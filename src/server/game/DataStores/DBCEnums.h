@@ -786,24 +786,6 @@ enum class GlobalCurve : int32
 #define MAX_ITEM_PROTO_SOCKETS 3
 #define MAX_ITEM_PROTO_STATS  10
 
-enum MapTypes                                               // Lua_IsInInstance
-{
-    MAP_COMMON          = 0,                                // none
-    MAP_INSTANCE        = 1,                                // party
-    MAP_RAID            = 2,                                // raid
-    MAP_BATTLEGROUND    = 3,                                // pvp
-    MAP_ARENA           = 4,                                // arena
-    MAP_SCENARIO        = 5                                 // scenario
-};
-
-enum MapFlags
-{
-    MAP_FLAG_CAN_TOGGLE_DIFFICULTY  = 0x0100,
-    MAP_FLAG_FLEX_LOCKING           = 0x8000, // All difficulties share completed encounters lock, not bound to a single instance id
-                                              // heroic difficulty flag overrides it and uses instance id bind
-    MAP_FLAG_GARRISON               = 0x4000000
-};
-
 enum GlyphSlotType
 {
     GLYPH_SLOT_MAJOR = 0,
@@ -1024,6 +1006,23 @@ enum ItemSpecStat
     ITEM_SPEC_STAT_NONE             = 40
 };
 
+enum MapTypes                                               // Lua_IsInInstance
+{
+    MAP_COMMON          = 0,                                // none
+    MAP_INSTANCE        = 1,                                // party
+    MAP_RAID            = 2,                                // raid
+    MAP_BATTLEGROUND    = 3,                                // pvp
+    MAP_ARENA           = 4,                                // arena
+    MAP_SCENARIO        = 5                                 // scenario
+};
+
+enum MapFlags
+{
+    MAP_FLAG_CAN_TOGGLE_DIFFICULTY  = 0x00000100,
+    MAP_FLAG_FLEX_LOCKING           = 0x00008000,
+    MAP_FLAG_GARRISON               = 0x04000000
+};
+
 enum class MapDifficultyFlags : uint8
 {
     LimitToPlayersFromOneRealm              = 0x01,
@@ -1034,6 +1033,13 @@ enum class MapDifficultyFlags : uint8
 };
 
 DEFINE_ENUM_FLAG(MapDifficultyFlags);
+
+enum MapDifficultyResetInterval : uint8
+{
+    MAP_DIFFICULTY_RESET_ANYTIME    = 0,
+    MAP_DIFFICULTY_RESET_DAILY      = 1,
+    MAP_DIFFICULTY_RESET_WEEKLY     = 2
+};
 
 enum class ModifierTreeType : int32
 {

@@ -66,6 +66,7 @@
 #include "GameTime.h"
 #include "Guild.h"
 #include "GuildMgr.h"
+#include "InstanceLockMgr.h"
 #include "InstancePackets.h"
 #include "InstanceSaveMgr.h"
 #include "InstanceScript.h"
@@ -278,7 +279,6 @@ Player::Player(WorldSession* session) : Unit(true), m_sceneMgr(this), m_Vignette
     m_dungeonDifficulty = DIFFICULTY_NORMAL;
     m_raidDifficulty = DIFFICULTY_NORMAL_RAID;
     m_legacyRaidDifficulty = DIFFICULTY_10_N;
-    m_prevMapDifficulty = DIFFICULTY_NORMAL_RAID;
 
     m_lastPotionId = 0;
 
@@ -1290,7 +1290,7 @@ void Player::Update(uint32 p_time)
         {
             // Player left the instance
             if (_pendingBindId == GetInstanceId())
-                BindToInstance();
+                ConfirmPendingBind();
             SetPendingBind(0, 0);
         }
         else
@@ -4942,8 +4942,8 @@ Corpse* Player::CreateCorpse()
     corpse->UpdatePositionData();
     corpse->SetZoneScript();
 
-    // we do not need to save corpses for BG/arenas
-    if (!GetMap()->IsBattlegroundOrArena())
+    // we do not need to save corpses for instances
+    if (!GetMap()->Instanceable())
         corpse->SaveToDB();
 
     return corpse;
@@ -17995,8 +17995,22 @@ bool Player::LoadFromDB(ObjectGuid guid, CharacterDatabaseQueryHolder const& hol
         ObjectGuid transGUID = ObjectGuid::Create<HighGuid::Transport>(fields.transguid);
 
         Transport* transport = nullptr;
-        if (MapTransport* go = HashMapHolder<MapTransport>::Find(transGUID))
-            transport = go;
+        if (Map* transportMap = sMapMgr->CreateMap(mapId, this))
+        {
+            if (Transport* transportOnMap = transportMap->GetTransport(transGUID))
+            {
+                if (transportOnMap->GetExpectedMapId() != mapId)
+                {
+                    mapId = transportOnMap->GetExpectedMapId();
+                    instanceId = 0;
+                    transportMap = sMapMgr->CreateMap(mapId, this);
+                    if (transportMap)
+                        transport = transportMap->GetTransport(transGUID);
+                }
+                else
+                    transport = transportOnMap;
+            }
+        }
 
         if (transport)
         {
@@ -18103,7 +18117,7 @@ bool Player::LoadFromDB(ObjectGuid guid, CharacterDatabaseQueryHolder const& hol
     // load the player's map here if it's not already loaded
     auto zoneId = fields.zone;
     if (!map)
-        map = sMapMgr->CreateMap(mapId, this, zoneId, instanceId);
+        map = sMapMgr->CreateMap(mapId, this, zoneId);
     AreaTriggerStruct const* areaTrigger = nullptr;
     bool check = false;
 
@@ -19878,7 +19892,7 @@ void Player::UnbindInstance(BoundInstancesMap::mapped_type::iterator& itr, Bound
         }
 
         if (itr->second.perm)
-            GetSession()->SendCalendarRaidLockout(itr->second.save, false);
+            GetSession()->SendCalendarRaidLockoutRemoved(itr->second.save);
 
         itr->second.save->RemovePlayer(this);               // save can become invalid
         difficultyItr->second.erase(itr++);
@@ -19951,20 +19965,14 @@ InstancePlayerBind* Player::BindToInstance(InstanceSave* save, bool permanent, B
     return nullptr;
 }
 
-void Player::BindToInstance()
+void Player::ConfirmPendingBind()
 {
-    InstanceSave* mapSave = sInstanceSaveMgr->GetInstanceSave(_pendingBindId);
-    if (!mapSave) //it seems sometimes mapSave is nullptr, but I did not check why
+    InstanceMap* map = GetMap()->ToInstanceMap();
+    if (!map || map->GetInstanceId() != _pendingBindId)
         return;
 
-    WorldPackets::Instance::InstanceSaveCreated data;
-    data.Gm = IsGameMaster();
-    SendDirectMessage(data.Write());
     if (!IsGameMaster())
-    {
-        BindToInstance(mapSave, true, EXTEND_STATE_KEEP);
-        GetSession()->SendCalendarRaidLockout(mapSave, true);
-    }
+        map->CreateInstanceLockForPlayer(this);
 }
 
 void Player::SetPendingBind(uint32 instanceId, uint32 bindTimer)
@@ -19975,40 +19983,26 @@ void Player::SetPendingBind(uint32 instanceId, uint32 bindTimer)
 
 void Player::SendRaidInfo()
 {
+    InstanceResetTimePoint now = GameTime::GetSystemTime();
+
+    std::vector<InstanceLock const*> instanceLocks = sInstanceLockMgr.GetInstanceLocksForPlayer(GetGUID());
+
     WorldPackets::Instance::InstanceInfo instanceInfo;
+    instanceInfo.LockList.reserve(instanceLocks.size());
 
-    time_t now = GameTime::GetGameTime();
-
-    for (auto difficultyItr = m_boundInstances.begin(); difficultyItr != m_boundInstances.end(); ++difficultyItr)
+    for (InstanceLock const* instanceLock : instanceLocks)
     {
-        for (auto itr = difficultyItr->second.begin(); itr != difficultyItr->second.end(); ++itr)
-        {
-            InstancePlayerBind const& bind = itr->second;
-            if (bind.perm)
-            {
-                InstanceSave* save = itr->second.save;
+        instanceInfo.LockList.emplace_back();
 
-                WorldPackets::Instance::InstanceLock lockInfos;
+        WorldPackets::Instance::InstanceLock& lockInfos = instanceInfo.LockList.back();
+        lockInfos.InstanceID = instanceLock->GetInstanceId();
+        lockInfos.MapID = instanceLock->GetMapId();
+        lockInfos.DifficultyID = instanceLock->GetDifficultyId();
+        lockInfos.TimeRemaining = int32(std::chrono::duration_cast<Seconds>(instanceLock->GetEffectiveExpiryTime() - now).count());
+        lockInfos.CompletedMask = instanceLock->GetData()->CompletedEncountersMask;
 
-                lockInfos.InstanceID = save->GetInstanceId();
-                lockInfos.MapID = save->GetMapId();
-                lockInfos.DifficultyID = save->GetDifficultyID();
-                if (bind.extendState != EXTEND_STATE_EXTENDED)
-                    lockInfos.TimeRemaining = save->GetResetTime() - now;
-                else
-                    lockInfos.TimeRemaining = sInstanceSaveMgr->GetSubsequentResetTime(save->GetMapId(), save->GetDifficultyID(), save->GetResetTime()) - now;
-
-                lockInfos.CompletedMask = 0;
-                if (Map* map = sMapMgr->FindMap(save->GetMapId(), save->GetInstanceId()))
-                    if (InstanceScript* instanceScript = ((InstanceMap*)map)->GetInstanceScript())
-                        lockInfos.CompletedMask = instanceScript->GetCompletedEncounterMask();
-
-                lockInfos.Locked = bind.extendState != EXTEND_STATE_EXPIRED;
-                lockInfos.Extended = bind.extendState == EXTEND_STATE_EXTENDED;
-
-                instanceInfo.LockList.push_back(lockInfos);
-            }
-        }
+        lockInfos.Locked = !instanceLock->IsExpired();
+        lockInfos.Extended = instanceLock->IsExtended();
     }
 
     SendDirectMessage(instanceInfo.Write());
@@ -24680,20 +24674,12 @@ void Player::SendInitialPacketsAfterAddToMap()
 
     if (GetMap()->IsRaid())
     {
-        m_prevMapDifficulty = GetMap()->GetDifficultyID();
-        DifficultyEntry const* difficulty = sDifficultyStore.AssertEntry(m_prevMapDifficulty);
-        SendRaidDifficulty((difficulty->Flags & DIFFICULTY_FLAG_LEGACY) != 0, m_prevMapDifficulty);
+        Difficulty mapDifficulty = GetMap()->GetDifficultyID();
+        DifficultyEntry const* difficulty = sDifficultyStore.AssertEntry(mapDifficulty);
+        SendRaidDifficulty((difficulty->Flags & DIFFICULTY_FLAG_LEGACY) != 0, mapDifficulty);
     }
     else if (GetMap()->IsNonRaidDungeon())
-    {
-        m_prevMapDifficulty = GetMap()->GetDifficultyID();
-        SendDungeonDifficulty(m_prevMapDifficulty);
-    }
-    else if (!GetMap()->Instanceable())
-    {
-        DifficultyEntry const* difficulty = sDifficultyStore.AssertEntry(m_prevMapDifficulty);
-        SendRaidDifficulty((difficulty->Flags & DIFFICULTY_FLAG_LEGACY) != 0);
-    }
+        SendDungeonDifficulty(GetMap()->GetDifficultyID());
 
     PhasingHandler::OnMapChange(this);
 

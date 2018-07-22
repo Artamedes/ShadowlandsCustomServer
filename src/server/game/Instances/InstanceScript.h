@@ -21,6 +21,7 @@
 #include "ZoneScript.h"
 #include "Common.h"
 #include "Duration.h"
+#include <array>
 #include <iosfwd>
 #include <map>
 #include <set>
@@ -41,11 +42,13 @@ class Player;
 class Unit;
 class TempSummon;
 class Challenge;
+struct DungeonEncounterEntry;
 struct InstanceSpawnGroupInfo;
 struct CriteriaTree;
 struct MythicKeystoneInfo;
 enum class CriteriaType : uint8;
 enum class CriteriaStartEvent : uint8;
+enum Difficulty : uint8;
 enum EncounterCreditType : uint8;
 namespace WorldPackets
 {
@@ -97,6 +100,14 @@ struct EntranceData
     uint32 BossId, WorldSafeLocId;
 };
 
+static constexpr uint32 MAX_DUNGEON_ENCOUNTERS_PER_BOSS = 4;
+
+struct DungeonEncounterData
+{
+    uint32 BossId;
+    std::array<uint32, MAX_DUNGEON_ENCOUNTERS_PER_BOSS> DungeonEncounterId;
+};
+
 struct DoorData
 {
     uint32 entry, bossId;
@@ -145,11 +156,15 @@ typedef std::vector<AreaBoundary const*> CreatureBoundary;
 
 struct BossInfo
 {
-    BossInfo() : state(TO_BE_DECIDED) { }
+    BossInfo() : state(TO_BE_DECIDED) { DungeonEncounters.fill(nullptr); }
+
+    DungeonEncounterEntry const* GetDungeonEncounterForDifficulty(Difficulty difficulty) const;
+
     EncounterState state;
     GuidSet door[MAX_DOOR_TYPES];
     GuidSet minion;
     CreatureBoundary boundary;
+    std::array<DungeonEncounterEntry const*, MAX_DUNGEON_ENCOUNTERS_PER_BOSS> DungeonEncounters;
 };
 
 struct DoorInfo
@@ -164,6 +179,12 @@ struct MinionInfo
 {
     explicit MinionInfo(BossInfo* _bossInfo) : bossInfo(_bossInfo) { }
     BossInfo* bossInfo;
+};
+
+struct UpdateSaveDataEvent
+{
+    uint32 BossId;
+    EncounterState NewState;
 };
 
 typedef std::multimap<uint32 /*entry*/, DoorInfo> DoorInfoMap;
@@ -208,9 +229,11 @@ class TC_GAME_API InstanceScript : public ZoneScript
         // When save is needed, this function generates the data
         virtual std::string GetSaveData();
 
+        virtual std::string UpdateSaveData(std::string const& oldData, UpdateSaveDataEvent const& event);
+
         virtual void SaveToDB();
 
-        virtual void Update(uint32 /*diff*/) { }
+        void UpdateCombatResurrection(uint32 diff);
         void UpdateOperations(uint32 const diff);
         void UpdateCombatResurrection(uint32 /*diff*/);
 
@@ -448,6 +471,12 @@ class TC_GAME_API InstanceScript : public ZoneScript
         void LoadDoorData(DoorData const* data);
         void LoadMinionData(MinionData const* data);
         void LoadObjectData(ObjectData const* creatureData, ObjectData const* gameObjectData);
+        template<typename T>
+        void LoadDungeonEncounterData(T const& encounters)
+        {
+            for (DungeonEncounterData const& encounter : encounters)
+                LoadDungeonEncounterData(encounter.BossId, encounter.DungeonEncounterId);
+        }
 
         void AddObject(Creature* obj, bool add);
         void AddObject(GameObject* obj, bool add);
@@ -476,7 +505,7 @@ class TC_GAME_API InstanceScript : public ZoneScript
         bool _SkipCheckRequiredBosses(Player const* player = nullptr) const;
 
     private:
-        static void LoadObjectData(ObjectData const* creatureData, ObjectInfoMap& objectInfo);
+        void LoadDungeonEncounterData(uint32 bossId, std::array<uint32, MAX_DUNGEON_ENCOUNTERS_PER_BOSS> const& dungeonEncounterIds);
         void UpdateEncounterState(EncounterCreditType type, uint32 creditEntry, Unit* source, Unit* unit = nullptr);
 
         std::vector<char> headers;
@@ -487,7 +516,7 @@ class TC_GAME_API InstanceScript : public ZoneScript
         ObjectInfoMap _creatureInfo;
         ObjectInfoMap _gameObjectInfo;
         ObjectGuidMap _objectGuids;
-        uint32 completedEncounters; // completed encounter mask, bit indexes are DungeonEncounter.dbc boss numbers, used for packets
+        uint32 completedEncounters; // DEPRECATED, REMOVE
         std::vector<InstanceSpawnGroupInfo> const* const _instanceSpawnGroups;
         std::unordered_set<uint32> _activatedAreaTriggers;
         uint32 _entranceId;
