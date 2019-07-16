@@ -267,14 +267,30 @@ public:
         std::string uptime          = secsToTimeString(GameTime::GetUptime());
         uint32 updateTime           = sWorldUpdateTime.GetLastUpdateTime();
 
-        handler->PSendSysMessage("%s", GitRevision::GetFullVersion());
-        handler->PSendSysMessage(LANG_CONNECTED_PLAYERS, playersNum, maxPlayersNum);
-        handler->PSendSysMessage(LANG_CONNECTED_USERS, activeClientsNum, maxActiveClientsNum, queuedClientsNum, maxQueuedClientsNum);
-        handler->PSendSysMessage(LANG_UPTIME, uptime.c_str());
-        handler->PSendSysMessage(LANG_UPDATE_DIFF, updateTime);
-        // Can't use sWorld->ShutdownMsg here in case of console command
-        if (sWorld->IsShuttingDown())
-            handler->PSendSysMessage(LANG_SHUTDOWN_TIMELEFT, secsToTimeString(sWorld->GetShutDownTimeLeft()).c_str());
+        bool l_Console = handler->GetSession() == nullptr;
+
+        if (l_Console)
+        {
+            handler->PSendSysMessage("%s", GitRevision::GetFullVersion());
+            handler->PSendSysMessage(LANG_CONNECTED_PLAYERS, playersNum, maxPlayersNum);
+            handler->PSendSysMessage(LANG_CONNECTED_USERS, activeClientsNum, maxActiveClientsNum, queuedClientsNum, maxQueuedClientsNum);
+            handler->PSendSysMessage(LANG_UPTIME, uptime.c_str());
+            handler->PSendSysMessage(LANG_UPDATE_DIFF, updateTime);
+            // Can't use sWorld->ShutdownMsg here in case of console command
+            if (sWorld->IsShuttingDown())
+                handler->PSendSysMessage(LANG_SHUTDOWN_TIMELEFT, secsToTimeString(sWorld->GetShutDownTimeLeft()).c_str());
+        }
+        else
+        {
+            handler->PSendSysMessage("[%s] %s", GitRevision::GetCommitCount(), GitRevision::GetFullVersion());
+            handler->PSendSysMessage(LANG_CONNECTED_PLAYERS, playersNum, maxPlayersNum);
+            handler->PSendSysMessage(LANG_CONNECTED_USERS, activeClientsNum, maxActiveClientsNum, queuedClientsNum, maxQueuedClientsNum);
+            handler->PSendSysMessage(LANG_UPTIME, uptime.c_str());
+            handler->PSendSysMessage(LANG_UPDATE_DIFF, updateTime);
+            // Can't use sWorld->ShutdownMsg here in case of console command
+            if (sWorld->IsShuttingDown())
+                handler->PSendSysMessage(LANG_SHUTDOWN_TIMELEFT, secsToTimeString(sWorld->GetShutDownTimeLeft()).c_str());
+        }
 
         return true;
     }

@@ -38,6 +38,8 @@ namespace GitRevision
     TC_COMMON_API char const* GetLegalCopyrightStr();
     TC_COMMON_API char const* GetFileVersionStr();
     TC_COMMON_API char const* GetProductVersionStr();
+    TC_COMMON_API char const* GetCommitCount();
+    TC_COMMON_API char const* GetPlatformStr();
 }
 
 #endif

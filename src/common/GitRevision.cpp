@@ -95,7 +95,7 @@ char const* GitRevision::GetHotfixesDatabase()
 
 char const* GitRevision::GetFullVersion()
 {
-  return "TrinityCore rev. " VER_PRODUCTVERSION_STR
+  return "TrinityCore " VER_PRODUCTVERSION_STR
     " (" TRINITY_PLATFORM_STR ", " _BUILD_DIRECTIVE ", " TRINITY_LINKAGE_TYPE_STR ")";
 }
 
@@ -117,4 +117,14 @@ char const* GitRevision::GetFileVersionStr()
 char const* GitRevision::GetProductVersionStr()
 {
     return VER_PRODUCTVERSION_STR;
+}
+
+char const* GitRevision::GetCommitCount()
+{
+    return _GIT_COMMIT_COUNT;
+}
+
+char const* GitRevision::GetPlatformStr()
+{
+    return " (" TRINITY_PLATFORM_STR ", " _BUILD_DIRECTIVE ", " TRINITY_LINKAGE_TYPE_STR ")";
 }
