@@ -8807,18 +8807,18 @@ void Unit::SetSpeedRate(UnitMoveType mtype, float rate)
 
     PropagateSpeedChange();
 
-    // Spline packets are for creatures and move_update are for players
-    static OpcodeServer const moveTypeToOpcode[MAX_MOVE_TYPE][3] =
+    // Spline packets are for creatures and set move are for players
+    static OpcodeServer const moveTypeToOpcode[MAX_MOVE_TYPE][2] =
     {
-        {SMSG_MOVE_SPLINE_SET_WALK_SPEED,        SMSG_MOVE_SET_WALK_SPEED,        SMSG_MOVE_UPDATE_WALK_SPEED       },
-        {SMSG_MOVE_SPLINE_SET_RUN_SPEED,         SMSG_MOVE_SET_RUN_SPEED,         SMSG_MOVE_UPDATE_RUN_SPEED        },
-        {SMSG_MOVE_SPLINE_SET_RUN_BACK_SPEED,    SMSG_MOVE_SET_RUN_BACK_SPEED,    SMSG_MOVE_UPDATE_RUN_BACK_SPEED   },
-        {SMSG_MOVE_SPLINE_SET_SWIM_SPEED,        SMSG_MOVE_SET_SWIM_SPEED,        SMSG_MOVE_UPDATE_SWIM_SPEED       },
-        {SMSG_MOVE_SPLINE_SET_SWIM_BACK_SPEED,   SMSG_MOVE_SET_SWIM_BACK_SPEED,   SMSG_MOVE_UPDATE_SWIM_BACK_SPEED  },
-        {SMSG_MOVE_SPLINE_SET_TURN_RATE,         SMSG_MOVE_SET_TURN_RATE,         SMSG_MOVE_UPDATE_TURN_RATE        },
-        {SMSG_MOVE_SPLINE_SET_FLIGHT_SPEED,      SMSG_MOVE_SET_FLIGHT_SPEED,      SMSG_MOVE_UPDATE_FLIGHT_SPEED     },
-        {SMSG_MOVE_SPLINE_SET_FLIGHT_BACK_SPEED, SMSG_MOVE_SET_FLIGHT_BACK_SPEED, SMSG_MOVE_UPDATE_FLIGHT_BACK_SPEED},
-        {SMSG_MOVE_SPLINE_SET_PITCH_RATE,        SMSG_MOVE_SET_PITCH_RATE,        SMSG_MOVE_UPDATE_PITCH_RATE       },
+        {SMSG_MOVE_SPLINE_SET_WALK_SPEED,        SMSG_MOVE_SET_WALK_SPEED       },
+        {SMSG_MOVE_SPLINE_SET_RUN_SPEED,         SMSG_MOVE_SET_RUN_SPEED        },
+        {SMSG_MOVE_SPLINE_SET_RUN_BACK_SPEED,    SMSG_MOVE_SET_RUN_BACK_SPEED   },
+        {SMSG_MOVE_SPLINE_SET_SWIM_SPEED,        SMSG_MOVE_SET_SWIM_SPEED       },
+        {SMSG_MOVE_SPLINE_SET_SWIM_BACK_SPEED,   SMSG_MOVE_SET_SWIM_BACK_SPEED  },
+        {SMSG_MOVE_SPLINE_SET_TURN_RATE,         SMSG_MOVE_SET_TURN_RATE        },
+        {SMSG_MOVE_SPLINE_SET_FLIGHT_SPEED,      SMSG_MOVE_SET_FLIGHT_SPEED     },
+        {SMSG_MOVE_SPLINE_SET_FLIGHT_BACK_SPEED, SMSG_MOVE_SET_FLIGHT_BACK_SPEED},
+        {SMSG_MOVE_SPLINE_SET_PITCH_RATE,        SMSG_MOVE_SET_PITCH_RATE       },
     };
 
     if (GetTypeId() == TYPEID_PLAYER)
@@ -8840,12 +8840,6 @@ void Unit::SetSpeedRate(UnitMoveType mtype, float rate)
         selfpacket.SequenceIndex = m_movementCounter++;
         selfpacket.Speed = GetSpeed(mtype);
         playerMover->GetSession()->SendPacket(selfpacket.Write());
-
-        // Send notification to other players
-        WorldPackets::Movement::MoveUpdateSpeed packet(moveTypeToOpcode[mtype][2]);
-        packet.Status = &m_movementInfo;
-        packet.Speed = GetSpeed(mtype);
-        playerMover->SendMessageToSet(packet.Write(), false);
     }
     else
     {
@@ -11568,10 +11562,6 @@ void Unit::SetRooted(bool apply, bool packetOnly /*= false*/)
         packet.MoverGUID = GetGUID();
         packet.SequenceIndex = m_movementCounter++;
         playerMover->SendDirectMessage(packet.Write());
-
-        WorldPackets::Movement::MoveUpdate moveUpdate;
-        moveUpdate.Status = &m_movementInfo;
-        SendMessageToSet(moveUpdate.Write(), playerMover);
     }
     else
     {
@@ -13159,10 +13149,6 @@ bool Unit::SetDisableGravity(bool disable, bool updateAnimTier /*= true*/)
         packet.MoverGUID = GetGUID();
         packet.SequenceIndex = m_movementCounter++;
         playerMover->SendDirectMessage(packet.Write());
-
-        WorldPackets::Movement::MoveUpdate moveUpdate;
-        moveUpdate.Status = &m_movementInfo;
-        SendMessageToSet(moveUpdate.Write(), playerMover);
     }
     else
     {
@@ -13247,10 +13233,6 @@ bool Unit::SetCanFly(bool enable)
         packet.MoverGUID = GetGUID();
         packet.SequenceIndex = m_movementCounter++;
         playerMover->SendDirectMessage(packet.Write());
-
-        WorldPackets::Movement::MoveUpdate moveUpdate;
-        moveUpdate.Status = &m_movementInfo;
-        SendMessageToSet(moveUpdate.Write(), playerMover);
     }
     else
     {
@@ -13284,10 +13266,6 @@ bool Unit::SetWaterWalking(bool enable)
         packet.MoverGUID = GetGUID();
         packet.SequenceIndex = m_movementCounter++;
         playerMover->SendDirectMessage(packet.Write());
-
-        WorldPackets::Movement::MoveUpdate moveUpdate;
-        moveUpdate.Status = &m_movementInfo;
-        SendMessageToSet(moveUpdate.Write(), playerMover);
     }
     else
     {
@@ -13322,10 +13300,6 @@ bool Unit::SetFeatherFall(bool enable)
         packet.MoverGUID = GetGUID();
         packet.SequenceIndex = m_movementCounter++;
         playerMover->SendDirectMessage(packet.Write());
-
-        WorldPackets::Movement::MoveUpdate moveUpdate;
-        moveUpdate.Status = &m_movementInfo;
-        SendMessageToSet(moveUpdate.Write(), playerMover);
     }
     else
     {
@@ -13375,10 +13349,6 @@ bool Unit::SetHover(bool enable, bool updateAnimTier /*= true*/)
         packet.MoverGUID = GetGUID();
         packet.SequenceIndex = m_movementCounter++;
         playerMover->SendDirectMessage(packet.Write());
-
-        WorldPackets::Movement::MoveUpdate moveUpdate;
-        moveUpdate.Status = &m_movementInfo;
-        SendMessageToSet(moveUpdate.Write(), playerMover);
     }
     else
     {
@@ -13422,10 +13392,6 @@ bool Unit::SetCollision(bool disable)
         packet.MoverGUID = GetGUID();
         packet.SequenceIndex = m_movementCounter++;
         playerMover->SendDirectMessage(packet.Write());
-
-        WorldPackets::Movement::MoveUpdate moveUpdate;
-        moveUpdate.Status = &m_movementInfo;
-        SendMessageToSet(moveUpdate.Write(), playerMover);
     }
     else
     {
@@ -13494,10 +13460,6 @@ bool Unit::SetCanTurnWhileFalling(bool enable)
         packet.MoverGUID = GetGUID();
         packet.SequenceIndex = m_movementCounter++;
         playerMover->SendDirectMessage(packet.Write());
-
-        WorldPackets::Movement::MoveUpdate moveUpdate;
-        moveUpdate.Status = &m_movementInfo;
-        SendMessageToSet(moveUpdate.Write(), playerMover);
     }
 
     return true;
@@ -13525,10 +13487,6 @@ bool Unit::SetCanDoubleJump(bool enable)
         packet.MoverGUID = GetGUID();
         packet.SequenceIndex = m_movementCounter++;
         playerMover->SendDirectMessage(packet.Write());
-
-        WorldPackets::Movement::MoveUpdate moveUpdate;
-        moveUpdate.Status = &m_movementInfo;
-        SendMessageToSet(moveUpdate.Write(), playerMover);
     }
 
     return true;
@@ -13556,10 +13514,6 @@ bool Unit::SetDisableInertia(bool disable)
         packet.MoverGUID = GetGUID();
         packet.SequenceIndex = m_movementCounter++;
         playerMover->SendDirectMessage(packet.Write());
-
-        WorldPackets::Movement::MoveUpdate moveUpdate;
-        moveUpdate.Status = &m_movementInfo;
-        SendMessageToSet(moveUpdate.Write(), playerMover);
     }
 
     return true;

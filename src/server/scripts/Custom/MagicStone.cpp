@@ -9,6 +9,8 @@
 #include "DatabaseEnv.h"
 #include "Chat.h"
 #include "ObjectMgr.h"
+#include "MoveSpline.h"
+#include "MoveSplineInit.h"
 
 void MagicStoneMgr::LoadFromDB()
 {
@@ -83,6 +85,12 @@ class MagicStone : public ItemScript
 
         void DisplayMenu(Player* player, Item* item, uint32 menuId)
         {
+            if ((player->IsSplineEnabled() && !player->movespline->Finalized()) || player->HasUnitState(UnitState::UNIT_STATE_STUNNED) || player->IsInCombat())
+            {
+                CloseGossipMenuFor(player);
+                return;
+            }
+
             ClearGossipMenuFor(player);
 
             auto l_Itr = sMagicStoneMgr->m_MagicStoneMenus.equal_range(menuId);
@@ -116,6 +124,12 @@ class MagicStone : public ItemScript
 
         void OnGossipSelect(Player* player, Item* item, uint32 /*sender*/, uint32 action) override
         {
+            if ((player->IsSplineEnabled() && !player->movespline->Finalized()) || player->HasUnitState(UnitState::UNIT_STATE_STUNNED) || player->IsInCombat())
+            {
+                CloseGossipMenuFor(player);
+                return;
+            }
+
             ClearGossipMenuFor(player);
             bool l_ShouldClose = true;
 

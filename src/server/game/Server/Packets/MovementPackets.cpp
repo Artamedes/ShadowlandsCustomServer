@@ -27,7 +27,7 @@ ByteBuffer& operator<<(ByteBuffer& data, MovementInfo const& movementInfo)
     bool hasTransportData = !movementInfo.transport.guid.IsEmpty();
     bool hasFallDirection = movementInfo.HasMovementFlag(MOVEMENTFLAG_FALLING | MOVEMENTFLAG_FALLING_FAR);
     bool hasFallData = hasFallDirection || movementInfo.jump.fallTime != 0;
-    bool hasSpline = false; // todo 6.x send this infos
+    bool hasSpline = movementInfo.HasSpline;
     bool hasInertia = movementInfo.inertia.has_value();
 
     // TODO: Find if this is still needed.
@@ -61,8 +61,8 @@ ByteBuffer& operator<<(ByteBuffer& data, MovementInfo const& movementInfo)
     data.WriteBit(hasFallData);
     data.WriteBit(hasSpline);
 
-    data.WriteBit(false); // HeightChangeFailed
-    data.WriteBit(false); // RemoteTimeValid
+    data.WriteBit(movementInfo.HeightChangeFailed); // HeightChangeFailed
+    data.WriteBit(movementInfo.RemoteTimeValid); // RemoteTimeValid
     data.WriteBit(hasInertia);
 
     data.FlushBits();
@@ -122,10 +122,10 @@ ByteBuffer& operator>>(ByteBuffer& data, MovementInfo& movementInfo)
 
     bool hasTransport = data.ReadBit();
     bool hasFall = data.ReadBit();
-    /*hasSpline = */data.ReadBit(); // todo 6.x read this infos
+    movementInfo.HasSpline = data.ReadBit(); // todo 6.x read this infos
 
-    data.ReadBit(); // HeightChangeFailed
-    data.ReadBit(); // RemoteTimeValid
+    movementInfo.HeightChangeFailed = data.ReadBit(); // HeightChangeFailed
+    movementInfo.RemoteTimeValid = data.ReadBit(); // RemoteTimeValid
     bool hasInertia = data.ReadBit();
 
     if (hasTransport)

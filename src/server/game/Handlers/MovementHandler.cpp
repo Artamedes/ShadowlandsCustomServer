@@ -311,6 +311,10 @@ void WorldSession::HandleMovementOpcode(OpcodeClient opcode, MovementInfo& movem
     if (plrMover && plrMover->IsBeingTeleported())
         return;
 
+    // Lock Spline for warrior charge etc so it doesn't look like we're tele-porting.
+    if (plrMover && plrMover->IsSplineEnabled() && !plrMover->movespline->Finalized())
+        return;
+
     GetPlayer()->ValidateMovementInfo(&movementInfo);
 
     // prevent tampered movement data
@@ -423,6 +427,7 @@ void WorldSession::HandleMovementOpcode(OpcodeClient opcode, MovementInfo& movem
 
     WorldPackets::Movement::MoveUpdate moveUpdate;
     moveUpdate.Status = &mover->m_movementInfo;
+    moveUpdate.Status->RemoteTimeValid = true;
     mover->SendMessageToSet(moveUpdate.Write(), _player);
 
     if (plrMover)                                            // nothing is charmed, or player charmed
@@ -513,6 +518,30 @@ void WorldSession::HandleForceSpeedChangeAck(WorldPackets::Movement::MovementSpe
             return;
     }
 
+    // move_update are for players
+    static OpcodeServer const moveTypeToOpcode[MAX_MOVE_TYPE] =
+    {
+    { SMSG_MOVE_UPDATE_WALK_SPEED },
+    { SMSG_MOVE_UPDATE_RUN_SPEED },
+    { SMSG_MOVE_UPDATE_RUN_BACK_SPEED },
+    { SMSG_MOVE_UPDATE_SWIM_SPEED },
+    { SMSG_MOVE_UPDATE_SWIM_BACK_SPEED },
+    { SMSG_MOVE_UPDATE_TURN_RATE },
+    { SMSG_MOVE_UPDATE_FLIGHT_SPEED },
+    { SMSG_MOVE_UPDATE_FLIGHT_BACK_SPEED },
+    { SMSG_MOVE_UPDATE_PITCH_RATE },
+    };
+
+    _player->m_movementInfo = packet.Ack.Status;
+
+    // Send notification to other players
+    WorldPackets::Movement::MoveUpdateSpeed packetUpdate(moveTypeToOpcode[move_type]);
+    packetUpdate.Status = &_player->m_movementInfo;
+    packetUpdate.Status->time = getMSTime();
+    packetUpdate.Status->RemoteTimeValid = true;
+    packetUpdate.Speed = packet.Speed;
+    _player->SendMessageToSet(packetUpdate.Write(), false);
+
     // skip all forced speed changes except last and unexpected
     // in run/mounted case used one ACK and it must be skipped. m_forced_speed_changes[MOVE_RUN] store both.
     if (_player->m_forced_speed_changes[move_type] > 0)
@@ -557,12 +586,18 @@ void WorldSession::HandleMoveKnockBackAck(WorldPackets::Movement::MoveKnockBackA
 
     WorldPackets::Movement::MoveUpdateKnockBack updateKnockBack;
     updateKnockBack.Status = &_player->m_movementInfo;
+    updateKnockBack.Status->time = getMSTime();
     _player->SendMessageToSet(updateKnockBack.Write(), false);
 }
 
 void WorldSession::HandleMovementAckMessage(WorldPackets::Movement::MovementAckMessage& movementAck)
 {
     GetPlayer()->ValidateMovementInfo(&movementAck.Ack.Status);
+
+    if (_player->m_unitMovedByMe->GetGUID() != movementAck.Ack.Status.guid)
+        return;
+
+    HandleMovementOpcode(movementAck.GetOpcode(), movementAck.Ack.Status);
 }
 
 void WorldSession::HandleSummonResponseOpcode(WorldPackets::Movement::SummonResponse& packet)
@@ -576,6 +611,18 @@ void WorldSession::HandleSummonResponseOpcode(WorldPackets::Movement::SummonResp
 void WorldSession::HandleSetCollisionHeightAck(WorldPackets::Movement::MoveSetCollisionHeightAck& setCollisionHeightAck)
 {
     GetPlayer()->ValidateMovementInfo(&setCollisionHeightAck.Data.Status);
+
+    if (_player->m_unitMovedByMe->GetGUID() != setCollisionHeightAck.Data.Status.guid)
+        return;
+
+    _player->m_movementInfo = setCollisionHeightAck.Data.Status;
+
+    WorldPackets::Movement::MoveUpdateCollisionHeight updateCollisionHeight;
+    updateCollisionHeight.Status = &_player->m_movementInfo;
+    updateCollisionHeight.Status->time = getMSTime();
+    updateCollisionHeight.Height = setCollisionHeightAck.Height;
+    updateCollisionHeight.Scale = _player->GetObjectScale();
+    _player->SendMessageToSet(updateCollisionHeight.Write(), false);
 }
 
 void WorldSession::HandleMoveApplyMovementForceAck(WorldPackets::Movement::MoveApplyMovementForceAck& moveApplyMovementForceAck)

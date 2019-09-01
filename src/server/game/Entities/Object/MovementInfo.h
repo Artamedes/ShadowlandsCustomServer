@@ -33,6 +33,9 @@ struct MovementInfo
     uint32 flags3;
     Position pos;
     uint32 time;
+    bool HasSpline;
+    bool HeightChangeFailed;
+    bool RemoteTimeValid;
 
     // transport
     struct TransportInfo
