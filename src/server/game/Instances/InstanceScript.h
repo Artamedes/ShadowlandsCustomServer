@@ -384,6 +384,8 @@ class TC_GAME_API InstanceScript : public ZoneScript
         std::vector<std::pair<int32, std::function<void()>>>    timedDelayedOperations;   ///< Delayed operations
         bool                                                    emptyWarned;              ///< Warning when there are no more delayed operations
 
+        bool IsEncounterCompleted(uint32 dungeonEncounterId) const;
+
         uint32 GetEncounterCount() const { return uint32(bosses.size()); }
 
         // Sets the entrance location (WorldSafeLoc) id

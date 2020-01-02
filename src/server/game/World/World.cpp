@@ -59,7 +59,6 @@
 #include "GroupMgr.h"
 #include "GuildMgr.h"
 #include "InstanceLockMgr.h"
-#include "InstanceSaveMgr.h"
 #include "IPLocation.h"
 #include "Language.h"
 #include "LanguageMgr.h"
@@ -1911,7 +1910,7 @@ void World::SetInitialWorldSettings()
 
     // Must be called before `respawn` data
     TC_LOG_INFO("server.loading", "Loading instances...");
-    sInstanceSaveMgr->LoadInstances();
+    sMapMgr->InitInstanceIds();
 
     sInstanceLockMgr.Load();
 
@@ -2893,12 +2892,6 @@ void World::Update(uint32 diff)
         TC_METRIC_TIMER("world_update_time", TC_METRIC_TAG("type", "Save guilds"));
         m_timers[WUPDATE_GUILDSAVE].Reset();
         sGuildMgr->SaveGuilds();
-    }
-
-    {
-        TC_METRIC_TIMER("world_update_time", TC_METRIC_TAG("type", "Update instance reset times"));
-        // update the instance reset times
-        sInstanceSaveMgr->Update();
     }
 
     // Check for shutdown warning

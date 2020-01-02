@@ -16,7 +16,6 @@
  */
 
 #include "Scenario.h"
-#include "InstanceSaveMgr.h"
 #include "InstanceScenario.h"
 #include "InstanceScript.h"
 #include "Log.h"

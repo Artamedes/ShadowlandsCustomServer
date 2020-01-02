@@ -53,6 +53,7 @@ class TC_GAME_API MapManager
 
         Map* CreateMap(uint32 mapId, Player* player, uint32 zoneId = 0, bool createChallenge = false, CustomInstanceZone const* p_CustomInstanceZone = nullptr);
         Map* FindMap(uint32 mapId, uint32 instanceId) const;
+        uint32 FindInstanceIdForPlayer(uint32 mapId, Player const* player) const;
 
         void Initialize();
         void Update(uint32 diff);

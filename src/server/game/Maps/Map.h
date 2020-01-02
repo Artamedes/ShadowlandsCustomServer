@@ -54,7 +54,6 @@ class GameObjectModel;
 class Group;
 class InstanceLock;
 class InstanceMap;
-class InstanceSave;
 class InstanceScript;
 class InstanceScenario;
 class Object;
@@ -303,7 +302,6 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
         bool IsDungeon() const;
         bool IsNonRaidDungeon() const;
         bool IsRaid() const;
-        bool IsRaidOrHeroicDungeon() const;
         bool IsHeroic() const;
         bool IsMythic() const;
         bool IsChallengeMode() const;
@@ -470,8 +468,8 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
         void SaveRespawnTime(SpawnObjectType type, ObjectGuid::LowType spawnId, uint32 entry, time_t respawnTime, uint32 gridId, CharacterDatabaseTransaction dbTrans = nullptr, bool startup = false);
         void SaveRespawnInfoDB(RespawnInfo const& info, CharacterDatabaseTransaction dbTrans = nullptr);
         void LoadRespawnTimes();
-        void DeleteRespawnTimes() { UnloadAllRespawnInfos(); DeleteRespawnTimesInDB(GetId(), GetInstanceId()); }
-        static void DeleteRespawnTimesInDB(uint16 mapId, uint32 instanceId);
+        void DeleteRespawnTimes() { UnloadAllRespawnInfos(); DeleteRespawnTimesInDB(); }
+        void DeleteRespawnTimesInDB();
 
         void LoadCorpseData();
         void DeleteCorpseData();
@@ -852,7 +850,7 @@ class TC_GAME_API InstanceMap : public Map
         void RemovePlayerFromMap(Player*, bool) override;
         void Update(uint32) override;
         void CreateInstanceData();
-        bool Reset(uint8 method);
+        bool Reset(InstanceResetMethod method);
         uint32 GetScriptId() const { return i_script_id; }
         std::string const& GetScriptName() const;
         InstanceScript* GetInstanceScript() { return i_data; }
@@ -865,18 +863,17 @@ class TC_GAME_API InstanceMap : public Map
         void CreateInstanceLockForPlayer(Player* player);
         void UnloadAll() override;
         EnterState CannotEnter(Player* player) override;
-        void SendResetWarnings(uint32 timeLeft) const;
         void SetResetSchedule(bool on);
 
         /* this checks if any players have a permanent bind (included reactivatable expired binds) to the instance ID
         it needs a DB query, so use sparingly */
         bool HasPermBoundPlayers() const;
         uint32 GetMaxPlayers() const;
-        uint32 GetMaxResetDelay() const;
         TeamId GetTeamIdInInstance() const;
         Team GetTeamInInstance() const { return GetTeamIdInInstance() == TEAM_ALLIANCE ? ALLIANCE : HORDE; }
 
         virtual void InitVisibilityDistance() override;
+
         Group* GetOwningGroup() const { return i_owningGroupRef.getTarget(); }
         void TrySetOwningGroup(Group* group);
 

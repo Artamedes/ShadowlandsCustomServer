@@ -22,12 +22,14 @@
 #include "DB2Stores.h"
 #include "GameTime.h"
 #include "Group.h"
-#include "InstanceSaveMgr.h"
 #include "InstanceScript.h"
 #include "Log.h"
 #include "Map.h"
 #include "ObjectMgr.h"
 #include "Player.h"
+
+// TODO
+// Do not save to db except for scenario type 3 (SCENARIO_TYPE_USE_DUNGEON_DISPLAY)
 
 InstanceScenario::InstanceScenario(Map* map, ScenarioData const* scenarioData) : Scenario(scenarioData), _map(map)
 {
@@ -67,7 +69,7 @@ void InstanceScenario::SaveToDB()
         Criteria const* criteria = sCriteriaMgr->GetCriteria(iter->first);
         switch (CriteriaType(criteria->Entry->Type))
         {
-            // Blizzard only appears to store creature kills
+            // Blizzard only appears to store creature kills and dungeon encounters
             case CriteriaType::KillCreature:
             case CriteriaType::DefeatDungeonEncounter:
                 break;

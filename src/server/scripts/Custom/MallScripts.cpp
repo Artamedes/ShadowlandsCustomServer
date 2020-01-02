@@ -17,7 +17,6 @@
 #include "QuestAI.h"
 #include "GameObjectAI.h"
 #include "PlayerChallenge.h"
-#include "InstanceSaveMgr.h"
 #include "Pet.h"
 #include "CustomObjectMgr.h"
 #include "CustomInstanceScript.h"
