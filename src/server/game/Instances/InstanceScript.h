@@ -22,9 +22,9 @@
 #include "Common.h"
 #include "Duration.h"
 #include <array>
-#include <iosfwd>
 #include <map>
 #include <set>
+#include <variant>
 
 #define OUT_SAVE_INST_DATA             TC_LOG_DEBUG("scripts", "Saving Instance Data for Instance %s (Map %d, Instance Id %d)", instance->GetMapName(), instance->GetId(), instance->GetInstanceId())
 #define OUT_SAVE_INST_DATA_COMPLETE    TC_LOG_DEBUG("scripts", "Saving Instance Data for Instance %s (Map %d, Instance Id %d) completed.", instance->GetMapName(), instance->GetId(), instance->GetInstanceId())
@@ -38,6 +38,7 @@ class GameObject;
 class InstanceMap;
 class Item;
 class ModuleReference;
+class PersistentInstanceScriptValueBase;
 class Player;
 class Unit;
 class TempSummon;
@@ -181,10 +182,19 @@ struct MinionInfo
     BossInfo* bossInfo;
 };
 
-struct UpdateSaveDataEvent
+struct UpdateBossStateSaveDataEvent
 {
+    DungeonEncounterEntry const* DungeonEncounter;
     uint32 BossId;
     EncounterState NewState;
+};
+
+struct UpdateAdditionalSaveDataEvent
+{
+    explicit UpdateAdditionalSaveDataEvent(char const* key, std::variant<int64, double> value) : Key(key), Value(value) { }
+
+    char const* Key;
+    std::variant<int64, double> Value;
 };
 
 typedef std::multimap<uint32 /*entry*/, DoorInfo> DoorInfoMap;
@@ -224,14 +234,13 @@ class TC_GAME_API InstanceScript : public ZoneScript
         // if we're starting without any saved instance data
         virtual void Create();
         // if we're loading existing instance save data
-        virtual void Load(char const* data);
+        void Load(char const* data);
 
         // When save is needed, this function generates the data
-        virtual std::string GetSaveData();
-
-        virtual std::string UpdateSaveData(std::string const& oldData, UpdateSaveDataEvent const& event);
-
-        virtual void SaveToDB();
+        std::string GetSaveData();
+        
+        std::string UpdateBossStateSaveData(std::string const& oldData, UpdateBossStateSaveDataEvent const& event);
+        std::string UpdateAdditionalSaveData(std::string const& oldData, UpdateAdditionalSaveDataEvent const& event);
 
         void UpdateCombatResurrection(uint32 diff);
         void UpdateOperations(uint32 const diff);
@@ -432,6 +441,10 @@ class TC_GAME_API InstanceScript : public ZoneScript
         void ResetCombatResurrections();
         uint8 GetCombatResurrectionCharges() const { return _combatResurrectionCharges; }
         uint32 GetCombatResurrectionChargeInterval() const;
+        
+        void RegisterPersistentScriptValue(PersistentInstanceScriptValueBase* value) { _persistentScriptValues.push_back(value); }
+        std::string const& GetHeader() const { return headers; }
+        std::vector<PersistentInstanceScriptValueBase*>& GetPersistentScriptValues() { return _persistentScriptValues; }
 
         virtual bool HandlePlayerRepopRequest(Player* ) const { return false; }
         virtual void OnPlayerPositionChange(Player* ) { }
@@ -496,13 +509,8 @@ class TC_GAME_API InstanceScript : public ZoneScript
         // Pay very much attention at how the returned BossInfo data is modified to avoid issues.
         BossInfo* GetBossInfo(uint32 id);
 
-        // Instance Load and Save
-        bool ReadSaveDataHeaders(std::istringstream& data);
-        void ReadSaveDataBossStates(std::istringstream& data);
-        virtual void ReadSaveDataMore(std::istringstream& /*data*/) { }
-        void WriteSaveDataHeaders(std::ostringstream& data);
-        void WriteSaveDataBossStates(std::ostringstream& data);
-        virtual void WriteSaveDataMore(std::ostringstream& /*data*/) { }
+        // Override this function to validate all additional data loads
+        virtual void AfterDataLoad() { }
 
         bool _SkipCheckRequiredBosses(Player const* player = nullptr) const;
 
@@ -510,8 +518,11 @@ class TC_GAME_API InstanceScript : public ZoneScript
         void LoadDungeonEncounterData(uint32 bossId, std::array<uint32, MAX_DUNGEON_ENCOUNTERS_PER_BOSS> const& dungeonEncounterIds);
         void UpdateEncounterState(EncounterCreditType type, uint32 creditEntry, Unit* source, Unit* unit = nullptr);
 
-        std::vector<char> headers;
+        void SaveToDB();
+
+        std::string headers;
         std::vector<BossInfo> bosses;
+        std::vector<PersistentInstanceScriptValueBase*> _persistentScriptValues;
         EntranceLocationMap entrances;
         DoorInfoMap doors;
         MinionInfoMap minions;
@@ -540,6 +551,77 @@ class TC_GAME_API InstanceScript : public ZoneScript
     #endif // #ifndef TRINITY_API_USE_DYNAMIC_LINKING
 
         friend class debug_commandscript;
+};
+
+class TC_GAME_API PersistentInstanceScriptValueBase
+{
+protected:
+    PersistentInstanceScriptValueBase(InstanceScript& instance, char const* name, std::variant<int64, double> value);
+
+public:
+    virtual ~PersistentInstanceScriptValueBase();
+
+    char const* GetName() const { return _name; }
+
+    UpdateAdditionalSaveDataEvent CreateEvent() const
+    {
+        return UpdateAdditionalSaveDataEvent(_name, _value);
+    }
+
+    void LoadValue(int64 value)
+    {
+        _value.emplace<int64>(value);
+    }
+
+    void LoadValue(double value)
+    {
+        _value.emplace<double>(value);
+    }
+
+protected:
+    void NotifyValueChanged();
+
+    InstanceScript& _instance;
+    char const* _name;
+    std::variant<int64, double> _value;
+};
+
+template<typename T>
+class PersistentInstanceScriptValue : public PersistentInstanceScriptValueBase
+{
+public:
+    PersistentInstanceScriptValue(InstanceScript& instance, char const* name, T value = {})
+        : PersistentInstanceScriptValueBase(instance, name, WrapValue(value))
+    {
+    }
+
+    operator T() const
+    {
+        return std::visit([](auto v) { return static_cast<T>(v); }, _value);
+    }
+
+    PersistentInstanceScriptValue& operator=(T value)
+    {
+        _value = WrapValue(value);
+        NotifyValueChanged();
+        return *this;
+    }
+
+    void LoadValue(T value)
+    {
+        _value = WrapValue(value);
+    }
+
+private:
+    static std::variant<int64, double> WrapValue(T value)
+    {
+        if constexpr (std::is_integral_v<T> || std::is_enum_v<T>)
+            return int64(value);
+        else if constexpr (std::is_floating_point_v<T>)
+            return double(value);
+        else
+            return {};
+    }
 };
 
 #endif // TRINITY_INSTANCE_DATA_H

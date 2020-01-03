@@ -67,7 +67,6 @@ class Weather;
 class WorldObject;
 class WorldPacket;
 struct DungeonEncounterEntry;
-struct UpdateSaveDataEvent;
 struct MapDifficultyEntry;
 struct MapEntry;
 struct Position;
@@ -76,6 +75,8 @@ struct ScriptAction;
 struct ScriptInfo;
 struct SmoothPhasingInfo;
 struct SummonPropertiesEntry;
+struct UpdateAdditionalSaveDataEvent;
+struct UpdateBossStateSaveDataEvent;
 class Transport;
 class TransportBase;
 class MapTransport;
@@ -859,7 +860,8 @@ class TC_GAME_API InstanceMap : public Map
         InstanceScenario const* GetInstanceScenario() const { return i_scenario; }
         void SetInstanceScenario(InstanceScenario* scenario) { i_scenario = scenario; }
         InstanceLock const* GetInstanceLock() const { return i_instanceLock; }
-        void UpdateInstanceLock(DungeonEncounterEntry const* dungeonEncounter, UpdateSaveDataEvent const& updateSaveDataEvent);
+        void UpdateInstanceLock(UpdateBossStateSaveDataEvent const& updateSaveDataEvent);
+        void UpdateInstanceLock(UpdateAdditionalSaveDataEvent const& updateSaveDataEvent);
         void CreateInstanceLockForPlayer(Player* player);
         void UnloadAll() override;
         EnterState CannotEnter(Player* player) override;
