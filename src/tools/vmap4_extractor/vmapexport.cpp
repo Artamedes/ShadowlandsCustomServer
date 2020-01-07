@@ -60,7 +60,7 @@ struct MapEntry
 std::vector<MapEntry> map_ids; // partitioned by parent maps first
 std::unordered_set<uint32> maps_that_are_parents;
 boost::filesystem::path input_path;
-bool preciseVectorData = false;
+bool preciseVectorData = true;
 char const* CascProduct = "wow";
 std::unordered_map<std::string, WMODoodadData> WmoDoodads;
 
@@ -307,7 +307,7 @@ void ParsMapFiles()
 bool processArgv(int argc, char ** argv, const char *versionString)
 {
     bool result = true;
-    preciseVectorData = false;
+    preciseVectorData = true;
 
     for (int i = 1; i < argc; ++i)
     {

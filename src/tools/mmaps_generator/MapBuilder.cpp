@@ -855,7 +855,17 @@ namespace MMAP
             }
             if (params.vertCount >= 0xffff)
             {
-                printf("%s Too many vertices!                      \n", tileString.c_str());
+                printf("%s Too many vertices! %d                      \n", tileString.c_str(), params.vertCount);
+
+                char buf[9];
+                sprintf(buf, "%04u%02i%02i ", mapID, tileY, tileX);
+                FILE* errfile = fopen("verticies_error.txt", "a");
+                if (errfile)
+                {
+                    // write data
+                    fwrite(buf, sizeof(char), sizeof(buf), errfile);
+                    fclose(errfile);
+                }
                 break;
             }
             if (!params.vertCount || !params.verts)
@@ -1439,7 +1449,7 @@ namespace MMAP
         config.minRegionArea = 64;
         config.mergeRegionArea = 400;
         config.maxVertsPerPoly = 6;
-        config.detailSampleDist = 1.8f;
+        config.detailSampleDist = 3.0f;//2.5 min or it will generate bugged height data!
         config.detailSampleMaxError = 0.2f;
         config.tileSize = VERTEX_PER_TILE;
         config.borderSize = config.walkableRadius + 3;
@@ -1495,8 +1505,8 @@ namespace MMAP
                 // mark all walkable tiles, both liquids and solids
                 unsigned char* triFlags = new unsigned char[tTriCount];
                 memset(triFlags, NAV_GROUND, tTriCount * sizeof(unsigned char));
-                //rcClearUnwalkableTriangles(m_rcContext, tileCfg.walkableSlopeAngle, tVerts, tVertCount, tTris, tTriCount, triFlags);
-                rcMarkWalkableTriangles(m_rcContext, tileCfg.walkableSlopeAngle, tVerts, tVertCount, tTris, tTriCount, triFlags); // taken from RecastDemo
+                rcClearUnwalkableTriangles(m_rcContext, tileCfg.walkableSlopeAngle, tVerts, tVertCount, tTris, tTriCount, triFlags);
+                //rcMarkWalkableTriangles(m_rcContext, tileCfg.walkableSlopeAngle, tVerts, tVertCount, tTris, tTriCount, triFlags); // taken from RecastDemo
                 rcRasterizeTriangles(m_rcContext, tVerts, tVertCount, tTris, triFlags, tTriCount, *tile.solid, config.walkableClimb);
                 delete[] triFlags;
 
