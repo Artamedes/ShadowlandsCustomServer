@@ -1442,7 +1442,7 @@ namespace MMAP
         config.ch = BASE_UNIT_DIM;
         config.walkableSlopeAngle = m_maxWalkableAngle ? *m_maxWalkableAngle : 45.0f;
         config.walkableHeight = 3;
-        config.walkableClimb = 2;
+        config.walkableClimb = 3;
         config.walkableRadius = 2;
         config.maxEdgeLen = 40;
         config.maxSimplificationError = 1.8f;
