@@ -239,7 +239,7 @@ namespace MMAP
 
         fclose(objFile);
 
-        printf("%s Writing debug output...                       \r", filename.c_str());
+        printf("%s Writing debug output...\n", filename.c_str());
 
         objFileName = "meshes/" + filename + ".map";;
 

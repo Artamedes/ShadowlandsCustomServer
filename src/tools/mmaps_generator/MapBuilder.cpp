@@ -1131,26 +1131,35 @@ namespace MMAP
         rcVcopy(config.bmin, bmin);
         rcVcopy(config.bmax, bmax);
 
-        config.maxVertsPerPoly = DT_VERTS_PER_POLYGON;
+        // these are WORLD UNIT based metrics
+        // this are basic unit dimentions
+        // value have to divide GRID_SIZE(533.3333f) ( aka: 0.5333, 0.2666, 0.3333, 0.1333, etc )
+        const static float BASE_UNIT_DIM = m_bigBaseUnit ? 0.5333333f : 0.2666666f;
+
+        // All are in UNIT metrics!
+        const static int VERTEX_PER_MAP = int(GRID_SIZE / BASE_UNIT_DIM + 0.5f);
+        const static int VERTEX_PER_TILE = m_bigBaseUnit ? 40 : 80; // must divide VERTEX_PER_MAP
+        const static int TILES_PER_MAP = VERTEX_PER_MAP / VERTEX_PER_TILE;
+
         config.cs = tileConfig.BASE_UNIT_DIM;
         config.ch = tileConfig.BASE_UNIT_DIM;
         // Keeping these 2 slope angles the same reduces a lot the number of polys.
         // 55 should be the minimum, maybe 70 is ok (keep in mind blink uses mmaps), 85 is too much for players
-        config.walkableSlopeAngle = m_maxWalkableAngle ? *m_maxWalkableAngle : 55;
         config.walkableSlopeAngleNotSteep = m_maxWalkableAngleNotSteep ? *m_maxWalkableAngleNotSteep : 55;
+        config.walkableSlopeAngle = 55.0f;
+        config.walkableHeight = 3;
+        config.walkableClimb = 3;
+        config.walkableRadius = 2;
+        config.maxEdgeLen = 40;
+        config.maxSimplificationError = 1.8f;
+        config.minRegionArea = 64;
+        config.mergeRegionArea = 400;
+        config.maxVertsPerPoly = 6;
+        config.detailSampleDist = 3.0f;//2.5 min or it will generate bugged height data!
+        config.detailSampleMaxError = 0.2f;
+        config.tileSize = VERTEX_PER_TILE;
         config.tileSize = tileConfig.VERTEX_PER_TILE;
-        config.walkableRadius = m_bigBaseUnit ? 1 : 2;
         config.borderSize = config.walkableRadius + 3;
-        config.maxEdgeLen = tileConfig.VERTEX_PER_TILE + 1;        // anything bigger than tileSize
-        config.walkableHeight = m_bigBaseUnit ? 3 : 6;
-        // a value >= 3|6 allows npcs to walk over some fences
-        // a value >= 4|8 allows npcs to walk over all fences
-        config.walkableClimb = m_bigBaseUnit ? 3 : 6;
-        config.minRegionArea = rcSqr(60);
-        config.mergeRegionArea = rcSqr(50);
-        config.maxSimplificationError = 1.8f;           // eliminates most jagged edges (tiny polygons)
-        config.detailSampleDist = config.cs * 16;
-        config.detailSampleMaxError = config.ch * 1;
 
         switch (mapID)
         {
@@ -1419,28 +1428,10 @@ namespace MMAP
         rcVcopy(config.bmin, bmin);
         rcVcopy(config.bmax, bmax);
 
-        /*config.maxVertsPerPoly = DT_VERTS_PER_POLYGON;
-        config.cs = BASE_UNIT_DIM;
-        config.ch = BASE_UNIT_DIM;
-        config.walkableSlopeAngle = m_maxWalkableAngle ? *m_maxWalkableAngle : 55;
-        config.tileSize = VERTEX_PER_TILE;
-        config.walkableRadius = m_bigBaseUnit ? 1 : 2;
-        config.borderSize = config.walkableRadius + 3;
-        config.maxEdgeLen = VERTEX_PER_TILE + 1;        // anything bigger than tileSize
-        config.walkableHeight = m_bigBaseUnit ? 2 : 4;
-        // a value >= 3|6 allows npcs to walk over some fences
-        // a value >= 4|8 allows npcs to walk over all fences
-        config.walkableClimb = m_bigBaseUnit ? 3 : 6;
-        config.minRegionArea = rcSqr(60);
-        config.mergeRegionArea = rcSqr(50);
-        config.maxSimplificationError = 1.8f;           // eliminates most jagged edges (tiny polygons)
-        config.detailSampleDist = config.cs * 64;
-        config.detailSampleMaxError = config.ch * 2;*/
-
         // values tested and taken from RecastDemo
         config.cs = BASE_UNIT_DIM;
         config.ch = BASE_UNIT_DIM;
-        config.walkableSlopeAngle = m_maxWalkableAngle ? *m_maxWalkableAngle : 45.0f;
+        config.walkableSlopeAngle = m_maxWalkableAngle ? *m_maxWalkableAngle : 55.0f;
         config.walkableHeight = 3;
         config.walkableClimb = 3;
         config.walkableRadius = 2;
@@ -1736,7 +1727,7 @@ namespace MMAP
             navMesh->removeTile(tileRef, NULL, NULL);
         } while (0);
 
-        /*if (m_debugOutput) // todo: use %05i for naming
+        if (m_debugOutput)
         {
             // restore padding so that the debug visualization is correct
             for (int i = 0; i < iv.polyMesh->nverts; ++i)
@@ -1745,8 +1736,11 @@ namespace MMAP
                 v[0] += (unsigned short)config.borderSize;
                 v[2] += (unsigned short)config.borderSize;
             }
-            iv.generateObjFile(modelID, CENTER_GRID_ID, CENTER_GRID_ID, meshData);
-            iv.writeIV(modelID, CENTER_GRID_ID, CENTER_GRID_ID);
-        }*/
+            char fileName[255];
+            sprintf(fileName, "go%05u", modelID);
+
+            iv.generateObjFile(fileName, meshData);
+            //iv.writeIV(mapID, tileX, tileY);
+        }
     }
 }
