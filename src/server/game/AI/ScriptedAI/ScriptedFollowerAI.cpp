@@ -70,7 +70,7 @@ void FollowerAI::JustReachedHome()
     {
         if (HasFollowState(STATE_FOLLOW_PAUSED))
             return;
-        me->GetMotionMaster()->MoveFollow(player, PET_FOLLOW_DIST, PET_FOLLOW_ANGLE);
+        me->FollowTarget(player);
     }
     else
         me->DespawnOrUnsummon();
@@ -189,7 +189,7 @@ void FollowerAI::StartFollow(Player* player, uint32 factionForFollower, uint32 q
 
     AddFollowState(STATE_FOLLOW_INPROGRESS);
 
-    me->GetMotionMaster()->MoveFollow(player, PET_FOLLOW_DIST, PET_FOLLOW_ANGLE);
+    me->FollowTarget(player);
 
     TC_LOG_DEBUG("scripts.ai.followerai", "FollowerAI::StartFollow: start follow %s - %s (%s)", player->GetName().c_str(), _leaderGUID.ToString().c_str(), me->GetGUID().ToString().c_str());
 }
@@ -211,7 +211,7 @@ void FollowerAI::SetFollowPaused(bool paused)
         RemoveFollowState(STATE_FOLLOW_PAUSED);
 
         if (Player* leader = GetLeaderForFollower())
-            me->GetMotionMaster()->MoveFollow(leader, PET_FOLLOW_DIST, PET_FOLLOW_ANGLE);
+            me->FollowTarget(leader);
     }
 }
 

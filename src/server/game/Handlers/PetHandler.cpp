@@ -150,6 +150,9 @@ void WorldSession::HandlePetActionHelper(Unit* pet, ObjectGuid guid1, uint32 spe
             switch (spellid)
             {
                 case COMMAND_STAY: // flat = 1792 - STAY
+                    if (pet->GetMotionMaster()->GetCurrentSlot() != MOTION_SLOT_ACTIVE)
+                        pet->StopMoving();
+
                     pet->GetMotionMaster()->Clear(MOTION_PRIORITY_NORMAL);
                     pet->GetMotionMaster()->MoveIdle();
 
@@ -164,7 +167,7 @@ void WorldSession::HandlePetActionHelper(Unit* pet, ObjectGuid guid1, uint32 spe
                 case COMMAND_FOLLOW: // spellid = 1792 - FOLLOW
                     pet->AttackStop();
                     pet->InterruptNonMeleeSpells(false);
-                    pet->GetMotionMaster()->MoveFollow(_player, PET_FOLLOW_DIST, pet->GetFollowAngle());
+                    pet->FollowTarget(_player);
 
                     charmInfo->SetCommandState(COMMAND_FOLLOW);
                     charmInfo->SetIsCommandAttack(false);
@@ -269,8 +272,8 @@ void WorldSession::HandlePetActionHelper(Unit* pet, ObjectGuid guid1, uint32 spe
                     }
                     break;
                 case COMMAND_MOVE_TO:
-                    pet->StopMoving();
-                    pet->GetMotionMaster()->Clear();
+                    pet->GetMotionMaster()->Clear(MOTION_SLOT_DEFAULT);
+                    pet->GetMotionMaster()->MoveIdle();
                     pet->GetMotionMaster()->MovePoint(0, pos);
                     charmInfo->SetCommandState(COMMAND_MOVE_TO);
 

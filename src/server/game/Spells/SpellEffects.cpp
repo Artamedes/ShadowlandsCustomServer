@@ -4285,11 +4285,11 @@ void Spell::EffectResurrectPet()
     {
         // Reposition the pet's corpse before reviving so as not to grab aggro
         // We can use a different, more accurate version of GetClosePoint() since we have a pet
-        float x, y, z; // Will be used later to reposition the pet if we have one
-        player->GetClosePoint(x, y, z, pet->GetCombatReach(), PET_FOLLOW_DIST, pet->GetFollowAngle());
-        pet->NearTeleportTo(x, y, z, player->GetOrientation());
-        pet->Relocate(x, y, z, player->GetOrientation()); // This is needed so SaveStayPosition() will get the proper coords.
-    }
+        Position pos = player->GetPosition();
+        player->MovePositionToFirstCollision(pos, DEFAULT_FOLLOW_DISTANCE_PET, float(M_PI_2));
+        pet->NearTeleportTo(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), player->GetOrientation());
+        pet->Relocate(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), player->GetOrientation()); // This is needed so SaveStayPosition() will get the proper coords.
+     }
 
     pet->ReplaceAllDynamicFlags(UNIT_DYNFLAG_NONE);
     pet->RemoveUnitFlag(UNIT_FLAG_SKINNABLE);
@@ -4324,7 +4324,7 @@ void Spell::EffectDestroyAllTotems()
         return;
 
     int32 mana = 0;
-    for (uint8 slot = SUMMON_SLOT_TOTEM; slot < MAX_TOTEM_SLOT; ++slot)
+    for (uint8 slot = SUMMON_SLOT_TOTEM_FIRE; slot < MAX_TOTEM_SLOT; ++slot)
     {
         if (!unitCaster->m_SummonSlot[slot])
             continue;
@@ -4853,9 +4853,9 @@ void Spell::EffectCreateTamedPet()
         return;
 
     // relocate
-    float px, py, pz;
-    unitTarget->GetClosePoint(px, py, pz, pet->GetCombatReach(), PET_FOLLOW_DIST, pet->GetFollowAngle());
-    pet->Relocate(px, py, pz, unitTarget->GetOrientation());
+    Position pos = unitTarget->GetPosition();
+    unitTarget->MovePositionToFirstCollision(pos, DEFAULT_FOLLOW_DISTANCE_PET, float(M_PI_2));
+    pet->Relocate(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), unitTarget->GetOrientation());
 
     // add to world
     pet->GetMap()->AddToMap(pet->ToCreature());

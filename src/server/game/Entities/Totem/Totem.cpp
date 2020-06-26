@@ -57,7 +57,7 @@ void Totem::InitStats(uint32 duration)
     // client requires SMSG_TOTEM_CREATED to be sent before adding to world and before removing old totem
     if (Player* owner = GetOwner()->ToPlayer())
     {
-        if (m_Properties->Slot >= SUMMON_SLOT_TOTEM && m_Properties->Slot < MAX_TOTEM_SLOT)
+        if (m_Properties->Slot >= SUMMON_SLOT_TOTEM_FIRE && m_Properties->Slot < MAX_TOTEM_SLOT)
         {
             WorldPackets::Totem::TotemCreated data;
             data.Totem = GetGUID();
@@ -107,7 +107,7 @@ void Totem::UnSummon(uint32 msTime)
     RemoveAurasDueToSpell(GetSpell(), GetGUID());
 
     // clear owner's totem slot
-    for (uint8 i = SUMMON_SLOT_TOTEM; i < MAX_TOTEM_SLOT; ++i)
+    for (uint8 i = SUMMON_SLOT_TOTEM_FIRE; i < MAX_TOTEM_SLOT; ++i)
     {
         if (GetOwner()->m_SummonSlot[i] == GetGUID())
         {

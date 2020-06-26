@@ -67,7 +67,6 @@ enum InventorySlot
     NULL_SLOT                  = 255
 };
 
-struct AbstractFollower;
 struct FactionTemplateEntry;
 struct LiquidData;
 struct LiquidTypeEntry;
@@ -795,6 +794,7 @@ class TC_GAME_API Unit : public WorldObject
         typedef std::array<DiminishingReturn, DIMINISHING_MAX> Diminishing;
 
         typedef std::vector<std::pair<uint32 /*procEffectMask*/, AuraApplication*>> AuraApplicationProcContainer;
+        typedef std::vector<Unit*> FormationFollowerContainer;
 
         struct VisibleAuraSlotCompare { bool operator()(AuraApplication* left, AuraApplication* right) const; };
         typedef std::set<AuraApplication*, VisibleAuraSlotCompare> VisibleAuraContainer;
@@ -1831,9 +1831,13 @@ class TC_GAME_API Unit : public WorldObject
         void SetSpeed(UnitMoveType mtype, float newValue);
         void SetSpeedRate(UnitMoveType mtype, float rate);
 
-        void FollowerAdded(AbstractFollower* f) { m_followingMe.insert(f); }
-        void FollowerRemoved(AbstractFollower* f) { m_followingMe.erase(f); }
-        void RemoveAllFollowers();
+        // Makes the unit follow the given target. Use this function above using the MotionMaster::MoveFollow for default follow behaivior.
+        void FollowTarget(Unit* target);
+
+        FormationFollowerContainer GetFormationFollowers() { return _formationFollowers; }
+        void AddFormationFollower(Unit* follower) { _formationFollowers.push_back(follower); }
+        void RemoveFormationFollower(Unit* follower);
+        bool HasFormationFollower(Unit* follower) const;
 
         MotionMaster* GetMotionMaster() { return i_motionMaster; }
         MotionMaster const* GetMotionMaster() const { return i_motionMaster; }
@@ -1937,8 +1941,6 @@ class TC_GAME_API Unit : public WorldObject
         }
 
         void RewardRage(uint32 baseRage);
-
-        virtual float GetFollowAngle() const { return static_cast<float>(M_PI/2); }
 
         void OutDebugInfo() const;
         virtual bool IsLoading() const { return false; }
@@ -2168,8 +2170,6 @@ class TC_GAME_API Unit : public WorldObject
         std::shared_ptr<UnitAI> i_AI;
         bool m_aiLocked;
 
-        std::unordered_set<AbstractFollower*> m_followingMe;
-
         uint32 _lastExtraAttackSpell;
         std::unordered_map<ObjectGuid /*guid*/, uint32 /*count*/> extraAttacksTargets;
         ObjectGuid _lastDamagedTargetGuid;
@@ -2195,6 +2195,8 @@ class TC_GAME_API Unit : public WorldObject
 
         std::unique_ptr<MovementForces> _movementForces;
         PositionUpdateInfo _positionUpdateInfo;
+
+        FormationFollowerContainer _formationFollowers;
 
         bool _isCombatDisallowed;
 

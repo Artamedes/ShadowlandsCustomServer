@@ -255,9 +255,9 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petEntry, uint32 petnumber, bool c
 
     if (IsCritter())
     {
-        float px, py, pz;
-        owner->GetClosePoint(px, py, pz, GetCombatReach(), PET_FOLLOW_DIST, GetFollowAngle());
-        Relocate(px, py, pz, owner->GetOrientation());
+        Position pos = owner->GetPosition();
+        owner->MovePositionToFirstCollision(pos, DEFAULT_FOLLOW_DISTANCE_PET, DEFAULT_FOLLOW_ANGLE);
+        Relocate(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), owner->GetOrientation());
 
         if (!IsPositionValid())
         {
@@ -308,9 +308,10 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petEntry, uint32 petnumber, bool c
     SynchronizeLevelWithOwner();
 
     // Set pet's position after setting level, its size depends on it
-    float px, py, pz;
-    owner->GetClosePoint(px, py, pz, GetCombatReach(), PET_FOLLOW_DIST, GetFollowAngle());
-    Relocate(px, py, pz, owner->GetOrientation());
+    Position pos = owner->GetPosition();
+    owner->MovePositionToFirstCollision(pos, DEFAULT_FOLLOW_DISTANCE_PET, float(M_PI_2));
+    Relocate(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), owner->GetOrientation());
+
     if (!IsPositionValid())
     {
         TC_LOG_ERROR("entities.pet", "Pet %s not loaded. Suggested coordinates isn't valid (X: %f Y: %f)",

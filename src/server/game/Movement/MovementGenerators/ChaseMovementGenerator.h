@@ -18,7 +18,6 @@
 #ifndef TRINITY_CHASEMOVEMENTGENERATOR_H
 #define TRINITY_CHASEMOVEMENTGENERATOR_H
 
-#include "AbstractFollower.h"
 #include "MovementDefines.h"
 #include "MovementGenerator.h"
 #include "Optional.h"
@@ -28,7 +27,7 @@
 class PathGenerator;
 class Unit;
 
-class ChaseMovementGenerator : public MovementGenerator, public AbstractFollower
+class ChaseMovementGenerator : public MovementGenerator
 {
     public:
         explicit ChaseMovementGenerator(Unit* target, Optional<ChaseRange> range = {}, Optional<ChaseAngle> angle = {});
@@ -43,6 +42,8 @@ class ChaseMovementGenerator : public MovementGenerator, public AbstractFollower
 
         void UnitSpeedChanged() override { _lastTargetPosition.reset(); }
 
+        Unit const* GetTarget() { return _target; }
+
     private:
         static constexpr uint32 RANGE_CHECK_INTERVAL = 100; // time (ms) until we attempt to recalculate
 
@@ -51,6 +52,7 @@ class ChaseMovementGenerator : public MovementGenerator, public AbstractFollower
 
         std::unique_ptr<PathGenerator> _path;
         Optional<Position> _lastTargetPosition;
+        Unit* _target;
         TimeTracker _rangeCheckTimer;
         bool _movingTowards = true;
         bool _mutualChase = true;

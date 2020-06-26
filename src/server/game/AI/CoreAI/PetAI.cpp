@@ -399,7 +399,7 @@ void PetAI::HandleReturnMovement()
             if (me->HasUnitState(UNIT_STATE_CHASE))
                 me->GetMotionMaster()->Remove(CHASE_MOTION_TYPE);
 
-            me->GetMotionMaster()->MoveFollow(me->GetCharmerOrOwner(), PET_FOLLOW_DIST, me->GetFollowAngle());
+            me->FollowTarget(me->GetCharmerOrOwner());
         }
     }
     me->RemoveUnitFlag(UNIT_FLAG_PET_IN_COMBAT); // on player pets, this flag indicates that we're actively going after a target - we're returning, so remove it

@@ -156,14 +156,14 @@ std::vector<MovementGeneratorInformation> MotionMaster::GetMovementGeneratorsInf
         {
             case CHASE_MOTION_TYPE:
             case FOLLOW_MOTION_TYPE:
-                if (AbstractFollower* followInformation = dynamic_cast<AbstractFollower*>(movement))
-                {
-                    if (Unit* target = followInformation->GetTarget())
-                        list.emplace_back(type, target->GetGUID(), target->GetName());
-                    else
-                        list.emplace_back(type, ObjectGuid::Empty, std::string());
-                }
-                else
+                // if (AbstractFollower* followInformation = dynamic_cast<AbstractFollower*>(movement))
+                // {
+                //     if (Unit* target = followInformation->GetTarget())
+                //         list.emplace_back(type, target->GetGUID(), target->GetName());
+                //     else
+                //         list.emplace_back(type, ObjectGuid::Empty, std::string());
+                // }
+                // else
                     list.emplace_back(type, ObjectGuid::Empty, std::string());
                 break;
             default:
@@ -610,7 +610,7 @@ void MotionMaster::MoveTargetedHome()
     else
     {
         TC_LOG_DEBUG("movement.motionmaster", "MotionMaster::MoveTargetedHome: '%s', starts following '%s'", _owner->GetGUID().ToString().c_str(), target->GetGUID().ToString().c_str());
-        Add(new FollowMovementGenerator(target, PET_FOLLOW_DIST, PET_FOLLOW_ANGLE));
+        owner->FollowTarget(target);
     }
 }
 
@@ -623,14 +623,14 @@ void MotionMaster::MoveRandom(float wanderDistance)
     }
 }
 
-void MotionMaster::MoveFollow(Unit* target, float dist, ChaseAngle angle, MovementSlot slot/* = MOTION_SLOT_ACTIVE*/)
+void MotionMaster::MoveFollow(Unit* target, float dist, float angle, bool joinFormation /*= false*/, bool catchUpToTarget /*= false*/, MovementSlot slot /*= MOTION_SLOT_IDLE*/)
 {
     // Ignore movement request if target not exist
     if (!target || target == _owner)
         return;
 
     TC_LOG_DEBUG("movement.motionmaster", "MotionMaster::MoveFollow: '%s', starts following '%s'", _owner->GetGUID().ToString().c_str(), target->GetGUID().ToString().c_str());
-    Add(new FollowMovementGenerator(target, dist, angle), slot);
+    Mutate(new FollowMovementGenerator(target, dist, angle, joinFormation, catchUpToTarget), slot);
 }
 
 void MotionMaster::MoveChase(Unit* target, Optional<ChaseRange> dist, Optional<ChaseAngle> angle)
