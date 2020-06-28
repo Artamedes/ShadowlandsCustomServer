@@ -172,7 +172,7 @@ void FollowMovementGenerator::Initialize(Unit* owner)
     owner->AddUnitState(UNIT_STATE_FOLLOW);
 
     // owner joins a organized follower formation.
-    if (_joinFormation)
+    if (_joinFormation && _target)
     {
         _target->AddFormationFollower(owner);
         UpdateFollowFormation();
@@ -292,6 +292,12 @@ void FollowMovementGenerator::UpdateFollowFormation()
     uint8 followSlot = 0;
     for (Unit* follower : _target->GetFormationFollowers())
     {
+        if (!follower)
+        {
+            TC_LOG_ERROR("movement.motionmaster", "Unit (%s) has a invalid follower reference in its formation follower container.", _target->GetGUID().ToString().c_str());
+            continue;
+        }
+
         for (uint8 slot = MOTION_SLOT_DEFAULT; slot < MAX_MOTION_SLOT; ++slot)
         {
             MovementGenerator* moveGen = follower->GetMotionMaster()->GetCurrentMovementGenerator(MovementSlot(slot));
