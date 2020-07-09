@@ -728,7 +728,7 @@ struct boss_the_lich_king : public BossAI
                     summon->CastSpell(summon, SPELL_ICE_SPHERE, false);
                     summon->CastSpell(summon, SPELL_ICE_BURST_TARGET_SEARCH, false);
                     summon->CastSpell(target, SPELL_ICE_PULSE, false);
-                    summon->GetMotionMaster()->MoveFollow(target, 0.0f, 0.0f);
+                    summon->GetMotionMaster()->MoveFollow(target, 0.0f, 0.0f, false, false, true);
                 }
                 else
                     summon->DespawnOrUnsummon();
