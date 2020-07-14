@@ -794,7 +794,7 @@ class TC_GAME_API Unit : public WorldObject
         typedef std::array<DiminishingReturn, DIMINISHING_MAX> Diminishing;
 
         typedef std::vector<std::pair<uint32 /*procEffectMask*/, AuraApplication*>> AuraApplicationProcContainer;
-        typedef std::vector<Unit*> FormationFollowerContainer;
+        typedef std::vector<ObjectGuid> FormationFollowerGUIDContainer;
 
         struct VisibleAuraSlotCompare { bool operator()(AuraApplication* left, AuraApplication* right) const; };
         typedef std::set<AuraApplication*, VisibleAuraSlotCompare> VisibleAuraContainer;
@@ -1834,8 +1834,8 @@ class TC_GAME_API Unit : public WorldObject
         // Makes the unit follow the given target. Use this function above using the MotionMaster::MoveFollow for default follow behaivior.
         void FollowTarget(Unit* target);
 
-        FormationFollowerContainer GetFormationFollowers() { return _formationFollowers; }
-        void AddFormationFollower(Unit* follower) { _formationFollowers.push_back(follower); }
+        FormationFollowerGUIDContainer GetFormationFollowers() { return _formationFollowers; }
+        void AddFormationFollower(Unit* follower) { _formationFollowers.push_back(follower->GetGUID()); }
         void RemoveFormationFollower(Unit* follower);
         bool HasFormationFollower(Unit* follower) const;
 
@@ -2196,7 +2196,7 @@ class TC_GAME_API Unit : public WorldObject
         std::unique_ptr<MovementForces> _movementForces;
         PositionUpdateInfo _positionUpdateInfo;
 
-        FormationFollowerContainer _formationFollowers;
+        FormationFollowerGUIDContainer _formationFollowers;
 
         bool _isCombatDisallowed;
 
