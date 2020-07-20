@@ -16,6 +16,7 @@
  */
 
 #include "ChaseMovementGenerator.h"
+#include "AbstractPursuer.h"
 #include "Creature.h"
 #include "CreatureAI.h"
 #include "G3DPosition.hpp"
@@ -65,7 +66,7 @@ static void DoMovementInform(Unit* owner, Unit* target)
         AI->MovementInform(CHASE_MOTION_TYPE, target->GetGUID().GetCounter());
 }
 
-ChaseMovementGenerator::ChaseMovementGenerator(Unit *target, Optional<ChaseRange> range, Optional<ChaseAngle> angle) : _target(target), _range(range),
+ChaseMovementGenerator::ChaseMovementGenerator(Unit *target, Optional<ChaseRange> range, Optional<ChaseAngle> angle)  : AbstractPursuer(PursuingType::Chase, ASSERT_NOTNULL(target)), _range(range),
     _angle(angle), _rangeCheckTimer(RANGE_CHECK_INTERVAL)
 {
     Mode = MOTION_MODE_DEFAULT;
@@ -98,7 +99,7 @@ bool ChaseMovementGenerator::Update(Unit* owner, uint32 diff)
         return false;
 
     // our target might have gone away
-    Unit* target = _target;
+    Unit* target = GetTarget();
     if (!target || !target->IsInWorld())
         return false;
 

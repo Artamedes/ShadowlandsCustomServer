@@ -16,6 +16,7 @@
  */
 
 #include "Unit.h"
+#include "AbstractPursuer.h"
 #include "Battlefield.h"
 #include "BattlefieldMgr.h"
 #include "Battleground.h"
@@ -9355,6 +9356,15 @@ bool Unit::HasFormationFollower(Unit* follower) const
     return false;
 }
 
+void Unit::RemoveAllPursuers()
+{
+    for (uint8 i = 0; i < AsUnderlyingType(PursuingType::Max); ++i)
+    {
+        while (!_unitsPursuingMe[i].empty())
+            (*_unitsPursuingMe[i].begin())->SetTarget(PursuingType(i), nullptr);
+    }
+}
+
 void Unit::setDeathState(DeathState s)
 {
     // Death state needs to be updated before RemoveAllAurasOnDeath() is called, to prevent entering combat
@@ -10371,7 +10381,9 @@ void Unit::RemoveFromWorld()
 
         RemoveAreaAurasDueToLeaveWorld();
 
-        GetMotionMaster()->Clear(MOTION_SLOT_DEFAULT); // clear idle movement slot to finalize follow movement to unregister formation targets
+        // clear idle movement slot to finalize follow movement to unregister formation targets
+        GetMotionMaster()->Clear(MOTION_SLOT_DEFAULT);
+        RemoveAllPursuers();
 
         if (IsCharmed())
             RemoveCharmedBy(nullptr);

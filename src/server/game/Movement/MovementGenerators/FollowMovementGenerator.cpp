@@ -157,7 +157,7 @@ static void GetFollowOffsets(uint8 followerIndex, float& distance, float& relati
 }
 
 FollowMovementGenerator::FollowMovementGenerator(Unit* target, Optional<float> distance, Optional<float> angle, bool joinFormation /*= true*/, bool catchUpToTarget /*= false*/, bool faceTarget /*= false*/) :
-    _target(target), _joinFormation(joinFormation), _catchUpToTarget(catchUpToTarget), _faceTarget(faceTarget)
+    AbstractPursuer(PursuingType::Follow, ASSERT_NOTNULL(target)), _joinFormation(joinFormation), _catchUpToTarget(catchUpToTarget), _faceTarget(faceTarget)
 {
     _distance = distance ? *distance : 0.f;
     _angle = angle ? *angle : 0.f;
@@ -172,10 +172,11 @@ void FollowMovementGenerator::Initialize(Unit* owner)
 
     owner->AddUnitState(UNIT_STATE_FOLLOW);
 
+    Unit* target = GetTarget();
     // owner joins a organized follower formation.
-    if (_joinFormation && _target)
+    if (_joinFormation && target)
     {
-        _target->AddFormationFollower(owner);
+        target->AddFormationFollower(owner);
         UpdateFollowFormation();
     }
 
@@ -197,9 +198,10 @@ void FollowMovementGenerator::Finalize(Unit* owner, bool active, bool /*movement
     {
         owner->ClearUnitState(UNIT_STATE_FOLLOW | UNIT_STATE_FOLLOW_MOVE);
 
-        if (_joinFormation && _target)
+        Unit* target = GetTarget();
+        if (_joinFormation && target)
         {
-            _target->RemoveFormationFollower(owner);
+            target->RemoveFormationFollower(owner);
             UpdateFollowFormation();
         }
     }
@@ -218,8 +220,10 @@ bool FollowMovementGenerator::Update(Unit* owner, uint32 diff)
     if (!owner->IsAlive())
         return false;
 
+    Unit* target = GetTarget();
+
     // Our target might have gone away
-    if (!_target || !_target->IsInWorld() || !_target->IsAlive())
+    if (!target || !target->IsInWorld() || !target->IsAlive())
         return false;
 
     // Follower cannot move at the moment
@@ -236,7 +240,7 @@ bool FollowMovementGenerator::Update(Unit* owner, uint32 diff)
     {
 
         _followMovementTimer.Reset(FOLLOW_MOVEMENT_INTERVAL);
-        if (IsTargetMoving(_target))
+        if (IsTargetMoving(target))
         {
             _events.Reset();
             LaunchMovement(owner);
@@ -245,7 +249,7 @@ bool FollowMovementGenerator::Update(Unit* owner, uint32 diff)
         else if (owner->HasUnitState(UNIT_STATE_FOLLOW_MOVE))
         {
             owner->ClearUnitState(UNIT_STATE_FOLLOW_MOVE);
-            DoMovementInform(owner, _target);
+            DoMovementInform(owner, target);
 
             if (!_faceTarget)
             {
@@ -264,12 +268,12 @@ bool FollowMovementGenerator::Update(Unit* owner, uint32 diff)
         {
             case EVENT_ALLIGN_TO_TARGET:
             {
-                Position pos = _target->GetPosition();
-                _target->MovePositionToFirstCollision(pos, _distance, _angle);
+                Position pos = target->GetPosition();
+                target->MovePositionToFirstCollision(pos, _distance, _angle);
 
                 Movement::MoveSplineInit init (owner);
                 if (_faceTarget)
-                    init.SetFacing(_target);
+                    init.SetFacing(target);
                 init.MoveTo(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ());
                 uint32 duration = std::max<uint32>(1, init.Launch());
 
@@ -278,7 +282,7 @@ bool FollowMovementGenerator::Update(Unit* owner, uint32 diff)
                 break;
             }
             case EVENT_ALLIGN_TO_FACING_DIRECTION:
-                owner->SetFacingTo(_target->GetOrientation());
+                owner->SetFacingTo(target->GetOrientation());
                 break;
             default:
                 break;
@@ -291,9 +295,9 @@ bool FollowMovementGenerator::Update(Unit* owner, uint32 diff)
 void FollowMovementGenerator::UpdateFollowFormation()
 {
     uint8 followSlot = 0;
-    for (ObjectGuid guid : _target->GetFormationFollowers())
+    for (ObjectGuid guid : target->GetFormationFollowers())
     {
-        if (Unit* follower = ObjectAccessor::GetUnit(*_target, guid))
+        if (Unit* follower = ObjectAccessor::GetUnit(*target, guid))
         {
             for (uint8 slot = MOTION_SLOT_DEFAULT; slot < MAX_MOTION_SLOT; ++slot)
             {
@@ -320,29 +324,30 @@ void FollowMovementGenerator::UpdateFormationFollowOffsets(uint32 slot)
 
 void FollowMovementGenerator::LaunchMovement(Unit* owner)
 {
-    Position dest = _target->GetPosition();
+    Unit* target = GetTarget();
+    Position dest = target->GetPosition();
     float offset = 0.f;
 
     // Strafe handling for player sidewards movement
-    if (_target->IsPlayer())
+    if (target->IsPlayer())
     {
-        if (_target->HasUnitMovementFlag(MOVEMENTFLAG_STRAFE_LEFT))
-            offset = _target->HasUnitMovementFlag(MOVEMENTFLAG_FORWARD) ? float(M_PI_4) : float(M_PI_2);
+        if (target->HasUnitMovementFlag(MOVEMENTFLAG_STRAFE_LEFT))
+            offset = target->HasUnitMovementFlag(MOVEMENTFLAG_FORWARD) ? float(M_PI_4) : float(M_PI_2);
 
-        if (_target->HasUnitMovementFlag(MOVEMENTFLAG_STRAFE_RIGHT))
-            offset = _target->HasUnitMovementFlag(MOVEMENTFLAG_FORWARD) ? -float(M_PI_4) : -float(M_PI_2);
+        if (target->HasUnitMovementFlag(MOVEMENTFLAG_STRAFE_RIGHT))
+            offset = target->HasUnitMovementFlag(MOVEMENTFLAG_FORWARD) ? -float(M_PI_4) : -float(M_PI_2);
 
-        if (_target->HasUnitMovementFlag(MOVEMENTFLAG_BACKWARD))
+        if (target->HasUnitMovementFlag(MOVEMENTFLAG_BACKWARD))
             offset += float(M_PI);
     }
 
     // Let's start with a cheap base destination calculation
-    dest.m_positionX += std::cos(Position::NormalizeOrientation(_target->GetOrientation() + _angle)) * _distance;
-    dest.m_positionY += std::sin(Position::NormalizeOrientation(_target->GetOrientation() + _angle)) * _distance;
+    dest.m_positionX += std::cos(Position::NormalizeOrientation(target->GetOrientation() + _angle)) * _distance;
+    dest.m_positionY += std::sin(Position::NormalizeOrientation(target->GetOrientation() + _angle)) * _distance;
     dest.SetOrientation(dest.GetOrientation() + offset);
 
     // Calculate velocity based on target's speed values
-    float velocity = GetVelocity(owner, _target, (_joinFormation || _catchUpToTarget));
+    float velocity = GetVelocity(owner, target, (_joinFormation || _catchUpToTarget));
     if (velocity == 0.f)
         return;
 
@@ -354,22 +359,22 @@ void FollowMovementGenerator::LaunchMovement(Unit* owner)
         return;
 
     // Predicting our follow destination if the owner is slower or equally as fast as the target
-    bool predictDestination = (!_joinFormation && !_catchUpToTarget && velocity < _target->GetSpeed(SelectSpeedType(_target->m_movementInfo.GetMovementFlags())))
+    bool predictDestination = (!_joinFormation && !_catchUpToTarget && velocity < target->GetSpeed(SelectSpeedType(target->m_movementInfo.GetMovementFlags())))
         || (_joinFormation || _catchUpToTarget);
 
     if (predictDestination)
     {
-        dest.m_positionX += std::cos(Position::NormalizeOrientation(_target->GetOrientation() + offset)) * velocity;
-        dest.m_positionY += std::sin(Position::NormalizeOrientation(_target->GetOrientation() + offset)) * velocity;
+        dest.m_positionX += std::cos(Position::NormalizeOrientation(target->GetOrientation() + offset)) * velocity;
+        dest.m_positionY += std::sin(Position::NormalizeOrientation(target->GetOrientation() + offset)) * velocity;
     }
 
     // Now we calculate our actual destination data
     if (!owner->HasUnitState(UNIT_STATE_IGNORE_PATHFINDING))
     {
-        float relativeAngle = _target->GetRelativeAngle(dest);
-        float distance = _target->GetExactDist2d(dest);
-        dest = _target->GetPosition();
-        _target->MovePositionToFirstCollision(dest, distance, relativeAngle);
+        float relativeAngle = target->GetRelativeAngle(dest);
+        float distance = target->GetExactDist2d(dest);
+        dest = target->GetPosition();
+        target->MovePositionToFirstCollision(dest, distance, relativeAngle);
     }
 
     Movement::MoveSplineInit init(owner);
@@ -377,7 +382,7 @@ void FollowMovementGenerator::LaunchMovement(Unit* owner)
     init.SetVelocity(velocity);
 
     if (_faceTarget)
-        init.SetFacing(_target);
+        init.SetFacing(target);
 
     init.Launch();
 
