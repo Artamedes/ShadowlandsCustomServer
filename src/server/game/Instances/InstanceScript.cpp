@@ -98,12 +98,6 @@ InstanceScript::~InstanceScript()
     }
 }
 
-void InstanceScript::SaveToDB()
-{
-    if (InstanceScenario* scenario = instance->GetInstanceScenario())
-        scenario->SaveToDB();
-}
-
 bool InstanceScript::IsEncounterInProgress() const
 {
     for (std::vector<BossInfo>::const_iterator itr = bosses.begin(); itr != bosses.end(); ++itr)
@@ -538,7 +532,6 @@ bool InstanceScript::SetBossState(uint32 id, EncounterState state, bool forced /
             }
 
             bossInfo->state = state;
-            SaveToDB();
             if (dungeonEncounter)
                 instance->UpdateInstanceLock({ dungeonEncounter, id, state });
         }

@@ -30,7 +30,7 @@ ScenarioMgr* ScenarioMgr::Instance()
     return &instance;
 }
 
-InstanceScenario* ScenarioMgr::CreateInstanceScenario(Map* map, TeamId team, LFGDungeonsEntry const* dungeonEntry) const
+InstanceScenario* ScenarioMgr::CreateInstanceScenario(InstanceMap* map, TeamId team, LFGDungeonsEntry const* dungeonEntry) const
 {
     ScenarioDBDataContainer::const_iterator dbDataItr = _scenarioDBData.find(std::make_pair(map->GetId(), map->GetDifficultyID()));
     ScenarioDBDataDungeonsContainer::const_iterator dbDungeonsDataItr;

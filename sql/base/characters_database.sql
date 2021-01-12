@@ -2587,31 +2587,6 @@ LOCK TABLES `instance` WRITE;
 UNLOCK TABLES;
 
 --
--- Table structure for table `instance_scenario_progress`
---
-
-DROP TABLE IF EXISTS `instance_scenario_progress`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `instance_scenario_progress` (
-  `id` int unsigned NOT NULL,
-  `criteria` int unsigned NOT NULL,
-  `counter` bigint unsigned NOT NULL,
-  `date` bigint NOT NULL DEFAULT '0',
-  PRIMARY KEY (`id`,`criteria`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `instance_scenario_progress`
---
-
-LOCK TABLES `instance_scenario_progress` WRITE;
-/*!40000 ALTER TABLE `instance_scenario_progress` DISABLE KEYS */;
-/*!40000 ALTER TABLE `instance_scenario_progress` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `item_instance`
 --
 
