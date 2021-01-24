@@ -298,6 +298,8 @@ struct TC_GAME_API Loot
     void SetSourceLoot(ObjectGuid sourceLoot) { _sourceLoot = sourceLoot; }
 
     ObjectGuid const& GetLootMasterGUID() const { return _lootMaster; }
+    uint32 GetDungeonEncounterId() const { return _dungeonEncounterId; }
+    void SetDungeonEncounterId(uint32 dungeonEncounterId) { _dungeonEncounterId = dungeonEncounterId; }
 
     void clear();
 
@@ -352,6 +354,7 @@ private:
     ObjectGuid _lootMaster;
     GuidUnorderedSet _allowedLooters;
     bool _wasOpened;                                                // true if at least one player received the loot content
+    uint32 _dungeonEncounterId;
     uint32 _challengeLevel; //Capped to 10 level
     uint32 _realChallengeLevel; //Real challenge level capped in worldserver config
     uint32 _challengeMap;
@@ -367,11 +370,12 @@ public:
         Item* item;
         uint8 count;
         LootType lootType;
+        uint32 dungeonEncounterId;
     };
 
     typedef std::vector<ResultValue> OrderedStorage;
 
-    void Add(Item* item, uint8 count, LootType lootType);
+    void Add(Item* item, uint8 count, LootType lootType, uint32 dungeonEncounterId);
 
     OrderedStorage::const_iterator begin() const;
     OrderedStorage::const_iterator end() const;

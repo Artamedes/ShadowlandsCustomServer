@@ -641,7 +641,7 @@ void LootRoll::Finish(RollVoteMap::const_iterator winnerItr)
 Loot::Loot(Map* map, ObjectGuid owner, LootType type, Group const* group) : gold(0), unlootedCount(0), roundRobinPlayer(), loot_type(LOOT_NONE), maxDuplicates(1),
     _guid(map ? ObjectGuid::Create<HighGuid::LootObject>(map->GetId(), 0, map->GenerateLowGuid<HighGuid::LootObject>()) : ObjectGuid::Empty),
     _owner(owner), _itemContext(ItemContext::NONE), _lootMethod(group ? group->GetLootMethod() : FREE_FOR_ALL),
-    _lootMaster(group ? group->GetMasterLooterGuid() : ObjectGuid::Empty), _wasOpened(false),
+    _lootMaster(group ? group->GetMasterLooterGuid() : ObjectGuid::Empty), _wasOpened(false), _dungeonEncounterId(0),
     _challengeLevel(0), _realChallengeLevel(0), _challengeMap(0), _levelBonus(0)
 {
 }
@@ -1218,7 +1218,7 @@ void Loot::FillNotNormalLootFor(Player const* player)
 // --------- AELootResult ---------
 //
 
-void AELootResult::Add(Item* item, uint8 count, LootType lootType)
+void AELootResult::Add(Item* item, uint8 count, LootType lootType, uint32 dungeonEncounterId)
 {
     auto itr = _byItem.find(item);
     if (itr != _byItem.end())
@@ -1230,6 +1230,7 @@ void AELootResult::Add(Item* item, uint8 count, LootType lootType)
         value.item = item;
         value.count = count;
         value.lootType = lootType;
+        value.dungeonEncounterId = dungeonEncounterId;
         _byOrder.push_back(value);
     }
 }

@@ -934,6 +934,11 @@ void InstanceScript::DespawnCreatureGroup(uint32 creatureGroupID)
 
     summonBySummonGroupIDs.erase(creatureGroupID);
 }
+ 
+DungeonEncounterEntry const* InstanceScript::GetBossDungeonEncounter(uint32 id) const
+{
+    return id < bosses.size() ? bosses[id].GetDungeonEncounterForDifficulty(instance->GetDifficultyID()) : nullptr;
+}
 
 bool InstanceScript::CheckAchievementCriteriaMeet(uint32 criteria_id, Player const* /*source*/, Unit const* /*target*/ /*= nullptr*/, uint32 /*miscvalue1*/ /*= 0*/)
 {
@@ -941,7 +946,6 @@ bool InstanceScript::CheckAchievementCriteriaMeet(uint32 criteria_id, Player con
         instance->GetId(), criteria_id);
     return false;
 }
-
 
 // Add aura on all players in instance
 void InstanceScript::DoAddAuraOnPlayers(uint32 spell)

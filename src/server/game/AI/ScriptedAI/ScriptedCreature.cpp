@@ -25,6 +25,7 @@
 #include "GridNotifiersImpl.h"
 #include "InstanceScript.h"
 #include "Log.h"
+#include "Loot.h"
 #include "MotionMaster.h"
 #include "ObjectAccessor.h"
 #include "PhasingHandler.h"
@@ -581,7 +582,13 @@ void BossAI::_JustDied()
     summons.DespawnAll();
     scheduler.CancelAll();
     if (instance)
+    {
+        if (me->m_loot)
+            if (DungeonEncounterEntry const* dungeonEncounter = instance->GetBossDungeonEncounter(_bossId))
+                me->m_loot->SetDungeonEncounterId(dungeonEncounter->ID);
+
         instance->SetBossState(_bossId, DONE);
+    }
 }
 
 void BossAI::_JustReachedHome()
