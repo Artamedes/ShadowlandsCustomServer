@@ -1826,12 +1826,22 @@ bool Aura::CanStackWith(Aura const* existingAura) const
     return true;
 }
 
-bool Aura::IsProcOnCooldown(TimePoint now) const
+bool Aura::IsProcOnCooldown(TimePoint now, ObjectGuid procTarget) const
 {
+    if (GetSpellInfo()->HasAttribute(SPELL_ATTR10_PROC_COOLDOWN_ON_A_PER_TARGET_BASIS))
+    {
+        auto itr = m_targetProcCooldown.find(procTarget);
+        if (itr != m_targetProcCooldown.end())
+            return itr->second > now;
+
+        // Not found in the target map, should not proc.
+        return false;
+    }
+
     return m_procCooldown > now;
 }
 
-void Aura::AddProcCooldown(SpellProcEntry const* procEntry, TimePoint now)
+void Aura::AddProcCooldown(SpellProcEntry const* procEntry, TimePoint now, ObjectGuid procTarget)
 {
     // cooldowns should be added to the whole aura (see 51698 area aura)
     int32 procCooldown = procEntry->Cooldown.count();
@@ -1839,11 +1849,16 @@ void Aura::AddProcCooldown(SpellProcEntry const* procEntry, TimePoint now)
         if (Player* modOwner = caster->GetSpellModOwner())
             modOwner->ApplySpellMod(GetSpellInfo(), SpellModOp::ProcCooldown, procCooldown);
 
-    m_procCooldown = now + Milliseconds(procCooldown);
+    if (GetSpellInfo()->HasAttribute(SPELL_ATTR10_PROC_COOLDOWN_ON_A_PER_TARGET_BASIS))
+        m_targetProcCooldown[procTarget] = now + Milliseconds(procCooldown);
+    else
+        m_procCooldown = now + Milliseconds(procCooldown);
 }
 
 void Aura::ResetProcCooldown()
 {
+    m_targetProcCooldown.clear();
+
     m_procCooldown = GameTime::Now();
 }
 
@@ -1859,7 +1874,7 @@ void Aura::PrepareProcToTrigger(AuraApplication* aurApp, ProcEventInfo& eventInf
     PrepareProcChargeDrop(procEntry, eventInfo);
 
     // cooldowns should be added to the whole aura (see 51698 area aura)
-    AddProcCooldown(procEntry, now);
+    AddProcCooldown(procEntry, now, eventInfo.GetProcTarget() ? eventInfo.GetProcTarget()->GetGUID() : ObjectGuid::Empty);
 
     SetLastProcSuccessTime(now);
 }
@@ -1938,7 +1953,7 @@ uint32 Aura::GetProcEffectMask(AuraApplication* aurApp, ProcEventInfo& eventInfo
     }
 
     // check proc cooldown
-    if (IsProcOnCooldown(now))
+    if (IsProcOnCooldown(now, eventInfo.GetProcTarget() ? eventInfo.GetProcTarget()->GetGUID() : ObjectGuid::Empty))
         return 0;
 
     // do checks against db data

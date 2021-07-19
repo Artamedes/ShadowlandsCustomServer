@@ -255,8 +255,8 @@ class TC_GAME_API Aura
         bool CheckAreaTarget(Unit* target);
         bool CanStackWith(Aura const* existingAura) const;
 
-        bool IsProcOnCooldown(TimePoint now) const;
-        void AddProcCooldown(SpellProcEntry const* procEntry, TimePoint now);
+        bool IsProcOnCooldown(TimePoint now, ObjectGuid procTarget = ObjectGuid::Empty) const;
+        void AddProcCooldown(SpellProcEntry const* procEntry, TimePoint now, ObjectGuid procTarget = ObjectGuid::Empty));
         void ResetProcCooldown();
         bool IsUsingCharges() const { return m_isUsingCharges; }
         void SetUsingCharges(bool val) { m_isUsingCharges = val; }
@@ -366,6 +366,7 @@ class TC_GAME_API Aura
         TimePoint m_procCooldown;
         TimePoint m_lastProcAttemptTime;
         TimePoint m_lastProcSuccessTime;
+        std::unordered_map<ObjectGuid, std::chrono::steady_clock::time_point> m_targetProcCooldown;
 
     private:
         std::vector<AuraApplication*> _removedApplications;
