@@ -1449,6 +1449,16 @@ void AuraEffect::HandleShapeshiftBoosts(Unit* target, bool apply) const
     }
 }
 
+bool AuraEffect::CanPeriodicTickCrit(Unit const* caster) const
+{
+    ASSERT(caster);
+
+    if (m_spellInfo->HasAttribute(SPELL_ATTR8_PERIODIC_CAN_CRIT))
+        return true;
+
+    return caster->HasAuraTypeWithAffectMask(SPELL_AURA_ABILITY_PERIODIC_CRIT, m_spellInfo);
+}
+
 /*********************************************************/
 /***               AURA EFFECT HANDLERS                ***/
 /*********************************************************/
@@ -5613,8 +5623,12 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster) const
                 damage = target->CalculateAOEAvoidance(damage, m_spellInfo->SchoolMask, GetBase()->GetCasterGUID());
         }
     }
+    
+    bool crit = false;
 
-    bool crit = roll_chance_f(isAreaAura ? GetCritChanceFor(caster, target) : m_critChance);
+    if (CanPeriodicTickCrit(caster))
+        crit = roll_chance_f(isAreaAura ? GetCritChanceFor(caster, target) : m_critChance);
+
     if (crit)
         damage = Unit::SpellCriticalDamageBonus(caster, m_spellInfo, damage, target);
 
@@ -5702,7 +5716,11 @@ void AuraEffect::HandlePeriodicHealthLeechAuraTick(Unit* target, Unit* caster) c
     }
     damage = target->SpellDamageBonusTaken(caster, GetSpellInfo(), damage, DOT);
 
-    bool crit = roll_chance_f(isAreaAura && caster ? GetCritChanceFor(caster, target) : m_critChance);
+    bool crit = false;
+
+    if (CanPeriodicTickCrit(caster))
+        crit = roll_chance_f(isAreaAura && caster ? GetCritChanceFor(caster, target) : m_critChance);
+
     if (crit)
         damage = Unit::SpellCriticalDamageBonus(caster, m_spellInfo, damage, target);
 
@@ -5902,8 +5920,12 @@ void AuraEffect::HandlePeriodicHealAurasTick(Unit* target, Unit* caster) const
     }
 
     damage = target->SpellHealingBonusTaken(caster, GetSpellInfo(), damage, DOT);
+    
+    bool crit = false;
 
-    bool crit = roll_chance_f(GetCritChanceFor(caster, target));
+    if (CanPeriodicTickCrit(caster))
+        crit = roll_chance_f(GetCritChanceFor(caster, target));
+
     if (crit)
         damage = Unit::SpellCriticalHealingBonus(caster, m_spellInfo, damage, target);
 

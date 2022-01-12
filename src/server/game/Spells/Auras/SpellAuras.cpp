@@ -967,7 +967,7 @@ void Aura::RefreshDuration(bool withMods, Spell* spell)
 void Aura::RefreshTimers(bool resetPeriodicTimer, Spell* spell)
 {
     m_maxDuration = CalcMaxDuration(true, spell);
-    if (m_spellInfo->HasAttribute(SPELL_ATTR8_DONT_RESET_PERIODIC_TIMER))
+    if (m_spellInfo->HasAttribute(SPELL_ATTR0_CU_DONT_RESET_PERIODIC))
     {
         int32 minPeriod = m_maxDuration;
         for (auto eff : GetAuraEffects())
