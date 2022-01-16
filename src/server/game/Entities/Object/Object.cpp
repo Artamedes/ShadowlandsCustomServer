@@ -798,6 +798,39 @@ std::string Object::GetDebugInfo() const
     return sstr.str();
 }
 
+float MovementInfo::GetMovementDirection() const
+{
+    switch (GetMovementFlags() & (MOVEMENTFLAG_FORWARD | MOVEMENTFLAG_BACKWARD | MOVEMENTFLAG_STRAFE_LEFT | MOVEMENTFLAG_STRAFE_RIGHT))
+    {
+        case MOVEMENTFLAG_NONE:
+        case MOVEMENTFLAG_FORWARD:
+        case MOVEMENTFLAG_FORWARD | MOVEMENTFLAG_BACKWARD:
+        case MOVEMENTFLAG_STRAFE_LEFT | MOVEMENTFLAG_STRAFE_RIGHT:
+        case MOVEMENTFLAG_FORWARD | MOVEMENTFLAG_STRAFE_LEFT | MOVEMENTFLAG_STRAFE_RIGHT:
+        case MOVEMENTFLAG_FORWARD | MOVEMENTFLAG_BACKWARD | MOVEMENTFLAG_STRAFE_LEFT | MOVEMENTFLAG_STRAFE_RIGHT:
+            return 0.0f;
+        case MOVEMENTFLAG_BACKWARD:
+        case MOVEMENTFLAG_BACKWARD | MOVEMENTFLAG_STRAFE_LEFT | MOVEMENTFLAG_STRAFE_RIGHT:
+            return static_cast<float>(M_PI);
+        case MOVEMENTFLAG_STRAFE_LEFT:
+        case MOVEMENTFLAG_FORWARD | MOVEMENTFLAG_BACKWARD | MOVEMENTFLAG_STRAFE_LEFT:
+            return static_cast<float>(M_PI / 2);
+        case MOVEMENTFLAG_FORWARD | MOVEMENTFLAG_STRAFE_LEFT:
+            return static_cast<float>(M_PI / 4);
+        case MOVEMENTFLAG_BACKWARD | MOVEMENTFLAG_STRAFE_LEFT:
+            return static_cast<float>(3 * M_PI / 4);
+        case MOVEMENTFLAG_STRAFE_RIGHT:
+        case MOVEMENTFLAG_FORWARD | MOVEMENTFLAG_BACKWARD |  MOVEMENTFLAG_STRAFE_RIGHT:
+            return static_cast<float>(-M_PI / 2);
+        case MOVEMENTFLAG_FORWARD | MOVEMENTFLAG_STRAFE_RIGHT:
+            return static_cast<float>(-M_PI / 4);
+        case MOVEMENTFLAG_BACKWARD | MOVEMENTFLAG_STRAFE_RIGHT:
+            return static_cast<float>(-3 * M_PI / 4);
+        default:
+            return 0.0f;
+    }
+}
+
 void MovementInfo::OutDebug()
 {
     TC_LOG_DEBUG("misc", "MOVEMENT INFO");

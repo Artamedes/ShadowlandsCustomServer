@@ -128,6 +128,10 @@ struct MovementInfo
     {
         jump.Reset();
     }
+    
+ 
+    // Returns the angle of the current movement direction based on movement flags (forward, strafe left etc)
+    float GetMovementDirection() const;
 
     void OutDebug();
 };
