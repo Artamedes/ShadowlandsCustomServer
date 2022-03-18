@@ -242,6 +242,10 @@ class spell_warr_heroic_leap : public SpellScript
     {
         if (WorldLocation* dest = GetHitDest())
             GetCaster()->CastSpell(*dest, SPELL_WARRIOR_HEROIC_LEAP_JUMP, true);
+
+        // Bounding Stride
+        if (GetCaster()->HasAura(202163))
+            GetCaster()->CastSpell(GetCaster(), 202164, true);
     }
 
     void Register() override
