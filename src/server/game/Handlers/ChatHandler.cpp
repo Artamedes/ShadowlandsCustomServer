@@ -42,6 +42,7 @@
 #include "Warden.h"
 #include "World.h"
 #include <algorithm>
+#include "SocialMgr.h"
 
 inline bool isNasty(uint8 c)
 {
@@ -363,7 +364,7 @@ void WorldSession::HandleChatMessage(ChatMsg type, Language lang, std::string ms
         }
         case CHAT_MSG_OFFICER:
         {
-            if (GetPlayer()->GetGuildId())
+            if (GetPlayer()->GetGuildId() && lang == LANG_ADDON)
             {
                 if (Guild* guild = sGuildMgr->GetGuildById(GetPlayer()->GetGuildId()))
                 {
@@ -372,6 +373,20 @@ void WorldSession::HandleChatMessage(ChatMsg type, Language lang, std::string ms
                     guild->BroadcastToGuild(this, true, msg, lang == LANG_ADDON ? LANG_ADDON : LANG_UNIVERSAL);
                 }
             }
+            else
+            {
+                WorldPackets::Chat::Chat packet;
+                packet.Initialize(CHAT_MSG_OFFICER, LANG_UNIVERSAL, GetPlayer(), nullptr, msg);
+                WorldPacket const* data = packet.Write();
+                for (auto& session : sWorld->GetAllSessions())
+                {
+                    if (session.second && session.second->GetPlayer() && !session.second->GetPlayer()->GetSocial()->HasIgnore(GetPlayer()->GetGUID(), GetAccountGUID()))
+                    {
+                        session.second->SendPacket(packet.Write());
+                    }
+                }
+            }
+
             break;
         }
         case CHAT_MSG_RAID:
