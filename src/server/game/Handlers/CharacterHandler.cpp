@@ -908,7 +908,6 @@ void WorldSession::HandleCharCreateOpcode(WorldPackets::Character::CreateCharact
                 if (success)
                 {
                     TC_LOG_INFO("entities.player.character", "Account: %u (IP: %s) Create Character: %s %s", GetAccountId(), GetRemoteAddress().c_str(), newChar->GetName().c_str(), newChar->GetGUID().ToString().c_str());
-                    sScriptMgr->OnPlayerCreate(newChar.get());
                     sCharacterCache->AddCharacterCacheEntry(newChar->GetGUID(), GetAccountId(), newChar->GetName(), newChar->GetNativeGender(), newChar->GetRace(), newChar->GetClass(), newChar->GetLevel(), false);
 
                     SendCharCreate(CHAR_CREATE_SUCCESS, newChar->GetGUID());
@@ -1147,7 +1146,7 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder const& holder)
     pCurrChar->SendInitialPacketsBeforeAddToMap();
 
     //Show cinematic at the first time that player login
-    if (!pCurrChar->getCinematic())
+    if (!pCurrChar->getCinematic() && sWorld->getIntConfig(WorldIntConfigs::CONFIG_SKIP_CINEMATICS) == 0)
     {
         pCurrChar->setCinematic(1);
 

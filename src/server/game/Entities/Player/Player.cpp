@@ -489,7 +489,7 @@ bool Player::Create(ObjectGuid::LowType guidlow, WorldPackets::Character::Charac
     SetRestState(REST_TYPE_XP, (GetSession()->IsARecruiter() || GetSession()->GetRecruiterId() != 0) ? REST_STATE_RAF_LINKED : REST_STATE_NOT_RAF_LINKED);
     SetRestState(REST_TYPE_HONOR, REST_STATE_NOT_RAF_LINKED);
     SetNativeGender(Gender(createInfo->Sex));
-    SetInventorySlotCount(INVENTORY_DEFAULT_SIZE);
+    SetInventorySlotCount(INVENTORY_DEFAULT_SIZE + 0x4);
 
     // set starting level
     SetLevel(GetStartLevel(createInfo->Race, createInfo->Class, createInfo->TemplateSet));
@@ -532,9 +532,11 @@ bool Player::Create(ObjectGuid::LowType guidlow, WorldPackets::Character::Charac
         ab.SetActionAndType(action_itr->action, ActionButtonType(action_itr->type));
     }
 
+    sScriptMgr->OnPlayerCreate(this);
+
     // original items
-    for (PlayerCreateInfoItem initialItem : info->item)
-        StoreNewItemInBestSlots(initialItem.item_id, initialItem.item_amount);
+    // for (PlayerCreateInfoItem initialItem : info->item)
+    //     StoreNewItemInBestSlots(initialItem.item_id, initialItem.item_amount);
 
     // bags and main-hand weapon must equipped at this moment
     // now second pass for not equipped (offhand weapon/shield if it attempt equipped before main-hand weapon)
@@ -567,11 +569,11 @@ bool Player::Create(ObjectGuid::LowType guidlow, WorldPackets::Character::Charac
     }
     // all item positions resolved
 
-    if (ChrSpecializationEntry const* defaultSpec = sDB2Manager.GetDefaultChrSpecializationForClass(GetClass()))
-    {
-        SetActiveTalentGroup(defaultSpec->OrderIndex);
-        SetPrimarySpecialization(defaultSpec->ID);
-    }
+   //if (ChrSpecializationEntry const* defaultSpec = sDB2Manager.GetDefaultChrSpecializationForClass(GetClass()))
+   //{
+   //    SetActiveTalentGroup(defaultSpec->OrderIndex);
+   //    SetPrimarySpecialization(defaultSpec->ID);
+   //}
 
     GetThreatManager().Initialize();
 
