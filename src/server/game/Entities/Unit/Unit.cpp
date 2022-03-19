@@ -582,7 +582,21 @@ void Unit::DisableSpline()
 
 void Unit::resetAttackTimer(WeaponAttackType type)
 {
-    m_attackTimer[type] = uint32(GetBaseAttackTime(type) * m_modAttackSpeedPct[type]);
+    if (IsPlayer())
+    {
+        switch (type)
+        {
+            case BASE_ATTACK:
+            case OFF_ATTACK:
+                m_attackTimer[type] = m_unitData->AttackRoundBaseTime[static_cast<uint32>(type)];
+                break;
+            case RANGED_ATTACK:
+                m_attackTimer[type] = *m_unitData->RangedAttackRoundBaseTime;
+                break;
+        }
+    }
+    else
+        m_attackTimer[type] = uint32(GetBaseAttackTime(type) * m_modAttackSpeedPct[type]);
 }
 
 bool Unit::IsWithinCombatRange(Unit const* obj, float dist2compare) const
@@ -1400,6 +1414,12 @@ void Unit::DealMeleeDamage(CalcDamageInfo* damageInfo, bool durabilityLoss)
 
     if (!victim->IsAlive() || victim->HasUnitState(UNIT_STATE_IN_FLIGHT) || (victim->GetTypeId() == TYPEID_UNIT && victim->ToCreature()->IsEvadingAttacks()))
         return;
+
+    // Hmmmm dont like this emotes client must by self do all animations
+    //if (damageInfo->HitInfo & HITINFO_CRITICALHIT)
+    //    victim->HandleEmoteCommand(EMOTE_ONESHOT_WOUND_CRITICAL);
+    //if (damageInfo->Blocked && damageInfo->TargetState != VICTIMSTATE_BLOCKS)
+    //    victim->HandleEmoteCommand(EMOTE_ONESHOT_PARRY_SHIELD);
 
     if (damageInfo->TargetState == VICTIMSTATE_PARRY &&
         (victim->GetTypeId() != TYPEID_UNIT || (victim->ToCreature()->GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_NO_PARRY_HASTEN) == 0))
@@ -10164,16 +10184,16 @@ void Unit::SetBaseAttackTime(WeaponAttackType att, uint32 val)
     UpdateAttackTimeField(att);
 }
 
-void Unit::UpdateAttackTimeField(WeaponAttackType att)
+void Unit::UpdateAttackTimeField(WeaponAttackType att, uint32 val /*= 0*/)
 {
     switch (att)
     {
         case BASE_ATTACK:
         case OFF_ATTACK:
-            SetUpdateFieldValue(m_values.ModifyValue(&Unit::m_unitData).ModifyValue(&UF::UnitData::AttackRoundBaseTime, att), uint32(m_baseAttackSpeed[att] * m_modAttackSpeedPct[att]));
+            SetUpdateFieldValue(m_values.ModifyValue(&Unit::m_unitData).ModifyValue(&UF::UnitData::AttackRoundBaseTime, att), val ? val : uint32(m_baseAttackSpeed[att] * m_modAttackSpeedPct[att]));
             break;
         case RANGED_ATTACK:
-            SetUpdateFieldValue(m_values.ModifyValue(&Unit::m_unitData).ModifyValue(&UF::UnitData::RangedAttackRoundBaseTime), uint32(m_baseAttackSpeed[RANGED_ATTACK] * m_modAttackSpeedPct[RANGED_ATTACK]));
+            SetUpdateFieldValue(m_values.ModifyValue(&Unit::m_unitData).ModifyValue(&UF::UnitData::RangedAttackRoundBaseTime), val ? val : uint32(m_baseAttackSpeed[RANGED_ATTACK] * m_modAttackSpeedPct[RANGED_ATTACK]));
             break;
         default:
             break;;

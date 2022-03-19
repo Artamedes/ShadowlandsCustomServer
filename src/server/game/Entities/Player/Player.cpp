@@ -580,7 +580,7 @@ bool Player::Create(ObjectGuid::LowType guidlow, WorldPackets::Character::Charac
     return true;
 }
 
-bool Player::StoreNewItemInBestSlots(uint32 titem_id, uint32 titem_amount)
+bool Player::StoreNewItemInBestSlots(uint32 titem_id, uint32 titem_amount, ItemContext context /*= ItemContext::NONE*/, std::vector<uint32> bonusListIds /*= nullptr*/)
 {
     TC_LOG_DEBUG("entities.player.items", "Player::StoreNewItemInBestSlots: Player '%s' (%s) creates initial item (ItemID: %u, Count: %u)",
         GetName().c_str(), GetGUID().ToString().c_str(), titem_id, titem_amount);
@@ -593,7 +593,7 @@ bool Player::StoreNewItemInBestSlots(uint32 titem_id, uint32 titem_amount)
         if (msg != EQUIP_ERR_OK)
             break;
 
-        EquipNewItem(eDest, titem_id, ItemContext::NONE, true);
+        EquipNewItem(eDest, titem_id, context, true, bonusListIds);
         AutoUnequipOffhandIfNeed();
         --titem_amount;
     }
@@ -1040,9 +1040,9 @@ void Player::Update(uint32 p_time)
                     m_swingErrorMsg = 0;                    // reset swing error state
 
                     // prevent base and off attack in same time, delay attack at 0.2 sec
-                    if (haveOffhandWeapon())
-                        if (getAttackTimer(OFF_ATTACK) < ATTACK_DISPLAY_DELAY)
-                            setAttackTimer(OFF_ATTACK, ATTACK_DISPLAY_DELAY);
+                    //if (haveOffhandWeapon())
+                    //    if (getAttackTimer(OFF_ATTACK) < ATTACK_DISPLAY_DELAY)
+                    //        setAttackTimer(OFF_ATTACK, ATTACK_DISPLAY_DELAY);
 
                     // do attack
                     AttackerStateUpdate(victim, BASE_ATTACK);
@@ -1050,7 +1050,7 @@ void Player::Update(uint32 p_time)
                 }
             }
 
-            if (!IsInFeralForm() && haveOffhandWeapon() && isAttackReady(OFF_ATTACK))
+            if (/*!IsInFeralForm() && */ haveOffhandWeapon() && isAttackReady(OFF_ATTACK))
             {
                 if (!IsWithinMeleeRange(victim))
                     setAttackTimer(OFF_ATTACK, 100);
@@ -1061,8 +1061,8 @@ void Player::Update(uint32 p_time)
                 else
                 {
                     // prevent base and off attack in same time, delay attack at 0.2 sec
-                    if (getAttackTimer(BASE_ATTACK) < ATTACK_DISPLAY_DELAY)
-                        setAttackTimer(BASE_ATTACK, ATTACK_DISPLAY_DELAY);
+                    //if (getAttackTimer(BASE_ATTACK) < ATTACK_DISPLAY_DELAY)
+                    //    setAttackTimer(BASE_ATTACK, ATTACK_DISPLAY_DELAY);
 
                     // do attack
                     AttackerStateUpdate(victim, OFF_ATTACK);
@@ -5353,20 +5353,24 @@ void Player::UpdateRating(CombatRating cr)
             switch (cr)
             {
                 case CR_HASTE_MELEE:
-                    ApplyAttackTimePercentMod(BASE_ATTACK, oldVal, false);
-                    ApplyAttackTimePercentMod(OFF_ATTACK, oldVal, false);
-                    ApplyAttackTimePercentMod(BASE_ATTACK, newVal, true);
-                    ApplyAttackTimePercentMod(OFF_ATTACK, newVal, true);
+                    //ApplyAttackTimePercentMod(BASE_ATTACK, oldVal, false);
+                    //ApplyAttackTimePercentMod(OFF_ATTACK, oldVal, false);
+                    //ApplyAttackTimePercentMod(BASE_ATTACK, newVal, true);
+                    //ApplyAttackTimePercentMod(OFF_ATTACK, newVal, true);
                     if (GetClass() == CLASS_DEATH_KNIGHT)
                         UpdateAllRunesRegen();
+                    UpdateAttackTimeField(BASE_ATTACK, 100);
+                    UpdateAttackTimeField(OFF_ATTACK, 100);
                     break;
                 case CR_HASTE_RANGED:
-                    ApplyAttackTimePercentMod(RANGED_ATTACK, oldVal, false);
-                    ApplyAttackTimePercentMod(RANGED_ATTACK, newVal, true);
+                    //ApplyAttackTimePercentMod(RANGED_ATTACK, oldVal, false);
+                    //ApplyAttackTimePercentMod(RANGED_ATTACK, newVal, true);
+                    UpdateAttackTimeField(RANGED_ATTACK, 100);
                     break;
                 case CR_HASTE_SPELL:
-                    ApplyCastTimePercentMod(oldVal, false);
-                    ApplyCastTimePercentMod(newVal, true);
+                    //ApplyCastTimePercentMod(oldVal, false);
+                    //ApplyCastTimePercentMod(newVal, true);
+                    SetModCastingSpeed(0.0f);
                     break;
                 default:
                     break;
@@ -12259,10 +12263,12 @@ Item* Player::_StoreItem(uint16 pos, Item* pItem, uint32 count, bool clone, bool
     }
 }
 
-Item* Player::EquipNewItem(uint16 pos, uint32 item, ItemContext context, bool update)
+Item* Player::EquipNewItem(uint16 pos, uint32 item, ItemContext context, bool update, std::vector<uint32> bonusListIds /*= nullptr*/)
 {
     if (Item* pItem = Item::CreateItem(item, 1, context, this))
     {
+        for (uint32 bonusId : bonusListIds)
+            pItem->AddBonuses(bonusId);
         UpdateCriteria(CriteriaType::ObtainAnyItem, item, 1);
         Item* equippedItem = EquipItem(pos, pItem, update);
         ItemAddedQuestCheck(item, 1);

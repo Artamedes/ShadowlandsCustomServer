@@ -4129,6 +4129,13 @@ void AuraEffect::HandleModCastingSpeed(AuraApplication const* aurApp, uint8 mode
         target->ApplyCastTimePercentMod(float(spellGroupVal), !apply);
 
     target->ApplyCastTimePercentMod((float)GetAmount(), apply);
+
+    if (Player* player = target->ToPlayer())
+    {
+        player->UpdateRating(CR_HASTE_MELEE);
+        player->UpdateRating(CR_HASTE_RANGED);
+        player->UpdateRating(CR_HASTE_SPELL);
+    }
 }
 
 void AuraEffect::HandleModMeleeRangedSpeedPct(AuraApplication const* aurApp, uint8 mode, bool apply) const
@@ -4142,6 +4149,13 @@ void AuraEffect::HandleModMeleeRangedSpeedPct(AuraApplication const* aurApp, uin
     target->ApplyAttackTimePercentMod(BASE_ATTACK, (float)GetAmount(), apply);
     target->ApplyAttackTimePercentMod(OFF_ATTACK, (float)GetAmount(), apply);
     target->ApplyAttackTimePercentMod(RANGED_ATTACK, (float)GetAmount(), apply);
+
+    if (Player* player = target->ToPlayer())
+    {
+        player->UpdateRating(CR_HASTE_MELEE);
+        player->UpdateRating(CR_HASTE_RANGED);
+        player->UpdateRating(CR_HASTE_SPELL);
+    }
 }
 
 void AuraEffect::HandleModCombatSpeedPct(AuraApplication const* aurApp, uint8 mode, bool apply) const
@@ -4165,6 +4179,13 @@ void AuraEffect::HandleModCombatSpeedPct(AuraApplication const* aurApp, uint8 mo
     target->ApplyAttackTimePercentMod(BASE_ATTACK, float(GetAmount()), apply);
     target->ApplyAttackTimePercentMod(OFF_ATTACK, float(GetAmount()), apply);
     target->ApplyAttackTimePercentMod(RANGED_ATTACK, float(GetAmount()), apply);
+
+    if (Player* player = target->ToPlayer())
+    {
+        player->UpdateRating(CR_HASTE_MELEE);
+        player->UpdateRating(CR_HASTE_RANGED);
+        player->UpdateRating(CR_HASTE_SPELL);
+    }
 }
 
 void AuraEffect::HandleModAttackSpeed(AuraApplication const* aurApp, uint8 mode, bool apply) const
@@ -4176,6 +4197,13 @@ void AuraEffect::HandleModAttackSpeed(AuraApplication const* aurApp, uint8 mode,
 
     target->ApplyAttackTimePercentMod(BASE_ATTACK, float(GetAmount()), apply);
     target->UpdateDamagePhysical(BASE_ATTACK);
+
+    if (Player* player = target->ToPlayer())
+    {
+        player->UpdateRating(CR_HASTE_MELEE);
+        player->UpdateRating(CR_HASTE_RANGED);
+        player->UpdateRating(CR_HASTE_SPELL);
+    }
 }
 
 void AuraEffect::HandleModMeleeSpeedPct(AuraApplication const* aurApp, uint8 mode, bool apply) const
@@ -4196,6 +4224,13 @@ void AuraEffect::HandleModMeleeSpeedPct(AuraApplication const* aurApp, uint8 mod
     }
     target->ApplyAttackTimePercentMod(BASE_ATTACK, float(GetAmount()), apply);
     target->ApplyAttackTimePercentMod(OFF_ATTACK,  float(GetAmount()), apply);
+
+    if (Player* player = target->ToPlayer())
+    {
+        player->UpdateRating(CR_HASTE_MELEE);
+        player->UpdateRating(CR_HASTE_RANGED);
+        player->UpdateRating(CR_HASTE_SPELL);
+    }
 }
 
 void AuraEffect::HandleAuraModRangedHaste(AuraApplication const* aurApp, uint8 mode, bool apply) const
@@ -4207,6 +4242,13 @@ void AuraEffect::HandleAuraModRangedHaste(AuraApplication const* aurApp, uint8 m
     Unit* target = aurApp->GetTarget();
 
     target->ApplyAttackTimePercentMod(RANGED_ATTACK, (float)GetAmount(), apply);
+
+    if (Player* player = target->ToPlayer())
+    {
+        player->UpdateRating(CR_HASTE_MELEE);
+        player->UpdateRating(CR_HASTE_RANGED);
+        player->UpdateRating(CR_HASTE_SPELL);
+    }
 }
 
 /********************************/

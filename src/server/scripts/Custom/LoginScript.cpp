@@ -26,7 +26,7 @@ class LoginScript : public PlayerScript
                     static uint32 items[] = { 182997, 182994, 183032, 182999, 183018, 182984, 183015, 183002, 183027, 183039, 183036, 183037, 179543, 179543 };
 
                     for (uint32 item : items)
-                        p_Player->StoreNewItemInBestSlots(item, 1);
+                        p_Player->StoreNewItemInBestSlots(item, 1, ItemContext::Raid_Raid_Finder, {7186});
                     break;
                 }
                 case CLASS_PALADIN:
@@ -36,7 +36,7 @@ class LoginScript : public PlayerScript
                     static uint32 items[] = { 182997, 182994, 183032, 182999, 183018, 182984, 183015, 183002, 183027, 183039, 183036, 183037, 179543 };
 
                     for (uint32 item : items)
-                        p_Player->StoreNewItemInBestSlots(item, 1);
+                        p_Player->StoreNewItemInBestSlots(item, 1, ItemContext::Raid_Raid_Finder, {7186});
 
                     break;
                 }
@@ -47,7 +47,7 @@ class LoginScript : public PlayerScript
                     static uint32 items[] = { 183001, 183003, 183033, 182988, 182977, 183014, 182976, 183012, 183006, 183039, 183037, 183036, 180081 };
 
                     for (uint32 item : items)
-                        p_Player->StoreNewItemInBestSlots(item, 1);
+                        p_Player->StoreNewItemInBestSlots(item, 1, ItemContext::Raid_Raid_Finder, {7186});
 
                     break;
                 }
@@ -59,7 +59,7 @@ class LoginScript : public PlayerScript
                     static uint32 items[] = { 182980, 183029, 183034, 183009, 183019, 183007, 183005, 182993, 183030, 183040, 183037, 183036, 182408, 182408 };
 
                     for (uint32 item : items)
-                        p_Player->StoreNewItemInBestSlots(item, 1);
+                        p_Player->StoreNewItemInBestSlots(item, 1, ItemContext::Raid_Raid_Finder, {7186});
                     break;
                 }
                 case CLASS_PRIEST:
@@ -70,7 +70,7 @@ class LoginScript : public PlayerScript
                     static uint32 items[] = { 183021, 183020, 184778, 182998, 182996, 183022, 183004, 183011, 182979, 183037, 183036, 183040, 182405 };
 
                     for (uint32 item : items)
-                        p_Player->StoreNewItemInBestSlots(item, 1);
+                        p_Player->StoreNewItemInBestSlots(item, 1, ItemContext::Raid_Raid_Finder, {7186});
                     break;
                 }
                 case CLASS_DEATH_KNIGHT:
@@ -80,7 +80,7 @@ class LoginScript : public PlayerScript
                     static uint32 items[] = { 182997, 182994, 183032, 182999, 183018, 182984, 183015, 183002, 183027, 183039, 183036, 183037, 179543 };
 
                     for (uint32 item : items)
-                        p_Player->StoreNewItemInBestSlots(item, 1);
+                        p_Player->StoreNewItemInBestSlots(item, 1, ItemContext::Raid_Raid_Finder, {7186});
                     break;
                 }
                 case CLASS_SHAMAN:
@@ -91,7 +91,7 @@ class LoginScript : public PlayerScript
                     static uint32 items[] = { 183001, 183003, 183033, 182988, 182977, 183014, 182976, 183012, 183006, 183039, 183037, 183036, 183448, 183448 };
 
                     for (uint32 item : items)
-                        p_Player->StoreNewItemInBestSlots(item, 1);
+                        p_Player->StoreNewItemInBestSlots(item, 1, ItemContext::Raid_Raid_Finder, {7186});
                     break;
                 }
                 case CLASS_MAGE:
@@ -102,7 +102,7 @@ class LoginScript : public PlayerScript
                     static uint32 items[] = { 183021, 183020, 184778, 182998, 182996, 183022, 183004, 183011, 182979, 183037, 183036, 183040, 182405 };
 
                     for (uint32 item : items)
-                        p_Player->StoreNewItemInBestSlots(item, 1);
+                        p_Player->StoreNewItemInBestSlots(item, 1, ItemContext::Raid_Raid_Finder, {7186});
                     break;
                 }
                 case CLASS_WARLOCK:
@@ -113,7 +113,7 @@ class LoginScript : public PlayerScript
                     static uint32 items[] = { 183021, 183020, 184778, 182998, 182996, 183022, 183004, 183011, 182979, 183037, 183036, 183040, 182405 };
 
                     for (uint32 item : items)
-                        p_Player->StoreNewItemInBestSlots(item, 1);
+                        p_Player->StoreNewItemInBestSlots(item, 1, ItemContext::Raid_Raid_Finder, {7186});
                     break;
                 }
                 case CLASS_MONK:
@@ -123,7 +123,7 @@ class LoginScript : public PlayerScript
                     static uint32 items[] = { 182980, 183029, 183034, 183009, 183019, 183007, 183005, 182993, 183030, 183040, 183037, 183036, 182408, 182408 };
 
                     for (uint32 item : items)
-                        p_Player->StoreNewItemInBestSlots(item, 1);
+                        p_Player->StoreNewItemInBestSlots(item, 1, ItemContext::Raid_Raid_Finder, {7186});
                     break;
                 }
                 case CLASS_DRUID:
@@ -133,7 +133,7 @@ class LoginScript : public PlayerScript
                     static uint32 items[] = { 182980, 183029, 183034, 183009, 183019, 183007, 183005, 182993, 183030, 183040, 183037, 183036, 179526 };
 
                     for (uint32 item : items)
-                        p_Player->StoreNewItemInBestSlots(item, 1);
+                        p_Player->StoreNewItemInBestSlots(item, 1, ItemContext::Raid_Raid_Finder, {7186});
                     break;
                 }
                 case CLASS_DEMON_HUNTER:
@@ -143,7 +143,7 @@ class LoginScript : public PlayerScript
                     static uint32 items[] = { 182980, 183029, 183034, 183009, 183019, 183007, 183005, 182993, 183030, 183040, 183037, 183036, 182408, 182408 };
 
                     for (uint32 item : items)
-                        p_Player->StoreNewItemInBestSlots(item, 1);
+                        p_Player->StoreNewItemInBestSlots(item, 1, ItemContext::Raid_Raid_Finder, { 7186 });
                     break;
                 }
             }
@@ -159,6 +159,7 @@ class LoginScript : public PlayerScript
                 p_Player->CastSpell(p_Player, 34092, true);
                 p_Player->CastSpell(p_Player, 90266, true);
                 p_Player->LearnSpell(332400, false); // Sinful Gladiator Mount
+                p_Player->ResurrectPlayer(1.0f);
             }
         }
 };

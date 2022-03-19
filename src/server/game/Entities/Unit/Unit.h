@@ -933,7 +933,7 @@ class TC_GAME_API Unit : public WorldObject
 
         uint32 GetBaseAttackTime(WeaponAttackType att) const;
         void SetBaseAttackTime(WeaponAttackType att, uint32 val);
-        void UpdateAttackTimeField(WeaponAttackType att);
+        void UpdateAttackTimeField(WeaponAttackType att, uint32 val = 0);
         void ApplyAttackTimePercentMod(WeaponAttackType att, float val, bool apply);
         void ApplyCastTimePercentMod(float val, bool apply);
 

@@ -388,6 +388,7 @@ void WorldSession::HandleCharEnum(CharacterDatabaseQueryHolder const& holder)
     charEnum.Success = true;
     charEnum.IsDeletedCharacters = static_cast<EnumCharactersQueryHolder const&>(holder).IsDeletedCharacters();
     charEnum.DisabledClassesMask = sWorld->getIntConfig(CONFIG_CHARACTER_CREATING_DISABLED_CLASSMASK);
+    charEnum.IsNewPlayerRestrictionSkipped = true;
 
     if (!charEnum.IsDeletedCharacters)
         _legitCharacters.clear();
