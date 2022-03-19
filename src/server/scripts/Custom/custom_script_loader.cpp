@@ -20,8 +20,12 @@
 // The name of this function should match:
 // void Add${NameOfDirectory}Scripts()
 void AddSC_LoginScript();
+void AddSC_MallScripts();
+void AddSC_item_upgrader();
 
 void AddCustomScripts()
 {
     AddSC_LoginScript();
+    AddSC_MallScripts();
+    AddSC_item_upgrader();
 }
