@@ -184,7 +184,10 @@ public:
         uint32 maxcount = mc.value_or(0);
         uint32 incrtime = it.value_or(0);
         uint32 extendedcost = ec.value_or(0);
-        uint32 vendor_entry = vendor->GetEntry();
+
+        char* addMulti = strtok(NULL, " ");
+        uint32 vendor_entry = addMulti ? handler->GetSession()->GetPlayer()->PlayerTalkClass->GetInteractionData().VendorId : vendor ? vendor->GetEntry() : 0;
+
 
         VendorItem vItem;
         vItem.item = itemId;
@@ -351,7 +354,8 @@ public:
         }
 
         uint32 itemId = item->GetId();
-        if (!sObjectMgr->RemoveVendorItem(vendor->GetEntry(), ITEM_VENDOR_TYPE_ITEM, itemId))
+        char* addMulti = strtok(NULL, " ");
+        if (!sObjectMgr->RemoveVendorItem(addMulti ? handler->GetSession()->GetPlayer()->PlayerTalkClass->GetInteractionData().TrainerId : vendor->GetEntry(), itemId, ITEM_VENDOR_TYPE_ITEM))
         {
             handler->PSendSysMessage(LANG_ITEM_NOT_IN_LIST, itemId);
             handler->SetSentErrorMessage(true);

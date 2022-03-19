@@ -29,6 +29,7 @@
 #include "Player.h"
 #include "SpellMgr.h"
 #include "World.h"
+#include "GossipDef.h"
 
 void WorldSession::HandleSplitItemOpcode(WorldPackets::Item::SplitItem& splitItem)
 {
@@ -591,7 +592,7 @@ void WorldSession::HandleListInventoryOpcode(WorldPackets::NPC::Hello& packet)
     SendListInventory(packet.Unit);
 }
 
-void WorldSession::SendListInventory(ObjectGuid vendorGuid)
+void WorldSession::SendListInventory(ObjectGuid vendorGuid, uint32 vendorEntry)
 {
     Creature* vendor = GetPlayer()->GetNPCIfCanInteractWith(vendorGuid, UNIT_NPC_FLAG_VENDOR, UNIT_NPC_FLAG_2_NONE);
     if (!vendor)
@@ -610,7 +611,11 @@ void WorldSession::SendListInventory(ObjectGuid vendorGuid)
         vendor->PauseMovement(pause);
     vendor->SetHomePosition(vendor->GetPosition());
 
-    VendorItemData const* vendorItems = vendor->GetVendorItems();
+    GetPlayer()->PlayerTalkClass->GetInteractionData().Reset();
+    GetPlayer()->PlayerTalkClass->GetInteractionData().SourceGuid = vendorGuid;
+    GetPlayer()->PlayerTalkClass->GetInteractionData().VendorId = vendorEntry;
+
+    VendorItemData const* vendorItems = vendorEntry ? sObjectMgr->GetNpcVendorItemList(vendorEntry) : vendor->GetVendorItems();
     uint32 rawItemCount = vendorItems ? vendorItems->GetItemCount() : 0;
 
     WorldPackets::NPC::VendorInventory packet;
