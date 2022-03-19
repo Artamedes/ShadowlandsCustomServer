@@ -431,6 +431,7 @@ public:
             handler->PSendSysMessage("Reloading the whole creature_template table");
             uint32 currMs = getMSTime();
             sObjectMgr->LoadCreatureTemplates();
+            sObjectMgr->LoadCreatureTemplateModels();
             uint32 diff = GetMSTimeDiffToNow(currMs);
             handler->PSendSysMessage("Took %u ms", diff);
             return true;
