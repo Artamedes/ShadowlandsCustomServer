@@ -3,11 +3,22 @@
 #include "ScriptedCreature.h"
 #include "ScriptedGossip.h"
 #include "TemporarySummon.h"
+#include "QuestDef.h"
 
 struct npc_battle_training : public ScriptedAI
 {
     public:
         npc_battle_training(Creature* p_Creature) : ScriptedAI(p_Creature) { }
+
+        void OnQuestAccept(Player* p_Player, Quest const* p_Quest) override
+        {
+            switch (p_Quest->GetQuestId())
+            {
+                case 700001:
+                    Talk(0, p_Player);
+                    break;
+            }
+        }
 
         bool OnGossipHello(Player* p_Player) override
         {
