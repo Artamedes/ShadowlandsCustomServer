@@ -7,6 +7,8 @@
 #include "QuestPackets.h"
 #include "QuestDef.h"
 #include "DB2Stores.h"
+#include "WorldSession.h"
+#include "CollectionMgr.h"
 
 enum class ItemUpgradeType
 {
@@ -328,8 +330,8 @@ class item_upgrader : public ItemScript
             WorldPackets::Quest::QuestGiverQuestDetails packet;
 
             packet.QuestTitle = targets.GetItemTarget()->GetTemplate()->GetName(LocaleConstant::LOCALE_enUS);
-            packet.LogDescription = "";
-            packet.DescriptionText = questDetails;
+            packet.LogDescription = questDetails;
+            packet.DescriptionText = "Upgrading this will reward you with a more powerful item.";
             packet.PortraitGiverText = "";
             packet.PortraitGiverName = "";
             packet.PortraitTurnInText = "";
@@ -362,7 +364,7 @@ class item_upgrader : public ItemScript
             packet.Rewards.SpellCompletionID = 0;
             packet.Rewards.SkillLineID = 0;
             packet.Rewards.NumSkillUps = 0;
-            packet.Rewards.TreasurePickerID = 591918;
+            packet.Rewards.TreasurePickerID = targets.GetItemTarget()->GetEntry();
 
            //packet.Rewards.ChoiceItems[0].Item.ItemID = l_ItemUpgrade->ReplaceItemID ? l_ItemUpgrade->ReplaceItemID : targets.GetItemTarget()->GetEntry();
            //packet.Rewards.ChoiceItems[0].Quantity = l_ItemUpgrade->ReplaceItemQuantity ? l_ItemUpgrade->ReplaceItemQuantity : 1;
@@ -411,12 +413,11 @@ class item_upgrader : public ItemScript
                 packet.Objectives[i].Type = l_ItemUpgrade->RequiredMaterials[i].Type;
             }
 
-            player->GetSession()->SendPacket(packet.Write());
 
             WorldPackets::Quest::TreasurePickerResponse l_Packet2;
 
             l_Packet2.QuestID = 591918;
-            l_Packet2.TreasurePickerID = 591918;
+            l_Packet2.TreasurePickerID = targets.GetItemTarget()->GetEntry();
 
             WorldPackets::Quest::TreasurePickItem l_Item;
             l_Item.Item.ItemID = l_ItemUpgrade->ReplaceItemID ? l_ItemUpgrade->ReplaceItemID : targets.GetItemTarget()->GetEntry();
@@ -431,6 +432,7 @@ class item_upgrader : public ItemScript
 
             l_Item.Quantity = 1;
             l_Packet2.Items.push_back(l_Item);
+            player->GetSession()->SendPacket(packet.Write());
             player->GetSession()->SendPacket(l_Packet2.Write());
 
             return true;
@@ -467,6 +469,7 @@ class item_upgrader : public ItemScript
             response.Info.PortraitTurnInName = "";
 
             response.Info.QuestID = 591918;
+            response.Info.TreasurePickerID = l_ItemTarget->GetEntry();
 
             for (uint8 i = 0; i < QUEST_ITEM_DROP_COUNT; ++i)
             {
@@ -537,7 +540,7 @@ class item_upgrader : public ItemScript
             WorldPackets::Quest::TreasurePickerResponse l_Packet2;
 
             l_Packet2.QuestID = 591918;
-            l_Packet2.TreasurePickerID = 591918;
+            l_Packet2.TreasurePickerID = l_ItemTarget->GetEntry();
 
             WorldPackets::Quest::TreasurePickItem l_Item;
             l_Item.Item.ItemID = l_ItemUpgrade->ReplaceItemID ? l_ItemUpgrade->ReplaceItemID : l_ItemTarget->GetEntry();
@@ -664,6 +667,11 @@ class item_upgrader : public ItemScript
                 p_Player->SendNewItem(l_ItemTarget, 1, true, false, true);
             }
 
+            l_ItemTarget->SetState(ITEM_CHANGED, p_Player);
+            p_Player->SetVisibleItemSlot(l_ItemTarget->GetSlot(), l_ItemTarget);
+            l_ItemTarget->SetNotRefundable(p_Player);
+            l_ItemTarget->ClearSoulboundTradeable(p_Player);
+            p_Player->GetSession()->GetCollectionMgr()->AddItemAppearance(l_ItemTarget);
             ChatHandler(p_Player->GetSession()).PSendSysMessage("|cff00FF00Success");
 
             if (p_Player->GetQuestStatus(700002) == QUEST_STATUS_INCOMPLETE)
