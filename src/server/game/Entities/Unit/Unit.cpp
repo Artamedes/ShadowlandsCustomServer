@@ -6502,6 +6502,13 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
     if (Player* modOwner = GetSpellModOwner())
         modOwner->ApplySpellMod(spellProto, damagetype == DOT ? SpellModOp::PeriodicHealingAndDamage : SpellModOp::HealingAndDamage, tmpDamage);
 
+    switch (spellProto->Id)
+    {
+        case 228597:
+            tmpDamage *= 10;
+            break;
+    }
+
     return uint32(std::max(tmpDamage, 0.0f));
 }
 
