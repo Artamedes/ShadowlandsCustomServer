@@ -729,6 +729,29 @@ namespace WorldPackets
             bool KeepOpenAfterChoice = false;
         };
 
+        struct TreasurePickItem
+        {
+            Item::ItemInstance Item;
+            uint32 Quantity;
+        };
+
+        class TreasurePickerResponse final : public ServerPacket
+        {
+        public:
+            TreasurePickerResponse() : ServerPacket(SMSG_TREASURE_PICKER_RESPONSE, 1000) { }
+
+            WorldPacket const* Write() override;
+
+            uint32 QuestID = 0;
+            uint32 TreasurePickerID = 0;
+
+            uint64 MoneyReward = 0;
+            int32 Flags = 0;
+
+            std::vector<TreasurePickItem> Items;
+
+        };
+
         class ChoiceResponse final : public ClientPacket
         {
         public:
@@ -739,6 +762,17 @@ namespace WorldPackets
             int32 ChoiceID = 0;
             int32 ResponseIdentifier = 0;
             bool IsReroll = false;
+        };
+
+        class QueryTreasurePicker final : public ClientPacket
+        {
+        public:
+            QueryTreasurePicker(WorldPacket&& packet) : ClientPacket(CMSG_QUERY_TREASURE_PICKER, std::move(packet)) { }
+
+            void Read() override;
+
+            int32 QuestId = 0;
+            int32 QuestTimer = 0;
         };
     }
 }

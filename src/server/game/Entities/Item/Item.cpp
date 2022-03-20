@@ -2935,3 +2935,98 @@ void BonusData::AddBonus(uint32 type, std::array<int32, 4> const& values)
             break;
     }
 }
+
+/*static*/ std::string Item::GetItemLink(uint32 p_Entry)
+{
+    ItemTemplate const* l_Proto = sObjectMgr->GetItemTemplate(p_Entry);
+
+    std::ostringstream l_SS;
+
+    l_SS << "|c" << std::hex << ItemQualityColors[l_Proto->GetQuality()] << std::dec <<
+        +"|Hitem:" << p_Entry << ":0:0:0:0:0:0:0:0:0|h[" << l_Proto->GetName(LocaleConstant::LOCALE_enUS) << "]|h|r";
+
+    return l_SS.str();
+}
+
+/*static*/ std::string Item::GetItemIcon(uint32 p_Entry, int32 p_SizeX, int32 p_SizeY, int32 p_PosX, int32 p_PosY)
+{
+    ItemTemplate const* l_Proto = sObjectMgr->GetItemTemplate(p_Entry);
+
+    //ItemDisplayInfoEntry const* l_DisplayInfo = sItemDisplayInfoStore.LookupEntry(l_Proto->);
+    //
+    //std::string l_Icon;
+    //
+    //l_Icon = "|TInterface";
+    //
+    //if (!l_DisplayInfo)
+    //    l_Icon += "/InventoryItems/WoWUnknownItem01";
+    //else
+    //{
+    //    l_Icon += "/ICONS/";
+    //    l_Icon += l_DisplayInfo->InventoryIcon[0];
+    //}
+    //
+    //std::ostringstream l_SS;
+    //
+    //l_SS <<
+    //    l_Icon
+    //    <<
+    //    ":" << p_SizeX <<
+    //    ":" << p_SizeY <<
+    //    ":" << p_PosX <<
+    //    ":" << p_PosY << "|t";
+
+    return "";
+
+}
+
+/*static*/ std::string Item::GetSlotIcon(uint8 p_Slot, uint32 p_Width, uint32 p_Height, int32 p_X, int32 p_Y)
+{
+    std::ostringstream l_SS;
+    l_SS << "|TInterface/PaperDoll/";
+
+    switch (p_Slot)
+    {
+        case EQUIPMENT_SLOT_HEAD: l_SS << "UI-PaperDoll-Slot-Head"; break;
+        case EQUIPMENT_SLOT_SHOULDERS: l_SS << "UI-PaperDoll-Slot-Shoulder"; break;
+        case EQUIPMENT_SLOT_BODY: l_SS << "UI-PaperDoll-Slot-Shirt"; break;
+        case EQUIPMENT_SLOT_CHEST: l_SS << "UI-PaperDoll-Slot-Chest"; break;
+        case EQUIPMENT_SLOT_WAIST: l_SS << "UI-PaperDoll-Slot-Waist"; break;
+        case EQUIPMENT_SLOT_LEGS: l_SS << "UI-PaperDoll-Slot-Legs"; break;
+        case EQUIPMENT_SLOT_FEET: l_SS << "UI-PaperDoll-Slot-Feet"; break;
+        case EQUIPMENT_SLOT_WRISTS: l_SS << "UI-PaperDoll-Slot-Wrists"; break;
+        case EQUIPMENT_SLOT_HANDS: l_SS << "UI-PaperDoll-Slot-Hands"; break;
+        case EQUIPMENT_SLOT_BACK: l_SS << "UI-PaperDoll-Slot-Chest"; break;
+        case EQUIPMENT_SLOT_MAINHAND: l_SS << "UI-PaperDoll-Slot-MainHand"; break;
+        case EQUIPMENT_SLOT_OFFHAND: l_SS << "UI-PaperDoll-Slot-SecondaryHand"; break;
+        case EQUIPMENT_SLOT_RANGED: l_SS << "UI-PaperDoll-Slot-Ranged"; break;
+        case EQUIPMENT_SLOT_TABARD: l_SS << "UI-PaperDoll-Slot-Tabard"; break;
+        default: l_SS << "UI-Backpack-EmptySlot";
+    }
+
+    l_SS << ":" << p_Width << ":" << p_Height << ":" << p_X << ":" << p_Y << "|t";
+
+    return l_SS.str();
+}
+
+/*static*/ std::string Item::GetSlotName(uint8 p_Slot)
+{
+    switch (p_Slot)
+    {
+        case EQUIPMENT_SLOT_HEAD: return  "Head";
+        case EQUIPMENT_SLOT_SHOULDERS: return  "Shoulders";
+        case EQUIPMENT_SLOT_BODY: return  "Shirt";
+        case EQUIPMENT_SLOT_CHEST: return  "Chest";
+        case EQUIPMENT_SLOT_WAIST: return  "Waist";
+        case EQUIPMENT_SLOT_LEGS: return  "Legs";
+        case EQUIPMENT_SLOT_FEET: return  "Feet";
+        case EQUIPMENT_SLOT_WRISTS: return  "Wrists";
+        case EQUIPMENT_SLOT_HANDS: return  "Hands";
+        case EQUIPMENT_SLOT_BACK: return  "Back";
+        case EQUIPMENT_SLOT_MAINHAND: return  "Main hand";
+        case EQUIPMENT_SLOT_OFFHAND: return  "Off hand";
+        case EQUIPMENT_SLOT_RANGED: return  "Ranged";
+        case EQUIPMENT_SLOT_TABARD: return  "Tabard";
+        default: return "";
+    }
+}

@@ -241,14 +241,14 @@ WorldPacket CreatureTemplate::BuildQueryData(LocaleConstant loc) const
     if (std::vector<uint32> const* items = sObjectMgr->GetCreatureQuestItemList(Entry))
         stats.QuestItems.insert(stats.QuestItems.begin(), items->begin(), items->end());
 
-    if (loc != LOCALE_enUS)
-        if (CreatureLocale const* creatureLocale = sObjectMgr->GetCreatureLocale(Entry))
-        {
-            ObjectMgr::GetLocaleString(creatureLocale->Name, loc, stats.Name[0]);
-            ObjectMgr::GetLocaleString(creatureLocale->NameAlt, loc, stats.NameAlt[0]);
-            ObjectMgr::GetLocaleString(creatureLocale->Title, loc, stats.Title);
-            ObjectMgr::GetLocaleString(creatureLocale->TitleAlt, loc, stats.TitleAlt);
-        }
+    //if (loc != LOCALE_enUS)
+    //    if (CreatureLocale const* creatureLocale = sObjectMgr->GetCreatureLocale(Entry))
+    //    {
+    //        ObjectMgr::GetLocaleString(creatureLocale->Name, loc, stats.Name[0]);
+    //        ObjectMgr::GetLocaleString(creatureLocale->NameAlt, loc, stats.NameAlt[0]);
+    //        ObjectMgr::GetLocaleString(creatureLocale->Title, loc, stats.Title);
+    //        ObjectMgr::GetLocaleString(creatureLocale->TitleAlt, loc, stats.TitleAlt);
+    //    }
 
     queryTemp.Write();
     queryTemp.ShrinkToFit();

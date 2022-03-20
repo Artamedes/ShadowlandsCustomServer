@@ -41,6 +41,8 @@
 
 Player* ChatHandler::GetPlayer() const { return m_session ? m_session->GetPlayer() : nullptr; }
 
+ChatHandler::ChatHandler(Player* player) : m_session(player->GetSession()), sentErrorMessage(false) { }
+
 char* ChatHandler::LineFromMessage(char*& pos)
 {
     char* start = strtok(pos, "\n");

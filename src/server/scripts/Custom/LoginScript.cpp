@@ -14,8 +14,8 @@ class LoginScript : public PlayerScript
             p_Player->StoreNewItemInBestSlots(184479, 1);
 
             // pvp badges
-            p_Player->StoreNewItemInBestSlots(175921, 1);
-            p_Player->StoreNewItemInBestSlots(178386, 1);
+            p_Player->StoreNewItemInBestSlots(175921, 1, ItemContext::Raid_Raid_Finder, { 7186 });
+            p_Player->StoreNewItemInBestSlots(178386, 1, ItemContext::Raid_Raid_Finder, { 7186 });
 
             switch (p_Player->GetClass())
             {

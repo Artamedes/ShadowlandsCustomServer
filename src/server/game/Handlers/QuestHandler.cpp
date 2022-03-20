@@ -142,6 +142,13 @@ void WorldSession::HandleQuestgiverAcceptQuestOpcode(WorldPackets::Quest::QuestG
     {
         if (!object->hasQuest(packet.QuestID))
         {
+            if (packet.QuestID == 591918)
+            {
+                auto item = _player->GetItemByEntry(700000);
+                if (item != nullptr)
+                    sScriptMgr->OnQuestAccept(_player, item, nullptr);
+            }
+
             CLOSE_GOSSIP_CLEAR_SHARING_INFO();
             return;
         }
@@ -245,9 +252,29 @@ void WorldSession::HandleQuestQueryOpcode(WorldPackets::Quest::QueryQuestInfo& p
         _player->PlayerTalkClass->SendQuestQueryResponse(quest);
     else
     {
+        if (packet.QuestID == 591918)
+        {
+            auto item = _player->GetItemByEntry(700000);
+            if (item != nullptr)
+                sScriptMgr->OnItemQuestQueryResponse(_player, item);
+            return;
+        }
+
         WorldPackets::Quest::QueryQuestInfoResponse response;
         response.QuestID = packet.QuestID;
         SendPacket(response.Write());
+    }
+}
+
+
+void WorldSession::HandleQueryTreasurePicker(WorldPackets::Quest::QueryTreasurePicker& packet)
+{
+    if (packet.QuestId == 591918)
+    {
+        auto item = _player->GetItemByEntry(700000);
+        if (item != nullptr)
+            sScriptMgr->OnQueryTreasurePicker(_player, item);
+        return;
     }
 }
 

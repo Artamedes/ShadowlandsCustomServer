@@ -1640,7 +1640,6 @@ bool ScriptMgr::OnQuestAccept(Player* player, Item* item, Quest const* quest)
 {
     ASSERT(player);
     ASSERT(item);
-    ASSERT(quest);
 
     GET_SCRIPT_RET(ItemScript, item->GetScriptId(), tmpscript, false);
     player->PlayerTalkClass->ClearMenus();
@@ -1701,6 +1700,18 @@ bool ScriptMgr::OnCastItemCombatSpell(Player* player, Unit* victim, SpellInfo co
 
     GET_SCRIPT_RET(ItemScript, item->GetScriptId(), tmpscript, true);
     return tmpscript->OnCastItemCombatSpell(player, victim, spellInfo, item);
+}
+
+bool ScriptMgr::OnItemQuestQueryResponse(Player* player, Item* item)
+{
+    GET_SCRIPT_RET(ItemScript, item->GetScriptId(), tmpscript, true);
+    return tmpscript->OnItemQuestQueryResponse(player, item);
+}
+
+bool ScriptMgr::OnQueryTreasurePicker(Player* player, Item* item)
+{
+    GET_SCRIPT_RET(ItemScript, item->GetScriptId(), tmpscript, true);
+    return tmpscript->OnQueryTreasurePicker(player, item);
 }
 
 bool ScriptMgr::CanCreateCreatureAI(uint32 scriptId) const

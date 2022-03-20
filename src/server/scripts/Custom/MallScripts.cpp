@@ -47,6 +47,47 @@ struct npc_battle_training : public ScriptedAI
         }
 };
 
+// 700003
+struct npc_item_upgrade_tutorial : public ScriptedAI
+{
+    public:
+        npc_item_upgrade_tutorial(Creature* p_Creature) : ScriptedAI(p_Creature) { }
+
+        void OnQuestAccept(Player* p_Player, Quest const* p_Quest) override
+        {
+            switch (p_Quest->GetQuestId())
+            {
+                case 700002:
+                    Talk(0, p_Player);
+                    break;
+            }
+        }
+
+        bool OnGossipHello(Player* p_Player) override
+        {
+            ClearGossipMenuFor(p_Player);
+            p_Player->PrepareQuestMenu(me->GetGUID());
+            if (p_Player->GetQuestStatus(700002) == QUEST_STATUS_INCOMPLETE)
+                AddGossipItemFor(p_Player, GossipOptionIcon::BattleMaster, "How do you upgrade?", 0, 1);
+            AddGossipItemFor(p_Player, GossipOptionIcon::None, "Nevermind", 0, 0);
+            SendGossipMenuFor(p_Player, me->GetEntry(), me);
+            return true;
+        }
+
+        bool OnGossipSelect(Player* p_Player, uint32 p_MenuId, uint32 p_GossipId) override
+        {
+            uint32 l_ActionId = p_Player->PlayerTalkClass->GetGossipOptionAction(p_GossipId);
+            CloseGossipMenuFor(p_Player);
+            switch (l_ActionId)
+            {
+                case 1:
+                    Talk(0, p_Player);
+                    break;
+            }
+            return true;
+        }
+};
+
 struct npc_infernal_core_360607 : public ScriptedAI
 {
     public:
@@ -109,4 +150,5 @@ void AddSC_MallScripts()
 {
     RegisterCreatureAI(npc_battle_training);
     RegisterCreatureAI(npc_infernal_core_360607);
+    RegisterCreatureAI(npc_item_upgrade_tutorial);
 }

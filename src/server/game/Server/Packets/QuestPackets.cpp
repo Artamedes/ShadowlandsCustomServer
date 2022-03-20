@@ -772,5 +772,52 @@ void ChoiceResponse::Read()
     _worldPacket >> ResponseIdentifier;
     IsReroll = _worldPacket.ReadBit();
 }
+
+WorldPacket const* TreasurePickerResponse::Write()
+{
+    _worldPacket << QuestID;
+    _worldPacket << TreasurePickerID;
+
+    _worldPacket << uint32(Items.size()); // ItemCount
+    _worldPacket << uint32(0); // CurrencyCount
+    _worldPacket << uint64(MoneyReward);
+    _worldPacket << uint32(0); // BonusCount
+    _worldPacket << Flags;
+
+    //for (int i = 0; i < currencyCount; i++)
+    //    ReadTreasurePickCurrency(packet, i);
+
+    //for (var i = 0; i < itemCount; ++i)
+    //    ReadTreasurePickItem(packet, i);
+
+    for (auto const& l_Item : Items)
+    {
+        _worldPacket << l_Item.Item;
+        _worldPacket << l_Item.Quantity;
+    }
+
+    //for (var i = 0; i < bonusCount; ++i)
+    //{
+    //    var bonusItemCount = packet.ReadUInt32("BonusItemCount", i);
+    //    var bonusCurrencyCount = packet.ReadUInt32("BonusCurrencyCount", i);
+    //    packet.ReadUInt64("BonusMoney", i);
+    //
+    //    for (var z = 0; z < bonusCurrencyCount; ++z)
+    //        ReadTreasurePickCurrency(packet, i, z);
+    //
+    //    packet.ReadBit("UnkBit", i);
+    //
+    //    for (int z = 0; z < bonusItemCount; ++z)
+    //        ReadTreasurePickItem(packet, i, z);
+    //}
+
+    return &_worldPacket;
+}
+
+void QueryTreasurePicker::Read()
+{
+    _worldPacket >> QuestId;
+    _worldPacket >> QuestTimer;
+}
 }
 }

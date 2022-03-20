@@ -42,6 +42,7 @@ class TC_GAME_API ChatHandler
         WorldSession const* GetSession() const { return m_session; }
         Player* GetPlayer() const;
         explicit ChatHandler(WorldSession* session) : m_session(session), sentErrorMessage(false) { }
+        explicit ChatHandler(Player* player);
         virtual ~ChatHandler() { }
 
         static char* LineFromMessage(char*& pos);
