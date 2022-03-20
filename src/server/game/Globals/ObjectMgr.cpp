@@ -6188,6 +6188,7 @@ PageText const* ObjectMgr::GetPageText(uint32 pageEntry)
 
 void ObjectMgr::LoadPageTextLocales()
 {
+    m_CustomSpellBuffs.clear();
     uint32 oldMSTime = getMSTime();
 
     _pageTextLocaleStore.clear(); // needed for reload case
@@ -6213,6 +6214,17 @@ void ObjectMgr::LoadPageTextLocales()
     } while (result->NextRow());
 
     TC_LOG_INFO("server.loading", ">> Loaded %u PageText locale strings in %u ms", uint32(_pageTextLocaleStore.size()), GetMSTimeDiffToNow(oldMSTime));
+
+    result = WorldDatabase.Query("SELECT SpellID, Modifier FROM z_spell_buffs");
+    if (!result)
+        return;
+
+    do
+    {
+        Field* fields = result->Fetch();
+
+        m_CustomSpellBuffs[fields[0].GetUInt32()] = fields[1].GetFloat();
+     } while (result->Fetch());
 }
 
 void ObjectMgr::LoadInstanceTemplate()

@@ -6502,12 +6502,9 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
     if (Player* modOwner = GetSpellModOwner())
         modOwner->ApplySpellMod(spellProto, damagetype == DOT ? SpellModOp::PeriodicHealingAndDamage : SpellModOp::HealingAndDamage, tmpDamage);
 
-    switch (spellProto->Id)
-    {
-        case 228597:
-            tmpDamage *= 10;
-            break;
-    }
+    auto l_Itr = sObjectMgr->m_CustomSpellBuffs.find(spellProto->Id);
+    if (l_Itr != sObjectMgr->m_CustomSpellBuffs.end())
+        tmpDamage *= l_Itr->second;
 
     return uint32(std::max(tmpDamage, 0.0f));
 }

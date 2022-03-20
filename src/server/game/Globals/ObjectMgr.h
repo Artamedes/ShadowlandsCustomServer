@@ -1770,6 +1770,8 @@ class TC_GAME_API ObjectMgr
 
         JumpChargeParams const* GetJumpChargeParams(int32 id) const;
 
+        std::unordered_map<uint32, float> m_CustomSpellBuffs;
+
     private:
         // first free id for selected id type
         uint32 _auctionId;
