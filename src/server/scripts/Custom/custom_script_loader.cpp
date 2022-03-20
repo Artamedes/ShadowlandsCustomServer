@@ -22,10 +22,12 @@
 void AddSC_LoginScript();
 void AddSC_MallScripts();
 void AddSC_item_upgrader();
+void AddSC_MaelstromDungeon();
 
 void AddCustomScripts()
 {
     AddSC_LoginScript();
     AddSC_MallScripts();
     AddSC_item_upgrader();
+    AddSC_MaelstromDungeon();
 }
