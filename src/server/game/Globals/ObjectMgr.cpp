@@ -6195,25 +6195,26 @@ void ObjectMgr::LoadPageTextLocales()
 
     //                                               0      1      2
     QueryResult result = WorldDatabase.Query("SELECT ID, locale, `Text` FROM page_text_locale");
-    if (!result)
-        return;
-
-    do
+    if (result)
     {
-        Field* fields = result->Fetch();
 
-        uint32 id                   = fields[0].GetUInt32();
-        std::string localeName      = fields[1].GetString();
+        do
+        {
+            Field* fields = result->Fetch();
 
-        LocaleConstant locale = GetLocaleByName(localeName);
-        if (!IsValidLocale(locale) || locale == LOCALE_enUS)
-            continue;
+            uint32 id = fields[0].GetUInt32();
+            std::string localeName = fields[1].GetString();
 
-        PageTextLocale& data = _pageTextLocaleStore[id];
-        AddLocaleString(fields[2].GetString(), locale, data.Text);
-    } while (result->NextRow());
+            LocaleConstant locale = GetLocaleByName(localeName);
+            if (!IsValidLocale(locale) || locale == LOCALE_enUS)
+                continue;
 
-    TC_LOG_INFO("server.loading", ">> Loaded %u PageText locale strings in %u ms", uint32(_pageTextLocaleStore.size()), GetMSTimeDiffToNow(oldMSTime));
+            PageTextLocale& data = _pageTextLocaleStore[id];
+            AddLocaleString(fields[2].GetString(), locale, data.Text);
+        } while (result->NextRow());
+
+        TC_LOG_INFO("server.loading", ">> Loaded %u PageText locale strings in %u ms", uint32(_pageTextLocaleStore.size()), GetMSTimeDiffToNow(oldMSTime));
+    }
 
     result = WorldDatabase.Query("SELECT SpellID, Modifier FROM z_spell_buffs");
     if (!result)
@@ -6224,7 +6225,7 @@ void ObjectMgr::LoadPageTextLocales()
         Field* fields = result->Fetch();
 
         m_CustomSpellBuffs[fields[0].GetUInt32()] = fields[1].GetFloat();
-     } while (result->Fetch());
+     } while (result->NextRow());
 }
 
 void ObjectMgr::LoadInstanceTemplate()

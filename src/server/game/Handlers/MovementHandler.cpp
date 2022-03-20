@@ -49,6 +49,8 @@ void WorldSession::HandleMoveWorldportAckOpcode(WorldPackets::Movement::WorldPor
 void WorldSession::HandleMoveWorldportAck()
 {
     Player* player = GetPlayer();
+    if (!player)
+        return;
     // ignore unexpected far teleports
     if (!player->IsBeingTeleportedFar())
         return;

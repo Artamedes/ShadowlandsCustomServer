@@ -4015,7 +4015,9 @@ bool InstanceMap::AddPlayerToMap(Player* player, bool initPlayer /*= true*/)
                 mapSave = sInstanceSaveMgr->AddInstanceSave(GetId(), GetInstanceId(), GetDifficultyID(), 0, 0, true);
             }
 
-            ASSERT(mapSave);
+            // can happen if difficultyid = 0
+            if (!mapSave)
+                return false;
 
             // check for existing instance binds
             InstancePlayerBind* playerBind = player->GetBoundInstance(GetId(), GetDifficultyID());
