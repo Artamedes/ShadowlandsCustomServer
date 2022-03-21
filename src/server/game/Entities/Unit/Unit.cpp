@@ -3049,6 +3049,9 @@ bool Unit::CanCastSpellWhileMoving(SpellInfo const* spellInfo) const
         if (HasAuraTypeWithMiscvalue(SPELL_AURA_CAST_WHILE_WALKING_BY_SPELL_LABEL, label))
             return true;
 
+    if (spellInfo->Id == 75)
+        return true;
+
     return false;
 }
 
