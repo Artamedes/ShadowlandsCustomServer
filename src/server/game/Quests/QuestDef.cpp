@@ -320,8 +320,7 @@ uint32 Quest::MoneyValue(Player const* player) const
 {
     if (QuestMoneyRewardEntry const* money = sQuestMoneyRewardStore.LookupEntry(player->GetQuestLevel(this)))
         return money->Difficulty[GetRewMoneyDifficulty()] * GetMoneyMultiplier();
-    else
-        return 0;
+    return 0;
 }
 
 uint32 Quest::MaxMoneyValue() const
@@ -351,7 +350,7 @@ void Quest::BuildQuestRewards(WorldPackets::Quest::QuestRewards& rewards, Player
 {
     rewards.ChoiceItemCount         = GetRewChoiceItemsCount();
     rewards.ItemCount               = GetRewItemsCount();
-    rewards.Money                   = player->GetQuestMoneyReward(this);
+    rewards.Money                   = player->GetQuestMoneyReward(this) + _rewardBonusMoney;
     rewards.XP                      = player->GetQuestXPReward(this);
     rewards.ArtifactCategoryID      = GetArtifactCategoryId();
     rewards.Title                   = GetRewTitle();
