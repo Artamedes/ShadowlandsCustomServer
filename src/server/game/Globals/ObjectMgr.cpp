@@ -377,6 +377,7 @@ void ObjectMgr::LoadCreatureTemplates()
         TC_LOG_INFO("server.loading", ">> Loaded 0 creature template definitions. DB table `creature_template` is empty.");
         return;
     }
+    _creatureTemplateStore.clear();
 
     _creatureTemplateStore.reserve(result->GetRowCount());
     do
@@ -1697,6 +1698,7 @@ void ObjectMgr::LoadCreatureModelInfo()
         return;
     }
 
+    _creatureModelStore.clear();
     _creatureModelStore.reserve(result->GetRowCount());
     uint32 count = 0;
 

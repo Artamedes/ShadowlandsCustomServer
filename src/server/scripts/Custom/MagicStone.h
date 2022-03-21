@@ -15,6 +15,7 @@ struct MagicStoneMenu
     std::string Text;
     std::string ExtraText;
     uint32 ActionID;
+    uint32 ConditionID;
 };
 
 enum class ActionTypes
@@ -30,6 +31,7 @@ struct MagicStoneAction
 {
     ActionTypes ActionType;
     uint32 Params[5];
+    uint32 ConditionID;
 };
 
 class MagicStoneMgr
@@ -49,7 +51,7 @@ class MagicStoneMgr
             m_MagicStoneActions.clear();
             m_MagicStoneMenuTexts.clear();
 
-            QueryResult result = WorldDatabase.Query("SELECT MenuID, `Text`, ExtraText, ActionID, GossipOptionIcon FROM z_magicstone_menus ORDER by ordering;");
+            QueryResult result = WorldDatabase.Query("SELECT MenuID, `Text`, ExtraText, ActionID, GossipOptionIcon, ConditionID FROM z_magicstone_menus ORDER by ordering;");
             if (result)
             {
                 do
@@ -64,6 +66,7 @@ class MagicStoneMgr
                     l_Menu.ExtraText = fields[2].GetString();
                     l_Menu.ActionID = fields[3].GetUInt32();
                     l_Menu.Icon = static_cast<GossipOptionIcon>(fields[4].GetUInt32());
+                    l_Menu.ConditionID = fields[5].GetUInt32();
 
                     m_MagicStoneMenus.insert({ MenuID, l_Menu });
 
@@ -82,7 +85,7 @@ class MagicStoneMgr
 
                 } while (result->NextRow());
             }
-            result = WorldDatabase.Query("SELECT ActionID, ActionType, Param1, Param2, Param3, Param4, Param5 FROM z_magicstone_actions ORDER by ordering;");
+            result = WorldDatabase.Query("SELECT ActionID, ActionType, Param1, Param2, Param3, Param4, Param5, ConditionID FROM z_magicstone_actions ORDER by ordering;");
             if (result)
             {
                 do
@@ -99,6 +102,7 @@ class MagicStoneMgr
                     l_Action.Params[2] = fields[4].GetUInt32();
                     l_Action.Params[3] = fields[5].GetUInt32();
                     l_Action.Params[4] = fields[6].GetUInt32();
+                    l_Action.ConditionID = fields[7].GetUInt32();
 
 
                     m_MagicStoneActions.insert({ ActionID , l_Action});

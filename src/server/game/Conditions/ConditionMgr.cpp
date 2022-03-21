@@ -2075,6 +2075,9 @@ bool ConditionMgr::isSourceTypeValid(Condition* cond) const
             }
             break;
         }
+        case CONDITION_SOURCE_TYPE_MAGIC_STONE_MENU:
+        case CONDITION_SOURCE_TYPE_MAGIC_STONE_ACTION:
+            break;
         default:
             TC_LOG_ERROR("sql.sql", "%s Invalid ConditionSourceType in `condition` table, ignoring.", cond->ToString().c_str());
             return false;

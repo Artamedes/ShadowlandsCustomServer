@@ -1,4 +1,5 @@
 #include "MagicStone.h"
+#include "ConditionMgr.h"
 
 class MagicStone : public ItemScript
 {
@@ -14,6 +15,9 @@ class MagicStone : public ItemScript
             for (auto l_I = l_Itr.first; l_I != l_Itr.second; ++l_I)
             {
                 auto l_Menu = &l_I->second;
+
+                if (!sConditionMgr->IsObjectMeetingNotGroupedConditions(ConditionSourceType::CONDITION_SOURCE_TYPE_MAGIC_STONE_MENU, l_I->second.ConditionID, player))
+                    continue;
 
                 if (l_Menu->ExtraText.empty())
                     AddGossipItemFor(player, l_Menu->Icon, l_Menu->Text, 0, l_Menu->ActionID);
@@ -43,6 +47,12 @@ class MagicStone : public ItemScript
             auto l_Itr = sMagicStoneMgr->m_MagicStoneActions.equal_range(action);
             for (auto l_I = l_Itr.first; l_I != l_Itr.second; ++l_I)
             {
+                if (l_I->second.ConditionID > 0)
+                {
+                    if (!sConditionMgr->IsObjectMeetingNotGroupedConditions(ConditionSourceType::CONDITION_SOURCE_TYPE_MAGIC_STONE_ACTION, l_I->second.ConditionID, player))
+                        continue;
+                }
+
                 switch (l_I->second.ActionType)
                 {
                     case ActionTypes::Menu:
@@ -68,6 +78,7 @@ class MagicStone : public ItemScript
                     }
                     case ActionTypes::CloseMenu:
                         CloseGossipMenuFor(player);
+                        l_ShouldClose = false;
                         break;
                 }
             }
