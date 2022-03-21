@@ -12,6 +12,9 @@ class LoginScript : public PlayerScript
             p_Player->StoreNewItemInBestSlots(184479, 1);
             p_Player->StoreNewItemInBestSlots(184479, 1);
             p_Player->StoreNewItemInBestSlots(184479, 1);
+            p_Player->StoreNewItemInBestSlots(6948, 1);
+
+            p_Player->LearnSpell(674, true);
 
             // pvp badges
             p_Player->StoreNewItemInBestSlots(175921, 1, ItemContext::Raid_Raid_Finder, { 7186 });
