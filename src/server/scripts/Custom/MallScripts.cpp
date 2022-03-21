@@ -190,7 +190,7 @@ struct npc_skipbot_3000 : public ScriptedAI
                         p_Player->RewardQuest(l_QuestPtr, LootItemType::Item, 0, me);
                     }
 
-                    GameTele const* tele = sObjectMgr->GetGameTele(1760);
+                    GameTele const* tele = sObjectMgr->GetGameTele(1779);
                     if (!tele)
                     {
                         ChatHandler(p_Player).PSendSysMessage("Broken teleport in Robot!");
@@ -200,10 +200,10 @@ struct npc_skipbot_3000 : public ScriptedAI
                     p_Player->TeleportTo(tele->mapId, tele->position_x, tele->position_y, tele->position_z, tele->orientation);
                     p_Player->SetHomebind(WorldLocation(tele->mapId, tele->position_x, tele->position_y, tele->position_z, tele->orientation), 6719);
 
-                    auto l_QuestPtr = sObjectMgr->GetQuestTemplate(700007);
-                    if (!l_QuestPtr)
-                        break;
-                    p_Player->AddQuest(l_QuestPtr, me);
+                   //auto l_QuestPtr = sObjectMgr->GetQuestTemplate(700007);
+                   //if (!l_QuestPtr)
+                   //    break;
+                   //p_Player->AddQuest(l_QuestPtr, me);
 
                     break;
                 }
@@ -243,6 +243,39 @@ struct npc_currency_guy : public ScriptedAI
         }
 };
 
+// Char services
+struct npc_char_services : public ScriptedAI
+{
+    public:
+        npc_char_services(Creature* p_Creature) : ScriptedAI(p_Creature) { }
+
+        bool OnGossipHello(Player* p_Player) override
+        {
+            ClearGossipMenuFor(p_Player);
+            p_Player->PrepareQuestMenu(me->GetGUID());
+            AddGossipItemFor(p_Player, GossipOptionIcon::None, "|TInterface\\ICONS\\achievement_general.BLP:30:30:-28:0|tReset my talents.", 0, 2);
+            AddGossipItemFor(p_Player, GossipOptionIcon::None, "|TInterface\\ICONS\\inv_inscription_talenttome01.BLP:30:30:-28:0|tGive me 5 tomes.", 0, 1);
+            SendGossipMenuFor(p_Player, me->GetEntry(), me);
+            return true;
+        }
+
+        bool OnGossipSelect(Player* p_Player, uint32 p_MenuId, uint32 p_GossipId) override
+        {
+            uint32 l_ActionId = p_Player->PlayerTalkClass->GetGossipOptionAction(p_GossipId);
+            CloseGossipMenuFor(p_Player);
+            switch (l_ActionId)
+            {
+                case 1:
+                    p_Player->AddItem(173049, 5);
+                    break;
+                case 2:
+                    p_Player->ResetTalents(true);
+                    break;
+            }
+            return true;
+        }
+};
+
 void AddSC_MallScripts()
 {
     RegisterCreatureAI(npc_battle_training);
@@ -250,4 +283,5 @@ void AddSC_MallScripts()
     RegisterCreatureAI(npc_item_upgrade_tutorial);
     RegisterCreatureAI(npc_skipbot_3000);
     RegisterCreatureAI(npc_currency_guy);
+    RegisterCreatureAI(npc_char_services);
 }
