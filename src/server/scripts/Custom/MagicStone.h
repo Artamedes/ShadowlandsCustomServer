@@ -26,6 +26,7 @@ enum class ActionTypes
     CastSpell = 3,
     CloseMenu = 4,
     MonsterCredit = 5,
+    SetHomebind = 6,
 };
 
 struct MagicStoneAction

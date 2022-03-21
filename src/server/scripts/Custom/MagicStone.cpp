@@ -83,6 +83,19 @@ class MagicStone : public ItemScript
                     case ActionTypes::MonsterCredit:
                         player->KilledMonsterCredit(l_I->second.Params[0]);
                         break;
+
+                    case ActionTypes::SetHomebind:
+                    {
+                        GameTele const* tele = sObjectMgr->GetGameTele(l_I->second.Params[0]);
+                        if (!tele)
+                        {
+                            ChatHandler(player).PSendSysMessage("Broken teleport %u in MagicStone!", l_I->second.Params[0]);
+                            continue;
+                        }
+
+                        player->SetHomebind(WorldLocation(tele->mapId, tele->position_x, tele->position_y, tele->position_z, tele->orientation), 6719);
+                        break;
+                    }
                 }
             }
 
