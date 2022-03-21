@@ -3,6 +3,7 @@
 #include "ScriptedCreature.h"
 #include "ScriptedGossip.h"
 #include "TemporarySummon.h"
+#include "Chat.h"
 #include "QuestDef.h"
 
 struct npc_battle_training : public ScriptedAI
@@ -146,9 +147,106 @@ struct npc_infernal_core_360607 : public ScriptedAI
         EventMap m_Events;
 };
 
+struct npc_skipbot_3000 : public ScriptedAI
+{
+    public:
+        npc_skipbot_3000(Creature* p_Creature) : ScriptedAI(p_Creature) { }
+
+        bool OnGossipHello(Player* p_Player) override
+        {
+            ClearGossipMenuFor(p_Player);
+            p_Player->PrepareQuestMenu(me->GetGUID());
+            if (p_Player->GetQuestStatus(700000) == QUEST_STATUS_INCOMPLETE || p_Player->GetQuestStatus(700000) == QUEST_STATUS_NONE
+                || p_Player->GetQuestStatus(700001) == QUEST_STATUS_INCOMPLETE || p_Player->GetQuestStatus(700001) == QUEST_STATUS_NONE
+                || p_Player->GetQuestStatus(700002) == QUEST_STATUS_INCOMPLETE || p_Player->GetQuestStatus(700002) == QUEST_STATUS_NONE
+                || p_Player->GetQuestStatus(700003) == QUEST_STATUS_INCOMPLETE || p_Player->GetQuestStatus(700003) == QUEST_STATUS_NONE
+                || p_Player->GetQuestStatus(700004) == QUEST_STATUS_INCOMPLETE || p_Player->GetQuestStatus(700004) == QUEST_STATUS_NONE
+                || p_Player->GetQuestStatus(700005) == QUEST_STATUS_INCOMPLETE || p_Player->GetQuestStatus(700005) == QUEST_STATUS_NONE
+                || p_Player->GetQuestStatus(700006) == QUEST_STATUS_INCOMPLETE || p_Player->GetQuestStatus(700006) == QUEST_STATUS_NONE)
+                AddGossipItemFor(p_Player, GossipOptionIcon::AdventureMap, "Skip tutorial.", 0, 1);
+            AddGossipItemFor(p_Player, GossipOptionIcon::None, "Nevermind", 0, 0);
+            SendGossipMenuFor(p_Player, me->GetEntry(), me);
+            return true;
+        }
+        
+
+        bool OnGossipSelect(Player* p_Player, uint32 p_MenuId, uint32 p_GossipId) override
+        {
+            uint32 l_ActionId = p_Player->PlayerTalkClass->GetGossipOptionAction(p_GossipId);
+            CloseGossipMenuFor(p_Player);
+            switch (l_ActionId)
+            {
+                case 1:
+                {
+                    Talk(0, p_Player);
+
+                    for (uint32 l_Quest : {700000, 700001, 700002, 700003, 700004, 700005, 700006})
+                    {
+                        auto l_QuestPtr = sObjectMgr->GetQuestTemplate(l_Quest);
+                        if (!l_QuestPtr)
+                            break;
+                        p_Player->AddQuest(l_QuestPtr, me);
+                        p_Player->CompleteQuest(l_Quest);
+                        p_Player->RewardQuest(l_QuestPtr, LootItemType::Item, 0, me);
+                    }
+
+                    GameTele const* tele = sObjectMgr->GetGameTele(1760);
+                    if (!tele)
+                    {
+                        ChatHandler(p_Player).PSendSysMessage("Broken teleport in Robot!");
+                        break;
+                    }
+
+                    p_Player->TeleportTo(tele->mapId, tele->position_x, tele->position_y, tele->position_z, tele->orientation);
+
+                    auto l_QuestPtr = sObjectMgr->GetQuestTemplate(700007);
+                    if (!l_QuestPtr)
+                        break;
+                    p_Player->AddQuest(l_QuestPtr, me);
+
+                    break;
+                }
+            }
+            return true;
+        }
+};
+
+struct npc_currency_guy : public ScriptedAI
+{
+    public:
+        npc_currency_guy(Creature* p_Creature) : ScriptedAI(p_Creature) { }
+
+        bool OnGossipHello(Player* p_Player) override
+        {
+            ClearGossipMenuFor(p_Player);
+            p_Player->PrepareQuestMenu(me->GetGUID());
+            if (p_Player->GetQuestStatus(700005) == QUEST_STATUS_INCOMPLETE)
+                AddGossipItemFor(p_Player, GossipOptionIcon::AdventureMap, "What are currencies for?", 0, 1);
+            AddGossipItemFor(p_Player, GossipOptionIcon::None, "Nevermind", 0, 0);
+            SendGossipMenuFor(p_Player, me->GetEntry(), me);
+            return true;
+        }
+
+        bool OnGossipSelect(Player* p_Player, uint32 p_MenuId, uint32 p_GossipId) override
+        {
+            uint32 l_ActionId = p_Player->PlayerTalkClass->GetGossipOptionAction(p_GossipId);
+            CloseGossipMenuFor(p_Player);
+            switch (l_ActionId)
+            {
+                case 1:
+                    Talk(0, p_Player);
+                    p_Player->KilledMonsterCredit(700005, me->GetGUID());
+                    break;
+            }
+            return true;
+        }
+};
+
 void AddSC_MallScripts()
 {
     RegisterCreatureAI(npc_battle_training);
     RegisterCreatureAI(npc_infernal_core_360607);
     RegisterCreatureAI(npc_item_upgrade_tutorial);
+    RegisterCreatureAI(npc_skipbot_3000);
+    RegisterCreatureAI(npc_currency_guy);
 }
