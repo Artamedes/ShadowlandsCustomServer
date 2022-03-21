@@ -1055,6 +1055,31 @@ namespace WorldPackets
             bool Reverse = false;
             int32 SpellID = 0;
         };
+
+        //class ModifyCooldownRecoverySpeed final : public ServerPacket
+        //{
+        //public:
+        //    ModifyCooldownRecoverySpeed() : ServerPacket(SMSG_MODIFY_COOLDOWN_RECOVERY_SPEED, 4 + 4 + 4) { }
+        //
+        //    WorldPacket const* Write() override;
+        //
+        //    uint32 SpellId;
+        //    float SpeedRate = 1.0f;
+        //    float SpeedRate2 = 1.0f;
+        //};
+        //
+        //class ModifyChargeRecoverySpeed final : public ServerPacket
+        //{
+        //public:
+        //    ModifyChargeRecoverySpeed() : ServerPacket(SMSG_MODIFY_CHARGE_RECOVERY_SPEED, 4 + 4 + 4 + 1) { }
+        //
+        //    WorldPacket const* Write() override;
+        //
+        //    uint32 ChargeCategoryId;
+        //    float SpeedRate = 1.0f;
+        //    float UnkFloat = 1.0f;
+        //    bool UnkBool = false;
+        //};
     }
 }
 

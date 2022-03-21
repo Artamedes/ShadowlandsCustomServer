@@ -1667,6 +1667,7 @@ class TC_GAME_API Unit : public WorldObject
         void _UnregisterAreaTrigger(AreaTrigger* areaTrigger);
         AreaTrigger* GetAreaTrigger(uint32 spellId) const;
         std::vector<AreaTrigger*> GetAreaTriggers(uint32 spellId) const;
+        std::vector<AreaTrigger*> GetAreaTriggersByEntry(std::set<uint32> entries) const;
         void RemoveAreaTrigger(uint32 spellId);
         void RemoveAreaTrigger(AuraEffect const* aurEff);
         void RemoveAllAreaTriggers();
@@ -1846,6 +1847,9 @@ class TC_GAME_API Unit : public WorldObject
         // Movement info
         Movement::MoveSpline * movespline;
 
+        void SaveDamageHistory(uint32 damage);
+        uint32 GetDamageOverLastSeconds(uint32 seconds) const;
+
         int32 GetHighestExclusiveSameEffectSpellGroupValue(AuraEffect const* aurEff, AuraType auraType, bool checkMiscValue = false, int32 miscValue = 0) const;
         bool IsHighestExclusiveAura(Aura const* aura, bool removeOtherAuraApplications = false);
         bool IsHighestExclusiveAuraEffect(SpellInfo const* spellInfo, AuraType auraType, int32 effectAmount, uint32 auraEffectMask, bool removeOtherAuraApplications = false);
@@ -1865,6 +1869,8 @@ class TC_GAME_API Unit : public WorldObject
         uint32 GetVirtualItemId(uint32 slot) const;
         uint16 GetVirtualItemAppearanceMod(uint32 slot) const;
         void SetVirtualItem(uint32 slot, uint32 itemId, uint16 appearanceModId = 0, uint16 itemVisual = 0);
+
+        void GetFriendlyUnitListInRange(std::list<Unit*>& list, float fMaxSearchRange, bool exceptSelf = false) const;
 
         // returns if the unit can't enter combat
         bool IsCombatDisallowed() const { return _isCombatDisallowed; }
@@ -2043,6 +2049,8 @@ class TC_GAME_API Unit : public WorldObject
 
         uint32 _oldFactionId;           ///< faction before charm
         bool _isWalkingBeforeCharm;     ///< Are we walking before we were charmed?
+
+        std::map<time_t, uint32> _damageTakenHistory;
 
         bool _playHoverAnim;
 

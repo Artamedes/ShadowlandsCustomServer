@@ -392,6 +392,7 @@ typedef std::vector<TalentEntry const*> TalentsByPosition[MAX_CLASSES][MAX_TALEN
 typedef std::unordered_set<uint32> ToyItemIdsContainer;
 typedef std::tuple<uint16, uint8, int32> WMOAreaTableKey;
 typedef std::map<WMOAreaTableKey, WMOAreaTableEntry const*> WMOAreaTableLookupContainer;
+typedef std::unordered_map<uint32 /*LabelCategoryId*/, std::vector<uint32/*SpellIds*/>> SpellLabelContainer;
 typedef std::pair<uint32 /*tableHash*/, int32 /*recordId*/> HotfixBlobKey;
 typedef std::map<HotfixBlobKey, std::vector<uint8>> HotfixBlobMap;
 using AllowedHotfixOptionalData = std::pair<uint32 /*optional data key*/, bool(*)(std::vector<uint8> const& data) /*validator*/>;
@@ -476,6 +477,7 @@ namespace
     SkillRaceClassInfoContainer _skillRaceClassInfoBySkill;
     std::unordered_map<std::pair<int32, int32>, SoulbindConduitRankEntry const*> _soulbindConduitRanks;
     SpecializationSpellsContainer _specializationSpellsBySpec;
+    SpellLabelContainer _SpellLabelIdsBySpellLabelCategory;
     std::unordered_set<std::pair<int32, uint32>> _specsBySpecSet;
     std::unordered_set<uint8> _spellFamilyNames;
     SpellProcsPerMinuteModContainer _spellProcsPerMinuteMods;
@@ -1360,6 +1362,9 @@ uint32 DB2Manager::LoadStores(std::string const& dataPath, LocaleConstant defaul
 
     for (SpecializationSpellsEntry const* specSpells : sSpecializationSpellsStore)
         _specializationSpellsBySpec[specSpells->SpecID].push_back(specSpells);
+
+    for (SpellLabelEntry const* spellLabel : sSpellLabelStore)
+        _SpellLabelIdsBySpellLabelCategory[spellLabel->LabelID].push_back(spellLabel->SpellID);
 
     for (SpecSetMemberEntry const* specSetMember : sSpecSetMemberStore)
         _specsBySpecSet.insert(std::make_pair(specSetMember->SpecSetID, uint32(specSetMember->ChrSpecializationID)));
@@ -3413,4 +3418,13 @@ bool DB2Manager::MountTypeXCapabilityEntryComparator::Compare(MountTypeXCapabili
     if (left->MountTypeID == right->MountTypeID)
         return left->OrderIndex < right->OrderIndex;
     return left->MountTypeID < right->MountTypeID;
+}
+
+std::vector<uint32> DB2Manager::GetSpellLabelSpellsByCategoryId(uint32 categoryId) const
+{
+    auto itr = _SpellLabelIdsBySpellLabelCategory.find(categoryId);
+    if (itr != _SpellLabelIdsBySpellLabelCategory.end())
+        return itr->second;
+
+    return std::vector<uint32>();
 }

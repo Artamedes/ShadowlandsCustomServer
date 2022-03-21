@@ -829,6 +829,16 @@ class TC_GAME_API PlayerScript : public ScriptObject
 
         // Called when a player choose a response from a PlayerChoice
         virtual void OnPlayerChoiceResponse(Player* /*player*/, uint32 /*choiceId*/, uint32 /*responseId*/) { }
+
+        // When the player learn a spell
+        // @player  : Player instance
+        // @spellID : Learned spell ID
+        virtual void OnSpellLearned(Player* /*player*/, uint32 /*spellID*/) {}
+
+        // When the player removed a spell
+        // @player  : Player instance
+        // @spellID : Learned spell ID
+        virtual void OnSpellRemoved(Player* /*player*/, uint32 /*spellID*/) {}
 };
 
 class TC_GAME_API AccountScript : public ScriptObject
@@ -1246,6 +1256,8 @@ class TC_GAME_API ScriptMgr
         void OnPlayerRepop(Player* player);
         void OnMovieComplete(Player* player, uint32 movieId);
         void OnPlayerChoiceResponse(Player* player, uint32 choiceId, uint32 responseId);
+        void OnPlayerSpellLearned(Player* player, uint32 spellID);
+        void OnPlayerSpellRemoved(Player* player, uint32 spellID);
 
     public: /* AccountScript */
 

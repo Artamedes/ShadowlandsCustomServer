@@ -224,6 +224,16 @@ SpellCastResult SpellScript::CheckCastHandler::Call(SpellScript* spellScript)
     return (spellScript->*_checkCastHandlerScript)();
 }
 
+void SpellScript::OnPrepareHandler::Call(SpellScript* spellScript)
+{
+    (spellScript->*_onPrepareHandlerScript)();
+}
+
+SpellScript::OnPrepareHandler::OnPrepareHandler(SpellOnPrepareFnType OnPrepareHandlerScript)
+{
+    _onPrepareHandlerScript = OnPrepareHandlerScript;
+}
+
 SpellScript::OnCalculateResistAbsorbHandler::OnCalculateResistAbsorbHandler(SpellOnResistAbsorbCalculateFnType onResistAbsorbCalculateHandlerScript) :
     pOnCalculateResistAbsorbHandlerScript(onResistAbsorbCalculateHandlerScript)
 {

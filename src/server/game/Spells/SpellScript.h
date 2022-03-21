@@ -212,6 +212,7 @@ enum SpellScriptHookType
     SPELL_SCRIPT_HOOK_CHECK_CAST,
     SPELL_SCRIPT_HOOK_BEFORE_CAST,
     SPELL_SCRIPT_HOOK_ON_CAST,
+    SPELL_SCRIPT_HOOK_ON_PREPARE,
     SPELL_SCRIPT_HOOK_ON_RESIST_ABSORB_CALCULATION,
     SPELL_SCRIPT_HOOK_AFTER_CAST,
     SPELL_SCRIPT_HOOK_CALC_CRIT_CHANCE,
@@ -236,6 +237,7 @@ class TC_GAME_API SpellScript : public _SpellScript
             typedef void(CLASSNAME::*SpellOnResistAbsorbCalculateFnType)(DamageInfo const& damageInfo, uint32& resistAmount, int32& absorbAmount); \
             typedef void(CLASSNAME::*SpellObjectAreaTargetSelectFnType)(std::list<WorldObject*>&); \
             typedef void(CLASSNAME::*SpellObjectTargetSelectFnType)(WorldObject*&); \
+            typedef void(CLASSNAME::*SpellOnPrepareFnType)(); \
             typedef void(CLASSNAME::*SpellDestinationTargetSelectFnType)(SpellDestination&);
 
         SPELLSCRIPT_FUNCTION_TYPE_DEFINES(SpellScript)
@@ -252,6 +254,15 @@ class TC_GAME_API SpellScript : public _SpellScript
                 void Call(SpellScript* spellScript);
             private:
                 SpellCastFnType pCastHandlerScript;
+        };
+
+        class TC_GAME_API OnPrepareHandler
+        {
+        public:
+            OnPrepareHandler(SpellOnPrepareFnType OnPrepareHandlerScript);
+            void Call(SpellScript* spellScript);
+        private:
+            SpellOnPrepareFnType _onPrepareHandlerScript;
         };
 
         class TC_GAME_API CheckCastHandler
@@ -402,6 +413,7 @@ class TC_GAME_API SpellScript : public _SpellScript
 
         #define SPELLSCRIPT_FUNCTION_CAST_DEFINES(CLASSNAME) \
         class CastHandlerFunction : public SpellScript::CastHandler { public: explicit CastHandlerFunction(SpellCastFnType _pCastHandlerScript) : SpellScript::CastHandler((SpellScript::SpellCastFnType)_pCastHandlerScript) { } }; \
+        class OnPrepareHandlerFunction : public SpellScript::OnPrepareHandler { public: OnPrepareHandlerFunction(SpellOnPrepareFnType _onPrepareHandlerScript) : SpellScript::OnPrepareHandler((SpellScript::SpellOnPrepareFnType)_onPrepareHandlerScript) {} }; \
         class CheckCastHandlerFunction : public SpellScript::CheckCastHandler { public: explicit CheckCastHandlerFunction(SpellCheckCastFnType _checkCastHandlerScript) : SpellScript::CheckCastHandler((SpellScript::SpellCheckCastFnType)_checkCastHandlerScript) { } }; \
         class EffectHandlerFunction : public SpellScript::EffectHandler { public: explicit EffectHandlerFunction(SpellEffectFnType _pEffectHandlerScript, uint8 _effIndex, uint16 _effName) : SpellScript::EffectHandler((SpellScript::SpellEffectFnType)_pEffectHandlerScript, _effIndex, _effName) { } }; \
         class HitHandlerFunction : public SpellScript::HitHandler { public: explicit HitHandlerFunction(SpellHitFnType _pHitHandlerScript) : SpellScript::HitHandler((SpellScript::SpellHitFnType)_pHitHandlerScript) { } }; \
@@ -447,6 +459,11 @@ class TC_GAME_API SpellScript : public _SpellScript
         // example: AfterCast += SpellCastFn(class::function);
         HookList<CastHandler> AfterCast;
         #define SpellCastFn(F) CastHandlerFunction(&F)
+        
+        // example: OnPrepare += SpellOnPrepareFn();
+        // where function is void function()
+        HookList<OnPrepareHandler> OnPrepare;
+        #define SpellOnPrepareFn(F) OnPrepareHandlerFunction(&F)
 
         // example: OnCheckCast += SpellCheckCastFn();
         // where function is SpellCastResult function()

@@ -146,6 +146,7 @@ float const DEFAULT_COLLISION_HEIGHT = 2.03128f; // Most common value in dbc
 class TC_GAME_API Object
 {
     public:
+        Trinity::AnyData Variables;
         virtual ~Object();
 
         bool IsInWorld() const { return m_inWorld; }

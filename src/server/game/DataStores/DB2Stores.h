@@ -468,6 +468,7 @@ public:
     void Map2ZoneCoordinates(uint32 areaId, float& x, float& y) const;
     bool IsUiMapPhase(uint32 phaseId) const;
     WMOAreaTableEntry const* GetWMOAreaTable(int32 rootId, int32 adtId, int32 groupId) const;
+    std::vector<uint32> GetSpellLabelSpellsByCategoryId(uint32 categoryId) const;
 
 private:
     friend class DB2HotfixGeneratorBase;

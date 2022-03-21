@@ -826,6 +826,7 @@ class TC_GAME_API Spell
         void LoadScripts();
         void CallScriptOnPrecastHandler();
         void CallScriptBeforeCastHandlers();
+        void CallScriptOnPrepareHandlers();
         void CallScriptOnCastHandlers();
         void CallScriptAfterCastHandlers();
         SpellCastResult CallScriptCheckCastHandlers();

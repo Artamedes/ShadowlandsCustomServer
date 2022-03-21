@@ -1832,6 +1832,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         time_t GetTalentResetTime() const { return _specializationInfo.ResetTalentsTime; }
         void SetTalentResetTime(time_t time_)  { _specializationInfo.ResetTalentsTime = time_; }
         uint32 GetPrimarySpecialization() const { return m_playerData->CurrentSpecID; }
+        uint32 GetSpecializationId() const { return GetPrimarySpecialization(); }
         void SetPrimarySpecialization(uint32 spec) { SetUpdateFieldValue(m_values.ModifyValue(&Player::m_playerData).ModifyValue(&UF::PlayerData::CurrentSpecID), spec); }
         uint8 GetActiveTalentGroup() const { return _specializationInfo.ActiveGroup; }
         void SetActiveTalentGroup(uint8 group){ _specializationInfo.ActiveGroup = group; }

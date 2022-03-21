@@ -74,6 +74,7 @@ public:
     using CategoryCooldownStorageType = std::unordered_map<uint32 /*categoryId*/, CooldownEntry*>;
     using ChargeStorageType = std::unordered_map<uint32 /*categoryId*/, ChargeEntryCollection>;
     using GlobalCooldownStorageType = std::unordered_map<uint32 /*categoryId*/, Clock::time_point>;
+    typedef std::unordered_map<uint32 /*spellCastedID*/, std::list<uint32> /*spellAffectedID*/> SpellRecoveryRatesStorageType;
 
     explicit SpellHistory(Unit* owner);
     ~SpellHistory();
@@ -111,6 +112,7 @@ public:
     }
 
     void AddCooldown(uint32 spellId, uint32 itemId, Clock::time_point cooldownEnd, uint32 categoryId, Clock::time_point categoryEnd, bool onHold = false);
+    void AddSpellCooldown(uint32 spellid, uint32 itemid, uint32 cooldownEnd);
     void ModifyCooldown(uint32 spellId, Duration cooldownMod, bool withoutCategoryCooldown = false);
     void ModifyCooldown(SpellInfo const* spellInfo, Duration cooldownMod, bool withoutCategoryCooldown = false);
     void ResetCooldown(uint32 spellId, bool update = false);
@@ -147,14 +149,32 @@ public:
     bool IsSchoolLocked(SpellSchoolMask schoolMask) const;
 
     // Charges
-    bool ConsumeCharge(uint32 chargeCategoryId);
+    void ForceSendSpellCharges();
+    void ForceSendSpellCharge(SpellCategoryEntry const* chargeCategoryEntry);
+    void ForceSendSetSpellCharges(SpellCategoryEntry const* chargeCategoryEntry);
+    void UpdateCharges();
+    void UpdateCharge(SpellCategoryEntry const* chargeCategoryEntry);
+    void ReduceChargeCooldown(uint32 chargeCategoryId, uint32 reductionTime);
+    void ReduceChargeCooldown(SpellCategoryEntry const* chargeCategoryEntry, uint32 reductionTime);
+    bool ConsumeCharge(uint32 chargeCategoryId, bool withPacket = false, SpellInfo const* spellinfo = nullptr);
+    int32 ConsumeAllCharges(uint32 chargeCategoryId);
+    bool ResetCharges(uint32 chargeCategoryId, bool eraseCategory = true);
     void ModifyChargeRecoveryTime(uint32 chargeCategoryId, Duration cooldownMod);
     void RestoreCharge(uint32 chargeCategoryId);
-    void ResetCharges(uint32 chargeCategoryId);
     void ResetAllCharges();
+    void ReduceChargeTime(uint32 chargeCategoryId, uint32 msToReduce);
     bool HasCharge(uint32 chargeCategoryId) const;
+    bool HasChargeInCooldown(uint32 spellID) const;
+    int32 GetChargeCount(uint32 chargeCategoryId) const;
     int32 GetMaxCharges(uint32 chargeCategoryId) const;
-    int32 GetChargeRecoveryTime(uint32 chargeCategoryId) const;
+    int32 GetChargeRecoveryTime(uint32 chargeCategoryId, SpellInfo const* spellinfo = nullptr);
+
+    //Recovery Rates
+    void AddSpellAffectedByRecoveryRate(uint32 spellCastedID, uint32 spellAffectedID) { SpellAffectedByRecoveryRates[spellCastedID].push_back(spellAffectedID); }
+    void RemoveSpellAffectedByRecoveryRate(uint32 spellCastedID);
+    bool HasSpellAffectedByRecoveryRate(uint32 spellCastedID, uint32 spellAffectedID);
+
+    void ChangeRecoveryRate(uint32 spellId, float rate);
 
     // Global cooldown
     bool HasGlobalCooldown(SpellInfo const* spellInfo) const;
@@ -185,6 +205,7 @@ private:
     Clock::time_point _schoolLockouts[MAX_SPELL_SCHOOL];
     ChargeStorageType _categoryCharges;
     GlobalCooldownStorageType _globalCooldowns;
+    SpellRecoveryRatesStorageType SpellAffectedByRecoveryRates;
 
     template<class T>
     struct PersistenceHelper { };

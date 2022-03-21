@@ -2161,6 +2161,18 @@ void ScriptMgr::OnPlayerChoiceResponse(Player* player, uint32 choiceId, uint32 r
     FOREACH_SCRIPT(PlayerScript)->OnPlayerChoiceResponse(player, choiceId, responseId);
 }
 
+/// When the player learn a spell
+/// @player  : Player instance
+/// @p_SpellID : Learned spell ID
+void ScriptMgr::OnPlayerSpellLearned(Player* player, uint32 p_SpellID)
+{
+    FOREACH_SCRIPT(PlayerScript)->OnSpellLearned(player, p_SpellID);
+}
+
+void ScriptMgr::OnPlayerSpellRemoved(Player* player, uint32 p_SpellID) {
+    FOREACH_SCRIPT(PlayerScript)->OnSpellRemoved(player, p_SpellID);
+}
+
 // Account
 void ScriptMgr::OnAccountLogin(uint32 accountId)
 {

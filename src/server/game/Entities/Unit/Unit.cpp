@@ -5179,6 +5179,17 @@ std::vector<AreaTrigger*> Unit::GetAreaTriggers(uint32 spellId) const
     return areaTriggers;
 }
 
+std::vector<AreaTrigger*> Unit::GetAreaTriggersByEntry(std::set<uint32> entries) const
+{
+    std::vector<AreaTrigger*> areaTriggers;
+    for (auto itr : m_areaTrigger)
+        if (AreaTrigger* at = itr)
+            if (entries.find(at->GetEntry()) != entries.end())
+                areaTriggers.push_back(at);
+
+    return areaTriggers;
+}
+
 void Unit::RemoveAreaTrigger(uint32 spellId)
 {
     if (m_areaTrigger.empty())
@@ -13270,6 +13281,38 @@ int32 Unit::GetHighestExclusiveSameEffectSpellGroupValue(AuraEffect const* aurEf
     return val;
 }
 
+#define MAX_DAMAGE_HISTORY_DURATION 20
+
+void Unit::SaveDamageHistory(uint32 damage)
+{
+    uint32 currentTime = GameTime::GetGameTimeMS();
+    uint32 maxPastTime = currentTime - MAX_DAMAGE_HISTORY_DURATION * IN_MILLISECONDS;
+
+    // Remove damages older than maxPastTime, can be increased if required
+    for (auto itr = _damageTakenHistory.begin(); itr != _damageTakenHistory.end();)
+    {
+        if (itr->first < maxPastTime)
+            itr = _damageTakenHistory.erase(itr);
+        else
+            ++itr;
+    }
+
+    _damageTakenHistory[currentTime] += damage;
+}
+
+uint32 Unit::GetDamageOverLastSeconds(uint32 seconds) const
+{
+    ASSERT(seconds <= MAX_DAMAGE_HISTORY_DURATION, "Damage history ms cannot be lower than MAX_DAMAGE_HISTORY_DURATION");
+    time_t maxPastTime = GameTime::GetGameTimeMS() - seconds * IN_MILLISECONDS;
+
+    uint32 damageOverLastSeconds = 0;
+    for (auto itr = _damageTakenHistory.begin(); itr != _damageTakenHistory.end(); ++itr)
+        if (itr->first >= maxPastTime)
+            damageOverLastSeconds += itr->second;
+
+    return damageOverLastSeconds;
+}
+
 bool Unit::IsHighestExclusiveAura(Aura const* aura, bool removeOtherAuraApplications /*= false*/)
 {
     for (AuraEffect const* aurEff : aura->GetAuraEffects())
@@ -13382,6 +13425,22 @@ void Unit::SetVirtualItem(uint32 slot, uint32 itemId, uint16 appearanceModId /*=
     SetUpdateFieldValue(virtualItemField.ModifyValue(&UF::VisibleItem::ItemID), itemId);
     SetUpdateFieldValue(virtualItemField.ModifyValue(&UF::VisibleItem::ItemAppearanceModID), appearanceModId);
     SetUpdateFieldValue(virtualItemField.ModifyValue(&UF::VisibleItem::ItemVisual), itemVisual);
+}
+
+void Unit::GetFriendlyUnitListInRange(std::list<Unit*>& list, float fMaxSearchRange, bool exceptSelf /*= false*/) const
+{
+    CellCoord p(Trinity::ComputeCellCoord(GetPositionX(), GetPositionY()));
+    Cell cell(p);
+    cell.SetNoCreate();
+
+    Trinity::AnyFriendlyUnitInObjectRangeCheck u_check(this, this, fMaxSearchRange, false, exceptSelf);
+    Trinity::UnitListSearcher<Trinity::AnyFriendlyUnitInObjectRangeCheck> searcher(this, list, u_check);
+
+    TypeContainerVisitor<Trinity::UnitListSearcher<Trinity::AnyFriendlyUnitInObjectRangeCheck>, WorldTypeMapContainer > world_unit_searcher(searcher);
+    TypeContainerVisitor<Trinity::UnitListSearcher<Trinity::AnyFriendlyUnitInObjectRangeCheck>, GridTypeMapContainer >  grid_unit_searcher(searcher);
+
+    cell.Visit(p, world_unit_searcher, *GetMap(), *this, fMaxSearchRange);
+    cell.Visit(p, grid_unit_searcher, *GetMap(), *this, fMaxSearchRange);
 }
 
 void Unit::Talk(uint32 textId, ChatMsg msgType, float textRange, WorldObject const* target)

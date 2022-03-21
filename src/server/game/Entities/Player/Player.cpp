@@ -3171,6 +3171,8 @@ void Player::LearnSpell(uint32 spell_id, bool dependent, int32 fromSkill /*= 0*/
         packet.SpellID.push_back(spell_id);
         packet.SuppressMessaging = suppressMessaging;
         SendDirectMessage(packet.Write());
+
+        sScriptMgr->OnPlayerSpellLearned(this, spell_id);
     }
 
     // learn all disabled higher ranks and required spells (recursive)
@@ -3363,6 +3365,9 @@ void Player::RemoveSpell(uint32 spell_id, bool disabled /*= false*/, bool learn_
         unlearnedSpells.SuppressMessaging = suppressMessaging;
         SendDirectMessage(unlearnedSpells.Write());
     }
+
+    if (IsInWorld())
+        sScriptMgr->OnPlayerSpellRemoved(this, spell_id);
 }
 
 void Player::RemoveArenaSpellCooldowns(bool removeActivePetCooldowns)

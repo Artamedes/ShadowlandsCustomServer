@@ -747,10 +747,10 @@ class TC_GAME_API SpellMgr
         SpellAreaForAreaMapBounds GetSpellAreaForAreaMapBounds(uint32 area_id) const;
 
         // SpellInfo object management
-        SpellInfo const* GetSpellInfo(uint32 spellId, Difficulty difficulty) const;
+        SpellInfo const* GetSpellInfo(uint32 spellId, Difficulty difficulty = DIFFICULTY_NONE) const;
 
         // Use this only with 100% valid spellIds
-        SpellInfo const* AssertSpellInfo(uint32 spellId, Difficulty difficulty) const
+        SpellInfo const* AssertSpellInfo(uint32 spellId, Difficulty difficulty = DIFFICULTY_NONE) const
         {
             SpellInfo const* spellInfo = GetSpellInfo(spellId, difficulty);
             ASSERT(spellInfo);
