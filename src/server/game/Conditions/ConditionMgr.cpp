@@ -811,7 +811,7 @@ std::string Condition::ToString(bool ext /*= false*/) const
     std::ostringstream ss;
     ss << "[Condition ";
     ss << "SourceType: " << SourceType;
-    if (SourceType < CONDITION_SOURCE_TYPE_MAX)
+    if (SourceType < 33)
         ss << " (" << ConditionMgr::StaticSourceTypeData[SourceType] << ")";
     else
         ss << " (Unknown)";

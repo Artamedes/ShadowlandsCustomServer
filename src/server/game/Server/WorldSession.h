@@ -813,6 +813,13 @@ namespace WorldPackets
         class WhoRequestPkt;
     }
 
+    namespace BattlePay
+    {
+        class BattlePayGetPurchaseList;
+        class BattlePayGetProductList;
+        class BattlePayRequestPriceInfo;
+    }
+
     class Null final : public ClientPacket
     {
     public:
@@ -1803,6 +1810,11 @@ class TC_GAME_API WorldSession
         std::unordered_map<uint32, uint8> const& GetRealmCharacterCounts() const { return _realmCharacterCounts; }
 
         void HandleQueryRealmName(WorldPackets::Query::QueryRealmName& queryRealmName);
+
+        // BattlePay
+        void HandleBattlePayGetProductList(WorldPackets::BattlePay::BattlePayGetProductList& recvPacket);
+        void HandleBattlePayGetPurchaseList(WorldPackets::BattlePay::BattlePayGetPurchaseList& recvPacket);
+        void HandleBattlePayRequestPriceInfo(WorldPackets::BattlePay::BattlePayRequestPriceInfo& recvPacket);
 
         // Artifact
         void HandleArtifactAddPower(WorldPackets::Artifact::ArtifactAddPower& artifactAddPower);

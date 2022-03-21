@@ -100,6 +100,8 @@
 #include "WhoListStorage.h"
 #include "WorldSession.h"
 #include "WorldSocket.h"
+#include "BattlePayPackets.h"
+#include "BattlePayMgr.h"
 
 #include <boost/algorithm/string.hpp>
 
@@ -1771,8 +1773,8 @@ void World::SetInitialWorldSettings()
     sDB2Manager.LoadHotfixData();
     TC_LOG_INFO("misc", "Loading hotfix optional data...");
     sDB2Manager.LoadHotfixOptionalData(m_availableDbcLocaleMask);
-    ///- Close hotfix database - it is only used during DB2 loading
-    HotfixDatabase.Close();
+    ///- Close hotfix database - it is only used during DB2 loading - not use by reload now
+    //HotfixDatabase.Close();
     ///- Load M2 fly by cameras
     LoadM2Cameras(m_dataPath);
     ///- Load GameTables
@@ -2468,6 +2470,8 @@ void World::SetInitialWorldSettings()
 
     TC_LOG_INFO("server.loading", "Loading phase names...");
     sObjectMgr->LoadPhaseNames();
+
+    sBattlePayMgr->LoadFromDB();
 
     // Preload all cells, if required for the base maps
     if (sWorld->getBoolConfig(CONFIG_BASEMAP_LOAD_GRIDS))

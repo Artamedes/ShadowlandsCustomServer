@@ -110,8 +110,8 @@ namespace WorldPackets
 
             bool VoiceEnabled                        = false;
             bool BrowserEnabled                      = false;
-            bool BpayStoreAvailable                  = false;
-            bool BpayStoreEnabled                    = false;
+            bool BpayStoreAvailable                  = true;
+            bool BpayStoreEnabled                    = true;
             Optional<SessionAlertConfig> SessionAlert;
             uint32 ScrollOfResurrectionMaxRequestsPerDay = 0;
             bool ScrollOfResurrectionEnabled         = false;
@@ -172,10 +172,10 @@ namespace WorldPackets
 
             WorldPacket const* Write() override;
 
-            bool BpayStoreAvailable                  = false; // NYI
+            bool BpayStoreAvailable                  = true; // NYI
             bool BpayStoreDisabledByParentalControls = false; // NYI
             bool CharUndeleteEnabled                 = false;
-            bool BpayStoreEnabled                    = false; // NYI
+            bool BpayStoreEnabled                    = true; // NYI
             bool CommerceSystemEnabled               = false; // NYI
             bool Unk14                               = false; // NYI
             bool WillKickFromWorld                   = false; // NYI

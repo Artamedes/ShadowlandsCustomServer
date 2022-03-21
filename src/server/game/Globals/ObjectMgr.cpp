@@ -6403,6 +6403,7 @@ void ObjectMgr::LoadNPCText()
         return;
     }
 
+    _npcTextStore.clear();
     _npcTextStore.reserve(result->GetRowCount());
 
     do
