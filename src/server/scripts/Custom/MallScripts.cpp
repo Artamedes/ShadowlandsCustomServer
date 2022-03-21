@@ -198,7 +198,7 @@ struct npc_skipbot_3000 : public ScriptedAI
                     }
 
                     p_Player->TeleportTo(tele->mapId, tele->position_x, tele->position_y, tele->position_z, tele->orientation);
-                    player->SetHomebind(WorldLocation(tele->mapId, tele->position_x, tele->position_y, tele->position_z, tele->orientation), 6719);
+                    p_Player->SetHomebind(WorldLocation(tele->mapId, tele->position_x, tele->position_y, tele->position_z, tele->orientation), 6719);
 
                     auto l_QuestPtr = sObjectMgr->GetQuestTemplate(700007);
                     if (!l_QuestPtr)
