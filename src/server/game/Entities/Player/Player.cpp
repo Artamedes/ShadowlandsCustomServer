@@ -14779,6 +14779,8 @@ void Player::OnGossipSelect(WorldObject* source, uint32 gossipListId, uint32 men
                 PrepareGossipMenu(source, menuItemData->GossipActionMenuId);
                 SendPreparedGossip(source);
             }
+            else
+                PlayerTalkClass->SendCloseGossip();
 
             break;
         }
