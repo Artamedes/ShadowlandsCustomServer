@@ -377,7 +377,7 @@ void ObjectMgr::LoadCreatureTemplates()
         TC_LOG_INFO("server.loading", ">> Loaded 0 creature template definitions. DB table `creature_template` is empty.");
         return;
     }
-    _creatureTemplateStore.clear();
+    //_creatureTemplateStore.clear();
 
     _creatureTemplateStore.reserve(result->GetRowCount());
     do
@@ -403,6 +403,8 @@ void ObjectMgr::LoadCreatureTemplate(Field* fields)
 {
     uint32 entry = fields[0].GetUInt32();
     CreatureTemplate& creatureTemplate = _creatureTemplateStore[entry];
+
+    creatureTemplate.Models.clear();
 
     creatureTemplate.Entry = entry;
 

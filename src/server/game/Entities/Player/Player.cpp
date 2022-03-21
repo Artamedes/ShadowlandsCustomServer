@@ -17269,7 +17269,10 @@ void Player::SetQuestObjectiveData(QuestObjective const& objective, int32 data)
 
 bool Player::IsQuestObjectiveCompletable(uint16 slot, Quest const* quest, QuestObjective const& objective) const
 {
-    ASSERT(objective.QuestID == quest->GetQuestId());
+    if (objective.QuestID != quest->GetQuestId())
+        return false;
+
+    //ASSERT(objective.QuestID == quest->GetQuestId());
 
     if (objective.Flags & QUEST_OBJECTIVE_FLAG_PART_OF_PROGRESS_BAR)
     {
