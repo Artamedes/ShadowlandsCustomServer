@@ -25,6 +25,7 @@ enum class ActionTypes
     Teleport = 2,
     CastSpell = 3,
     CloseMenu = 4,
+    MonsterCredit = 5,
 };
 
 struct MagicStoneAction

@@ -80,6 +80,9 @@ class MagicStone : public ItemScript
                         CloseGossipMenuFor(player);
                         l_ShouldClose = false;
                         break;
+                    case ActionTypes::MonsterCredit:
+                        player->KilledMonsterCredit(l_I->second.Params[0]);
+                        break;
                 }
             }
 
