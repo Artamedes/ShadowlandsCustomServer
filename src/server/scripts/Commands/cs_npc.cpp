@@ -107,6 +107,8 @@ public:
             { "follow stop",    HandleNpcUnFollowCommand,          rbac::RBAC_PERM_COMMAND_NPC_FOLLOW,         Console::No },
             { "evade",          HandleNpcEvadeCommand,             rbac::RBAC_PERM_COMMAND_NPC_EVADE,          Console::No },
             { "showloot",       HandleNpcShowLootCommand,          rbac::RBAC_PERM_COMMAND_NPC_SHOWLOOT,       Console::No },
+            { "clone",          HandleNpcCloneCommand,             rbac::RBAC_PERM_COMMAND_NPC_SHOWLOOT,       Console::No },
+            { "get",            HandleNpcGetCommand,               rbac::RBAC_PERM_COMMAND_NPC_SHOWLOOT,       Console::No },
         };
         static ChatCommandTable commandTable =
         {
@@ -1254,6 +1256,60 @@ public:
         return true;
     }
 
+    static bool HandleNpcCloneCommand(ChatHandler* handler, uint32 EntryID)
+    {
+        auto l_Creature = handler->getSelectedCreature();
+
+        if (!l_Creature)
+        {
+            handler->PSendSysMessage("No creature selected");
+            return true;
+        }
+
+        if (!EntryID)
+        {
+            handler->PSendSysMessage("Bad entryid");
+            return true;
+        }
+
+        auto l_Stmt = WorldDatabase.GetPreparedStatement(WORLD_REP_CREATURE_TEMPLATE);
+        l_Stmt->setUInt32(0, EntryID);
+        l_Stmt->setString(1, l_Creature->GetName());
+        l_Stmt->setUInt32(2, l_Creature->GetFaction());
+        l_Stmt->setUInt32(3, l_Creature->GetClass());
+        l_Stmt->setUInt32(4, l_Creature->GetCreatureTemplate()->rank);
+        l_Stmt->setUInt32(5, l_Creature->GetCreatureTemplate()->minlevel);
+        l_Stmt->setUInt32(6, l_Creature->GetCreatureTemplate()->maxlevel);
+        WorldDatabase.Query(l_Stmt);
+
+        l_Stmt = WorldDatabase.GetPreparedStatement(WORLD_REP_CREATURE_TEMPLATE_MODEL);
+        l_Stmt->setUInt32(0, EntryID);
+        l_Stmt->setUInt32(1, 0);
+        l_Stmt->setUInt32(2, l_Creature->GetDisplayId());
+        l_Stmt->setFloat(3, l_Creature->GetObjectScale());
+        l_Stmt->setFloat(4, 1.0f);
+        WorldDatabase.Query(l_Stmt);
+
+
+        WorldDatabasePreparedStatement* stmt = WorldDatabase.GetPreparedStatement(WORLD_SEL_CREATURE_TEMPLATE);
+        stmt->setUInt32(0, EntryID);
+        stmt->setUInt32(1, 0);
+        PreparedQueryResult result = WorldDatabase.Query(stmt);
+
+        if (!result)
+        {
+            handler->PSendSysMessage(LANG_COMMAND_CREATURETEMPLATE_NOTFOUND, EntryID);
+            return true;
+        }
+
+        sObjectMgr->LoadCreatureTemplate(result->Fetch());
+        sObjectMgr->LoadCreatureTemplateModel(EntryID);
+
+        handler->PSendSysMessage("Succesfully copied %u to %u", l_Creature->GetEntry(), EntryID);
+
+        return true;
+    }
+
     static bool HandleNpcAddFormationCommand(ChatHandler* handler, ObjectGuid::LowType leaderGUID)
     {
         Creature* creature = handler->getSelectedCreature();
@@ -1323,6 +1379,29 @@ public:
         }
 
         handler->PSendSysMessage("LinkGUID '" UI64FMTD "' added to creature with DBTableGUID: '" UI64FMTD "'", linkguid, creature->GetSpawnId());
+        return true;
+    }
+
+
+
+    static bool HandleNpcGetCommand(ChatHandler* p_Handler, char const* p_Args)
+    {
+        Creature* l_Creature = p_Handler->getSelectedCreature();
+
+        if (!l_Creature)
+        {
+            p_Handler->SendSysMessage("You must select a creature to use this command!");
+            return false;
+        }
+
+        const CreatureTemplate* p_Template = l_Creature->GetCreatureTemplate();
+
+        p_Handler->PSendSysMessage("|cffFFBD00Entry: %u Name: %s LootID: %u", p_Template->Entry, p_Template->Name.c_str(), p_Template->lootid);
+        p_Handler->PSendSysMessage("|cffFFBD00Guid: %s", l_Creature->GetGUID().ToString().c_str());
+        p_Handler->PSendSysMessage("|cffFFBD00SpawnId: %u", l_Creature->GetSpawnId());
+        p_Handler->PSendSysMessage("|cffFFBD00Displayid: %u", l_Creature->GetDisplayId());
+        PhasingHandler::PrintToChat(p_Handler, l_Creature);
+
         return true;
     }
 

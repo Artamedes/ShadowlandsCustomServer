@@ -25,6 +25,7 @@ void AddSC_item_upgrader();
 void AddSC_MaelstromDungeon();
 void AddSC_AutoLootSystem();
 void AddSC_MagicStone();
+void AddSC_npc_currency_exchange();
 
 void AddCustomScripts()
 {
@@ -34,4 +35,5 @@ void AddCustomScripts()
     AddSC_MaelstromDungeon();
     AddSC_AutoLootSystem();
     AddSC_MagicStone();
+    AddSC_npc_currency_exchange();
 }

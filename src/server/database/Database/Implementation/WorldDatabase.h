@@ -28,6 +28,8 @@ enum WorldDatabaseStatements : uint32
         name for a suiting suffix.
     */
 
+    WORLD_REP_CREATURE_TEMPLATE,
+    WORLD_REP_CREATURE_TEMPLATE_MODEL,
     WORLD_DEL_LINKED_RESPAWN,
     WORLD_DEL_LINKED_RESPAWN_MASTER,
     WORLD_REP_LINKED_RESPAWN,

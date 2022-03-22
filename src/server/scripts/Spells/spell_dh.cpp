@@ -314,6 +314,26 @@ public:
                 player->RemoveAura(SPELL_DH_DEMONIC_ORIGINS_DAMAGE);
         }
     }
+
+    void OnLogin(Player* player, bool first) override
+    {
+        if (player->GetSpecializationId() == TALENT_SPEC_DEMON_HUNTER_HAVOC)
+        {
+            std::vector<int32> spellIds
+            {
+                SPELL_DH_CHAOS_NOVA, SPELL_DH_CONSUME_MAGIC, SPELL_DH_THROW_GLAIVE, SPELL_DH_METAMORPHOSIS,
+                SPELL_DH_EYE_BEAM, SPELL_DH_BLUR, SPELL_DH_VENGEFUL_RETREAT, SPELL_DH_SIGIL_OF_FLAME
+            };
+
+            for (auto spell : spellIds)
+            {
+                if (sSpellMgr->GetSpellInfo(spell) && !player->HasSpell(spell))
+                    player->LearnSpell(spell, false);
+            }
+            if (!player->HasSpell(258920))
+                player->CastSpell(player, 195447, true);
+        }
+    }
 };
 
 // Nether Bond - 207810

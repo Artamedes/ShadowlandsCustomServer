@@ -1318,6 +1318,7 @@ class TC_GAME_API ObjectMgr
         void LoadCreatureTemplateResistances();
         void LoadCreatureTemplateSpells();
         void LoadCreatureTemplateModels();
+        void LoadCreatureTemplateModel(uint32 p_Entry);
         void LoadCreatureScalingData();
         void CheckCreatureTemplate(CreatureTemplate const* cInfo);
         void CheckCreatureMovement(char const* table, uint64 id, CreatureMovementData& creatureMovement);
