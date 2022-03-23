@@ -662,10 +662,15 @@ class item_upgrader : public ItemScript
 
             if (!l_ItemUpgrade->ReplaceBonusIDList.empty())
             {
+                if (l_ItemTarget->IsEquipped())
+                    p_Player->_ApplyItemMods(l_ItemTarget, l_ItemTarget->GetSlot(), false);
+
                 l_ItemTarget->ClearBonuses();
-                for (auto bonus : l_ItemUpgrade->ReplaceBonusIDList)
-                    l_ItemTarget->AddBonuses(bonus);
+                l_ItemTarget->SetBonuses(l_ItemUpgrade->ReplaceBonusIDList);
                 p_Player->SendNewItem(l_ItemTarget, 1, true, false, true);
+
+                if (l_ItemTarget->IsEquipped())
+                    p_Player->_ApplyItemMods(l_ItemTarget, l_ItemTarget->GetSlot(), true);
             }
 
             l_ItemTarget->SetState(ITEM_CHANGED, p_Player);

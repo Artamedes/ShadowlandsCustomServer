@@ -153,7 +153,7 @@ class npc_playerscript : public PlayerScript
                     sObjectMgr->LoadCreatureTemplate(result->Fetch());
                     sObjectMgr->LoadCreatureTemplateModel(l_Menu.EntryID);
 
-                    ChatHandler(player).PSendSysMessage("%s \"%s\" with entry %u", (l_Exists ? "overwrote", "created"), l_Menu.Name.c_str(), l_Menu.EntryID);
+                    ChatHandler(player).PSendSysMessage("%s \"%s\" with entry %u", (l_Exists ? "overwrote" : "created"), l_Menu.Name.c_str(), l_Menu.EntryID);
 
                     break;
                 }
