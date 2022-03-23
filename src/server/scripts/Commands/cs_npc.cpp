@@ -46,6 +46,160 @@ EndScriptData */
 #include "World.h"
 #include "WorldSession.h"
 
+#include "ScriptedGossip.h"
+
+struct MenuDatas
+{
+    uint32 EntryID = 0;
+    std::string Name = "";
+    std::string SubName = "";
+    uint32 FactionID = 35;
+    uint32 DisplayId = 1337;
+    float Scale = 1.0f;
+};
+
+static std::unordered_map<ObjectGuid::LowType, MenuDatas> _menuData;
+
+
+class npc_playerscript : public PlayerScript
+{
+    public:
+        npc_playerscript() : PlayerScript("npc_playerscript") { }
+
+        static void ShowMenu(Player* player)
+        {
+            ClearGossipMenuFor(player);
+
+            MenuDatas& l_Menu = _menuData[player->GetGUID().GetCounter()];
+
+            std::ostringstream ss;
+            ss << "EntryID: " << l_Menu.EntryID;
+            AddGossipItemFor(player, GossipOptionIcon::None, ss.str(), 0, 1, "", 0, true);
+            ss.str("");
+            ss.clear();
+            ss << "Name: " << l_Menu.Name;
+            AddGossipItemFor(player, GossipOptionIcon::None, ss.str(), 0, 2, "", 0, true);
+            ss.str("");
+            ss.clear();
+            ss << "SubName: " << l_Menu.SubName;
+            AddGossipItemFor(player, GossipOptionIcon::None, ss.str(), 0, 3, "", 0, true);
+            ss.str("");
+            ss.clear();
+            ss << "FactionID: " << l_Menu.FactionID;
+            AddGossipItemFor(player, GossipOptionIcon::None, ss.str(), 0, 4, "", 0, true);
+            ss.str("");
+            ss.clear();
+            ss << "DisplayId: " << l_Menu.DisplayId;
+            AddGossipItemFor(player, GossipOptionIcon::None, ss.str(), 0, 5, "", 0, true);
+            ss.str("");
+            ss.clear();
+            ss << "Scale: " << l_Menu.Scale;
+            AddGossipItemFor(player, GossipOptionIcon::None, ss.str(), 0, 6, "", 0, true);
+            AddGossipItemFor(player, GossipOptionIcon::None, "Create", 0, 7);
+
+            player->PlayerTalkClass->GetGossipMenu().SetMenuId(56818);
+            SendGossipMenuFor(player, 1, player->GetGUID());
+        }
+
+        void OnGossipSelect(Player* player, uint32 menu_id, uint32 /*sender*/, uint32 action)
+        {
+            if (menu_id != 56818)
+                return;
+
+            ShowMenu(player);
+
+            switch (action)
+            {
+                case 7:
+                {
+                    MenuDatas& l_Menu = _menuData[player->GetGUID().GetCounter()];
+                    if (l_Menu.EntryID == 0)
+                        return;
+
+                    CloseGossipMenuFor(player);
+
+                    auto l_Stmt = WorldDatabase.GetPreparedStatement(WORLD_REP_CREATURE_TEMPLATE);
+                    l_Stmt->setUInt32(0, l_Menu.EntryID);
+                    l_Stmt->setString(1, l_Menu.Name);
+                    l_Stmt->setString(2, l_Menu.SubName);
+                    l_Stmt->setUInt32(3, l_Menu.FactionID);
+                    l_Stmt->setUInt32(4, 1);
+                    l_Stmt->setUInt32(5, 0);
+                    l_Stmt->setUInt32(6, 60);
+                    l_Stmt->setUInt32(7, 60);
+                    WorldDatabase.Query(l_Stmt);
+
+                    l_Stmt = WorldDatabase.GetPreparedStatement(WORLD_REP_CREATURE_TEMPLATE_MODEL);
+                    l_Stmt->setUInt32(0, l_Menu.EntryID);
+                    l_Stmt->setUInt32(1, 0);
+                    l_Stmt->setUInt32(2, l_Menu.DisplayId);
+                    l_Stmt->setFloat(3, l_Menu.Scale);
+                    l_Stmt->setFloat(4, 1.0f);
+                    WorldDatabase.Query(l_Stmt);
+
+
+                    WorldDatabasePreparedStatement* stmt = WorldDatabase.GetPreparedStatement(WORLD_SEL_CREATURE_TEMPLATE);
+                    stmt->setUInt32(0, l_Menu.EntryID);
+                    stmt->setUInt32(1, 0);
+                    PreparedQueryResult result = WorldDatabase.Query(stmt);
+
+                    if (!result)
+                    {
+                        return;
+                    }
+
+                    auto l_Exists = sObjectMgr->GetCreatureTemplate(l_Menu.EntryID) != nullptr;
+
+                    sObjectMgr->LoadCreatureTemplate(result->Fetch());
+                    sObjectMgr->LoadCreatureTemplateModel(l_Menu.EntryID);
+
+                    ChatHandler(player).PSendSysMessage("%s \"%s\" with entry %u", (l_Exists ? "overwrote", "created"), l_Menu.Name.c_str(), l_Menu.EntryID);
+
+                    break;
+                }
+            }
+        }
+
+        void OnGossipSelectCode(Player* player, uint32 menu_id, uint32 /*sender*/, uint32 action, const char* code)
+        {
+            if (menu_id != 56818)
+                return;
+
+            if (!code)
+            {
+
+                ShowMenu(player);
+                return;
+            }
+            MenuDatas& l_Menu = _menuData[player->GetGUID().GetCounter()];
+
+            switch (action)
+            {
+                case 1:
+                    l_Menu.EntryID = atol(code);
+                    break;
+                case 2:
+                    l_Menu.Name = (code);
+                    break;
+                case 3:
+                    l_Menu.SubName = (code);
+                    break;
+                case 4:
+                    l_Menu.FactionID = atol(code);
+                    break;
+                case 5:
+                    l_Menu.DisplayId = atol(code);
+                    break;
+                case 6:
+                    l_Menu.Scale = atof(code);
+                    break;
+            }
+
+            ShowMenu(player);
+        }
+
+};
+
 using namespace Trinity::ChatCommands;
 
 using CreatureSpawnId = Variant<Hyperlink<creature>, ObjectGuid::LowType>;
@@ -80,11 +234,14 @@ public:
             { "level",          HandleNpcSetLevelCommand,          rbac::RBAC_PERM_COMMAND_NPC_SET_LEVEL,      Console::No },
             { "link",           HandleNpcSetLinkCommand,           rbac::RBAC_PERM_COMMAND_NPC_SET_LINK,       Console::No },
             { "model",          HandleNpcSetModelCommand,          rbac::RBAC_PERM_COMMAND_NPC_SET_MODEL,      Console::No },
+            { "scale",          HandleNpcSetScaleCommand,          rbac::RBAC_PERM_COMMAND_NPC_SET_MODEL,      Console::No },
             { "movetype",       HandleNpcSetMoveTypeCommand,       rbac::RBAC_PERM_COMMAND_NPC_SET_MOVETYPE,   Console::No },
             { "phase",          HandleNpcSetPhaseCommand,          rbac::RBAC_PERM_COMMAND_NPC_SET_PHASE,      Console::No },
             { "wanderdistance", HandleNpcSetWanderDistanceCommand, rbac::RBAC_PERM_COMMAND_NPC_SET_SPAWNDIST,  Console::No },
             { "spawntime",      HandleNpcSetSpawnTimeCommand,      rbac::RBAC_PERM_COMMAND_NPC_SET_SPAWNTIME,  Console::No },
             { "data",           HandleNpcSetDataCommand,           rbac::RBAC_PERM_COMMAND_NPC_SET_DATA,       Console::No },
+            { "name",           HandleNpcSetNameCommand,           rbac::RBAC_PERM_COMMAND_NPC_SET_DATA,       Console::No },
+            { "subname",        HandleNpcSetSubNameCommand,        rbac::RBAC_PERM_COMMAND_NPC_SET_DATA,       Console::No },
         };
         static ChatCommandTable npcCommandTable =
         {
@@ -109,6 +266,7 @@ public:
             { "showloot",       HandleNpcShowLootCommand,          rbac::RBAC_PERM_COMMAND_NPC_SHOWLOOT,       Console::No },
             { "clone",          HandleNpcCloneCommand,             rbac::RBAC_PERM_COMMAND_NPC_SHOWLOOT,       Console::No },
             { "get",            HandleNpcGetCommand,               rbac::RBAC_PERM_COMMAND_NPC_SHOWLOOT,       Console::No },
+            { "create",         HandleNpcCreateCommand,            rbac::RBAC_PERM_COMMAND_NPC_SHOWLOOT,       Console::No },
         };
         static ChatCommandTable commandTable =
         {
@@ -451,6 +609,86 @@ public:
         return true;
     }
 
+    static bool HandleNpcSetNameCommand(ChatHandler* handler, Tail text)
+    {
+        Creature* creature = handler->getSelectedCreature();
+
+        if (!creature)
+        {
+            handler->SendSysMessage(LANG_SELECT_CREATURE);
+            handler->SetSentErrorMessage(true);
+            return false;
+        }
+
+        handler->PSendSysMessage("Set the name of %s to %s", creature->GetName().c_str(), text);
+        auto stmt = WorldDatabase.GetPreparedStatement(WORLD_UPD_CREATURE_TEMPLATE_NAME);
+        stmt->setStringView(0, text);
+        stmt->setUInt32(1, creature->GetEntry());
+        WorldDatabase.Query(stmt);
+
+        stmt = WorldDatabase.GetPreparedStatement(WORLD_SEL_CREATURE_TEMPLATE);
+        stmt->setUInt32(0, creature->GetEntry());
+        stmt->setUInt32(1, 0);
+        PreparedQueryResult result = WorldDatabase.Query(stmt);
+
+        if (!result)
+        {
+            handler->PSendSysMessage(LANG_COMMAND_CREATURETEMPLATE_NOTFOUND, creature->GetEntry());
+            return true;
+        }
+
+        sObjectMgr->LoadCreatureTemplate(result->Fetch());
+        sObjectMgr->LoadCreatureTemplateModel(creature->GetEntry());
+
+        WorldPacket response = creature->GetCreatureTemplate()->BuildQueryData(handler->GetSession()->GetSessionDbLocaleIndex());
+        handler->GetSession()->SendPacket(&response);
+
+        creature->DestroyForNearbyPlayers();
+        creature->UpdateObjectVisibility(true);
+
+        return true;
+    }
+
+    static bool HandleNpcSetSubNameCommand(ChatHandler* handler, Tail text)
+    {
+        Creature* creature = handler->getSelectedCreature();
+
+        if (!creature)
+        {
+            handler->SendSysMessage(LANG_SELECT_CREATURE);
+            handler->SetSentErrorMessage(true);
+            return false;
+        }
+
+        handler->PSendSysMessage("Set the subname of %s to %s", creature->GetName().c_str(), text);
+        auto stmt = WorldDatabase.GetPreparedStatement(WORLD_UPD_CREATURE_TEMPLATE_SUBNAME);
+        stmt->setStringView(0, text);
+        stmt->setUInt32(1, creature->GetEntry());
+        WorldDatabase.Query(stmt);
+
+        stmt = WorldDatabase.GetPreparedStatement(WORLD_SEL_CREATURE_TEMPLATE);
+        stmt->setUInt32(0, creature->GetEntry());
+        stmt->setUInt32(1, 0);
+        PreparedQueryResult result = WorldDatabase.Query(stmt);
+
+        if (!result)
+        {
+            handler->PSendSysMessage(LANG_COMMAND_CREATURETEMPLATE_NOTFOUND, creature->GetEntry());
+            return true;
+        }
+
+        sObjectMgr->LoadCreatureTemplate(result->Fetch());
+        sObjectMgr->LoadCreatureTemplateModel(creature->GetEntry());
+
+        WorldPacket response = creature->GetCreatureTemplate()->BuildQueryData(handler->GetSession()->GetSessionDbLocaleIndex());
+        handler->GetSession()->SendPacket(&response);
+
+        creature->DestroyForNearbyPlayers();
+        creature->UpdateObjectVisibility(true);
+
+        return true;
+    }
+
     //npc follow handling
     static bool HandleNpcFollowCommand(ChatHandler* handler)
     {
@@ -699,7 +937,65 @@ public:
         creature->SetDisplayId(displayId);
         creature->SetNativeDisplayId(displayId);
 
+        auto stmt = WorldDatabase.GetPreparedStatement(WORLD_UPD_CREATURE_TEMPLATE_MODEL);
+        stmt->setUInt32(0, displayId);
+        stmt->setUInt32(1, creature->GetEntry());
+        stmt->setUInt32(2, 0);
+        WorldDatabase.Query(stmt);
+
         creature->SaveToDB();
+
+        stmt = WorldDatabase.GetPreparedStatement(WORLD_SEL_CREATURE_TEMPLATE);
+        stmt->setUInt32(0, creature->GetEntry());
+        stmt->setUInt32(1, 0);
+        PreparedQueryResult result = WorldDatabase.Query(stmt);
+
+        if (!result)
+        {
+            handler->PSendSysMessage(LANG_COMMAND_CREATURETEMPLATE_NOTFOUND, creature->GetEntry());
+            return true;
+        }
+
+        sObjectMgr->LoadCreatureTemplate(result->Fetch());
+        sObjectMgr->LoadCreatureTemplateModel(creature->GetEntry());
+
+        return true;
+    }
+
+    static bool HandleNpcSetScaleCommand(ChatHandler* handler, float scale)
+    {
+        Creature* creature = handler->getSelectedCreature();
+
+        if (!creature || creature->IsPet())
+        {
+            handler->SendSysMessage(LANG_SELECT_CREATURE);
+            handler->SetSentErrorMessage(true);
+            return false;
+        }
+
+        creature->SetObjectScale(scale);
+
+        auto stmt = WorldDatabase.GetPreparedStatement(WORLD_UPD_CREATURE_TEMPLATE_SCALE);
+        stmt->setFloat(0, scale);
+        stmt->setUInt32(1, creature->GetEntry());
+        stmt->setUInt32(2, 0);
+        WorldDatabase.Query(stmt);
+
+        creature->SaveToDB();
+
+        stmt = WorldDatabase.GetPreparedStatement(WORLD_SEL_CREATURE_TEMPLATE);
+        stmt->setUInt32(0, creature->GetEntry());
+        stmt->setUInt32(1, 0);
+        PreparedQueryResult result = WorldDatabase.Query(stmt);
+
+        if (!result)
+        {
+            handler->PSendSysMessage(LANG_COMMAND_CREATURETEMPLATE_NOTFOUND, creature->GetEntry());
+            return true;
+        }
+
+        sObjectMgr->LoadCreatureTemplate(result->Fetch());
+        sObjectMgr->LoadCreatureTemplateModel(creature->GetEntry());
 
         return true;
     }
@@ -1275,11 +1571,12 @@ public:
         auto l_Stmt = WorldDatabase.GetPreparedStatement(WORLD_REP_CREATURE_TEMPLATE);
         l_Stmt->setUInt32(0, EntryID);
         l_Stmt->setString(1, l_Creature->GetName());
-        l_Stmt->setUInt32(2, l_Creature->GetFaction());
-        l_Stmt->setUInt32(3, l_Creature->GetClass());
-        l_Stmt->setUInt32(4, l_Creature->GetCreatureTemplate()->rank);
-        l_Stmt->setUInt32(5, l_Creature->GetCreatureTemplate()->minlevel);
-        l_Stmt->setUInt32(6, l_Creature->GetCreatureTemplate()->maxlevel);
+        l_Stmt->setString(2, l_Creature->GetCreatureTemplate()->SubName);
+        l_Stmt->setUInt32(3, l_Creature->GetFaction());
+        l_Stmt->setUInt32(4, l_Creature->GetClass());
+        l_Stmt->setUInt32(5, l_Creature->GetCreatureTemplate()->rank);
+        l_Stmt->setUInt32(6, l_Creature->GetCreatureTemplate()->minlevel);
+        l_Stmt->setUInt32(7, l_Creature->GetCreatureTemplate()->maxlevel);
         WorldDatabase.Query(l_Stmt);
 
         l_Stmt = WorldDatabase.GetPreparedStatement(WORLD_REP_CREATURE_TEMPLATE_MODEL);
@@ -1405,6 +1702,12 @@ public:
         return true;
     }
 
+    static bool HandleNpcCreateCommand(ChatHandler* p_Handler)
+    {
+        npc_playerscript::ShowMenu(p_Handler->GetPlayer());
+        return true;
+    }
+
     /// @todo NpcCommands that need to be fixed :
     static bool HandleNpcAddWeaponCommand([[maybe_unused]] ChatHandler* handler, [[maybe_unused]] uint32 SlotID, [[maybe_unused]] ItemTemplate const* tmpItem)
     {
@@ -1455,6 +1758,7 @@ public:
 void AddSC_npc_commandscript()
 {
     new npc_commandscript();
+    new npc_playerscript();
 }
 
 bool HandleNpcSpawnGroup(ChatHandler* handler, std::vector<Variant<uint32, EXACT_SEQUENCE("force"), EXACT_SEQUENCE("ignorerespawn")>> const& opts)

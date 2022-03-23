@@ -663,7 +663,8 @@ class item_upgrader : public ItemScript
             if (!l_ItemUpgrade->ReplaceBonusIDList.empty())
             {
                 l_ItemTarget->ClearBonuses();
-                l_ItemTarget->SetBonuses(l_ItemUpgrade->ReplaceBonusIDList);
+                for (auto bonus : l_ItemUpgrade->ReplaceBonusIDList)
+                    l_ItemTarget->AddBonuses(bonus);
                 p_Player->SendNewItem(l_ItemTarget, 1, true, false, true);
             }
 
