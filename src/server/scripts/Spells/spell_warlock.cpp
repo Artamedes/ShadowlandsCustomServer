@@ -359,7 +359,7 @@ class spell_warl_health_funnel : public AuraScript
         damageInfo.periodicLog = true;
         damageInfo.damage = damage;
         caster->DealSpellDamage(&damageInfo, false);
-        caster->SendSpellNonMeleeDamageLog(&damageInfo);
+   //     caster->SendSpellNonMeleeDamageLog(&damageInfo);
     }
 
     void Register() override

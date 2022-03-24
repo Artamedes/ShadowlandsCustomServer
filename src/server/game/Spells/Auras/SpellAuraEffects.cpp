@@ -5777,7 +5777,7 @@ void AuraEffect::HandlePeriodicPowerBurnAuraTick(Unit* target, Unit* caster) con
     DamageInfo dotDamageInfo(damageInfo, DOT, BASE_ATTACK, hitMask);
     Unit::ProcSkillsAndAuras(caster, target, procAttacker, procVictim, spellTypeMask, PROC_SPELL_PHASE_HIT, hitMask, nullptr, &dotDamageInfo, nullptr);
 
-    caster->SendSpellNonMeleeDamageLog(&damageInfo);
+   // caster->SendSpellNonMeleeDamageLog(&damageInfo);
 }
 
 bool AuraEffect::CanPeriodicTickCrit() const
@@ -5873,7 +5873,7 @@ void AuraEffect::HandleProcTriggerDamageAuraProc(AuraApplication* aurApp, ProcEv
     Unit::DealDamageMods(damageInfo.attacker, damageInfo.target, damageInfo.damage, &damageInfo.absorb);
     TC_LOG_DEBUG("spells.aura.effect", "AuraEffect::HandleProcTriggerDamageAuraProc: Triggering %u spell damage from aura %u proc", damage, GetId());
     target->DealSpellDamage(&damageInfo, true);
-    target->SendSpellNonMeleeDamageLog(&damageInfo);
+    //target->SendSpellNonMeleeDamageLog(&damageInfo);
 }
 
 void AuraEffect::HandleAuraForceWeather(AuraApplication const* aurApp, uint8 mode, bool apply) const

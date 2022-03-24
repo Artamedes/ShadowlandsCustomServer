@@ -2481,7 +2481,7 @@ public:
         damageInfo.damage = damage;
         Unit::DealDamageMods(damageInfo.attacker, damageInfo.target, damageInfo.damage, &damageInfo.absorb);
         target->DealSpellDamage(&damageInfo, true);
-        target->SendSpellNonMeleeDamageLog(&damageInfo);
+       // target->SendSpellNonMeleeDamageLog(&damageInfo);
         return true;
     }
 

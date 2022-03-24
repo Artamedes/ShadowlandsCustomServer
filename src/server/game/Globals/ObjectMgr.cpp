@@ -4585,9 +4585,9 @@ void ObjectMgr::LoadQuests()
 {
     uint32 oldMSTime = getMSTime();
 
-    _questTemplates.clear();
+   // _questTemplates.clear();
     _questTemplatesAutoPush.clear();
-    _questObjectives.clear();
+   // _questObjectives.clear();
 
     _exclusiveQuestGroups.clear();
 

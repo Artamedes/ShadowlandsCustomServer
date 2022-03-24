@@ -2688,7 +2688,7 @@ void Spell::TargetInfo::DoDamageAndTriggers(Spell* spell)
                 caster->DealSpellDamage(&damageInfo, true);
 
                 // Send log damage message to client
-                caster->SendSpellNonMeleeDamageLog(&damageInfo);
+                //caster->SendSpellNonMeleeDamageLog(&damageInfo);
             }
 
             // Do triggers for unit

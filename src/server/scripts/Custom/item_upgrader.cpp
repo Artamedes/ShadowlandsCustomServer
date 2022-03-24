@@ -160,6 +160,25 @@ class item_upgrader : public ItemScript
             if (!targets.GetItemTarget())
                 return true;
 
+            if (!BuildPackets(player, item, targets))
+                return true;
+
+            // Need to send this to play like 500 ms after.
+            // fix the crash todo
+            // player->m_Events.AddEventAtOffset([&]()
+            // {
+            //     if (player && player->GetSession())
+            //     {
+            //         BuildPackets(player, item, targets);
+            //     }
+            // }, 500ms);
+
+            return true;
+        }
+
+        bool BuildPackets(Player* player, Item* item, SpellCastTargets const& targets)
+        {
+
             auto l_ItemUpgrade = sItemUpgrader->GetItemUpgrade(targets.GetItemTarget());
             if (!l_ItemUpgrade)
             {
@@ -174,7 +193,7 @@ class item_upgrader : public ItemScript
                     }
                 }
 
-                return true;
+                return false;
             }
 
             m_PlayerItemTargets[player->GetGUID()] = targets.GetItemTarget()->GetGUID();
@@ -188,11 +207,11 @@ class item_upgrader : public ItemScript
                     l_Creature->AI()->Talk(2, player);
                 }
             }
-            
+
             auto BuildRequireLine([](std::string const& p_Text, std::string const& p_String) -> std::string
-            {
-                return "|cffCB4335+ |cff05B61D" + p_Text + " |cffE74C3C: " + p_String + "\n";
-            });
+                {
+                    return "|cffCB4335+ |cff05B61D" + p_Text + " |cffE74C3C: " + p_String + "\n";
+                });
 
 
             std::string questDetails;
@@ -225,75 +244,75 @@ class item_upgrader : public ItemScript
             {
                 switch (l_Item.Type)
                 {
-                    case QuestObjectiveType::QUEST_OBJECTIVE_CURRENCY:
+                case QuestObjectiveType::QUEST_OBJECTIVE_CURRENCY:
 
-                        if (l_Item.RequiredID > 0)
-                        {
-                            uint32 l_CurrCount = player->GetCurrency(l_Item.RequiredID);
+                    if (l_Item.RequiredID > 0)
+                    {
+                        uint32 l_CurrCount = player->GetCurrency(l_Item.RequiredID);
 
-                            l_SS << sCurrencyTypesStore.LookupEntry(l_Item.RequiredID)->Name.Str[0];
+                        l_SS << sCurrencyTypesStore.LookupEntry(l_Item.RequiredID)->Name.Str[0];
 
-                            if (l_CurrCount >= l_Item.RequiredAmount)
-                                l_SS << " |cff09ff1b(" << l_CurrCount << "/" << l_Item.RequiredAmount;
-                            else
-                                l_SS << " |cffff0909(" << l_CurrCount << "/" << l_Item.RequiredAmount;
+                        if (l_CurrCount >= l_Item.RequiredAmount)
+                            l_SS << " |cff09ff1b(" << l_CurrCount << "/" << l_Item.RequiredAmount;
+                        else
+                            l_SS << " |cffff0909(" << l_CurrCount << "/" << l_Item.RequiredAmount;
 
-                            l_SS << ")";
+                        l_SS << ")";
 
-                            ChatHandler(player).PSendSysMessage("%s", l_SS.str().c_str());
+                        ChatHandler(player).PSendSysMessage("%s", l_SS.str().c_str());
 
-                            questDetails += BuildRequireLine("Require", l_SS.str());
+                        questDetails += BuildRequireLine("Require", l_SS.str());
 
-                            l_SS.clear();
-                            l_SS.str("");
-                        }
+                        l_SS.clear();
+                        l_SS.str("");
+                    }
 
-                        break;
-                    case QuestObjectiveType::QUEST_OBJECTIVE_ITEM:
+                    break;
+                case QuestObjectiveType::QUEST_OBJECTIVE_ITEM:
 
-                        if (l_Item.RequiredID > 0)
-                        {
-                            uint32 l_CurrCount = player->GetItemCount(l_Item.RequiredID);
+                    if (l_Item.RequiredID > 0)
+                    {
+                        uint32 l_CurrCount = player->GetItemCount(l_Item.RequiredID);
 
-                            l_SS << Item::GetItemLink(l_Item.RequiredID);
+                        l_SS << Item::GetItemLink(l_Item.RequiredID);
 
-                            if (l_CurrCount >= l_Item.RequiredAmount)
-                                l_SS << " |cff09ff1b(" << l_CurrCount << "/" << l_Item.RequiredAmount;
-                            else
-                                l_SS << " |cffff0909(" << l_CurrCount << "/" << l_Item.RequiredAmount;
+                        if (l_CurrCount >= l_Item.RequiredAmount)
+                            l_SS << " |cff09ff1b(" << l_CurrCount << "/" << l_Item.RequiredAmount;
+                        else
+                            l_SS << " |cffff0909(" << l_CurrCount << "/" << l_Item.RequiredAmount;
 
-                            l_SS << ")";
+                        l_SS << ")";
 
-                            ChatHandler(player).PSendSysMessage("%s", l_SS.str().c_str());
+                        ChatHandler(player).PSendSysMessage("%s", l_SS.str().c_str());
 
-                            questDetails += BuildRequireLine("Require", l_SS.str());
+                        questDetails += BuildRequireLine("Require", l_SS.str());
 
-                            l_SS.clear();
-                            l_SS.str("");
-                        }
-                        break;
-                    case QuestObjectiveType::QUEST_OBJECTIVE_MONEY:
-                        if (l_Item.RequiredAmount > 0)
-                        {
-                            uint32 l_CurrCount = player->GetMoney();
+                        l_SS.clear();
+                        l_SS.str("");
+                    }
+                    break;
+                case QuestObjectiveType::QUEST_OBJECTIVE_MONEY:
+                    if (l_Item.RequiredAmount > 0)
+                    {
+                        uint32 l_CurrCount = player->GetMoney();
 
-                            l_SS << "|cffE74C3C" << l_Item.RequiredAmount << " |cff05B61DGold";
+                        l_SS << "|cffE74C3C" << l_Item.RequiredAmount << " |cff05B61DGold";
 
-                            if (l_CurrCount >= l_Item.RequiredAmount)
-                                l_SS << " |cff09ff1b(" << l_CurrCount << "/" << l_Item.RequiredAmount;
-                            else
-                                l_SS << " |cffff0909(" << l_CurrCount << "/" << l_Item.RequiredAmount;
+                        if (l_CurrCount >= l_Item.RequiredAmount)
+                            l_SS << " |cff09ff1b(" << l_CurrCount << "/" << l_Item.RequiredAmount;
+                        else
+                            l_SS << " |cffff0909(" << l_CurrCount << "/" << l_Item.RequiredAmount;
 
-                            l_SS << ")";
+                        l_SS << ")";
 
-                            ChatHandler(player).PSendSysMessage("%s", l_SS.str().c_str());
+                        ChatHandler(player).PSendSysMessage("%s", l_SS.str().c_str());
 
-                            questDetails += BuildRequireLine("Require", l_SS.str());
+                        questDetails += BuildRequireLine("Require", l_SS.str());
 
-                            l_SS.clear();
-                            l_SS.str("");
-                        }
-                        break;
+                        l_SS.clear();
+                        l_SS.str("");
+                    }
+                    break;
                 }
             }
 
@@ -366,19 +385,19 @@ class item_upgrader : public ItemScript
             packet.Rewards.NumSkillUps = 0;
             packet.Rewards.TreasurePickerID = targets.GetItemTarget()->GetEntry();
 
-           //packet.Rewards.ChoiceItems[0].Item.ItemID = l_ItemUpgrade->ReplaceItemID ? l_ItemUpgrade->ReplaceItemID : targets.GetItemTarget()->GetEntry();
-           //packet.Rewards.ChoiceItems[0].Quantity = l_ItemUpgrade->ReplaceItemQuantity ? l_ItemUpgrade->ReplaceItemQuantity : 1;
-           //if (!l_ItemUpgrade->ReplaceBonusIDList.empty())
-           //{
-           //    packet.Rewards.ChoiceItems[0].Item.ItemBonus.emplace();
-           //    packet.Rewards.ChoiceItems[0].Item.ItemBonus->Context = ItemContext::Torghast;
-           //    for (int32 bonusId : l_ItemUpgrade->ReplaceBonusIDList)
-           //        packet.Rewards.ChoiceItems[0].Item.ItemBonus->BonusListIDs.push_back(bonusId);
-           //}
+            //packet.Rewards.ChoiceItems[0].Item.ItemID = l_ItemUpgrade->ReplaceItemID ? l_ItemUpgrade->ReplaceItemID : targets.GetItemTarget()->GetEntry();
+            //packet.Rewards.ChoiceItems[0].Quantity = l_ItemUpgrade->ReplaceItemQuantity ? l_ItemUpgrade->ReplaceItemQuantity : 1;
+            //if (!l_ItemUpgrade->ReplaceBonusIDList.empty())
+            //{
+            //    packet.Rewards.ChoiceItems[0].Item.ItemBonus.emplace();
+            //    packet.Rewards.ChoiceItems[0].Item.ItemBonus->Context = ItemContext::Torghast;
+            //    for (int32 bonusId : l_ItemUpgrade->ReplaceBonusIDList)
+            //        packet.Rewards.ChoiceItems[0].Item.ItemBonus->BonusListIDs.push_back(bonusId);
+            //}
 
             for (uint32 i = 0; i < QUEST_REWARD_CHOICES_COUNT; ++i)
             {
-               // packet.Rewards.ChoiceItems[i].LootItemType =;
+                // packet.Rewards.ChoiceItems[i].LootItemType =;
                 packet.Rewards.ChoiceItems[i].Item.ItemID = 0;
                 packet.Rewards.ChoiceItems[i].Quantity = 0;
             }
@@ -408,7 +427,7 @@ class item_upgrader : public ItemScript
             for (uint32 i = 0; i < l_ItemUpgrade->RequiredMaterials.size(); ++i)
             {
                 packet.Objectives[i].ID = l_ItemUpgrade->RequiredMaterials[i].RequiredID;
-                packet.Objectives[i].ObjectID = i+100;
+                packet.Objectives[i].ObjectID = i + 100;
                 packet.Objectives[i].Amount = l_ItemUpgrade->RequiredMaterials[i].RequiredAmount;
                 packet.Objectives[i].Type = l_ItemUpgrade->RequiredMaterials[i].Type;
             }
@@ -434,7 +453,6 @@ class item_upgrader : public ItemScript
             l_Packet2.Items.push_back(l_Item);
             player->GetSession()->SendPacket(packet.Write());
             player->GetSession()->SendPacket(l_Packet2.Write());
-
             return true;
         }
 

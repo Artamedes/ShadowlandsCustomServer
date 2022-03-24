@@ -26,6 +26,7 @@ void AddSC_MaelstromDungeon();
 void AddSC_AutoLootSystem();
 void AddSC_MagicStone();
 void AddSC_npc_currency_exchange();
+void AddSC_Crapopolis();
 
 void AddCustomScripts()
 {
@@ -36,4 +37,5 @@ void AddCustomScripts()
     AddSC_AutoLootSystem();
     AddSC_MagicStone();
     AddSC_npc_currency_exchange();
+    AddSC_Crapopolis();
 }

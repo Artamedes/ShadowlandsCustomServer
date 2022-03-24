@@ -774,8 +774,8 @@ void Creature::Update(uint32 diff)
             if (m_deathState != CORPSE)
                 break;
 
-            if (IsEngaged())
-                Unit::AIUpdateTick(diff);
+          //  if (IsEngaged())
+            Unit::AIUpdateTick(diff);
 
             if (m_groupLootTimer && !lootingGroupLowGUID.IsEmpty())
             {
