@@ -1,6 +1,7 @@
 #include "ScriptMgr.h"
 #include "Creature.h"
 #include "ScriptedCreature.h"
+#include "../CustomInstanceScript.h";
 
 struct npc_custom_thrall_700113 : public ScriptedAI
 {
@@ -81,12 +82,12 @@ struct boss_corrupted_ghost_of_the_primus_700104 : public ScriptedAI
 
         void Reset() override
         {
-            DoCastSelf(364949);
+            DoCastSelf(367432);
         }
 
         void JustEngagedWith(Unit* /*p_Who*/) override
         {
-            me->RemoveAurasDueToSpell(364949);
+            me->RemoveAurasDueToSpell(367432);
             m_Events.ScheduleEvent(1, 5s, 6s);
             m_Events.ScheduleEvent(2, 10s, 12s);
             m_Events.ScheduleEvent(3, 15s, 15s);
@@ -104,15 +105,15 @@ struct boss_corrupted_ghost_of_the_primus_700104 : public ScriptedAI
                 switch (eventId)
                 {
                     case 1:
-                        DoCastVictim(361613);
+                        DoCastVictim(365834);
                         m_Events.Repeat(10s, 15s);
                         break;
                     case 2:
-                        DoCastVictim(350588);
+                        DoCastVictim(366182);
                         m_Events.Repeat(10s, 15s);
                         break;
                     case 3:
-                        DoCastSelf(347064);
+                        DoCastSelf(365168);
                         m_Events.Repeat(10s, 15s);
                         break;
                 }
@@ -138,7 +139,7 @@ struct npc_sir_duke_iro_700112 : public ScriptedAI
 
         void Reset() override
         {
-            DoCastSelf(345192);
+            DoCast(353760);
         }
 
         void MoveInLineOfSight(Unit* p_Who) override
@@ -158,7 +159,7 @@ struct npc_sir_duke_iro_700112 : public ScriptedAI
 
         void JustEngagedWith(Unit* /*p_Who*/) override
         {
-            me->RemoveAurasDueToSpell(345192);
+            me->RemoveAurasDueToSpell(353760);
             m_Events.ScheduleEvent(1, 5s, 6s);
             m_Events.ScheduleEvent(2, 25s, 26s);
         }
@@ -209,9 +210,9 @@ class instance_maelstrom_invasion : public InstanceMapScript
 public:
     instance_maelstrom_invasion() : InstanceMapScript("instance_maelstrom_invasion", 1469) { }
 
-    struct instance_maelstrom_invasion_InstanceMapScript : public InstanceScript
+    struct instance_maelstrom_invasion_InstanceMapScript : public CustomInstanceScript
     {
-        instance_maelstrom_invasion_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
+        instance_maelstrom_invasion_InstanceMapScript(InstanceMap* map) : CustomInstanceScript(map)
         {
             // SetHeaders(DataHeader);
             // SetBossNumber(EncounterCount);
@@ -244,6 +245,22 @@ public:
                                     l_Iro->AI()->DoAction(1);
                         }
                         break;
+                }
+            }
+        }
+
+        void OnPlayerPositionChange(Player* player) override
+        {
+            if (player->GetPositionZ() <= -6.0f)
+            {
+                player->EnvironmentalDamage(EnviromentalDamage::DAMAGE_FALL, player->GetMaxHealth());
+                if (!player->IsGameMaster())
+                    player->Kill(player, player);
+
+                if (auto respawnData = sCustomInstanceRespawn->GetRespawnData(instance->GetId(), m_CheckpointId))
+                {
+                    player->TeleportTo(WorldLocation(instance->GetId(), respawnData->Pos), 0);
+                    player->RemovePlayerFlag(PLAYER_FLAGS_IS_OUT_OF_BOUNDS);
                 }
             }
         }

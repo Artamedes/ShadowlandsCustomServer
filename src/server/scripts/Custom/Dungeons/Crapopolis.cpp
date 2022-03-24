@@ -3,6 +3,7 @@
 #include "ScriptedCreature.h"
 #include "Creature.h"
 #include "Player.h"
+#include "../CustomInstanceScript.h";
 
 struct npc_crapopolis_ai_base : public ScriptedAI
 {
@@ -295,10 +296,10 @@ class instance_crapopolis : public InstanceMapScript
 public:
     instance_crapopolis() : InstanceMapScript("instance_crapopolis", 2263) { }
 
-    struct instance_maelstrom_invasion_InstanceMapScript : public InstanceScript
+    struct instance_maelstrom_invasion_InstanceMapScript : public CustomInstanceScript
     {
         public:
-            instance_maelstrom_invasion_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
+            instance_maelstrom_invasion_InstanceMapScript(InstanceMap* map) : CustomInstanceScript(map)
             {
                 // SetHeaders(DataHeader);
                 // SetBossNumber(EncounterCount);

@@ -79,6 +79,14 @@ void WorldSession::HandleRepopRequest(WorldPackets::Misc::RepopRequest& /*packet
     //this is spirit release confirm?
     GetPlayer()->RemovePet(nullptr, PET_SAVE_NOT_IN_SLOT, true);
     GetPlayer()->BuildPlayerRepop();
+
+    if (auto instance = GetPlayer()->GetInstanceScript())
+        if (instance->HandlePlayerRepopRequest(GetPlayer()))
+        {
+            GetPlayer()->RemovePlayerFlag(PLAYER_FLAGS_IS_OUT_OF_BOUNDS);
+            return;
+        }
+
     GetPlayer()->RepopAtGraveyard();
 }
 

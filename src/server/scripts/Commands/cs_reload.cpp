@@ -51,6 +51,7 @@ EndScriptData */
 #include "WaypointManager.h"
 #include "World.h"
 #include "../Custom/MagicStone.h"
+#include "../Custom/CustomInstanceScript.h"
 
 #if TRINITY_COMPILER == TRINITY_COMPILER_GNU
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
@@ -1165,6 +1166,14 @@ public:
         sBroadcastTextStore.LoadFromDB();
         handler->SendSysMessage("Loading npc_text");
         sObjectMgr->LoadNPCText();
+        return true;
+    }
+
+    static bool HandleReloadInstanceRespawn(ChatHandler* handler, char const* /*args*/)
+    {
+        TC_LOG_INFO("misc", "Reloading HandleReloadBroadcastText table...");
+        handler->SendSysMessage("Loading broadcast_text");
+        sCustomInstanceRespawn->LoadFromDB();
         return true;
     }
 

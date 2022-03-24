@@ -37,6 +37,7 @@
 #include "Transport.h"
 #include "Vehicle.h"
 #include "SpellMgr.h"
+#include "InstanceScript.h"
 #include <boost/accumulators/statistics/variance.hpp>
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/accumulators/statistics.hpp>
@@ -451,6 +452,9 @@ void WorldSession::HandleMovementOpcode(OpcodeClient opcode, MovementInfo& movem
             plrMover->RemoveAurasWithInterruptFlags(SpellAuraInterruptFlags2::Jump);
             Unit::ProcSkillsAndAuras(plrMover, nullptr, PROC_FLAG_JUMP, PROC_FLAG_NONE, PROC_SPELL_TYPE_MASK_ALL, PROC_SPELL_PHASE_NONE, PROC_HIT_NONE, nullptr, nullptr, nullptr);
         }
+
+        if (auto instance = plrMover->GetInstanceScript())
+            instance->OnPlayerPositionChange(plrMover);
     }
 }
 

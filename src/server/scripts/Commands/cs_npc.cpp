@@ -56,6 +56,8 @@ struct MenuDatas
     uint32 FactionID = 35;
     uint32 DisplayId = 1337;
     float Scale = 1.0f;
+    uint32 MinLevel = 60;
+    uint32 MaxLevel = 60;
 };
 
 static std::unordered_map<ObjectGuid::LowType, MenuDatas> _menuData;
@@ -73,29 +75,24 @@ class npc_playerscript : public PlayerScript
             MenuDatas& l_Menu = _menuData[player->GetGUID().GetCounter()];
 
             std::ostringstream ss;
-            ss << "EntryID: " << l_Menu.EntryID;
-            AddGossipItemFor(player, GossipOptionIcon::None, ss.str(), 0, 1, "", 0, true);
-            ss.str("");
-            ss.clear();
-            ss << "Name: " << l_Menu.Name;
-            AddGossipItemFor(player, GossipOptionIcon::None, ss.str(), 0, 2, "", 0, true);
-            ss.str("");
-            ss.clear();
-            ss << "SubName: " << l_Menu.SubName;
-            AddGossipItemFor(player, GossipOptionIcon::None, ss.str(), 0, 3, "", 0, true);
-            ss.str("");
-            ss.clear();
-            ss << "FactionID: " << l_Menu.FactionID;
-            AddGossipItemFor(player, GossipOptionIcon::None, ss.str(), 0, 4, "", 0, true);
-            ss.str("");
-            ss.clear();
-            ss << "DisplayId: " << l_Menu.DisplayId;
-            AddGossipItemFor(player, GossipOptionIcon::None, ss.str(), 0, 5, "", 0, true);
-            ss.str("");
-            ss.clear();
-            ss << "Scale: " << l_Menu.Scale;
-            AddGossipItemFor(player, GossipOptionIcon::None, ss.str(), 0, 6, "", 0, true);
+            auto CreateMenuOptionWithAction([&](uint32 p_ActionId, std::string p_Name, std::string p_Value)
+            {
+                ss.str("");
+                ss.clear();
+                ss << p_Name << ": " << p_Value;
+                AddGossipItemFor(player, GossipOptionIcon::None, ss.str(), 0, p_ActionId, "", 0, true);
+            });
+
+            CreateMenuOptionWithAction(1, "EntryId", std::to_string(l_Menu.EntryID));
+            CreateMenuOptionWithAction(2, "Name", l_Menu.Name);
+            CreateMenuOptionWithAction(3, "SubName", l_Menu.SubName);
+            CreateMenuOptionWithAction(4, "FactionID", std::to_string(l_Menu.FactionID));
+            CreateMenuOptionWithAction(5, "DisplayId", std::to_string(l_Menu.DisplayId));
+            CreateMenuOptionWithAction(6, "Scale", std::to_string(l_Menu.Scale));
+            CreateMenuOptionWithAction(9, "MinLevel", std::to_string(l_Menu.MinLevel));
+            CreateMenuOptionWithAction(10, "MaxLevel", std::to_string(l_Menu.MaxLevel));
             AddGossipItemFor(player, GossipOptionIcon::None, "Create", 0, 7);
+            AddGossipItemFor(player, GossipOptionIcon::None, "Create and Spawn", 0, 8);
 
             player->PlayerTalkClass->GetGossipMenu().SetMenuId(56818);
             SendGossipMenuFor(player, 1, player->GetGUID());
@@ -111,6 +108,7 @@ class npc_playerscript : public PlayerScript
             switch (action)
             {
                 case 7:
+                case 8:
                 {
                     MenuDatas& l_Menu = _menuData[player->GetGUID().GetCounter()];
                     if (l_Menu.EntryID == 0)
@@ -125,8 +123,8 @@ class npc_playerscript : public PlayerScript
                     l_Stmt->setUInt32(3, l_Menu.FactionID);
                     l_Stmt->setUInt32(4, 1);
                     l_Stmt->setUInt32(5, 0);
-                    l_Stmt->setUInt32(6, 60);
-                    l_Stmt->setUInt32(7, 60);
+                    l_Stmt->setUInt32(6, l_Menu.MinLevel);
+                    l_Stmt->setUInt32(7, l_Menu.MaxLevel);
                     WorldDatabase.Query(l_Stmt);
 
                     l_Stmt = WorldDatabase.GetPreparedStatement(WORLD_REP_CREATURE_TEMPLATE_MODEL);
@@ -154,6 +152,51 @@ class npc_playerscript : public PlayerScript
                     sObjectMgr->LoadCreatureTemplateModel(l_Menu.EntryID);
 
                     ChatHandler(player).PSendSysMessage("%s \"%s\" with entry %u", (l_Exists ? "overwrote" : "created"), l_Menu.Name.c_str(), l_Menu.EntryID);
+
+                    if (action == 8)
+                    {
+                       // npc_commandscript::HandleNpcAddCommand(&ChatHandler(player), l_Menu.EntryID);
+                        auto id = l_Menu.EntryID;
+                        if (!sObjectMgr->GetCreatureTemplate(id))
+                            break;
+
+                        Player* chr = player;
+                        Map* map = chr->GetMap();
+
+                        if (Transport* trans = chr->GetTransport())
+                        {
+                            ObjectGuid::LowType guid = sObjectMgr->GenerateCreatureSpawnId();
+                            CreatureData& data = sObjectMgr->NewOrExistCreatureData(guid);
+                            data.spawnId = guid;
+                            data.spawnGroupData = sObjectMgr->GetDefaultSpawnGroup();
+                            data.id = id;
+                            data.spawnPoint.Relocate(chr->GetTransOffsetX(), chr->GetTransOffsetY(), chr->GetTransOffsetZ(), chr->GetTransOffsetO());
+                            if (Creature* creature = trans->CreateNPCPassenger(guid, &data))
+                            {
+                                creature->SaveToDB(trans->GetGOInfo()->moTransport.SpawnMap, { map->GetDifficultyID() });
+                                sObjectMgr->AddCreatureToGrid(&data);
+                            }
+                            break;
+                        }
+
+                        Creature* creature = Creature::CreateCreature(id, map, chr->GetPosition());
+                        if (!creature)break;
+
+                        PhasingHandler::InheritPhaseShift(creature, chr);
+                        creature->SaveToDB(map->GetId(), { map->GetDifficultyID() });
+
+                        ObjectGuid::LowType db_guid = creature->GetSpawnId();
+
+                        // To call _LoadGoods(); _LoadQuests(); CreateTrainerSpells()
+                        // current "creature" variable is deleted and created fresh new, otherwise old values might trigger asserts or cause undefined behavior
+                        creature->CleanupsBeforeDelete();
+                        delete creature;
+
+                        creature = Creature::CreateCreatureFromDB(db_guid, map, true, true);
+                        if (!creature)break;
+
+                        sObjectMgr->AddCreatureToGrid(sObjectMgr->GetCreatureData(db_guid));
+                    }
 
                     break;
                 }
@@ -192,6 +235,12 @@ class npc_playerscript : public PlayerScript
                     break;
                 case 6:
                     l_Menu.Scale = atof(code);
+                    break;
+                case 9:
+                    l_Menu.MinLevel = atol(code);
+                    break;
+                case 10:
+                    l_Menu.MaxLevel = atol(code);
                     break;
             }
 

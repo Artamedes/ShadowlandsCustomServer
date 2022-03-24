@@ -1567,6 +1567,9 @@ uint32 DB2Manager::LoadStores(std::string const& dataPath, LocaleConstant defaul
     // Crapopolis Dungeon
     const_cast<MapEntry*>(sMapStore.LookupEntry(2263))->InstanceType = 1;
     const_cast<MapEntry*>(sMapStore.LookupEntry(2263))->MaxPlayers = 5;
+    // Skyhold Dungeon
+    const_cast<MapEntry*>(sMapStore.LookupEntry(2472))->InstanceType = 1;
+    const_cast<MapEntry*>(sMapStore.LookupEntry(2472))->MaxPlayers = 5;
 
     TC_LOG_INFO("server.loading", ">> Initialized " SZFMTD " DB2 data stores in %u ms", _stores.size(), GetMSTimeDiffToNow(oldMSTime));
 
