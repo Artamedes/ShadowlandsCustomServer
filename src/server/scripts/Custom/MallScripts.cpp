@@ -350,7 +350,7 @@ struct npc_juno_700006 : public ScriptedAI
                     if (l_Player->GetQuestStatus(700007) == QUEST_STATUS_NONE
                      && l_Player->GetQuestStatus(700006) == QUEST_STATUS_REWARDED)
                     {
-                        m_PlayerTalks[p_Who->GetGUID()] = l_Now + Minutes(5);
+                        m_PlayerTalks[p_Who->GetGUID()] = l_Now + Hours(2);
                         Talk(0, p_Who);
                     }
                 }
