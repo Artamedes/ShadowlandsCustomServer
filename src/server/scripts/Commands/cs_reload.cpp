@@ -171,7 +171,8 @@ public:
             { "vehicle_accessory",             rbac::RBAC_PERM_COMMAND_RELOAD_VEHICLE_ACCESORY,                 true,  &HandleReloadVehicleAccessoryCommand,           "" },
             { "vehicle_template_accessory",    rbac::RBAC_PERM_COMMAND_RELOAD_VEHICLE_TEMPLATE_ACCESSORY,       true,  &HandleReloadVehicleTemplateAccessoryCommand,   "" },
             { "magicstone",                    rbac::RBAC_PERM_COMMAND_RELOAD_VEHICLE_TEMPLATE_ACCESSORY,       true,  &HandleReloadMagicStone,   "" },
-            { "broadcast_text",                    rbac::RBAC_PERM_COMMAND_RELOAD_VEHICLE_TEMPLATE_ACCESSORY,       true,  &HandleReloadBroadcastText,   "" },
+            { "broadcast_text",                rbac::RBAC_PERM_COMMAND_RELOAD_VEHICLE_TEMPLATE_ACCESSORY,       true,  &HandleReloadBroadcastText,   "" },
+            { "creature_template_movement",    rbac::RBAC_PERM_COMMAND_RELOAD_VEHICLE_TEMPLATE_ACCESSORY,       true,  &HandleReloadCreatureTemplateMovement,   "" },
         };
         static std::vector<ChatCommand> commandTable =
         {
@@ -1166,6 +1167,13 @@ public:
         sBroadcastTextStore.LoadFromDB();
         handler->SendSysMessage("Loading npc_text");
         sObjectMgr->LoadNPCText();
+        return true;
+    }
+
+    static bool HandleReloadCreatureTemplateMovement(ChatHandler* handler)
+    {
+        handler->SendSysMessage("Loading creature_template_movement");
+      //  sObjectMgr->LoadCreaturetemplateMovement();
         return true;
     }
 
