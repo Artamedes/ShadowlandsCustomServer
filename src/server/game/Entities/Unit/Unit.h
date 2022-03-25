@@ -1872,6 +1872,7 @@ class TC_GAME_API Unit : public WorldObject
         uint16 GetVirtualItemAppearanceMod(uint32 slot) const;
         void SetVirtualItem(uint32 slot, uint32 itemId, uint16 appearanceModId = 0, uint16 itemVisual = 0);
 
+        void GetAttackableUnitListInRange(std::list<Unit*>& list, float fMaxSearchRange) const;
         void GetFriendlyUnitListInRange(std::list<Unit*>& list, float fMaxSearchRange, bool exceptSelf = false) const;
 
         // returns if the unit can't enter combat

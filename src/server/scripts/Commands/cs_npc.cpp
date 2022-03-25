@@ -615,7 +615,7 @@ public:
     }
 
     //set npcflag of creature
-    static bool HandleNpcSetFlagCommand(ChatHandler* handler, NPCFlags npcFlags, NPCFlags2 npcFlags2)
+    static bool HandleNpcSetFlagCommand(ChatHandler* handler, uint32 npcFlags, Optional<uint32> npcFlags2)
     {
         Creature* creature = handler->getSelectedCreature();
 
@@ -626,12 +626,14 @@ public:
             return false;
         }
 
-        creature->SetNpcFlags(npcFlags);
-        creature->SetNpcFlags2(npcFlags2);
+        uint32 npcFlag2 = npcFlags2.value_or(0);
+
+        creature->SetNpcFlags(static_cast<NPCFlags>(npcFlags));
+        creature->SetNpcFlags2(static_cast<NPCFlags2>(npcFlag2));
 
         WorldDatabasePreparedStatement* stmt = WorldDatabase.GetPreparedStatement(WORLD_UPD_CREATURE_NPCFLAG);
 
-        stmt->setUInt64(0, uint64(npcFlags) | (uint64(npcFlags2) << 32));
+        stmt->setUInt64(0, uint64(npcFlags) | (uint64(npcFlag2) << 32));
         stmt->setUInt32(1, creature->GetEntry());
 
         WorldDatabase.Execute(stmt);

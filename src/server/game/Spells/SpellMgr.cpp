@@ -4445,6 +4445,17 @@ void SpellMgr::LoadSpellInfoCorrections()
         spellInfo->AttributesEx2 |= SPELL_ATTR2_CAN_TARGET_NOT_IN_LOS;
     });
 
+    ApplySpellFix({ 357616 }, [](SpellInfo* spellInfo)
+    {
+        spellInfo->AttributesEx3 &= ~SPELL_ATTR3_ONLY_TARGET_PLAYERS;
+
+        ApplySpellEffectFix(spellInfo, EFFECT_0, [](SpellEffectInfo* spellEffectInfo)
+            {
+                spellEffectInfo->TargetA = SpellImplicitTargetInfo(TARGET_UNIT_TARGET_ANY);
+                spellEffectInfo->TargetB = SpellImplicitTargetInfo();
+            });
+    });
+
     // Arcane Barrage (cast by players and NONMELEEDAMAGELOG with caster Scion of Eternity (original caster)).
     ApplySpellFix({ 63934 }, [](SpellInfo* spellInfo)
     {

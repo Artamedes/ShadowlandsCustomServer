@@ -625,7 +625,16 @@ struct npc_trade_prince_gallywix_700200 : public ScriptedAI
         }
         bool OnGossipSelect(Player* player, uint32 menuid, uint32 gossipid) override
         {
+            uint32 action = player->PlayerTalkClass->GetGossipOptionAction(gossipid);
             CloseGossipMenuFor(player);
+            switch (action)
+            {
+                case 1:
+                    me->RemoveNpcFlag(UNIT_NPC_FLAG_GOSSIP);
+                    me->RemoveNpcFlag(UNIT_NPC_FLAG_QUESTGIVER);
+                    DoCast(359361); // Banshee Form
+                    break;
+            }
             return true;
         }
 };

@@ -1118,6 +1118,42 @@ namespace Trinity
             bool i_check3D;
     };
 
+    class AttackableUnitInObjectRangeCheck
+    {
+    public:
+        AttackableUnitInObjectRangeCheck(WorldObject const* obj, float range, bool check3D = true) : i_obj(obj), i_range(range), i_check3D(check3D) { }
+
+        bool operator()(Unit* u) const
+        {
+            if (i_obj->IsUnit())
+                if (u->IsAlive() && i_obj->IsWithinDistInMap(u, i_range, i_check3D) && i_obj->ToUnit()->IsValidAttackTarget(u))
+                    return true;
+
+            return false;
+        }
+
+    private:
+        WorldObject const* i_obj;
+        float i_range;
+        bool i_check3D;
+    };
+
+    class AnyAreatriggerInObjectRangeCheck
+    {
+    public:
+        AnyAreatriggerInObjectRangeCheck(WorldObject const* object, float range) : m_Object(object), m_Range(range) {}
+        bool operator()(AreaTrigger* areaTrigger)
+        {
+            if (m_Object->IsWithinDistInMap(areaTrigger, m_Range))
+                return true;
+
+            return false;
+        }
+    private:
+        WorldObject const* m_Object;
+        float m_Range;
+    };
+
     // Success at unit in range, range update for next check (this can be use with UnitLastSearcher to find nearest unit)
     class NearestAttackableUnitInObjectRangeCheck
     {
