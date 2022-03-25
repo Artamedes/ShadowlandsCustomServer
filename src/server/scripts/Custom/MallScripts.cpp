@@ -348,7 +348,7 @@ struct npc_juno_700006 : public ScriptedAI
                 if (l_Itr == m_PlayerTalks.end() || l_Now >= l_Itr->second)
                 {
                     if (l_Player->GetQuestStatus(700007) == QUEST_STATUS_NONE
-                     || l_Player->GetQuestStatus(700006) == QUEST_STATUS_REWARDED)
+                     && l_Player->GetQuestStatus(700006) == QUEST_STATUS_REWARDED)
                     {
                         m_PlayerTalks[p_Who->GetGUID()] = l_Now + Minutes(5);
                         Talk(0, p_Who);
