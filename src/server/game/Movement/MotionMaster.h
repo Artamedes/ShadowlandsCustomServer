@@ -66,6 +66,23 @@ enum MotionMasterDelayedActionType : uint8
     MOTIONMASTER_DELAYED_INITIALIZE
 };
 
+enum MoveOptions : uint32
+{
+    MOVE_NONE                 = 0x000,
+    MOVE_PATHFINDING          = 0x001,
+    MOVE_WALK_MODE            = 0x002,
+    MOVE_RUN_MODE             = 0x004,
+    MOVE_FLY_MODE             = 0x008,
+    MOVE_CYCLIC               = 0x010,
+    MOVE_FALLING              = 0x020,
+    MOVE_FORCE_DESTINATION    = 0x040,
+    MOVE_EXCLUDE_STEEP_SLOPES = 0x080,
+    MOVE_STRAIGHT_PATH        = 0x100,
+    MOVE_SMOOTH_PATH          = 0x200,
+    MOVE_CAN_SWIM             = 0x400, ///< Add spline flag: CanSwim
+    MOVE_ANIMATION            = 0x800, ///< Add spline flag: Animation
+};
+
 struct MovementGeneratorDeleter
 {
     void operator()(MovementGenerator* a);
@@ -90,6 +107,16 @@ static bool EmptyValidator()
 {
     return true;
 }
+
+enum class MoveTypes
+{
+    Forward,
+    Backwards,
+    Up,
+    Down,
+    Home,
+    Ground
+};
 
 class TC_GAME_API MotionMaster
 {
@@ -196,6 +223,8 @@ class TC_GAME_API MotionMaster
         void MoveFormation(Unit* leader, float range, float angle, uint32 point1, uint32 point2);
 
         void LaunchMoveSpline(Movement::MoveSplineInit&& init, uint32 id = 0, MovementGeneratorPriority priority = MOTION_PRIORITY_NORMAL, MovementGeneratorType type = EFFECT_MOTION_TYPE);
+
+        void Move(uint32 p_Id, MoveTypes p_MoveType, uint32 p_Options = MoveOptions::MOVE_PATHFINDING, float p_Distance = 0.0f);
     private:
         typedef std::unique_ptr<MovementGenerator, MovementGeneratorDeleter> MovementGeneratorPointer;
         typedef std::multiset<MovementGenerator*, MovementGeneratorComparator> MotionMasterContainer;

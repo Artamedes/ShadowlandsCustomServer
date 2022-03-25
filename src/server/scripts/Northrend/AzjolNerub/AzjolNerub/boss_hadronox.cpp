@@ -135,7 +135,7 @@ enum Talk
 // Movement IDs used by the permanently spawning Anub'ar opponents - they are done in sequence, as one finishes, the next one starts
 enum Movements
 {
-    MOVE_NONE = 0,
+    MOVE_NONE1 = 0,
     MOVE_OUTSIDE,
     MOVE_DOWNSTAIRS,
     MOVE_DOWNSTAIRS_2,
@@ -735,7 +735,7 @@ struct npc_hadronox_foeAI : public ScriptedAI
                 default:
                     break;
             }
-            _nextMovement = MOVE_NONE;
+            _nextMovement = MOVE_NONE1;
         }
 
         if (!UpdateVictim())

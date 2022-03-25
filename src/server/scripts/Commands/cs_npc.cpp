@@ -316,6 +316,7 @@ public:
             { "clone",          HandleNpcCloneCommand,             rbac::RBAC_PERM_COMMAND_NPC_SHOWLOOT,       Console::No },
             { "get",            HandleNpcGetCommand,               rbac::RBAC_PERM_COMMAND_NPC_SHOWLOOT,       Console::No },
             { "create",         HandleNpcCreateCommand,            rbac::RBAC_PERM_COMMAND_NPC_SHOWLOOT,       Console::No },
+            { "reload",         HandleNpcReloadCommand,            rbac::RBAC_PERM_COMMAND_NPC_SHOWLOOT,       Console::No },
         };
         static ChatCommandTable commandTable =
         {
@@ -1754,6 +1755,43 @@ public:
     static bool HandleNpcCreateCommand(ChatHandler* p_Handler)
     {
         npc_playerscript::ShowMenu(p_Handler->GetPlayer());
+        return true;
+    }
+
+    static bool HandleNpcReloadCommand(ChatHandler* p_Handler)
+    {
+        auto creature = p_Handler->getSelectedCreature();
+        if (!creature)
+            return true;
+
+        uint32 entry = creature->GetEntry();
+        WorldDatabasePreparedStatement* stmt = WorldDatabase.GetPreparedStatement(WORLD_SEL_CREATURE_TEMPLATE);
+        stmt->setUInt32(0, entry);
+        stmt->setUInt32(1, 0);
+        PreparedQueryResult result = WorldDatabase.Query(stmt);
+
+        if (!result)
+        {
+            p_Handler->PSendSysMessage(LANG_COMMAND_CREATURETEMPLATE_NOTFOUND, entry);
+            return true;
+        }
+
+        CreatureTemplate const* cInfo = sObjectMgr->GetCreatureTemplate(entry);
+        if (!cInfo)
+        {
+            p_Handler->PSendSysMessage(LANG_COMMAND_CREATURESTORAGE_NOTFOUND, entry);
+            return true;
+        }
+
+        TC_LOG_INFO("misc", "Reloading creature template entry %u", entry);
+
+        Field* fields = result->Fetch();
+        sObjectMgr->LoadCreatureTemplate(fields);
+        sObjectMgr->LoadCreatureTemplateModel(entry);
+        sObjectMgr->CheckCreatureTemplate(cInfo);
+
+        p_Handler->PSendSysMessage("%u reloaded", entry);
+
         return true;
     }
 

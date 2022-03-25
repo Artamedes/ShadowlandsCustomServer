@@ -5,6 +5,7 @@
 #include "TemporarySummon.h"
 #include "Chat.h"
 #include "QuestDef.h"
+#include "GameTime.h"
 
 struct npc_battle_training : public ScriptedAI
 {
@@ -39,9 +40,18 @@ struct npc_battle_training : public ScriptedAI
             switch (l_ActionId)
             {
                 case 1:
-                    me->SummonCreature(700001, { 424.571991f, -3423.668457f, 4.344817f, 1.230315f }, TempSummonType::TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30s, 0, 0, p_Player->GetGUID());
-                    me->SummonCreature(700001, { 414.650269f, -3416.539551f, 4.344817f, 1.030315f }, TempSummonType::TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30s, 0, 0, p_Player->GetGUID());
-                    me->SummonCreature(700001, { 411.319611f, -3434.841064f, 4.344656f, 1.230315f }, TempSummonType::TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30s, 0, 0, p_Player->GetGUID());
+                    if (me->GetEntry() == 700008)
+                    {
+                        me->SummonCreature(700001, { 738.073181f, -3414.861084f, 4.344868f, 2.140065f }, TempSummonType::TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30s, 0, 0, p_Player->GetGUID());
+                        me->SummonCreature(700001, { 747.188782f, -3420.872070f, 4.344868f, 2.140065f }, TempSummonType::TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30s, 0, 0, p_Player->GetGUID());
+                        me->SummonCreature(700001, { 738.937927f, -3425.946289f, 4.344868f, 2.064797f }, TempSummonType::TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30s, 0, 0, p_Player->GetGUID());
+                    }
+                    else
+                    {
+                        me->SummonCreature(700001, { 424.571991f, -3423.668457f, 4.344817f, 1.230315f }, TempSummonType::TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30s, 0, 0, p_Player->GetGUID());
+                        me->SummonCreature(700001, { 414.650269f, -3416.539551f, 4.344817f, 1.030315f }, TempSummonType::TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30s, 0, 0, p_Player->GetGUID());
+                        me->SummonCreature(700001, { 411.319611f, -3434.841064f, 4.344656f, 1.230315f }, TempSummonType::TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30s, 0, 0, p_Player->GetGUID());
+                    }
                     break;
             }
             return true;
@@ -126,10 +136,7 @@ struct npc_infernal_core_360607 : public ScriptedAI
                         DoCast(360607); // Infernal Portal
                         //DoCast(255472);
                         m_Events.ScheduleEvent(2, 200ms);
-                        Position pos = *me;
-                        pos.m_positionX += 6.0f;
-                        pos.m_positionY += 15.0f;
-                        me->GetMotionMaster()->MovePoint(1, pos);
+                        me->GetMotionMaster()->Move(1, MoveTypes::Forward, MOVE_PATHFINDING, 10.0f);
                         break;
                     }
                     case 2:
@@ -191,11 +198,15 @@ struct npc_skipbot_3000 : public ScriptedAI
                         if (!l_QuestPtr)
                             break;
 
-                        if (p_Player->GetQuestStatus(l_Quest) == QUEST_STATUS_NONE)
+                        auto l_Status = p_Player->GetQuestStatus(l_Quest);
+
+                        if (l_Status == QUEST_STATUS_REWARDED)
                             continue;
 
-                        p_Player->AddQuest(l_QuestPtr, me);
-                        p_Player->CompleteQuest(l_Quest);
+                        if (p_Player->GetQuestStatus(l_Quest) == QUEST_STATUS_NONE)
+                            p_Player->AddQuest(l_QuestPtr, me);
+                        if (p_Player->GetQuestStatus(l_Quest) == QUEST_STATUS_INCOMPLETE)
+                            p_Player->CompleteQuest(l_Quest);
                         p_Player->RewardQuest(l_QuestPtr, LootItemType::Item, 0, me);
                     }
 
@@ -249,6 +260,12 @@ struct npc_currency_guy : public ScriptedAI
                     break;
             }
             return true;
+        }
+
+        void OnQuestAccept(Player* p_Player, Quest const* p_Quest) override
+        {
+            if (p_Quest->GetQuestId() == 700006)
+                Talk(1, p_Player);
         }
 };
 
@@ -319,6 +336,28 @@ struct npc_juno_700006 : public ScriptedAI
             CloseGossipMenuFor(p_Player);
             return true;
         }
+
+        void MoveInLineOfSight(Unit* p_Who) override
+        {
+            if (p_Who->IsPlayer())
+            {
+                auto l_Player = p_Who->ToPlayer();
+                auto l_Itr = m_PlayerTalks.find(p_Who->GetGUID());
+                auto l_Now = GameTime::Now();
+
+                if (l_Itr == m_PlayerTalks.end() || l_Now >= l_Itr->second)
+                {
+                    if (l_Player->GetQuestStatus(700007) == QUEST_STATUS_NONE
+                     || l_Player->GetQuestStatus(700006) == QUEST_STATUS_REWARDED)
+                    {
+                        m_PlayerTalks[p_Who->GetGUID()] = l_Now + Minutes(5);
+                        Talk(0, p_Who);
+                    }
+                }
+            }
+        }
+    private:
+        std::unordered_map<ObjectGuid, TimePoint> m_PlayerTalks;
 };
 
 void AddSC_MallScripts()

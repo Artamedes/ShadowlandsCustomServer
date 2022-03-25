@@ -1106,6 +1106,43 @@ void MotionMaster::MoveFormation(Unit* leader, float range, float angle, uint32 
     }
 }
 
+void MotionMaster::Move(uint32 p_Id, MoveTypes p_MoveType, uint32 p_Options, float p_Distance)
+{
+    Position l_CurrentPos = *_owner;
+
+    switch (p_MoveType)
+    {
+        case MoveTypes::Forward:
+            l_CurrentPos.m_positionX += p_Distance * std::cos(l_CurrentPos.GetOrientation());
+            l_CurrentPos.m_positionY += p_Distance * std::sin(l_CurrentPos.GetOrientation());
+            l_CurrentPos.SetOrientation(l_CurrentPos.GetAngle(l_CurrentPos.m_positionX, l_CurrentPos.m_positionY));
+            break;
+        case MoveTypes::Backwards:
+            l_CurrentPos.m_positionX += p_Distance * std::cos(l_CurrentPos.GetOrientation());
+            l_CurrentPos.m_positionY += p_Distance * std::sin(l_CurrentPos.GetOrientation());
+            l_CurrentPos.SetOrientation(l_CurrentPos.GetAngle(l_CurrentPos.m_positionX, l_CurrentPos.m_positionY));
+            break;
+        case MoveTypes::Up:
+            l_CurrentPos.m_positionX += p_Distance * std::cos(l_CurrentPos.GetOrientation());
+            l_CurrentPos.m_positionY += p_Distance * std::sin(l_CurrentPos.GetOrientation());
+            l_CurrentPos.SetOrientation(l_CurrentPos.GetAngle(l_CurrentPos.m_positionX, l_CurrentPos.m_positionY));
+            break;
+        case MoveTypes::Down:
+            l_CurrentPos.m_positionX += p_Distance * std::cos(l_CurrentPos.GetOrientation());
+            l_CurrentPos.m_positionY += p_Distance * std::sin(l_CurrentPos.GetOrientation());
+            l_CurrentPos.SetOrientation(l_CurrentPos.GetAngle(l_CurrentPos.m_positionX, l_CurrentPos.m_positionY));
+            break;
+        case MoveTypes::Home:
+            l_CurrentPos = _owner->IsCreature() ? _owner->ToCreature()->GetHomePosition() : l_CurrentPos;
+            break;
+    }
+
+    Movement::MoveSplineInit init(_owner);
+    init.MoveTo(PositionToVector3(l_CurrentPos), p_Options & MOVE_PATHFINDING);
+    Add(new GenericMovementGenerator(std::move(init), EFFECT_MOTION_TYPE, p_Id), MOTION_SLOT_ACTIVE);
+}
+
+
 void MotionMaster::LaunchMoveSpline(Movement::MoveSplineInit&& init, uint32 id/*= 0*/, MovementGeneratorPriority priority/* = MOTION_PRIORITY_NORMAL*/, MovementGeneratorType type/*= EFFECT_MOTION_TYPE*/)
 {
     if (IsInvalidMovementGeneratorType(type))

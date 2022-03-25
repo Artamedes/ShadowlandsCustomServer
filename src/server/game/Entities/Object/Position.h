@@ -156,6 +156,17 @@ public:
 
     // constrain arbitrary radian orientation to interval [0,2*PI)
     static float NormalizeOrientation(float o);
+
+    // Return angle in range 0..2*pi
+    float GetAngle(const float x, const float y) const
+    {
+        float dx = x - GetPositionX();
+        float dy = y - GetPositionY();
+
+        float ang = std::atan2(dy, dx);
+        ang = (ang >= 0) ? ang : 2 * float(M_PI) + ang;
+        return ang;
+    }
 };
 
 #define MAPID_INVALID 0xFFFFFFFF
