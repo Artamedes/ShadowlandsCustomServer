@@ -213,14 +213,14 @@ public:
             stmt->setUInt32(1, pathid);
         }
 
-        WorldDatabase.Execute(stmt);
+        WorldDatabase.Query(stmt);
 
         stmt = WorldDatabase.GetPreparedStatement(WORLD_UPD_CREATURE_MOVEMENT_TYPE);
 
         stmt->setUInt8(0, uint8(WAYPOINT_MOTION_TYPE));
         stmt->setUInt64(1, guidLow);
 
-        WorldDatabase.Execute(stmt);
+        WorldDatabase.Query(stmt);
 
         target->LoadPath(pathid);
         target->SetDefaultMovementType(WAYPOINT_MOTION_TYPE);

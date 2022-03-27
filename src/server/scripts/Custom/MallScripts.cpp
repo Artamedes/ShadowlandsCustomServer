@@ -6,6 +6,7 @@
 #include "Chat.h"
 #include "QuestDef.h"
 #include "GameTime.h"
+#include "Item.h"
 
 struct npc_battle_training : public ScriptedAI
 {
@@ -348,7 +349,7 @@ struct npc_juno_700006 : public ScriptedAI
                 if (l_Itr == m_PlayerTalks.end() || l_Now >= l_Itr->second)
                 {
                     if (l_Player->GetQuestStatus(700007) == QUEST_STATUS_NONE
-                     && l_Player->GetQuestStatus(700006) == QUEST_STATUS_REWARDED)
+                     && l_Player->GetQuestStatus(700006) == QUEST_STATUS_COMPLETE)
                     {
                         m_PlayerTalks[p_Who->GetGUID()] = l_Now + Hours(2);
                         Talk(0, p_Who);
@@ -360,6 +361,81 @@ struct npc_juno_700006 : public ScriptedAI
         std::unordered_map<ObjectGuid, TimePoint> m_PlayerTalks;
 };
 
+struct npc_mall_weapongiver : public ScriptedAI
+{
+    public:
+        npc_mall_weapongiver(Creature* creature) : ScriptedAI(creature) { }
+
+        void InitializeAI() override
+        {
+            DoCastSelf(356889);
+        }
+
+        void EnterEvadeMode(EvadeReason) override
+        {
+            DoCastSelf(356889);
+        }
+
+        void Reset() override
+        {
+            DoCastSelf(356889);
+            events.ScheduleEvent(1, 30s);
+            switch (me->GetEntry())
+            {
+
+            }
+        }
+
+        bool OnGossipHello(Player* player) override
+        {
+            ClearGossipMenuFor(player);
+
+            if (player->HasItemCount(700316, 1))
+                AddGossipItemFor(player, GossipOptionIcon::None, "Create Weapon", 0, 2, "|cffFF0000Accepting this will use |cffff8000[Legendary Dust]|cffFF0000x1|R", 0, false);
+
+            AddGossipItemFor(player, GossipOptionIcon::None, "Preview Weapon", 0, 1);
+            SendGossipMenuFor(player, 1, me);
+            return true;
+        }
+
+        bool OnGossipSelect(Player* player, uint32 menuId, uint32 gossipId) override
+        {
+            uint32 actionId = player->PlayerTalkClass->GetGossipOptionAction(gossipId);
+            ClearGossipMenuFor(player);
+
+            switch (actionId)
+            {
+                case 1:
+                    ChatHandler(player).PSendSysMessage("ItemLink here. TODO");
+                    break;
+                case 2:
+                    if (player->HasItemCount(700316, 1) && m_ItemEntry)
+                    {
+                        player->DestroyItemCount(700316, 1, true);
+                        Item* item = Item::CreateItem(m_ItemEntry, 1, ItemContext::NONE, player);
+                        item->SetBonuses({1650, 1650, 1650});
+                    }
+                    break;
+            }
+
+            return OnGossipHello(player);
+        }
+
+        void UpdateAI(uint32 diff) override
+        {
+            events.Update(diff);
+
+            if (events.ExecuteEvent() == 1)
+            {
+                DoCastSelf(356889);
+                events.Repeat(30s);
+            }
+        }
+
+        uint32 m_ItemEntry = 0;
+        EventMap events;
+};
+
 void AddSC_MallScripts()
 {
     RegisterCreatureAI(npc_battle_training);
@@ -369,4 +445,5 @@ void AddSC_MallScripts()
     RegisterCreatureAI(npc_currency_guy);
     RegisterCreatureAI(npc_char_services);
     RegisterCreatureAI(npc_juno_700006);
+    RegisterCreatureAI(npc_mall_weapongiver);
 }

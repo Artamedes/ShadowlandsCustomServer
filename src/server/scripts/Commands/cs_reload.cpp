@@ -172,7 +172,7 @@ public:
             { "vehicle_template_accessory",    rbac::RBAC_PERM_COMMAND_RELOAD_VEHICLE_TEMPLATE_ACCESSORY,       true,  &HandleReloadVehicleTemplateAccessoryCommand,   "" },
             { "magicstone",                    rbac::RBAC_PERM_COMMAND_RELOAD_VEHICLE_TEMPLATE_ACCESSORY,       true,  &HandleReloadMagicStone,   "" },
             { "broadcast_text",                rbac::RBAC_PERM_COMMAND_RELOAD_VEHICLE_TEMPLATE_ACCESSORY,       true,  &HandleReloadBroadcastText,   "" },
-            { "creature_template_movement",    rbac::RBAC_PERM_COMMAND_RELOAD_VEHICLE_TEMPLATE_ACCESSORY,       true,  &HandleReloadCreatureTemplateMovement,   "" },
+            { "instance_template",             rbac::RBAC_PERM_COMMAND_RELOAD_VEHICLE_TEMPLATE_ACCESSORY,       true,  &HandleReloadCreatureTemplateMovement,   "" },
         };
         static std::vector<ChatCommand> commandTable =
         {
@@ -1175,6 +1175,7 @@ public:
     {
         handler->SendSysMessage("Loading creature_template_movement");
       //  sObjectMgr->LoadCreaturetemplateMovement();
+        sObjectMgr->LoadInstanceTemplate();
         return true;
     }
 

@@ -4242,7 +4242,7 @@ void SpellMgr::LoadSpellInfoCorrections()
     });
 
     // Swarming Shadows
-    ApplySpellFix({ 71266 }, [](SpellInfo* spellInfo)
+    ApplySpellFix({ 71266, 299150 }, [](SpellInfo* spellInfo)
     {
         spellInfo->RequiredAreasID = 0; // originally, these require area 4522, which is... outside of Icecrown Citadel
     });

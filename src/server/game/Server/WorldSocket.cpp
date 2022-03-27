@@ -436,9 +436,14 @@ WorldSocket::ReadDataHandlerResult WorldSocket::ReadDataHandler()
                 _worldSession->ResetTimeOutTime(true);
             break;
         case CMSG_LOG_DISCONNECT:
+        {
             LogOpcodeText(opcode, sessionGuard);
+          //  uint32 disconnectReason = 0;
+           // packet << disconnectReason;
+          //  TC_LOG_ERROR("network", "WorldSocket::ReadDataHandler(): CMSG_LOG_DISCONNECT disconnectReason: %u", disconnectReason);
             packet.rfinish();   // contains uint32 disconnectReason;
             break;
+        }
         case CMSG_ENABLE_NAGLE:
             LogOpcodeText(opcode, sessionGuard);
             SetNoDelay(false);

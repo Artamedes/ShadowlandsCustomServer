@@ -1057,6 +1057,7 @@ void WorldSession::AbortLogin(WorldPackets::Character::LoginFailureReason reason
 void WorldSession::HandleLoadScreenOpcode(WorldPackets::Character::LoadingScreenNotify& /*loadingScreenNotify*/)
 {
     // TODO: Do something with this packet
+    m_LoadScreenOpcodeTime = GameTime::Now();
 }
 
 void WorldSession::HandlePlayerLogin(LoginQueryHolder const& holder)
