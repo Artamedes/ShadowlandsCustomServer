@@ -1939,6 +1939,9 @@ public:
                     caster->SetPower(POWER_COMBO_POINTS, cp + 1);
                 }
 
+              // if (IsHitCrit())
+              //     caster->CastSpell(target, )
+
                 // Night Terrors
                 if (caster->HasAura(SPELL_ROGUE_NIGHT_TERRORS))
                     caster->CastSpell(target, SPELL_ROGUE_SHADOW_GRASP_SLOW, true);
@@ -3894,7 +3897,7 @@ class aura_rog_find_weakness : public AuraScript
 
     bool CheckProc(ProcEventInfo& eventInfo)
     {
-        if (eventInfo.GetSpellInfo() && (eventInfo.GetSpellInfo()->Id == SPELL_ROGUE_SHADOWSTRIKE || eventInfo.GetSpellInfo()->Id == SPELL_ROGUE_CHEAP_SHOOT))
+        if (eventInfo.GetSpellInfo() && (eventInfo.GetSpellInfo()->Id == SPELL_ROGUE_SHADOWSTRIKE || eventInfo.GetSpellInfo()->Id == SPELL_ROGUE_CHEAP_SHOOT || eventInfo.GetSpellInfo()->Id == SPELL_ROGUE_SHURIKEN_STORM || eventInfo.GetSpellInfo()->Id == SPELL_ROGUE_BACKSTAB))
             return true;
 
         return false;
