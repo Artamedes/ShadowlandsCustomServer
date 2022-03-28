@@ -4669,6 +4669,18 @@ void SpellMgr::LoadSpellInfoCorrections()
         spellInfo->Attributes |= SPELL_ATTR0_UNAFFECTED_BY_INVULNERABILITY;
     });
 
+	// Shadow Strike
+	ApplySpellFix({ 137619 }, [](SpellInfo* spellInfo)
+	{
+		spellInfo->AttributesEx3 &= ~SPELL_ATTR3_DEATH_PERSISTENT;
+	});
+
+	// Shadow Strike
+	ApplySpellFix({ 185438 }, [](SpellInfo* spellInfo)
+	{
+		spellInfo->Stances = FORM_NONE;
+	});
+
     for (SpellInfo const& s : mSpellInfoMap)
     {
         SpellInfo* spellInfo = &const_cast<SpellInfo&>(s);

@@ -129,7 +129,6 @@ enum RogueSpells
     SPELL_ROGUE_SHIV_TRIGGERED                      = 5940,
     SPELL_ROGUE_SHROUD_OF_CONCEALMENT_AURA          = 115834,
     SPELL_ROGUE_SHURIKEN_STORM                      = 197835,
-    SPELL_ROGUE_SILCE_AND_DICE                      = 5171,
     SPELL_ROGUE_SLICE_AND_DICE                      = 5171,
     SPELL_ROGUE_SMOKE_BOMB_AURA                     = 212183,
     SPELL_ROGUE_SMOKE_BOMB_VISUAL                   = 183859,
@@ -1101,7 +1100,7 @@ class spell_rog_stealth : public SpellScriptLoader
                         target->CastSpell(target, SPELL_ROGUE_MASTER_ASSASIN_AURA, true);
 
                     // Shadowstrike Rank 2
-                    if (target->HasAura(SPELL_ROGUE_SHADOWSTRIKE_RANK_2))
+                    //if (target->HasAura(SPELL_ROGUE_SHADOWSTRIKE_RANK_2))
                         target->CastSpell(target, SPELL_ROGUE_SHADOWSTRIKE_BONUS, true);
 
                     target->RemoveAurasDueToSpell(SPELL_ROGUE_VANISH);
@@ -1676,7 +1675,11 @@ public:
         {
             if (Player* _player = GetCaster()->ToPlayer())
             {
-                if (Aura* sliceAndDice = _player->GetAura(SPELL_ROGUE_SLICE_AND_DICE))
+                auto sliceAndDice = _player->GetAura(SPELL_ROGUE_SLICE_AND_DICE);
+                if (!sliceAndDice)
+                    sliceAndDice = _player->GetAura(315496); // slice and dice
+
+                if (sliceAndDice)
                 {
                     int32 duration = sliceAndDice->GetDuration();
                     int32 maxDuration = sliceAndDice->GetMaxDuration();
@@ -2063,7 +2066,7 @@ public:
             if (!caster || !target)
                 return;
 
-            if (caster->HasAura(SPELL_ROGUE_SHADOWSTRIKE_RANK_2))
+            if (caster->HasAura(SPELL_ROGUE_SHADOWSTRIKE_BONUS))
                 if(!caster->IsWithinMeleeRange(target))
                     GetCaster()->CastSpell(target, SPELL_ROGUE_SHADOWSTEP_LEAP, true);
         }
@@ -2371,7 +2374,11 @@ class aura_rog_shadow_dance_effect : public AuraScript
     void HandleRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
     {
         if (Unit* caster = GetCaster())
+        {
             caster->RemoveAura(SPELL_ROGUE_SHADOW_FOCUS_EFFECT);
+            caster->RemoveAura(SPELL_ROGUE_STEALTH_BAR);
+            caster->RemoveAura(SPELL_ROGUE_SHADOW_DANCE_AURA);
+        }
     }
 
     void Register() override
