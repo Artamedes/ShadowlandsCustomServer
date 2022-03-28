@@ -4766,6 +4766,22 @@ class spell_gen_anchor_here : public SpellScript
         OnEffectHitTarget += SpellEffectFn(spell_gen_anchor_here::HandleScript, EFFECT_0, SPELL_EFFECT_SCRIPT_EFFECT);
     }
 };
+// 274738 - Ancestral Call
+class spell_ancestral_call : public SpellScript
+{
+    PrepareSpellScript(spell_ancestral_call);
+
+    void HandleEffectHit(SpellEffIndex /*effIndex*/)
+    {
+        if (Unit* caster = GetCaster())
+            caster->CastSpell(caster, RAND(274739, 274741, 274742, 274740), true);
+    }
+
+    void Register() override
+    {
+        OnEffectHitTarget += SpellEffectFn(spell_ancestral_call::HandleEffectHit, EFFECT_0, SPELL_EFFECT_APPLY_AURA);
+    }
+};
 
 void AddSC_generic_spell_scripts()
 {
@@ -4916,4 +4932,5 @@ void AddSC_generic_spell_scripts()
     RegisterSpellScript(spell_defender_of_azeroth_speak_with_mograine);
     RegisterSpellScript(spell_summon_battle_pet);
     RegisterSpellScript(spell_gen_anchor_here);
+    RegisterSpellScript(spell_ancestral_call);
 }
