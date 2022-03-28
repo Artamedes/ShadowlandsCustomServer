@@ -940,6 +940,39 @@ public:
     }
 };
 
+class spell_warr_raging_blow : public SpellScriptLoader
+{
+public:
+    spell_warr_raging_blow() : SpellScriptLoader("spell_warr_raging_blow") { }
+
+    class spell_warr_raging_blow_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_warr_raging_blow_SpellScript);
+
+        void HandleOnHit()
+        {
+            if (Unit* caster = GetCaster())
+            {
+                if (roll_chance_i(GetSpellInfo()->GetEffect(EFFECT_0).BasePoints))
+                {
+                    caster->GetSpellHistory()->RestoreCharge(GetSpellInfo()->ChargeCategoryId);
+                    caster->CastSpell(caster, SPELL_WARRIOR_ALLOW_RAGING_BLOW, true);
+                }
+            }
+        }
+
+        void Register() override
+        {
+            OnHit += SpellHitFn(spell_warr_raging_blow_SpellScript::HandleOnHit);
+        }
+    };
+
+    SpellScript* GetSpellScript() const override
+    {
+        return new spell_warr_raging_blow_SpellScript();
+    }
+};
+
 void AddSC_warrior_spell_scripts()
 {
     RegisterSpellScript(spell_warr_bloodthirst);
@@ -964,4 +997,5 @@ void AddSC_warrior_spell_scripts()
     RegisterSpellScript(spell_warr_victory_rush);
     new spell_warr_enrage();
     new spell_warr_rampage();
+    new spell_warr_raging_blow();
 }
