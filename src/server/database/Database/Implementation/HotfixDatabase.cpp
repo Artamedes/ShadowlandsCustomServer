@@ -1733,7 +1733,7 @@ void HotfixDatabaseConnection::DoPrepareStatements()
     PREPARE_MAX_ID_STMT(HOTFIX_SEL_WORLD_STATE_EXPRESSION, "SELECT MAX(ID) + 1 FROM world_state_expression", CONNECTION_SYNCH);
 
     // Custom
-    PrepareStatement(HOTFIX_REP_HOTFIX_DATA, "REPLACE INTO hotfix_data (Id, UniqueId, TableHash, RecordId, Status) VALUES (?, ?, ?, ?, ?)", CONNECTION_BOTH);
+    PrepareStatement(HOTFIX_REP_HOTFIX_DATA, "REPLACE INTO hotfix_data (Id, UniqueId, TableHash, RecordId, `Status`) VALUES (?, ?, ?, ?, ?)", CONNECTION_BOTH);
     PrepareStatement(HOTFIX_REP_ITEM, "REPLACE INTO item (ID, ClassID, SubclassID, Material, InventoryType, SheatheType, SoundOverrideSubclassID, IconFileDataID, ItemGroupSoundsID, ContentTuningID, ModifiedCraftingReagentItemID) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", CONNECTION_BOTH);
     PrepareStatement(HOTFIX_REP_ITEM_SPARSE, "REPLACE INTO item_sparse (ID, AllowableRace, Description, Display3, Display2, Display1, Display, ExpansionID, DmgVariance, "
         "LimitCategory, DurationInInventory, QualityModifier, BagFamily, StartQuestID, LanguageID, ItemRange, StatPercentageOfSocket1, "
@@ -1748,6 +1748,7 @@ void HotfixDatabaseConnection::DoPrepareStatements()
         "DamageDamageType, StatModifierBonusStat1, StatModifierBonusStat2, StatModifierBonusStat3, StatModifierBonusStat4, StatModifierBonusStat5, "
         "StatModifierBonusStat6, StatModifierBonusStat7, StatModifierBonusStat8, StatModifierBonusStat9, StatModifierBonusStat10, ContainerSlots, "
         "MinReputation, RequiredPVPMedal, RequiredPVPRank, RequiredLevel, InventoryType, OverallQualityID) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", CONNECTION_BOTH);
+    PrepareStatement(HOTFIX_REP_ITEM_MODIFIED_APPERANCE, "REPLACE INTO item_modified_appearance (ID, ItemID, ItemAppearanceModifierID, ItemAppearanceID, OrderIndex, TransmogSourceTypeEnum) VALUES (?, ?, ?, ?, ?, ?)", CONNECTION_BOTH);
 }
 
 HotfixDatabaseConnection::HotfixDatabaseConnection(MySQLConnectionInfo& connInfo) : MySQLConnection(connInfo)

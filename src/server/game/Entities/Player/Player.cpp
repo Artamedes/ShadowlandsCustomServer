@@ -7844,9 +7844,9 @@ void Player::_ApplyWeaponDamage(uint8 slot, Item* item, bool apply)
         SetBaseWeaponDamage(attType, MAXDAMAGE, damage);
     }
 
-    SpellShapeshiftFormEntry const* shapeshift = sSpellShapeshiftFormStore.LookupEntry(GetShapeshiftForm());
-    if (proto->GetDelay() && !(shapeshift && shapeshift->CombatRoundTime))
-        SetBaseAttackTime(attType, apply ? proto->GetDelay() : BASE_ATTACK_TIME);
+    //SpellShapeshiftFormEntry const* shapeshift = sSpellShapeshiftFormStore.LookupEntry(GetShapeshiftForm());
+    //if (proto->GetDelay() && !(shapeshift && shapeshift->CombatRoundTime))
+    //    SetBaseAttackTime(attType, apply ? proto->GetDelay() : BASE_ATTACK_TIME);
 
     int32 weaponBasedAttackPower = apply ? int32(proto->GetDPS(itemLevel) * 6.0f) : 0;
     switch (attType)
@@ -7866,6 +7866,9 @@ void Player::_ApplyWeaponDamage(uint8 slot, Item* item, bool apply)
 
     if (CanModifyStats() && (damage || proto->GetDelay()))
         UpdateDamagePhysical(attType);
+
+    UpdateRating(CR_HASTE_MELEE);
+    UpdateRating(CR_HASTE_RANGED);
 }
 
 SpellSchoolMask Player::GetMeleeDamageSchoolMask(WeaponAttackType attackType /*= BASE_ATTACK*/) const
@@ -23110,6 +23113,9 @@ void Player::InitDataForForm(bool reapplyMods)
 
     UpdateAttackPowerAndDamage();
     UpdateAttackPowerAndDamage(true);
+
+    UpdateRating(CR_HASTE_MELEE);
+    UpdateRating(CR_HASTE_RANGED);
 }
 
 void Player::InitDisplayIds()

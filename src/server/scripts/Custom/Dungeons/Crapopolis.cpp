@@ -639,6 +639,53 @@ struct npc_trade_prince_gallywix_700200 : public ScriptedAI
         }
 };
 
+
+
+class crapopolis_dungeon_player_script : public PlayerScript
+{
+    public:
+        crapopolis_dungeon_player_script() : PlayerScript("crapopolis_dungeon_player_script") { }
+
+        void OnQuestStatusChange(Player* player, uint32 questId) override
+        {
+            if (player->GetMapId() != 2263)
+                return;
+
+            switch (questId)
+            {
+                case 700013: // A load of crap
+                {
+
+                    auto status = player->GetQuestStatus(questId);
+
+                    if (status == QUEST_STATUS_REWARDED)
+                    {
+                        player->AddQuestAndCheckCompletion(sObjectMgr->GetQuestTemplate(700014), player);
+                        player->PlayerTalkClass->SendQuestGiverQuestDetails(sObjectMgr->GetQuestTemplate(700014), player->GetGUID(), true, true);
+                    }
+
+                    break;
+
+                }
+                case 700014: //You've gotta be kiddin'
+                {
+
+                    auto status = player->GetQuestStatus(questId);
+
+                    if (status == QUEST_STATUS_REWARDED)
+                    {
+                        player->AddQuestAndCheckCompletion(sObjectMgr->GetQuestTemplate(700015), player);
+                        player->PlayerTalkClass->SendQuestGiverQuestDetails(sObjectMgr->GetQuestTemplate(700015), player->GetGUID(), true, true);
+                    }
+
+                    break;
+
+                }
+            }
+        }
+};
+
+
 void AddSC_Crapopolis()
 {
     RegisterCreatureAI(npc_crapopolis_ai_base);
@@ -652,4 +699,5 @@ void AddSC_Crapopolis()
     RegisterCreatureAI(npc_crap_warden_of_souls);
     RegisterCreatureAI(npc_crap_synod);
     RegisterCreatureAI(npc_trade_prince_gallywix_700200);
+    new crapopolis_dungeon_player_script();
 }

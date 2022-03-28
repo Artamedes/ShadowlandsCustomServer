@@ -37,7 +37,9 @@ struct npc_skyhold_sylvanas : public ScriptedAI
         bool OnGossipHello(Player* player) override
         {
             ClearGossipMenuFor(player);
-            AddGossipItemFor(player, GossipOptionIcon::None, "Wreak havoc", 0, 1);
+            player->PrepareQuestMenu(me->GetGUID());
+            if (player->GetQuestStatus(700016) == QUEST_STATUS_REWARDED && player->GetQuestStatus(700017) != QUEST_STATUS_NONE)
+                AddGossipItemFor(player, GossipOptionIcon::None, "Wreak havoc", 0, 1);
             SendGossipMenuFor(player, me->GetEntry(), me);
             return true;
         }
@@ -88,6 +90,7 @@ struct npc_skyhold_sylvanas : public ScriptedAI
             switch (action)
             {
                 case 1:
+                    player->RewardPlayerAndGroupAtEvent(me->GetEntry(), me);
                     me->RemoveNpcFlag(UNIT_NPC_FLAG_GOSSIP);
                     me->RemoveNpcFlag(UNIT_NPC_FLAG_QUESTGIVER);
                     Talk(0);
@@ -148,6 +151,7 @@ public:
     {
         TalkAggro = 0,
         TalkEvade = 1,
+        TalkFriend,
     };
 
     void Reset() override
@@ -169,6 +173,17 @@ public:
         {
             Talk(Talks::TalkEvade);
             wasEngaged = false;
+        }
+    }
+
+    bool m_Talked = false;
+
+    void MoveInLineOfSight(Unit* who) override
+    {
+        if (who->IsPlayer() && me->GetFaction() == 35 && !m_Talked && who->GetDistance(me) <= 55.0f)
+        {
+            Talk(TalkFriend, who);
+            m_Talked = true;
         }
     }
 
@@ -195,6 +210,8 @@ public:
 
             }
         }
+
+        DoMeleeAttackIfReady();
     }
 
 private:
@@ -720,6 +737,38 @@ public:
     }
 };
 
+
+class skyhold_dungeon_player_script : public PlayerScript
+{
+public:
+    skyhold_dungeon_player_script() : PlayerScript("skyhold_dungeon_player_script") { }
+
+    void OnQuestStatusChange(Player* player, uint32 questId) override
+    {
+        if (player->GetMapId() != 2472)
+            return;
+
+        switch (questId)
+        {
+            case 700017: // Betrayal For Power
+            {
+
+                auto status = player->GetQuestStatus(questId);
+
+                if (status == QUEST_STATUS_REWARDED)
+                {
+                    player->AddQuestAndCheckCompletion(sObjectMgr->GetQuestTemplate(700018), player);
+                    player->PlayerTalkClass->SendQuestGiverQuestDetails(sObjectMgr->GetQuestTemplate(700018), player->GetGUID(), true, true);
+                }
+
+                break;
+
+            }
+        }
+    }
+};
+
+
 void AddSC_Skyhold()
 {
     new instance_skyhold();
@@ -734,4 +783,5 @@ void AddSC_Skyhold()
     RegisterCreatureAI(npc_valajar_thundercaller);
     RegisterCreatureAI(npc_valajar_falconer);
     RegisterCreatureAI(npc_dark_ascended_corrus);
+    new skyhold_dungeon_player_script();
 }

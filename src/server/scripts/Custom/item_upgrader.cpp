@@ -187,6 +187,8 @@ class item_upgrader : public ItemScript
                 if (player->GetQuestStatus(700002) == QUEST_STATUS_INCOMPLETE)
                 {
                     auto l_Creature = player->FindNearestCreature(700003, 30.0f);
+                    if (!l_Creature)
+                        l_Creature = player->FindNearestCreature(700010, 30.0f);
                     if (l_Creature && l_Creature->AI())
                     {
                         l_Creature->AI()->Talk(1, player);
@@ -202,6 +204,8 @@ class item_upgrader : public ItemScript
             if (player->GetQuestStatus(700002) == QUEST_STATUS_INCOMPLETE)
             {
                 auto l_Creature = player->FindNearestCreature(700003, 30.0f);
+                if (!l_Creature)
+                    l_Creature = player->FindNearestCreature(700010, 30.0f);
                 if (l_Creature && l_Creature->AI())
                 {
                     l_Creature->AI()->Talk(2, player);

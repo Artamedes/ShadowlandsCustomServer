@@ -29,7 +29,7 @@ struct npc_battle_training : public ScriptedAI
             p_Player->PrepareQuestMenu(me->GetGUID());
             if (p_Player->GetQuestStatus(700001) == QUEST_STATUS_INCOMPLETE)
                 AddGossipItemFor(p_Player, GossipOptionIcon::BattleMaster, "Battle!", 0, 1);
-            AddGossipItemFor(p_Player, GossipOptionIcon::None, "Nevermind", 0, 0);
+            //AddGossipItemFor(p_Player, GossipOptionIcon::None, "Nevermind", 0, 0);
             SendGossipMenuFor(p_Player, me->GetEntry(), me);
             return true;
         }
@@ -81,7 +81,7 @@ struct npc_item_upgrade_tutorial : public ScriptedAI
             p_Player->PrepareQuestMenu(me->GetGUID());
             if (p_Player->GetQuestStatus(700002) == QUEST_STATUS_INCOMPLETE)
                 AddGossipItemFor(p_Player, GossipOptionIcon::BattleMaster, "How do you upgrade?", 0, 1);
-            AddGossipItemFor(p_Player, GossipOptionIcon::None, "Nevermind", 0, 0);
+          //  AddGossipItemFor(p_Player, GossipOptionIcon::None, "Nevermind", 0, 0);
             SendGossipMenuFor(p_Player, me->GetEntry(), me);
             return true;
         }
@@ -244,7 +244,7 @@ struct npc_currency_guy : public ScriptedAI
             p_Player->PrepareQuestMenu(me->GetGUID());
             if (p_Player->GetQuestStatus(700005) == QUEST_STATUS_INCOMPLETE)
                 AddGossipItemFor(p_Player, GossipOptionIcon::AdventureMap, "What are currencies for?", 0, 1);
-            AddGossipItemFor(p_Player, GossipOptionIcon::None, "Nevermind", 0, 0);
+           // AddGossipItemFor(p_Player, GossipOptionIcon::None, "Nevermind", 0, 0);
             SendGossipMenuFor(p_Player, me->GetEntry(), me);
             return true;
         }
@@ -321,10 +321,9 @@ struct npc_juno_700006 : public ScriptedAI
         {
             ClearGossipMenuFor(p_Player);
             p_Player->PrepareQuestMenu(me->GetGUID());
-            AddGossipItemFor(p_Player, GossipOptionIcon::None, "Nevermind.", 0, 2);
             if (p_Player->GetQuestStatus(700007) == QUEST_STATUS_NONE)
                 SendGossipMenuFor(p_Player, 7000060, me);
-            else if (p_Player->GetQuestStatus(700008) == QUEST_STATUS_INCOMPLETE || p_Player->GetQuestStatus(700007) == QUEST_STATUS_NONE)
+            else if (p_Player->GetQuestStatus(700008) != QUEST_STATUS_REWARDED)
                 SendGossipMenuFor(p_Player, 7000061, me);
             else
                 SendGossipMenuFor(p_Player, 700006, me);
@@ -394,7 +393,7 @@ struct npc_mall_weapongiver : public ScriptedAI
                 AddGossipItemFor(player, GossipOptionIcon::None, "Create Weapon", 0, 2, "|cffFF0000Accepting this will use |cffff8000[Legendary Dust]|cffFF0000x1|R", 0, false);
 
             AddGossipItemFor(player, GossipOptionIcon::None, "Preview Weapon", 0, 1);
-            SendGossipMenuFor(player, 1, me);
+            SendGossipMenuFor(player, 800017, me);
             return true;
         }
 

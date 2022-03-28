@@ -8,9 +8,16 @@ struct npc_custom_thrall_700113 : public ScriptedAI
     public:
         npc_custom_thrall_700113(Creature* p_Creature) : ScriptedAI(p_Creature) { }
 
+        void InitializeAI() override
+        {
+            // EMOTE_STATE_MEDITATE
+            //me->AddAura(182726, me); // Injured
+            me->SetEmoteState(EMOTE_STATE_MEDITATE);
+        }
+
         void Reset() override
         {
-            me->SetEmoteState(EMOTE_STATE_READY1H);
+           // me->SetEmoteState(EMOTE_STATE_COWER);
         }
 };
 
@@ -276,6 +283,65 @@ public:
     }
 };
 
+class maelstrom_dungeon_player_script : public PlayerScript
+{
+    public:
+        maelstrom_dungeon_player_script() : PlayerScript("maelstrom_dungeon_player_script") { }
+
+        void OnQuestStatusChange(Player* player, uint32 questId) override
+        {
+            if (player->GetMapId() != 1469)
+                return;
+
+            switch (questId)
+            {
+                case 700008: // maeslstrom invasion
+                {
+
+                    auto status = player->GetQuestStatus(questId);
+
+                    if (status == QUEST_STATUS_REWARDED)
+                    {
+                     //   player->AddQuestAndCheckCompletion(sObjectMgr->GetQuestTemplate(700009), player);
+                        player->AddQuestAndCheckCompletion(sObjectMgr->GetQuestTemplate(700010), player);
+                        player->PlayerTalkClass->SendQuestGiverQuestDetails(sObjectMgr->GetQuestTemplate(700010), player->GetGUID(), true, true);
+                    }
+
+                    break;
+
+                }
+                case 700009:
+                {
+                    auto status1 = player->GetQuestStatus(700009);
+
+                    if (status1 == QUEST_STATUS_REWARDED)
+                    {
+                        auto quest = sObjectMgr->GetQuestTemplate(700011);
+                        player->AddQuestAndCheckCompletion(quest, player);
+                        player->PlayerTalkClass->SendQuestGiverQuestDetails(quest, player->GetGUID(), true, true);
+                    }
+
+                    break;
+                }
+                case 700010:
+                {
+                    // add quest - 700011
+                    auto status1 = player->GetQuestStatus(700010);
+
+                    if (status1 == QUEST_STATUS_REWARDED)
+                    {
+                        auto quest = sObjectMgr->GetQuestTemplate(700009);
+                        player->AddQuestAndCheckCompletion(quest, player);
+                        player->PlayerTalkClass->SendQuestGiverQuestDetails(quest, player->GetGUID(), true, true);
+                    }
+
+
+                    break;
+                }
+            }
+        }
+};
+
 void AddSC_MaelstromDungeon()
 {
     RegisterCreatureAI(npc_custom_thrall_700113);
@@ -284,4 +350,5 @@ void AddSC_MaelstromDungeon()
     RegisterCreatureAI(boss_corrupted_ghost_of_the_primus_700104);
     RegisterCreatureAI(npc_sir_duke_iro_700112);
     new instance_maelstrom_invasion();
+    new maelstrom_dungeon_player_script();
 }
