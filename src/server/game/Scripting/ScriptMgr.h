@@ -824,6 +824,9 @@ class TC_GAME_API PlayerScript : public ScriptObject
         // Called when a player presses release when he died
         virtual void OnPlayerRepop(Player* /*player*/) { }
 
+        // Called when a player power change
+        virtual void OnModifyPower(Player* /*player*/, Powers /*power*/, int32 /*oldValue*/, int32& /*newValue*/, bool /*regen*/, bool /*after*/) { }
+
         // Called when a player completes a movie
         virtual void OnMovieComplete(Player* /*player*/, uint32 /*movieId*/) { }
 
@@ -839,6 +842,9 @@ class TC_GAME_API PlayerScript : public ScriptObject
         // @player  : Player instance
         // @spellID : Learned spell ID
         virtual void OnSpellRemoved(Player* /*player*/, uint32 /*spellID*/) {}
+
+        //Called when a spell Hit a target
+        virtual void CheckOnSpellHitOnUnit(Unit* /*target*/, WorldObject const* /*caster*/, SpellMissInfo& /*spellResult*/, SpellInfo const* /*spellInfo*/) { }
 };
 
 class TC_GAME_API AccountScript : public ScriptObject
@@ -1255,6 +1261,8 @@ class TC_GAME_API ScriptMgr
         void OnQuestStatusChange(Player* player, uint32 questId);
         void OnPlayerRepop(Player* player);
         void OnMovieComplete(Player* player, uint32 movieId);
+        void OnModifyPower(Player* player, Powers power, int32 oldValue, int32& newValue, bool regen, bool after);
+        void CheckOnSpellHitOnUnit(Unit* target, WorldObject const* caster, SpellMissInfo& spellMissInfo, SpellInfo const* spellInfo);
         void OnPlayerChoiceResponse(Player* player, uint32 choiceId, uint32 responseId);
         void OnPlayerSpellLearned(Player* player, uint32 spellID);
         void OnPlayerSpellRemoved(Player* player, uint32 spellID);

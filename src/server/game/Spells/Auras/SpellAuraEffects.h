@@ -75,6 +75,13 @@ class TC_GAME_API AuraEffect
         void HandleEffect(Unit* target, uint8 mode, bool apply, AuraEffect const* triggeredBy = nullptr);
         void ApplySpellMod(Unit* target, bool apply, AuraEffect const* triggeredBy = nullptr);
 
+        void  SetDamage(int32 val) { m_damage = val; }
+        int32 GetDamage() const { return m_damage; }
+        void  SetCritChance(float val) { m_critChance = val; }
+        float GetCritChance() const { return m_critChance; }
+        void  SetDonePct(float val) { m_donePct = val; }
+        float GetDonePct() const { return m_donePct; }
+
         void Update(uint32 diff, Unit* caster);
 
         uint32 GetTickNumber() const { return _ticksDone; }
@@ -113,6 +120,9 @@ class TC_GAME_API AuraEffect
 
         int32 const m_baseAmount;
         int32 _amount;
+        int32 m_damage;
+        float m_critChance;
+        float m_donePct;
         Optional<float> _estimatedAmount;   // for periodic damage and healing auras this will include damage done bonuses
 
         // periodic stuff

@@ -40,7 +40,7 @@
 #include "UpdateData.h"
 
 AreaTrigger::AreaTrigger() : WorldObject(false), MapObject(), _spawnId(0), _aurEff(nullptr), _maxSearchRadius(0.0f),
-    _duration(0), _totalDuration(0), _timeSinceCreated(0), _previousCheckOrientation(std::numeric_limits<float>::infinity()), _radius(0.0f),
+    _duration(0), _totalDuration(0), _timeSinceCreated(0), _periodicProcTimer(0), _basePeriodicProcTimer(0), _previousCheckOrientation(std::numeric_limits<float>::infinity()), _radius(0.0f),
     _isRemoved(false), _reachedDestination(true), _lastSplineIndex(0), _movementTime(0),
     _areaTriggerCreateProperties(nullptr), _areaTriggerTemplate(nullptr)
 {
@@ -317,9 +317,23 @@ void AreaTrigger::Update(uint32 diff)
         }
     }
 
+    UpdateTargetList();
+
+    if (!_ai)
+        return;
+
     _ai->OnUpdate(diff);
 
-    UpdateTargetList();
+    if (_basePeriodicProcTimer)
+    {
+        if (_periodicProcTimer <= diff)
+        {
+            _ai->OnPeriodicProc();
+            _periodicProcTimer = _basePeriodicProcTimer;
+        }
+        else
+            _periodicProcTimer -= diff;
+    }
 }
 
 void AreaTrigger::Remove()

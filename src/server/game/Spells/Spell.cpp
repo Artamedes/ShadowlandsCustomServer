@@ -2861,9 +2861,20 @@ SpellMissInfo Spell::PreprocessSpellHit(Unit* unit, TargetInfo& hitInfo)
 
     if (Player* player = unit->ToPlayer())
     {
-        player->StartCriteriaTimer(CriteriaStartEvent::BeSpellTarget, m_spellInfo->Id);
-        player->UpdateCriteria(CriteriaType::BeSpellTarget, m_spellInfo->Id, 0, 0, m_caster);
-        player->UpdateCriteria(CriteriaType::GainAura, m_spellInfo->Id);
+        if (player->IsInWorld())
+        {
+            if (m_caster && m_spellInfo)
+            {
+                SpellMissInfo spellResult = SPELL_MISS_NONE;
+                sScriptMgr->CheckOnSpellHitOnUnit(unitTarget, m_caster, spellResult, m_spellInfo);
+                if (spellResult != SPELL_MISS_NONE)
+                    return spellResult;
+            }
+
+            player->StartCriteriaTimer(CriteriaStartEvent::BeSpellTarget, m_spellInfo->Id);
+            player->UpdateCriteria(CriteriaType::BeSpellTarget, m_spellInfo->Id, 0, 0, m_caster);
+            player->UpdateCriteria(CriteriaType::GainAura, m_spellInfo->Id);
+        }
     }
 
     if (Player* player = m_caster->ToPlayer())
@@ -5092,6 +5103,8 @@ void Spell::TakePower()
                 }
             }
         }
+
+        CallScriptOnTakePowerHandlers(cost);
 
         if (powerType == POWER_RUNES)
         {
@@ -8272,6 +8285,29 @@ void Spell::CallScriptAfterCastHandlers()
     }
 }
 
+void Spell::CallScriptOnTakePowerHandlers(SpellPowerCost& powerCost)
+{
+#ifdef PERFORMANCE_LOG
+    uint32 scriptExecuteTime = GameTime::GetGameTimeMS();
+#endif // PERFORMANCE_LOG
+
+    for (auto scritr = m_loadedScripts.begin(); scritr != m_loadedScripts.end(); ++scritr)
+    {
+        (*scritr)->_PrepareScriptCall(SPELL_SCRIPT_HOOK_TAKE_POWER);
+        auto hookItrEnd = (*scritr)->OnTakePower.end(), hookItr = (*scritr)->OnTakePower.begin();
+        for (; hookItr != hookItrEnd; ++hookItr)
+            (*hookItr).Call(*scritr, powerCost);
+
+        (*scritr)->_FinishScriptCall();
+    }
+
+#ifdef PERFORMANCE_LOG
+    scriptExecuteTime = GameTime::GetGameTimeMS() - scriptExecuteTime;
+    if (scriptExecuteTime > 10)
+        sLog->outPerformance("Spell::CallScriptOnTakePowerHandlers [%u] take more than 10 ms to execute (%u ms)", m_spellInfo->Id, scriptExecuteTime);
+#endif // PERFORMANCE_LOG
+}
+
 SpellCastResult Spell::CallScriptCheckCastHandlers()
 {
     SpellCastResult retVal = SPELL_CAST_OK;
@@ -8950,4 +8986,14 @@ SpellCastVisual::operator UF::SpellCastVisual() const
 SpellCastVisual::operator WorldPackets::Spells::SpellCastVisual() const
 {
     return { int32(SpellXSpellVisualID), int32(ScriptVisualID) };
+}
+
+SpellPowerCost const* Spell::GetPowerCost(Powers power) const
+{
+    std::vector<SpellPowerCost> const& costs = GetPowerCost();
+    auto c = std::find_if(costs.begin(), costs.end(), [power](SpellPowerCost const& cost) { return cost.Power == power; });
+    if (c != costs.end())
+        return &(*c);
+
+    return nullptr;
 }

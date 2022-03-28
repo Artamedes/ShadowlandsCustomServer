@@ -192,6 +192,7 @@ class TC_GAME_API Aura
         uint8 GetStackAmount() const { return m_stackAmount; }
         void SetStackAmount(uint8 num);
         bool ModStackAmount(int32 num, AuraRemoveMode removeMode = AURA_REMOVE_BY_DEFAULT, bool resetPeriodicTimer = true);
+        bool DropStack(AuraRemoveMode removeMode = AURA_REMOVE_BY_DEFAULT) { return ModStackAmount(-1, removeMode); }
         uint32 CalcMaxStackAmount() const;
         bool IsUsingStacks() const;
 
@@ -304,6 +305,7 @@ class TC_GAME_API Aura
         std::vector<AuraScript*> m_loadedScripts;
 
         AuraEffectVector const& GetAuraEffects() const { return _effects; }
+        AuraScript* GetScriptByName(std::string const& scriptName) const;
 
         virtual std::string GetDebugInfo() const;
 

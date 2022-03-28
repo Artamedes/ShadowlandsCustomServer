@@ -2359,6 +2359,14 @@ void Aura::CallScriptAfterEffectProcHandlers(AuraEffect* aurEff, AuraApplication
     }
 }
 
+AuraScript* Aura::GetScriptByName(std::string const& scriptName) const
+{
+    for (auto itr = m_loadedScripts.begin(); itr != m_loadedScripts.end(); ++itr)
+        if ((*itr)->_GetScriptName()->compare(scriptName) == 0)
+            return *itr;
+    return nullptr;
+}
+
 std::string Aura::GetDebugInfo() const
 {
     std::stringstream sstr;

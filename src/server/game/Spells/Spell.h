@@ -620,6 +620,7 @@ class TC_GAME_API Spell
         SpellInfo const* GetSpellInfo() const { return m_spellInfo; }
         Difficulty GetCastDifficulty() const;
         std::vector<SpellPowerCost> const& GetPowerCost() const { return m_powerCost; }
+        SpellPowerCost const* GetPowerCost(Powers power) const;
         bool HasPowerTypeCost(Powers power) const;
         Optional<int32> GetPowerTypeCostAmount(Powers power) const;
 
@@ -829,6 +830,7 @@ class TC_GAME_API Spell
         void CallScriptOnPrepareHandlers();
         void CallScriptOnCastHandlers();
         void CallScriptAfterCastHandlers();
+        void CallScriptOnTakePowerHandlers(SpellPowerCost& powerCost);
         SpellCastResult CallScriptCheckCastHandlers();
         bool CallScriptEffectHandlers(SpellEffIndex effIndex, SpellEffectHandleMode mode);
         void CallScriptSuccessfulDispel(SpellEffIndex effIndex);

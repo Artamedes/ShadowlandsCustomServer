@@ -234,6 +234,16 @@ SpellScript::OnPrepareHandler::OnPrepareHandler(SpellOnPrepareFnType OnPrepareHa
     _onPrepareHandlerScript = OnPrepareHandlerScript;
 }
 
+void SpellScript::OnTakePowerHandler::Call(SpellScript* spellScript, SpellPowerCost& powerCost)
+{
+    (spellScript->*_onTakePowerHandlerScript)(powerCost);
+}
+
+SpellScript::OnTakePowerHandler::OnTakePowerHandler(SpellOnTakePowerFnType OnTakePowerHandlerScript)
+{
+    _onTakePowerHandlerScript = OnTakePowerHandlerScript;
+}
+
 SpellScript::OnCalculateResistAbsorbHandler::OnCalculateResistAbsorbHandler(SpellOnResistAbsorbCalculateFnType onResistAbsorbCalculateHandlerScript) :
     pOnCalculateResistAbsorbHandlerScript(onResistAbsorbCalculateHandlerScript)
 {

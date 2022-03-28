@@ -50,6 +50,7 @@ class WorldLocation;
 class WorldObject;
 struct SpellDestination;
 struct SpellModifier;
+struct SpellPowerCost;
 struct SpellValue;
 enum Difficulty : uint8;
 enum class ItemContext : uint8;
@@ -212,6 +213,7 @@ enum SpellScriptHookType
     SPELL_SCRIPT_HOOK_CHECK_CAST,
     SPELL_SCRIPT_HOOK_BEFORE_CAST,
     SPELL_SCRIPT_HOOK_ON_CAST,
+    SPELL_SCRIPT_HOOK_TAKE_POWER,
     SPELL_SCRIPT_HOOK_ON_PREPARE,
     SPELL_SCRIPT_HOOK_ON_RESIST_ABSORB_CALCULATION,
     SPELL_SCRIPT_HOOK_AFTER_CAST,
@@ -237,6 +239,7 @@ class TC_GAME_API SpellScript : public _SpellScript
             typedef void(CLASSNAME::*SpellOnResistAbsorbCalculateFnType)(DamageInfo const& damageInfo, uint32& resistAmount, int32& absorbAmount); \
             typedef void(CLASSNAME::*SpellObjectAreaTargetSelectFnType)(std::list<WorldObject*>&); \
             typedef void(CLASSNAME::*SpellObjectTargetSelectFnType)(WorldObject*&); \
+            typedef void(CLASSNAME::*SpellOnTakePowerFnType)(SpellPowerCost& powerCost); \
             typedef void(CLASSNAME::*SpellOnPrepareFnType)(); \
             typedef void(CLASSNAME::*SpellDestinationTargetSelectFnType)(SpellDestination&);
 
@@ -263,6 +266,15 @@ class TC_GAME_API SpellScript : public _SpellScript
             void Call(SpellScript* spellScript);
         private:
             SpellOnPrepareFnType _onPrepareHandlerScript;
+        };
+        
+        class TC_GAME_API OnTakePowerHandler
+        {
+        public:
+            OnTakePowerHandler(SpellOnTakePowerFnType OnTakePowerHandlerScript);
+            void Call(SpellScript* spellScript, SpellPowerCost& powerCost);
+        private:
+            SpellOnTakePowerFnType _onTakePowerHandlerScript;
         };
 
         class TC_GAME_API CheckCastHandler
@@ -414,6 +426,7 @@ class TC_GAME_API SpellScript : public _SpellScript
         #define SPELLSCRIPT_FUNCTION_CAST_DEFINES(CLASSNAME) \
         class CastHandlerFunction : public SpellScript::CastHandler { public: explicit CastHandlerFunction(SpellCastFnType _pCastHandlerScript) : SpellScript::CastHandler((SpellScript::SpellCastFnType)_pCastHandlerScript) { } }; \
         class OnPrepareHandlerFunction : public SpellScript::OnPrepareHandler { public: OnPrepareHandlerFunction(SpellOnPrepareFnType _onPrepareHandlerScript) : SpellScript::OnPrepareHandler((SpellScript::SpellOnPrepareFnType)_onPrepareHandlerScript) {} }; \
+        class OnTakePowerHandlerFunction : public SpellScript::OnTakePowerHandler { public: OnTakePowerHandlerFunction(SpellOnTakePowerFnType _onTakePowerHandlerScript) : SpellScript::OnTakePowerHandler((SpellScript::SpellOnTakePowerFnType)_onTakePowerHandlerScript) {} }; \
         class CheckCastHandlerFunction : public SpellScript::CheckCastHandler { public: explicit CheckCastHandlerFunction(SpellCheckCastFnType _checkCastHandlerScript) : SpellScript::CheckCastHandler((SpellScript::SpellCheckCastFnType)_checkCastHandlerScript) { } }; \
         class EffectHandlerFunction : public SpellScript::EffectHandler { public: explicit EffectHandlerFunction(SpellEffectFnType _pEffectHandlerScript, uint8 _effIndex, uint16 _effName) : SpellScript::EffectHandler((SpellScript::SpellEffectFnType)_pEffectHandlerScript, _effIndex, _effName) { } }; \
         class HitHandlerFunction : public SpellScript::HitHandler { public: explicit HitHandlerFunction(SpellHitFnType _pHitHandlerScript) : SpellScript::HitHandler((SpellScript::SpellHitFnType)_pHitHandlerScript) { } }; \
@@ -515,6 +528,11 @@ class TC_GAME_API SpellScript : public _SpellScript
         // where function is void function(SpellDestination& target)
         HookList<DestinationTargetSelectHandler> OnDestinationTargetSelect;
         #define SpellDestinationTargetSelectFn(F, I, N) DestinationTargetSelectHandlerFunction(&F, I, N)
+
+        // example: OnTakePower += SpellOnTakePowerFn(class::function);
+        // where function is void function(SpellPowerCost& powerCost)
+        HookList<OnTakePowerHandler> OnTakePower;
+        #define SpellOnTakePowerFn(F) OnTakePowerHandlerFunction(&F)
 
         // hooks are executed in following order, at specified event of spell:
         // 1. OnPrecast - executed during spell preparation (before cast bar starts)

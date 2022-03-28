@@ -96,6 +96,14 @@ bool Position::IsWithinDoubleVerticalCylinder(Position const* center, float radi
     return IsInDist2d(center, radius) && std::abs(verticalDelta) <= height;
 }
 
+float Position::GetAngle(Position const* pos) const
+{
+    if (!pos)
+        return 0.0f;
+
+    return GetAngle(pos->GetPositionX(), pos->GetPositionY());
+}
+
 bool Position::HasInArc(float arc, Position const* obj, float border) const
 {
     // always have self in arc

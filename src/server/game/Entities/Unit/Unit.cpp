@@ -4433,7 +4433,7 @@ Aura* Unit::GetAuraOfRankedSpell(uint32 spellId, ObjectGuid casterGUID, ObjectGu
     return aurApp ? aurApp->GetBase() : nullptr;
 }
 
-void Unit::GetDispellableAuraList(WorldObject const* caster, uint32 dispelMask, DispelChargesList& dispelList, bool isReflect /*= false*/) const
+void Unit::GetDispellableAuraList(WorldObject const* caster, uint32 dispelMask, DispelChargesList& dispelList, bool isReflect /*= false*/, bool checkFriendly /*= true*/)  const
 {
     AuraMap const& auras = GetOwnedAuras();
     for (auto itr = auras.begin(); itr != auras.end(); ++itr)
@@ -4452,8 +4452,9 @@ void Unit::GetDispellableAuraList(WorldObject const* caster, uint32 dispelMask, 
             // do not remove positive auras if friendly target
             //               negative auras if non-friendly
             // unless we're reflecting (dispeller eliminates one of it's benefitial buffs)
-            if (isReflect != (aurApp->IsPositive() == IsFriendlyTo(caster)))
-                continue;
+            if (checkFriendly)
+                if (isReflect != (aurApp->IsPositive() == IsFriendlyTo(caster)))
+                    continue;
 
             // 2.4.3 Patch Notes: "Dispel effects will no longer attempt to remove effects that have 100% dispel resistance."
             int32 chance = aura->CalcDispelChance(this, !IsFriendlyTo(caster));
@@ -4591,6 +4592,28 @@ bool Unit::HasAuraWithMechanic(uint32 mechanicMask) const
     }
 
     return false;
+}
+
+bool Unit::HasAuraWithDispelFlagsFromCaster(Unit* caster, DispelType dispelType, bool checkFriendly /*= true*/)
+{
+    DispelChargesList diseases;
+    GetDispellableAuraList(caster, (1 << dispelType), diseases, false, checkFriendly);
+    bool hasDispel = false;
+    for (DispelChargesList::iterator itr = diseases.begin(); itr != diseases.end(); ++itr)
+    {
+        Aura* aura = itr->GetAura();
+        if (!aura)
+            continue;
+
+        // if target has aura with dispel type from caster
+        if (aura->GetCasterGUID() == caster->GetGUID())
+        {
+            hasDispel = true;
+            break;
+        }
+    }
+
+    return hasDispel;
 }
 
 bool Unit::HasStrongerAuraWithDR(SpellInfo const* auraSpellInfo, Unit* caster) const
@@ -6433,7 +6456,7 @@ void Unit::SendEnergizeSpellLog(Unit* victim, uint32 spellID, int32 damage, int3
 
 void Unit::EnergizeBySpell(Unit* victim, SpellInfo const* spellInfo, int32 damage, Powers powerType)
 {
-    int32 gain = victim->ModifyPower(powerType, damage, false);
+    int32 gain = victim->ModifyPower(powerType, damage);
     int32 overEnergize = damage - gain;
     victim->GetThreatManager().ForwardThreatForAssistingMe(this, float(damage) / 2, spellInfo, true);
     SendEnergizeSpellLog(victim, spellInfo->Id, gain, overEnergize, powerType);
@@ -9108,6 +9131,10 @@ void Unit::SetPower(Powers power, int32 val, bool withPowerUpdate /*= true*/)
         val = maxPower;
 
     int32 oldPower = m_unitData->Power[powerIndex];
+
+    if (IsPlayer())
+        sScriptMgr->OnModifyPower(ToPlayer(), power, oldPower, val, false, false);
+
     SetUpdateFieldValue(m_values.ModifyValue(&Unit::m_unitData).ModifyValue(&UF::UnitData::Power, powerIndex), val);
 
     if (IsInWorld() && withPowerUpdate)
@@ -9118,6 +9145,9 @@ void Unit::SetPower(Powers power, int32 val, bool withPowerUpdate /*= true*/)
         packet.Powers.emplace_back(val, power);
         SendMessageToSet(packet.Write(), GetTypeId() == TYPEID_PLAYER);
     }
+
+    if (ToPlayer())
+        sScriptMgr->OnModifyPower(ToPlayer(), power, oldPower, val, false, true);
 
     TriggerOnPowerChangeAuras(power, oldPower, val);
 

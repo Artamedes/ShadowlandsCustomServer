@@ -167,6 +167,11 @@ public:
         ang = (ang >= 0) ? ang : 2 * float(M_PI) + ang;
         return ang;
     }
+    float GetAngle(Position const* pos) const;
+    float GetAngle(Position const& pos) const
+    {
+        return GetAngle(pos.m_positionX, pos.m_positionY);
+    }
 };
 
 #define MAPID_INVALID 0xFFFFFFFF
