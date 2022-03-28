@@ -484,22 +484,22 @@ struct at_monk_ring_of_peace : AreaTriggerAI
     {
         if (diff <= time)
         {
-            diff = IN_MILLISECONDS;
+            diff = 100;
             if (Unit* caster = at->GetCaster())
             {
-                std::list<Player*> playerList;
-                Trinity::AnyPlayerInObjectRangeCheck check(at, at->GetRadius());
-                Trinity::PlayerListSearcher<Trinity::AnyPlayerInObjectRangeCheck> searcher(at, playerList, check);
+                std::list<Unit*> playerList;
+                Trinity::AnyUnitInObjectRangeCheck check(at, at->GetRadius());
+                Trinity::PlayerListSearcher<Trinity::AnyUnitInObjectRangeCheck> searcher(at, playerList, check);
                 Cell::VisitAllObjects(at, searcher, at->GetRadius());
 
                 if (!playerList.empty())
                 {
-                    for (std::list<Player*>::const_iterator itr = playerList.begin(); itr != playerList.end(); ++itr)
+                    for (auto itr = playerList.begin(); itr != playerList.end(); ++itr)
                     {
                         if (!(*itr) || !caster->IsValidAttackTarget((*itr)))
                             continue;
 
-                        if (!(*itr)->GetKnockBackTime())
+                        if (!(*itr)->IsPlayer() || !(*itr)->ToPlayer()->GetKnockBackTime())
                         {
                             caster->CastSpell(at->GetPosition(), SPELL_MONK_RING_OF_PEACE_KNOCKBACK, true);
                             return;
