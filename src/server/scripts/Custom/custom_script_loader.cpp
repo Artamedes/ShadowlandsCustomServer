@@ -30,6 +30,7 @@ void AddSC_Crapopolis();
 void AddSC_Skyhold();
 void AddSC_CustomInstanceScript();
 void AddSC_cs_custom();
+void AddSC_NetherlightTemple();
 
 void AddCustomScripts()
 {
@@ -44,4 +45,5 @@ void AddCustomScripts()
     AddSC_Skyhold();
     AddSC_CustomInstanceScript();
     AddSC_cs_custom();
+    AddSC_NetherlightTemple();
 }
