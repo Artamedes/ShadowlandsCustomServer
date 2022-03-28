@@ -35,6 +35,8 @@ enum WarriorSpells
 {
     SPELL_WARRIOR_BLADESTORM_PERIODIC_WHIRLWIND     = 50622,
     SPELL_WARRIOR_BLOODTHIRST_HEAL                  = 117313,
+    SPELL_WARRIOR_BLOODTHIRST                       = 23885,
+    SPELL_WARRIOR_BLOODTHIRST_DAMAGE                = 23881,
     SPELL_WARRIOR_CHARGE                            = 34846,
     SPELL_WARRIOR_CHARGE_EFFECT                     = 218104,
     SPELL_WARRIOR_CHARGE_EFFECT_BLAZING_TRAIL       = 198337,
@@ -64,6 +66,7 @@ enum WarriorSpells
     SPELL_WARRIOR_TRAUMA_EFFECT                     = 215537,
     SPELL_WARRIOR_VICTORIOUS                        = 32216,
     SPELL_WARRIOR_VICTORY_RUSH_HEAL                 = 118779,
+    SPELL_WARRIOR_ENRAGE_AURA                       = 184362,
 };
 
 enum WarriorMisc
@@ -636,6 +639,76 @@ class spell_warr_victory_rush : public SpellScript
         AfterCast += SpellCastFn(spell_warr_victory_rush::HandleHeal);
     }
 };
+// Enrage - 184361
+class spell_warr_enrage : public SpellScriptLoader
+{
+public:
+    spell_warr_enrage() : SpellScriptLoader("spell_warr_enrage") {}
+
+    class spell_warr_enrage_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_warr_enrage_AuraScript);
+
+        bool CheckProc(ProcEventInfo& eventInfo)
+        {
+            if (eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == SPELL_WARRIOR_BLOODTHIRST_DAMAGE && roll_chance_i(sSpellMgr->GetSpellInfo(SPELL_WARRIOR_ENRAGE_AURA)->GetEffect(EFFECT_0).BasePoints))
+                return true;
+
+            return false;
+        }
+
+        void HandleProc(ProcEventInfo& eventInfo)
+        {
+            if (Unit* caster = GetCaster())
+                caster->CastSpell(caster, SPELL_WARRIOR_ENRAGE_AURA, true);
+        }
+
+        void Register() override
+        {
+            OnProc += AuraProcFn(spell_warr_enrage_AuraScript::HandleProc);
+            DoCheckProc += AuraCheckProcFn(spell_warr_enrage_AuraScript::CheckProc);
+        }
+    };
+
+    AuraScript* GetAuraScript() const override
+    {
+        return new spell_warr_enrage_AuraScript();
+    }
+};
+
+// Rampage damage dealers - 218617, 184707, 184709, 201364, 201363
+class spell_warr_rampage : public SpellScriptLoader
+{
+public:
+    spell_warr_rampage() : SpellScriptLoader("spell_warr_rampage") { }
+
+    class spell_warr_rampage_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_warr_rampage_SpellScript);
+
+        void HandleAuras()
+        {
+            Unit* caster = GetCaster();
+            if (!caster)
+                return;
+
+            if (Aura* enrage = caster->GetAura(SPELL_WARRIOR_ENRAGE_AURA))
+                enrage->RefreshDuration();
+            else
+                caster->CastSpell(caster, SPELL_WARRIOR_ENRAGE_AURA, true);
+        }
+
+        void Register() override
+        {
+            OnCast += SpellCastFn(spell_warr_rampage_SpellScript::HandleAuras);
+        }
+    };
+
+    SpellScript* GetSpellScript() const override
+    {
+        return new spell_warr_rampage_SpellScript();
+    }
+};
 
 void AddSC_warrior_spell_scripts()
 {
@@ -659,4 +732,6 @@ void AddSC_warrior_spell_scripts()
     RegisterSpellScript(spell_warr_t3_prot_8p_bonus);
     RegisterSpellScript(spell_warr_victorious_state);
     RegisterSpellScript(spell_warr_victory_rush);
+    new spell_warr_enrage();
+    new spell_warr_rampage();
 }
