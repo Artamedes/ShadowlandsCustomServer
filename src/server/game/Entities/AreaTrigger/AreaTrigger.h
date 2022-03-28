@@ -128,6 +128,7 @@ class TC_GAME_API AreaTrigger : public WorldObject, public GridObject<AreaTrigge
 
         void UpdateShape();
 
+        float GetRadius() { return _radius; }
         UF::UpdateField<UF::AreaTriggerData, 0, TYPEID_AREATRIGGER> m_areaTriggerData;
 
     protected:
@@ -168,6 +169,7 @@ class TC_GAME_API AreaTrigger : public WorldObject, public GridObject<AreaTrigge
         int32 _totalDuration;
         uint32 _timeSinceCreated;
         float _previousCheckOrientation;
+        float _radius;
         bool _isRemoved;
 
         Position _rollPitchYaw;

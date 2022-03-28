@@ -20,14 +20,18 @@
  * Scriptnames of files in this file should be prefixed with "spell_monk_".
  */
 
+#include "AreaTrigger.h"
+#include "AreaTriggerAI.h"
+#include "CellImpl.h"
+#include "Containers.h"
+#include "GridNotifiersImpl.h"
 #include "ScriptMgr.h"
-#include "DB2Stores.h"
-#include "Spell.h"
 #include "SpellAuraEffects.h"
-#include "SpellInfo.h"
+#include "SpellHistory.h"
 #include "SpellMgr.h"
+#include "SpellPackets.h"
 #include "SpellScript.h"
-#include "Unit.h"
+#include "Util.h"
 
 enum MonkSpells
 {
@@ -47,6 +51,7 @@ enum MonkSpells
     SPELL_MONK_STAGGER_LIGHT                            = 124275,
     SPELL_MONK_STAGGER_MODERATE                         = 124274,
     SPELL_MONK_SURGING_MIST_HEAL                        = 116995,
+    SPELL_MONK_RING_OF_PEACE_KNOCKBACK                  = 237371,
 };
 
 // 117952 - Crackling Jade Lightning
@@ -461,6 +466,64 @@ private:
     }
 };
 
+// Ring of Peace: 237371 
+// Areatrigger ID: 3983
+struct at_monk_ring_of_peace : AreaTriggerAI
+{
+	at_monk_ring_of_peace(AreaTrigger* areatrigger) : AreaTriggerAI(areatrigger) { }
+
+    uint32 diff = IN_MILLISECONDS;
+
+    void OnCreate() override
+    {
+        if (Unit* caster = at->GetCaster())        
+            caster->CastSpell(at->GetPosition(), SPELL_MONK_RING_OF_PEACE_KNOCKBACK, true);
+    }
+
+    void OnUpdate(uint32 time) override
+    {
+        if (diff <= time)
+        {
+            diff = IN_MILLISECONDS;
+            if (Unit* caster = at->GetCaster())
+            {
+                std::list<Player*> playerList;
+                Trinity::AnyPlayerInObjectRangeCheck check(at, at->GetRadius());
+                Trinity::PlayerListSearcher<Trinity::AnyPlayerInObjectRangeCheck> searcher(at, playerList, check);
+                Cell::VisitAllObjects(at, searcher, at->GetRadius());
+
+                if (!playerList.empty())
+                {
+                    for (std::list<Player*>::const_iterator itr = playerList.begin(); itr != playerList.end(); ++itr)
+                    {
+                        if (!(*itr) || !caster->IsValidAttackTarget((*itr)))
+                            continue;
+
+                        if (!(*itr)->GetKnockBackTime())
+                        {
+                            caster->CastSpell(at->GetPosition(), SPELL_MONK_RING_OF_PEACE_KNOCKBACK, true);
+                            return;
+                        }
+                    }
+                }
+            }              
+        }
+        else
+            diff -= time;
+    }
+
+	void OnUnitEnter(Unit* unit) override
+	{
+		Unit* caster = at->GetCaster();
+
+		if (!caster || !unit)
+			return;
+
+		if (unit != caster && caster->IsValidAttackTarget(unit))
+			caster->CastSpell(at->GetPosition(), SPELL_MONK_RING_OF_PEACE_KNOCKBACK, true);
+	}
+};
+
 void AddSC_monk_spell_scripts()
 {
     RegisterSpellScript(spell_monk_crackling_jade_lightning);
@@ -471,4 +534,6 @@ void AddSC_monk_spell_scripts()
     RegisterSpellScript(spell_monk_stagger);
     RegisterSpellScript(spell_monk_stagger_damage_aura);
     RegisterSpellScript(spell_monk_stagger_debuff_aura);
+
+    RegisterAreaTriggerAI(at_monk_ring_of_peace);
 }

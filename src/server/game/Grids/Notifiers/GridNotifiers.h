@@ -1459,7 +1459,7 @@ namespace Trinity
             NearestCreatureEntryWithLiveStateInObjectRangeCheck(NearestCreatureEntryWithLiveStateInObjectRangeCheck const&) = delete;
     };
 
-    class AnyPlayerInObjectRangeCheck
+    class TC_GAME_API AnyPlayerInObjectRangeCheck
     {
         public:
             AnyPlayerInObjectRangeCheck(WorldObject const* obj, float range, bool reqAlive = true) : _obj(obj), _range(range), _reqAlive(reqAlive) { }
@@ -1481,7 +1481,7 @@ namespace Trinity
             bool _reqAlive;
     };
 
-    class AnyPlayerInPositionRangeCheck
+    class TC_GAME_API AnyPlayerInPositionRangeCheck
     {
     public:
         AnyPlayerInPositionRangeCheck(Position const* pos, float range, bool reqAlive = true) : _pos(pos), _range(range), _reqAlive(reqAlive) { }

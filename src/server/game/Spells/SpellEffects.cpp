@@ -3952,6 +3952,9 @@ void Spell::EffectKnockBack()
 
     Unit::ProcSkillsAndAuras(GetUnitCasterForEffectHandlers(), unitTarget, PROC_FLAG_NONE, { PROC_FLAG_NONE, PROC_FLAG_2_KNOCKBACK },
         PROC_SPELL_TYPE_MASK_ALL, PROC_SPELL_PHASE_HIT, PROC_HIT_NONE, nullptr, nullptr, nullptr);
+
+    if (unitTarget->IsPlayer())
+        unitTarget->ToPlayer()->SetKnockBackTime(getMSTime());
 }
 
 void Spell::EffectLeapBack()

@@ -30,6 +30,13 @@ ByteBuffer& operator<<(ByteBuffer& data, MovementInfo const& movementInfo)
     bool hasSpline = false; // todo 6.x send this infos
     bool hasInertia = movementInfo.inertia.has_value();
 
+    // TODO: Find if this is still needed.
+    // if (movementInfo.HasExtraMovementFlag(MOVEMENTFLAG2_WATERWALKING_FULL_PITCH) && !movementInfo.jump.fallTime)
+    // {
+    //     hasFallData = true;
+    //     hasFallDirection = true;
+    // }
+
     data << movementInfo.guid;
     data << uint32(movementInfo.flags);
     data << uint32(movementInfo.flags2);

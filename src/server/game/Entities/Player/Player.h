@@ -2642,6 +2642,9 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         VoidStorageItem* GetVoidStorageItem(uint8 slot) const;
         VoidStorageItem* GetVoidStorageItem(uint64 id, uint8& slot) const;
 
+        void SetKnockBackTime(uint32 timer) { m_knockBackTimer = timer; }
+        uint32 GetKnockBackTime() const { return m_knockBackTimer; }
+
         // Reagent Bank
         bool IsReagentBankUnlocked() const { return HasPlayerFlagEx(PLAYER_FLAGS_EX_REAGENT_BANK_UNLOCKED); }
         void UnlockReagentBank() { AddPlayerFlagEx(PLAYER_FLAGS_EX_REAGENT_BANK_UNLOCKED); }
@@ -3135,6 +3138,8 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         InstanceTimeMap _instanceResetTimes;
         uint32 _pendingBindId;
         uint32 _pendingBindTimer;
+
+        uint32 m_knockBackTimer;
 
         uint32 _activeCheats;
 

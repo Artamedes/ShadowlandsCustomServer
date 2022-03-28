@@ -330,6 +330,8 @@ Player::Player(WorldSession* session) : Unit(true), m_sceneMgr(this)
     healthBeforeDuel = 0;
     manaBeforeDuel = 0;
 
+    m_knockBackTimer = 0;
+
     memset(_voidStorageItems, 0, VOID_STORAGE_MAX_SLOT * sizeof(VoidStorageItem*));
 
     _cinematicMgr = new CinematicMgr(this);

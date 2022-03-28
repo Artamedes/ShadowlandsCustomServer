@@ -209,6 +209,7 @@ public:
     AreaTriggerId Id;
     uint32 Flags;
     std::vector<AreaTriggerAction> Actions;
+    uint32 ScriptId = 0;
 };
 
 class AreaTriggerCreateProperties

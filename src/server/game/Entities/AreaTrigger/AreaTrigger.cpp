@@ -40,7 +40,7 @@
 #include "UpdateData.h"
 
 AreaTrigger::AreaTrigger() : WorldObject(false), MapObject(), _spawnId(0), _aurEff(nullptr), _maxSearchRadius(0.0f),
-    _duration(0), _totalDuration(0), _timeSinceCreated(0), _previousCheckOrientation(std::numeric_limits<float>::infinity()),
+    _duration(0), _totalDuration(0), _timeSinceCreated(0), _previousCheckOrientation(std::numeric_limits<float>::infinity()), _radius(0.0f),
     _isRemoved(false), _reachedDestination(true), _lastSplineIndex(0), _movementTime(0),
     _areaTriggerCreateProperties(nullptr), _areaTriggerTemplate(nullptr)
 {
@@ -424,17 +424,20 @@ void AreaTrigger::SearchUnitInSphere(std::vector<Unit*>& targetList)
     }
 
     SearchUnits(targetList, radius, true);
+    _radius = radius;
 }
 
 void AreaTrigger::SearchUnitInBox(std::vector<Unit*>& targetList)
 {
-    SearchUnits(targetList, GetMaxSearchRadius(), false);
+    float maxSearchRadius = GetMaxSearchRadius();
+    SearchUnits(targetList, maxSearchRadius, false);
 
     Position const& boxCenter = GetPosition();
     float extentsX = _shape.BoxDatas.Extents[0];
     float extentsY = _shape.BoxDatas.Extents[1];
     float extentsZ = _shape.BoxDatas.Extents[2];
 
+    _radius = maxSearchRadius;
     targetList.erase(std::remove_if(targetList.begin(), targetList.end(), [boxCenter, extentsX, extentsY, extentsZ](Unit* unit) -> bool
     {
         return !unit->IsWithinBox(boxCenter, extentsX, extentsY, extentsZ);
@@ -443,11 +446,14 @@ void AreaTrigger::SearchUnitInBox(std::vector<Unit*>& targetList)
 
 void AreaTrigger::SearchUnitInPolygon(std::vector<Unit*>& targetList)
 {
-    SearchUnits(targetList, GetMaxSearchRadius(), false);
+    float maxSearchRadius = GetMaxSearchRadius();
+    SearchUnits(targetList, maxSearchRadius, false);
 
     float height = _shape.PolygonDatas.Height;
     float minZ = GetPositionZ() - height;
     float maxZ = GetPositionZ() + height;
+
+    _radius = maxSearchRadius;
 
     targetList.erase(std::remove_if(targetList.begin(), targetList.end(), [this, minZ, maxZ](Unit* unit) -> bool
     {
@@ -459,11 +465,14 @@ void AreaTrigger::SearchUnitInPolygon(std::vector<Unit*>& targetList)
 
 void AreaTrigger::SearchUnitInCylinder(std::vector<Unit*>& targetList)
 {
-    SearchUnits(targetList, GetMaxSearchRadius(), false);
+    float maxSearchRadius = GetMaxSearchRadius();
+    SearchUnits(targetList, maxSearchRadius, false);
 
     float height = _shape.CylinderDatas.Height;
     float minZ = GetPositionZ() - height;
     float maxZ = GetPositionZ() + height;
+
+    _radius = maxSearchRadius;
 
     targetList.erase(std::remove_if(targetList.begin(), targetList.end(), [minZ, maxZ](Unit* unit) -> bool
     {
@@ -474,12 +483,12 @@ void AreaTrigger::SearchUnitInCylinder(std::vector<Unit*>& targetList)
 
 void AreaTrigger::SearchUnitInDisk(std::vector<Unit*>& targetList)
 {
-    SearchUnits(targetList, GetMaxSearchRadius(), false);
-
     float innerRadius = _shape.DiskDatas.InnerRadius;
     float height = _shape.DiskDatas.Height;
     float minZ = GetPositionZ() - height;
     float maxZ = GetPositionZ() + height;
+
+    _radius = innerRadius;
 
     targetList.erase(std::remove_if(targetList.begin(), targetList.end(), [this, innerRadius, minZ, maxZ](Unit const* unit) -> bool
     {
@@ -548,6 +557,9 @@ uint32 AreaTrigger::GetScriptId() const
 
     if (GetCreateProperties())
         return GetCreateProperties()->ScriptId;
+
+    if (_areaTriggerTemplate)
+        return _areaTriggerTemplate->ScriptId;
 
     return 0;
 }

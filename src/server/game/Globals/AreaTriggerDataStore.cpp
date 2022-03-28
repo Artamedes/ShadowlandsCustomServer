@@ -151,7 +151,7 @@ void AreaTriggerDataStore::LoadAreaTriggerTemplates()
     }
 
     //                                                      0   1             2
-    if (QueryResult templates = WorldDatabase.Query("SELECT Id, IsServerSide, Flags FROM `areatrigger_template`"))
+    if (QueryResult templates = WorldDatabase.Query("SELECT Id, IsServerSide, Flags, ScriptName FROM `areatrigger_template`"))
     {
         do
         {
@@ -161,6 +161,7 @@ void AreaTriggerDataStore::LoadAreaTriggerTemplates()
             areaTriggerTemplate.Id.Id = fields[0].GetUInt32();
             areaTriggerTemplate.Id.IsServerSide = fields[1].GetUInt8() == 1;
             areaTriggerTemplate.Flags = fields[2].GetUInt32();
+            areaTriggerTemplate.ScriptId = sObjectMgr->GetScriptId(fields[3].GetString());
 
             if (areaTriggerTemplate.Id.IsServerSide && areaTriggerTemplate.Flags != 0)
             {
