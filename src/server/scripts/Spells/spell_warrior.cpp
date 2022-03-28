@@ -316,6 +316,14 @@ class spell_warr_bloodthirst : public SpellScript
         CastSpellExtraArgs args(TRIGGERED_FULL_MASK);
         args.AddSpellBP0(heal);
         caster->CastSpell(target, SPELL_WARRIOR_BLOODTHIRST_HEAL, args);
+
+        if (roll_chance_i(30))
+        {
+            if (Aura* enrage = caster->GetAura(SPELL_WARRIOR_ENRAGE_AURA))
+                enrage->RefreshDuration();
+            else
+                caster->CastSpell(caster, SPELL_WARRIOR_ENRAGE_AURA, true);
+        }
     }
 
     void Register() override
