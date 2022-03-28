@@ -312,6 +312,8 @@ void Loot::AddItem(LootStoreItem const& item)
             generatedLoot.BonusListIDs.insert(generatedLoot.BonusListIDs.end(), bonusListIDs.begin(), bonusListIDs.end());
         }
 
+        generatedLoot.BonusListIDs.insert(generatedLoot.BonusListIDs.end(), item.bonusIds.begin(), item.bonusIds.end());
+
         lootItems.push_back(generatedLoot);
         count -= proto->GetMaxStackSize();
 

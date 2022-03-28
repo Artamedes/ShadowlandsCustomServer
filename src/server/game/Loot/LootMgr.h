@@ -42,12 +42,13 @@ struct TC_GAME_API LootStoreItem
     uint8 mincount;                                        // mincount for drop items
     uint8 maxcount;                                        // max drop count for the item mincount or Ref multiplicator
     ConditionContainer conditions;                         // additional loot condition
+    std::vector<int32> bonusIds;
 
     // Constructor
     // displayid is filled in IsValid() which must be called after
-    LootStoreItem(uint32 _itemid, uint32 _reference, float _chance, bool _needs_quest, uint16 _lootmode, uint8 _groupid, uint8 _mincount, uint8 _maxcount)
+    LootStoreItem(uint32 _itemid, uint32 _reference, float _chance, bool _needs_quest, uint16 _lootmode, uint8 _groupid, uint8 _mincount, uint8 _maxcount, std::vector<int32> &pBonusIds)
         : itemid(_itemid), reference(_reference), chance(_chance), lootmode(_lootmode),
-        needs_quest(_needs_quest), groupid(_groupid), mincount(_mincount), maxcount(_maxcount)
+        needs_quest(_needs_quest), groupid(_groupid), mincount(_mincount), maxcount(_maxcount), bonusIds(pBonusIds)
          { }
 
     bool Roll(bool rate) const;                             // Checks if the entry takes it's chance (at loot generation)

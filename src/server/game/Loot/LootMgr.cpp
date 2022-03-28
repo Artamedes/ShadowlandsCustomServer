@@ -28,6 +28,7 @@
 #include "SpellInfo.h"
 #include "SpellMgr.h"
 #include "World.h"
+#include "StringConvert.h"
 
 static Rates const qualityToRate[MAX_ITEM_QUALITY] =
 {
@@ -132,8 +133,8 @@ uint32 LootStore::LoadLootTable()
     // Clearing store (for reloading case)
     Clear();
 
-    //                                                  0     1            2               3         4         5             6
-    QueryResult result = WorldDatabase.PQuery("SELECT Entry, Item, Reference, Chance, QuestRequired, LootMode, GroupId, MinCount, MaxCount FROM %s", GetName());
+    //                                                 0       1       2        3         4             5          6       7        8         9
+    QueryResult result = WorldDatabase.PQuery("SELECT Entry, Item, Reference, Chance, QuestRequired, LootMode, GroupId, MinCount, MaxCount, BonusList FROM %s", GetName());
 
     if (!result)
         return 0;
@@ -154,13 +155,19 @@ uint32 LootStore::LoadLootTable()
         uint8  mincount            = fields[7].GetUInt8();
         uint8  maxcount            = fields[8].GetUInt8();
 
+        std::vector<int32> bonusIdList;
+
+        for (std::string_view token : Trinity::Tokenize(fields[9].GetStringView(), ' ', false))
+            if (Optional<int32> bonusListID = Trinity::StringTo<int32>(token))
+                bonusIdList.push_back(*bonusListID);
+
         if (groupid >= 1 << 7)                                     // it stored in 7 bit field
         {
             TC_LOG_ERROR("sql.sql", "Table '%s' Entry %d Item %d: GroupId (%u) must be less %u - skipped", GetName(), entry, item, groupid, 1 << 7);
             return 0;
         }
 
-        LootStoreItem* storeitem = new LootStoreItem(item, reference, chance, needsquest, lootmode, groupid, mincount, maxcount);
+        LootStoreItem* storeitem = new LootStoreItem(item, reference, chance, needsquest, lootmode, groupid, mincount, maxcount, bonusIdList);
 
         if (!storeitem->IsValid(*this, entry))            // Validity checks
         {
