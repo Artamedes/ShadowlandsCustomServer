@@ -453,7 +453,7 @@ class spell_rog_roll_the_bones : public SpellScript
         {
             if (Aura* aura = GetCaster()->GetAura(spellId))
             {
-                currentDuration = aura->GetDuration();
+                currentDuration = std::min(aura->GetDuration(), 9000);
                 GetCaster()->RemoveAura(aura);
             }
         }
