@@ -1518,6 +1518,7 @@ class spell_gen_feign_death_all_flags : public AuraScript
         target->AddDynamicFlag( UNIT_DYNFLAG_DEAD);
         target->AddUnitFlag2(UNIT_FLAG2_FEIGN_DEATH);
         target->AddUnitFlag(UNIT_FLAG_PREVENT_EMOTES_FROM_CHAT_TEXT);
+        target->AddUnitFlag(UNIT_FLAG_UNINTERACTIBLE);
 
         if (Creature* creature = target->ToCreature())
             creature->SetReactState(REACT_PASSIVE);
@@ -1529,6 +1530,7 @@ class spell_gen_feign_death_all_flags : public AuraScript
         target->RemoveDynamicFlag(UNIT_DYNFLAG_DEAD);
         target->RemoveUnitFlag2(UNIT_FLAG2_FEIGN_DEATH);
         target->RemoveUnitFlag(UNIT_FLAG_PREVENT_EMOTES_FROM_CHAT_TEXT);
+        target->RemoveUnitFlag(UNIT_FLAG_UNINTERACTIBLE);
 
         if (Creature* creature = target->ToCreature())
             creature->InitializeReactState();

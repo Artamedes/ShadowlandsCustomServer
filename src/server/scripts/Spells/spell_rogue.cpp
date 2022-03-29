@@ -233,6 +233,7 @@ enum RogueSpells
     SPELL_ROGUE_SHROUDED_MANTLE_HOT                 = 280200,
     SPELL_ROGUE_SHROUDED_MANTLE_HEAL                = 280201,
     SPELL_ROGUE_WATER_WALKING                       = 61922,
+    SPELL_ROGUE_BLACK_POWDER                        = 319175,
 };
 
 enum RollTheBones
@@ -1948,7 +1949,7 @@ public:
 
                 // 245640 Shuriken Storm
                 if (_canApplyShurikenCombo)
-                    caster->CastSpell(caster, SPELL_ROGUE_SHURIKEN_COMBO, true);
+                    ;// caster->CastSpell(caster, SPELL_ROGUE_SHURIKEN_COMBO, true);
                 else
                     _canApplyShurikenCombo = true;
             }
@@ -3829,7 +3830,7 @@ class aura_rog_relentless_strikes : public AuraScript
     bool CheckProc(ProcEventInfo& eventInfo)
     {
         if (eventInfo.GetSpellInfo() && (eventInfo.GetSpellInfo()->Id == SPELL_ROGUE_EVISCERATE || eventInfo.GetSpellInfo()->Id == SPELL_ROGUE_NIGHTBLADE ||
-            eventInfo.GetSpellInfo()->Id == SPELL_ROGUE_KIDNEY_SHOT || eventInfo.GetSpellInfo()->Id == SPELL_ROGUE_SECRET_TECHNIQUE))
+            eventInfo.GetSpellInfo()->Id == SPELL_ROGUE_KIDNEY_SHOT || eventInfo.GetSpellInfo()->Id == SPELL_ROGUE_SECRET_TECHNIQUE) || eventInfo.GetSpellInfo()->Id == SPELL_ROGUE_BLACK_POWDER)
             return true;
 
         return false;

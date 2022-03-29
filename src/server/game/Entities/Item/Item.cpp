@@ -2498,10 +2498,18 @@ uint16 Item::GetVisibleItemVisual(Player const* owner) const
     return 0;
 }
 
-void Item::AddBonuses(uint32 bonusListID)
+bool Item::HasBonusId(uint32 bonusListID)
 {
     if (std::find(m_itemData->BonusListIDs->begin(), m_itemData->BonusListIDs->end(), int32(bonusListID)) != m_itemData->BonusListIDs->end())
-        return;
+        return true;
+
+    return false;
+}
+
+bool Item::AddBonuses(uint32 bonusListID, bool checkExists)
+{
+    if (checkExists && std::find(m_itemData->BonusListIDs->begin(), m_itemData->BonusListIDs->end(), int32(bonusListID)) != m_itemData->BonusListIDs->end())
+        return false;
 
     if (DB2Manager::ItemBonusList const* bonuses = sDB2Manager.GetItemBonusList(bonusListID))
     {
@@ -2511,7 +2519,9 @@ void Item::AddBonuses(uint32 bonusListID)
         for (ItemBonusEntry const* bonus : *bonuses)
             _bonusData.AddBonus(bonus->Type, bonus->Value);
         SetUpdateFieldValue(m_values.ModifyValue(&Item::m_itemData).ModifyValue(&UF::ItemData::ItemAppearanceModID), _bonusData.AppearanceModID);
+        return true;
     }
+    return false;
 }
 
 void Item::SetBonuses(std::vector<int32> bonusListIDs)

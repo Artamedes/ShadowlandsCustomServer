@@ -291,6 +291,7 @@ public:
             { "data",           HandleNpcSetDataCommand,           rbac::RBAC_PERM_COMMAND_NPC_SET_DATA,       Console::No },
             { "name",           HandleNpcSetNameCommand,           rbac::RBAC_PERM_COMMAND_NPC_SET_DATA,       Console::No },
             { "subname",        HandleNpcSetSubNameCommand,        rbac::RBAC_PERM_COMMAND_NPC_SET_DATA,       Console::No },
+            { "aura",           HandleNpcSetAuraCommand,           rbac::RBAC_PERM_COMMAND_NPC_SET_DATA,       Console::No },
         };
         static ChatCommandTable npcCommandTable =
         {
@@ -373,7 +374,7 @@ public:
     }
 
     //add item in vendorlist
-    static bool HandleNpcAddVendorItemCommand(ChatHandler* handler, ItemTemplate const* item, Optional<uint32> mc, Optional<uint32> it, Optional<uint32> ec, Optional<std::string_view> bonusListIDs)
+    static bool HandleNpcAddVendorItemCommand(ChatHandler* handler, ItemTemplate const* item, Optional<uint32> mc, Optional<uint32> it, Optional<uint32> ec, Optional<bool> addMulti, Optional<std::string_view> bonusListIDs)
     {
         if (!item)
         {
@@ -395,8 +396,7 @@ public:
         uint32 incrtime = it.value_or(0);
         uint32 extendedcost = ec.value_or(0);
 
-        char* addMulti = strtok(NULL, " ");
-        uint32 vendor_entry = addMulti ? handler->GetSession()->GetPlayer()->PlayerTalkClass->GetInteractionData().VendorId : vendor ? vendor->GetEntry() : 0;
+        uint32 vendor_entry = addMulti.value_or(false) ? handler->GetSession()->GetPlayer()->PlayerTalkClass->GetInteractionData().VendorId : vendor->GetEntry();
 
 
         VendorItem vItem;
@@ -546,7 +546,7 @@ public:
     }
 
     //del item from vendor list
-    static bool HandleNpcDeleteVendorItemCommand(ChatHandler* handler, ItemTemplate const* item)
+    static bool HandleNpcDeleteVendorItemCommand(ChatHandler* handler, ItemTemplate const* item, Optional<bool> addMulti)
     {
         Creature* vendor = handler->getSelectedCreature();
         if (!vendor || !vendor->IsVendor())
@@ -564,8 +564,7 @@ public:
         }
 
         uint32 itemId = item->GetId();
-        char* addMulti = strtok(NULL, " ");
-        if (!sObjectMgr->RemoveVendorItem(addMulti ? handler->GetSession()->GetPlayer()->PlayerTalkClass->GetInteractionData().TrainerId : vendor->GetEntry(), itemId, ITEM_VENDOR_TYPE_ITEM))
+        if (!sObjectMgr->RemoveVendorItem(addMulti.value_or(false) ? handler->GetSession()->GetPlayer()->PlayerTalkClass->GetInteractionData().TrainerId : vendor->GetEntry(), itemId, ITEM_VENDOR_TYPE_ITEM))
         {
             handler->PSendSysMessage(LANG_ITEM_NOT_IN_LIST, itemId);
             handler->SetSentErrorMessage(true);
@@ -737,6 +736,48 @@ public:
 
         creature->DestroyForNearbyPlayers();
         creature->UpdateObjectVisibility(true);
+
+        return true;
+    }
+
+    static bool HandleNpcSetAuraCommand(ChatHandler* handler, uint32 aura)
+    {
+        auto creature = handler->getSelectedCreature();
+
+        auto guidLow = creature->GetSpawnId();
+
+        WorldDatabasePreparedStatement* stmt = WorldDatabase.GetPreparedStatement(WORLD_SEL_CREATURE_ADDON_BY_GUID);
+
+        stmt->setUInt64(0, guidLow);
+
+        PreparedQueryResult result = WorldDatabase.Query(stmt);
+
+        if (result)
+        {
+            auto fields = result->Fetch();
+            auto pathid = fields[2].GetUInt32();
+            stmt = WorldDatabase.GetPreparedStatement(WORLD_UPD_CREATURE_ADDON_PATH);
+
+            stmt->setUInt32(0, pathid);
+
+            std::ostringstream ss;
+            ss << fields[1].GetStringView() << " " << aura;
+
+            stmt->setStringView(1, ss.str());
+            stmt->setUInt64(2, guidLow);
+        }
+        else
+        {
+            stmt = WorldDatabase.GetPreparedStatement(WORLD_INS_CREATURE_ADDON);
+
+            stmt->setUInt64(0, guidLow);
+            stmt->setUInt32(1, 0);
+            stmt->setStringView(2, std::to_string(aura));
+        }
+
+        WorldDatabase.Query(stmt);
+
+        creature->AddAura(aura, creature);
 
         return true;
     }

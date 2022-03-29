@@ -200,10 +200,12 @@ public:
 
         if (result)
         {
+            auto fields = result->Fetch();
             stmt = WorldDatabase.GetPreparedStatement(WORLD_UPD_CREATURE_ADDON_PATH);
 
             stmt->setUInt32(0, pathid);
-            stmt->setUInt64(1, guidLow);
+            stmt->setStringView(1, fields[1].GetStringView());
+            stmt->setUInt64(2, guidLow);
         }
         else
         {
@@ -211,6 +213,7 @@ public:
 
             stmt->setUInt64(0, guidLow);
             stmt->setUInt32(1, pathid);
+            stmt->setStringView(2, "");
         }
 
         WorldDatabase.Query(stmt);

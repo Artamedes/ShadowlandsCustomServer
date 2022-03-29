@@ -223,7 +223,8 @@ class TC_GAME_API Item : public Object
         void LoadArtifactData(Player const* owner, uint64 xp, uint32 artifactAppearanceId, uint32 artifactTier, std::vector<ArtifactPowerData>& powers);  // must be called after LoadFromDB to have gems (relics) initialized
         void CheckArtifactRelicSlotUnlock(Player const* owner);
 
-        void AddBonuses(uint32 bonusListID);
+        bool HasBonusId(uint32 bonusId);
+        bool AddBonuses(uint32 bonusListID, bool checkExists = true);
         void SetBonuses(std::vector<int32> bonusListIDs);
         void ClearBonuses();
 

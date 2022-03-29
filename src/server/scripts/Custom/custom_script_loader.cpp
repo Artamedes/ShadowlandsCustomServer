@@ -31,6 +31,8 @@ void AddSC_Skyhold();
 void AddSC_CustomInstanceScript();
 void AddSC_cs_custom();
 void AddSC_NetherlightTemple();
+void AddSC_Niskara();
+void AddSC_item_enhancement_system();
 
 void AddCustomScripts()
 {
@@ -46,4 +48,6 @@ void AddCustomScripts()
     AddSC_CustomInstanceScript();
     AddSC_cs_custom();
     AddSC_NetherlightTemple();
+    AddSC_Niskara();
+    AddSC_item_enhancement_system();
 }

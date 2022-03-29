@@ -25,6 +25,7 @@
 class Creature;
 class ObjectGuid;
 class Player;
+class WorldObject;
 
 // Gossip Item Text
 #define GOSSIP_TEXT_BROWSE_GOODS        "I'd like to browse your goods."
@@ -96,7 +97,7 @@ void TC_GAME_API AddGossipItemFor(Player* player, GossipOptionIcon icon, std::st
 // Uses gossip item info from DB
 void TC_GAME_API AddGossipItemFor(Player* player, uint32 gossipMenuID, uint32 gossipMenuItemID, uint32 sender, uint32 action);
 void TC_GAME_API SendGossipMenuFor(Player* player, uint32 npcTextID, ObjectGuid const& guid);
-void TC_GAME_API SendGossipMenuFor(Player* player, uint32 npcTextID, Creature const* creature);
+void TC_GAME_API SendGossipMenuFor(Player* player, uint32 npcTextID, WorldObject const* creature);
 void TC_GAME_API CloseGossipMenuFor(Player* player);
 
 #endif

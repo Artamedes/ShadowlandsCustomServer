@@ -435,6 +435,104 @@ struct npc_mall_weapongiver : public ScriptedAI
         EventMap events;
 };
 
+struct npc_morpher_admin : public ScriptedAI
+{
+    public:
+        npc_morpher_admin(Creature* creature) : ScriptedAI(creature) { }
+
+        uint32 startEntryId = 0;
+        uint32 time = 250;
+        bool pause = false;
+
+        bool OnGossipHello(Player* player) override
+        {
+            ClearGossipMenuFor(player);
+            AddGossipItemFor(player, GossipOptionIcon::None, "Set start display id " + std::to_string(startEntryId), 0, 1, "", 0, true);
+            AddGossipItemFor(player, GossipOptionIcon::None, "Set time " + std::to_string(time), 0, 2, "", 0, true);
+            AddGossipItemFor(player, GossipOptionIcon::None, "pause: " + std::string((pause ? "true" : "false")), 0, 3);
+            AddGossipItemFor(player, GossipOptionIcon::None, "back: " + std::to_string(startEntryId - 1), 0, 4);
+            AddGossipItemFor(player, GossipOptionIcon::None, "next: " + std::to_string(startEntryId + 1), 0, 5);
+            AddGossipItemFor(player, GossipOptionIcon::None, "go ", 0, 6);
+            SendGossipMenuFor(player, 1, me);
+            return true;
+        }
+
+        bool OnGossipSelect(Player* player, uint32 menuId, uint32 gossipId) override
+        {
+            auto actionId = player->PlayerTalkClass->GetGossipOptionAction(gossipId);
+            ClearGossipMenuFor(player);
+
+            if (actionId == 3)
+                pause = !pause;
+            else if (actionId == 4)
+            {
+                startEntryId--;
+                AnnounceDisplay();
+            }
+            else if (actionId == 5)
+            {
+                startEntryId++;
+                AnnounceDisplay();
+            }
+            else if (actionId == 6)
+            {
+                events.Reset();
+                events.ScheduleEvent(1, 100ms);
+            }
+
+            return OnGossipHello(player);
+        }
+
+        bool OnGossipSelectCode(Player* player, uint32 menuId, uint32 gossipId, char const* code) override
+        {
+            auto actionId = player->PlayerTalkClass->GetGossipOptionAction(gossipId);
+            ClearGossipMenuFor(player);
+
+            if (code)
+            {
+                switch (actionId)
+                {
+                    case 1:
+                        startEntryId = atol(code);
+                        break;
+                    case 2:
+                        time = atol(code);
+                        break;
+                }
+            }
+
+            return OnGossipHello(player);
+        }
+
+        void AnnounceDisplay()
+        {
+            std::ostringstream ss;
+            ss << "model: " << startEntryId;
+            me->Say(ss.str(), LANG_UNIVERSAL);
+            me->SetDisplayId(startEntryId);
+        }
+
+        void UpdateAI(uint32 diff) override
+        {
+            if (pause)
+                return;
+
+            events.Update(diff);
+
+            if (uint32 eventId = events.ExecuteEvent())
+            {
+                if (eventId == 1)
+                {
+                    ++startEntryId;
+                    AnnounceDisplay();
+                    events.Repeat(Milliseconds(time));
+                }
+            }
+        }
+
+        EventMap events;
+};
+
 void AddSC_MallScripts()
 {
     RegisterCreatureAI(npc_battle_training);
@@ -445,4 +543,5 @@ void AddSC_MallScripts()
     RegisterCreatureAI(npc_char_services);
     RegisterCreatureAI(npc_juno_700006);
     RegisterCreatureAI(npc_mall_weapongiver);
+    RegisterCreatureAI(npc_morpher_admin);
 }

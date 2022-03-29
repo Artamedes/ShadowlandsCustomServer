@@ -1570,6 +1570,12 @@ uint32 DB2Manager::LoadStores(std::string const& dataPath, LocaleConstant defaul
     // Skyhold Dungeon
     const_cast<MapEntry*>(sMapStore.LookupEntry(2472))->InstanceType = 1;
     const_cast<MapEntry*>(sMapStore.LookupEntry(2472))->MaxPlayers = 5;
+    // Netherlight Temple
+    const_cast<MapEntry*>(sMapStore.LookupEntry(1512))->InstanceType = 1;
+    const_cast<MapEntry*>(sMapStore.LookupEntry(1512))->MaxPlayers = 5;
+    // Niskara
+    const_cast<MapEntry*>(sMapStore.LookupEntry(1604))->InstanceType = 1;
+    const_cast<MapEntry*>(sMapStore.LookupEntry(1604))->MaxPlayers = 5;
 
     TC_LOG_INFO("server.loading", ">> Initialized " SZFMTD " DB2 data stores in %u ms", _stores.size(), GetMSTimeDiffToNow(oldMSTime));
 
