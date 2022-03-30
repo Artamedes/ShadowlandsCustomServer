@@ -981,6 +981,63 @@ public:
     }
 };
 
+
+// 95738 - Bladestorm Offhand
+class spell_warr_bladestorm_offhand : public SpellScriptLoader
+{
+public:
+	spell_warr_bladestorm_offhand() : SpellScriptLoader("spell_warr_bladestorm_offhand") { }
+
+	class spell_warr_bladestorm_offhand_SpellScript : public SpellScript
+	{
+		PrepareSpellScript(spell_warr_bladestorm_offhand_SpellScript);
+
+		void HandleOnHit(SpellEffIndex effIndex)
+		{
+            if (!GetCaster()->ToPlayer())
+                return;
+
+            uint32 _spec = GetCaster()->ToPlayer()->GetSpecializationId();
+			if (_spec != TALENT_SPEC_WARRIOR_FURY) //only fury warriors should deal damage with offhand
+			{
+				PreventHitDamage();
+				PreventHitDefaultEffect(effIndex);
+				PreventHitEffect(effIndex);
+			}
+		}
+
+		void Register() override
+		{
+			OnEffectHitTarget += SpellEffectFn(spell_warr_bladestorm_offhand_SpellScript::HandleOnHit, EFFECT_0, SPELL_EFFECT_NORMALIZED_WEAPON_DMG);
+			OnEffectHitTarget += SpellEffectFn(spell_warr_bladestorm_offhand_SpellScript::HandleOnHit, EFFECT_1, SPELL_EFFECT_WEAPON_PERCENT_DAMAGE);
+		}
+	};
+
+	SpellScript* GetSpellScript() const override
+	{
+		return new spell_warr_bladestorm_offhand_SpellScript();
+	}
+};
+
+// 227847 - Bladestorm
+// Last Update 8.0.1 Build 28153
+class aura_warr_bladestorm : public AuraScript
+{
+    PrepareAuraScript(aura_warr_bladestorm);
+
+    void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+    {
+        if (Unit* caster = GetCaster())
+            if (caster->HasAura(SPELL_WARRIOR_GATHERING_STORM_PERIODIC))
+                caster->RemoveAura(SPELL_WARRIOR_GATHERING_STORM_PERIODIC);
+    }
+
+    void Register() override
+    {
+        OnEffectRemove += AuraEffectRemoveFn(aura_warr_bladestorm::OnRemove, EFFECT_0, SPELL_AURA_PERIODIC_TRIGGER_SPELL, AURA_EFFECT_HANDLE_REAL);
+    }
+};
+
 void AddSC_warrior_spell_scripts()
 {
     RegisterSpellScript(spell_warr_bloodthirst);
@@ -1006,4 +1063,6 @@ void AddSC_warrior_spell_scripts()
     new spell_warr_enrage();
     new spell_warr_rampage();
     new spell_warr_raging_blow();
+    new spell_warr_bladestorm_offhand();
+    RegisterSpellScript(aura_warr_bladestorm);
 }

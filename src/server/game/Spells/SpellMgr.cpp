@@ -3862,6 +3862,8 @@ void SpellMgr::LoadSpellInfoCorrections()
         });
     });
 
+
+
     // Gift of the Naaru (priest and monk variants)
     ApplySpellFix({ 59544, 121093 }, [](SpellInfo* spellInfo)
     {
@@ -3892,6 +3894,16 @@ void SpellMgr::LoadSpellInfoCorrections()
         ApplySpellEffectFix(spellInfo, EFFECT_0, [](SpellEffectInfo* spellEffectInfo)
         {
             spellEffectInfo->RadiusEntry = sSpellRadiusStore.LookupEntry(EFFECT_RADIUS_10_YARDS);
+        });
+    });
+
+    // Bladestorm
+    ApplySpellFix({ 270927 }, [](SpellInfo* spellInfo)
+    {
+        ApplySpellEffectFix(spellInfo, EFFECT_0, [](SpellEffectInfo* spellEffectInfo)
+        {
+            spellEffectInfo->Effect = SPELL_EFFECT_APPLY_AURA;
+            spellEffectInfo->ApplyAuraName = SPELL_AURA_DUMMY;
         });
     });
 

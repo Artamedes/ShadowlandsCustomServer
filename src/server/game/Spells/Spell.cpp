@@ -3034,7 +3034,20 @@ void Spell::DoSpellEffectHit(Unit* unit, SpellEffectInfo const& spellEffectInfo,
 
                                 // if there is no periodic effect
                                 if (!hitInfo.AuraDuration)
-                                    hitInfo.AuraDuration = int32(origDuration * m_originalCaster->m_unitData->ModCastingSpeed);
+                                {
+                                    float ModCastingSpeed = *m_originalCaster->m_unitData->ModCastingSpeed;
+
+                                    if (m_originalCaster->IsPlayer())
+                                    {
+                                        ModCastingSpeed = 1.0f;
+
+                                        auto haste = m_originalCaster->ToPlayer()->GetRatingBonusValue(CR_HASTE_SPELL);
+                                        if (haste > 0.0f)
+                                            ModCastingSpeed = std::max(0.01f, 1.0f - (haste / 35000.0f));
+                                    }
+
+                                    hitInfo.AuraDuration = int32(origDuration * ModCastingSpeed);
+                                }
                             }
                         }
                     }

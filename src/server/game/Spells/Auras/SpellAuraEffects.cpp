@@ -770,18 +770,35 @@ void AuraEffect::CalculatePeriodic(Unit* caster, bool resetPeriodicTimer /*= tru
         {
             // Haste modifies periodic time of channeled spells
             if (m_spellInfo->IsChanneled())
-                caster->ModSpellDurationTime(m_spellInfo, _period);
-            else if (m_spellInfo->HasAttribute(SPELL_ATTR5_HASTE_AFFECT_DURATION))
             {
+                if (m_spellInfo->HasAttribute(SPELL_ATTR5_HASTE_AFFECT_DURATION))
+                    caster->ModSpellDurationTime(m_spellInfo, _period);
+            }
+            else
+            {
+                float ModCastingSpeed = *caster->m_unitData->ModCastingSpeed;
 
                 if (modOwner)
                 {
-                    int32 currHaste = modOwner->GetRatingBonusValue(CR_HASTE_SPELL);
+                    ModCastingSpeed = 1.0f;
 
-                    _period = int32(_period * currHaste);
+                    auto haste = modOwner->GetRatingBonusValue(CR_HASTE_SPELL);
+                    if (haste > 0.0f)
+                        ModCastingSpeed = std::max(0.01f, 1.0f - (haste / 35000.0f));
                 }
-                else
-                    _period = int32(_period * caster->m_unitData->ModCastingSpeed);
+
+                if (m_spellInfo->HasAttribute(SPELL_ATTR5_HASTE_AFFECT_DURATION))
+                    _period = int32(_period * ModCastingSpeed);
+
+                if (m_spellInfo->HasAttribute(SPELL_ATTR8_HASTE_AFFECT_DURATION_RECOVERY))
+                {
+                    int32 _duration = GetBase()->GetMaxDuration() * ModCastingSpeed;
+                    GetBase()->SetMaxDuration(_duration);
+                    GetBase()->SetDuration(_duration);
+                }
+
+                if (m_spellInfo->HasAttribute(SPELL_ATTR8_HASTE_AFFECT_DURATION))
+                    _period = int32(_period * ModCastingSpeed);
             }
         }
     }
