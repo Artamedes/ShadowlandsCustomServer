@@ -4,6 +4,7 @@
 #include "MotionMaster.h"
 #include "CellImpl.h"
 #include "GridNotifiersImpl.h"
+#include "GenericMovementGenerator.h"
 
 struct instance_niskara : public CustomInstanceScript
 {
@@ -142,6 +143,12 @@ struct npc_nazgrul_700500 : public ScriptedAI
         /// TODO: Fill this function
      }
 
+     void JustEngagedWith(Unit* who) override
+     {
+         scheduler.CancelAll();
+         Talk(2);
+     }
+
      void UpdateAI(uint32 diff) override
      {
         scheduler.Update(diff);
@@ -160,9 +167,29 @@ struct npc_nazgrul_700500 : public ScriptedAI
         DoMeleeAttackIfReady();
      }
 
-     void MoveInLineOfSight(Unit* who) override
+     bool m_DidText = false;
+
+     void OnUnitRelocation(Unit* who) override
      {
-        /// TODO: Fill this function
+         if (who->IsPlayer() && !me->IsEngaged() && !m_DidText)
+         {
+             auto dist = who->GetDistance2d(me);
+             if (dist <= 40.0f)
+             {
+                 m_DidText = true;
+                 Talk(0);
+                 scheduler.Schedule(5s, [this](TaskContext context)
+                 {
+                     if (auto baby = me->FindNearestCreature(700501, 15.0f))
+                         baby->AI()->Talk(0);
+
+                     scheduler.Schedule(5s, [this](TaskContext context)
+                     {
+                        Talk(1);
+                     });
+                 });
+             }
+         }
      }
 
      TaskScheduler scheduler;
@@ -433,6 +460,13 @@ struct npc_oglaz_700506 : public ScriptedAI
         DoMeleeAttackIfReady();
      }
 
+
+     void KilledUnit(Unit* who) override
+     {
+         if (who->IsPlayer())
+             Talk(2);
+     }
+
      void OnUnitRelocation(Unit* who) override
      {
          if (who->IsPlayer() && !m_Talked && who->GetDistance(me) <= 205.0f)
@@ -451,6 +485,51 @@ struct npc_oglaz_700506 : public ScriptedAI
                                  {
                                      demonSlave->CastSpell(demonSlave, 318123);
                                  }
+
+                                 scheduler.Schedule(1s, [this](TaskContext context)
+                                     {
+                                         std::list<Unit*> units;
+                                         me->GetFriendlyUnitListInRange(units, 50.0f, true);
+
+                                         for (auto unit : units)
+                                         {
+                                             if (unit->IsCreature())
+                                             {
+                                                 auto creature = unit->ToCreature();
+                                                 if (creature->GetSpawnId() == 1051659)
+                                                 {
+                                                     auto demonEnforcer = creature;
+
+                                                     demonEnforcer->AI()->Talk(0);
+                                                     if (auto demonSlave = demonEnforcer->FindNearestCreature(700502, 50.0f))
+                                                     {
+                                                         auto guid = demonSlave->GetGUID();
+                                                         scheduler.Schedule(3s, [this, guid](TaskContext context)
+                                                             {
+                                                                 if (auto demonSlave = ObjectAccessor::GetCreature(*me, guid))
+                                                                 {
+                                                                     demonSlave->AI()->Talk(0);
+
+                                                                     static Position points[3] = {
+                                                                         { 483.366577f, 1576.726807f, -123.664726f },
+                                                                         { 492.72219f, 1570.001587f, -124.411804f },
+                                                                         { 491.478912f, 1566.103516f, -124.174370f },
+                                                                     };
+
+                                                                     auto result = demonSlave->GetMotionMaster()->MoveSmoothPath(1, points, 3, true);
+                                                                     //result->callbackFunc = [this, demonSlave]()
+                                                                     //{
+                                                                     //    demonSlave->Say("My callback worked!", LANG_UNIVERSAL);
+                                                                     //};
+                                                                 }
+                                                             });
+                                                     }
+
+                                                     break;
+                                                 }
+                                             }
+                                         }
+                                     });
                              });
                      }
                  });
@@ -494,6 +573,13 @@ struct npc_jazgolluth_700507 : public ScriptedAI
             }
         }
         DoMeleeAttackIfReady();
+     }
+
+
+     void KilledUnit(Unit* who) override
+     {
+         if (who->IsPlayer())
+             Talk(1);
      }
 
      void MoveInLineOfSight(Unit* who) override
@@ -540,6 +626,12 @@ struct npc_annaxin_700508 : public ScriptedAI
         void JustDied(Unit* who) override
         {
             Talk(1);
+        }
+
+        void KilledUnit(Unit* who) override
+        {
+            if (who->IsPlayer())
+                Talk(2);
         }
 
         void UpdateAI(uint32 diff) override
@@ -628,6 +720,13 @@ struct npc_zorith_700510 : public ScriptedAI
      {
         /// TODO: Fill this function
      }
+
+     void KilledUnit(Unit* who) override
+     {
+         if (who->IsPlayer())
+            Talk(0);
+     }
+
 
      void UpdateAI(uint32 diff) override
      {
@@ -742,6 +841,58 @@ struct npc_legion_portal_700512 : public ScriptedAI
      EventMap events;
 };
 
+// 700512 - legion_portal_700512
+struct npc_harvester_700513 : public ScriptedAI
+{
+public:
+    npc_harvester_700513(Creature* creature) : ScriptedAI(creature) { }
+
+    void InitializeAI() override
+    {
+        /// TODO: Fill this function
+    }
+
+    void Reset() override
+    {
+        /// TODO: Fill this function
+    }
+
+    void JustEngagedWith(Unit* who) override
+    {
+        events.ScheduleEvent(1, 2s, 10s);
+    }
+
+    void UpdateAI(uint32 diff) override
+    {
+        scheduler.Update(diff);
+
+        if (!UpdateVictim())
+            return;
+
+        events.Update(diff);
+
+        if (uint32 eventId = events.ExecuteEvent())
+        {
+            switch (eventId)
+            {
+                case 1:
+                    DoCastVictim(211491);
+                    events.Repeat(10s, 20s);
+                    break;
+            }
+        }
+        DoMeleeAttackIfReady();
+    }
+
+    void MoveInLineOfSight(Unit* who) override
+    {
+        /// TODO: Fill this function
+    }
+
+    TaskScheduler scheduler;
+    EventMap events;
+};
+
 void AddSC_Niskara()
 {
     RegisterInstanceScript(instance_niskara, 1604);
@@ -761,4 +912,5 @@ void AddSC_Niskara()
     RegisterCreatureAI(npc_zorith_700510);
     RegisterCreatureAI(npc_xolmir_700511);
     RegisterCreatureAI(npc_legion_portal_700512);
+    RegisterCreatureAI(npc_harvester_700513);
 }

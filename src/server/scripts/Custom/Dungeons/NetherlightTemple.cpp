@@ -256,7 +256,7 @@ struct npc_derza_700402 : public ScriptedAI
 
         void JustEngagedWith(Unit* who) override
         {
-            Talk(TalkEngaged);
+           // Talk(TalkEngaged);
             events.ScheduleEvent(1, 2s, 10s);
             events.ScheduleEvent(2, 5s, 30s);
         }
@@ -267,6 +267,7 @@ struct npc_derza_700402 : public ScriptedAI
         }
 
         bool m_Talked = false;
+        bool m_SummonWatcher = false;
 
         void OnUnitRelocation(Unit* unit) override
         {
@@ -280,14 +281,24 @@ struct npc_derza_700402 : public ScriptedAI
                     m_Talked = true;
                 }
             }
+
+            if (m_SummonWatcher && unit->IsPlayer())
+            {
+                auto dist = unit->GetDistance2d(me);
+                if (dist <= 75.0f)
+                {
+                    m_SummonWatcher = false;
+                    Talk(BossesDefeated);
+                    DoSummon(700411, { 1400.830811f, 1343.949463f, 177.933823f }, 0s, TempSummonType::TEMPSUMMON_MANUAL_DESPAWN);
+                }
+            }
         }
 
         void DoAction(int32 action) override
         {
             if (action == 1)
             {
-                Talk(BossesDefeated);
-                DoSummon(700411, {1400.830811f, 1343.949463f, 177.933823f}, 0s, TempSummonType::TEMPSUMMON_MANUAL_DESPAWN);
+                m_SummonWatcher = true;
             }
             else if (action == 2)
             {
@@ -295,7 +306,27 @@ struct npc_derza_700402 : public ScriptedAI
                 me->SetReactState(REACT_AGGRESSIVE);
                 me->RemoveUnitFlag(UNIT_FLAG_NON_ATTACKABLE);
                 me->RemoveUnitFlag(UNIT_FLAG_IMMUNE_TO_PC);
+
+                if (auto victim = SelectVictimCrap())
+                {
+                    if (victim != me->GetVictim())
+                        AttackStart(victim);
+                }
             }
+        }
+
+        Unit* SelectVictimCrap()
+        {
+            Unit* target = me->SelectNearestTargetInAttackDistance(55.0f);
+
+            if (target && me->_IsTargetAcceptable(target) && me->CanCreatureAttack(target))
+            {
+                if (!me->HasSpellFocus())
+                    me->SetInFront(target);
+                return target;
+            }
+
+            return nullptr;
         }
 
         void UpdateAI(uint32 diff) override

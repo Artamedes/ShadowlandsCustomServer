@@ -920,7 +920,7 @@ void MotionMaster::MoveCirclePath(float x, float y, float z, float radius, bool 
     Add(new GenericMovementGenerator(std::move(init), EFFECT_MOTION_TYPE, 0));
 }
 
-void MotionMaster::MoveSmoothPath(uint32 pointId, Position const* pathPoints, size_t pathSize, bool walk, bool fly)
+GenericMovementGenerator* MotionMaster::MoveSmoothPath(uint32 pointId, Position const* pathPoints, size_t pathSize, bool walk, bool fly)
 {
     Movement::MoveSplineInit init(_owner);
     if (fly)
@@ -942,7 +942,9 @@ void MotionMaster::MoveSmoothPath(uint32 pointId, Position const* pathPoints, si
     // This code is not correct
     // GenericMovementGenerator does not affect UNIT_STATE_ROAMING_MOVE
     // need to call PointMovementGenerator with various pointIds
-    Add(new GenericMovementGenerator(std::move(init), EFFECT_MOTION_TYPE, pointId));
+    auto gen = new GenericMovementGenerator(std::move(init), EFFECT_MOTION_TYPE, pointId);
+    Add(gen);
+    return gen;
 }
 
 void MotionMaster::MoveAlongSplineChain(uint32 pointId, uint16 dbChainId, bool walk)

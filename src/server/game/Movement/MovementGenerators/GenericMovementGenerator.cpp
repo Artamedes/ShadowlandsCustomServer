@@ -94,4 +94,7 @@ void GenericMovementGenerator::MovementInform(Unit* owner)
         if (creature->AI())
             creature->AI()->MovementInform(_type, _pointId);
     }
+
+    if (callbackFunc)
+        callbackFunc();
 }
