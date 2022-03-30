@@ -428,8 +428,8 @@ class TC_GAME_API ItemScript : public ScriptObject
         // Called before casting a combat spell from this item (chance on hit spells of item template, can be used to prevent cast if returning false)
         virtual bool OnCastItemCombatSpell(Player* /*player*/, Unit* /*victim*/, SpellInfo const* /*spellInfo*/, Item* /*item*/) { return true; }
 
-        virtual bool OnItemQuestQueryResponse(Player* player, Item* item) { return false; }
-        virtual bool OnQueryTreasurePicker(Player* player, Item* item) { return false; }
+        virtual bool OnItemQuestQueryResponse(Player*, Item*) { return false; }
+        virtual bool OnQueryTreasurePicker(Player*, Item*) { return false; }
 };
 
 class TC_GAME_API UnitScript : public ScriptObject
@@ -785,8 +785,20 @@ class TC_GAME_API PlayerScript : public ScriptObject
         // Called in Spell::Cast.
         virtual void OnSpellCast(Player* /*player*/, Spell* /*spell*/, bool /*skipCheck*/) { }
 
+        // Called in Spell::Cast after spell is actually casted
+        virtual void OnSuccessfulSpellCast(Player* /*player*/, Spell* /*spell*/) { }
+
+        // Called when spell was interrupted on cast.
+        virtual void OnInterruptedSpellCast(Player* /*player*/, Spell* /*spell*/) { }
+
+        // Called when Interrupted
+        virtual void OnSpellInterrupt(Player* /*player*/, Unit* /*source*/, Spell* /*spell*/, Spell* /*interruptingSpell*/) { }
+
         // Called when a player logs in.
         virtual void OnLogin(Player* /*player*/, bool /*firstLogin*/) { }
+
+        // Called at each player update
+        virtual void OnUpdate(Player* /*player*/, uint32 /*diff*/) { }
 
         // Called when a player logs out.
         virtual void OnLogout(Player* /*player*/) { }
@@ -827,6 +839,12 @@ class TC_GAME_API PlayerScript : public ScriptObject
         // Called when a player power change
         virtual void OnModifyPower(Player* /*player*/, Powers /*power*/, int32 /*oldValue*/, int32& /*newValue*/, bool /*regen*/, bool /*after*/) { }
 
+        // Called when a player take damage
+        virtual void OnTakeDamage(Player* /*player*/, uint32 /*damage*/, SpellSchoolMask /*schoolMask*/) { }
+
+        // Called when a player deal damage
+        virtual void OnDealDamage(Player* /*player*/, Unit* /*target*/, uint32 /*damage*/, SpellSchoolMask /*schoolMask*/) { }
+
         // Called when a player completes a movie
         virtual void OnMovieComplete(Player* /*player*/, uint32 /*movieId*/) { }
 
@@ -845,6 +863,12 @@ class TC_GAME_API PlayerScript : public ScriptObject
 
         //Called when a spell Hit a target
         virtual void CheckOnSpellHitOnUnit(Unit* /*target*/, WorldObject const* /*caster*/, SpellMissInfo& /*spellResult*/, SpellInfo const* /*spellInfo*/) { }
+
+        // Calle when summoned creature deals damage
+        virtual void OnSummonCreatureDealsDamage(Player* /*player*/, Unit* /*creature*/, Unit* /*victim*/, int32 /*damage*/) { }
+
+        // Called when a channeled spell finish succesful
+        virtual void OnChanneledSpellSuccessfulCast(Player* /*player*/, Spell* /*spell*/) { }
 };
 
 class TC_GAME_API AccountScript : public ScriptObject
@@ -1248,7 +1272,9 @@ class TC_GAME_API ScriptMgr
         void OnPlayerClearEmote(Player* player);
         void OnPlayerTextEmote(Player* player, uint32 textEmote, uint32 emoteNum, ObjectGuid guid);
         void OnPlayerSpellCast(Player* player, Spell* spell, bool skipCheck);
+        void OnPlayerSuccessfulSpellCast(Player* player, Spell* spell);
         void OnPlayerLogin(Player* player, bool firstLogin);
+        void OnPlayerUpdate(Player* player, uint32 diff);
         void OnPlayerLogout(Player* player);
         void OnPlayerCreate(Player* player);
         void OnPlayerDelete(ObjectGuid guid, uint32 accountId);
@@ -1262,10 +1288,16 @@ class TC_GAME_API ScriptMgr
         void OnPlayerRepop(Player* player);
         void OnMovieComplete(Player* player, uint32 movieId);
         void OnModifyPower(Player* player, Powers power, int32 oldValue, int32& newValue, bool regen, bool after);
+        void OnPlayerTakeDamage(Player* player, uint32 damage, SpellSchoolMask schoolMask);
+        void OnPlayerDealDamage(Player* player, Unit* target, uint32 damage, SpellSchoolMask schoolMask);
         void CheckOnSpellHitOnUnit(Unit* target, WorldObject const* caster, SpellMissInfo& spellMissInfo, SpellInfo const* spellInfo);
         void OnPlayerChoiceResponse(Player* player, uint32 choiceId, uint32 responseId);
         void OnPlayerSpellLearned(Player* player, uint32 spellID);
         void OnPlayerSpellRemoved(Player* player, uint32 spellID);
+        void OnPlayerInterruptedSpellCast(Player* player, Spell* spell);
+        void OnSpellInterrupt(Player* player, Unit* source, Spell* spell, Spell* interruptingSpell);
+        void OnSummonCreatureDealsDamage(Player* player, Unit* creature, Unit* victim, int32 damage);
+        void OnChanneledSpellSuccessfulCast(Player* player, Spell* spell);
 
     public: /* AccountScript */
 

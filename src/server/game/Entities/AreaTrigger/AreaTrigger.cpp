@@ -38,10 +38,11 @@
 #include "Transport.h"
 #include "Unit.h"
 #include "UpdateData.h"
+#include "PathGenerator.h"
 
 AreaTrigger::AreaTrigger() : WorldObject(false), MapObject(), _spawnId(0), _aurEff(nullptr), _maxSearchRadius(0.0f),
     _duration(0), _totalDuration(0), _timeSinceCreated(0), _periodicProcTimer(0), _basePeriodicProcTimer(0), _previousCheckOrientation(std::numeric_limits<float>::infinity()), _radius(0.0f),
-    _isRemoved(false), _reachedDestination(true), _lastSplineIndex(0), _movementTime(0),
+    _isRemoved(false), _reachedDestination(true), _setedDestination(false), _lastSplineIndex(0), _movementTime(0),
     _areaTriggerCreateProperties(nullptr), _areaTriggerTemplate(nullptr)
 {
     m_objectType |= TYPEMASK_AREATRIGGER;
@@ -689,6 +690,24 @@ bool AreaTrigger::CheckIsInPolygon2D(Position const* pos) const
     return locatedInPolygon;
 }
 
+bool AreaTrigger::SetDestination(Position const& pos, uint32 timeToTarget, bool followTerrain /*= false*/)
+{
+    PathGenerator path(GetCaster());
+    bool result = path.CalculatePath(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), true);
+
+    if (!result || path.GetPathType() & PATHFIND_NOPATH)
+        return false;
+
+    if (!followTerrain)
+        _setedDestination = true;
+
+    //We Have a new destination
+    _reachedDestination = false; 
+
+    InitSplines(path.GetPath(), timeToTarget);
+    return true;
+}
+
 void AreaTrigger::UpdateShape()
 {
     if (_shape.IsPolygon())
@@ -838,6 +857,31 @@ bool AreaTrigger::HasSplines() const
     return bool(_spline);
 }
 
+void AreaTrigger::UpdateTimeToTarget(uint32 timeToTarget)
+{
+    if (!HasSplines())
+        return;
+
+    float currentTimePercent = GetCurrentTimePercent();
+    int lastPositionIndex = 0;
+    float percentFromLastPoint = 0;
+
+    _spline->computeIndex(currentTimePercent, lastPositionIndex, percentFromLastPoint);
+
+    std::vector<G3D::Vector3> newPoints;
+    float x, y, z;
+    GetPosition(x, y, z);
+    if (Transport* transport = GetTransport())
+        transport->CalculatePassengerOffset(x, y, z);
+    newPoints.push_back(G3D::Vector3(x, y, z));
+    newPoints.push_back(newPoints[0]);
+
+    for (int i = lastPositionIndex + 1; i < _spline->getPointCount(); ++i)
+        newPoints.push_back(_spline->getPoint(i));
+
+    InitSplines(newPoints, timeToTarget);
+}
+
 void AreaTrigger::InitOrbit(AreaTriggerOrbitInfo const& orbit, uint32 timeToTarget)
 {
     // Circular movement requires either a center position or an attached unit
@@ -963,22 +1007,7 @@ void AreaTrigger::UpdateSplinePosition(uint32 diff)
         return;
     }
 
-    float currentTimePercent = float(_movementTime) / float(GetTimeToTarget());
-
-    if (currentTimePercent <= 0.f)
-        return;
-
-    if (GetCreateProperties()->MoveCurveId)
-    {
-        float progress = sDB2Manager.GetCurveValueAt(GetCreateProperties()->MoveCurveId, currentTimePercent);
-        if (progress < 0.f || progress > 1.f)
-        {
-            TC_LOG_ERROR("entities.areatrigger", "AreaTrigger (Id: %u, AreaTriggerCreatePropertiesId: %u) has wrong progress (%f) caused by curve calculation (MoveCurveId: %u)",
-                GetEntry(), GetCreateProperties()->Id, progress, GetCreateProperties()->MorphCurveId);
-        }
-        else
-            currentTimePercent = progress;
-    }
+    float currentTimePercent = GetCurrentTimePercent();
 
     int lastPositionIndex = 0;
     float percentFromLastPoint = 0;
@@ -1004,6 +1033,32 @@ void AreaTrigger::UpdateSplinePosition(uint32 diff)
         _lastSplineIndex = lastPositionIndex;
         _ai->OnSplineIndexReached(_lastSplineIndex);
     }
+}
+
+float AreaTrigger::GetCurrentTimePercent()
+{
+    float currentTimePercent = float(_movementTime) / float(GetTimeToTarget());
+
+    if (currentTimePercent <= 0.f)
+        return 0.0f;
+
+    if (!HaveDestination())
+    {
+        if (GetCreateProperties() && GetCreateProperties()->MoveCurveId)
+        {
+            float progress = sDB2Manager.GetCurveValueAt(GetCreateProperties()->MoveCurveId, currentTimePercent);
+            if (progress < 0.f || progress > 1.f)
+            {
+               //TC_LOG_ERROR("entities.areatrigger", "AreaTrigger (Id: %u, SpellMiscId: %u) has wrong progress (%f) caused by curve calculation (MoveCurveId: %u)",
+               //    GetTemplate()->Id, GetCreateProperties()->AnimId, progress, GetCreateProperties()->MorphCurveId);
+            }
+            else
+                currentTimePercent = progress;
+        }
+    }
+
+    // currentTimePercent must be between 0.f and 1.f
+    return std::max(0.f, std::min(currentTimePercent, 1.f));
 }
 
 void AreaTrigger::DebugVisualizePosition()

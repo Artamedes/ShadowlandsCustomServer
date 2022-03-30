@@ -24,6 +24,7 @@
 #include "Random.h"
 #include <map>
 #include <type_traits>
+#include <functional>
 
 class EventProcessor;
 
@@ -86,6 +87,28 @@ public:
 private:
 
     T _callback;
+};
+
+class TC_COMMON_API GenericDelayedEvent : public BasicEvent
+{
+    friend class EventProcessor;
+
+public:
+    GenericDelayedEvent(std::function<void()> lambda) :
+        BasicEvent(), m_Lambda(lambda) {}
+
+    virtual ~GenericDelayedEvent() { }
+
+    virtual bool Execute(uint64 /*endTime*/, uint32 /*time*/)
+    {
+        m_Lambda();
+        return true;
+    }
+
+    virtual void Abort(uint64) { }
+
+private:
+    std::function<void()> m_Lambda;
 };
 
 template<typename T>

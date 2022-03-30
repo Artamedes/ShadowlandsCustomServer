@@ -123,6 +123,8 @@ class TC_GAME_API Aura
     friend class Unit;
 
     public:
+        Trinity::AnyData Variables;
+
         typedef std::unordered_map<ObjectGuid, AuraApplication*> ApplicationMap;
 
         static uint32 BuildEffectMaskForOwner(SpellInfo const* spellProto, uint32 availableEffectMask, WorldObject* owner);
@@ -175,6 +177,7 @@ class TC_GAME_API Aura
         static int32 CalcMaxDuration(SpellInfo const* spellInfo, WorldObject* caster);
         int32 GetDuration() const { return m_duration; }
         void SetDuration(int32 duration, bool withMods = false);
+        void ModDuration(int32 duration, bool withMods = false) { SetDuration(GetDuration() + duration, withMods); }
         void RefreshDuration(bool withMods = false);
         void RefreshTimers(bool resetPeriodicTimer);
         bool IsExpired() const { return !GetDuration() && !m_dropEvent; }
@@ -191,7 +194,7 @@ class TC_GAME_API Aura
 
         uint8 GetStackAmount() const { return m_stackAmount; }
         void SetStackAmount(uint8 num);
-        bool ModStackAmount(int32 num, AuraRemoveMode removeMode = AURA_REMOVE_BY_DEFAULT, bool resetPeriodicTimer = true);
+        bool ModStackAmount(int32 num, AuraRemoveMode removeMode = AURA_REMOVE_BY_DEFAULT, bool resetPeriodicTimer = true, bool refresh = true);
         bool DropStack(AuraRemoveMode removeMode = AURA_REMOVE_BY_DEFAULT) { return ModStackAmount(-1, removeMode); }
         uint32 CalcMaxStackAmount() const;
         bool IsUsingStacks() const;

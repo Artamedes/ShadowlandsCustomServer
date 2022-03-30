@@ -3425,6 +3425,10 @@ void Spell::cancel()
     //set state back so finish will be processed
     m_spellState = oldState;
 
+    // Notify player
+    if (m_caster && m_caster->IsPlayer())
+        sScriptMgr->OnPlayerInterruptedSpellCast(m_caster->ToPlayer(), this);
+
     finish(false);
 }
 
@@ -3662,6 +3666,9 @@ void Spell::_cast(bool skipCheck)
     }
 
     CallScriptAfterCastHandlers();
+
+    if (m_caster->IsPlayer())
+        sScriptMgr->OnPlayerSuccessfulSpellCast(m_caster->ToPlayer(), this);
 
     if (std::vector<int32> const* spell_triggered = sSpellMgr->GetSpellLinked(m_spellInfo->Id))
     {
@@ -4125,6 +4132,9 @@ void Spell::finish(bool ok)
     // Unsummon summon as possessed creatures on spell cancel
     if (m_spellInfo->IsChanneled() && unitCaster->GetTypeId() == TYPEID_PLAYER)
     {
+        if (ok)
+            sScriptMgr->OnChanneledSpellSuccessfulCast(m_caster->ToPlayer(), this);
+
         if (Unit* charm = unitCaster->GetCharmed())
             if (charm->GetTypeId() == TYPEID_UNIT
                 && charm->ToCreature()->HasUnitTypeMask(UNIT_MASK_PUPPET)

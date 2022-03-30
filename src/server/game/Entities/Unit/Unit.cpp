@@ -751,8 +751,13 @@ bool Unit::HasBreakableByDamageCrowdControlAura(Unit* excludeCasterChannel) cons
     if (UnitAI* attackerAI = attacker ? attacker->GetAI() : nullptr)
         attackerAI->DamageDealt(victim, damage, damagetype);
 
-    // Hook for OnDamage Event
-    sScriptMgr->OnDamage(attacker, victim, damage);
+    if (attacker->IsSummon() && attacker->GetOwner() && attacker->GetOwner()->ToPlayer())
+        sScriptMgr->OnSummonCreatureDealsDamage(attacker->GetOwner()->ToPlayer(), attacker, victim, damage);
+    else
+    {
+        // Hook for OnDamage Event
+        sScriptMgr->OnDamage(attacker, victim, damage);
+    }
 
     // Signal to pets that their owner was attacked - except when DOT.
     if (attacker != victim && damagetype != DOT)
@@ -762,6 +767,14 @@ bool Unit::HasBreakableByDamageCrowdControlAura(Unit* excludeCasterChannel) cons
                 if (CreatureAI* controlledAI = cControlled->AI())
                     controlledAI->OwnerAttackedBy(attacker);
     }
+
+    if (victim->IsPlayer())
+    {
+        sScriptMgr->OnPlayerTakeDamage(victim->ToPlayer(), damage, damageSchoolMask);
+    }
+
+    if (Player* player = attacker->ToPlayer())
+        sScriptMgr->OnPlayerDealDamage(player, victim, damage, damageSchoolMask);
 
     if (Player* player = victim->ToPlayer())
         if (player->GetCommandStatus(CHEAT_GOD))
@@ -2995,7 +3008,7 @@ void Unit::SetCurrentCastSpell(Spell* pSpell)
     pSpell->m_selfContainer = &(m_currentSpells[pSpell->GetCurrentContainer()]);
 }
 
-void Unit::InterruptSpell(CurrentSpellTypes spellType, bool withDelayed, bool withInstant)
+void Unit::InterruptSpell(CurrentSpellTypes spellType, bool withDelayed, bool withInstant, Spell* interruptingSpell /*= nullptr*/)
 {
     //TC_LOG_DEBUG("entities.unit", "Interrupt spell for unit %u.", GetEntry());
     Spell* spell = m_currentSpells[spellType];
@@ -3022,6 +3035,9 @@ void Unit::InterruptSpell(CurrentSpellTypes spellType, bool withDelayed, bool wi
 
         if (GetTypeId() == TYPEID_UNIT && IsAIEnabled())
             ToCreature()->AI()->OnSpellCastFinished(spell->GetSpellInfo(), SPELL_FINISHED_CANCELED);
+
+        if (spell->GetCaster() && spell->GetCaster()->IsPlayer())
+            sScriptMgr->OnSpellInterrupt(spell->GetCaster()->ToPlayer(), this, spell, interruptingSpell);
     }
 }
 
@@ -3203,6 +3219,109 @@ void Unit::ProcessTerrainStatusUpdate(ZLiquidStatus oldLiquidStatus, Optional<Li
         UpdateMountCapability();
 }
 
+
+void Unit::SendCancelOrphanSpellVisual(uint32 id)
+{
+    WorldPackets::Spells::CancelOrphanSpellVisual cancelOrphanSpellVisual;
+    cancelOrphanSpellVisual.SpellVisualID = id;
+    SendMessageToSet(cancelOrphanSpellVisual.Write(), true);
+}
+
+void Unit::SendPlayOrphanSpellVisual(ObjectGuid const& target, uint32 spellVisualId, float travelSpeed, bool speedAsTime /*= false*/, bool withSourceOrientation /*= false*/)
+{
+    WorldPackets::Spells::PlayOrphanSpellVisual playOrphanSpellVisual;
+    playOrphanSpellVisual.SourceLocation = GetPosition();
+    if (withSourceOrientation)
+        playOrphanSpellVisual.SourceRotation = Position(0.0f, 0.0f, GetOrientation());
+    playOrphanSpellVisual.Target = target; // exclusive with TargetLocation
+    playOrphanSpellVisual.SpellVisualID = spellVisualId;
+    playOrphanSpellVisual.TravelSpeed = travelSpeed;
+    playOrphanSpellVisual.SpeedAsTime = speedAsTime;
+    SendMessageToSet(playOrphanSpellVisual.Write(), true);
+}
+
+void Unit::SendPlayOrphanSpellVisual(Position const& targetLocation, uint32 spellVisualId, float travelSpeed, bool speedAsTime /*= false*/, bool withSourceOrientation /*= false*/)
+{
+    WorldPackets::Spells::PlayOrphanSpellVisual playOrphanSpellVisual;
+    playOrphanSpellVisual.SourceLocation = GetPosition();
+    if (withSourceOrientation)
+        playOrphanSpellVisual.SourceRotation = Position(0.0f, 0.0f, GetOrientation());
+    playOrphanSpellVisual.TargetLocation = targetLocation; // exclusive with Target
+    playOrphanSpellVisual.SpellVisualID = spellVisualId;
+    playOrphanSpellVisual.TravelSpeed = travelSpeed;
+    playOrphanSpellVisual.SpeedAsTime = speedAsTime;
+    SendMessageToSet(playOrphanSpellVisual.Write(), true);
+}
+
+void Unit::SendPlayOrphanSpellVisual(Position const& sourcePos, Position const& orientationPos, Position const& targetPos, uint32 spellVisualId, float travelSpeed, bool speedAsTime /*= false*/)
+{
+    WorldPackets::Spells::PlayOrphanSpellVisual playOrphanSpellVisual;
+    playOrphanSpellVisual.SourceLocation = sourcePos;
+    playOrphanSpellVisual.SourceRotation = orientationPos;
+    playOrphanSpellVisual.TargetLocation = targetPos;
+    playOrphanSpellVisual.SpellVisualID = spellVisualId;
+    playOrphanSpellVisual.TravelSpeed = travelSpeed;
+    playOrphanSpellVisual.SpeedAsTime = speedAsTime;
+    SendMessageToSet(playOrphanSpellVisual.Write(), true);
+}
+
+
+void Unit::SendCancelSpellVisual(uint32 id)
+{
+    WorldPackets::Spells::CancelSpellVisual cancelSpellVisual;
+    cancelSpellVisual.Source = GetGUID();
+    cancelSpellVisual.SpellVisualID = id;
+    SendMessageToSet(cancelSpellVisual.Write(), true);
+}
+
+void Unit::SendPlaySpellVisual(ObjectGuid const& targetGuid, uint32 spellVisualId, uint16 missReason /*= 0*/, uint16 reflectStatus /*= 0*/, float travelSpeed /*= .0f*/, bool speedAsTime /*= false*/)
+{
+    if (!targetGuid)
+        return;
+
+    WorldPackets::Spells::PlaySpellVisual playSpellVisual;
+    playSpellVisual.Source = GetGUID();
+    playSpellVisual.Target = targetGuid; // exclusive with TargetPosition
+    playSpellVisual.SpellVisualID = spellVisualId;
+    playSpellVisual.TravelSpeed = travelSpeed;
+    playSpellVisual.MissReason = missReason;
+    playSpellVisual.ReflectStatus = reflectStatus;
+    playSpellVisual.SpeedAsTime = speedAsTime;
+    SendMessageToSet(playSpellVisual.Write(), true);
+}
+
+void Unit::SendPlaySpellVisual(Position const& targetPosition, float o, uint32 spellVisualId, uint16 missReason /*= 0*/, uint16 reflectStatus /*= 0*/, float travelSpeed /*= .0f*/, bool speedAsTime /*= false*/)
+{
+    WorldPackets::Spells::PlaySpellVisual playSpellVisual;
+    playSpellVisual.Source = GetGUID();
+    playSpellVisual.TargetPosition = targetPosition; // exclusive with Target
+    playSpellVisual.LaunchDelay = o;
+    playSpellVisual.SpellVisualID = spellVisualId;
+    playSpellVisual.TravelSpeed = travelSpeed;
+    playSpellVisual.MissReason = missReason;
+    playSpellVisual.ReflectStatus = reflectStatus;
+    playSpellVisual.SpeedAsTime = speedAsTime;
+    SendMessageToSet(playSpellVisual.Write(), true);
+}
+
+void Unit::SendCancelSpellVisualKit(uint32 id)
+{
+    WorldPackets::Spells::CancelSpellVisualKit cancelSpellVisualKit;
+    cancelSpellVisualKit.Source = GetGUID();
+    cancelSpellVisualKit.SpellVisualKitID = id;
+    SendMessageToSet(cancelSpellVisualKit.Write(), true);
+}
+
+void Unit::SendPlaySpellVisualKit(uint32 id, uint32 type, uint32 duration) const
+{
+    WorldPackets::Spells::PlaySpellVisualKit playSpellVisualKit;
+    playSpellVisualKit.Unit = GetGUID();
+    playSpellVisualKit.KitRecID = id;
+    playSpellVisualKit.KitType = type;
+    playSpellVisualKit.Duration = duration;
+    SendMessageToSet(playSpellVisualKit.Write(), true);
+}
+
 void Unit::DeMorph()
 {
     SetDisplayId(GetNativeDisplayId());
@@ -3336,6 +3455,9 @@ AuraApplication* Unit::_CreateAuraApplication(Aura* aura, uint32 effMask)
     AuraApplication * aurApp = new AuraApplication(this, caster, aura, effMask);
     m_appliedAuras.insert(AuraApplicationMap::value_type(aurId, aurApp));
 
+    if (caster)
+        caster->RegisterTargetAura(aurApp);
+
     if (aurSpellInfo->HasAnyAuraInterruptFlag())
     {
         m_interruptableAuras.push_back(aurApp);
@@ -3431,6 +3553,8 @@ void Unit::_UnapplyAura(AuraApplicationMap::iterator& i, AuraRemoveMode removeMo
 
     // Remove all pointers from lists here to prevent possible pointer invalidation on spellcast/auraapply/auraremove
     m_appliedAuras.erase(i);
+    if (caster)
+        caster->UnregisterTargetAura(aurApp);
 
     if (aura->GetSpellInfo()->HasAnyAuraInterruptFlag())
     {
@@ -3640,6 +3764,43 @@ Aura* Unit::GetOwnedAura(uint32 spellId, ObjectGuid casterGUID, ObjectGuid itemC
     }
     return nullptr;
 }
+
+Unit::AuraApplicationVector Unit::GetTargetAuraApplications(uint32 spellId) const
+{
+    AuraApplicationVector aurApps;
+
+    auto bounds = m_targetAuras.equal_range(spellId);
+    for (auto itr = bounds.first; itr != bounds.second; ++itr)
+    {
+        if (Unit* target = ObjectAccessor::GetUnit(*this, itr->second))
+            if (AuraApplication* aurApp = target->GetAuraApplication(itr->first, GetGUID()))
+                aurApps.push_back(aurApp);
+    }
+
+    return aurApps;
+}
+
+void Unit::RegisterTargetAura(AuraApplication const* aurApp)
+{
+    m_targetAuras.emplace(aurApp->GetBase()->GetId(), aurApp->GetTarget()->GetGUID());
+}
+
+void Unit::UnregisterTargetAura(AuraApplication const* aurApp)
+{
+    auto bounds = m_targetAuras.equal_range(aurApp->GetBase()->GetId());
+    for (auto itr = bounds.first; itr != bounds.second;)
+    {
+        if (itr->second == aurApp->GetTarget()->GetGUID())
+        {
+            itr = m_targetAuras.erase(itr);
+            // erase only one entry from container
+            return;
+        }
+        else
+            ++itr;
+    }
+}
+
 
 void Unit::RemoveAura(AuraApplicationMap::iterator &i, AuraRemoveMode mode)
 {
@@ -5006,6 +5167,133 @@ int32 Unit::GetMaxNegativeAuraModifierByAffectMask(AuraType auraType, SpellInfo 
             return true;
         return false;
     });
+}
+
+int32 Unit::GetTotalSpellPowerValue(SpellSchoolMask mask, bool heal) const
+{
+    if (!IsPlayer())
+    {
+        if (GetOwner() && GetOwner()->ToPlayer())
+        {
+            if (IsTotem())
+                return GetOwner()->GetTotalSpellPowerValue(mask, heal);
+            else
+            {
+                if (IsPet())
+                    return GetOwner()->ToPlayer()->m_activePlayerData->PetSpellPower;
+                else if (IsGuardian())
+                    return ((Guardian*)this)->GetBonusDamage();
+            }
+        }
+
+        if (heal)
+            return SpellBaseHealingBonusDone(mask);
+
+        return SpellBaseDamageBonusDone(mask);
+    }
+
+    int32 sp = 0;
+
+    if (heal)
+        sp = ToPlayer()->m_activePlayerData->ModHealingDonePos;
+    else
+    {
+        int32 counter = 0;
+        for (uint32 i = 1; i < MAX_SPELL_SCHOOL; i++)
+        {
+            if (mask & (1 << i))
+            {
+                sp += ToPlayer()->m_activePlayerData->ModDamageDonePos[i];
+                counter++;
+            }
+        }
+        if (counter > 0)
+            sp /= counter;
+    }
+
+    return std::max(sp, 0); //avoid negative spell power
+}
+
+bool Unit::CastCustomSpell(Unit* victim, uint32 spellId, int32 const* bp0, int32 const* bp1, int32 const* bp2, bool triggered, Item* castItem, AuraEffect const* triggeredByAura, ObjectGuid originalCaster)
+{
+    CastSpellTargetArg targets(victim);
+
+    if (castItem)
+        targets.Targets->SetItemTarget(castItem);
+
+    CastSpellExtraArgs args(triggered);
+
+    if (bp0)
+        args.AddSpellBP0(*bp0);
+    if (bp1)
+        args.AddSpellBP1(*bp1);
+    if (bp2)
+        args.AddSpellBP2(*bp2);
+    if (triggeredByAura)
+        args.SetTriggeringAura(triggeredByAura);
+    if (!originalCaster.IsEmpty())
+        args.SetOriginalCaster(originalCaster);
+
+    return CastSpell(targets, spellId, args);
+}
+
+bool Unit::CastCustomSpell(float x, float y, float z, uint32 spellId, int32 const* bp0, int32 const* bp1, int32 const* bp2, bool triggered, Item* castItem, AuraEffect const* triggeredByAura, ObjectGuid originalCaster)
+{
+    CastSpellTargetArg targets(Position(x, y, z));
+
+    if (castItem)
+        targets.Targets->SetItemTarget(castItem);
+
+    CastSpellExtraArgs args(triggered);
+
+    if (bp0)
+        args.AddSpellBP0(*bp0);
+    if (bp1)
+        args.AddSpellBP1(*bp1);
+    if (bp2)
+        args.AddSpellBP2(*bp2);
+    if (triggeredByAura)
+        args.SetTriggeringAura(triggeredByAura);
+    if (!originalCaster.IsEmpty())
+        args.SetOriginalCaster(originalCaster);
+
+    return CastSpell(targets, spellId, args);
+}
+
+bool Unit::CastCustomSpell(uint32 spellId, SpellValueMod mod, int32 value, Unit* victim, bool triggered, Item* castItem, AuraEffect const* triggeredByAura, ObjectGuid originalCaster)
+{
+    CastSpellTargetArg targets(victim);
+
+    if (castItem)
+        targets.Targets->SetItemTarget(castItem);
+
+    CastSpellExtraArgs args(triggered);
+
+    if (triggeredByAura)
+        args.SetTriggeringAura(triggeredByAura);
+    if (!originalCaster.IsEmpty())
+        args.SetOriginalCaster(originalCaster);
+    args.AddSpellMod(mod, value);
+
+    return CastSpell(targets, spellId, args);
+}
+
+bool Unit::CastCustomSpell(uint32 spellId, SpellValueMod mod, int32 value, Unit* victim, TriggerCastFlags triggerFlags, Item* castItem, AuraEffect const* triggeredByAura, ObjectGuid originalCaster)
+{
+    CastSpellTargetArg targets(victim);
+
+    if (castItem)
+        targets.Targets->SetItemTarget(castItem);
+
+    CastSpellExtraArgs args(triggerFlags);
+
+    if (triggeredByAura)
+        args.SetTriggeringAura(triggeredByAura);
+    if (!originalCaster.IsEmpty())
+        args.SetOriginalCaster(originalCaster);
+    args.AddSpellMod(mod, value);
+
+    return CastSpell(targets, spellId, args);
 }
 
 void Unit::InitStatBuffMods()
@@ -13898,4 +14186,11 @@ std::string Unit::GetDebugInfo() const
     }
 
     return sstr.str();
+}
+
+bool Trinity::AreaTriggerDurationPctOrderPred::operator()(const AreaTrigger* a, const AreaTrigger* b) const
+{
+    int32 rA = a->GetDuration() ? a->GetDuration() : 0;
+    int32 rB = b->GetDuration() ? b->GetDuration() : 0;
+    return m_ascending ? rA < rB : rA > rB;
 }

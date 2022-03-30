@@ -40,6 +40,60 @@ enum PetEntry
 
 struct SummonPropertiesEntry;
 
+enum PetEntries
+{
+    // Warlock Pets/Minions
+    ENTRY_IMP                     = 416,
+    ENTRY_VOIDWALKER              = 1860,
+    ENTRY_SUCCUBUS                = 1863,
+    ENTRY_FELHUNTER               = 417,
+    ENTRY_FELGUARD                = 17252,
+    ENTRY_DOOMGUARD               = 11859,
+    ENTRY_DOOMGUARD_PET           = 78158,
+    ENTRY_INFERNAL                = 89,
+    ENTRY_INFERNAL_LORD_OF_FLAMES = 108452,
+    ENTRY_INFERNAL_PET            = 78217,
+    ENTRY_WILD_IMP                = 143622,
+    ENTRY_DEMONIC_TYRANT		  = 135002,
+    ENTRY_DREADSTALKER            = 98035,
+    ENTRY_DARKGLARE               = 103673,
+    ENTRY_CHAOS_TEAR              = 108493,
+    ENTRY_UNSTABLE_TEAR           = 94584,
+    ENTRY_SHADOWY_TEAR            = 99887,
+	ENTRY_VILEFIEND				  = 135816,
+	ENTRY_BILESCOURGE			  = 136404,
+	ENTRY_DARKHOUND				  = 136408,
+	ENTRY_EYES_OF_GULDAN		  = 136401,
+	ENTRY_ILLIDAR_SATYR			  = 136398,
+	ENTRY_PRINCE_MALCHEZZAR		  = 136397,
+	ENTRY_SHIVARRA				  = 136406,
+	ENTRY_URSUL					  = 136402,
+	ENTRY_VICIUS_HELLHOUND		  = 136399,
+	ENTRY_VOID_TERROR			  = 136403,
+	ENTRY_WRATHGUARD			  = 136407,
+	ENTRY_OBSERVER				  = 107100,
+	ENTRY_FEL_LORD				  = 107024,
+    // Mage Pet/Minion
+    ENTRY_WATER_ELEMENTAL         = 78116,
+    // Shaman Pet/Minion
+    ENTRY_FIRE_ELEMENTAL          = 95061,
+    // Death knight Pet/Minion
+    ENTRY_GHOUL                   = 26125,
+    ENTRY_BLOODWORM               = 99773,
+    ENTRY_RISEN_SKULKER           = 99541,
+    ENTRY_ABOMINATION             = 106848,
+    ENTRY_ARMY_OF_DEATH_GHOUL     = 24207,
+    // Monk Pet/Minion
+    ENTRY_XUEN                    = 63508,
+    ENTRY_NIUZAO                  = 73967,
+    ENTRY_CHI_JI                  = 100868,
+    // Druid Pet/Minion
+    ENTRY_TREANT                  = 1964,
+	// Priest
+	ENTRY_SHADOWFIEND			  = 19668,
+	ENTRY_MINDBENDER			  = 62982,
+};
+
 class TC_GAME_API TempSummon : public Creature
 {
     public:

@@ -241,6 +241,14 @@ enum TalentSpecialization // talent tabs
     TALENT_SPEC_DEMON_HUNTER_VENGEANCE  = 581
 };
 
+enum TalentSpecRoles
+{
+    TALENT_ROLE_TANK    = 0,
+    TALENT_ROLE_HEALER  = 1,
+    TALENT_ROLE_DAMAGE  = 2,
+    TALENT_ROLE_NOT_SET = 3
+};
+
 enum SpecResetType
 {
     SPEC_RESET_TALENTS = 0,
@@ -1848,6 +1856,8 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         bool HasTalent(uint32 spell_id, uint8 spec) const;
         void RemoveTalent(TalentEntry const* talent);
         void ResetTalentSpecialization();
+        uint8 GetRole() const;
+        static uint8 _GetRole(uint32 spec);
 
         TalentLearnResult LearnPvpTalent(uint32 talentID, uint8 slot, int32* spellOnCooldown);
         bool AddPvpTalent(PvpTalentEntry const* talent, uint8 activeTalentGroup, uint8 slot);

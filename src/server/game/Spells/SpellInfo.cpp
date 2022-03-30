@@ -1367,6 +1367,65 @@ bool SpellInfo::HasOnlyDamageEffects() const
     return true;
 }
 
+
+bool SpellInfo::IsLossOfControl() const
+{
+    for (auto effect : GetEffects())
+    {
+        switch (effect.Mechanic)
+        {
+            case MECHANIC_SAPPED:
+            case MECHANIC_CHARM:
+            case MECHANIC_DISORIENTED:
+            case MECHANIC_FEAR:
+            case MECHANIC_SILENCE:
+            case MECHANIC_POLYMORPH:
+            case MECHANIC_BANISH:
+            case MECHANIC_SLEEP:
+            case MECHANIC_STUN:
+            case MECHANIC_INTERRUPT:
+            case MECHANIC_HORROR:
+            case MECHANIC_FREEZE:
+                return true;
+            default:
+                break;
+        }
+    }
+
+    // If nothing found, we must find default values depending on AuraType
+    for (auto effect : GetEffects())
+    {
+        switch (effect.ApplyAuraName)
+        {
+            case SPELL_AURA_MOD_FEAR:
+            case SPELL_AURA_MOD_FEAR_2:
+            case SPELL_AURA_MOD_STUN:
+            case SPELL_AURA_MOD_SILENCE:
+            case SPELL_AURA_MOD_PACIFY_SILENCE:
+            case SPELL_AURA_MOD_POSSESS:
+            case SPELL_AURA_MOD_CHARM:
+            case SPELL_AURA_MOD_CONFUSE:
+                return true;
+            default:
+                break;
+        }
+    }
+
+    return false;
+}
+
+bool SpellInfo::HasEffectMechanic(Mechanics mechanic) const
+{
+    uint64 allEffectMask = 0;
+    for (auto effect : GetEffects())
+    {
+        if (effect.Mechanic)
+            allEffectMask |= 1LL << effect.Mechanic;
+    }
+
+    return allEffectMask & (1LL << mechanic);
+}
+
 bool SpellInfo::HasTargetType(::Targets target) const
 {
     for (SpellEffectInfo const& effect : GetEffects())

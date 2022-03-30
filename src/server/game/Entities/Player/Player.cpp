@@ -1233,6 +1233,8 @@ void Player::Update(uint32 p_time)
     //because we don't want player's ghost teleported from graveyard
     if (IsHasDelayedTeleport() && IsAlive())
         TeleportTo(m_teleport_dest, m_teleport_options);
+
+    sScriptMgr->OnPlayerUpdate(this, p_time);
 }
 
 void Player::setDeathState(DeathState s)
@@ -27262,6 +27264,19 @@ bool Player::IsAreaThatActivatesPvpTalents(uint32 areaID) const
 
     return false;
 }
+
+uint8 Player::GetRole() const
+{
+    return _GetRole(GetSpecializationId());
+};
+
+uint8 Player::_GetRole(uint32 spec)
+{
+    if (ChrSpecializationEntry const* chrSpec = sChrSpecializationStore.LookupEntry(spec))
+        return chrSpec->Role;
+
+    return TALENT_ROLE_NOT_SET;
+};
 
 void Player::UpdateFallInformationIfNeed(MovementInfo const& minfo, uint16 opcode)
 {

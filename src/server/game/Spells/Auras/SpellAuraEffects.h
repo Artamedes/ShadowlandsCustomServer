@@ -36,6 +36,8 @@ class TC_GAME_API AuraEffect
         explicit AuraEffect(Aura* base, SpellEffectInfo const& spellEfffectInfo, int32 const* baseAmount, Unit* caster);
 
     public:
+        Trinity::AnyData Variables;
+
         Unit* GetCaster() const { return GetBase()->GetCaster(); }
         ObjectGuid GetCasterGUID() const { return GetBase()->GetCasterGUID(); }
         Aura* GetBase() const { return m_base; }

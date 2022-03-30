@@ -2096,6 +2096,11 @@ void ScriptMgr::OnPlayerLogin(Player* player, bool firstLogin)
     FOREACH_SCRIPT(PlayerScript)->OnLogin(player, firstLogin);
 }
 
+void ScriptMgr::OnPlayerUpdate(Player* player, uint32 diff)
+{
+    FOREACH_SCRIPT(PlayerScript)->OnUpdate(player, diff);
+}
+
 void ScriptMgr::OnPlayerLogout(Player* player)
 {
     FOREACH_SCRIPT(PlayerScript)->OnLogout(player);
@@ -2181,6 +2186,41 @@ void ScriptMgr::OnPlayerSpellLearned(Player* player, uint32 p_SpellID)
 
 void ScriptMgr::OnPlayerSpellRemoved(Player* player, uint32 p_SpellID) {
     FOREACH_SCRIPT(PlayerScript)->OnSpellRemoved(player, p_SpellID);
+}
+
+void ScriptMgr::OnPlayerSuccessfulSpellCast(Player* player, Spell* spell)
+{
+    FOREACH_SCRIPT(PlayerScript)->OnSuccessfulSpellCast(player, spell);
+}
+
+void ScriptMgr::OnPlayerInterruptedSpellCast(Player* player, Spell* spell)
+{
+    FOREACH_SCRIPT(PlayerScript)->OnInterruptedSpellCast(player, spell);
+}
+
+void ScriptMgr::OnSpellInterrupt(Player* player, Unit* source, Spell* spell, Spell* interruptingSpell)
+{
+    FOREACH_SCRIPT(PlayerScript)->OnSpellInterrupt(player, source, spell, interruptingSpell);
+}
+
+void ScriptMgr::OnSummonCreatureDealsDamage(Player* player, Unit* creature, Unit* victim, int32 damage)
+{
+    FOREACH_SCRIPT(PlayerScript)->OnSummonCreatureDealsDamage(player, creature, victim, damage);
+}
+
+void ScriptMgr::OnPlayerTakeDamage(Player* player, uint32 damage, SpellSchoolMask schoolMask)
+{
+    FOREACH_SCRIPT(PlayerScript)->OnTakeDamage(player, damage, schoolMask);
+}
+
+void ScriptMgr::OnPlayerDealDamage(Player* player, Unit* target, uint32 damage, SpellSchoolMask schoolMask)
+{
+    FOREACH_SCRIPT(PlayerScript)->OnDealDamage(player, target, damage, schoolMask);
+}
+
+void ScriptMgr::OnChanneledSpellSuccessfulCast(Player* player, Spell* spell)
+{
+    FOREACH_SCRIPT(PlayerScript)->OnChanneledSpellSuccessfulCast(player, spell);
 }
 
 // Account

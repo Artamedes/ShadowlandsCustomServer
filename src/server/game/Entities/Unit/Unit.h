@@ -771,6 +771,9 @@ class TC_GAME_API Unit : public WorldObject
         struct VisibleAuraSlotCompare { bool operator()(AuraApplication* left, AuraApplication* right) const; };
         typedef std::set<AuraApplication*, VisibleAuraSlotCompare> VisibleAuraContainer;
 
+        typedef std::unordered_multimap<uint32 /*spellId*/, ObjectGuid /*targetGuid*/> TargetAuraContainer;
+        typedef std::vector<AuraApplication*> AuraApplicationVector;
+
         virtual ~Unit();
 
         bool IsAIEnabled() const { return (i_AI != nullptr); }
@@ -799,6 +802,11 @@ class TC_GAME_API Unit : public WorldObject
         bool ApplyDiminishingToDuration(SpellInfo const* auraSpellInfo, int32& duration, WorldObject* caster, DiminishingLevels previousLevel) const;
         void ApplyDiminishingAura(DiminishingGroup group, bool apply);
         void ClearDiminishings();
+
+        void AddDelayedEvent(uint32 delay, std::function<void()> lambda)
+        {
+            m_Events.AddEvent(new GenericDelayedEvent(lambda), m_Events.CalculateTime(Milliseconds(delay)));
+        }
 
         virtual void Update(uint32 time) override;
 
@@ -1187,6 +1195,17 @@ class TC_GAME_API Unit : public WorldObject
 
         void CancelSpellMissiles(uint32 spellId, bool reverseMissile = false);
 
+        void SendCancelOrphanSpellVisual(uint32 id);
+        void SendPlayOrphanSpellVisual(ObjectGuid const& target, uint32 spellVisualId, float travelSpeed, bool speedAsTime = false, bool withSourceOrientation = false);
+        void SendPlayOrphanSpellVisual(Position const& targetLocation, uint32 spellVisualId, float travelSpeed, bool speedAsTime = false, bool withSourceOrientation = false);
+        void SendPlayOrphanSpellVisual(Position const& sourcePos, Position const& orientationPos, Position const& targetPos, uint32 spellVisualId, float travelSpeed, bool speedAsTime = false);
+        void SendCancelSpellVisual(uint32 id);
+        void SendPlaySpellVisual(ObjectGuid const& target, uint32 spellVisualId, uint16 missReason = 0, uint16 reflectStatus = 0, float travelSpeed = .0f, bool speedAsTime = false);
+        void SendPlaySpellVisual(Position const& targetPosition, float o, uint32 spellVisualId, uint16 missReason = 0, uint16 reflectStatus = 0, float travelSpeed = .0f, bool speedAsTime = false);
+        void SendCancelSpellVisualKit(uint32 id);
+        void SendPlaySpellVisualKit(uint32 id, uint32 type, uint32 duration) const;
+        void SendMissileCancel(uint32 spellId, bool reverse = true);
+
         void DeMorph();
 
         void SendAttackStateUpdate(CalcDamageInfo* damageInfo);
@@ -1355,6 +1374,10 @@ class TC_GAME_API Unit : public WorldObject
         AuraApplicationMap      & GetAppliedAuras()       { return m_appliedAuras; }
         AuraApplicationMap const& GetAppliedAuras() const { return m_appliedAuras; }
 
+        AuraApplicationVector GetTargetAuraApplications(uint32 spellId) const;
+        void RegisterTargetAura(AuraApplication const* aurApp);
+        void UnregisterTargetAura(AuraApplication const* aurApp);
+
         void RemoveAura(AuraApplicationMap::iterator &i, AuraRemoveMode mode = AURA_REMOVE_BY_DEFAULT);
         void RemoveAura(uint32 spellId, ObjectGuid casterGUID = ObjectGuid::Empty, uint32 reqEffMask = 0, AuraRemoveMode removeMode = AURA_REMOVE_BY_DEFAULT);
         void RemoveAura(AuraApplication * aurApp, AuraRemoveMode mode = AURA_REMOVE_BY_DEFAULT);
@@ -1467,6 +1490,12 @@ class TC_GAME_API Unit : public WorldObject
         float GetTotalAuraMultiplierByAffectMask(AuraType auraType, SpellInfo const* affectedSpell) const;
         int32 GetMaxPositiveAuraModifierByAffectMask(AuraType auraType, SpellInfo const* affectedSpell) const;
         int32 GetMaxNegativeAuraModifierByAffectMask(AuraType auraType, SpellInfo const* affectedSpell) const;
+        int32 GetTotalSpellPowerValue(SpellSchoolMask mask, bool heal) const;
+
+        bool CastCustomSpell(Unit* victim, uint32 spellId, int32 const* bp0, int32 const* bp1, int32 const* bp2, bool triggered, Item* castItem = nullptr, AuraEffect const* triggeredByAura = nullptr, ObjectGuid originalCaster = ObjectGuid::Empty);
+        bool CastCustomSpell(float x, float y, float z, uint32 spellId, int32 const* bp0, int32 const* bp1, int32 const* bp2, bool triggered, Item* castItem = nullptr, AuraEffect const* triggeredByAura = nullptr, ObjectGuid originalCaster = ObjectGuid::Empty);
+        bool CastCustomSpell(uint32 spellId, SpellValueMod mod, int32 value, Unit* victim, bool triggered, Item* castItem = nullptr, AuraEffect const* triggeredByAura = nullptr, ObjectGuid originalCaster = ObjectGuid::Empty);
+        bool CastCustomSpell(uint32 spellId, SpellValueMod mod, int32 value, Unit* victim = nullptr, TriggerCastFlags triggerFlags = TRIGGERED_NONE, Item* castItem = nullptr, AuraEffect const* triggeredByAura = nullptr, ObjectGuid originalCaster = ObjectGuid::Empty);
 
         void InitStatBuffMods();
         void UpdateStatBuffMod(Stats stat);
@@ -1509,7 +1538,7 @@ class TC_GAME_API Unit : public WorldObject
         void ClearChannelObjects() { ClearDynamicUpdateFieldValues(m_values.ModifyValue(&Unit::m_unitData).ModifyValue(&UF::UnitData::ChannelObjects)); }
 
         void SetCurrentCastSpell(Spell* pSpell);
-        void InterruptSpell(CurrentSpellTypes spellType, bool withDelayed = true, bool withInstant = true);
+        void InterruptSpell(CurrentSpellTypes spellType, bool withDelayed = true, bool withInstant = true, Spell* interruptingSpell = nullptr);
         void FinishSpell(CurrentSpellTypes spellType, bool ok = true);
 
         // set withDelayed to true to account delayed spells as cast
@@ -1958,6 +1987,8 @@ class TC_GAME_API Unit : public WorldObject
         AuraMap::iterator m_auraUpdateIterator;
         uint32 m_removedAurasCount;
 
+        TargetAuraContainer m_targetAuras;
+
         AuraEffectList m_modAuras[TOTAL_AURAS];
         AuraList m_scAuras;                        // cast singlecast auras
         AuraApplicationList m_interruptableAuras;  // auras which have interrupt mask applied on unit
@@ -2130,6 +2161,45 @@ namespace Trinity
 
         private:
             bool const _ascending;
+    };
+    
+    // Binary predicate for sorting Units based on value of distance of an GameObject
+    class DistanceCompareOrderPred
+    {
+        public:
+            DistanceCompareOrderPred(const WorldObject* object, bool ascending = true) : m_object(object), m_ascending(ascending) {}
+            bool operator() (const WorldObject* a, const WorldObject* b) const
+            {
+                return m_ascending ? a->GetDistance(m_object) < b->GetDistance(m_object) :
+                                     a->GetDistance(m_object) > b->GetDistance(m_object);
+            }
+        private:
+            const WorldObject* m_object;
+            const bool m_ascending;
+    };
+
+    class DistanceOrderPred
+    {
+        public:
+            DistanceOrderPred(Unit* searcher) :  _searcher(searcher) { }
+            bool operator() (const Unit* a, const Unit* b) const
+            {
+                float rA = _searcher->GetDistance(a);
+                float rB = _searcher->GetDistance(b);
+                return rA < rB;
+            }
+        private:
+            Unit const* _searcher;
+    };
+
+    // Binary predicate for sorting DynamicObjects based on value of duration
+    class AreaTriggerDurationPctOrderPred
+    {
+    public:
+        AreaTriggerDurationPctOrderPred(bool ascending = true) : m_ascending(ascending) {}
+        bool operator() (const AreaTrigger* a, const AreaTrigger* b) const;
+    private:
+        const bool m_ascending;
     };
 }
 

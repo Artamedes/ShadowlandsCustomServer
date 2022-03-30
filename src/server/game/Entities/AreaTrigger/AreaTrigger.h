@@ -89,11 +89,13 @@ class TC_GAME_API AreaTrigger : public WorldObject, public GridObject<AreaTrigge
         void Update(uint32 diff) override;
         void Remove();
         bool IsRemoved() const { return _isRemoved; }
+        bool HaveDestination() const { return _setedDestination; }
         uint32 GetSpellId() const { return m_areaTriggerData->SpellID; }
         AuraEffect const* GetAuraEffect() const { return _aurEff; }
         uint32 GetTimeSinceCreated() const { return _timeSinceCreated; }
         uint32 GetTimeToTarget() const { return m_areaTriggerData->TimeToTarget; }
         uint32 GetTimeToTargetScale() const { return m_areaTriggerData->TimeToTargetScale; }
+        void UpdateTimeToTarget(uint32 timeToTarget);
         int32 GetDuration() const { return _duration; }
         int32 GetTotalDuration() const { return _totalDuration; }
         void SetDuration(int32 newDuration);
@@ -125,11 +127,13 @@ class TC_GAME_API AreaTrigger : public WorldObject, public GridObject<AreaTrigge
 
         void InitOrbit(AreaTriggerOrbitInfo const& orbit, uint32 timeToTarget);
         bool HasOrbit() const;
+        bool SetDestination(Position const& pos, uint32 timeToTarget, bool followTerrain = false);
         Optional<AreaTriggerOrbitInfo> const& GetCircularMovementInfo() const { return _orbitInfo; }
 
         void UpdateShape();
 
         float GetRadius() { return _radius; }
+        float GetCurrentTimePercent();
         UF::UpdateField<UF::AreaTriggerData, 0, TYPEID_AREATRIGGER> m_areaTriggerData;
 
     protected:
@@ -174,6 +178,7 @@ class TC_GAME_API AreaTrigger : public WorldObject, public GridObject<AreaTrigge
         float _previousCheckOrientation;
         float _radius;
         bool _isRemoved;
+        bool _setedDestination;
 
         Position _rollPitchYaw;
         Position _targetRollPitchYaw;
