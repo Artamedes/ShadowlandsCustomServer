@@ -176,8 +176,7 @@ struct npc_skipbot_3000 : public ScriptedAI
             ClearGossipMenuFor(p_Player);
             p_Player->PrepareQuestMenu(me->GetGUID());
             if (DidNotCompleteTutorialQuests(p_Player))
-                AddGossipItemFor(p_Player, GossipOptionIcon::AdventureMap, "Skip tutorial.", 0, 1);
-            AddGossipItemFor(p_Player, GossipOptionIcon::None, "Nevermind", 0, 0);
+                AddGossipItemFor(p_Player, GossipOptionIcon::None, "Skip tutorial.", 0, 1);
             SendGossipMenuFor(p_Player, me->GetEntry(), me);
             return true;
         }
@@ -368,6 +367,108 @@ struct npc_mall_weapongiver : public ScriptedAI
         void InitializeAI() override
         {
             DoCastSelf(356889);
+            switch (me->GetEntry())
+            {
+                case 800025: // Sylvanas
+                    m_BonusListIds.reserve(3);
+                    m_ItemEntries.reserve(1);
+                    m_ItemEntries.emplace_back(186414);
+                    m_BonusListIds.emplace_back(6606); // Mythic
+                    m_BonusListIds.emplace_back(1610); // ItemLevel
+                    m_BonusListIds.emplace_back(1601); // ItemLevel
+                    AllowableClasses = 4; // Hunter
+                    break;
+                case 800023: // Wrathion
+                    m_ItemEntries.reserve(2);
+                    m_ItemEntries.emplace_back(77949);
+                    m_ItemEntries.emplace_back(77950);
+                    m_BonusListIds.reserve(4);
+                    m_BonusListIds.emplace_back(6606); // Mythic
+                    m_BonusListIds.emplace_back(1610); // ItemLevel
+                    m_BonusListIds.emplace_back(1618); // ItemLevel
+                    m_BonusListIds.emplace_back(1650); // ItemLevel
+                    AllowableClasses = 8; // Rogue
+                    break;
+                case 800022: // Dragonwrath
+                    //.add 71086 1 6606;1610;1618;1651
+                    m_ItemEntries.reserve(1);
+                    m_ItemEntries.emplace_back(71086);
+                    m_BonusListIds.reserve(4);
+                    m_BonusListIds.emplace_back(6606); // Mythic
+                    m_BonusListIds.emplace_back(1610); // ItemLevel
+                    m_BonusListIds.emplace_back(1618); // ItemLevel
+                    m_BonusListIds.emplace_back(1651); // ItemLevel
+                    AllowableClasses = CLASSMASK_WAND_USERS + 1024 + 64; // Casters
+                    break;
+                case 800021: // Sulfuras
+                    //.add 71352 1 6606;1610;1618;1651
+                    m_ItemEntries.reserve(1);
+                    m_ItemEntries.emplace_back(71352);
+                    m_BonusListIds.reserve(4);
+                    m_BonusListIds.emplace_back(6606); // Mythic
+                    m_BonusListIds.emplace_back(1610); // ItemLevel
+                    m_BonusListIds.emplace_back(1618); // ItemLevel
+                    m_BonusListIds.emplace_back(1651); // ItemLevel
+                    AllowableClasses = 1 + 2 + 32;
+                    break;
+                case 800018: // Shadowmourne
+                    //.add 49623 1 6606;1610;1618;1653
+                    m_ItemEntries.reserve(1);
+                    m_ItemEntries.emplace_back(49623);
+                    m_BonusListIds.reserve(4);
+                    m_BonusListIds.emplace_back(6606); // Mythic
+                    m_BonusListIds.emplace_back(1610); // ItemLevel
+                    m_BonusListIds.emplace_back(1618); // ItemLevel
+                    m_BonusListIds.emplace_back(1653); // ItemLevel
+                    AllowableClasses = 1 + 2 + 32;
+                    break;
+                case 800019: // Frostmourne
+                    //.add 49623 1 6606;1610;1618;1653
+                    //m_ItemEntries.reserve(1);
+                    //m_ItemEntries.emplace_back(49623);
+                    //m_BonusListIds.reserve(4);
+                    //m_BonusListIds.emplace_back(6606); // Mythic
+                    //m_BonusListIds.emplace_back(1610); // ItemLevel
+                    //m_BonusListIds.emplace_back(1618); // ItemLevel
+                    //m_BonusListIds.emplace_back(1653); // ItemLevel
+                    //AllowableClasses = 1 + 2 + 32;
+                    break;
+                case 800020: // Highlord
+                    //.add 19019 1 6606;1610;1618;1659
+                    m_ItemEntries.reserve(1);
+                    m_ItemEntries.emplace_back(19019);
+                    m_BonusListIds.reserve(4);
+                    m_BonusListIds.emplace_back(6606); // Mythic
+                    m_BonusListIds.emplace_back(1610); // ItemLevel
+                    m_BonusListIds.emplace_back(1618); // ItemLevel
+                    m_BonusListIds.emplace_back(1659); // ItemLevel
+                    AllowableClasses = 1 + 2048 + 8 + 512 + 32;
+                    break;
+                case 800017: // Illidan
+                    //.add 32837 1 6606;1610;1618;1655
+                    //.add 32838 1 6606;1610;1618;1655
+                    m_ItemEntries.reserve(2);
+                    m_ItemEntries.emplace_back(32837);
+                    m_ItemEntries.emplace_back(32838);
+                    m_BonusListIds.reserve(4);
+                    m_BonusListIds.emplace_back(6606); // Mythic
+                    m_BonusListIds.emplace_back(1610); // ItemLevel
+                    m_BonusListIds.emplace_back(1618); // ItemLevel
+                    m_BonusListIds.emplace_back(1655); // ItemLevel
+                    AllowableClasses = 1 + 2048 + 8 + 512 + 32;
+                    break;
+                case 800024: // Magni
+                    //.add [Val'anyr, Hammer of Ancient Kings] 1 6606;1610;1618;1653
+                    m_ItemEntries.reserve(1);
+                    m_ItemEntries.emplace_back(46017);
+                    m_BonusListIds.reserve(4);
+                    m_BonusListIds.emplace_back(6606); // Mythic
+                    m_BonusListIds.emplace_back(1610); // ItemLevel
+                    m_BonusListIds.emplace_back(1618); // ItemLevel
+                    m_BonusListIds.emplace_back(1653); // ItemLevel
+                    AllowableClasses = 1024 + 64 + 512; // Casters
+                    break;
+            }
         }
 
         void EnterEvadeMode(EvadeReason) override
@@ -379,10 +480,6 @@ struct npc_mall_weapongiver : public ScriptedAI
         {
             DoCastSelf(356889);
             events.ScheduleEvent(1, 30s);
-            switch (me->GetEntry())
-            {
-
-            }
         }
 
         bool OnGossipHello(Player* player) override
@@ -390,7 +487,12 @@ struct npc_mall_weapongiver : public ScriptedAI
             ClearGossipMenuFor(player);
 
             if (player->HasItemCount(700316, 1))
-                AddGossipItemFor(player, GossipOptionIcon::None, "Create Weapon", 0, 2, "|cffFF0000Accepting this will use |cffff8000[Legendary Dust]|cffFF0000x1|R", 0, false);
+            {
+                if (AllowableClasses & player->GetClassMask())
+                {
+                    AddGossipItemFor(player, GossipOptionIcon::None, "Create Weapon", 0, 2, "|cffFF0000Accepting this will use |cffff8000[Legendary Dust]|cffFF0000x1|R", 0, false);
+                }
+            }
 
             AddGossipItemFor(player, GossipOptionIcon::None, "Preview Weapon", 0, 1);
             SendGossipMenuFor(player, 800017, me);
@@ -405,14 +507,47 @@ struct npc_mall_weapongiver : public ScriptedAI
             switch (actionId)
             {
                 case 1:
-                    ChatHandler(player).PSendSysMessage("ItemLink here. TODO");
+                    for (auto entry : m_ItemEntries)
+                    {
+                        Item* item = Item::CreateItem(entry, 1, ItemContext::NONE, player);
+                        if (item)
+                        {
+                            item->SetBonuses(m_BonusListIds);
+                            ChatHandler(player).PSendSysMessage("%s", Item::GetItemLink(item).c_str());
+                            delete item;
+                        }
+                    }
                     break;
                 case 2:
-                    if (player->HasItemCount(700316, 1) && m_ItemEntry)
+                    // 700316 - Legendary Dust
+                    if (player->HasItemCount(700316, 1) && !m_ItemEntries.empty())
                     {
+                        if (player->GetQuestStatus(700019) == QUEST_STATUS_INCOMPLETE)
+                        {
+                            CloseGossipMenuFor(player);
+                            player->CompleteQuest(700019);
+                            player->RewardQuest(sObjectMgr->GetQuestTemplate(700019), LootItemType::Item, 0, me, true);
+                            player->AddQuestAndCheckCompletion(sObjectMgr->GetQuestTemplate(700020), me);
+                            player->PlayerTalkClass->SendQuestGiverQuestDetails(sObjectMgr->GetQuestTemplate(700020), player->GetGUID(), true, true);
+                        }
                         player->DestroyItemCount(700316, 1, true);
-                        Item* item = Item::CreateItem(m_ItemEntry, 1, ItemContext::NONE, player);
-                        item->SetBonuses({1650, 1650, 1650});
+                        for (auto entry : m_ItemEntries)
+                        {
+                            uint32 noSpaceForCount = 0;
+                            ItemPosCountVec dest;
+                            InventoryResult msg = player->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, entry, 1, &noSpaceForCount);
+                            if (dest.empty())
+                            {
+                                /// @todo Send to mailbox if no space
+                                ChatHandler(player).PSendSysMessage("You don't have any space in your bags, sent to mailbox.");
+                                return false;
+                            }
+
+                            Item* item = Item::CreateItem(entry, 1, ItemContext::NONE, player);
+                            item->SetBonuses(m_BonusListIds);
+                            player->StoreItem(dest, item, true);
+                            player->SendNewItem(item, 1, true, true, false);
+                        }
                     }
                     break;
             }
@@ -431,7 +566,9 @@ struct npc_mall_weapongiver : public ScriptedAI
             }
         }
 
-        uint32 m_ItemEntry = 0;
+        std::vector<uint32> m_ItemEntries;
+        std::vector<int32> m_BonusListIds;
+        int32 AllowableClasses = -1;
         EventMap events;
 };
 

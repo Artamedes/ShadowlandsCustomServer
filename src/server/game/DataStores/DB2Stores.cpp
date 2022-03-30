@@ -169,6 +169,7 @@ DB2Storage<ItemArmorShieldEntry>                sItemArmorShieldStore("ItemArmor
 DB2Storage<ItemArmorTotalEntry>                 sItemArmorTotalStore("ItemArmorTotal.db2", ItemArmorTotalLoadInfo::Instance());
 DB2Storage<ItemBagFamilyEntry>                  sItemBagFamilyStore("ItemBagFamily.db2", ItemBagFamilyLoadInfo::Instance());
 DB2Storage<ItemBonusEntry>                      sItemBonusStore("ItemBonus.db2", ItemBonusLoadInfo::Instance());
+DB2Storage<ItemBonusListEntry>                  sItemBonusListStore("ItemBonusList.db2", ItemBonusListLoadInfo::Instance());
 DB2Storage<ItemBonusListLevelDeltaEntry>        sItemBonusListLevelDeltaStore("ItemBonusListLevelDelta.db2", ItemBonusListLevelDeltaLoadInfo::Instance());
 DB2Storage<ItemBonusTreeNodeEntry>              sItemBonusTreeNodeStore("ItemBonusTreeNode.db2", ItemBonusTreeNodeLoadInfo::Instance());
 DB2Storage<ItemChildEquipmentEntry>             sItemChildEquipmentStore("ItemChildEquipment.db2", ItemChildEquipmentLoadInfo::Instance());
@@ -745,6 +746,7 @@ uint32 DB2Manager::LoadStores(std::string const& dataPath, LocaleConstant defaul
     LOAD_DB2(sItemArmorTotalStore);
     LOAD_DB2(sItemBagFamilyStore);
     LOAD_DB2(sItemBonusStore);
+    LOAD_DB2(sItemBonusListStore);
     LOAD_DB2(sItemBonusListLevelDeltaStore);
     LOAD_DB2(sItemBonusTreeNodeStore);
     LOAD_DB2(sItemChildEquipmentStore);

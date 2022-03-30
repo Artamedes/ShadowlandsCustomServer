@@ -795,6 +795,11 @@ void HotfixDatabaseConnection::DoPrepareStatements()
         " WHERE (`VerifiedBuild` > 0) = ?", CONNECTION_SYNCH);
     PREPARE_MAX_ID_STMT(HOTFIX_SEL_ITEM_BONUS, "SELECT MAX(ID) + 1 FROM item_bonus", CONNECTION_SYNCH);
 
+    // ItemBonusList.db2
+    PrepareStatement(HOTFIX_SEL_ITEM_BONUS_LIST, "SELECT ID, Flags FROM item_bonus_list"
+        " WHERE (`VerifiedBuild` > 0) = ?", CONNECTION_SYNCH);
+    PREPARE_MAX_ID_STMT(HOTFIX_SEL_ITEM_BONUS_LIST, "SELECT MAX(ID) + 1 FROM item_bonus_list", CONNECTION_SYNCH);
+
     // ItemBonusListLevelDelta.db2
     PrepareStatement(HOTFIX_SEL_ITEM_BONUS_LIST_LEVEL_DELTA, "SELECT ItemLevelDelta, ID FROM item_bonus_list_level_delta"
         " WHERE (`VerifiedBuild` > 0) = ?", CONNECTION_SYNCH);

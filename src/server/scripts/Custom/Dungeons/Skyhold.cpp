@@ -34,11 +34,13 @@ struct npc_skyhold_sylvanas : public ScriptedAI
 
         }
 
+        bool m_DidCorrupt = false;
+
         bool OnGossipHello(Player* player) override
         {
             ClearGossipMenuFor(player);
             player->PrepareQuestMenu(me->GetGUID());
-            if (player->GetQuestStatus(700016) == QUEST_STATUS_REWARDED && player->GetQuestStatus(700017) != QUEST_STATUS_NONE)
+            if (player->GetQuestStatus(700016) == QUEST_STATUS_REWARDED && player->GetQuestStatus(700017) != QUEST_STATUS_NONE && !m_DidCorrupt)
                 AddGossipItemFor(player, GossipOptionIcon::None, "Wreak havoc", 0, 1);
             SendGossipMenuFor(player, me->GetEntry(), me);
             return true;
@@ -72,6 +74,7 @@ struct npc_skyhold_sylvanas : public ScriptedAI
         {
             if (id == 1)
             {
+                m_DidCorrupt = true;
                 m_Flying = false;
                 Talk(1);
                 me->RemoveAurasDueToSpell(359361); // Banshee form
@@ -79,6 +82,8 @@ struct npc_skyhold_sylvanas : public ScriptedAI
                 scheduler.Schedule(100ms, [this](TaskContext context)
                 {
                     me->SetFacingTo(-0.034910f);
+                    me->AddNpcFlag(UNIT_NPC_FLAG_GOSSIP);
+                    me->AddNpcFlag(UNIT_NPC_FLAG_QUESTGIVER);
                 });
             }
         }
@@ -250,7 +255,7 @@ struct gobj_ancient_chest_700000 : public GameObjectAI
                 me->AddFlag(GameObjectFlags::GO_FLAG_NOT_SELECTABLE);
                 m_Locked = true;
                 // start the encounter..
-                scheduler.Schedule(5s, [this](TaskContext context)
+                scheduler.Schedule(1s, [this](TaskContext context)
                 {
                     if (auto instance = me->GetInstanceScript())
                         instance->DoCastSpellOnPlayers(365127);

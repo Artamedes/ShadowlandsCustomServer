@@ -400,6 +400,11 @@ struct npc_oglaz_700506 : public ScriptedAI
         /// TODO: Fill this function
      }
 
+     void JustEngagedWith(Unit* who)
+     {
+         Talk(1);
+     }
+
      void UpdateAI(uint32 diff) override
      {
         // if (!m_Talked)

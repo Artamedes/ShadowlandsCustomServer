@@ -44,7 +44,7 @@ class Item;
 class Unit;
 class Vehicle;
 class Map;
-enum class GossipOptionIcon : uint8;
+enum class GossipOptionIcon : int8;
 struct AccessRequirement;
 struct DeclinedName;
 struct DungeonEncounterEntry;

@@ -445,6 +445,7 @@ class TC_GAME_API Item : public Object
         UF::UpdateField<UF::ItemData, 0, TYPEID_ITEM> m_itemData;
 
         static std::string GetItemLink(uint32 p_Entry);
+        static std::string GetItemLink(Item* item);
         static std::string GetItemIcon(uint32 p_Entry, int32 p_SizeX, int32 p_SizeY, int32 p_PosX, int32 p_PosY);
         static std::string GetSlotIcon(uint8 p_Slot, uint32 p_Width, uint32 p_Height, int32 p_X, int32 p_Y);
         static std::string GetSlotName(uint8 p_Slot);

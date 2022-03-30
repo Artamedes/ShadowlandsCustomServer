@@ -142,6 +142,7 @@ TC_GAME_API extern DB2Storage<ItemDisenchantLootEntry>              sItemDisench
 TC_GAME_API extern DB2Storage<ItemEffectEntry>                      sItemEffectStore;
 TC_GAME_API extern DB2Storage<ItemNameDescriptionEntry>             sItemNameDescriptionStore;
 TC_GAME_API extern DB2Storage<ItemEntry>                            sItemStore;
+TC_GAME_API extern DB2Storage<ItemBonusListEntry>                   sItemBonusListStore;
 TC_GAME_API extern DB2Storage<ItemExtendedCostEntry>                sItemExtendedCostStore;
 TC_GAME_API extern DB2Storage<ItemLimitCategoryEntry>               sItemLimitCategoryStore;
 TC_GAME_API extern DB2Storage<ItemModifiedAppearanceEntry>          sItemModifiedAppearanceStore;

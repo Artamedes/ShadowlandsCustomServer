@@ -1950,6 +1950,12 @@ struct ItemBonusEntry
     uint8 OrderIndex;
 };
 
+struct ItemBonusListEntry
+{
+    uint32 ID;
+    uint32 Flags;
+};
+
 // new item upgrade system
 //struct ItemBonusListGroupEntryEntry
 //{

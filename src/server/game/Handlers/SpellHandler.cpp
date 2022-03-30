@@ -131,6 +131,24 @@ void WorldSession::HandleUseItemOpcode(WorldPackets::Spells::UseItem& packet)
         // no script or script not process request by self
         user->CastItemUseSpell(item, targets, packet.Cast.CastID, packet.Cast.Misc);
     }
+    else
+    {
+        WorldPackets::Spells::SpellFailure failurePacket;
+        failurePacket.CasterUnit = user->GetGUID();
+        failurePacket.CastID = packet.Cast.CastID;
+        failurePacket.SpellID = packet.Cast.SpellID;
+        failurePacket.Visual = packet.Cast.Visual;
+        failurePacket.Reason = SPELL_FAILED_DONT_REPORT;
+        user->SendMessageToSet(failurePacket.Write(), true);
+
+        WorldPackets::Spells::SpellFailedOther failedPacket;
+        failedPacket.CasterUnit = user->GetGUID();
+        failedPacket.CastID = packet.Cast.CastID;
+        failedPacket.SpellID = packet.Cast.SpellID;
+        failedPacket.Visual = packet.Cast.Visual;
+        failedPacket.Reason = SPELL_FAILED_DONT_REPORT;
+        user->SendMessageToSet(failedPacket.Write(), true);
+    }
 }
 
 void WorldSession::HandleOpenItemOpcode(WorldPackets::Spells::OpenItem& packet)

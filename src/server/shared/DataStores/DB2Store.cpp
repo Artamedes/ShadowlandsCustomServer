@@ -84,6 +84,8 @@ void DB2StorageBase::WriteRecordData(char const* entry, LocaleConstant locale, B
     }
 }
 
+#include "DatabaseEnv.h"
+
 void DB2StorageBase::Load(std::string const& path, LocaleConstant locale, char**& indexTable)
 {
     indexTable = nullptr;
@@ -95,6 +97,8 @@ void DB2StorageBase::Load(std::string const& path, LocaleConstant locale, char**
     _fieldCount = db2.GetCols();
     _tableHash = db2.GetTableHash();
     _layoutHash = db2.GetLayoutHash();
+
+    HotfixDatabase.PQuery("REPLACE INTO hotfix_table_hashes (Hash, Name) VALUE (%u, '%s')", _tableHash, _fileName);
 
     // load raw non-string data
     _dataTable = db2.AutoProduceData(_indexTableSize, indexTable);

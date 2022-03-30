@@ -58,8 +58,11 @@ struct npc_demon_priest_700408 : public ScriptedAI
             if (me->HasUnitState(UNIT_STATE_CASTING))
                 return;
 
-            DoCast(290097);
-            DoMeleeAttackIfReady();
+            DoCastVictim(266146);
+            if (me->HasUnitState(UNIT_STATE_CASTING))
+                return;
+
+           // DoMeleeAttackIfReady();
         }
 
     TaskScheduler scheduler;
@@ -78,7 +81,7 @@ struct npc_void_walker_700403 : public ScriptedAI
 
         void JustEngagedWith(Unit* who) override
         {
-            DoCast(354757);
+            DoCastSelf(354757);
             events.ScheduleEvent(1, 2s, 10s);
         }
 
@@ -103,8 +106,10 @@ struct npc_void_walker_700403 : public ScriptedAI
 
             if (me->HasUnitState(UNIT_STATE_CASTING))
                 return;
-            DoCast(237890);
-            DoMeleeAttackIfReady();
+            DoCastVictim(237890);
+            if (me->HasUnitState(UNIT_STATE_CASTING))
+                return;
+           // DoMeleeAttackIfReady();
         }
 
         EventMap events;
@@ -153,8 +158,8 @@ struct npc_void_walker_700410 : public ScriptedAI
 
             if (me->HasUnitState(UNIT_STATE_CASTING))
                 return;
-            DoCast(237890);
-            DoMeleeAttackIfReady();
+            DoCastVictim(237890);
+            //DoMeleeAttackIfReady();
         }
 
         EventMap events;
@@ -269,7 +274,7 @@ struct npc_derza_700402 : public ScriptedAI
             {
                 auto dist = unit->GetDistance2d(me);
                 // unit->Say("Distance: " + std::to_string(dist), LANG_UNIVERSAL);
-                if (dist <= 100.0f)
+                if (dist <= 150.0f)
                 {
                     Talk(FirstEnter);
                     m_Talked = true;
@@ -319,9 +324,11 @@ struct npc_derza_700402 : public ScriptedAI
 
             if (me->HasUnitState(UNIT_STATE_CASTING))
                 return;
-            DoCast(251028);
+            DoCastVictim(251028);
 
-            DoMeleeAttackIfReady();
+            if (me->HasUnitState(UNIT_STATE_CASTING))
+                return;
+           // DoMeleeAttackIfReady();
         }
 
         EventMap events;
@@ -613,6 +620,9 @@ struct npc_prophet_velen_700412 : public ScriptedAI
         {
             if (id == 1)
             {
+                me->AddNpcFlag(NPCFlags::UNIT_NPC_FLAG_GOSSIP);
+                me->AddNpcFlag(NPCFlags::UNIT_NPC_FLAG_QUESTGIVER);
+
                 scheduler.Schedule(1s, [this](TaskContext context)
                 {
                     Talk(1);
@@ -673,6 +683,7 @@ struct npc_mawswarn_portal_700415 : public ScriptedAI
                 {
                     player->RemoveAurasDueToSpell(141480);
                     GameTele const* tele = sObjectMgr->GetGameTele(1793);
+                    player->KilledMonsterCredit(me->GetEntry(), me->GetGUID());
                     if (tele)
                         player->TeleportTo(tele->mapId, tele->position_x, tele->position_y, tele->position_z, tele->orientation);
 

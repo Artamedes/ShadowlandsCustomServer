@@ -56,8 +56,9 @@ enum Gossip_Option
     GOSSIP_OPTION_MAX
 };
 
-enum class GossipOptionIcon : uint8
+enum class GossipOptionIcon : int8
 {
+    Anti                    = -1,
     None                    = 0,    // White chat bubble. Default
     Vendor                  = 1,    // Brown bag
     TaxiNode                = 2,    // White wing

@@ -2889,6 +2889,21 @@ struct ItemBonusLoadInfo
     }
 };
 
+struct ItemBonusListLoadInfo
+{
+    static DB2LoadInfo const* Instance()
+    {
+        static DB2FieldMeta const fields[] =
+        {
+            { false, FT_INT, "ID" },
+            { true, FT_INT, "Flags" },
+        };
+        static DB2LoadInfo const loadInfo(&fields[0], std::extent<decltype(fields)>::value, ItemBonusListMeta::Instance(), HOTFIX_SEL_ITEM_BONUS_LIST);
+        return &loadInfo;
+    }
+};
+
+
 struct ItemBonusListLevelDeltaLoadInfo
 {
     static DB2LoadInfo const* Instance()

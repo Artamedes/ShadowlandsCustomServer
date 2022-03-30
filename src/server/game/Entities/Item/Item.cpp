@@ -2992,8 +2992,40 @@ void BonusData::AddBonus(uint32 type, std::array<int32, 4> const& values)
 
     std::ostringstream l_SS;
 
+    uint32 l_ItemContext1 = 60;
+    uint32 l_ItemContext2 = 261;
+    uint32 l_BonusId1 = 6606;
+    uint32 l_BonusId2 = 1610;
+    uint32 l_BonusId3 = 1618;
+    uint32 l_BonusId4 = 1650;
+
     l_SS << "|c" << std::hex << ItemQualityColors[l_Proto->GetQuality()] << std::dec <<
-        +"|Hitem:" << p_Entry << ":0:0:0:0:0:0:0:0:0|h[" << l_Proto->GetName(LocaleConstant::LOCALE_enUS) << "]|h|r";
+        +"|Hitem:" << p_Entry << "::::::::60:261:::4:6606:1610:1618:1650::::::|h[" << l_Proto->GetName(LocaleConstant::LOCALE_enUS) << "]|h|r";
+
+    return l_SS.str();
+}
+
+/*static*/ std::string Item::GetItemLink(Item* item)
+{
+    auto l_Proto = item->GetTemplate();
+    std::ostringstream l_SS;
+
+    uint32 l_ItemContext1 = 60;
+    uint32 l_ItemContext2 = 261;
+    uint32 l_BonusId[4] = { 0, 0, 0, 0};
+
+    auto itr = 0;
+
+    for (auto bonusId : *item->m_itemData->BonusListIDs)
+    {
+        if (itr <= 3)
+            l_BonusId[itr++] = bonusId;
+        else
+            break;
+    }
+
+    l_SS << "|c" << std::hex << ItemQualityColors[l_Proto->GetQuality()] << std::dec <<
+        +"|Hitem:" << l_Proto->GetId() << "::::::::" << l_ItemContext1 << ":" << l_ItemContext2 << ":::4:" << l_BonusId[0] << ":" << l_BonusId[1] << ":" << l_BonusId[2] << ":" << l_BonusId[3] << "::::::|h[" << l_Proto->GetName(LocaleConstant::LOCALE_enUS) << "]|h|r";
 
     return l_SS.str();
 }
