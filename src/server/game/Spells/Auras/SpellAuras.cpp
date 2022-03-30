@@ -265,7 +265,7 @@ void AuraApplication::BuildUpdatePacket(WorldPackets::Spells::AuraInfo& auraInfo
         {
             if (effect && HasEffect(effect->GetEffIndex()))       // Not all of aura's effects have to be applied on every target
             {
-                Trinity::Containers::EnsureWritableVectorIndex(auraData.Points, effect->GetEffIndex()) = float(effect->GetAmount());
+                Trinity::Containers::EnsureWritableVectorIndex(auraData.Points, effect->GetEffIndex()) = float(effect->GetAmount() * effect->GetDonePct());
                 if (effect->GetEstimatedAmount())
                     hasEstimatedAmounts = true;
             }
@@ -276,7 +276,7 @@ void AuraApplication::BuildUpdatePacket(WorldPackets::Spells::AuraInfo& auraInfo
             auraData.EstimatedPoints.resize(auraData.Points.size());
             for (AuraEffect const* effect : GetBase()->GetAuraEffects())
                 if (effect && HasEffect(effect->GetEffIndex()))       // Not all of aura's effects have to be applied on every target
-                    auraData.EstimatedPoints[effect->GetEffIndex()] = effect->GetEstimatedAmount().value_or(effect->GetAmount());
+                    auraData.EstimatedPoints[effect->GetEffIndex()] = effect->GetEstimatedAmount().value_or(effect->GetAmount() * effect->GetDonePct());
         }
     }
 }
@@ -1023,7 +1023,10 @@ void Aura::SetStackAmount(uint8 stackAmount)
 
     for (AuraApplication* aurApp : applications)
         if (!aurApp->GetRemoveMode())
+        {
+            HandleAuraSpecificPeriodics(aurApp, caster);
             HandleAuraSpecificMods(aurApp, caster, true, true);
+        }
 
     SetNeedClientUpdateForTargets();
 }
@@ -1539,6 +1542,55 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                     break;
             }
             break;
+    }
+}
+
+void Aura::HandleAuraSpecificPeriodics(AuraApplication const* aurApp, Unit* caster)
+{
+    Unit* target = aurApp->GetTarget();
+
+    if (!caster || aurApp->GetRemoveMode())
+        return;
+
+    for (auto effect : GetAuraEffects())
+    {
+        if (!effect)
+            continue;
+
+        switch (effect->GetSpellEffectInfo().ApplyAuraName)
+        {
+            case SPELL_AURA_PERIODIC_DAMAGE:
+            case SPELL_AURA_PERIODIC_DAMAGE_PERCENT:
+            case SPELL_AURA_PERIODIC_LEECH:
+            {
+                // ignore non positive values (can be result apply spellmods to aura damage
+                uint32 damage = std::max(effect->GetAmount(), 0);
+
+                // Script Hook For HandlePeriodicDamageAurasTick -- Allow scripts to change the Damage pre class mitigation calculations
+                sScriptMgr->ModifyPeriodicDamageAurasTick(target, caster, damage);
+
+                effect->SetDonePct(caster->SpellDamagePctDone(target, m_spellInfo, DOT, effect->GetSpellEffectInfo())); // Calculate done percentage first!
+                effect->SetDamage(caster->SpellDamageBonusDone(target, m_spellInfo, damage, DOT, effect->GetSpellEffectInfo(), GetStackAmount()) * effect->GetDonePct());
+                effect->SetCritChance(caster->GetUnitSpellCriticalChance(target, nullptr, effect, m_spellInfo->GetSchoolMask()));
+                break;
+            }
+            case SPELL_AURA_PERIODIC_HEAL:
+            case SPELL_AURA_OBS_MOD_HEALTH:
+            {
+                // ignore non positive values (can be result apply spellmods to aura damage
+                uint32 damage = std::max(effect->GetAmount(), 0);
+
+                // Script Hook For HandlePeriodicDamageAurasTick -- Allow scripts to change the Damage pre class mitigation calculations
+                sScriptMgr->ModifyPeriodicDamageAurasTick(target, caster, damage);
+
+                effect->SetDonePct(caster->SpellHealingPctDone(target, m_spellInfo)); // Calculate done percentage first!
+                effect->SetDamage(caster->SpellHealingBonusDone(target, m_spellInfo, damage, DOT, effect->GetSpellEffectInfo(), GetStackAmount()) * effect->GetDonePct());
+                effect->SetCritChance(caster->GetUnitSpellCriticalChance(target, nullptr, effect, m_spellInfo->GetSchoolMask()));
+                break;
+            }
+            default:
+                break;
+        }
     }
 }
 

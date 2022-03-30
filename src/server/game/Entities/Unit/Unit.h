@@ -1077,6 +1077,7 @@ class TC_GAME_API Unit : public WorldObject
         float GetUnitBlockChance(WeaponAttackType attType, Unit const* victim) const;
         float GetUnitMissChance() const;
         float GetUnitCriticalChanceDone(WeaponAttackType attackType) const;
+        float GetUnitCriticalChance(WeaponAttackType attackType, Unit const* victim) const;
         float GetUnitCriticalChanceTaken(Unit const* attacker, WeaponAttackType attackType, float critDone) const;
         float GetUnitCriticalChanceAgainst(WeaponAttackType attackType, Unit const* victim) const;
         int32 GetMechanicResistChance(SpellInfo const* spellInfo) const;
@@ -1686,6 +1687,7 @@ class TC_GAME_API Unit : public WorldObject
         Unit* GetMeleeHitRedirectTarget(Unit* victim, SpellInfo const* spellInfo = nullptr);
 
         int32 SpellBaseDamageBonusDone(SpellSchoolMask schoolMask) const;
+        int32  SpellBaseDamageBonusTaken(SpellSchoolMask schoolMask) const;
         uint32 SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uint32 pdamage, DamageEffectType damagetype, SpellEffectInfo const& spellEffectInfo, uint32 stack = 1) const;
         float SpellDamagePctDone(Unit* victim, SpellInfo const* spellProto, DamageEffectType damagetype, SpellEffectInfo const& spellEffectInfo) const;
         uint32 SpellDamageBonusTaken(Unit* caster, SpellInfo const* spellProto, uint32 pdamage, DamageEffectType damagetype) const;
@@ -1703,6 +1705,8 @@ class TC_GAME_API Unit : public WorldObject
         float SpellCritChanceTaken(Unit const* caster, Spell* spell, AuraEffect const* aurEff, SpellSchoolMask schoolMask, float doneChance, WeaponAttackType attackType = BASE_ATTACK) const;
         static uint32 SpellCriticalDamageBonus(Unit const* caster, SpellInfo const* spellProto, uint32 damage, Unit* victim);
         static uint32 SpellCriticalHealingBonus(Unit const* caster, SpellInfo const* spellProto, uint32 damage, Unit* victim);
+        bool   IsSpellCrit(Unit* victim, Spell* spell, AuraEffect const* aurEff, SpellSchoolMask schoolMask, WeaponAttackType attackType = BASE_ATTACK) const;
+        float  GetUnitSpellCriticalChance(Unit* victim, Spell* spell, AuraEffect const* aurEff, SpellSchoolMask schoolMask, WeaponAttackType attackType = BASE_ATTACK) const;
 
         void ApplySpellImmune(uint32 spellId, uint32 op, uint32 type, bool apply);
         virtual bool IsImmunedToSpell(SpellInfo const* spellInfo, WorldObject const* caster) const;

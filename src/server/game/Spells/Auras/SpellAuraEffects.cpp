@@ -784,7 +784,10 @@ void AuraEffect::CalculatePeriodic(Unit* caster, bool resetPeriodicTimer /*= tru
 
                     auto haste = modOwner->GetRatingBonusValue(CR_HASTE_SPELL);
                     if (haste > 0.0f)
-                        ModCastingSpeed = std::max(0.01f, 1.0f - (haste / 35000.0f));
+                    {
+                        auto result = (1.0f - (haste / 35000.0f)) / 40.0F;
+                        ModCastingSpeed = std::max(0.001f, result);
+                    }
                 }
 
                 if (m_spellInfo->HasAttribute(SPELL_ATTR5_HASTE_AFFECT_DURATION))
