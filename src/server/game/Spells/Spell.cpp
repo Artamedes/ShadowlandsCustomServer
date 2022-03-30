@@ -584,6 +584,7 @@ m_spellValue(new SpellValue(m_spellInfo, caster)), _spellEvent(nullptr)
     m_launchHandled = false;
     m_immediateHandled = false;
 
+    m_currentTargetInfo = nullptr;
     m_channelTargetEffectMask = 0;
 
     // Determine if spell can be reflected back to the caster
@@ -2468,6 +2469,7 @@ void Spell::TargetInfo::PreprocessTarget(Spell* spell)
     // Reset damage/healing counter
     spell->m_damage = Damage;
     spell->m_healing = Healing;
+    spell->m_currentTargetInfo = this;
 
     _spellHitTarget = nullptr;
     if (MissCondition == SPELL_MISS_NONE)
@@ -3892,6 +3894,7 @@ uint64 Spell::handle_delayed(uint64 t_offset)
 
         DoProcessTargetContainer(delayedTargets);
     }
+    m_currentTargetInfo = nullptr;
 
     // now recheck gameobject targeting correctness
     {

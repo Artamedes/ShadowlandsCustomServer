@@ -417,6 +417,8 @@ SpellEffectInfo::SpellEffectInfo(SpellInfo const* spellInfo, SpellEffectEntry co
     TriggerSpell = _effect.EffectTriggerSpell;
     SpellClassMask = _effect.EffectSpellClassMask;
     BonusCoefficientFromAP = _effect.BonusCoefficientFromAP;
+    GroupSizeScalingMod = _effect.GroupSizeBasePointsCoefficient;
+    PvpMultiplierMod = _effect.PvpMultiplier;
     Scaling.Class = _effect.ScalingClass;
     Scaling.Coefficient = _effect.Coefficient;
     Scaling.Variance = _effect.Variance;

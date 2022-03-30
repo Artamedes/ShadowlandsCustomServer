@@ -1249,6 +1249,16 @@ void AuraScript::EffectProcHandler::Call(AuraScript* auraScript, AuraEffect* aur
     (auraScript->*_EffectHandlerScript)(aurEff, eventInfo);
 }
 
+AuraScript::AuraCalcProcChanceHandler::AuraCalcProcChanceHandler(AuraCalcProcChanceFnType effectHandlerScript)
+{
+    _HandlerScript = effectHandlerScript;
+}
+
+void AuraScript::AuraCalcProcChanceHandler::Call(AuraScript* auraScript, ProcEventInfo& eventInfo, float& chance)
+{
+    (auraScript->*_HandlerScript)(eventInfo, chance);
+}
+
 AuraScript::EnterLeaveCombatHandler::EnterLeaveCombatHandler(AuraEnterLeaveCombatFnType handlerScript) : _handlerScript(handlerScript)
 {
 }

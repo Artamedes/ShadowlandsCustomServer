@@ -12118,7 +12118,7 @@ void Unit::SetPvP(bool state)
 Aura* Unit::AddAura(uint32 spellId, Unit* target)
 {
     if (!target)
-        return nullptr;
+        target = this;
 
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId, GetMap()->GetDifficultyID());
     if (!spellInfo)

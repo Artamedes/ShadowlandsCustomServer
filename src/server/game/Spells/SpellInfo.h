@@ -258,7 +258,9 @@ public:
     uint32    ItemType;
     uint32    TriggerSpell;
     flag128   SpellClassMask;
-    float     BonusCoefficientFromAP;
+    float     BonusCoefficientFromAP = 0.0f;
+    float     GroupSizeScalingMod = 0.0f;
+    float     PvpMultiplierMod = 0.0f;
     std::vector<Condition*>* ImplicitTargetConditions;
     EnumFlag<SpellEffectAttributes> EffectAttributes;
     // SpellScalingEntry

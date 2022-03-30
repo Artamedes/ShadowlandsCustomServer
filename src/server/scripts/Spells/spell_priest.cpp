@@ -1022,6 +1022,7 @@ public:
                 caster->CastSpell(caster, SPELL_PRIEST_CHORUS_OF_INSANITY_BUFF, mod);
             }
 
+            // TODO: Figure out whats going on here and why this won't work.
             caster->CastSpell(caster, SPELL_PRIEST_SHADOWFORM_STANCE, true);
         }
 

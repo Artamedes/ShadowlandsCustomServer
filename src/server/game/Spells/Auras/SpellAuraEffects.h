@@ -56,6 +56,8 @@ class TC_GAME_API AuraEffect
 
         int32 GetMiscValueB() const { return GetSpellEffectInfo().MiscValueB; }
         int32 GetMiscValue() const { return GetSpellEffectInfo().MiscValue; }
+        uint32 GetTriggerSpell() const { return GetSpellEffectInfo().TriggerSpell; }
+        uint32 GetPvpMultiplierMod() const { return GetSpellEffectInfo().PvpMultiplierMod; }
         AuraType GetAuraType() const { return GetSpellEffectInfo().ApplyAuraName; }
         int32 GetAmount() const { return _amount; }
         void SetAmount(int32 amount) { _amount = amount; m_canBeRecalculated = false; }
@@ -71,6 +73,8 @@ class TC_GAME_API AuraEffect
         void ChangeAmount(int32 newAmount, bool mark = true, bool onStackOrReapply = false, AuraEffect const* triggeredBy = nullptr);
         void RecalculateAmount(AuraEffect const* triggeredBy = nullptr) { if (!CanBeRecalculated()) return; ChangeAmount(CalculateAmount(GetCaster()), false, false, triggeredBy); }
         void RecalculateAmount(Unit* caster, AuraEffect const* triggeredBy = nullptr) { if (!CanBeRecalculated()) return; ChangeAmount(CalculateAmount(caster), false, false, triggeredBy); }
+        void RecalculateAmountRog(bool reapplyingEffects = false, AuraEffect const* triggeredBy = nullptr) { if (!CanBeRecalculated()) return; ChangeAmount(CalculateAmount(GetCaster()), false, reapplyingEffects, triggeredBy); }
+        void RecalculateAmountRog(Unit* caster, bool force = false, bool reapplyingEffects = false, AuraEffect const* triggeredBy = nullptr) { if (!force && !CanBeRecalculated()) return; ChangeAmount(CalculateAmount(caster), false, reapplyingEffects, triggeredBy); }
         bool CanBeRecalculated() const { return m_canBeRecalculated; }
         void SetCanBeRecalculated(bool val) { m_canBeRecalculated = val; }
         void HandleEffect(AuraApplication * aurApp, uint8 mode, bool apply, AuraEffect const* triggeredBy = nullptr);

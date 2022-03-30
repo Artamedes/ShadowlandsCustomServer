@@ -1244,7 +1244,7 @@ void Aura::SetLoadedState(int32 maxDuration, int32 duration, int32 charges, uint
         effect->SetCanBeRecalculated((recalculateMask & (1 << effect->GetEffIndex())) != 0);
         effect->CalculatePeriodic(caster, false, true);
         effect->CalculateSpellMod();
-        effect->RecalculateAmount(caster);
+        effect->RecalculateAmount(caster, nullptr);
     }
 }
 
@@ -1276,13 +1276,20 @@ bool Aura::EffectTypeNeedsSendingAmount(AuraType type)
     return false;
 }
 
-void Aura::RecalculateAmountOfEffects()
+void Aura::RecalculateAmountOfEffects(bool force /*= false*/, bool reaplyingEffect /*= false*/, bool isPVPMultiplier /*= false*/)
 {
-    ASSERT (!IsRemoved());
+    ASSERT(!IsRemoved());
     Unit* caster = GetCaster();
     for (AuraEffect* effect : GetAuraEffects())
+    {
         if (effect && !IsRemoved())
-            effect->RecalculateAmount(caster);
+        {
+            if (isPVPMultiplier && (effect->GetPvpMultiplierMod() == 0.0f || effect->GetPvpMultiplierMod() == 1.0f))
+                continue;
+            else
+                effect->RecalculateAmountRog(caster, force, reaplyingEffect, effect);
+        }
+    }
 }
 
 void Aura::HandleAllEffects(AuraApplication * aurApp, uint8 mode, bool apply)
@@ -1801,7 +1808,7 @@ void Aura::PrepareProcToTrigger(AuraApplication* aurApp, ProcEventInfo& eventInf
     SetLastProcSuccessTime(now);
 }
 
-uint32 Aura::GetProcEffectMask(AuraApplication* aurApp, ProcEventInfo& eventInfo, TimePoint now) const
+uint32 Aura::GetProcEffectMask(AuraApplication* aurApp, ProcEventInfo& eventInfo, TimePoint now)
 {
     SpellProcEntry const* procEntry = sSpellMgr->GetSpellProcEntry(GetSpellInfo());
     // only auras with spell proc entry can trigger proc
@@ -1919,7 +1926,7 @@ uint32 Aura::GetProcEffectMask(AuraApplication* aurApp, ProcEventInfo& eventInfo
     return 0;
 }
 
-float Aura::CalcProcChance(SpellProcEntry const& procEntry, ProcEventInfo& eventInfo) const
+float Aura::CalcProcChance(SpellProcEntry const& procEntry, ProcEventInfo& eventInfo)
 {
     float chance = procEntry.Chance;
     // calculate chances depending on unit with caster's data
@@ -1935,6 +1942,8 @@ float Aura::CalcProcChance(SpellProcEntry const& procEntry, ProcEventInfo& event
 
         if (GetSpellInfo()->ProcBasePPM > 0.0f)
             chance = CalcPPMProcChance(caster);
+
+        CallScriptCalcProcChanceHandlers(eventInfo, chance);
 
         // apply chance modifer aura, applies also to ppm chance (see improved judgement of light spell)
         if (Player* modOwner = caster->GetSpellModOwner())
@@ -2409,6 +2418,29 @@ void Aura::CallScriptAfterEffectProcHandlers(AuraEffect* aurEff, AuraApplication
 
         (*scritr)->_FinishScriptCall();
     }
+}
+
+void Aura::CallScriptCalcProcChanceHandlers(ProcEventInfo& eventInfo, float& chance)
+{
+#ifdef PERFORMANCE_LOG
+    uint32 scriptExecuteTime = GameTime::GetGameTimeMS();
+#endif // PERFORMANCE_LOG
+
+    for (auto scritr = m_loadedScripts.begin(); scritr != m_loadedScripts.end(); ++scritr)
+    {
+        (*scritr)->_PrepareScriptCall(AURA_SCRIPT_HOOK_CHANCE_PROC);
+        auto hookItrEnd = (*scritr)->OnCalcProcChance.end(), hookItr = (*scritr)->OnCalcProcChance.begin();
+        for (; hookItr != hookItrEnd; ++hookItr)
+            (*hookItr).Call(*scritr, eventInfo, chance);
+
+        (*scritr)->_FinishScriptCall();
+    }
+
+#ifdef PERFORMANCE_LOG
+    scriptExecuteTime = GameTime::GetGameTimeMS() - scriptExecuteTime;
+    if (scriptExecuteTime > 10)
+        sLog->outPerformance("Aura::CallScriptCalcProcChanceHandlers [%u] take more than 10 ms to execute (%u ms)", m_spellInfo->Id, scriptExecuteTime);
+#endif // PERFORMANCE_LOG
 }
 
 AuraScript* Aura::GetScriptByName(std::string const& scriptName) const

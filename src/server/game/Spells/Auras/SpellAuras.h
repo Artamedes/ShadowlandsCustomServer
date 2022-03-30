@@ -234,7 +234,7 @@ class TC_GAME_API Aura
         static bool EffectTypeNeedsSendingAmount(AuraType type);
         AuraEffect* GetEffect(uint32 index) const;
         uint32 GetEffectMask() const;
-        void RecalculateAmountOfEffects();
+        void RecalculateAmountOfEffects(bool force = false, bool reaplyingEffect = false, bool isPVPMultiplier = false);
         void HandleAllEffects(AuraApplication * aurApp, uint8 mode, bool apply);
 
         // Helpers for targets
@@ -257,8 +257,8 @@ class TC_GAME_API Aura
         bool IsUsingCharges() const { return m_isUsingCharges; }
         void SetUsingCharges(bool val) { m_isUsingCharges = val; }
         void PrepareProcToTrigger(AuraApplication* aurApp, ProcEventInfo& eventInfo, TimePoint now);
-        uint32 GetProcEffectMask(AuraApplication* aurApp, ProcEventInfo& eventInfo, TimePoint now) const;
-        float CalcProcChance(SpellProcEntry const& procEntry, ProcEventInfo& eventInfo) const;
+        uint32 GetProcEffectMask(AuraApplication* aurApp, ProcEventInfo& eventInfo, TimePoint now);
+        float CalcProcChance(SpellProcEntry const& procEntry, ProcEventInfo& eventInfo);
         void TriggerProcOnEvent(uint32 procEffectMask, AuraApplication* aurApp, ProcEventInfo& eventInfo);
         float CalcPPMProcChance(Unit* actor) const;
         void SetLastProcAttemptTime(TimePoint lastProcAttemptTime) { m_lastProcAttemptTime = lastProcAttemptTime; }
@@ -293,6 +293,7 @@ class TC_GAME_API Aura
         void CallScriptAfterProcHandlers(AuraApplication const* aurApp, ProcEventInfo& eventInfo);
         bool CallScriptEffectProcHandlers(AuraEffect* aurEff, AuraApplication const* aurApp, ProcEventInfo& eventInfo);
         void CallScriptAfterEffectProcHandlers(AuraEffect* aurEff, AuraApplication const* aurApp, ProcEventInfo& eventInfo);
+        void CallScriptCalcProcChanceHandlers(ProcEventInfo& eventInfo, float& chance);
 
         UnitAura* ToUnitAura() { if (GetType() == UNIT_AURA_TYPE) return reinterpret_cast<UnitAura*>(this); else return nullptr; }
         UnitAura const* ToUnitAura() const { if (GetType() == UNIT_AURA_TYPE) return reinterpret_cast<UnitAura const*>(this); else return nullptr; }

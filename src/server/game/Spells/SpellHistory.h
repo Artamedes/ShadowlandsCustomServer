@@ -102,6 +102,7 @@ public:
     // Cooldowns
     static Duration const InfinityCooldownDelay;  // used for set "infinity cooldowns" for spells and check
 
+    void StartCooldownROG(SpellInfo const* spellInfo, uint32 itemId, Spell* spell = nullptr, bool onHold = false, bool forceSendPacket = false, uint32 ModCooldown = 0);
     void StartCooldown(SpellInfo const* spellInfo, uint32 itemId, Spell* spell = nullptr, bool onHold = false, Optional<Duration> forcedCooldown = {});
     void SendCooldownEvent(SpellInfo const* spellInfo, uint32 itemId = 0, Spell* spell = nullptr, bool startCooldown = true);
 

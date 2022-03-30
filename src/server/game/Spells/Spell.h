@@ -773,6 +773,7 @@ class TC_GAME_API Spell
             bool _enablePVP = false;         // need to enable PVP at DoDamageAndTriggers?
         };
         std::vector<TargetInfo> m_UniqueTargetInfo;
+        TargetInfo* m_currentTargetInfo = nullptr;
         uint32 m_channelTargetEffectMask;                       // Mask req. alive targets
 
         struct GOTargetInfo : public TargetInfoBase

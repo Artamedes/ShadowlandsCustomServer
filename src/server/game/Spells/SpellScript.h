@@ -633,7 +633,6 @@ class TC_GAME_API SpellScript : public _SpellScript
         Aura* GetHitAura(bool dynObjAura = false) const;
         // prevents applying aura on current spell hit target
         void PreventHitAura();
-
         // prevents effect execution on current spell hit target
         // including other effect/hit scripts
         // will not work on aura/damage/heal
@@ -698,6 +697,7 @@ enum AuraScriptHookType
     AURA_SCRIPT_HOOK_EFFECT_PROC,
     AURA_SCRIPT_HOOK_EFFECT_AFTER_PROC,
     AURA_SCRIPT_HOOK_AFTER_PROC,
+    AURA_SCRIPT_HOOK_CHANCE_PROC,
     /*AURA_SCRIPT_HOOK_APPLY,
     AURA_SCRIPT_HOOK_REMOVE, */
 };
@@ -728,6 +728,7 @@ class TC_GAME_API AuraScript : public _SpellScript
         typedef bool(CLASSNAME::*AuraCheckEffectProcFnType)(AuraEffect const*, ProcEventInfo&); \
         typedef void(CLASSNAME::*AuraProcFnType)(ProcEventInfo&); \
         typedef void(CLASSNAME::*AuraEffectProcFnType)(AuraEffect*, ProcEventInfo&); \
+        typedef void(CLASSNAME::*AuraCalcProcChanceFnType)(ProcEventInfo&, float&); \
         typedef void(CLASSNAME::*AuraEnterLeaveCombatFnType)(bool);
 
         AURASCRIPT_FUNCTION_TYPE_DEFINES(AuraScript)
@@ -953,6 +954,14 @@ class TC_GAME_API AuraScript : public _SpellScript
             private:
                 AuraEffectProcFnType _EffectHandlerScript;
         };
+        class TC_GAME_API AuraCalcProcChanceHandler
+        {
+        public:
+            AuraCalcProcChanceHandler(AuraCalcProcChanceFnType handlerScript);
+            void Call(AuraScript* auraScript, ProcEventInfo& eventInfo, float& chance);
+        private:
+            AuraCalcProcChanceFnType _HandlerScript;
+        };
         class TC_GAME_API EnterLeaveCombatHandler
         {
             public:
@@ -980,6 +989,7 @@ class TC_GAME_API AuraScript : public _SpellScript
         class EffectAbsorbFunction : public AuraScript::EffectAbsorbHandler { public: explicit EffectAbsorbFunction(AuraEffectAbsorbFnType _pEffectHandlerScript, uint8 _effIndex, bool overkill = false) : AuraScript::EffectAbsorbHandler((AuraScript::AuraEffectAbsorbFnType)_pEffectHandlerScript, _effIndex, overkill) { } }; \
         class EffectManaShieldFunction : public AuraScript::EffectManaShieldHandler { public: explicit EffectManaShieldFunction(AuraEffectAbsorbFnType _pEffectHandlerScript, uint8 _effIndex) : AuraScript::EffectManaShieldHandler((AuraScript::AuraEffectAbsorbFnType)_pEffectHandlerScript, _effIndex) { } }; \
         class EffectSplitFunction : public AuraScript::EffectSplitHandler { public: explicit EffectSplitFunction(AuraEffectSplitFnType _pEffectHandlerScript, uint8 _effIndex) : AuraScript::EffectSplitHandler((AuraScript::AuraEffectSplitFnType)_pEffectHandlerScript, _effIndex) { } }; \
+        class CalcProcChanceHandlerFunction : public AuraScript::AuraCalcProcChanceHandler { public: CalcProcChanceHandlerFunction(AuraCalcProcChanceFnType _pHandlerScript) : AuraScript::AuraCalcProcChanceHandler((AuraScript::AuraCalcProcChanceFnType)_pHandlerScript) {} }; \
         class CheckProcHandlerFunction : public AuraScript::CheckProcHandler { public: explicit CheckProcHandlerFunction(AuraCheckProcFnType handlerScript) : AuraScript::CheckProcHandler((AuraScript::AuraCheckProcFnType)handlerScript) { } }; \
         class CheckEffectProcHandlerFunction : public AuraScript::CheckEffectProcHandler { public: explicit CheckEffectProcHandlerFunction(AuraCheckEffectProcFnType handlerScript, uint8 effIndex, uint16 effName) : AuraScript::CheckEffectProcHandler((AuraScript::AuraCheckEffectProcFnType)handlerScript, effIndex, effName) { } }; \
         class AuraProcHandlerFunction : public AuraScript::AuraProcHandler { public: explicit AuraProcHandlerFunction(AuraProcFnType handlerScript) : AuraScript::AuraProcHandler((AuraScript::AuraProcFnType)handlerScript) { } }; \
@@ -1138,6 +1148,11 @@ class TC_GAME_API AuraScript : public _SpellScript
         // example: DoPrepareProc += AuraProcFn(class::function);
         // where function is: void function (ProcEventInfo& eventInfo);
         HookList<AuraProcHandler> DoPrepareProc;
+        // executed when chance of proc is calculated
+        // example: OnCalcProcChance += AuraCalcProcChanceFn(class::function);
+        // where function is: void function (ProcEventInfo& eventInfo, float& chance);
+        HookList<AuraCalcProcChanceHandler> OnCalcProcChance;
+        #define AuraCalcProcChanceFn(F) CalcProcChanceHandlerFunction(&F)        
         // executed when aura procs
         // example: OnProc += AuraProcFn(class::function);
         // where function is: void function (ProcEventInfo& eventInfo);

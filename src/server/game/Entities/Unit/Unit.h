@@ -1189,7 +1189,7 @@ class TC_GAME_API Unit : public WorldObject
         void SendEnergizeSpellLog(Unit* victim, uint32 spellId, int32 damage, int32 overEnergize, Powers powerType);
         void EnergizeBySpell(Unit* victim, SpellInfo const* spellInfo, int32 damage, Powers powerType);
 
-        Aura* AddAura(uint32 spellId, Unit* target);
+        Aura* AddAura(uint32 spellId, Unit* target = nullptr);
         Aura* AddAura(SpellInfo const* spellInfo, uint32 effMask, Unit* target);
         void SetAuraStack(uint32 spellId, Unit* target, uint32 stack);
 
