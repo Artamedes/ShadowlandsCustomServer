@@ -50,8 +50,6 @@ EndScriptData */
 #include "SupportMgr.h"
 #include "WaypointManager.h"
 #include "World.h"
-#include "../Custom/MagicStone.h"
-#include "../Custom/CustomInstanceScript.h"
 
 #if TRINITY_COMPILER == TRINITY_COMPILER_GNU
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
@@ -170,7 +168,6 @@ public:
             { "vehicle_template",              rbac::RBAC_PERM_COMMAND_RELOAD_VEHICLE_TEMPLATE,                 true,  &HandleReloadVehicleTemplateCommand,            "" },
             { "vehicle_accessory",             rbac::RBAC_PERM_COMMAND_RELOAD_VEHICLE_ACCESORY,                 true,  &HandleReloadVehicleAccessoryCommand,           "" },
             { "vehicle_template_accessory",    rbac::RBAC_PERM_COMMAND_RELOAD_VEHICLE_TEMPLATE_ACCESSORY,       true,  &HandleReloadVehicleTemplateAccessoryCommand,   "" },
-            { "magicstone",                    rbac::RBAC_PERM_COMMAND_RELOAD_VEHICLE_TEMPLATE_ACCESSORY,       true,  &HandleReloadMagicStone,   "" },
             { "broadcast_text",                rbac::RBAC_PERM_COMMAND_RELOAD_VEHICLE_TEMPLATE_ACCESSORY,       true,  &HandleReloadBroadcastText,   "" },
             { "instance_template",             rbac::RBAC_PERM_COMMAND_RELOAD_VEHICLE_TEMPLATE_ACCESSORY,       true,  &HandleReloadCreatureTemplateMovement,   "" },
         };
@@ -1153,13 +1150,6 @@ public:
         handler->SendGlobalGMSysMessage("Vehicle accessories reloaded.");
         return true;
     }
-    
-    static bool HandleReloadMagicStone(ChatHandler* handler, char const* /*args*/)
-    {
-        TC_LOG_INFO("misc", "Reloading HandleReloadMagicStone table...");
-        sMagicStoneMgr->LoadFromDB();
-        return true;
-    }
 
     static bool HandleReloadBroadcastText(ChatHandler* handler, char const* /*args*/)
     {
@@ -1176,14 +1166,6 @@ public:
         handler->SendSysMessage("Loading creature_template_movement");
       //  sObjectMgr->LoadCreaturetemplateMovement();
         sObjectMgr->LoadInstanceTemplate();
-        return true;
-    }
-
-    static bool HandleReloadInstanceRespawn(ChatHandler* handler, char const* /*args*/)
-    {
-        TC_LOG_INFO("misc", "Reloading HandleReloadBroadcastText table...");
-        handler->SendSysMessage("Loading broadcast_text");
-        sCustomInstanceRespawn->LoadFromDB();
         return true;
     }
 

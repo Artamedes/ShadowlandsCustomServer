@@ -7,6 +7,8 @@
 #include "ScriptedGossip.h"
 #include "HotfixDatabase.h"
 #include "DB2Stores.h"
+#include "../MagicStone.h"
+#include "../CustomInstanceScript.h"
 
 using namespace Trinity::ChatCommands;
 
@@ -1848,10 +1850,10 @@ public:
             GoToLastMenuForPlayer(player);
         }
 
-        switch (actionId)
-        {
-
-        }
+        // switch (actionId)
+        // {
+        // 
+        // }
     }
 
     void GoToLastMenuForPlayer(Player* player)
@@ -1870,8 +1872,10 @@ public:
     {
         static ChatCommandTable commandTable =
         {
-            { "start",      HandleStartCommand,      rbac::RBAC_PERM_INSTANT_LOGOUT,          Console::No },
-            { "createitem", HandleCreateItemCommand, rbac::RBAC_PERM_COMMAND_RELOAD_ALL_ITEM, Console::No },
+            { "start",            HandleStartCommand,      rbac::RBAC_PERM_INSTANT_LOGOUT,          Console::No },
+            { "createitem",       HandleCreateItemCommand, rbac::RBAC_PERM_COMMAND_RELOAD_ALL_ITEM, Console::No },
+            { "magicstone",       HandleReloadMagicStone,  rbac::RBAC_PERM_COMMAND_RELOAD_ALL_ITEM, Console::No },
+            { "instance_respawn", HandleReloadInstanceRespawn,  rbac::RBAC_PERM_COMMAND_RELOAD_ALL_ITEM, Console::No },
         };
         return commandTable;
     }
@@ -1882,6 +1886,23 @@ public:
     {
         auto player = handler->GetPlayer();
         player->TeleportTo(player->m_homebind, TELE_REVIVE_AT_TELEPORT);
+        return true;
+    }
+
+
+    static bool HandleReloadInstanceRespawn(ChatHandler* handler, char const* /*args*/)
+    {
+        TC_LOG_INFO("misc", "Reloading HandleReloadBroadcastText table...");
+        handler->SendSysMessage("Loading broadcast_text");
+        sCustomInstanceRespawn->LoadFromDB();
+        return true;
+    }
+
+    static bool HandleReloadMagicStone(ChatHandler* handler, char const* /*args*/)
+    {
+        handler->SendSysMessage("Loading magic stone!");
+        TC_LOG_INFO("misc", "Reloading HandleReloadMagicStone table...");
+        sMagicStoneMgr->LoadFromDB();
         return true;
     }
 
