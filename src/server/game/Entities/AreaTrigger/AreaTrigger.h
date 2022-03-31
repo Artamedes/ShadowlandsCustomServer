@@ -74,7 +74,7 @@ class TC_GAME_API AreaTrigger : public WorldObject, public GridObject<AreaTrigge
         AreaTriggerAI* AI() { return _ai.get(); }
 
         bool IsServerSide() const { return _areaTriggerTemplate->Id.IsServerSide; }
-
+        void SetXSpellVisualID(uint32 id);
         bool IsNeverVisibleFor(WorldObject const* seer) const override { return WorldObject::IsNeverVisibleFor(seer) || IsServerSide(); }
 
     private:

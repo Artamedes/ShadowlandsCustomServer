@@ -846,6 +846,7 @@ void Aura::Update(uint32 diff, Unit* caster)
             }
         }
     }
+    CallScriptAuraUpdateHandlers(diff);
 }
 
 int32 Aura::CalcMaxDuration(Unit* caster) const
@@ -2161,6 +2162,28 @@ void Aura::CallScriptEffectUpdatePeriodicHandlers(AuraEffect* aurEff)
 
         (*scritr)->_FinishScriptCall();
     }
+}
+
+void Aura::CallScriptAuraUpdateHandlers(uint32 diff)
+{
+#ifdef PERFORMANCE_LOG
+    uint32 scriptExecuteTime = getMSTime();
+#endif // PERFORMANCE_LOG
+
+    for (auto scritr = m_loadedScripts.begin(); scritr != m_loadedScripts.end(); ++scritr)
+    {
+        (*scritr)->_PrepareScriptCall(AURA_SCRIPT_HOOK_ON_UPDATE);
+        std::vector<AuraScript::AuraUpdateHandler>::iterator hookItrEnd = (*scritr)->OnAuraUpdate.end(), hookItr = (*scritr)->OnAuraUpdate.begin();
+        for (; hookItr != hookItrEnd; ++hookItr)
+            (*hookItr).Call(*scritr, diff);
+        (*scritr)->_FinishScriptCall();
+    }
+
+#ifdef PERFORMANCE_LOG
+    scriptExecuteTime = getMSTime() - scriptExecuteTime;
+    if (scriptExecuteTime > 10)
+        sLog->outPerformance("Aura::CallScriptAuraUpdateHandlers [%u] take more than 10 ms to execute (%u ms)", GetId(), scriptExecuteTime);
+#endif // PERFORMANCE_LOG
 }
 
 void Aura::CallScriptEffectCalcAmountHandlers(AuraEffect const* aurEff, int32& amount, bool& canBeRecalculated)

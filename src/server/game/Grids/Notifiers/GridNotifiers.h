@@ -1589,6 +1589,58 @@ namespace Trinity
             uint32 m_uiEntry;
             float m_fRange;
     };
+    
+    class AllAreaTriggeresOfEntryInRange
+    {
+    public:
+        AllAreaTriggeresOfEntryInRange(const WorldObject* object, uint32 entry, float maxRange) : m_pObject(object), m_uiEntry(entry), m_fRange(maxRange) {}
+        bool operator() (AreaTrigger* areaTrigger)
+        {
+            if ((!m_uiEntry || areaTrigger->GetEntry() == m_uiEntry) && m_pObject->IsWithinDist(areaTrigger, m_fRange, false) && m_pObject->IsInPhase(areaTrigger))
+                return true;
+
+            return false;
+        }
+    private:
+        const WorldObject* m_pObject;
+        uint32 m_uiEntry;
+        float m_fRange;
+    };
+
+    class AllCreaturesInRange
+    {
+    public:
+        AllCreaturesInRange(const WorldObject* object, float maxRange) : m_pObject(object), m_fRange(maxRange) {}
+        bool operator() (Unit* unit)
+        {
+            if (m_pObject->IsWithinDist(unit, m_fRange, false))
+                return true;
+
+            return false;
+        }
+
+    private:
+        const WorldObject* m_pObject;
+        float m_fRange;
+    };
+
+    class AllDeadCreaturesInRange
+    {
+    public:
+        AllDeadCreaturesInRange(const WorldObject* object, float maxRange, ObjectGuid excludeGUID) : m_pObject(object), m_excludeGUID(excludeGUID), m_fRange(maxRange) {}
+        bool operator() (Unit* unit)
+        {
+            if (unit->GetTypeId() == TYPEID_UNIT && unit->GetGUID() != m_excludeGUID && !unit->IsAlive() && m_pObject->IsWithinDist(unit, m_fRange, false))
+                return true;
+
+            return false;
+        }
+
+    private:
+        const WorldObject* m_pObject;
+        ObjectGuid m_excludeGUID;
+        float m_fRange;
+    };
 
     class PlayerAtMinimumRangeAway
     {

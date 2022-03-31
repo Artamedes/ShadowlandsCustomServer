@@ -47,6 +47,7 @@ struct VendorItemCount
     time_t lastIncrementTime;
 };
 
+typedef std::list<Creature*> CreatureList;
 typedef std::list<VendorItemCount> VendorItemCounts;
 
 // max different by z coordinate for creature aggro reaction

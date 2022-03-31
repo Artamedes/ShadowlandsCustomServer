@@ -413,7 +413,7 @@ class TC_GAME_API Spell
         void InitExplicitTargets(SpellCastTargets const& targets);
         void SelectExplicitTargets();
 
-        void SelectSpellTargets();
+        void SelectSpellTargets(bool checkDelay = true);
         void SelectEffectImplicitTargets(SpellEffectInfo const& spellEffectInfo, SpellImplicitTargetInfo const& targetType, uint32& processedEffectMask);
         void SelectImplicitChannelTargets(SpellEffectInfo const& spellEffectInfo, SpellImplicitTargetInfo const& targetType);
         void SelectImplicitNearbyTargets(SpellEffectInfo const& spellEffectInfo, SpellImplicitTargetInfo const& targetType, uint32 effMask);

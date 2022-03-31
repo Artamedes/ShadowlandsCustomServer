@@ -1150,3 +1150,9 @@ void AreaTrigger::ClearUpdateMask(bool remove)
     m_values.ClearChangesMask(&AreaTrigger::m_areaTriggerData);
     Object::ClearUpdateMask(remove);
 }
+
+void AreaTrigger::SetXSpellVisualID(uint32 dumb)
+{
+    auto areaTriggerData = m_values.ModifyValue(&AreaTrigger::m_areaTriggerData);
+    SetUpdateFieldValue(areaTriggerData.ModifyValue(&UF::AreaTriggerData::SpellVisual).ModifyValue(&UF::SpellCastVisual::SpellXSpellVisualID), dumb);
+}

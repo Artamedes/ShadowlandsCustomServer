@@ -744,7 +744,7 @@ void Spell::SelectExplicitTargets()
     }
 }
 
-void Spell::SelectSpellTargets()
+void Spell::SelectSpellTargets(bool checkDelay /*= false*/)
 {
     // select targets for cast phase
     SelectExplicitTargets();
@@ -800,8 +800,11 @@ void Spell::SelectSpellTargets()
         }
     }
 
-    if (uint64 dstDelay = CalculateDelayMomentForDst(m_spellInfo->LaunchDelay))
-        m_delayMoment = dstDelay;
+    if (checkDelay)
+    {
+        if (uint64 dstDelay = CalculateDelayMomentForDst(m_spellInfo->LaunchDelay))
+            m_delayMoment = dstDelay;
+    }
 }
 
 uint64 Spell::CalculateDelayMomentForDst(float launchDelay) const

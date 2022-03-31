@@ -404,6 +404,7 @@ class TC_GAME_API SpellInfo
         uint32 SpellLevel = 0;
         SpellDurationEntry const* DurationEntry = nullptr;
         std::array<SpellPowerEntry const*, MAX_POWERS_PER_SPELL> PowerCosts = {};
+        uint32 RangeIndex = 0;
         SpellRangeEntry const* RangeEntry = nullptr;
         float Speed = 0.0f;
         float LaunchDelay = 0.0f;

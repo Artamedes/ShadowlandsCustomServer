@@ -2464,6 +2464,9 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void SaveRecallPosition() { m_recall_location.WorldRelocate(*this); }
         void Recall() { TeleportTo(m_recall_location); }
 
+        void SaveBlinkPosition() { m_blink_location.WorldRelocate(*this); }
+        void RecallBlink() { TeleportTo(m_blink_location); }
+
         void SetHomebind(WorldLocation const& loc, uint32 areaId);
         void SendBindPointUpdate() const;
         void SendPlayerBound(ObjectGuid const& binderGuid, uint32 areaId) const;
@@ -3083,6 +3086,8 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
 
         // Recall position
         WorldLocation m_recall_location;
+
+        WorldLocation m_blink_location;
 
         DeclinedName *m_declinedname;
         Runes *m_runes;
