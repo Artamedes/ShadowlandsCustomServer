@@ -2379,7 +2379,7 @@ void WorldObject::ModSpellDurationTime(SpellInfo const* spellInfo, int32& durati
     if (!spellInfo || duration < 0)
         return;
 
-    if (spellInfo->IsChanneled())//&& !spellInfo->HasAttribute(SPELL_ATTR5_HASTE_AFFECT_DURATION))
+    if (!spellInfo->HasAttribute(SPELL_ATTR5_HASTE_AFFECT_DURATION))
         return;
 
     // called from caster
@@ -2388,6 +2388,10 @@ void WorldObject::ModSpellDurationTime(SpellInfo const* spellInfo, int32& durati
 
     Unit const* unitCaster = ToUnit();
     if (!unitCaster)
+        return;
+
+    // don't affect for players if it's a channe;
+    if (GetSpellModOwner() && spellInfo->IsChanneled())
         return;
 
     if (!(spellInfo->HasAttribute(SPELL_ATTR0_ABILITY) || spellInfo->HasAttribute(SPELL_ATTR0_TRADESPELL) || spellInfo->HasAttribute(SPELL_ATTR3_NO_DONE_BONUS)) &&

@@ -769,7 +769,7 @@ void AuraEffect::CalculatePeriodic(Unit* caster, bool resetPeriodicTimer /*= tru
         if (caster)
         {
             // Haste modifies periodic time of channeled spells
-            if (m_spellInfo->IsChanneled())
+            if (m_spellInfo->IsChanneled() && !modOwner) // modOwner added customly!
             {
                 if (m_spellInfo->HasAttribute(SPELL_ATTR5_HASTE_AFFECT_DURATION))
                     caster->ModSpellDurationTime(m_spellInfo, _period);
