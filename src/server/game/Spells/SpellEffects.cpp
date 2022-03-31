@@ -1663,7 +1663,7 @@ void Spell::EffectOpenLock()
         SendLoot(guid, LOOT_SKINNING);
     else if (itemTarget)
     {
-        itemTarget->AddItemFlag(ITEM_FIELD_FLAG_UNLOCKED);
+        itemTarget->SetItemFlag(ITEM_FIELD_FLAG_UNLOCKED);
         itemTarget->SetState(ITEM_CHANGED, itemTarget->GetOwner());
     }
 
@@ -3780,7 +3780,7 @@ void Spell::EffectSkinning()
     uint32 skill = creature->GetCreatureTemplate()->GetRequiredLootSkill();
 
     creature->RemoveUnitFlag(UNIT_FLAG_SKINNABLE);
-    creature->AddDynamicFlag(UNIT_DYNFLAG_LOOTABLE);
+    creature->SetDynamicFlag(UNIT_DYNFLAG_LOOTABLE);
     player->SendLoot(creature->GetGUID(), LOOT_SKINNING);
 
     if (skill == SKILL_SKINNING)
@@ -4191,7 +4191,7 @@ void Spell::EffectResurrectPet()
         pet->Relocate(x, y, z, player->GetOrientation()); // This is needed so SaveStayPosition() will get the proper coords.
     }
 
-    pet->SetDynamicFlags(UNIT_DYNFLAG_NONE);
+    pet->ReplaceAllDynamicFlags(UNIT_DYNFLAG_NONE);
     pet->RemoveUnitFlag(UNIT_FLAG_SKINNABLE);
     pet->setDeathState(ALIVE);
     pet->ClearUnitState(UNIT_STATE_ALL_ERASABLE);
@@ -4908,7 +4908,7 @@ void Spell::EffectRenamePet()
         !unitTarget->IsPet() || ((Pet*)unitTarget)->getPetType() != HUNTER_PET)
         return;
 
-    unitTarget->AddPetFlag(UNIT_PET_FLAG_CAN_BE_RENAMED);
+    unitTarget->SetPetFlag(UNIT_PET_FLAG_CAN_BE_RENAMED);
 }
 
 void Spell::EffectPlayMusic()
@@ -5407,7 +5407,7 @@ void Spell::EffectEnableBattlePets()
         return;
 
     Player* player = unitTarget->ToPlayer();
-    player->AddPlayerFlag(PLAYER_FLAGS_PET_BATTLES_UNLOCKED);
+    player->SetPlayerFlag(PLAYER_FLAGS_PET_BATTLES_UNLOCKED);
     player->GetSession()->GetBattlePetMgr()->UnlockSlot(BattlePets::BattlePetSlot::Slot0);
 }
 

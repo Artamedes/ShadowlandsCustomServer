@@ -17,6 +17,7 @@
 
 #include "ScriptMgr.h"
 #include "CreatureAIImpl.h"
+#include "DB2Stores.h"
 #include "GameObject.h"
 #include "MotionMaster.h"
 #include "ObjectAccessor.h"
@@ -378,10 +379,11 @@ enum Thassarian
     SAY_LERYSSA_1           = 0,
     SAY_LERYSSA_2           = 1,
     SAY_LERYSSA_3           = 2,
-    SAY_LERYSSA_4           = 3
-};
+    SAY_LERYSSA_4           = 3,
 
-#define GOSSIP_ITEM_T   "Let's do this, Thassarian. It's now or never."
+    GOSSIP_THASSARIAN_MENU  = 9418, //Let's do this, Thassarian.  It's now or never.
+    GOSSIP_THASSARIAN_OP    = 0
+};
 
 class npc_thassarian : public CreatureScript
 {
@@ -445,7 +447,7 @@ public:
                     if (Creature* arthas = me->SummonCreature(NPC_IMAGE_LICH_KING, 3730.313f, 3518.689f, 473.324f, 1.562f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 2min))
                     {
                         arthasGUID = arthas->GetGUID();
-                        arthas->AddUnitFlag(UNIT_FLAG_NON_ATTACKABLE);
+                        arthas->SetUnitFlag(UNIT_FLAG_NON_ATTACKABLE);
                         arthas->SetReactState(REACT_PASSIVE);
                         arthas->SetWalk(true);
                         arthas->GetMotionMaster()->MovePoint(0, 3737.374756f, 3564.841309f, 477.433014f);
@@ -502,7 +504,7 @@ public:
                         {
                             talbot->UpdateEntry(NPC_PRINCE_VALANAR);
                             talbot->SetFaction(FACTION_MONSTER);
-                            talbot->AddUnitFlag(UNIT_FLAG_NON_ATTACKABLE);
+                            talbot->SetUnitFlag(UNIT_FLAG_NON_ATTACKABLE);
                             talbot->SetReactState(REACT_PASSIVE);
                         }
                         phaseTimer = 5000;
@@ -542,7 +544,7 @@ public:
                             leryssaGUID = leryssa->GetGUID();
                             leryssa->SetWalk(false);
                             leryssa->SetReactState(REACT_PASSIVE);
-                            leryssa->AddUnitFlag(UNIT_FLAG_NON_ATTACKABLE);
+                            leryssa->SetUnitFlag(UNIT_FLAG_NON_ATTACKABLE);
                             leryssa->GetMotionMaster()->MovePoint(0, 3741.969971f, 3571.439941f, 477.441010f);
                         }
                         phaseTimer = 2000;
@@ -618,7 +620,7 @@ public:
                         break;
 
                     case 16:
-                        me->AddNpcFlag(UNIT_NPC_FLAG_QUESTGIVER);
+                        me->SetNpcFlag(UNIT_NPC_FLAG_QUESTGIVER);
                         phaseTimer = 20000;
                         ++phase;
                         break;
@@ -664,7 +666,7 @@ public:
                 player->PrepareQuestMenu(me->GetGUID());
 
             if (player->GetQuestStatus(QUEST_LAST_RITES) == QUEST_STATUS_INCOMPLETE && me->GetAreaId() == 4128)
-                AddGossipItemFor(player, GossipOptionIcon::None, GOSSIP_ITEM_T, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+                AddGossipItemFor(player, GOSSIP_THASSARIAN_MENU, GOSSIP_THASSARIAN_OP, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
 
             SendGossipMenuFor(player, player->GetGossipTextId(me), me->GetGUID());
             return true;
@@ -1412,12 +1414,13 @@ enum HiddenCultist
     SAY_HIDDEN_CULTIST_1                        = 0,
     SAY_HIDDEN_CULTIST_2                        = 1,
     SAY_HIDDEN_CULTIST_3                        = 2,
-    SAY_HIDDEN_CULTIST_4                        = 3
-};
+    SAY_HIDDEN_CULTIST_4                        = 3,
 
-char const* GOSSIP_ITEM_TOM_HEGGER = "What do you know about the Cult of the Damned?";
-char const* GOSSIP_ITEM_GUARD_MITCHELLS = "How long have you worked for the Cult of the Damned?";
-char const* GOSSIP_ITEM_SALTY_JOHN_THORPE = "I have a reason to believe you're involved in the cultist activity";
+    GOSSIP_ITEM_TOM_HEGGER_MENUID               = 9217, //What do you know about the Cult of the Damned?
+    GOSSIP_ITEM_GUARD_MITCHELLS_MENUID          = 9219, //How long have you worked for the Cult of the Damned?
+    GOSSIP_ITEM_SALTY_JOHN_THORPE_MENUID        = 9218, //I have a reason to believe you're involved in the cultist activity
+    GOSSIP_ITEM_HIDDEN_CULTIST_OPTIONID         = 0
+};
 
 class npc_hidden_cultist : public CreatureScript
 {
@@ -1430,7 +1433,7 @@ public:
         {
             Initialize();
             uiEmoteState = creature->GetEmoteState();
-            uiNpcFlags = NPCFlags(creature->m_unitData->NpcFlags[0]);
+            uiNpcFlags = creature->GetNpcFlags();
         }
 
         void Initialize()
@@ -1455,7 +1458,7 @@ public:
                 me->SetEmoteState(uiEmoteState);
 
             if (uiNpcFlags)
-                me->SetNpcFlags(uiNpcFlags);
+                me->ReplaceAllNpcFlags(uiNpcFlags);
 
             Initialize();
 
@@ -1467,7 +1470,7 @@ public:
         void DoAction(int32 /*iParam*/) override
         {
             me->StopMoving();
-            me->SetNpcFlags(UNIT_NPC_FLAG_NONE);
+            me->ReplaceAllNpcFlags(UNIT_NPC_FLAG_NONE);
             me->SetEmoteState(EMOTE_ONESHOT_NONE);
             if (Player* player = ObjectAccessor::GetPlayer(*me, uiPlayerGUID))
                 me->SetFacingToObject(player);
@@ -1545,28 +1548,28 @@ public:
         bool OnGossipHello(Player* player) override
         {
             uint32 uiGossipText = 0;
-            char const* charGossipItem;
+            uint32 charGossipItem = 0;
 
             switch (me->GetEntry())
             {
                 case NPC_TOM_HEGGER:
                     uiGossipText = GOSSIP_TEXT_TOM_HEGGER;
-                    charGossipItem = GOSSIP_ITEM_TOM_HEGGER;
+                    charGossipItem = GOSSIP_ITEM_TOM_HEGGER_MENUID;
                     break;
                 case NPC_SALTY_JOHN_THORPE:
                     uiGossipText = GOSSIP_TEXT_SALTY_JOHN_THORPE;
-                    charGossipItem = GOSSIP_ITEM_SALTY_JOHN_THORPE;
+                    charGossipItem = GOSSIP_ITEM_SALTY_JOHN_THORPE_MENUID;
                     break;
                 case NPC_GUARD_MITCHELLS:
                     uiGossipText = GOSSIP_TEXT_GUARD_MITCHELSS;
-                    charGossipItem = GOSSIP_ITEM_GUARD_MITCHELLS;
+                    charGossipItem = GOSSIP_ITEM_GUARD_MITCHELLS_MENUID;
                     break;
                 default:
                     return false;
             }
 
             if (player->HasAura(SPELL_RIGHTEOUS_VISION) && player->GetQuestStatus(QUEST_THE_HUNT_IS_ON) == QUEST_STATUS_INCOMPLETE)
-                AddGossipItemFor(player, GossipOptionIcon::None, charGossipItem, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+                AddGossipItemFor(player, charGossipItem, GOSSIP_ITEM_HIDDEN_CULTIST_OPTIONID, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
 
             if (me->IsVendor())
                 AddGossipItemFor(player, GossipOptionIcon::Vendor, GOSSIP_TEXT_BROWSE_GOODS, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_TRADE);
@@ -1893,6 +1896,69 @@ class spell_dispel_freed_soldier_debuff : public SpellScript
     }
 };
 
+/*######
+## Quest 11690: Bring 'Em Back Alive
+######*/
+
+enum BringEmBackAlive
+{
+    SPELL_KODO_DELIVERED   = 48203,
+
+    TEXT_DELIVERED_1       = 24881,
+    TEXT_DELIVERED_2       = 24882,
+    TEXT_DELIVERED_3       = 26284,
+    TEXT_DELIVERED_4       = 26285,
+    TEXT_DELIVERED_5       = 26286
+};
+
+// 45877 - Deliver Kodo
+class spell_deliver_kodo : public SpellScript
+{
+    PrepareSpellScript(spell_deliver_kodo);
+
+    bool Validate(SpellInfo const* /*spell*/) override
+    {
+        return ValidateSpellInfo({ SPELL_KODO_DELIVERED });
+    }
+
+    void HandleScript(SpellEffIndex /*effIndex*/)
+    {
+        Unit* caster = GetCaster();
+        caster->CastSpell(caster, SPELL_KODO_DELIVERED, true);
+    }
+
+    void Register() override
+    {
+        OnEffectHit += SpellEffectFn(spell_deliver_kodo::HandleScript, EFFECT_0, SPELL_EFFECT_SCRIPT_EFFECT);
+    }
+};
+
+// 48204 - Kodo Delivered
+class spell_kodo_delivered : public SpellScript
+{
+    PrepareSpellScript(spell_kodo_delivered);
+
+    bool Validate(SpellInfo const* /*spellInfo*/) override
+    {
+        return sBroadcastTextStore.HasRecord(TEXT_DELIVERED_1) &&
+            sBroadcastTextStore.HasRecord(TEXT_DELIVERED_2) &&
+            sBroadcastTextStore.HasRecord(TEXT_DELIVERED_3) &&
+            sBroadcastTextStore.HasRecord(TEXT_DELIVERED_4) &&
+            sBroadcastTextStore.HasRecord(TEXT_DELIVERED_5);
+    }
+
+    void HandleScript(SpellEffIndex /*effIndex*/)
+    {
+        Unit* caster = GetCaster();
+        caster->Unit::Say(RAND(TEXT_DELIVERED_1, TEXT_DELIVERED_2, TEXT_DELIVERED_3, TEXT_DELIVERED_4, TEXT_DELIVERED_5), caster);
+    }
+
+    void Register() override
+    {
+        OnEffectHit += SpellEffectFn(spell_kodo_delivered::HandleScript, EFFECT_0, SPELL_EFFECT_SCRIPT_EFFECT);
+    }
+};
+
 void AddSC_borean_tundra()
 {
     new npc_corastrasza();
@@ -1917,4 +1983,6 @@ void AddSC_borean_tundra()
     RegisterSpellScript(spell_nerubar_web_random_unit_not_on_quest_dummy);
     RegisterSpellScript(spell_nerubar_web_random_unit_on_quest_dummy);
     RegisterSpellScript(spell_dispel_freed_soldier_debuff);
+    RegisterSpellScript(spell_deliver_kodo);
+    RegisterSpellScript(spell_kodo_delivered);
 }

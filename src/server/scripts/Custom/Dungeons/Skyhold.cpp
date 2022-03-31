@@ -82,8 +82,8 @@ struct npc_skyhold_sylvanas : public ScriptedAI
                 scheduler.Schedule(100ms, [this](TaskContext context)
                 {
                     me->SetFacingTo(-0.034910f);
-                    me->AddNpcFlag(UNIT_NPC_FLAG_GOSSIP);
-                    me->AddNpcFlag(UNIT_NPC_FLAG_QUESTGIVER);
+                    me->SetNpcFlag(UNIT_NPC_FLAG_GOSSIP);
+                    me->SetNpcFlag(UNIT_NPC_FLAG_QUESTGIVER);
                 });
             }
         }
@@ -251,8 +251,8 @@ struct gobj_ancient_chest_700000 : public GameObjectAI
             CloseGossipMenuFor(player);
             if (actionId == 1)
             {
-                me->AddFlag(GameObjectFlags::GO_FLAG_LOCKED);
-                me->AddFlag(GameObjectFlags::GO_FLAG_NOT_SELECTABLE);
+                me->SetFlag(GameObjectFlags::GO_FLAG_LOCKED);
+                me->SetFlag(GameObjectFlags::GO_FLAG_NOT_SELECTABLE);
                 m_Locked = true;
                 // start the encounter..
                 scheduler.Schedule(1s, [this](TaskContext context)
@@ -284,7 +284,7 @@ struct npc_dark_ascended_corrus : public ScriptedAI
 
         void InitializeAI() override
         {
-            me->AddUnitFlag(UNIT_FLAG_NON_ATTACKABLE);
+            me->SetUnitFlag(UNIT_FLAG_NON_ATTACKABLE);
             me->SetReactState(REACT_PASSIVE);
 
             scheduler.Schedule(100ms, [this](TaskContext context)

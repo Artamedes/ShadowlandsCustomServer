@@ -2052,9 +2052,9 @@ public:
     void Reset() override
     {
         me->CastSpell(me, SPELL_PALADIN_LIGHT_HAMMER_COSMETIC, true);
-        me->AddUnitFlag(UNIT_FLAG_NON_ATTACKABLE);
-        me->AddUnitFlag(UNIT_FLAG_UNINTERACTIBLE);
-        me->AddUnitFlag(UNIT_FLAG_REMOVE_CLIENT_CONTROL);
+        me->SetUnitFlag(UNIT_FLAG_NON_ATTACKABLE);
+        me->SetUnitFlag(UNIT_FLAG_UNINTERACTIBLE);
+        me->SetUnitFlag(UNIT_FLAG_REMOVE_CLIENT_CONTROL);
     }
 };
 
@@ -3730,7 +3730,7 @@ class spell_pal_divine_steed_mount : public AuraScript
         if (!player)
             return;
 
-        player->AddUnitFlag3(UnitFlags3::UNIT_FLAG3_CAN_FIGHT_WITHOUT_DISMOUNT);
+        player->SetUnitFlag3(UnitFlags3::UNIT_FLAG3_CAN_FIGHT_WITHOUT_DISMOUNT);
 
         if (player->HasAura(SPELL_PALADIN_GALLANT_STEED_POWER))
             player->CastSpell(player, SPELL_PALADIN_GALLANT_STEED_AT, true);

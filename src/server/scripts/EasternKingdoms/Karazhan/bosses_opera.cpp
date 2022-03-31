@@ -1019,7 +1019,7 @@ void PretendToDie(Creature* creature)
     creature->InterruptNonMeleeSpells(true);
     creature->RemoveAllAuras();
     creature->SetHealth(0);
-    creature->AddUnitFlag(UNIT_FLAG_UNINTERACTIBLE);
+    creature->SetUnitFlag(UNIT_FLAG_UNINTERACTIBLE);
     creature->GetMotionMaster()->Clear();
     creature->GetMotionMaster()->MoveIdle();
     creature->SetStandState(UNIT_STAND_STATE_DEAD);
@@ -1256,7 +1256,7 @@ public:
                         Julianne->GetMotionMaster()->Clear();
                         Julianne->setDeathState(JUST_DIED);
                         Julianne->CombatStop(true);
-                        Julianne->SetDynamicFlags(UNIT_DYNFLAG_LOOTABLE);
+                        Julianne->ReplaceAllDynamicFlags(UNIT_DYNFLAG_LOOTABLE);
                     }
                     return;
                 }
@@ -1525,7 +1525,7 @@ void boss_julianne::boss_julianneAI::DamageTaken(Unit* /*done_by*/, uint32& dama
                 Romulo->GetMotionMaster()->Clear();
                 Romulo->setDeathState(JUST_DIED);
                 Romulo->CombatStop(true);
-                Romulo->SetDynamicFlags(UNIT_DYNFLAG_LOOTABLE);
+                Romulo->ReplaceAllDynamicFlags(UNIT_DYNFLAG_LOOTABLE);
             }
 
             return;

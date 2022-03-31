@@ -244,8 +244,8 @@ struct npc_derza_700402 : public ScriptedAI
         void InitializeAI() override
         {
             me->SetReactState(REACT_PASSIVE);
-            me->AddUnitFlag(UNIT_FLAG_NON_ATTACKABLE);
-            me->AddUnitFlag(UNIT_FLAG_IMMUNE_TO_PC);
+            me->SetUnitFlag(UNIT_FLAG_NON_ATTACKABLE);
+            me->SetUnitFlag(UNIT_FLAG_IMMUNE_TO_PC);
             DoCast(345355); // Channel
         }
 
@@ -589,8 +589,8 @@ struct npc_watcher_of_death : public ScriptedAI
             me->SetObjectScale(3.0f);
             me->SetDisplayId(101302);
             me->SetReactState(REACT_PASSIVE);
-            me->AddUnitFlag(UNIT_FLAG_NON_ATTACKABLE);
-            me->AddUnitFlag(UNIT_FLAG_UNINTERACTIBLE);
+            me->SetUnitFlag(UNIT_FLAG_NON_ATTACKABLE);
+            me->SetUnitFlag(UNIT_FLAG_UNINTERACTIBLE);
             scheduler.Schedule(100ms, [this](TaskContext context)
                 {
                     me->SetFacingTo(3.118690f);
@@ -651,8 +651,8 @@ struct npc_prophet_velen_700412 : public ScriptedAI
         {
             if (id == 1)
             {
-                me->AddNpcFlag(NPCFlags::UNIT_NPC_FLAG_GOSSIP);
-                me->AddNpcFlag(NPCFlags::UNIT_NPC_FLAG_QUESTGIVER);
+                me->SetNpcFlag(NPCFlags::UNIT_NPC_FLAG_GOSSIP);
+                me->SetNpcFlag(NPCFlags::UNIT_NPC_FLAG_QUESTGIVER);
 
                 scheduler.Schedule(1s, [this](TaskContext context)
                 {
@@ -683,7 +683,7 @@ struct npc_mawswarn_portal_700415 : public ScriptedAI
 
         void InitializeAI() override
         {
-            me->AddUnitFlag(UnitFlags::UNIT_FLAG_UNINTERACTIBLE);
+            me->SetUnitFlag(UnitFlags::UNIT_FLAG_UNINTERACTIBLE);
         }
 
         void UpdateAI(uint32 diff) override

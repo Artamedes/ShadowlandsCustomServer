@@ -430,8 +430,8 @@ struct npc_crap_warden_of_souls : public npc_crapopolis_ai_base
     void InitializeAI() override
     {
         me->SetReactState(REACT_PASSIVE);
-        me->AddUnitFlag(UNIT_FLAG_IMMUNE_TO_PC);
-        me->AddUnitFlag(UNIT_FLAG_NON_ATTACKABLE);
+        me->SetUnitFlag(UNIT_FLAG_IMMUNE_TO_PC);
+        me->SetUnitFlag(UNIT_FLAG_NON_ATTACKABLE);
         me->GetMotionMaster()->MovePoint(1, { 999.312012f, -3556.616699f, 12.931227f, 3.894261f });
     }
 
@@ -529,8 +529,8 @@ struct npc_crap_synod : public npc_crapopolis_ai_base
     void InitializeAI() override
     {
         me->SetReactState(REACT_PASSIVE);
-        me->AddUnitFlag(UNIT_FLAG_IMMUNE_TO_PC);
-        me->AddUnitFlag(UNIT_FLAG_NON_ATTACKABLE);
+        me->SetUnitFlag(UNIT_FLAG_IMMUNE_TO_PC);
+        me->SetUnitFlag(UNIT_FLAG_NON_ATTACKABLE);
         me->GetMotionMaster()->MovePoint(1, { 999.312012f, -3556.616699f, 12.931227f, 3.894261f });
     }
 

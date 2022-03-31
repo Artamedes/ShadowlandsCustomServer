@@ -17,9 +17,11 @@
 
 #include "ScriptMgr.h"
 #include "CombatAI.h"
+#include "DB2Stores.h"
 #include "GameObject.h"
 #include "MotionMaster.h"
 #include "ObjectAccessor.h"
+#include "ObjectMgr.h"
 #include "Player.h"
 #include "ScriptedEscortAI.h"
 #include "ScriptedGossip.h"
@@ -368,7 +370,7 @@ public:
                     case EVENT_SCRIPT_1:
                         if (Player* player = ObjectAccessor::GetPlayer(*me, playerGUID))
                             Talk(SAY_BRANN_1, player);
-                        me->RemoveUnitFlag(UnitFlags(UNIT_NPC_FLAG_GOSSIP | UNIT_NPC_FLAG_QUESTGIVER));
+                        me->RemoveNpcFlag(UNIT_NPC_FLAG_GOSSIP | UNIT_NPC_FLAG_QUESTGIVER);
                         if (Creature* voice = me->SummonCreature(NPC_A_DISTANT_VOICE, 7863.43f, -1396.585f, 1538.076f, 2.949606f, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 49s))
                             voiceGUID = voice->GetGUID();
                         events.ScheduleEvent(EVENT_SCRIPT_2, 4s);
@@ -672,7 +674,7 @@ public:
                     me->RemoveAurasDueToSpell(SPELL_JAWS_OF_DEATH_PERIODIC);
                     me->RemoveAurasDueToSpell(SPELL_PRY_JAWS_OPEN);
 
-                    me->SetNpcFlags(UNIT_NPC_FLAG_NONE);
+                    me->ReplaceAllNpcFlags(UNIT_NPC_FLAG_NONE);
 
                     me->GetMotionMaster()->MoveFall(POINT_FALL);
                 });
@@ -846,7 +848,7 @@ public:
                 playerGUID = who->GetGUID();
                 Talk(SAY_HOLD_ON, who);
                 me->CastSpell(who, SPELL_JOKKUM_KILL_CREDIT, true);
-                me->AddUnitFlag(UNIT_FLAG_IMMUNE_TO_NPC);
+                me->SetUnitFlag(UNIT_FLAG_IMMUNE_TO_NPC);
                 me->GetMotionMaster()->MovePath(PATH_JOKKUM, false);
             }
         }
@@ -1322,29 +1324,103 @@ public:
     }
 };
 
-enum CollapsingCave
-{
-    SPELL_COLLAPSING_CAVE = 55486
-};
+/*######
+## Quest 12823: A Flawless Plan
+######*/
 
 // 55693 - Remove Collapsing Cave Aura
 class spell_q12823_remove_collapsing_cave_aura : public SpellScript
 {
     PrepareSpellScript(spell_q12823_remove_collapsing_cave_aura);
 
-    bool Validate(SpellInfo const* /*spellInfo*/) override
+    bool Validate(SpellInfo const* spellInfo) override
     {
-        return ValidateSpellInfo({ SPELL_COLLAPSING_CAVE });
+        return ValidateSpellInfo({ uint32(spellInfo->GetEffect(EFFECT_0).CalcValue()) });
     }
 
-    void HandleScriptEffect(SpellEffIndex /* effIndex */)
+    void HandleScript(SpellEffIndex /*effIndex*/)
     {
-        GetHitUnit()->RemoveAurasDueToSpell(SPELL_COLLAPSING_CAVE);
+        GetHitUnit()->RemoveAurasDueToSpell(uint32(GetEffectValue()));
     }
 
     void Register() override
     {
-        OnEffectHitTarget += SpellEffectFn(spell_q12823_remove_collapsing_cave_aura::HandleScriptEffect, EFFECT_0, SPELL_EFFECT_SCRIPT_EFFECT);
+        OnEffectHitTarget += SpellEffectFn(spell_q12823_remove_collapsing_cave_aura::HandleScript, EFFECT_0, SPELL_EFFECT_SCRIPT_EFFECT);
+    }
+};
+
+/*######
+## Quest 12828: Ample Inspiration
+######*/
+
+enum AmpleInspiration
+{
+    SPELL_QUIET_SUICIDE              = 3617,
+    SPELL_SUMMON_MAIN_MAMMOTH_MEAT   = 57444,
+    SPELL_MAMMOTH_SUMMON_OBJECT_1    = 54627,
+    SPELL_MAMMOTH_SUMMON_OBJECT_2    = 54628,
+    SPELL_MAMMOTH_SUMMON_OBJECT_3    = 54623,
+
+    ITEM_EXPLOSIVE_DEVICE            = 40686
+};
+
+// 54581 - Mammoth Explosion Spell Spawner
+class spell_storm_peaks_mammoth_explosion_master : public SpellScript
+{
+    PrepareSpellScript(spell_storm_peaks_mammoth_explosion_master);
+
+    bool Validate(SpellInfo const* /*spellInfo*/) override
+    {
+        return ValidateSpellInfo(
+        {
+            SPELL_QUIET_SUICIDE,
+            SPELL_SUMMON_MAIN_MAMMOTH_MEAT,
+            SPELL_MAMMOTH_SUMMON_OBJECT_1,
+            SPELL_MAMMOTH_SUMMON_OBJECT_2,
+            SPELL_MAMMOTH_SUMMON_OBJECT_3
+        });
+    }
+
+    void HandleScript(SpellEffIndex /*effIndex*/)
+    {
+        Unit* caster = GetCaster();
+        caster->CastSpell(caster, SPELL_QUIET_SUICIDE);
+        caster->CastSpell(caster, SPELL_SUMMON_MAIN_MAMMOTH_MEAT);
+        caster->CastSpell(caster, SPELL_MAMMOTH_SUMMON_OBJECT_1);
+        caster->CastSpell(caster, SPELL_MAMMOTH_SUMMON_OBJECT_1);
+        caster->CastSpell(caster, SPELL_MAMMOTH_SUMMON_OBJECT_1);
+        caster->CastSpell(caster, SPELL_MAMMOTH_SUMMON_OBJECT_2);
+        caster->CastSpell(caster, SPELL_MAMMOTH_SUMMON_OBJECT_2);
+        caster->CastSpell(caster, SPELL_MAMMOTH_SUMMON_OBJECT_2);
+        caster->CastSpell(caster, SPELL_MAMMOTH_SUMMON_OBJECT_3);
+        caster->CastSpell(caster, SPELL_MAMMOTH_SUMMON_OBJECT_3);
+    }
+
+    void Register() override
+    {
+        OnEffectHit += SpellEffectFn(spell_storm_peaks_mammoth_explosion_master::HandleScript, EFFECT_0, SPELL_EFFECT_SCRIPT_EFFECT);
+    }
+};
+
+// 54892 - Unstable Explosive Detonation
+class spell_storm_peaks_unstable_explosive_detonation : public SpellScript
+{
+    PrepareSpellScript(spell_storm_peaks_unstable_explosive_detonation);
+
+    bool Validate(SpellInfo const* /*spellInfo*/) override
+    {
+        return sObjectMgr->GetItemTemplate(ITEM_EXPLOSIVE_DEVICE);
+    }
+
+    void HandleScript(SpellEffIndex /*effIndex*/)
+    {
+        if (Player* caster = GetCaster()->ToPlayer())
+            caster->DestroyItemCount(ITEM_EXPLOSIVE_DEVICE, 1, true);
+    }
+
+    void Register() override
+    {
+        OnEffectHit += SpellEffectFn(spell_storm_peaks_unstable_explosive_detonation::HandleScript, EFFECT_1, SPELL_EFFECT_SCRIPT_EFFECT);
     }
 };
 
@@ -1371,4 +1447,9 @@ void AddSC_storm_peaks()
     new spell_fatal_strike();
     new spell_player_mount_wyrm();
     RegisterSpellScript(spell_q12823_remove_collapsing_cave_aura);
+    // RegisterSpellScript(spell_read_pronouncement);
+    // RegisterSpellScript(spell_bear_flank_master);
+    // RegisterSpellScript(spell_bear_flank_fail);
+    RegisterSpellScript(spell_storm_peaks_mammoth_explosion_master);
+    RegisterSpellScript(spell_storm_peaks_unstable_explosive_detonation);
 }

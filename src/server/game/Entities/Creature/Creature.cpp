@@ -612,19 +612,19 @@ bool Creature::UpdateEntry(uint32 entry, CreatureData const* data /*= nullptr*/,
     if (cInfo->flags_extra & CREATURE_FLAG_EXTRA_WORLDEVENT)
         npcFlags |= sGameEventMgr->GetNPCFlag(this);
 
-    SetNpcFlags(NPCFlags(npcFlags & 0xFFFFFFFF));
-    SetNpcFlags2(NPCFlags2(npcFlags >> 32));
+    ReplaceAllNpcFlags(NPCFlags(npcFlags & 0xFFFFFFFF));
+    ReplaceAllNpcFlags2(NPCFlags2(npcFlags >> 32));
 
     // if unit is in combat, keep this flag
     unitFlags &= ~UNIT_FLAG_IN_COMBAT;
     if (IsInCombat())
         unitFlags |= UNIT_FLAG_IN_COMBAT;
 
-    SetUnitFlags(UnitFlags(unitFlags));
-    SetUnitFlags2(UnitFlags2(unitFlags2));
-    SetUnitFlags3(UnitFlags3(unitFlags3));
+    ReplaceAllUnitFlags(UnitFlags(unitFlags));
+    ReplaceAllUnitFlags2(UnitFlags2(unitFlags2));
+    ReplaceAllUnitFlags3(UnitFlags3(unitFlags3));
 
-    SetDynamicFlags(dynamicFlags);
+    ReplaceAllDynamicFlags(dynamicFlags);
 
     SetUpdateFieldValue(m_values.ModifyValue(&Unit::m_unitData).ModifyValue(&UF::UnitData::StateAnimID), sDB2Manager.GetEmptyAnimStateID());
 
@@ -675,7 +675,7 @@ bool Creature::UpdateEntry(uint32 entry, CreatureData const* data /*= nullptr*/,
 
     // trigger creature is always uninteractible and can not be attacked
     if (IsTrigger())
-        AddUnitFlag(UNIT_FLAG_UNINTERACTIBLE);
+        SetUnitFlag(UNIT_FLAG_UNINTERACTIBLE);
 
     InitializeReactState();
 
@@ -1357,7 +1357,7 @@ void Creature::SetLootRecipient(Unit* unit, bool withGroup)
     else
         m_lootRecipientGroup = ObjectGuid::Empty;
 
-    AddDynamicFlag(UNIT_DYNFLAG_TAPPED);
+    SetDynamicFlag(UNIT_DYNFLAG_TAPPED);
 }
 
 // return true if this creature is tapped by the player or by a member of his group.
@@ -2130,8 +2130,8 @@ void Creature::setDeathState(DeathState s)
         DoNotReacquireSpellFocusTarget();  // cancel delayed re-target
         SetTarget(ObjectGuid::Empty);      // drop target - dead mobs shouldn't ever target things
 
-        SetNpcFlags(UNIT_NPC_FLAG_NONE);
-        SetNpcFlags2(UNIT_NPC_FLAG_2_NONE);
+        ReplaceAllNpcFlags(UNIT_NPC_FLAG_NONE);
+        ReplaceAllNpcFlags2(UNIT_NPC_FLAG_2_NONE);
 
         SetMountDisplayId(0); // if creature is mounted on a virtual mount, remove it at death
 
@@ -2179,13 +2179,13 @@ void Creature::setDeathState(DeathState s)
             if (cInfo->flags_extra & CREATURE_FLAG_EXTRA_WORLDEVENT)
                 npcFlags |= sGameEventMgr->GetNPCFlag(this);
 
-            SetNpcFlags(NPCFlags(npcFlags & 0xFFFFFFFF));
-            SetNpcFlags2(NPCFlags2(npcFlags >> 32));
+            ReplaceAllNpcFlags(NPCFlags(npcFlags & 0xFFFFFFFF));
+            ReplaceAllNpcFlags2(NPCFlags2(npcFlags >> 32));
 
-            SetUnitFlags(UnitFlags(unitFlags));
-            SetUnitFlags2(UnitFlags2(unitFlags2));
-            SetUnitFlags3(UnitFlags3(unitFlags3));
-            SetDynamicFlags(dynamicFlags);
+            ReplaceAllUnitFlags(UnitFlags(unitFlags));
+            ReplaceAllUnitFlags2(UnitFlags2(unitFlags2));
+            ReplaceAllUnitFlags3(UnitFlags3(unitFlags3));
+            ReplaceAllDynamicFlags(dynamicFlags);
 
             RemoveUnitFlag(UNIT_FLAG_IN_COMBAT);
 
@@ -2518,7 +2518,7 @@ bool Creature::CanAssistTo(Unit const* u, Unit const* enemy, bool checkfaction /
     if (IsCivilian())
         return false;
 
-    if (HasUnitFlag(UnitFlags(UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_UNINTERACTIBLE)) || IsImmuneToNPC())
+    if (HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_UNINTERACTIBLE) || IsImmuneToNPC())
         return false;
 
     // skip fighting creature
@@ -2678,7 +2678,7 @@ bool Creature::LoadCreaturesAddon()
         // 3 StandMiscFlags
 
         SetStandState(UnitStandStateType(cainfo->bytes1 & 0xFF));
-        SetVisFlags(UnitVisFlags((cainfo->bytes1 >> 16) & 0xFF));
+        ReplaceAllVisFlags(UnitVisFlags((cainfo->bytes1 >> 16) & 0xFF));
         SetAnimTier(AnimTier((cainfo->bytes1 >> 24) & 0xFF), false);
 
         //! Suspected correlation between UNIT_FIELD_BYTES_1, offset 3, value 0x2:
@@ -2698,8 +2698,8 @@ bool Creature::LoadCreaturesAddon()
         // 3 ShapeshiftForm     Must be determined/set by shapeshift spell/aura
 
         SetSheath(SheathState(cainfo->bytes2 & 0xFF));
-        SetPvpFlags(UNIT_BYTE2_FLAG_NONE);
-        SetPetFlags(UNIT_PET_FLAG_NONE);
+        ReplaceAllPvpFlags(UNIT_BYTE2_FLAG_NONE);
+        ReplaceAllPetFlags(UNIT_PET_FLAG_NONE);
         SetShapeshiftForm(FORM_NONE);
     }
 
@@ -2874,14 +2874,14 @@ void Creature::RefreshCanSwimFlag(bool recheck)
     // Check if the creature has UNIT_FLAG_CAN_SWIM and add it if it's missing
     // Creatures must be able to chase a target in water if they can enter water
     if (_isMissingCanSwimFlagOutOfCombat && CanEnterWater())
-        AddUnitFlag(UNIT_FLAG_CAN_SWIM);
+        SetUnitFlag(UNIT_FLAG_CAN_SWIM);
 }
 
 void Creature::AllLootRemovedFromCorpse()
 {
     if (loot.loot_type != LOOT_SKINNING && !IsPet() && GetCreatureTemplate()->SkinLootId && hasLootRecipient())
         if (LootTemplates_Skinning.HaveLootFor(GetCreatureTemplate()->SkinLootId))
-            AddUnitFlag(UNIT_FLAG_SKINNABLE);
+            SetUnitFlag(UNIT_FLAG_SKINNABLE);
 
     time_t now = GameTime::GetGameTime();
     // Do not reset corpse remove time if corpse is already removed
@@ -3493,7 +3493,7 @@ void Creature::AtDisengage()
 
     ClearUnitState(UNIT_STATE_ATTACK_PLAYER);
     if (IsAlive() && HasDynamicFlag(UNIT_DYNFLAG_TAPPED))
-        SetDynamicFlags(GetCreatureTemplate()->dynamicflags);
+        ReplaceAllDynamicFlags(GetCreatureTemplate()->dynamicflags);
 
     if (IsPet() || IsGuardian()) // update pets' speed for catchup OOC speed
     {

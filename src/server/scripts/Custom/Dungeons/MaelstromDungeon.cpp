@@ -140,7 +140,7 @@ struct npc_sir_duke_iro_700112 : public ScriptedAI
 
         void InitializeAI() override
         {
-            me->SetUnitFlags(UnitFlags::UNIT_FLAG_NON_ATTACKABLE);
+            me->SetUnitFlag(UnitFlags::UNIT_FLAG_NON_ATTACKABLE);
             me->SetReactState(ReactStates::REACT_PASSIVE);
         }
 

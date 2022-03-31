@@ -780,6 +780,10 @@ class npc_frostbrood_skytalon : public CreatureScript
         }
 };
 
+/*######
+## Quest 12887, 12892: It's All Fun and Games
+######*/
+
 // 55288 - It's All Fun and Games: The Ocular On Death
 class spell_the_ocular_on_death : public SpellScript
 {
@@ -793,12 +797,106 @@ class spell_the_ocular_on_death : public SpellScript
     void HandleScript(SpellEffIndex /*effIndex*/)
     {
         if (Player* target = GetHitPlayer())
-            target->CastSpell(target, GetEffectInfo().CalcValue(), true);
+            target->CastSpell(target, uint32(GetEffectValue()));
     }
 
     void Register() override
     {
         OnEffectHitTarget += SpellEffectFn(spell_the_ocular_on_death::HandleScript, EFFECT_0, SPELL_EFFECT_SCRIPT_EFFECT);
+    }
+};
+
+/*######
+## Quest 14077, 14144: The Light's Mercy
+######*/
+
+// 66411 - Summon Tualiq Proxy
+class spell_summon_tualiq_proxy : public SpellScript
+{
+    PrepareSpellScript(spell_summon_tualiq_proxy);
+
+    void SetDest(SpellDestination& dest)
+    {
+        Position const offset = { 0.0f, 0.0f, 30.0f, 0.0f };
+        dest.RelocateOffset(offset);
+    }
+
+    void Register() override
+    {
+        OnDestinationTargetSelect += SpellDestinationTargetSelectFn(spell_summon_tualiq_proxy::SetDest, EFFECT_0, TARGET_DEST_CASTER);
+    }
+};
+
+/*######
+## Quest 14076 & 14092: Breakfast Of Champions
+######*/
+
+enum BreakfastOfChampions
+{
+    SPELL_SUMMON_DEEP_JORMUNGAR     = 66510,
+    SPELL_STORMFORGED_MOLE_MACHINE  = 66492
+};
+
+// 66512 - Pound Drum
+class spell_q14076_14092_pound_drum : public SpellScript
+{
+    PrepareSpellScript(spell_q14076_14092_pound_drum);
+
+    bool Validate(SpellInfo const* /*spell*/) override
+    {
+        return ValidateSpellInfo({ SPELL_SUMMON_DEEP_JORMUNGAR, SPELL_STORMFORGED_MOLE_MACHINE });
+    }
+
+    void HandleSummon()
+    {
+        GetCaster()->CastSpell(GetCaster(), roll_chance_i(50) ? SPELL_SUMMON_DEEP_JORMUNGAR : SPELL_STORMFORGED_MOLE_MACHINE, true);
+    }
+
+    void Register() override
+    {
+        OnCast += SpellCastFn(spell_q14076_14092_pound_drum::HandleSummon);
+    }
+};
+
+/*######
+## Quest 14112 & 14145: What Do You Feed a Yeti, Anyway?
+######*/
+
+enum ChumTheWaterSummons
+{
+    SPELL_SUMMON_ANGRY_KVALDIR           = 66737,
+    SPELL_SUMMON_NORTH_SEA_MAKO          = 66738,
+    SPELL_SUMMON_NORTH_SEA_THRESHER      = 66739,
+    SPELL_SUMMON_NORTH_SEA_BLUE_SHARK    = 66740
+};
+
+std::array<uint32, 4> const ChumTheWaterSummonSpells =
+{
+    SPELL_SUMMON_ANGRY_KVALDIR,
+    SPELL_SUMMON_NORTH_SEA_MAKO,
+    SPELL_SUMMON_NORTH_SEA_THRESHER,
+    SPELL_SUMMON_NORTH_SEA_BLUE_SHARK
+};
+
+// 66741 - Chum the Water
+class spell_q14112_14145_chum_the_water : public SpellScript
+{
+    PrepareSpellScript(spell_q14112_14145_chum_the_water);
+
+    bool Validate(SpellInfo const* /*spellInfo*/) override
+    {
+        return ValidateSpellInfo(ChumTheWaterSummonSpells);
+    }
+
+    void HandleScript(SpellEffIndex /*effIndex*/)
+    {
+        Unit* caster = GetCaster();
+        caster->CastSpell(caster, Trinity::Containers::SelectRandomContainerElement(ChumTheWaterSummonSpells));
+    }
+
+    void Register() override
+    {
+        OnEffectHit += SpellEffectFn(spell_q14112_14145_chum_the_water::HandleScript, EFFECT_0, SPELL_EFFECT_SCRIPT_EFFECT);
     }
 };
 
@@ -810,4 +908,7 @@ void AddSC_icecrown()
     new npc_blessed_banner();
     new npc_frostbrood_skytalon();
     RegisterSpellScript(spell_the_ocular_on_death);
+    RegisterSpellScript(spell_summon_tualiq_proxy);
+    RegisterSpellScript(spell_q14076_14092_pound_drum);
+    RegisterSpellScript(spell_q14112_14145_chum_the_water);
 }

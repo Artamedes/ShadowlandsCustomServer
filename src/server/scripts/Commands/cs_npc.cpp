@@ -627,8 +627,8 @@ public:
 
         uint32 npcFlag2 = npcFlags2.value_or(0);
 
-        creature->SetNpcFlags(static_cast<NPCFlags>(npcFlags));
-        creature->SetNpcFlags2(static_cast<NPCFlags2>(npcFlag2));
+        creature->ReplaceAllNpcFlags(static_cast<NPCFlags>(npcFlags));
+        creature->ReplaceAllNpcFlags2(static_cast<NPCFlags2>(npcFlag2));
 
         WorldDatabasePreparedStatement* stmt = WorldDatabase.GetPreparedStatement(WORLD_UPD_CREATURE_NPCFLAG);
 

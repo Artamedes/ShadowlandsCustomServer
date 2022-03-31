@@ -107,7 +107,7 @@ struct npc_infernal_core_360607 : public ScriptedAI
 
         void InitializeAI() override
         {
-            me->SetUnitFlags(UnitFlags::UNIT_FLAG_NON_ATTACKABLE);
+            me->SetUnitFlag(UnitFlags::UNIT_FLAG_NON_ATTACKABLE);
             m_Events.ScheduleEvent(1, 100ms);
         }
 

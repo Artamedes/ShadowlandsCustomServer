@@ -1645,14 +1645,14 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
         {
             for (WorldObject* target : targets)
                 if (IsCreature(target))
-                    target->ToUnit()->SetNpcFlags(NPCFlags(e.action.flag.flag));
+                    target->ToUnit()->ReplaceAllNpcFlags(NPCFlags(e.action.flag.flag));
             break;
         }
         case SMART_ACTION_ADD_NPC_FLAG:
         {
             for (WorldObject* target : targets)
                 if (IsCreature(target))
-                    target->ToUnit()->AddNpcFlag(NPCFlags(e.action.flag.flag));
+                    target->ToUnit()->SetNpcFlag(NPCFlags(e.action.flag.flag));
             break;
         }
         case SMART_ACTION_REMOVE_NPC_FLAG:
@@ -1805,7 +1805,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                             // pet talent points
                             break;
                         case 2:
-                            target->ToUnit()->AddVisFlags(UnitVisFlags(e.action.setunitByte.byte1));
+                            target->ToUnit()->SetVisFlag(UnitVisFlags(e.action.setunitByte.byte1));
                             break;
                         case 3:
                             target->ToUnit()->SetAnimTier(AnimTier(e.action.setunitByte.byte1));
@@ -1828,7 +1828,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                             // pet talent points
                             break;
                         case 2:
-                            target->ToUnit()->RemoveVisFlags(UnitVisFlags(e.action.setunitByte.byte1));
+                            target->ToUnit()->RemoveVisFlag(UnitVisFlags(e.action.setunitByte.byte1));
                             break;
                         case 3:
                             target->ToUnit()->SetAnimTier(AnimTier::Ground);
@@ -2369,7 +2369,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                 if (IsUnit(target))
                 {
                     if (e.action.setImmunePC.immunePC)
-                        target->ToUnit()->AddUnitFlag(UNIT_FLAG_IMMUNE_TO_PC);
+                        target->ToUnit()->SetUnitFlag(UNIT_FLAG_IMMUNE_TO_PC);
                     else
                         target->ToUnit()->RemoveUnitFlag(UNIT_FLAG_IMMUNE_TO_PC);
                 }
@@ -2383,7 +2383,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                 if (IsUnit(target))
                 {
                     if (e.action.setImmuneNPC.immuneNPC)
-                        target->ToUnit()->AddUnitFlag(UNIT_FLAG_IMMUNE_TO_NPC);
+                        target->ToUnit()->SetUnitFlag(UNIT_FLAG_IMMUNE_TO_NPC);
                     else
                         target->ToUnit()->RemoveUnitFlag(UNIT_FLAG_IMMUNE_TO_NPC);
                 }
@@ -2397,7 +2397,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                 if (IsUnit(target))
                 {
                     if (e.action.setUninteractible.uninteractible)
-                        target->ToUnit()->AddUnitFlag(UNIT_FLAG_UNINTERACTIBLE);
+                        target->ToUnit()->SetUnitFlag(UNIT_FLAG_UNINTERACTIBLE);
                     else
                         target->ToUnit()->RemoveUnitFlag(UNIT_FLAG_UNINTERACTIBLE);
                 }
@@ -3162,6 +3162,20 @@ void SmartScript::ProcessEvent(SmartScriptHolder& e, Unit* unit, uint32 var0, ui
                     RecalcTimer(e, e.event.spellHit.cooldownMin, e.event.spellHit.cooldownMax);
                     ProcessAction(e, unit, 0, 0, bvar, spell, gob);
                 }
+            break;
+        }
+        case SMART_EVENT_ON_SPELL_CAST:
+        case SMART_EVENT_ON_SPELL_FAILED:
+        case SMART_EVENT_ON_SPELL_START:
+        {
+            if (!spell)
+                return;
+
+            if (spell->Id != e.event.spellCast.spell)
+                return;
+
+            RecalcTimer(e, e.event.spellCast.cooldownMin, e.event.spellCast.cooldownMax);
+            ProcessAction(e, nullptr, 0, 0, bvar, spell);
             break;
         }
         case SMART_EVENT_OOC_LOS:

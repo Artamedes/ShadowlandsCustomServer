@@ -188,8 +188,6 @@ class spell_q12688_detonate_2 : public SpellScript
 ## npc_jungle_punch_target
 #####*/
 
-#define SAY_OFFER     "Care to try Grimbooze Thunderbrew's new jungle punch?"
-
 enum JunglePunch
 {
     SPELL_OFFER                         = 51962,
@@ -357,7 +355,6 @@ public:
                     continue;
 
                 player->KilledMonsterCredit(me->GetEntry());
-                player->Say(SAY_OFFER, LANG_UNIVERSAL);
                 sayStep = 1;
                 break;
             }
@@ -626,59 +623,6 @@ public:
     }
 };
 
-/*######
-## Quest Dreadsaber Mastery: Stalking the Prey (12550)
-######*/
-
-enum ShangoTracks
-{
-    SPELL_CORRECT_TRACKS   = 52160,
-    SPELL_INCORRECT_TRACKS = 52163,
-    SAY_CORRECT_TRACKS     = 28634,
-    SAY_INCORRECT_TRACKS   = 28635
-};
-
-// 52160 - Correct Tracks
-// 52163 - Incorrect Tracks
-class spell_shango_tracks : public SpellScriptLoader
-{
-public:
-   spell_shango_tracks() : SpellScriptLoader("spell_shango_tracks") { }
-
-    class spell_shango_tracks_SpellScript : public SpellScript
-    {
-        PrepareSpellScript(spell_shango_tracks_SpellScript);
-
-        void HandleScript(SpellEffIndex /*effIndex*/)
-        {
-            if (Unit* target = GetHitUnit())
-            {
-                switch (GetSpellInfo()->Id)
-                {
-                    case SPELL_CORRECT_TRACKS:
-                        target->Say(SAY_CORRECT_TRACKS, target);
-                        break;
-                    case SPELL_INCORRECT_TRACKS:
-                        target->Say(SAY_INCORRECT_TRACKS, target);
-                        break;
-                    default:
-                        break;
-                }
-            }
-        }
-
-        void Register() override
-        {
-            OnEffectHitTarget += SpellEffectFn(spell_shango_tracks_SpellScript::HandleScript, EFFECT_0, SPELL_EFFECT_SCRIPT_EFFECT);
-        }
-    };
-
-    SpellScript* GetSpellScript() const override
-    {
-        return new spell_shango_tracks_SpellScript();
-    }
-};
-
 enum ReturnedSevenfold
 {
     SPELL_FREYAS_WARD           = 51845,
@@ -718,6 +662,125 @@ class spell_q12611_deathbolt : public SpellScript
     }
 };
 
+/*######
+## Quest 12683: Burning to Help
+######*/
+
+enum BurningToHelp
+{
+    SPELL_HYDRA_SPUTUM     = 52307
+};
+
+// 52308 - Take Sputum Sample
+class spell_sholazar_take_sputum_sample : public SpellScript
+{
+    PrepareSpellScript(spell_sholazar_take_sputum_sample);
+
+    bool Validate(SpellInfo const* spellInfo) override
+    {
+        return spellInfo->GetEffects().size() > EFFECT_1 && ValidateSpellInfo(
+        {
+            uint32(spellInfo->GetEffect(EFFECT_0).CalcValue()),
+            uint32(spellInfo->GetEffect(EFFECT_1).CalcValue())
+        });
+    }
+
+    SpellCastResult CheckCast()
+    {
+        if (!GetCaster()->HasAura(uint32(GetEffectInfo(EFFECT_1).CalcValue())))
+            return SPELL_FAILED_CASTER_AURASTATE;
+
+        return SPELL_CAST_OK;
+    }
+
+    void HandleDummy(SpellEffIndex /*effIndex*/)
+    {
+        GetCaster()->CastSpell(GetCaster(), uint32(GetEffectValue()));
+    }
+
+    void Register() override
+    {
+        OnCheckCast += SpellCheckCastFn(spell_sholazar_take_sputum_sample::CheckCast);
+        OnEffectHit += SpellEffectFn(spell_sholazar_take_sputum_sample::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
+    }
+};
+
+// 52306 - Sputum Collected
+class spell_sholazar_sputum_collected : public SpellScript
+{
+    PrepareSpellScript(spell_sholazar_sputum_collected);
+
+    bool Validate(SpellInfo const* /*spellInfo*/) override
+    {
+        return ValidateSpellInfo({ SPELL_HYDRA_SPUTUM });
+    }
+
+    void HandleScript(SpellEffIndex /*effIndex*/)
+    {
+        GetCaster()->RemoveAurasDueToSpell(SPELL_HYDRA_SPUTUM);
+    }
+
+    void Register() override
+    {
+        OnEffectHit += SpellEffectFn(spell_sholazar_sputum_collected::HandleScript, EFFECT_1, SPELL_EFFECT_SCRIPT_EFFECT);
+    }
+};
+
+/*######
+## Quest 12735: A Cleansing Song
+######*/
+
+enum ACleansingSong
+{
+    SPELL_SUMMON_SPIRIT_ATHA        = 52954,
+    SPELL_SUMMON_SPIRIT_HAKHALAN    = 52958,
+    SPELL_SUMMON_SPIRIT_KOOSU       = 52959,
+
+    AREA_BITTERTIDE_LAKE            = 4385,
+    AREA_RIVERS_HEART               = 4290,
+    AREA_WINTERGRASP_RIVER          = 4388
+};
+
+// 52941 - Song of Cleansing
+class spell_sholazar_song_of_cleansing : public SpellScript
+{
+    PrepareSpellScript(spell_sholazar_song_of_cleansing);
+
+    bool Validate(SpellInfo const* /*spellInfo*/) override
+    {
+        return ValidateSpellInfo(
+        {
+            SPELL_SUMMON_SPIRIT_ATHA,
+            SPELL_SUMMON_SPIRIT_HAKHALAN,
+            SPELL_SUMMON_SPIRIT_KOOSU
+        });
+    }
+
+    void HandleScript(SpellEffIndex /*effIndex*/)
+    {
+        Unit* caster = GetCaster();
+        switch (caster->GetAreaId())
+        {
+            case AREA_BITTERTIDE_LAKE:
+                caster->CastSpell(caster, SPELL_SUMMON_SPIRIT_ATHA);
+                break;
+            case AREA_RIVERS_HEART:
+                caster->CastSpell(caster, SPELL_SUMMON_SPIRIT_HAKHALAN);
+                break;
+            case AREA_WINTERGRASP_RIVER:
+                caster->CastSpell(caster, SPELL_SUMMON_SPIRIT_KOOSU);
+                break;
+            default:
+                break;
+        }
+    }
+
+    void Register() override
+    {
+        OnEffectHit += SpellEffectFn(spell_sholazar_song_of_cleansing::HandleScript, EFFECT_0, SPELL_EFFECT_SCRIPT_EFFECT);
+    }
+};
+
 void AddSC_sholazar_basin()
 {
     RegisterCreatureAI(npc_engineer_helice);
@@ -727,6 +790,8 @@ void AddSC_sholazar_basin()
     new spell_q12620_the_lifewarden_wrath();
     new spell_q12589_shoot_rjr();
     new npc_haiphoon();
-    new spell_shango_tracks();
     RegisterSpellScript(spell_q12611_deathbolt);
+    RegisterSpellScript(spell_sholazar_take_sputum_sample);
+    RegisterSpellScript(spell_sholazar_sputum_collected);
+    RegisterSpellScript(spell_sholazar_song_of_cleansing);
 }
