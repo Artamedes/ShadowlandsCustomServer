@@ -4818,6 +4818,28 @@ class spell_pri_premonition_damage : public SpellScript
     }
 };
 
+// 341374 : Damnation
+class spell_priest_damnation : public SpellScript
+{
+    PrepareSpellScript(spell_priest_damnation);
+
+    void HandleDummy(SpellEffIndex /*effIndex*/)
+    {
+        if (Unit* caster = GetCaster())
+            if (Unit* target = GetHitUnit())
+            {
+                caster->CastSpell(target, 335467, true); // Devouring Plague
+                caster->CastSpell(target, 34914, true); // Vampirc Touch
+                caster->CastSpell(target, 589, true); // Shadow word: Pain
+            }
+    }
+
+    void Register() override
+    {
+        OnEffectHitTarget += SpellEffectFn(spell_priest_damnation::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
+    }
+};
+
 void AddSC_priest_spell_scripts()
 {
     // Areatriggers
@@ -4931,6 +4953,7 @@ void AddSC_priest_spell_scripts()
     RegisterSpellAndAuraScriptPair(spell_pri_symbol_of_hope, aura_pri_symbol_of_hope);
     RegisterSpellScript(spell_pri_premonition);
     RegisterSpellScript(spell_pri_premonition_damage);
+    RegisterSpellScript(spell_priest_damnation);
 
     // PlayerScripts
     new priest_playerscript();
