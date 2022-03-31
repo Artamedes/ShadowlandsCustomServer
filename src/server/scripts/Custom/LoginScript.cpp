@@ -166,6 +166,7 @@ class LoginScript : public PlayerScript
             }
 
             p_Player->RemoveAurasDueToSpell(141480); // Self stun
+            p_Player->RemoveAurasDueToSpell(163091); // Self stun
         }
 };
 

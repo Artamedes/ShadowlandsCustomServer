@@ -33,6 +33,7 @@ void AddSC_cs_custom();
 void AddSC_NetherlightTemple();
 void AddSC_Niskara();
 void AddSC_item_enhancement_system();
+void AddSC_TelegrusRift();
 
 void AddCustomScripts()
 {
@@ -50,4 +51,5 @@ void AddCustomScripts()
     AddSC_NetherlightTemple();
     AddSC_Niskara();
     AddSC_item_enhancement_system();
+    AddSC_TelegrusRift();
 }

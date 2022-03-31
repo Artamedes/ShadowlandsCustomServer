@@ -197,6 +197,7 @@ class npc_playerscript : public PlayerScript
 
                         sObjectMgr->AddCreatureToGrid(sObjectMgr->GetCreatureData(db_guid));
                     }
+                    l_Menu.EntryID++;
 
                     break;
                 }

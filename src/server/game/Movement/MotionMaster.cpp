@@ -920,7 +920,7 @@ void MotionMaster::MoveCirclePath(float x, float y, float z, float radius, bool 
     Add(new GenericMovementGenerator(std::move(init), EFFECT_MOTION_TYPE, 0));
 }
 
-GenericMovementGenerator* MotionMaster::MoveSmoothPath(uint32 pointId, Position const* pathPoints, size_t pathSize, bool walk, bool fly)
+GenericMovementGenerator* MotionMaster::MoveSmoothPath(uint32 pointId, Position const* pathPoints, size_t pathSize, bool walk, bool fly, Optional<float> velocity)
 {
     Movement::MoveSplineInit init(_owner);
     if (fly)
@@ -929,6 +929,9 @@ GenericMovementGenerator* MotionMaster::MoveSmoothPath(uint32 pointId, Position 
         init.SetUncompressed();
         init.SetSmooth();
     }
+
+    if (velocity)
+        init.SetVelocity(*velocity);
 
     Movement::PointsArray path;
     path.reserve(pathSize);
