@@ -151,6 +151,11 @@ class TC_GAME_API Pet : public Guardian
         Player* GetOwner() const;
 
         std::string GetDebugInfo() const override;
+        //Animal Companion
+        bool IsAnimalCompanion() { return m_animalCompanion; }
+        void SetAnimalCompanion(bool animalCompanion) { m_animalCompanion = animalCompanion; }
+
+        bool m_animalCompanion = false;
 
     protected:
         PetType m_petType;

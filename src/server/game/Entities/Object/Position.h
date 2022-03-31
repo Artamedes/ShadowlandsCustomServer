@@ -79,6 +79,30 @@ public:
     float GetPositionZ() const { return m_positionZ; }
     float GetOrientation() const { return m_orientation; }
 
+    void GetPositionWithDistInFront(float dist, float& x, float& y) const
+    {
+        GetPositionWithDistInOrientation(dist, GetOrientation(), x, y);
+    }
+
+    Position GetPositionWithDistInFront(float dist) const
+    {
+        return GetPositionWithDistInOrientation(dist, GetOrientation());
+    }
+
+    void GetPositionWithDistInOrientation(float dist, float orientation, float& x, float& y) const
+    {
+        x = GetPositionX() + (dist * cos(orientation));
+        y = GetPositionY() + (dist * sin(orientation));
+    }
+
+    Position GetPositionWithDistInOrientation(float dist, float orientation) const
+    {
+        float x = GetPositionX() + (dist * cos(orientation));
+        float y = GetPositionY() + (dist * sin(orientation));
+
+        return Position(x, y, GetPositionZ(), GetOrientation());
+    }
+
     void GetPosition(float &x, float &y) const { x = m_positionX; y = m_positionY; }
     void GetPosition(float &x, float &y, float &z) const { GetPosition(x, y); z = m_positionZ; }
     void GetPosition(float &x, float &y, float &z, float &o) const { GetPosition(x, y, z); o = m_orientation; }

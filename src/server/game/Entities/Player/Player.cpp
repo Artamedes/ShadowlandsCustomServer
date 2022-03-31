@@ -21985,6 +21985,12 @@ void Player::RemovePet(Pet* pet, PetSaveMode mode, bool returnreagent)
         return;
     }
 
+    if (!pet || pet->GetOwnerGUID() != GetGUID())
+        return;
+
+    if (pet->IsAnimalCompanion())
+        SetAnimalCompanion(ObjectGuid::Empty);
+
     pet->CombatStop();
 
     // only if current pet in slot
@@ -28699,6 +28705,7 @@ Pet* Player::SummonPet(uint32 entry, Optional<PetSaveMode> slot, float x, float 
     PetStable& petStable = GetOrInitPetStable();
 
     Pet* pet = new Pet(this, SUMMON_PET);
+    pet->SetAnimalCompanion(false);
 
     if (pet->LoadPetFromDB(this, entry, 0, false, slot))
     {

@@ -2700,6 +2700,13 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
 
         bool MeetPlayerCondition(uint32 conditionId) const;
 
+        //Animal Companion Helped
+        void SetAnimalCompanion(ObjectGuid guid) { petAnimalCompanionGuid = guid; }
+        ObjectGuid GetAnimalCompanion() { return petAnimalCompanionGuid; }
+
+        //Animal Companion
+        ObjectGuid petAnimalCompanionGuid;
+
         bool HasPlayerFlag(PlayerFlags flags) const { return (*m_playerData->PlayerFlags & flags) != 0; }
         void SetPlayerFlag(PlayerFlags flags) { SetUpdateFieldFlagValue(m_values.ModifyValue(&Player::m_playerData).ModifyValue(&UF::PlayerData::PlayerFlags), flags); }
         void RemovePlayerFlag(PlayerFlags flags) { RemoveUpdateFieldFlagValue(m_values.ModifyValue(&Player::m_playerData).ModifyValue(&UF::PlayerData::PlayerFlags), flags); }
