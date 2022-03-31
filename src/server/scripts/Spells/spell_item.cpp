@@ -4407,6 +4407,77 @@ class spell_item_heart_of_azeroth : public AuraScript
     }
 };
 
+// 101056
+class spell_wrath_of_tarecgosa : public AuraScript
+{
+    PrepareAuraScript(spell_wrath_of_tarecgosa);
+
+    enum Tarecgosa
+    {
+        SPELL_WRATH_OF_TERECGOSA_PROC = 101085,
+    };
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        if (!eventInfo.GetDamageInfo())
+            return false;
+
+        bool didDamage = eventInfo.GetDamageInfo()->GetDamage() > 0;
+        float chance = 0.0f;
+
+        if (Unit* actor = eventInfo.GetActor())
+        {
+            if (Player* playerActor = actor->ToPlayer())
+            {
+                //    Mage - 12.5%
+                //    Priest - 13.6%
+                //    Warlock - 17 %
+                //    Druid - 11 %
+                //    Shaman - 17 %
+                //    Other - 10 %
+                switch (playerActor->GetClass())
+                {
+                    case CLASS_MAGE:
+                        chance = 12.5f;
+                        break;
+                    case CLASS_WARLOCK:
+                    case CLASS_SHAMAN:
+                        chance = 17.0f;
+                        break;
+                    case CLASS_DRUID:
+                        chance = 11.0f;
+                        break;
+                    case CLASS_PRIEST:
+                        chance = 13.6f;
+                        break;
+                    default:
+                        chance = 10.0f;
+                        break;
+                }
+            }
+        }
+        return didDamage && roll_chance_f(chance);
+    }
+
+    void HandleProc(AuraEffect* aurEff, ProcEventInfo& eventInfo)
+    {
+        if (Unit* caster = eventInfo.GetActor())
+        {
+            if (Unit* target = eventInfo.GetActionTarget())
+            {
+                int32 damage = eventInfo.GetDamageInfo()->GetDamage();
+                caster->CastSpell(CastSpellTargetArg(target), SPELL_WRATH_OF_TERECGOSA_PROC, CastSpellExtraArgs(true).AddSpellBP0(damage).SetTriggeringAura(aurEff));
+            }
+        }
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_wrath_of_tarecgosa::CheckProc);
+        OnEffectProc += AuraEffectProcFn(spell_wrath_of_tarecgosa::HandleProc, EFFECT_0, SPELL_AURA_DUMMY);
+    }
+};
+
 void AddSC_item_spell_scripts()
 {
     // 23074 Arcanite Dragonling
@@ -4541,4 +4612,5 @@ void AddSC_item_spell_scripts()
     RegisterSpellScript(spell_item_eggnog);
 
     RegisterSpellScript(spell_item_heart_of_azeroth);
+    RegisterSpellScript(spell_wrath_of_tarecgosa);
 }
