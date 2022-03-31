@@ -1005,7 +1005,7 @@ class spell_dru_wild_growth : public SpellScript
         if (!caster)
             return;
 
-        uint8 maxTargets = GetSpellInfo()->GetEffect(EFFECT_2).BasePoints + 1;
+        uint8 maxTargets = 5;
         if (!maxTargets)
             return;
 
