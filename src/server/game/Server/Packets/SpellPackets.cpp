@@ -1023,3 +1023,52 @@ WorldPacket const* WorldPackets::Spells::MissileCancel::Write()
 
     return &_worldPacket;
 }
+
+WorldPacket const* WorldPackets::Spells::LossControlAuraUpdate::Write()
+{
+    _worldPacket << TargetGUID;
+    _worldPacket << uint32(LossControlInfoCount); //LossOfControlInfoCount Always 1?
+    //for (uint32 i = 0; i < LossControlInfoCount; ++i)
+    //{
+    _worldPacket << uint8(AuraSlot);
+    _worldPacket << uint8(EffIndex);
+    _worldPacket << uint8(Type);
+    _worldPacket << uint8(Mechanic);
+    //}
+    return &_worldPacket;
+}
+
+WorldPacket const* WorldPackets::Spells::LossControlAdd::Write()
+{
+    _worldPacket << TargetGUID;
+    _worldPacket << int32(SpellId);
+    _worldPacket << CasterGUID;
+    _worldPacket << uint32(MaxDuration);
+    _worldPacket << uint32(Duration);
+    _worldPacket << uint32(LockoutSchoolMask);    // DurationRemainingLockoutSchoolMask
+    _worldPacket << uint8(Mechanic);
+    _worldPacket << uint8(Type);
+    return &_worldPacket;
+}
+
+WorldPacket const* WorldPackets::Spells::LossControlRemove::Write()
+{
+    _worldPacket << TargetGUID;
+    _worldPacket << int32(SpellId);
+    _worldPacket << CasterGUID;
+    _worldPacket << uint8(Type);
+    return &_worldPacket;
+}
+
+WorldPacket const* WorldPackets::Spells::LossControlClear::Write()
+{
+    _worldPacket << OwnerGUID;
+    // not sure about this packet. just matching struct
+    _worldPacket << int32(0);
+    _worldPacket << int32(0);
+    _worldPacket << int32(0);
+    _worldPacket << int32(0);
+    _worldPacket << int32(0);
+    _worldPacket << int32(0);
+    return &_worldPacket;
+}

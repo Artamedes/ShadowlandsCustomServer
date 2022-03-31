@@ -1056,6 +1056,61 @@ namespace WorldPackets
             int32 SpellID = 0;
         };
 
+
+        class LossControlAuraUpdate final : public ServerPacket
+        {
+        public:
+            LossControlAuraUpdate() : ServerPacket(SMSG_LOSS_OF_CONTROL_AURA_UPDATE, sizeof(ObjectGuid) + 8) { }
+
+            WorldPacket const* Write() override;
+
+            ObjectGuid TargetGUID;
+            uint32 LossControlInfoCount = 0;
+            uint8 AuraSlot = 0;
+            uint8 EffIndex = 0;
+            uint8 Type = 0;
+            uint8 Mechanic = 0;
+        };
+
+        class LossControlClear final : public ServerPacket
+        {
+        public:
+            LossControlClear() : ServerPacket(SMSG_CLEAR_LOSS_OF_CONTROL, 16) { }
+
+            WorldPacket const* Write() override;
+            ObjectGuid OwnerGUID;
+        };
+
+        class LossControlAdd final : public ServerPacket
+        {
+        public:
+            LossControlAdd() : ServerPacket(SMSG_ADD_LOSS_OF_CONTROL, sizeof(ObjectGuid) + sizeof(ObjectGuid) + 18) { }
+
+            WorldPacket const* Write() override;
+
+            ObjectGuid TargetGUID;
+            int32 SpellId;
+            ObjectGuid CasterGUID;
+            uint32 MaxDuration;
+            uint32 Duration;
+            uint32 LockoutSchoolMask;    // DurationRemainingLockoutSchoolMask
+            uint8  Mechanic;
+            uint8 Type;
+        };
+
+        class LossControlRemove final : public ServerPacket
+        {
+        public:
+            LossControlRemove() : ServerPacket(SMSG_REMOVE_LOSS_OF_CONTROL, sizeof(ObjectGuid) + 5) { }
+
+            WorldPacket const* Write() override;
+
+            ObjectGuid TargetGUID;
+            int32 SpellId;
+            ObjectGuid CasterGUID;
+            uint8 Type;
+        };
+
         //class ModifyCooldownRecoverySpeed final : public ServerPacket
         //{
         //public:

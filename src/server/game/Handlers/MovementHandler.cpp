@@ -292,6 +292,14 @@ void WorldSession::HandleMoveTeleportAck(WorldPackets::Movement::MoveTeleportAck
 
 void WorldSession::HandleMovementOpcodes(WorldPackets::Movement::ClientPlayerMovement& packet)
 {
+    if (packet.GetOpcode() == CMSG_MOVE_JUMP)
+        GetPlayer()->SetJumping(true);
+    else if (packet.GetOpcode() == CMSG_MOVE_FALL_LAND)
+        GetPlayer()->SetJumping(false);
+    // player is flying so he can't be jumping
+    else if (packet.GetOpcode() == CMSG_MOVE_SET_FLY)
+        GetPlayer()->SetJumping(false);
+
     HandleMovementOpcode(packet.GetOpcode(), packet.Status);
 }
 

@@ -7543,6 +7543,12 @@ void Player::DuelComplete(DuelCompleteType type)
     ClearComboPoints();
     opponent->ClearComboPoints();
 
+    SendClearLossOfControl();
+    opponent->SendClearLossOfControl();
+
+    opponent->DisablePvpRules();
+    DisablePvpRules();
+
     //cleanups
     SetDuelArbiter(ObjectGuid::Empty);
     SetDuelTeam(0);
@@ -25925,17 +25931,17 @@ void Player::SetClientControl(Unit* target, bool allowMove)
     ASSERT(target);
 
     // don't allow possession to be overridden
-    if (target->HasUnitState(UNIT_STATE_CHARMED) && (GetGUID() != target->GetCharmerGUID()))
-    {
-        TC_LOG_ERROR("entities.player", "Player '%s' attempt to client control '%s', which is charmed by GUID %s",
-                     GetName().c_str(), target->GetName().c_str(), target->GetCharmerGUID().ToString().c_str());
-        return;
-    }
-
-    // still affected by some aura that shouldn't allow control, only allow on last such aura to be removed
-    if (target->HasUnitState(UNIT_STATE_FLEEING | UNIT_STATE_CONFUSED))
-        allowMove = false;
-
+   // if (target->HasUnitState(UNIT_STATE_CHARMED) && (GetGUID() != target->GetCharmerGUID()))
+   // {
+   //     TC_LOG_ERROR("entities.player", "Player '%s' attempt to client control '%s', which is charmed by GUID %s",
+   //                  GetName().c_str(), target->GetName().c_str(), target->GetCharmerGUID().ToString().c_str());
+   //     return;
+   // }
+   //
+   // // still affected by some aura that shouldn't allow control, only allow on last such aura to be removed
+   // if (target->HasUnitState(UNIT_STATE_FLEEING | UNIT_STATE_CONFUSED))
+   //     allowMove = false;
+   //
     WorldPackets::Movement::ControlUpdate data;
     data.Guid = target->GetGUID();
     data.On = allowMove;
@@ -25952,7 +25958,8 @@ void Player::SetClientControl(Unit* target, bool allowMove)
             SetViewpoint(target, true);
     }
 
-    SetMovedUnit(target);
+    if (allowMove)
+        SetMovedUnit(target);
 }
 
 void Player::UpdateZoneDependentAuras(uint32 newZone)

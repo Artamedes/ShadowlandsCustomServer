@@ -140,6 +140,8 @@ class TC_GAME_API Aura
         uint32 GetId() const{ return GetSpellInfo()->Id; }
         Difficulty GetCastDifficulty() const { return m_castDifficulty; }
 
+        void FillMechanicAndControlTypes(Mechanics& mechanics, LossOfControlType& type, SpellEffIndex& effIndex);
+
         ObjectGuid GetCastId() const { return m_castId; }
         ObjectGuid GetCasterGUID() const { return m_casterGuid; }
         ObjectGuid GetCastItemGUID() const { return m_castItemGuid; }

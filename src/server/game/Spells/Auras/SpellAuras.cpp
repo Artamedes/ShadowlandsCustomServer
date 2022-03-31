@@ -294,6 +294,26 @@ void AuraApplication::ClientUpdate(bool remove)
     update.Auras.push_back(auraInfo);
 
     _target->SendMessageToSet(update.Write(), true);
+
+    Aura* auraBase = GetBase();
+    if (auraBase == nullptr || remove)
+        return;
+
+    if (auraBase->GetSpellInfo()->Attributes & SPELL_ATTR0_HIDDEN_CLIENTSIDE)
+        return;
+
+    if (auraBase->GetCaster() == _target)
+        return;
+
+    Mechanics mechanic = Mechanics::MECHANIC_NONE;
+    SpellEffIndex effectIndex = EFFECT_0;
+    LossOfControlType type = LossOfControlType::TypeNone;
+    auraBase->FillMechanicAndControlTypes(mechanic, type, effectIndex);
+
+    if (type == LossOfControlType::TypeNone || mechanic == Mechanics::MECHANIC_NONE)
+        return;
+
+    _target->SendLossOfControlAuraUpdate(this, mechanic, effectIndex, type);
 }
 
 std::string AuraApplication::GetDebugInfo() const
@@ -2705,6 +2725,162 @@ void DynObjAura::FillTargetMap(std::unordered_map<Unit*, uint32>& targets, Unit*
 
         for (Unit* unit : units)
             targets[unit] |= 1 << spellEffectInfo.EffectIndex;
+    }
+}
+
+void Aura::FillMechanicAndControlTypes(Mechanics& mechanics, LossOfControlType& type, SpellEffIndex& effIndex)
+{
+    SpellInfo const* spellInfo = GetSpellInfo();
+
+    auto i = 0;
+    for (auto effect : spellInfo->GetEffects())
+    {
+            switch (effect.Mechanic)
+            {
+            case Mechanics::MECHANIC_CHARM:
+                type = LossOfControlType::TypeCharmed;
+                mechanics = MECHANIC_CHARM;
+                effIndex = SpellEffIndex(i);
+                return;
+            case Mechanics::MECHANIC_DISORIENTED:
+                type = LossOfControlType::TypeDisoriented;
+                mechanics = MECHANIC_DISORIENTED;
+                effIndex = SpellEffIndex(i);
+                return;
+            case Mechanics::MECHANIC_DISARM:
+                type = LossOfControlType::TypeDisarmed;
+                mechanics = MECHANIC_DISARM;
+                effIndex = SpellEffIndex(i);
+                return;
+            case Mechanics::MECHANIC_FEAR:
+                type = LossOfControlType::TypeFeared;
+                mechanics = MECHANIC_FEAR;
+                effIndex = SpellEffIndex(i);
+                return;
+            case Mechanics::MECHANIC_ROOT:
+                type = LossOfControlType::TypeRooted;
+                mechanics = MECHANIC_ROOT;
+                effIndex = SpellEffIndex(i);
+                return;
+            case Mechanics::MECHANIC_SILENCE:
+                type = LossOfControlType::TypeSilenced;
+                mechanics = MECHANIC_SILENCE;
+                effIndex = SpellEffIndex(i);
+                return;
+            case Mechanics::MECHANIC_POLYMORPH:
+                type = LossOfControlType::TypePolymorphed;
+                mechanics = MECHANIC_POLYMORPH;
+                effIndex = SpellEffIndex(i);
+                return;
+            case Mechanics::MECHANIC_BANISH:
+                type = LossOfControlType::TypeBanished;
+                mechanics = MECHANIC_STUN;
+                effIndex = SpellEffIndex(i);
+                return;
+            case Mechanics::MECHANIC_SLEEP:
+                type = LossOfControlType::TypeAsleep;
+                mechanics = MECHANIC_STUN;
+                effIndex = SpellEffIndex(i);
+                return;
+            case Mechanics::MECHANIC_STUN:
+                type = LossOfControlType::TypeStunned;
+                mechanics = MECHANIC_STUN;
+                effIndex = SpellEffIndex(i);
+                return;
+            case Mechanics::MECHANIC_INTERRUPT:
+                type = LossOfControlType::TypeInterrupted;
+                mechanics = MECHANIC_SILENCE;
+                effIndex = SpellEffIndex(i);
+                return;
+            case Mechanics::MECHANIC_SAPPED:
+                type = LossOfControlType::TypeSapped;
+                mechanics = MECHANIC_STUN;
+                effIndex = SpellEffIndex(i);
+                return;
+            case Mechanics::MECHANIC_HORROR:
+                type = LossOfControlType::TypeHorrified;
+                mechanics = MECHANIC_FEAR;
+                effIndex = SpellEffIndex(i);
+                return;
+            case Mechanics::MECHANIC_FREEZE:
+                type = LossOfControlType::TypeFrozen;
+                mechanics = MECHANIC_FEAR;
+                effIndex = SpellEffIndex(i);
+                return;
+            default:
+                break;
+            }
+
+            i++;
+    }
+
+    i = 0;
+
+    // If nothing found, we must find default values depending on AuraType
+    for (auto effect : spellInfo->GetEffects())
+    {
+       // if (spellInfo->GetEffect(i))
+        {
+            switch (effect.ApplyAuraName)
+            {
+            case SPELL_AURA_MOD_ROOT:
+            case SPELL_AURA_MOD_ROOT_2:
+                type = LossOfControlType::TypeRooted;
+                mechanics = Mechanics::MECHANIC_ROOT;
+                effIndex = SpellEffIndex(i);
+                return;
+            case SPELL_AURA_MOD_FEAR:
+                type = LossOfControlType::TypeHorrified;
+                mechanics = MECHANIC_FEAR;
+                effIndex = SpellEffIndex(i);
+                return;
+            case SPELL_AURA_MOD_FEAR_2:
+                type = LossOfControlType::TypeFeared;
+                mechanics = Mechanics::MECHANIC_FEAR;
+                effIndex = SpellEffIndex(i);
+                return;
+            case SPELL_AURA_MOD_STUN:
+                type = LossOfControlType::TypeStunned;
+                mechanics = Mechanics::MECHANIC_STUN;
+                effIndex = SpellEffIndex(i);
+                return;
+            case SPELL_AURA_MOD_SILENCE:
+                type = LossOfControlType::TypeSilenced;
+                mechanics = Mechanics::MECHANIC_SILENCE;
+                effIndex = SpellEffIndex(i);
+                return;
+            case SPELL_AURA_MOD_PACIFY_SILENCE:
+                type = LossOfControlType::TypePolymorphed;
+                mechanics = Mechanics::MECHANIC_POLYMORPH;
+                effIndex = SpellEffIndex(i);
+                return;
+            case SPELL_AURA_MOD_DISARM:
+            case SPELL_AURA_MOD_DISARM_OFFHAND:
+            case SPELL_AURA_MOD_DISARM_RANGED:
+                type = LossOfControlType::TypeDisarmed;
+                mechanics = Mechanics::MECHANIC_DISARM;
+                effIndex = SpellEffIndex(i);
+                return;
+            case SPELL_AURA_MOD_POSSESS:
+                type = LossOfControlType::TypeCharmed;
+                mechanics = Mechanics::MECHANIC_CHARM;
+                effIndex = SpellEffIndex(i);
+                return;
+            case SPELL_AURA_MOD_CHARM:
+                type = LossOfControlType::TypeCharmed;
+                mechanics = Mechanics::MECHANIC_CHARM;
+                effIndex = SpellEffIndex(i);
+                return;
+            case SPELL_AURA_MOD_CONFUSE:
+                type = LossOfControlType::TypeDisoriented;
+                mechanics = Mechanics::MECHANIC_DISORIENTED;
+                effIndex = SpellEffIndex(i);
+                return;
+            default:
+                break;
+            }
+        }
+        ++i;
     }
 }
 

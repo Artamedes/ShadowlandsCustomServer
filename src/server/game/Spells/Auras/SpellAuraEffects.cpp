@@ -2069,6 +2069,7 @@ void AuraEffect::HandleAuraTransform(AuraApplication const* aurApp, uint8 mode, 
         // polymorph case
         if ((mode & AURA_EFFECT_HANDLE_REAL) && target->GetTypeId() == TYPEID_PLAYER && target->IsPolymorphed())
         {
+            target->SendAddLossOfControl(aurApp, Mechanics::MECHANIC_POLYMORPH, LossOfControlType::TypePolymorphed);
             // for players, start regeneration after 1s (in polymorph fast regeneration case)
             // only if caster is Player (after patch 2.4.2)
             if (GetCasterGUID().IsPlayer())
@@ -2086,6 +2087,7 @@ void AuraEffect::HandleAuraTransform(AuraApplication const* aurApp, uint8 mode, 
             target->SetTransformSpell(0);
 
         target->RestoreDisplayId(target->IsMounted());
+        target->SendRemoveLossOfControl(aurApp, LossOfControlType::TypePolymorphed);
 
         // Dragonmaw Illusion (restore mount model)
         if (GetId() == 42016 && target->GetMountDisplayId() == 16314)
@@ -2309,6 +2311,13 @@ void AuraEffect::HandleAuraModDisarm(AuraApplication const* aurApp, uint8 mode, 
         }
     }
 
+    // if disarm effects should be applied, wait to set flag until damage mods are unapplied
+    if (apply)
+        target->SendAddLossOfControl(aurApp, Mechanics::MECHANIC_DISARM, LossOfControlType::TypeDisarmed);
+    else
+        target->SendRemoveLossOfControl(aurApp, LossOfControlType::TypeDisarmed);
+
+
     if (target->GetTypeId() == TYPEID_UNIT && target->ToCreature()->GetCurrentEquipmentId())
         target->UpdateDamagePhysical(attType);
 }
@@ -2331,6 +2340,8 @@ void AuraEffect::HandleAuraModSilence(AuraApplication const* aurApp, uint8 mode,
                 if (spell->m_spellInfo->PreventionType & SPELL_PREVENTION_TYPE_SILENCE)
                     // Stop spells on prepare or casting state
                     target->InterruptSpell(CurrentSpellTypes(i), false);
+
+        target->SendAddLossOfControl(aurApp, MECHANIC_SILENCE, LossOfControlType::TypePacifySilence);
     }
     else
     {
@@ -2339,6 +2350,7 @@ void AuraEffect::HandleAuraModSilence(AuraApplication const* aurApp, uint8 mode,
             return;
 
         target->RemoveUnitFlag(UNIT_FLAG_SILENCED);
+        target->SendRemoveLossOfControl(aurApp, LossOfControlType::TypePacifySilence);
     }
 }
 
@@ -2350,13 +2362,27 @@ void AuraEffect::HandleAuraModPacify(AuraApplication const* aurApp, uint8 mode, 
     Unit* target = aurApp->GetTarget();
 
     if (apply)
+    {
         target->SetUnitFlag(UNIT_FLAG_PACIFIED);
+
+        if (m_spellInfo->HasAura(SPELL_AURA_MOD_PACIFY) && !m_spellInfo->IsPositive())
+            target->SendAddLossOfControl(aurApp, Mechanics::MECHANIC_SILENCE, LossOfControlType::TypePacified);
+        else if (m_spellInfo->HasAura(SPELL_AURA_MOD_PACIFY_SILENCE) && !m_spellInfo->IsPositive())
+            target->SendAddLossOfControl(aurApp, Mechanics::MECHANIC_SILENCE, LossOfControlType::TypePolymorphed);
+
+        target->AttackStop();
+    }
     else
     {
         // do not remove unit flag if there are more than this auraEffect of that kind on unit on unit
         if (target->HasAuraType(SPELL_AURA_MOD_PACIFY) || target->HasAuraType(SPELL_AURA_MOD_PACIFY_SILENCE))
             return;
         target->RemoveUnitFlag(UNIT_FLAG_PACIFIED);
+
+        if (m_spellInfo->HasAura(SPELL_AURA_MOD_PACIFY) && !m_spellInfo->IsPositive())
+            target->SendRemoveLossOfControl(aurApp, LossOfControlType::TypePacified);
+        else if (m_spellInfo->HasAura(SPELL_AURA_MOD_PACIFY_SILENCE) && !m_spellInfo->IsPositive())
+            target->SendRemoveLossOfControl(aurApp, LossOfControlType::TypePolymorphed);
     }
 }
 
@@ -2848,6 +2874,12 @@ void AuraEffect::HandleModConfuse(AuraApplication const* aurApp, uint8 mode, boo
     Unit* target = aurApp->GetTarget();
 
     target->SetControlled(apply, UNIT_STATE_CONFUSED);
+
+    if (apply)
+        target->SendAddLossOfControl(aurApp, Mechanics::MECHANIC_DISORIENTED, LossOfControlType::TypeDisoriented);
+    else
+        target->SendRemoveLossOfControl(aurApp, LossOfControlType::TypeDisoriented);
+
     if (apply)
         target->GetThreatManager().EvaluateSuppressed();
 }
@@ -2860,6 +2892,11 @@ void AuraEffect::HandleModFear(AuraApplication const* aurApp, uint8 mode, bool a
     Unit* target = aurApp->GetTarget();
 
     target->SetControlled(apply, UNIT_STATE_FLEEING);
+
+    if (apply)
+        target->SendAddLossOfControl(aurApp, Mechanics::MECHANIC_FEAR, LossOfControlType::TypeFeared);
+    else
+        target->SendRemoveLossOfControl(aurApp, LossOfControlType::TypeFeared);
 }
 
 void AuraEffect::HandleAuraModStun(AuraApplication const* aurApp, uint8 mode, bool apply) const
@@ -2872,6 +2909,45 @@ void AuraEffect::HandleAuraModStun(AuraApplication const* aurApp, uint8 mode, bo
     target->SetControlled(apply, UNIT_STATE_STUNNED);
     if (apply)
         target->GetThreatManager().EvaluateSuppressed();
+
+    if (apply)
+    {
+        if (m_spellInfo->Mechanic == MECHANIC_SAPPED)
+            target->SendAddLossOfControl(aurApp, Mechanics::MECHANIC_STUN, LossOfControlType::TypeSapped);
+        else if (m_spellInfo->Mechanic == MECHANIC_SLEEP)
+            target->SendAddLossOfControl(aurApp, Mechanics::MECHANIC_STUN, LossOfControlType::TypeAsleep);
+        else if (m_spellInfo->Mechanic == MECHANIC_BANISH)
+            target->SendAddLossOfControl(aurApp, Mechanics::MECHANIC_STUN, LossOfControlType::TypeBanished);
+        else if (m_spellInfo->Mechanic == MECHANIC_SHACKLE)
+            target->SendAddLossOfControl(aurApp, Mechanics::MECHANIC_STUN, LossOfControlType::TypeShackled);
+        else
+        {
+            uint32 effMask = m_spellInfo->GetAllEffectsMechanicMask();
+            if ((effMask & MECHANIC_FREEZE))
+                target->SendAddLossOfControl(aurApp, Mechanics::MECHANIC_STUN, LossOfControlType::TypeFrozen);
+            else
+                target->SendAddLossOfControl(aurApp, Mechanics::MECHANIC_STUN, LossOfControlType::TypeStunned);
+        }
+    }
+    else
+    {
+        if (m_spellInfo->Mechanic == MECHANIC_SAPPED)
+            target->SendRemoveLossOfControl(aurApp, LossOfControlType::TypeStunned);
+        else if (m_spellInfo->Mechanic == MECHANIC_SLEEP)
+            target->SendRemoveLossOfControl(aurApp, LossOfControlType::TypeStunned);
+        else if (m_spellInfo->Mechanic == MECHANIC_BANISH)
+            target->SendRemoveLossOfControl(aurApp, LossOfControlType::TypeStunned);
+        else if (m_spellInfo->Mechanic == MECHANIC_SHACKLE)
+            target->SendRemoveLossOfControl(aurApp, LossOfControlType::TypeStunned);
+        else
+        {
+            uint32 effMask = m_spellInfo->GetAllEffectsMechanicMask();
+            if ((effMask & MECHANIC_FREEZE))
+                target->SendRemoveLossOfControl(aurApp, LossOfControlType::TypeFrozen);
+            else
+                target->SendRemoveLossOfControl(aurApp, LossOfControlType::TypeStunned);
+        }
+    }
 }
 
 void AuraEffect::HandleAuraModRoot(AuraApplication const* aurApp, uint8 mode, bool apply) const
@@ -2882,6 +2958,11 @@ void AuraEffect::HandleAuraModRoot(AuraApplication const* aurApp, uint8 mode, bo
     Unit* target = aurApp->GetTarget();
 
     target->SetControlled(apply, UNIT_STATE_ROOT);
+
+    if (apply)
+        target->SendAddLossOfControl(aurApp, Mechanics::MECHANIC_ROOT, LossOfControlType::TypeRooted);
+    else
+        target->SendRemoveLossOfControl(aurApp, LossOfControlType::TypeRooted);
 }
 
 void AuraEffect::HandlePreventFleeing(AuraApplication const* aurApp, uint8 mode, bool apply) const
@@ -2920,9 +3001,15 @@ void AuraEffect::HandleModPossess(AuraApplication const* aurApp, uint8 mode, boo
     }
 
     if (apply)
+    {
         target->SetCharmedBy(caster, CHARM_TYPE_POSSESS, aurApp);
+        target->SendAddLossOfControl(aurApp, Mechanics::MECHANIC_CHARM, LossOfControlType::TypeCharmed);
+    }
     else
+    {
         target->RemoveCharmedBy(caster);
+        target->SendRemoveLossOfControl(aurApp, LossOfControlType::TypeCharmed);
+    }
 }
 
 void AuraEffect::HandleModPossessPet(AuraApplication const* aurApp, uint8 mode, bool apply) const

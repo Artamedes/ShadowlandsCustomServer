@@ -357,6 +357,33 @@ enum UnitTypeMask
     UNIT_MASK_ACCESSORY             = 0x00000200
 };
 
+enum LossOfControlType
+{
+    TypeNone                = 0,
+    TypeCharmed             = 1,
+    TypeDisoriented         = 2,
+    TypeDisarmed            = 3,
+    TypeDistracted          = 4,
+    TypeFeared              = 5,
+    TypePacify              = 6,
+    TypeRooted              = 7,
+    TypeSilenced            = 8,
+    TypePacifySilence       = 9,
+    TypeAsleep              = 10,
+    TypeSnare               = 11,
+    TypeStunned             = 12,
+    TypeFrozen              = 13,
+    TypeIncapacitated       = 14,
+    TypePolymorphed         = 17,
+    TypeBanished            = 18,
+    TypeShackled            = 20,
+    TypeHorrified           = 24,
+    TypeInterrupted         = 26,
+    TypeDazed               = 27,
+    TypePacified            = 29,
+    TypeSapped              = 30,
+};
+
 struct DiminishingReturn
 {
     DiminishingReturn() : stack(0), hitTime(0), hitCount(DIMINISHING_LEVEL_1) { }
@@ -1336,6 +1363,9 @@ class TC_GAME_API Unit : public WorldObject
         void SetPetNumberForClient(uint32 petNumber) { SetUpdateFieldValue(m_values.ModifyValue(&Unit::m_unitData).ModifyValue(&UF::UnitData::PetNumber), petNumber); }
         void SetPetNameTimestamp(uint32 timestamp) { SetUpdateFieldValue(m_values.ModifyValue(&Unit::m_unitData).ModifyValue(&UF::UnitData::PetNameTimestamp), timestamp); }
 
+        bool IsInAir() const;
+        bool IsInAir(float x, float y, float z);
+
         // all of these are for DIRECT CLIENT CONTROL only
         void SetMovedUnit(Unit* target);
         // returns the unit that this player IS CONTROLLING
@@ -1438,6 +1468,7 @@ class TC_GAME_API Unit : public WorldObject
 
         AuraEffectList const& GetAuraEffectsByType(AuraType type) const { return m_modAuras[type]; }
         AuraEffectList& GetAuraEffectsByType(AuraType type) { return m_modAuras[type]; }
+        AuraEffectList GetAuraEffectsByTypes(std::initializer_list<AuraType> types, ObjectGuid casterGUID = ObjectGuid::Empty) const;
         AuraList      & GetSingleCastAuras()       { return m_scAuras; }
         AuraList const& GetSingleCastAuras() const { return m_scAuras; }
 
@@ -1934,6 +1965,13 @@ class TC_GAME_API Unit : public WorldObject
 
         void GetAttackableUnitListInRange(std::list<Unit*>& list, float fMaxSearchRange) const;
         void GetFriendlyUnitListInRange(std::list<Unit*>& list, float fMaxSearchRange, bool exceptSelf = false) const;
+
+        // Control Alert
+        void SendLossOfControlAuraUpdate(AuraApplication const* aurApp, Mechanics mechanic, SpellEffIndex effIndex, LossOfControlType type);
+        void SendClearLossOfControl();
+        void SendAddLossOfControl(AuraApplication const* aurApp, Mechanics mechanic, LossOfControlType type);
+        void SendRemoveLossOfControl(AuraApplication const* aurApp, LossOfControlType type);
+        void SendLossOfControlAlertInterrupt(ObjectGuid casterGUID, ObjectGuid targetGUID, uint32 spellId, uint32 duration, SpellSchoolMask schoolMaskLocked);
 
         // returns if the unit can't enter combat
         bool IsCombatDisallowed() const { return _isCombatDisallowed; }

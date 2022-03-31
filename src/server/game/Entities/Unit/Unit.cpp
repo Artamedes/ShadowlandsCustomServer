@@ -4626,6 +4626,18 @@ void Unit::_ApplyAllAuraStatMods()
         (*i).second->GetBase()->HandleAllEffects(i->second, AURA_EFFECT_HANDLE_STAT, true);
 }
 
+Player::AuraEffectList Unit::GetAuraEffectsByTypes(std::initializer_list<AuraType> types, ObjectGuid casterGUID /*= ObjectGuid::Empty*/) const
+{
+    Player::AuraEffectList returnAuraEffectList;
+
+    for (AuraType type : types)
+        for (AuraEffect* effect : GetAuraEffectsByType(type))
+            if (casterGUID.IsEmpty() || effect->GetCasterGUID() == casterGUID)
+                returnAuraEffectList.push_back(effect);
+
+    return returnAuraEffectList;
+}
+
 AuraEffect* Unit::GetAuraEffect(uint32 spellId, uint8 effIndex, ObjectGuid caster) const
 {
     AuraApplicationMapBounds range = m_appliedAuras.equal_range(spellId);
@@ -10348,6 +10360,26 @@ void CharmInfo::SetSpellAutocast(SpellInfo const* spellInfo, bool state)
     }
 }
 
+bool Unit::IsInAir() const
+{
+    float ground = GetMap()->GetHeight(GetPhaseShift(), GetPositionX(), GetPositionY(), GetPositionZ());
+
+    // allow +- 0.05 to compensate for minor height imperfections
+    return (G3D::fuzzyGt(GetPositionZ(), ground + 0.05f) || G3D::fuzzyLt(GetPositionZ(), ground - 0.05f));
+}
+
+bool Unit::IsInAir(float x, float y, float z)
+{
+    float offset = 0.0f;
+    if (HasUnitMovementFlag(MOVEMENTFLAG_HOVER))
+        offset = m_unitData->HoverHeight;
+
+    z -= offset;
+
+    float ground = GetMap()->GetHeight(GetPhaseShift(), x, y, z);
+    return (G3D::fuzzyGt(z, ground + 0.05f) || G3D::fuzzyLt(z, ground - 0.05f));
+}
+
 void Unit::SetMovedUnit(Unit* target)
 {
     m_unitMovedByMe->m_playerMovingMe = nullptr;
@@ -11394,6 +11426,8 @@ void Unit::SetMeleeAnimKitId(uint16 animKitId)
             plrVictim->CombatStopWithPets(true);
             plrVictim->DuelComplete(DUEL_INTERRUPTED);
         }
+
+        plrVictim->SendClearLossOfControl();
     }
     else                                                // creature died
     {
@@ -11683,7 +11717,7 @@ void Unit::SetFeared(bool apply)
         SetTarget(ObjectGuid::Empty);
 
         Unit* caster = nullptr;
-        Unit::AuraEffectList const& fearAuras = GetAuraEffectsByType(SPELL_AURA_MOD_FEAR);
+        Unit::AuraEffectList const& fearAuras = GetAuraEffectsByTypes({ SPELL_AURA_MOD_FEAR, SPELL_AURA_MOD_FEAR_2 });
         if (!fearAuras.empty())
             caster = ObjectAccessor::GetUnit(*this, fearAuras.front()->GetCasterGUID());
         if (!caster)
@@ -11702,12 +11736,9 @@ void Unit::SetFeared(bool apply)
         }
     }
 
-    // block / allow control to real player in control (eg charmer)
-    if (GetTypeId() == TYPEID_PLAYER)
-    {
-        if (m_playerMovingMe)
-            m_playerMovingMe->SetClientControl(this, !apply);
-    }
+    if (Player* player = ToPlayer())
+        if (!player->HasUnitState(UNIT_STATE_POSSESSED))
+            player->SetClientControl(this, !apply);
 }
 
 void Unit::SetConfused(bool apply)
@@ -11727,12 +11758,9 @@ void Unit::SetConfused(bool apply)
         }
     }
 
-    // block / allow control to real player in control (eg charmer)
-    if (GetTypeId() == TYPEID_PLAYER)
-    {
-        if (m_playerMovingMe)
-            m_playerMovingMe->SetClientControl(this, !apply);
-    }
+    if (Player* player = ToPlayer())
+        if (!player->HasUnitState(UNIT_STATE_POSSESSED))
+            player->SetClientControl(this, !apply);
 }
 
 bool Unit::SetCharmedBy(Unit* charmer, CharmType type, AuraApplication const* aurApp)
@@ -14265,4 +14293,113 @@ bool Trinity::AreaTriggerDurationPctOrderPred::operator()(const AreaTrigger* a, 
     int32 rA = a->GetDuration() ? a->GetDuration() : 0;
     int32 rB = b->GetDuration() ? b->GetDuration() : 0;
     return m_ascending ? rA < rB : rA > rB;
+}
+
+
+// Control Alert
+void Unit::SendLossOfControlAuraUpdate(AuraApplication const* aurApp, Mechanics mechanic, SpellEffIndex effIndex, LossOfControlType type)
+{
+    if (GetTypeId() != TYPEID_PLAYER)
+        return;
+
+    Aura* aura = aurApp->GetBase();
+    if (aura == nullptr)
+        return;
+
+    if (aura->GetSpellInfo()->HasAttribute(SPELL_ATTR0_HIDDEN_CLIENTSIDE) || aura->GetSpellInfo()->HasAttribute(SPELL_ATTR5_HIDE_DURATION))
+        return;
+
+    if (aurApp->IsPositive())
+        return;
+
+    Unit* target = aurApp->GetTarget();
+    if (!target)
+        return;
+
+    WorldPackets::Spells::LossControlAuraUpdate LossControlAuraUpdate;
+    LossControlAuraUpdate.TargetGUID = target->GetGUID();
+    LossControlAuraUpdate.LossControlInfoCount = uint32(1);
+    LossControlAuraUpdate.AuraSlot = uint8(aurApp->GetSlot());
+    LossControlAuraUpdate.EffIndex = uint8(effIndex);
+    LossControlAuraUpdate.Type = uint8(type);
+    LossControlAuraUpdate.Mechanic = uint8(mechanic);
+
+    ToPlayer()->SendDirectMessage(LossControlAuraUpdate.Write());
+}
+
+void Unit::SendClearLossOfControl()
+{
+    if (GetTypeId() != TYPEID_PLAYER)
+        return;
+
+    WorldPackets::Spells::LossControlClear LossControlClear;
+    LossControlClear.OwnerGUID = this->GetGUID();
+    ToPlayer()->SendDirectMessage(LossControlClear.Write());
+}
+
+void Unit::SendAddLossOfControl(AuraApplication const* aurApp, Mechanics mechanic, LossOfControlType type)
+{
+    if (GetTypeId() != TYPEID_PLAYER)
+        return;
+
+    Aura* aura = aurApp->GetBase();
+    if (aura == nullptr)
+        return;
+
+    if (aura->GetSpellInfo()->HasAttribute(SPELL_ATTR0_HIDDEN_CLIENTSIDE) || aura->GetSpellInfo()->HasAttribute(SPELL_ATTR5_HIDE_DURATION) || aura->GetSpellInfo()->HasAttribute(SPELL_ATTR1_DONT_DISPLAY_IN_AURA_BAR))
+        return;
+
+    if (aurApp->IsPositive())
+        return;
+
+    Unit* target = aurApp->GetTarget();
+    if (!target)
+        return;
+
+    WorldPackets::Spells::LossControlAdd LossControlAdd;
+    LossControlAdd.TargetGUID = target->GetGUID();
+    LossControlAdd.SpellId = int32(aura->GetSpellInfo()->Id);
+    LossControlAdd.CasterGUID = aura->GetCasterGUID();
+    LossControlAdd.MaxDuration = uint32(aura->GetMaxDuration());
+    LossControlAdd.Duration = uint32(aura->GetDuration());
+    LossControlAdd.LockoutSchoolMask = uint32(0);    // DurationRemainingLockoutSchoolMask ??
+    LossControlAdd.Mechanic = uint8(mechanic);
+    LossControlAdd.Type = uint8(type);
+
+    ToPlayer()->SendDirectMessage(LossControlAdd.Write());
+}
+
+void Unit::SendRemoveLossOfControl(AuraApplication const* aurApp, LossOfControlType type)
+{
+    if (GetTypeId() != TYPEID_PLAYER)
+        return;
+
+    Aura* aura = aurApp->GetBase();
+    if (aura == nullptr)
+        return;
+
+    Unit* target = aurApp->GetTarget();
+    if (!target)
+        return;
+
+    WorldPackets::Spells::LossControlRemove LossControlRemove;
+    LossControlRemove.TargetGUID = target->GetGUID();
+    LossControlRemove.SpellId = int32(aura->GetSpellInfo()->Id);
+    LossControlRemove.CasterGUID = aura->GetCasterGUID();
+    LossControlRemove.Type = uint8(type);
+
+    ToPlayer()->SendDirectMessage(LossControlRemove.Write());
+}
+
+void Unit::SendLossOfControlAlertInterrupt(ObjectGuid casterGUID, ObjectGuid targetGUID, uint32 spellId, uint32 duration, SpellSchoolMask schoolMaskLocked)
+{
+    WorldPackets::Spells::LossControlAdd LossControlAdd;
+    LossControlAdd.TargetGUID = targetGUID;
+    LossControlAdd.SpellId = int32(spellId);
+    LossControlAdd.CasterGUID = casterGUID;
+    LossControlAdd.MaxDuration = uint32(duration);
+    LossControlAdd.Duration = uint32(duration);
+    LossControlAdd.LockoutSchoolMask = uint32(schoolMaskLocked);    // DurationRemainingLockoutSchoolMask ??
+    LossControlAdd.Mechanic = uint8(MECHANIC_INTERRUPT);
+    LossControlAdd.Type = uint8(LossOfControlType::TypeSnare);
 }

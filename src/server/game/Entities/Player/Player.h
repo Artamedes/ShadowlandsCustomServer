@@ -2700,6 +2700,9 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
 
         bool MeetPlayerCondition(uint32 conditionId) const;
 
+        void SetJumping(bool jumping) { m_isJumping = jumping; };
+        bool IsJumping() { return m_isJumping; };
+
         //Animal Companion Helped
         void SetAnimalCompanion(ObjectGuid guid) { petAnimalCompanionGuid = guid; }
         ObjectGuid GetAnimalCompanion() { return petAnimalCompanionGuid; }
@@ -3187,6 +3190,8 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         SceneMgr m_sceneMgr;
 
         std::unordered_map<ObjectGuid /*LootObject*/, ObjectGuid /*world object*/> m_AELootView;
+
+        bool m_isJumping = false;
 
         void _InitHonorLevelOnLoadFromDB(uint32 honor, uint32 honorLevel);
         std::unique_ptr<RestMgr> _restMgr;
