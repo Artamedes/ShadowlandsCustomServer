@@ -1023,22 +1023,25 @@ public:
             }
 
             // TODO: Figure out whats going on here and why this won't work.
-            caster->CastSpell(caster, SPELL_PRIEST_SHADOWFORM_STANCE, true);
+            //caster->AddAura(SPELL_PRIEST_SHADOWFORM_STANCE);
+            caster->m_Events.AddEventAtOffset([caster]() {
+                caster->CastSpell(caster, SPELL_PRIEST_SHADOWFORM_STANCE, true);
+                }, 100ms);
         }
 
-		void CalculateAmount(AuraEffect const* /*aurEff*/, int32& amount, bool& /*canBeRecalculated*/)
-		{
-			if (Unit* caster = GetCaster())
-				if (Aura* aura = caster->GetAura(SPELL_PRIEST_VOIDFORM_BUFFS))
-					aura->GetEffect(EFFECT_3)->SetDonePct(0.5f);
-		}
+		//void CalculateAmount(AuraEffect const* /*aurEff*/, int32& amount, bool& /*canBeRecalculated*/)
+		//{
+		//	if (Unit* caster = GetCaster())
+		//		if (Aura* aura = caster->GetAura(SPELL_PRIEST_VOIDFORM_BUFFS))
+		//			aura->GetEffect(EFFECT_3)->SetDonePct(0.5f);
+		//}
 
         void Register() override
         {
             OnEffectPeriodic += AuraEffectPeriodicFn(spell_pri_voidform_AuraScript::HandlePeriodic, EFFECT_4, SPELL_AURA_PERIODIC_DUMMY);
-            AfterEffectRemove += AuraEffectRemoveFn(spell_pri_voidform_AuraScript::HandleRemove, EFFECT_3, SPELL_AURA_MELEE_SLOW, AURA_EFFECT_HANDLE_REAL);
+            AfterEffectRemove += AuraEffectRemoveFn(spell_pri_voidform_AuraScript::HandleRemove, EFFECT_3, SPELL_AURA_MOD_SPELL_CRIT_CHANCE, AURA_EFFECT_HANDLE_REAL);
+			//DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_pri_voidform_AuraScript::CalculateAmount, EFFECT_3, SPELL_AURA_MOD_SPELL_CRIT_CHANCE);
             AfterEffectApply += AuraEffectApplyFn(spell_pri_voidform_AuraScript::HandleApply, EFFECT_4, SPELL_AURA_PERIODIC_DUMMY, AURA_EFFECT_HANDLE_REAL);
-			DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_pri_voidform_AuraScript::CalculateAmount, EFFECT_3, SPELL_AURA_MELEE_SLOW);
         }
     };
 
