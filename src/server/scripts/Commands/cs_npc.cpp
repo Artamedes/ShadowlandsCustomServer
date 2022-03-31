@@ -113,6 +113,12 @@ class npc_playerscript : public PlayerScript
                     MenuDatas& l_Menu = _menuData[player->GetGUID().GetCounter()];
                     if (l_Menu.EntryID == 0)
                         return;
+                    auto l_Exists = sObjectMgr->GetCreatureTemplate(l_Menu.EntryID) != nullptr;
+                    if (l_Exists)
+                    {
+                        ChatHandler(player).PSendSysMessage("Prevented overwrite creature %u", l_Menu.EntryID);
+                        return;
+                    }
 
                     CloseGossipMenuFor(player);
 
@@ -146,7 +152,6 @@ class npc_playerscript : public PlayerScript
                         return;
                     }
 
-                    auto l_Exists = sObjectMgr->GetCreatureTemplate(l_Menu.EntryID) != nullptr;
 
                     sObjectMgr->LoadCreatureTemplate(result->Fetch());
                     sObjectMgr->LoadCreatureTemplateModel(l_Menu.EntryID);

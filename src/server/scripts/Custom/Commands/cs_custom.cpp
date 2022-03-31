@@ -10,6 +10,10 @@
 #include "../MagicStone.h"
 #include "../CustomInstanceScript.h"
 
+#ifdef WIN32
+#include "windows.h"
+#endif
+
 using namespace Trinity::ChatCommands;
 
 struct CreateItemPlayerData
@@ -1876,6 +1880,11 @@ public:
             { "createitem",       HandleCreateItemCommand, rbac::RBAC_PERM_COMMAND_RELOAD_ALL_ITEM, Console::No },
             { "magicstone",       HandleReloadMagicStone,  rbac::RBAC_PERM_COMMAND_RELOAD_ALL_ITEM, Console::No },
             { "instance_respawn", HandleReloadInstanceRespawn,  rbac::RBAC_PERM_COMMAND_RELOAD_ALL_ITEM, Console::No },
+
+#ifdef WIN32
+            { "gpscopy", HandleGPSCopyCommand,  rbac::RBAC_PERM_COMMAND_RELOAD_ALL_ITEM, Console::No },
+#endif
+
         };
         return commandTable;
     }
@@ -1889,6 +1898,27 @@ public:
         return true;
     }
 
+#ifdef WIN32
+    static bool HandleGPSCopyCommand(ChatHandler* handler)
+    {
+        std::ostringstream ss;
+
+        auto player = handler->GetPlayer();
+
+        ss << "{ " << player->GetPositionX() << "f, " << player->GetPositionY() << "f, " << player->GetPositionZ() << "f, " << player->GetOrientation() << "f }, ";
+        const char* output = ss.str().c_str();
+        const size_t len = strlen(output) + 1;
+        HGLOBAL hMem = GlobalAlloc(GMEM_MOVEABLE, len);
+        memcpy(GlobalLock(hMem), output, len);
+        GlobalUnlock(hMem);
+        OpenClipboard(0);
+        EmptyClipboard();
+        SetClipboardData(CF_TEXT, hMem);
+        CloseClipboard();
+        handler->SendSysMessage(ss.str().c_str());
+        return true;
+    }
+#endif
 
     static bool HandleReloadInstanceRespawn(ChatHandler* handler, char const* /*args*/)
     {
