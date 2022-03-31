@@ -441,6 +441,9 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
         void RemoveFromWorld() override;
 
         void GetNearPoint2D(WorldObject const* searcher, float& x, float& y, float distance, float absAngle) const;
+        void GetNearPoint2D(float& x, float& y, float distance, float absAngle) const;
+        void GetNearPointROG(WorldObject const* searcher, float& x, float& y, float& z, float searcher_size, float distance2d, float absAngle) const;
+        void GetNearPointROG(Position& pos, float searcherSize, float distance2D, float absAngle) const;
         void GetNearPoint(WorldObject const* searcher, float& x, float& y, float& z, float distance2d, float absAngle) const;
         void GetClosePoint(float& x, float& y, float& z, float size, float distance2d = 0, float relAngle = 0) const;
         void MovePosition(Position &pos, float dist, float angle);
@@ -450,6 +453,8 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
         Position GetRandomNearPosition(float radius);
         void GetContactPoint(WorldObject const* obj, float& x, float& y, float& z, float distance2d = CONTACT_DISTANCE) const;
 
+        float GetObjectSize() const;
+        float GetExactObjectSize() const;
         virtual float GetCombatReach() const { return 0.0f; } // overridden (only) in Unit
         void UpdateGroundPositionZ(float x, float y, float &z) const;
         void UpdateAllowedPositionZ(float x, float y, float &z, float* groundZ = nullptr) const;

@@ -1006,6 +1006,34 @@ void Aura::DropChargeDelayed(uint32 delay, AuraRemoveMode removeMode)
     owner->m_Events.AddEvent(m_dropEvent, owner->m_Events.CalculateTime(Milliseconds(delay)));
 }
 
+uint32 Aura::GetMaxStackAmount() const
+{
+    uint32 maxStackAmount = GetSpellInfo()->StackAmount;
+
+    if (GetCaster())
+        if (Player* playerCaster = GetCaster()->ToPlayer())
+            playerCaster->ApplySpellMod(GetSpellInfo(), SpellModOp::MaxAuraStacks, maxStackAmount);
+
+    return maxStackAmount;
+}
+
+void Aura::SetMaxStackAmount()
+{
+    int32 maxStackAmount = GetMaxStackAmount();
+    bool refresh = maxStackAmount >= GetStackAmount();
+
+    // Update stack amount
+    SetStackAmount(maxStackAmount);
+
+    if (refresh)
+    {
+        RefreshTimers(true);
+        SetCharges(CalcMaxCharges());
+    }
+
+    SetNeedClientUpdateForTargets();
+}
+
 void Aura::SetStackAmount(uint8 stackAmount)
 {
     m_stackAmount = stackAmount;

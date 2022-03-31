@@ -56,6 +56,7 @@
 #include "Vehicle.h"
 #include "VMapManager2.h"
 #include "World.h"
+#include "ScriptMgr.h"
 #include <G3D/Vector3.h>
 #include <sstream>
 
@@ -1909,6 +1910,10 @@ TempSummon* Map::SummonCreature(uint32 entry, Position const& pos, SummonPropert
     Trinity::AIRelocationNotifier notifier(*summon);
     Cell::VisitAllObjects(summon, notifier, GetVisibilityRange());
 
+    if (summoner)
+        if (Player* player = summoner->ToPlayer())
+            sScriptMgr->OnCreatureSummoned(player, summon);
+
     return summon;
 }
 
@@ -3287,6 +3292,91 @@ void WorldObject::GetNearPoint2D(WorldObject const* searcher, float& x, float& y
     Trinity::NormalizeMapCoord(y);
 }
 
+void WorldObject::GetNearPoint2D(float& x, float& y, float distance2d, float absAngle) const
+{
+    x = GetPositionX() + (GetObjectSize() + distance2d) * std::cos(absAngle);
+    y = GetPositionY() + (GetObjectSize() + distance2d) * std::sin(absAngle);
+
+    Trinity::NormalizeMapCoord(x);
+    Trinity::NormalizeMapCoord(y);
+}
+
+void WorldObject::GetNearPointROG(WorldObject const* /*searcher*/, float& x, float& y, float& z, float searcher_size, float distance2d, float absAngle) const
+{
+    GetNearPoint2D(x, y, distance2d + searcher_size, absAngle);
+    z = GetPositionZ();
+    // Should "searcher" be used instead of "this" when updating z coordinate ?
+    UpdateAllowedPositionZ(x, y, z);
+
+    // if detection disabled, return first point
+    if (!sWorld->getBoolConfig(CONFIG_DETECT_POS_COLLISION))
+        return;
+
+    // return if the point is already in LoS
+    if (IsWithinLOS(x, y, z))
+        return;
+
+    // remember first point
+    float first_x = x;
+    float first_y = y;
+    float first_z = z;
+
+    // loop in a circle to look for a point in LoS using small steps
+    for (float angle = float(M_PI) / 8; angle < float(M_PI) * 2; angle += float(M_PI) / 8)
+    {
+        GetNearPoint2D(x, y, distance2d + searcher_size, absAngle + angle);
+        z = GetPositionZ();
+        UpdateAllowedPositionZ(x, y, z);
+        if (IsWithinLOS(x, y, z))
+            return;
+    }
+
+    // still not in LoS, give up and return first position found
+    x = first_x;
+    y = first_y;
+    z = first_z;
+}
+
+void WorldObject::GetNearPointROG(Position& pos, float searcherSize, float distance2D, float absAngle) const
+{
+    GetNearPoint2D(pos.m_positionX, pos.m_positionY, distance2D + searcherSize, absAngle);
+    pos.m_positionZ = GetPositionZ();
+
+    // Should "searcher" be used instead of "this" when updating z coordinate ?
+    UpdateAllowedPositionZ(pos.m_positionX, pos.m_positionY, pos.m_positionZ);
+
+    // if detection disabled, return first point
+    if (!sWorld->getBoolConfig(WorldBoolConfigs::CONFIG_DETECT_POS_COLLISION))
+        return;
+
+    // return if the point is already in LoS
+    if (IsWithinLOS(pos.m_positionX, pos.m_positionY, pos.m_positionZ))
+        return;
+
+    // Remember first point
+    float firstX = pos.m_positionX;
+    float firstY = pos.m_positionY;
+    float firstZ = pos.m_positionZ;
+
+    // Loop in a circle to look for a point in LoS using small steps
+    for (float currentAngle = float(M_PI) / 8; currentAngle < float(M_PI) * 2; currentAngle += float(M_PI) / 8)
+    {
+        GetNearPoint2D(pos.m_positionX, pos.m_positionY, distance2D + searcherSize, absAngle + currentAngle);
+
+        pos.m_positionZ = GetPositionZ();
+
+        UpdateAllowedPositionZ(pos.m_positionX, pos.m_positionY, pos.m_positionZ);
+
+        if (IsWithinLOS(pos.m_positionX, pos.m_positionY, pos.m_positionZ))
+            return;
+    }
+
+    // Still not in LoS, give up and return first position found
+    pos.m_positionX = firstX;
+    pos.m_positionY = firstY;
+    pos.m_positionZ = firstZ;
+}
+
 void WorldObject::GetNearPoint(WorldObject const* searcher, float& x, float& y, float& z, float distance2d, float absAngle) const
 {
     GetNearPoint2D(searcher, x, y, distance2d, absAngle);
@@ -3355,6 +3445,19 @@ void WorldObject::GetContactPoint(WorldObject const* obj, float& x, float& y, fl
     GetNearPoint(obj, x, y, z, distance2d, GetAbsoluteAngle(obj));
 }
 
+float WorldObject::GetObjectSize() const
+{
+    if (auto unit = ToUnit())
+        return unit->GetCombatReach();
+    return 0.388999998569489f;
+}
+
+float WorldObject::GetExactObjectSize() const
+{
+    if (auto unit = ToUnit())
+        return unit->GetBoundingRadius();
+    return 0.388999998569489f;
+}
 void WorldObject::MovePosition(Position &pos, float dist, float angle)
 {
     angle += GetOrientation();

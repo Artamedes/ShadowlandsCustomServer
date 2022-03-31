@@ -851,6 +851,11 @@ class TC_GAME_API PlayerScript : public ScriptObject
         // Called when a player choose a response from a PlayerChoice
         virtual void OnPlayerChoiceResponse(Player* /*player*/, uint32 /*choiceId*/, uint32 /*responseId*/) { }
 
+        virtual void OnCreatureSummoned(Player* /*player*/, Creature* /*creature*/) { }
+
+        // Called when summoned creature has been unsummoned
+        virtual void OnCreatureUnsummoned(Player* /*player*/, Creature* /*creature*/) { }
+
         // When the player learn a spell
         // @player  : Player instance
         // @spellID : Learned spell ID
@@ -1296,6 +1301,8 @@ class TC_GAME_API ScriptMgr
         void OnPlayerSpellRemoved(Player* player, uint32 spellID);
         void OnPlayerInterruptedSpellCast(Player* player, Spell* spell);
         void OnSpellInterrupt(Player* player, Unit* source, Spell* spell, Spell* interruptingSpell);
+        void OnCreatureSummoned(Player* player, Creature* creature);
+        void OnCreatureUnsummoned(Player* player, Creature* creature);
         void OnSummonCreatureDealsDamage(Player* player, Unit* creature, Unit* victim, int32 damage);
         void OnChanneledSpellSuccessfulCast(Player* player, Spell* spell);
 

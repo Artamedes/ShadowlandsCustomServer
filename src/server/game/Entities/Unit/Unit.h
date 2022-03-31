@@ -828,6 +828,7 @@ class TC_GAME_API Unit : public WorldObject
         float GetMeleeRange(Unit const* target) const;
         virtual SpellSchoolMask GetMeleeDamageSchoolMask(WeaponAttackType attackType = BASE_ATTACK) const = 0;
         bool IsWithinBoundaryRadius(const Unit* obj) const;
+        void GetRandomContactPoint(const Unit* target, float& x, float& y, float& z, float distance2dMin, float distance2dMax) const;
         bool m_canDualWield;
 
         void _addAttacker(Unit* pAttacker);                  // must be called only from Unit::Attack(Unit*)
@@ -969,6 +970,7 @@ class TC_GAME_API Unit : public WorldObject
         void RemoveUnitFlag3(UnitFlags3 flags) { RemoveUpdateFieldFlagValue(m_values.ModifyValue(&Unit::m_unitData).ModifyValue(&UF::UnitData::Flags3), flags); }
         void ReplaceAllUnitFlags3(UnitFlags3 flags) { SetUpdateFieldValue(m_values.ModifyValue(&Unit::m_unitData).ModifyValue(&UF::UnitData::Flags3), flags); }
 
+        void SetInteractSpellID(uint32 SpellID) { SetUpdateFieldValue(m_values.ModifyValue(&Unit::m_unitData).ModifyValue(&UF::UnitData::InteractSpellID), SpellID); }
         void SetCreatedBySpell(int32 spellId) { SetUpdateFieldValue(m_values.ModifyValue(&Unit::m_unitData).ModifyValue(&UF::UnitData::CreatedBySpell), spellId); }
 
         Emote GetEmoteState() const { return Emote(*m_unitData->EmoteState); }
@@ -1379,6 +1381,8 @@ class TC_GAME_API Unit : public WorldObject
         void RemoveOwnedAura(Aura* aura, AuraRemoveMode removeMode = AURA_REMOVE_BY_DEFAULT);
 
         Aura* GetOwnedAura(uint32 spellId, ObjectGuid casterGUID = ObjectGuid::Empty, ObjectGuid itemCasterGUID = ObjectGuid::Empty, uint32 reqEffMask = 0, Aura* except = nullptr) const;
+
+        std::vector<Aura*> GetOwnedAurasByTypes(std::initializer_list<AuraType> types) const;
 
         // m_appliedAuras container management
         AuraApplicationMap      & GetAppliedAuras()       { return m_appliedAuras; }

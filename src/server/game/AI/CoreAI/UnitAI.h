@@ -130,6 +130,8 @@ public:
         bool _inLos;
 };
 
+TC_GAME_API void SortByDistanceTo(Unit* reference, std::list<Unit*>& targets);
+
 class TC_GAME_API UnitAI
 {
     protected:

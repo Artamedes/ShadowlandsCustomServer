@@ -2203,6 +2203,16 @@ void ScriptMgr::OnSpellInterrupt(Player* player, Unit* source, Spell* spell, Spe
     FOREACH_SCRIPT(PlayerScript)->OnSpellInterrupt(player, source, spell, interruptingSpell);
 }
 
+void ScriptMgr::OnCreatureSummoned(Player* player, Creature* creature)
+{
+    FOREACH_SCRIPT(PlayerScript)->OnCreatureSummoned(player, creature);
+}
+
+void ScriptMgr::OnCreatureUnsummoned(Player* player, Creature* creature)
+{
+    FOREACH_SCRIPT(PlayerScript)->OnCreatureUnsummoned(player, creature);
+}
+
 void ScriptMgr::OnSummonCreatureDealsDamage(Player* player, Unit* creature, Unit* victim, int32 damage)
 {
     FOREACH_SCRIPT(PlayerScript)->OnSummonCreatureDealsDamage(player, creature, victim, damage);

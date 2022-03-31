@@ -30,6 +30,7 @@
 #include "SmoothPhasing.h"
 #include <boost/container/small_vector.hpp>
 #include <sstream>
+#include "ScriptMgr.h"
 
 TempSummon::TempSummon(SummonPropertiesEntry const* properties, WorldObject* owner, bool isWorldObject) :
 Creature(isWorldObject), m_Properties(properties), m_type(TEMPSUMMON_MANUAL_DESPAWN),
@@ -321,6 +322,8 @@ void TempSummon::UnSummon(uint32 msTime)
 
     if (WorldObject * owner = GetSummoner())
     {
+        if (owner->IsPlayer())
+            sScriptMgr->OnCreatureUnsummoned(owner->ToPlayer(), this);
         if (owner->GetTypeId() == TYPEID_UNIT && owner->ToCreature()->IsAIEnabled())
             owner->ToCreature()->AI()->SummonedCreatureDespawn(this);
         if (auto unit = owner->ToUnit())

@@ -234,6 +234,16 @@ SpellScript::OnPrepareHandler::OnPrepareHandler(SpellOnPrepareFnType OnPrepareHa
     _onPrepareHandlerScript = OnPrepareHandlerScript;
 }
 
+void SpellScript::OnSummonHandler::Call(SpellScript* spellScript, Creature* creature)
+{
+    (spellScript->*_onSummonHandlerScript)(creature);
+}
+
+SpellScript::OnSummonHandler::OnSummonHandler(SpellOnSummonFnType OnSummonHandlerScript)
+{
+    _onSummonHandlerScript = OnSummonHandlerScript;
+}
+
 void SpellScript::OnTakePowerHandler::Call(SpellScript* spellScript, SpellPowerCost& powerCost)
 {
     (spellScript->*_onTakePowerHandlerScript)(powerCost);

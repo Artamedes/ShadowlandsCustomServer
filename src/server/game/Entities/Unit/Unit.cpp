@@ -666,6 +666,19 @@ bool Unit::IsWithinBoundaryRadius(const Unit* obj) const
     return IsInDist(obj, objBoundaryRadius);
 }
 
+void Unit::GetRandomContactPoint(const Unit* obj, float& x, float& y, float& z, float distance2dMin, float distance2dMax) const
+{
+    float combat_reach = GetCombatReach();
+    if (combat_reach < 0.1f) // sometimes bugged for players
+        combat_reach = 1.5f;
+
+    uint32 attacker_number = uint32(getAttackers().size());
+    if (attacker_number > 0)
+        --attacker_number;
+    GetNearPointROG(obj, x, y, z, obj->GetCombatReach(), distance2dMin + (distance2dMax - distance2dMin) * (float)rand_norm(),
+        GetAngle(obj) + (attacker_number ? (static_cast<float>(M_PI / 2) - static_cast<float>(M_PI) * (float)rand_norm()) * float(attacker_number) / combat_reach * 0.3f : 0));
+}
+
 void Unit::SetVisibleAura(AuraApplication* aurApp)
 {
     m_visibleAuras.insert(aurApp);
@@ -3800,6 +3813,25 @@ void Unit::RemoveOwnedAura(Aura* aura, AuraRemoveMode removeMode)
     }
 
     ABORT();
+}
+
+std::vector<Aura*> Unit::GetOwnedAurasByTypes(std::initializer_list<AuraType> types) const
+{
+    std::vector<Aura*> returnAuras;
+
+    for (auto itr : m_ownedAuras)
+    {
+        for (AuraType type : types)
+        {
+            if (itr.second->HasEffectType(type))
+            {
+                returnAuras.push_back(itr.second);
+                break;
+            }
+        }
+    }
+
+    return returnAuras;
 }
 
 Aura* Unit::GetOwnedAura(uint32 spellId, ObjectGuid casterGUID, ObjectGuid itemCasterGUID, uint32 reqEffMask, Aura* except) const

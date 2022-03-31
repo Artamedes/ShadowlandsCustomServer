@@ -2042,6 +2042,7 @@ void Spell::EffectSummonType()
     {
         summon->SetCreatorGUID(caster->GetGUID());
         ExecuteLogEffectSummonObject(SpellEffectName(effectInfo->Effect), summon);
+        CallScriptOnSummonHandlers(summon);
     }
 }
 
@@ -2677,6 +2678,7 @@ void Spell::EffectSummonPet()
     }
 
     ExecuteLogEffectSummonObject(SpellEffectName(effectInfo->Effect), pet);
+    CallScriptOnSummonHandlers(pet);
 }
 
 void Spell::EffectLearnPetSpell()
@@ -4894,6 +4896,8 @@ void Spell::SummonGuardian(SpellEffectInfo const* effect, uint32 entry, SummonPr
             else
                 summon->SetDisplayId(1126); // modelid1
         }
+
+        CallScriptOnSummonHandlers(summon);
 
         ExecuteLogEffectSummonObject(SpellEffectName(effect->Effect), summon);
     }

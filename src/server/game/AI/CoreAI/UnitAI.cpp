@@ -473,3 +473,8 @@ bool FarthestTargetSelector::operator()(Unit const* target) const
 
     return true;
 }
+
+void SortByDistanceTo(Unit* reference, std::list<Unit*>& targets)
+{
+    targets.sort(Trinity::ObjectDistanceOrderPred(reference));
+}

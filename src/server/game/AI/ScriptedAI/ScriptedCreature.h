@@ -412,4 +412,12 @@ inline void GetPlayerListInGrid(Container& container, WorldObject* source, float
     source->GetPlayerListInGrid(container, maxSearchRange, alive);
 }
 
+TC_GAME_API void GetPositionWithDistInOrientation(Position* pUnit, float dist, float orientation, float& x, float& y);
+TC_GAME_API void GetPositionWithDistInOrientation(Position* fromPos, float dist, float orientation, Position& movePosition);
+
+TC_GAME_API void GetRandPosFromCenterInDist(float centerX, float centerY, float dist, float& x, float& y);
+TC_GAME_API void GetRandPosFromCenterInDist(Position* centerPos, float dist, Position& movePosition);
+
+TC_GAME_API void GetPositionWithDistInFront(Position* centerPos, float dist, Position& movePosition);
+
 #endif // TRINITY_SCRIPTEDCREATURE_H

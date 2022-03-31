@@ -834,6 +834,7 @@ class TC_GAME_API Spell
         void CallScriptBeforeHitHandlers(SpellMissInfo missInfo);
         void CallScriptOnHitHandlers();
         void CallScriptAfterHitHandlers();
+        void CallScriptOnSummonHandlers(Creature* creature);
     public:
         void CallScriptCalcCritChanceHandlers(Unit const* victim, float& chance);
     protected:

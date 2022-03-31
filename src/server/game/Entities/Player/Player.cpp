@@ -22008,6 +22008,8 @@ void Player::RemovePet(Pet* pet, PetSaveMode mode, bool returnreagent)
     pet->AddObjectToRemoveList();
     pet->m_removed = true;
 
+    sScriptMgr->OnCreatureUnsummoned(this, pet);
+
     if (pet->isControlled())
     {
         WorldPackets::Pet::PetSpells petSpellsPacket;
@@ -27351,7 +27353,16 @@ void Player::ResummonPetTemporaryUnSummonedIfAny()
 
     Pet* NewPet = new Pet(this);
     if (!NewPet->LoadPetFromDB(this, 0, m_temporaryUnsummonedPetNumber, true))
+    {
         delete NewPet;
+        NewPet = nullptr;
+    }
+
+    if (NewPet)
+    {
+        if (NewPet)
+            sScriptMgr->OnCreatureSummoned(this, NewPet);
+    }
 
     m_temporaryUnsummonedPetNumber = 0;
 }
@@ -28784,6 +28795,8 @@ Pet* Player::SummonPet(uint32 entry, Optional<PetSaveMode> slot, float x, float 
 
     if (isNew)
         *isNew = true;
+
+    sScriptMgr->OnCreatureSummoned(this, pet);
 
     return pet;
 }

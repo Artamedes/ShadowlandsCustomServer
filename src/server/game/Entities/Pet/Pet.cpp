@@ -38,6 +38,7 @@
 #include "Util.h"
 #include "World.h"
 #include "WorldSession.h"
+#include "ScriptMgr.h"
 #include <sstream>
 
 #define PET_XP_FACTOR 0.05f
@@ -440,6 +441,7 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petEntry, uint32 petnumber, bool c
             owner->PetSpellInitialize();
         }
 
+        sScriptMgr->OnCreatureSummoned(owner, this);
         SetGroupUpdateFlag(GROUP_UPDATE_PET_FULL);
 
         if (getPetType() == HUNTER_PET)
@@ -723,7 +725,11 @@ void Pet::Update(uint32 diff)
 
 void Pet::Remove(PetSaveMode mode, bool returnreagent)
 {
-    GetOwner()->RemovePet(this, mode, returnreagent);
+    if (Player* owner = GetOwner())
+    {
+        owner->RemovePet(this, mode, returnreagent);
+        sScriptMgr->OnCreatureUnsummoned(owner, this);
+    }
 }
 
 void Pet::GivePetXP(uint32 xp)

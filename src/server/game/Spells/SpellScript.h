@@ -209,6 +209,7 @@ enum SpellScriptHookType
     SPELL_SCRIPT_HOOK_AFTER_HIT,
     SPELL_SCRIPT_HOOK_OBJECT_AREA_TARGET_SELECT,
     SPELL_SCRIPT_HOOK_OBJECT_TARGET_SELECT,
+    SPELL_SCRIPT_HOOK_ON_SUMMON,
     SPELL_SCRIPT_HOOK_DESTINATION_TARGET_SELECT,
     SPELL_SCRIPT_HOOK_CHECK_CAST,
     SPELL_SCRIPT_HOOK_BEFORE_CAST,
@@ -243,6 +244,7 @@ class TC_GAME_API SpellScript : public _SpellScript
             typedef void(CLASSNAME::*SpellOnTakePowerFnType)(SpellPowerCost& powerCost); \
             typedef void(CLASSNAME::*SpellOnCalcCastTimeFnType)(int32& castTime); \
             typedef void(CLASSNAME::*SpellOnPrepareFnType)(); \
+            typedef void(CLASSNAME::*SpellOnSummonFnType)(Creature* summon); \
             typedef void(CLASSNAME::*SpellDestinationTargetSelectFnType)(SpellDestination&);
 
         SPELLSCRIPT_FUNCTION_TYPE_DEFINES(SpellScript)
@@ -420,6 +422,16 @@ class TC_GAME_API SpellScript : public _SpellScript
                 SpellDestinationTargetSelectFnType DestinationTargetSelectHandlerScript;
         };
 
+
+        class TC_GAME_API OnSummonHandler
+        {
+        public:
+            OnSummonHandler(SpellOnSummonFnType OnSummonHandlerScript);
+            void Call(SpellScript* spellScript, Creature* creature);
+        private:
+            SpellOnSummonFnType _onSummonHandlerScript;
+        };
+
         class TC_GAME_API OnCalculateResistAbsorbHandler
         {
         public:
@@ -437,6 +449,7 @@ class TC_GAME_API SpellScript : public _SpellScript
         #define SPELLSCRIPT_FUNCTION_CAST_DEFINES(CLASSNAME) \
         class CastHandlerFunction : public SpellScript::CastHandler { public: explicit CastHandlerFunction(SpellCastFnType _pCastHandlerScript) : SpellScript::CastHandler((SpellScript::SpellCastFnType)_pCastHandlerScript) { } }; \
         class OnPrepareHandlerFunction : public SpellScript::OnPrepareHandler { public: OnPrepareHandlerFunction(SpellOnPrepareFnType _onPrepareHandlerScript) : SpellScript::OnPrepareHandler((SpellScript::SpellOnPrepareFnType)_onPrepareHandlerScript) {} }; \
+        class OnSummonHandlerFunction : public SpellScript::OnSummonHandler { public: OnSummonHandlerFunction(SpellOnSummonFnType _onSummonHandlerScript) : SpellScript::OnSummonHandler((SpellScript::SpellOnSummonFnType)_onSummonHandlerScript) {} }; \
         class OnTakePowerHandlerFunction : public SpellScript::OnTakePowerHandler { public: OnTakePowerHandlerFunction(SpellOnTakePowerFnType _onTakePowerHandlerScript) : SpellScript::OnTakePowerHandler((SpellScript::SpellOnTakePowerFnType)_onTakePowerHandlerScript) {} }; \
         class OnCalcCastTimeHandlerFunction : public SpellScript::OnCalcCastTimeHandler { public: OnCalcCastTimeHandlerFunction(SpellOnCalcCastTimeFnType _onCalcCastTimeHandlerScript) : SpellScript::OnCalcCastTimeHandler((SpellScript::SpellOnCalcCastTimeFnType)_onCalcCastTimeHandlerScript) {} }; \
         class CheckCastHandlerFunction : public SpellScript::CheckCastHandler { public: explicit CheckCastHandlerFunction(SpellCheckCastFnType _checkCastHandlerScript) : SpellScript::CheckCastHandler((SpellScript::SpellCheckCastFnType)_checkCastHandlerScript) { } }; \
@@ -540,6 +553,11 @@ class TC_GAME_API SpellScript : public _SpellScript
         // where function is void function(SpellDestination& target)
         HookList<DestinationTargetSelectHandler> OnDestinationTargetSelect;
         #define SpellDestinationTargetSelectFn(F, I, N) DestinationTargetSelectHandlerFunction(&F, I, N)
+        
+        // example: OnEffectSummon += SpellOnEffectSummonFn(class::function);
+        // where function is void function(Creature* creature)
+        HookList<OnSummonHandler> OnEffectSummon;
+        #define SpellOnEffectSummonFn(F) OnSummonHandlerFunction(&F)
 
         // example: OnTakePower += SpellOnTakePowerFn(class::function);
         // where function is void function(SpellPowerCost& powerCost)
