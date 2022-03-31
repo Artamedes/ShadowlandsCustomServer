@@ -194,6 +194,9 @@ void TempSummon::InitStats(uint32 duration)
         if (owner->GetTypeId() == TYPEID_PLAYER)
             m_ControlledByPlayer = true;
 
+    if (owner)
+        owner->AddSummonedCreature(GetGUID(), GetEntry());
+
     if (!m_Properties)
         return;
 
@@ -320,10 +323,14 @@ void TempSummon::UnSummon(uint32 msTime)
     {
         if (owner->GetTypeId() == TYPEID_UNIT && owner->ToCreature()->IsAIEnabled())
             owner->ToCreature()->AI()->SummonedCreatureDespawn(this);
+        if (auto unit = owner->ToUnit())
+            unit->RemoveSummonedCreature(GetGUID());
         else if (owner->GetTypeId() == TYPEID_GAMEOBJECT && owner->ToGameObject()->AI())
             owner->ToGameObject()->AI()->SummonedCreatureDespawn(this);
     }
 
+    if (AI())
+        AI()->JustUnsummoned();
     AddObjectToRemoveList();
 }
 

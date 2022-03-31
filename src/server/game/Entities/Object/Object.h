@@ -446,7 +446,7 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
         void MovePosition(Position &pos, float dist, float angle);
         Position GetNearPosition(float dist, float angle);
         void MovePositionToFirstCollision(Position &pos, float dist, float angle);
-        Position GetFirstCollisionPosition(float dist, float angle);
+        Position GetFirstCollisionPosition(float dist, float angle = 0.0f);
         Position GetRandomNearPosition(float radius);
         void GetContactPoint(WorldObject const* obj, float& x, float& y, float& z, float distance2d = CONTACT_DISTANCE) const;
 

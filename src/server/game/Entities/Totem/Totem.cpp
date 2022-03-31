@@ -111,6 +111,7 @@ void Totem::UnSummon(uint32 msTime)
     {
         if (GetOwner()->m_SummonSlot[i] == GetGUID())
         {
+            GetOwner()->RemoveSummonedCreature(GetGUID());
             GetOwner()->m_SummonSlot[i].Clear();
             break;
         }

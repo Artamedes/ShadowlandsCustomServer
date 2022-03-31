@@ -1,5 +1,5 @@
 /*
- * This file is part of the TrinityCore Project. See AUTHORS file for Copyright information
+ * Copyright (C) 2008-2018 TrinityCore <https://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -25,98 +25,134 @@
 #include "CombatAI.h"
 #include "GridNotifiersImpl.h"
 #include "MotionMaster.h"
+#include "ScriptedCreature.h"
+#include "SpellInfo.h"
 
 enum DeathKnightSpells
 {
-    SPELL_DK_SUMMON_GARGOYLE_1      = 49206,
-    SPELL_DK_SUMMON_GARGOYLE_2      = 50514,
-    SPELL_DK_DISMISS_GARGOYLE       = 50515,
-    SPELL_DK_SANCTUARY              = 54661
+    SPELL_GARGOYLE_STRIKE                       = 51963,
+    SPELL_DK_RISEN_GHOUL_SELF_STUN              = 47466,
+
+    // Risen Skulker
+    SPELL_GEN_SKELETON_SPAWN_EFFECT             = 85374,
+    SPELL_DK_RAISE_SKULKER                      = 196910,
+    SPELL_DK_RAISE_SKULKER_VISUAL               = 198837,
+    SPELL_DK_SKULKER_SHOT                       = 212423,
 };
 
-struct npc_pet_dk_ebon_gargoyle : CasterAI
+// NPC - 27829 
+class npc_pet_dk_ebon_gargoyle : public ScriptedAI
 {
-    npc_pet_dk_ebon_gargoyle(Creature* creature) : CasterAI(creature) { }
+public:
+    npc_pet_dk_ebon_gargoyle(Creature* creature) : ScriptedAI(creature) {}
 
-    void InitializeAI() override
+    void IsSummonedBy(WorldObject* owner) override
     {
-        CasterAI::InitializeAI();
-        ObjectGuid ownerGuid = me->GetOwnerGUID();
-        if (!ownerGuid)
+        if (!owner)
             return;
 
-        // Find victim of Summon Gargoyle spell
-        std::list<Unit*> targets;
-        Trinity::AnyUnfriendlyUnitInObjectRangeCheck u_check(me, me, 30.0f);
-        Trinity::UnitListSearcher<Trinity::AnyUnfriendlyUnitInObjectRangeCheck> searcher(me, targets, u_check);
-        Cell::VisitAllObjects(me, searcher, 30.0f);
-        for (Unit* target : targets)
+        me->SetCanFly(true);
+
+        owner->Variables.Set<uint8>("RUNE_REST", 0);
+    }
+
+    void UpdateAI(uint32 /*diff*/) override
+    {
+        Unit* owner = me->GetOwner();
+        if (!owner)
+            return;
+
+        if (me->IsInEvadeMode() && !owner->IsInCombat())
+            return;
+
+        Unit* target = GetTarget();
+        ObjectGuid newtargetGUID = owner->GetTarget();
+        if ((newtargetGUID.IsEmpty() || newtargetGUID == _targetGUID) && (target && me->IsValidAttackTarget(target)))
         {
-            if (target->HasAura(SPELL_DK_SUMMON_GARGOYLE_1, ownerGuid))
-            {
-                me->Attack(target, false);
-                break;
-            }
+            CastSpellOnTarget(owner, target);
+            return;
+        }
+
+        if (Unit* newTarget = ObjectAccessor::GetUnit(*me, newtargetGUID))
+        {
+            if (target != newTarget && me->IsValidAttackTarget(newTarget) && owner->IsInCombat())
+
+                target = newTarget;
+            CastSpellOnTarget(owner, target);
+            return;
+        }
+
+        EnterEvadeMode(EVADE_REASON_NO_HOSTILES);
+    }
+
+    void EnterEvadeMode(EvadeReason /*reason*/) override
+    {
+        if (me->IsInEvadeMode() || !me->IsAlive())
+            return;
+
+        Unit* owner = me->GetOwner();
+
+        me->CombatStop(true);
+        me->SetReactState(REACT_ASSIST);
+        if (owner && !me->HasUnitState(UNIT_STATE_FOLLOW))
+        {
+            me->GetMotionMaster()->Clear();
+            me->GetMotionMaster()->MoveFollow(owner, PET_FOLLOW_DIST, me->GetFollowAngle(), MovementSlot::MOTION_SLOT_ACTIVE);
         }
     }
 
-    void JustDied(Unit* /*killer*/) override
+private:
+    Unit * GetTarget() const
     {
-        // Stop Feeding Gargoyle when it dies
-        if (Unit* owner = me->GetOwner())
-            owner->RemoveAurasDueToSpell(SPELL_DK_SUMMON_GARGOYLE_2);
+        return ObjectAccessor::GetUnit(*me, _targetGUID);
     }
 
-    // Fly away when dismissed
-    void SpellHit(WorldObject* caster, SpellInfo const* spellInfo) override
+    void CastSpellOnTarget(Unit* owner, Unit* target)
     {
-        if (spellInfo->Id != SPELL_DK_DISMISS_GARGOYLE || !me->IsAlive())
-            return;
-
-        Unit* owner = me->GetOwner();
-        if (!owner || owner != caster)
-            return;
-
-        // Stop Fighting
-        me->SetUnitFlag(UNIT_FLAG_NON_ATTACKABLE);
-
-        // Sanctuary
-        me->CastSpell(me, SPELL_DK_SANCTUARY, true);
-        me->SetReactState(REACT_PASSIVE);
-
-        //! HACK: Creature's can't have MOVEMENTFLAG_FLYING
-        // Fly Away
-        me->SetCanFly(true);
-        me->SetSpeedRate(MOVE_FLIGHT, 0.75f);
-        me->SetSpeedRate(MOVE_RUN, 0.75f);
-        float x = me->GetPositionX() + 20 * std::cos(me->GetOrientation());
-        float y = me->GetPositionY() + 20 * std::sin(me->GetOrientation());
-        float z = me->GetPositionZ() + 40;
-        me->GetMotionMaster()->Clear();
-        me->GetMotionMaster()->MovePoint(0, x, y, z);
-
-        // Despawn as soon as possible
-        me->DespawnOrUnsummon(Seconds(4));
+        if (target && me->IsValidAttackTarget(target))
+        {
+            _targetGUID = target->GetGUID();
+            me->SetTarget(_targetGUID);
+            if (me->GetDistance(target->GetPosition()) > 40.f)
+            {
+                me->GetMotionMaster()->MoveChase(target);
+                return;
+            }
+            me->CastSpell(target, SPELL_GARGOYLE_STRIKE, false);
+        }
     }
+
+    ObjectGuid _targetGUID;
 };
 
-struct npc_pet_dk_guardian : public AggressorAI
+// Risen Skulker : 99541
+// Last Update 8.0.1 Build 28153
+struct npc_pet_dk_risen_skulker : public ScriptedAI
 {
-    npc_pet_dk_guardian(Creature* creature) : AggressorAI(creature) { }
+    npc_pet_dk_risen_skulker(Creature* creature) : ScriptedAI(creature) { }
 
-    bool CanAIAttack(Unit const* target) const override
+    void IsSummonedBy(WorldObject* summoner) override
     {
-        if (!target)
-            return false;
-        Unit* owner = me->GetOwner();
-        if (owner && !target->IsInCombatWith(owner))
-            return false;
-        return AggressorAI::CanAIAttack(target);
+        Player* player = summoner->ToPlayer();
+        if (!player)
+            return;
+
+        DoCastSelf(SPELL_DK_RISEN_GHOUL_SELF_STUN, true);
+        DoCast(me, SPELL_DK_RAISE_SKULKER_VISUAL, true);
+        DoCast(me, SPELL_GEN_SKELETON_SPAWN_EFFECT, true);
+    }
+
+    void UpdateAI(uint32 /*diff*/) override
+    {
+        if (!UpdateVictim())
+            return;
+
+        DoSpellAttackIfReady(SPELL_DK_SKULKER_SHOT);
     }
 };
 
 void AddSC_deathknight_pet_scripts()
 {
     RegisterCreatureAI(npc_pet_dk_ebon_gargoyle);
-    RegisterCreatureAI(npc_pet_dk_guardian);
+    RegisterCreatureAI(npc_pet_dk_risen_skulker);
 }

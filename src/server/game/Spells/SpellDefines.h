@@ -332,6 +332,9 @@ public:
 
     void SetTargetFlag(SpellCastTargetFlags flag) { m_targetMask |= flag; }
 
+    ObjectGuid GetOrigUnitTargetGUID() const;
+    void SetOrigUnitTarget(Unit* target);
+
     ObjectGuid GetUnitTargetGUID() const;
     Unit* GetUnitTarget() const;
     void SetUnitTarget(Unit* target);
@@ -397,6 +400,7 @@ private:
     Item* m_itemTarget;
 
     // object GUID/etc, can be used always
+    ObjectGuid m_origObjectTargetGUID;
     ObjectGuid m_objectTargetGUID;
     ObjectGuid m_itemTargetGUID;
     uint32 m_itemTargetEntry;
@@ -479,6 +483,16 @@ struct TC_GAME_API CastSpellExtraArgs
 
 struct SpellCastVisual
 {
+    SpellCastVisual()
+    {
+
+    }
+    SpellCastVisual(uint32 p_SpellXSpellVisualID, uint32 p_ScriptVisualID)
+    {
+        SpellXSpellVisualID = p_SpellXSpellVisualID;
+        ScriptVisualID = p_ScriptVisualID;
+    }
+
     uint32 SpellXSpellVisualID = 0;
     uint32 ScriptVisualID = 0;
 

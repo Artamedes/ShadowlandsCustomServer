@@ -21,6 +21,7 @@
 #include "Object.h"
 #include "CombatManager.h"
 #include "SpellAuraDefines.h"
+#include "TaskScheduler.h"
 #include "ThreatManager.h"
 #include "Timer.h"
 #include "UnitDefines.h"
@@ -1247,6 +1248,7 @@ class TC_GAME_API Unit : public WorldObject
         bool IsWalking() const { return m_movementInfo.HasMovementFlag(MOVEMENTFLAG_WALKING); }
         bool IsHovering() const { return m_movementInfo.HasMovementFlag(MOVEMENTFLAG_HOVER); }
         bool SetWalk(bool enable);
+        bool SetFlying(bool enable);
         bool SetDisableGravity(bool disable, bool updateAnimTier = true);
         bool SetFall(bool enable);
         bool SetSwim(bool enable);
@@ -1574,6 +1576,11 @@ class TC_GAME_API Unit : public WorldObject
 
         ObjectGuid m_SummonSlot[MAX_SUMMON_SLOT];
         ObjectGuid m_ObjectSlot[MAX_GAMEOBJECT_SLOT];
+
+        void AddSummonedCreature(ObjectGuid guid, uint32 entry);
+        void RemoveSummonedCreature(ObjectGuid guid);
+        Creature* GetSummonedCreatureByEntry(uint32 entry);
+        void UnsummonCreatureByEntry(uint32 entry, uint32 ms = 0);
 
         ShapeshiftForm GetShapeshiftForm() const { return ShapeshiftForm(*m_unitData->ShapeshiftForm); }
         void SetShapeshiftForm(ShapeshiftForm form);
@@ -1917,6 +1924,8 @@ class TC_GAME_API Unit : public WorldObject
         uint16 GetVirtualItemAppearanceMod(uint32 slot) const;
         void SetVirtualItem(uint32 slot, uint32 itemId, uint16 appearanceModId = 0, uint16 itemVisual = 0);
 
+        TaskScheduler& GetScheduler() { return _scheduler; }
+
         void GetAttackableUnitListInRange(std::list<Unit*>& list, float fMaxSearchRange) const;
         void GetFriendlyUnitListInRange(std::list<Unit*>& list, float fMaxSearchRange, bool exceptSelf = false) const;
 
@@ -2110,10 +2119,14 @@ class TC_GAME_API Unit : public WorldObject
 
         SpellHistory* _spellHistory;
 
+        TaskScheduler _scheduler;
+
         std::unique_ptr<MovementForces> _movementForces;
         PositionUpdateInfo _positionUpdateInfo;
 
         bool _isCombatDisallowed;
+
+        std::unordered_map<ObjectGuid, uint32/*entry*/> m_SummonedCreatures;
 };
 
 namespace Trinity

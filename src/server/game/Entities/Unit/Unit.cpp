@@ -305,7 +305,7 @@ Unit::Unit(bool isWorldObject) :
     i_motionMaster(new MotionMaster(this)), m_regenTimer(0), m_vehicle(nullptr),
     m_vehicleKit(nullptr), m_unitTypeMask(UNIT_MASK_NONE), m_Diminishing(), m_combatManager(this),
     m_threatManager(this), m_aiLocked(false), _playHoverAnim(false), _aiAnimKitId(0), _movementAnimKitId(0), _meleeAnimKitId(0),
-    _spellHistory(new SpellHistory(this))
+    _spellHistory(new SpellHistory(this)), _scheduler(this)
 {
     m_objectType |= TYPEMASK_UNIT;
     m_objectTypeId = TYPEID_UNIT;
@@ -415,6 +415,7 @@ Unit::~Unit()
         }
 
     m_Events.KillAllEvents(true);
+    _scheduler.CancelAll();
 
     _DeleteRemovedAuras();
 
@@ -443,6 +444,8 @@ void Unit::Update(uint32 p_time)
     // Spells must be processed with event system BEFORE they go to _UpdateSpells.
     // Or else we may have some SPELL_STATE_FINISHED spells stalled in pointers, that is bad.
     m_Events.Update(p_time);
+
+    _scheduler.Update(p_time);
 
     if (!IsInWorld())
         return;
@@ -2009,8 +2012,28 @@ void Unit::HandleEmoteCommand(Emote emoteId, Player* target /*=nullptr*/, Trinit
         if (!((*i)->GetMiscValue() & healInfo.GetSpellInfo()->SchoolMask))
             continue;
 
+        auto aura = (*i);
+
+        AuraApplication const* aurApp = aura->GetBase()->GetApplicationOfTarget(healInfo.GetTarget()->GetGUID());
+        if (!aurApp)
+            continue;
+
         // Max Amount can be absorbed by this aura
-        int32 currentAbsorb = (*i)->GetAmount();
+        int32 currentAbsorb = aura->GetAmount();
+
+        // aura with infinite absorb amount - let the scripts handle absorbtion amount, set here to 0 for safety
+        if (currentAbsorb < 0)
+            currentAbsorb = 0;
+
+        uint32 tempAbsorb = uint32(currentAbsorb);
+
+        bool defaultPrevented = false;
+
+        aura->GetBase()->CallScriptEffectHealAbsorbHandlers(aura, aurApp, healInfo, tempAbsorb, defaultPrevented);
+        currentAbsorb = tempAbsorb;
+
+        if (defaultPrevented)
+            continue;
 
         // Found empty aura (impossible but..)
         if (currentAbsorb <= 0)
@@ -3131,6 +3154,36 @@ bool Unit::IsMovementPreventedByCasting() const
 
     // prohibit movement for all other spell casts
     return true;
+}
+
+void Unit::AddSummonedCreature(ObjectGuid guid, uint32 entry)
+{
+    m_SummonedCreatures[guid] = entry;
+}
+
+void Unit::RemoveSummonedCreature(ObjectGuid guid)
+{
+    m_SummonedCreatures.erase(guid);
+}
+
+Creature* Unit::GetSummonedCreatureByEntry(uint32 entry)
+{
+    auto itr = std::find_if(m_SummonedCreatures.begin(), m_SummonedCreatures.end(), [entry](auto& p)
+        {
+            return p.second == entry;
+        });
+
+    if (itr == m_SummonedCreatures.end())
+        return nullptr;
+
+    return ObjectAccessor::GetCreature(*this, itr->first);
+}
+
+void Unit::UnsummonCreatureByEntry(uint32 entry, uint32 ms/* = 0*/)
+{
+    if (Creature* creature = GetSummonedCreatureByEntry(entry))
+        if (TempSummon* tempSummon = creature->ToTempSummon())
+            tempSummon->UnSummon(ms);
 }
 
 bool Unit::CanCastSpellWhileMoving(SpellInfo const* spellInfo) const
@@ -13121,6 +13174,19 @@ bool Unit::SetWalk(bool enable)
     WorldPackets::Movement::MoveSplineSetFlag packet(walkModeTable[enable]);
     packet.MoverGUID = GetGUID();
     SendMessageToSet(packet.Write(), true);
+    return true;
+}
+
+bool Unit::SetFlying(bool enable)
+{
+    if (enable == IsFlying())
+        return false;
+
+    if (enable)
+        AddUnitMovementFlag(MOVEMENTFLAG_FLYING);
+    else
+        RemoveUnitMovementFlag(MOVEMENTFLAG_FLYING);
+
     return true;
 }
 

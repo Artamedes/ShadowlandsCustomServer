@@ -1363,6 +1363,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         std::vector<Item*> GetItemListByEntry(uint32 entry, bool inBankAlso = false) const;
         Item* GetItemByPos(uint16 pos) const;
         Item* GetItemByPos(uint8 bag, uint8 slot) const;
+        Item* GetEquippedItem(EquipmentSlots slot) const;
         Item* GetUseableItemByPos(uint8 bag, uint8 slot) const;
         Bag*  GetBagByPos(uint8 slot) const;
         std::vector<Item*> GetCraftingReagentItemsToDeposit();
@@ -1740,6 +1741,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void SendRespecWipeConfirm(ObjectGuid const& guid, uint32 cost) const;
         void RegenerateAll();
         void Regenerate(Powers power);
+        void SendPowerUpdate(Powers power, int32 amount);
         void RegenerateHealth();
         void setRegenTimerCount(uint32 time) {m_regenTimerCount = time;}
         void setWeaponChangeTimer(uint32 time) {m_weaponChangeTimer = time;}
@@ -2601,6 +2603,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         uint32 GetRuneBaseCooldown() const;
         void SetRuneCooldown(uint8 index, uint32 cooldown);
         void ResyncRunes() const;
+        void AddRunePower(uint8 index) const;
         void InitRunes();
 
         void SendRespondInspectAchievements(Player* player) const;

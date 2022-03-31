@@ -461,6 +461,7 @@ class TC_GAME_API SpellInfo
         bool HasOnlyDamageEffects() const;
         bool HasEffectMechanic(Mechanics mechanic) const;
         bool IsLossOfControl() const;
+        bool IsCanBeStolen() const;
         bool HasTargetType(::Targets target) const;
 
         bool HasAttribute(SpellAttr0 attribute) const { return !!(Attributes & attribute); }

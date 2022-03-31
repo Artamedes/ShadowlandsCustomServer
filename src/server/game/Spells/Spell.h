@@ -588,6 +588,7 @@ class TC_GAME_API Spell
         bool IsProcDisabled() const;
         bool IsChannelActive() const;
         bool IsAutoActionResetSpell() const;
+        bool IsDarkSimulacrum() const;
         bool IsPositive() const;
 
         bool IsTriggeredByAura(SpellInfo const* auraSpellInfo) const { return (auraSpellInfo == m_triggeredByAuraSpell); }
@@ -826,6 +827,7 @@ class TC_GAME_API Spell
         void CallScriptOnCastHandlers();
         void CallScriptAfterCastHandlers();
         void CallScriptOnTakePowerHandlers(SpellPowerCost& powerCost);
+        void CallScriptOnCalcCastTimeHandlers();
         SpellCastResult CallScriptCheckCastHandlers();
         bool CallScriptEffectHandlers(SpellEffIndex effIndex, SpellEffectHandleMode mode);
         void CallScriptSuccessfulDispel(SpellEffIndex effIndex);

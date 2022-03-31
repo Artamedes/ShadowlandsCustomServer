@@ -1416,6 +1416,71 @@ bool SpellInfo::IsLossOfControl() const
     return false;
 }
 
+
+bool SpellInfo::IsCanBeStolen() const
+{
+    // Special rules, some aren't using mana but can be stolen
+    switch (Id)
+    {
+        case 633:   // Lay on Hands
+        case 22812: // Barkskin
+        case 24275: // Hammer of Wrath
+        case 158392: // Hammer of Wrath
+        case 31935: // Avenger's Shield
+        case 53563: // Beacon of Light
+            return false;
+        case 642:   // Divine Shield
+        case 5484:  // Howl of Terror
+        case 12472: // Icy Veins
+        case 51490: // Thunderstorm
+        case 64044: // Psychic Horror
+            return true;
+        default:
+            break;
+    }
+
+    // Some of the rules for those spells that can be stolen by Dark Simulacrum
+    // Spells should use mana
+    bool useMana = false;
+    for (auto powerCost : PowerCosts)
+    {
+        if (powerCost->PowerType == POWER_MANA)
+        {
+            useMana = true;
+            break;
+        }
+    }
+
+    if (!useMana)
+        return false;
+
+    for (SpellEffectInfo const& effectInfo : GetEffects())
+    {
+        switch (effectInfo.Effect)
+        {
+            case SPELL_EFFECT_SUMMON:
+            case SPELL_EFFECT_SUMMON_PET:
+            case SPELL_EFFECT_CAST_BUTTON:
+            case SPELL_EFFECT_TAMECREATURE:
+            case SPELL_EFFECT_WEAPON_PERCENT_DAMAGE:
+                return false;
+            case SPELL_EFFECT_SCHOOL_DAMAGE:
+                if (DmgClass == SPELL_DAMAGE_CLASS_MELEE)
+                    return false;
+                break;
+            case SPELL_EFFECT_APPLY_AURA:
+            case SPELL_EFFECT_APPLY_AREA_AURA_SUMMONS:
+                if (effectInfo.ApplyAuraName == SPELL_AURA_MOD_SHAPESHIFT)
+                    return false;
+                break;
+            default:
+                break;
+        }
+    }
+
+    return true;
+}
+
 bool SpellInfo::HasEffectMechanic(Mechanics mechanic) const
 {
     uint64 allEffectMask = 0;

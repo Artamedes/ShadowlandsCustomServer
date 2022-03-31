@@ -113,6 +113,9 @@ class TC_GAME_API CreatureAI : public UnitAI
         // Called when the creature is killed
         virtual void JustDied(Unit* /*killer*/) { }
 
+        // Called when the creature is unsummoned
+        virtual void JustUnsummoned() { }
+
         // Called when the creature kills a unit
         virtual void KilledUnit(Unit* /*victim*/) { }
 

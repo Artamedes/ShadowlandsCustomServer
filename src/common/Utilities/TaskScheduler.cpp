@@ -1,5 +1,5 @@
 /*
- * This file is part of the TrinityCore Project. See AUTHORS file for Copyright information
+ * Copyright (C) 2008-2018 TrinityCore <https://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -97,7 +97,7 @@ void TaskScheduler::Dispatch(success_t const& callback)
 
         // Perfect forward the context to the handler
         // Use weak references to catch destruction before callbacks.
-        TaskContext context(_task_holder.Pop(), std::weak_ptr<TaskScheduler>(self_reference));
+        TaskContext context(_task_holder.Pop(), std::weak_ptr<TaskScheduler>(self_reference), GetSchedulerUnit(), GetSchedulerGameObject());
 
         // Invoke the context
         context.Invoke();
@@ -160,6 +160,17 @@ void TaskScheduler::TaskQueue::ModifyIf(std::function<bool(TaskContainer const&)
 bool TaskScheduler::TaskQueue::IsEmpty() const
 {
     return container.empty();
+}
+
+bool TaskScheduler::TaskQueue::AnyOf(std::function<bool(TaskContainer const&)> const& filter) const
+{
+    for (auto itr = container.begin(); itr != container.end();)
+        if (filter(*itr))
+            return true;
+        else
+            ++itr;
+
+    return false;
 }
 
 TaskContext& TaskContext::Dispatch(std::function<TaskScheduler&(TaskScheduler&)> const& apply)
@@ -226,5 +237,10 @@ void TaskContext::AssertOnConsumed() const
 
 void TaskContext::Invoke()
 {
-    _task->_task(*this);
+    try
+    {
+        if (_task)
+            _task->_task(*this);
+    }
+    catch (...) { }
 }

@@ -1897,6 +1897,26 @@ void Player::Regenerate(Powers power)
     }
 }
 
+void Player::SendPowerUpdate(Powers power, int32 amount)
+{
+    if (!IsInWorld())
+        return;
+
+    uint32 powerIndex = GetPowerIndex(power);
+    if (powerIndex == MAX_POWERS || powerIndex >= MAX_POWERS_PER_CLASS)
+        return;
+
+    if (amount > GetMaxPower(power))
+        amount = GetMaxPower(power);
+
+    WorldPackets::Combat::PowerUpdatePower powUpd(amount, power);
+    WorldPackets::Combat::PowerUpdate upd;
+    upd.Guid = GetGUID();
+    upd.Powers.reserve(1);
+    upd.Powers.emplace_back(powUpd);
+    SendDirectMessage(upd.Write());
+}
+
 void Player::RegenerateHealth()
 {
     uint32 curValue = GetHealth();
@@ -10153,6 +10173,11 @@ Item* Player::GetItemByPos(uint8 bag, uint8 slot) const
     if (Bag* pBag = GetBagByPos(bag))
         return pBag->GetItemByPos(slot);
     return nullptr;
+}
+
+Item* Player::GetEquippedItem(EquipmentSlots slot) const
+{
+    return GetItemByPos(INVENTORY_SLOT_BAG_0, slot);
 }
 
 //Does additional check for disarmed weapons
@@ -26514,6 +26539,13 @@ void Player::ResyncRunes() const
     for (uint32 i = 0; i < maxRunes; ++i)
         data.Runes.Cooldowns.push_back(uint8((baseCd - float(GetRuneCooldown(i))) / baseCd * 255));
 
+    SendDirectMessage(data.Write());
+}
+
+void Player::AddRunePower(uint8 index) const
+{
+    WorldPackets::Spells::AddRunePower data;
+    data.AddedRunesMask = (1 << index);
     SendDirectMessage(data.Write());
 }
 

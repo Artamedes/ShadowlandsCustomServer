@@ -2656,3 +2656,21 @@ void DynObjAura::FillTargetMap(std::unordered_map<Unit*, uint32>& targets, Unit*
             targets[unit] |= 1 << spellEffectInfo.EffectIndex;
     }
 }
+
+void Aura::CallScriptEffectHealAbsorbHandlers(AuraEffect* aurEff, AuraApplication const* aurApp, HealInfo& healInfo, uint32& absorbAmount, bool& defaultPrevented)
+{
+    for (auto scritr = m_loadedScripts.begin(); scritr != m_loadedScripts.end(); ++scritr)
+    {
+        (*scritr)->_PrepareScriptCall(AURA_SCRIPT_HOOK_EFFECT_ABSORB, aurApp);
+        auto effEndItr = (*scritr)->OnEffectHealAbsorb.end(), effItr = (*scritr)->OnEffectHealAbsorb.begin();
+        for (; effItr != effEndItr; ++effItr)
+
+            if (effItr->IsEffectAffected(m_spellInfo, aurEff->GetEffIndex()))
+                effItr->Call(*scritr, aurEff, healInfo, absorbAmount);
+
+        if (!defaultPrevented)
+            defaultPrevented = (*scritr)->_IsDefaultActionPrevented();
+
+        (*scritr)->_FinishScriptCall();
+    }
+}

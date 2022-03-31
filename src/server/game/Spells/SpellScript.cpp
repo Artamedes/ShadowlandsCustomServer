@@ -244,6 +244,16 @@ SpellScript::OnTakePowerHandler::OnTakePowerHandler(SpellOnTakePowerFnType OnTak
     _onTakePowerHandlerScript = OnTakePowerHandlerScript;
 }
 
+void SpellScript::OnCalcCastTimeHandler::Call(SpellScript* spellScript, int32& castTime)
+{
+    (spellScript->*_onCalcCastTimeHandlerScript)(castTime);
+}
+
+SpellScript::OnCalcCastTimeHandler::OnCalcCastTimeHandler(SpellOnCalcCastTimeFnType OnCalcCastTimeHandlerScript)
+{
+    _onCalcCastTimeHandlerScript = OnCalcCastTimeHandlerScript;
+}
+
 SpellScript::OnCalculateResistAbsorbHandler::OnCalculateResistAbsorbHandler(SpellOnResistAbsorbCalculateFnType onResistAbsorbCalculateHandlerScript) :
     pOnCalculateResistAbsorbHandlerScript(onResistAbsorbCalculateHandlerScript)
 {
@@ -609,6 +619,11 @@ GameObject* SpellScript::GetExplTargetGObj() const
 Item* SpellScript::GetExplTargetItem() const
 {
     return m_spell->m_targets.GetItemTarget();
+}
+
+ObjectGuid SpellScript::GetOrigUnitTargetGUID() const
+{
+    return m_spell->m_targets.GetOrigUnitTargetGUID();
 }
 
 int64 SpellScript::GetUnitTargetCountForEffect(SpellEffIndex effect) const
@@ -1180,6 +1195,18 @@ void AuraScript::EffectManaShieldHandler::Call(AuraScript* auraScript, AuraEffec
 {
     (auraScript->*pEffectHandlerScript)(aurEff, dmgInfo, absorbAmount);
 }
+
+void AuraScript::EffectHealAbsorbHandler::Call(AuraScript* auraScript, AuraEffect* aurEff, HealInfo& healInfo, uint32& absorbAmount)
+{
+    (auraScript->*pEffectHandlerScript)(aurEff, healInfo, absorbAmount);
+}
+
+AuraScript::EffectHealAbsorbHandler::EffectHealAbsorbHandler(AuraEffectHealAbsorbFnType _pEffectHandlerScript, uint8 _effIndex)
+    : AuraScript::EffectBase(_effIndex, SPELL_AURA_SCHOOL_HEAL_ABSORB)
+{
+    pEffectHandlerScript = _pEffectHandlerScript;
+}
+
 
 AuraScript::EffectSplitHandler::EffectSplitHandler(AuraEffectSplitFnType _pEffectHandlerScript, uint8 _effIndex)
     : AuraScript::EffectBase(_effIndex, SPELL_AURA_SPLIT_DAMAGE_PCT), pEffectHandlerScript(_pEffectHandlerScript)

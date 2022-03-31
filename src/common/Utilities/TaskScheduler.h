@@ -1,5 +1,5 @@
 /*
- * This file is part of the TrinityCore Project. See AUTHORS file for Copyright information
+ * Copyright (C) 2008-2018 TrinityCore <https://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -21,9 +21,9 @@
 #include "Duration.h"
 #include "Optional.h"
 #include "Random.h"
+#include <functional>
 #include <algorithm>
 #include <chrono>
-#include <functional>
 #include <vector>
 #include <queue>
 #include <memory>
@@ -31,6 +31,13 @@
 #include <set>
 
 class TaskContext;
+class Unit;
+class GameObject;
+
+#define GetContextUnit()        context.GetUnit()
+#define GetContextCreature()    context.GetUnit()->ToCreature()
+#define GetContextPlayer()      context.GetUnit()->ToPlayer()
+#define GetContextGameObject()  context.GetGameObject()
 
 /// The TaskScheduler class provides the ability to schedule std::function's in the near future.
 /// Use TaskScheduler::Update to update the scheduler.
@@ -150,6 +157,8 @@ class TC_COMMON_API TaskScheduler
         void ModifyIf(std::function<bool(TaskContainer const&)> const& filter);
 
         bool IsEmpty() const;
+
+        bool AnyOf(std::function<bool(TaskContainer const&)> const& filter) const;
     };
 
     /// Contains a self reference to track if this object was deleted or not.
@@ -180,11 +189,25 @@ class TC_COMMON_API TaskScheduler
 
 public:
     TaskScheduler()
-        : self_reference(this, [](TaskScheduler const*) { }), _now(clock_t::now()), _predicate(EmptyValidator) { }
+        : self_reference(this, [](TaskScheduler const*) { }), _now(clock_t::now()), _predicate(EmptyValidator), _schedulerUnit(nullptr), _schedulerGob(nullptr) { }
 
     template<typename P>
     TaskScheduler(P&& predicate)
-        : self_reference(this, [](TaskScheduler const*) { }), _now(clock_t::now()), _predicate(std::forward<P>(predicate)) { }
+        : self_reference(this, [](TaskScheduler const*) { }), _now(clock_t::now()), _predicate(std::forward<P>(predicate)), _schedulerUnit(nullptr), _schedulerGob(nullptr) { }
+
+    TaskScheduler(Unit* unit)
+        : self_reference(this, [](TaskScheduler const*) { }), _now(clock_t::now()), _predicate(EmptyValidator), _schedulerUnit(unit), _schedulerGob(nullptr) { }
+
+    TaskScheduler(GameObject* gob)
+        : self_reference(this, [](TaskScheduler const*) {}), _now(clock_t::now()), _predicate(EmptyValidator), _schedulerUnit(nullptr), _schedulerGob(gob) { }
+
+    template<typename P>
+    TaskScheduler(Unit* unit, P&& predicate)
+        : self_reference(this, [](TaskScheduler const*) { }), _now(clock_t::now()), _predicate(std::forward<P>(predicate)), _schedulerUnit(unit), _schedulerGob(nullptr) { }
+
+    template<typename P>
+    TaskScheduler(GameObject* gob, P&& predicate)
+        : self_reference(this, [](TaskScheduler const*) {}), _now(clock_t::now()), _predicate(std::forward<P>(predicate)), _schedulerUnit(nullptr), _schedulerGob(gob) { }
 
     TaskScheduler(TaskScheduler const&) = delete;
     TaskScheduler(TaskScheduler&&) = delete;
@@ -249,7 +272,7 @@ public:
     TaskScheduler& Schedule(std::chrono::duration<_RepLeft, _PeriodLeft> const& min,
         std::chrono::duration<_RepRight, _PeriodRight> const& max, task_handler_t const& task)
     {
-        return Schedule(randtime(min, max), task);
+        return Schedule(RandomDurationBetween(min, max), task);
     }
 
     /// Schedule an event with a fixed rate.
@@ -259,7 +282,27 @@ public:
         std::chrono::duration<_RepRight, _PeriodRight> const& max, group_t const group,
         task_handler_t const& task)
     {
-        return Schedule(randtime(min, max), group, task);
+        return Schedule(RandomDurationBetween(min, max), group, task);
+    }
+
+    /// Schedule an event with a fixed rate.
+    /// Never call this from within a task context! Use TaskContext::Schedule instead!
+    template<class _Rep, class _Period>
+    void Schedule(std::initializer_list<std::chrono::duration<_Rep, _Period>> const& times,
+        task_handler_t const& task)
+    {
+        for (auto time : times)
+            ScheduleAt(_now, time, task);
+    }
+
+    /// Schedule an event with a fixed rate.
+    /// Never call this from within a task context! Use TaskContext::Schedule instead!
+    template<class _Rep, class _Period>
+    void Schedule(std::initializer_list<std::chrono::duration<_Rep, _Period>> const& times,
+        group_t const group, task_handler_t const& task)
+    {
+        for (auto time: times)
+            ScheduleAt(_now, time, group, task);
     }
 
     /// Cancels all tasks.
@@ -291,7 +334,7 @@ public:
     TaskScheduler& DelayAll(std::chrono::duration<_RepLeft, _PeriodLeft> const& min,
         std::chrono::duration<_RepRight, _PeriodRight> const& max)
     {
-        return DelayAll(randtime(min, max));
+        return DelayAll(RandomDurationBetween(min, max));
     }
 
     /// Delays all tasks of a group with the given duration.
@@ -317,7 +360,7 @@ public:
         std::chrono::duration<_RepLeft, _PeriodLeft> const& min,
         std::chrono::duration<_RepRight, _PeriodRight> const& max)
     {
-        return DelayGroup(group, randtime(min, max));
+        return DelayGroup(group, RandomDurationBetween(min, max));
     }
 
     /// Reschedule all tasks with a given duration.
@@ -338,7 +381,7 @@ public:
     TaskScheduler& RescheduleAll(std::chrono::duration<_RepLeft, _PeriodLeft> const& min,
         std::chrono::duration<_RepRight, _PeriodRight> const& max)
     {
-        return RescheduleAll(randtime(min, max));
+        return RescheduleAll(RandomDurationBetween(min, max));
     }
 
     /// Reschedule all tasks of a group with the given duration.
@@ -365,7 +408,22 @@ public:
         std::chrono::duration<_RepLeft, _PeriodLeft> const& min,
         std::chrono::duration<_RepRight, _PeriodRight> const& max)
     {
-        return RescheduleGroup(group, randtime(min, max));
+        return RescheduleGroup(group, RandomDurationBetween(min, max));
+    }
+
+    /// Allow to retrieve Unit currently updating TaskScheduler
+    Unit* GetSchedulerUnit() const { return _schedulerUnit; }
+
+    /// Allow to retrieve GameObject currently updating TaskScheduler
+    GameObject* GetSchedulerGameObject() const { return _schedulerGob; }
+
+    /// Check if a group exist specific
+    bool HasGroup(group_t const group)
+    {
+        return _task_holder.AnyOf([group](TaskContainer const& task) -> bool
+        {
+            return task->IsInGroup(group);
+        });
     }
 
 private:
@@ -390,8 +448,24 @@ private:
         return InsertTask(TaskContainer(new Task(end + time, time, group, DEFAULT_REPEATED, task)));
     }
 
+    // Returns a random duration between min and max
+    template<class _RepLeft, class _PeriodLeft, class _RepRight, class _PeriodRight>
+    static std::chrono::milliseconds
+    RandomDurationBetween(std::chrono::duration<_RepLeft, _PeriodLeft> const& min,
+            std::chrono::duration<_RepRight, _PeriodRight> const& max)
+    {
+        auto const milli_min = std::chrono::duration_cast<std::chrono::milliseconds>(min);
+        auto const milli_max = std::chrono::duration_cast<std::chrono::milliseconds>(max);
+
+        // TC specific: use SFMT URandom
+        return std::chrono::milliseconds(urand(uint32(milli_min.count()), uint32(milli_max.count())));
+    }
+
     /// Dispatch remaining tasks
     void Dispatch(success_t const& callback);
+
+    Unit* _schedulerUnit;
+    GameObject* _schedulerGob;
 };
 
 class TC_COMMON_API TaskContext
@@ -413,19 +487,22 @@ class TC_COMMON_API TaskContext
 public:
     // Empty constructor
     TaskContext()
-        : _task(), _owner(), _consumed(std::make_shared<bool>(true)) { }
+        : _task(), _owner(), _consumed(std::make_shared<bool>(true)), _contextUnit(nullptr), _contextGob(nullptr) { }
 
     // Construct from task and owner
-    explicit TaskContext(TaskScheduler::TaskContainer&& task, std::weak_ptr<TaskScheduler>&& owner)
-        : _task(task), _owner(owner), _consumed(std::make_shared<bool>(false)) { }
+    explicit TaskContext(TaskScheduler::TaskContainer&& task, std::weak_ptr<TaskScheduler>&& owner, Unit* schedulerUnit, GameObject* schedulerGob)
+        : _task(task), _owner(owner), _consumed(std::make_shared<bool>(false)),
+            _contextUnit(schedulerUnit), _contextGob(schedulerGob) { }
 
     // Copy construct
     TaskContext(TaskContext const& right)
-        : _task(right._task), _owner(right._owner), _consumed(right._consumed) { }
+        : _task(right._task), _owner(right._owner), _consumed(right._consumed),
+            _contextUnit(right._contextUnit), _contextGob(right._contextGob) { }
 
     // Move construct
     TaskContext(TaskContext&& right)
-        : _task(std::move(right._task)), _owner(std::move(right._owner)), _consumed(std::move(right._consumed)) { }
+        : _task(std::move(right._task)), _owner(std::move(right._owner)), _consumed(std::move(right._consumed)),
+            _contextUnit(std::move(right._contextUnit)), _contextGob(std::move(right._contextGob)) { }
 
     // Copy assign
     TaskContext& operator= (TaskContext const& right)
@@ -433,6 +510,8 @@ public:
         _task = right._task;
         _owner = right._owner;
         _consumed = right._consumed;
+        _contextUnit = right._contextUnit;
+        _contextGob = right._contextGob;
         return *this;
     }
 
@@ -442,6 +521,8 @@ public:
         _task = std::move(right._task);
         _owner = std::move(right._owner);
         _consumed = std::move(right._consumed);
+        _contextUnit = std::move(right._contextUnit);
+        _contextGob = std::move(right._contextGob);
         return *this;
     }
 
@@ -493,7 +574,7 @@ public:
     TaskContext& Repeat(std::chrono::duration<_RepLeft, _PeriodLeft> const& min,
         std::chrono::duration<_RepRight, _PeriodRight> const& max)
     {
-        return Repeat(randtime(min, max));
+        return Repeat(TaskScheduler::RandomDurationBetween(min, max));
     }
 
     /// Schedule a callable function that is executed at the next update tick from within the context.
@@ -538,7 +619,7 @@ public:
     TaskContext& Schedule(std::chrono::duration<_RepLeft, _PeriodLeft> const& min,
         std::chrono::duration<_RepRight, _PeriodRight> const& max, TaskScheduler::task_handler_t const& task)
     {
-        return Schedule(randtime(min, max), task);
+        return Schedule(TaskScheduler::RandomDurationBetween(min, max), task);
     }
 
     /// Schedule an event with a randomized rate between min and max rate from within the context.
@@ -550,7 +631,7 @@ public:
         std::chrono::duration<_RepRight, _PeriodRight> const& max, TaskScheduler::group_t const group,
         TaskScheduler::task_handler_t const& task)
     {
-        return Schedule(randtime(min, max), group, task);
+        return Schedule(TaskScheduler::RandomDurationBetween(min, max), group, task);
     }
 
     /// Cancels all tasks from within the context.
@@ -575,7 +656,7 @@ public:
     TaskContext& DelayAll(std::chrono::duration<_RepLeft, _PeriodLeft> const& min,
         std::chrono::duration<_RepRight, _PeriodRight> const& max)
     {
-        return DelayAll(randtime(min, max));
+        return DelayAll(TaskScheduler::RandomDurationBetween(min, max));
     }
 
     /// Delays all tasks of a group with the given duration from within the context.
@@ -591,7 +672,7 @@ public:
         std::chrono::duration<_RepLeft, _PeriodLeft> const& min,
         std::chrono::duration<_RepRight, _PeriodRight> const& max)
     {
-        return DelayGroup(group, randtime(min, max));
+        return DelayGroup(group, TaskScheduler::RandomDurationBetween(min, max));
     }
 
     /// Reschedule all tasks with the given duration.
@@ -606,7 +687,7 @@ public:
     TaskContext& RescheduleAll(std::chrono::duration<_RepLeft, _PeriodLeft> const& min,
         std::chrono::duration<_RepRight, _PeriodRight> const& max)
     {
-        return RescheduleAll(randtime(min, max));
+        return RescheduleAll(TaskScheduler::RandomDurationBetween(min, max));
     }
 
     /// Reschedule all tasks of a group with the given duration.
@@ -622,8 +703,14 @@ public:
         std::chrono::duration<_RepLeft, _PeriodLeft> const& min,
         std::chrono::duration<_RepRight, _PeriodRight> const& max)
     {
-        return RescheduleGroup(group, randtime(min, max));
+        return RescheduleGroup(group, TaskScheduler::RandomDurationBetween(min, max));
     }
+
+    /// Allow to retrieve Unit currently updating TaskScheduler
+    Unit* GetUnit() const { return _contextUnit; }
+
+    /// Allow to retrieve GameObject currently updating TaskScheduler
+    GameObject* GetGameObject() const { return _contextGob; }
 
 private:
     /// Asserts if the task was consumed already.
@@ -631,6 +718,9 @@ private:
 
     /// Invokes the associated hook of the task.
     void Invoke();
+
+    Unit* _contextUnit;
+    GameObject* _contextGob;
 };
 
 #endif /// _TASK_SCHEDULER_H_

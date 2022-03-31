@@ -199,6 +199,28 @@ void SpellCastTargets::Write(WorldPackets::Spells::SpellTargetData& data)
         data.Name = m_strTarget;
 }
 
+ObjectGuid SpellCastTargets::GetOrigUnitTargetGUID() const
+{
+    switch (m_origObjectTargetGUID.GetHigh())
+    {
+        case HighGuid::Player:
+        case HighGuid::Vehicle:
+        case HighGuid::Creature:
+        case HighGuid::Pet:
+            return m_origObjectTargetGUID;
+        default:
+            return ObjectGuid();
+    }
+}
+
+void SpellCastTargets::SetOrigUnitTarget(Unit* target)
+{
+    if (!target)
+        return;
+
+    m_origObjectTargetGUID = target->GetGUID();
+}
+
 ObjectGuid SpellCastTargets::GetUnitTargetGUID() const
 {
     if (m_objectTargetGUID.IsUnit())
@@ -625,6 +647,7 @@ Spell::~Spell()
 void Spell::InitExplicitTargets(SpellCastTargets const& targets)
 {
     m_targets = targets;
+    m_targets.SetOrigUnitTarget(m_targets.GetUnitTarget());
 
     // this function tries to correct spell explicit targets for spell
     // client doesn't send explicit targets correctly sometimes - we need to fix such spells serverside
@@ -3302,6 +3325,11 @@ SpellCastResult Spell::prepare(SpellCastTargets const& targets, AuraEffect const
     else
         m_casttime = m_spellInfo->CalcCastTime(this);
 
+    CallScriptOnCalcCastTimeHandlers();
+
+    if (IsDarkSimulacrum() && !m_spellInfo->IsChanneled())
+        m_casttime = 0;
+
     // don't allow channeled spells / spells with cast time to be cast while moving
     // exception are only channeled spells that have no casttime and SPELL_ATTR5_CAN_CHANNEL_WHEN_MOVING
     // (even if they are interrupted on moving, spells with almost immediate effect get to have their effect processed before movement interrupter kicks in)
@@ -5456,7 +5484,7 @@ SpellCastResult Spell::CheckCast(bool strict, int32* param1 /*= nullptr*/, int32
                 break;
             }
 
-            if (checkForm)
+            if (checkForm && !IsDarkSimulacrum())
             {
                 // Cannot be used in this stance/form
                 SpellCastResult shapeError = m_spellInfo->CheckShapeshift(unitCaster->GetShapeshiftForm());
@@ -7880,6 +7908,36 @@ bool Spell::IsAutoActionResetSpell() const
     return true;
 }
 
+bool Spell::IsDarkSimulacrum() const
+{
+    // Dark Simulacrum
+    if (auto unit = m_caster->ToUnit())
+    {
+        if (AuraEffect* darkSimulacrum = unit->GetAuraEffect(77616, 0))
+        {
+            if (m_spellInfo->Id == darkSimulacrum->GetAmount())
+                return true;
+            else
+            {
+                SpellInfo const* amountSpell = sSpellMgr->GetSpellInfo(darkSimulacrum->GetAmount());
+                if (!amountSpell)
+                    return false;
+
+                auto effect = amountSpell->GetEffect(EFFECT_0);
+
+                SpellInfo const* triggerSpell = sSpellMgr->GetSpellInfo(effect.BasePoints);
+                if (!triggerSpell)
+                    return false;
+
+                if (m_spellInfo->Id == triggerSpell->Id)
+                    return true;
+            }
+        }
+    }
+
+    return false;
+}
+
 bool Spell::IsPositive() const
 {
     return m_spellInfo->IsPositive() && (!m_triggeredByAuraSpell || m_triggeredByAuraSpell->IsPositive());
@@ -8336,6 +8394,29 @@ void Spell::CallScriptOnTakePowerHandlers(SpellPowerCost& powerCost)
     scriptExecuteTime = GameTime::GetGameTimeMS() - scriptExecuteTime;
     if (scriptExecuteTime > 10)
         sLog->outPerformance("Spell::CallScriptOnTakePowerHandlers [%u] take more than 10 ms to execute (%u ms)", m_spellInfo->Id, scriptExecuteTime);
+#endif // PERFORMANCE_LOG
+}
+
+void Spell::CallScriptOnCalcCastTimeHandlers()
+{
+#ifdef PERFORMANCE_LOG
+    uint32 scriptExecuteTime = GameTime::GetGameTimeMS();
+#endif // PERFORMANCE_LOG
+
+    for (auto scritr = m_loadedScripts.begin(); scritr != m_loadedScripts.end(); ++scritr)
+    {
+        (*scritr)->_PrepareScriptCall(SPELL_SCRIPT_HOOK_CALC_CAST_TIME);
+        auto hookItrEnd = (*scritr)->OnCalcCastTime.end(), hookItr = (*scritr)->OnCalcCastTime.begin();
+        for (; hookItr != hookItrEnd; ++hookItr)
+            (*hookItr).Call(*scritr, m_casttime);
+
+        (*scritr)->_FinishScriptCall();
+    }
+
+#ifdef PERFORMANCE_LOG
+    scriptExecuteTime = GameTime::GetGameTimeMS() - scriptExecuteTime;
+    if (scriptExecuteTime > 10)
+        sLog->outPerformance("Spell::CallScriptOnCalcCastTimeHandlers [%u] take more than 10 ms to execute (%u ms)", m_spellInfo->Id, scriptExecuteTime);
 #endif // PERFORMANCE_LOG
 }
 
