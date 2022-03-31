@@ -499,6 +499,8 @@ public:
             m_SummonedBoss = true;
             DoSummon(700626, { 1607.15f, 3053.69f, 27.1007f, 0.40906f });
             me->DespawnOrUnsummon(5s);
+            if (auto riftPortal = me->FindNearestCreature(700605, 50.0f))
+                riftPortal->DespawnOrUnsummon();
         }
     }
 
