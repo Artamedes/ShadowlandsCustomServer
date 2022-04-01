@@ -162,7 +162,7 @@ class npc_minigob_manabonk : public CreatureScript
 
             void Reset() override
             {
-                playerGuid = ObjectGuid();
+                playerGuid = ObjectGuid::Empty;
                 me->SetVisible(false);
                 events.ScheduleEvent(EVENT_SELECT_TARGET, 1s);
             }

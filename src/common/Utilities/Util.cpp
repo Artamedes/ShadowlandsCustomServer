@@ -900,3 +900,13 @@ float DegToRad(float degrees)
 {
     return degrees * (2.f * float(M_PI) / 360.f);
 }
+
+int32 RoundingFloatValue(float val)
+{
+    int32 intVal = val;
+    float difference = val - intVal;
+    if (difference >= 0.44444445f)
+        intVal++;
+
+    return intVal;
+}

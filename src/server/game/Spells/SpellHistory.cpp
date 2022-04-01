@@ -31,6 +31,7 @@
 #include "SpellPackets.h"
 #include "World.h"
 #include "SpellAuraEffects.h"
+#include "ScriptMgr.h"
 
 SpellHistory::Duration const SpellHistory::InfinityCooldownDelay = Seconds(MONTH);
 
@@ -420,6 +421,16 @@ void SpellHistory::StartCooldown(SpellInfo const* spellInfo, uint32 itemId, Spel
     else
         cooldown = *forcedCooldown;
 
+    Player* playerOwner = GetPlayerOwner();
+    if (playerOwner)
+    {
+        int32 cooldown2 = cooldown.count();
+        int32 categoryCooldown2 = categoryCooldown.count();
+        sScriptMgr->OnCooldownStart(playerOwner, spellInfo, itemId, cooldown2, categoryId, categoryCooldown2);
+        cooldown = Duration(cooldown2);
+        categoryCooldown = Duration(categoryCooldown2);
+    }
+
     // overwrite time for selected category
     if (onHold)
     {
@@ -547,8 +558,14 @@ void SpellHistory::StartCooldownROG(SpellInfo const* spellInfo, uint32 itemId, S
         GetCooldownDurations(spellInfo, itemId, &cooldown, &categoryId, &categoryCooldown);
 
     Player* playerOwner = GetPlayerOwner();
-    //if (playerOwner)
-    //    sScriptMgr->OnCooldownStart(playerOwner, spellInfo, itemId, cooldown, categoryId, categoryCooldown);
+    if (playerOwner)
+    {
+        int32 cooldown2 = cooldown.count();
+        int32 categoryCooldown2 = categoryCooldown.count();
+        sScriptMgr->OnCooldownStart(playerOwner, spellInfo, itemId, cooldown2, categoryId, categoryCooldown2);
+        cooldown = Duration(cooldown2);
+        categoryCooldown = Duration(categoryCooldown2);
+    }
 
     Clock::time_point curTime = GameTime::GetTime<Clock>();
     Clock::time_point catrecTime;

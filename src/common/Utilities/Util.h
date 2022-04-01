@@ -376,6 +376,8 @@ inline std::vector<uint8> HexStrToByteVector(std::string_view str, bool reverse 
 
 TC_COMMON_API float DegToRad(float degrees);
 
+TC_COMMON_API int32 RoundingFloatValue(float val);
+
 TC_COMMON_API bool StringEqualI(std::string_view str1, std::string_view str2);
 inline bool StringStartsWith(std::string_view haystack, std::string_view needle) { return (haystack.substr(0, needle.length()) == needle); }
 inline bool StringStartsWithI(std::string_view haystack, std::string_view needle) { return StringEqualI(haystack.substr(0, needle.length()), needle); }

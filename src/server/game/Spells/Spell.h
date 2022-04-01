@@ -582,6 +582,8 @@ class TC_GAME_API Spell
         bool IsAutoRepeat() const { return m_autoRepeat; }
         void SetAutoRepeat(bool rep) { m_autoRepeat = rep; }
         void ReSetTimer() { m_timer = m_casttime > 0 ? m_casttime : 0; }
+        TriggerCastFlags GetTriggeredCastFlags() const { return _triggeredCastFlags; }
+        void SetTriggerCastFlags(TriggerCastFlags flags) { _triggeredCastFlags = TriggerCastFlags(uint32(_triggeredCastFlags) | flags); }
         bool IsTriggered() const;
         bool IsIgnoringCooldowns() const;
         bool IsFocusDisabled() const;
@@ -622,6 +624,7 @@ class TC_GAME_API Spell
         bool UpdatePointers();                              // must be used at call Spell code after time delay (non triggered spell cast/update spell call/etc)
 
         void CleanupTargetList();
+        Unit* GetUnitTarget() { return m_targets.GetUnitTarget() ? m_targets.GetUnitTarget() : unitTarget; }
 
         void SetSpellValue(SpellValueMod mod, int32 value);
 

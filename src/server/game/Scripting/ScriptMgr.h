@@ -851,6 +851,9 @@ class TC_GAME_API PlayerScript : public ScriptObject
         // Called when a player choose a response from a PlayerChoice
         virtual void OnPlayerChoiceResponse(Player* /*player*/, uint32 /*choiceId*/, uint32 /*responseId*/) { }
 
+        // Called when a cooldown start for that player
+        virtual void OnCooldownStart(Player* /*player*/, SpellInfo const* /*spellInfo*/, uint32 /*itemId*/, int32& /*cooldown*/, uint32& /*categoryId*/, int32& /*categoryCooldown*/) { }
+
         virtual void OnCreatureSummoned(Player* /*player*/, Creature* /*creature*/) { }
 
         // Called when summoned creature has been unsummoned
@@ -1301,6 +1304,7 @@ class TC_GAME_API ScriptMgr
         void OnPlayerSpellRemoved(Player* player, uint32 spellID);
         void OnPlayerInterruptedSpellCast(Player* player, Spell* spell);
         void OnSpellInterrupt(Player* player, Unit* source, Spell* spell, Spell* interruptingSpell);
+        void OnCooldownStart(Player* player, SpellInfo const* spellInfo, uint32 itemId, int32& cooldown, uint32& categoryId, int32& categoryCooldown);
         void OnCreatureSummoned(Player* player, Creature* creature);
         void OnCreatureUnsummoned(Player* player, Creature* creature);
         void OnSummonCreatureDealsDamage(Player* player, Unit* creature, Unit* victim, int32 damage);

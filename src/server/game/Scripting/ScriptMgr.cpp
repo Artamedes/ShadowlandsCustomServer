@@ -2176,6 +2176,11 @@ void ScriptMgr::OnPlayerChoiceResponse(Player* player, uint32 choiceId, uint32 r
     FOREACH_SCRIPT(PlayerScript)->OnPlayerChoiceResponse(player, choiceId, responseId);
 }
 
+void ScriptMgr::OnCooldownStart(Player* player, SpellInfo const* spellInfo, uint32 itemId, int32& cooldown, uint32& categoryId, int32& categoryCooldown)
+{
+    FOREACH_SCRIPT(PlayerScript)->OnCooldownStart(player, spellInfo, itemId, cooldown, categoryId, categoryCooldown);
+}
+
 /// When the player learn a spell
 /// @player  : Player instance
 /// @p_SpellID : Learned spell ID
