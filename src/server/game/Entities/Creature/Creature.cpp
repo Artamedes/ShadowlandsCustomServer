@@ -342,6 +342,9 @@ void Creature::AddToWorld()
 
         if (GetZoneScript())
             GetZoneScript()->OnCreatureCreate(this);
+
+        if (GetMap()->Instanceable())
+            m_canBePersonalLooted = false; // Don't allow personal loot in dungeons.
     }
 }
 
@@ -422,6 +425,7 @@ void Creature::RemoveCorpse(bool setSpawnTime, bool destroyForNearbyPlayers)
         setDeathState(DEAD);
         RemoveAllAuras();
         loot.clear();
+        m_PersonalLoots.clear();
         uint32 respawnDelay = m_respawnDelay;
         if (CreatureAI* ai = AI())
             ai->CorpseRemoved(respawnDelay);
@@ -1327,6 +1331,11 @@ Group* Creature::GetLootRecipientGroup() const
     return sGroupMgr->GetGroupByGUID(m_lootRecipientGroup);
 }
 
+void Creature::AddPersonalLooter(Player* who)
+{
+    m_lootRecipientsPersonal.insert(who->GetGUID());
+}
+
 void Creature::SetLootRecipient(Unit* unit, bool withGroup)
 {
     // set the player whose group should receive the right
@@ -1337,6 +1346,7 @@ void Creature::SetLootRecipient(Unit* unit, bool withGroup)
     {
         m_lootRecipient.Clear();
         m_lootRecipientGroup.Clear();
+        m_lootRecipientsPersonal.clear();
         RemoveDynamicFlag(UNIT_DYNFLAG_LOOTABLE | UNIT_DYNFLAG_TAPPED);
         return;
     }
@@ -1348,6 +1358,8 @@ void Creature::SetLootRecipient(Unit* unit, bool withGroup)
     if (!player)                                             // normal creature, no player involved
         return;
 
+    if (CanHavePersonalLoot())
+        m_lootRecipientsPersonal.insert(player->GetGUID());
     m_lootRecipient = player->GetGUID();
     if (withGroup)
     {
@@ -1357,13 +1369,14 @@ void Creature::SetLootRecipient(Unit* unit, bool withGroup)
     else
         m_lootRecipientGroup = ObjectGuid::Empty;
 
-    SetDynamicFlag(UNIT_DYNFLAG_TAPPED);
+    if (!CanHavePersonalLoot())
+        SetDynamicFlag(UNIT_DYNFLAG_TAPPED);
 }
 
 // return true if this creature is tapped by the player or by a member of his group.
 bool Creature::isTappedBy(Player const* player) const
 {
-    if (player->GetGUID() == m_lootRecipient)
+    if (player->GetGUID() == m_lootRecipient || m_lootRecipientsPersonal.count(player->GetGUID()))
         return true;
 
     Group const* playerGroup = player->GetGroup();
@@ -1827,6 +1840,8 @@ bool Creature::LoadFromDB(ObjectGuid::LowType spawnId, Map* map, bool addToMap, 
     m_defaultMovementType = MovementGeneratorType(data->movementType);
 
     loot.SetGUID(ObjectGuid::Create<HighGuid::LootObject>(GetMapId(), data->id, GetMap()->GenerateLowGuid<HighGuid::LootObject>()));
+    for (auto & loot : m_PersonalLoots) // TODO: Verify this
+        loot.second.SetGUID(ObjectGuid::Create<HighGuid::LootObject>(GetMapId(), data->id, GetMap()->GenerateLowGuid<HighGuid::LootObject>()));
 
     if (addToMap && !GetMap()->AddToMap(this))
         return false;
@@ -1977,6 +1992,36 @@ bool Creature::hasInvolvedQuest(uint32 quest_id) const
     WorldDatabase.CommitTransaction(trans);
 
     return true;
+}
+
+Loot& Creature::GetLootFor(Player* player)
+{
+    if (CanHavePersonalLoot())
+    {
+        auto itr = m_PersonalLoots.find(player->GetGUID());
+        if (itr == m_PersonalLoots.end())
+        {
+            // create? - Maybe not, should have generated on the player already. - sometimes its not, See Unit::Kill
+            //m_PersonalLoots.insert({ player->GetGUID(), Loot() });
+            // Just gonna return normal loot.
+            //return loot;
+        }
+        auto& l_Loot = m_PersonalLoots[player->GetGUID()];
+        return l_Loot;
+    }
+
+    return loot;
+}
+
+bool Creature::IsAllLooted() const
+{
+    for (auto const& personal : m_PersonalLoots)
+    {
+        if (!personal.second.isLooted())
+            return false;
+    }
+
+    return loot.isLooted();
 }
 
 bool Creature::IsInvisibleDueToDespawn() const

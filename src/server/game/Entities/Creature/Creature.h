@@ -224,15 +224,25 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         virtual void SaveToDB(uint32 mapid, std::vector<Difficulty> const& spawnDifficulties);
         static bool DeleteFromDB(ObjectGuid::LowType spawnId);
 
+        Loot& GetLootFor(Player* player);
+        bool IsAllLooted() const;
+
         Loot loot;
+        std::unordered_map<ObjectGuid, Loot> m_PersonalLoots;
         void StartPickPocketRefillTimer();
         void ResetPickPocketRefillTimer() { _pickpocketLootRestore = 0; }
         bool CanGeneratePickPocketLoot() const;
         ObjectGuid GetLootRecipientGUID() const { return m_lootRecipient; }
         Player* GetLootRecipient() const;
         Group* GetLootRecipientGroup() const;
-        bool hasLootRecipient() const { return !m_lootRecipient.IsEmpty() || !m_lootRecipientGroup.IsEmpty(); }
+        bool hasLootRecipient() const { return !m_lootRecipient.IsEmpty() || !m_lootRecipientGroup.IsEmpty() || !m_lootRecipientsPersonal.empty(); }
         bool isTappedBy(Player const* player) const;                          // return true if the creature is tapped by the player or a member of his party.
+        // Personal Loot system
+        bool CanHavePersonalLoot() const { return m_canBePersonalLooted; }
+        void AddPersonalLooter(Player* who);
+        
+        bool m_canBePersonalLooted = true;
+        GuidSet m_lootRecipientsPersonal;
 
         void SetLootRecipient (Unit* unit, bool withGroup = true);
         void AllLootRemovedFromCorpse();

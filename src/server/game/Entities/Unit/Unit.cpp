@@ -910,6 +910,8 @@ bool Unit::HasBreakableByDamageCrowdControlAura(Unit* excludeCasterChannel) cons
     {
         if (!victim->ToCreature()->hasLootRecipient())
             victim->ToCreature()->SetLootRecipient(attacker);
+        if (attacker && victim->ToCreature()->CanHavePersonalLoot() && attacker->IsPlayer())
+            victim->ToCreature()->AddPersonalLooter(attacker->ToPlayer());
 
         if (!attacker || attacker->IsControlledByPlayer())
             victim->ToCreature()->LowerPlayerDamageReq(health < damage ?  health : damage);
@@ -1001,6 +1003,9 @@ bool Unit::HasBreakableByDamageCrowdControlAura(Unit* excludeCasterChannel) cons
 
         if (damagetype == DIRECT_DAMAGE || damagetype == SPELL_DIRECT_DAMAGE)
             victim->RemoveAurasWithInterruptFlags(SpellAuraInterruptFlags::NonPeriodicDamage, spellProto ? spellProto->Id : 0);
+
+        if (victim)
+            victim->SaveDamageHistory(damage);
 
         if (victim->GetTypeId() != TYPEID_PLAYER)
         {
@@ -10932,6 +10937,14 @@ Unit* Unit::SelectNearbyTarget(Unit* exclude, float dist) const
     if (exclude)
         targets.remove(exclude);
 
+    targets.remove_if([this](Unit* target)
+    {
+        if (target->IsCreature())
+            if (target->ToCreature()->AI())
+                return !target->ToCreature()->AI()->CanAIAttack(this);
+        return false;
+    });
+
     // remove not LoS targets
     for (std::list<Unit*>::iterator tIter = targets.begin(); tIter != targets.end();)
     {
@@ -11291,6 +11304,9 @@ void Unit::SetMeleeAnimKitId(uint16 animKitId)
     if (creature && creature->IsPet() && creature->GetOwnerGUID().IsPlayer())
         isRewardAllowed = false;
 
+    if (creature->CanHavePersonalLoot() && victim->IsPlayer() && creature->isTappedBy(victim->ToPlayer()))
+        player = victim->ToPlayer();
+
     // Reward player, his pets, and group/raid members
     // call kill spell proc event (before real die and combat stop to triggering auras removed at death/combat stop)
     if (isRewardAllowed && player && player != victim)
@@ -11329,7 +11345,7 @@ void Unit::SetMeleeAnimKitId(uint16 animKitId)
             {
                 WorldPackets::Loot::LootList lootList;
                 lootList.Owner = creature->GetGUID();
-                lootList.LootObj = creature->loot.GetGUID();
+                lootList.LootObj = creature->GetLootFor(player).GetGUID();
 
                 player->SendMessageToSet(lootList.Write(), true);
             }
@@ -11338,28 +11354,43 @@ void Unit::SetMeleeAnimKitId(uint16 animKitId)
         // Generate loot before updating looter
         if (creature)
         {
-            Loot* loot = &creature->loot;
-            loot->clear();
-            if (uint32 lootid = creature->GetCreatureTemplate()->lootid)
-                loot->FillLoot(lootid, LootTemplates_Creature, looter, false, false, creature->GetLootMode(), creature->GetMap()->GetDifficultyLootItemContext());
-
-            if (creature->GetLootMode() > 0)
-                loot->generateMoneyLoot(creature->GetCreatureTemplate()->mingold, creature->GetCreatureTemplate()->maxgold);
-
-            if (group)
+            auto GenerateLootAndSendToGroup([&](Player* who)
             {
-                if (hasLooterGuid)
-                    group->SendLooter(creature, looter);
-                else
-                    group->SendLooter(creature, nullptr);
+                Loot* loot = &creature->GetLootFor(who);
+                loot->clear();
+                if (uint32 lootid = creature->GetCreatureTemplate()->lootid)
+                    loot->FillLoot(lootid, LootTemplates_Creature, looter, false, false, creature->GetLootMode(), creature->GetMap()->GetDifficultyLootItemContext());
 
-                // Update round robin looter only if the creature had loot
-                if (!loot->empty())
-                    group->UpdateLooterGuid(creature);
+                if (creature->GetLootMode() > 0)
+                    loot->generateMoneyLoot(creature->GetCreatureTemplate()->mingold, creature->GetCreatureTemplate()->maxgold);
+
+                if (group)
+                {
+                    if (hasLooterGuid)
+                        group->SendLooter(creature, looter);
+                    else
+                        group->SendLooter(creature, nullptr);
+
+                    // Update round robin looter only if the creature had loot
+                    if (!loot->empty())
+                        group->UpdateLooterGuid(creature);
+                }
+                who->RewardPlayerAndGroupAtKill(victim, false);
+            });
+
+            if (creature->CanHavePersonalLoot())
+            {
+                for (auto guid : creature->m_lootRecipientsPersonal)
+                {
+                    if (auto who = ObjectAccessor::GetPlayer(*creature, guid))
+                        GenerateLootAndSendToGroup(who);
+                }
             }
+            else
+                GenerateLootAndSendToGroup(player);
         }
-
-        player->RewardPlayerAndGroupAtKill(victim, false);
+        else
+            player->RewardPlayerAndGroupAtKill(victim, false);
     }
 
     // Do KILL and KILLED procs. KILL proc is called only for the unit who landed the killing blow (and its owner - for pets and totems) regardless of who tapped the victim
@@ -11448,10 +11479,11 @@ void Unit::SetMeleeAnimKitId(uint16 animKitId)
         TC_LOG_DEBUG("entities.unit", "DealDamageNotPlayer");
         ASSERT_NODEBUGINFO(creature);
 
+        // TODO Check this
         if (!creature->IsPet())
         {
             // must be after setDeathState which resets dynamic flags
-            if (!creature->loot.isLooted())
+            if (!creature->IsAllLooted())
                 creature->SetDynamicFlag(UNIT_DYNFLAG_LOOTABLE);
             else
                 creature->AllLootRemovedFromCorpse();
@@ -13979,7 +14011,7 @@ int32 Unit::GetHighestExclusiveSameEffectSpellGroupValue(AuraEffect const* aurEf
     return val;
 }
 
-#define MAX_DAMAGE_HISTORY_DURATION 20
+#define MAX_DAMAGE_HISTORY_DURATION 60
 
 void Unit::SaveDamageHistory(uint32 damage)
 {
