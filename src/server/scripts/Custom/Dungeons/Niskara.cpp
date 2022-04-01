@@ -509,14 +509,15 @@ struct npc_oglaz_700506 : public ScriptedAI
                                                                  if (auto demonSlave = ObjectAccessor::GetCreature(*me, guid))
                                                                  {
                                                                      demonSlave->AI()->Talk(0);
+                                                                     demonSlave->SetEmoteState(EMOTE_STATE_COWER);
 
-                                                                     static Position points[3] = {
-                                                                         { 483.366577f, 1576.726807f, -123.664726f },
-                                                                         { 492.72219f, 1570.001587f, -124.411804f },
-                                                                         { 491.478912f, 1566.103516f, -124.174370f },
-                                                                     };
-
-                                                                     auto result = demonSlave->GetMotionMaster()->MoveSmoothPath(1, points, 3, true);
+                                                                     //static Position points[3] = {
+                                                                     //    { 483.366577f, 1576.726807f, -123.664726f },
+                                                                     //    { 492.72219f, 1570.001587f, -124.411804f },
+                                                                     //    { 491.478912f, 1566.103516f, -124.174370f },
+                                                                     //};
+                                                                     //
+                                                                     //auto result = demonSlave->GetMotionMaster()->MoveSmoothPath(1, points, 3, true);
                                                                      //result->callbackFunc = [this, demonSlave]()
                                                                      //{
                                                                      //    demonSlave->Say("My callback worked!", LANG_UNIVERSAL);
