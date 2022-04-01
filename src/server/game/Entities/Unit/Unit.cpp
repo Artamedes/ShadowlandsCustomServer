@@ -767,12 +767,13 @@ bool Unit::HasBreakableByDamageCrowdControlAura(Unit* excludeCasterChannel) cons
     if (UnitAI* attackerAI = attacker ? attacker->GetAI() : nullptr)
         attackerAI->DamageDealt(victim, damage, damagetype);
 
-    if (attacker->IsSummon() && attacker->GetOwner() && attacker->GetOwner()->ToPlayer())
+    if (attacker && attacker->IsSummon() && attacker->GetOwner() && attacker->GetOwner()->ToPlayer())
         sScriptMgr->OnSummonCreatureDealsDamage(attacker->GetOwner()->ToPlayer(), attacker, victim, damage);
     else
     {
         // Hook for OnDamage Event
-        sScriptMgr->OnDamage(attacker, victim, damage);
+        if (attacker && victim)
+            sScriptMgr->OnDamage(attacker, victim, damage);
     }
 
     // Signal to pets that their owner was attacked - except when DOT.
