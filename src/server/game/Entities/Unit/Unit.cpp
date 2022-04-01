@@ -11304,7 +11304,7 @@ void Unit::SetMeleeAnimKitId(uint16 animKitId)
     if (creature && creature->IsPet() && creature->GetOwnerGUID().IsPlayer())
         isRewardAllowed = false;
 
-    if (creature->CanHavePersonalLoot() && victim->IsPlayer() && creature->isTappedBy(victim->ToPlayer()))
+    if (creature && creature->CanHavePersonalLoot() && victim->IsPlayer() && creature->isTappedBy(victim->ToPlayer()))
         player = victim->ToPlayer();
 
     // Reward player, his pets, and group/raid members
