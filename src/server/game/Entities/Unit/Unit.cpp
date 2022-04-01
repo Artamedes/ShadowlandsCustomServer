@@ -6562,6 +6562,19 @@ void Unit::SetMinion(Minion *minion, bool apply)
     UpdatePetCombatState();
 }
 
+// Get the first controlled creature with a given entry
+Creature* Unit::GetControlledCreature(uint32 entry)
+{
+    for (ControlList::const_iterator itr = m_Controlled.begin(); itr != m_Controlled.end(); ++itr)
+    {
+        Creature* c = (*itr)->ToCreature();
+        if (c && c->GetEntry() == entry)
+            return c;
+    }
+
+    return nullptr;
+}
+
 void Unit::GetAllMinionsByEntry(std::list<TempSummon*>& Minions, uint32 entry)
 {
     for (Unit::ControlList::iterator itr = m_Controlled.begin(); itr != m_Controlled.end(); ++itr)
