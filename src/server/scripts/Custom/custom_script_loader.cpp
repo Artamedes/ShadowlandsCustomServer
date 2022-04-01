@@ -34,6 +34,7 @@ void AddSC_NetherlightTemple();
 void AddSC_Niskara();
 void AddSC_item_enhancement_system();
 void AddSC_TelegrusRift();
+void AddSC_NazmirCustom();
 
 void AddCustomScripts()
 {
@@ -52,4 +53,5 @@ void AddCustomScripts()
     AddSC_Niskara();
     AddSC_item_enhancement_system();
     AddSC_TelegrusRift();
+    AddSC_NazmirCustom();
 }

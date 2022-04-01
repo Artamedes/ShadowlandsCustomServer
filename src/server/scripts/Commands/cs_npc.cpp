@@ -303,6 +303,7 @@ public:
         {
             { "add", npcAddCommandTable },
             { "set", npcSetCommandTable },
+            { "addmulti",       HandleNpcAddMultiCommand,          rbac::RBAC_PERM_COMMAND_NPC_ADD,            Console::No },
             { "info",           HandleNpcInfoCommand,              rbac::RBAC_PERM_COMMAND_NPC_INFO,           Console::No },
             { "near",           HandleNpcNearCommand,              rbac::RBAC_PERM_COMMAND_NPC_NEAR,           Console::No },
             { "move",           HandleNpcMoveCommand,              rbac::RBAC_PERM_COMMAND_NPC_MOVE,           Console::No },
@@ -379,6 +380,58 @@ public:
         return true;
     }
 
+    static bool HandleNpcAddMultiCommand(ChatHandler* handler, std::string_view entries)
+    {
+        std::vector<uint32> entryIds;
+        for (std::string_view token : Trinity::Tokenize(entries, ',', false))
+            if (Optional<uint32> entryId = Trinity::StringTo<uint32>(token))
+                entryIds.push_back(entryId.value());
+
+        auto id = Trinity::Containers::SelectRandomContainerElement(entryIds);
+
+        if (!sObjectMgr->GetCreatureTemplate(id))
+            return false;
+
+        Player* chr = handler->GetSession()->GetPlayer();
+        Map* map = chr->GetMap();
+
+        if (Transport* trans = chr->GetTransport())
+        {
+            ObjectGuid::LowType guid = sObjectMgr->GenerateCreatureSpawnId();
+            CreatureData& data = sObjectMgr->NewOrExistCreatureData(guid);
+            data.spawnId = guid;
+            data.spawnGroupData = sObjectMgr->GetDefaultSpawnGroup();
+            data.id = id;
+            data.spawnPoint.Relocate(chr->GetTransOffsetX(), chr->GetTransOffsetY(), chr->GetTransOffsetZ(), chr->GetTransOffsetO());
+            if (Creature* creature = trans->CreateNPCPassenger(guid, &data))
+            {
+                creature->SaveToDB(trans->GetGOInfo()->moTransport.SpawnMap, { map->GetDifficultyID() });
+                sObjectMgr->AddCreatureToGrid(&data);
+            }
+            return true;
+        }
+
+        Creature* creature = Creature::CreateCreature(id, map, chr->GetPosition());
+        if (!creature)
+            return false;
+
+        PhasingHandler::InheritPhaseShift(creature, chr);
+        creature->SaveToDB(map->GetId(), { map->GetDifficultyID() });
+
+        ObjectGuid::LowType db_guid = creature->GetSpawnId();
+
+        // To call _LoadGoods(); _LoadQuests(); CreateTrainerSpells()
+        // current "creature" variable is deleted and created fresh new, otherwise old values might trigger asserts or cause undefined behavior
+        creature->CleanupsBeforeDelete();
+        delete creature;
+
+        creature = Creature::CreateCreatureFromDB(db_guid, map, true, true);
+        if (!creature)
+            return false;
+
+        sObjectMgr->AddCreatureToGrid(sObjectMgr->GetCreatureData(db_guid));
+        return true;
+    }
     //add item in vendorlist
     static bool HandleNpcAddVendorItemCommand(ChatHandler* handler, ItemTemplate const* item, Optional<uint32> mc, Optional<uint32> it, Optional<uint32> ec, Optional<bool> addMulti, Optional<std::string_view> bonusListIDs)
     {
