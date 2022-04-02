@@ -11371,7 +11371,7 @@ void Unit::SetMeleeAnimKitId(uint16 animKitId)
                     else
                         group->SendLooter(creature, nullptr);
 
-                    // Update round robin looter only if the creature had loot
+                    // Update round robin looter only if the creature had loot // TODO RESEARCH CRASH
                     if (!loot->empty())
                         group->UpdateLooterGuid(creature);
                 }

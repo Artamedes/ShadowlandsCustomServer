@@ -152,7 +152,6 @@ struct npc_occularus_coldheart_generic : public ScriptedAI
 
         void InitializeAI() override
         {
-            DoCastSelf(283126);
             me->SetReactState(REACT_PASSIVE);
             me->SetUnitFlag(UnitFlags::UNIT_FLAG_UNINTERACTIBLE);
             me->SetUnitFlag(UnitFlags::UNIT_FLAG_NON_ATTACKABLE);
@@ -184,7 +183,6 @@ struct npc_occularus_coldheart_generic : public ScriptedAI
             scheduler.CancelAll();
             me->SetReactState(REACT_AGGRESSIVE);
             me->RemoveAurasDueToSpell(Frozen);
-            me->RemoveAurasDueToSpell(283126);
         }
 
         void UpdateAI(uint32 diff) override
