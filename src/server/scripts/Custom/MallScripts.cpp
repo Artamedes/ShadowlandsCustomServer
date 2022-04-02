@@ -575,20 +575,32 @@ struct npc_mall_weapongiver : public ScriptedAI
 struct npc_morpher_admin : public ScriptedAI
 {
     public:
-        npc_morpher_admin(Creature* creature) : ScriptedAI(creature) { }
+        npc_morpher_admin(Creature* creature) : ScriptedAI(creature), summons(creature) { }
 
         uint32 startEntryId = 0;
         uint32 time = 250;
+        uint32 max = 0;
+        uint32 iterate = 9;
         bool pause = false;
+        SummonList summons;
+
+        void JustSummoned(Creature* creature) override
+        {
+            summons.Summon(creature);
+        }
 
         bool OnGossipHello(Player* player) override
         {
             ClearGossipMenuFor(player);
             AddGossipItemFor(player, GossipOptionIcon::None, "Set start display id " + std::to_string(startEntryId), 0, 1, "", 0, true);
+            AddGossipItemFor(player, GossipOptionIcon::None, "Set max " + std::to_string(max), 0, 8, "", 0, true);
+            AddGossipItemFor(player, GossipOptionIcon::None, "Set iterate " + std::to_string(iterate), 0, 9, "", 0, true);
             AddGossipItemFor(player, GossipOptionIcon::None, "Set time " + std::to_string(time), 0, 2, "", 0, true);
             AddGossipItemFor(player, GossipOptionIcon::None, "pause: " + std::string((pause ? "true" : "false")), 0, 3);
             AddGossipItemFor(player, GossipOptionIcon::None, "back: " + std::to_string(startEntryId - 1), 0, 4);
             AddGossipItemFor(player, GossipOptionIcon::None, "next: " + std::to_string(startEntryId + 1), 0, 5);
+            AddGossipItemFor(player, GossipOptionIcon::None, "spiral: " + std::to_string(startEntryId + 1), 0, 7);
+            AddGossipItemFor(player, GossipOptionIcon::None, "DESPAWN: ", 0, 9);
             AddGossipItemFor(player, GossipOptionIcon::None, "go ", 0, 6);
             SendGossipMenuFor(player, 1, me);
             return true;
@@ -616,6 +628,21 @@ struct npc_morpher_admin : public ScriptedAI
                 events.Reset();
                 events.ScheduleEvent(1, 100ms);
             }
+            else if (actionId == 7)
+            {
+                for (int i = 0; i < (max + 1); i += 1.0f)
+                {
+                    auto displayId = startEntryId + i;
+                    float posX = me->GetPositionX() + float(i % iterate) * 10.0f;
+                    float posY = me->GetPositionY() + float((float)i / (float)iterate) * 10.0f;
+                    if (auto trigger = DoSummon(3, { posX, posY, me->GetPositionZ(), me->GetOrientation() }, 0s, TempSummonType::TEMPSUMMON_MANUAL_DESPAWN))
+                        trigger->SetDisplayId(displayId);
+                }
+            }
+            else if (actionId == 9)
+            {
+                summons.DespawnAll();
+            }
 
             return OnGossipHello(player);
         }
@@ -634,6 +661,13 @@ struct npc_morpher_admin : public ScriptedAI
                         break;
                     case 2:
                         time = atol(code);
+                        break;
+                    case 8:
+                        max = atol(code);
+                        break;
+                    case 9:
+                        iterate = atol(code);
+                        iterate = std::max(1u, iterate);
                         break;
                 }
             }
