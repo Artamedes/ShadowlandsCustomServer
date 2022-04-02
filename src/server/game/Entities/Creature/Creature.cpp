@@ -424,7 +424,7 @@ void Creature::RemoveCorpse(bool setSpawnTime, bool destroyForNearbyPlayers)
         m_corpseRemoveTime = GameTime::GetGameTime();
         setDeathState(DEAD);
         RemoveAllAuras();
-        loot.clear();
+        GetLootFor()->clear();
         m_PersonalLoots.clear();
         uint32 respawnDelay = m_respawnDelay;
         if (CreatureAI* ai = AI())
@@ -522,7 +522,7 @@ bool Creature::InitEntry(uint32 entry, CreatureData const* data /*= nullptr*/)
 
     // Initialize loot duplicate count depending on raid difficulty
     if (GetMap()->Is25ManRaid())
-        loot.maxDuplicates = 3;
+        GetLootFor()->maxDuplicates = 3;
 
     SetEntry(entry);                                        // normal entry always
     m_creatureInfo = cinfo;                                 // map mode related always
@@ -786,7 +786,7 @@ void Creature::Update(uint32 diff)
                 if (m_groupLootTimer <= diff)
                 {
                     if (Group* group = sGroupMgr->GetGroupByGUID(lootingGroupLowGUID))
-                        group->EndRoll(&loot, GetMap());
+                        group->EndRoll(GetLootFor(), GetMap());
 
                     m_groupLootTimer = 0;
                     lootingGroupLowGUID.Clear();
@@ -1346,7 +1346,6 @@ void Creature::SetLootRecipient(Unit* unit, bool withGroup)
     {
         m_lootRecipient.Clear();
         m_lootRecipientGroup.Clear();
-        m_lootRecipientsPersonal.clear();
         RemoveDynamicFlag(UNIT_DYNFLAG_LOOTABLE | UNIT_DYNFLAG_TAPPED);
         return;
     }
@@ -1358,8 +1357,8 @@ void Creature::SetLootRecipient(Unit* unit, bool withGroup)
     if (!player)                                             // normal creature, no player involved
         return;
 
-    if (CanHavePersonalLoot())
-        m_lootRecipientsPersonal.insert(player->GetGUID());
+    //if (CanHavePersonalLoot())
+    //    m_lootRecipientsPersonal.insert(player->GetGUID());
     m_lootRecipient = player->GetGUID();
     if (withGroup)
     {
@@ -1369,7 +1368,7 @@ void Creature::SetLootRecipient(Unit* unit, bool withGroup)
     else
         m_lootRecipientGroup = ObjectGuid::Empty;
 
-    if (!CanHavePersonalLoot())
+    //if (!CanHavePersonalLoot())
         SetDynamicFlag(UNIT_DYNFLAG_TAPPED);
 }
 
@@ -1839,9 +1838,11 @@ bool Creature::LoadFromDB(ObjectGuid::LowType spawnId, Map* map, bool addToMap, 
     // checked at creature_template loading
     m_defaultMovementType = MovementGeneratorType(data->movementType);
 
-    loot.SetGUID(ObjectGuid::Create<HighGuid::LootObject>(GetMapId(), data->id, GetMap()->GenerateLowGuid<HighGuid::LootObject>()));
+    auto lootGuid = ObjectGuid::Create<HighGuid::LootObject>(GetMapId(), data->id, GetMap()->GenerateLowGuid<HighGuid::LootObject>());
+
+    GetLootFor()->SetGUID(lootGuid);
     for (auto & loot : m_PersonalLoots) // TODO: Verify this
-        loot.second.SetGUID(ObjectGuid::Create<HighGuid::LootObject>(GetMapId(), data->id, GetMap()->GenerateLowGuid<HighGuid::LootObject>()));
+        loot.second->SetGUID(lootGuid);
 
     if (addToMap && !GetMap()->AddToMap(this))
         return false;
@@ -1994,34 +1995,35 @@ bool Creature::hasInvolvedQuest(uint32 quest_id) const
     return true;
 }
 
-Loot& Creature::GetLootFor(Player* player)
+Loot* Creature::GetLootFor(Player* player)
 {
-    if (CanHavePersonalLoot())
+    if (CanHavePersonalLoot() && player && m_lootRecipientsPersonal.count(player->GetGUID()))
     {
         auto itr = m_PersonalLoots.find(player->GetGUID());
         if (itr == m_PersonalLoots.end())
         {
-            // create? - Maybe not, should have generated on the player already. - sometimes its not, See Unit::Kill
-            //m_PersonalLoots.insert({ player->GetGUID(), Loot() });
-            // Just gonna return normal loot.
-            //return loot;
+            m_PersonalLoots.insert({ player->GetGUID(), std::make_unique<Loot>() });
+            //ASSERT(loot);
+            m_PersonalLoots[player->GetGUID()]->SetGUID(loot ? loot->GetGUID() : ObjectGuid::Create<HighGuid::LootObject>(GetMapId(), GetEntry(), GetMap()->GenerateLowGuid<HighGuid::LootObject>())); // loot should already be initialized
         }
-        auto& l_Loot = m_PersonalLoots[player->GetGUID()];
-        return l_Loot;
+        return m_PersonalLoots[player->GetGUID()].get();
     }
 
-    return loot;
+    if (!loot)
+        loot = std::make_unique<Loot>();
+
+    return loot.get();
 }
 
 bool Creature::IsAllLooted() const
 {
     for (auto const& personal : m_PersonalLoots)
     {
-        if (!personal.second.isLooted())
+        if (!personal.second->isLooted())
             return false;
     }
 
-    return loot.isLooted();
+    return loot->isLooted();
 }
 
 bool Creature::IsInvisibleDueToDespawn() const
@@ -2263,7 +2265,7 @@ void Creature::Respawn(bool force)
             TC_LOG_DEBUG("entities.unit", "Respawning creature %s (%s)", GetName().c_str(), GetGUID().ToString().c_str());
             m_respawnTime = 0;
             ResetPickPocketRefillTimer();
-            loot.clear();
+            GetLootFor()->clear();
 
             if (m_originalEntry != GetEntry())
                 UpdateEntry(m_originalEntry);
@@ -2924,7 +2926,7 @@ void Creature::RefreshCanSwimFlag(bool recheck)
 
 void Creature::AllLootRemovedFromCorpse()
 {
-    if (loot.loot_type != LOOT_SKINNING && !IsPet() && GetCreatureTemplate()->SkinLootId && hasLootRecipient())
+    if (GetLootFor()->loot_type != LOOT_SKINNING && !IsPet() && GetCreatureTemplate()->SkinLootId && hasLootRecipient())
         if (LootTemplates_Skinning.HaveLootFor(GetCreatureTemplate()->SkinLootId))
             SetUnitFlag(UNIT_FLAG_SKINNABLE);
 
@@ -2937,7 +2939,7 @@ void Creature::AllLootRemovedFromCorpse()
     float decayRate = m_ignoreCorpseDecayRatio ? 1.f : sWorld->getRate(RATE_CORPSE_DECAY_LOOTED);
 
     // corpse skinnable, but without skinning flag, and then skinned, corpse will despawn next update
-    if (loot.loot_type == LOOT_SKINNING)
+    if (GetLootFor()->loot_type == LOOT_SKINNING)
         m_corpseRemoveTime = now;
     else
         m_corpseRemoveTime = now + uint32(m_corpseDelay * decayRate);

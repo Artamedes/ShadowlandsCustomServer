@@ -11345,7 +11345,7 @@ void Unit::SetMeleeAnimKitId(uint16 animKitId)
             {
                 WorldPackets::Loot::LootList lootList;
                 lootList.Owner = creature->GetGUID();
-                lootList.LootObj = creature->GetLootFor(player).GetGUID();
+                lootList.LootObj = creature->GetLootFor(player)->GetGUID();
 
                 player->SendMessageToSet(lootList.Write(), true);
             }
@@ -11356,7 +11356,7 @@ void Unit::SetMeleeAnimKitId(uint16 animKitId)
         {
             auto GenerateLootAndSendToGroup([&](Player* who, bool personal = false)
             {
-                Loot* loot = &creature->GetLootFor(who);
+                Loot* loot = creature->GetLootFor(who);
                 loot->clear();
                 if (uint32 lootid = creature->GetCreatureTemplate()->lootid)
                     loot->FillLoot(lootid, LootTemplates_Creature, looter, personal, false, creature->GetLootMode(), creature->GetMap()->GetDifficultyLootItemContext());
@@ -11483,7 +11483,7 @@ void Unit::SetMeleeAnimKitId(uint16 animKitId)
         if (!creature->IsPet())
         {
             // must be after setDeathState which resets dynamic flags
-            if (!creature->IsAllLooted())
+            if (!creature->GetLootFor(player)->isLooted())
                 creature->SetDynamicFlag(UNIT_DYNFLAG_LOOTABLE);
             else
                 creature->AllLootRemovedFromCorpse();

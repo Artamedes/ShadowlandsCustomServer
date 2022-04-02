@@ -224,11 +224,11 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         virtual void SaveToDB(uint32 mapid, std::vector<Difficulty> const& spawnDifficulties);
         static bool DeleteFromDB(ObjectGuid::LowType spawnId);
 
-        Loot& GetLootFor(Player* player);
+        Loot* GetLootFor(Player* player = nullptr);
         bool IsAllLooted() const;
 
-        Loot loot;
-        std::unordered_map<ObjectGuid, Loot> m_PersonalLoots;
+        std::unique_ptr<Loot> loot;
+        std::unordered_map<ObjectGuid, std::unique_ptr<Loot>> m_PersonalLoots;
         void StartPickPocketRefillTimer();
         void ResetPickPocketRefillTimer() { _pickpocketLootRestore = 0; }
         bool CanGeneratePickPocketLoot() const;

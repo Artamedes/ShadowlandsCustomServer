@@ -9008,22 +9008,23 @@ void Player::SendLoot(ObjectGuid guid, LootType loot_type, bool aeLooting/* = fa
             return;
         }
 
-        bool isPersonal = false;
+        bool isPersonal = creature->CanHavePersonalLoot() && creature->isTappedBy(this);
+        loot = creature->GetLootFor(this);
 
-        if (creature->CanHavePersonalLoot() && creature->isTappedBy(this))
-        {
-            auto itr = creature->m_PersonalLoots.find(GetGUID());
-            if (itr == creature->m_PersonalLoots.end())
-            {
-                // create?
-                //creature->m_PersonalLoots.insert( { GetGUID(), Loot() });
-            }
-            auto& l_Loot = creature->m_PersonalLoots[GetGUID()];
-            loot = &l_Loot;
-            isPersonal = true;
-        }
-        else
-            loot = &creature->loot;
+        //if (creature->CanHavePersonalLoot() && creature->isTappedBy(this))
+        //{
+        //    auto itr = creature->m_PersonalLoots.find(GetGUID());
+        //    if (itr == creature->m_PersonalLoots.end())
+        //    {
+        //        // create?
+        //        //creature->m_PersonalLoots.insert( { GetGUID(), Loot() });
+        //    }
+        //    auto& l_Loot = creature->m_PersonalLoots[GetGUID()];
+        //    loot = &l_Loot;
+        //    isPersonal = true;
+        //}
+        //else
+        //    loot = &creature->loot;
 
         if (loot_type == LOOT_PICKPOCKETING)
         {
@@ -9071,7 +9072,7 @@ void Player::SendLoot(ObjectGuid guid, LootType loot_type, bool aeLooting/* = fa
                 }
             }
 
-            if (loot->loot_type == LOOT_NONE && !isPersonal)
+            if (loot->loot_type == LOOT_NONE && !isPersonal) // ignore personal in group.
             {
                 // for creature, loot is filled when creature is killed.
                 if (Group* group = creature->GetLootRecipientGroup())
@@ -9130,7 +9131,7 @@ void Player::SendLoot(ObjectGuid guid, LootType loot_type, bool aeLooting/* = fa
                     else
                         permission = NONE_PERMISSION;
                 }
-                else if (creature->GetLootRecipient() == this || isPersonal)
+                else if (creature->isTappedBy(this))
                     permission = OWNER_PERMISSION;
                 else
                     permission = NONE_PERMISSION;
@@ -18804,7 +18805,7 @@ bool Player::isAllowedToLoot(const Creature* creature) const
     if (!creature->isTappedBy(this))
         return false;
 
-    Loot const* loot = &(const_cast<Creature*>(creature)->GetLootFor(const_cast<Player*>(this)));
+    Loot const* loot = (const_cast<Creature*>(creature)->GetLootFor(const_cast<Player*>(this)));
     if (loot->isLooted()) // nothing to loot or everything looted.
         return false;
     if (!loot->hasItemForAll() && !loot->hasItemFor(this)) // no loot in creature for this player
@@ -18822,7 +18823,6 @@ bool Player::isAllowedToLoot(const Creature* creature) const
     switch (thisGroup->GetLootMethod())
     {
         case PERSONAL_LOOT: /// @todo implement personal loot (http://wow.gamepedia.com/Loot#Personal_Loot)
-            return creature->isTappedBy(this);
         case MASTER_LOOT:
         case FREE_FOR_ALL:
             return true;

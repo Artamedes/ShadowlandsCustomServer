@@ -113,14 +113,14 @@ void WorldSession::HandleAutostoreLootItemOpcode(WorldPackets::Loot::LootItem& p
         {
             Creature* creature = GetPlayer()->GetMap()->GetCreature(lguid);
 
-            bool lootAllowed = creature && creature->IsAlive() == (player->GetClass() == CLASS_ROGUE && creature->GetLootFor(player).loot_type == LOOT_PICKPOCKETING);
+            bool lootAllowed = creature && creature->IsAlive() == (player->GetClass() == CLASS_ROGUE && creature->GetLootFor(player)->loot_type == LOOT_PICKPOCKETING);
             if (!lootAllowed || !creature->IsWithinDistInMap(_player, AELootCreatureCheck::LootDistance))
             {
                 player->SendLootError(req.Object, lguid, lootAllowed ? LOOT_ERROR_TOO_FAR : LOOT_ERROR_DIDNT_KILL);
                 continue;
             }
 
-            loot = &creature->GetLootFor(player);
+            loot = creature->GetLootFor(player);
         }
 
         player->StoreLootItem(req.LootListID - 1, loot, aeResultPtr);
@@ -190,10 +190,10 @@ void WorldSession::HandleLootMoneyOpcode(WorldPackets::Loot::LootMoney& /*packet
             case HighGuid::Vehicle:
             {
                 Creature* creature = player->GetMap()->GetCreature(guid);
-                bool lootAllowed = creature && creature->IsAlive() == (player->GetClass() == CLASS_ROGUE && creature->GetLootFor(player).loot_type == LOOT_PICKPOCKETING);
+                bool lootAllowed = creature && creature->IsAlive() == (player->GetClass() == CLASS_ROGUE && creature->GetLootFor(player)->loot_type == LOOT_PICKPOCKETING);
                 if (lootAllowed && creature->IsWithinDistInMap(player, AELootCreatureCheck::LootDistance))
                 {
-                    loot = &creature->GetLootFor(player);
+                    loot = creature->GetLootFor(player);
                     if (creature->IsAlive())
                         shareMoney = false;
                 }
@@ -413,12 +413,12 @@ void WorldSession::DoLootRelease(ObjectGuid lguid)
     {
         Creature* creature = GetPlayer()->GetMap()->GetCreature(lguid);
 
-        bool lootAllowed = creature && creature->IsAlive() == (player->GetClass() == CLASS_ROGUE && creature->GetLootFor(player).loot_type == LOOT_PICKPOCKETING);
+        bool lootAllowed = creature && creature->IsAlive() == (player->GetClass() == CLASS_ROGUE && creature->GetLootFor(player)->loot_type == LOOT_PICKPOCKETING);
         if (!lootAllowed || !creature->IsWithinDistInMap(_player, AELootCreatureCheck::LootDistance))
             return;
 
-        loot = &creature->GetLootFor(player);
-        if (creature->IsAllLooted())
+        loot = creature->GetLootFor(player);
+        if (loot->isLooted())
         {
             creature->RemoveDynamicFlag(UNIT_DYNFLAG_LOOTABLE);
 
@@ -493,7 +493,7 @@ void WorldSession::HandleLootMasterGiveOpcode(WorldPackets::Loot::MasterLootItem
                 return;
 
             // Therortically this should only be creature loot. Not even sure if master loot exists right now either.
-            loot = &creature->loot;
+            loot = creature->GetLootFor(GetPlayer());
         }
         else if (GetPlayer()->GetLootGUID().IsGameObject())
         {
