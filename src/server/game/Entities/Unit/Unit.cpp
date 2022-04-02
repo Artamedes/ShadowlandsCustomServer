@@ -11354,12 +11354,12 @@ void Unit::SetMeleeAnimKitId(uint16 animKitId)
         // Generate loot before updating looter
         if (creature)
         {
-            auto GenerateLootAndSendToGroup([&](Player* who)
+            auto GenerateLootAndSendToGroup([&](Player* who, bool personal = false)
             {
                 Loot* loot = &creature->GetLootFor(who);
                 loot->clear();
                 if (uint32 lootid = creature->GetCreatureTemplate()->lootid)
-                    loot->FillLoot(lootid, LootTemplates_Creature, looter, false, false, creature->GetLootMode(), creature->GetMap()->GetDifficultyLootItemContext());
+                    loot->FillLoot(lootid, LootTemplates_Creature, looter, personal, false, creature->GetLootMode(), creature->GetMap()->GetDifficultyLootItemContext());
 
                 if (creature->GetLootMode() > 0)
                     loot->generateMoneyLoot(creature->GetCreatureTemplate()->mingold, creature->GetCreatureTemplate()->maxgold);
@@ -11383,7 +11383,7 @@ void Unit::SetMeleeAnimKitId(uint16 animKitId)
                 for (auto guid : creature->m_lootRecipientsPersonal)
                 {
                     if (auto who = ObjectAccessor::GetPlayer(*creature, guid))
-                        GenerateLootAndSendToGroup(who);
+                        GenerateLootAndSendToGroup(who, true);
                 }
             }
             else
