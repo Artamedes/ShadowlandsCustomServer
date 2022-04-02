@@ -1739,6 +1739,16 @@ public:
         l_Stmt->setFloat(4, 1.0f);
         WorldDatabase.Query(l_Stmt);
 
+        int8 wepId = -1;
+        if (auto weapon = sObjectMgr->GetEquipmentInfo(EntryID, wepId))
+        {
+            l_Stmt = WorldDatabase.GetPreparedStatement(WORLD_REP_CREATURE_EQUIP_TEMPLATE);
+            l_Stmt->setUInt32(0, EntryID);
+            l_Stmt->setUInt32(1, 0);
+            l_Stmt->setUInt32(2, weapon->Items[0].ItemId);
+            WorldDatabase.Query(l_Stmt);
+        }
+
 
         WorldDatabasePreparedStatement* stmt = WorldDatabase.GetPreparedStatement(WORLD_SEL_CREATURE_TEMPLATE);
         stmt->setUInt32(0, EntryID);
@@ -1753,6 +1763,7 @@ public:
 
         sObjectMgr->LoadCreatureTemplate(result->Fetch());
         sObjectMgr->LoadCreatureTemplateModel(EntryID);
+        sObjectMgr->LoadEquipmentTemplates();
 
         handler->PSendSysMessage("Succesfully copied %u to %u", l_Creature->GetEntry(), EntryID);
 
