@@ -23619,6 +23619,12 @@ bool Player::BuyItemFromVendorSlot(ObjectGuid vendorguid, uint32 vendorslot, uin
         }
     }
 
+    if (auto ai = creature->AI())
+    {
+        if (!ai->OnBuyItemFromVendorSlot(vendorslot, item, count, bag, slot, price, pProto, crItem))
+            return false;
+    }
+
     if ((bag == NULL_BAG && slot == NULL_SLOT) || IsInventoryPos(bag, slot))
     {
         if (!_StoreOrEquipNewItem(vendorslot, item, count, bag, slot, price, pProto, creature, crItem, true))
