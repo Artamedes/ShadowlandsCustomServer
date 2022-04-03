@@ -225,7 +225,7 @@ class TC_GAME_API MotionMaster
         void MoveRotate(uint32 id, uint32 time, RotateDirection direction);
         void MoveFormation(Unit* leader, float range, float angle, uint32 point1, uint32 point2);
 
-        void LaunchMoveSpline(Movement::MoveSplineInit&& init, uint32 id = 0, MovementGeneratorPriority priority = MOTION_PRIORITY_NORMAL, MovementGeneratorType type = EFFECT_MOTION_TYPE);
+        void LaunchMoveSpline(std::function<void(Movement::MoveSplineInit& init)>&& initializer, uint32 id = 0, MovementGeneratorPriority priority = MOTION_PRIORITY_NORMAL, MovementGeneratorType type = EFFECT_MOTION_TYPE);
 
         MovementGenerator* Move(uint32 p_Id, MoveTypes p_MoveType, uint32 p_Options = MoveOptions::MOVE_PATHFINDING, float p_Distance = 0.0f);
     private:

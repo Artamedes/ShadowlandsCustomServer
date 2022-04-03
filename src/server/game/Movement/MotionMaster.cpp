@@ -27,6 +27,7 @@
 #include "Map.h"
 #include "MoveSpline.h"
 #include "MoveSplineInit.h"
+#include "ObjectAccessor.h"
 #include "PathGenerator.h"
 #include "PetDefines.h"
 #include "Player.h"
@@ -705,10 +706,13 @@ void MotionMaster::MoveCloserAndStop(uint32 id, Unit* target, float distance)
     else
     {
         // We are already close enough. We just need to turn toward the target without changing position.
-        Movement::MoveSplineInit init(_owner);
-        init.MoveTo(_owner->GetPositionX(), _owner->GetPositionY(), _owner->GetPositionZ());
-        init.SetFacing(target);
-        Add(new GenericMovementGenerator(std::move(init), EFFECT_MOTION_TYPE, id));
+        std::function<void(Movement::MoveSplineInit&)> initializer = [=, target = target->GetGUID()](Movement::MoveSplineInit& init)
+        {
+            init.MoveTo(_owner->GetPositionX(), _owner->GetPositionY(), _owner->GetPositionZ());
+            if (Unit const* refreshedTarget = ObjectAccessor::GetUnit(*_owner, target))
+                init.SetFacing(refreshedTarget);
+        };
+        Add(new GenericMovementGenerator(std::move(initializer), EFFECT_MOTION_TYPE, id));
     }
 }
 
@@ -716,24 +720,28 @@ void MotionMaster::MoveLand(uint32 id, Position const& pos, Optional<float> velo
 {
     TC_LOG_DEBUG("movement.motionmaster", "MotionMaster::MoveLand: '%s', landing point Id: %u (X: %f, Y: %f, Z: %f)", _owner->GetGUID().ToString().c_str(), id, pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ());
 
-    Movement::MoveSplineInit init(_owner);
-    init.MoveTo(PositionToVector3(pos), false);
-    init.SetAnimation(AnimTier::Ground);
-    if (velocity)
-        init.SetVelocity(*velocity);
-    Add(new GenericMovementGenerator(std::move(init), EFFECT_MOTION_TYPE, id));
+    std::function<void(Movement::MoveSplineInit&)> initializer = [=](Movement::MoveSplineInit& init)
+    {
+        init.MoveTo(PositionToVector3(pos), false);
+        init.SetAnimation(AnimTier::Ground);
+        if (velocity)
+            init.SetVelocity(*velocity);
+    };
+    Add(new GenericMovementGenerator(std::move(initializer), EFFECT_MOTION_TYPE, id));
 }
 
 void MotionMaster::MoveTakeoff(uint32 id, Position const& pos, Optional<float> velocity /*= {}*/)
 {
     TC_LOG_DEBUG("movement.motionmaster", "MotionMaster::MoveTakeoff: '%s', landing point Id: %u (X: %f, Y: %f, Z: %f)", _owner->GetGUID().ToString().c_str(), id, pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ());
 
-    Movement::MoveSplineInit init(_owner);
-    init.MoveTo(PositionToVector3(pos), false);
-    init.SetAnimation(AnimTier::Hover);
-    if (velocity)
-        init.SetVelocity(*velocity);
-    Add(new GenericMovementGenerator(std::move(init), EFFECT_MOTION_TYPE, id));
+    std::function<void(Movement::MoveSplineInit&)> initializer = [=](Movement::MoveSplineInit& init)
+    {
+        init.MoveTo(PositionToVector3(pos), false);
+        init.SetAnimation(AnimTier::Hover);
+        if (velocity)
+            init.SetVelocity(*velocity);
+    };
+    Add(new GenericMovementGenerator(std::move(initializer), EFFECT_MOTION_TYPE, id));
 }
 
 void MotionMaster::MoveCharge(float x, float y, float z, float speed /*= SPEED_CHARGE*/, uint32 id /*= EVENT_CHARGE*/, bool generatePath /*= false*/,
@@ -796,15 +804,17 @@ void MotionMaster::MoveKnockbackFrom(Position const& origin, float speedXY, floa
     // Use a mmap raycast to get a valid destination.
     _owner->MovePositionToFirstCollision(dest, dist, _owner->GetRelativeAngle(origin) + float(M_PI));
 
-    Movement::MoveSplineInit init(_owner);
-    init.MoveTo(dest.GetPositionX(), dest.GetPositionY(), dest.GetPositionZ(), false);
-    init.SetParabolic(max_height, 0);
-    init.SetOrientationFixed(true);
-    init.SetVelocity(speedXY);
-    if (spellEffectExtraData)
-        init.SetSpellEffectExtraData(*spellEffectExtraData);
+    std::function<void(Movement::MoveSplineInit&)> initializer = [=, effect = (spellEffectExtraData ? Optional<Movement::SpellEffectExtraData>(*spellEffectExtraData) : Optional<Movement::SpellEffectExtraData>())](Movement::MoveSplineInit& init)
+    {
+        init.MoveTo(dest.GetPositionX(), dest.GetPositionY(), dest.GetPositionZ(), false);
+        init.SetParabolic(max_height, 0);
+        init.SetOrientationFixed(true);
+        init.SetVelocity(speedXY);
+        if (effect)
+            init.SetSpellEffectExtraData(*effect);
+    };
 
-    GenericMovementGenerator* movement = new GenericMovementGenerator(std::move(init), EFFECT_MOTION_TYPE, 0);
+    GenericMovementGenerator* movement = new GenericMovementGenerator(std::move(initializer), EFFECT_MOTION_TYPE, 0);
     movement->Priority = MOTION_PRIORITY_HIGHEST;
     movement->AddFlag(MOVEMENTGENERATOR_FLAG_PERSIST_ON_DEATH);
     Add(movement);
@@ -843,14 +853,16 @@ void MotionMaster::MoveJump(float x, float y, float z, float o, float speedXY, f
     float moveTimeHalf = speedZ / Movement::gravity;
     float max_height = -Movement::computeFallElevation(moveTimeHalf, false, -speedZ);
 
-    Movement::MoveSplineInit init(_owner);
-    init.MoveTo(x, y, z, false);
-    init.SetParabolic(max_height, 0);
-    init.SetVelocity(speedXY);
-    if (hasOrientation)
-        init.SetFacing(o);
-    if (spellEffectExtraData)
-        init.SetSpellEffectExtraData(*spellEffectExtraData);
+    std::function<void(Movement::MoveSplineInit&)> initializer = [=, effect = (spellEffectExtraData ? Optional<Movement::SpellEffectExtraData>(*spellEffectExtraData) : Optional<Movement::SpellEffectExtraData>())](Movement::MoveSplineInit& init)
+    {
+        init.MoveTo(x, y, z, false);
+        init.SetParabolic(max_height, 0);
+        init.SetVelocity(speedXY);
+        if (hasOrientation)
+            init.SetFacing(o);
+        if (effect)
+            init.SetSpellEffectExtraData(*effect);
+    };
 
     uint32 arrivalSpellId = 0;
     ObjectGuid arrivalSpellTargetGuid;
@@ -860,7 +872,7 @@ void MotionMaster::MoveJump(float x, float y, float z, float o, float speedXY, f
         arrivalSpellTargetGuid = arrivalCast->Target;
     }
 
-    GenericMovementGenerator* movement = new GenericMovementGenerator(std::move(init), EFFECT_MOTION_TYPE, id, arrivalSpellId, arrivalSpellTargetGuid);
+    GenericMovementGenerator* movement = new GenericMovementGenerator(std::move(initializer), EFFECT_MOTION_TYPE, id, arrivalSpellId, arrivalSpellTargetGuid);
     movement->Priority = MOTION_PRIORITY_HIGHEST;
     movement->BaseUnitState = UNIT_STATE_JUMPING;
     Add(movement);
@@ -873,15 +885,17 @@ void MotionMaster::MoveJumpWithGravity(Position const& pos, float speedXY, float
     if (speedXY < 0.01f)
         return;
 
-    Movement::MoveSplineInit init(_owner);
-    init.MoveTo(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), false);
-    init.SetParabolicVerticalAcceleration(gravity, 0);
-    init.SetUncompressed();
-    init.SetVelocity(speedXY);
-    if (hasOrientation)
-        init.SetFacing(pos.GetOrientation());
-    if (spellEffectExtraData)
-        init.SetSpellEffectExtraData(*spellEffectExtraData);
+    std::function<void(Movement::MoveSplineInit&)> initializer = [=, effect = (spellEffectExtraData ? Optional<Movement::SpellEffectExtraData>(*spellEffectExtraData) : Optional<Movement::SpellEffectExtraData>())](Movement::MoveSplineInit& init)
+    {
+        init.MoveTo(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), false);
+        init.SetParabolicVerticalAcceleration(gravity, 0);
+        init.SetUncompressed();
+        init.SetVelocity(speedXY);
+        if (hasOrientation)
+            init.SetFacing(pos.GetOrientation());
+        if (effect)
+            init.SetSpellEffectExtraData(*effect);
+    };
 
     uint32 arrivalSpellId = 0;
     ObjectGuid arrivalSpellTargetGuid;
@@ -891,7 +905,7 @@ void MotionMaster::MoveJumpWithGravity(Position const& pos, float speedXY, float
         arrivalSpellTargetGuid = arrivalCast->Target;
     }
 
-    GenericMovementGenerator* movement = new GenericMovementGenerator(std::move(init), EFFECT_MOTION_TYPE, id, arrivalSpellId, arrivalSpellTargetGuid);
+    GenericMovementGenerator* movement = new GenericMovementGenerator(std::move(initializer), EFFECT_MOTION_TYPE, id, arrivalSpellId, arrivalSpellTargetGuid);
     movement->Priority = MOTION_PRIORITY_HIGHEST;
     movement->BaseUnitState = UNIT_STATE_JUMPING;
     movement->AddFlag(MOVEMENTGENERATOR_FLAG_PERSIST_ON_DEATH);
@@ -900,59 +914,47 @@ void MotionMaster::MoveJumpWithGravity(Position const& pos, float speedXY, float
 
 GenericMovementGenerator* MotionMaster::MoveCirclePath(float x, float y, float z, float radius, bool clockwise, uint8 stepCount)
 {
-    float step = 2 * float(M_PI) / stepCount * (clockwise ? -1.0f : 1.0f);
-    Position const& pos = { x, y, z, 0.0f };
-    float angle = pos.GetAbsoluteAngle(_owner->GetPositionX(), _owner->GetPositionY());
-
-    Movement::MoveSplineInit init(_owner);
-
-    // add the owner's current position as starting point as it gets removed after entering the cycle
-    init.Path().push_back(G3D::Vector3(_owner->GetPositionX(), _owner->GetPositionY(), _owner->GetPositionZ()));
-
-    for (uint8 i = 0; i < stepCount; angle += step, ++i)
+    std::function<void(Movement::MoveSplineInit&)> initializer = [=](Movement::MoveSplineInit& init)
     {
-        G3D::Vector3 point;
-        point.x = x + radius * cosf(angle);
-        point.y = y + radius * sinf(angle);
+        float step = 2 * float(M_PI) / stepCount * (clockwise ? -1.0f : 1.0f);
+        Position const& pos = { x, y, z, 0.0f };
+        float angle = pos.GetAbsoluteAngle(_owner->GetPositionX(), _owner->GetPositionY());
+
+        // add the owner's current position as starting point as it gets removed after entering the cycle
+        init.Path().push_back(G3D::Vector3(_owner->GetPositionX(), _owner->GetPositionY(), _owner->GetPositionZ()));
+
+        for (uint8 i = 0; i < stepCount; angle += step, ++i)
+        {
+            G3D::Vector3 point;
+            point.x = x + radius * cosf(angle);
+            point.y = y + radius * sinf(angle);
+
+            if (_owner->IsFlying())
+                point.z = z;
+            else
+                point.z = _owner->GetMapHeight(point.x, point.y, z) + _owner->GetHoverOffset();
+
+            init.Path().push_back(point);
+        }
 
         if (_owner->IsFlying())
-            point.z = z;
+        {
+            init.SetFly();
+            init.SetCyclic();
+            init.SetAnimation(AnimTier::Hover);
+        }
         else
-            point.z = _owner->GetMapHeight(point.x, point.y, z) + _owner->GetHoverOffset();
+        {
+            init.SetWalk(true);
+            init.SetCyclic();
+        }
+    };
 
-        init.Path().push_back(point);
-    }
-
-    if (_owner->IsFlying())
-    {
-        init.SetFly();
-        init.SetCyclic();
-        init.SetAnimation(AnimTier::Hover);
-    }
-    else
-    {
-        init.SetWalk(true);
-        init.SetCyclic();
-    }
-
-    return Add(new GenericMovementGenerator(std::move(init), EFFECT_MOTION_TYPE, 0));
+    return Add(new GenericMovementGenerator(std::move(initializer), EFFECT_MOTION_TYPE, 0));
 }
 
 GenericMovementGenerator* MotionMaster::MoveSmoothPath(uint32 pointId, Position const* pathPoints, size_t pathSize, bool walk, bool fly, Optional<float> velocity)
 {
-    Movement::MoveSplineInit init(_owner);
-    if (fly)
-    {
-        init.SetFly();
-        init.SetUncompressed();
-        init.SetSmooth();
-    }
-
-    if (velocity)
-    {
-        init.SetUnlimitedSpeed(true);
-        init.SetVelocity(*velocity);
-    }
 
     Movement::PointsArray path;
     path.reserve(pathSize);
@@ -960,15 +962,27 @@ GenericMovementGenerator* MotionMaster::MoveSmoothPath(uint32 pointId, Position 
     {
         return G3D::Vector3(point.GetPositionX(), point.GetPositionY(), point.GetPositionZ());
     });
-    init.MovebyPath(path);
-    init.SetWalk(walk);
+    std::function<void(Movement::MoveSplineInit&)> initializer = [=](Movement::MoveSplineInit& init)
+    {
+        init.MovebyPath(path);
+        init.SetWalk(walk);
+        if (fly)
+        {
+            init.SetFly();
+            init.SetUncompressed();
+            init.SetSmooth();
+        }
+        if (velocity)
+        {
+            init.SetUnlimitedSpeed(true);
+            init.SetVelocity(*velocity);
+        }
+    };
 
     // This code is not correct
     // GenericMovementGenerator does not affect UNIT_STATE_ROAMING_MOVE
     // need to call PointMovementGenerator with various pointIds
-    auto gen = new GenericMovementGenerator(std::move(init), EFFECT_MOTION_TYPE, pointId);
-    Add(gen);
-    return gen;
+    return Add(new GenericMovementGenerator(std::move(initializer), EFFECT_MOTION_TYPE, pointId));
 }
 
 void MotionMaster::MoveAlongSplineChain(uint32 pointId, uint16 dbChainId, bool walk)
@@ -1031,11 +1045,13 @@ void MotionMaster::MoveFall(uint32 id/* = 0*/)
         return;
     }
 
-    Movement::MoveSplineInit init(_owner);
-    init.MoveTo(_owner->GetPositionX(), _owner->GetPositionY(), tz + _owner->GetHoverOffset(), false);
-    init.SetFall();
+    std::function<void(Movement::MoveSplineInit&)> initializer = [=](Movement::MoveSplineInit& init)
+    {
+        init.MoveTo(_owner->GetPositionX(), _owner->GetPositionY(), tz + _owner->GetHoverOffset(), false);
+        init.SetFall();
+    };
 
-    GenericMovementGenerator* movement = new GenericMovementGenerator(std::move(init), EFFECT_MOTION_TYPE, id);
+    GenericMovementGenerator* movement = new GenericMovementGenerator(std::move(initializer), EFFECT_MOTION_TYPE, id);
     movement->Priority = MOTION_PRIORITY_HIGHEST;
     Add(movement);
 }
@@ -1163,13 +1179,14 @@ MovementGenerator* MotionMaster::Move(uint32 p_Id, MoveTypes p_MoveType, uint32 
             break;
     }
 
-    Movement::MoveSplineInit init(_owner);
-    init.MoveTo(PositionToVector3(l_CurrentPos), p_Options & MOVE_PATHFINDING);
-    return Add(new GenericMovementGenerator(std::move(init), EFFECT_MOTION_TYPE, p_Id), MOTION_SLOT_ACTIVE);
+    std::function<void(Movement::MoveSplineInit&)> initializer = [=](Movement::MoveSplineInit& init)
+    {
+        init.MoveTo(PositionToVector3(l_CurrentPos), p_Options & MOVE_PATHFINDING);
+    };
+    return Add(new GenericMovementGenerator(std::move(initializer), EFFECT_MOTION_TYPE, p_Id), MOTION_SLOT_ACTIVE);
 }
 
-
-void MotionMaster::LaunchMoveSpline(Movement::MoveSplineInit&& init, uint32 id/*= 0*/, MovementGeneratorPriority priority/* = MOTION_PRIORITY_NORMAL*/, MovementGeneratorType type/*= EFFECT_MOTION_TYPE*/)
+void MotionMaster::LaunchMoveSpline(std::function<void(Movement::MoveSplineInit& init)>&& initializer, uint32 id/*= 0*/, MovementGeneratorPriority priority/* = MOTION_PRIORITY_NORMAL*/, MovementGeneratorType type/*= EFFECT_MOTION_TYPE*/)
 {
     if (IsInvalidMovementGeneratorType(type))
     {
@@ -1179,7 +1196,7 @@ void MotionMaster::LaunchMoveSpline(Movement::MoveSplineInit&& init, uint32 id/*
 
     TC_LOG_DEBUG("movement.motionmaster", "MotionMaster::LaunchMoveSpline: '%s', initiates spline Id: %u (Type: %u, Priority: %u)", _owner->GetGUID().ToString().c_str(), id, type, priority);
 
-    GenericMovementGenerator* movement = new GenericMovementGenerator(std::move(init), type, id);
+    GenericMovementGenerator* movement = new GenericMovementGenerator(std::move(initializer), type, id);
     movement->Priority = priority;
     Add(movement);
 }
