@@ -222,7 +222,7 @@ class TC_GAME_API CreatureAI : public UnitAI
         // Called when a player completes a quest and is rewarded, opt is the selected item's index or 0
         virtual void OnQuestReward(Player* /*player*/, Quest const* /*quest*/, LootItemType /*type*/, uint32 /*opt*/) { }
 
-        virtual bool OnBuyItemFromVendorSlot(uint32 vendorslot, uint32 item, uint8 count, uint8 bag, uint8 slot, uint64 price, ItemTemplate const* pProto, VendorItem const* crItem) { return true; }
+        virtual bool OnBuyItemFromVendorSlot(uint32 /*vendorslot*/, uint32 /*item*/, uint8 /*count*/, uint8 /*bag*/, uint8 /*slot*/, uint64 /*price*/, ItemTemplate const* /*pProto*/, VendorItem const* /*crItem*/ ) { return true; }
 
         /// == Waypoints system =============================
 

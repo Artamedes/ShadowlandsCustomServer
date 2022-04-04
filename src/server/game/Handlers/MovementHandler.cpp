@@ -305,6 +305,7 @@ void WorldSession::HandleMovementOpcodes(WorldPackets::Movement::ClientPlayerMov
 
 void WorldSession::HandleMovementOpcode(OpcodeClient opcode, MovementInfo& movementInfo)
 {
+    LastMoveTime = GameTime::Now();
     Unit* mover = _player->GetUnitBeingMoved();
 
     ASSERT(mover != nullptr);                      // there must always be a mover
@@ -454,14 +455,17 @@ void WorldSession::HandleMovementOpcode(OpcodeClient opcode, MovementInfo& movem
                 /// @todo discard movement packets after the player is rooted
                 if (plrMover->IsAlive())
                 {
-                    TC_LOG_DEBUG("entities.player.falldamage", "FALLDAMAGE Below map. Map min height: %f , Player debug info:\n%s", plrMover->GetMap()->GetMinHeight(plrMover->GetPhaseShift(), movementInfo.pos.GetPositionX(), movementInfo.pos.GetPositionY()), plrMover->GetDebugInfo().c_str());
-                    plrMover->SetPlayerFlag(PLAYER_FLAGS_IS_OUT_OF_BOUNDS);
-                    plrMover->EnvironmentalDamage(DAMAGE_FALL_TO_VOID, GetPlayer()->GetMaxHealth());
-                    // player can be alive if GM/etc
-                    // change the death state to CORPSE to prevent the death timer from
-                    // starting in the next player update
-                    if (plrMover->IsAlive())
-                        plrMover->KillPlayer();
+                    if (!plrMover->IsGameMaster() && !plrMover->GetCommandStatus(CHEAT_GOD))
+                    {
+                        TC_LOG_DEBUG("entities.player.falldamage", "FALLDAMAGE Below map. Map min height: %f , Player debug info:\n%s", plrMover->GetMap()->GetMinHeight(plrMover->GetPhaseShift(), movementInfo.pos.GetPositionX(), movementInfo.pos.GetPositionY()), plrMover->GetDebugInfo().c_str());
+                        plrMover->SetPlayerFlag(PLAYER_FLAGS_IS_OUT_OF_BOUNDS);
+                        plrMover->EnvironmentalDamage(DAMAGE_FALL_TO_VOID, GetPlayer()->GetMaxHealth());
+                        // player can be alive if GM/etc
+                        // change the death state to CORPSE to prevent the death timer from
+                        // starting in the next player update
+                        if (plrMover->IsAlive())
+                            plrMover->KillPlayer();
+                    }
                 }
             }
         }

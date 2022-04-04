@@ -2390,7 +2390,7 @@ bool GridMap::isHole(int row, int col) const
 float GridMap::getMinHeight(float x, float y) const
 {
     if (!_minHeightPlanes)
-        return -500.0f;
+        return -1000.0f;
 
     GridCoord gridCoord = Trinity::ComputeGridCoordSimple(x, y);
 
@@ -2629,7 +2629,7 @@ float Map::GetMinHeight(PhaseShift const& phaseShift, float x, float y)
     if (GridMap const* grid = GetGrid(PhasingHandler::GetTerrainMapId(phaseShift, this, x, y), x, y))
         return grid->getMinHeight(x, y);
 
-    return -500.0f;
+    return -1000.0f;
 }
 
 static inline bool IsInWMOInterior(uint32 mogpFlags)

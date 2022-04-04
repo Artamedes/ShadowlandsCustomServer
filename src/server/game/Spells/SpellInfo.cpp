@@ -3897,6 +3897,9 @@ int32 SpellInfo::CalcDuration(WorldObject const* caster /*= nullptr*/) const
 
 int32 SpellInfo::GetDuration() const
 {
+    if (Id == 319728)
+        return -1;
+
     if (!DurationEntry)
         return IsPassive() ? -1 : 0;
     return (DurationEntry->Duration == -1) ? -1 : abs(DurationEntry->Duration);

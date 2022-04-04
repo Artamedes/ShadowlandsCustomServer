@@ -72,6 +72,8 @@ public:
         static ChatCommandTable commandTable =
         {
             { "additem",          HandleAddItemCommand,          rbac::RBAC_PERM_COMMAND_ADDITEM,          Console::No },
+            { "additembonus",     HandleAddItemBonusCommand,     rbac::RBAC_PERM_COMMAND_ADDITEM,          Console::No },
+            { "removeitembonus",  HandleRemoveItemBonusCommand,  rbac::RBAC_PERM_COMMAND_ADDITEM,          Console::No },
             { "additem to",       HandleAddItemToCommand,        rbac::RBAC_PERM_COMMAND_ADDITEM,          Console::No },
             { "additem set",      HandleAddItemSetCommand,       rbac::RBAC_PERM_COMMAND_ADDITEMSET,       Console::No },
             { "appear",           HandleAppearCommand,           rbac::RBAC_PERM_COMMAND_APPEAR,           Console::No },
@@ -1179,6 +1181,152 @@ public:
         playerTarget->RemoveExploredZones(offset, val);
 
         handler->SendSysMessage(LANG_UNEXPLORE_AREA);
+        return true;
+    }
+
+    static bool HandleAddItemBonusCommand(ChatHandler* handler, char const* args)
+    {
+        if (!*args)
+            return false;
+
+        Player* player = handler->GetSession()->GetPlayer();
+
+        uint32 itemId = 0;
+
+        if (args[0] == '[')                                        // [name] manual form
+        {
+            char const* itemNameStr = strtok((char*)args, "]");
+
+            if (itemNameStr && itemNameStr[0])
+            {
+                std::string itemName = itemNameStr + 1;
+                auto itr = std::find_if(sItemSparseStore.begin(), sItemSparseStore.end(), [&itemName](ItemSparseEntry const* sparse)
+                    {
+                        for (LocaleConstant i = LOCALE_enUS; i < TOTAL_LOCALES; i = LocaleConstant(i + 1))
+                            if (itemName == sparse->Display[i])
+                                return true;
+                        return false;
+                    });
+
+                if (itr == sItemSparseStore.end())
+                {
+                    handler->PSendSysMessage(LANG_COMMAND_COULDNOTFIND, itemNameStr + 1);
+                    handler->SetSentErrorMessage(true);
+                    return false;
+                }
+
+                itemId = itr->ID;
+            }
+            else
+                return false;
+        }
+        else                                                    // item_id or [name] Shift-click form |color|Hitem:item_id:0:0:0|h[name]|h|r
+        {
+            char const* id = handler->extractKeyFromLink((char*)args, "Hitem");
+            if (!id)
+                return false;
+            itemId = atoul(id);
+        }
+
+        std::vector<int32> bonusListIDs;
+        char const* bonuses = strtok(nullptr, " ");
+
+        // semicolon separated bonuslist ids (parse them after all arguments are extracted by strtok!)
+        if (bonuses)
+            for (std::string_view token : Trinity::Tokenize(bonuses, ';', false))
+                if (Optional<int32> bonusListId = Trinity::StringTo<int32>(token))
+                    bonusListIDs.push_back(*bonusListId);
+
+        if (bonusListIDs.empty())
+        {
+            handler->SendSysMessage("No bonuslist ids");
+            return true;
+        }
+
+        auto item = handler->GetPlayer()->GetItemByEntry(itemId);
+        if (!item)
+            handler->SendSysMessage("You don't have that item");
+
+        player->_ApplyItemMods(item, item->GetSlot(), false);
+
+        for (auto bonus : bonusListIDs)
+            item->AddBonuses(bonus);
+
+        player->_ApplyItemMods(item, item->GetSlot(), true);
+
+        return true;
+    }
+
+    static bool HandleRemoveItemBonusCommand(ChatHandler* handler, char const* args)
+    {
+        if (!*args)
+            return false;
+
+        Player* player = handler->GetSession()->GetPlayer();
+
+        uint32 itemId = 0;
+
+        if (args[0] == '[')                                        // [name] manual form
+        {
+            char const* itemNameStr = strtok((char*)args, "]");
+
+            if (itemNameStr && itemNameStr[0])
+            {
+                std::string itemName = itemNameStr + 1;
+                auto itr = std::find_if(sItemSparseStore.begin(), sItemSparseStore.end(), [&itemName](ItemSparseEntry const* sparse)
+                    {
+                        for (LocaleConstant i = LOCALE_enUS; i < TOTAL_LOCALES; i = LocaleConstant(i + 1))
+                            if (itemName == sparse->Display[i])
+                                return true;
+                        return false;
+                    });
+
+                if (itr == sItemSparseStore.end())
+                {
+                    handler->PSendSysMessage(LANG_COMMAND_COULDNOTFIND, itemNameStr + 1);
+                    handler->SetSentErrorMessage(true);
+                    return false;
+                }
+
+                itemId = itr->ID;
+            }
+            else
+                return false;
+        }
+        else                                                    // item_id or [name] Shift-click form |color|Hitem:item_id:0:0:0|h[name]|h|r
+        {
+            char const* id = handler->extractKeyFromLink((char*)args, "Hitem");
+            if (!id)
+                return false;
+            itemId = atoul(id);
+        }
+
+        std::vector<int32> bonusListIDs;
+        char const* bonuses = strtok(nullptr, " ");
+
+        // semicolon separated bonuslist ids (parse them after all arguments are extracted by strtok!)
+        if (bonuses)
+            for (std::string_view token : Trinity::Tokenize(bonuses, ';', false))
+                if (Optional<int32> bonusListId = Trinity::StringTo<int32>(token))
+                    bonusListIDs.push_back(*bonusListId);
+
+        if (bonusListIDs.empty())
+        {
+            handler->SendSysMessage("No bonuslist ids");
+            return true;
+        }
+
+        auto item = handler->GetPlayer()->GetItemByEntry(itemId);
+        if (!item)
+            handler->SendSysMessage("You don't have that item");
+
+        player->_ApplyItemMods(item, item->GetSlot(), false);
+
+        for (auto bonus : bonusListIDs)
+            item->RemoveBonus(bonus);
+
+        player->_ApplyItemMods(item, item->GetSlot(), true);
+
         return true;
     }
 

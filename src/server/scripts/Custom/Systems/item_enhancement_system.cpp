@@ -126,5 +126,6 @@ void AddSC_item_enhancement_system()
     new item_enhancement_system<6483>("item_enhancement_system_t1_avoidant");
     new item_enhancement_system<6493>("item_enhancement_system_t1_siphoner");
     new item_enhancement_system<6547>("item_enhancement_system_t1_ineffable_truth");
+    new item_enhancement_system<1522>("item_enhancement_system_t1_50_ilvls");
     RegisterCreatureAI(npc_mother_700013);
 }

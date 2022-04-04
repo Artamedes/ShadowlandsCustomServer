@@ -36,6 +36,11 @@ void AddSC_item_enhancement_system();
 void AddSC_TelegrusRift();
 void AddSC_NazmirCustom();
 void AddSC_Occularus();
+void AddSC_PeakOfSerenity();
+void AddSC_LostGlacier();
+void AddSC_ElarianSanctuary();
+void AddSC_ShadoPanMonastary();
+void AddSC_LightDungeon3();
 
 void AddCustomScripts()
 {
@@ -56,4 +61,9 @@ void AddCustomScripts()
     AddSC_TelegrusRift();
     AddSC_NazmirCustom();
     AddSC_Occularus();
+    AddSC_PeakOfSerenity();
+    AddSC_LostGlacier();
+    AddSC_ElarianSanctuary();
+    AddSC_ShadoPanMonastary();
+    AddSC_LightDungeon3();
 }

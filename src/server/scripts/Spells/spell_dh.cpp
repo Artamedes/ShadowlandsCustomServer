@@ -117,6 +117,7 @@ enum DHSpells
     SPELL_DH_INFERNAL_STRIKE_JUMP                  = 189111,
     SPELL_DH_INFERNAL_STRIKE_VISUAL                = 208461,
     SPELL_DH_LAST_RESORT_DEBUFF                    = 209261,
+    SPELL_DH_METAMORPHOSIS_HAVOC                   = 162264,
     SPELL_DH_METAMORPHOSIS                         = 191427,
     SPELL_DH_METAMORPHOSIS_BUFFS                   = 162264,
     SPELL_DH_METAMORPHOSIS_IMMUNITY                = 201453,
@@ -2049,8 +2050,37 @@ public:
                 }
         }
 
+        bool targetHit;
+
+        void FilterTargets(std::list<WorldObject*>& targets)
+        {
+            targets.remove(GetCaster());
+        }
+
+        void CountTargets(std::list<WorldObject*>& targets)
+        {
+            Unit* caster = GetCaster();
+            if (!caster)
+                return;
+
+            targets.clear();
+            std::list<Unit*> units;
+            caster->GetAttackableUnitListInRange(units, 25.f);
+            units.remove_if([caster](Unit* unit)
+                {
+                    return !caster->HasInLine(unit, 6.f, caster->GetObjectScale());
+                });
+
+            for (Unit* unit : units)
+                targets.push_back(unit);
+
+            targetHit = !targets.empty();
+        }
+
         void Register() override
         {
+            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_dh_fel_rush_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_RECT_CASTER_ENEMY);
+            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_dh_fel_rush_SpellScript::CountTargets, EFFECT_0, TARGET_UNIT_RECT_CASTER_ENEMY);
             OnEffectHitTarget += SpellEffectFn(spell_dh_fel_rush_SpellScript::HandleDashGround, EFFECT_0, SPELL_EFFECT_DUMMY);
             OnEffectHitTarget += SpellEffectFn(spell_dh_fel_rush_SpellScript::HandleDashAir, EFFECT_1, SPELL_EFFECT_DUMMY);
         }
@@ -2231,6 +2261,8 @@ public:
     {
         PrepareAuraScript(spell_dh_eye_beam_AuraScript);
 
+        bool firstTick = true;
+
         bool Validate(SpellInfo const* /*spellInfo*/) override
         {
             if (!sSpellMgr->GetSpellInfo(SPELL_DH_EYE_BEAM) ||
@@ -2243,54 +2275,36 @@ public:
         {
             if (Unit* caster = GetCaster())
             {
-                caster->CastSpell(caster, SPELL_DH_EYE_BEAM_DAMAGE, true);
-
-                if (!caster->HasAura(SPELL_DH_BLIND_FURY)) return;
-
-                int32 fury = caster->GetPower(POWER_FURY);
-
-                if (fury + 40 < caster->GetMaxPower(POWER_FURY))
+                if (!firstTick)
                 {
-                    caster->SetPower(POWER_FURY, fury + 40);
-                }
-                else
-                {
-                    caster->SetPower(POWER_FURY, caster->GetMaxPower(POWER_FURY));
+                    caster->CastSpell(caster, SPELL_DH_EYE_BEAM_DAMAGE, true);
+                    if (int32 energize = caster->GetAuraEffectAmount(SPELL_DH_BLIND_FURY, EFFECT_2))
+                        caster->ModifyPower(POWER_FURY, energize * 2.f / 50.f);
                 }
             }
+
+            firstTick = false;
         }
 
         void HandleRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
         {
             if (Unit* caster = GetCaster())
-            {
                 caster->RemoveAurasDueToSpell(SPELL_DH_EYE_BEAM_VISUAL);
-
-                if (caster->HasAura(SPELL_DH_DEMONIC) && !caster->HasAura(SPELL_DH_METAMORPHOSIS_BUFFS)) //Eye Beam causes you to enter demon form for 5 sec after it finishes dealing damage.
-                {
-                    caster->CastSpell(caster, SPELL_DH_METAMORPHOSIS_BUFFS, true); // Metamorphosis
-                    if (Aura* aur = caster->GetAura(SPELL_DH_METAMORPHOSIS_BUFFS))
-                    {
-                        aur->SetDuration(8000);
-                        aur->SetMaxDuration(8000);
-                    }
-                }
-            }
         }
 
         void HandleApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
         {
             if (Unit* caster = GetCaster())
             {
-             //   caster->CastSpell(caster, SPELL_DH_EYE_BEAM_VISUAL, true);
+                if (!caster->HasAura(SPELL_DH_DEMONIC))
+                    caster->CastSpell(caster, SPELL_DH_EYE_BEAM_VISUAL, true);
 
                 if (caster->HasAura(SPELL_DH_DEMONIC))
                 {
-                    if (Aura* aur = caster->GetAura(SPELL_DH_METAMORPHOSIS_BUFFS))
-                    {
-                        aur->SetDuration(aur->GetDuration() + 8000);
-                        aur->SetMaxDuration(aur->GetDuration() + 8000);
-                    }
+                    if (Aura* aur = caster->GetAura(SPELL_DH_METAMORPHOSIS_HAVOC))
+                        aur->ModDuration(8 * IN_MILLISECONDS);
+                    else if (Aura* aur = caster->AddAura(SPELL_DH_METAMORPHOSIS_HAVOC, caster))
+                        aur->SetDuration(10 * IN_MILLISECONDS);
                 }
             }
         }
@@ -3668,10 +3682,30 @@ class spell_dh_eye_beam_damage : public SpellScript
         }
     }
 
+    void FilterTargets(std::list<WorldObject*>& unitList)
+    {
+        Unit* caster = GetCaster();
+        if (!caster)
+            return;
+
+        unitList.clear();
+        std::list<Unit*>  units;
+        caster->GetAttackableUnitListInRange(units, 25.f);
+        units.remove_if([caster](Unit* unit)
+            {
+                return !caster->HasInLine(unit, 5.f, caster->GetObjectScale());
+            });
+
+        for (Unit* unit : units)
+            unitList.push_back(unit);
+    }
+
+
     void Register() override
     {
         OnPrepare += SpellOnPrepareFn(spell_dh_eye_beam_damage::HandlePrepare);
         OnHit += SpellHitFn(spell_dh_eye_beam_damage::HandleHit);
+        OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_dh_eye_beam_damage::FilterTargets, EFFECT_0, TARGET_UNIT_RECT_CASTER_ENEMY);
     }
 
 private:

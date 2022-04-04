@@ -1851,6 +1851,8 @@ class TC_GAME_API WorldSession
         TransactionCallback& AddTransactionCallback(TransactionCallback&& callback);
         SQLQueryHolderCallback& AddQueryHolderCallback(SQLQueryHolderCallback&& callback);
 
+        TimePoint LastMoveTime;
+
     private:
         void ProcessQueryCallbacks();
 

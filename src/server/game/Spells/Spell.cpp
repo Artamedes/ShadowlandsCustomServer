@@ -3088,6 +3088,9 @@ void Spell::DoSpellEffectHit(Unit* unit, SpellEffectInfo const& spellEffectInfo,
                         hitInfo.HitAura->SetDuration(hitInfo.AuraDuration);
                     }
 
+                    if (GetSpellInfo()->Id == 319728)
+                        hitInfo.AuraDuration = -1;
+
                     if (refresh)
                         hitInfo.HitAura->AddStaticApplication(unit, aura_effmask);
                 }

@@ -178,6 +178,22 @@ struct npc_occularus_coldheart_generic : public ScriptedAI
             });
         }
 
+        void JustDied(Unit* who) override
+        {
+            UnitList list;
+
+            std::list<Player*> players;
+            Trinity::AnyPlayerInObjectRangeCheck checker(me, 50.0f);
+            Trinity::PlayerListSearcher<Trinity::AnyPlayerInObjectRangeCheck> searcher(me, players, checker);
+            Cell::VisitWorldObjects(me, searcher, 50.0f);
+
+            for (auto u : players)
+            {
+                if (u && me->isTappedBy(u))
+                    u->KilledMonsterCredit(720001, me->GetGUID());
+            }
+        }
+
         void JustEngagedWith(Unit* who) override
         {
             scheduler.CancelAll();

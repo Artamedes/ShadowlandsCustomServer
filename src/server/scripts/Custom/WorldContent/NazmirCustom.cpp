@@ -474,7 +474,7 @@ struct npc_nazmir_general_enemy : public ScriptedAI
             for (auto u : players)
             {
                 if (u && me->isTappedBy(u))
-                    u->UpdateQuestObjectiveProgress(QUEST_OBJECTIVE_MONSTER, 720000, 1, me->GetGUID());
+                    u->KilledMonsterCredit(720000, me->GetGUID());
             }
         }
 

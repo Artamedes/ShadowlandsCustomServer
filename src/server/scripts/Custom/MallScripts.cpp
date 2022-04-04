@@ -7,6 +7,8 @@
 #include "QuestDef.h"
 #include "GameTime.h"
 #include "Item.h"
+#include "CollectionMgr.h"
+#include "WorldSession.h"
 
 struct npc_battle_training : public ScriptedAI
 {
@@ -704,6 +706,148 @@ struct npc_morpher_admin : public ScriptedAI
         EventMap events;
 };
 
+
+const std::vector<uint32> t3entries =
+{
+    22498,
+    22499,
+    22496,
+    22501,
+    22502,
+    22497,
+    22500,
+    39514,
+    22515,
+    22512,
+    22517,
+    22518,
+    22513,
+    22516,
+    22506,
+    22507,
+    22504,
+    30668,
+    22510,
+    22505,
+    22508,
+    22478,
+    22479,
+    22476,
+    22481,
+    22482,
+    22477,
+    22480,
+    30674,
+    22490,
+    22491,
+    22488,
+    22493,
+    22494,
+    22489,
+    22492,
+    22438,
+    22439,
+    22436,
+    22441,
+    22442,
+    22437,
+    22440,
+    22418,
+    22419,
+    22416,
+    22421,
+    22422,
+    22417,
+    22420,
+    22428,
+    22429,
+    22425,
+    22426,
+    22431,
+    22427,
+    22430,
+    22466,
+    22467,
+    22464,
+    22469,
+    22470,
+    22465,
+    22468,
+};
+
+struct npc_kazzik_t3_transmogs : public ScriptedAI
+{
+    public:
+        npc_kazzik_t3_transmogs(Creature* creature) : ScriptedAI(creature) { }
+
+        bool OnGossipHello(Player* player) override
+        {
+            ClearGossipMenuFor(player);
+            AddGossipItemFor(player, GossipOptionIcon::None, "Give me my tier 3", 0, 0);
+            SendGossipMenuFor(player, 1, me);
+            return true;
+        }
+
+        bool OnGossipSelect(Player* player, uint32 menuId, uint32 GossipId) override
+        {
+            CloseGossipMenuFor(player);
+
+            for (auto entry : t3entries)
+            {
+                auto temp = sObjectMgr->GetItemTemplate(entry);
+              //  sObjectMgr->Getitemapp
+                if (!temp)
+                    continue;
+                //if (player->CanUseItem(temp))
+                  //  if (!player->GetSession()->GetCollectionMgr()->HasItemAppearance(temp->)
+
+                    player->AddItem(entry, 1);
+            }
+
+            return true;
+        }
+};
+
+struct npc_sturzah_800005 : public ScriptedAI
+{
+    public:
+        npc_sturzah_800005(Creature* creature) : ScriptedAI(creature) { }
+
+        void Reset() override
+        {
+
+        }
+
+        bool OnGossipHello(Player* player) override
+        {
+            ClearGossipMenuFor(player);
+            AddGossipItemFor(player, GossipOptionIcon::None, "|TInterface/Icons/achievement_pvp_h_01.blp:30:30:-28:0|tTier 1", 0, 1);
+            AddGossipItemFor(player, GossipOptionIcon::None, "|TInterface/Icons/achievement_pvp_h_02.blp:30:30:-28:0|tTier 2", 0, 2);
+            AddGossipItemFor(player, GossipOptionIcon::None, "|TInterface/Icons/achievement_pvp_h_03.blp:30:30:-28:0|tTier 3", 0, 3);
+            AddGossipItemFor(player, GossipOptionIcon::None, "|TInterface/Icons/achievement_pvp_h_04.blp:30:30:-28:0|tTier 4", 0, 4);
+            AddGossipItemFor(player, GossipOptionIcon::None, "|TInterface/Icons/achievement_pvp_h_05.blp:30:30:-28:0|tTier 5", 0, 5);
+            SendGossipMenuFor(player, 800005, me);
+            return true;
+        }
+
+        bool OnGossipSelect(Player* player, uint32 menuId, uint32 gossipListId) override
+        {
+            uint32 actionId = player->PlayerTalkClass->GetGossipOptionAction(gossipListId);
+            CloseGossipMenuFor(player);
+
+            switch (actionId)
+            {
+                case 1: player->GetSession()->SendListInventory(me->GetGUID(), 8000050); break;
+                case 2: player->GetSession()->SendListInventory(me->GetGUID(), 8000051); break;
+                case 3: player->GetSession()->SendListInventory(me->GetGUID(), 8000052); break;
+                case 4: player->GetSession()->SendListInventory(me->GetGUID(), 8000053); break;
+                case 5: player->GetSession()->SendListInventory(me->GetGUID(), 8000054); break;
+            }
+
+            return true;
+        }
+};
+
 void AddSC_MallScripts()
 {
     RegisterCreatureAI(npc_battle_training);
@@ -715,4 +859,6 @@ void AddSC_MallScripts()
     RegisterCreatureAI(npc_juno_700006);
     RegisterCreatureAI(npc_mall_weapongiver);
     RegisterCreatureAI(npc_morpher_admin);
+    RegisterCreatureAI(npc_kazzik_t3_transmogs);
+    RegisterCreatureAI(npc_sturzah_800005);
 }

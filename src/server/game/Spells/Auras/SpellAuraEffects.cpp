@@ -773,6 +773,9 @@ void AuraEffect::CalculatePeriodic(Unit* caster, bool resetPeriodicTimer /*= tru
             {
                 if (m_spellInfo->HasAttribute(SPELL_ATTR5_HASTE_AFFECT_DURATION))
                     caster->ModSpellDurationTime(m_spellInfo, _period);
+
+                if (GetSpellInfo()->Id == 319728)
+                    _period = -1;
             }
             else
             {

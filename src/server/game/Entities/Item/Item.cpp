@@ -2524,6 +2524,22 @@ bool Item::AddBonuses(uint32 bonusListID, bool checkExists)
     return false;
 }
 
+bool Item::RemoveBonus(uint32 bonusListID)
+{
+    if (std::find(m_itemData->BonusListIDs->begin(), m_itemData->BonusListIDs->end(), int32(bonusListID)) == m_itemData->BonusListIDs->end())
+        return false;
+
+    std::vector<int32> bonusIds;
+    bonusIds.reserve(m_itemData->BonusListIDs->size());
+    for (auto bonus : *m_itemData->BonusListIDs)
+        if (bonus != bonusListID)
+            bonusIds.emplace_back(bonus);
+
+    ClearBonuses();
+    SetBonuses(bonusIds);
+    return true;
+}
+
 void Item::SetBonuses(std::vector<int32> bonusListIDs)
 {
     SetUpdateFieldValue(m_values.ModifyValue(&Item::m_itemData).ModifyValue(&UF::ItemData::BonusListIDs), std::move(bonusListIDs));
