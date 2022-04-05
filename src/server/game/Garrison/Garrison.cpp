@@ -541,10 +541,8 @@ Garrison::Follower const* Garrison::GetFollower(uint64 dbId) const
     return nullptr;
 }
 
-void Garrison::SendInfo()
+void Garrison::AddGarrisonInfo(WorldPackets::Garrison::GetGarrisonInfoResult& garrisonInfo)
 {
-    WorldPackets::Garrison::GetGarrisonInfoResult garrisonInfo;
-    garrisonInfo.FactionIndex = GetFaction();
     garrisonInfo.Garrisons.emplace_back();
 
     WorldPackets::Garrison::GarrisonInfo& garrison = garrisonInfo.Garrisons.back();
@@ -562,8 +560,6 @@ void Garrison::SendInfo()
 
     for (auto const& p : _followers)
         garrison.Followers.push_back(&p.second.PacketInfo);
-
-    _owner->SendDirectMessage(garrisonInfo.Write());
 }
 
 void Garrison::SendRemoteInfo() const

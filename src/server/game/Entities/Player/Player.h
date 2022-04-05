@@ -70,6 +70,8 @@ class Bag;
 class Battleground;
 class Channel;
 class CinematicMgr;
+class Covenant;
+class CovenantMgr;
 class Creature;
 class DynamicObject;
 class Garrison;
@@ -1468,7 +1470,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
           * @param  printLog used on SMSG_SET_CURRENCY
           * @param  ignore gain multipliers
         */
-        void ModifyCurrency(uint32 id, int32 count, bool printLog = true, bool ignoreMultipliers = false);
+        void ModifyCurrency(uint32 id, int32 count, bool printLog = true, bool ignoreMultipliers = false, bool forceSet = false);
 
         void SetInvSlot(uint32 slot, ObjectGuid guid) { SetUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::InvSlots, slot), guid); }
 
@@ -2674,6 +2676,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void CreateGarrison(uint32 garrSiteId);
         void DeleteGarrison();
         Garrison* GetGarrison() const { return _garrison.get(); }
+        void SendGarrisonInfoResult();
 
         bool IsAdvancedCombatLoggingEnabled() const { return _advancedCombatLoggingEnabled; }
         void SetAdvancedCombatLogging(bool enabled) { _advancedCombatLoggingEnabled = enabled; }
@@ -2709,6 +2712,13 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
 
         //Animal Companion
         ObjectGuid petAnimalCompanionGuid;
+
+        Covenant* GetCovenant();
+        CovenantMgr* GetCovenantMgr();
+        // Only use this function for setting field! - Proper set in GetCovenant()!
+        void SetCovenant(int32 covenant) { SetUpdateFieldValue(m_values.ModifyValue(&Player::m_playerData).ModifyValue(&UF::PlayerData::CovenantID), covenant); }
+        // Only use this function for setting field! - Proper set in GetCovenant()!
+        void SetSoulbind(int32 soulbind) { SetUpdateFieldValue(m_values.ModifyValue(&Player::m_playerData).ModifyValue(&UF::PlayerData::SoulbindID), soulbind); }
 
         bool HasPlayerFlag(PlayerFlags flags) const { return (*m_playerData->PlayerFlags & flags) != 0; }
         void SetPlayerFlag(PlayerFlags flags) { SetUpdateFieldFlagValue(m_values.ModifyValue(&Player::m_playerData).ModifyValue(&UF::PlayerData::PlayerFlags), flags); }
@@ -3195,6 +3205,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
 
         void _InitHonorLevelOnLoadFromDB(uint32 honor, uint32 honorLevel);
         std::unique_ptr<RestMgr> _restMgr;
+        std::unique_ptr<CovenantMgr> _covenantMgr;
 
         bool _usePvpItemLevels;
 };

@@ -53,6 +53,7 @@
 #include <G3D/CoordinateFrame.h>
 #include <G3D/Quat.h>
 #include <sstream>
+#include "CovenantPackets.h"
 
 void GameObjectTemplate::InitializeQueryData()
 {
@@ -2444,6 +2445,11 @@ void GameObject::Use(Unit* user)
                     WorldPackets::Azerite::OpenHeartForge openHeartForge;
                     openHeartForge.ForgeGUID = GetGUID();
                     player->SendDirectMessage(openHeartForge.Write());
+                    break;
+                }
+                case 3: // covenant forge
+                {
+                    player->SendDirectMessage(WorldPackets::Covenant::OpenItemForge(GetGUID()).Write());
                     break;
                 }
                 default:

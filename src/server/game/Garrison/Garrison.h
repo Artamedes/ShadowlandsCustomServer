@@ -259,7 +259,7 @@ public:
         return count;
     }
 
-    void SendInfo();
+    void AddGarrisonInfo(WorldPackets::Garrison::GetGarrisonInfoResult& garrisonInfo);
     void SendRemoteInfo() const;
     void SendBlueprintAndSpecializationData();
     void SendMapData(Player* receiver) const;

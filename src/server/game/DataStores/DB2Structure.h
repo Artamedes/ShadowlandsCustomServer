@@ -3132,6 +3132,56 @@ struct SkillRaceClassInfoEntry
     int16 SkillTierID;
 };
 
+struct SoulbindEntry
+{
+    LocalizedString Name;
+    uint32 ID;
+    int32 CovenantID;
+    int32 GarrTalentTreeID;
+    int32 CreatureID;
+    int32 GarrFollowerID;
+    int32 PlayerConditionID;
+};
+
+struct RenownRewardsEntry
+{
+    uint32 ID;
+    LocalizedString Name;
+    LocalizedString Description;
+    LocalizedString ToastDescription;
+    int32 CovenantID;
+    int32 Level;
+    int32 Icon;
+    int32 Flags;
+    int32 UiOrder;
+    int32 ItemID;
+    int32 SpellID;
+    int32 MountID;
+    int32 TransmogID;
+    int32 TransmogSetID;
+    int32 CharTitlesID;
+    int32 GarrFollowerID;
+    int32 TransmogIllusionID;
+    int32 QuestID;
+    int32 PlayerConditionID;
+};
+
+struct SoulbindConduitEntry
+{
+    uint32 ID;
+    uint32 ConduitType; // 0: Finesse, 1: Potency, 2: Endurance
+    uint32 CovenantID;
+    uint32 SpecSetID;
+    uint32 Flags;
+};
+
+struct SoulbindConduitItemEntry
+{
+    uint32 ID;
+    uint32 ItemID;
+    uint32 ConduitID;
+};
+
 struct SoulbindConduitRankEntry
 {
     uint32 ID;
@@ -3812,6 +3862,15 @@ struct TransportRotationEntry
     std::array<float, 4> Rot;
     uint32 TimeIndex;
     uint32 GameObjectsID;
+};
+
+struct UICovenantAbilityEntry
+{
+    uint32 ID;
+    uint32 CovenantPreviewID;
+    uint32 SpellID;
+    uint8 AbilityType; // 0 = Class, 1 = Race/Signature, 2 = Soulbind
+    uint32 SoulbindDisplayInfoID;
 };
 
 struct UiMapEntry

@@ -37,10 +37,13 @@ EndScriptData */
 #include "SpellPackets.h"
 #include "UpdateFields.h"
 #include "WorldSession.h"
+#include "CovenantMgr.h"
 
 #if TRINITY_COMPILER == TRINITY_COMPILER_GNU
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #endif
+
+using namespace Trinity::ChatCommands;
 
 class modify_commandscript : public CommandScript
 {
@@ -81,6 +84,11 @@ public:
             { "talentpoints", rbac::RBAC_PERM_COMMAND_MODIFY_TALENTPOINTS, false, &HandleModifyTalentCommand,        "" },
             { "xp",           rbac::RBAC_PERM_COMMAND_MODIFY_XP,           false, &HandleModifyXPCommand,            "" },
             { "power",        rbac::RBAC_PERM_COMMAND_MODIFY_POWER,        false, &HandleModifyPowerCommand,         "" },
+            { "anima",        rbac::RBAC_PERM_COMMAND_MODIFY_POWER,        false, &HandleModifyAnimaCommand,         "" },
+            { "renown",       rbac::RBAC_PERM_COMMAND_MODIFY_POWER,        false, &HandleModifyRenownCommand,        "" },
+            { "souls",        rbac::RBAC_PERM_COMMAND_MODIFY_POWER,        false, &HandleModifySoulsCommand,         "" },
+            { "covenant",     rbac::RBAC_PERM_COMMAND_MODIFY_POWER,        false, &HandleModifyCovenantCommand,      "" },
+            { "soulbind",     rbac::RBAC_PERM_COMMAND_MODIFY_POWER,        false, &HandleModifySoulbindCommand,      "" },
         };
         static std::vector<ChatCommand> commandTable =
         {
@@ -1096,6 +1104,41 @@ public:
         powerAmount *= powerType->DisplayModifier;
         target->SetMaxPower(Powers(powerType->PowerTypeEnum), powerAmount);
         target->SetPower(Powers(powerType->PowerTypeEnum), powerAmount);
+        return true;
+    }
+
+    static bool HandleModifyAnimaCommand(ChatHandler* handler, uint32 anima)
+    {
+        auto covenant = handler->getSelectedPlayer()->GetCovenant();
+        covenant->SetAnima(anima);
+        return true;
+    }
+
+    static bool HandleModifyRenownCommand(ChatHandler* handler, int32 renown)
+    {
+        auto covenant = handler->getSelectedPlayer()->GetCovenant();
+        covenant->SetRenown(renown);
+        return true;
+    }
+
+    static bool HandleModifySoulsCommand(ChatHandler* handler, uint32 souls)
+    {
+        auto covenant = handler->getSelectedPlayer()->GetCovenant();
+        covenant->SetSouls(souls);
+        return true;
+    }
+
+    static bool HandleModifyCovenantCommand(ChatHandler* handler, int32 covenantId)
+    {
+        auto covenantMgr = handler->getSelectedPlayer()->GetCovenantMgr();
+        covenantMgr->SetCovenant(static_cast<CovenantID>(covenantId));
+        return true;
+    }
+
+    static bool HandleModifySoulbindCommand(ChatHandler* handler, int32 soulbindId)
+    {
+        auto covenant = handler->getSelectedPlayer()->GetCovenant();
+        covenant->SetSoulbind(static_cast<SoulbindID>(soulbindId));
         return true;
     }
 };

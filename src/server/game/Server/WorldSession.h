@@ -320,6 +320,12 @@ namespace WorldPackets
         class SetSheathed;
     }
 
+    namespace Covenant
+    {
+        class RequestCovenantCallings;
+        class CovenantRenownRequestCatchupState;
+    }
+
     namespace Duel
     {
         class CanDuel;
@@ -1497,6 +1503,9 @@ class TC_GAME_API WorldSession
         void HandleAttackSwingOpcode(WorldPackets::Combat::AttackSwing& packet);
         void HandleAttackStopOpcode(WorldPackets::Combat::AttackStop& packet);
         void HandleSetSheathedOpcode(WorldPackets::Combat::SetSheathed& packet);
+
+        void HandleRequestCovenantCallingsOpcode(WorldPackets::Covenant::RequestCovenantCallings& packet);
+        void HandleCovenantRenownRequestCatchupStateOpcode(WorldPackets::Covenant::CovenantRenownRequestCatchupState& packet);
 
         void HandleUseItemOpcode(WorldPackets::Spells::UseItem& packet);
         void HandleOpenItemOpcode(WorldPackets::Spells::OpenItem& packet);

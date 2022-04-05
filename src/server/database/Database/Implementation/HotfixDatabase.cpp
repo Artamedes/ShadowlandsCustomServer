@@ -1338,6 +1338,26 @@ void HotfixDatabaseConnection::DoPrepareStatements()
         " FROM soulbind_conduit_rank WHERE (`VerifiedBuild` > 0) = ?", CONNECTION_SYNCH);
     PREPARE_MAX_ID_STMT(HOTFIX_SEL_SOULBIND_CONDUIT_RANK, "SELECT MAX(ID) + 1 FROM soulbind_conduit_rank", CONNECTION_SYNCH);
 
+    PrepareStatement(HOTFIX_SEL_UI_COVENANT_ABILITY, "SELECT ID, CovenantPreviewID, SpellID, AbilityType, SoulbindDisplayInfoID"
+        " FROM ui_covenant_ability WHERE (`VerifiedBuild` > 0) = ?", CONNECTION_SYNCH);
+    PREPARE_MAX_ID_STMT(HOTFIX_SEL_UI_COVENANT_ABILITY, "SELECT MAX(ID) + 1 FROM ui_covenant_ability", CONNECTION_SYNCH);
+
+    PrepareStatement(HOTFIX_SEL_RENOWN_REWARDS, "SELECT ID, Name, Description, ToastDescription, CovenantID, Level, Icon, Flags, UiOrder, ItemID, SpellID, MountID, TransmogID, TransmogSetID, CharTitlesID, GarrFollowerID, TransmogIllusionID, QuestID, PlayerConditionID"
+        " FROM renown_rewards WHERE (`VerifiedBuild` > 0) = ?", CONNECTION_SYNCH);
+    PREPARE_MAX_ID_STMT(HOTFIX_SEL_RENOWN_REWARDS, "SELECT MAX(ID) + 1 FROM renown_rewards", CONNECTION_SYNCH);
+
+    PrepareStatement(HOTFIX_SEL_SOULBIND_CONDUIT_ITEM, "SELECT ID, ItemID, ConduitID"
+        " FROM soulbind_conduit_item WHERE (`VerifiedBuild` > 0) = ?", CONNECTION_SYNCH);
+    PREPARE_MAX_ID_STMT(HOTFIX_SEL_SOULBIND_CONDUIT_ITEM, "SELECT MAX(ID) + 1 FROM soulbind_conduit_item", CONNECTION_SYNCH);
+
+    PrepareStatement(HOTFIX_SEL_SOULBIND_CONDUIT, "SELECT ID,ConduitType, CovenantID, SpecSetID, Flags"
+        " FROM soulbind_conduit WHERE (`VerifiedBuild` > 0) = ?", CONNECTION_SYNCH);
+    PREPARE_MAX_ID_STMT(HOTFIX_SEL_SOULBIND_CONDUIT, "SELECT MAX(ID) + 1 FROM soulbind_conduit", CONNECTION_SYNCH);
+
+    PrepareStatement(HOTFIX_SEL_SOULBIND, "SELECT Name, ID, CovenantID, GarrTalentTreeID, CreatureID, GarrFollowerID, PlayerConditionID"
+        " FROM soulbind WHERE (`VerifiedBuild` > 0) = ?", CONNECTION_SYNCH);
+    PREPARE_MAX_ID_STMT(HOTFIX_SEL_SOULBIND, "SELECT MAX(ID) + 1 FROM soulbind", CONNECTION_SYNCH);
+
     // SoundKit.db2
     PrepareStatement(HOTFIX_SEL_SOUND_KIT, "SELECT ID, SoundType, VolumeFloat, Flags, MinDistance, DistanceCutoff, EAXDef, SoundKitAdvancedID, "
         "VolumeVariationPlus, VolumeVariationMinus, PitchVariationPlus, PitchVariationMinus, DialogType, PitchAdjust, BusOverwriteID, MaxInstances"

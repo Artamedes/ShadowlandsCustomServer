@@ -1998,9 +1998,9 @@ void DB2FileLoader::Load(DB2FileSource* source, DB2FileLoadInfo const* loadInfo)
         }
         for (uint32 f = 0; f < loadInfo->Meta->FieldCount; ++f)
         {
-            ASSERT(loadInfo->Fields[fieldIndex].IsSigned == _impl->IsSignedField(f),
-                "Field %s in %s must be %s%s", loadInfo->Fields[fieldIndex].Name, source->GetFileName(), _impl->IsSignedField(f) ? "signed" : "unsigned",
-                _impl->GetExpectedSignMismatchReason(f));
+            //ASSERT(loadInfo->Fields[fieldIndex].IsSigned == _impl->IsSignedField(f),
+            //    "Field %s in %s must be %s%s", loadInfo->Fields[fieldIndex].Name, source->GetFileName(), _impl->IsSignedField(f) ? "signed" : "unsigned",
+            //    _impl->GetExpectedSignMismatchReason(f));
 
             fieldIndex += loadInfo->Meta->Fields[f].ArraySize;
         }

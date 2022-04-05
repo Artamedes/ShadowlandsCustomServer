@@ -404,6 +404,8 @@ class TC_GAME_API Spell
         void EffectCreatePrivateConversation();
         void EffectSendChatMessage();
         void EffectGrantBattlePetExperience();
+        void EffectSetCovenant();
+        void EffectLearnSoulbindConduit();
 
         typedef std::unordered_set<Aura*> UsedSpellMods;
 

@@ -5074,6 +5074,105 @@ struct SkillRaceClassInfoLoadInfo
     }
 };
 
+struct SoulbindLoadInfo
+{
+    static DB2LoadInfo const* Instance()
+    {
+        static DB2FieldMeta const fields[] =
+        {
+            { true, FT_STRING, "Name" },
+            { true, FT_INT, "ID" },
+            { true, FT_INT, "CovenantID" },
+            { true, FT_INT, "GarrTalentTreeID" },
+            { true, FT_INT, "CreatureID" },
+            { true, FT_INT, "GarrFollowerID" },
+            { true, FT_INT, "PlayerConditionID" },
+        };
+        static DB2LoadInfo const loadInfo(&fields[0], std::extent<decltype(fields)>::value, SoulbindMeta::Instance(), HOTFIX_SEL_SOULBIND);
+        return &loadInfo;
+    }
+};
+
+struct SoulbindConduitLoadInfo
+{
+    static DB2LoadInfo const* Instance()
+    {
+        static DB2FieldMeta const fields[] =
+        {
+            { false, FT_INT, "ID" },
+            { true, FT_INT, "ConduitType" },
+            { true, FT_INT, "CovenantID" },
+            { true, FT_INT, "SpecSetID" },
+            { true, FT_INT, "Flags" },
+        };
+        static DB2LoadInfo const loadInfo(&fields[0], std::extent<decltype(fields)>::value, SoulbindConduitMeta::Instance(), HOTFIX_SEL_SOULBIND_CONDUIT);
+        return &loadInfo;
+    }
+};
+
+struct SoulbindConduitItemLoadInfo
+{
+    static DB2LoadInfo const* Instance()
+    {
+        static DB2FieldMeta const fields[] =
+        {
+            { false, FT_INT, "ID" },
+            { true, FT_INT, "ItemID" },
+            { true, FT_INT, "ConduitID" },
+        };
+        static DB2LoadInfo const loadInfo(&fields[0], std::extent<decltype(fields)>::value, SoulbindConduitItemMeta::Instance(), HOTFIX_SEL_SOULBIND_CONDUIT_ITEM);
+        return &loadInfo;
+    }
+};
+
+struct RenownRewardsLoadInfo
+{
+    static DB2LoadInfo const* Instance()
+    {
+        static DB2FieldMeta const fields[] =
+        {
+            { false, FT_INT, "ID" },
+            { true, FT_STRING, "Name" },
+            { true, FT_STRING, "Description" },
+            { true, FT_STRING, "ToastDescription" },
+            { true, FT_INT, "CovenantID" },
+            { true, FT_INT, "Level" },
+            { true, FT_INT, "Icon" },
+            { true, FT_INT, "Flags" },
+            { true, FT_INT, "UiOrder" },
+            { true, FT_INT, "ItemID" },
+            { true, FT_INT, "SpellID" },
+            { true, FT_INT, "MountID" },
+            { true, FT_INT, "TransmogID" },
+            { true, FT_INT, "TransmogSetID" },
+            { true, FT_INT, "CharTitlesID" },
+            { true, FT_INT, "GarrFollowerID" },
+            { true, FT_INT, "TransmogIllusionID" },
+            { true, FT_INT, "QuestID" },
+            { true, FT_INT, "PlayerConditionID" },
+        };
+        static DB2LoadInfo const loadInfo(&fields[0], std::extent<decltype(fields)>::value, RenownRewardsMeta::Instance(), HOTFIX_SEL_RENOWN_REWARDS);
+        return &loadInfo;
+    }
+};
+
+struct UiCovenantAbilityLoadInfo
+{
+    static DB2LoadInfo const* Instance()
+    {
+        static DB2FieldMeta const fields[] =
+        {
+            { false, FT_INT, "ID" },
+            { true, FT_INT, "CovenantPreviewID" },
+            { true, FT_INT, "SpellID" },
+            { false, FT_BYTE, "AbilityType" },
+            { true, FT_INT, "SoulbindDisplayInfoID" },
+        };
+        static DB2LoadInfo const loadInfo(&fields[0], std::extent<decltype(fields)>::value, UICovenantAbilityMeta::Instance(), HOTFIX_SEL_UI_COVENANT_ABILITY);
+        return &loadInfo;
+    }
+};
+
 struct SoulbindConduitRankLoadInfo
 {
     static DB2LoadInfo const* Instance()

@@ -188,6 +188,7 @@ TC_GAME_API extern DB2Storage<QuestMoneyRewardEntry>                sQuestMoneyR
 TC_GAME_API extern DB2Storage<QuestSortEntry>                       sQuestSortStore;
 TC_GAME_API extern DB2Storage<QuestXPEntry>                         sQuestXPStore;
 TC_GAME_API extern DB2Storage<RandPropPointsEntry>                  sRandPropPointsStore;
+TC_GAME_API extern DB2Storage<RenownRewardsEntry>                   sRenownRewardsStore;
 TC_GAME_API extern DB2Storage<RewardPackEntry>                      sRewardPackStore;
 TC_GAME_API extern DB2Storage<ScenarioEntry>                        sScenarioStore;
 TC_GAME_API extern DB2Storage<ScenarioStepEntry>                    sScenarioStepStore;
@@ -195,6 +196,10 @@ TC_GAME_API extern DB2Storage<SkillLineEntry>                       sSkillLineSt
 TC_GAME_API extern DB2Storage<SceneScriptPackageEntry>              sSceneScriptPackageStore;
 TC_GAME_API extern DB2Storage<SkillLineAbilityEntry>                sSkillLineAbilityStore;
 TC_GAME_API extern DB2Storage<SkillRaceClassInfoEntry>              sSkillRaceClassInfoStore;
+TC_GAME_API extern DB2Storage<SoulbindEntry>                        sSoulbindStore;
+TC_GAME_API extern DB2Storage<SoulbindConduitEntry>                 sSoulbindConduitStore;
+TC_GAME_API extern DB2Storage<SoulbindConduitItemEntry>             sSoulbindConduitItemStore;
+TC_GAME_API extern DB2Storage<SoulbindConduitRankEntry>             sSoulbindConduitRankStore;
 TC_GAME_API extern DB2Storage<SoundKitEntry>                        sSoundKitStore;
 TC_GAME_API extern DB2Storage<SpellAuraOptionsEntry>                sSpellAuraOptionsStore;
 TC_GAME_API extern DB2Storage<SpellAuraRestrictionsEntry>           sSpellAuraRestrictionsStore;
@@ -242,6 +247,7 @@ TC_GAME_API extern DB2Storage<TransmogSetGroupEntry>                sTransmogSet
 TC_GAME_API extern DB2Storage<TransmogSetItemEntry>                 sTransmogSetItemStore;
 TC_GAME_API extern DB2Storage<TransportAnimationEntry>              sTransportAnimationStore;
 TC_GAME_API extern DB2Storage<TransportRotationEntry>               sTransportRotationStore;
+TC_GAME_API extern DB2Storage<UICovenantAbilityEntry>               sUiCovenantAbilityEntry;
 TC_GAME_API extern DB2Storage<UiMapEntry>                           sUiMapStore;
 TC_GAME_API extern DB2Storage<UISplashScreenEntry>                  sUISplashScreenStore;
 TC_GAME_API extern DB2Storage<UnitConditionEntry>                   sUnitConditionStore;
@@ -470,6 +476,7 @@ public:
     bool IsUiMapPhase(uint32 phaseId) const;
     WMOAreaTableEntry const* GetWMOAreaTable(int32 rootId, int32 adtId, int32 groupId) const;
     std::vector<uint32> GetSpellLabelSpellsByCategoryId(uint32 categoryId) const;
+    uint32 GetConduitIDFromItemID(uint32 itemId) const;
     void InsertNewHotfix(uint32 tableHash, uint32 recordId);
 
 private:

@@ -790,8 +790,9 @@ bool Unit::HasBreakableByDamageCrowdControlAura(Unit* excludeCasterChannel) cons
         sScriptMgr->OnPlayerTakeDamage(victim->ToPlayer(), damage, damageSchoolMask);
     }
 
-    if (Player* player = attacker->ToPlayer())
-        sScriptMgr->OnPlayerDealDamage(player, victim, damage, damageSchoolMask);
+    if (attacker)
+        if (Player* player = attacker->ToPlayer())
+            sScriptMgr->OnPlayerDealDamage(player, victim, damage, damageSchoolMask);
 
     if (Player* player = victim->ToPlayer())
         if (player->GetCommandStatus(CHEAT_GOD))

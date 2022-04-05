@@ -126,6 +126,8 @@
 #include "WorldStatePackets.h"
 #include <G3D/g3dmath.h>
 #include <sstream>
+#include "GarrisonPackets.h"
+#include "CovenantMgr.h"
 
 #define ZONE_UPDATE_INTERVAL (1*IN_MILLISECONDS)
 
@@ -348,6 +350,7 @@ Player::Player(WorldSession* session) : Unit(true), m_sceneMgr(this)
     _advancedCombatLoggingEnabled = false;
 
     _restMgr = std::make_unique<RestMgr>(this);
+    _covenantMgr = std::make_unique< CovenantMgr>(this);
 
     _usePvpItemLevels = false;
 }
@@ -6952,7 +6955,7 @@ bool Player::HasCurrency(uint32 id, uint32 count) const
     return itr != _currencyStorage.end() && itr->second.Quantity >= count;
 }
 
-void Player::ModifyCurrency(uint32 id, int32 count, bool printLog/* = true*/, bool ignoreMultipliers/* = false*/)
+void Player::ModifyCurrency(uint32 id, int32 count, bool printLog/* = true*/, bool ignoreMultipliers/* = false*/, bool forceSet /*= false*/)
 {
     if (!count)
         return;
@@ -6985,7 +6988,7 @@ void Player::ModifyCurrency(uint32 id, int32 count, bool printLog/* = true*/, bo
     uint32 oldTrackedCount = 0;
 
     PlayerCurrenciesMap::iterator itr = _currencyStorage.find(id);
-    if (itr == _currencyStorage.end())
+    if (itr == _currencyStorage.end() || forceSet)
     {
         PlayerCurrency cur;
         cur.state = PLAYERCURRENCY_NEW;
@@ -17955,6 +17958,7 @@ bool Player::LoadFromDB(ObjectGuid guid, CharacterDatabaseQueryHolder const& hol
         PlayerRestState honorRestState;
         float honorRestBonus;
         uint8 numRespecs;
+        uint32 covenant;
 
         PlayerLoadData(Field* fields)
         {
@@ -18026,6 +18030,7 @@ bool Player::LoadFromDB(ObjectGuid guid, CharacterDatabaseQueryHolder const& hol
             honorRestState = PlayerRestState(fields[i++].GetUInt8());
             honorRestBonus = fields[i++].GetFloat();
             numRespecs = fields[i++].GetUInt8();
+            covenant = fields[i++].GetUInt32();
         }
 
     } fields(result->Fetch());
@@ -18742,6 +18747,8 @@ bool Player::LoadFromDB(ObjectGuid guid, CharacterDatabaseQueryHolder const& hol
 
     m_achievementMgr->CheckAllAchievementCriteria(this);
     m_questObjectiveCriteriaMgr->CheckAllQuestObjectiveCriteria(this);
+    _covenantMgr->SetCovenant(static_cast<CovenantID>(fields.covenant));
+    _covenantMgr->LoadFromDB();
 
     PushQuests();
     return true;
@@ -20757,6 +20764,7 @@ void Player::SaveToDB(LoginDatabaseTransaction loginTransaction, CharacterDataba
         stmt->setUInt32(index++, GetHonorLevel());
         stmt->setUInt8(index++, m_activePlayerData->RestInfo[REST_TYPE_HONOR].StateID);
         stmt->setFloat(index++, finiteAlways(_restMgr->GetRestBonus(REST_TYPE_HONOR)));
+        stmt->setUInt32(index++, static_cast<uint32>(_covenantMgr->GetCovenant()->GetCovenantID()));
         stmt->setUInt32(index++, sRealmList->GetMinorMajorBugfixVersionForBuild(realm.Build));
 
         // Index
@@ -20804,6 +20812,7 @@ void Player::SaveToDB(LoginDatabaseTransaction loginTransaction, CharacterDataba
     _SaveCUFProfiles(trans);
     if (_garrison)
         _garrison->SaveToDB(trans);
+    _covenantMgr->SaveToDB(trans);
 
     // check if stats should only be saved on logout
     // save stats can be out of transaction
@@ -28534,6 +28543,16 @@ void Player::DeleteGarrison()
     }
 }
 
+void Player::SendGarrisonInfoResult()
+{
+    WorldPackets::Garrison::GetGarrisonInfoResult garrisonInfo;
+    garrisonInfo.FactionIndex = GetFaction();
+    if (_garrison)
+        _garrison->AddGarrisonInfo(garrisonInfo);
+    _covenantMgr->AddGarrisonInfo(garrisonInfo);
+    SendDirectMessage(garrisonInfo.Write());
+}
+
 void Player::SendMovementSetCollisionHeight(float height, WorldPackets::Movement::UpdateCollisionHeightReason reason)
 {
     WorldPackets::Movement::MoveSetCollisionHeight setCollisionHeight;
@@ -29429,4 +29448,14 @@ void Player::SendDisplayToast(uint32 entry, DisplayToastType type, bool isBonusR
     }
 
     SendDirectMessage(displayToast.Write());
+}
+
+Covenant* Player::GetCovenant()
+{
+    return _covenantMgr->GetCovenant();
+}
+
+CovenantMgr* Player::GetCovenantMgr()
+{
+    return _covenantMgr.get();
 }
