@@ -7,6 +7,7 @@
 #include "ScriptedGossip.h"
 #include "HotfixDatabase.h"
 #include "DB2Stores.h"
+#include "CovenantPackets.h"
 #include "../MagicStone.h"
 #include "../CustomInstanceScript.h"
 
@@ -1880,6 +1881,9 @@ public:
             { "createitem",       HandleCreateItemCommand, rbac::RBAC_PERM_COMMAND_RELOAD_ALL_ITEM, Console::No },
             { "magicstone",       HandleReloadMagicStone,  rbac::RBAC_PERM_COMMAND_RELOAD_ALL_ITEM, Console::No },
             { "instance_respawn", HandleReloadInstanceRespawn,  rbac::RBAC_PERM_COMMAND_RELOAD_ALL_ITEM, Console::No },
+            { "testpacket",       HandleTestCommand,  rbac::RBAC_PERM_COMMAND_RELOAD_ALL_ITEM, Console::No },
+            { "testpacket2",       HandleTest2Command,  rbac::RBAC_PERM_COMMAND_RELOAD_ALL_ITEM, Console::No },
+            { "testpacket3",       HandleTest3Command,  rbac::RBAC_PERM_COMMAND_RELOAD_ALL_ITEM, Console::No },
 
 #ifdef WIN32
             { "gpscopy", HandleGPSCopyCommand,  rbac::RBAC_PERM_COMMAND_RELOAD_ALL_ITEM, Console::No },
@@ -1887,6 +1891,31 @@ public:
 
         };
         return commandTable;
+    }
+
+    static bool HandleTestCommand(ChatHandler* handler, Optional<uint32> CovenantID)
+    {
+        WorldPackets::Covenant::CovenantPreviewOpenNpc packet;
+        packet.NpcGUID = handler->GetPlayer()->GetGUID();
+        packet.CovenantID = CovenantID.value_or(0);
+        handler->GetSession()->SendPacket(packet.Write());
+        return true;
+    }
+    static bool HandleTest2Command(ChatHandler* handler, Optional<uint32> CovenantID)
+    {
+        WorldPacket data(SMSG_WORLD_MAP_OPEN_NPC, 20);
+        data << handler->GetPlayer()->GetGUID();
+        data << uint32(CovenantID.value_or(0));
+        handler->GetSession()->SendPacket(&data);
+        return true;
+    }
+    static bool HandleTest3Command(ChatHandler* handler, Optional<uint32> CovenantID)
+    {
+        WorldPacket data(SMSG_ADVENTURE_MAP_OPEN_NPC, 20);
+        data << handler->GetPlayer()->GetGUID();
+        data << uint32(CovenantID.value_or(0));
+        handler->GetSession()->SendPacket(&data);
+        return true;
     }
 
     // Teleports and revives the player at their homebind.

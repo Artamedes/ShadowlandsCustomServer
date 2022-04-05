@@ -37,6 +37,8 @@
 #include "ReputationMgr.h"
 #include "ScriptMgr.h"
 #include "World.h"
+#include "CovenantMgr.h"
+#include "CovenantPackets.h"
 
 void WorldSession::HandleQuestgiverStatusQueryOpcode(WorldPackets::Quest::QuestGiverStatusQuery& packet)
 {
@@ -856,6 +858,45 @@ void WorldSession::HandlePlayerChoiceResponse(WorldPackets::Quest::ChoiceRespons
     }
 
     sScriptMgr->OnPlayerChoiceResponse(GetPlayer(), choiceResponse.ChoiceID, choiceResponse.ResponseIdentifier);
+
+    if (choiceResponse.ChoiceID == 644) // Choose a covenant
+    {
+        auto ShowCovenantPreview([this](CovenantID CovenantID)
+        {
+            WorldPackets::Covenant::CovenantPreviewOpenNpc packet;
+            packet.NpcGUID = _player->GetGUID();
+            packet.CovenantID = static_cast<int32>(CovenantID);
+            SendPacket(packet.Write());
+        });
+
+        switch (choiceResponse.ResponseIdentifier)
+        {
+            case 333: // PLAYER_CHOICE_NECROLORD_CONFIRMATION
+                _player->GetCovenantMgr()->SetCovenant(CovenantID::Necrolord);
+                break;
+            case 335: // PLAYER_CHOICE_NIGHTFAE_CONFIRMATION
+                _player->GetCovenantMgr()->SetCovenant(CovenantID::NightFae);
+                break;
+            case 329: // PLAYER_CHOICE_KYRIAN_CONFIRMATION
+                _player->GetCovenantMgr()->SetCovenant(CovenantID::Kyrian);
+                break;
+            case 331: // PLAYER_CHOICE_VENTHYR_CONFIRMATION
+                _player->GetCovenantMgr()->SetCovenant(CovenantID::Venthyr);
+                break;
+            case 332: // Preview Vnthyr
+                ShowCovenantPreview(CovenantID::Venthyr);
+                break;
+            case 334: // Preview Necrolord
+                ShowCovenantPreview(CovenantID::Necrolord);
+                break;
+            case 336: // Preview Night Fae
+                ShowCovenantPreview(CovenantID::NightFae);
+                break;
+            case 330: // Preview Kyrian
+                ShowCovenantPreview(CovenantID::Kyrian);
+                break;
+        }
+    }
 
     if (playerChoiceResponse->Reward)
     {

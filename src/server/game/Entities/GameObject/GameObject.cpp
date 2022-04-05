@@ -2469,6 +2469,22 @@ void GameObject::Use(Unit* user)
             player->SendDirectMessage(gameObjectUILink.Write());
             return;
         }
+        case GAMEOBJECT_TYPE_PLAYER_CHOICE_CHEST:
+        {
+            Player* player = user->ToPlayer();
+            if (!player)
+                return;
+
+            GameObjectTemplate const* info = GetGOInfo();
+            if (!info)
+                return;
+
+            if (!info->playerChoiceChest.PlayerChoice)
+                return;
+
+            player->SendPlayerChoice(GetGUID(), info->playerChoiceChest.PlayerChoice);
+            break;
+        }
         default:
             if (GetGoType() >= MAX_GAMEOBJECT_TYPE)
                 TC_LOG_ERROR("misc", "GameObject::Use(): unit (%s, name: %s) tries to use object (%s, name: %s) of unknown type (%u)",

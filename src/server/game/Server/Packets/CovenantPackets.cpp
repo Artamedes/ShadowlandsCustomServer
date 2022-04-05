@@ -39,3 +39,10 @@ WorldPacket const* WorldPackets::Covenant::OpenItemForge::Write()
     _worldPacket << UnkInt2;
     return &_worldPacket;
 }
+
+WorldPacket const* WorldPackets::Covenant::CovenantPreviewOpenNpc::Write()
+{
+    _worldPacket << NpcGUID;
+    _worldPacket << CovenantID;
+    return &_worldPacket;
+}

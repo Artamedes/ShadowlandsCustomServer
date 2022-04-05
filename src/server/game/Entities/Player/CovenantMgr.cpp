@@ -48,9 +48,9 @@ CovenantMgr::CovenantMgr(Player* player) : _player(player), _currCovenantIndex(0
 {
     _playerCovenants[0] = std::make_unique<Covenant>(CovenantID::None, _player);
     _playerCovenants[1] = std::make_unique<Covenant>(CovenantID::Kyrian, _player);
-    _playerCovenants[2] = std::make_unique<Covenant>(CovenantID::NightFae, _player);
-    _playerCovenants[3] = std::make_unique<Covenant>(CovenantID::Necrolord, _player);
-    _playerCovenants[4] = std::make_unique<Covenant>(CovenantID::Venthyr, _player);
+    _playerCovenants[2] = std::make_unique<Covenant>(CovenantID::Venthyr, _player);
+    _playerCovenants[3] = std::make_unique<Covenant>(CovenantID::NightFae, _player);
+    _playerCovenants[4] = std::make_unique<Covenant>(CovenantID::Necrolord, _player);
 }
 
 void CovenantMgr::LoadFromDB()
@@ -110,8 +110,21 @@ Covenant* CovenantMgr::GetCovenant()
 
 void CovenantMgr::SetCovenant(CovenantID covenant)
 {
+    size_t newCovenantId = -1;
+
+    switch (covenant)
+    {
+    case CovenantID::Kyrian: newCovenantId = 1; break;
+    case CovenantID::Venthyr: newCovenantId = 2; break;
+    case CovenantID::NightFae: newCovenantId = 3; break;
+    case CovenantID::Necrolord: newCovenantId = 4; break;
+    }
+
+    if (newCovenantId == -1)
+        return;
+
     // nothing to do.
-    if (_currCovenantIndex == static_cast<size_t>(covenant))
+    if (_currCovenantIndex == newCovenantId)
         return;
 
     // cleanups when swapping
@@ -126,7 +139,7 @@ void CovenantMgr::SetCovenant(CovenantID covenant)
         UnlearnCovenantSpells();
     }
 
-    _currCovenantIndex = static_cast<size_t>(covenant);
+    _currCovenantIndex = newCovenantId;
     InitializeFields();
 }
 
