@@ -22,25 +22,26 @@ class item_enhancement_system : public ItemScript
 
             auto item = targets.GetItemTarget();
 
-            switch (item->GetEntry())
-            {
-                case 46017:
-                case 32838:
-                case 32837:
-                case 19019:
-                case 49623:
-                case 71352:
-                case 71086:
-                case 77949:
-                case 77950:
-                case 186414:
-                    break;
-                default:
-                {
-                    ChatHandler(player).SendSysMessage("|cffFF0000You can't enhance that item.");
-                    return true;
-                }
-            }
+            // Allowing everything to be enhanced.
+            //switch (item->GetEntry())
+            //{
+            //    case 46017:
+            //    case 32838:
+            //    case 32837:
+            //    case 19019:
+            //    case 49623:
+            //    case 71352:
+            //    case 71086:
+            //    case 77949:
+            //    case 77950:
+            //    case 186414:
+            //        break;
+            //    default:
+            //    {
+            //        ChatHandler(player).SendSysMessage("|cffFF0000You can't enhance that item.");
+            //        return true;
+            //    }
+            //}
             if (item->HasBonusId(BonusIDAward))
             {
                 ChatHandler(player).PSendSysMessage("|cffFF0000You can't enhance that item with %s anymore.", Item::GetItemLink(upgrader->GetEntry()).c_str());
@@ -58,7 +59,7 @@ class item_enhancement_system : public ItemScript
             return true;
         }
 
-        void OnGossipSelect(Player* player, Item* item, uint32 sender, uint32 action) override
+        void OnGossipSelect(Player* player, Item* item, uint32 /*sender*/, uint32 /*action*/) override
         {
             CloseGossipMenuFor(player);
             auto itr = m_ItemTargets.find(player->GetGUID().GetCounter());
@@ -94,9 +95,10 @@ struct npc_mother_700013 : public ScriptedAI
             AddGossipItemFor(player, GossipOptionIcon::None, "|TInterface/Icons/spell_fire_twilightfire.blp:30:30:-30:0|tShadow Essence Enhancements", 0, 1);
             AddGossipItemFor(player, GossipOptionIcon::None, "|TInterface/Icons/ability_paladin_toweroflight.blp:30:30:-30:0|tLight Essence Enhancements", 0, 2);
             SendGossipMenuFor(player, 700013, me);
+            return true;
         }
 
-        bool OnGossipSelect(Player* player, uint32 menuId, uint32 gossipId) override
+        bool OnGossipSelect(Player* player, uint32 /*menuId*/, uint32 gossipId) override
         {
             auto actionId = player->PlayerTalkClass->GetGossipOptionAction(gossipId);
             ClearGossipMenuFor(player);

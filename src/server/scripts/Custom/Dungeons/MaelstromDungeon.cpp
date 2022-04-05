@@ -149,7 +149,7 @@ struct npc_sir_duke_iro_700112 : public ScriptedAI
             DoCast(353760);
         }
 
-        void MoveInLineOfSight(Unit* p_Who) override
+        void OnUnitRelocation(Unit* p_Who) override
         {
             if (!p_Who)
                 return;

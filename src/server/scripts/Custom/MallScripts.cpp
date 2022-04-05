@@ -338,7 +338,7 @@ struct npc_juno_700006 : public ScriptedAI
             return true;
         }
 
-        void MoveInLineOfSight(Unit* p_Who) override
+        void OnUnitRelocation(Unit* p_Who) override
         {
             if (p_Who->IsPlayer())
             {

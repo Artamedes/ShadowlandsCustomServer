@@ -118,7 +118,7 @@ struct npc_bob_700099 : public ScriptedAI
         DoMeleeAttackIfReady();
      }
 
-     void MoveInLineOfSight(Unit* who) override
+     void OnUnitRelocation(Unit* who) override
      {
         /// TODO: Fill this function
      }
@@ -230,7 +230,7 @@ struct npc_demonic_priest_700501 : public ScriptedAI
         DoMeleeAttackIfReady();
      }
 
-     void MoveInLineOfSight(Unit* who) override
+     void OnUnitRelocation(Unit* who) override
      {
         /// TODO: Fill this function
      }
@@ -273,7 +273,7 @@ struct npc_demon_slave_700502 : public ScriptedAI
         DoMeleeAttackIfReady();
      }
 
-     void MoveInLineOfSight(Unit* who) override
+     void OnUnitRelocation(Unit* who) override
      {
         /// TODO: Fill this function
      }
@@ -316,7 +316,7 @@ struct npc_demon_enforcer_700503 : public ScriptedAI
         DoMeleeAttackIfReady();
      }
 
-     void MoveInLineOfSight(Unit* who) override
+     void OnUnitRelocation(Unit* who) override
      {
         /// TODO: Fill this function
      }
@@ -359,7 +359,7 @@ struct npc_fel_hunter_700504 : public ScriptedAI
         DoMeleeAttackIfReady();
      }
 
-     void MoveInLineOfSight(Unit* who) override
+     void OnUnitRelocation(Unit* who) override
      {
         /// TODO: Fill this function
      }
@@ -402,7 +402,7 @@ struct npc_fading_demon_700505 : public ScriptedAI
         DoMeleeAttackIfReady();
      }
 
-     void MoveInLineOfSight(Unit* who) override
+     void OnUnitRelocation(Unit* who) override
      {
         /// TODO: Fill this function
      }
@@ -583,7 +583,7 @@ struct npc_jazgolluth_700507 : public ScriptedAI
              Talk(1);
      }
 
-     void MoveInLineOfSight(Unit* who) override
+     void OnUnitRelocation(Unit* who) override
      {
         /// TODO: Fill this function
          if (who->IsPlayer() && !m_Talked && who->GetDistance(me) <= 25.0f)
@@ -653,7 +653,7 @@ struct npc_annaxin_700508 : public ScriptedAI
             DoMeleeAttackIfReady();
         }
 
-        void MoveInLineOfSight(Unit* who) override
+        void OnUnitRelocation(Unit* who) override
         {
             /// TODO: Fill this function
         }
@@ -697,7 +697,7 @@ struct npc_skyhold_slave_700509 : public ScriptedAI
         DoMeleeAttackIfReady();
      }
 
-     void MoveInLineOfSight(Unit* who) override
+     void OnUnitRelocation(Unit* who) override
      {
         /// TODO: Fill this function
      }
@@ -747,7 +747,7 @@ struct npc_zorith_700510 : public ScriptedAI
         DoMeleeAttackIfReady();
      }
 
-     void MoveInLineOfSight(Unit* who) override
+     void OnUnitRelocation(Unit* who) override
      {
         /// TODO: Fill this function
      }
@@ -790,7 +790,7 @@ struct npc_xolmir_700511 : public ScriptedAI
         DoMeleeAttackIfReady();
      }
 
-     void MoveInLineOfSight(Unit* who) override
+     void OnUnitRelocation(Unit* who) override
      {
         /// TODO: Fill this function
      }
@@ -833,7 +833,7 @@ struct npc_legion_portal_700512 : public ScriptedAI
         DoMeleeAttackIfReady();
      }
 
-     void MoveInLineOfSight(Unit* who) override
+     void OnUnitRelocation(Unit* who) override
      {
         /// TODO: Fill this function
      }
@@ -885,7 +885,7 @@ public:
         DoMeleeAttackIfReady();
     }
 
-    void MoveInLineOfSight(Unit* who) override
+    void OnUnitRelocation(Unit* who) override
     {
         /// TODO: Fill this function
     }

@@ -37,7 +37,7 @@ public:
         DoMeleeAttackIfReady();
     }
 
-    void MoveInLineOfSight(Unit* who) override
+    void OnUnitRelocation(Unit* who) override
     {
         /// TODO: Fill this function
     }
@@ -84,7 +84,7 @@ public:
         DoMeleeAttackIfReady();
     }
 
-    void MoveInLineOfSight(Unit* who) override
+    void OnUnitRelocation(Unit* who) override
     {
         /// TODO: Fill this function
     }
@@ -150,7 +150,7 @@ public:
     }
 
     bool didIntro = false;
-    void MoveInLineOfSight(Unit* who) override
+    void OnUnitRelocation(Unit* who) override
     {
         if (didIntro)
             return;
@@ -220,7 +220,7 @@ public:
         DoMeleeAttackIfReady();
     }
 
-    void MoveInLineOfSight(Unit* who) override
+    void OnUnitRelocation(Unit* who) override
     {
         /// TODO: Fill this function
     }
@@ -290,7 +290,7 @@ public:
         DoMeleeAttackIfReady();
     }
 
-    void MoveInLineOfSight(Unit* who) override
+    void OnUnitRelocation(Unit* who) override
     {
         /// TODO: Fill this function
     }
@@ -337,7 +337,7 @@ public:
         DoMeleeAttackIfReady();
     }
 
-    void MoveInLineOfSight(Unit* who) override
+    void OnUnitRelocation(Unit* who) override
     {
         /// TODO: Fill this function
     }
@@ -384,7 +384,7 @@ public:
         DoMeleeAttackIfReady();
     }
 
-    void MoveInLineOfSight(Unit* who) override
+    void OnUnitRelocation(Unit* who) override
     {
         /// TODO: Fill this function
     }

@@ -36,7 +36,7 @@ public:
         DoMeleeAttackIfReady();
     }
 
-    void MoveInLineOfSight(Unit* who) override
+    void OnUnitRelocation(Unit* who) override
     {
         /// TODO: Fill this function
     }
@@ -83,7 +83,7 @@ public:
         DoMeleeAttackIfReady();
     }
 
-    void MoveInLineOfSight(Unit* who) override
+    void OnUnitRelocation(Unit* who) override
     {
         /// TODO: Fill this function
     }
@@ -130,7 +130,7 @@ public:
         DoMeleeAttackIfReady();
     }
 
-    void MoveInLineOfSight(Unit* who) override
+    void OnUnitRelocation(Unit* who) override
     {
         /// TODO: Fill this function
     }
@@ -245,7 +245,7 @@ public:
         DoMeleeAttackIfReady();
     }
 
-    void MoveInLineOfSight(Unit* who) override
+    void OnUnitRelocation(Unit* who) override
     {
         /// TODO: Fill this function
     }
@@ -397,7 +397,7 @@ public:
 
 
     bool intro = false;
-    void MoveInLineOfSight(Unit* who) override
+    void OnUnitRelocation(Unit* who) override
     {
         /// TODO: Fill this function
         if (!intro && who->IsPlayer() && who->GetDistance2d(me) <= 30.0f)
@@ -457,9 +457,15 @@ public:
 
     void JustEngagedWith(Unit* who) override
     {
+        Talk(1);
         events.ScheduleEvent(1, 5s, 10s);
         events.ScheduleEvent(2, 25s, 30s);
         events.ScheduleEvent(3, 5s, 30s);
+    }
+
+    void JustDied(Unit* who) override
+    {
+        Talk(0);
     }
 
     void UpdateAI(uint32 diff) override
@@ -492,7 +498,7 @@ public:
         DoMeleeAttackIfReady();
     }
 
-    void MoveInLineOfSight(Unit* who) override
+    void OnUnitRelocation(Unit* who) override
     {
         /// TODO: Fill this function
     }
@@ -597,7 +603,7 @@ public:
         DoMeleeAttackIfReady();
     }
 
-    void MoveInLineOfSight(Unit* who) override
+    void OnUnitRelocation(Unit* who) override
     {
         /// TODO: Fill this function
     }
@@ -644,7 +650,7 @@ public:
         DoMeleeAttackIfReady();
     }
 
-    void MoveInLineOfSight(Unit* who) override
+    void OnUnitRelocation(Unit* who) override
     {
         /// TODO: Fill this function
     }
@@ -691,7 +697,7 @@ public:
         DoMeleeAttackIfReady();
     }
 
-    void MoveInLineOfSight(Unit* who) override
+    void OnUnitRelocation(Unit* who) override
     {
         /// TODO: Fill this function
     }
@@ -738,10 +744,6 @@ public:
         DoMeleeAttackIfReady();
     }
 
-    void MoveInLineOfSight(Unit* who) override
-    {
-        /// TODO: Fill this function
-    }
     void OnSpellClick(Unit* clicker, bool spellClickHandled) override
     {
         /// TODO: Fill this function
@@ -785,10 +787,6 @@ public:
         DoMeleeAttackIfReady();
     }
 
-    void MoveInLineOfSight(Unit* who) override
-    {
-        /// TODO: Fill this function
-    }
     void OnSpellClick(Unit* clicker, bool spellClickHandled) override
     {
         /// TODO: Fill this function
@@ -832,10 +830,6 @@ public:
         DoMeleeAttackIfReady();
     }
 
-    void MoveInLineOfSight(Unit* who) override
-    {
-        /// TODO: Fill this function
-    }
     void OnSpellClick(Unit* clicker, bool spellClickHandled) override
     {
         /// TODO: Fill this function

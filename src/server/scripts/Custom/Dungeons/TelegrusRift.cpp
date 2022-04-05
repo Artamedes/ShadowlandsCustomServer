@@ -23,7 +23,7 @@ struct npc_void_portal_700615 : public ScriptedAI
 
         bool m_EncounterStarted = false;
 
-        void MoveInLineOfSight(Unit* who) override
+        void OnUnitRelocation(Unit* who) override
         {
             if (who->IsPlayer() && !m_EncounterStarted)
             {
@@ -392,7 +392,7 @@ public:
         DoMeleeAttackIfReady();
     }
 
-    void MoveInLineOfSight(Unit* who) override
+    void OnUnitRelocation(Unit* who) override
     {
         /// TODO: Fill this function
     }
@@ -436,7 +436,7 @@ public:
 
     bool m_SummonedBoss = false;
 
-    void MoveInLineOfSight(Unit* who) override
+    void OnUnitRelocation(Unit* who) override
     {
         /// TODO: Fill this function
         if (who->IsPlayer() && !m_SummonedBoss && who->GetDistance2d(me) <= 20.0f)
@@ -491,7 +491,7 @@ public:
 
     bool m_SummonedBoss = false;
 
-    void MoveInLineOfSight(Unit* who) override
+    void OnUnitRelocation(Unit* who) override
     {
         /// TODO: Fill this function
         if (who->IsPlayer() && !m_SummonedBoss && who->GetDistance2d(me) <= 10.0f)
@@ -547,7 +547,7 @@ public:
         DoMeleeAttackIfReady();
     }
 
-    void MoveInLineOfSight(Unit* who) override
+    void OnUnitRelocation(Unit* who) override
     {
         /// TODO: Fill this function
     }
@@ -569,7 +569,7 @@ struct npc_final_boss_void_portal_700632 : public ScriptedAI
 
         bool m_EncounterStarted = false;
 
-        void MoveInLineOfSight(Unit* who) override
+        void OnUnitRelocation(Unit* who) override
         {
             if (who->IsPlayer() && !m_EncounterStarted)
             {
@@ -751,7 +751,7 @@ public:
         DoMeleeAttackIfReady();
     }
 
-    void MoveInLineOfSight(Unit* who) override
+    void OnUnitRelocation(Unit* who) override
     {
         /// TODO: Fill this function
     }
@@ -805,7 +805,7 @@ public:
         DoMeleeAttackIfReady();
     }
 
-    void MoveInLineOfSight(Unit* who) override
+    void OnUnitRelocation(Unit* who) override
     {
         /// TODO: Fill this function
     }

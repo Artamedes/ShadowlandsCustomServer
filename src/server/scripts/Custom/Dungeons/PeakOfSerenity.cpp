@@ -36,7 +36,7 @@ public:
         DoMeleeAttackIfReady();
     }
 
-    void MoveInLineOfSight(Unit* who) override
+    void OnUnitRelocation(Unit* who) override
     {
         /// TODO: Fill this function
     }
@@ -57,7 +57,9 @@ public:
 
     void InitializeAI() override
     {
-        /// TODO: Fill this function
+        /// TODO: Fill this function'
+        me->SetUnitFlag2(UNIT_FLAG2_UNTARGETABLE_BY_CLIENT);
+        me->SetUnitFlag2(UNIT_FLAG2_UNINTERACTIBLE_IF_HOSTILE);
     }
 
     void Reset() override
@@ -83,7 +85,7 @@ public:
         DoMeleeAttackIfReady();
     }
 
-    void MoveInLineOfSight(Unit* who) override
+    void OnUnitRelocation(Unit* who) override
     {
         /// TODO: Fill this function
     }
@@ -141,7 +143,7 @@ public:
         DoMeleeAttackIfReady();
     }
 
-    void MoveInLineOfSight(Unit* who) override
+    void OnUnitRelocation(Unit* who) override
     {
         /// TODO: Fill this function
     }
@@ -188,7 +190,7 @@ public:
         DoMeleeAttackIfReady();
     }
 
-    void MoveInLineOfSight(Unit* who) override
+    void OnUnitRelocation(Unit* who) override
     {
         /// TODO: Fill this function
     }
@@ -247,7 +249,7 @@ public:
         DoMeleeAttackIfReady();
     }
 
-    void MoveInLineOfSight(Unit* who) override
+    void OnUnitRelocation(Unit* who) override
     {
         /// TODO: Fill this function
     }
@@ -327,7 +329,7 @@ public:
         DoMeleeAttackIfReady();
     }
 
-    void MoveInLineOfSight(Unit* who) override
+    void OnUnitRelocation(Unit* who) override
     {
         /// TODO: Fill this function
     }
@@ -398,7 +400,7 @@ public:
         DoMeleeAttackIfReady();
     }
 
-    void MoveInLineOfSight(Unit* who) override
+    void OnUnitRelocation(Unit* who) override
     {
         /// TODO: Fill this function
     }
@@ -515,7 +517,7 @@ public:
         DoMeleeAttackIfReady();
     }
 
-    void MoveInLineOfSight(Unit* who) override
+    void OnUnitRelocation(Unit* who) override
     {
         /// TODO: Fill this function
     }
@@ -562,7 +564,7 @@ public:
         DoMeleeAttackIfReady();
     }
 
-    void MoveInLineOfSight(Unit* who) override
+    void OnUnitRelocation(Unit* who) override
     {
         /// TODO: Fill this function
     }

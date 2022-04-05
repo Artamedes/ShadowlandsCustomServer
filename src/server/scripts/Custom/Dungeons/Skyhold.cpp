@@ -183,7 +183,7 @@ public:
 
     bool m_Talked = false;
 
-    void MoveInLineOfSight(Unit* who) override
+    void OnUnitRelocation(Unit* who) override
     {
         if (who->IsPlayer() && me->GetFaction() == 35 && !m_Talked && who->GetDistance(me) <= 55.0f)
         {
