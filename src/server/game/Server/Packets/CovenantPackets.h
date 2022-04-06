@@ -24,6 +24,16 @@ namespace WorldPackets
             void Read() override { }
         };
 
+        class ActivateSoulbind final : public ClientPacket
+        {
+        public:
+            ActivateSoulbind(WorldPacket&& packet) : ClientPacket(CMSG_ACTIVATE_SOULBIND, std::move(packet)) { }
+
+            void Read() override;
+
+            uint32 SoulbindID;
+        };
+
         class TC_GAME_API CovenantRenownOpenNpc final : public ServerPacket
         {
         public:

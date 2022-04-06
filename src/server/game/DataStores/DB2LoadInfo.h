@@ -2235,6 +2235,90 @@ struct GarrBuildingPlotInstLoadInfo
     }
 };
 
+struct GarrTalentLoadInfo
+{
+    static DB2LoadInfo const* Instance()
+    {
+        static DB2FieldMeta const fields[] =
+        {
+            { false, FT_STRING, "Name" },
+            { false, FT_STRING, "Description" },
+            { false, FT_INT, "ID" },
+            { false, FT_INT, "Tier" },
+            { false, FT_BYTE, "Tier" },
+            { false, FT_BYTE, "UiOrder" },
+            { false, FT_INT, "IconFileDataID" },
+            { false, FT_INT, "PlayerConditionID" },
+            { false, FT_INT, "GarrAbilityID" },
+            { false, FT_INT, "Flags" },
+            { false, FT_INT, "TalentType" },
+            { false, FT_INT, "PrerequesiteTalentID" },
+            { false, FT_INT, "ResearchCostSource" },
+            { false, FT_INT, "ActiveDurationSecs" },
+            { false, FT_INT, "GarrTalentSocketPropertiesID" },
+
+        };
+        static DB2LoadInfo const loadInfo(&fields[0], std::extent<decltype(fields)>::value, GarrTalentMeta::Instance(), HOTFIX_SEL_GARR_TALENT);
+        return &loadInfo;
+    }
+};
+
+struct GarrTalentRankLoadInfo
+{
+    static DB2LoadInfo const* Instance()
+    {
+        static DB2FieldMeta const fields[] =
+        {
+            {false,FT_INT,"ID,"},
+            {true ,FT_INT,"Rank"},
+            {true ,FT_INT,"PerkSpellID"},
+            {true ,FT_INT,"PerkPlayerConditionID"},
+            {true ,FT_FLOAT,"Points"},
+            {true ,FT_INT,"ResearchCost"},
+            {true ,FT_INT,"ResearchCostCurrencyTypesID"},
+            {true ,FT_INT,"ResearchGoldCost"},
+            {true ,FT_INT,"ResearchDurationSecs"},
+            {true ,FT_INT,"RespecCost"},
+            {true ,FT_INT,"RespecCostCurrencyTypesID"},
+            {true ,FT_INT,"RespecGoldCost"},
+            {true ,FT_INT,"RespecDurationSecs"},
+            {true ,FT_INT,"AlternateResearchCost"},
+            {true ,FT_INT,"AlternateResearchCostCurrencyTypesID"},
+            {true ,FT_INT,"AlternateResearchGoldCost"},
+            {true ,FT_INT,"AlternateResearchDurationSecs"},
+            {true ,FT_INT,"GarrTalentID"},
+        };
+        static DB2LoadInfo const loadInfo(&fields[0], std::extent<decltype(fields)>::value, GarrTalentRankMeta::Instance(), HOTFIX_SEL_GARR_TALENT_RANK);
+        return &loadInfo;
+    }
+};
+
+struct GarrTalentTreeLoadInfo
+{
+    static DB2LoadInfo const* Instance()
+    {
+        static DB2FieldMeta const fields[] =
+        {
+            { false, FT_INT, "ID" },
+            { false, FT_STRING, "Name" },
+            { false, FT_BYTE, "GarrTypeID" },
+            { false, FT_INT, "ClassID" },
+            { false, FT_BYTE, "MaxTiers" },
+            { false, FT_BYTE, "UiOrder" },
+            { false, FT_INT, "Flags" },
+            { false, FT_SHORT, "UiTextureKitID" },
+            { false, FT_INT, "GarrTalentTreeType" },
+            { false, FT_INT, "PlayerConditionID" },
+            { false, FT_BYTE, "FeatureTypeIndex" },
+            { false, FT_BYTE, "FeatureSubtypeIndex" },
+            { false, FT_INT, "CurrencyID" },
+
+        };
+        static DB2LoadInfo const loadInfo(&fields[0], std::extent<decltype(fields)>::value, GarrTalentTreeMeta::Instance(), HOTFIX_SEL_GARR_TALENT_TREE);
+        return &loadInfo;
+    }
+};
+
 struct GarrClassSpecLoadInfo
 {
     static DB2LoadInfo const* Instance()

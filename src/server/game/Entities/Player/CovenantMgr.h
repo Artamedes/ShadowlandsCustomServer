@@ -3,18 +3,12 @@
 #include "Common.h"
 #include "SharedDefines.h"
 #include "DatabaseEnvFwd.h"
+#include "DB2Structure.h"
+#include "GarrisonPackets.h"
 
 class Player;
 class Unit;
 class Item;
-
-namespace WorldPackets
-{
-    namespace Garrison
-    {
-        class GetGarrisonInfoResult;
-    }
-}
 
 enum class CovenantID : int32
 {
@@ -59,6 +53,28 @@ enum class SoulbindUIDisplayInfoIds : uint32
     Theotar       = 15,
 };
 
+enum GarrisonTalentFlags
+{
+    TalentFlagDisabled = 0x0,
+    TalentFlagEnabled  = 0x1,
+};
+
+struct TC_GAME_API Conduit
+{
+    GarrTalentEntry const* TalentEntry;
+    GarrTalentTreeEntry const* TreeEntry;
+
+    Optional<WorldPackets::Garrison::GarrisonTalentSocketData> Socket;
+
+    void BuildGarrisonTalent(WorldPackets::Garrison::GarrisonTalent& result);
+
+    bool operator==(Conduit const& right) const
+    {
+        return TalentEntry == right.TalentEntry && TreeEntry == right.TreeEntry;
+    }
+    bool operator!=(Conduit const& right) const { return !(*this == right); }
+};
+
 class TC_GAME_API Covenant
 {
     public:
@@ -74,6 +90,10 @@ class TC_GAME_API Covenant
         void SetSouls(uint32 souls);
 
         void InitializeCovenant();
+        void LearnConduit(GarrTalentEntry const* talent, GarrTalentTreeEntry const* tree);
+        void BuildGarrisonPacket(WorldPackets::Garrison::GarrisonInfo& result);
+        void SocketTalent(WorldPackets::Garrison::GarrisonSocketTalent& packet);
+        void LearnTalent(WorldPackets::Garrison::GarrisonLearnTalent& researchResult);
 
     private:
         Player* _player;
@@ -82,6 +102,7 @@ class TC_GAME_API Covenant
         int32 _renownLevel;
         uint32 _anima;
         uint32 _souls;
+        std::vector<Conduit> _conduits;
 };
 
 class TC_GAME_API CovenantMgr
@@ -132,4 +153,5 @@ class TC_GAME_API CovenantMgr
         Player* _player;
         size_t _currCovenantIndex;
         std::array<std::unique_ptr<Covenant>, 5> _playerCovenants = { };
+        std::vector<WorldPackets::Garrison::GarrisonCollectionEntry> CollectionEntries;
 };

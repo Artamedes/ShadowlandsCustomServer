@@ -324,6 +324,7 @@ namespace WorldPackets
     {
         class RequestCovenantCallings;
         class CovenantRenownRequestCatchupState;
+        class ActivateSoulbind;
     }
 
     namespace Duel
@@ -352,6 +353,9 @@ namespace WorldPackets
         class GarrisonCancelConstruction;
         class GarrisonRequestBlueprintAndSpecializationData;
         class GarrisonGetMapData;
+        class GarrisonResearchTalent;
+        class GarrisonLearnTalent;
+        class GarrisonSocketTalent;
     }
 
     namespace Guild
@@ -1506,6 +1510,7 @@ class TC_GAME_API WorldSession
 
         void HandleRequestCovenantCallingsOpcode(WorldPackets::Covenant::RequestCovenantCallings& packet);
         void HandleCovenantRenownRequestCatchupStateOpcode(WorldPackets::Covenant::CovenantRenownRequestCatchupState& packet);
+        void HandleActivateSoulbindOpcode(WorldPackets::Covenant::ActivateSoulbind& packet);
 
         void HandleUseItemOpcode(WorldPackets::Spells::UseItem& packet);
         void HandleOpenItemOpcode(WorldPackets::Spells::OpenItem& packet);
@@ -1787,6 +1792,9 @@ class TC_GAME_API WorldSession
         void HandleGarrisonCancelConstruction(WorldPackets::Garrison::GarrisonCancelConstruction& garrisonCancelConstruction);
         void HandleGarrisonRequestBlueprintAndSpecializationData(WorldPackets::Garrison::GarrisonRequestBlueprintAndSpecializationData& garrisonRequestBlueprintAndSpecializationData);
         void HandleGarrisonGetMapData(WorldPackets::Garrison::GarrisonGetMapData& garrisonGetMapData);
+        void HandleGarrisonResearchTalent(WorldPackets::Garrison::GarrisonResearchTalent& researchResult);
+        void HandleGarrisonLearnTalent(WorldPackets::Garrison::GarrisonLearnTalent& researchResult);
+        void HandleGarrisonSocketTalent(WorldPackets::Garrison::GarrisonSocketTalent& packet);
 
         // Battle Pets
         void HandleBattlePetRequestJournal(WorldPackets::BattlePet::BattlePetRequestJournal& battlePetRequestJournal);

@@ -1,6 +1,6 @@
 #include "CovenantPackets.h"
 #include "WorldSession.h"
-
+#include "CovenantMgr.h"
 
 void WorldSession::HandleRequestCovenantCallingsOpcode(WorldPackets::Covenant::RequestCovenantCallings& /*packet*/)
 {
@@ -16,4 +16,12 @@ void WorldSession::HandleCovenantRenownRequestCatchupStateOpcode(WorldPackets::C
 {
     WorldPackets::Covenant::CovenantRenownSendCatchupState packet;
     SendPacket(packet.Write());
+}
+
+void WorldSession::HandleActivateSoulbindOpcode(WorldPackets::Covenant::ActivateSoulbind& packet)
+{
+    if (packet.SoulbindID > 4)
+        return;
+
+    _player->GetCovenant()->SetSoulbind((SoulbindID)packet.SoulbindID);
 }

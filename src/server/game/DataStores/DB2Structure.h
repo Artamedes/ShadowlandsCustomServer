@@ -1759,6 +1759,64 @@ struct GarrSiteLevelPlotInstEntry
     uint8 UiMarkerSize;
 };
 
+struct GarrTalentEntry
+{
+    LocalizedString Name;
+    LocalizedString Description;
+    uint32 ID;
+    uint32 GarrTalentTreeID;
+    int8 Tier;
+    int8 UiOrder;
+    uint32 IconFileDataID;
+    uint32 PlayerConditionID;
+    uint32 GarrAbilityID;
+    uint32 Flags;
+    uint32 TalentType;
+    uint32 PrerequesiteTalentID;
+    uint32 ResearchCostSource;
+    uint32 ActiveDurationSecs;
+    uint32 GarrTalentSocketPropertiesID;
+};
+
+struct GarrTalentRankEntry
+{
+    uint32 ID;
+    uint32 Rank;
+    uint32 PerkSpellID;
+    uint32 PerkPlayerConditionID;
+    float Points;
+    uint32 ResearchCost;
+    uint32 ResearchCostCurrencyTypesID;
+    uint32 ResearchGoldCost;
+    uint32 ResearchDurationSecs;
+    uint32 RespecCost;
+    uint32 RespecCostCurrencyTypesID;
+    uint32 RespecGoldCost;
+    uint32 RespecDurationSecs;
+    uint32 AlternateResearchCost;
+    uint32 AlternateResearchCostCurrencyTypesID;
+    uint32 AlternateResearchGoldCost;
+    uint32 AlternateResearchDurationSecs;
+    uint32 GarrTalentID;
+};
+
+struct GarrTalentTreeEntry
+{
+    uint32 ID;
+    LocalizedString Name;
+    uint8 GarrTypeID;
+    uint32 ClassID;
+    uint8 MaxTiers;
+    uint8 UiOrder;
+    uint32 Flags;
+    uint16 UiTextureKitID;
+    uint32 GarrTalentTreeType;
+    uint32 PlayerConditionID;
+    uint8 FeatureTypeIndex;
+    uint8 FeatureSubtypeIndex;
+    uint32 CurrencyID;
+};
+
 struct GemPropertiesEntry
 {
     uint32 ID;

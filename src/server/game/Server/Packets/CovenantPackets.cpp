@@ -46,3 +46,8 @@ WorldPacket const* WorldPackets::Covenant::CovenantPreviewOpenNpc::Write()
     _worldPacket << CovenantID;
     return &_worldPacket;
 }
+
+void WorldPackets::Covenant::ActivateSoulbind::Read()
+{
+    _worldPacket >> SoulbindID;
+}

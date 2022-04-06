@@ -452,4 +452,115 @@ WorldPacket const* GarrisonBuildingActivated::Write()
 
     return &_worldPacket;
 }
+void GarrisonResearchTalent::Read()
+{
+    _worldPacket >> UnkGuid;
+    _worldPacket >> GarrTalentID;
+    _worldPacket >> UnkInt2;
+    UnkBool = _worldPacket.ReadBit();
+}
+WorldPacket const* AddSpecGroups::Write()
+{
+    _worldPacket << uint32(GarrTypeID);
+    _worldPacket << uint32(SpecGroups.size());
+
+    for (auto const& specGroup : SpecGroups)
+        _worldPacket << specGroup;
+
+    return &_worldPacket;
+}
+WorldPacket const* GarrisonResearchTalentResult::Write()
+{
+    _worldPacket << uint32(UnkInt1);
+    _worldPacket << uint32(GarrTypeID);
+    _worldPacket.FlushBits();
+    _worldPacket.WriteBit(UnkBit);
+    _worldPacket << talent;
+    return &_worldPacket;
+}
+WorldPacket const* GarrisonTalentCompleted::Write()
+{
+    _worldPacket << GarrTypeID;
+    _worldPacket << GarrTalentID;
+    _worldPacket << UnkInt1;
+    _worldPacket << UnkInt2;
+    return &_worldPacket;
+}
+void GarrisonLearnTalent::Read()
+{
+    _worldPacket >> UnkInt1;
+    _worldPacket >> GarrTalentID;
+}
+void GarrisonSocketTalent::Read()
+{
+    _worldPacket >> SoulbindConduitItemID;
+    Sockets.resize(_worldPacket.read<uint32>());
+    for (int i = 0; i < Sockets.size(); ++i)
+    {
+        _worldPacket >> Sockets[i].SoulbindConduitID;
+        _worldPacket >> Sockets[i].SoulbindConduitRank;
+    }
+}
+WorldPacket const* GarrisonTalentUpdateSocketData::Write()
+{
+    _worldPacket << UnkInt1;
+    _worldPacket << UnkInt2;
+    _worldPacket.FlushBits();
+    _worldPacket.WriteBit(Socket.has_value());
+    if (Socket.has_value())
+    {
+        _worldPacket << *Socket;
+    }
+    return &_worldPacket;
+}
+WorldPacket const* GarrisonTalentRemoveSocketData::Write()
+{
+    _worldPacket << GarrTypeID;
+    _worldPacket << GarrTalentID;
+    _worldPacket << UnkInt1;
+    _worldPacket << UnkInt2;
+    return &_worldPacket;
+}
+WorldPacket const* GarrisonTalentRemoved::Write()
+{
+    _worldPacket << GarrTypeID;
+    _worldPacket << GarrTalentID;
+    _worldPacket << UnkInt1;
+    _worldPacket << UnkInt2;
+    return &_worldPacket;
+}
+WorldPacket const* GarrisonCollectionUpdateEntry::Write()
+{
+    _worldPacket << GarrTypeID;
+    _worldPacket << UnkInt2;
+    _worldPacket << Socket;
+    return &_worldPacket;
+}
+WorldPacket const* GarrisonApplyTalentSocketDataChanges::Write()
+{
+    _worldPacket << GarrTypeID;
+    _worldPacket << uint32(Sockets.size());
+    _worldPacket << uint32(RemoveConduitIds.size());
+    for (auto const& conduitId : RemoveConduitIds)
+        _worldPacket << conduitId;
+    for (auto const& socket : Sockets)
+    {
+        _worldPacket << socket.ConduitID;
+        _worldPacket.WriteBit(socket.Socket.has_value());
+        if (socket.Socket.has_value())
+            _worldPacket << *socket.Socket;
+    }
+
+    return &_worldPacket;
+}
+
+WorldPacket const* GarrisonSwitchTalentTreeBranch::Write()
+{
+    _worldPacket << uint32(GarrTypeID);
+    _worldPacket << uint32(Talents.size());
+    for (auto const& talent : Talents)
+        _worldPacket << talent;
+    return &_worldPacket;
+}
+
 }

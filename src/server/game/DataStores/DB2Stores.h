@@ -117,6 +117,9 @@ TC_GAME_API extern DB2Storage<GarrPlotBuildingEntry>                sGarrPlotBui
 TC_GAME_API extern DB2Storage<GarrPlotInstanceEntry>                sGarrPlotInstanceStore;
 TC_GAME_API extern DB2Storage<GarrSiteLevelEntry>                   sGarrSiteLevelStore;
 TC_GAME_API extern DB2Storage<GarrSiteLevelPlotInstEntry>           sGarrSiteLevelPlotInstStore;
+TC_GAME_API extern DB2Storage<GarrTalentEntry>                      sGarrTalentStore;
+TC_GAME_API extern DB2Storage<GarrTalentRankEntry>                  sGarrTalentRankStore;
+TC_GAME_API extern DB2Storage<GarrTalentTreeEntry>                  sGarrTalentTreeStore;
 TC_GAME_API extern DB2Storage<GemPropertiesEntry>                   sGemPropertiesStore;
 TC_GAME_API extern DB2Storage<GlyphPropertiesEntry>                 sGlyphPropertiesStore;
 TC_GAME_API extern DB2Storage<GuildColorBackgroundEntry>            sGuildColorBackgroundStore;
@@ -478,6 +481,7 @@ public:
     std::vector<uint32> GetSpellLabelSpellsByCategoryId(uint32 categoryId) const;
     uint32 GetConduitIDFromItemID(uint32 itemId) const;
     void InsertNewHotfix(uint32 tableHash, uint32 recordId);
+    GarrTalentRankEntry const* GetTalentRankEntryByGarrTalentID(uint32 garrTalentId);
 
 private:
     friend class DB2HotfixGeneratorBase;

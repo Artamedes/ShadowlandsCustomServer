@@ -19,6 +19,7 @@
 #include "Garrison.h"
 #include "GarrisonPackets.h"
 #include "Player.h"
+#include "CovenantMgr.h"
 
 void WorldSession::HandleGetGarrisonInfo(WorldPackets::Garrison::GetGarrisonInfo& /*getGarrisonInfo*/)
 {
@@ -55,4 +56,31 @@ void WorldSession::HandleGarrisonGetMapData(WorldPackets::Garrison::GarrisonGetM
 {
     if (Garrison* garrison = _player->GetGarrison())
         garrison->SendMapData(_player);
+}
+
+void WorldSession::HandleGarrisonResearchTalent(WorldPackets::Garrison::GarrisonResearchTalent& researchResult)
+{
+    TC_LOG_TRACE("network.opcode", "HandleGarrisonResearchTalent GarrTalentID: %u %u %s",
+        researchResult.GarrTalentID, researchResult.UnkInt2, researchResult.UnkGuid.ToString());
+    if (auto talent = sGarrTalentStore.LookupEntry(researchResult.GarrTalentID))
+    {
+        if (auto tree = sGarrTalentTreeStore.LookupEntry(talent->GarrTalentTreeID))
+        {
+            if (tree->GarrTypeID == 111)
+            {
+                _player->GetCovenant()->LearnConduit(talent, tree);
+            }
+        }
+    }
+}
+
+void WorldSession::HandleGarrisonLearnTalent(WorldPackets::Garrison::GarrisonLearnTalent& packet)
+{
+    _player->GetCovenant()->LearnTalent(packet);
+}
+
+void WorldSession::HandleGarrisonSocketTalent(WorldPackets::Garrison::GarrisonSocketTalent& packet)
+{
+    // TODO: check if they own the SoulbindConduitItemID.
+    _player->GetCovenant()->SocketTalent(packet);
 }

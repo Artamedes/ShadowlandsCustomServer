@@ -148,6 +148,9 @@ DB2Storage<GarrPlotBuildingEntry>               sGarrPlotBuildingStore("GarrPlot
 DB2Storage<GarrPlotInstanceEntry>               sGarrPlotInstanceStore("GarrPlotInstance.db2", GarrPlotInstanceLoadInfo::Instance());
 DB2Storage<GarrSiteLevelEntry>                  sGarrSiteLevelStore("GarrSiteLevel.db2", GarrSiteLevelLoadInfo::Instance());
 DB2Storage<GarrSiteLevelPlotInstEntry>          sGarrSiteLevelPlotInstStore("GarrSiteLevelPlotInst.db2", GarrSiteLevelPlotInstLoadInfo::Instance());
+DB2Storage<GarrTalentEntry>                     sGarrTalentStore("GarrTalent.db2", GarrTalentLoadInfo::Instance());
+DB2Storage<GarrTalentRankEntry>                 sGarrTalentRankStore("GarrTalentRank.db2", GarrTalentRankLoadInfo::Instance());
+DB2Storage<GarrTalentTreeEntry>                 sGarrTalentTreeStore("GarrTalentTree.db2", GarrTalentTreeLoadInfo::Instance());
 DB2Storage<GemPropertiesEntry>                  sGemPropertiesStore("GemProperties.db2", GemPropertiesLoadInfo::Instance());
 DB2Storage<GlobalCurveEntry>                    sGlobalCurveStore("GlobalCurve.db2", GlobalCurveLoadInfo::Instance());
 DB2Storage<GlyphBindableSpellEntry>             sGlyphBindableSpellStore("GlyphBindableSpell.db2", GlyphBindableSpellLoadInfo::Instance());
@@ -500,6 +503,7 @@ namespace
     std::unordered_multimap<int32, UiMapAssignmentEntry const*> _uiMapAssignmentByWmoDoodadPlacement[MAX_UI_MAP_SYSTEM];
     std::unordered_multimap<int32, UiMapAssignmentEntry const*> _uiMapAssignmentByWmoGroup[MAX_UI_MAP_SYSTEM];
     std::unordered_set<int32> _uiMapPhases;
+    std::unordered_map<uint32, GarrTalentRankEntry const*> _talentRankEntriesByTalentId;
     WMOAreaTableLookupContainer _wmoAreaTableLookup;
 }
 
@@ -731,6 +735,9 @@ uint32 DB2Manager::LoadStores(std::string const& dataPath, LocaleConstant defaul
     LOAD_DB2(sGarrPlotInstanceStore);
     LOAD_DB2(sGarrSiteLevelStore);
     LOAD_DB2(sGarrSiteLevelPlotInstStore);
+    LOAD_DB2(sGarrTalentStore);
+    LOAD_DB2(sGarrTalentRankStore);
+    LOAD_DB2(sGarrTalentTreeStore);
     LOAD_DB2(sGemPropertiesStore);
     LOAD_DB2(sGlobalCurveStore);
     LOAD_DB2(sGlyphBindableSpellStore);
@@ -1593,6 +1600,9 @@ uint32 DB2Manager::LoadStores(std::string const& dataPath, LocaleConstant defaul
     for (auto entry : sSoulbindConduitItemStore)
         ItemIDToConduitID[entry->ItemID] = entry->ConduitID;
 
+    for (auto entry : sGarrTalentRankStore)
+        _talentRankEntriesByTalentId[entry->GarrTalentID] = entry;
+
     TC_LOG_INFO("server.loading", ">> Initialized " SZFMTD " DB2 data stores in %u ms", _stores.size(), GetMSTimeDiffToNow(oldMSTime));
 
     return availableDb2Locales.to_ulong();
@@ -1828,6 +1838,14 @@ void DB2Manager::InsertNewHotfix(uint32 tableHash, uint32 recordId)
     hotfixRecord.ID.PushID = ++_maxHotfixId;
     hotfixRecord.ID.UniqueID = rand32();
     _hotfixData[hotfixRecord.ID.PushID].push_back(hotfixRecord);
+}
+
+GarrTalentRankEntry const* DB2Manager::GetTalentRankEntryByGarrTalentID(uint32 garrTalentId)
+{
+    auto itr = _talentRankEntriesByTalentId.find(garrTalentId);
+    if (itr != _talentRankEntriesByTalentId.end())
+        return itr->second;
+    return nullptr;
 }
 
 std::vector<uint32> DB2Manager::GetAreasForGroup(uint32 areaGroupId) const

@@ -7,8 +7,10 @@
 #include "SpellMgr.h"
 #include "CovenantPackets.h"
 #include "GarrisonPackets.h"
+#include "ObjectMgr.h"
+#include "GameTime.h"
 
-Covenant::Covenant(CovenantID covId, Player* player) : _covenantId(covId), _player(player), _soulbindId(SoulbindID::None), _renownLevel(1), _anima(0), _souls(0)
+Covenant::Covenant(CovenantID covId, Player* player) : _covenantId(covId), _player(player), _soulbindId(SoulbindID::None), _renownLevel(80), _anima(0), _souls(0)
 {
 }
 
@@ -16,6 +18,14 @@ void Covenant::SetSoulbind(SoulbindID soulbind)
 {
     _soulbindId = soulbind;
     _player->SetSoulbind(static_cast<int32>(_soulbindId));
+
+    // SMSG_GARRISON_ADD_SPEC_GROUPS send instead.
+    WorldPackets::Garrison::AddSpecGroups packet;
+    packet.GarrTypeID = 111;
+    packet.SpecGroups.resize(1);
+    packet.SpecGroups[0].ChrSpecializationID = _player->GetSpecializationId();
+    packet.SpecGroups[0].SoulbindID = static_cast<int32>(GetSoulbindID());
+    _player->SendDirectMessage(packet.Write());
 }
 
 void Covenant::SetRenown(int32 renown)
@@ -23,6 +33,26 @@ void Covenant::SetRenown(int32 renown)
     _renownLevel = renown;
     _player->ModifyCurrency(1822, renown, true, false, true);
     _player->GetCovenantMgr()->LearnCovenantSpells(); // renown rewards
+
+    // Check Renown
+    auto covIdInt = static_cast<int32>(GetCovenantID());
+    for (auto reward : sRenownRewardsStore)
+    {
+        if (reward->CovenantID != covIdInt)
+            continue;
+
+        if (reward->Level > GetRenownLevel())
+            continue;
+
+        if (reward->QuestID > 0)
+        {
+            if (auto quest = sObjectMgr->GetQuestTemplate(reward->QuestID))
+            {
+                if (auto questStatus = _player->GetQuestStatus(reward->QuestID) == QUEST_STATUS_NONE)
+                    _player->RewardQuest(quest, LootItemType::Item, 0, _player, false);
+            }
+        }
+    }
 }
 
 void Covenant::SetAnima(uint32 anima)
@@ -42,6 +72,158 @@ void Covenant::InitializeCovenant()
     SetRenown(_renownLevel);
     SetAnima(_anima);
     SetSouls(_souls);
+
+    _player->CompletedAchievement(sAchievementStore.LookupEntry(15247));
+    _player->CompletedAchievement(sAchievementStore.LookupEntry(15248));
+    _player->CompletedAchievement(sAchievementStore.LookupEntry(15249));
+    _player->CompletedAchievement(sAchievementStore.LookupEntry(15250));
+    _player->CompletedAchievement(sAchievementStore.LookupEntry(14934));
+    _player->CompletedAchievement(sAchievementStore.LookupEntry(14936));
+    _player->CompletedAchievement(sAchievementStore.LookupEntry(14937));
+    _player->CompletedAchievement(sAchievementStore.LookupEntry(14790));
+}
+
+void Covenant::LearnConduit(GarrTalentEntry const* talent, GarrTalentTreeEntry const* tree)
+{
+    Conduit conduit;
+    conduit.TalentEntry = talent;
+    conduit.TreeEntry = tree;
+
+    if (std::find(_conduits.begin(), _conduits.end(), conduit) == _conduits.end())
+        _conduits.emplace_back(conduit);
+
+    // SMSG_GARRISON_RESEARCH_TALENT_RESULT send instead
+    //_player->SendGarrisonInfoResult();
+    // ServerToClient: SMSG_GARRISON_RESEARCH_TALENT_RESULT (0x296C) Length: 30 ConnIdx: 1 Time: 04/05/2022 23:54:19.075 Number: 15355
+    // UnkInt1: 0
+    // GarrTypeID: 111
+    // unkbit: True
+
+    WorldPackets::Garrison::GarrisonResearchTalentResult result;
+    result.GarrTypeID = 111;
+    conduit.BuildGarrisonTalent(result.talent);
+    _player->SendDirectMessage(result.Write());
+
+    // SMSG_LEARNED_SPELLS - need implement GarrTalentRank.db2
+    if (auto talentRank = sDB2Manager.GetTalentRankEntryByGarrTalentID(talent->ID))
+    {
+        if (talentRank->PerkSpellID > 0)
+        {
+            if (!_player->HasSpell(talentRank->PerkSpellID))
+                _player->LearnSpell(talentRank->PerkSpellID, false);
+        }
+    }
+    // SMSG_CRITERIA_UPDATE Criteria ID, 30952, 3x Quantity
+    // SMSG_GARRISON_TALENT_COMPLETED
+    WorldPackets::Garrison::GarrisonTalentCompleted result2;
+    result2.GarrTypeID = 111;
+    result2.GarrTalentID = talent->ID;
+    _player->SendDirectMessage(result2.Write());
+}
+
+void Conduit::BuildGarrisonTalent(WorldPackets::Garrison::GarrisonTalent& talent)
+{
+    // GarrTalentID: 864
+    // Rank: 1
+    // ResearchStartTime: 1649217259
+    // Flags: 1
+    // HasSocket: False
+    talent.GarrTalentID = TalentEntry->ID; // GarrTalent.dbc - Contains GarrTalentTreeID, which is the soulbind. 997 - 304 Endurance Conduit
+    talent.Rank = 1; // not sure
+    talent.Flags = 1; // not 100% sure
+    talent.ResearchStartTime = GameTime::GetGameTime(); // not 100% sure. other garrison packets used this.
+    if (Socket.has_value())
+        talent.Socket = Socket;
+}
+
+void Covenant::BuildGarrisonPacket(WorldPackets::Garrison::GarrisonInfo& result)
+{
+    for (auto& conduit : _conduits)
+    {
+        WorldPackets::Garrison::GarrisonTalent talent;
+        conduit.BuildGarrisonTalent(talent);
+        result.Talents.push_back(talent);
+    }
+}
+
+void Covenant::SocketTalent(WorldPackets::Garrison::GarrisonSocketTalent& packet)
+{
+    // SMSG_GARRISON_APPLY_TALENT_SOCKET_DATA_CHANGES
+    WorldPackets::Garrison::GarrisonApplyTalentSocketDataChanges response;
+    response.GarrTypeID = 111;
+    //response.Sockets.resize(packet.Sockets.size());
+    for (int i = 0; i < packet.Sockets.size(); ++i)
+    {
+        if (packet.Sockets[i].SoulbindConduitID != 0)
+        {
+            WorldPackets::Garrison::GarrisonTalentSocketChange socketChange;
+            socketChange.ConduitID = packet.Sockets[i].SoulbindConduitID;
+            WorldPackets::Garrison::GarrisonTalentSocketData data;
+            data.SoulbindConduitID = packet.Sockets[i].SoulbindConduitRank;
+            data.SoulbindConduitRank = 0; // probably the rank
+            socketChange.Socket = data;
+            response.Sockets.push_back(socketChange);
+        }
+        else
+            response.RemoveConduitIds.push_back(packet.Sockets[i].SoulbindConduitID);
+    }
+    _player->SendDirectMessage(response.Write());
+}
+
+void Covenant::LearnTalent(WorldPackets::Garrison::GarrisonLearnTalent& researchResult)
+{
+    auto talent = sGarrTalentStore.LookupEntry(researchResult.GarrTalentID);
+    if (!talent)
+        return;
+
+    TC_LOG_TRACE("network.opcode", "GarrisonLearnTalent: GarrTalentID %u UnkInt1 %u", researchResult.GarrTalentID, researchResult.UnkInt1);
+    // Might be talentTier in researchResult. Have to verify.
+
+    // SMSG_UNLEARNED_SPELLS
+    // Need to track the OLD learned spells. possibly ordering by their Tier?
+    // Also need to check Spells with pre-requestiteTalentIds
+    //if (auto talentRank = sDB2Manager.GetTalentRankEntryByGarrTalentID(talent->ID))
+    //{
+    //    if (talentRank->PerkSpellID > 0)
+    //    {
+    //        if (!_player->HasSpell(talentRank->PerkSpellID))
+    //            _player->LearnSpell(talentRank->PerkSpellID, false);
+    //    }
+    //}
+
+    // SMSG_GARRISON_SWITCH_TALENT_TREE_BRANCH
+    // ServerToClient: SMSG_GARRISON_SWITCH_TALENT_TREE_BRANCH(0x29AA) Length : 50 ConnIdx : 1 Time : 04 / 06 / 2022 15 : 55 : 14.871 Number : 3406
+    // GarrTypeID : 111
+    // Count : 2
+    // GarrTalentID : 850
+    // Rank : 1
+    // ResearchStartTime : 1649223627
+    // Flags : 0
+    // HasSocket : False
+    // GarrTalentID : 1009
+    // Rank : 1
+    // ResearchStartTime : 1649274916
+    // Flags : 1
+    // HasSocket : False
+    WorldPackets::Garrison::GarrisonSwitchTalentTreeBranch packet;
+    packet.GarrTypeID = 111;
+    // possible resize to number of results in a row.
+    for (auto garrTalent : sGarrTalentStore)
+    {
+        if (garrTalent->Tier == garrTalent->Tier && garrTalent->GarrTalentTreeID == talent->GarrTalentTreeID)
+        {
+            WorldPackets::Garrison::GarrisonTalent garrTalentPacket;
+
+            garrTalentPacket.GarrTalentID = garrTalent->ID;
+            garrTalentPacket.Flags = garrTalent->ID == researchResult.GarrTalentID ? GarrisonTalentFlags::TalentFlagEnabled : GarrisonTalentFlags::TalentFlagDisabled;
+            garrTalentPacket.Rank = 1;
+            garrTalentPacket.ResearchStartTime = GameTime::GetGameTimeMS();
+
+            packet.Talents.push_back(garrTalentPacket);
+        }
+    }
+    //packet.Talents.resize(2);
+    _player->SendDirectMessage(packet.Write());
 }
 
 CovenantMgr::CovenantMgr(Player* player) : _player(player), _currCovenantIndex(0)
@@ -249,6 +431,24 @@ void CovenantMgr::LearnSoulbindConduit(Item* item)
     auto conduitId = sDB2Manager.GetConduitIDFromItemID(item->GetEntry());
     if (!conduitId)
         return;
+
+    // SoulbindConduitRankProperties.db2, And check the itemlevel
+    uint32 rank = 1;
+
+    // SMSG_GARRISON_COLLECTION_UPDATE_ENTRY
+    WorldPackets::Garrison::GarrisonCollectionUpdateEntry packet;
+
+    packet.GarrTypeID = 111;
+    packet.UnkInt2 = 1; // Type.
+    packet.Socket.SoulbindConduitID = conduitId;
+    packet.Socket.SoulbindConduitRank = rank;
+    _player->SendDirectMessage(packet.Write());
+
+    auto itr = std::find(CollectionEntries.begin(), CollectionEntries.end(), conduitId);
+    if (itr != CollectionEntries.end())
+    {
+        itr->Rank = rank;
+    }
 }
 
 void CovenantMgr::AddGarrisonInfo(WorldPackets::Garrison::GetGarrisonInfoResult& garrisonInfo)
@@ -258,6 +458,31 @@ void CovenantMgr::AddGarrisonInfo(WorldPackets::Garrison::GetGarrisonInfoResult&
     cov.GarrTypeID = 111; // GarrType.db2
     cov.GarrSiteID = 299; // don't know
     cov.GarrSiteLevelID = 864; // GarrSiteLevel.db2
+
+    cov.Collections.resize(1);
+    cov.Collections[0].Type = 1;
+    cov.Collections[0].Entries = CollectionEntries;
+
+   //for (auto entry : sSoulbindConduitStore)
+   //{
+   //    // [7] (Talents) [0] GarrTalentID: 997
+   //    // [7] (Talents) [0] Rank: 1
+   //    // [7] (Talents) [0] ResearchStartTime: 1625953643
+   //    // [7] (Talents) [0] Flags: 1
+   //    // [7] (Talents) [0] (Socket) SoulbindConduitID: 283
+   //    // [7] (Talents) [0] (Socket) SoulbindConduitRank: 0
+   //    WorldPackets::Garrison::GarrisonTalent talent;
+   //    WorldPackets::Garrison::GarrisonTalentSocketData socket;
+   //    socket.SoulbindConduitID = entry->ID;
+   //    socket.SoulbindConduitRank = 0;
+   //    talent.Socket = socket;
+   //    talent.Flags = entry->Flags;
+   //    talent.GarrTalentID = 997; // GarrTalent.dbc - Contains GarrTalentTreeID, which is the soulbind. 997 - 304 Endurance Conduit
+   //    talent.Rank = 1;
+   //    talent.ResearchStartTime = getMSTime();
+   //    cov.Talents.push_back(talent);
+   //}
+    GetCovenant()->BuildGarrisonPacket(cov);
 
     garrisonInfo.Garrisons.push_back(cov);
 }
@@ -281,3 +506,9 @@ void CovenantMgr::AddGarrisonInfo(WorldPackets::Garrison::GetGarrisonInfoResult&
 // SoulbindConduitItem.db2
 // SoulbindConduitRank.db2
 // UICovenantAbility.db2
+
+// CMSG_ACTIVATE_SOULBIND
+// SMSG_ACTIVATE_SOULBIND_FAILED
+// SMSG_DISPLAY_SOULBIND_UPDATE_MESSAGE
+// CMSG_GARRISON_RESEARCH_TALENT
+// CMSG_GARRISON_LEARN_TALENT

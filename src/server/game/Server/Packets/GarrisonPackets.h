@@ -64,6 +64,30 @@ namespace WorldPackets
             void Read() override { }
         };
 
+        class GarrisonResearchTalent final : public ClientPacket
+        {
+        public:
+            GarrisonResearchTalent(WorldPacket&& packet) : ClientPacket(CMSG_GARRISON_RESEARCH_TALENT, std::move(packet)) { }
+
+            void Read() override;
+
+            ObjectGuid UnkGuid;
+            int32 GarrTalentID = 0;
+            int32 UnkInt2 = 0;
+            bool UnkBool;
+        };
+
+        class GarrisonLearnTalent final : public ClientPacket
+        {
+        public:
+            GarrisonLearnTalent(WorldPacket&& packet) : ClientPacket(CMSG_GARRISON_LEARN_TALENT, std::move(packet)) { }
+
+            void Read() override;
+
+            int32 UnkInt1 = 0; // possible row
+            int32 GarrTalentID = 0;
+        };
+
         struct GarrisonPlotInfo
         {
             uint32 GarrPlotInstanceID = 0;
@@ -422,6 +446,136 @@ namespace WorldPackets
 
             uint32 GarrPlotInstanceID = 0;
         };
+
+        class AddSpecGroups final : public ServerPacket
+        {
+        public:
+            AddSpecGroups() : ServerPacket(SMSG_GARRISON_ADD_SPEC_GROUPS, 4) { }
+
+            WorldPacket const* Write() override;
+
+            uint32 GarrTypeID = 0;
+            std::vector<GarrisonSpecGroup> SpecGroups;
+        };
+
+        class GarrisonResearchTalentResult final : public ServerPacket
+        {
+        public:
+            GarrisonResearchTalentResult() : ServerPacket(SMSG_GARRISON_RESEARCH_TALENT_RESULT, 100) { }
+
+            WorldPacket const* Write() override;
+
+            uint32 UnkInt1 = 0;
+            uint32 GarrTypeID = 0;
+            bool UnkBit = true;
+
+            GarrisonTalent talent = { };
+        };
+
+        class GarrisonTalentCompleted final : public ServerPacket
+        {
+        public:
+            GarrisonTalentCompleted() : ServerPacket(SMSG_GARRISON_TALENT_COMPLETED, 16) { }
+
+            WorldPacket const* Write() override;
+
+            uint32 GarrTypeID = 0;
+            uint32 GarrTalentID = 0;
+            uint32 UnkInt1 = 1;
+            uint32 UnkInt2 = 1;
+        };
+
+        class GarrisonTalentRemoveSocketData final : public ServerPacket
+        {
+        public:
+            GarrisonTalentRemoveSocketData() : ServerPacket(SMSG_GARRISON_TALENT_REMOVE_SOCKET_DATA, 16) { }
+
+            WorldPacket const* Write() override;
+
+            uint32 GarrTypeID = 0;
+            uint32 GarrTalentID = 0;
+            uint32 UnkInt1 = 1;
+            uint32 UnkInt2 = 1;
+        };
+
+        class GarrisonTalentRemoved final : public ServerPacket
+        {
+        public:
+            GarrisonTalentRemoved() : ServerPacket(SMSG_GARRISON_TALENT_REMOVED, 16) { }
+
+            WorldPacket const* Write() override;
+
+            uint32 GarrTypeID = 0;
+            uint32 GarrTalentID = 0;
+            uint32 UnkInt1 = 1;
+            uint32 UnkInt2 = 1;
+        };
+
+        class GarrisonTalentUpdateSocketData final : public ServerPacket
+        {
+        public:
+            GarrisonTalentUpdateSocketData() : ServerPacket(SMSG_GARRISON_TALENT_UPDATE_SOCKET_DATA, 4+4+1+4+4) { }
+
+            WorldPacket const* Write() override;
+
+            uint32 UnkInt1 = 0;
+            uint32 UnkInt2 = 0;
+            Optional<GarrisonTalentSocketData> Socket;
+        };
+
+        class GarrisonCollectionUpdateEntry final : public ServerPacket
+        {
+        public:
+            GarrisonCollectionUpdateEntry() : ServerPacket(SMSG_GARRISON_COLLECTION_UPDATE_ENTRY, 4 + 4 + 4 + 4) { }
+
+            WorldPacket const* Write() override;
+
+            uint32 GarrTypeID = 0;
+            uint32 UnkInt2 = 0;
+            GarrisonTalentSocketData Socket = { };
+        };
+
+        struct GarrisonTalentSocketChange
+        {
+            uint32 ConduitID;
+            Optional<GarrisonTalentSocketData> Socket;
+        };
+
+        class GarrisonApplyTalentSocketDataChanges final : public ServerPacket
+        {
+        public:
+            GarrisonApplyTalentSocketDataChanges() : ServerPacket(SMSG_GARRISON_APPLY_TALENT_SOCKET_DATA_CHANGES, 200) { }
+
+            WorldPacket const* Write() override;
+
+            uint32 GarrTypeID = 0;
+            std::vector<int32> RemoveConduitIds;
+            std::vector<GarrisonTalentSocketChange> Sockets;
+        };
+
+
+        class GarrisonSwitchTalentTreeBranch final : public ServerPacket
+        {
+        public:
+            GarrisonSwitchTalentTreeBranch() : ServerPacket(SMSG_GARRISON_SWITCH_TALENT_TREE_BRANCH, 200) { }
+
+            WorldPacket const* Write() override;
+
+            uint32 GarrTypeID = 0;
+            std::vector<GarrisonTalent> Talents;
+        };
+
+        class GarrisonSocketTalent final : public ClientPacket
+        {
+        public:
+            GarrisonSocketTalent(WorldPacket&& packet) : ClientPacket(CMSG_GARRISON_SOCKET_TALENT, std::move(packet)) { }
+
+            void Read() override;
+
+            int32 SoulbindConduitItemID = 0;
+            std::vector<GarrisonTalentSocketData> Sockets;
+        };
+
     }
 }
 
