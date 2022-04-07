@@ -775,6 +775,9 @@ void CovenantMgr::LearnTalent(WorldPackets::Garrison::GarrisonLearnTalent& resea
 
         if (TalentTiersToCheck.count(entry->Tier))
         {
+            if (entry->GarrTalentTreeID != talent->GarrTalentTreeID)
+                continue;
+
             if (i->second.TalentEntryId == talent->ID || entry->PrerequesiteTalentID == talent->ID)
                 i->second.Flags = GarrisonTalentFlags::TalentFlagEnabled;
             else
