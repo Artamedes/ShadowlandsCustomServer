@@ -577,7 +577,7 @@ void CovenantMgr::LearnSoulbindConduit(Item* item)
     int32 rank = 0;
     for (auto prop : sSoulbindConduitRankPropertiesStore)
     {
-        if (item->GetItemLevel(_player) > prop->ItemLevel)
+        if (prop->ItemLevel > item->GetItemLevel(_player))
             break;
 
         rank++;
