@@ -20,8 +20,5 @@ void WorldSession::HandleCovenantRenownRequestCatchupStateOpcode(WorldPackets::C
 
 void WorldSession::HandleActivateSoulbindOpcode(WorldPackets::Covenant::ActivateSoulbind& packet)
 {
-    if (packet.SoulbindID > 4)
-        return;
-
     _player->GetCovenantMgr()->SetSoulbind((SoulbindID)packet.SoulbindID, true);
 }

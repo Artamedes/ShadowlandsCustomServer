@@ -1370,7 +1370,7 @@ void HotfixDatabaseConnection::DoPrepareStatements()
         " FROM soulbind_conduit WHERE (`VerifiedBuild` > 0) = ?", CONNECTION_SYNCH);
     PREPARE_MAX_ID_STMT(HOTFIX_SEL_SOULBIND_CONDUIT, "SELECT MAX(ID) + 1 FROM soulbind_conduit", CONNECTION_SYNCH);
 
-    PrepareStatement(HOTFIX_SEL_SOULBIND, "SELECT Name, ID, CovenantID, GarrTalentTreeID, CreatureID, GarrFollowerID, PlayerConditionID"
+    PrepareStatement(HOTFIX_SEL_SOULBIND, "SELECT ID, Name, CovenantID, GarrTalentTreeID, CreatureID, GarrFollowerID, PlayerConditionID"
         " FROM soulbind WHERE (`VerifiedBuild` > 0) = ?", CONNECTION_SYNCH);
     PREPARE_MAX_ID_STMT(HOTFIX_SEL_SOULBIND, "SELECT MAX(ID) + 1 FROM soulbind", CONNECTION_SYNCH);
 

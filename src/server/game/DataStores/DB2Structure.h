@@ -3192,8 +3192,8 @@ struct SkillRaceClassInfoEntry
 
 struct SoulbindEntry
 {
-    LocalizedString Name;
     uint32 ID;
+    LocalizedString Name;
     int32 CovenantID;
     int32 GarrTalentTreeID;
     int32 CreatureID;

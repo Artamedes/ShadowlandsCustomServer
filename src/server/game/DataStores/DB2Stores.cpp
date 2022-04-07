@@ -860,7 +860,7 @@ uint32 DB2Manager::LoadStores(std::string const& dataPath, LocaleConstant defaul
     LOAD_DB2(sSkillLineAbilityStore);
     LOAD_DB2(sSkillRaceClassInfoStore);
     LOAD_DB2(sSoulbindConduitStore);
-   // LOAD_DB2(sSoulbindStore);
+    LOAD_DB2(sSoulbindStore);
     LOAD_DB2(sSoulbindConduitItemStore);
     LOAD_DB2(sSoulbindConduitRankPropertiesStore);
     LOAD_DB2(sSoulbindConduitRankStore);

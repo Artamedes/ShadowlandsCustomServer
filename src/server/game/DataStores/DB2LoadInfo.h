@@ -5164,8 +5164,8 @@ struct SoulbindLoadInfo
     {
         static DB2FieldMeta const fields[] =
         {
+            { false, FT_INT, "ID" },
             { true, FT_STRING, "Name" },
-            { true, FT_INT, "ID" },
             { true, FT_INT, "CovenantID" },
             { true, FT_INT, "GarrTalentTreeID" },
             { true, FT_INT, "CreatureID" },

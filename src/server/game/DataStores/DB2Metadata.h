@@ -10861,7 +10861,7 @@ struct SoulbindMeta
 {
     static DB2Meta const* Instance()
     {
-        static DB2MetaField const fields[7] =
+        static DB2MetaField const fields[6] =
         {
             { FT_STRING, 1, true },
             { FT_INT, 1, true },
@@ -10869,9 +10869,8 @@ struct SoulbindMeta
             { FT_INT, 1, true },
             { FT_INT, 1, true },
             { FT_INT, 1, true },
-            { FT_INT, 1, true },
         };
-        static DB2Meta instance(3488583, 1, 7, 7, 0x18A13B2B, fields, -1);
+        static DB2Meta instance(3488583, -1, 6, 6, 0x18A13B2B, fields, -1);
         return &instance;
     }
 };

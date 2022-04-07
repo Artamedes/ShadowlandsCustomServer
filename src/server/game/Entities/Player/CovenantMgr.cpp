@@ -815,6 +815,11 @@ void CovenantMgr::SetSoulbind(SoulbindID soulbind, bool sendPacket /*= false*/)
     if (covenant->GetCovenantID() == CovenantID::None)
         return;
 
+    // Cheating check
+    auto soulbindEntry = sSoulbindStore.LookupEntry(static_cast<uint32>(soulbind));
+    if (!soulbindEntry || soulbindEntry->CovenantID != _player->m_playerData->CovenantID)
+        return;
+
     covenant->SetSoulbind(soulbind, sendPacket);
 
     auto range = _covenantSoulbinds.equal_range(_player->m_playerData->CovenantID);
