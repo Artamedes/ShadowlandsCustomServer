@@ -18748,7 +18748,7 @@ bool Player::LoadFromDB(ObjectGuid guid, CharacterDatabaseQueryHolder const& hol
     m_achievementMgr->CheckAllAchievementCriteria(this);
     m_questObjectiveCriteriaMgr->CheckAllQuestObjectiveCriteria(this);
     _covenantMgr->SetCovenant(static_cast<CovenantID>(fields.covenant));
-    _covenantMgr->LoadFromDB();
+    _covenantMgr->LoadFromDB(holder);
 
     PushQuests();
     return true;
@@ -29092,6 +29092,12 @@ void Player::RemoveSocial()
 {
     sSocialMgr->RemovePlayerSocial(GetGUID());
     m_social = nullptr;
+}
+
+void Player::SetPrimarySpecialization(uint32 spec)
+{
+    SetUpdateFieldValue(m_values.ModifyValue(&Player::m_playerData).ModifyValue(&UF::PlayerData::CurrentSpecID), spec);
+    GetCovenantMgr()->OnSpecChange();
 }
 
 uint32 Player::GetDefaultSpecId() const

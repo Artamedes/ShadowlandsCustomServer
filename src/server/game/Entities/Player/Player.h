@@ -911,6 +911,10 @@ enum PlayerLoginQueryIndex
     PLAYER_LOGIN_QUERY_LOAD_GARRISON_BUILDINGS,
     PLAYER_LOGIN_QUERY_LOAD_GARRISON_FOLLOWERS,
     PLAYER_LOGIN_QUERY_LOAD_GARRISON_FOLLOWER_ABILITIES,
+    PLAYER_LOGIN_QUERY_LOAD_CHARACTER_COVENANT_COLLECTIONS,
+    PLAYER_LOGIN_QUERY_LOAD_CHARACTER_COVENANT_CONDUITS,
+    PLAYER_LOGIN_QUERY_LOAD_CHARACTER_COVENANT,
+    PLAYER_LOGIN_QUERY_LOAD_CHARACTER_COVENANT_SOULBIND,
     MAX_PLAYER_LOGIN_QUERY
 };
 
@@ -1851,7 +1855,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void SetTalentResetTime(time_t time_)  { _specializationInfo.ResetTalentsTime = time_; }
         uint32 GetPrimarySpecialization() const { return m_playerData->CurrentSpecID; }
         uint32 GetSpecializationId() const { return GetPrimarySpecialization(); }
-        void SetPrimarySpecialization(uint32 spec) { SetUpdateFieldValue(m_values.ModifyValue(&Player::m_playerData).ModifyValue(&UF::PlayerData::CurrentSpecID), spec); }
+        void SetPrimarySpecialization(uint32 spec);
         uint8 GetActiveTalentGroup() const { return _specializationInfo.ActiveGroup; }
         void SetActiveTalentGroup(uint8 group){ _specializationInfo.ActiveGroup = group; }
         uint32 GetDefaultSpecId() const;

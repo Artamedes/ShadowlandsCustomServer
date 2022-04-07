@@ -335,6 +335,22 @@ bool LoginQueryHolder::Initialize()
     stmt->setUInt64(0, lowGuid);
     res &= SetPreparedQuery(PLAYER_LOGIN_QUERY_LOAD_GARRISON_FOLLOWER_ABILITIES, stmt);
 
+    stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_COVENANT_COLLECTIONS);
+    stmt->setUInt64(0, lowGuid);
+    res &= SetPreparedQuery(PLAYER_LOGIN_QUERY_LOAD_CHARACTER_COVENANT_COLLECTIONS, stmt);
+
+    stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_COVENANT_CONDUITS);
+    stmt->setUInt64(0, lowGuid);
+    res &= SetPreparedQuery(PLAYER_LOGIN_QUERY_LOAD_CHARACTER_COVENANT_CONDUITS, stmt);
+
+    stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_COVENANT);
+    stmt->setUInt64(0, lowGuid);
+    res &= SetPreparedQuery(PLAYER_LOGIN_QUERY_LOAD_CHARACTER_COVENANT, stmt);
+
+    stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_COVENANT_SOULBIND);
+    stmt->setUInt64(0, lowGuid);
+    res &= SetPreparedQuery(PLAYER_LOGIN_QUERY_LOAD_CHARACTER_COVENANT_SOULBIND, stmt);
+
     return res;
 }
 

@@ -848,6 +848,24 @@ struct npc_sturzah_800005 : public ScriptedAI
         }
 };
 
+struct npc_covenant_swapper : public ScriptedAI
+{
+    public:
+        npc_covenant_swapper(Creature* creature) : ScriptedAI(creature) { }
+
+        void Reset() override
+        {
+
+        }
+
+        bool OnGossipHello(Player* player) override
+        {
+            CloseGossipMenuFor(player);
+            player->SendPlayerChoice(GetGUID(), 644);
+            return true;
+        }
+};
+
 void AddSC_MallScripts()
 {
     RegisterCreatureAI(npc_battle_training);
@@ -861,4 +879,5 @@ void AddSC_MallScripts()
     RegisterCreatureAI(npc_morpher_admin);
     RegisterCreatureAI(npc_kazzik_t3_transmogs);
     RegisterCreatureAI(npc_sturzah_800005);
+    RegisterCreatureAI(npc_covenant_swapper);
 }

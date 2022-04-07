@@ -72,7 +72,7 @@ public:
         static ChatCommandTable commandTable =
         {
             { "additem",          HandleAddItemCommand,          rbac::RBAC_PERM_COMMAND_ADDITEM,          Console::No },
-            { "additembonus",     HandleAddItemBonusCommand,     rbac::RBAC_PERM_COMMAND_ADDITEM,          Console::No },
+            { "bonusadd",         HandleAddItemBonusCommand,     rbac::RBAC_PERM_COMMAND_ADDITEM,          Console::No },
             { "removeitembonus",  HandleRemoveItemBonusCommand,  rbac::RBAC_PERM_COMMAND_ADDITEM,          Console::No },
             { "additem to",       HandleAddItemToCommand,        rbac::RBAC_PERM_COMMAND_ADDITEM,          Console::No },
             { "additem set",      HandleAddItemSetCommand,       rbac::RBAC_PERM_COMMAND_ADDITEMSET,       Console::No },

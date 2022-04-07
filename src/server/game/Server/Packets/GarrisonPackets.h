@@ -84,7 +84,7 @@ namespace WorldPackets
 
             void Read() override;
 
-            int32 UnkInt1 = 0; // possible row
+            int32 SoulbindID = 0;
             int32 GarrTalentID = 0;
         };
 

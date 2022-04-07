@@ -787,6 +787,18 @@ void CharacterDatabaseConnection::DoPrepareStatements()
 
     // War mode
     PrepareStatement(CHAR_SEL_WAR_MODE_TUNING, "SELECT race, COUNT(guid) FROM characters WHERE ((playerFlags & ?) = ?) AND logout_time >= (UNIX_TIMESTAMP() - 604800) GROUP BY race", CONNECTION_SYNCH);
+
+    PrepareStatement(CHAR_SEL_COVENANT_COLLECTIONS, "SELECT EntryID, Rank FROM character_covenant_collections WHERE guid = ?", CONNECTION_ASYNC);
+    PrepareStatement(CHAR_REP_COVENANT_COLLECTIONS, "REPLACE INTO character_covenant_collections (guid, EntryID, Rank) VALUES (?, ?, ?)", CONNECTION_ASYNC);
+
+    PrepareStatement(CHAR_SEL_COVENANT_CONDUITS, "SELECT CovenantID, GarrTalentID, GarrTalentTreeID, Rank, Flags, ResearchStartTime, SoulbindConduitID, SoulbindConduitRank FROM character_covenant_conduits WHERE guid = ?", CONNECTION_ASYNC);
+    PrepareStatement(CHAR_REP_COVENANT_CONDUITS, "REPLACE INTO character_covenant_conduits (guid, CovenantID, GarrTalentID, GarrTalentTreeID, Rank, Flags, ResearchStartTime, SoulbindConduitID, SoulbindConduitRank) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", CONNECTION_ASYNC);
+
+    PrepareStatement(CHAR_SEL_COVENANT, "SELECT Covenant, Renown, Anima, Souls FROM character_covenant WHERE guid = ?", CONNECTION_ASYNC);
+    PrepareStatement(CHAR_REP_COVENANT, "REPLACE INTO character_covenant (guid, Covenant, Renown, Anima, Souls) VALUES (?, ?, ?, ?, ?)", CONNECTION_ASYNC);
+
+    PrepareStatement(CHAR_SEL_COVENANT_SOULBIND, "SELECT Covenant, SpecId, Soulbind FROM character_covenant_soulbinds WHERE guid = ?", CONNECTION_ASYNC);
+    PrepareStatement(CHAR_REP_COVENANT_SOULBIND, "REPLACE INTO character_covenant_soulbinds (guid, Covenant, SpecId, Soulbind) VALUES (?, ?, ?, ?)", CONNECTION_ASYNC);
 }
 
 CharacterDatabaseConnection::CharacterDatabaseConnection(MySQLConnectionInfo& connInfo) : MySQLConnection(connInfo)

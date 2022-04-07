@@ -488,7 +488,7 @@ WorldPacket const* GarrisonTalentCompleted::Write()
 }
 void GarrisonLearnTalent::Read()
 {
-    _worldPacket >> UnkInt1;
+    _worldPacket >> SoulbindID;
     _worldPacket >> GarrTalentID;
 }
 void GarrisonSocketTalent::Read()

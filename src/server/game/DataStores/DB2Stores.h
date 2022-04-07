@@ -482,6 +482,7 @@ public:
     uint32 GetConduitIDFromItemID(uint32 itemId) const;
     void InsertNewHotfix(uint32 tableHash, uint32 recordId);
     GarrTalentRankEntry const* GetTalentRankEntryByGarrTalentID(uint32 garrTalentId);
+    std::vector<GarrTalentEntry const*> const* GetTalentEntriesByGarrTalentId(uint32 garrTalentId);
 
 private:
     friend class DB2HotfixGeneratorBase;

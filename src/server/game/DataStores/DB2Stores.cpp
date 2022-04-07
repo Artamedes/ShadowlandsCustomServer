@@ -504,6 +504,7 @@ namespace
     std::unordered_multimap<int32, UiMapAssignmentEntry const*> _uiMapAssignmentByWmoGroup[MAX_UI_MAP_SYSTEM];
     std::unordered_set<int32> _uiMapPhases;
     std::unordered_map<uint32, GarrTalentRankEntry const*> _talentRankEntriesByTalentId;
+    std::unordered_map<uint32, std::vector<GarrTalentEntry const*>> _garrTalentEntriesByPrerequisiteTalentID;
     WMOAreaTableLookupContainer _wmoAreaTableLookup;
 }
 
@@ -1602,6 +1603,12 @@ uint32 DB2Manager::LoadStores(std::string const& dataPath, LocaleConstant defaul
 
     for (auto entry : sGarrTalentRankStore)
         _talentRankEntriesByTalentId[entry->GarrTalentID] = entry;
+
+    for (auto entry : sGarrTalentStore)
+    {
+        if (entry->PrerequesiteTalentID > 0)
+            _garrTalentEntriesByPrerequisiteTalentID[entry->PrerequesiteTalentID].push_back(entry);
+    }
 
     TC_LOG_INFO("server.loading", ">> Initialized " SZFMTD " DB2 data stores in %u ms", _stores.size(), GetMSTimeDiffToNow(oldMSTime));
 
@@ -3482,4 +3489,13 @@ uint32 DB2Manager::GetConduitIDFromItemID(uint32 itemId) const
     if (itr != ItemIDToConduitID.end())
         return itr->second;
     return 0;
+}
+
+std::vector<GarrTalentEntry const*> const* DB2Manager::GetTalentEntriesByGarrTalentId(uint32 garrTalentId)
+{
+    auto itr = _garrTalentEntriesByPrerequisiteTalentID.find(garrTalentId);
+    if (itr == _garrTalentEntriesByPrerequisiteTalentID.end())
+        return nullptr;
+
+    return &itr->second;
 }

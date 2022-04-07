@@ -9,29 +9,46 @@
 #include "GarrisonPackets.h"
 #include "ObjectMgr.h"
 #include "GameTime.h"
+#include "QueryHolder.h"
 
 Covenant::Covenant(CovenantID covId, Player* player) : _covenantId(covId), _player(player), _soulbindId(SoulbindID::None), _renownLevel(80), _anima(0), _souls(0)
 {
 }
 
-void Covenant::SetSoulbind(SoulbindID soulbind)
+bool Covenant::IsActiveCovenant() const
+{
+    return this == _player->GetCovenant();
+}
+
+void Covenant::SetSoulbind(SoulbindID soulbind, bool sendPacket /*= false*/)
 {
     _soulbindId = soulbind;
-    _player->SetSoulbind(static_cast<int32>(_soulbindId));
 
-    // SMSG_GARRISON_ADD_SPEC_GROUPS send instead.
-    WorldPackets::Garrison::AddSpecGroups packet;
-    packet.GarrTypeID = 111;
-    packet.SpecGroups.resize(1);
-    packet.SpecGroups[0].ChrSpecializationID = _player->GetSpecializationId();
-    packet.SpecGroups[0].SoulbindID = static_cast<int32>(GetSoulbindID());
-    _player->SendDirectMessage(packet.Write());
+    if (IsActiveCovenant())
+    {
+        _player->SetSoulbind(static_cast<int32>(_soulbindId));
+
+        // SMSG_GARRISON_ADD_SPEC_GROUPS send instead.
+        if (sendPacket)
+        {
+            WorldPackets::Garrison::AddSpecGroups packet;
+            packet.GarrTypeID = 111;
+            packet.SpecGroups.resize(1);
+            packet.SpecGroups[0].ChrSpecializationID = _player->GetSpecializationId();
+            packet.SpecGroups[0].SoulbindID = static_cast<int32>(GetSoulbindID());
+            _player->SendDirectMessage(packet.Write());
+        }
+    }
 }
 
 void Covenant::SetRenown(int32 renown)
 {
     _renownLevel = renown;
-    _player->ModifyCurrency(1822, renown, true, false, true);
+
+    if (!IsActiveCovenant())
+        return;
+
+    _player->ModifyCurrency(1822, renown, false, false, true);
     _player->GetCovenantMgr()->LearnCovenantSpells(); // renown rewards
 
     // Check Renown
@@ -58,13 +75,15 @@ void Covenant::SetRenown(int32 renown)
 void Covenant::SetAnima(uint32 anima)
 {
     _anima = anima;
-    _player->ModifyCurrency(1813, anima, true, false, true);
+    if (IsActiveCovenant())
+        _player->ModifyCurrency(1813, anima, true, false, true);
 }
 
 void Covenant::SetSouls(uint32 souls)
 {
     _souls = souls;
-    _player->ModifyCurrency(1810, souls, true, false, true);
+    if (IsActiveCovenant())
+        _player->ModifyCurrency(1810, souls, true, false, true);
 }
 
 void Covenant::InitializeCovenant()
@@ -73,52 +92,15 @@ void Covenant::InitializeCovenant()
     SetAnima(_anima);
     SetSouls(_souls);
 
-    _player->CompletedAchievement(sAchievementStore.LookupEntry(15247));
-    _player->CompletedAchievement(sAchievementStore.LookupEntry(15248));
-    _player->CompletedAchievement(sAchievementStore.LookupEntry(15249));
-    _player->CompletedAchievement(sAchievementStore.LookupEntry(15250));
-    _player->CompletedAchievement(sAchievementStore.LookupEntry(14934));
-    _player->CompletedAchievement(sAchievementStore.LookupEntry(14936));
-    _player->CompletedAchievement(sAchievementStore.LookupEntry(14937));
-    _player->CompletedAchievement(sAchievementStore.LookupEntry(14790));
-}
-
-void Covenant::LearnConduit(GarrTalentEntry const* talent, GarrTalentTreeEntry const* tree)
-{
-    Conduit conduit;
-    conduit.TalentEntry = talent;
-    conduit.TreeEntry = tree;
-
-    if (std::find(_conduits.begin(), _conduits.end(), conduit) == _conduits.end())
-        _conduits.emplace_back(conduit);
-
-    // SMSG_GARRISON_RESEARCH_TALENT_RESULT send instead
-    //_player->SendGarrisonInfoResult();
-    // ServerToClient: SMSG_GARRISON_RESEARCH_TALENT_RESULT (0x296C) Length: 30 ConnIdx: 1 Time: 04/05/2022 23:54:19.075 Number: 15355
-    // UnkInt1: 0
-    // GarrTypeID: 111
-    // unkbit: True
-
-    WorldPackets::Garrison::GarrisonResearchTalentResult result;
-    result.GarrTypeID = 111;
-    conduit.BuildGarrisonTalent(result.talent);
-    _player->SendDirectMessage(result.Write());
-
-    // SMSG_LEARNED_SPELLS - need implement GarrTalentRank.db2
-    if (auto talentRank = sDB2Manager.GetTalentRankEntryByGarrTalentID(talent->ID))
-    {
-        if (talentRank->PerkSpellID > 0)
-        {
-            if (!_player->HasSpell(talentRank->PerkSpellID))
-                _player->LearnSpell(talentRank->PerkSpellID, false);
-        }
-    }
-    // SMSG_CRITERIA_UPDATE Criteria ID, 30952, 3x Quantity
-    // SMSG_GARRISON_TALENT_COMPLETED
-    WorldPackets::Garrison::GarrisonTalentCompleted result2;
-    result2.GarrTypeID = 111;
-    result2.GarrTalentID = talent->ID;
-    _player->SendDirectMessage(result2.Write());
+    // Don't think we need theese. Do need to complete the quests however.
+    //_player->CompletedAchievement(sAchievementStore.LookupEntry(15247));
+    //_player->CompletedAchievement(sAchievementStore.LookupEntry(15248));
+    //_player->CompletedAchievement(sAchievementStore.LookupEntry(15249));
+    //_player->CompletedAchievement(sAchievementStore.LookupEntry(15250));
+    //_player->CompletedAchievement(sAchievementStore.LookupEntry(14934));
+    //_player->CompletedAchievement(sAchievementStore.LookupEntry(14936));
+    //_player->CompletedAchievement(sAchievementStore.LookupEntry(14937));
+    //_player->CompletedAchievement(sAchievementStore.LookupEntry(14790));
 }
 
 void Conduit::BuildGarrisonTalent(WorldPackets::Garrison::GarrisonTalent& talent)
@@ -128,22 +110,12 @@ void Conduit::BuildGarrisonTalent(WorldPackets::Garrison::GarrisonTalent& talent
     // ResearchStartTime: 1649217259
     // Flags: 1
     // HasSocket: False
-    talent.GarrTalentID = TalentEntry->ID; // GarrTalent.dbc - Contains GarrTalentTreeID, which is the soulbind. 997 - 304 Endurance Conduit
-    talent.Rank = 1; // not sure
-    talent.Flags = 1; // not 100% sure
-    talent.ResearchStartTime = GameTime::GetGameTime(); // not 100% sure. other garrison packets used this.
+    talent.GarrTalentID = TalentEntryId; // GarrTalent.dbc - Contains GarrTalentTreeID, which is the soulbind. 997 - 304 Endurance Conduit
+    talent.Rank = Rank; // not sure
+    talent.Flags = Flags; // not 100% sure
+    talent.ResearchStartTime = ResearchStartTime; // not 100% sure. other garrison packets used this.
     if (Socket.has_value())
         talent.Socket = Socket;
-}
-
-void Covenant::BuildGarrisonPacket(WorldPackets::Garrison::GarrisonInfo& result)
-{
-    for (auto& conduit : _conduits)
-    {
-        WorldPackets::Garrison::GarrisonTalent talent;
-        conduit.BuildGarrisonTalent(talent);
-        result.Talents.push_back(talent);
-    }
 }
 
 void Covenant::SocketTalent(WorldPackets::Garrison::GarrisonSocketTalent& packet)
@@ -154,79 +126,27 @@ void Covenant::SocketTalent(WorldPackets::Garrison::GarrisonSocketTalent& packet
     //response.Sockets.resize(packet.Sockets.size());
     for (int i = 0; i < packet.Sockets.size(); ++i)
     {
-        if (packet.Sockets[i].SoulbindConduitID != 0)
+        auto conduit = _player->GetCovenantMgr()->GetConduitByGarrTalentId(packet.Sockets[i].SoulbindConduitID);
+        if (!conduit)
         {
-            WorldPackets::Garrison::GarrisonTalentSocketChange socketChange;
-            socketChange.ConduitID = packet.Sockets[i].SoulbindConduitID;
-            WorldPackets::Garrison::GarrisonTalentSocketData data;
-            data.SoulbindConduitID = packet.Sockets[i].SoulbindConduitRank;
-            data.SoulbindConduitRank = 0; // probably the rank
-            socketChange.Socket = data;
-            response.Sockets.push_back(socketChange);
+            response.RemoveConduitIds.push_back(packet.Sockets[i].SoulbindConduitRank); // todo: find if this conduit is socketed
+            continue;
         }
-        else
-            response.RemoveConduitIds.push_back(packet.Sockets[i].SoulbindConduitID);
+
+        // TODO: Name these fields correctly.
+        WorldPackets::Garrison::GarrisonTalentSocketChange socketChange;
+        socketChange.ConduitID = packet.Sockets[i].SoulbindConduitID;
+        WorldPackets::Garrison::GarrisonTalentSocketData data;
+        data.SoulbindConduitID = packet.Sockets[i].SoulbindConduitRank;
+        data.SoulbindConduitRank = 0; // probably the rank
+        socketChange.Socket = data;
+        conduit->Socket = data;
+        response.Sockets.push_back(socketChange);
     }
     _player->SendDirectMessage(response.Write());
 }
 
-void Covenant::LearnTalent(WorldPackets::Garrison::GarrisonLearnTalent& researchResult)
-{
-    auto talent = sGarrTalentStore.LookupEntry(researchResult.GarrTalentID);
-    if (!talent)
-        return;
-
-    TC_LOG_TRACE("network.opcode", "GarrisonLearnTalent: GarrTalentID %u UnkInt1 %u", researchResult.GarrTalentID, researchResult.UnkInt1);
-    // Might be talentTier in researchResult. Have to verify.
-
-    // SMSG_UNLEARNED_SPELLS
-    // Need to track the OLD learned spells. possibly ordering by their Tier?
-    // Also need to check Spells with pre-requestiteTalentIds
-    //if (auto talentRank = sDB2Manager.GetTalentRankEntryByGarrTalentID(talent->ID))
-    //{
-    //    if (talentRank->PerkSpellID > 0)
-    //    {
-    //        if (!_player->HasSpell(talentRank->PerkSpellID))
-    //            _player->LearnSpell(talentRank->PerkSpellID, false);
-    //    }
-    //}
-
-    // SMSG_GARRISON_SWITCH_TALENT_TREE_BRANCH
-    // ServerToClient: SMSG_GARRISON_SWITCH_TALENT_TREE_BRANCH(0x29AA) Length : 50 ConnIdx : 1 Time : 04 / 06 / 2022 15 : 55 : 14.871 Number : 3406
-    // GarrTypeID : 111
-    // Count : 2
-    // GarrTalentID : 850
-    // Rank : 1
-    // ResearchStartTime : 1649223627
-    // Flags : 0
-    // HasSocket : False
-    // GarrTalentID : 1009
-    // Rank : 1
-    // ResearchStartTime : 1649274916
-    // Flags : 1
-    // HasSocket : False
-    WorldPackets::Garrison::GarrisonSwitchTalentTreeBranch packet;
-    packet.GarrTypeID = 111;
-    // possible resize to number of results in a row.
-    for (auto garrTalent : sGarrTalentStore)
-    {
-        if (garrTalent->Tier == garrTalent->Tier && garrTalent->GarrTalentTreeID == talent->GarrTalentTreeID)
-        {
-            WorldPackets::Garrison::GarrisonTalent garrTalentPacket;
-
-            garrTalentPacket.GarrTalentID = garrTalent->ID;
-            garrTalentPacket.Flags = garrTalent->ID == researchResult.GarrTalentID ? GarrisonTalentFlags::TalentFlagEnabled : GarrisonTalentFlags::TalentFlagDisabled;
-            garrTalentPacket.Rank = 1;
-            garrTalentPacket.ResearchStartTime = GameTime::GetGameTimeMS();
-
-            packet.Talents.push_back(garrTalentPacket);
-        }
-    }
-    //packet.Talents.resize(2);
-    _player->SendDirectMessage(packet.Write());
-}
-
-CovenantMgr::CovenantMgr(Player* player) : _player(player), _currCovenantIndex(0)
+CovenantMgr::CovenantMgr(Player* player) : _player(player), _currCovenantIndex(0), _loaded(false)
 {
     _playerCovenants[0] = std::make_unique<Covenant>(CovenantID::None, _player);
     _playerCovenants[1] = std::make_unique<Covenant>(CovenantID::Kyrian, _player);
@@ -235,15 +155,172 @@ CovenantMgr::CovenantMgr(Player* player) : _player(player), _currCovenantIndex(0
     _playerCovenants[4] = std::make_unique<Covenant>(CovenantID::Necrolord, _player);
 }
 
-void CovenantMgr::LoadFromDB()
+void CovenantMgr::LoadFromDB(CharacterDatabaseQueryHolder const& holder)
 {
-    // Test
-    // SetCovenant(CovenantID::Kyrian);
+    auto result = holder.GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_CHARACTER_COVENANT_COLLECTIONS);
+    if (result)
+    {
+        CollectionEntries.rehash(result->GetRowCount());
+        int i = 0;
+        do
+        {
+            auto fields = result->Fetch();
+            CollectionEntries[fields[0].GetInt32()] = fields[1].GetInt32();
+
+            i++;
+
+        } while (result->NextRow());
+    }
+    result = holder.GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_CHARACTER_COVENANT_CONDUITS);
+
+    if (result)
+    {
+        do
+        {
+            auto fields = result->Fetch();
+
+            uint32 CovenantID = fields[0].GetUInt32();
+            uint32 GarrTalentID = fields[1].GetUInt32();
+            uint32 GarrTalentTreeID = fields[2].GetUInt32();
+
+            Conduit conduit;
+
+            conduit.TalentEntryId = GarrTalentID;
+            conduit.TreeEntryId = GarrTalentTreeID;
+            conduit.Rank = fields[3].GetUInt32();
+            conduit.Flags = fields[4].GetUInt32();
+            conduit.ResearchStartTime = fields[5].GetUInt64();
+
+            uint32 SoulbindConduitID = fields[6].GetUInt32();
+            if (SoulbindConduitID > 0)
+            {
+                WorldPackets::Garrison::GarrisonTalentSocketData data;
+                data.SoulbindConduitID = SoulbindConduitID;
+                data.SoulbindConduitRank = fields[7].GetUInt32();
+                conduit.Socket = data;
+            }
+
+            _conduits.insert({ CovenantID, conduit });
+
+        } while (result->NextRow());
+    }
+
+    result = holder.GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_CHARACTER_COVENANT);
+
+    if (result)
+    {
+        do
+        {
+            auto fields = result->Fetch();
+
+            auto covenant = fields[0].GetUInt32();
+
+            // bad db data.
+            if (covenant > 4)
+                continue;
+
+            auto Renown = fields[1].GetInt32();
+            auto Anima = fields[2].GetUInt32();
+            auto Souls = fields[2].GetUInt32();
+
+            auto cov = _playerCovenants[covenant].get();
+
+            cov->SetRenown(Renown);
+            cov->SetAnima(Anima);
+            cov->SetSouls(Souls);
+
+        } while (result->NextRow());
+    }
+
+
+    result = holder.GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_CHARACTER_COVENANT_SOULBIND);
+
+    if (result)
+    {
+        do
+        {
+            auto fields = result->Fetch();
+
+            auto covenant = fields[0].GetUInt32();
+            auto specId = fields[1].GetUInt32();
+            auto soulbind = fields[2].GetUInt32();
+
+            CovenantSoulbind covSoulbind;
+
+            covSoulbind.SpecId = specId;
+            covSoulbind.Soulbind = soulbind;
+
+            _covenantSoulbinds.insert({ covenant, covSoulbind });
+        } while (result->NextRow());
+    }
+    _loaded = true;
+    OnSpecChange();
 }
 
 void CovenantMgr::SaveToDB(CharacterDatabaseTransaction trans)
 {
+    for (auto const& itr : _playerCovenants)
+    {
+        if (itr->GetCovenantID() == CovenantID::None)
+            continue;
 
+        auto stmt = CharacterDatabase.GetPreparedStatement(CHAR_REP_COVENANT);
+        stmt->setUInt64(0, _player->GetGUID().GetCounter());
+        stmt->setUInt32(1, static_cast<uint32>(itr->GetCovenantID()));
+        stmt->setUInt32(2, itr->GetRenownLevel());
+        stmt->setUInt32(3, itr->GetAnima());
+        stmt->setUInt32(4, itr->GetSouls());
+        trans->Append(stmt);
+    }
+
+    for (auto const& itr : _covenantSoulbinds)
+    {
+        auto stmt = CharacterDatabase.GetPreparedStatement(CHAR_REP_COVENANT_SOULBIND);
+        stmt->setUInt64(0, _player->GetGUID().GetCounter());
+        stmt->setUInt32(1, itr.first);
+        stmt->setUInt32(2, itr.second.SpecId);
+        stmt->setUInt32(3, itr.second.Soulbind);
+        trans->Append(stmt);
+    }
+
+    for (auto const& itr : CollectionEntries)
+    {
+        auto stmt = CharacterDatabase.GetPreparedStatement(CHAR_REP_COVENANT_COLLECTIONS);
+        stmt->setUInt64(0, _player->GetGUID().GetCounter());
+        stmt->setInt32(1, itr.first);
+        stmt->setInt32(2, itr.second);
+        trans->Append(stmt);
+    }
+
+    for (auto const& itr : _conduits)
+    {
+        auto covenantid = itr.first;
+        auto const& conduit = itr.second;
+
+        auto index = 0;
+
+        auto stmt = CharacterDatabase.GetPreparedStatement(CHAR_REP_COVENANT_CONDUITS);
+        stmt->setUInt64(index++, _player->GetGUID().GetCounter());
+        stmt->setUInt32(index++, covenantid);
+        stmt->setUInt32(index++, conduit.TalentEntryId);
+        stmt->setUInt32(index++, conduit.TreeEntryId);
+        stmt->setUInt32(index++, conduit.Rank);
+        stmt->setUInt32(index++, conduit.Flags);
+        stmt->setUInt64(index++, conduit.ResearchStartTime);
+
+        uint32 SoulbindConduitID = 0;
+        uint32 SoulbindConduitRank = 0;
+
+        if (conduit.Socket.has_value())
+        {
+            SoulbindConduitID = conduit.Socket->SoulbindConduitID;
+            SoulbindConduitRank = conduit.Socket->SoulbindConduitRank;
+        }
+
+        stmt->setUInt32(index++, SoulbindConduitID);
+        stmt->setUInt32(index++, SoulbindConduitRank);
+        trans->Append(stmt);
+    }
 }
 
 void CovenantMgr::InitializeFields()
@@ -433,7 +510,7 @@ void CovenantMgr::LearnSoulbindConduit(Item* item)
         return;
 
     // SoulbindConduitRankProperties.db2, And check the itemlevel
-    uint32 rank = 1;
+    int32 rank = 1;
 
     // SMSG_GARRISON_COLLECTION_UPDATE_ENTRY
     WorldPackets::Garrison::GarrisonCollectionUpdateEntry packet;
@@ -444,10 +521,14 @@ void CovenantMgr::LearnSoulbindConduit(Item* item)
     packet.Socket.SoulbindConduitRank = rank;
     _player->SendDirectMessage(packet.Write());
 
-    auto itr = std::find(CollectionEntries.begin(), CollectionEntries.end(), conduitId);
+    auto itr = CollectionEntries.find(conduitId);
     if (itr != CollectionEntries.end())
     {
-        itr->Rank = rank;
+        itr->second = rank;
+    }
+    else
+    {
+        CollectionEntries[conduitId] = rank;
     }
 }
 
@@ -461,7 +542,15 @@ void CovenantMgr::AddGarrisonInfo(WorldPackets::Garrison::GetGarrisonInfoResult&
 
     cov.Collections.resize(1);
     cov.Collections[0].Type = 1;
-    cov.Collections[0].Entries = CollectionEntries;
+
+    cov.Collections[0].Entries.reserve(CollectionEntries.size());
+    for (auto const& itr : CollectionEntries)
+    {
+        WorldPackets::Garrison::GarrisonCollectionEntry entry;
+        entry.EntryID = itr.first;
+        entry.Rank = itr.second;
+        cov.Collections[0].Entries.emplace_back(entry);
+    }
 
    //for (auto entry : sSoulbindConduitStore)
    //{
@@ -482,9 +571,235 @@ void CovenantMgr::AddGarrisonInfo(WorldPackets::Garrison::GetGarrisonInfoResult&
    //    talent.ResearchStartTime = getMSTime();
    //    cov.Talents.push_back(talent);
    //}
-    GetCovenant()->BuildGarrisonPacket(cov);
+    BuildGarrisonPacket(cov);
 
     garrisonInfo.Garrisons.push_back(cov);
+}
+
+
+void CovenantMgr::LearnConduit(GarrTalentEntry const* talent, GarrTalentTreeEntry const* tree)
+{
+    Conduit conduit;
+    conduit.TalentEntryId = talent->ID;
+    conduit.TreeEntryId = tree->ID;
+    conduit.Flags = GarrisonTalentFlags::TalentFlagEnabled;
+
+    uint32 covId = (uint32)_currCovenantIndex;
+    auto range = _conduits.equal_range(covId);
+    bool found = false;
+    for (auto i = range.first; i != range.second; ++i)
+    {
+        if (i->second.TalentEntryId == talent->ID)
+        {
+            found = true;
+            break;
+        }
+    }
+    if (!found)
+        _conduits.insert({ covId, conduit });
+
+    // SMSG_GARRISON_RESEARCH_TALENT_RESULT send instead
+    //_player->SendGarrisonInfoResult();
+    // ServerToClient: SMSG_GARRISON_RESEARCH_TALENT_RESULT (0x296C) Length: 30 ConnIdx: 1 Time: 04/05/2022 23:54:19.075 Number: 15355
+    // UnkInt1: 0
+    // GarrTypeID: 111
+    // unkbit: True
+
+    WorldPackets::Garrison::GarrisonResearchTalentResult result;
+    result.GarrTypeID = 111;
+    conduit.BuildGarrisonTalent(result.talent);
+    _player->SendDirectMessage(result.Write());
+
+    // SMSG_LEARNED_SPELLS - need implement GarrTalentRank.db2
+    if (auto talentRank = sDB2Manager.GetTalentRankEntryByGarrTalentID(talent->ID))
+    {
+        if (talentRank->PerkSpellID > 0)
+        {
+            if (!_player->HasSpell(talentRank->PerkSpellID))
+                _player->LearnSpell(talentRank->PerkSpellID, false);
+        }
+    }
+    // SMSG_CRITERIA_UPDATE Criteria ID, 30952, 3x Quantity
+    // SMSG_GARRISON_TALENT_COMPLETED
+    WorldPackets::Garrison::GarrisonTalentCompleted result2;
+    result2.GarrTypeID = 111;
+    result2.GarrTalentID = talent->ID;
+    _player->SendDirectMessage(result2.Write());
+}
+
+void CovenantMgr::BuildGarrisonPacket(WorldPackets::Garrison::GarrisonInfo& result)
+{
+    uint32 covId = (uint32)_currCovenantIndex;
+    auto range = _conduits.equal_range(covId);
+
+    for (auto i = range.first; i != range.second; ++i)
+    {
+        auto& conduit = i->second;
+
+        WorldPackets::Garrison::GarrisonTalent talent;
+        conduit.BuildGarrisonTalent(talent); // maybe make const
+        result.Talents.push_back(talent);
+    }
+}
+
+void CovenantMgr::LearnTalent(WorldPackets::Garrison::GarrisonLearnTalent& researchResult)
+{
+    auto talent = sGarrTalentStore.LookupEntry(researchResult.GarrTalentID);
+    if (!talent)
+        return;
+
+    // SMSG_UNLEARNED_SPELLS
+    // Need to track the OLD learned spells. possibly ordering by their Tier?
+    // Also need to check Spells with pre-requestiteTalentIds
+    //if (auto talentRank = sDB2Manager.GetTalentRankEntryByGarrTalentID(talent->ID))
+    //{
+    //    if (talentRank->PerkSpellID > 0)
+    //    {
+    //        if (!_player->HasSpell(talentRank->PerkSpellID))
+    //            _player->LearnSpell(talentRank->PerkSpellID, false);
+    //    }
+    //}
+
+    WorldPackets::Garrison::GarrisonSwitchTalentTreeBranch packet;
+    packet.GarrTypeID = 111;
+    uint32 covId = (uint32)_currCovenantIndex;
+    auto range = _conduits.equal_range(covId);
+
+    auto AddConduitToListIfNeed([range, covId, this](GarrTalentEntry const* pTalent)
+    {
+        bool found = false;
+        for (auto i = range.first; i != range.second; ++i)
+        {
+            if (i->second.TalentEntryId == pTalent->ID)
+            {
+                found = true;
+                break;
+            }
+        }
+        if (!found)
+        {
+            Conduit conduit;
+            conduit.TalentEntryId = pTalent->ID;
+            conduit.TreeEntryId = pTalent->GarrTalentTreeID;
+            conduit.Flags = GarrisonTalentFlags::TalentFlagEnabled;
+
+            _conduits.insert({ covId, conduit });
+        }
+    });
+
+    AddConduitToListIfNeed(talent);
+
+    std::set<uint32> TalentTiersToCheck;
+    TalentTiersToCheck.insert(talent->Tier);
+    auto extraConduits = sDB2Manager.GetTalentEntriesByGarrTalentId(talent->ID);
+    if (extraConduits != nullptr)
+    {
+        for (auto t : *extraConduits)
+        {
+            AddConduitToListIfNeed(t);
+            TalentTiersToCheck.insert(t->Tier);
+        }
+    }
+
+    auto garrTalentResult = sGarrTalentStore.LookupEntry(talent->PrerequesiteTalentID);
+
+    while (garrTalentResult != nullptr)
+    {
+        AddConduitToListIfNeed(garrTalentResult);
+        TalentTiersToCheck.insert(garrTalentResult->Tier);
+        talent = garrTalentResult;
+        auto newResult = sGarrTalentStore.LookupEntry(garrTalentResult->PrerequesiteTalentID);
+        if (newResult == garrTalentResult)
+            break;
+        garrTalentResult = newResult;
+    }
+
+    for (auto i = range.first; i != range.second; ++i)
+    {
+        auto entry = sGarrTalentStore.LookupEntry(i->second.TalentEntryId);
+
+        if (TalentTiersToCheck.count(entry->Tier))
+        {
+            if (i->second.TalentEntryId == talent->ID || entry->PrerequesiteTalentID == talent->ID)
+                i->second.Flags = GarrisonTalentFlags::TalentFlagEnabled;
+            else
+                i->second.Flags = GarrisonTalentFlags::TalentFlagDisabled;
+
+            WorldPackets::Garrison::GarrisonTalent garrTalentPacket;
+            i->second.BuildGarrisonTalent(garrTalentPacket);
+            packet.Talents.push_back(garrTalentPacket);
+
+            //auto extraConduits = sDB2Manager.GetTalentEntriesByGarrTalentId(entry->ID);
+            //if (extraConduits != nullptr)
+            //{
+            //    for (auto t : *extraConduits)
+            //    {
+            //    }
+            //}
+        }
+    }
+
+    _player->SendDirectMessage(packet.Write());
+}
+
+Conduit* CovenantMgr::GetConduitByGarrTalentId(uint32 garrTalentId)
+{
+    uint32 covId = (uint32)_currCovenantIndex;
+    auto range = _conduits.equal_range(covId);
+
+    for (auto i = range.first; i != range.second; ++i)
+    {
+        auto& conduit = i->second;
+        if (conduit.TalentEntryId == garrTalentId)
+            return &conduit;
+    }
+
+    return nullptr;
+}
+
+void CovenantMgr::SetSoulbind(SoulbindID soulbind, bool sendPacket /*= false*/)
+{
+    auto covenant = GetCovenant();
+    if (covenant->GetCovenantID() == CovenantID::None)
+        return;
+
+    covenant->SetSoulbind(soulbind, sendPacket);
+
+    auto range = _covenantSoulbinds.equal_range(static_cast<uint32>(covenant->GetCovenantID()));
+    for (auto i = range.first; i != range.second; ++i)
+    {
+        if (i->second.SpecId == _player->GetSpecializationId())
+        {
+            i->second.Soulbind = static_cast<uint32>(soulbind);
+            return;
+        }
+    }
+
+    CovenantSoulbind covSoulbind;
+
+    covSoulbind.Soulbind = static_cast<uint32>(soulbind);
+    covSoulbind.SpecId = _player->GetSpecializationId();
+
+    _covenantSoulbinds.insert({ (uint32)covenant->GetCovenantID(), covSoulbind });
+}
+
+void CovenantMgr::OnSpecChange()
+{
+    if (!_loaded)
+        return;
+    auto covenant = GetCovenant();
+    if (covenant->GetCovenantID() == CovenantID::None)
+        return;
+
+    auto range = _covenantSoulbinds.equal_range(static_cast<uint32>(covenant->GetCovenantID()));
+    for (auto i = range.first; i != range.second; ++i)
+    {
+        if (i->second.SpecId == _player->GetSpecializationId())
+        {
+            covenant->SetSoulbind(static_cast<SoulbindID>(i->second.Soulbind));
+            break;
+        }
+    }
 }
 
 // Packets:

@@ -61,8 +61,11 @@ enum GarrisonTalentFlags
 
 struct TC_GAME_API Conduit
 {
-    GarrTalentEntry const* TalentEntry;
-    GarrTalentTreeEntry const* TreeEntry;
+    uint32 TalentEntryId = 0;//GarrTalentEntry const* TalentEntry;
+    uint32 TreeEntryId = 0;//GarrTalentTreeEntry const* TreeEntry;
+    uint32 Rank = 1;
+    uint32 Flags = 1;
+    uint64 ResearchStartTime = 0;
 
     Optional<WorldPackets::Garrison::GarrisonTalentSocketData> Socket;
 
@@ -70,7 +73,7 @@ struct TC_GAME_API Conduit
 
     bool operator==(Conduit const& right) const
     {
-        return TalentEntry == right.TalentEntry && TreeEntry == right.TreeEntry;
+        return TalentEntryId == right.TalentEntryId && TreeEntryId == right.TreeEntryId;
     }
     bool operator!=(Conduit const& right) const { return !(*this == right); }
 };
@@ -83,17 +86,17 @@ class TC_GAME_API Covenant
         CovenantID GetCovenantID() const { return _covenantId; }
         SoulbindID GetSoulbindID() const { return _soulbindId; }
         int32 GetRenownLevel() const { return _renownLevel; }
+        uint32 GetAnima() const { return _anima; }
+        uint32 GetSouls() const { return _souls; }
+        bool IsActiveCovenant() const;
 
-        void SetSoulbind(SoulbindID soulbind);
+        void SetSoulbind(SoulbindID soulbind, bool sendPacket = false);
         void SetRenown(int32 renown);
         void SetAnima(uint32 anima);
         void SetSouls(uint32 souls);
 
         void InitializeCovenant();
-        void LearnConduit(GarrTalentEntry const* talent, GarrTalentTreeEntry const* tree);
-        void BuildGarrisonPacket(WorldPackets::Garrison::GarrisonInfo& result);
         void SocketTalent(WorldPackets::Garrison::GarrisonSocketTalent& packet);
-        void LearnTalent(WorldPackets::Garrison::GarrisonLearnTalent& researchResult);
 
     private:
         Player* _player;
@@ -102,7 +105,13 @@ class TC_GAME_API Covenant
         int32 _renownLevel;
         uint32 _anima;
         uint32 _souls;
-        std::vector<Conduit> _conduits;
+        //std::vector<Conduit> _conduits;
+};
+
+struct TC_GAME_API CovenantSoulbind
+{
+    uint32 SpecId;
+    uint32 Soulbind;
 };
 
 class TC_GAME_API CovenantMgr
@@ -110,7 +119,7 @@ class TC_GAME_API CovenantMgr
     public:
         CovenantMgr(Player* player);
 
-        void LoadFromDB();
+        void LoadFromDB(CharacterDatabaseQueryHolder const& holder);
         void SaveToDB(CharacterDatabaseTransaction trans);
         void InitializeFields();
         void SetCovenant(CovenantID covenant);
@@ -126,7 +135,15 @@ class TC_GAME_API CovenantMgr
 
         void AddGarrisonInfo(WorldPackets::Garrison::GetGarrisonInfoResult & garrisonInfo);
         void LearnSoulbindConduit(Item* item);
-        
+        void LearnConduit(GarrTalentEntry const* talent, GarrTalentTreeEntry const* tree);
+        void BuildGarrisonPacket(WorldPackets::Garrison::GarrisonInfo& result);
+        void LearnTalent(WorldPackets::Garrison::GarrisonLearnTalent& researchResult);
+        Conduit* GetConduitByGarrTalentId(uint32 garrTalentId);
+        void SetSoulbind(SoulbindID soulbind, bool sendPacket = false);
+
+        // Events
+        void OnSpecChange();
+
         SoulbindUIDisplayInfoIds GetSoulbindUIDisplayInfoIdFromSoulbindID(SoulbindID id) const
         {
             switch (id)
@@ -152,6 +169,9 @@ class TC_GAME_API CovenantMgr
     private:
         Player* _player;
         size_t _currCovenantIndex;
+        bool _loaded = false;
         std::array<std::unique_ptr<Covenant>, 5> _playerCovenants = { };
-        std::vector<WorldPackets::Garrison::GarrisonCollectionEntry> CollectionEntries;
+        std::unordered_map<int32, int32> CollectionEntries;
+        std::unordered_multimap<uint32, Conduit> _conduits; // CovenantID, Conduit
+        std::unordered_multimap <uint32, CovenantSoulbind> _covenantSoulbinds;
 };

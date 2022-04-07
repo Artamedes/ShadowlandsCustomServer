@@ -23,5 +23,5 @@ void WorldSession::HandleActivateSoulbindOpcode(WorldPackets::Covenant::Activate
     if (packet.SoulbindID > 4)
         return;
 
-    _player->GetCovenant()->SetSoulbind((SoulbindID)packet.SoulbindID);
+    _player->GetCovenantMgr()->SetSoulbind((SoulbindID)packet.SoulbindID, true);
 }

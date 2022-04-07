@@ -68,7 +68,7 @@ void WorldSession::HandleGarrisonResearchTalent(WorldPackets::Garrison::Garrison
         {
             if (tree->GarrTypeID == 111)
             {
-                _player->GetCovenant()->LearnConduit(talent, tree);
+                _player->GetCovenantMgr()->LearnConduit(talent, tree);
             }
         }
     }
@@ -76,7 +76,7 @@ void WorldSession::HandleGarrisonResearchTalent(WorldPackets::Garrison::Garrison
 
 void WorldSession::HandleGarrisonLearnTalent(WorldPackets::Garrison::GarrisonLearnTalent& packet)
 {
-    _player->GetCovenant()->LearnTalent(packet);
+    _player->GetCovenantMgr()->LearnTalent(packet);
 }
 
 void WorldSession::HandleGarrisonSocketTalent(WorldPackets::Garrison::GarrisonSocketTalent& packet)
