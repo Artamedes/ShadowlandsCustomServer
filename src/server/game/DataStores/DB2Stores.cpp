@@ -273,6 +273,7 @@ DB2Storage<SoulbindEntry>                       sSoulbindStore("Soulbind.db2", S
 DB2Storage<SoulbindConduitEntry>                sSoulbindConduitStore("SoulbindConduit.db2", SoulbindConduitLoadInfo::Instance());
 DB2Storage<SoulbindConduitItemEntry>            sSoulbindConduitItemStore("SoulbindConduitItem.db2", SoulbindConduitItemLoadInfo::Instance());
 DB2Storage<SoulbindConduitRankEntry>            sSoulbindConduitRankStore("SoulbindConduitRank.db2", SoulbindConduitRankLoadInfo::Instance());
+DB2Storage<SoulbindConduitRankPropertiesEntry>  sSoulbindConduitRankPropertiesStore("SoulbindConduitRankProperties.db2", SoulbindConduitRankPropertiesLoadInfo::Instance());
 DB2Storage<SoundKitEntry>                       sSoundKitStore("SoundKit.db2", SoundKitLoadInfo::Instance());
 DB2Storage<SpecializationSpellsEntry>           sSpecializationSpellsStore("SpecializationSpells.db2", SpecializationSpellsLoadInfo::Instance());
 DB2Storage<SpecSetMemberEntry>                  sSpecSetMemberStore("SpecSetMember.db2", SpecSetMemberLoadInfo::Instance());
@@ -505,6 +506,7 @@ namespace
     std::unordered_set<int32> _uiMapPhases;
     std::unordered_map<uint32, GarrTalentRankEntry const*> _talentRankEntriesByTalentId;
     std::unordered_map<uint32, std::vector<GarrTalentEntry const*>> _garrTalentEntriesByPrerequisiteTalentID;
+    std::unordered_map<uint32, std::vector<SoulbindConduitRankEntry const*>> _soulbindConduitRankBySoulbindConduitIDs;
     WMOAreaTableLookupContainer _wmoAreaTableLookup;
 }
 
@@ -860,6 +862,7 @@ uint32 DB2Manager::LoadStores(std::string const& dataPath, LocaleConstant defaul
     LOAD_DB2(sSoulbindConduitStore);
    // LOAD_DB2(sSoulbindStore);
     LOAD_DB2(sSoulbindConduitItemStore);
+    LOAD_DB2(sSoulbindConduitRankPropertiesStore);
     LOAD_DB2(sSoulbindConduitRankStore);
     LOAD_DB2(sSoundKitStore);
     LOAD_DB2(sSpecializationSpellsStore);
@@ -1609,6 +1612,9 @@ uint32 DB2Manager::LoadStores(std::string const& dataPath, LocaleConstant defaul
         if (entry->PrerequesiteTalentID > 0)
             _garrTalentEntriesByPrerequisiteTalentID[entry->PrerequesiteTalentID].push_back(entry);
     }
+
+    for (auto entry : sSoulbindConduitRankStore)
+        _soulbindConduitRankBySoulbindConduitIDs[entry->SoulbindConduitID].push_back(entry);
 
     TC_LOG_INFO("server.loading", ">> Initialized " SZFMTD " DB2 data stores in %u ms", _stores.size(), GetMSTimeDiffToNow(oldMSTime));
 
@@ -3495,6 +3501,15 @@ std::vector<GarrTalentEntry const*> const* DB2Manager::GetTalentEntriesByGarrTal
 {
     auto itr = _garrTalentEntriesByPrerequisiteTalentID.find(garrTalentId);
     if (itr == _garrTalentEntriesByPrerequisiteTalentID.end())
+        return nullptr;
+
+    return &itr->second;
+}
+
+std::vector<SoulbindConduitRankEntry const*> const* DB2Manager::GetSoulbindConduitRankBySoulbindConduitID(uint32 soulbindConduitID)
+{
+    auto itr = _soulbindConduitRankBySoulbindConduitIDs.find(soulbindConduitID);
+    if (itr == _soulbindConduitRankBySoulbindConduitIDs.end())
         return nullptr;
 
     return &itr->second;

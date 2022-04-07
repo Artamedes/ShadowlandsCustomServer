@@ -5274,6 +5274,22 @@ struct SoulbindConduitRankLoadInfo
     }
 };
 
+struct SoulbindConduitRankPropertiesLoadInfo
+{
+    static DB2LoadInfo const* Instance()
+    {
+        static DB2FieldMeta const fields[] =
+        {
+            { false, FT_INT, "ID" },
+            { true, FT_INT, "Rank" },
+            { true, FT_INT, "ItemLevel" },
+            { true, FT_INT, "QualityID" },
+        };
+        static DB2LoadInfo const loadInfo(&fields[0], std::extent<decltype(fields)>::value, SoulbindConduitRankPropertiesMeta::Instance(), HOTFIX_SEL_SOULBIND_CONDUIT_RANK_PROPERTIES);
+        return &loadInfo;
+    }
+};
+
 struct SoundKitLoadInfo
 {
     static DB2LoadInfo const* Instance()

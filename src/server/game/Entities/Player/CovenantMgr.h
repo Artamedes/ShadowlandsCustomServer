@@ -53,6 +53,23 @@ enum class SoulbindUIDisplayInfoIds : uint32
     Theotar       = 15,
 };
 
+enum GarrTalentTreeIds : uint32
+{
+    Niya          = 276,
+    Dreamweaver   = 275,
+    GeneralDraven = 304,
+    Marileth      = 325,
+    Emeni         = 330,
+    Korayn        = 334,
+    Pelagos       = 357,
+    Heimer        = 349,
+    Kleia         = 360,
+    Mikanikos     = 365,
+    Nadjia        = 272,
+    Nadjia2       = 368, // hmm
+    Theotar       = 392,
+};
+
 enum GarrisonTalentFlags
 {
     TalentFlagDisabled = 0x0,
@@ -61,6 +78,8 @@ enum GarrisonTalentFlags
 
 struct TC_GAME_API Conduit
 {
+    Conduit(Player* player) : _player(player) { }
+
     uint32 TalentEntryId = 0;//GarrTalentEntry const* TalentEntry;
     uint32 TreeEntryId = 0;//GarrTalentTreeEntry const* TreeEntry;
     uint32 Rank = 1;
@@ -69,6 +88,7 @@ struct TC_GAME_API Conduit
 
     Optional<WorldPackets::Garrison::GarrisonTalentSocketData> Socket;
 
+    void FlagsUpdated(bool forceRemove = false);
     void BuildGarrisonTalent(WorldPackets::Garrison::GarrisonTalent& result);
 
     bool operator==(Conduit const& right) const
@@ -76,6 +96,8 @@ struct TC_GAME_API Conduit
         return TalentEntryId == right.TalentEntryId && TreeEntryId == right.TreeEntryId;
     }
     bool operator!=(Conduit const& right) const { return !(*this == right); }
+
+    Player* _player;
 };
 
 class TC_GAME_API Covenant
@@ -143,8 +165,9 @@ class TC_GAME_API CovenantMgr
 
         // Events
         void OnSpecChange();
+        void UpdateConduits(); // called when a soulbind is chosen at active covenant, or when covenant is swapped.
 
-        SoulbindUIDisplayInfoIds GetSoulbindUIDisplayInfoIdFromSoulbindID(SoulbindID id) const
+        static SoulbindUIDisplayInfoIds GetSoulbindUIDisplayInfoIdFromSoulbindID(SoulbindID id)
         {
             switch (id)
             {
@@ -166,12 +189,34 @@ class TC_GAME_API CovenantMgr
             }
         }
 
+        static SoulbindID GetSoulbindIDFromTalentTreeId(uint32 talentTreeId)
+        {
+            switch (talentTreeId)
+            {
+                case GarrTalentTreeIds::Niya: return SoulbindID::Niya;
+                case GarrTalentTreeIds::Dreamweaver: return SoulbindID::Dreamweaver;
+                case GarrTalentTreeIds::GeneralDraven: return SoulbindID::GeneralDraven;
+                case GarrTalentTreeIds::Marileth: return SoulbindID::PlagueDeviserMarileth;
+                case GarrTalentTreeIds::Emeni: return SoulbindID::Emeni;
+                case GarrTalentTreeIds::Korayn: return SoulbindID::Korayn;
+                case GarrTalentTreeIds::Pelagos: return SoulbindID::Pelagos;
+                case GarrTalentTreeIds::Heimer: return SoulbindID::BonesmithHeimer;
+                case GarrTalentTreeIds::Kleia: return SoulbindID::Kleia;
+                case GarrTalentTreeIds::Mikanikos: return SoulbindID::ForgePrimeMikanikos;
+                case GarrTalentTreeIds::Nadjia: return SoulbindID::NadjiaTheMistblade;
+                case GarrTalentTreeIds::Nadjia2: return SoulbindID::NadjiaTheMistblade;
+                case GarrTalentTreeIds::Theotar: return SoulbindID::TheotarTheMadDuke;
+                default:
+                    return SoulbindID::None;
+            }
+        }
+
     private:
         Player* _player;
         size_t _currCovenantIndex;
         bool _loaded = false;
         std::array<std::unique_ptr<Covenant>, 5> _playerCovenants = { };
         std::unordered_map<int32, int32> CollectionEntries;
-        std::unordered_multimap<uint32, Conduit> _conduits; // CovenantID, Conduit
-        std::unordered_multimap <uint32, CovenantSoulbind> _covenantSoulbinds;
+        std::unordered_multimap<int32, Conduit> _conduits; // CovenantID, Conduit
+        std::unordered_multimap <int32, CovenantSoulbind> _covenantSoulbinds;
 };

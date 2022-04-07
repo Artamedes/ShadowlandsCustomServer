@@ -1350,6 +1350,10 @@ void HotfixDatabaseConnection::DoPrepareStatements()
         " FROM soulbind_conduit_rank WHERE (`VerifiedBuild` > 0) = ?", CONNECTION_SYNCH);
     PREPARE_MAX_ID_STMT(HOTFIX_SEL_SOULBIND_CONDUIT_RANK, "SELECT MAX(ID) + 1 FROM soulbind_conduit_rank", CONNECTION_SYNCH);
 
+    PrepareStatement(HOTFIX_SEL_SOULBIND_CONDUIT_RANK_PROPERTIES, "SELECT ID, Rank, ItemLevel, QualityID"
+        " FROM soulbind_conduit_rank_properties WHERE (`VerifiedBuild` > 0) = ?", CONNECTION_SYNCH);
+    PREPARE_MAX_ID_STMT(HOTFIX_SEL_SOULBIND_CONDUIT_RANK_PROPERTIES, "SELECT MAX(ID) + 1 FROM soulbind_conduit_rank_properties", CONNECTION_SYNCH);
+
     PrepareStatement(HOTFIX_SEL_UI_COVENANT_ABILITY, "SELECT ID, CovenantPreviewID, SpellID, AbilityType, SoulbindDisplayInfoID"
         " FROM ui_covenant_ability WHERE (`VerifiedBuild` > 0) = ?", CONNECTION_SYNCH);
     PREPARE_MAX_ID_STMT(HOTFIX_SEL_UI_COVENANT_ABILITY, "SELECT MAX(ID) + 1 FROM ui_covenant_ability", CONNECTION_SYNCH);

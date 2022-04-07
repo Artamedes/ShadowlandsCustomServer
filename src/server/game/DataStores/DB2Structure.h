@@ -3249,6 +3249,14 @@ struct SoulbindConduitRankEntry
     uint32 SoulbindConduitID;
 };
 
+struct SoulbindConduitRankPropertiesEntry
+{
+    uint32 ID;
+    int32 Rank;
+    int32 ItemLevel;
+    int32 QualityID;
+};
+
 struct SoundKitEntry
 {
     uint32 ID;

@@ -10,6 +10,8 @@
 #include "ObjectMgr.h"
 #include "GameTime.h"
 #include "QueryHolder.h"
+#include "SpellAuras.h"
+#include "SpellAuraEffects.h"
 
 Covenant::Covenant(CovenantID covId, Player* player) : _covenantId(covId), _player(player), _soulbindId(SoulbindID::None), _renownLevel(80), _anima(0), _souls(0)
 {
@@ -38,6 +40,8 @@ void Covenant::SetSoulbind(SoulbindID soulbind, bool sendPacket /*= false*/)
             packet.SpecGroups[0].SoulbindID = static_cast<int32>(GetSoulbindID());
             _player->SendDirectMessage(packet.Write());
         }
+
+        _player->GetCovenantMgr()->UpdateConduits();
     }
 }
 
@@ -52,7 +56,7 @@ void Covenant::SetRenown(int32 renown)
     _player->GetCovenantMgr()->LearnCovenantSpells(); // renown rewards
 
     // Check Renown
-    auto covIdInt = static_cast<int32>(GetCovenantID());
+    auto covIdInt = _player->m_playerData->CovenantID;
     for (auto reward : sRenownRewardsStore)
     {
         if (reward->CovenantID != covIdInt)
@@ -101,6 +105,59 @@ void Covenant::InitializeCovenant()
     //_player->CompletedAchievement(sAchievementStore.LookupEntry(14936));
     //_player->CompletedAchievement(sAchievementStore.LookupEntry(14937));
     //_player->CompletedAchievement(sAchievementStore.LookupEntry(14790));
+    static uint32 questsToComplete[] = {61550, 59317, 61057, 61541, 61542, 62919, 62918, 61542, 61388, 61058, 60504, 60111, 60110, 59919, 59596, 59597, 59343, 59325, 58797, 59316, 57898};
+    for (auto questId : questsToComplete)
+    {
+        if (_player->GetQuestStatus(questId) == QUEST_STATUS_NONE)
+            _player->RewardQuest(sObjectMgr->GetQuestTemplate(questId), LootItemType::Item, 0, _player, false);
+    }
+}
+
+void Conduit::FlagsUpdated(bool forceRemove /*= false*/)
+{
+    bool disabled = Flags == 0 || forceRemove;
+
+    if (auto talentRank = sDB2Manager.GetTalentRankEntryByGarrTalentID(TalentEntryId))
+    {
+        if (talentRank->PerkSpellID > 0)
+        {
+            if (disabled)
+            {
+                if (_player->HasSpell(talentRank->PerkSpellID))
+                    _player->RemoveSpell(talentRank->PerkSpellID);
+            }
+            else
+            {
+                if (!_player->HasSpell(talentRank->PerkSpellID))
+                    _player->LearnSpell(talentRank->PerkSpellID, false);
+            }
+        }
+    }
+
+    if (Socket.has_value())
+    {
+        auto entries = sDB2Manager.GetSoulbindConduitRankBySoulbindConduitID(Socket->SoulbindConduitID);
+        if (entries)
+        {
+            if (!disabled)
+            {
+                for (auto entry : *entries)
+                {
+                    if (entry->RankIndex == Socket->SoulbindConduitRank)
+                    {
+                        // activate socket spell.
+                        // todo: research this more
+                        _player->RemoveAurasDueToSpell(entries->at(0)->SpellID);
+                        if (auto aura = _player->AddAura(entry->SpellID))
+                            ;// aura->GetEffect(0)->SetAmount()
+                        break;
+                    }
+                }
+            }
+            else
+                _player->RemoveAurasDueToSpell(entries->at(0)->SpellID);
+        }
+    }
 }
 
 void Conduit::BuildGarrisonTalent(WorldPackets::Garrison::GarrisonTalent& talent)
@@ -142,6 +199,8 @@ void Covenant::SocketTalent(WorldPackets::Garrison::GarrisonSocketTalent& packet
         socketChange.Socket = data;
         conduit->Socket = data;
         response.Sockets.push_back(socketChange);
+        conduit->FlagsUpdated(true);
+        conduit->FlagsUpdated();
     }
     _player->SendDirectMessage(response.Write());
 }
@@ -183,7 +242,7 @@ void CovenantMgr::LoadFromDB(CharacterDatabaseQueryHolder const& holder)
             uint32 GarrTalentID = fields[1].GetUInt32();
             uint32 GarrTalentTreeID = fields[2].GetUInt32();
 
-            Conduit conduit;
+            Conduit conduit(_player);
 
             conduit.TalentEntryId = GarrTalentID;
             conduit.TreeEntryId = GarrTalentTreeID;
@@ -360,6 +419,7 @@ void CovenantMgr::InitializeFields()
     // (Cast) SpellID: 344090 (Deepening Bond)
 
     // Looks like it's just from RenownRewards.db2
+    UpdateConduits();
 }
 
 Covenant* CovenantMgr::GetCovenant()
@@ -510,7 +570,14 @@ void CovenantMgr::LearnSoulbindConduit(Item* item)
         return;
 
     // SoulbindConduitRankProperties.db2, And check the itemlevel
-    int32 rank = 1;
+    int32 rank = 0;
+    for (auto prop : sSoulbindConduitRankPropertiesStore)
+    {
+        if (item->GetItemLevel(_player) > prop->ItemLevel)
+            break;
+
+        rank++;
+    }
 
     // SMSG_GARRISON_COLLECTION_UPDATE_ENTRY
     WorldPackets::Garrison::GarrisonCollectionUpdateEntry packet;
@@ -524,7 +591,8 @@ void CovenantMgr::LearnSoulbindConduit(Item* item)
     auto itr = CollectionEntries.find(conduitId);
     if (itr != CollectionEntries.end())
     {
-        itr->second = rank;
+        if (itr->second < rank)
+            itr->second = rank;
     }
     else
     {
@@ -579,7 +647,7 @@ void CovenantMgr::AddGarrisonInfo(WorldPackets::Garrison::GetGarrisonInfoResult&
 
 void CovenantMgr::LearnConduit(GarrTalentEntry const* talent, GarrTalentTreeEntry const* tree)
 {
-    Conduit conduit;
+    Conduit conduit(_player);
     conduit.TalentEntryId = talent->ID;
     conduit.TreeEntryId = tree->ID;
     conduit.Flags = GarrisonTalentFlags::TalentFlagEnabled;
@@ -611,14 +679,10 @@ void CovenantMgr::LearnConduit(GarrTalentEntry const* talent, GarrTalentTreeEntr
     _player->SendDirectMessage(result.Write());
 
     // SMSG_LEARNED_SPELLS - need implement GarrTalentRank.db2
-    if (auto talentRank = sDB2Manager.GetTalentRankEntryByGarrTalentID(talent->ID))
-    {
-        if (talentRank->PerkSpellID > 0)
-        {
-            if (!_player->HasSpell(talentRank->PerkSpellID))
-                _player->LearnSpell(talentRank->PerkSpellID, false);
-        }
-    }
+    auto covenant = GetCovenant();
+    auto soulbindId = GetSoulbindIDFromTalentTreeId(tree->ID);
+    if (soulbindId == SoulbindID::None || soulbindId == covenant->GetSoulbindID())
+        conduit.FlagsUpdated();
     // SMSG_CRITERIA_UPDATE Criteria ID, 30952, 3x Quantity
     // SMSG_GARRISON_TALENT_COMPLETED
     WorldPackets::Garrison::GarrisonTalentCompleted result2;
@@ -649,16 +713,7 @@ void CovenantMgr::LearnTalent(WorldPackets::Garrison::GarrisonLearnTalent& resea
         return;
 
     // SMSG_UNLEARNED_SPELLS
-    // Need to track the OLD learned spells. possibly ordering by their Tier?
-    // Also need to check Spells with pre-requestiteTalentIds
-    //if (auto talentRank = sDB2Manager.GetTalentRankEntryByGarrTalentID(talent->ID))
-    //{
-    //    if (talentRank->PerkSpellID > 0)
-    //    {
-    //        if (!_player->HasSpell(talentRank->PerkSpellID))
-    //            _player->LearnSpell(talentRank->PerkSpellID, false);
-    //    }
-    //}
+    // Sent down below.
 
     WorldPackets::Garrison::GarrisonSwitchTalentTreeBranch packet;
     packet.GarrTypeID = 111;
@@ -678,7 +733,7 @@ void CovenantMgr::LearnTalent(WorldPackets::Garrison::GarrisonLearnTalent& resea
         }
         if (!found)
         {
-            Conduit conduit;
+            Conduit conduit(_player);
             conduit.TalentEntryId = pTalent->ID;
             conduit.TreeEntryId = pTalent->GarrTalentTreeID;
             conduit.Flags = GarrisonTalentFlags::TalentFlagEnabled;
@@ -725,17 +780,11 @@ void CovenantMgr::LearnTalent(WorldPackets::Garrison::GarrisonLearnTalent& resea
             else
                 i->second.Flags = GarrisonTalentFlags::TalentFlagDisabled;
 
+            if (researchResult.SoulbindID == _player->m_playerData->SoulbindID)
+                i->second.FlagsUpdated();
             WorldPackets::Garrison::GarrisonTalent garrTalentPacket;
             i->second.BuildGarrisonTalent(garrTalentPacket);
             packet.Talents.push_back(garrTalentPacket);
-
-            //auto extraConduits = sDB2Manager.GetTalentEntriesByGarrTalentId(entry->ID);
-            //if (extraConduits != nullptr)
-            //{
-            //    for (auto t : *extraConduits)
-            //    {
-            //    }
-            //}
         }
     }
 
@@ -765,7 +814,7 @@ void CovenantMgr::SetSoulbind(SoulbindID soulbind, bool sendPacket /*= false*/)
 
     covenant->SetSoulbind(soulbind, sendPacket);
 
-    auto range = _covenantSoulbinds.equal_range(static_cast<uint32>(covenant->GetCovenantID()));
+    auto range = _covenantSoulbinds.equal_range(_player->m_playerData->CovenantID);
     for (auto i = range.first; i != range.second; ++i)
     {
         if (i->second.SpecId == _player->GetSpecializationId())
@@ -780,7 +829,7 @@ void CovenantMgr::SetSoulbind(SoulbindID soulbind, bool sendPacket /*= false*/)
     covSoulbind.Soulbind = static_cast<uint32>(soulbind);
     covSoulbind.SpecId = _player->GetSpecializationId();
 
-    _covenantSoulbinds.insert({ (uint32)covenant->GetCovenantID(), covSoulbind });
+    _covenantSoulbinds.insert({ _player->m_playerData->CovenantID, covSoulbind });
 }
 
 void CovenantMgr::OnSpecChange()
@@ -791,7 +840,7 @@ void CovenantMgr::OnSpecChange()
     if (covenant->GetCovenantID() == CovenantID::None)
         return;
 
-    auto range = _covenantSoulbinds.equal_range(static_cast<uint32>(covenant->GetCovenantID()));
+    auto range = _covenantSoulbinds.equal_range(_player->m_playerData->CovenantID);
     for (auto i = range.first; i != range.second; ++i)
     {
         if (i->second.SpecId == _player->GetSpecializationId())
@@ -802,28 +851,22 @@ void CovenantMgr::OnSpecChange()
     }
 }
 
-// Packets:
-// CMSG_REQUEST_COVENANT_CALLINGS
-// SMSG_COVENANT_CALLINGS_AVAILABILITY_RESPONSE
-//      AreCallingsUnlocked: True
-//      [0] BountyID: 239
-//      [1] BountyID : 242
-//      [2] BountyID : 255
-// CMSG_COVENANT_RENOWN_REQUEST_CATCHUP_STATE
-// SMSG_COVENANT_RENOWN_SEND_CATCHUP_STATE
-//
-// Spells
-// 341427  - Spell (Learning)
-// SPELL_EFFECT_LEARN_SOULBIND_CONDUIT
+void CovenantMgr::UpdateConduits()
+{
+    for (auto& itr : _conduits)
+    {
+        bool remove = false;
 
-// Soulbind.db2
-// SoulbindConduit.db2
-// SoulbindConduitItem.db2
-// SoulbindConduitRank.db2
-// UICovenantAbility.db2
+        if (itr.first != _player->m_playerData->CovenantID)
+            remove = true;
 
-// CMSG_ACTIVATE_SOULBIND
-// SMSG_ACTIVATE_SOULBIND_FAILED
-// SMSG_DISPLAY_SOULBIND_UPDATE_MESSAGE
-// CMSG_GARRISON_RESEARCH_TALENT
-// CMSG_GARRISON_LEARN_TALENT
+        if (!remove)
+        {
+            auto requiredSoulbindId = static_cast<int32>(GetSoulbindIDFromTalentTreeId(itr.second.TreeEntryId));
+            if (requiredSoulbindId != 0 && requiredSoulbindId != _player->m_playerData->SoulbindID)
+                remove = true;
+        }
+
+        itr.second.FlagsUpdated(remove);
+    }
+}

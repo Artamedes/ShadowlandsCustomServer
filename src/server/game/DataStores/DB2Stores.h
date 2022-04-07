@@ -203,6 +203,7 @@ TC_GAME_API extern DB2Storage<SoulbindEntry>                        sSoulbindSto
 TC_GAME_API extern DB2Storage<SoulbindConduitEntry>                 sSoulbindConduitStore;
 TC_GAME_API extern DB2Storage<SoulbindConduitItemEntry>             sSoulbindConduitItemStore;
 TC_GAME_API extern DB2Storage<SoulbindConduitRankEntry>             sSoulbindConduitRankStore;
+TC_GAME_API extern DB2Storage<SoulbindConduitRankPropertiesEntry>   sSoulbindConduitRankPropertiesStore;
 TC_GAME_API extern DB2Storage<SoundKitEntry>                        sSoundKitStore;
 TC_GAME_API extern DB2Storage<SpellAuraOptionsEntry>                sSpellAuraOptionsStore;
 TC_GAME_API extern DB2Storage<SpellAuraRestrictionsEntry>           sSpellAuraRestrictionsStore;
@@ -483,6 +484,7 @@ public:
     void InsertNewHotfix(uint32 tableHash, uint32 recordId);
     GarrTalentRankEntry const* GetTalentRankEntryByGarrTalentID(uint32 garrTalentId);
     std::vector<GarrTalentEntry const*> const* GetTalentEntriesByGarrTalentId(uint32 garrTalentId);
+    std::vector < SoulbindConduitRankEntry const*> const* GetSoulbindConduitRankBySoulbindConduitID(uint32 soulbindConduitID);
 
 private:
     friend class DB2HotfixGeneratorBase;
