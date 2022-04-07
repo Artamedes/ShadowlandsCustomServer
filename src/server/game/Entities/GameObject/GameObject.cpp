@@ -54,6 +54,7 @@
 #include <G3D/Quat.h>
 #include <sstream>
 #include "CovenantPackets.h"
+#include "CovenantMgr.h"
 
 void GameObjectTemplate::InitializeQueryData()
 {
@@ -2449,7 +2450,9 @@ void GameObject::Use(Unit* user)
                 }
                 case 3: // covenant forge
                 {
-                    player->SendDirectMessage(WorldPackets::Covenant::OpenItemForge(GetGUID()).Write());
+                    if (auto covenant = player->GetCovenant())
+                        if (covenant->GetCovenantID() != CovenantID::None)
+                            player->SendDirectMessage(WorldPackets::Covenant::OpenItemForge(GetGUID()).Write());
                     break;
                 }
                 default:
