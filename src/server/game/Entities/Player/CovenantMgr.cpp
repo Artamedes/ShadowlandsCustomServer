@@ -101,15 +101,14 @@ void Covenant::InitializeCovenant()
     SetAnima(_anima);
     SetSouls(_souls);
 
-    // Don't think we need theese. Do need to complete the quests however.
-    //_player->CompletedAchievement(sAchievementStore.LookupEntry(15247));
-    //_player->CompletedAchievement(sAchievementStore.LookupEntry(15248));
-    //_player->CompletedAchievement(sAchievementStore.LookupEntry(15249));
-    //_player->CompletedAchievement(sAchievementStore.LookupEntry(15250));
-    //_player->CompletedAchievement(sAchievementStore.LookupEntry(14934));
-    //_player->CompletedAchievement(sAchievementStore.LookupEntry(14936));
-    //_player->CompletedAchievement(sAchievementStore.LookupEntry(14937));
-    //_player->CompletedAchievement(sAchievementStore.LookupEntry(14790));
+    _player->CompletedAchievement(sAchievementStore.LookupEntry(15247));
+    _player->CompletedAchievement(sAchievementStore.LookupEntry(15248));
+    _player->CompletedAchievement(sAchievementStore.LookupEntry(15249));
+    _player->CompletedAchievement(sAchievementStore.LookupEntry(15250));
+    _player->CompletedAchievement(sAchievementStore.LookupEntry(14934));
+    _player->CompletedAchievement(sAchievementStore.LookupEntry(14936));
+    _player->CompletedAchievement(sAchievementStore.LookupEntry(14937));
+    _player->CompletedAchievement(sAchievementStore.LookupEntry(14790));
     static uint32 questsToComplete[] = {61550, 59317, 61057, 61541, 61542, 62919, 62918, 61542, 61388, 61058, 60504, 60111, 60110, 59919, 59596, 59597, 59343, 59325, 58797, 59316, 57898};
     for (auto questId : questsToComplete)
     {

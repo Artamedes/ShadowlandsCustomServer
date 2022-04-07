@@ -5403,6 +5403,64 @@ class aura_dru_tranquility_heal : public AuraScript
     }
 };
 
+// 323764
+class spell_dru_convoke : public AuraScript
+{
+    PrepareAuraScript(spell_dru_convoke);
+
+    void HandleConvoke(AuraEffect const* /*aurEff*/)
+    {
+        if (Unit* caster = GetCaster())
+        {
+            std::vector<uint32> SpellsToCast;
+
+            SpellsToCast.push_back(774);
+            SpellsToCast.push_back(8936);
+            SpellsToCast.push_back(8921);
+            SpellsToCast.push_back(5176);
+
+            switch (caster->GetShapeshiftForm())
+            {
+                case ShapeshiftForm::FORM_BEAR_FORM:
+                    SpellsToCast.push_back(33917);
+                    SpellsToCast.push_back(192081);
+                    SpellsToCast.push_back(106832);
+                    SpellsToCast.push_back(80313);
+                    break;
+                case ShapeshiftForm::FORM_CAT_FORM:
+                    SpellsToCast.push_back(22568);
+                    SpellsToCast.push_back(1822);
+                    SpellsToCast.push_back(5221);
+                    SpellsToCast.push_back(5217);
+                    break;
+                case ShapeshiftForm::FORM_MOONKIN_FORM:
+                    SpellsToCast.push_back(78674);
+                    SpellsToCast.push_back(191034);
+                    break;
+                default: // heal
+                    if (caster->ToPlayer() && caster->ToPlayer()->GetSpecializationId() == TALENT_SPEC_DRUID_RESTORATION)
+                    {
+                        SpellsToCast.push_back(18562);
+                        SpellsToCast.push_back(48438);
+                        SpellsToCast.push_back(1917721);
+                    }
+                    break;
+            }
+
+            auto target = ObjectAccessor::GetUnit(*caster, caster->GetTarget());
+            if (!target)
+                target = caster;
+            if (auto spell = Trinity::Containers::SelectRandomContainerElement(SpellsToCast))
+                caster->CastSpell(target, spell, true);
+        }
+    }
+
+    void Register() override
+    {
+        OnEffectPeriodic += AuraEffectPeriodicFn(spell_dru_convoke::HandleConvoke, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
+    }
+};
+
 void AddSC_druid_spell_scripts()
 {
     // Spells Scripts
@@ -5507,6 +5565,7 @@ void AddSC_druid_spell_scripts()
     RegisterSpellScript(aura_dru_rend_and_tear);
     RegisterSpellScript(aura_dru_innervate);
     RegisterSpellAndAuraScriptPair(spell_dru_tranquility_heal, aura_dru_tranquility_heal);
+    RegisterSpellScript(spell_dru_convoke);
 
 	// Affinity
     RegisterSpellScript(aura_dru_guaridan_affinity_balance_resto);

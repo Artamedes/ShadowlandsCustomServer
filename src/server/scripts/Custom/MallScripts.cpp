@@ -9,6 +9,7 @@
 #include "Item.h"
 #include "CollectionMgr.h"
 #include "WorldSession.h"
+#include "CovenantMgr.h"
 
 struct npc_battle_training : public ScriptedAI
 {
@@ -866,6 +867,84 @@ struct npc_covenant_swapper : public ScriptedAI
         }
 };
 
+const uint32 soulshapeModAuras[] = { 333206,326215,326212,326209,326207,326204,326202,326200,326197,326195,326191,326184,326181,326168,326165,326161,326157,326153,326152,349209,349213,349215,249217,349219,349221,349222,349225,321080 };
+
+struct npc_soulshape_picker : public ScriptedAI
+{
+    public:
+        npc_soulshape_picker(Creature* creature) : ScriptedAI(creature) { }
+
+        void Reset() override
+        {
+
+        }
+
+
+        bool OnGossipHello(Player* player) override
+        {
+            auto covenant = player->GetCovenant();
+            ClearGossipMenuFor(player);
+
+            if (covenant->GetCovenantID() == CovenantID::NightFae)
+            {
+                AddGossipItemFor(player, GossipOptionIcon::None, "Vulpin", 0, 0);
+                AddGossipItemFor(player, GossipOptionIcon::None, "Toad", 0, 333206);
+                AddGossipItemFor(player, GossipOptionIcon::None, "Wyvern", 0, 326215);
+                AddGossipItemFor(player, GossipOptionIcon::None, "Gryphon", 0, 326212);
+                AddGossipItemFor(player, GossipOptionIcon::None, "Hippogryph", 0, 326209);
+                AddGossipItemFor(player, GossipOptionIcon::None, "Wolfhawk", 0, 326207);
+                AddGossipItemFor(player, GossipOptionIcon::None, "Feathered Drake", 0, 326204);
+                AddGossipItemFor(player, GossipOptionIcon::None, "Wolf", 0, 326202);
+                AddGossipItemFor(player, GossipOptionIcon::None, "Moose", 0, 326200);
+                AddGossipItemFor(player, GossipOptionIcon::None, "Bear", 0, 326197);
+                AddGossipItemFor(player, GossipOptionIcon::None, "Raptor", 0, 326195);
+                AddGossipItemFor(player, GossipOptionIcon::None, "Shadowstalker", 0, 326191);
+                AddGossipItemFor(player, GossipOptionIcon::None, "Stag", 0, 326184);
+                AddGossipItemFor(player, GossipOptionIcon::None, "Dragon Turtle", 0, 326181);
+                AddGossipItemFor(player, GossipOptionIcon::None, "Tiger", 0, 326168);
+                AddGossipItemFor(player, GossipOptionIcon::None, "Lion", 0, 326165);
+                AddGossipItemFor(player, GossipOptionIcon::None, "Crane", 0, 326161);
+                AddGossipItemFor(player, GossipOptionIcon::None, "Shrieker", 0, 326157);
+                AddGossipItemFor(player, GossipOptionIcon::None, "Horned Horse", 0, 326153);
+                AddGossipItemFor(player, GossipOptionIcon::None, "Moth", 0, 326152);
+                AddGossipItemFor(player, GossipOptionIcon::None, "Direhorn", 0, 349209);
+                AddGossipItemFor(player, GossipOptionIcon::None, "Hippo", 0, 349213);
+                AddGossipItemFor(player, GossipOptionIcon::None, "Kodo", 0, 349215);
+                AddGossipItemFor(player, GossipOptionIcon::None, "Mammoth", 0, 249217);
+                AddGossipItemFor(player, GossipOptionIcon::None, "Saurolisk", 0, 349219);
+                AddGossipItemFor(player, GossipOptionIcon::None, "Shoveltusk", 0, 349221);
+                AddGossipItemFor(player, GossipOptionIcon::None, "Spider", 0, 349222);
+                AddGossipItemFor(player, GossipOptionIcon::None, "Yak", 0, 349225);
+                AddGossipItemFor(player, GossipOptionIcon::None, "Runestag", 0, 321080);
+            }
+
+
+            SendGossipMenuFor(player, 1, me);
+            return true;
+        }
+
+        bool OnGossipSelect(Player* player, uint32 menuId, uint32 gossipId) override
+        {
+            uint32 actionId = player->PlayerTalkClass->GetGossipOptionAction(gossipId);
+
+            for (auto spell : soulshapeModAuras)
+            {
+                if (player->HasSpell(spell))
+                    player->RemoveSpell(spell);
+                player->RemoveAurasDueToSpell(spell);
+            }
+
+            if (actionId > 0)
+            {
+                player->CastSpell(player, actionId, true);
+                player->LearnSpell(actionId, false);
+                player->RestoreDisplayId();
+            }
+
+            return OnGossipHello(player);
+        }
+};
+
 void AddSC_MallScripts()
 {
     RegisterCreatureAI(npc_battle_training);
@@ -880,4 +959,5 @@ void AddSC_MallScripts()
     RegisterCreatureAI(npc_kazzik_t3_transmogs);
     RegisterCreatureAI(npc_sturzah_800005);
     RegisterCreatureAI(npc_covenant_swapper);
+    RegisterCreatureAI(npc_soulshape_picker);
 }

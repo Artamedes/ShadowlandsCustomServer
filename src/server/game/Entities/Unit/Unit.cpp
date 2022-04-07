@@ -12544,6 +12544,23 @@ uint32 Unit::GetModelForForm(ShapeshiftForm form, uint32 spellId) const
         break;
     }
 
+    // Not sure other way to handle this without making more spell hooks. Hack it for now
+    if (form == FORM_SOULSHAPE)
+    {
+        // $ ? a333206[a Toad] ? a326215[a Wyvern] ? a326212[a Gryphon] ? a326209[a Hippogryph] ? a326207[a Wolfhawk] ? a326204[a Feathered Drake] ? a326202[a Wolf] ? a326200[a Moose] ? a326197[a Bear] ? a326195[a Raptor] ? a326191[a Shadowstalker] ? a326184[a Stag] ? a326181[a Dragon Turtle] ?
+        // a326168[a Tiger] ? a326165[a Lion] ? a326161[a Crane] ? a326157[a Shrieker] ? a326153[a Horned Horse] ? a326152[a Moth] ? a349209[a Direhorn] ? a349213[a Hippo] ? a349215[a Kodo] ? a249217[a Mammoth] ? a349219[a Saurolisk] ? a349221[a Shoveltusk] ? a349222[a Spider] ? a349225[a Yak] ?
+        // a321080[a Runestag][a Vulpin],
+        static uint32 soulshapeModAuras[] = {333206,326215,326212,326209,326207,326204,326202,326200,326197,326195,326191,326184,326181,326168,326165,326161,326157,326153,326152,349209,349213,349215,249217,349219,349221,349222,349225,321080};
+        for (auto mod : soulshapeModAuras)
+        {
+            auto aura = GetAura(mod);
+            if (!aura)
+                continue;
+
+            return aura->GetEffect(EFFECT_0)->GetSpellEffectInfo().BasePoints;
+        }
+    }
+
     if (Player const* player = ToPlayer())
     {
         if (Aura* artifactAura = GetAura(ARTIFACTS_ALL_WEAPONS_GENERAL_WEAPON_EQUIPPED_PASSIVE))

@@ -3884,6 +3884,31 @@ class spell_dh_vengeance_shatter_soul : public SpellScript
     }
 };
 
+// 323639 
+class spell_dh_the_hunt : public SpellScript
+{
+    PrepareSpellScript(spell_dh_the_hunt);
+
+    void HandleScript(SpellEffIndex /*effIndex*/)
+    {
+        if (Unit* target = GetHitUnit())
+        {
+            Unit* caster = GetCaster();
+
+            std::list<Unit*> units;
+            caster->GetAttackableUnitListInRange(units, MELEE_RANGE);
+
+            for (auto unit : units)
+                caster->CastSpell(unit, 345335, true); // Hunt Dot
+        }
+    }
+
+    void Register() override
+    {
+        OnEffectHitTarget += SpellEffectFn(spell_dh_the_hunt::HandleScript, EFFECT_0, SPELL_EFFECT_CHARGE);
+    }
+};
+
 void AddSC_demon_hunter_spell_scripts()
 {
     new spell_dh_annihilation();
@@ -3963,6 +3988,7 @@ void AddSC_demon_hunter_spell_scripts()
     RegisterSpellScript(spell_dh_chaos_nova);
     RegisterSpellScript(spell_dh_vengeance_shatter_soul);
     RegisterSpellScript(aura_dh_vengeance_sigil_of_flame);
+    RegisterSpellScript(spell_dh_the_hunt);
 
     /// AreaTrigger Scripts
     RegisterAreaTriggerAI(at_dh_darkness);
