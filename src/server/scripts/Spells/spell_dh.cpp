@@ -2025,6 +2025,12 @@ public:
             return ValidateSpellInfo({ SPELL_DH_FEL_RUSH_DASH, SPELL_DH_FEL_RUSH_AIR });
         }
 
+        enum Extra
+        {
+            AuraFelfireHaste = 338799,
+            FelfireHasteProc = 338804,
+        };
+
         void HandleDashGround(SpellEffIndex /*effIndex*/)
         {
             if (Unit* caster = GetCaster())
@@ -2036,6 +2042,9 @@ public:
                 }
                 if (caster->HasAura(SPELL_DH_MOMENTUM))
                     caster->CastSpell(caster, SPELL_DH_MOMENTUM_BUFF, true);
+                if (auto aura1 = caster->GetAura(AuraFelfireHaste))
+                    if (auto aura = caster->AddAura(FelfireHasteProc))
+                        aura->GetEffect(0)->SetAmount(aura1->GetEffect(0)->GetAmount());
             }
         }
 
