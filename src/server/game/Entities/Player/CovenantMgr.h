@@ -113,9 +113,11 @@ class TC_GAME_API Covenant
         bool IsActiveCovenant() const;
 
         void SetSoulbind(SoulbindID soulbind, bool sendPacket = false);
-        void SetRenown(int32 renown);
-        void SetAnima(uint32 anima);
-        void SetSouls(uint32 souls);
+        void SetRenown(int32 renown, bool modCurr = true);
+        void SetAnima(uint32 anima, bool modCurr = true);
+        void SetSouls(uint32 souls, bool modCurr = true);
+
+        void AddAnima(uint32 anima);
 
         void InitializeCovenant();
         void SocketTalent(WorldPackets::Garrison::GarrisonSocketTalent& packet);

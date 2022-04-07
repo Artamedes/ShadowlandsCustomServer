@@ -7045,6 +7045,17 @@ void Player::ModifyCurrency(uint32 id, int32 count, bool printLog/* = true*/, bo
 
     if (uint32(newTotalCount) != oldTotalCount)
     {
+        if (id == 1813) // anima
+        {
+            if (auto covenant = GetCovenant())
+                covenant->SetAnima(newTotalCount, false);
+        }
+        else if (id == 1810) // souls
+        {
+            if (auto covenant = GetCovenant())
+                covenant->SetSouls(newTotalCount, false);
+        }
+
         if (itr->second.state != PLAYERCURRENCY_NEW)
             itr->second.state = PLAYERCURRENCY_CHANGED;
 

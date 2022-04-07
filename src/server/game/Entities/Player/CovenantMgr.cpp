@@ -45,7 +45,7 @@ void Covenant::SetSoulbind(SoulbindID soulbind, bool sendPacket /*= false*/)
     }
 }
 
-void Covenant::SetRenown(int32 renown)
+void Covenant::SetRenown(int32 renown, bool /*modCurr = true*/)
 {
     _renownLevel = renown;
 
@@ -76,18 +76,23 @@ void Covenant::SetRenown(int32 renown)
     }
 }
 
-void Covenant::SetAnima(uint32 anima)
+void Covenant::SetAnima(uint32 anima, bool modCurr /*= true*/)
 {
     _anima = anima;
-    if (IsActiveCovenant())
+    if (IsActiveCovenant() && modCurr)
         _player->ModifyCurrency(1813, anima, true, false, true);
 }
 
-void Covenant::SetSouls(uint32 souls)
+void Covenant::SetSouls(uint32 souls, bool modCurr /*= true*/)
 {
     _souls = souls;
-    if (IsActiveCovenant())
+    if (IsActiveCovenant() && modCurr)
         _player->ModifyCurrency(1810, souls, true, false, true);
+}
+
+void Covenant::AddAnima(uint32 anima)
+{
+    SetAnima(_anima + anima);
 }
 
 void Covenant::InitializeCovenant()

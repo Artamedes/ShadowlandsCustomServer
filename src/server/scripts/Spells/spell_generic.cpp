@@ -45,6 +45,7 @@
 #include "SpellScript.h"
 #include "Vehicle.h"
 #include "World.h"
+#include "CovenantMgr.h"
 
 class spell_gen_absorb0_hitlimit1 : public AuraScript
 {
@@ -4820,6 +4821,33 @@ class spell_ancestral_call : public SpellScript
     }
 };
 
+class spell_deposit_anima : public SpellScript
+{
+    PrepareSpellScript(spell_deposit_anima);
+
+    void HandleDummy(SpellEffIndex effIndex)
+    {
+        auto player = GetCaster()->ToPlayer();
+        if (!player)
+            return;
+
+        auto covenant = player->GetCovenant();
+        if (!covenant || covenant->GetCovenantID() == CovenantID::None)
+            return;
+
+        if (auto item = GetCastItem())
+        {
+            auto anima = GetSpellValue()->EffectBasePoints[effIndex] * item->GetCount();
+            covenant->AddAnima(anima);
+            player->DestroyItem(item->GetBagSlot(), item->GetSlot(), true);
+        }
+    }
+
+    void Register() override
+    {
+        OnEffectHitTarget += SpellEffectFn(spell_deposit_anima::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
+    }
+};
 void AddSC_generic_spell_scripts()
 {
     RegisterSpellScript(spell_gen_absorb0_hitlimit1);
@@ -4973,4 +5001,5 @@ void AddSC_generic_spell_scripts()
     RegisterSpellScript(spell_summon_battle_pet);
     RegisterSpellScript(spell_gen_anchor_here);
     RegisterSpellScript(spell_ancestral_call);
+    RegisterSpellScript(spell_deposit_anima);
 }
