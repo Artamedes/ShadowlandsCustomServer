@@ -4549,6 +4549,12 @@ class spell_rog_sepsis_attack : public SpellScript
 
     void After()
     {
+        if (GetCaster()->HasAura(SPELL_ROGUE_SUBTERFUGE) || GetCaster()->HasAura(SPELL_ROGUE_SUBTERFUGE_AURA)
+            || GetCaster()->HasAura(SPELL_ROGUE_STEALTH) || GetCaster()->HasAura(SPELL_ROGUE_VANISH)
+            || GetCaster()->HasAura(SPELL_ROGUE_VANISH_AURA) || GetCaster()->HasAura(SPELL_ROGUE_SHADOW_DANCE)
+            || GetCaster()->HasAura(SPELL_ROGUE_SHADOW_DANCE_AURA))
+            return;
+
         GetCaster()->RemoveAurasDueToSpell(SPELL_ROGUE_SEPSIS_AURA);
     }
 
@@ -4556,6 +4562,49 @@ class spell_rog_sepsis_attack : public SpellScript
     {
         AfterHit += SpellHitFn(spell_rog_sepsis_attack::After);
     }
+};
+
+// 324073 
+class spell_rog_serrated_bone_spike : public AuraScript
+{
+    PrepareAuraScript(spell_rog_serrated_bone_spike);
+
+    enum SBS
+    {
+        SBSDot = 328547,
+        SBSMain = 324073,
+    };
+
+    ObjectGuid CasterGuid;
+
+    void HandleApply(const AuraEffect* /*aurEff*/, AuraEffectHandleModes /* mode */)
+    {
+        Unit* caster = GetCaster();
+        Unit* target = GetUnitOwner();
+        if (!caster || !target)
+            return;
+
+        CasterGuid = caster->GetGUID();
+    }
+
+    void HandlePeriodic(AuraEffect const* /*aurEff*/)
+    {
+        Unit* caster = GetCaster();
+        Unit* target = GetUnitOwner();
+        if (!caster && target)
+        {
+            target->RemoveAurasDueToSpell(SBSMain, CasterGuid);
+            target->RemoveAurasDueToSpell(SBSDot, CasterGuid);
+            return;
+        }
+    }
+
+    void Register() override
+    {
+        OnEffectApply += AuraEffectApplyFn(spell_rog_serrated_bone_spike::HandleApply, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE, AURA_EFFECT_HANDLE_REAL);
+        OnEffectPeriodic += AuraEffectPeriodicFn(spell_rog_serrated_bone_spike::HandlePeriodic, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE);
+    }
+
 };
 
 void AddSC_rogue_spell_scripts()
@@ -4656,6 +4705,7 @@ void AddSC_rogue_spell_scripts()
     RegisterSpellScript(spell_rog_flagellation);
     RegisterSpellScript(spell_rog_sepsis_attack);
     RegisterSpellScript(spell_rog_sepsis);
+    RegisterSpellScript(spell_rog_serrated_bone_spike);
 
 	// Areatrigger
     RegisterAreaTriggerAI(at_rog_smoke_bomb);    // 11451
