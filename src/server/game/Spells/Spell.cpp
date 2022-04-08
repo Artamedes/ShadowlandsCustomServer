@@ -4049,6 +4049,9 @@ void Spell::_handle_finish_phase()
 
 void Spell::SendSpellCooldown()
 {
+    if (_triggeredCastFlags & TRIGGERED_DONT_CREATE_COOLDOWN)
+        return;
+
     if (!m_caster->IsUnit())
         return;
 
@@ -4543,6 +4546,12 @@ void Spell::SendSpellStart()
     if (HasPowerTypeCost(POWER_RUNES))
         castFlags |= CAST_FLAG_NO_GCD; // not needed, but Blizzard sends it
 
+    if (_triggeredCastFlags & TRIGGERED_DONT_CREATE_COOLDOWN)
+    {
+        castFlags |= CAST_FLAG_PENDING;
+        m_castFlagsEx |= CAST_FLAG_EX_USE_TOY_SPELL;
+    }
+
     WorldPackets::Spells::SpellStart packet;
     WorldPackets::Spells::SpellCastData& castData = packet.Cast;
 
@@ -4655,6 +4664,12 @@ void Spell::SendSpellGo()
 
     if (!m_spellInfo->StartRecoveryTime)
         castFlags |= CAST_FLAG_NO_GCD;
+
+    if (_triggeredCastFlags & TRIGGERED_DONT_CREATE_COOLDOWN)
+    {
+        castFlags |= CAST_FLAG_PENDING;
+        m_castFlagsEx |= CAST_FLAG_EX_USE_TOY_SPELL;
+    }
 
     WorldPackets::Spells::SpellGo packet;
     WorldPackets::Spells::SpellCastData& castData = packet.Cast;
