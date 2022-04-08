@@ -101,6 +101,15 @@ void Scenario::SetStep(ScenarioStepEntry const* step)
 void Scenario::OnPlayerEnter(Player* player)
 {
     _players.insert(player->GetGUID());
+
+    switch (player->GetMapId())
+    {
+        case 959: // Shado Pan Monastary
+            return;
+        default:
+            break;
+    }
+
     SendScenarioState(player);
 }
 

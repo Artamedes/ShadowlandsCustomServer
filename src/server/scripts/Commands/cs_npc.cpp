@@ -325,6 +325,7 @@ public:
             { "get",            HandleNpcGetCommand,               rbac::RBAC_PERM_COMMAND_NPC_SHOWLOOT,       Console::No },
             { "create",         HandleNpcCreateCommand,            rbac::RBAC_PERM_COMMAND_NPC_SHOWLOOT,       Console::No },
             { "reload",         HandleNpcReloadCommand,            rbac::RBAC_PERM_COMMAND_NPC_SHOWLOOT,       Console::No },
+            { "wpadd",          HandleWpAddCommand,                rbac::RBAC_PERM_COMMANDS_PINFO_CHECK_PERSONAL_DATA, Console::No },
         };
         static ChatCommandTable commandTable =
         {
@@ -332,6 +333,48 @@ public:
         };
         return commandTable;
     }
+    
+    static bool HandleWpAddCommand(ChatHandler* handler)
+    {
+        Creature* target = handler->getSelectedCreature();
+        if (!target)
+            return true;
+        uint32 pathid = target->GetSpawnId() * 10;
+
+        uint32 point = 0;
+        // path_id -> ID of the Path
+        // point   -> number of the waypoint (if not 0)
+
+        if (!pathid)
+        {
+            handler->PSendSysMessage("%s%s|r", "|cffff33ff", "Current creature haven't loaded path.");
+            return true;
+        }
+
+        WorldDatabasePreparedStatement* stmt = WorldDatabase.GetPreparedStatement(WORLD_SEL_WAYPOINT_DATA_MAX_POINT);
+        stmt->setUInt32(0, pathid);
+        PreparedQueryResult result = WorldDatabase.Query(stmt);
+
+        if (result)
+            point = (*result)[0].GetUInt32();
+
+        Player* player = handler->GetSession()->GetPlayer();
+        //Map* map = player->GetMap();
+
+        stmt = WorldDatabase.GetPreparedStatement(WORLD_INS_WAYPOINT_DATA);
+
+        stmt->setUInt32(0, pathid);
+        stmt->setUInt32(1, point + 1);
+        stmt->setFloat(2, player->GetPositionX());
+        stmt->setFloat(3, player->GetPositionY());
+        stmt->setFloat(4, player->GetPositionZ());
+        stmt->setFloat(5, player->GetOrientation());
+
+        WorldDatabase.Execute(stmt);
+
+        handler->PSendSysMessage("%s%s%u%s%u%s|r", "|cff00ff00", "PathID: |r|cff00ffff", pathid, "|r|cff00ff00: Waypoint |r|cff00ffff", point+1, "|r|cff00ff00 created. ");
+        return true;
+    }                                                           // HandleWpAddCommand
 
     //add spawn of creature
     static bool HandleNpcAddCommand(ChatHandler* handler, CreatureEntry id)
@@ -1717,6 +1760,12 @@ public:
         if (!EntryID)
         {
             handler->PSendSysMessage("Bad entryid");
+            return true;
+        }
+
+        if (sObjectMgr->GetCreatureTemplate(EntryID))
+        {
+            handler->PSendSysMessage("Bad entryid (prevent overwrite)");
             return true;
         }
 

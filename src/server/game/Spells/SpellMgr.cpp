@@ -3844,6 +3844,14 @@ void SpellMgr::LoadSpellInfoCorrections()
         spellInfo->ChannelInterruptFlags &= ~SpellAuraInterruptFlags::Action;
     });
 
+    // ID - 331027 [DNT] Generic - Dark Kyrian Beam Channel Reverse on Stalkers
+    ApplySpellFix({ 331027 }, [](SpellInfo* spellInfo)
+    {
+        spellInfo->Attributes &= SPELL_ATTR0_HIDDEN_CLIENTSIDE;
+        spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(28);
+       // spellInfo->ChannelInterruptFlags = SpellAuraInterruptFlags::None;
+        });
+
     // Sic'em
     ApplySpellFix({ 42767 }, [](SpellInfo* spellInfo)
     {
@@ -3861,8 +3869,6 @@ void SpellMgr::LoadSpellInfoCorrections()
             spellEffectInfo->MiscValue = 24008; // Fallen Combatant
         });
     });
-
-
 
     // Gift of the Naaru (priest and monk variants)
     ApplySpellFix({ 59544, 121093 }, [](SpellInfo* spellInfo)

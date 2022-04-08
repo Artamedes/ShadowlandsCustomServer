@@ -49,53 +49,6 @@ public:
     EventMap events;
 };
 
-// 700701 - npc_weapon_of_light_700701
-struct npc_weapon_of_light_700701 : public ScriptedAI
-{
-public:
-    npc_weapon_of_light_700701(Creature* creature) : ScriptedAI(creature) { }
-
-    void InitializeAI() override
-    {
-        /// TODO: Fill this function
-    }
-
-    void Reset() override
-    {
-        /// TODO: Fill this function
-    }
-
-    void UpdateAI(uint32 diff) override
-    {
-        scheduler.Update(diff);
-
-        if (!UpdateVictim())
-            return;
-
-        events.Update(diff);
-
-        if (uint32 eventId = events.ExecuteEvent())
-        {
-            switch (eventId)
-            {
-            }
-        }
-        DoMeleeAttackIfReady();
-    }
-
-    void OnUnitRelocation(Unit* who) override
-    {
-        /// TODO: Fill this function
-    }
-    void OnSpellClick(Unit* clicker, bool spellClickHandled) override
-    {
-        /// TODO: Fill this function
-    }
-
-    TaskScheduler scheduler;
-    EventMap events;
-};
-
 // 700704 - npc_portal_of_light_700704
 struct npc_portal_of_light_700704 : public ScriptedAI
 {
@@ -104,12 +57,11 @@ public:
 
     void InitializeAI() override
     {
-        /// TODO: Fill this function
+        me->SetUnitFlag(UNIT_FLAG_UNINTERACTIBLE);
     }
 
     void Reset() override
     {
-        /// TODO: Fill this function
     }
 
     void UpdateAI(uint32 diff) override
@@ -118,7 +70,7 @@ public:
 
         if (!UpdateVictim())
             return;
-
+        
         events.Update(diff);
 
         if (uint32 eventId = events.ExecuteEvent())
@@ -130,13 +82,22 @@ public:
         DoMeleeAttackIfReady();
     }
 
-    void OnUnitRelocation(Unit* who) override
-    {
-        /// TODO: Fill this function
-    }
     void OnSpellClick(Unit* clicker, bool spellClickHandled) override
     {
-        /// TODO: Fill this function
+        if (clicker->IsPlayer())
+        {
+            //clicker->CastSpell(clicker, 367044, true);
+            auto clickerGuid = clicker->GetGUID();
+            scheduler.Schedule(800ms, [this, clickerGuid](TaskContext context)
+            {
+                    if (auto player = ObjectAccessor::GetPlayer(*me, clickerGuid))
+                    {
+                        GameTele const* tele = sObjectMgr->GetGameTele(1903);
+                        if (tele)
+                            player->TeleportTo(tele->mapId, tele->position_x, tele->position_y, tele->position_z, tele->orientation);
+                    }
+            });
+        }
     }
 
     TaskScheduler scheduler;
@@ -289,6 +250,7 @@ public:
     {
         events.Reset();
 
+        Talk(0);
         events.ScheduleEvent(1, 1s, 10s);
         events.ScheduleEvent(2, 1s, 10s);
         events.ScheduleEvent(3, 1s, 10s);
@@ -369,12 +331,20 @@ public:
         /// TODO: Fill this function
         me->DeMorph();
         phase = false;
+        phase = false;
+        isPhasing = false;
+        me->SetReactState(REACT_AGGRESSIVE);
+
     }
 
     void JustEngagedWith(Unit* who) override
     {
         me->DeMorph();
         phase = false;
+        phase = false;
+        isPhasing = false;
+        me->SetReactState(REACT_AGGRESSIVE);
+
     }
 
     void UpdateAI(uint32 diff) override
@@ -406,20 +376,62 @@ public:
             Talk(0);
             scheduler.Schedule(3s, [this](TaskContext context)
                 {
-
                     me->RemoveUnitFlag(UNIT_FLAG_NON_ATTACKABLE);
+
+                    if (auto victim = SelectVictimCrap())
+                    {
+                        if (victim != me->GetVictim())
+                            AttackStart(victim);
+                    }
                 });
         }
     }
 
+    Unit* SelectVictimCrap()
+    {
+        Unit* target = me->SelectNearestTargetInAttackDistance(55.0f);
+
+        if (target && me->_IsTargetAcceptable(target) && me->CanCreatureAttack(target))
+        {
+            if (!me->HasSpellFocus())
+                me->SetInFront(target);
+            return target;
+        }
+
+        return nullptr;
+    }
+
     bool phase = false;
+    bool isPhasing = false;
     void DamageTaken(Unit* attacker, uint32& damage, DamageEffectType damageType, SpellInfo const* spell) override
     {
+        if (isPhasing)
+        {
+            damage = 0;
+            attacker->AttackStop();
+        }
+
         if (!phase && me->HealthBelowPctDamaged(51, damage))
         {
             phase = true;
-            Talk(1);
-            me->SetDisplayId(92451);
+            isPhasing = true;
+            me->SetReactState(REACT_PASSIVE);
+            DoCast(366165);
+            scheduler.Schedule(1s, [this](TaskContext context)
+                {
+                    Talk(1);
+                    me->SetDisplayId(92451);
+                    me->SetReactState(REACT_AGGRESSIVE);
+                    isPhasing = false;
+                });
+        }
+    }
+
+    void JustDied(Unit* who) override
+    {
+        if (auto portal = me->FindNearestCreature(700704, 50.0f, true))
+        {
+            portal->RemoveUnitFlag(UNIT_FLAG_UNINTERACTIBLE);
         }
     }
 
@@ -844,7 +856,7 @@ void AddSC_ShadoPanMonastary()
 {
    //RegisterCreatureAI(npc_angelic_warrior_700703);
    //RegisterCreatureAI(npc_weapon_of_light_700701);
-   //RegisterCreatureAI(npc_portal_of_light_700704);
+   RegisterCreatureAI(npc_portal_of_light_700704);
    RegisterCreatureAI(npc_corrupted_light_700711);
  //  RegisterCreatureAI(npc_disciple_of_light_700702);
    RegisterCreatureAI(npc_kang_dae_whitegarden_700712);

@@ -945,6 +945,19 @@ struct npc_soulshape_picker : public ScriptedAI
         }
 };
 
+struct npc_rewardsbot_700014 : public ScriptedAI
+{
+    public:
+        npc_rewardsbot_700014(Creature* creature) : ScriptedAI(creature) { }
+
+        bool OnGossipHello(Player* player) override
+        {
+            ClearGossipMenuFor(player);
+            SendGossipMenuFor(player, 700014, me);
+            return true;
+        }
+};
+
 void AddSC_MallScripts()
 {
     RegisterCreatureAI(npc_battle_training);
@@ -960,4 +973,5 @@ void AddSC_MallScripts()
     RegisterCreatureAI(npc_sturzah_800005);
     RegisterCreatureAI(npc_covenant_swapper);
     RegisterCreatureAI(npc_soulshape_picker);
+    RegisterCreatureAI(npc_rewardsbot_700014);
 }

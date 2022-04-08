@@ -97,10 +97,10 @@ public:
         if (!done)
         {
             done = true;
-            me->DespawnOrUnsummon(5s);
-            scheduler.Schedule(3s, [this](TaskContext)
+            me->DespawnOrUnsummon(2500ms);
+            scheduler.Schedule(100ms, [this](TaskContext)
                 {
-                    DoCastSelf(356777);
+                    DoCastSelf(367667);
                 });
         }
     }
@@ -212,23 +212,28 @@ public:
     void InitializeAI() override
     {
         /// TODO: Fill this function
-        scheduler.Schedule(1s, [this](TaskContext context)
-            {
-                if (auto beacon = me->FindNearestCreature(700709, 50.0f))
-                    DoCast(beacon, 319728, true);
-            });
+        //scheduler.Schedule(1s, [this](TaskContext context)
+        //    {
+        //        if (auto beacon = me->FindNearestCreature(700709, 50.0f))
+        //            DoCast(beacon, 319728, true);
+        //    });
 
        // if (auto channel = me->GetCurrentSpell(CurrentSpellTypes::CURRENT_CHANNELED_SPELL))
     }
 
     void Reset() override
     {
+        phase = false;
+        isPhasing = false;
         /// TODO: Fill this function
-        scheduler.Schedule(1s, [this](TaskContext context)
-            {
-                if (auto beacon = me->FindNearestCreature(700709, 50.0f))
-                    DoCast(beacon, 319728, true);
-            });
+       // scheduler.Schedule(1s, [this](TaskContext context)
+       //     {
+       //         if (auto beacon = me->FindNearestCreature(700709, 50.0f))
+       //             DoCast(beacon, 319728, true);
+       //     });
+        me->RemoveUnitFlag(UNIT_FLAG_NON_ATTACKABLE);
+        me->RemoveAurasDueToSpell(317535); // Enrage
+        me->SetReactState(REACT_AGGRESSIVE);
     }
 
     void UpdateAI(uint32 diff) override
@@ -249,13 +254,53 @@ public:
         DoMeleeAttackIfReady();
     }
 
-    void OnUnitRelocation(Unit* who) override
+    bool phase = false;
+    bool isPhasing = false;
+
+    void DamageTaken(Unit* attacker, uint32& damage, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
     {
-        /// TODO: Fill this function
-    }
-    void OnSpellClick(Unit* clicker, bool spellClickHandled) override
-    {
-        /// TODO: Fill this function
+        if (isPhasing)
+        {
+            attacker->AttackStop();
+            damage = 0;
+        }
+
+        if (!phase && me->HealthBelowPctDamaged(51, damage))
+        {
+            phase = true;
+            me->SetUnitFlag(UNIT_FLAG_NON_ATTACKABLE);
+            me->AttackStop();
+            me->SetReactState(REACT_PASSIVE);
+            isPhasing = true;
+
+            scheduler.Schedule(500ms, [this](TaskContext context)
+                {
+                    if (auto beacon = me->FindNearestCreature(700709, 50.0f))
+                        me->SetFacingToObject(beacon);
+                });
+            scheduler.Schedule(1s, [this](TaskContext context)
+                {
+                    if (auto beacon = me->FindNearestCreature(700709, 50.0f))
+                        DoCast(beacon, 331027, true);
+                });
+
+
+            me->RemoveAllAuras();
+            scheduler.Schedule(3s, [this](TaskContext context)
+            {
+                    me->RemoveUnitFlag(UNIT_FLAG_NON_ATTACKABLE);
+
+                    scheduler.Schedule(2s, [this](TaskContext context)
+                    {
+                            isPhasing = false;
+                            if (me->GetCurrentSpell(CURRENT_CHANNELED_SPELL) != nullptr)
+                            {
+                                DoCastSelf(317535, true); // Enrage
+                            }
+                            me->SetReactState(REACT_AGGRESSIVE);
+                    });
+            });
+        }
     }
 
     TaskScheduler scheduler;
@@ -350,7 +395,7 @@ public:
 
     enum eSpells
     {
-        MindBlast = 314801,
+        MindBlast = 284409,
         MindFlay = 310552,
     };
 
@@ -388,11 +433,11 @@ public:
             switch (eventId)
             {
                 case 1:
-                    DoCast(MindBlast);
+                    DoCastVictim(MindBlast);
                     events.Repeat(5s, 10s);
                     break;
                 case 2:
-                    DoCast(MindFlay);
+                    DoCastVictim(MindFlay);
                     events.Repeat(5s, 10s);
                     break;
             }

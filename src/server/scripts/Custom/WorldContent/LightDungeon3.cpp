@@ -157,13 +157,35 @@ public:
 
         if (who->IsPlayer() && who->GetDistance2d(me) <= 20.0f)
         {
-            me->SetDisplayId(80096);
+            DoCast(366165);
             didIntro = true;
+            scheduler.Schedule(500ms, [this](TaskContext context)
+                {
+                    me->SetDisplayId(80096);
+
+                    if (auto victim = SelectVictimCrap())
+                    {
+                        if (victim != me->GetVictim())
+                            AttackStart(victim);
+                    }
+
+                });
         }
     }
-    void OnSpellClick(Unit* clicker, bool spellClickHandled) override
+
+
+    Unit* SelectVictimCrap()
     {
-        /// TODO: Fill this function
+        Unit* target = me->SelectNearestTargetInAttackDistance(55.0f);
+
+        if (target && me->_IsTargetAcceptable(target) && me->CanCreatureAttack(target))
+        {
+            if (!me->HasSpellFocus())
+                me->SetInFront(target);
+            return target;
+        }
+
+        return nullptr;
     }
 
     TaskScheduler scheduler;
