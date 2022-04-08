@@ -608,19 +608,19 @@ struct npc_annaxin_700508 : public ScriptedAI
         {
             /// TODO: Fill this function
             if (auto creature = me->FindNearestCreature(700509, 50.0f)) // Slave
-                DoCast(creature, 328785, true); // Drain
+                DoCast(creature, 241024, true); // Drain
         }
 
         void Reset() override
         {
             /// TODO: Fill this function
             if (auto creature = me->FindNearestCreature(700509, 50.0f)) // Slave
-                DoCast(creature, 328785, true); // Drain
+                DoCast(creature, 241024, true); // Drain
         }
 
         void JustEngagedWith(Unit* who) override
         {
-            me->RemoveAurasDueToSpell(328785);
+            me->RemoveAurasDueToSpell(241024);
             Talk(0);
         }
 
@@ -635,12 +635,30 @@ struct npc_annaxin_700508 : public ScriptedAI
                 Talk(2);
         }
 
+        uint32 prevTarget = 0;
+
         void UpdateAI(uint32 diff) override
         {
             scheduler.Update(diff);
 
             if (!UpdateVictim())
+            {
+                if (!me->IsEngaged() && !me->GetCurrentSpell(CurrentSpellTypes::CURRENT_CHANNELED_SPELL))
+                {
+                    if (prevTarget == 700509)
+                        prevTarget = 700505;
+                    else
+                        prevTarget = 700509;
+
+                    if (auto creature = me->FindNearestCreature(prevTarget, 50.0f)) // Slave
+                    {
+                        prevTarget = creature->GetEntry();
+                        me->SetFacingToObject(creature);
+                        DoCast(creature, 241024, true); // Drain
+                    }
+                }
                 return;
+            }
 
             events.Update(diff);
 
@@ -672,6 +690,8 @@ struct npc_skyhold_slave_700509 : public ScriptedAI
      {
         /// TODO: Fill this function
          me->SetEmoteState(Emote::EMOTE_STATE_DROWNED);
+         me->SetReactState(REACT_PASSIVE);
+         me->SetUnitFlag(UNIT_FLAG_NON_ATTACKABLE);
      }
 
      void Reset() override
@@ -868,7 +888,18 @@ public:
         scheduler.Update(diff);
 
         if (!UpdateVictim())
+        {
+            if (!me->IsEngaged() && !me->GetCurrentSpell(CurrentSpellTypes::CURRENT_CHANNELED_SPELL))
+            {
+                if (auto creature = me->FindNearestCreature(700515, 10.0f)) // Slave
+                {
+                    me->SetFacingToObject(creature);
+                    DoCast(creature, 241024, true); // Drain
+                }
+            }
+
             return;
+        }
 
         events.Update(diff);
 
@@ -888,6 +919,73 @@ public:
     void OnUnitRelocation(Unit* who) override
     {
         /// TODO: Fill this function
+    }
+
+    TaskScheduler scheduler;
+    EventMap events;
+};
+
+const Position watcherOfDeathPos[] = {
+    { 277.907f, 1910.15f, -24.0141f, 0.546515f },
+    { 287.476f, 1915.97f, -27.6328f, 0.546515f },
+    { 297.073f, 1921.74f, -30.1178f, 0.543242f },
+    { 296.989f, 1924.93f, -30.9588f, 1.65262f },
+    { 295.569f, 1928.5f, -31.9165f, 1.97659f },
+    { 291.525f, 1933.74f, -33.3113f, 2.23512f },
+    { 286.527f, 1937.57f, -35.6996f, 2.41838f },
+    { 279.949f, 1943.4f, -40.8263f, 2.60819f },
+    { 272.402f, 1947.0f, -45.54f, 2.69982f },
+    { 266.903f, 1949.27f, -48.2273f, 2.76527f },
+    { 261.902f, 1950.87f, -49.9608f, 2.87653f },
+};
+
+struct npc_watcher_of_death_700515 : public ScriptedAI
+{
+public:
+    npc_watcher_of_death_700515(Creature* creature) : ScriptedAI(creature) { }
+
+    void InitializeAI()
+    {
+        if (me->GetSpawnId() == 1053038)
+        {
+            scheduler.Schedule(1s, [this](TaskContext context)
+                {
+                    auto path = me->GetMotionMaster()->MoveSmoothPath(1, watcherOfDeathPos, 11, true);
+                    path->callbackFunc = [this]() {
+                        scheduler.Schedule(250ms, [this](TaskContext context)
+                            {
+                                me->SetEmoteState(Emote::EMOTE_ONESHOT_READY1H);
+                            });
+                        };
+                });
+        }
+    }
+
+    void JustEngagedWith(Unit* who)
+    {
+        me->SetEmoteState(Emote::EMOTE_STATE_NONE);
+    }
+
+    void UpdateAI(uint32 diff) override
+    {
+        scheduler.Update(diff);
+
+        if (!UpdateVictim())
+            return;
+
+        events.Update(diff);
+
+        if (uint32 eventId = events.ExecuteEvent())
+        {
+            switch (eventId)
+            {
+            case 1:
+                DoCastVictim(211491);
+                events.Repeat(10s, 20s);
+                break;
+            }
+        }
+        DoMeleeAttackIfReady();
     }
 
     TaskScheduler scheduler;
@@ -914,4 +1012,5 @@ void AddSC_Niskara()
     RegisterCreatureAI(npc_xolmir_700511);
     RegisterCreatureAI(npc_legion_portal_700512);
     RegisterCreatureAI(npc_harvester_700513);
+    RegisterCreatureAI(npc_watcher_of_death_700515);
 }
