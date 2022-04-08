@@ -1,6 +1,9 @@
 #include "SpellMgr.h"
 #include "Unit.h"
 #include "SpellScript.h"
+#include "CovenantMgr.h"
+#include "Player.h"
+#include "SpellHistory.h"
 
 struct npc_kyrian_steward : public ScriptedAI
 {
@@ -46,6 +49,7 @@ struct npc_kyrian_steward : public ScriptedAI
                         DoCast(me->GetOwner(), 324743, true);
                         me->GetOwner()->ToPlayer()->AddItem(177278, 1);
                     }
+                    me->RemoveAurasDueToSpell(324791); // Carry Bottle
                     gavePotsToOwner = true;
                 }
             }
@@ -128,7 +132,40 @@ struct npc_kyrian_steward : public ScriptedAI
         bool gavePotsToOwner = false;
 };
 
+// ID - 353248 Effusive Anima Accelerator
+class spell_kyrian_effusive_anima_accelerator : public SpellScript
+{
+    PrepareSpellScript(spell_kyrian_effusive_anima_accelerator);
+
+    void FilterTargets(std::list<WorldObject*>& targets)
+    {
+        auto caster = GetCaster();
+        if (!caster)
+            return;
+        if (targets.empty())
+            return;
+
+        int32 targetsSize = targets.size();
+        int32 cdr = 3000 * targetsSize;
+        if (cdr >= 15000)
+            cdr = 15000;
+
+        switch (caster->GetClass())
+        {
+            case CLASS_ROGUE:
+                caster->GetSpellHistory()->ModifyCooldown(323547, -cdr); // Echoing Reprimand
+                break;
+        }
+    }
+
+    void Register() override
+    {
+        OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_kyrian_effusive_anima_accelerator::FilterTargets, EFFECT_0, TARGET_UNIT_DEST_AREA_ENEMY);
+    }
+};
+
 void AddSC_spell_kyrian()
 {
     RegisterCreatureAI(npc_kyrian_steward);
+    RegisterSpellScript(spell_kyrian_effusive_anima_accelerator);
 }

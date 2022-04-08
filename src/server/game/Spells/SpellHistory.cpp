@@ -799,8 +799,7 @@ void SpellHistory::ModifySpellCooldown(uint32 spellId, Duration offset, bool wit
 
 void SpellHistory::ModifyCooldown(uint32 spellId, int32 cooldownModMs)
 {
-    Clock::duration offset = std::chrono::duration_cast<Clock::duration>(std::chrono::milliseconds(cooldownModMs));
-    ModifyCooldown(spellId, Milliseconds(offset.count()));
+    ModifyCooldown(spellId, Milliseconds(cooldownModMs));
 }
 
 void SpellHistory::ModifyCooldown(uint32 spellId, Duration cooldownMod, bool withoutCategoryCooldown)

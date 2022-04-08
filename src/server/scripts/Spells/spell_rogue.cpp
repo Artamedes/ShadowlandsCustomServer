@@ -4424,6 +4424,11 @@ class spell_rog_echoing_reprimand : public SpellScript
 
         GetCaster()->RemoveAurasByType(SPELL_AURA_SET_POWER_POINT_CHARGE);
 
+        if (auto effusiveAnima = GetCaster()->GetAura(352188))
+        {
+            GetCaster()->CastSpell(GetCaster(), 353248, true);
+        }
+
         if (auto resoundingClarity = GetCaster()->GetAura(354837))
         {
             for (auto buff : buffs)
