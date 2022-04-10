@@ -92,6 +92,7 @@ public:
             {
                     if (auto player = ObjectAccessor::GetPlayer(*me, clickerGuid))
                     {
+                        player->KilledMonsterCredit(me->GetEntry(), me->GetGUID());
                         GameTele const* tele = sObjectMgr->GetGameTele(1903);
                         if (tele)
                             player->TeleportTo(tele->mapId, tele->position_x, tele->position_y, tele->position_z, tele->orientation);
@@ -374,7 +375,7 @@ public:
         {
             intro = true;
             Talk(0);
-            scheduler.Schedule(3s, [this](TaskContext context)
+            scheduler.Schedule(500ms, [this](TaskContext context)
                 {
                     me->RemoveUnitFlag(UNIT_FLAG_NON_ATTACKABLE);
 
@@ -567,12 +568,15 @@ public:
             attacker->AttackStop();
             if (!dead)
             {
+                Talk(0);
                 dead = true;
                 me->UpdateEntry(700727);
                 EnterEvadeMode();
                 me->SetFaction(35);
                 me->SetReactState(REACT_PASSIVE);
                 me->SetUnitFlag(UnitFlags::UNIT_FLAG_NON_ATTACKABLE);
+                if (auto player = attacker->ToPlayer())
+                    player->KilledMonsterCredit(700715, me->GetGUID());
             }
         }
     }

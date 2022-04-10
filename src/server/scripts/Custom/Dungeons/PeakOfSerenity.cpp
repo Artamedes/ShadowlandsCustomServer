@@ -267,6 +267,7 @@ public:
 
         if (!phase && me->HealthBelowPctDamaged(51, damage))
         {
+            Talk(0); // I need more power!
             phase = true;
             me->SetUnitFlag(UNIT_FLAG_NON_ATTACKABLE);
             me->AttackStop();

@@ -765,6 +765,14 @@ struct npc_vivian_700600 : public ScriptedAI
 public:
     npc_vivian_700600(Creature* creature) : ScriptedAI(creature) { }
 
+    bool OnGossipHello(Player* player) override
+    {
+        ClearGossipMenuFor(player);
+        player->PrepareQuestMenu(me->GetGUID());
+        SendGossipMenuFor(player, 700600, me);
+        return true;
+    }
+
     void InitializeAI() override
     {
         /// TODO: Fill this function

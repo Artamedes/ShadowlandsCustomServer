@@ -1,5 +1,6 @@
 #include "Player.h"
 #include "ScriptMgr.h"
+#include "CovenantMgr.h"
 
 class LoginScript : public PlayerScript
 {
@@ -163,6 +164,70 @@ class LoginScript : public PlayerScript
                 p_Player->CastSpell(p_Player, 90266, true);
                 p_Player->LearnSpell(332400, false); // Sinful Gladiator Mount
                 p_Player->ResurrectPlayer(1.0f);
+
+                switch (p_Player->GetClass())
+                {
+                case CLASS_WARRIOR:
+                {
+                    p_Player->GetCovenantMgr()->SetCovenant(CovenantID::Kyrian);
+                    break;
+                }
+                case CLASS_PALADIN:
+                {
+                    p_Player->GetCovenantMgr()->SetCovenant(CovenantID::Kyrian);
+                    break;
+                }
+                case CLASS_HUNTER:
+                {
+                    p_Player->GetCovenantMgr()->SetCovenant(CovenantID::NightFae);
+                    break;
+                }
+                case CLASS_ROGUE:
+                {
+                    p_Player->GetCovenantMgr()->SetCovenant(CovenantID::Kyrian);
+                    break;
+                }
+                case CLASS_PRIEST:
+                {
+                    p_Player->GetCovenantMgr()->SetCovenant(CovenantID::Necrolord);
+                    break;
+                }
+                case CLASS_DEATH_KNIGHT:
+                {
+                    p_Player->GetCovenantMgr()->SetCovenant(CovenantID::Necrolord);
+                    break;
+                }
+                case CLASS_SHAMAN:
+                {
+                    p_Player->GetCovenantMgr()->SetCovenant(CovenantID::Venthyr);
+                    break;
+                }
+                case CLASS_MAGE:
+                {
+                    p_Player->GetCovenantMgr()->SetCovenant(CovenantID::NightFae);
+                    break;
+                }
+                case CLASS_WARLOCK:
+                {
+                    p_Player->GetCovenantMgr()->SetCovenant(CovenantID::NightFae);
+                    break;
+                }
+                case CLASS_MONK:
+                {
+                    p_Player->GetCovenantMgr()->SetCovenant(CovenantID::Necrolord);
+                    break;
+                }
+                case CLASS_DRUID:
+                {
+                    p_Player->GetCovenantMgr()->SetCovenant(CovenantID::NightFae);
+                    break;
+                }
+                case CLASS_DEMON_HUNTER:
+                {
+                    p_Player->GetCovenantMgr()->SetCovenant(CovenantID::NightFae);
+                    break;
+                }
+                }
             }
 
             p_Player->RemoveAurasDueToSpell(141480); // Self stun

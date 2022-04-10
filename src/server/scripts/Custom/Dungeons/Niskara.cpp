@@ -5,6 +5,8 @@
 #include "CellImpl.h"
 #include "GridNotifiersImpl.h"
 #include "GenericMovementGenerator.h"
+#include "GameTime.h"
+#include "ScriptedGossip.h"
 
 struct instance_niskara : public CustomInstanceScript
 {
@@ -64,11 +66,11 @@ struct npc_prophet_velen_700499 : public ScriptedAI
 
                                     scheduler.Schedule(5s, [this](TaskContext context)
                                         {
-                                            DoCast(286210);
+                                        //    DoCast(286210);
 
                                             scheduler.Schedule(100ms, [this](TaskContext context)
                                                 {
-                                                    me->DespawnOrUnsummon();
+                                                //    me->DespawnOrUnsummon();
                                                 });
                                         });
                                 });
@@ -82,6 +84,22 @@ struct npc_prophet_velen_700499 : public ScriptedAI
         }
 
         TaskScheduler scheduler;
+};
+
+const Position bobPath[] = {
+    { 278.581f, 1938.85f, -58.9439f, 0.261801f },
+    { 285.683f, 1938.48f, -56.8478f, 6.23083f },
+    { 291.011f, 1938.27f, -58.0162f, 0.00327396f },
+    { 301.666f, 1942.2f, -60.5329f, 0.687224f },
+    { 305.748f, 1946.46f, -61.6977f, 0.906482f },
+    { 313.58f, 1959.76f, -64.6617f, 1.26318f },
+    { 316.169f, 1967.9f, -66.1662f, 1.26318f },
+    { 322.702f, 1988.15f, -68.431f, 1.25664f },
+    { 331.331f, 2014.71f, -70.497f, 1.25664f },
+    { 338.179f, 2044.48f, -72.69f, 1.77696f },
+    { 335.453f, 2068.03f, -72.1815f, 1.63625f },
+    { 333.922f, 2093.46f, -71.8279f, 1.52498f },
+    { 335.043f, 2118.13f, -71.2157f, 1.60352f },
 };
 
 // 700099 - bob_700099
@@ -98,6 +116,28 @@ struct npc_bob_700099 : public ScriptedAI
      void Reset() override
      {
         /// TODO: Fill this function
+     }
+
+     bool OnGossipHello(Player* player) override
+     {
+         ClearGossipMenuFor(player);
+         AddGossipItemFor(player,GossipOptionIcon::None, "I see", 0, 0);
+         SendGossipMenuFor(player, 700099, me);
+         return true;
+     }
+
+     bool OnGossipSelect(Player* player, uint32 menuId, uint32 gossipId) override
+     {
+         me->RemoveNpcFlag(UNIT_NPC_FLAG_GOSSIP);
+         scheduler.Schedule(1s, [this](TaskContext context)
+             {
+                 Talk(0);
+                 auto path = me->GetMotionMaster()->MoveSmoothPath(1, bobPath, 13, false, true, 3.0f);
+                 path->callbackFunc = [this]() {
+                     me->DespawnOrUnsummon(1s);
+                 };
+             });
+         return true;
      }
 
      void UpdateAI(uint32 diff) override
@@ -174,7 +214,7 @@ struct npc_nazgrul_700500 : public ScriptedAI
          if (who->IsPlayer() && !me->IsEngaged() && !m_DidText)
          {
              auto dist = who->GetDistance2d(me);
-             if (dist <= 40.0f)
+             if (dist <= 50.0f)
              {
                  m_DidText = true;
                  Talk(0);
@@ -469,7 +509,7 @@ struct npc_oglaz_700506 : public ScriptedAI
 
      void OnUnitRelocation(Unit* who) override
      {
-         if (who->IsPlayer() && !m_Talked && who->GetDistance(me) <= 205.0f)
+         if (who->IsPlayer() && !m_Talked && who->GetDistance(me) <= 125.0f)
          {
              m_Talked = true;
              Talk(0);
@@ -558,6 +598,11 @@ struct npc_jazgolluth_700507 : public ScriptedAI
         /// TODO: Fill this function
      }
 
+     void JustEngagedWith(Unit* unit) override
+     {
+         Talk(0);
+     }
+
      void UpdateAI(uint32 diff) override
      {
         scheduler.Update(diff);
@@ -589,9 +634,22 @@ struct npc_jazgolluth_700507 : public ScriptedAI
          if (who->IsPlayer() && !m_Talked && who->GetDistance(me) <= 25.0f)
          {
              m_Talked = true;
-             Talk(0);
          }
      }
+    //
+    // Unit* SelectVictimCrap()
+    // {
+    //     Unit* target = me->SelectNearestTargetInAttackDistance(55.0f);
+    //
+    //     if (target && me->_IsTargetAcceptable(target) && me->CanCreatureAttack(target))
+    //     {
+    //         if (!me->HasSpellFocus())
+    //             me->SetInFront(target);
+    //         return target;
+    //     }
+    //
+    //     return nullptr;
+    // }
 
      bool m_Talked = false;
      TaskScheduler scheduler;
@@ -636,6 +694,7 @@ struct npc_annaxin_700508 : public ScriptedAI
         }
 
         uint32 prevTarget = 0;
+        TimePoint nextDrainTime;
 
         void UpdateAI(uint32 diff) override
         {
@@ -643,16 +702,23 @@ struct npc_annaxin_700508 : public ScriptedAI
 
             if (!UpdateVictim())
             {
-                if (!me->IsEngaged() && !me->GetCurrentSpell(CurrentSpellTypes::CURRENT_CHANNELED_SPELL))
+                if (!me->IsEngaged() && !me->GetCurrentSpell(CurrentSpellTypes::CURRENT_CHANNELED_SPELL) && !me->IsInEvadeMode() && !me->isDead())
                 {
-                    if (prevTarget == 700509)
-                        prevTarget = 700505;
-                    else
+                    if (!prevTarget)
                         prevTarget = 700509;
 
                     if (auto creature = me->FindNearestCreature(prevTarget, 50.0f)) // Slave
                     {
-                        prevTarget = creature->GetEntry();
+                        auto now = GameTime::Now();
+
+                        if (now >= nextDrainTime)
+                        {
+                            if (prevTarget == 700509)
+                                prevTarget = 700517;
+                            else
+                                prevTarget = 700509;
+                            nextDrainTime = now + Seconds(urand(3000, 6000));
+                        }
                         me->SetFacingToObject(creature);
                         DoCast(creature, 241024, true); // Drain
                     }
@@ -729,49 +795,14 @@ struct npc_skyhold_slave_700509 : public ScriptedAI
 // 700510 - zorith_700510
 struct npc_zorith_700510 : public ScriptedAI
 {
-   public:
-       npc_zorith_700510(Creature* creature) : ScriptedAI(creature) { }
-
-     void InitializeAI() override
-     {
-        /// TODO: Fill this function
-     }
-
-     void Reset() override
-     {
-        /// TODO: Fill this function
-     }
+public:
+     npc_zorith_700510(Creature* creature) : ScriptedAI(creature) { }
 
      void KilledUnit(Unit* who) override
      {
          if (who->IsPlayer())
             Talk(0);
      }
-
-
-     void UpdateAI(uint32 diff) override
-     {
-        scheduler.Update(diff);
-
-        if (!UpdateVictim())
-           return;
-
-        events.Update(diff);
-
-        if (uint32 eventId = events.ExecuteEvent())
-        {
-            switch (eventId)
-            {
-            }
-        }
-        DoMeleeAttackIfReady();
-     }
-
-     void OnUnitRelocation(Unit* who) override
-     {
-        /// TODO: Fill this function
-     }
-
      TaskScheduler scheduler;
      EventMap events;
 };
@@ -782,41 +813,202 @@ struct npc_xolmir_700511 : public ScriptedAI
    public:
        npc_xolmir_700511(Creature* creature) : ScriptedAI(creature) { }
 
-     void InitializeAI() override
-     {
-        /// TODO: Fill this function
-     }
+       void JustEngagedWith(Unit* unit) override
+       {
 
-     void Reset() override
-     {
-        /// TODO: Fill this function
-     }
+       }
 
-     void UpdateAI(uint32 diff) override
-     {
-        scheduler.Update(diff);
+       void JustDied(Unit* unit) override
+       {
+           if (auto voidRift = me->FindNearestCreature(700518, 50.0f))
+           {
+               voidRift->RemoveUnitFlag(UnitFlags::UNIT_FLAG_NON_ATTACKABLE);
+           }
+       }
 
-        if (!UpdateVictim())
-           return;
+       void UpdateAI(uint32 diff) override
+       {
+           scheduler.Update(diff);
 
-        events.Update(diff);
+           if (unknownCreatureGuid.IsEmpty())
+           {
+               if (auto creature = me->FindNearestCreature(700516, 50.0f))
+                   unknownCreatureGuid = creature->GetGUID();
+           }
 
-        if (uint32 eventId = events.ExecuteEvent())
-        {
-            switch (eventId)
-            {
-            }
-        }
-        DoMeleeAttackIfReady();
-     }
+           if (!UpdateVictim())
+               return;
 
-     void OnUnitRelocation(Unit* who) override
-     {
-        /// TODO: Fill this function
-     }
+           events.Update(diff);
+
+           if (uint32 eventId = events.ExecuteEvent())
+           {
+               switch (eventId)
+               {
+               }
+           }
+           DoMeleeAttackIfReady();
+       }
+
+       bool mDidEvent1 = false;
+       bool mDidEvent2 = false;
+
+       void OnUnitRelocation(Unit* who) override
+       {
+           if (who->IsPlayer() && !mDidEvent1 && who->GetDistance2d(me) <= 90.0f)
+           {
+               mDidEvent1 = true;
+               scheduler.Schedule(1s, [this](TaskContext context)
+                   {
+                       if (auto unkCreature = GetUnknownCreature())
+                       {
+                           if (auto ai = unkCreature->AI())
+                               ai->Talk(0);
+                       }
+
+                       scheduler.Schedule(6s, [this](TaskContext context)
+                           {
+                               Talk(1);
+                           });
+
+                   });
+           }
+           if (who->IsPlayer() && !mDidEvent2 && who->GetDistance2d(me) <= 40.0f)
+           {
+               mDidEvent2 = true;
+               scheduler.CancelAll();
+
+               scheduler.Schedule(1s, [this](TaskContext context)
+                   {
+                       if (auto unkCreature = GetUnknownCreature())
+                       {
+                           if (auto ai = unkCreature->AI())
+                           {
+                               ai->Talk(1);
+                               ai->DoAction(1);
+                           }
+                       }
+                   });
+
+               scheduler.Schedule(3s, [this](TaskContext context)
+                   {
+                       Talk(2);
+
+                       if (auto victim = SelectVictimCrap())
+                       {
+                           if (victim != me->GetVictim())
+                               AttackStart(victim);
+                       }
+                   });
+           }
+       }
+
+       Unit* SelectVictimCrap()
+       {
+           Unit* target = me->SelectNearestTargetInAttackDistance(55.0f);
+
+           if (target && me->_IsTargetAcceptable(target) && me->CanCreatureAttack(target))
+           {
+               if (!me->HasSpellFocus())
+                   me->SetInFront(target);
+               return target;
+           }
+
+           return nullptr;
+       }
+
+       Creature* GetUnknownCreature()
+       {
+           return ObjectAccessor::GetCreature(*me, unknownCreatureGuid);
+       }
+
+       ObjectGuid unknownCreatureGuid;
 
      TaskScheduler scheduler;
      EventMap events;
+};
+
+const Position UnknownCreaturePath[] = {
+    { 18.67f, 1175.27f, -45.986f, 5.21964f },
+    { 22.1311f, 1169.04f, -45.9825f, 5.21964f },
+    { 26.3137f, 1161.52f, -46.459f, 5.21964f },
+};
+struct npc_unknown_creature_700516 : public ScriptedAI
+{
+    public:
+        npc_unknown_creature_700516(Creature* creature) : ScriptedAI(creature) { }
+
+        void DoAction(int32 action) override
+        {
+            if (action == 1)
+            {
+                auto path = me->GetMotionMaster()->MoveSmoothPath(1, UnknownCreaturePath, 3, true);
+                path->callbackFunc = [this]()
+                {
+                    DoCast(367667); // Visual
+                    me->DespawnOrUnsummon(1s);
+                };
+            }
+        }
+};
+
+struct npc_void_rift_700518 : public ScriptedAI
+{
+    public:
+        npc_void_rift_700518(Creature* creature) : ScriptedAI(creature) { }
+
+        void InitializeAI()
+        {
+            me->SetUnitFlag(UnitFlags::UNIT_FLAG_UNINTERACTIBLE);
+            me->SetUnitFlag(UnitFlags::UNIT_FLAG_NON_ATTACKABLE);
+        }
+
+
+        void UpdateAI(uint32 diff) override
+        {
+            if (me->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE))
+                return;
+
+            std::list<Unit*> players;
+            me->GetFriendlyUnitListInRange(players, 2.0f, true);
+            players.remove_if([&](Unit* unit)
+                {
+                    return !unit->IsPlayer() || unit->IsInCombat() || unit->ToPlayer()->IsBeingTeleported() || m_PlayersToTele.count(unit->GetGUID());
+                });
+
+            auto now = GameTime::Now();
+
+            for (auto player : players)
+            {
+                player->CastSpell(player, 141480, true);
+                player->CastSpell(player, 367044, true);
+                m_PlayersToTele[player->GetGUID()] = now + Milliseconds(800);
+            }
+
+            for (auto it = m_PlayersToTele.cbegin(); it != m_PlayersToTele.cend();)
+            {
+                auto player = ObjectAccessor::GetPlayer(*me, it->first);
+                if (!player || !player->GetSession() || player->IsBeingTeleported())
+                    continue;
+
+                if (now >= it->second)
+                {
+                    player->RemoveAurasDueToSpell(141480);
+                    GameTele const* tele = sObjectMgr->GetGameTele(1930);
+                    player->KilledMonsterCredit(me->GetEntry(), me->GetGUID());
+                    if (tele)
+                        player->TeleportTo(tele->mapId, tele->position_x, tele->position_y, tele->position_z, tele->orientation);
+
+                    m_PlayersToTele.erase(it++);
+                }
+                else
+                {
+                    ++it;
+                }
+            }
+        }
+
+        std::unordered_map<ObjectGuid, TimePoint> m_PlayersToTele;
 };
 
 // 700512 - legion_portal_700512
@@ -883,16 +1075,45 @@ public:
         events.ScheduleEvent(1, 2s, 10s);
     }
 
+    Unit* SelectVictimCrap()
+    {
+        Unit* target = me->SelectNearestTargetInAttackDistance(55.0f);
+
+        if (target && me->_IsTargetAcceptable(target) && me->CanCreatureAttack(target))
+        {
+            if (!me->HasSpellFocus())
+                me->SetInFront(target);
+            return target;
+        }
+
+        return nullptr;
+    }
+
+    // cast 244481 at the demon slaves
+
     void UpdateAI(uint32 diff) override
     {
         scheduler.Update(diff);
 
         if (!UpdateVictim())
         {
-            if (!me->IsEngaged() && !me->GetCurrentSpell(CurrentSpellTypes::CURRENT_CHANNELED_SPELL))
+            if (!me->IsEngaged() && !me->GetCurrentSpell(CurrentSpellTypes::CURRENT_CHANNELED_SPELL) && !me->IsInEvadeMode() && !me->isDead())
             {
-                if (auto creature = me->FindNearestCreature(700515, 10.0f)) // Slave
+                auto creature = me->FindNearestCreature(700515, 10.0f);
+                if (!creature)
+                    creature = me->FindNearestCreature(700505, 10.0f);
+                if (creature) // Slave
                 {
+                    if (creature->IsEngaged())
+                    {
+                        if (auto victim = SelectVictimCrap())
+                        {
+                            if (victim != me->GetVictim())
+                                AttackStart(victim);
+                        }
+                        return;
+                    }
+
                     me->SetFacingToObject(creature);
                     DoCast(creature, 241024, true); // Drain
                 }
@@ -951,6 +1172,9 @@ public:
             scheduler.Schedule(1s, [this](TaskContext context)
                 {
                     auto path = me->GetMotionMaster()->MoveSmoothPath(1, watcherOfDeathPos, 11, true);
+
+                    me->SignalFormationMovement();
+
                     path->callbackFunc = [this]() {
                         scheduler.Schedule(250ms, [this](TaskContext context)
                             {
@@ -1013,4 +1237,6 @@ void AddSC_Niskara()
     RegisterCreatureAI(npc_legion_portal_700512);
     RegisterCreatureAI(npc_harvester_700513);
     RegisterCreatureAI(npc_watcher_of_death_700515);
+    RegisterCreatureAI(npc_unknown_creature_700516);
+    RegisterCreatureAI(npc_void_rift_700518);
 }

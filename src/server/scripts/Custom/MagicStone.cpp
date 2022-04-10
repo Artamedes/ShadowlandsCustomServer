@@ -157,7 +157,23 @@ class MagicStone : public ItemScript
                             continue;
                         }
 
-                        player->TeleportTo(tele->mapId, tele->position_x, tele->position_y, tele->position_z, tele->orientation);
+                        if (tele->mapId != player->GetMapId() || player->GetDistance2d(tele->position_x, tele->position_y) >= 200.0f)
+                        {
+                            player->CastSpell(player, 367044, true);
+                            player->m_Events.AddEventAtOffset([player, tele]()
+                            {
+                                if (!player->IsBeingTeleported())
+                                {
+                                    if ((player->IsSplineEnabled() && !player->movespline->Finalized()) || player->HasUnitState(UnitState::UNIT_STATE_STUNNED) || player->IsInCombat())
+                                        return;
+
+                                    player->TeleportTo(tele->mapId, tele->position_x, tele->position_y, tele->position_z, tele->orientation);
+                                }
+                            }, 800ms);
+                        }
+                        else
+                            player->TeleportTo(tele->mapId, tele->position_x, tele->position_y, tele->position_z, tele->orientation);
+
                         break;
                     }
                     case ActionTypes::CastSpell:
