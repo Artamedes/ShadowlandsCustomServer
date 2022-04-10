@@ -915,6 +915,8 @@ enum PlayerLoginQueryIndex
     PLAYER_LOGIN_QUERY_LOAD_CHARACTER_COVENANT_CONDUITS,
     PLAYER_LOGIN_QUERY_LOAD_CHARACTER_COVENANT,
     PLAYER_LOGIN_QUERY_LOAD_CHARACTER_COVENANT_SOULBIND,
+    PLAYER_LOGIN_QUERY_LOAD_CHARACTER_CUSTOM,
+    PLAYER_LOGIN_QUERY_LOAD_CHARACTER_DAILY_REWARDS,
     MAX_PLAYER_LOGIN_QUERY
 };
 
@@ -2838,6 +2840,12 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void SetWarModeLocal(bool enabled);
         bool CanEnableWarModeInArea() const;
         void UpdateWarModeAuras();
+
+        void LoadCustom(CharacterDatabaseQueryHolder const& holder);
+        void SaveCustom(CharacterDatabaseTransaction trans);
+        uint32 _daysLoggedIn = 0;
+        time_t m_logoutTime;
+        std::unordered_set<uint32> _rewardsClaimed;
 
         std::string GetDebugInfo() const override;
 

@@ -38,6 +38,7 @@ public:
 
     virtual bool HasRecord(uint32 id) const = 0;
     virtual void WriteRecord(uint32 id, LocaleConstant locale, ByteBuffer& buffer) const = 0;
+    void WriteRecordData(char const* entry, LocaleConstant locale, ByteBuffer& buffer) const;
     virtual void EraseRecord(uint32 id) = 0;
 
     std::string const& GetFileName() const { return _fileName; }
@@ -50,7 +51,6 @@ public:
     virtual void LoadStringsFromDB(LocaleConstant locale) = 0;
 
 protected:
-    void WriteRecordData(char const* entry, LocaleConstant locale, ByteBuffer& buffer) const;
     void Load(std::string const& path, LocaleConstant locale, char**& indexTable);
     void LoadStringsFrom(std::string const& path, LocaleConstant locale, char** indexTable);
     void LoadFromDB(char**& indexTable);

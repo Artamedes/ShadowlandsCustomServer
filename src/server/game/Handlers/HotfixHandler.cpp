@@ -33,6 +33,11 @@ void WorldSession::HandleDBQueryBulk(WorldPackets::Hotfix::DBQueryBulk& dbQuery)
         dbReply.TableHash = dbQuery.TableHash;
         dbReply.RecordID = record.RecordID;
 
+        if (record.RecordID == 700014 && dbReply.TableHash == 35137211)
+        {
+            continue;
+        }
+
         if (store && store->HasRecord(record.RecordID))
         {
             dbReply.Status = DB2Manager::HotfixRecord::Status::Valid;
@@ -70,6 +75,9 @@ void WorldSession::HandleHotfixRequest(WorldPackets::Hotfix::HotfixRequest& hotf
     hotfixQueryResponse.Hotfixes.reserve(hotfixQuery.Hotfixes.size());
     for (int32 hotfixId : hotfixQuery.Hotfixes)
     {
+        if (hotfixId == -1)
+            continue;
+
         if (std::vector<DB2Manager::HotfixRecord> const* hotfixRecords = Trinity::Containers::MapGetValuePtr(hotfixes, hotfixId))
         {
             for (DB2Manager::HotfixRecord const& hotfixRecord : *hotfixRecords)

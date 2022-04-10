@@ -2238,6 +2238,11 @@ void ScriptMgr::OnChanneledSpellSuccessfulCast(Player* player, Spell* spell)
     FOREACH_SCRIPT(PlayerScript)->OnChanneledSpellSuccessfulCast(player, spell);
 }
 
+void ScriptMgr::OnPlayerDailyReset(Player* player)
+{
+    FOREACH_SCRIPT(PlayerScript)->OnDailyReset(player);
+}
+
 // Account
 void ScriptMgr::OnAccountLogin(uint32 accountId)
 {

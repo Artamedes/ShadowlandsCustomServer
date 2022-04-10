@@ -3508,6 +3508,10 @@ void World::DailyReset()
     m_NextDailyQuestReset = next;
     sWorld->setWorldState(WS_DAILY_QUEST_RESET_TIME, uint64(next));
 
+    stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CLAIMED_DAILY_REWARDS);
+    stmt->setUInt32(0, 7);
+    CharacterDatabase.Execute(stmt);
+
     TC_LOG_INFO("misc", "Daily quests for all characters have been reset.");
 }
 

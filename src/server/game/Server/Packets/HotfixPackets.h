@@ -43,7 +43,7 @@ namespace WorldPackets
             std::vector<DBQueryRecord> Queries;
         };
 
-        class DBReply final : public ServerPacket
+        class TC_GAME_API DBReply final : public ServerPacket
         {
         public:
             DBReply() : ServerPacket(SMSG_DB_REPLY, 4 + 4 + 4 + 1 + 4) { }
@@ -57,7 +57,7 @@ namespace WorldPackets
             ByteBuffer Data;
         };
 
-        class AvailableHotfixes final : public ServerPacket
+        class TC_GAME_API AvailableHotfixes final : public ServerPacket
         {
         public:
             AvailableHotfixes(int32 virtualRealmAddress, DB2Manager::HotfixContainer const& hotfixes)
@@ -81,7 +81,7 @@ namespace WorldPackets
             std::vector<int32> Hotfixes;
         };
 
-        class HotfixConnect final : public ServerPacket
+        class TC_GAME_API HotfixConnect final : public ServerPacket
         {
         public:
             struct HotfixData

@@ -799,6 +799,13 @@ void CharacterDatabaseConnection::DoPrepareStatements()
 
     PrepareStatement(CHAR_SEL_COVENANT_SOULBIND, "SELECT Covenant, SpecId, Soulbind FROM character_covenant_soulbinds WHERE guid = ?", CONNECTION_ASYNC);
     PrepareStatement(CHAR_REP_COVENANT_SOULBIND, "REPLACE INTO character_covenant_soulbinds (guid, Covenant, SpecId, Soulbind) VALUES (?, ?, ?, ?)", CONNECTION_ASYNC);
+
+    PrepareStatement(CHAR_SEL_CUSTOM, "SELECT DaysLoggedIn FROM z_character_custom where guid = ?", CONNECTION_ASYNC);
+    PrepareStatement(CHAR_REP_CUSTOM, "REPLACE INTO z_character_custom (guid, DaysLoggedIn) VALUES (?, ?)", CONNECTION_ASYNC);
+
+    PrepareStatement(CHAR_SEL_CLAIMED_DAILY_REWARDS, "SELECT id FROM z_character_claimed_daily_rewards where guid = ?", CONNECTION_ASYNC);
+    PrepareStatement(CHAR_REP_CLAIMED_DAILY_REWARDS, "REPLACE INTO z_character_claimed_daily_rewards (guid, id) VALUES (?, ?)", CONNECTION_ASYNC);
+    PrepareStatement(CHAR_DEL_CLAIMED_DAILY_REWARDS, "DELETE FROM z_character_claimed_daily_rewards WHERE id = ?", CONNECTION_ASYNC);
 }
 
 CharacterDatabaseConnection::CharacterDatabaseConnection(MySQLConnectionInfo& connInfo) : MySQLConnection(connInfo)

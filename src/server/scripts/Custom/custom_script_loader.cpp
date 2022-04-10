@@ -41,6 +41,7 @@ void AddSC_LostGlacier();
 void AddSC_ElarianSanctuary();
 void AddSC_ShadoPanMonastary();
 void AddSC_LightDungeon3();
+void AddSC_DailyRewardsSystem();
 
 void AddCustomScripts()
 {
@@ -66,4 +67,5 @@ void AddCustomScripts()
     AddSC_ElarianSanctuary();
     AddSC_ShadoPanMonastary();
     AddSC_LightDungeon3();
+    AddSC_DailyRewardsSystem();
 }

@@ -45,6 +45,7 @@ EndScriptData */
 #include "Transport.h"
 #include "World.h"
 #include "WorldSession.h"
+#include "WaypointManager.h"
 
 #include "ScriptedGossip.h"
 
@@ -326,12 +327,75 @@ public:
             { "create",         HandleNpcCreateCommand,            rbac::RBAC_PERM_COMMAND_NPC_SHOWLOOT,       Console::No },
             { "reload",         HandleNpcReloadCommand,            rbac::RBAC_PERM_COMMAND_NPC_SHOWLOOT,       Console::No },
             { "wpadd",          HandleWpAddCommand,                rbac::RBAC_PERM_COMMANDS_PINFO_CHECK_PERSONAL_DATA, Console::No },
+            { "relwp",          HandleRelWpCommand,                rbac::RBAC_PERM_COMMANDS_PINFO_CHECK_PERSONAL_DATA, Console::No },
         };
         static ChatCommandTable commandTable =
         {
             { "npc", npcCommandTable },
         };
         return commandTable;
+    }
+
+    static bool HandleRelWpCommand(ChatHandler* handler)
+    {
+        Creature* target = handler->getSelectedCreature();
+        if (!target)
+            return true;
+        uint32 pathid = target->GetSpawnId() * 10;
+
+        uint32 point = 0;
+        // path_id -> ID of the Path
+        // point   -> number of the waypoint (if not 0)
+
+        if (!pathid)
+        {
+            handler->PSendSysMessage("%s%s|r", "|cffff33ff", "Current creature haven't loaded path.");
+            return true;
+        }
+
+        handler->PSendSysMessage("%s%s|r|cff00ffff%u|r", "|cff00ff00", "Loading Path: ", pathid);
+        sWaypointMgr->ReloadPath(pathid);
+
+        auto guidLow = target->GetSpawnId();
+
+        WorldDatabasePreparedStatement* stmt = WorldDatabase.GetPreparedStatement(WORLD_SEL_CREATURE_ADDON_BY_GUID);
+
+        stmt->setUInt64(0, guidLow);
+
+        PreparedQueryResult result = WorldDatabase.Query(stmt);
+
+        if (result)
+        {
+            auto fields = result->Fetch();
+            stmt = WorldDatabase.GetPreparedStatement(WORLD_UPD_CREATURE_ADDON_PATH);
+
+            stmt->setUInt32(0, pathid);
+            stmt->setStringView(1, fields[1].GetStringView());
+            stmt->setUInt64(2, guidLow);
+        }
+        else
+        {
+            stmt = WorldDatabase.GetPreparedStatement(WORLD_INS_CREATURE_ADDON);
+
+            stmt->setUInt64(0, guidLow);
+            stmt->setUInt32(1, pathid);
+            stmt->setStringView(2, "");
+        }
+
+        WorldDatabase.Query(stmt);
+
+        stmt = WorldDatabase.GetPreparedStatement(WORLD_UPD_CREATURE_MOVEMENT_TYPE);
+
+        stmt->setUInt8(0, uint8(WAYPOINT_MOTION_TYPE));
+        stmt->setUInt64(1, guidLow);
+
+        WorldDatabase.Query(stmt);
+
+        target->LoadPath(pathid);
+        target->SetDefaultMovementType(WAYPOINT_MOTION_TYPE);
+        target->GetMotionMaster()->Initialize();
+        target->Say("Path loaded.", LANG_UNIVERSAL);
+        return true;
     }
     
     static bool HandleWpAddCommand(ChatHandler* handler)

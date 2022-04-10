@@ -10,6 +10,7 @@
 #include "CollectionMgr.h"
 #include "WorldSession.h"
 #include "CovenantMgr.h"
+#include "Mail.h"
 
 struct npc_battle_training : public ScriptedAI
 {
@@ -440,11 +441,12 @@ struct npc_mall_weapongiver : public ScriptedAI
                     //.add 19019 1 6606;1610;1618;1659
                     m_ItemEntries.reserve(1);
                     m_ItemEntries.emplace_back(19019);
-                    m_BonusListIds.reserve(4);
+                    m_BonusListIds.reserve(5);
                     m_BonusListIds.emplace_back(6606); // Mythic
                     m_BonusListIds.emplace_back(1610); // ItemLevel
                     m_BonusListIds.emplace_back(1618); // ItemLevel
                     m_BonusListIds.emplace_back(1659); // ItemLevel
+                    m_BonusListIds.emplace_back(6403); // agil/crit
                     AllowableClasses = 1 + 2048 + 8 + 512 + 32;
                     break;
                 case 800017: // Illidan
@@ -453,11 +455,12 @@ struct npc_mall_weapongiver : public ScriptedAI
                     m_ItemEntries.reserve(2);
                     m_ItemEntries.emplace_back(32837);
                     m_ItemEntries.emplace_back(32838);
-                    m_BonusListIds.reserve(4);
+                    m_BonusListIds.reserve(5);
                     m_BonusListIds.emplace_back(6606); // Mythic
                     m_BonusListIds.emplace_back(1610); // ItemLevel
                     m_BonusListIds.emplace_back(1618); // ItemLevel
                     m_BonusListIds.emplace_back(1655); // ItemLevel
+                    m_BonusListIds.emplace_back(6403); // agil/crit
                     AllowableClasses = 1 + 2048 + 8 + 512 + 32;
                     break;
                 case 800024: // Magni
@@ -531,7 +534,10 @@ struct npc_mall_weapongiver : public ScriptedAI
                             player->CompleteQuest(700019);
                             player->RewardQuest(sObjectMgr->GetQuestTemplate(700019), LootItemType::Item, 0, me, true);
                             player->AddQuestAndCheckCompletion(sObjectMgr->GetQuestTemplate(700020), me);
-                            player->PlayerTalkClass->SendQuestGiverQuestDetails(sObjectMgr->GetQuestTemplate(700020), player->GetGUID(), true, true);
+                            player->GetScheduler().Schedule(100ms, [player](TaskContext context)
+                                {
+                                    player->PlayerTalkClass->SendQuestGiverQuestDetails(sObjectMgr->GetQuestTemplate(700020), player->GetGUID(), true, true);
+                                });
                         }
                         player->DestroyItemCount(700316, 1, true);
                         for (auto entry : m_ItemEntries)
@@ -539,15 +545,24 @@ struct npc_mall_weapongiver : public ScriptedAI
                             uint32 noSpaceForCount = 0;
                             ItemPosCountVec dest;
                             InventoryResult msg = player->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, entry, 1, &noSpaceForCount);
+                            Item* item = Item::CreateItem(entry, 1, ItemContext::NONE, player);
+                            item->SetBonuses(m_BonusListIds);
                             if (dest.empty())
                             {
                                 /// @todo Send to mailbox if no space
                                 ChatHandler(player).PSendSysMessage("You don't have any space in your bags, sent to mailbox.");
-                                return false;
+                                CharacterDatabaseTransaction trans = CharacterDatabase.BeginTransaction();
+                                // save new item before send
+                                item->SaveToDB(trans);                               // save for prevent lost at next mail load, if send fail then item will deleted
+
+                                auto draft = MailDraft("Lost Item", "Recovered your lost item");
+                                // item
+                                draft.AddItem(item);
+                                draft.SendMailTo(trans, player, MailSender(MAIL_CREATURE, uint64(me->GetEntry())));
+                                CharacterDatabase.CommitTransaction(trans);
+                                continue;
                             }
 
-                            Item* item = Item::CreateItem(entry, 1, ItemContext::NONE, player);
-                            item->SetBonuses(m_BonusListIds);
                             player->StoreItem(dest, item, true);
                             player->SendNewItem(item, 1, true, true, false);
                         }
@@ -945,18 +960,33 @@ struct npc_soulshape_picker : public ScriptedAI
         }
 };
 
-struct npc_rewardsbot_700014 : public ScriptedAI
+struct npc_general_700000 : public ScriptedAI
 {
-    public:
-        npc_rewardsbot_700014(Creature* creature) : ScriptedAI(creature) { }
+public:
+    npc_general_700000(Creature* p_Creature) : ScriptedAI(p_Creature) { }
 
-        bool OnGossipHello(Player* player) override
+    void OnUnitRelocation(Unit* p_Who) override
+    {
+        if (p_Who->IsPlayer() && p_Who->GetDistance2d(me) <= 14.0f)
         {
-            ClearGossipMenuFor(player);
-            SendGossipMenuFor(player, 700014, me);
-            return true;
+            auto l_Player = p_Who->ToPlayer();
+            auto l_Itr = m_PlayerTalks.find(p_Who->GetGUID());
+            auto l_Now = GameTime::Now();
+
+            if (l_Itr == m_PlayerTalks.end() || l_Now >= l_Itr->second)
+            {
+                if (l_Player->GetQuestStatus(700000) == QUEST_STATUS_NONE)
+                {
+                    m_PlayerTalks[p_Who->GetGUID()] = l_Now + Hours(2);
+                    Talk(0, p_Who);
+                }
+            }
         }
+    }
+private:
+    std::unordered_map<ObjectGuid, TimePoint> m_PlayerTalks;
 };
+
 
 void AddSC_MallScripts()
 {
@@ -973,5 +1003,5 @@ void AddSC_MallScripts()
     RegisterCreatureAI(npc_sturzah_800005);
     RegisterCreatureAI(npc_covenant_swapper);
     RegisterCreatureAI(npc_soulshape_picker);
-    RegisterCreatureAI(npc_rewardsbot_700014);
+    RegisterCreatureAI(npc_general_700000);
 }

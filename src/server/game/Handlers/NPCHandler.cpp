@@ -42,6 +42,7 @@
 #include "World.h"
 #include "WorldPacket.h"
 #include "ScriptMgr.h"
+#include "GameTime.h"
 
 enum class StableResult : uint8
 {
@@ -148,6 +149,10 @@ void WorldSession::HandleTrainerBuySpellOpcode(WorldPackets::NPC::TrainerBuySpel
 
 void WorldSession::HandleGossipHelloOpcode(WorldPackets::NPC::Hello& packet)
 {
+    auto now = GameTime::Now();
+    if (m_NextAllowedGossipTime > now)
+        return;
+
     Creature* unit = GetPlayer()->GetNPCIfCanInteractWith(packet.Unit, UNIT_NPC_FLAG_GOSSIP, UNIT_NPC_FLAG_2_NONE);
     if (!unit)
     {

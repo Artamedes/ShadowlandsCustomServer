@@ -18466,6 +18466,7 @@ bool Player::LoadFromDB(ObjectGuid guid, CharacterDatabaseQueryHolder const& hol
 
     time_t now = GameTime::GetGameTime();
     time_t logoutTime = time_t(fields.logout_time);
+    m_logoutTime = logoutTime;
 
     // since last logout (in seconds)
     uint32 time_diff = uint32(now - logoutTime); //uint64 is excessive for a time_diff in seconds.. uint32 allows for 136~ year difference.
@@ -18760,6 +18761,8 @@ bool Player::LoadFromDB(ObjectGuid guid, CharacterDatabaseQueryHolder const& hol
     m_questObjectiveCriteriaMgr->CheckAllQuestObjectiveCriteria(this);
     _covenantMgr->SetCovenant(static_cast<CovenantID>(fields.covenant));
     _covenantMgr->LoadFromDB(holder);
+
+    LoadCustom(holder);
 
     PushQuests();
     return true;
@@ -20538,7 +20541,7 @@ void Player::SaveToDB(LoginDatabaseTransaction loginTransaction, CharacterDataba
         stmt->setUInt32(index++, m_Played_time[PLAYED_TIME_TOTAL]);
         stmt->setUInt32(index++, m_Played_time[PLAYED_TIME_LEVEL]);
         stmt->setFloat(index++, finiteAlways(_restMgr->GetRestBonus(REST_TYPE_XP)));
-        stmt->setUInt64(index++, GameTime::GetGameTime());
+        stmt->setUInt64(index++, GameTime::GetGameTime()); // logout time
         stmt->setUInt8(index++,  (HasPlayerFlag(PLAYER_FLAGS_RESTING) ? 1 : 0));
         //save, far from tavern/city
         //save, but in tavern/city
@@ -20824,6 +20827,7 @@ void Player::SaveToDB(LoginDatabaseTransaction loginTransaction, CharacterDataba
     if (_garrison)
         _garrison->SaveToDB(trans);
     _covenantMgr->SaveToDB(trans);
+    SaveCustom(trans);
 
     // check if stats should only be saved on logout
     // save stats can be out of transaction
@@ -25231,6 +25235,8 @@ void Player::DailyReset()
 
     if (_garrison)
         _garrison->ResetFollowerActivationLimit();
+
+    sScriptMgr->OnPlayerDailyReset(this);
 }
 
 void Player::ResetWeeklyQuestStatus()
@@ -29419,6 +29425,46 @@ void Player::UpdateWarModeAuras()
         RemoveAurasDueToSpell(auraInside);
         RemovePlayerFlag(PLAYER_FLAGS_WAR_MODE_ACTIVE);
         RemovePvpFlag(UNIT_BYTE2_FLAG_PVP);
+    }
+}
+
+void Player::LoadCustom(CharacterDatabaseQueryHolder const& holder)
+{
+    if (auto result = holder.GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_CHARACTER_CUSTOM))
+    {
+        do
+        {
+            Field* fields = result->Fetch();
+
+            _daysLoggedIn = fields[0].GetUInt32();
+
+        } while (result->NextRow());
+    }
+
+    if (auto result = holder.GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_CHARACTER_DAILY_REWARDS))
+    {
+        do
+        {
+            Field* fields = result->Fetch();
+
+            _rewardsClaimed.insert(fields[0].GetUInt32());
+        } while (result->NextRow());
+    }
+}
+
+void Player::SaveCustom(CharacterDatabaseTransaction trans)
+{
+    auto stmt = CharacterDatabase.GetPreparedStatement(CHAR_REP_CUSTOM);
+    stmt->setUInt64(0, GetGUID().GetCounter());
+    stmt->setUInt32(1, _daysLoggedIn);
+    trans->Append(stmt);
+
+    for (uint32 reward : _rewardsClaimed)
+    {
+        stmt = CharacterDatabase.GetPreparedStatement(CHAR_REP_CLAIMED_DAILY_REWARDS);
+        stmt->setUInt64(0, GetGUID().GetCounter());
+        stmt->setUInt32(1, reward);
+        trans->Append(stmt);
     }
 }
 

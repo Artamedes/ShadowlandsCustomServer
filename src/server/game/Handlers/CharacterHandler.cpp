@@ -351,6 +351,14 @@ bool LoginQueryHolder::Initialize()
     stmt->setUInt64(0, lowGuid);
     res &= SetPreparedQuery(PLAYER_LOGIN_QUERY_LOAD_CHARACTER_COVENANT_SOULBIND, stmt);
 
+    stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_CUSTOM);
+    stmt->setUInt64(0, lowGuid);
+    res &= SetPreparedQuery(PLAYER_LOGIN_QUERY_LOAD_CHARACTER_CUSTOM, stmt);
+
+    stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_CLAIMED_DAILY_REWARDS);
+    stmt->setUInt64(0, lowGuid);
+    res &= SetPreparedQuery(PLAYER_LOGIN_QUERY_LOAD_CHARACTER_DAILY_REWARDS, stmt);
+
     return res;
 }
 

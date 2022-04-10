@@ -1506,7 +1506,7 @@ uint32 WorldSession::DosProtection::GetMaxPacketCounterAllowed(uint16 opcode) co
         }
         case CMSG_HOTFIX_REQUEST:                       // not profiled
         {
-            maxPacketCounterAllowed = 1;
+            maxPacketCounterAllowed = 15;
             break;
         }
         default:

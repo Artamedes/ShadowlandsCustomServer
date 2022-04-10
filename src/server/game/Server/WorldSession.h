@@ -1981,6 +1981,7 @@ class TC_GAME_API WorldSession
         // Packets cooldown
         time_t _calendarEventCreationCooldown;
         TimePoint m_LoadScreenOpcodeTime;
+        TimePoint m_NextAllowedGossipTime;
 
         std::unique_ptr<BattlePets::BattlePetMgr> _battlePetMgr;
 
