@@ -257,6 +257,12 @@ public:
     bool phase = false;
     bool isPhasing = false;
 
+    void JustDied(Unit* who) override
+    {
+        scheduler.CancelAll();
+        me->CastStop();
+    }
+
     void DamageTaken(Unit* attacker, uint32& damage, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
     {
         if (isPhasing)
