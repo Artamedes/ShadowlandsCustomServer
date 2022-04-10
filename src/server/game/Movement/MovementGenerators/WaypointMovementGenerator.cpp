@@ -177,6 +177,15 @@ bool WaypointMovementGenerator<Creature>::DoUpdate(Creature* owner, uint32 diff)
         // relaunch movement if its speed has changed
         if (HasFlag(MOVEMENTGENERATOR_FLAG_SPEED_UPDATE_PENDING))
             StartMove(owner, true);
+        else
+        {
+            uint32 pointId = uint32(owner->movespline->currentPathIdx());
+            if (pointId > _currentNode)
+            {
+                OnArrived(owner);
+                _currentNode = pointId;
+            }
+        }
     }
     else if (!_nextMoveTime.Passed()) // it's not moving, is there a timer?
     {
@@ -343,7 +352,18 @@ void WaypointMovementGenerator<Creature>::StartMove(Creature* owner, bool relaun
 
     //! Do not use formationDest here, MoveTo requires transport offsets due to DisableTransportPathTransformations() call
     //! but formationDest contains global coordinates
-    init.MoveTo(waypoint.x, waypoint.y, waypoint.z);
+    //init.MoveTo(waypoint.x, waypoint.y, waypoint.z);
+    Movement::PointsArray path;
+    path.reserve(1 + _path->nodes.size() - _currentNode);
+    path.emplace_back(G3D::Vector3(owner->GetPositionX(), owner->GetPositionY(), owner->GetPositionZ()));
+    int i = _currentNode;
+    for (i = _currentNode; i < std::min<int>(_path->nodes.size(), 30); ++i)
+    {
+        auto wp = _path->nodes[i];
+        path.emplace_back(G3D::Vector3(wp.x, wp.y, wp.z));
+    }
+
+    init.MovebyPath(path);
 
     //! Accepts angles such as 0.00001 and -0.00001, 0 must be ignored, default value in waypoint table
     if (waypoint.orientation && waypoint.delay)
