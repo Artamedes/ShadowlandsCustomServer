@@ -1274,6 +1274,11 @@ class spell_dh_blade_dance : public SpellScript
 {
     PrepareSpellScript(spell_dh_blade_dance);
 
+    enum BladeDance
+    {
+        DancingWithFate = 339228, // Conduit
+    };
+
     void HandleOnHit(SpellEffIndex /*effIndex*/)
     {
         Unit* caster = GetCaster();
@@ -1286,6 +1291,10 @@ class spell_dh_blade_dance : public SpellScript
             if (AuraEffect* aurEff = caster->GetAuraEffect(SPELL_DH_FIRST_BLOOD, EFFECT_0))
                 if (target->GetGUID() == caster->Variables.GetValue<ObjectGuid>("FIRST_BLOOD_TARGET"))
                     AddPct(dmg, aurEff->GetAmount());
+
+        if (GetSpellInfo()->Id == SPELL_DH_BLADE_DANCE_LAST_HIT)
+            if (auto aurEff = caster->GetAuraEffect(DancingWithFate, EFFECT_0))
+                AddPct(dmg, aurEff->GetAmount());
 
         SetHitDamage(dmg);
 
