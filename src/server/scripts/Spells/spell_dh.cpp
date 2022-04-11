@@ -3941,6 +3941,24 @@ class spell_dh_chaos_strike : public SpellScript
     }
 };
 
+// ID - 339230 Serrated Glaive
+class spell_dh_serrated_glaive : public AuraScript
+{
+    PrepareAuraScript(spell_dh_serrated_glaive);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        if (eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == SPELL_DH_THROW_GLAIVE)
+            return true;
+        return false;
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_dh_serrated_glaive::CheckProc);
+    }
+};
+
 void AddSC_demon_hunter_spell_scripts()
 {
     new spell_dh_annihilation();
@@ -4021,6 +4039,8 @@ void AddSC_demon_hunter_spell_scripts()
     RegisterSpellScript(spell_dh_vengeance_shatter_soul);
     RegisterSpellScript(aura_dh_vengeance_sigil_of_flame);
     RegisterSpellScript(spell_dh_the_hunt);
+    RegisterSpellScript(spell_dh_chaos_strike);
+    RegisterSpellScript(spell_dh_serrated_glaive);
 
     /// AreaTrigger Scripts
     RegisterAreaTriggerAI(at_dh_darkness);
@@ -4032,7 +4052,6 @@ void AddSC_demon_hunter_spell_scripts()
     RegisterAreaTriggerAI(at_dh_sigil_of_misery);
     RegisterAreaTriggerAI(at_dh_mana_rift);
 
-    RegisterSpellScript(spell_dh_chaos_strike);
 
     /// Custom NPC scripts
    // new npc_dh_spell_trainer();
