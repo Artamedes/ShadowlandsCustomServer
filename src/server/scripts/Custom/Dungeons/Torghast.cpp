@@ -357,6 +357,7 @@ public:
     void JustEngagedWith(Unit* who) override
     {
         Talk(0);
+        me->RemoveAurasDueToSpell(346815); // Channel visual
     }
 
     void UpdateAI(uint32 diff) override
@@ -364,7 +365,11 @@ public:
         scheduler.Update(diff);
 
         if (!UpdateVictim())
+        {
+            if (!me->isDead() && !me->IsEngaged() && !me->GetCurrentSpell(CurrentSpellTypes::CURRENT_CHANNELED_SPELL))
+                DoCastSelf(346815); // Channel visual
             return;
+        }
 
         events.Update(diff);
 
