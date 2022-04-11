@@ -509,7 +509,7 @@ NonDefaultConstructible<pAuraEffectHandler> AuraEffectHandler[TOTAL_AURAS]=
     &AuraEffect::HandleNULL,                                      //440 SPELL_AURA_MOD_MULTISTRIKE_DAMAGE
     &AuraEffect::HandleNULL,                                      //441 SPELL_AURA_MOD_MULTISTRIKE_CHANCE
     &AuraEffect::HandleNULL,                                      //442 SPELL_AURA_MOD_READINESS
-    &AuraEffect::HandleNULL,                                      //443 SPELL_AURA_MOD_LEECH
+    &AuraEffect::HandleAuraLeech,                                 //443 SPELL_AURA_MOD_LEECH
     &AuraEffect::HandleNULL,                                      //444
     &AuraEffect::HandleNULL,                                      //445
     &AuraEffect::HandleNULL,                                      //446
@@ -548,7 +548,7 @@ NonDefaultConstructible<pAuraEffectHandler> AuraEffectHandler[TOTAL_AURAS]=
     &AuraEffect::HandleNULL,                                      //479
     &AuraEffect::HandleNULL,                                      //480 SPELL_AURA_MOD_ARTIFACT_ITEM_LEVEL
     &AuraEffect::HandleNoImmediateEffect,                         //481 SPELL_AURA_CONVERT_CONSUMED_RUNE implemented in Spell::TakeRunePower
-    &AuraEffect::HandleNULL,                                      //482
+    &AuraEffect::HandleProfilCamera,                              //482 SPELL_AURA_PROFIL_CAMERA
     &AuraEffect::HandleNULL,                                      //483 SPELL_AURA_SUPPRESS_TRANSFORMS
     &AuraEffect::HandleNULL,                                      //484 SPELL_AURA_ALLOW_INTERRUPT_SPELL
     &AuraEffect::HandleModMovementForceMagnitude,                 //485 SPELL_AURA_MOD_MOVEMENT_FORCE_MAGNITUDE
@@ -6390,6 +6390,60 @@ void AuraEffect::HandleForceBreathBar(AuraApplication const* aurApp, uint8 mode,
         return;
 
     playerTarget->UpdatePositionData();
+}
+
+void AuraEffect::HandleAuraLeech(AuraApplication const* auraApp, uint8 mode, bool /*apply*/) const
+{
+    if (!(mode & AURA_EFFECT_HANDLE_REAL))
+        return;
+
+    if (Player* player = auraApp->GetTarget()->ToPlayer())
+        player->UpdateLeechPercentage();
+}
+
+
+enum HandleProfilCameraData
+{
+    PhotoBomberNPC  = 91977,
+    VisualKit       = 54168
+};
+
+void AuraEffect::HandleProfilCamera(AuraApplication const* aurApp, uint8 mode, bool apply) const
+{
+    if (!(mode & AURA_EFFECT_HANDLE_REAL))
+        return;
+
+    Unit* target = aurApp->GetTarget();
+
+    if (!target->IsPlayer())
+        return;
+
+    if (apply)
+    {
+        target->ToPlayer()->SendPlaySpellVisualKit(VisualKit, 2, 0);
+
+        std::list<Creature*> photoBomberList;
+        target->GetCreatureListWithEntryInGrid(photoBomberList, PhotoBomberNPC, 100.0f);
+
+        /// Remove other players Master PhotoBomber
+        for (Creature* photoBomber : photoBomberList)
+        {
+            Unit* owner = photoBomber->GetOwner();
+            if (owner != nullptr && owner->GetGUID() == target->GetGUID() && photoBomber->IsSummon())
+            {
+                target->Variables.Set("PhotoBomberGUID", photoBomber->GetGUID());
+                break;
+            }
+        }
+    }
+    else
+    {
+        if (Creature* photoBomber = ObjectAccessor::GetCreature(*target, target->Variables.GetValue<ObjectGuid>("PhotoBomberGUID")))
+            photoBomber->DespawnOrUnsummon();
+
+        target->Variables.Remove("PhotoBomberGUID");
+        target->ToPlayer()->SendCancelSpellVisualKit(VisualKit);
+    }
 }
 
 template TC_GAME_API void AuraEffect::GetTargetList(std::list<Unit*>&) const;

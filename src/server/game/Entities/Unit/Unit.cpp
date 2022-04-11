@@ -86,6 +86,8 @@
 #include <sstream>
 #include <cmath>
 
+#define SPELL_PLAYER_LIFE_STEAL 146347
+
 float baseMoveSpeed[MAX_MOVE_TYPE] =
 {
     2.5f,                  // MOVE_WALK
@@ -761,6 +763,16 @@ bool Unit::HasBreakableByDamageCrowdControlAura(Unit* excludeCasterChannel) cons
 
 /*static*/ uint32 Unit::DealDamage(Unit* attacker, Unit* victim, uint32 damage, CleanDamage const* cleanDamage, DamageEffectType damagetype, SpellSchoolMask damageSchoolMask, SpellInfo const* spellProto, bool durabilityLoss)
 {
+    // Handle Leech.
+    if (attacker && attacker->IsPlayer() && damage > 0 && (!spellProto || spellProto->Id != 143924)) ///< 143924 - Leech
+    {
+        if (float percent = attacker->m_unitData->Lifesteal)
+        {
+            int32 heal = CalculatePct(damage, (int32)percent);
+            attacker->CastSpell(attacker, 143924, CastSpellExtraArgs(true).AddSpellBP0(heal));
+        }
+    }
+
     if (UnitAI* victimAI = victim->GetAI())
         victimAI->DamageTaken(attacker, damage, damagetype, spellProto);
 

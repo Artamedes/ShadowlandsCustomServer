@@ -5380,7 +5380,11 @@ void Player::UpdateRating(CombatRating cr)
         case CR_SPEED:
         case CR_RESILIENCE_PLAYER_DAMAGE:
         case CR_RESILIENCE_CRIT_TAKEN:
+        case CR_AVOIDANCE:
+            UpdateAvoidancePercentage();
+            break;
         case CR_LIFESTEAL:
+            UpdateLeechPercentage();
             break;
         case CR_HASTE_MELEE:
         case CR_HASTE_RANGED:
@@ -5417,7 +5421,6 @@ void Player::UpdateRating(CombatRating cr)
             }
             break;
         }
-        case CR_AVOIDANCE:
         case CR_STURDINESS:
         case CR_UNUSED_7:
             break;
