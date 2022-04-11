@@ -357,7 +357,7 @@ void WaypointMovementGenerator<Creature>::StartMove(Creature* owner, bool relaun
     path.reserve(1 + _path->nodes.size() - _currentNode);
     path.emplace_back(G3D::Vector3(owner->GetPositionX(), owner->GetPositionY(), owner->GetPositionZ()));
     int i = _currentNode;
-    for (i = _currentNode; i < std::min<int>(_path->nodes.size(), 30); ++i)
+    for (i = _currentNode; i < _path->nodes.size(); ++i)
     {
         auto wp = _path->nodes[i];
         path.emplace_back(G3D::Vector3(wp.x, wp.y, wp.z));
