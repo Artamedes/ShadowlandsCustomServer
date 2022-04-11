@@ -48,7 +48,7 @@ enum DHSpells
     SPELL_DH_ANNIHILATION                          = 201427,
     SPELL_DH_ANNIHILATION_MAINHAIND                = 201428,
     SPELL_DH_ANNIHILATION_OFFHAND                  = 227518,
-    SPELL_DH_SIGIL_OF_FLAME                        = 188499,
+    SPELL_DH_BLADE_DANCE                           = 188499,
     SPELL_DH_SIGIL_OF_MISSERY                      = 207684,
     SPELL_DH_SIGIL_OF_SILENCE                      = 202137,
     SPELL_DH_SIGIL_OF_CHAINS                       = 202138,
@@ -323,7 +323,7 @@ public:
             std::vector<int32> spellIds
             {
                 SPELL_DH_CHAOS_NOVA, SPELL_DH_CONSUME_MAGIC, SPELL_DH_THROW_GLAIVE, SPELL_DH_METAMORPHOSIS,
-                SPELL_DH_EYE_BEAM, SPELL_DH_BLUR, SPELL_DH_VENGEFUL_RETREAT, SPELL_DH_SIGIL_OF_FLAME
+                SPELL_DH_EYE_BEAM, SPELL_DH_BLUR, SPELL_DH_VENGEFUL_RETREAT, SPELL_DH_BLADE_DANCE
             };
 
             for (auto spell : spellIds)
@@ -2175,12 +2175,8 @@ public:
                 player->CastSpell(CastSpellTargetArg({ dest->GetPositionX(), dest->GetPositionY(), dest->GetPositionZ() }), SPELL_DH_METAMORPHOSIS_LEAP, false);
             }
 
-            if (player->HasAura(SPELL_DH_DEMON_REBORN)) // Remove cd of chaos nova, blur and eye beam
-            {
-                player->GetSpellHistory()->ResetCooldown(SPELL_DH_CHAOS_NOVA, true);
-                player->GetSpellHistory()->ResetCharges(sSpellMgr->GetSpellInfo(SPELL_DH_BLUR)->ChargeCategoryId);
-                player->GetSpellHistory()->ResetCooldown(SPELL_DH_EYE_BEAM, true);
-            }
+            player->GetSpellHistory()->ResetCooldown(SPELL_DH_EYE_BEAM, true);
+            player->GetSpellHistory()->ResetCooldown(SPELL_DH_BLADE_DANCE, true);
         }
 
         void Register() override
@@ -2826,7 +2822,7 @@ struct at_dh_sigil_of_misery : AreaTriggerAI
             {
               //  caster->CastSpell(SPELL_DH_CYCLE_OF_BLINDING_BUFF, SPELLVALUE_BASE_POINT0, auraEff->GetAmount(), caster);
 
-                caster->GetSpellHistory()->ModifyCooldown(SPELL_DH_SIGIL_OF_FLAME, -1s * (int32)sSpellMgr->GetSpellInfo(SPELL_DH_CYCLE_OF_BLINDING_POWER)->GetEffect(EFFECT_1).BasePoints);
+              //  caster->GetSpellHistory()->ModifyCooldown(SPELL_DH_SIGIL_OF_FLAME, -1s * (int32)sSpellMgr->GetSpellInfo(SPELL_DH_CYCLE_OF_BLINDING_POWER)->GetEffect(EFFECT_1).BasePoints);
                 caster->GetSpellHistory()->ModifyCooldown(SPELL_DH_SIGIL_OF_MISSERY, -1s * (int32)sSpellMgr->GetSpellInfo(SPELL_DH_CYCLE_OF_BLINDING_POWER)->GetEffect(EFFECT_1).BasePoints);
                 caster->GetSpellHistory()->ModifyCooldown(SPELL_DH_SIGIL_OF_SILENCE, -1s * (int32)sSpellMgr->GetSpellInfo(SPELL_DH_CYCLE_OF_BLINDING_POWER)->GetEffect(EFFECT_1).BasePoints);
                 caster->GetSpellHistory()->ModifyCooldown(SPELL_DH_SIGIL_OF_CHAINS, -1s * (int32)sSpellMgr->GetSpellInfo(SPELL_DH_CYCLE_OF_BLINDING_POWER)->GetEffect(EFFECT_1).BasePoints);
@@ -2852,7 +2848,7 @@ struct at_dh_sigil_of_flame : AreaTriggerAI
             {
                // caster->CastSpell(SPELL_DH_CYCLE_OF_BLINDING_BUFF, SPELLVALUE_BASE_POINT0, auraEff->GetAmount(), caster);
 
-                caster->GetSpellHistory()->ModifyCooldown(SPELL_DH_SIGIL_OF_FLAME, -1s * (int32)sSpellMgr->GetSpellInfo(SPELL_DH_CYCLE_OF_BLINDING_POWER)->GetEffect(EFFECT_1).BasePoints);
+          //      caster->GetSpellHistory()->ModifyCooldown(SPELL_DH_SIGIL_OF_FLAME, -1s * (int32)sSpellMgr->GetSpellInfo(SPELL_DH_CYCLE_OF_BLINDING_POWER)->GetEffect(EFFECT_1).BasePoints);
                 caster->GetSpellHistory()->ModifyCooldown(SPELL_DH_SIGIL_OF_MISSERY, -1s * (int32)sSpellMgr->GetSpellInfo(SPELL_DH_CYCLE_OF_BLINDING_POWER)->GetEffect(EFFECT_1).BasePoints);
                 caster->GetSpellHistory()->ModifyCooldown(SPELL_DH_SIGIL_OF_SILENCE, -1s * (int32)sSpellMgr->GetSpellInfo(SPELL_DH_CYCLE_OF_BLINDING_POWER)->GetEffect(EFFECT_1).BasePoints);
                 caster->GetSpellHistory()->ModifyCooldown(SPELL_DH_SIGIL_OF_CHAINS, -1s * (int32)sSpellMgr->GetSpellInfo(SPELL_DH_CYCLE_OF_BLINDING_POWER)->GetEffect(EFFECT_1).BasePoints);
@@ -2912,7 +2908,7 @@ struct at_dh_sigil_of_chains : AreaTriggerAI
                     {
                       //  caster->CastSpell(SPELL_DH_CYCLE_OF_BLINDING_BUFF, SPELLVALUE_BASE_POINT0, auraEff->GetAmount(), caster);
 
-                        caster->GetSpellHistory()->ModifyCooldown(SPELL_DH_SIGIL_OF_FLAME, -1s * (int32)sSpellMgr->GetSpellInfo(SPELL_DH_CYCLE_OF_BLINDING_POWER)->GetEffect(EFFECT_1).BasePoints);
+             //           caster->GetSpellHistory()->ModifyCooldown(SPELL_DH_SIGIL_OF_FLAME, -1s * (int32)sSpellMgr->GetSpellInfo(SPELL_DH_CYCLE_OF_BLINDING_POWER)->GetEffect(EFFECT_1).BasePoints);
                         caster->GetSpellHistory()->ModifyCooldown(SPELL_DH_SIGIL_OF_MISSERY, -1s * (int32)sSpellMgr->GetSpellInfo(SPELL_DH_CYCLE_OF_BLINDING_POWER)->GetEffect(EFFECT_1).BasePoints);
                         caster->GetSpellHistory()->ModifyCooldown(SPELL_DH_SIGIL_OF_SILENCE, -1s * (int32)sSpellMgr->GetSpellInfo(SPELL_DH_CYCLE_OF_BLINDING_POWER)->GetEffect(EFFECT_1).BasePoints);
                         caster->GetSpellHistory()->ModifyCooldown(SPELL_DH_SIGIL_OF_CHAINS, -1s * (int32)sSpellMgr->GetSpellInfo(SPELL_DH_CYCLE_OF_BLINDING_POWER)->GetEffect(EFFECT_1).BasePoints);
@@ -3071,7 +3067,7 @@ struct at_dh_sigil_of_silence : AreaTriggerAI
             {
               //  caster->CastSpell(SPELL_DH_CYCLE_OF_BLINDING_BUFF, SPELLVALUE_BASE_POINT0, auraEff->GetAmount(), caster);
 
-                caster->GetSpellHistory()->ModifyCooldown(SPELL_DH_SIGIL_OF_FLAME, -1s * (int32)sSpellMgr->GetSpellInfo(SPELL_DH_CYCLE_OF_BLINDING_POWER)->GetEffect(EFFECT_1).BasePoints);
+             //   caster->GetSpellHistory()->ModifyCooldown(SPELL_DH_SIGIL_OF_FLAME, -1s * (int32)sSpellMgr->GetSpellInfo(SPELL_DH_CYCLE_OF_BLINDING_POWER)->GetEffect(EFFECT_1).BasePoints);
                 caster->GetSpellHistory()->ModifyCooldown(SPELL_DH_SIGIL_OF_MISSERY, -1s * (int32)sSpellMgr->GetSpellInfo(SPELL_DH_CYCLE_OF_BLINDING_POWER)->GetEffect(EFFECT_1).BasePoints);
                 caster->GetSpellHistory()->ModifyCooldown(SPELL_DH_SIGIL_OF_SILENCE, -1s * (int32)sSpellMgr->GetSpellInfo(SPELL_DH_CYCLE_OF_BLINDING_POWER)->GetEffect(EFFECT_1).BasePoints);
                 caster->GetSpellHistory()->ModifyCooldown(SPELL_DH_SIGIL_OF_CHAINS, -1s * (int32)sSpellMgr->GetSpellInfo(SPELL_DH_CYCLE_OF_BLINDING_POWER)->GetEffect(EFFECT_1).BasePoints);
