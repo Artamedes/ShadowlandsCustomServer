@@ -50,6 +50,7 @@
 #include "Weather.h"
 #include "World.h"
 #include "WorldSession.h"
+#include "CovenantMgr.h"
 
 // temporary hack until includes are sorted out (don't want to pull in Windows.h)
 #ifdef GetClassName
@@ -123,8 +124,43 @@ public:
             { "unstuck",          HandleUnstuckCommand,          rbac::RBAC_PERM_COMMAND_UNSTUCK,          Console::Yes },
             { "wchange",          HandleChangeWeather,           rbac::RBAC_PERM_COMMAND_WCHANGE,          Console::No },
             { "mailbox",          HandleMailBoxCommand,          rbac::RBAC_PERM_COMMAND_MAILBOX,          Console::No },
+            { "allmyconduits",    HandleAddAllMyConduitsCommand, rbac::RBAC_PERM_COMMAND_PINFO,            Console::No },
         };
         return commandTable;
+    }
+
+    static bool HandleAddAllMyConduitsCommand(ChatHandler* handler)
+    {
+        auto player = handler->GetSession()->GetPlayer();
+
+        auto covenantMgr = player->GetCovenantMgr();
+
+        for (auto entry : sSoulbindConduitItemStore)
+        {
+            auto entry2 = sSoulbindConduitStore.LookupEntry(entry->ConduitID);
+            if (entry2)
+            {
+                for (auto entry3 : sSpecSetMemberStore)
+                {
+                    if (entry3->SpecSetID == entry2->SpecSetID)
+                    {
+                        auto entry4 = sChrSpecializationStore.LookupEntry(entry3->ChrSpecializationID);
+                        if (entry4->ClassID == player->GetClass())
+                        {
+                            auto item = Item::CreateItem(entry->ItemID, 1, ItemContext::NONE);
+                            if (item)
+                            {
+                                covenantMgr->LearnSoulbindConduit(item);
+                                delete item;
+                            }
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+
+        return true;
     }
 
     static bool HandlePvPstatsCommand(ChatHandler* handler)

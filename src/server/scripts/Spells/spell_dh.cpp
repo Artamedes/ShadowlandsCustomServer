@@ -110,7 +110,7 @@ enum DHSpells
     SPELL_DH_GLIDE_KNOCKBACK                       = 196353,
     SPELL_DH_GLUTTONY                              = 227327,
     SPELL_DH_GLUTTONY_BUFF                         = 227330,
-    SPELL_DH_IMMOLATION_AURA                       = 178740,
+    SPELL_DH_IMMOLATION_AURA                       = 258920,
     SPELL_DH_IMMOLATION_AURA_VISUAL                = 201122,
     SPELL_DH_INFERNAL_STRIKE                       = 189110,
     SPELL_DH_INFERNAL_STRIKE_DAMAGE                = 189112,
@@ -1758,13 +1758,67 @@ public:
 
         void Register() override
         {
-            OnEffectHit += SpellEffectFn(spell_dh_immolation_aura_SpellScript::ApplyVisual, EFFECT_1, SPELL_EFFECT_TRIGGER_SPELL);
+            OnEffectHit += SpellEffectFn(spell_dh_immolation_aura_SpellScript::ApplyVisual, EFFECT_0, SPELL_EFFECT_TRIGGER_SPELL);
+        }
+    };
+
+    class spell_dh_immolation_aura_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_dh_immolation_aura_AuraScript);
+
+        void HandlePeriodic(AuraEffect const* /*aurEff*/)
+        {
+            if (Unit* caster = GetCaster())
+            {
+                caster->Variables.Set("ImmolationAuraTicks", caster->Variables.GetValue("ImmolationAuraTicks", 0) + 1);
+            }
+        }
+
+        void HandleRemove(const AuraEffect* /*aurEff*/, AuraEffectHandleModes /* mode */)
+        {
+            if (Unit* caster = GetCaster())
+                caster->Variables.Remove("ImmolationAuraTicks");
+        }
+        void Register() override
+        {
+            OnEffectPeriodic += AuraEffectPeriodicFn(spell_dh_immolation_aura_AuraScript::HandlePeriodic, EFFECT_0, SPELL_AURA_PERIODIC_TRIGGER_SPELL);
+            OnEffectRemove += AuraEffectRemoveFn(spell_dh_immolation_aura_AuraScript::HandleRemove, EFFECT_0, SPELL_AURA_PERIODIC_TRIGGER_SPELL, AURA_EFFECT_HANDLE_REAL);
         }
     };
 
     SpellScript* GetSpellScript() const override
     {
         return new spell_dh_immolation_aura_SpellScript();
+    }
+    AuraScript* GetAuraScript() const override
+    {
+        return new spell_dh_immolation_aura_AuraScript();
+    }
+};
+
+// 258922
+class spell_dh_immolation_aura_dmg : public SpellScript
+{
+    PrepareSpellScript(spell_dh_immolation_aura_dmg);
+
+    enum ImmoAura
+    {
+        GrowingInferno = 339231,
+    };
+
+    void OnHit(SpellEffIndex /*effIndex*/)
+    {
+        auto hitDmg = GetHitDamage();
+
+        if (auto growingInferno = GetCaster()->GetAuraEffect(GrowingInferno, EFFECT_0))
+            AddPct(hitDmg, growingInferno->GetAmount() * GetCaster()->Variables.GetValue("ImmolationAuraTicks", 1));
+
+        SetHitDamage(hitDmg);
+    }
+
+    void Register() override
+    {
+        OnEffectHitTarget += SpellEffectFn(spell_dh_immolation_aura_dmg::OnHit, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
     }
 };
 
@@ -3991,7 +4045,8 @@ void AddSC_demon_hunter_spell_scripts()
     RegisterSpellScript(aura_dh_fraility);
     new spell_dh_glide();
     new spell_dh_immolation_aura();
-	RegisterSpellScript(spell_dh_immolation_aura_damage);
+    RegisterSpellScript(spell_dh_immolation_aura_damage);
+    RegisterSpellScript(spell_dh_immolation_aura_dmg);
     RegisterSpellScript(spell_dh_infernal_strike);
     RegisterSpellScript(spell_dh_last_resort);    
     new spell_dh_master_of_the_glaive();

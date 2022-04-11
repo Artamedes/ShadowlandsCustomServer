@@ -205,6 +205,7 @@ TC_GAME_API extern DB2Storage<SoulbindConduitItemEntry>             sSoulbindCon
 TC_GAME_API extern DB2Storage<SoulbindConduitRankEntry>             sSoulbindConduitRankStore;
 TC_GAME_API extern DB2Storage<SoulbindConduitRankPropertiesEntry>   sSoulbindConduitRankPropertiesStore;
 TC_GAME_API extern DB2Storage<SoundKitEntry>                        sSoundKitStore;
+TC_GAME_API extern DB2Storage<SpecSetMemberEntry>                   sSpecSetMemberStore;
 TC_GAME_API extern DB2Storage<SpellAuraOptionsEntry>                sSpellAuraOptionsStore;
 TC_GAME_API extern DB2Storage<SpellAuraRestrictionsEntry>           sSpellAuraRestrictionsStore;
 TC_GAME_API extern DB2Storage<SpellCastTimesEntry>                  sSpellCastTimesStore;
