@@ -96,8 +96,10 @@ public:
             if (healer->HasAura(WildHuntTactics))
             {
                 AddPct(gain, 10);
-                healer->CastSpell(healer, Stratagem, true);
-                healer->CastSpell(healer, WildHuntTacticsMS, true);
+                if (!healer->HasAura(Stratagem))
+                    healer->CastSpell(healer, Stratagem, true);
+                if (!healer->HasAura(WildHuntTacticsMS))
+                    healer->CastSpell(healer, WildHuntTacticsMS, true);
                 if (healer->HasAura(Stratagem))
                     healer->CastSpell(reciever, StratagemHealer, true);
             }
@@ -114,8 +116,10 @@ public:
             if (attacker->HasAura(WildHuntTactics))
             {
                 AddPct(damage, 10);
-                attacker->CastSpell(attacker, Stratagem, true);
-                attacker->CastSpell(attacker, WildHuntTacticsMS, true);
+                if (!attacker->HasAura(Stratagem))
+                    attacker->CastSpell(attacker, Stratagem, true);
+                if (!attacker->HasAura(WildHuntTacticsMS))
+                    attacker->CastSpell(attacker, WildHuntTacticsMS, true);
                 if (attacker->HasAura(Stratagem))
                     attacker->CastSpell(victim, StratagemDamage, true);
             }
