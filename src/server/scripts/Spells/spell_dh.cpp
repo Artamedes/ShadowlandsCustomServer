@@ -2440,52 +2440,52 @@ public:
 // };
 
 // 197125 - Chaos Strike
-class spell_dh_chaos_strike : public SpellScriptLoader
-{
-public:
-    spell_dh_chaos_strike() : SpellScriptLoader("spell_dh_chaos_strike") { }
-
-    class spell_dh_chaos_strike_AuraScript : public AuraScript
-    {
-        PrepareAuraScript(spell_dh_chaos_strike_AuraScript);
-
-        bool Validate(SpellInfo const* /*spellInfo*/) override
-        {
-            return ValidateSpellInfo({ SPELL_DH_CHAOS_STRIKE_PROC });
-        }
-
-		bool CheckProc(ProcEventInfo& eventInfo)
-        {
-			if (eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == SPELL_DH_CHAOS_STRIKE)
-				return true;
-
-			return false;
-		}
-
-        void HandleProc(ProcEventInfo& /*eventInfo*/)
-        {
-            PreventDefaultAction();
-
-            if (Unit* caster = GetCaster())
-			{
-				caster->CastSpell(caster, SPELL_DH_CHAOS_STRIKE_PROC, true);
-				if (caster->HasAura(SPELL_DH_CYCLE_OF_HATRED))
-					caster->GetSpellHistory()->ModifyCooldown(SPELL_DH_METAMORPHOSIS, -1s * (int32)sSpellMgr->GetSpellInfo(SPELL_DH_CYCLE_OF_HATRED)->GetEffect(EFFECT_0).BasePoints);
-        }
-        }
-
-        void Register() override
-        {
-			DoCheckProc += AuraCheckProcFn(spell_dh_chaos_strike_AuraScript::CheckProc);
-            OnProc += AuraProcFn(spell_dh_chaos_strike_AuraScript::HandleProc);
-        }
-    };
-
-    AuraScript* GetAuraScript() const override
-    {
-        return new spell_dh_chaos_strike_AuraScript();
-    }
-};
+//class spell_dh_chaos_strike : public SpellScriptLoader
+//{
+//public:
+//    spell_dh_chaos_strike() : SpellScriptLoader("spell_dh_chaos_strike") { }
+//
+//    class spell_dh_chaos_strike_AuraScript : public AuraScript
+//    {
+//        PrepareAuraScript(spell_dh_chaos_strike_AuraScript);
+//
+//        bool Validate(SpellInfo const* /*spellInfo*/) override
+//        {
+//            return ValidateSpellInfo({ SPELL_DH_CHAOS_STRIKE_PROC });
+//        }
+//
+//		bool CheckProc(ProcEventInfo& eventInfo)
+//        {
+//			if (eventInfo.GetSpellInfo() && (eventInfo.GetSpellInfo()->Id == SPELL_DH_CHAOS_STRIKE || eventInfo.GetSpellInfo()->Id == SPELL_DH_ANNIHILATION))
+//				return true;
+//
+//			return false;
+//		}
+//
+//        void HandleProc(ProcEventInfo& /*eventInfo*/)
+//        {
+//            PreventDefaultAction();
+//
+//            if (Unit* caster = GetCaster())
+//			{
+//				caster->CastSpell(caster, SPELL_DH_CHAOS_STRIKE_PROC, true);
+//				if (caster->HasAura(SPELL_DH_CYCLE_OF_HATRED))
+//					caster->GetSpellHistory()->ModifyCooldown(SPELL_DH_METAMORPHOSIS, -1s * (int32)sSpellMgr->GetSpellInfo(SPELL_DH_CYCLE_OF_HATRED)->GetEffect(EFFECT_0).BasePoints);
+//        }
+//        }
+//
+//        void Register() override
+//        {
+//			DoCheckProc += AuraCheckProcFn(spell_dh_chaos_strike_AuraScript::CheckProc);
+//            OnProc += AuraProcFn(spell_dh_chaos_strike_AuraScript::HandleProc);
+//        }
+//    };
+//
+//    AuraScript* GetAuraScript() const override
+//    {
+//        return new spell_dh_chaos_strike_AuraScript();
+//    }
+//};
 
 // Consume Soul - 178963 and 228532
 //Last Update 8.0.1 Build 28153
@@ -3914,6 +3914,33 @@ class spell_dh_the_hunt : public SpellScript
     }
 };
 
+// 162794 201427
+class spell_dh_chaos_strike : public SpellScript
+{
+    PrepareSpellScript(spell_dh_chaos_strike);
+
+    void HandleDummy(SpellEffIndex /*effIndex*/)
+    {
+        if (Unit* target = GetHitUnit())
+        {
+            if (roll_chance_i(40))
+            {
+                auto caster = GetCaster();
+                if (!caster)
+                    return;
+                caster->CastSpell(caster, SPELL_DH_CHAOS_STRIKE_PROC, true);
+                if (caster->HasAura(SPELL_DH_CYCLE_OF_HATRED))
+                    caster->GetSpellHistory()->ModifyCooldown(SPELL_DH_EYE_BEAM, -1s);
+            }
+        }
+    }
+
+    void Register() override
+    {
+        OnEffectLaunchTarget += SpellEffectFn(spell_dh_chaos_strike::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
+    }
+};
+
 void AddSC_demon_hunter_spell_scripts()
 {
     new spell_dh_annihilation();
@@ -3922,7 +3949,7 @@ void AddSC_demon_hunter_spell_scripts()
     RegisterSpellScript(spell_dh_blade_dance);    
     new spell_dh_blade_turning();
     //new spell_dh_bloodlet();
-    new spell_dh_chaos_strike();
+    //new spell_dh_chaos_strike();
     new spell_dh_consume_soul();
     RegisterSpellScript(spell_dh_consume_soul_vengeance);
     new spell_dh_darkness_absorb();
@@ -4004,6 +4031,8 @@ void AddSC_demon_hunter_spell_scripts()
     RegisterAreaTriggerAI(at_dh_sigil_of_silence);
     RegisterAreaTriggerAI(at_dh_sigil_of_misery);
     RegisterAreaTriggerAI(at_dh_mana_rift);
+
+    RegisterSpellScript(spell_dh_chaos_strike);
 
     /// Custom NPC scripts
    // new npc_dh_spell_trainer();
