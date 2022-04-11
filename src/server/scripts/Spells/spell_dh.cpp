@@ -3982,10 +3982,26 @@ class spell_dh_chaos_strike : public SpellScript
 {
     PrepareSpellScript(spell_dh_chaos_strike);
 
+    enum ChaosStrike
+    {
+        RelentlessOnslought = 339151,
+    };
+
     void HandleDummy(SpellEffIndex /*effIndex*/)
     {
         if (Unit* target = GetHitUnit())
         {
+            uint32 chance = 0;
+
+            if (auto aurEff = GetCaster()->GetAuraEffect(RelentlessOnslought, EFFECT_0))
+                chance += aurEff->GetAmount();
+
+            if (chance > 100)
+                chance = 100;
+
+            if (roll_chance_i(chance))
+                GetCaster()->CastSpell(target, GetSpellInfo()->Id, true);
+
             if (roll_chance_i(40))
             {
                 auto caster = GetCaster();
