@@ -194,6 +194,8 @@ void Covenant::SocketTalent(WorldPackets::Garrison::GarrisonSocketTalent& packet
             continue;
         }
 
+        // unapply before modifying
+        conduit->FlagsUpdated(true);
         // TODO: Name these fields correctly.
         WorldPackets::Garrison::GarrisonTalentSocketChange socketChange;
         socketChange.ConduitID = packet.Sockets[i].SoulbindConduitID;
@@ -203,10 +205,12 @@ void Covenant::SocketTalent(WorldPackets::Garrison::GarrisonSocketTalent& packet
         socketChange.Socket = data;
         conduit->Socket = data;
         response.Sockets.push_back(socketChange);
-        conduit->FlagsUpdated(true);
         conduit->FlagsUpdated();
     }
     _player->SendDirectMessage(response.Write());
+
+    // just incase to remove auras
+    _player->GetCovenantMgr()->UpdateConduits();
 }
 
 CovenantMgr::CovenantMgr(Player* player) : _player(player), _currCovenantIndex(0), _loaded(false)
