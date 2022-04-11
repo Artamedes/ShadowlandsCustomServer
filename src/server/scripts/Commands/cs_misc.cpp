@@ -300,6 +300,8 @@ public:
 
         PhasingHandler::PrintToChat(handler, object);
 
+        handler->PSendSysMessage("%f distance to us", handler->GetPlayer()->GetDistance2d(object));
+
         return true;
     }
 

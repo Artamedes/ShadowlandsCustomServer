@@ -979,10 +979,8 @@ bool WorldObject::IsInWorldPvpZone() const
         case 5095: // Tol Barad
         case 6941: // Ashran
             return true;
-            break;
         default:
             return false;
-            break;
     }
 }
 
@@ -2832,6 +2830,8 @@ SpellCastResult WorldObject::CastSpell(CastSpellTargetArg const& targets, uint32
     spell->m_CastItem = args.CastItem;
     if (args.OriginalCastItemLevel)
         spell->m_castItemLevel = *args.OriginalCastItemLevel;
+
+    spell->m_SpecialDuration = args.SpecialDuration;
 
     return spell->prepare(*targets.Targets, args.TriggeringAura);
 }

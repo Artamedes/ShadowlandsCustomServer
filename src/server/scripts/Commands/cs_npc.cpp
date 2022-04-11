@@ -328,12 +328,84 @@ public:
             { "reload",         HandleNpcReloadCommand,            rbac::RBAC_PERM_COMMAND_NPC_SHOWLOOT,       Console::No },
             { "wpadd",          HandleWpAddCommand,                rbac::RBAC_PERM_COMMANDS_PINFO_CHECK_PERSONAL_DATA, Console::No },
             { "relwp",          HandleRelWpCommand,                rbac::RBAC_PERM_COMMANDS_PINFO_CHECK_PERSONAL_DATA, Console::No },
+            { "addleaderformation",          HandleAddLeaderFormation,                rbac::RBAC_PERM_COMMANDS_PINFO_CHECK_PERSONAL_DATA, Console::No },
+            { "addformation",          HandleAddFormationCommand,                rbac::RBAC_PERM_COMMANDS_PINFO_CHECK_PERSONAL_DATA, Console::No },
         };
         static ChatCommandTable commandTable =
         {
             { "npc", npcCommandTable },
         };
         return commandTable;
+    }
+
+    static bool HandleAddFormationCommand(ChatHandler* handler, uint64 leaderGUID, Optional<float> distance, Optional<float> angle, Optional<uint32> groupai)
+    {
+
+        Creature* creature = handler->getSelectedCreature();
+
+        if (!creature || !creature->GetSpawnId())
+        {
+            handler->SendSysMessage(LANG_SELECT_CREATURE);
+            handler->SetSentErrorMessage(true);
+            return false;
+        }
+
+        ObjectGuid::LowType lowguid = creature->GetSpawnId();
+        if (creature->GetFormation())
+        {
+            handler->PSendSysMessage("Selected creature is already member of group " UI64FMTD, creature->GetFormation()->GetLeaderSpawnId());
+            return false;
+        }
+
+        if (!lowguid)
+            return false;
+
+        Player* chr = handler->GetSession()->GetPlayer();
+
+        float  followAngle = angle.value_or((creature->GetAbsoluteAngle(chr) - chr->GetOrientation()) * 180.0f / float(M_PI));
+        float  followDist = distance.value_or(std::sqrt(std::pow(chr->GetPositionX() - creature->GetPositionX(), 2.f) + std::pow(chr->GetPositionY() - creature->GetPositionY(), 2.f)));
+        uint32 groupAI = groupai.value_or(515);
+        sFormationMgr->AddFormationMember(lowguid, followAngle, followDist, leaderGUID, groupAI);
+        creature->SearchFormation();
+
+        WorldDatabasePreparedStatement* stmt = WorldDatabase.GetPreparedStatement(WORLD_INS_CREATURE_FORMATION);
+        stmt->setUInt64(0, leaderGUID);
+        stmt->setUInt64(1, lowguid);
+        stmt->setFloat(2, followDist);
+        stmt->setFloat(3, followAngle );
+        stmt->setUInt32(4, groupAI);
+
+        WorldDatabase.Execute(stmt);
+
+        handler->PSendSysMessage("Creature " UI64FMTD " added to formation with leader " UI64FMTD, lowguid, leaderGUID);
+        return true;
+    }
+
+    static bool HandleAddLeaderFormation(ChatHandler* handler)
+    {
+        Creature* creature = handler->getSelectedCreature();
+        if (!creature)
+            return true;
+
+        float followAngle = 0.0f;
+        float followDist = 0.0f;
+        uint64 leaderGUID = creature->GetSpawnId();
+        uint32 groupAI = 515;
+
+        sFormationMgr->AddFormationMember(creature->GetSpawnId(), followAngle, followDist, leaderGUID, groupAI);
+        creature->SearchFormation();
+
+        WorldDatabasePreparedStatement* stmt = WorldDatabase.GetPreparedStatement(WORLD_INS_CREATURE_FORMATION);
+        stmt->setUInt64(0, leaderGUID);
+        stmt->setUInt64(1, leaderGUID);
+        stmt->setFloat(2, followDist);
+        stmt->setFloat(3, followAngle);
+        stmt->setUInt32(4, groupAI);
+
+        WorldDatabase.Execute(stmt);
+
+        handler->PSendSysMessage("Added formation for spawnid: %u", creature->GetSpawnId());
+        return true;
     }
 
     static bool HandleRelWpCommand(ChatHandler* handler)

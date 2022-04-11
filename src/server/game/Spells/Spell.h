@@ -535,6 +535,7 @@ class TC_GAME_API Spell
         ObjectGuid m_castItemGUID;
         uint32 m_castItemEntry;
         int32 m_castItemLevel;
+        Optional<uint32> m_SpecialDuration;
         ObjectGuid m_castId;
         ObjectGuid m_originalCastId;
         bool m_fromClient;

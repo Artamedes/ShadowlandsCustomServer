@@ -3050,7 +3050,12 @@ void Spell::DoSpellEffectHit(Unit* unit, SpellEffectInfo const& spellEffectInfo,
 
                             // Haste modifies duration of channeled spells
                             if (m_spellInfo->IsChanneled())
-                                caster->ModSpellDurationTime(m_spellInfo, hitInfo.AuraDuration, this);
+                            {
+                                if (m_SpecialDuration.has_value())
+                                    hitInfo.AuraDuration = *m_SpecialDuration;
+                                else
+                                    caster->ModSpellDurationTime(m_spellInfo, hitInfo.AuraDuration, this);
+                            }
                             else if (m_spellInfo->HasAttribute(SPELL_ATTR5_HASTE_AFFECT_DURATION))
                             {
                                 int32 origDuration = hitInfo.AuraDuration;
@@ -3820,7 +3825,11 @@ void Spell::handle_immediate()
                 duration *= m_spellValue->DurationMul;
 
                 // Apply haste mods
-                m_caster->ModSpellDurationTime(m_spellInfo, duration, this);
+
+                if (m_SpecialDuration.has_value())
+                    duration = *m_SpecialDuration;
+                else
+                    m_caster->ModSpellDurationTime(m_spellInfo, duration, this);
             }
             else
                 duration = *m_spellValue->Duration;

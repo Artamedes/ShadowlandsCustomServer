@@ -1,6 +1,7 @@
 #include "ScriptMgr.h"
 #include "Player.h"
 #include "Creature.h"
+#include "Containers.h"
 #include "ScriptedCreature.h"
 
 // 700011 - npc_oogway_700011
@@ -50,47 +51,196 @@ public:
     EventMap events;
 };
 
+const Position cornerPosErnoch[] = {
+    { -4023.0f, -11007.6f, 715.225f, 3.01729f },
+    { -4039.08f, -11022.4f, 715.225f, 1.81628f },
+    { -4070.03f, -10994.7f, 715.227f, 6.12288f },
+    { -4054.84f, -10978.9f, 715.227f, 4.91861f },
+};
 // 700721 - npc_ernoch_700721
 struct npc_ernoch_700721 : public ScriptedAI
 {
 public:
-    npc_ernoch_700721(Creature* creature) : ScriptedAI(creature) { }
+    npc_ernoch_700721(Creature* creature) : ScriptedAI(creature), summons(creature) { }
 
-    void InitializeAI() override
+    enum Ernoch
     {
-        /// TODO: Fill this function
+        NormalModel = 70822,
+        BlueModel = 70823,
+        GreenModel = 70824,
+        PurpleModel = 70825,
+
+        SpinningCraneKick = 330901,
+        BurningLegSweep = 227568,
+        FistsOfFury = 283773,
+        RisingSunKick = 282285,
+    };
+
+    bool isSummon = false;
+    bool ClonePhase = false;
+    SummonList summons;
+
+    void JustEngagedWith(Unit* who) override
+    {
+        if (me->GetOwner() || isSummon)
+            return;
+
+        scheduler.CancelAll();
+        events.ScheduleEvent(1, 5s, 10s);
+        events.ScheduleEvent(2, 5s, 10s);
+        events.ScheduleEvent(3, 5s, 10s);
+    }
+
+    void JustSummoned(Creature* who) override
+    {
+        summons.Summon(who);
+    }
+
+    void IsSummonedBy(WorldObject* o) override
+    {
+        if (!o)
+            return;
+        if (!o->IsUnit())
+            return;
+        isSummon = true;
+        didPhase = true;
+        ClonePhase = true;
+        auto owner = o->ToUnit();
+        me->SetReactState(REACT_PASSIVE);
     }
 
     void Reset() override
     {
-        /// TODO: Fill this function
+        ClonePhase = false;
+        me->SetReactState(REACT_AGGRESSIVE);
+        me->SetControlled(false, UnitState::UNIT_STATE_ROOT);
+        summons.DespawnAll();
+        me->DeMorph();
+    }
+
+    void JustDied(Unit* who) override
+    {
+        if (isSummon)
+            me->DespawnOrUnsummon();
+        else
+        {
+            if (auto tome = me->FindNearestCreature(700729, 500.0f))
+                tome->RemoveUnitFlag(UnitFlags::UNIT_FLAG_UNINTERACTIBLE);
+        }
+
+        scheduler.CancelAll();
+        summons.DespawnAll();
     }
 
     void UpdateAI(uint32 diff) override
     {
         scheduler.Update(diff);
 
+        if (ClonePhase && !me->isDead())
+        {
+            if (!me->GetCurrentSpell(CurrentSpellTypes::CURRENT_CHANNELED_SPELL))
+                DoCast(SpinningCraneKick);
+        }
+
         if (!UpdateVictim())
             return;
 
         events.Update(diff);
 
-        if (uint32 eventId = events.ExecuteEvent())
+        if (me->HasUnitState(UNIT_STATE_CASTING))
+            return;
+
+        while (uint32 eventId = events.ExecuteEvent())
         {
             switch (eventId)
             {
+                case 1:
+                    DoCast(BurningLegSweep);
+                    events.Repeat(20s, 25s);
+                    break;
+                case 2:
+                    DoCastVictim(FistsOfFury);
+                    events.Repeat(10s, 20s);
+                    break;
+                case 3:
+                    DoCastVictim(RisingSunKick);
+                    events.Repeat(10s, 20s);
+                    break;
             }
         }
+
         DoMeleeAttackIfReady();
     }
 
-    void OnUnitRelocation(Unit* who) override
+    bool didPhase = false;
+    void DamageTaken(Unit* attacker, uint32& damage, DamageEffectType damageType, SpellInfo const* spell) override
     {
-        /// TODO: Fill this function
-    }
-    void OnSpellClick(Unit* clicker, bool spellClickHandled) override
-    {
-        /// TODO: Fill this function
+        if (didPhase && !isSummon && me->HealthBelowPctDamaged(91, damage) && ClonePhase)
+        {
+            summons.DespawnAll();
+            me->SetReactState(REACT_AGGRESSIVE);
+            ClonePhase = false;
+
+            me->SetControlled(false, UnitState::UNIT_STATE_ROOT);
+        }
+
+        if (!didPhase && me->HealthBelowPctDamaged(51, damage) && !isSummon && me->GetVictim())
+        {
+            damage = 0;
+            didPhase = true;
+            attacker->SendClearTarget();
+            me->DestroyForNearbyPlayers();
+            if (attacker->IsPlayer())
+                attacker->ToPlayer()->SetSelection(ObjectGuid::Empty);
+            me->SendClearTarget();
+
+            scheduler.Schedule(1s, [this](TaskContext context)
+                {
+                    std::vector<Position> positions;
+                    std::vector<uint32> models = { NormalModel, BlueModel, GreenModel, PurpleModel };
+                    positions.reserve(4);
+                    for (auto p : cornerPosErnoch)
+                        positions.emplace_back(p);
+
+                    me->RemoveAllAuras();
+                    me->SetFullHealth();
+                    me->UpdateObjectVisibility();
+
+                    Trinity::Containers::RandomShuffle(positions);
+                    Trinity::Containers::RandomShuffle(models);
+
+                    bool first = false;
+                    int i = 0;
+
+
+                    for (auto const& p : positions)
+                    {
+                        if (!first)
+                        {
+                            first = true;
+                            me->NearTeleportTo(p);
+                            ClonePhase = true;
+                            DoCast(SpinningCraneKick);
+                            me->SetControlled(true, UnitState::UNIT_STATE_ROOT);
+                            me->SetDisplayId(models[i++]);
+                            Talk(0);
+                            continue;
+                        }
+
+                        if (auto summon = DoSummon(me->GetEntry(), p, 0s, TempSummonType::TEMPSUMMON_DEAD_DESPAWN))
+                        {
+                            summon->AI()->AttackStart(me->GetVictim());
+                            summon->AI()->Talk(0);
+                            summon->SetTarget(me->GetVictim()->GetGUID());
+                            summon->SetLevel(me->GetLevel());
+                            summon->SetReactState(REACT_PASSIVE);
+                            summon->CastSpell(summon, SpinningCraneKick, true);
+                            summon->SetControlled(true, UnitState::UNIT_STATE_ROOT);
+                            summon->SetDisplayId(models[i++]);
+                        }
+                    }
+                });
+        }
     }
 
     TaskScheduler scheduler;

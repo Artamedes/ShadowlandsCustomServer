@@ -3973,6 +3973,12 @@ void SpellMgr::LoadSpellInfoCorrections()
         spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(4); // 2 minutes
     });
 
+    // Freeze
+    ApplySpellFix({ 139844 }, [](SpellInfo* spellInfo)
+        {
+            spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(9); // 30s
+        });
+    
     // Dark Conclave Ritualist Channel
     ApplySpellFix({ 38469 }, [](SpellInfo* spellInfo)
     {

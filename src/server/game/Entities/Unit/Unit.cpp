@@ -14462,13 +14462,48 @@ void Unit::SendRemoveLossOfControl(AuraApplication const* aurApp, LossOfControlT
     if (!target)
         return;
 
-    WorldPackets::Spells::LossControlRemove LossControlRemove;
-    LossControlRemove.TargetGUID = target->GetGUID();
-    LossControlRemove.SpellId = int32(aura->GetSpellInfo()->Id);
-    LossControlRemove.CasterGUID = aura->GetCasterGUID();
-    LossControlRemove.Type = uint8(type);
+    WorldPackets::Spells::LossControlAdd LossControlAdd;
+    LossControlAdd.TargetGUID = ObjectGuid::Empty;
+    LossControlAdd.SpellId = 0;
+    LossControlAdd.CasterGUID = ObjectGuid::Empty;
+    LossControlAdd.MaxDuration = uint32(0);
+    LossControlAdd.Duration = uint32(0);
+    LossControlAdd.LockoutSchoolMask = uint32(0);    // DurationRemainingLockoutSchoolMask ??
 
-    ToPlayer()->SendDirectMessage(LossControlRemove.Write());
+    auto mechanic = Mechanics::MECHANIC_NONE;
+
+    switch (type)
+    {
+        case TypeNone              : LossControlAdd.Mechanic = mechanic = Mechanics::MECHANIC_NONE;break;
+        case TypeCharmed           : LossControlAdd.Mechanic = mechanic = Mechanics::MECHANIC_CHARM;break; 
+        case TypeDisoriented       : LossControlAdd.Mechanic = mechanic = Mechanics::MECHANIC_DISORIENTED;break; 
+        case TypeDisarmed          : LossControlAdd.Mechanic = mechanic = Mechanics::MECHANIC_DISARM;break; 
+        case TypeDistracted        : LossControlAdd.Mechanic = mechanic = Mechanics::MECHANIC_DISTRACT;break; 
+        case TypeFeared            : LossControlAdd.Mechanic = mechanic = Mechanics::MECHANIC_FEAR;break; 
+        case TypePacify            : LossControlAdd.Mechanic = mechanic = Mechanics::MECHANIC_SILENCE; break;
+        case TypeRooted            : LossControlAdd.Mechanic = mechanic = Mechanics::MECHANIC_ROOT;break; 
+        case TypeSilenced          : LossControlAdd.Mechanic = mechanic = Mechanics::MECHANIC_SILENCE;break; 
+        case TypePacifySilence     : LossControlAdd.Mechanic = mechanic = Mechanics::MECHANIC_SILENCE;break; 
+        case TypeAsleep            : LossControlAdd.Mechanic = mechanic = Mechanics::MECHANIC_SLEEP;break; 
+        case TypeSnare             : LossControlAdd.Mechanic = mechanic = Mechanics::MECHANIC_SNARE;break; 
+        case TypeStunned           : LossControlAdd.Mechanic = mechanic = Mechanics::MECHANIC_STUN;break; 
+        case TypeFrozen            : LossControlAdd.Mechanic = mechanic = Mechanics::MECHANIC_FREEZE;break; 
+        case TypeIncapacitated     : LossControlAdd.Mechanic = mechanic = Mechanics::MECHANIC_SAPPED;break;
+        case TypePolymorphed       : LossControlAdd.Mechanic = mechanic = Mechanics::MECHANIC_POLYMORPH;break; 
+        case TypeBanished          : LossControlAdd.Mechanic = mechanic = Mechanics::MECHANIC_BANISH;break; 
+        case TypeShackled          : LossControlAdd.Mechanic = mechanic = Mechanics::MECHANIC_SHACKLE;break; 
+        case TypeHorrified         : LossControlAdd.Mechanic = mechanic = Mechanics::MECHANIC_HORROR;break; 
+        case TypeInterrupted       : LossControlAdd.Mechanic = mechanic = Mechanics::MECHANIC_INTERRUPT;break; 
+        case TypeDazed             : LossControlAdd.Mechanic = mechanic = Mechanics::MECHANIC_DAZE;break; 
+        case TypePacified          : LossControlAdd.Mechanic = mechanic = Mechanics::MECHANIC_NONE;break; 
+        case TypeSapped            : LossControlAdd.Mechanic = mechanic = Mechanics::MECHANIC_SAPPED;break; 
+
+    }
+
+    LossControlAdd.Mechanic = uint8(mechanic);
+    LossControlAdd.Type = uint8(type);
+
+    ToPlayer()->SendDirectMessage(LossControlAdd.Write());
 }
 
 void Unit::SendLossOfControlAlertInterrupt(ObjectGuid casterGUID, ObjectGuid targetGUID, uint32 spellId, uint32 duration, SpellSchoolMask schoolMaskLocked)

@@ -1068,7 +1068,5 @@ WorldPacket const* WorldPackets::Spells::LossControlClear::Write()
     _worldPacket << int32(0);
     _worldPacket << int32(0);
     _worldPacket << int32(0);
-    _worldPacket << int32(0);
-    _worldPacket << int32(0);
     return &_worldPacket;
 }

@@ -42,6 +42,7 @@ void AddSC_ElarianSanctuary();
 void AddSC_ShadoPanMonastary();
 void AddSC_LightDungeon3();
 void AddSC_DailyRewardsSystem();
+void AddSC_Torghast();
 
 void AddCustomScripts()
 {
@@ -68,4 +69,5 @@ void AddCustomScripts()
     AddSC_ShadoPanMonastary();
     AddSC_LightDungeon3();
     AddSC_DailyRewardsSystem();
+    AddSC_Torghast();
 }

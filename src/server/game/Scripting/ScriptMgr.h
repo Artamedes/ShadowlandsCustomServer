@@ -878,7 +878,7 @@ class TC_GAME_API PlayerScript : public ScriptObject
         // Called when a channeled spell finish succesful
         virtual void OnChanneledSpellSuccessfulCast(Player* /*player*/, Spell* /*spell*/) { }
 
-        virtual void OnDailyReset(Player* player) { }
+        virtual void OnDailyReset(Player* /*player*/) { }
 };
 
 class TC_GAME_API AccountScript : public ScriptObject

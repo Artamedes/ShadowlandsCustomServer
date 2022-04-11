@@ -105,6 +105,7 @@ void Scenario::OnPlayerEnter(Player* player)
     switch (player->GetMapId())
     {
         case 959: // Shado Pan Monastary
+        case 1277: // defense of karabdor
             return;
         default:
             break;

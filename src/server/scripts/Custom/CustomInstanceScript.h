@@ -58,6 +58,14 @@ public:
 
 #define sCustomInstanceRespawn CustomInstanceRespawn::instance()
 
+constexpr uint32 SetDataCheckpointId = 4000;
+
+static void SetCheckpointId(WorldObject* obj, uint32 checkpoint)
+{
+    if (auto instance = obj->GetInstanceScript())
+        instance->SetData(SetDataCheckpointId, checkpoint);
+}
+
 struct CustomInstanceScript : public InstanceScript
 {
 public:
@@ -75,6 +83,12 @@ public:
         }
 
         return false;
+    }
+
+    void SetData(uint32 DataId, uint32 Value) override
+    {
+        if (DataId == SetDataCheckpointId)
+            m_CheckpointId = Value;
     }
 
     uint32 m_CheckpointId = 0;
