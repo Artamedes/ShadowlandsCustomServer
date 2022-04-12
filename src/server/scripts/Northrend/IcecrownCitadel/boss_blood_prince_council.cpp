@@ -539,7 +539,7 @@ struct BloodPrincesBossAI : public BossAI
             DoAction(ACTION_CAST_INVOCATION);
     }
 
-    void DamageDealt(Unit* /*target*/, uint32& damage, DamageEffectType damageType) override
+    void DamageDealt(Unit* /*target*/, uint32& damage, DamageEffectType damageType, SpellInfo const* /*spellInfo = nullptr*/) override
     {
         if (damageType != SPELL_DIRECT_DAMAGE)
             return;
@@ -954,7 +954,7 @@ struct npc_ball_of_flame : public ScriptedAI
             }
     }
 
-    void DamageDealt(Unit* /*target*/, uint32& damage, DamageEffectType damageType) override
+    void DamageDealt(Unit* /*target*/, uint32& damage, DamageEffectType damageType, SpellInfo const* /*spellInfo = nullptr*/) override
     {
         if (damageType != SPELL_DIRECT_DAMAGE)
             return;

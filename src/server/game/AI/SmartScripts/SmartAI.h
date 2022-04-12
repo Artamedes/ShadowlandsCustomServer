@@ -151,7 +151,7 @@ class TC_GAME_API SmartAI : public CreatureAI
         void IsSummonedBy(WorldObject* summoner) override;
 
         // Called at any Damage to any victim (before damage apply)
-        void DamageDealt(Unit* doneTo, uint32& damage, DamageEffectType /*damagetype*/) override;
+        void DamageDealt(Unit* doneTo, uint32& damage, DamageEffectType /*damagetype*/, SpellInfo const* /*spellInfo = nullptr*/) override;
 
         // Called when a summoned creature dissapears (UnSommoned)
         void SummonedCreatureDespawn(Creature* unit) override;

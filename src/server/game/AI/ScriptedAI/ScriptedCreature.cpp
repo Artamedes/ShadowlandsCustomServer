@@ -31,6 +31,7 @@
 #include "Spell.h"
 #include "SpellMgr.h"
 #include "TemporarySummon.h"
+#include "CustomObjectMgr.h"
 
 void SummonList::Summon(Creature const* summon)
 {
@@ -487,6 +488,11 @@ void ScriptedAI::SetEquipmentSlots(bool loadDefault, int32 mainHand /*= EQUIP_NO
 void ScriptedAI::SetCombatMovement(bool allowMovement)
 {
     _isCombatMovementAllowed = allowMovement;
+}
+
+void ScriptedAI::DamageDealt(Unit* victim, uint32& damage, DamageEffectType type, SpellInfo const* spellInfo /*= nullptr*/)
+{
+    sCustomObjectMgr->ModifySpellDmg(me, spellInfo, damage);
 }
 
 // BossAI - for instanced bosses

@@ -378,7 +378,7 @@ class player_overlord_brandAI : public PlayerAI
     public:
         player_overlord_brandAI(Player* player, ObjectGuid casterGUID) : PlayerAI(player), _tyrannusGUID(casterGUID) { }
 
-        void DamageDealt(Unit* /*victim*/, uint32& damage, DamageEffectType /*damageType*/) override
+        void DamageDealt(Unit* /*victim*/, uint32& damage, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
         {
             if (Creature* tyrannus = ObjectAccessor::GetCreature(*me, _tyrannusGUID))
                 if (Unit* victim = tyrannus->GetVictim())

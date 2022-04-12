@@ -428,6 +428,10 @@ void Spell::EffectInstaKill()
     if (m_caster == unitTarget)                              // prevent interrupt message
         finish();
 
+    // dark purge - Hack. prevent insta kill for Custom Script
+    if (m_spellInfo->Id == 367554)
+        return;
+
     WorldPackets::CombatLog::SpellInstakillLog data;
     data.Target = unitTarget->GetGUID();
     data.Caster = m_caster->GetGUID();

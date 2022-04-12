@@ -102,6 +102,7 @@
 #include "WorldSocket.h"
 #include "BattlePayPackets.h"
 #include "BattlePayMgr.h"
+#include "CustomObjectMgr.h"
 
 #include <boost/algorithm/string.hpp>
 
@@ -2472,6 +2473,8 @@ void World::SetInitialWorldSettings()
     sObjectMgr->LoadPhaseNames();
 
     sBattlePayMgr->LoadFromDB();
+
+    sCustomObjectMgr->LoadFromDB();
 
     // Preload all cells, if required for the base maps
     if (sWorld->getBoolConfig(CONFIG_BASEMAP_LOAD_GRIDS))

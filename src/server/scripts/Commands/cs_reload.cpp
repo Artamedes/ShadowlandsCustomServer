@@ -50,6 +50,7 @@ EndScriptData */
 #include "SupportMgr.h"
 #include "WaypointManager.h"
 #include "World.h"
+#include "CustomObjectMgr.h"
 
 #if TRINITY_COMPILER == TRINITY_COMPILER_GNU
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
@@ -170,12 +171,20 @@ public:
             { "vehicle_template_accessory",    rbac::RBAC_PERM_COMMAND_RELOAD_VEHICLE_TEMPLATE_ACCESSORY,       true,  &HandleReloadVehicleTemplateAccessoryCommand,   "" },
             { "broadcast_text",                rbac::RBAC_PERM_COMMAND_RELOAD_VEHICLE_TEMPLATE_ACCESSORY,       true,  &HandleReloadBroadcastText,   "" },
             { "instance_template",             rbac::RBAC_PERM_COMMAND_RELOAD_VEHICLE_TEMPLATE_ACCESSORY,       true,  &HandleReloadCreatureTemplateMovement,   "" },
+            { "custom_spell_dmg",             rbac::RBAC_PERM_COMMAND_RELOAD_VEHICLE_TEMPLATE_ACCESSORY,       true,  &HandleReloadCustomSpellDmg,   "" },
         };
         static std::vector<ChatCommand> commandTable =
         {
             { "reload",                        rbac::RBAC_PERM_COMMAND_RELOAD,                                  true,  nullptr,                                        "", reloadCommandTable },
         };
         return commandTable;
+    }
+
+    static bool HandleReloadCustomSpellDmg(ChatHandler* handler)
+    {
+        sCustomObjectMgr->LoadCustomSpellDmgs();
+        handler->SendGlobalGMSysMessage("Reloaded custom spell dmgs");
+        return true;
     }
 
     //reload commands

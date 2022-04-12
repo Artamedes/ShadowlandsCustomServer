@@ -5584,7 +5584,7 @@ public:
         EnterEvadeMode(EVADE_REASON_NO_HOSTILES);
     }
 
-    void DamageDealt(Unit* /*victim*/, uint32& damage, DamageEffectType /*damageType*/) override
+    void DamageDealt(Unit* /*victim*/, uint32& damage, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
     {
         Unit* owner = me->GetOwner();
         if (!owner)

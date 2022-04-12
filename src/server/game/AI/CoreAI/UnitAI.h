@@ -300,7 +300,7 @@ class TC_GAME_API UnitAI
         virtual void LeavingWorld() { }
 
         // Called at any Damage to any victim (before damage apply)
-        virtual void DamageDealt(Unit* /*victim*/, uint32& /*damage*/, DamageEffectType /*damageType*/) { }
+        virtual void DamageDealt(Unit* /*victim*/, uint32& /*damage*/, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) { }
 
         // Called at any Damage from any attacker (before damage apply)
         // Note: it for recalculation damage or special reaction at damage

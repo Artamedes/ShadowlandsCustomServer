@@ -777,7 +777,7 @@ bool Unit::HasBreakableByDamageCrowdControlAura(Unit* excludeCasterChannel) cons
         victimAI->DamageTaken(attacker, damage, damagetype, spellProto);
 
     if (UnitAI* attackerAI = attacker ? attacker->GetAI() : nullptr)
-        attackerAI->DamageDealt(victim, damage, damagetype);
+        attackerAI->DamageDealt(victim, damage, damagetype, spellProto);
 
     if (attacker && attacker->IsSummon() && attacker->GetOwner() && attacker->GetOwner()->ToPlayer())
         sScriptMgr->OnSummonCreatureDealsDamage(attacker->GetOwner()->ToPlayer(), attacker, victim, damage);
@@ -795,11 +795,6 @@ bool Unit::HasBreakableByDamageCrowdControlAura(Unit* excludeCasterChannel) cons
             if (Creature* cControlled = controlled->ToCreature())
                 if (CreatureAI* controlledAI = cControlled->AI())
                     controlledAI->OwnerAttackedBy(attacker);
-    }
-
-    if (victim->IsPlayer())
-    {
-        sScriptMgr->OnPlayerTakeDamage(victim->ToPlayer(), damage, damageSchoolMask);
     }
 
     if (attacker)

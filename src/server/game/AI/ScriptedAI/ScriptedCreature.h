@@ -237,6 +237,8 @@ struct TC_GAME_API ScriptedAI : public CreatureAI
         void SetCombatMovement(bool allowMovement);
         bool IsCombatMovementAllowed() const { return _isCombatMovementAllowed; }
 
+        virtual void DamageDealt(Unit* /*victim*/, uint32& /*damage*/, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/);
+
         // return true for heroic mode. i.e.
         //   - for dungeon in mode 10-heroic,
         //   - for raid in mode 10-Heroic
