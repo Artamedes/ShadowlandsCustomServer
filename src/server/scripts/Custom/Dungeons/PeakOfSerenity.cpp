@@ -236,6 +236,13 @@ public:
         me->SetReactState(REACT_AGGRESSIVE);
     }
 
+    void JustEngagedWith(Unit* who) override
+    {
+        events.Reset();
+        events.ScheduleEvent(1, 10s, 20s);
+        events.ScheduleEvent(2, 10s, 20s);
+    }
+
     void UpdateAI(uint32 diff) override
     {
         scheduler.Update(diff);
@@ -249,6 +256,14 @@ public:
         {
             switch (eventId)
             {
+                case 1:
+                    DoCastVictim(365870);
+                    events.Repeat(10s, 25s);
+                    break;
+                case 2:
+                    DoCastVictim(361209);
+                    events.Repeat(10s, 25s);
+                    break;
             }
         }
         DoMeleeAttackIfReady();

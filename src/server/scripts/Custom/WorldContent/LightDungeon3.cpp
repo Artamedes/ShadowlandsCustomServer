@@ -268,6 +268,9 @@ public:
         events.Reset();
         events.ScheduleEvent(1, 5s, 10s);
         events.ScheduleEvent(2, 5s, 10s);
+        events.ScheduleEvent(3, 15s, 40s);
+        events.ScheduleEvent(4, 15s, 40s);
+        events.ScheduleEvent(5, 15s, 40s);
     }
 
     void UpdateAI(uint32 diff) override
@@ -293,6 +296,18 @@ public:
                 case 2:
                     DoCastVictim(317959, true); // Dark Lash
                     events.Repeat(2s, 5s);
+                    break;
+                case 3:
+                    DoCast(364248); // dark zeal
+                    events.Repeat(12s, 35s);
+                    break;
+                case 4:
+                    DoCastVictim(345306); // Void Bolt
+                    events.Repeat(12s, 35s);
+                    break;
+                case 5:
+                    DoCastVictim(341176); // Void Frenzy
+                    events.Repeat(12s, 35s);
                     break;
             }
         }
@@ -427,6 +442,7 @@ public:
         events.ScheduleEvent(1, 5s, 15s);
         events.ScheduleEvent(2, 5s, 15s);
         events.ScheduleEvent(3, 5s, 15s);
+        events.ScheduleEvent(4, 15s, 3s);
     }
 
     void UpdateAI(uint32 diff) override
@@ -456,6 +472,10 @@ public:
                 case 3:
                     DoCastVictim(337785); // Cleanse pain
                     events.Repeat(10s, 30s);
+                    break;
+                case 4:
+                    DoCastVictim(212262); // hand of gul'dan
+                    events.Repeat(30s, 40s);
                     break;
             }
         }

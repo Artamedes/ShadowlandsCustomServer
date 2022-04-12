@@ -346,6 +346,9 @@ public:
         isPhasing = false;
         me->SetReactState(REACT_AGGRESSIVE);
 
+        events.Reset();
+        events.ScheduleEvent(1, 10s, 20s);
+        events.ScheduleEvent(2, 10s, 20s);
     }
 
     void UpdateAI(uint32 diff) override
@@ -361,6 +364,18 @@ public:
         {
             switch (eventId)
             {
+                case 1:
+                    DoCastVictim(361209); // Furious slam
+                    events.Repeat(5s, 15s);
+                    break;
+                case 2:
+                    DoCastSelf(367554); // dark purge
+                    events.Repeat(30s, 40s);
+                    break;
+                case 3:
+                    DoCastSelf(364248); // dark zeal
+                    events.Repeat(10s, 30s);
+                    break;
             }
         }
         DoMeleeAttackIfReady();
@@ -377,6 +392,7 @@ public:
             Talk(0);
             scheduler.Schedule(500ms, [this](TaskContext context)
                 {
+                    events.ScheduleEvent(3, 1s, 5s);
                     me->RemoveUnitFlag(UNIT_FLAG_NON_ATTACKABLE);
 
                     if (auto victim = SelectVictimCrap())
@@ -540,6 +556,11 @@ public:
         /// TODO: Fill this function
     }
 
+    void JustEngagedWith(Unit* who) override
+    {
+        events.Reset();
+    }
+
     void UpdateAI(uint32 diff) override
     {
         scheduler.Update(diff);
@@ -553,6 +574,11 @@ public:
         {
             switch (eventId)
             {
+                case 1:
+                    DoCastVictim(368168, true);
+                    DoCastVictim(368168, true);
+                    events.Repeat(10s, 20s);
+                    break;
             }
         }
         DoMeleeAttackIfReady();

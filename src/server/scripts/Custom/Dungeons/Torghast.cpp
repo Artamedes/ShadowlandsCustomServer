@@ -7,6 +7,7 @@
 #include "ScriptMgr.h"
 #include "MoveSpline.h"
 #include "GenericMovementGenerator.h"
+#include "GameTime.h"
 #include "../CustomInstanceScript.h"
 
 // 700800 - npc_thrall_700800
@@ -67,6 +68,9 @@ public:
     void JustEngagedWith(Unit* who) override
     {
         Talk(0);
+        events.ScheduleEvent(1, 5s, 6s);
+        events.ScheduleEvent(2, 25s, 26s);
+        events.ScheduleEvent(3, 25s, 26s);
     }
 
     void UpdateAI(uint32 diff) override
@@ -82,6 +86,18 @@ public:
         {
             switch (eventId)
             {
+                case 1:
+                    DoCast(240006);
+                    events.Repeat(10s, 11s);
+                    break;
+                case 2:
+                    DoCastVictim(355872);
+                    events.Repeat(10s, 20s);
+                    break;
+                case 3:
+                    DoCastSelf(263848); // void barrier
+                    Talk(1);
+                    break;
             }
         }
         DoMeleeAttackIfReady();
@@ -103,15 +119,25 @@ public:
         /// TODO: Fill this function
     }
 
-    void Reset() override
-    {
-        /// TODO: Fill this function
-    }
-
     void JustDied(Unit* who) override
     {
         if (auto portal = me->FindNearestCreature(700819, 500.0f, true))
             portal->RemoveUnitFlag(UnitFlags::UNIT_FLAG_NON_ATTACKABLE);
+    }
+
+    void Reset() override
+    {
+        me->SetEmoteState(EMOTE_STATE_READY1H);
+        events.Reset();
+    }
+
+    void JustEngagedWith(Unit* /*who*/) override
+    {
+        me->SetEmoteState(EMOTE_STATE_NONE);
+        events.ScheduleEvent(1, 8s, 12s);
+        events.ScheduleEvent(2, 7s);
+        events.ScheduleEvent(3, 17s);
+        events.ScheduleEvent(4, 15s);
     }
 
     void UpdateAI(uint32 diff) override
@@ -127,6 +153,22 @@ public:
         {
             switch (eventId)
             {
+                case 1:
+                    DoCastVictim(364355);
+                    events.Repeat(15s, 20s);
+                    break;
+                case 2:
+                    DoCastSelf(356306);
+                    events.Repeat(15s, 20s);
+                    break;
+                case 3:
+                    DoCastSelf(294165);
+                    events.Repeat(15s, 20s);
+                    break;
+                case 4:
+                    DoCastSelf(292942);
+                    events.Repeat(35s, 40s);
+                    break;
             }
         }
         DoMeleeAttackIfReady();
@@ -153,12 +195,38 @@ public:
         /// TODO: Fill this function
     }
 
+    void JustEngagedWith(Unit* who) override
+    {
+        me->SetEmoteState(Emote::EMOTE_ONESHOT_NONE);
+        events.Reset();
+        events.ScheduleEvent(1, 5s, 20s);
+    }
+
+    bool emoting = false;
+
     void UpdateAI(uint32 diff) override
     {
         scheduler.Update(diff);
 
         if (!UpdateVictim())
+        {
+            if (!me->IsEngaged() && !me->isDead())
+            {
+                auto axeguard = me->FindNearestCreature(700803, 10.0f);
+                if (!axeguard && emoting)
+                {
+                    emoting = false;
+                    me->SetEmoteState(Emote::EMOTE_ONESHOT_NONE);
+                }
+                if (axeguard && !emoting)
+                {
+                    me->SetEmoteState(Emote::EMOTE_ONESHOT_ATTACK1H);
+                    emoting = true;
+                }
+            }
+
             return;
+        }
 
         events.Update(diff);
 
@@ -166,6 +234,10 @@ public:
         {
             switch (eventId)
             {
+                case 1:
+                    DoCastAOE(296523); // Defeaning howl
+                    events.Repeat(25s, 30s);
+                    break;
             }
         }
         DoMeleeAttackIfReady();
@@ -192,6 +264,12 @@ public:
         /// TODO: Fill this function
     }
 
+    void JustEngagedWith(Unit* who) override
+    {
+        events.Reset();
+        events.ScheduleEvent(1, 5s, 20s);
+    }
+
     void UpdateAI(uint32 diff) override
     {
         scheduler.Update(diff);
@@ -205,10 +283,15 @@ public:
         {
             switch (eventId)
             {
+            case 1:
+                DoCastAOE(347404); // Harrow
+                events.Repeat(25s, 30s);
+                break;
             }
         }
         DoMeleeAttackIfReady();
     }
+
 
 
     TaskScheduler scheduler;
@@ -231,6 +314,12 @@ public:
         /// TODO: Fill this function
     }
 
+    void JustEngagedWith(Unit* who) override
+    {
+        events.Reset();
+        events.ScheduleEvent(1, 5s, 20s);
+    }
+
     void UpdateAI(uint32 diff) override
     {
         scheduler.Update(diff);
@@ -244,6 +333,10 @@ public:
         {
             switch (eventId)
             {
+            case 1:
+                DoCastVictim(355872); // Gavel
+                events.Repeat(25s, 30s);
+                break;
             }
         }
         DoMeleeAttackIfReady();
@@ -262,7 +355,7 @@ public:
 
     void InitializeAI() override
     {
-        /// TODO: Fill this function
+        me->SetEmoteState(Emote::EMOTE_STATE_READY1H);
     }
 
     void Reset() override
@@ -270,12 +363,36 @@ public:
         /// TODO: Fill this function
     }
 
+    void JustEngagedWith(Unit* who) override
+    {
+        me->SetEmoteState(Emote::EMOTE_ONESHOT_NONE);
+    }
+
+    bool emoting = false;
+
     void UpdateAI(uint32 diff) override
     {
         scheduler.Update(diff);
 
         if (!UpdateVictim())
+        {
+            if (!me->IsEngaged() && !me->isDead() && (!me->movespline || me->movespline->Finalized()))
+            {
+                auto dog = me->FindNearestCreature(700808, 10.0f);
+                if (!dog && emoting)
+                {
+                    emoting = false;
+                    me->SetEmoteState(Emote::EMOTE_ONESHOT_NONE);
+                }
+                if (dog && !emoting)
+                {
+                    me->SetEmoteState(Emote::EMOTE_STATE_READY2H);
+                    emoting = true;
+                }
+            }
+
             return;
+        }
 
         events.Update(diff);
 
@@ -358,6 +475,11 @@ public:
     {
         Talk(0);
         me->RemoveAurasDueToSpell(346815); // Channel visual
+
+        events.Reset();
+        events.ScheduleEvent(1, 5s, 10s);
+        events.ScheduleEvent(2, 5s, 10s);
+        events.ScheduleEvent(3, 15s, 20s);
     }
 
     void UpdateAI(uint32 diff) override
@@ -377,6 +499,18 @@ public:
         {
             switch (eventId)
             {
+                case 1:
+                    DoCastAOE(362317); // Shock
+                    events.Repeat(5s, 7s);
+                    break;
+                case 2:
+                    DoCastAOE(355645); // Shock Spear
+                    events.Repeat(10s, 20s);
+                    break;
+                case 3:
+                    DoCastAOE(362317); // Shock Mines
+                    events.Repeat(30s);
+                    break;
             }
         }
         DoMeleeAttackIfReady();
@@ -386,6 +520,10 @@ public:
     TaskScheduler scheduler;
     EventMap events;
 };
+const Position PositionPortalOne = { 10618.4f, -4657.81f, -0.114514f, 6.25309f };
+const Position PositionPortalTwo = { 10710.5f, -4657.25f, -0.178392f, 3.1344f };
+const Position PositionPortalThree = { 10618.6f, -4732.78f, -0.0964871f, 0.0414607f };
+const Position PositionPortalFour = { 10709.7f, -4733.37f, -0.0569076f, 3.16669f };
 
 // 700816 - npc_urgoz_700816
 struct npc_urgoz_700816 : public ScriptedAI
@@ -404,6 +542,16 @@ public:
         /// TODO: Fill this function
     }
 
+    void JustEngagedWith(Unit* who) override
+    {
+        phase = false;
+        phase1 = false;
+        me->RemoveAllAuras();
+        events.Reset();
+        events.ScheduleEvent(1, 20s, 30s);
+        events.ScheduleEvent(2, 1s, 30s);
+    }
+
     void UpdateAI(uint32 diff) override
     {
         scheduler.Update(diff);
@@ -413,18 +561,69 @@ public:
 
         events.Update(diff);
 
+        if (me->HasUnitState(UNIT_STATE_CASTING))
+            return;
+
         if (uint32 eventId = events.ExecuteEvent())
         {
             switch (eventId)
             {
+                case 1:
+                    DoCastAOE(367554);
+                    events.Repeat(30s, 50s);
+                    break;
+                case 2:
+                    DoCastVictim(212262);
+                    events.Repeat(20s, 30s);
+                    break;
+                case 3:
+                    break;
             }
         }
         DoMeleeAttackIfReady();
     }
 
-    void JustEngagedWith(Unit* who) override
+    bool phase = false;
+    bool phase1 = false;
+
+    void DamageTaken(Unit* attacker, uint32& damage, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
     {
-        me->RemoveAllAuras();
+        if (!phase && me->HealthBelowPctDamaged(61, damage))
+        {
+            DoSummon(700803, PositionPortalThree);
+            DoSummon(700803, PositionPortalThree);
+            DoSummon(700808, PositionPortalFour);
+            DoCast(367314);
+            phase = true;
+            Talk(10);
+        }
+        if (!phase1 && me->HealthBelowPctDamaged(21, damage))
+        {
+            DoSummon(700803, PositionPortalThree);
+            DoSummon(700803, PositionPortalThree);
+            DoSummon(700803, PositionPortalThree);
+            DoSummon(700803, PositionPortalThree);
+            DoSummon(700803, PositionPortalThree);
+            DoSummon(700803, PositionPortalThree);
+            DoSummon(700808, PositionPortalFour);
+            DoSummon(700808, PositionPortalFour);
+            DoCast(367314);
+            phase1 = true;
+            Talk(11);
+        }
+    }
+
+    void JustSummoned(Creature* summ) override
+    {
+        if (summ->GetEntry() == 700818)
+            return;
+
+        summ->SetReactState(REACT_AGGRESSIVE);
+        if (auto victim = SelectVictimCrap())
+        {
+            if (victim != summ->GetVictim())
+                summ->AI()->AttackStart(victim);
+        }
     }
 
     void JustDied(Unit* who) override
@@ -432,14 +631,14 @@ public:
         if (auto portal = me->FindNearestCreature(700835, 500.0f, true))
             portal->RemoveUnitFlag(UnitFlags::UNIT_FLAG_NON_ATTACKABLE);
 
-        scheduler.Schedule(1s, [this](TaskContext context)
-            {
-                if (auto thrall = DoSummon(700800, *me))
-                {
-                    thrall->GetMotionMaster()->MovePoint(1, *me);
-                    thrall->AI()->Talk(0);
-                }
-            });
+       // scheduler.Schedule(1s, [this](TaskContext context)
+       //     {
+       //         if (auto thrall = DoSummon(700800, *me))
+       //         {
+       //             thrall->GetMotionMaster()->MovePoint(1, *me);
+       //             thrall->AI()->Talk(0);
+       //         }
+       //     });
     }
 
     bool didIntro = false;
@@ -554,11 +753,6 @@ public:
     EventMap events;
 };
 
-
-const Position PositionPortalOne = { 10618.4f, -4657.81f, -0.114514f, 6.25309f };
-const Position PositionPortalTwo = { 10710.5f, -4657.25f, -0.178392f, 3.1344f };
-const Position PositionPortalThree = { 10618.6f, -4732.78f, -0.0964871f, 0.0414607f };
-const Position PositionPortalFour = { 10709.7f, -4733.37f, -0.0569076f, 3.16669f };
 
 const std::vector<uint32> TrashToSpawn = {
     700801,
@@ -778,6 +972,15 @@ public:
         }
     }
 
+    void JustEngagedWith(Unit* who) override
+    {
+        events.Reset();
+        events.ScheduleEvent(1, 20s, 30s);
+        events.ScheduleEvent(2, 5s, 15s);
+        events.ScheduleEvent(3, 5s, 15s);
+        events.ScheduleEvent(4, 5s, 15s);
+    }
+
     void UpdateAI(uint32 diff) override
     {
         scheduler.Update(diff);
@@ -787,10 +990,49 @@ public:
 
         events.Update(diff);
 
+        if (me->HasUnitState(UNIT_STATE_CASTING))
+            return;
+
         if (uint32 eventId = events.ExecuteEvent())
         {
+            if (me->GetVictim())
+            if (eventId == 4 && me->GetDistance2d(me->GetVictim()) >= 30.0f)
+                return;
+
             switch (eventId)
             {
+                case 1:
+                    DoCastSelf(367038);
+                    switch (urand(0, 3))
+                    {
+                        case 0:
+                            me->NearTeleportTo(PositionPortalOne);
+                            break;
+                        case 1:
+                            me->NearTeleportTo(PositionPortalTwo);
+                            break;
+                        case 2:
+                            me->NearTeleportTo(PositionPortalThree);
+                            break;
+                        case 3:
+                            me->NearTeleportTo(PositionPortalFour);
+                            break;
+                    }
+                    DoCastVictim(304475);
+                    events.Repeat(20s, 30s);
+                    break;
+                case 2:
+                    DoCastVictim(333820); // arcane missles
+                    events.Repeat(5s, 15s);
+                    break;
+                case 3:
+                    DoCastVictim(301891); // arcane beam
+                    events.Repeat(5s, 15s);
+                    break;
+                case 4:
+                    DoCastVictim(304180); // arcane fury
+                    events.Repeat(5s, 15s);
+                    break;
             }
         }
         DoMeleeAttackIfReady();
@@ -1081,6 +1323,12 @@ public:
         /// TODO: Fill this function
     }
 
+    void JustEngagedWith(Unit* who) override
+    {
+        events.Reset();
+        events.ScheduleEvent(1, 5s, 20s);
+    }
+
     void UpdateAI(uint32 diff) override
     {
         scheduler.Update(diff);
@@ -1094,11 +1342,14 @@ public:
         {
             switch (eventId)
             {
+            case 1:
+                DoCastAOE(347404); // Harrow
+                events.Repeat(25s, 30s);
+                break;
             }
         }
         DoMeleeAttackIfReady();
     }
-
 
     TaskScheduler scheduler;
     EventMap events;
@@ -1120,6 +1371,13 @@ public:
         /// TODO: Fill this function
     }
 
+    void JustEngagedWith(Unit* who) override
+    {
+        events.Reset();
+        events.ScheduleEvent(1, 5s, 10s);
+        events.ScheduleEvent(2, 5s, 10s);
+    }
+
     void UpdateAI(uint32 diff) override
     {
         scheduler.Update(diff);
@@ -1133,6 +1391,14 @@ public:
         {
             switch (eventId)
             {
+                case 1:
+                    DoCastVictim(294362);
+                    events.Repeat(10s, 15s);
+                    break;
+                case 2:
+                    DoCastVictim(304093);
+                    events.Repeat(10s, 15s);
+                    break;
             }
         }
         DoMeleeAttackIfReady();
@@ -1158,13 +1424,42 @@ public:
     {
         /// TODO: Fill this function
     }
+    
+    void JustEngagedWith(Unit* who) override
+    {
+        events.Reset();
+        events.ScheduleEvent(1, 5s, 10s);
+        events.ScheduleEvent(2, 5s, 10s);
+    }
+
+    TimePoint CanTalk;
 
     void UpdateAI(uint32 diff) override
     {
         scheduler.Update(diff);
 
         if (!UpdateVictim())
+        {
+            if (!me->IsEngaged() && !me->isDead())
+            {
+                auto now = GameTime::Now();
+                if (now >= CanTalk)
+                {
+                    if (auto deathSpeeker = me->FindNearestCreature(700821, 20.0f))
+                    {
+                        me->HandleEmoteCommand(Emote::EMOTE_ONESHOT_TALK);
+                        scheduler.Schedule(1s, [this](TaskContext context)
+                        {
+                            if (auto deathSpeeker = me->FindNearestCreature(700821, 20.0f))
+                                deathSpeeker->HandleEmoteCommand(Emote::EMOTE_ONESHOT_TALK);
+                        });
+                    }
+                    CanTalk = now + 2s;
+                }
+            }
+
             return;
+        }
 
         events.Update(diff);
 
@@ -1172,6 +1467,14 @@ public:
         {
             switch (eventId)
             {
+                case 1:
+                    DoCastVictim(294362);
+                    events.Repeat(10s, 15s);
+                    break;
+                case 2:
+                    DoCastVictim(292926);
+                    events.Repeat(10s, 15s);
+                    break;
             }
         }
         DoMeleeAttackIfReady();

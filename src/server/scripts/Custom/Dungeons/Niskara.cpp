@@ -680,6 +680,7 @@ struct npc_annaxin_700508 : public ScriptedAI
         {
             me->RemoveAurasDueToSpell(241024);
             Talk(0);
+            events.ScheduleEvent(1, 10s, 60s);
         }
 
         void JustDied(Unit* who) override
@@ -717,7 +718,7 @@ struct npc_annaxin_700508 : public ScriptedAI
                                 prevTarget = 700517;
                             else
                                 prevTarget = 700509;
-                            nextDrainTime = now + Seconds(urand(3000, 6000));
+                            nextDrainTime = now + Seconds(urand(30, 60));
                         }
                         me->SetFacingToObject(creature);
                         DoCast(creature, 241024, true); // Drain
@@ -732,6 +733,15 @@ struct npc_annaxin_700508 : public ScriptedAI
             {
                 switch (eventId)
                 {
+                    case 1:
+                        if (auto summ = DoSummon(700505, me, 15.0f))
+                        {
+                            Talk(3);
+                            if (me->GetVictim())
+                                if (summ->AI())
+                                    summ->AI()->AttackStart(me->GetVictim());
+                        }
+                        break;
                 }
             }
             DoMeleeAttackIfReady();
@@ -803,6 +813,42 @@ public:
          if (who->IsPlayer())
             Talk(0);
      }
+
+     void JustEngagedWith(Unit* who) override
+     {
+         events.Reset();
+         events.ScheduleEvent(1, 5s, 15s);
+         events.ScheduleEvent(1, 10s, 20s);
+     }
+
+     void UpdateAI(uint32 diff) override
+     {
+         if (!UpdateVictim())
+             return;
+
+         events.Update(diff);
+
+         if (me->HasUnitState(UnitState::UNIT_STATE_CASTING))
+             return;
+
+         while (uint32 eventId = events.ExecuteEvent())
+         {
+             switch (eventId)
+             {
+                 case 1:
+                     DoCastVictim(198013, true); // eye beam
+                     events.Repeat(30s, 40s);
+                     break;
+                 case 2:
+                     DoCastVictim(220627);
+                     events.Repeat(10s, 20s);
+                     break;
+             }
+         }
+
+         DoMeleeAttackIfReady();
+     }
+
      TaskScheduler scheduler;
      EventMap events;
 };
@@ -813,9 +859,15 @@ struct npc_xolmir_700511 : public ScriptedAI
    public:
        npc_xolmir_700511(Creature* creature) : ScriptedAI(creature) { }
 
+       enum GulDan
+       {
+           HandOfGuldan = 212262,
+       };
+
        void JustEngagedWith(Unit* unit) override
        {
-
+           events.Reset();
+           events.ScheduleEvent(1, 5s, 10s);
        }
 
        void JustDied(Unit* unit) override
@@ -845,6 +897,10 @@ struct npc_xolmir_700511 : public ScriptedAI
            {
                switch (eventId)
                {
+                   case 1:
+                       DoCastVictim(HandOfGuldan);
+                       events.Repeat(15s, 20s);
+                       break;
                }
            }
            DoMeleeAttackIfReady();
