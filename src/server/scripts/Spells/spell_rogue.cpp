@@ -1029,7 +1029,14 @@ class spell_rog_rupture : public SpellScript
                     {
                         if (SpellPowerCost const* powerCost = GetSpell()->GetPowerCost(POWER_COMBO_POINTS))
                         {
-                            int32 duration = 4 + (4 * powerCost->Amount);
+                            uint32 cp = GetFinishngComboPointsAndDropEchoingReprimand(caster, powerCost->Amount);
+
+                            if (auto flag = GetCaster()->GetAura(SPELL_ROGUE_FLAGELLATION_AURA))
+                            {
+                                flag->SetStackAmount(std::min(30u, static_cast<uint32>(flag->GetStackAmount() + cp)));
+                            }
+
+                            int32 duration = 4 + (4 * cp);
                             ruptureAura->SetDuration(duration * IN_MILLISECONDS);
                             ruptureAura->SetMaxDuration(duration * IN_MILLISECONDS);
                         }

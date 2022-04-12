@@ -1738,41 +1738,14 @@ class spell_dh_immolation_aura : public SpellScriptLoader
 public:
     spell_dh_immolation_aura() : SpellScriptLoader("spell_dh_immolation_aura") {}
 
-    class spell_dh_immolation_aura_SpellScript : public SpellScript
-    {
-        PrepareSpellScript(spell_dh_immolation_aura_SpellScript);
-
-        bool Validate(SpellInfo const* /*spellInfo*/) override
-        {
-            if (!sSpellMgr->GetSpellInfo(SPELL_DH_IMMOLATION_AURA) ||
-                !sSpellMgr->GetSpellInfo(SPELL_DH_IMMOLATION_AURA_VISUAL))
-                return false;
-            return true;
-        }
-
-        void ApplyVisual(SpellEffIndex /*effIndex*/)
-        {
-            Unit* caster = GetCaster();
-            if (!caster)
-                return;
-
-            caster->CastSpell(caster, SPELL_DH_IMMOLATION_AURA_VISUAL, true);
-
-            if (Aura* imm = caster->GetAura(SPELL_DH_IMMOLATION_AURA_VISUAL))
-            {
-                imm->SetDuration(6000); //it's 10 seconds otherwise.
-                caster->RemoveVisibleAura(imm->GetApplicationOfTarget(caster->GetGUID()));
-            }
-        }
-
-        void Register() override
-        {
-            OnEffectHit += SpellEffectFn(spell_dh_immolation_aura_SpellScript::ApplyVisual, EFFECT_0, SPELL_EFFECT_TRIGGER_SPELL);
-        }
-    };
-
     class spell_dh_immolation_aura_AuraScript : public AuraScript
     {
+        enum ImmoAura
+        {
+            UnboundChaos = 347461,
+            UnboundChaosProc = 347462,
+        };
+
         PrepareAuraScript(spell_dh_immolation_aura_AuraScript);
 
         void HandlePeriodic(AuraEffect const* /*aurEff*/)
@@ -1780,6 +1753,23 @@ public:
             if (Unit* caster = GetCaster())
             {
                 caster->Variables.Set("ImmolationAuraTicks", caster->Variables.GetValue("ImmolationAuraTicks", 0) + 1);
+            }
+        }
+        void HandleApply(const AuraEffect* /*aurEff*/, AuraEffectHandleModes /* mode */)
+        {
+            Unit* caster = GetCaster();
+            if (!caster)
+                return;
+
+            if (caster->HasAura(UnboundChaos))
+                caster->CastSpell(caster, UnboundChaosProc, true);
+
+            caster->CastSpell(caster, SPELL_DH_IMMOLATION_AURA_VISUAL, true);
+
+            if (Aura* imm = caster->GetAura(SPELL_DH_IMMOLATION_AURA_VISUAL))
+            {
+                imm->SetDuration(6000); //it's 10 seconds otherwise.
+                caster->RemoveVisibleAura(imm->GetApplicationOfTarget(caster->GetGUID()));
             }
         }
 
@@ -1791,14 +1781,11 @@ public:
         void Register() override
         {
             OnEffectPeriodic += AuraEffectPeriodicFn(spell_dh_immolation_aura_AuraScript::HandlePeriodic, EFFECT_0, SPELL_AURA_PERIODIC_TRIGGER_SPELL);
+            OnEffectApply += AuraEffectApplyFn(spell_dh_immolation_aura_AuraScript::HandleApply, EFFECT_0, SPELL_AURA_PERIODIC_TRIGGER_SPELL, AURA_EFFECT_HANDLE_REAL);
             OnEffectRemove += AuraEffectRemoveFn(spell_dh_immolation_aura_AuraScript::HandleRemove, EFFECT_0, SPELL_AURA_PERIODIC_TRIGGER_SPELL, AURA_EFFECT_HANDLE_REAL);
         }
     };
 
-    SpellScript* GetSpellScript() const override
-    {
-        return new spell_dh_immolation_aura_SpellScript();
-    }
     AuraScript* GetAuraScript() const override
     {
         return new spell_dh_immolation_aura_AuraScript();
@@ -4038,6 +4025,62 @@ class spell_dh_serrated_glaive : public AuraScript
     }
 };
 
+// ID - 258860 Essence Break
+class spell_dh_essence_break : public SpellScript
+{
+    PrepareSpellScript(spell_dh_essence_break);
+
+    enum EssenceBreak
+    {
+        EssenceBreakDebuff = 320338,
+    };
+
+    void HandleDamage(SpellEffIndex /*effIndex*/)
+    {
+        if (auto hitUnit = GetHitUnit())
+        {
+            GetCaster()->CastSpell(hitUnit, EssenceBreakDebuff, true);
+        }
+    }
+
+    void Register() override
+    {
+        OnEffectHitTarget += SpellEffectFn(spell_dh_essence_break::HandleDamage, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
+    }
+};
+
+// ID - 192611 Fel Rush
+class spell_dh_fel_rush_dmg : public SpellScript
+{
+    PrepareSpellScript(spell_dh_fel_rush_dmg);
+
+    enum EssenceBreak
+    {
+        UnboundChaos = 347462,
+    };
+
+    void HandleDamage(SpellEffIndex /*effIndex*/)
+    {
+        if (auto hitUnit = GetHitUnit())
+        {
+            auto hitDmg = GetHitDamage();
+
+            if (auto unbounChaos = GetCaster()->GetAuraEffect(UnboundChaos, EFFECT_0))
+            {
+                AddPct(hitDmg, unbounChaos->GetAmount());
+                GetCaster()->RemoveAurasDueToSpell(UnboundChaos);
+            }
+
+            SetHitDamage(hitDmg);
+        }
+    }
+
+    void Register() override
+    {
+        OnEffectHitTarget += SpellEffectFn(spell_dh_fel_rush_dmg::HandleDamage, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
+    }
+};
+
 void AddSC_demon_hunter_spell_scripts()
 {
     new spell_dh_annihilation();
@@ -4121,6 +4164,8 @@ void AddSC_demon_hunter_spell_scripts()
     RegisterSpellScript(spell_dh_the_hunt);
     RegisterSpellScript(spell_dh_chaos_strike);
     RegisterSpellScript(spell_dh_serrated_glaive);
+    RegisterSpellScript(spell_dh_essence_break);
+    RegisterSpellScript(spell_dh_fel_rush_dmg);
 
     /// AreaTrigger Scripts
     RegisterAreaTriggerAI(at_dh_darkness);
