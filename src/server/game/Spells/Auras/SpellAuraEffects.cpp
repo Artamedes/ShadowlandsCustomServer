@@ -5110,6 +5110,48 @@ void AuraEffect::HandleAuraLinked(AuraApplication const* aurApp, uint8 mode, boo
     if (!caster)
         return;
 
+    auto amount = GetAmount();
+    if (triggeredSpellInfo->HasAura(SPELL_AURA_MOD_RATING_PCT) && amount && mode & AURA_EFFECT_HANDLE_REAL_OR_REAPPLY_MASK)
+    {
+        ObjectGuid casterGUID = triggeredSpellInfo->NeedsToBeTriggeredByCaster(m_spellInfo) ? GetCasterGUID() : target->GetGUID();
+        if (auto aura = target->GetAura(triggeredSpellInfo->Id, casterGUID))
+        {
+            for (auto eff : aura->GetAuraEffects())
+            {
+                if (eff->GetAuraType() == SPELL_AURA_MOD_RATING_PCT)
+                {
+                    if (!apply)
+                    {
+                        eff->SetAmount(std::max(0, eff->GetAmount() - amount));
+                        if (eff->GetAmount() == 0)
+                        {
+                            target->RemoveAura(triggeredSpellId, casterGUID);
+                            return;
+                        }
+                    }
+                    else
+                        eff->SetAmount(eff->GetAmount() + amount);
+                }
+            }
+
+            if (target->IsPlayer())
+                target->ToPlayer()->UpdateAllRatings(); // update ratings
+            return; // handled
+        }
+
+        // first apply
+        if (apply)
+        {
+            CastSpellExtraArgs args(this);
+            if (amount) // If amount avalible cast with basepoints (Crypt Fever for example)
+                args.AddSpellMod(SPELLVALUE_BASE_POINT0, amount);
+
+            caster->CastSpell(target, triggeredSpellId, args);
+        }
+
+        return;
+    }
+
     if (mode & AURA_EFFECT_HANDLE_REAL)
     {
         if (apply)
