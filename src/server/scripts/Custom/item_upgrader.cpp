@@ -449,6 +449,11 @@ class item_upgrader : public ItemScript
             {
                 l_Item.Item.ItemBonus.emplace();
                 l_Item.Item.ItemBonus->Context = ItemContext::Torghast;
+
+                for (int32 bonusId : *targets.GetItemTarget()->m_itemData->BonusListIDs)
+                    if (l_ItemUpgrade->Type != ItemUpgradeType::BonusID || bonusId != l_ItemUpgrade->RequiredID)
+                        l_Item.Item.ItemBonus->BonusListIDs.push_back(bonusId);
+
                 for (int32 bonusId : l_ItemUpgrade->ReplaceBonusIDList)
                     l_Item.Item.ItemBonus->BonusListIDs.push_back(bonusId);
             }
@@ -571,6 +576,9 @@ class item_upgrader : public ItemScript
             {
                 l_Item.Item.ItemBonus.emplace();
                 l_Item.Item.ItemBonus->Context = ItemContext::Torghast;
+                for (int32 bonusId : *l_ItemTarget->m_itemData->BonusListIDs)
+                    if (l_ItemUpgrade->Type != ItemUpgradeType::BonusID || bonusId != l_ItemUpgrade->RequiredID)
+                        l_Item.Item.ItemBonus->BonusListIDs.push_back(bonusId);
                 for (int32 bonusId : l_ItemUpgrade->ReplaceBonusIDList)
                     l_Item.Item.ItemBonus->BonusListIDs.push_back(bonusId);
             }
@@ -687,8 +695,9 @@ class item_upgrader : public ItemScript
                 if (l_ItemTarget->IsEquipped())
                     p_Player->_ApplyItemMods(l_ItemTarget, l_ItemTarget->GetSlot(), false);
 
-                l_ItemTarget->ClearBonuses();
-                l_ItemTarget->SetBonuses(l_ItemUpgrade->ReplaceBonusIDList);
+                l_ItemTarget->RemoveBonus(l_ItemUpgrade->RequiredID);
+                for (auto bonus : l_ItemUpgrade->ReplaceBonusIDList)
+                    l_ItemTarget->AddBonuses(bonus, false);
                 p_Player->SendNewItem(l_ItemTarget, 1, true, false, true);
 
                 if (l_ItemTarget->IsEquipped())
