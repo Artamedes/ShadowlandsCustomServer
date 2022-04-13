@@ -58,6 +58,7 @@ EndScriptData */
 #include <limits>
 #include <map>
 #include <set>
+#include "QueryHolder.h"
 #include <sstream>
 
 using namespace Trinity::ChatCommands;
@@ -128,7 +129,8 @@ public:
             { "objectcount",        HandleDebugObjectCountCommand,         rbac::RBAC_PERM_COMMAND_DEBUG,   Console::Yes },
             { "questreset",         HandleDebugQuestResetCommand,          rbac::RBAC_PERM_COMMAND_DEBUG,   Console::Yes },
             { "warden force",       HandleDebugWardenForce,                rbac::RBAC_PERM_COMMAND_DEBUG,   Console::Yes },
-            { "personalclone",      HandleDebugBecomePersonalClone,        rbac::RBAC_PERM_COMMAND_DEBUG,   Console::No }
+            { "personalclone",      HandleDebugBecomePersonalClone,        rbac::RBAC_PERM_COMMAND_DEBUG,   Console::No },
+            { "stabilitytest",      HandleDebugStabilityTestCommand,       rbac::RBAC_PERM_COMMAND_DEBUG,   Console::No },
         };
         static ChatCommandTable commandTable =
         {
@@ -1754,6 +1756,83 @@ public:
         handler->SendSysMessage("This command does nothing right now. Edit your local core (cs_debug.cpp) to make it do whatever you need for testing.");
         return true;
     }
+
+    static bool HandleDebugStabilityTestCommand(ChatHandler* handler, uint32 number, bool on)
+    {
+        if (!number)
+        {
+            handler->SendSysMessage(LANG_BAD_VALUE);
+            handler->SetSentErrorMessage(true);
+            return false;
+        }
+
+        // Disconnect all bots
+        if (!on)
+        {
+            SessionMap const& sessions = sWorld->GetAllSessions();
+            for (auto session : sessions)
+            {
+                if (session.second->IsStabilityTest())
+                    session.second->SetStabilityTest(false);
+            }
+            return true;
+        }
+
+        // Add new bots
+        if (on)
+        {
+            if (number > 10000)
+                return false;
+
+            std::ostringstream query;
+            query << "SELECT account, guid, name FROM characters WHERE account NOT IN(0";
+
+            SessionMap const& sessions = sWorld->GetAllSessions();
+            for (auto session : sessions)
+                query << "," << session.first;
+
+            query << ") GROUP BY account ORDER BY RAND() LIMIT " << number;
+
+            QueryResult result = CharacterDatabase.PQuery(query.str().c_str());
+
+            if (result)
+            {
+                do
+                {
+                    Field* Fields = result->Fetch();
+
+                    uint32 accountId = Fields[0].GetUInt32();
+                    uint32 guid = Fields[1].GetUInt32();
+                    std::string name = Fields[2].GetString();
+
+                    handler->PSendSysMessage("%s", name.c_str());
+
+                    WorldSession* newSession = new WorldSession(accountId, name.c_str(), accountId, nullptr, SEC_ADMINISTRATOR, 8, time_t(0), "Wn64", LOCALE_esES, 0, false);
+
+                    newSession->SetStabilityTest(true);
+
+                    CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_ACCOUNT_DATA);
+                    stmt->setUInt32(0, accountId);
+                    newSession->LoadAccountData(CharacterDatabase.Query(stmt), 0);
+                    sWorld->AddSession(newSession);
+
+                    std::shared_ptr<LoginQueryHolder> holder = std::make_shared<LoginQueryHolder>(accountId, ObjectGuid::Create<HighGuid::Player>(guid));
+                    if (!holder->Initialize())
+                    {
+                        continue;
+                    }
+                    
+                    newSession->AddQueryHolderCallback(CharacterDatabase.DelayQueryHolder(holder)).AfterComplete([newSession](SQLQueryHolderBase const& holder)
+                    {
+                        newSession->HandlePlayerLogin(static_cast<LoginQueryHolder const&>(holder));
+                    });
+                } while (result->NextRow());
+            }
+        }
+
+        return true;
+    }
+
 };
 
 void AddSC_debug_commandscript()

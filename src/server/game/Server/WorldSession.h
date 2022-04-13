@@ -33,6 +33,7 @@
 #include "Optional.h"
 #include "Packet.h"
 #include "RaceMask.h"
+#include "QueryHolder.h"
 #include "SharedDefines.h"
 #include <boost/circular_buffer.hpp>
 #include <array>
@@ -968,6 +969,19 @@ struct PacketCounter
     uint32 amountCounter;
 };
 
+
+class TC_GAME_API LoginQueryHolder : public CharacterDatabaseQueryHolder
+{
+    private:
+        uint32 m_accountId;
+        ObjectGuid m_guid;
+    public:
+        LoginQueryHolder(uint32 accountId, ObjectGuid guid);
+        ObjectGuid GetGuid() const { return m_guid; }
+        uint32 GetAccountId() const { return m_accountId; }
+        bool Initialize();
+};
+
 /// Player session in the World
 class TC_GAME_API WorldSession
 {
@@ -1163,6 +1177,9 @@ class TC_GAME_API WorldSession
         void SetLatency(uint32 latency) { m_latency = latency; }
 
         std::atomic<time_t> m_timeOutTime;
+
+        void SetStabilityTest(bool value) { m_IsStabilityTestSession = value; }
+        bool IsStabilityTest() const { return m_IsStabilityTestSession; }
 
         void ResetTimeOutTime(bool onlyActive);
 
@@ -1991,6 +2008,8 @@ class TC_GAME_API WorldSession
 
         WorldSession(WorldSession const& right) = delete;
         WorldSession& operator=(WorldSession const& right) = delete;
+
+        bool m_IsStabilityTestSession = false;
 };
 
 #endif

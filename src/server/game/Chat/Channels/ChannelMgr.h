@@ -50,6 +50,7 @@ class TC_GAME_API ChannelMgr
         Channel* GetSystemChannel(uint32 channelId, AreaTableEntry const* zoneEntry = nullptr);
         Channel* CreateCustomChannel(std::string const& name);
         Channel* GetCustomChannel(std::string const& name) const;
+        Channel* GetJoinChannel(uint32 channelId, std::string const& name, AreaTableEntry const* zoneEntry = nullptr);
         Channel* GetChannel(uint32 channelId, std::string const& name, Player* player, bool notify = true, AreaTableEntry const* zoneEntry = nullptr) const;
         void LeftChannel(uint32 channelId, AreaTableEntry const* zoneEntry);
 

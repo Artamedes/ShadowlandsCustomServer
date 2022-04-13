@@ -205,6 +205,42 @@ Channel* ChannelMgr::GetCustomChannel(std::string const& name) const
     return nullptr;
 }
 
+Channel* ChannelMgr::GetJoinChannel(uint32 channelId, std::string const& name, AreaTableEntry const* zoneEntry /*= nullptr*/)
+{
+    if (channelId) // builtin
+    {
+        ChatChannelsEntry const* channelEntry = sChatChannelsStore.AssertEntry(channelId);
+        uint32 zoneId = zoneEntry ? zoneEntry->ID : 0;
+        if (channelEntry->Flags & (CHANNEL_DBC_FLAG_GLOBAL | CHANNEL_DBC_FLAG_CITY_ONLY))
+            zoneId = 0;
+
+        auto key = CreateBuiltinChannelGuid(channelId, zoneEntry);
+        auto itr = _channels.find(key);
+        if (itr != _channels.end())
+            return itr->second;
+
+        Channel* newChannel = new Channel(CreateCustomChannelGuid(), name, _team);
+        _channels[key] = newChannel;
+        return newChannel;
+    }
+    else // custom
+    {
+        std::wstring channelName;
+        if (!Utf8toWStr(name, channelName))
+            return nullptr;
+
+        wstrToLower(channelName);
+
+        auto itr = _customChannels.find(channelName);
+        if (itr != _customChannels.end())
+            return itr->second;
+
+        Channel* newChannel = new Channel(CreateCustomChannelGuid(), name, TEAM_NEUTRAL);
+        _customChannels[channelName] = newChannel;
+        return newChannel;
+    }
+}
+
 Channel* ChannelMgr::GetChannel(uint32 channelId, std::string const& name, Player* player, bool notify /*= true*/, AreaTableEntry const* zoneEntry /*= nullptr*/) const
 {
     Channel* result = nullptr;

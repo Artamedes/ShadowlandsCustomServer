@@ -221,7 +221,8 @@ void AuraApplication::SetNeedClientUpdate()
 
 void AuraApplication::BuildUpdatePacket(WorldPackets::Spells::AuraInfo& auraInfo, bool remove)
 {
-    ASSERT(_target->HasVisibleAura(this) != remove);
+    if (_target->HasVisibleAura(this) == remove)
+        return;
 
     auraInfo.Slot = GetSlot();
     if (remove)
