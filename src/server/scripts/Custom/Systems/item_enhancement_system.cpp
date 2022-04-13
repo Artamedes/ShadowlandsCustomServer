@@ -94,6 +94,7 @@ struct npc_mother_700013 : public ScriptedAI
             ClearGossipMenuFor(player);
             AddGossipItemFor(player, GossipOptionIcon::None, "|TInterface/Icons/spell_fire_twilightfire.blp:30:30:-30:0|tShadow Essence Enhancements", 0, 1);
             AddGossipItemFor(player, GossipOptionIcon::None, "|TInterface/Icons/ability_paladin_toweroflight.blp:30:30:-30:0|tLight Essence Enhancements", 0, 2);
+            AddGossipItemFor(player, GossipOptionIcon::None, "|TInterface/Icons/inv_maweye_black.blp:30:30:-30:0|tMaw Essence Enhancements", 0, 3);
             SendGossipMenuFor(player, 700013, me);
             return true;
         }
@@ -110,6 +111,9 @@ struct npc_mother_700013 : public ScriptedAI
                     break;
                 case 2:
                     player->GetSession()->SendListInventory(me->GetGUID(), 7000130);
+                    break;
+                case 3:
+                    player->GetSession()->SendListInventory(me->GetGUID(), 7000131);
                     break;
                 default:
                     OnGossipHello(player);
@@ -129,5 +133,23 @@ void AddSC_item_enhancement_system()
     new item_enhancement_system<6493>("item_enhancement_system_t1_siphoner");
     new item_enhancement_system<6547>("item_enhancement_system_t1_ineffable_truth");
     new item_enhancement_system<1522>("item_enhancement_system_t1_50_ilvls");
+
+    new item_enhancement_system<6478>("item_enhancement_system_t2_versatile");
+    new item_enhancement_system<6472>("item_enhancement_system_t2_masterful");
+    new item_enhancement_system<6475>("item_enhancement_system_t2_expident");
+    new item_enhancement_system<6481>("item_enhancement_system_t2_severe");
+    new item_enhancement_system<6484>("item_enhancement_system_t2_avoidant");
+    new item_enhancement_system<6494>("item_enhancement_system_t2_siphoner");
+    new item_enhancement_system<6548>("item_enhancement_system_t2_ineffable_truth");
+    new item_enhancement_system<1523>("item_enhancement_system_t2_50_ilvls");
+
+    new item_enhancement_system<6479>("item_enhancement_system_t3_versatile");
+    new item_enhancement_system<6473>("item_enhancement_system_t3_masterful");
+    new item_enhancement_system<6476>("item_enhancement_system_t3_expident");
+    new item_enhancement_system<6482>("item_enhancement_system_t3_severe");
+    new item_enhancement_system<6485>("item_enhancement_system_t3_avoidant");
+    new item_enhancement_system<6495>("item_enhancement_system_t3_siphoner");
+    new item_enhancement_system<6549>("item_enhancement_system_t3_ineffable_truth");
+    new item_enhancement_system<1524>("item_enhancement_system_t3_50_ilvls");
     RegisterCreatureAI(npc_mother_700013);
 }
