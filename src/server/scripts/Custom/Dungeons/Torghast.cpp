@@ -714,7 +714,7 @@ public:
                                                                     player->PlayerTalkClass->SendQuestGiverQuestDetails(sObjectMgr->GetQuestTemplate(700035), player->GetGUID(), true, true);
                                                                 }
 
-                                                                player->RemoveAurasDueToSpell(139844);
+                                                                //player->RemoveAurasDueToSpell(139844);
                                                             }
                                                         }
                                                     }
