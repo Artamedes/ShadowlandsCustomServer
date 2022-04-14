@@ -2261,7 +2261,6 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         static uint32 TeamForRace(uint8 race);
         static TeamId TeamIdForRace(uint8 race);
         uint32 GetTeam() const { return m_team; }
-        void SwitchToOppositeTeam(bool apply);
         TeamId GetTeamId() const { return m_team == ALLIANCE ? TEAM_ALLIANCE : TEAM_HORDE; }
         bool IsInAlliance() const { return m_team == ALLIANCE; }
         bool IsInHorde() const { return m_team == HORDE; }
