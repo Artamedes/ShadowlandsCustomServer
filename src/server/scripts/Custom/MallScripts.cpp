@@ -849,7 +849,6 @@ struct npc_sturzah_800005 : public ScriptedAI
         bool OnGossipSelect(Player* player, uint32 menuId, uint32 gossipListId) override
         {
             uint32 actionId = player->PlayerTalkClass->GetGossipOptionAction(gossipListId);
-            CloseGossipMenuFor(player);
 
             switch (actionId)
             {
@@ -858,6 +857,7 @@ struct npc_sturzah_800005 : public ScriptedAI
                 case 3: player->GetSession()->SendListInventory(me->GetGUID(), 8000052); break;
                 case 4: player->GetSession()->SendListInventory(me->GetGUID(), 8000053); break;
                 case 5: player->GetSession()->SendListInventory(me->GetGUID(), 8000054); break;
+                default: CloseGossipMenuFor(player); break;
             }
 
             return true;
