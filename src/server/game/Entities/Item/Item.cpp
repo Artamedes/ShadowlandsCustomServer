@@ -3015,33 +3015,47 @@ void BonusData::AddBonus(uint32 type, std::array<int32, 4> const& values)
     uint32 l_BonusId3 = 1618;
     uint32 l_BonusId4 = 1650;
 
-    l_SS << "|c" << std::hex << ItemQualityColors[l_Proto->GetQuality()] << std::dec <<
-        +"|Hitem:" << p_Entry << "::::::::60:261:::4:6606:1610:1618:1650::::::|h[" << l_Proto->GetName(LocaleConstant::LOCALE_enUS) << "]|h|r";
+    l_SS << "|c" << std::hex << ItemQualityColors[l_Proto->GetQuality()] << std::dec << "|Hitem:" << p_Entry << "::::::::60:261:::4:6606:1610:1618:1650::::::|h[" << l_Proto->GetName(LocaleConstant::LOCALE_enUS) << "]|h|r";
 
     return l_SS.str();
 }
 
-/*static*/ std::string Item::GetItemLink(Item* item)
+/*static*/ std::string Item::GetItemLink(Item* item, Player* player)
 {
     auto l_Proto = item->GetTemplate();
     std::ostringstream l_SS;
 
-    uint32 l_ItemContext1 = 60;
-    uint32 l_ItemContext2 = 261;
-    uint32 l_BonusId[4] = { 0, 0, 0, 0};
+    if (!player)
+        player = item->GetOwner();
 
-    auto itr = 0;
+    auto linkLevel = 0;
+    auto specializationId = 0;
 
-    for (auto bonusId : *item->m_itemData->BonusListIDs)
+    if (player)
     {
-        if (itr <= 3)
-            l_BonusId[itr++] = bonusId;
-        else
-            break;
+        linkLevel = player->GetLevel();
+        specializationId = player->GetSpecializationId();
     }
 
-    l_SS << "|c" << std::hex << ItemQualityColors[l_Proto->GetQuality()] << std::dec <<
-        +"|Hitem:" << l_Proto->GetId() << "::::::::" << l_ItemContext1 << ":" << l_ItemContext2 << ":::4:" << l_BonusId[0] << ":" << l_BonusId[1] << ":" << l_BonusId[2] << ":" << l_BonusId[3] << "::::::|h[" << l_Proto->GetName(LocaleConstant::LOCALE_enUS) << "]|h|r";
+    l_SS << "|c" << std::hex << ItemQualityColors[l_Proto->GetQuality()] << std::dec << "|Hitem:";
+
+    l_SS << l_Proto->GetId() << ":"; // ItemId -  Item ID that can be used for GetItemInfo calls.
+    l_SS << item->GetEnchantmentId(PERM_ENCHANTMENT_SLOT) << ":"; // EnchantId - Permament enchants applied to an item. See list of EnchantIds.
+    l_SS << item->GetEnchantmentId(SOCK_ENCHANTMENT_SLOT) << ":"; // gemId1 - Embedded gems re-use EnchantId indices, though gem icons show only for specific values
+    l_SS << item->GetEnchantmentId(SOCK_ENCHANTMENT_SLOT_2) << ":"; // gemId2
+    l_SS << item->GetEnchantmentId(SOCK_ENCHANTMENT_SLOT_3) << ":"; // gemId3
+    l_SS << item->GetEnchantmentId(BONUS_ENCHANTMENT_SLOT) << ":"; // gemId4
+    l_SS << item->GetBonus()->Suffix << ":"; // suffixId
+    l_SS << 0 << ":"; // uniqueId -  Data pertaining to a specific instance of the item.
+    l_SS << linkLevel << ":"; // linkLevel - Level of the character supplying the link. This is used to render scaling heirloom item tooltips at the proper level.
+    l_SS << specializationId << ":"; // specializationId
+    l_SS << 0 << ":"; // upgradeId
+    l_SS << 0 << ":"; // instanceDifficultyId
+    l_SS << item->m_itemData->BonusListIDs->size() << ":"; // num bonusIds
+    for (auto bonusId : *item->m_itemData->BonusListIDs)
+        l_SS << bonusId << ":"; // bonusId
+    l_SS << 0; // UpgradeValue
+    l_SS << "|h[" << l_Proto->GetName(LocaleConstant::LOCALE_enUS) << "]|h|r";
 
     return l_SS.str();
 }
