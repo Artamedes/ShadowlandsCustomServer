@@ -46,6 +46,7 @@ EndScriptData */
 #include "World.h"
 #include "WorldSession.h"
 #include "WaypointManager.h"
+#include "LootMgr.h"
 
 #include "ScriptedGossip.h"
 
@@ -322,20 +323,43 @@ public:
             { "follow stop",    HandleNpcUnFollowCommand,          rbac::RBAC_PERM_COMMAND_NPC_FOLLOW,         Console::No },
             { "evade",          HandleNpcEvadeCommand,             rbac::RBAC_PERM_COMMAND_NPC_EVADE,          Console::No },
             { "showloot",       HandleNpcShowLootCommand,          rbac::RBAC_PERM_COMMAND_NPC_SHOWLOOT,       Console::No },
-            { "clone",          HandleNpcCloneCommand,             rbac::RBAC_PERM_COMMAND_NPC_SHOWLOOT,       Console::No },
+            { "clone",          HandleNpcCloneCommand,             rbac::RBAC_PERM_COMMAND_DEV,       Console::No },
             { "get",            HandleNpcGetCommand,               rbac::RBAC_PERM_COMMAND_NPC_SHOWLOOT,       Console::No },
-            { "create",         HandleNpcCreateCommand,            rbac::RBAC_PERM_COMMAND_NPC_SHOWLOOT,       Console::No },
-            { "reload",         HandleNpcReloadCommand,            rbac::RBAC_PERM_COMMAND_NPC_SHOWLOOT,       Console::No },
-            { "wpadd",          HandleWpAddCommand,                rbac::RBAC_PERM_COMMANDS_PINFO_CHECK_PERSONAL_DATA, Console::No },
-            { "relwp",          HandleRelWpCommand,                rbac::RBAC_PERM_COMMANDS_PINFO_CHECK_PERSONAL_DATA, Console::No },
-            { "addleaderformation",          HandleAddLeaderFormation,                rbac::RBAC_PERM_COMMANDS_PINFO_CHECK_PERSONAL_DATA, Console::No },
-            { "addformation",          HandleAddFormationCommand,                rbac::RBAC_PERM_COMMANDS_PINFO_CHECK_PERSONAL_DATA, Console::No },
+            { "create",         HandleNpcCreateCommand,            rbac::RBAC_PERM_COMMAND_DEV,       Console::No },
+            { "reload",         HandleNpcReloadCommand,            rbac::RBAC_PERM_COMMAND_DEV,       Console::No },
+            { "wpadd",          HandleWpAddCommand,                rbac::RBAC_PERM_COMMAND_DEV, Console::No },
+            { "relwp",          HandleRelWpCommand,                rbac::RBAC_PERM_COMMAND_DEV, Console::No },
+            { "addleaderformation", HandleAddLeaderFormation,      rbac::RBAC_PERM_COMMAND_DEV, Console::No },
+            { "addformation",   HandleAddFormationCommand,         rbac::RBAC_PERM_COMMAND_DEV, Console::No },
+            { "addloot",        HandleAddLootCommand,              rbac::RBAC_PERM_COMMAND_DEV, Console::No },
         };
         static ChatCommandTable commandTable =
         {
             { "npc", npcCommandTable },
         };
         return commandTable;
+    }
+
+    static bool HandleAddLootCommand(ChatHandler* handler, uint32 itemId, uint32 count, Optional<uint32> chance)
+    {
+        auto creature = handler->getSelectedCreature();
+        if (!creature)
+            return false;
+
+        auto lootId = creature->GetCreatureTemplate()->lootid;
+        if (!lootId)
+        {
+            lootId = creature->GetEntry();
+            WorldDatabase.PQuery("UPDATE creature_template set lootid = %u where entry = %u", lootId, creature->GetEntry());
+        }
+
+        WorldDatabase.PQuery("REPLACE INTO creature_loot_template (Entry, Item, MinCount, MaxCount, Chance) VALUE (%u, %u, %u, %u, %u)", lootId, itemId, count, count, chance.value_or(100));
+        LoadLootTemplates_Creature();
+        LootTemplates_Creature.CheckLootRefs();
+        handler->SendGlobalGMSysMessage("DB table `creature_loot_template` reloaded.");
+        sConditionMgr->LoadConditions(true);
+        handler->PSendSysMessage("added %u with count %u chance %u to %u", itemId, count, chance.value_or(100), lootId);
+        return true;
     }
 
     static bool HandleAddFormationCommand(ChatHandler* handler, uint64 leaderGUID, Optional<float> distance, Optional<float> angle, Optional<uint32> groupai)
