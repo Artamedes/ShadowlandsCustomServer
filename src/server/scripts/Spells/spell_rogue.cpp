@@ -239,6 +239,7 @@ enum RogueSpells
     SPELL_ROGUE_FLAGELLATION_DMG = 345316,
     SPELL_ROGUE_FLAGELLATION_AFTER_AURA = 345569,
     SPELL_ROGUE_SEPSIS_AURA = 347037,
+    SPELL_ROGUE_SHROUD_OF_CONCEALMENT = 114018,
 };
 
 enum RollTheBones
@@ -284,35 +285,22 @@ uint32 GetFinishngComboPointsAndDropEchoingReprimand(Unit* unitCaster, uint32 pr
     //if (powerType == POWER_COMBO_POINTS)
     {
         auto cpAura = unitCaster->GetAuraApplication([&](AuraApplication const* aurApp)
-            {
-                return aurApp->GetBase()->HasEffectType(SPELL_AURA_SET_POWER_POINT_CHARGE) && aurApp->GetBase()->GetEffect(EFFECT_0)->GetMiscValue() == prevPowerCost;
-            });
+        {
+            return aurApp->GetBase()->HasEffectType(SPELL_AURA_SET_POWER_POINT_CHARGE) && aurApp->GetBase()->GetEffect(EFFECT_0)->GetMiscValue() == prevPowerCost;
+        });
         if (cpAura)
         {
             unitCaster->RemoveAura(cpAura);
+            unitCaster->Variables.Set("RogueComboPoints", 7);
             return 7;
         }
     }
     return prevPowerCost;
 }
 
-// todo: remove this crap
-std::unordered_map<ObjectGuid::LowType, uint8> _RogueComboPoints;
-
-uint8 RogueComboPoints(WorldObject* Caster)
+uint32 RogueComboPoints(WorldObject* Caster)
 {
-    auto itr = _RogueComboPoints.find(Caster->GetGUID().GetCounter());
-    if (itr != _RogueComboPoints.end())
-        return itr->second;
-    return 0;
-}
-
-uint8 RogueComboPoints(ObjectGuid::LowType Caster)
-{
-    auto itr = _RogueComboPoints.find(Caster);
-    if (itr != _RogueComboPoints.end())
-        return itr->second;
-    return 0;
+    return Caster->Variables.GetValue("RogueComboPoints", 0);
 }
 
 class rogue_playerscript : public PlayerScript
@@ -331,8 +319,9 @@ public:
         if (player->GetSpecializationId() != TALENT_SPEC_ROGUE_ASSASSINATION && player->GetSpecializationId() != TALENT_SPEC_ROGUE_COMBAT && player->GetSpecializationId() != TALENT_SPEC_ROGUE_SUBTLETY)
             return;
 
+        // check echoing reprimand here?
         if (power == POWER_COMBO_POINTS && oldValue > newValue)
-            _RogueComboPoints[player->GetGUID().GetCounter()] = oldValue;
+            player->Variables.Set("RogueComboPoints", oldValue);
     }
 
     void CheckOnSpellHitOnUnit(Unit* target, WorldObject const* /*caster*/, SpellMissInfo& spellMissInfo, SpellInfo const* spellInfo) override
@@ -444,7 +433,7 @@ class spell_rog_between_the_eyes :public SpellScript
         if (!caster || !target)
             return;
 
-        uint32 _cp = RogueComboPoints(caster->GetGUID().GetCounter());
+        uint32 _cp = RogueComboPoints(caster);
         
         int32 duration = _cp * IN_MILLISECONDS;
 
@@ -458,9 +447,10 @@ class spell_rog_between_the_eyes :public SpellScript
 	{
         if (Unit* caster = GetCaster())
         {
-            uint32 _cp = RogueComboPoints(caster->GetGUID().GetCounter());
+            uint32 _cp = RogueComboPoints(caster);
             int32 damage = GetHitDamage() * _cp;
             _cp = GetFinishngComboPointsAndDropEchoingReprimand(GetCaster(), _cp);
+            caster->Variables.Set("RogueComboPoints", _cp);
             if (AuraEffect* aura = caster->GetAuraEffect(SPELL_ROGUE_ACE_UP_YOUR_SLEEVE, EFFECT_0))
                 damage += aura->GetAmount() * _cp;
 
@@ -1180,6 +1170,7 @@ class spell_rog_stealth : public SpellScriptLoader
                     target->RemoveAurasDueToSpell(SPELL_ROGUE_SHADOW_FOCUS_EFFECT);
                     target->RemoveAurasDueToSpell(SPELL_ROGUE_STEALTH_STEALTH_AURA);
                     target->RemoveAurasDueToSpell(SPELL_ROGUE_STEALTH_SHAPESHIFT_AURA);
+                    target->RemoveAurasDueToSpell(SPELL_ROGUE_SHROUD_OF_CONCEALMENT);
                     if (target->HasAura(SPELL_ROGUE_SUBTERFUGE))
                         target->CastSpell(target, SPELL_ROGUE_SUBTERFUGE_AURA, true);
                     if (Aura* aur = target->GetAura(SPELL_ROGUE_MASTER_OF_SUBTLETY_DAMAGE_PERCENT))
@@ -2110,7 +2101,9 @@ public:
         enum UsedSpells
         {
             SPELL_ROGUE_STRIKE_FROM_THE_SHADOWS_SLOW = 222775,
-            SPELL_ROGUE_STRIKE_FROM_THE_SHADOWS_STUN = 196958
+            SPELL_ROGUE_STRIKE_FROM_THE_SHADOWS_STUN = 196958,
+
+            ImmortalTechnique = 364557,
         };
 
         bool Validate(SpellInfo const* /*SpellInfo*/) override
@@ -2131,7 +2124,7 @@ public:
                 return;
 
             if (caster->HasAura(SPELL_ROGUE_SHADOWSTRIKE_BONUS))
-                if(!caster->IsWithinMeleeRange(target))
+                if (!caster->IsWithinMeleeRange(target))
                     GetCaster()->CastSpell(target, SPELL_ROGUE_SHADOWSTEP_LEAP, true);
         }
 
@@ -2162,6 +2155,21 @@ public:
 
             if(caster->HasAura(SPELL_ROGUE_SHADOWSTRIKE_BONUS))
                 caster->RemoveAurasDueToSpell(SPELL_ROGUE_SHADOWSTRIKE_BONUS);
+
+            if (auto aur = caster->GetAura(ImmortalTechnique))
+            {
+                if (roll_chance_i(15))
+                {
+                    uint32 AddDuration = 5000;
+
+                    if (auto shadowBlades = caster->GetAura(SPELL_ROGUE_SHADOW_BLADES))
+                        shadowBlades->ModDuration(AddDuration);
+                    else if (auto shadowBlades = caster->AddAura(SPELL_ROGUE_SHADOW_BLADES))
+                    {
+                        shadowBlades->SetDuration(AddDuration);
+                    }
+                }
+            }
         }
 
         void Register() override
@@ -2442,6 +2450,7 @@ class aura_rog_shadow_dance_effect : public AuraScript
             caster->RemoveAura(SPELL_ROGUE_SHADOW_FOCUS_EFFECT);
             caster->RemoveAura(SPELL_ROGUE_STEALTH_BAR);
             caster->RemoveAura(SPELL_ROGUE_SHADOW_DANCE_AURA);
+            caster->RemoveAurasDueToSpell(SPELL_ROGUE_SHROUD_OF_CONCEALMENT);
         }
     }
 
@@ -2593,104 +2602,91 @@ public:
     }
 };
 
-//Deepening Shadows 185314 Update 8.0.1 Build 28153
+/// 185314 - Deepening Shadows  Update 9.2.0 43206
 class spell_rog_deepening_shadows : public AuraScript
 {
     PrepareAuraScript(spell_rog_deepening_shadows);
 
+    enum Shadow
+    {
+        ShadowDanceChargeID = 1615,
+        EnvelopingShadows = 238104,
+        ImmortalTechnique = 363949,
+    };
 
     bool CheckProc(ProcEventInfo& eventInfo)
     {
-        if (eventInfo.GetSpellInfo() && (eventInfo.GetSpellInfo()->Id == SPELL_ROGUE_EVISCERATE || eventInfo.GetSpellInfo()->Id == SPELL_ROGUE_SECRET_TECHNIQUE ||
-            eventInfo.GetSpellInfo()->Id == SPELL_ROGUE_KIDNEY_SHOT || eventInfo.GetSpellInfo()->Id == SPELL_ROGUE_NIGHTBLADE))
-            return true;
+        if (!eventInfo.GetSpellInfo())
+            return false;
 
-        return false;
+        switch (eventInfo.GetSpellInfo()->Id)
+        {
+            case SPELL_ROGUE_EVISCERATE:
+            case SPELL_ROGUE_NIGHTBLADE:
+            case SPELL_ROGUE_KIDNEY_SHOT:
+            case SPELL_ROGUE_SECRET_TECHNIQUE:
+            case SPELL_ROGUE_RUPTURE:
+            case SPELL_ROGUE_BLACK_POWDER:
+            case SPELL_ROGUE_SLICE_AND_DICE:
+                return true;
+            default:
+                return false;
+        }
     }
 
-    void HandleProc(AuraEffect* aurEff, ProcEventInfo& /*eventInfo*/)
+    void HandleProc(AuraEffect* aurEff, ProcEventInfo& eventInfo)
     {
-        if (Unit* caster = GetCaster())        
-            caster->GetSpellHistory()->ReduceChargeCooldown(sSpellMgr->GetSpellInfo(SPELL_ROGUE_SHADOW_DANCE)->ChargeCategoryId, RogueComboPoints(caster) * aurEff->GetBaseAmount() / 10 * IN_MILLISECONDS);
+        //if (auto spell = eventInfo.GetProcSpell())
+        {
+            if (Unit* caster = GetCaster())
+            {
+                uint32 CDR = 1000;
+
+                if (caster->HasAura(EnvelopingShadows))
+                    CDR += 500;
+
+                auto cp = RogueComboPoints(caster);
+
+                // 4 set bonus
+                if (caster->HasAura(ImmortalTechnique))
+                {
+                    if (roll_chance_i(cp * 3))
+                    {
+                        std::list<Unit*> attackUnits;
+                        caster->GetAttackableUnitListInRange(attackUnits, 15.0f);
+                        attackUnits.remove_if([caster](Unit* who) {
+                            return !who->IsInCombat();
+                        });
+
+                        if (!attackUnits.empty())
+                        {
+                            bool hasLeapBonus = caster->HasAura(SPELL_ROGUE_SHADOWSTRIKE_BONUS);
+                            if (hasLeapBonus)
+                                caster->RemoveAurasDueToSpell(SPELL_ROGUE_SHADOWSTRIKE_BONUS);
+
+                            for (auto unit : attackUnits)
+                            {
+                                caster->CastSpell(unit, SPELL_ROGUE_SHADOWSTRIKE, CastSpellExtraArgs(TriggerCastFlags(TRIGGERED_IGNORE_POWER_AND_REAGENT_COST | TRIGGERED_IGNORE_SPELL_AND_CATEGORY_CD | TRIGGERED_IGNORE_GCD)));
+                            }
+
+                            if (hasLeapBonus)
+                                caster->CastSpell(caster, SPELL_ROGUE_SHADOWSTRIKE_BONUS, true);
+                        }
+
+                    }
+                }
+
+                caster->GetSpellHistory()->ReduceChargeCooldown(
+                    ShadowDanceChargeID,
+                    cp * CDR);
+            }
+        }
     }
 
     void Register() override
     {
         DoCheckProc += AuraCheckProcFn(spell_rog_deepening_shadows::CheckProc);
         OnEffectProc += AuraEffectProcFn(spell_rog_deepening_shadows::HandleProc, EFFECT_0, SPELL_AURA_DUMMY);
-    }
-};
-
-// Enveloping Shadows - 206237
-class spell_rog_enveloping_shadows : public SpellScriptLoader
-{
-public:
-    spell_rog_enveloping_shadows() : SpellScriptLoader("spell_rog_enveloping_shadows") {}
-
-    class spell_rog_enveloping_shadows_AuraScript : public AuraScript
-    {
-        PrepareAuraScript(spell_rog_enveloping_shadows_AuraScript);
-
-        uint8 _cp;
-
-        void HandleApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
-        {
-            if (!GetCaster())
-                return;
-
-            int32 maxcp = GetCaster()->HasAura(SPELL_ROGUE_DEEPER_STRATAGEM) ? 6 : 5;
-            _cp = std::min(GetCaster()->GetPower(POWER_COMBO_POINTS) + 1, maxcp);
-
-            GetCaster()->ModifyPower(POWER_COMBO_POINTS, -1 * (_cp - 1));
-            if (Aura* aur = GetAura())
-            {
-                aur->SetMaxDuration(_cp * 6000);
-                aur->RefreshDuration();
-            }
-            SpellCategoryEntry const* catEntry = sSpellCategoryStore.LookupEntry(sSpellMgr->GetSpellInfo(SPELL_ROGUE_SHADOW_DANCE)->ChargeCategoryId);
-            if (GetCaster()->HasAura(SPELL_ROGUE_DEEPENING_SHADOWS))
-                GetCaster()->GetSpellHistory()->ReduceChargeCooldown(catEntry, _cp * 3000);
-            if (GetCaster()->HasAura(SPELL_ROGUE_RELENTLESS_STRIKES) && roll_chance_i(20*_cp))
-                GetCaster()->CastSpell(GetCaster(), SPELL_ROGUE_RELENTLESS_STRIKES_POWER, true);
-            if (GetCaster()->HasAura(SPELL_ROGUE_ALACRITY) && roll_chance_i(20 * _cp))
-                GetCaster()->CastSpell(GetCaster(), SPELL_ROGUE_ALACRITY_BUFF, true);
-        }
-
-        void Register() override
-        {
-
-            AfterEffectApply += AuraEffectApplyFn(spell_rog_enveloping_shadows_AuraScript::HandleApply, EFFECT_0, SPELL_AURA_PERIODIC_ENERGIZE, AURA_EFFECT_HANDLE_REAL_OR_REAPPLY_MASK);
-        }
-    };
-
-    class spell_rog_enveloping_shadows_SpellScript : public SpellScript
-    {
-        PrepareSpellScript(spell_rog_enveloping_shadows_SpellScript);
-
-        void HandleLaunch(SpellEffIndex /*effIndex*/)
-        {
-            Unit* caster = GetCaster();
-            Unit* target = GetHitUnit();
-            if (!caster || !target)
-                return;
-
-            target->RemoveAurasDueToSpell(SPELL_ROGUE_ENVELOPING_SHADOWS, caster->GetGUID());
-        }
-
-        void Register() override
-        {
-            OnEffectLaunchTarget += SpellEffectFn(spell_rog_enveloping_shadows_SpellScript::HandleLaunch, EFFECT_0, SPELL_EFFECT_APPLY_AURA);
-        }
-    };
-
-    SpellScript* GetSpellScript() const override
-    {
-        return new spell_rog_enveloping_shadows_SpellScript();
-    }
-
-    AuraScript* GetAuraScript() const override
-    {
-        return new spell_rog_enveloping_shadows_AuraScript();
     }
 };
 
@@ -4627,7 +4623,6 @@ void AddSC_rogue_spell_scripts()
     new spell_rog_deadly_throw();
     RegisterSpellScript(spell_rog_deepening_shadows);
     new spell_rog_dirty_tricks();
-    new spell_rog_enveloping_shadows();
     RegisterSpellScript(spell_rog_envenom);
     RegisterSpellScript(spell_rog_eviscerate);
     new spell_rog_fan_of_knives();
