@@ -30,6 +30,10 @@
 #include "SpellAuraEffects.h"
 #include "SpellHistory.h"
 #include "SpellScript.h"
+#include "AreaTrigger.h"
+#include "AreaTriggerAI.h"
+#include "TemporarySummon.h"
+#include "PhasingHandler.h"
 
 enum WarriorSpells
 {
@@ -1038,6 +1042,100 @@ class aura_warr_bladestorm : public AuraScript
     }
 };
 
+// kyrian spear - 307963  tether
+// 17984
+struct at_warr_kyrian_spear : AreaTriggerAI
+{
+    at_warr_kyrian_spear(AreaTrigger* areatrigger) : AreaTriggerAI(areatrigger) { }
+
+    enum Spear
+    {
+        Tether = 307963,
+        Visual = 308062,
+    };
+
+    ObjectGuid triggerGuid;
+
+    void OnCreate() override
+    {
+        if (auto caster = at->GetOwner())
+        {
+            if (auto tempSumm = caster->SummonCreature(WORLD_TRIGGER, at->GetPosition(), TEMPSUMMON_TIMED_DESPAWN, 4s))
+            {
+                tempSumm->SetFaction(caster->GetFaction());
+                tempSumm->SetOwnerGUID(caster->GetGUID());
+                PhasingHandler::InheritPhaseShift(tempSumm, caster);
+                triggerGuid = tempSumm->GetGUID();
+            }
+        }
+    }
+
+    void OnUnitEnter(Unit* unit) override
+    {
+        if (auto caster = at->GetOwner())
+            if (caster->IsValidAttackTarget(unit))
+                if (auto trigger = ObjectAccessor::GetCreature(*at, triggerGuid))
+                    unit->CastSpell(*trigger, Visual, true);
+    }
+
+    void OnUnitExit(Unit* unit) override
+    {
+        if (auto caster = at->GetOwner())
+            if (caster->IsValidAttackTarget(unit))
+                if (auto trigger = ObjectAccessor::GetCreature(*at, triggerGuid))
+                    unit->CastSpell(trigger, Tether, true);
+    }
+
+    void OnRemove() override
+    {
+        for (auto guid : at->GetInsideUnits())
+            if (auto unit = ObjectAccessor::GetCreature(*at, guid))
+                unit->RemoveAurasDueToSpell(Visual);
+    }
+};
+
+// 21902
+struct at_warr_ancient_aftershock : public AreaTriggerAI
+{
+    at_warr_ancient_aftershock(AreaTrigger* areatrigger) : AreaTriggerAI(areatrigger) { }
+
+    enum Aftershock
+    {
+        Stun = 326062,
+        Energize = 326076,
+    };
+
+    int32 ticks = 0;
+
+    void OnUpdate(uint32 diff)
+    {
+        if (ticks <= 0)
+        {
+            ticks = 3000;
+            if (auto caster = at->GetOwner())
+            {
+                uint32 targetCount = 5;
+                for (auto guid : at->GetInsideUnits())
+                {
+                    if (auto unit = ObjectAccessor::GetCreature(*at, guid))
+                    {
+                        if (!caster->IsValidAttackTarget(unit))
+                            continue;
+
+                        if (--targetCount == 0)
+                            break;
+
+                        caster->CastSpell(unit, Stun, true);
+                        caster->CastSpell(caster, Energize, true);
+                    }
+                }
+            }
+        }
+        else
+            ticks -= diff;
+    }
+};
+
 void AddSC_warrior_spell_scripts()
 {
     RegisterSpellScript(spell_warr_bloodthirst);
@@ -1065,4 +1163,6 @@ void AddSC_warrior_spell_scripts()
     new spell_warr_raging_blow();
     new spell_warr_bladestorm_offhand();
     RegisterSpellScript(aura_warr_bladestorm);
+    RegisterAreaTriggerAI(at_warr_kyrian_spear);
+    RegisterAreaTriggerAI(at_warr_ancient_aftershock);
 }
