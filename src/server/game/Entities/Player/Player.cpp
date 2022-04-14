@@ -585,7 +585,7 @@ bool Player::Create(ObjectGuid::LowType guidlow, WorldPackets::Character::Charac
     return true;
 }
 
-bool Player::StoreNewItemInBestSlots(uint32 titem_id, uint32 titem_amount, ItemContext context /*= ItemContext::NONE*/, std::vector<uint32> bonusListIds /*= nullptr*/)
+bool Player::StoreNewItemInBestSlots(uint32 titem_id, uint32 titem_amount, ItemContext context /*= ItemContext::NONE*/, std::vector<int32> bonusListIds /*= nullptr*/)
 {
     TC_LOG_DEBUG("entities.player.items", "Player::StoreNewItemInBestSlots: Player '%s' (%s) creates initial item (ItemID: %u, Count: %u)",
         GetName().c_str(), GetGUID().ToString().c_str(), titem_id, titem_amount);
@@ -612,7 +612,7 @@ bool Player::StoreNewItemInBestSlots(uint32 titem_id, uint32 titem_amount, ItemC
     InventoryResult msg = CanStoreNewItem(INVENTORY_SLOT_BAG_0, NULL_SLOT, sDest, titem_id, titem_amount);
     if (msg == EQUIP_ERR_OK)
     {
-        StoreNewItem(sDest, titem_id, true, GenerateItemRandomBonusListId(titem_id));
+        StoreNewItem(sDest, titem_id, true, GenerateItemRandomBonusListId(titem_id), GuidSet(), ItemContext::NONE, bonusListIds);
         return true;                                        // stored
     }
 
@@ -12346,7 +12346,7 @@ Item* Player::_StoreItem(uint16 pos, Item* pItem, uint32 count, bool clone, bool
     }
 }
 
-Item* Player::EquipNewItem(uint16 pos, uint32 item, ItemContext context, bool update, std::vector<uint32> bonusListIds /*= nullptr*/)
+Item* Player::EquipNewItem(uint16 pos, uint32 item, ItemContext context, bool update, std::vector<int32> bonusListIds /*= nullptr*/)
 {
     if (Item* pItem = Item::CreateItem(item, 1, context, this))
     {

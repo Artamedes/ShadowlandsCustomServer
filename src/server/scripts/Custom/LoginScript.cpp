@@ -29,6 +29,7 @@ class LoginScript : public PlayerScript
                     p_Player->SetActiveTalentGroup(1);
                     static uint32 items[] = { 182997, 182994, 183032, 182999, 183018, 182984, 183015, 183002, 183027, 183039, 183036, 183037, 179543, 179543 };
 
+                    p_Player->SetCanTitanGrip(true);
                     for (uint32 item : items)
                         p_Player->StoreNewItemInBestSlots(item, 1, ItemContext::Raid_Raid_Finder, {7186});
                     break;
@@ -170,61 +171,73 @@ class LoginScript : public PlayerScript
                 case CLASS_WARRIOR:
                 {
                     p_Player->GetCovenantMgr()->SetCovenant(CovenantID::Kyrian);
+                    p_Player->GetCovenantMgr()->SetSoulbind(SoulbindID::Pelagos);
                     break;
                 }
                 case CLASS_PALADIN:
                 {
                     p_Player->GetCovenantMgr()->SetCovenant(CovenantID::Kyrian);
+                    p_Player->GetCovenantMgr()->SetSoulbind(SoulbindID::Pelagos);
                     break;
                 }
                 case CLASS_HUNTER:
                 {
                     p_Player->GetCovenantMgr()->SetCovenant(CovenantID::NightFae);
+                    p_Player->GetCovenantMgr()->SetSoulbind(SoulbindID::Niya);
                     break;
                 }
                 case CLASS_ROGUE:
                 {
                     p_Player->GetCovenantMgr()->SetCovenant(CovenantID::Kyrian);
+                    p_Player->GetCovenantMgr()->SetSoulbind(SoulbindID::Pelagos);
                     break;
                 }
                 case CLASS_PRIEST:
                 {
                     p_Player->GetCovenantMgr()->SetCovenant(CovenantID::Necrolord);
+                    p_Player->GetCovenantMgr()->SetSoulbind(SoulbindID::PlagueDeviserMarileth);
                     break;
                 }
                 case CLASS_DEATH_KNIGHT:
                 {
                     p_Player->GetCovenantMgr()->SetCovenant(CovenantID::Necrolord);
+                    p_Player->GetCovenantMgr()->SetSoulbind(SoulbindID::PlagueDeviserMarileth);
                     break;
                 }
                 case CLASS_SHAMAN:
                 {
                     p_Player->GetCovenantMgr()->SetCovenant(CovenantID::Venthyr);
+                    p_Player->GetCovenantMgr()->SetSoulbind(SoulbindID::NadjiaTheMistblade);
                     break;
                 }
                 case CLASS_MAGE:
                 {
                     p_Player->GetCovenantMgr()->SetCovenant(CovenantID::NightFae);
+                    p_Player->GetCovenantMgr()->SetSoulbind(SoulbindID::Niya);
                     break;
                 }
                 case CLASS_WARLOCK:
                 {
                     p_Player->GetCovenantMgr()->SetCovenant(CovenantID::NightFae);
+                    p_Player->GetCovenantMgr()->SetSoulbind(SoulbindID::Niya);
                     break;
                 }
                 case CLASS_MONK:
                 {
                     p_Player->GetCovenantMgr()->SetCovenant(CovenantID::Necrolord);
+                    p_Player->GetCovenantMgr()->SetSoulbind(SoulbindID::PlagueDeviserMarileth);
                     break;
                 }
                 case CLASS_DRUID:
                 {
                     p_Player->GetCovenantMgr()->SetCovenant(CovenantID::NightFae);
+                    p_Player->GetCovenantMgr()->SetSoulbind(SoulbindID::Niya);
                     break;
                 }
                 case CLASS_DEMON_HUNTER:
                 {
                     p_Player->GetCovenantMgr()->SetCovenant(CovenantID::NightFae);
+                    p_Player->GetCovenantMgr()->SetSoulbind(SoulbindID::Niya);
                     break;
                 }
                 }
