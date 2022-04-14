@@ -4458,6 +4458,77 @@ class aura_mage_enhaced_pyrotechnics : public AuraScript
     }
 };
 
+// 314791 
+class spell_mage_shifting_power : public AuraScript
+{
+    PrepareAuraScript(spell_mage_shifting_power);
+
+    enum Shift
+    {
+        ShiftingPowerSpell = 325130,
+    };
+
+    // effect 3
+    void HandleApply(const AuraEffect* /*aurEff*/, AuraEffectHandleModes /* mode */)
+    {
+        PreventDefaultAction();
+    }
+
+    // 342373 Fae Tendrils
+    // Shifting Power entangles enemies it hits, rooting them in place for $342373d.
+    void OnTick(AuraEffect const* /*aurEff*/)
+    {
+        PreventDefaultAction();
+    }
+
+    void HandleUpdate(uint32 diff)
+    {
+        if (Unit* caster = GetCaster())
+        {
+            if (timer <= 0)
+            {
+                timer = 500;
+                //caster->CastSpell(caster, 325130, true); - gonna let it scale with haste, will handle CDR part here
+                auto spellHistory = caster->GetSpellHistory();
+                // Need add conduit supp
+                spellHistory->ReduceCooldowns([caster](SpellHistory::CooldownStorageType::iterator itr) -> bool
+                    {
+                        SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(itr->first, DIFFICULTY_NONE);
+                        Milliseconds remainingCooldown = caster->GetSpellHistory()->GetRemainingCooldown(spellInfo);
+
+                        bool allow = spellInfo->SpellFamilyName == SPELLFAMILY_MAGE;
+
+                        if (!allow)
+                        {
+                            switch (spellInfo->Id)
+                            {
+                                case 1953: // Blink
+                                    return true;
+                                default:
+                                    return false;
+                            }
+                        }
+
+                        return remainingCooldown > 0ms
+                            && !itr->second.OnHold;
+                    }, 1000);
+            }
+            else
+                timer -= diff;
+        }
+    }
+
+    int32 timer = 0;
+
+    void Register() override
+    {
+        //OnEffectApply += AuraEffectPeriodicFn(spell_mage_shifting_power::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_TRIGGER_SPELL, AURA_EFFECT_HANDLE_REAL);
+        OnEffectApply += AuraEffectApplyFn(spell_mage_shifting_power::HandleApply, EFFECT_3, SPELL_AURA_PERIODIC_TRIGGER_SPELL, AURA_EFFECT_HANDLE_REAL);
+        OnEffectPeriodic += AuraEffectPeriodicFn(spell_mage_shifting_power::OnTick, EFFECT_3, SPELL_AURA_PERIODIC_TRIGGER_SPELL);
+        OnAuraUpdate += AuraUpdateFn(spell_mage_shifting_power::HandleUpdate);
+    }
+};
+
 void AddSC_mage_spell_scripts()
 {
     new playerscript_mage_arcane();
@@ -4567,6 +4638,7 @@ void AddSC_mage_spell_scripts()
     RegisterSpellScript(aura_mage_enhaced_pyrotechnics);
     RegisterSpellScript(spell_mage_alter_time_aura);
     RegisterSpellScript(spell_mage_alter_time_active);
+    RegisterSpellScript(spell_mage_shifting_power);
 
     // Spell Pet scripts
     RegisterSpellScript(spell_mage_pet_freeze);

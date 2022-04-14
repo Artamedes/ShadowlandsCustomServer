@@ -2368,9 +2368,9 @@ void ScriptMgr::OnHeal(Unit* healer, Unit* reciever, uint32& gain)
     FOREACH_SCRIPT(UnitScript)->OnHeal(healer, reciever, gain);
 }
 
-void ScriptMgr::OnDamage(Unit* attacker, Unit* victim, uint32& damage)
+void ScriptMgr::OnDamage(Unit* attacker, Unit* victim, uint32& damage, SpellInfo const* spellInfo)
 {
-    FOREACH_SCRIPT(UnitScript)->OnDamage(attacker, victim, damage);
+    FOREACH_SCRIPT(UnitScript)->OnDamage(attacker, victim, damage, spellInfo);
 }
 
 void ScriptMgr::ModifyPeriodicDamageAurasTick(Unit* target, Unit* attacker, uint32& damage)

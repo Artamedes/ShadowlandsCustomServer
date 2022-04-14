@@ -1,6 +1,7 @@
 #include "SpellMgr.h"
 #include "Unit.h"
 #include "SpellScript.h"
+#include "SpellHistory.h"
 
 // 320221 
 class spell_nightfae_podtender : public AuraScript
@@ -84,6 +85,10 @@ public:
         Stratagem = 353286,
         StratagemHealer = 353793,
         StratagemDamage = 353254,
+
+        // Hunter
+        WildSpirits = 328837,
+        WildSpiritsDmg = 328757,
     };
 
     void OnHeal(Unit* healer, Unit* reciever, uint32& gain) override
@@ -106,7 +111,7 @@ public:
         }
     }
 
-    void OnDamage(Unit* attacker, Unit* victim, uint32& damage)
+    void OnDamage(Unit* attacker, Unit* victim, uint32& damage, SpellInfo const* spellInfo)
     {
         if (!attacker || !victim)
             return;
@@ -124,6 +129,19 @@ public:
                     attacker->CastSpell(victim, StratagemDamage, true);
             }
         }
+
+        if (attacker->GetClass() == CLASS_HUNTER && attacker->IsPlayer() && spellInfo && spellInfo->Id != WildSpiritsDmg)
+        {
+            if (attacker->HasAura(WildSpirits))
+            {
+                auto areaTrigger = attacker->GetAreaTrigger(WildSpirits);
+                if (areaTrigger)
+                {
+                    if (areaTrigger->GetInsideUnits().count(victim->GetGUID()))
+                        attacker->CastSpell(victim, WildSpiritsDmg, true);
+                }
+            }
+        }
     }
 };
 
@@ -132,10 +150,17 @@ class spell_nightfae_soulshape : public AuraScript
 {
     PrepareAuraScript(spell_nightfae_soulshape);
 
+    enum SoulShape
+    {
+        Flicker = 324701,
+    };
+
     void HandleApply(const AuraEffect* /*aurEff*/, AuraEffectHandleModes /* mode */)
     {
         // Is this a soulbind? Check plz
         PreventDefaultAction();
+
+        GetCaster()->GetSpellHistory()->StartCooldown(sSpellMgr->GetSpellInfo(Flicker), 0, nullptr, false, 4s);
     }
 
     void Register() override

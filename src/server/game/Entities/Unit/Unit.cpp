@@ -785,7 +785,7 @@ bool Unit::HasBreakableByDamageCrowdControlAura(Unit* excludeCasterChannel) cons
     {
         // Hook for OnDamage Event
         if (attacker && victim)
-            sScriptMgr->OnDamage(attacker, victim, damage);
+            sScriptMgr->OnDamage(attacker, victim, damage, spellProto);
     }
 
     // Signal to pets that their owner was attacked - except when DOT.

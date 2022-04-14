@@ -139,6 +139,25 @@ public:
             SendClearCooldowns(resetCooldowns);
     }
 
+    template<typename Predicate>
+    void ReduceCooldowns(Predicate predicate, int32 time = 0)
+    {
+        std::vector<uint32> resetCooldowns;
+        resetCooldowns.reserve(_spellCooldowns.size());
+
+        for (auto itr = _spellCooldowns.begin(); itr != _spellCooldowns.end();)
+        {
+            if (predicate(itr))
+            {
+                resetCooldowns.push_back(itr->first);
+            }
+            ++itr;
+        }
+
+        for (uint32 itr : resetCooldowns)
+            ModifyCooldown(itr, -time);
+    }
+
     void ResetAllCooldowns();
     bool HasCooldown(SpellInfo const* spellInfo, uint32 itemId = 0) const;
     bool HasCooldown(uint32 spellId, uint32 itemId = 0) const;
