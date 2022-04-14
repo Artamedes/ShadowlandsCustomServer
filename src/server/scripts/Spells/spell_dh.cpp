@@ -2347,6 +2347,13 @@ public:
                 caster->RemoveAurasDueToSpell(SPELL_DH_EYE_BEAM_VISUAL);
         }
 
+        enum EyeB
+        {
+            DarkglareMedallion = 322832, // torghast power i guess
+            DarkglareBoon = 337534,
+            DarkglareBoonEnergize = 350726,
+        };
+
         void HandleApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
         {
             if (Unit* caster = GetCaster())
@@ -2361,7 +2368,21 @@ public:
                     else if (Aura* aur = caster->AddAura(SPELL_DH_METAMORPHOSIS_HAVOC, caster))
                         aur->SetDuration(10 * IN_MILLISECONDS);
                 }
+
+                if (caster->HasAura(DarkglareMedallion) && roll_chance_i(20))
+                    caster->GetSpellHistory()->ResetCooldown(SPELL_DH_EYE_BEAM, true);
+
+                if (caster->HasAura(DarkglareBoon) && roll_chance_i(40))
+                {
+                    caster->GetSpellHistory()->ResetCooldown(SPELL_DH_EYE_BEAM, true);
+                    caster->CastSpell(caster, DarkglareBoonEnergize, true);
+                }
             }
+        }
+
+        void ModDuration(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
+        {
+            const_cast<AuraEffect*>(aurEff)->SetAmount(-95);
         }
 
         void Register() override
@@ -2369,6 +2390,7 @@ public:
             OnEffectPeriodic += AuraEffectPeriodicFn(spell_dh_eye_beam_AuraScript::HandlePeriodic, EFFECT_0, SPELL_AURA_PERIODIC_TRIGGER_SPELL);
             OnEffectRemove += AuraEffectRemoveFn(spell_dh_eye_beam_AuraScript::HandleRemove, EFFECT_2, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
             OnEffectApply += AuraEffectApplyFn(spell_dh_eye_beam_AuraScript::HandleApply, EFFECT_2, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+            OnEffectApply += AuraEffectApplyFn(spell_dh_eye_beam_AuraScript::ModDuration, EFFECT_1, SPELL_AURA_MOD_DECREASE_SPEED, AURA_EFFECT_HANDLE_REAL);
         }
     };
 
@@ -2628,6 +2650,9 @@ public:
 
             if (GetCaster()->IsMounted())
                 return SPELL_FAILED_NOT_MOUNTED;
+
+            if (GetCaster()->GetCurrentSpell(CurrentSpellTypes::CURRENT_CHANNELED_SPELL))
+                return SPELL_FAILED_DONT_REPORT;
 
             return SPELL_CAST_OK;
         }
@@ -4059,17 +4084,24 @@ class spell_dh_fel_rush_dmg : public SpellScript
         UnboundChaos = 347462,
     };
 
+    uint32 AddPctAmount = 0;
+    void BeforeSCast()
+    {
+        if (auto unbounChaos = GetCaster()->GetAuraEffect(UnboundChaos, EFFECT_0))
+        {
+            AddPctAmount = unbounChaos->GetAmount();
+            GetCaster()->RemoveAurasDueToSpell(UnboundChaos);
+        }
+    }
+
     void HandleDamage(SpellEffIndex /*effIndex*/)
     {
         if (auto hitUnit = GetHitUnit())
         {
             auto hitDmg = GetHitDamage();
 
-            if (auto unbounChaos = GetCaster()->GetAuraEffect(UnboundChaos, EFFECT_0))
-            {
-                AddPct(hitDmg, unbounChaos->GetAmount());
-                GetCaster()->RemoveAurasDueToSpell(UnboundChaos);
-            }
+            if (AddPctAmount)
+                AddPct(hitDmg, AddPctAmount);
 
             SetHitDamage(hitDmg);
         }
@@ -4077,6 +4109,7 @@ class spell_dh_fel_rush_dmg : public SpellScript
 
     void Register() override
     {
+        BeforeCast += SpellCastFn(spell_dh_fel_rush_dmg::BeforeSCast);
         OnEffectHitTarget += SpellEffectFn(spell_dh_fel_rush_dmg::HandleDamage, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
     }
 };
