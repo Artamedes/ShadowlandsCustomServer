@@ -7904,4 +7904,10 @@ enum WorldState : uint32
     WS_CHALLENGE_LAST_RESET_TIME          = 20025,    // Last reset time for Challenge key
 };
 
+enum SpecialSpells : uint32
+{
+    SPELL_MERCENARY_CONTRACT_HORDE      = 193472,
+    SPELL_MERCENARY_CONTRACT_ALLIANCE   = 193475,
+};
+
 #endif
