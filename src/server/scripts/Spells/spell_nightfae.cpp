@@ -127,12 +127,32 @@ public:
     }
 };
 
+// 310143 
+class spell_nightfae_soulshape : public AuraScript
+{
+    PrepareAuraScript(spell_nightfae_soulshape);
+
+    void HandleApply(const AuraEffect* /*aurEff*/, AuraEffectHandleModes /* mode */)
+    {
+        // Is this a soulbind? Check plz
+        PreventDefaultAction();
+    }
+
+    void Register() override
+    {
+        OnEffectApply += AuraEffectApplyFn(spell_nightfae_soulshape::HandleApply, EFFECT_5, SPELL_AURA_MOD_UNATTACKABLE, AURA_EFFECT_HANDLE_REAL);
+    }
+};
+
+
 // cast 348121 on death
 // 320227 - depleted shell
 
 void AddSC_spell_nightfae()
 {
     RegisterSpellScript(spell_nightfae_podtender);
+    RegisterSpellScript(spell_nightfae_soulshape);
+
     RegisterCreatureAI(npc_regenerating_wild_seed_164589);
 
     new unit_script_nightfae();
