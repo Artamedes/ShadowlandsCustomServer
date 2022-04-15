@@ -373,6 +373,34 @@ struct npc_mall_weapongiver : public ScriptedAI
             DoCastSelf(356889);
             switch (me->GetEntry())
             {
+                case 800027: // Julius (Shield)
+                    m_BonusListIds.reserve(4);
+                    m_ItemEntries.reserve(1);
+                    m_ItemEntries.emplace_back(113653);
+                    m_BonusListIds.emplace_back(6606); // Mythic
+                    m_BonusListIds.emplace_back(1660); // ItemLevel
+                    m_BonusListIds.emplace_back(1610); // ItemLevel
+                    m_BonusListIds.emplace_back(1602); // ItemLevel
+                    AllowableClasses = 2 + 1;
+                    break;
+                case 800028: // Draka
+                    m_BonusListIds.reserve(3);
+                    m_ItemEntries.reserve(1);
+                    m_ItemEntries.emplace_back(186398);
+                    m_BonusListIds.emplace_back(6606); // Mythic
+                    m_BonusListIds.emplace_back(1600); // ItemLevel
+                    m_BonusListIds.emplace_back(1611); // ItemLevel
+                    AllowableClasses = 8 + 1024;
+                    break;
+                case 800029: // Prophet
+                    m_BonusListIds.reserve(3);
+                    m_ItemEntries.reserve(1);
+                    m_ItemEntries.emplace_back(189851);
+                    m_BonusListIds.emplace_back(6606); // Mythic
+                    m_BonusListIds.emplace_back(1610); // ItemLevel
+                    m_BonusListIds.emplace_back(1601); // ItemLevel
+                    AllowableClasses = 2 + 1 + 32;
+                    break;
                 case 800025: // Sylvanas
                     m_BonusListIds.reserve(3);
                     m_ItemEntries.reserve(1);
