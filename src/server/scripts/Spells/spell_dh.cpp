@@ -2358,8 +2358,8 @@ public:
         {
             if (Unit* caster = GetCaster())
             {
-                if (!caster->HasAura(SPELL_DH_DEMONIC))
-                    caster->CastSpell(caster, SPELL_DH_EYE_BEAM_VISUAL, true);
+                //if (!caster->HasAura(SPELL_DH_DEMONIC))
+                 //   caster->CastSpell(caster, SPELL_DH_EYE_BEAM_VISUAL, true);
 
                 if (caster->HasAura(SPELL_DH_DEMONIC))
                 {

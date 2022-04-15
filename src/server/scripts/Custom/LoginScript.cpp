@@ -27,7 +27,7 @@ class LoginScript : public PlayerScript
                 {
                     p_Player->SetPrimarySpecialization(TALENT_SPEC_WARRIOR_FURY);
                     p_Player->SetActiveTalentGroup(1);
-                    static uint32 items[] = { 182997, 182994, 183032, 182999, 183018, 182984, 183015, 183002, 183027, 183039, 183036, 183037, 179543, 179543 };
+                    static uint32 items[] = { 182997, 182994, 183032, 182999, 183018, 182984, 183015, 183002, 183027, 183039, 183036, 183037, 179543, 179543, 174311, 184547 };
 
                     p_Player->SetCanTitanGrip(true);
                     for (uint32 item : items)
@@ -38,7 +38,7 @@ class LoginScript : public PlayerScript
                 {
                     p_Player->SetPrimarySpecialization(TALENT_SPEC_PALADIN_RETRIBUTION);
                     p_Player->SetActiveTalentGroup(2);
-                    static uint32 items[] = { 182997, 182994, 183032, 182999, 183018, 182984, 183015, 183002, 183027, 183039, 183036, 183037, 179543 };
+                    static uint32 items[] = { 182997, 182994, 183032, 182999, 183018, 182984, 183015, 183002, 183027, 183039, 183036, 183037, 179543, 174311, 184547 };
 
                     for (uint32 item : items)
                         p_Player->StoreNewItemInBestSlots(item, 1, ItemContext::Raid_Raid_Finder, {7186});
@@ -49,7 +49,7 @@ class LoginScript : public PlayerScript
                 {
                     p_Player->SetPrimarySpecialization(TalentSpecialization::TALENT_SPEC_HUNTER_MARKSMAN);
                     p_Player->SetActiveTalentGroup(1);
-                    static uint32 items[] = { 183001, 183003, 183033, 182988, 182977, 183014, 182976, 183012, 183006, 183039, 183037, 183036, 180081 };
+                    static uint32 items[] = { 183001, 183003, 183033, 182988, 182977, 183014, 182976, 183012, 183006, 183039, 183037, 183036, 180081, 179526 };
 
                     for (uint32 item : items)
                         p_Player->StoreNewItemInBestSlots(item, 1, ItemContext::Raid_Raid_Finder, {7186});
@@ -58,10 +58,9 @@ class LoginScript : public PlayerScript
                 }
                 case CLASS_ROGUE:
                 {
-
                     p_Player->SetPrimarySpecialization(TalentSpecialization::TALENT_SPEC_ROGUE_COMBAT);
                     p_Player->SetActiveTalentGroup(1);
-                    static uint32 items[] = { 182980, 183029, 183034, 183009, 183019, 183007, 183005, 182993, 183030, 183040, 183037, 183036, 182408, 182408 };
+                    static uint32 items[] = { 182980, 183029, 183034, 183009, 183019, 183007, 183005, 182993, 183030, 183040, 183037, 183036, 182408, 182408, 177861, 177861 };
 
                     for (uint32 item : items)
                         p_Player->StoreNewItemInBestSlots(item, 1, ItemContext::Raid_Raid_Finder, {7186});
@@ -82,7 +81,7 @@ class LoginScript : public PlayerScript
                 {
                     p_Player->SetPrimarySpecialization(TalentSpecialization::TALENT_SPEC_DEATHKNIGHT_FROST);
                     p_Player->SetActiveTalentGroup(1);
-                    static uint32 items[] = { 182997, 182994, 183032, 182999, 183018, 182984, 183015, 183002, 183027, 183039, 183036, 183037, 179543 };
+                    static uint32 items[] = { 182997, 182994, 183032, 182999, 183018, 182984, 183015, 183002, 183027, 183039, 183036, 183037, 184547, 184547, 179543 };
 
                     for (uint32 item : items)
                         p_Player->StoreNewItemInBestSlots(item, 1, ItemContext::Raid_Raid_Finder, {7186});
@@ -93,7 +92,7 @@ class LoginScript : public PlayerScript
 
                     p_Player->SetPrimarySpecialization(TalentSpecialization::TALENT_SPEC_SHAMAN_ENHANCEMENT);
                     p_Player->SetActiveTalentGroup(1);
-                    static uint32 items[] = { 183001, 183003, 183033, 182988, 182977, 183014, 182976, 183012, 183006, 183039, 183037, 183036, 183448, 183448 };
+                    static uint32 items[] = { 183001, 183003, 183033, 182988, 182977, 183014, 182976, 183012, 183006, 183039, 183037, 183036, 183448, 183448, 174311, 182405, 182404 };
 
                     for (uint32 item : items)
                         p_Player->StoreNewItemInBestSlots(item, 1, ItemContext::Raid_Raid_Finder, {7186});
@@ -125,7 +124,7 @@ class LoginScript : public PlayerScript
                 {
                     p_Player->SetPrimarySpecialization(TalentSpecialization::TALENT_SPEC_MONK_BATTLEDANCER);
                     p_Player->SetActiveTalentGroup(2);
-                    static uint32 items[] = { 182980, 183029, 183034, 183009, 183019, 183007, 183005, 182993, 183030, 183040, 183037, 183036, 182408, 182408 };
+                    static uint32 items[] = { 182980, 183029, 183034, 183009, 183019, 183007, 183005, 182993, 183030, 183040, 183037, 183036, 182408, 182408, 182405 };
 
                     for (uint32 item : items)
                         p_Player->StoreNewItemInBestSlots(item, 1, ItemContext::Raid_Raid_Finder, {7186});
@@ -135,7 +134,7 @@ class LoginScript : public PlayerScript
                 {
                     p_Player->SetPrimarySpecialization(TalentSpecialization::TALENT_SPEC_DRUID_CAT);
                     p_Player->SetActiveTalentGroup(1);
-                    static uint32 items[] = { 182980, 183029, 183034, 183009, 183019, 183007, 183005, 182993, 183030, 183040, 183037, 183036, 179526 };
+                    static uint32 items[] = { 182980, 183029, 183034, 183009, 183019, 183007, 183005, 182993, 183030, 183040, 183037, 183036, 179526, 182405 };
 
                     for (uint32 item : items)
                         p_Player->StoreNewItemInBestSlots(item, 1, ItemContext::Raid_Raid_Finder, {7186});

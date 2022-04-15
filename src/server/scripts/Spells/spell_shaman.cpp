@@ -6462,6 +6462,12 @@ class spell_sha_flametongue_weapon_aura : public AuraScript
     }
 };
 
+
+// chain harvest - dummy visual 320762
+// visual 2 - (return ? 321310 ) (321311  script effect)
+// 321595  inital target?
+// 368583  - energize
+
 void AddSC_shaman_spell_scripts()
 {
     new shaman_playerscript();
