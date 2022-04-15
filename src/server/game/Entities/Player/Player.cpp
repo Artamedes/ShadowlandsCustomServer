@@ -5332,6 +5332,50 @@ void Player::UpdateRating(CombatRating cr)
 
     uint32 oldRating = m_activePlayerData->CombatRatings[cr];
     SetUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::CombatRatings, cr), amount);
+    
+    if (cr >= CR_HASTE_MELEE && cr <= CR_HASTE_SPELL)
+    {
+        float hastePct = amount * GetRatingMultiplier(cr);
+
+        AuraEffectList const& hasteAuras = GetAuraEffectsByType(SPELL_AURA_MOD_CASTING_SPEED_NOT_STACK);
+        for (AuraEffectList::const_iterator iter = hasteAuras.begin(); iter != hasteAuras.end(); ++iter)
+        {
+            hastePct *= (1.0f + (*iter)->GetAmount() / 100.0f);
+            hastePct += (*iter)->GetAmount();
+        }
+
+        std::map<SpellGroup, int32> SameEffectSpellGroup;
+        AuraEffectList const& meleeSlowAuras = GetAuraEffectsByType(SPELL_AURA_MELEE_SLOW);
+        for (AuraEffectList::const_iterator iter = meleeSlowAuras.begin(); iter != meleeSlowAuras.end(); ++iter)
+        {
+            if (!sSpellMgr->AddSameEffectStackRuleSpellGroups((*iter)->GetSpellInfo(), SPELL_AURA_MELEE_SLOW, (*iter)->GetAmount(), SameEffectSpellGroup))
+            {
+                hastePct *= (1.0f + (*iter)->GetAmount() / 100.0f);
+                hastePct += (*iter)->GetAmount();
+            }
+        }
+
+        for (std::map<SpellGroup, int32>::const_iterator itr = SameEffectSpellGroup.begin(); itr != SameEffectSpellGroup.end(); ++itr)
+        {
+            hastePct *= (1.0f + itr->second / 100.0f);
+            hastePct += itr->second;
+        }
+
+        float haste = 1.0f / (1.0f + hastePct / 100.0f);
+
+        // Update haste percentage for client
+        //SetModCastingSpeed(haste);
+        SetModSpellHaste(haste);
+        SetModHaste(haste);
+        SetModRangedHaste(haste);
+        SetModHasteRegen(haste);
+        SetModTimeRate(1.0f);
+
+        UpdateManaRegen();
+        //UpdateEnergyRegen();
+        //UpdateFocusRegen();
+        UpdateAllRunesRegen();
+    }
 
     bool affectStats = CanModifyStats();
 
@@ -7058,6 +7102,8 @@ void Player::ModifyCurrency(uint32 id, int32 count, bool printLog/* = true*/, bo
             if (auto covenant = GetCovenant())
                 covenant->SetSouls(newTotalCount, false);
         }
+
+        sScriptMgr->OnPlayerModifyCurrency(this, id, oldTotalCount, newTotalCount);
 
         if (itr->second.state != PLAYERCURRENCY_NEW)
             itr->second.state = PLAYERCURRENCY_CHANGED;

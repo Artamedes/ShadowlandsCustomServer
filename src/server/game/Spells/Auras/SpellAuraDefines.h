@@ -471,7 +471,7 @@ enum AuraType : uint32
     SPELL_AURA_CAST_WHILE_WALKING_ALL                       = 377,  // Enables casting all spells while moving
     SPELL_AURA_MOD_POSSESS_PET                              = 378,
     SPELL_AURA_MOD_MANA_REGEN_PCT                           = 379,
-    SPELL_AURA_380                                          = 380,
+    SPELL_AURA_MOD_GLOBAL_COOLDOWN_BY_HASTE                 = 380,
     SPELL_AURA_MOD_DAMAGE_TAKEN_FROM_CASTER_PET             = 381,  // NYI
     SPELL_AURA_MOD_PET_STAT_PCT                             = 382,  // NYI
     SPELL_AURA_IGNORE_SPELL_COOLDOWN                        = 383,  // NYI

@@ -6,6 +6,7 @@
 #include "WorldSession.h"
 #include "SpellPackets.h"
 #include "Spell.h"
+#include "Conversation.h"
 
 template<uint32 BonusIDAward>
 class item_enhancement_system : public ItemScript
@@ -123,6 +124,24 @@ struct npc_mother_700013 : public ScriptedAI
         }
 };
 
+class item_enhancement_system_playerscript : public PlayerScript
+{
+    public:
+        item_enhancement_system_playerscript() : PlayerScript("item_enhancement_system_playerscript") { }
+
+        void OnPlayerModifyCurrency(Player* player, uint32 id, uint32 /*oldCount*/, int32 newCount)
+        {
+            if (id == 10170 && newCount >= 50) ///< Shadow Essence
+            {
+                if (player->GetQuestStatus(699999) == QUEST_STATUS_NONE)
+                {
+                    player->SetQuestStatus(699999, QuestStatus::QUEST_STATUS_REWARDED, false);
+                    Conversation::CreateConversation(700013, player, *player, player->GetGUID());
+                }
+            }
+        }
+};
+
 void AddSC_item_enhancement_system()
 {
     new item_enhancement_system<6477>("item_enhancement_system_t1_versatile");
@@ -152,4 +171,6 @@ void AddSC_item_enhancement_system()
     new item_enhancement_system<6549>("item_enhancement_system_t3_ineffable_truth");
     new item_enhancement_system<1524>("item_enhancement_system_t3_50_ilvls");
     RegisterCreatureAI(npc_mother_700013);
+
+    new item_enhancement_system_playerscript();
 }

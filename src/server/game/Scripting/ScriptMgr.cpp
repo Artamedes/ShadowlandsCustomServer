@@ -2243,6 +2243,11 @@ void ScriptMgr::OnPlayerDailyReset(Player* player)
     FOREACH_SCRIPT(PlayerScript)->OnDailyReset(player);
 }
 
+void ScriptMgr::OnPlayerModifyCurrency(Player* player, uint32 id, uint32 oldCount, int32 newCount)
+{
+    FOREACH_SCRIPT(PlayerScript)->OnPlayerModifyCurrency(player, id, oldCount, newCount);
+}
+
 // Account
 void ScriptMgr::OnAccountLogin(uint32 accountId)
 {

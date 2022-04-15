@@ -879,6 +879,8 @@ class TC_GAME_API PlayerScript : public ScriptObject
         virtual void OnChanneledSpellSuccessfulCast(Player* /*player*/, Spell* /*spell*/) { }
 
         virtual void OnDailyReset(Player* /*player*/) { }
+
+        virtual void OnPlayerModifyCurrency(Player* /*player*/, uint32 /*id*/, uint32 /*oldCount*/, int32 /*newCount*/) { }
 };
 
 class TC_GAME_API AccountScript : public ScriptObject
@@ -1312,6 +1314,7 @@ class TC_GAME_API ScriptMgr
         void OnSummonCreatureDealsDamage(Player* player, Unit* creature, Unit* victim, int32 damage);
         void OnChanneledSpellSuccessfulCast(Player* player, Spell* spell);
         void OnPlayerDailyReset(Player* player);
+        void OnPlayerModifyCurrency(Player* player, uint32 id, uint32 oldCount, int32 newCount);
 
     public: /* AccountScript */
 
