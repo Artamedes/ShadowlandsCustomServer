@@ -225,6 +225,7 @@ ObjectMgr::ObjectMgr():
     _creatureSpawnId(1),
     _gameObjectSpawnId(1),
     _voidItemId(1),
+    _scenarioId(1),
     DBCLocaleIndex(LOCALE_enUS)
 {
 }
@@ -7565,6 +7566,10 @@ void ObjectMgr::SetHighestGuids()
     result = WorldDatabase.Query("SELECT MAX(guid) FROM gameobject");
     if (result)
         _gameObjectSpawnId = (*result)[0].GetUInt64() + 1;
+
+    result = CharacterDatabase.Query("SELECT MAX(ID) FROM challenge");
+    if (result)
+        _scenarioId = (*result)[0].GetUInt64() + 1;
 }
 
 uint32 ObjectMgr::GenerateAuctionID()
@@ -7635,6 +7640,16 @@ uint64 ObjectMgr::GenerateGameObjectSpawnId()
         World::StopNow(ERROR_EXIT_CODE);
     }
     return _gameObjectSpawnId++;
+}
+
+uint64 ObjectMgr::GenerateScenarioId()
+{
+    if (_scenarioId >= uint64(0xFFFFFFFFFFFFFFFELL))
+    {
+        TC_LOG_ERROR("misc", "Scenario id overflow!! Can't continue, shutting down server. Search on forum for TCE00007 for more info. ");
+        World::StopNow(ERROR_EXIT_CODE);
+    }
+    return _scenarioId++;
 }
 
 void ObjectMgr::LoadGameObjectLocales()

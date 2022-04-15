@@ -731,6 +731,35 @@ WorldPacket const* WorldPackets::Misc::StartTimer::Write()
     return &_worldPacket;
 }
 
+WorldPacket const* WorldPackets::Misc::StartElapsedTimer::Write()
+{
+    _worldPacket << Timer.TimerID;
+    _worldPacket << uint32(Timer.CurrentDuration);
+
+    return &_worldPacket;
+}
+
+WorldPacket const* WorldPackets::Misc::StartElapsedTimers::Write()
+{
+    _worldPacket << static_cast<uint32>(Timers.size());
+    for (auto const& v : Timers)
+    {
+        _worldPacket << v.TimerID;
+        _worldPacket << uint32(v.CurrentDuration);
+    }
+
+    return &_worldPacket;
+}
+
+WorldPacket const* WorldPackets::Misc::StopElapsedTimer::Write()
+{
+    _worldPacket << TimerID;
+    _worldPacket << KeepTimer;
+    _worldPacket.FlushBits();
+
+    return &_worldPacket;
+}
+
 void WorldPackets::Misc::ConversationLineStarted::Read()
 {
     _worldPacket >> ConversationGUID;

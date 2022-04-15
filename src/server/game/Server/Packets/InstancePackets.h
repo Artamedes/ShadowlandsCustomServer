@@ -245,7 +245,84 @@ namespace WorldPackets
             WorldPacket const* Write() override;
             uint32 DungeonEncounterID = 0;
         };
+
+        struct AuraInfo
+        {
+            ObjectGuid CasterGuid;
+            uint32 SpellID;
+        };
+
+        struct ArtifactPowerInfo
+        {
+            uint32 ArtifactPowerID;
+            uint16 Rank;
+        };
+
+        struct EncounterItemInfo
+        {
+            uint32 ItemID;
+            uint32 ItemLevel;
+            std::vector<uint32> EnchantmentIDs;
+            std::vector<uint32> ItemBonusListIDs;
+            std::vector<uint32> Gems;
+        };
+
+        struct InstancePlayerData
+        {
+            ObjectGuid PlayerGuid;
+            std::vector<uint32> Stats;
+            std::vector<uint32> CombatRatings;
+            std::vector<AuraInfo> AuraInfos;
+            uint32 SpecID;
+            std::vector<uint32> Talents;
+            std::array<uint32, MAX_PVP_TALENT_SLOTS> PvpTalents;
+            std::vector<ArtifactPowerInfo> ArtifactPowerInfos;
+            std::vector<EncounterItemInfo> EncounterItemInfos;
+        };
+
+        class EncounterStart final : public ServerPacket
+        {
+        public:
+            EncounterStart() : ServerPacket(SMSG_ENCOUNTER_START, 500) { }
+
+            WorldPacket const* Write() override;
+
+            uint32 EncounterID;
+            uint32 DifficultyID;
+            uint32 GroupSize;
+            std::vector<InstancePlayerData> PlayerDatas;
+        };
+
+        class EncounterEnd final : public ServerPacket
+        {
+        public:
+            EncounterEnd() : ServerPacket(SMSG_ENCOUNTER_END, 4 + 4 + 4 + 1) { }
+
+            WorldPacket const* Write() override;
+
+            uint32 EncounterID;
+            uint32 DifficultyID;
+            uint32 GroupSize;
+            bool Success;
+        };
+
+        class ChangePlayerDifficultyResult final : public ServerPacket
+        {
+        public:
+            ChangePlayerDifficultyResult(uint32 type = 0) : ServerPacket(SMSG_CHANGE_PLAYER_DIFFICULTY_RESULT, 16+4+4+4+4+1+1) { }
+
+            WorldPacket const* Write() override;
+
+            ObjectGuid Guid;
+            uint32 CooldownReason = 0;
+            uint32 InstanceMapID = 0;
+            uint32 DifficultyRecID = 0;
+            uint32 MapID = 0;
+            uint8 Result = 0;
+            bool Cooldown = false;
+        };
     }
 }
+ByteBuffer& operator<<(ByteBuffer& data, WorldPackets::Instance::InstancePlayerData const& instancePlayerData);
 
 #endif // InstancePackets_h__

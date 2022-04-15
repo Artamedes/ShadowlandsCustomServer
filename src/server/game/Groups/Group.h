@@ -49,6 +49,12 @@ namespace WorldPackets
     }
 }
 
+//namespace lfg
+//{
+//    class  LFGListEntry;
+//    struct ApplicationSlot;
+//}
+
 #define MAX_GROUP_SIZE      5
 #define MAX_RAID_SIZE       40
 #define MAX_RAID_SUBGROUPS  MAX_RAID_SIZE / MAX_GROUP_SIZE
@@ -422,6 +428,24 @@ class TC_GAME_API Group
 
         // FG: evil hacks
         void BroadcastGroupUpdate(void);
+        //
+        //void SetLFGListEntry(lfg::LFGListEntry* entry) { _lfgListEntry = entry; }
+        //lfg::LFGListEntry* GetLFGListEntry() { return _lfgListEntry; }
+        //
+        //void AddLFGListApplication(lfg::ApplicationSlot* slot) { _lfgListApplications.insert(slot); }
+        //void RemoveLFGListApplication(lfg::ApplicationSlot* slot) { _lfgListApplications.erase(slot); }
+        //std::set<lfg::ApplicationSlot*> GetLFGListApplications() { return _lfgListApplications; }
+        //
+        ObjectGuid GetGroupGuid() const { return m_guid; }
+
+        bool InChallenge();
+        ObjectGuid m_challengeOwner;
+        ObjectGuid m_challengeItem;
+        MapChallengeModeEntry const* m_challengeEntry;
+        uint32 m_challengeLevel;
+        uint32 m_challengeMapID;
+        uint32 m_challengeInstanceID;
+        std::array<uint32, 4> m_affixes;
 
     protected:
         bool _setMembersGroup(ObjectGuid guid, uint8 group);
@@ -467,5 +491,8 @@ class TC_GAME_API Group
         // Raid markers
         std::array<std::unique_ptr<RaidMarker>, RAID_MARKERS_COUNT> m_markers;
         uint32              m_activeMarkers;
+
+        //lfg::LFGListEntry* _lfgListEntry;
+        //std::set<lfg::ApplicationSlot*> _lfgListApplications;
 };
 #endif

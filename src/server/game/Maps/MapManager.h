@@ -34,7 +34,7 @@ class TC_GAME_API MapManager
 
         Map* CreateBaseMap(uint32 mapId);
         Map* FindBaseNonInstanceMap(uint32 mapId) const;
-        Map* CreateMap(uint32 mapId, Player* player, uint32 loginInstanceId=0);
+        Map* CreateMap(uint32 mapId, Player* player, uint32 loginInstanceId = 0, bool createChallenge = false);
         Map* FindMap(uint32 mapId, uint32 instanceId) const;
 
         uint32 GetAreaId(PhaseShift const& phaseShift, uint32 mapid, float x, float y, float z)

@@ -305,7 +305,7 @@ bool ForcedDespawnDelayEvent::Execute(uint64 /*e_time*/, uint32 /*p_time*/)
 }
 
 Creature::Creature(bool isWorldObject): Unit(isWorldObject), MapObject(), m_groupLootTimer(0), m_PlayerDamageReq(0), _pickpocketLootRestore(0),
-    m_corpseRemoveTime(0), m_respawnTime(0), m_respawnDelay(300), m_corpseDelay(60), m_ignoreCorpseDecayRatio(false), m_wanderDistance(0.0f), m_boundaryCheckTime(2500), m_combatPulseTime(0), m_combatPulseDelay(0), m_reactState(REACT_AGGRESSIVE),
+    m_corpseRemoveTime(0), m_respawnTime(0), m_respawnDelay(300), m_respawnChallenge(0), m_corpseDelay(60), m_ignoreCorpseDecayRatio(false), m_wanderDistance(0.0f), m_boundaryCheckTime(2500), m_combatPulseTime(0), m_combatPulseDelay(0), m_reactState(REACT_AGGRESSIVE),
     m_defaultMovementType(IDLE_MOTION_TYPE), m_spawnId(UI64LIT(0)), m_equipmentId(0), m_originalEquipmentId(0), m_AlreadyCallAssistance(false), m_AlreadySearchedAssistance(false), m_cannotReachTarget(false), m_cannotReachTimer(0),
     m_meleeDamageSchoolMask(SPELL_SCHOOL_MASK_NORMAL), m_originalEntry(0), m_homePosition(), m_transportHomePosition(), m_creatureInfo(nullptr), m_creatureData(nullptr), _waypointPathId(0), _currentWaypointNodeInfo(0, 0),
     m_formation(nullptr), m_triggerJustAppeared(true), m_respawnCompatibilityMode(false), _lastDamagedTime(0),
@@ -323,6 +323,7 @@ Creature::Creature(bool isWorldObject): Unit(isWorldObject), MapObject(), m_grou
 
     ResetLootMode(); // restore default loot mode
     m_isTempWorldObject = false;
+    m_spawnMode = 0;
 }
 
 void Creature::AddToWorld()
@@ -523,6 +524,8 @@ bool Creature::InitEntry(uint32 entry, CreatureData const* data /*= nullptr*/)
     // Initialize loot duplicate count depending on raid difficulty
     if (GetMap()->Is25ManRaid())
         GetLootFor()->maxDuplicates = 3;
+
+    m_spawnMode = GetMap()->GetSpawnMode();
 
     SetEntry(entry);                                        // normal entry always
     m_creatureInfo = cinfo;                                 // map mode related always
@@ -810,6 +813,20 @@ void Creature::Update(uint32 diff)
             if (!IsAlive())
                 break;
 
+            //Check current difficulty map for change stats
+            if (GetMap()->GetInstanceId() != 0 && !IsPet())
+            {
+                if (GetMap()->GetSpawnMode() != m_spawnMode)
+                    UpdateAllStats();
+                // todo
+                //else if (GetMap()->IsNeedRecalc() && GetMap()->GetPlayerCount() > 10 && GetMap()->GetPlayerCount() > GetPlayerCount()) //For dynamic stats
+                //{
+                //    m_playerCount = GetMap()->GetPlayerCount();
+                //    UpdateMaxHealth();
+                //    UpdateAttackPowerAndDamage();
+                //}
+            }
+
             GetThreatManager().Update(diff);
             if (_spellFocusInfo.Delay)
             {
@@ -914,6 +931,15 @@ void Creature::Update(uint32 diff)
         default:
             break;
     }
+
+    if (!IsAlive())
+        if (GetMap()->Instanceable() && !isAnySummons())
+            if (GetMap()->GetSpawnMode() != GetSpawnMode() || GetMap()->IsNeedRespawn(m_respawnChallenge))
+            {
+                m_respawnChallenge = GetMap()->m_respawnChallenge;
+                Respawn(true);
+                AddDelayedEvent(2000, [=]()->void { UpdateAllStats(); });
+            }
 }
 
 void Creature::Regenerate(Powers power)

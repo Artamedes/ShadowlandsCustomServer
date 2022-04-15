@@ -166,3 +166,129 @@ WorldPacket const* WorldPackets::Instance::BossKill::Write()
 
     return &_worldPacket;
 }
+
+ByteBuffer& operator<<(ByteBuffer& data, WorldPackets::Instance::AuraInfo const& auraInfo)
+{
+    data << auraInfo.CasterGuid;
+    data << uint32(auraInfo.SpellID);
+
+    return data;
+}
+
+ByteBuffer& operator<<(ByteBuffer& data, WorldPackets::Instance::ArtifactPowerInfo const& artifactPowerInfo)
+{
+    data << uint32(artifactPowerInfo.ArtifactPowerID);
+    data << uint16(artifactPowerInfo.Rank);
+
+    return data;
+}
+
+ByteBuffer& operator<<(ByteBuffer& data, WorldPackets::Instance::EncounterItemInfo const& encounterItemInfo)
+{
+    data << uint32(encounterItemInfo.ItemID);
+    data << uint32(encounterItemInfo.ItemLevel);
+    data << uint32(encounterItemInfo.EnchantmentIDs.size());
+    data << uint32(encounterItemInfo.ItemBonusListIDs.size());
+    data << uint32(encounterItemInfo.Gems.size());
+
+    for (uint32 i = 0; i < encounterItemInfo.EnchantmentIDs.size(); ++i)
+        data << uint32(encounterItemInfo.EnchantmentIDs[i]);
+
+    for (uint32 i = 0; i < encounterItemInfo.ItemBonusListIDs.size(); ++i)
+        data << uint32(encounterItemInfo.ItemBonusListIDs[i]);
+
+    for (uint32 i = 0; i < encounterItemInfo.Gems.size(); ++i)
+        data << uint32(encounterItemInfo.Gems[i]);
+
+    return data;
+}
+
+ByteBuffer& operator<<(ByteBuffer& data, WorldPackets::Instance::InstancePlayerData const& instancePlayerData)
+{
+    data << instancePlayerData.PlayerGuid;
+    data << uint32(instancePlayerData.Stats.size());
+    data << uint32(instancePlayerData.CombatRatings.size());
+    data << uint32(instancePlayerData.AuraInfos.size());
+    data << uint32(instancePlayerData.SpecID);
+    data << uint32(instancePlayerData.Talents.size());
+    data << uint32(instancePlayerData.PvpTalents.size());
+
+    for (uint32 i = 0; i < instancePlayerData.Talents.size(); ++i)
+        data << uint32(instancePlayerData.Talents[i]);
+
+    for (uint32 i = 0; i < instancePlayerData.PvpTalents.size(); ++i)
+        data << uint32(instancePlayerData.PvpTalents[i]);
+
+    data << uint32(instancePlayerData.ArtifactPowerInfos.size());
+    data << uint32(instancePlayerData.EncounterItemInfos.size());
+
+    for (uint32 i = 0; i < instancePlayerData.Stats.size(); ++i)
+        data << uint32(instancePlayerData.Stats[i]);
+
+    for (uint32 i = 0; i < instancePlayerData.CombatRatings.size(); ++i)
+        data << uint32(instancePlayerData.CombatRatings[i]);
+
+    for (auto auraInfo : instancePlayerData.AuraInfos)
+        data << auraInfo;
+
+    for (auto artifactPowerInfo : instancePlayerData.ArtifactPowerInfos)
+        data << artifactPowerInfo;
+
+    for (auto encounterItemInfos : instancePlayerData.EncounterItemInfos)
+        data << encounterItemInfos;
+
+    return data;
+}
+
+WorldPacket const* WorldPackets::Instance::EncounterStart::Write()
+{
+    _worldPacket << uint32(EncounterID);
+    _worldPacket << uint32(DifficultyID);
+    _worldPacket << uint32(GroupSize);
+    _worldPacket << uint32(PlayerDatas.size());
+
+    for (auto PlayerData : PlayerDatas)
+        _worldPacket << PlayerData;
+
+    return &_worldPacket;
+}
+
+WorldPacket const* WorldPackets::Instance::EncounterEnd::Write()
+{
+    _worldPacket << uint32(EncounterID);
+    _worldPacket << uint32(DifficultyID);
+    _worldPacket << uint32(GroupSize);
+    _worldPacket.WriteBit(Success);
+    _worldPacket.FlushBits();
+
+    return &_worldPacket;
+}
+
+WorldPacket const* WorldPackets::Instance::ChangePlayerDifficultyResult::Write()
+{
+    _worldPacket.FlushBits();
+    _worldPacket.WriteBits(Result, 4);
+    switch (Result)
+    {
+        case (uint8)ChangeDifficultyResult::DIFFICULTY_CHANGE_SET_COOLDOWN_S:
+        case (uint8)ChangeDifficultyResult::DIFFICULTY_CHANGE_OTHER_HEROIC_S:
+            _worldPacket.WriteBit(Cooldown);
+            _worldPacket.FlushBits();
+            _worldPacket << CooldownReason;
+            break;
+        case (uint8)ChangeDifficultyResult::DIFFICULTY_CHANGE_BY_PARTY_LEADER:
+            _worldPacket << InstanceMapID;
+            _worldPacket << DifficultyRecID;
+            break;
+        case (uint8)ChangeDifficultyResult::DIFFICULTY_CHANGE_ENCOUNTER:
+            _worldPacket << MapID;
+            break;
+        case (uint8)ChangeDifficultyResult::DIFFICULTY_CHANGE_PLAYER_BUSY:
+            _worldPacket << Guid;
+            break;
+        default:
+            break;
+    }
+
+    return &_worldPacket;
+}

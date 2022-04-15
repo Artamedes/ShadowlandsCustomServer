@@ -4245,7 +4245,7 @@ std::string const& InstanceMap::GetScriptName() const
 
 void InstanceMap::PermBindAllPlayers()
 {
-    if (!IsDungeon())
+    if (!IsDungeon() || IsLFR() || IsChallengeMode())
         return;
 
     InstanceSave* save = sInstanceSaveMgr->GetInstanceSave(GetInstanceId());
@@ -4379,9 +4379,19 @@ bool Map::IsHeroic() const
     return false;
 }
 
+bool Map::IsChallengeMode() const
+{
+    return i_spawnMode == DIFFICULTY_MYTHIC_KEYSTONE;
+}
+
 bool Map::Is25ManRaid() const
 {
     return IsRaid() && (i_spawnMode == DIFFICULTY_25_N || i_spawnMode == DIFFICULTY_25_HC);
+}
+
+bool Map::IsLFR() const
+{
+    return IsRaid() && (i_spawnMode == DIFFICULTY_LFR || i_spawnMode == DIFFICULTY_LFR_NEW);
 }
 
 bool Map::IsBattleground() const
@@ -4409,6 +4419,11 @@ bool Map::GetEntrancePos(int32 &mapid, float &x, float &y)
     if (!i_mapEntry)
         return false;
     return i_mapEntry->GetEntrancePos(mapid, x, y);
+}
+
+bool Map::IsNeedRespawn(uint32 lastRespawn) const
+{
+    return lastRespawn < m_respawnChallenge;
 }
 
 bool InstanceMap::HasPermBoundPlayers() const

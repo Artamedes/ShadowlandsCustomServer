@@ -57,6 +57,8 @@ void WorldSession::HandleMoveWorldportAck()
         return;
 
     bool seamlessTeleport = player->IsBeingTeleportedSeamlessly();
+    Map* teleport = player->GetTeleportMap();
+    player->ResetTeleMap();
     player->SetSemaphoreTeleportFar(false);
 
     // get the teleport destination
@@ -78,7 +80,7 @@ void WorldSession::HandleMoveWorldportAck()
         player->m_InstanceValid = true;
 
     Map* oldMap = player->GetMap();
-    Map* newMap = sMapMgr->CreateMap(loc.GetMapId(), player);
+    Map* newMap = teleport ? teleport : sMapMgr->CreateMap(loc.GetMapId(), player);
 
     if (player->IsInWorld())
     {

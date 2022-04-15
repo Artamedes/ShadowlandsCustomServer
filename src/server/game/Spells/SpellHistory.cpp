@@ -1519,6 +1519,54 @@ void SpellHistory::RestoreCooldownStateAfterDuel()
     }
 }
 
+void SpellHistory::RemoveSpellCooldownsWithTime(uint32 minRecoveryTime)
+{
+    CooldownStorageType::iterator itr, next;
+    for (itr = _spellCooldowns.begin(); itr != _spellCooldowns.end(); itr = next)
+    {
+        next = itr;
+
+        ++next;
+
+        uint32 flags = 0;
+
+        if (SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(itr->first))
+        {
+            if (SpellCategoryEntry const* CategoryEntry = sSpellCategoryStore.LookupEntry(spellInfo->CategoryId))
+            {
+                flags = CategoryEntry->Flags;
+            }
+
+            // Check if SpellEntry is present and if the cooldown is not more than the specified time
+            if (spellInfo->RecoveryTime > minRecoveryTime || spellInfo->CategoryRecoveryTime > minRecoveryTime)
+                continue;
+        }
+
+        if (flags & SPELL_CATEGORY_FLAG_COOLDOWN_EXPIRES_AT_DAILY_RESET)
+            continue;
+
+        // Remove & notify
+        ResetCooldown(itr->first, true);
+    }
+
+    // Remove spell charge with cooldown equal or more than the specified time
+    for (SpellHistory::ChargeStorageType::iterator itr = _categoryCharges.begin(); itr != _categoryCharges.end();)
+    {
+        if (SpellCategoryEntry const* spellCategory = sSpellCategoryStore.LookupEntry(itr->first))
+        {
+            if (spellCategory->ChargeRecoveryTime <= int32(minRecoveryTime) && (spellCategory->Flags & SPELL_CATEGORY_FLAG_COOLDOWN_EXPIRES_AT_DAILY_RESET) == 0)
+            {
+                if (ResetCharges(spellCategory->ID, false))
+                {
+                    itr = _categoryCharges.erase(itr);
+                    continue;
+                }
+            }
+        }
+
+        ++itr;
+    }
+}
 
 void SpellHistory::RemoveSpellAffectedByRecoveryRate(uint32 spellCastedID)
 {

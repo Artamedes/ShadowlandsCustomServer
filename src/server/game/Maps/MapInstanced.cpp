@@ -114,7 +114,7 @@ void MapInstanced::UnloadAll()
 - create the instance if it's not created already
 - the player is not actually added to the instance (only in InstanceMap::Add)
 */
-Map* MapInstanced::CreateInstanceForPlayer(uint32 mapId, Player* player, uint32 loginInstanceId /*= 0*/)
+Map* MapInstanced::CreateInstanceForPlayer(const uint32 mapId, Player* player, uint32 loginInstanceId /*= 0*/, bool createChallenge /*= false*/)
 {
     if (GetId() != mapId || !player)
         return nullptr;
@@ -176,7 +176,7 @@ Map* MapInstanced::CreateInstanceForPlayer(uint32 mapId, Player* player, uint32 
                 }
             }
         }
-        if (pSave)
+        if (pSave && !createChallenge)
         {
             // solo/perm/group
             newInstanceId = pSave->GetInstanceId();
@@ -190,8 +190,14 @@ Map* MapInstanced::CreateInstanceForPlayer(uint32 mapId, Player* player, uint32 
             // if no instanceId via group members or instance saves is found
             // the instance will be created for the first time
             newInstanceId = sMapMgr->GenerateInstanceId();
-
             Difficulty diff = player->GetGroup() ? player->GetGroup()->GetDifficultyID(GetEntry()) : player->GetDifficultyID(GetEntry());
+
+            if (createChallenge)
+            {
+                diff = DIFFICULTY_MYTHIC_KEYSTONE;
+                player->UnbindInstance(GetId(), diff);
+            }
+
             //Seems it is now possible, but I do not know if it should be allowed
             //ASSERT(!FindInstanceMap(NewInstanceId));
             map = FindInstanceMap(newInstanceId);

@@ -195,6 +195,7 @@ enum WorldBoolConfigs
     CONFIG_REGEN_HP_CANNOT_REACH_TARGET_IN_RAID,
     CONFIG_ALLOW_LOGGING_IP_ADDRESSES_IN_DATABASE,
     CONFIG_CHARACTER_CREATING_DISABLE_ALLIED_RACE_ACHIEVEMENT_REQUIREMENT,
+    CONFIG_CHALLENGE_ENABLED,
     BOOL_CONFIG_VALUE_COUNT
 };
 
@@ -427,6 +428,14 @@ enum WorldIntConfigs
     CONFIG_BLACKMARKET_MAXAUCTIONS,
     CONFIG_BLACKMARKET_UPDATE_PERIOD,
     CONFIG_FACTION_BALANCE_LEVEL_CHECK_DIFF,
+    CONFIG_CHALLENGE_KEY_RESET,
+    CONFIG_CHALLENGE_LEVEL_LIMIT,
+    CONFIG_CHALLENGE_LEVEL_MAX,
+    CONFIG_CHALLENGE_MANUAL_AFFIX1,
+    CONFIG_CHALLENGE_MANUAL_AFFIX2,
+    CONFIG_CHALLENGE_MANUAL_AFFIX3,
+    CONFIG_CHALLENGE_MANUAL_AFFIX4,
+    CONFIG_CHALLENGE_SEASON_ID,
     INT_CONFIG_VALUE_COUNT
 };
 
@@ -793,6 +802,7 @@ class TC_GAME_API World
         uint32 GetCleaningFlags() const { return m_CleaningFlags; }
         void SetCleaningFlags(uint32 flags) { m_CleaningFlags = flags; }
         void ResetEventSeasonalQuests(uint16 event_id);
+        void ChallengeKeyResetTime();
 
         void ReloadRBAC();
 
@@ -808,6 +818,8 @@ class TC_GAME_API World
         void SetForcedWarModeFactionBalanceState(TeamId team, int32 reward = 0);
         void DisableForcedWarModeFactionBalanceState();
 
+        time_t getNextChallengeKeyReset();
+
     protected:
         void _UpdateGameTime();
 
@@ -817,6 +829,7 @@ class TC_GAME_API World
         void InitQuestResetTimes();
         void CheckScheduledResetTimes();
         void InitCurrencyResetTime();
+        void InitChallengeKeyResetTime();
         void DailyReset();
         void ResetWeeklyQuests();
         void ResetMonthlyQuests();
@@ -894,6 +907,7 @@ class TC_GAME_API World
         time_t m_NextCalendarOldEventsDeletionTime;
         time_t m_NextGuildReset;
         time_t m_NextCurrencyReset;
+        time_t m_NextChallengeKeyReset;
 
         //Player Queue
         Queue m_QueuedPlayer;

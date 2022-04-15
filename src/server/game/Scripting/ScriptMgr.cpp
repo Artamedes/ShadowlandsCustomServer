@@ -1702,6 +1702,15 @@ bool ScriptMgr::OnCastItemCombatSpell(Player* player, Unit* victim, SpellInfo co
     return tmpscript->OnCastItemCombatSpell(player, victim, spellInfo, item);
 }
 
+bool ScriptMgr::OnItemCreate(Player* player, Item* item)
+{
+    ASSERT(player);
+    ASSERT(item);
+
+    GET_SCRIPT_RET(ItemScript, item->GetScriptId(), tmpscript, false);
+    return tmpscript->OnCreate(player, item);
+}
+
 bool ScriptMgr::OnItemQuestQueryResponse(Player* player, Item* item)
 {
     GET_SCRIPT_RET(ItemScript, item->GetScriptId(), tmpscript, true);

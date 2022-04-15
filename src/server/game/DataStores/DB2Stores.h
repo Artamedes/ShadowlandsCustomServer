@@ -414,6 +414,8 @@ public:
     std::vector<uint32> const* GetGlyphBindableSpells(uint32 glyphPropertiesId) const;
     std::vector<uint32> const* GetGlyphRequiredSpecs(uint32 glyphPropertiesId) const;
     HeirloomEntry const* GetHeirloomByItemId(uint32 itemId) const;
+    MapChallengeModeEntry const* GetChallengeModeByMapID(uint32 mapID);
+    std::vector<uint32> GetChallengeMaps();
     ItemBonusList const* GetItemBonusList(uint32 bonusListId) const;
     uint32 GetItemBonusListForItemLevelDelta(int16 delta) const;
     std::set<uint32> GetDefaultItemBonusTree(uint32 itemId, ItemContext itemContext) const;
@@ -486,6 +488,7 @@ public:
     GarrTalentRankEntry const* GetTalentRankEntryByGarrTalentID(uint32 garrTalentId);
     std::vector<GarrTalentEntry const*> const* GetTalentEntriesByGarrTalentId(uint32 garrTalentId);
     std::vector < SoulbindConduitRankEntry const*> const* GetSoulbindConduitRankBySoulbindConduitID(uint32 soulbindConduitID);
+    int32 GetChallengeLevelReward(uint32 challengeLevel, int8 seasonID, bool isOploteChest) const;
 
 private:
     friend class DB2HotfixGeneratorBase;

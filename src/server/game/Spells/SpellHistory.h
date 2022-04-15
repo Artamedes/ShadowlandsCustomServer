@@ -205,6 +205,7 @@ public:
     void SaveCooldownStateBeforeDuel();
     void RestoreCooldownStateAfterDuel();
 
+    void RemoveSpellCooldownsWithTime(uint32 minRecoveryTime);
 private:
     Player* GetPlayerOwner() const;
     void ModifySpellCooldown(uint32 spellId, Duration cooldownMod, bool withoutCategoryCooldown = false);

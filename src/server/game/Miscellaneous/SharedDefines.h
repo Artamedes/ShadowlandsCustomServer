@@ -7723,6 +7723,66 @@ enum class MountResult : uint32
     Ok             = 10 // never sent
 };
 
+enum ChallengeMode
+{
+    CHALLENGE_NOT_IN_TIMER = 0,
+    CHALLENGE_TIMER_LEVEL_1 = 1,
+    CHALLENGE_TIMER_LEVEL_2 = 2,
+    CHALLENGE_TIMER_LEVEL_3 = 3
+};
+
+enum TimeType : uint8
+{
+    TIMER_TYPE_BATTLEGROUND = 0,
+    TIMER_TYPE_CHALLENGE = 1,
+    TIMER_TYPE_PROVING_GROUND
+};
+
+enum class ChangeDifficultyResult : uint8
+{
+    DIFFICULTY_CHANGE_COOLDOWN_S = 0, // ERR_DIFFICULTY_CHANGE_COMBAT_COOLDOWN_S
+    DIFFICULTY_CHANGE_WORLDSTATE = 1,
+    DIFFICULTY_CHANGE_ENCOUNTER = 2,
+    DIFFICULTY_CHANGE_COMBAT = 3,
+    DIFFICULTY_CHANGE_PLAYER_BUSY = 4,
+    DIFFICULTY_CHANGE_SET_COOLDOWN_S = 5,
+    DIFFICULTY_CHANGE_ALREADY_STARTED = 6,
+    DIFFICULTY_CHANGE_OTHER_HEROIC_S = 8,
+    DIFFICULTY_CHANGE_HEROIC_INSTANCE_ALREADY_RUNNING = 9,
+    DIFFICULTY_DISABLED_IN_LFG = 10,
+    DIFFICULTY_CHANGE_BY_PARTY_LEADER = 11
+};
+
+enum Maps : uint32
+{
+    MAP_EASTERN_KINGDOMS        = 0,
+    MAP_KALIMDOR                = 1,
+    MAP_OUTLAND                 = 530,
+    MAP_NORTHREND               = 571,
+    MAP_EBON_HOLD_DK_START_ZONE = 609,
+    MAP_LOST_ISLES_GOBLIN_START = 648,
+    MAP_GILNEAS_WORGEN_START    = 654,
+    MAP_WANDERING_ISLE_PANDAREN = 860,
+    MAP_PANDARIA                = 870,
+    MAP_DRAENOR                 = 1116,
+    MAP_WOD_BLASTED_LANDS_PHASE = 1190,
+    MAP_BROKEN_ISLANDS          = 1220,
+    MAP_TANAAN_JUNGLE_INTRO     = 1265,
+    MAP_BROKEN_ISLAND_SCENARIO  = 1460,
+    MAP_TANAAN_JUNGLE           = 1464,
+    MAP_VAULT_DH_START_ZONE     = 1468,
+    MAP_MARDUM_DH_START_ZONE    = 1481,
+    MAP_DALARAN_UNDERBELLY      = 1502,
+    MAP_ZANDALAR                = 1642,
+    MAP_KULTIRAS                = 1643,
+    MAP_TOL_DAGOR_DUNGEON       = 1771,
+    MAP_SEETHING_SHORE          = 1803,
+    MAP_SIEGE_OF_BORALUS        = 1822,
+    MAP_THE_UNDERROT_DUNGEON    = 1841,
+    MAP_ARATHI_HIGHLANDS_FRONT  = 1945
+};
+
+
 enum AreaId : uint32
 {
     AREA_WINTERGRASP                = 4197,
@@ -7835,6 +7895,13 @@ enum WorldState : uint32
     WS_DAILY_QUEST_RESET_TIME   = 20008,                     // Next daily quest reset time
     WS_DAILY_CALENDAR_DELETION_OLD_EVENTS_TIME = 20009,      // Next daily calendar deletions of old events time
     WS_GUILD_WEEKLY_RESET_TIME  = 20050,                     // Next guild week reset time
+    //Challenge WS
+    WS_CHALLENGE_KEY_RESET_TIME           = 20020,    // Reset time for Challenge key
+    WS_CHALLENGE_AFFIXE1_RESET_TIME       = 20021,    // Challenge Affixe 1
+    WS_CHALLENGE_AFFIXE2_RESET_TIME       = 20022,    // Challenge Affixe 2
+    WS_CHALLENGE_AFFIXE3_RESET_TIME       = 20023,    // Challenge Affixe 3
+    WS_CHALLENGE_AFFIXE4_RESET_TIME       = 20024,    // Challenge Affixe 4
+    WS_CHALLENGE_LAST_RESET_TIME          = 20025,    // Last reset time for Challenge key
 };
 
 #endif

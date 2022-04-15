@@ -65,6 +65,7 @@ class WorldPacket;
 struct MapDifficultyEntry;
 struct MapEntry;
 struct Position;
+struct QuaternionData;
 struct ScriptAction;
 struct ScriptInfo;
 struct SmoothPhasingInfo;
@@ -376,6 +377,8 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
         static bool CheckGridIntegrity(T* object, bool moved, char const* objType);
 
         uint32 GetInstanceId() const { return i_InstanceId; }
+        uint8 GetSpawnMode() const { return (i_spawnMode); }
+        void SetSpawnMode(uint8 spawnMode) { i_spawnMode = (Difficulty)spawnMode; }
 
         enum EnterState
         {
@@ -407,12 +410,15 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
         bool IsRaid() const;
         bool IsRaidOrHeroicDungeon() const;
         bool IsHeroic() const;
+        bool IsChallengeMode() const;
         bool Is25ManRaid() const;
+        bool IsLFR() const;
         bool IsBattleground() const;
         bool IsBattleArena() const;
         bool IsBattlegroundOrArena() const;
         bool IsGarrison() const;
         bool GetEntrancePos(int32& mapid, float& x, float& y);
+        bool IsNeedRespawn(uint32 lastRespawn) const;
 
         void AddObjectToRemoveList(WorldObject* obj);
         void AddObjectToSwitchList(WorldObject* obj, bool on);
@@ -433,6 +439,7 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
 
         typedef MapRefManager PlayerList;
         PlayerList const& GetPlayers() const { return m_mapRefManager; }
+        uint32 GetPlayerCount() const { return m_mapRefManager.getSize(); }
 
         template <typename T>
         void DoOnPlayers(T&& fn)
@@ -461,6 +468,7 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
 
         TempSummon* SummonCreature(uint32 entry, Position const& pos, SummonPropertiesEntry const* properties = nullptr, uint32 duration = 0, WorldObject* summoner = nullptr, uint32 spellId = 0, uint32 vehId = 0, ObjectGuid privateObjectOwner = ObjectGuid::Empty, SmoothPhasingInfo const* smoothPhasingInfo = nullptr);
         void SummonCreatureGroup(uint8 group, std::list<TempSummon*>* list = nullptr);
+        GameObject* SummonGameObject(uint32 entry, Position const& pos, QuaternionData const& rot, uint32 respawnTime /* s */);
         AreaTrigger* GetAreaTrigger(ObjectGuid const& guid);
         SceneObject* GetSceneObject(ObjectGuid const& guid);
         Conversation* GetConversation(ObjectGuid const& guid);
@@ -625,6 +633,8 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
         }
 
         virtual std::string GetDebugInfo() const;
+
+        time_t m_respawnChallenge = 0;
 
     private:
         void LoadMapAndVMap(int gx, int gy);

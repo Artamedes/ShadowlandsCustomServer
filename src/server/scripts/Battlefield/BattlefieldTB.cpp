@@ -377,9 +377,10 @@ void BattlefieldTB::SendInitWorldStatesToAll()
     // Tol Barad Peninsula
     Map::PlayerList const& players = m_Map->GetPlayers();
     for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
-        if (Player* player = itr->GetSource()->ToPlayer())
-            if (player->GetZoneId() == 5389) // ZONE_TOL_BARAD_PENINSULA
-                player->SendInitWorldStates(5389, player->GetAreaId());
+        if (itr->GetSource())
+            if (Player* player = itr->GetSource()->ToPlayer())
+                if (player->GetZoneId() == 5389) // ZONE_TOL_BARAD_PENINSULA
+                    player->SendInitWorldStates(5389, player->GetAreaId());
 }
 
 void BattlefieldTB::OnStartGrouping()

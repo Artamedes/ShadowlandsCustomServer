@@ -863,6 +863,7 @@ enum PlayerLoginQueryIndex
     PLAYER_LOGIN_QUERY_LOAD_QUEST_STATUS_OBJECTIVES_CRITERIA_PROGRESS,
     PLAYER_LOGIN_QUERY_LOAD_DAILY_QUEST_STATUS,
     PLAYER_LOGIN_QUERY_LOAD_REPUTATION,
+    PLAYER_LOGIN_QUERY_CHALLENGE_KEY,
     PLAYER_LOGIN_QUERY_LOAD_INVENTORY,
     PLAYER_LOGIN_QUERY_LOAD_ARTIFACTS,
     PLAYER_LOGIN_QUERY_LOAD_AZERITE,
@@ -1131,9 +1132,33 @@ private:
     SpecializationInfo& operator=(SpecializationInfo const&) = delete;
 };
 
+struct ChallengeKeyInfo
+{
+    ChallengeKeyInfo() : InstanceID(0), timeReset(0), ID(0), Level(2), Affix(0), Affix1(0), Affix2(0), Affix3(0), KeyIsCharded(1), needSave(false), needUpdate(false) { }
+
+    bool IsActive() { return ID != 0; }
+
+    MapChallengeModeEntry const* challengeEntry = nullptr;
+    uint32 InstanceID = 0;
+    uint32 timeReset = 0;
+    uint16 ID = 0;
+    uint8 Level = 0;
+    uint8 Affix = 0;
+    uint8 Affix1 = 0;
+    uint8 Affix2 = 0;
+    uint8 Affix3 = 0;
+    uint8 KeyIsCharded = 0;
+    bool needSave = false;
+    bool needUpdate = false;
+};
+
 uint32 constexpr PLAYER_MAX_HONOR_LEVEL = 500;
 uint8 constexpr PLAYER_LEVEL_MIN_HONOR = 10;
 uint32 constexpr SPELL_PVP_RULES_ENABLED = 134735;
+uint32 constexpr SPELL_ENLISTED          = 269083;
+uint32 constexpr SPELL_BG_DESERTER       = 26013;    // Battleground Deserter Spell
+uint32 constexpr SPELL_BG_CRAVEN         = 158263;   // Arena Deserter Spell
+uint32 constexpr SPELL_BG_RECREANT       = 194958;   // Ashran Deserter Spell
 
 enum class ZonePVPTypeOverride : uint32
 {
@@ -1167,6 +1192,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         bool TeleportTo(uint32 mapid, float x, float y, float z, float orientation, uint32 options = 0);
         bool TeleportTo(WorldLocation const& loc, uint32 options = 0);
         bool TeleportToBGEntryPoint();
+        void TeleportToChallenge(uint32 mapid, float x, float y, float z, float orientation, Player* keyOwner = nullptr);
 
         bool HasSummonPending() const;
         void SendSummonRequestFrom(Unit* summoner);
@@ -2216,6 +2242,8 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void SetSkillTempBonus(uint32 pos, uint16 bonus) { SetUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::Skill).ModifyValue(&UF::SkillInfo::SkillTempBonus, pos), bonus); }
         void SetSkillPermBonus(uint32 pos, uint16 bonus) { SetUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::Skill).ModifyValue(&UF::SkillInfo::SkillPermBonus, pos), bonus); }
 
+        Map* GetTeleportMap() { return m_teleport_target_map; }
+        void ResetTeleMap() { m_teleport_target_map = nullptr; }
         WorldLocation& GetTeleportDest() { return m_teleport_dest; }
         uint32 GetTeleportOptions() const { return m_teleport_options; }
         bool IsBeingTeleported() const { return IsBeingTeleportedNear() || IsBeingTeleportedFar(); }
@@ -2234,6 +2262,8 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         static TeamId TeamIdForRace(uint8 race);
         uint32 GetTeam() const { return m_team; }
         TeamId GetTeamId() const { return m_team == ALLIANCE ? TEAM_ALLIANCE : TEAM_HORDE; }
+        bool IsInAlliance() const { return m_team == ALLIANCE; }
+        bool IsInHorde() const { return m_team == HORDE; }
         void SetFactionForRace(uint8 race);
 
         void InitDisplayIds();
@@ -2628,6 +2658,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void UpdateCriteria(CriteriaType type, uint64 miscValue1 = 0, uint64 miscValue2 = 0, uint64 miscValue3 = 0, WorldObject* ref = nullptr);
         void StartCriteriaTimer(CriteriaStartEvent startEvent, uint32 entry, uint32 timeLost = 0);
         void RemoveCriteriaTimer(CriteriaStartEvent startEvent, uint32 entry);
+        void CompletedAchievement(uint32 achievementId);
         void CompletedAchievement(AchievementEntry const* entry);
         bool ModifierTreeSatisfied(uint32 modifierTreeId) const;
 
@@ -2713,6 +2744,14 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
 
         void SetJumping(bool jumping) { m_isJumping = jumping; };
         bool IsJumping() { return m_isJumping; };
+
+        //Challenge
+        ChallengeKeyInfo m_challengeKeyInfo;
+        bool InitChallengeKey(Item* item);
+        void UpdateChallengeKey(Item* item);
+        void CreateChallengeKey(Item* item);
+        void ResetChallengeKey();
+        void ChallengeKeyCharded(Item* item, uint32 challengeLevel, bool runRand = true);
 
         //Animal Companion Helped
         void SetAnimalCompanion(ObjectGuid guid) { petAnimalCompanionGuid = guid; }
@@ -2941,6 +2980,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void _LoadPetStable(uint32 summonedPetNumber, PreparedQueryResult result);
         void _LoadCurrency(PreparedQueryResult result);
         void _LoadCUFProfiles(PreparedQueryResult result);
+        void _LoadChallengeKey(PreparedQueryResult result);
 
         /*********************************************************/
         /***                   SAVE SYSTEM                     ***/
@@ -2968,6 +3008,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void _SaveInstanceTimeRestrictions(CharacterDatabaseTransaction trans);
         void _SaveCurrency(CharacterDatabaseTransaction trans);
         void _SaveCUFProfiles(CharacterDatabaseTransaction trans);
+        void _SaveChallengeKey(CharacterDatabaseTransaction& trans);
 
         /*********************************************************/
         /***              ENVIRONMENTAL SYSTEM                 ***/
@@ -3172,6 +3213,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         uint8 m_MirrorTimerFlagsLast;
 
         // Current teleport data
+        Map* m_teleport_target_map;
         WorldLocation m_teleport_dest;
         uint32 m_teleport_options;
         bool mSemaphoreTeleport_Near;

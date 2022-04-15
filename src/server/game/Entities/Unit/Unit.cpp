@@ -6415,6 +6415,20 @@ Guardian* Unit::GetGuardianPet() const
     return nullptr;
 }
 
+Unit* Unit::GetAnyOwner() const
+{
+    if (!GetCharmerGUID().IsEmpty())
+        return GetCharmer();
+    if (auto summ = ToTempSummon())
+        if (auto owner = summ->GetSummoner())
+            if (auto u = owner->ToUnit())
+                return u;
+    if (GetOwner())
+        return GetOwner();
+
+    return nullptr;
+}
+
 void Unit::SetMinion(Minion *minion, bool apply)
 {
     TC_LOG_DEBUG("entities.unit", "SetMinion %u for %u, apply %u", minion->GetEntry(), GetEntry(), apply);
@@ -14524,4 +14538,12 @@ void Unit::SendLossOfControlAlertInterrupt(ObjectGuid casterGUID, ObjectGuid tar
     LossControlAdd.LockoutSchoolMask = uint32(schoolMaskLocked);    // DurationRemainingLockoutSchoolMask ??
     LossControlAdd.Mechanic = uint8(MECHANIC_INTERRUPT);
     LossControlAdd.Type = uint8(LossOfControlType::TypeSnare);
+}
+
+bool Unit::isAnySummons() const
+{
+    if (IsPlayer())
+        return false;
+
+    return (m_unitTypeMask & (UNIT_MASK_GUARDIAN | UNIT_MASK_PET | UNIT_MASK_HUNTER_PET | UNIT_MASK_TOTEM | UNIT_MASK_VEHICLE | UNIT_MASK_SUMMON)) != 0;
 }

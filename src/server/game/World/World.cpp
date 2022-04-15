@@ -103,6 +103,7 @@
 #include "BattlePayPackets.h"
 #include "BattlePayMgr.h"
 #include "CustomObjectMgr.h"
+#include "ChallengeModeMgr.h"
 
 #include <boost/algorithm/string.hpp>
 
@@ -141,6 +142,7 @@ World::World()
     m_NextCalendarOldEventsDeletionTime = 0;
     m_NextGuildReset = 0;
     m_NextCurrencyReset = 0;
+    m_NextChallengeKeyReset = 0;
 
     m_defaultDbcLocale = LOCALE_enUS;
     m_availableDbcLocaleMask = 0;
@@ -1100,6 +1102,16 @@ void World::LoadConfigSettings(bool reload)
     m_bool_configs[CONFIG_CAST_UNSTUCK] = sConfigMgr->GetBoolDefault("CastUnstuck", true);
     m_int_configs[CONFIG_INSTANCE_RESET_TIME_HOUR]  = sConfigMgr->GetIntDefault("Instance.ResetTimeHour", 4);
     m_int_configs[CONFIG_INSTANCE_UNLOAD_DELAY] = sConfigMgr->GetIntDefault("Instance.UnloadDelay", 30 * MINUTE * IN_MILLISECONDS);
+
+    m_int_configs[CONFIG_CHALLENGE_KEY_RESET] = sConfigMgr->GetIntDefault("Challenge.Key.Reset", 7);
+    m_bool_configs[CONFIG_CHALLENGE_ENABLED] = sConfigMgr->GetBoolDefault("Challenge.Enabled", true);
+    m_int_configs[CONFIG_CHALLENGE_LEVEL_LIMIT] = sConfigMgr->GetIntDefault("Challenge.LevelLimit", 30);
+    m_int_configs[CONFIG_CHALLENGE_LEVEL_MAX] = sConfigMgr->GetIntDefault("Challenge.LevelMax", 10);
+    m_int_configs[CONFIG_CHALLENGE_MANUAL_AFFIX1] = sConfigMgr->GetIntDefault("Challenge.Manual.Affix1", 0);
+    m_int_configs[CONFIG_CHALLENGE_MANUAL_AFFIX2] = sConfigMgr->GetIntDefault("Challenge.Manual.Affix2", 0);
+    m_int_configs[CONFIG_CHALLENGE_MANUAL_AFFIX3] = sConfigMgr->GetIntDefault("Challenge.Manual.Affix3", 0);
+    m_int_configs[CONFIG_CHALLENGE_MANUAL_AFFIX4] = sConfigMgr->GetIntDefault("Challenge.Manual.Affix4", 0);
+    m_int_configs[CONFIG_CHALLENGE_SEASON_ID] = sConfigMgr->GetIntDefault("Challenge.Season", -1);
 
     m_int_configs[CONFIG_DAILY_QUEST_RESET_TIME_HOUR] = sConfigMgr->GetIntDefault("Quests.DailyResetTime", 3);
     if (m_int_configs[CONFIG_DAILY_QUEST_RESET_TIME_HOUR] > 23)
@@ -2419,7 +2431,7 @@ void World::SetInitialWorldSettings()
 
     ///- Initialize Battlefield
     TC_LOG_INFO("server.loading", "Starting Battlefield System");
-    sBattlefieldMgr->InitBattlefield();
+    //sBattlefieldMgr->InitBattlefield();
 
     TC_LOG_INFO("server.loading", "Loading Transports...");
     sTransportMgr->SpawnContinentTransports();
@@ -2449,6 +2461,9 @@ void World::SetInitialWorldSettings()
 
     TC_LOG_INFO("server.loading", "Calculate next currency reset time...");
     InitCurrencyResetTime();
+
+    TC_LOG_INFO("server.loading", "Calculate next challenge reset time...");
+    InitChallengeKeyResetTime();
 
     TC_LOG_INFO("server.loading", "Loading race and class expansion requirements...");
     sObjectMgr->LoadRaceAndClassExpansionRequirements();
@@ -2606,6 +2621,8 @@ void World::Update(uint32 diff)
         ResetCurrencyWeekCap();
     }
 
+    if (currentGameTime > m_NextChallengeKeyReset)
+        ChallengeKeyResetTime();
     /// <ul><li> Handle auctions when the timer has passed
     if (m_timers[WUPDATE_AUCTIONS].Passed())
     {
@@ -3485,6 +3502,35 @@ static time_t GetNextDailyResetTime(time_t t)
     return GetLocalHourTimestamp(t, sWorld->getIntConfig(CONFIG_DAILY_QUEST_RESET_TIME_HOUR), true);
 }
 
+void World::InitChallengeKeyResetTime()
+{
+    time_t insttime = sWorld->getWorldState(WS_CHALLENGE_KEY_RESET_TIME);
+
+    // generate time by config
+    time_t curTime = time(nullptr);
+    tm localTm = *localtime(&curTime);
+    localTm.tm_wday = 3;
+    localTm.tm_hour = getIntConfig(CONFIG_INSTANCE_RESET_TIME_HOUR);
+    localTm.tm_min = 0;
+    localTm.tm_sec = 0;
+
+    // Daily reset time
+    time_t nextResetTime = mktime(&localTm);
+
+    // next reset time before current moment
+    while (curTime >= nextResetTime)
+        nextResetTime += getIntConfig(CONFIG_CHALLENGE_KEY_RESET) * DAY;
+
+    // normalize reset time
+    m_NextChallengeKeyReset = insttime ? insttime : nextResetTime;
+
+    if (!insttime)
+        sWorld->setWorldState(WS_CHALLENGE_KEY_RESET_TIME, m_NextChallengeKeyReset);
+
+    if (!sWorld->getWorldState(WS_CHALLENGE_LAST_RESET_TIME))
+        sWorld->setWorldState(WS_CHALLENGE_LAST_RESET_TIME, m_NextChallengeKeyReset - (7 * DAY));
+}
+
 void World::DailyReset()
 {
     // reset all saved quest status
@@ -3885,6 +3931,30 @@ void World::ProcessQueryCallbacks()
     _queryProcessor.ProcessReadyCallbacks();
 }
 
+void World::ChallengeKeyResetTime()
+{
+    sChallengeModeMgr->GenerateCurrentWeekAffixes();
+    sChallengeModeMgr->GenerateOploteLoot();
+
+    CharacterDatabase.PQuery("DELETE FROM challenge_key WHERE timeReset < %u", m_NextChallengeKeyReset);
+    CharacterDatabase.Query("DELETE FROM item_instance WHERE itemEntry = 158923");
+    CharacterDatabase.Query("DELETE FROM item_instance_modifiers WHERE challengeLevel <> 0");
+
+    for (SessionMap::const_iterator itr = m_sessions.begin(); itr != m_sessions.end(); ++itr)
+        if (Player* player = itr->second->GetPlayer())
+            player->AddDelayedEvent(100, [player]() -> void { player->ResetChallengeKey(); });
+
+    time_t curTime = time(nullptr);
+    time_t m_LastChallengeKeyReset = m_NextChallengeKeyReset;
+    m_NextChallengeKeyReset = time_t(m_NextChallengeKeyReset + DAY * getIntConfig(CONFIG_CHALLENGE_KEY_RESET));
+
+    while (curTime >= m_NextChallengeKeyReset)
+        m_NextChallengeKeyReset += getIntConfig(CONFIG_CHALLENGE_KEY_RESET) * DAY;
+
+    sWorld->setWorldState(WS_CHALLENGE_KEY_RESET_TIME, m_NextChallengeKeyReset);
+    sWorld->setWorldState(WS_CHALLENGE_LAST_RESET_TIME, m_LastChallengeKeyReset);
+}
+
 void World::ReloadRBAC()
 {
     // Passive reload, we mark the data as invalidated and next time a permission is checked it will be reloaded
@@ -3971,4 +4041,10 @@ CliCommandHolder::CliCommandHolder(void* callbackArg, char const* command, Print
 CliCommandHolder::~CliCommandHolder()
 {
     free(m_command);
+}
+
+
+time_t World::getNextChallengeKeyReset()
+{
+    return m_NextChallengeKeyReset;
 }

@@ -27,6 +27,7 @@
 #include "InstanceSaveMgr.h"
 #include "Item.h"
 #include "LFGMgr.h"
+//#include "LFGListMgr.h"
 #include "Log.h"
 #include "LootMgr.h"
 #include "LootPackets.h"
@@ -64,7 +65,7 @@ Group::Group() : m_leaderGuid(), m_leaderName(""), m_groupFlags(GROUP_FLAG_NONE)
 m_dungeonDifficulty(DIFFICULTY_NORMAL), m_raidDifficulty(DIFFICULTY_NORMAL_RAID), m_legacyRaidDifficulty(DIFFICULTY_10_N),
 m_bgGroup(nullptr), m_bfGroup(nullptr), m_lootMethod(FREE_FOR_ALL), m_lootThreshold(ITEM_QUALITY_UNCOMMON), m_looterGuid(),
 m_masterLooterGuid(), m_subGroupsCounts(nullptr), m_guid(), m_maxEnchantingLevel(0), m_dbStoreId(0), m_isLeaderOffline(false),
-m_readyCheckStarted(false), m_readyCheckTimer(Milliseconds::zero()), m_activeMarkers(0)
+m_readyCheckStarted(false), m_readyCheckTimer(Milliseconds::zero()), m_activeMarkers(0)//, _lfgListEntry(nullptr)
 {
     for (uint8 i = 0; i < TARGET_ICONS_COUNT; ++i)
         m_targetIcons[i].Clear();
@@ -713,6 +714,7 @@ bool Group::RemoveMember(ObjectGuid guid, RemoveMethod method /*= GROUP_REMOVEME
         {
             // send update to removed player too so party frames are destroyed clientside
             SendUpdateDestroyGroupToPlayer(player);
+            //sLFGListMgr->OnPlayerLeaveGroup(this, player);
         }
 
         return true;
@@ -783,6 +785,8 @@ void Group::ChangeLeader(ObjectGuid newLeaderGuid, int8 partyIndex)
     if (Player* oldLeader = ObjectAccessor::FindConnectedPlayer(m_leaderGuid))
         oldLeader->RemovePlayerFlag(PLAYER_FLAGS_GROUP_LEADER);
 
+    //sLFGListMgr->OnChangeLeader(this, m_leaderGuid, newLeader->GetGUID());
+
     newLeader->SetPlayerFlag(PLAYER_FLAGS_GROUP_LEADER);
     m_leaderGuid = newLeader->GetGUID();
     m_leaderName = newLeader->GetName();
@@ -834,6 +838,7 @@ void Group::ConvertLeaderInstancesToGroup(Player* player, Group* group, bool swi
 void Group::Disband(bool hideDestroy /* = false */)
 {
     sScriptMgr->OnGroupDisband(this);
+    //sLFGListMgr->OnGroupDisband(this);
 
     Player* player;
     for (member_citerator citr = m_memberSlots.begin(); citr != m_memberSlots.end(); ++citr)
@@ -2811,4 +2816,10 @@ void Group::SetEveryoneIsAssistant(bool apply)
         ToggleGroupMemberFlag(itr, MEMBER_FLAG_ASSISTANT, apply);
 
     SendUpdate();
+}
+
+
+bool Group::InChallenge()
+{
+    return m_dungeonDifficulty == DIFFICULTY_MYTHIC_KEYSTONE;
 }

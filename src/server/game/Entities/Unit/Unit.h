@@ -896,6 +896,9 @@ class TC_GAME_API Unit : public WorldObject
         bool IsHunterPet() const{ return (m_unitTypeMask & UNIT_MASK_HUNTER_PET) != 0; }
         bool IsTotem() const    { return (m_unitTypeMask & UNIT_MASK_TOTEM) != 0; }
         bool IsVehicle() const  { return (m_unitTypeMask & UNIT_MASK_VEHICLE) != 0; }
+        bool isMinion() const { return (m_unitTypeMask & UNIT_MASK_MINION) != 0; }
+        //bool isTrainingDummy() const { return m_unitTypeMask & UNIT_MASK_TRAINING_DUMMY; }
+        bool isAnySummons() const;
 
         uint8 GetLevel() const { return uint8(m_unitData->Level); }
         uint8 GetLevelForTarget(WorldObject const* /*target*/) const override { return GetLevel(); }
@@ -1333,6 +1336,8 @@ class TC_GAME_API Unit : public WorldObject
         Player* GetControllingPlayer() const;
         ObjectGuid GetCharmerOrOwnerGUID() const override { return IsCharmed() ? GetCharmerGUID() : GetOwnerGUID(); }
         bool IsCharmedOwnedByPlayerOrPlayer() const { return GetCharmerOrOwnerOrOwnGUID().IsPlayer(); }
+
+        Unit* GetAnyOwner() const;
 
         Guardian* GetGuardianPet() const;
         Minion* GetFirstMinion() const;
@@ -1888,6 +1893,7 @@ class TC_GAME_API Unit : public WorldObject
         Vehicle* GetVehicleKit() const { return m_vehicleKit; }
         Vehicle* GetVehicle() const { return m_vehicle; }
         void SetVehicle(Vehicle* vehicle) { m_vehicle = vehicle; }
+        bool IsOnVehicle() const { return m_vehicle != nullptr; }
         bool IsOnVehicle(Unit const* vehicle) const;
         Unit* GetVehicleBase() const;
         Unit* GetVehicleRoot() const;

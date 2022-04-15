@@ -125,12 +125,12 @@ Map* MapManager::FindBaseNonInstanceMap(uint32 mapId) const
     return map;
 }
 
-Map* MapManager::CreateMap(uint32 id, Player* player, uint32 loginInstanceId)
+Map* MapManager::CreateMap(uint32 id, Player* player, uint32 loginInstanceId /*= 0*/, bool createChallenge /*= false*/)
 {
     Map* m = CreateBaseMap(id);
 
     if (m && m->Instanceable())
-        m = ((MapInstanced*)m)->CreateInstanceForPlayer(id, player, loginInstanceId);
+        m = ((MapInstanced*)m)->CreateInstanceForPlayer(id, player, loginInstanceId, createChallenge);
 
     return m;
 }

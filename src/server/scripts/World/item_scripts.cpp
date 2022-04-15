@@ -37,6 +37,7 @@ EndContentData */
 #include "Spell.h"
 #include "SpellMgr.h"
 #include "TemporarySummon.h"
+#include "ChallengeMode.h"
 
 /*#####
 # item_only_for_flight
@@ -299,6 +300,25 @@ class item_generic_limit_chance_above_60 : public ItemScript
         }
 };
 
+
+//158923 Challenge Key
+//Last Update 8.0.1 Build 28153
+// todo: add 180653 as well, there are 2 keystones in shadowlands, 1 is current, 1 is timealking
+class item_challenge_key : public ItemScript
+{
+public:
+    item_challenge_key() : ItemScript("item_challenge_key") { }
+
+    bool OnCreate(Player* player, Item* item) override
+    {
+        if (player->HasItemCount(ITEM_MYTHIC_KEYSTONE, 1, true))
+            player->InitChallengeKey(item);
+        else
+            player->CreateChallengeKey(item);
+        return false;
+    }
+};
+
 void AddSC_item_scripts()
 {
     new item_only_for_flight();
@@ -309,4 +329,5 @@ void AddSC_item_scripts()
     new item_dehta_trap_smasher();
     new item_captured_frog();
     new item_generic_limit_chance_above_60();
+    new item_challenge_key();
 }

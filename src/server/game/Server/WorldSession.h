@@ -240,6 +240,26 @@ namespace WorldPackets
         class CalendarComplain;
     }
 
+    namespace ChallengeMode
+    {
+        class StartRequest;
+        class RequestLeaders;
+        class RequestLeadersResult;
+        class RequestMapStats;
+        class AllMapStats;
+        class Rewards;
+        class Complete;
+        class NewPlayerRecord;
+        class ChangePlayerDifficultyResult;
+        class Start;
+        class Reset;
+        class UpdateDeathCount;
+        class ResetChallengeMode;
+        class GlobalGetChallengeModeRewards;
+        class RequestChallengeModeAffixes;
+        class ResetChallengeModeCheat;
+    }
+
     namespace Character
     {
         struct CharacterCreateInfo;
@@ -472,6 +492,17 @@ namespace WorldPackets
         class DFTeleport;
         class DFGetSystemInfo;
         class DFGetJoinStatus;
+
+        //class ListApplyToGroup;
+        //class ListCancelApplication;
+        //class ListInviteResponse;
+        //class ListJoin;
+        //class ListLeave;
+        //class ListSearch;
+        //class ListUpdateRequest;
+        //class ListInviteApplicant;
+        //class ListDeclineApplicant;
+        //struct RideTicket;
     }
 
     namespace Loot
@@ -1682,6 +1713,23 @@ class TC_GAME_API WorldSession
         void SendLfgOfferContinue(uint32 dungeonEntry);
         void SendLfgTeleportError(lfg::LfgTeleportResult err);
 
+        // Lfg List
+        //void HandleLfgListGetStatus(WorldPacket&);
+        //void HandleRequestLfgListBlacklist(WorldPacket&);
+        //void HandleLfgListApplyToGroup(WorldPackets::LFG::ListApplyToGroup&);
+        //void HandleLfgListSearch(WorldPackets::LFG::ListSearch&);
+        //void HandleLfgListJoin(WorldPackets::LFG::ListJoin&);
+        //void HandleLfgListUpdateRequest(WorldPackets::LFG::ListUpdateRequest&);
+        //void HandleLfgListLeave(WorldPackets::LFG::ListLeave&);
+        //void HandleLfgListInviteResponse(WorldPackets::LFG::ListInviteResponse&);
+        //void HandleLfgListCancelApplication(WorldPackets::LFG::ListCancelApplication&);
+        //
+        //void HandleLfgListInviteApplicant(WorldPackets::LFG::ListInviteApplicant&);
+        //void HandleLfgListDeclineApplicant(WorldPackets::LFG::ListDeclineApplicant&);
+        //void SendLfgListJoinResult(uint8 error, WorldPackets::LFG::RideTicket* ticket = nullptr);
+        //void SendLfgListApplicantGroupInviteResponse(lfg::LFGListEntry* entry, lfg::ApplicationSlot& slot);
+        //void SendLfgListApplyForGroupResult(lfg::LFGListEntry* entry, lfg::ApplicationSlot& slot);
+
         void HandleSelfResOpcode(WorldPackets::Spells::SelfRes& selfRes);
         void HandleRequestPetInfo(WorldPackets::Pet::RequestPetInfo& requestPetInfo);
 
@@ -1844,6 +1892,15 @@ class TC_GAME_API WorldSession
         std::unordered_map<uint32, uint8> const& GetRealmCharacterCounts() const { return _realmCharacterCounts; }
 
         void HandleQueryRealmName(WorldPackets::Query::QueryRealmName& queryRealmName);
+
+        // Challenge Modes
+        void HandleChallengeModeStart(WorldPackets::ChallengeMode::StartRequest& /*start*/);
+        void HandleRequestLeaders(WorldPackets::ChallengeMode::RequestLeaders& leaders);
+        void HandleChallengeModeRequestMapStats(WorldPackets::ChallengeMode::RequestMapStats& mapStats);
+        void HandleGetChallengeModeRewards(WorldPackets::ChallengeMode::GlobalGetChallengeModeRewards& modeRewards);
+        void HandleResetChallengeMode(WorldPackets::ChallengeMode::ResetChallengeMode& reset);
+        void HandleRequestChallengeModeAffixes(WorldPackets::ChallengeMode::RequestChallengeModeAffixes& modeAffixes);
+        void HandleResetChallengeModeCheat(WorldPackets::ChallengeMode::ResetChallengeModeCheat& resetModeCheat);
 
         // BattlePay
         void HandleBattlePayGetProductList(WorldPackets::BattlePay::BattlePayGetProductList& recvPacket);

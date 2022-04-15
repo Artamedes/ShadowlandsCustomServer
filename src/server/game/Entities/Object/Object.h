@@ -655,6 +655,9 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
         void GetCreatureListWithEntryInGrid(Container& creatureContainer, uint32 entry, float maxSearchRange = 250.0f) const;
 
         template <typename Container>
+        void GetCreatureListInGrid(Container& creatureContainer, float maxSearchRange = 250.0f) const;
+
+        template <typename Container>
         void GetPlayerListInGrid(Container& playerContainer, float maxSearchRange, bool alive = true) const;
 
         void DestroyForNearbyPlayers();

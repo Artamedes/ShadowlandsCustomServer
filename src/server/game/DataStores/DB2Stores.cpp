@@ -34,6 +34,7 @@
 #include <numeric>
 #include <sstream>
 #include <cctype>
+#include "ChallengeMode.h"
 
 // temporary hack until includes are sorted out (don't want to pull in Windows.h)
 #ifdef GetClassName
@@ -400,6 +401,8 @@ typedef std::unordered_map<uint32, std::unordered_map<uint32, std::vector<SpellP
 typedef std::unordered_map<uint32, std::vector<SpellProcsPerMinuteModEntry const*>> SpellProcsPerMinuteModContainer;
 typedef std::vector<TalentEntry const*> TalentsByPosition[MAX_CLASSES][MAX_TALENT_TIERS][MAX_TALENT_COLUMNS];
 typedef std::unordered_set<uint32> ToyItemIdsContainer;
+typedef std::unordered_map<uint32, MapChallengeModeEntry const*> MapChallengeModeEntryContainer;
+typedef std::vector<uint32 /*MapID*/> MapChallengeModeListContainer;
 typedef std::tuple<uint16, uint8, int32> WMOAreaTableKey;
 typedef std::map<WMOAreaTableKey, WMOAreaTableEntry const*> WMOAreaTableLookupContainer;
 typedef std::unordered_map<uint32 /*LabelCategoryId*/, std::vector<uint32/*SpellIds*/>> SpellLabelContainer;
@@ -494,6 +497,8 @@ namespace
     std::unordered_map<int32, std::vector<SpellVisualMissileEntry const*>> _spellVisualMissilesBySet;
     TalentsByPosition _talentsByPosition;
     ToyItemIdsContainer _toys;
+    MapChallengeModeEntryContainer _mapChallengeModeEntrybyMap;
+    MapChallengeModeListContainer _challengeModeMaps;
     std::unordered_map<uint32, TransmogIllusionEntry const*> _transmogIllusionsByEnchantmentId;
     std::unordered_map<uint32, std::vector<TransmogSetEntry const*>> _transmogSetsByItemModifiedAppearance;
     std::unordered_map<uint32, std::vector<TransmogSetItemEntry const*>> _transmogSetItemsByTransmogSet;
@@ -1245,6 +1250,13 @@ uint32 DB2Manager::LoadStores(std::string const& dataPath, LocaleConstant defaul
 
     for (MapDifficultyEntry const* entry : sMapDifficultyStore)
         _mapDifficulties[entry->MapID][entry->DifficultyID] = entry;
+
+    for (MapChallengeModeEntry const* entry : sMapChallengeModeStore)
+    {
+        _mapChallengeModeEntrybyMap[entry->MapID] = entry;
+        if (entry->ID >= FIRST_BFA_CHALLENGE_ID)
+            _challengeModeMaps.emplace_back(entry->ID);
+    }
 
     std::vector<MapDifficultyXConditionEntry const*> mapDifficultyConditions;
     mapDifficultyConditions.reserve(sMapDifficultyXConditionStore.GetNumRows());
@@ -2446,6 +2458,16 @@ HeirloomEntry const* DB2Manager::GetHeirloomByItemId(uint32 itemId) const
     return Trinity::Containers::MapGetValuePtr(_heirlooms, itemId);
 }
 
+MapChallengeModeEntry const* DB2Manager::GetChallengeModeByMapID(uint32 mapID)
+{
+    return Trinity::Containers::MapGetValuePtr(_mapChallengeModeEntrybyMap, mapID);
+}
+
+std::vector<uint32> DB2Manager::GetChallengeMaps()
+{
+    return _challengeModeMaps;
+}
+
 DB2Manager::ItemBonusList const* DB2Manager::GetItemBonusList(uint32 bonusListId) const
 {
     return Trinity::Containers::MapGetValuePtr(_itemBonusLists, bonusListId);
@@ -3513,4 +3535,24 @@ std::vector<SoulbindConduitRankEntry const*> const* DB2Manager::GetSoulbindCondu
         return nullptr;
 
     return &itr->second;
+}
+
+int32 DB2Manager::GetChallengeLevelReward(uint32 challengeLevel, int8 seasonID, bool isOploteChest) const
+{
+    // for (uint32 entry = 0; entry < sMythicPlusSeasonRewardLevelsStore.GetNumRows(); entry++)
+    // {
+    //     auto mythicPlus = sMythicPlusSeasonRewardLevelsStore.LookupEntry(entry);
+    //     if (mythicPlus == nullptr)
+    //         continue;
+    //
+    //     if (mythicPlus->Season != seasonID)
+    //         continue;
+    //
+    //     if (mythicPlus->DifficultyLevel != challengeLevel)
+    //         continue;
+    //
+    //     return isOploteChest ? mythicPlus->WeeklyRewardLevel : mythicPlus->EndOfRunRewardLevel;
+    // }
+
+    return 0;
 }

@@ -17,6 +17,9 @@
 
 #include "InstanceScript.h"
 #include "AreaBoundary.h"
+#include "ChallengeMode.h"
+#include "ChallengeModeMgr.h"
+#include "ChallengeModePackets.h"
 #include "Creature.h"
 #include "CreatureAI.h"
 #include "CreatureAIImpl.h"
@@ -38,6 +41,11 @@
 #include "WorldSession.h"
 #include <sstream>
 #include <cstdarg>
+#include "TemporarySummon.h"
+#include "SpellHistory.h"
+#include "SpellAuras.h"
+#include "Spell.h"
+#include "Item.h"
 
 #ifdef TRINITY_API_USE_DYNAMIC_LINKING
 #include "ScriptMgr.h"
@@ -50,7 +58,8 @@ BossBoundaryData::~BossBoundaryData()
 }
 
 InstanceScript::InstanceScript(InstanceMap* map) : instance(map), completedEncounters(0), _instanceSpawnGroups(sObjectMgr->GetSpawnGroupsForInstance(map->GetId())),
-_entranceId(0), _temporaryEntranceId(0), _combatResurrectionTimer(0), _combatResurrectionCharges(0), _combatResurrectionTimerStarted(false)
+_entranceId(0), _temporaryEntranceId(0), _combatResurrectionTimer(0), _combatResurrectionCharges(0), _combatResurrectionTimerStarted(false),
+_disabledMask(0), _encounterTime(0), _challenge(nullptr), initDamageManager(false)
 {
 #ifdef TRINITY_API_USE_DYNAMIC_LINKING
     uint32 scriptId = sObjectMgr->GetInstanceTemplate(map->GetId())->ScriptId;
@@ -64,6 +73,12 @@ _entranceId(0), _temporaryEntranceId(0), _combatResurrectionTimer(0), _combatRes
 
 InstanceScript::~InstanceScript()
 {
+    if (_challenge)
+    {
+        _challenge->SetInstanceScript(nullptr);
+        delete _challenge;
+        _challenge = nullptr;
+    }
 }
 
 void InstanceScript::SaveToDB()
@@ -151,6 +166,18 @@ void InstanceScript::LoadBossBoundaries(BossBoundaryData const& data)
     for (BossBoundaryEntry const& entry : data)
         if (entry.BossId < bosses.size())
             bosses[entry.BossId].boundary.push_back(entry.Boundary);
+}
+
+void InstanceScript::LoadEntranceData(const EntranceData* data)
+{
+    while (data->WorldSafeLocId)
+    {
+        if (data->BossId < bosses.size())
+            entrances[data->BossId] = data->WorldSafeLocId;
+
+        ++data;
+    }
+    TC_LOG_DEBUG("scripts", "InstanceScript::LoadEntranceLocations: " UI64FMTD " entrances loaded.", uint64(entrances.size()));
 }
 
 void InstanceScript::LoadMinionData(MinionData const* data)
@@ -380,11 +407,24 @@ bool InstanceScript::SetBossState(uint32 id, EncounterState state)
 
             switch (state)
             {
+                case NOT_STARTED:
+                {
+                    if (bossInfo->state == IN_PROGRESS)
+                    {
+                        if(!IsChallenge())
+                            ResetCombatResurrections();
+
+                        SendEncounterEnd();
+                    }
+                    break;
+                }
                 case IN_PROGRESS:
                 {
+                    _encounterTime = uint32(time(nullptr));
+
                     uint32 resInterval = GetCombatResurrectionChargeInterval();
                     InitializeCombatResurrections(1, resInterval);
-                    SendEncounterStart(1, 9, resInterval, resInterval);
+                    SendEncounterStart(_combatResurrectionCharges, IsChallenge() ? 5 : 9, resInterval, _combatResurrectionTimer);
 
                     instance->DoOnPlayers([](Player* player)
                     {
@@ -393,10 +433,49 @@ bool InstanceScript::SetBossState(uint32 id, EncounterState state)
                     });
                     break;
                 }
-                case FAIL:
                 case DONE:
-                    ResetCombatResurrections();
+                    if (!IsChallenge())
+                        ResetCombatResurrections();
+
                     SendEncounterEnd();
+                    SendCompleteGuildChallenge(id);
+                    SetEntranceLocation(entrances.count(id) ? entrances[id] : GetEntranceLocation());
+
+                    // This buff disappears immediately after killing the boss
+                    DoRemoveAurasDueToSpellOnPlayers(eInstanceSpells::SpellDetermination);
+
+                    _encounterTime = 0;
+
+                    if (Creature* boss = GetCreature(id))
+                        SendEncounterEnd(GetEncounterIDForBoss(boss), true);
+
+                    if (instance->IsRaid())
+                    {
+                        // Bloodlust, Heroism, Temporal Displacement and Insanity debuffs are removed at the end of an encounter
+                        DoRemoveAurasDueToSpellOnPlayers(eInstanceSpells::HunterInsanity);
+                        DoRemoveAurasDueToSpellOnPlayers(eInstanceSpells::MageTemporalDisplacement);
+                        DoRemoveAurasDueToSpellOnPlayers(eInstanceSpells::ShamanExhaustion);
+                        DoRemoveAurasDueToSpellOnPlayers(eInstanceSpells::ShamanSated);
+
+                        // Remove all cooldowns with a recovery time equal or superior than 3 minutes
+                        DoRemoveSpellCooldownWithTimeOnPlayers(3 * TimeConstants::IN_MILLISECONDS * TimeConstants::MINUTE);
+                        break;
+                    }
+                case FAIL:
+                    if (!IsChallenge())
+                        ResetCombatResurrections();
+                    SendEncounterEnd();
+
+                    // Now you have to fight for at least 3mins to get a stack.
+                    // It was nerfed due to people intentionally reseting the boss to gain max stack to kill the boss faster.
+                    if (_encounterTime && instance->IsLFR() && (time(nullptr) - _encounterTime) >= 3 * TimeConstants::MINUTE)
+                        DoCastSpellOnPlayers(eInstanceSpells::SpellDetermination);
+
+                    if (Creature* boss = GetCreature(id))
+                        SendEncounterEnd(GetEncounterIDForBoss(boss), false);
+
+                    // Remove all cooldowns with a recovery time equal or superior than 3 minutes
+                    DoRemoveSpellCooldownWithTimeOnPlayers(3 * TimeConstants::IN_MILLISECONDS * TimeConstants::MINUTE);
                     break;
                 default:
                     break;
@@ -714,9 +793,61 @@ void InstanceScript::DoCastSpellOnPlayer(Player* player, uint32 spell, bool incl
     }
 }
 
+//Pop all player to the graveyard more near in the instance
+void InstanceScript::RepopPlayersAtGraveyard()
+{
+    if (!this || !instance)
+        return;
+
+    Map::PlayerList const& PlayerList = instance->GetPlayers();
+
+    if (!PlayerList.isEmpty())
+        for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+            if (Player* player = i->GetSource())
+                player->RepopAtGraveyard();
+}
+
 bool InstanceScript::ServerAllowsTwoSideGroups()
 {
     return sWorld->getBoolConfig(CONFIG_ALLOW_TWO_SIDE_INTERACTION_GROUP);
+}
+
+CreatureGroup* InstanceScript::SummonCreatureGroup(uint32 creatureGroupID, std::list<TempSummon*>* list /*= nullptr*/)
+{
+    bool createTempList = !list;
+    if (createTempList)
+        list = new std::list<TempSummon*>;
+
+    instance->SummonCreatureGroup(creatureGroupID, list);
+
+    for (TempSummon* summon : *list)
+        summonBySummonGroupIDs[creatureGroupID].push_back(summon->GetGUID());
+
+    if (createTempList)
+    {
+        delete list;
+        list = nullptr;
+    }
+
+    return GetCreatureGroup(creatureGroupID);
+}
+
+CreatureGroup* InstanceScript::GetCreatureGroup(uint32 creatureGroupID)
+{
+    for (ObjectGuid guid : summonBySummonGroupIDs[creatureGroupID])
+        if (Creature* summon = instance->GetCreature(guid))
+            return summon->GetFormation();
+
+    return nullptr;
+}
+
+void InstanceScript::DespawnCreatureGroup(uint32 creatureGroupID)
+{
+    for (ObjectGuid guid : summonBySummonGroupIDs[creatureGroupID])
+        if (Creature* summon = instance->GetCreature(guid))
+            summon->DespawnOrUnsummon();
+
+    summonBySummonGroupIDs.erase(creatureGroupID);
 }
 
 bool InstanceScript::CheckAchievementCriteriaMeet(uint32 criteria_id, Player const* /*source*/, Unit const* /*target*/ /*= nullptr*/, uint32 /*miscvalue1*/ /*= 0*/)
@@ -724,6 +855,48 @@ bool InstanceScript::CheckAchievementCriteriaMeet(uint32 criteria_id, Player con
     TC_LOG_ERROR("misc", "Achievement system call InstanceScript::CheckAchievementCriteriaMeet but instance script for map %u not have implementation for achievement criteria %u",
         instance->GetId(), criteria_id);
     return false;
+}
+
+
+// Add aura on all players in instance
+void InstanceScript::DoAddAuraOnPlayers(uint32 spell)
+{
+    Map::PlayerList const& PlayerList = instance->GetPlayers();
+
+    if (!PlayerList.isEmpty())
+        for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+            if (Player* player = i->GetSource())
+                player->AddAura(spell, player);
+}
+
+void InstanceScript::DoRemoveSpellCooldownOnPlayers(uint32 spellID)
+{
+    Map::PlayerList const& playerList = instance->GetPlayers();
+
+    if (!playerList.isEmpty())
+    {
+        for (Map::PlayerList::const_iterator iter = playerList.begin(); iter != playerList.end(); ++iter)
+        {
+            if (Player* player = iter->GetSource())
+            {
+                if (player->GetSpellHistory()->HasCooldown(spellID))
+                    player->GetSpellHistory()->ResetCooldown(spellID, true);
+            }
+        }
+    }
+}
+
+void InstanceScript::DoRemoveSpellCooldownWithTimeOnPlayers(uint32 minRecoveryTime)
+{
+    Map::PlayerList const& playerList = instance->GetPlayers();
+    if (playerList.isEmpty())
+        return;
+
+    for (Map::PlayerList::const_iterator iter = playerList.begin(); iter != playerList.end(); ++iter)
+    {
+        if (Player* player = iter->GetSource())
+            player->GetSpellHistory()->RemoveSpellCooldownsWithTime(minRecoveryTime);
+    }
 }
 
 void InstanceScript::SetEntranceLocation(uint32 worldSafeLocationId)
@@ -774,13 +947,14 @@ void InstanceScript::SendEncounterUnit(uint32 type, Unit* unit /*= nullptr*/, ui
     }
 }
 
-void InstanceScript::SendEncounterStart(uint32 inCombatResCount /*= 0*/, uint32 maxInCombatResCount /*= 0*/, uint32 inCombatResChargeRecovery /*= 0*/, uint32 nextCombatResChargeTime /*= 0*/)
+void InstanceScript::SendEncounterStart(uint32 inCombatResCount /*= 0*/, uint32 maxInCombatResCount /*= 0*/, uint32 inCombatResChargeRecovery /*= 0*/, uint32 nextCombatResChargeTime /*= 0*/, bool inProgress /*= true*/)
 {
     WorldPackets::Instance::InstanceEncounterStart encounterStartMessage;
     encounterStartMessage.InCombatResCount = inCombatResCount;
     encounterStartMessage.MaxInCombatResCount = maxInCombatResCount;
     encounterStartMessage.CombatResChargeRecovery = inCombatResChargeRecovery;
     encounterStartMessage.NextCombatResChargeTime = nextCombatResChargeTime;
+    encounterStartMessage.InProgress = inProgress;
 
     instance->SendToPlayers(encounterStartMessage.Write());
 }
@@ -943,4 +1117,413 @@ bool InstanceHasScript(WorldObject const* obj, char const* scriptName)
         return instance->GetScriptName() == scriptName;
 
     return false;
+}
+
+void InstanceScript::SendCompleteGuildChallenge(uint32 id)
+{
+    InstanceMap::PlayerList const& playersMap = instance->GetPlayers();
+    for (InstanceMap::PlayerList::const_iterator itr = playersMap.begin(); itr != playersMap.end(); ++itr)
+    {
+        if (Player* player = itr->GetSource())
+        {
+            //if (player->GetGroup() && player->GetGroup()->CanRecieveGuildChallengeCredit())
+            //{
+            //    if (Guild* guild = player->GetGuild())
+            //    {
+            //        if (instance->IsRaid())
+            //            guild->CompleteGuildChallenge(GuildChallengeType::ChallengeRaid, player);
+            //        else if (instance->IsDungeon() && id == (bosses.size() - 1))
+            //            guild->CompleteGuildChallenge(GuildChallengeType::ChallengeDungeon, player);
+            //        break;
+            //    }
+            //}
+        }
+    }
+}
+
+void InstanceScript::BuildPlayerDatas(WorldPackets::Instance::EncounterStart& packet)
+{
+    Map::PlayerList const& playerList = instance->GetPlayers();
+    if (playerList.isEmpty())
+        return;
+
+    uint8 count = 0;
+
+    for (Map::PlayerList::const_iterator iter = playerList.begin(); iter != playerList.end(); ++iter)
+    {
+        if (Player* player = iter->GetSource())
+        {
+            if (!player->IsInWorld())
+                continue;
+
+            packet.PlayerDatas[count].PlayerGuid = player->GetGUID();
+
+            for (uint8 i = 0; i < MAX_STATS; ++i)
+                packet.PlayerDatas[count].Stats.push_back(player->GetStat(Stats(i)));
+
+            for (uint32 rating = 0; rating < MAX_COMBAT_RATING; ++rating)
+                packet.PlayerDatas[count].CombatRatings.push_back(player->GetRatingBonusValue(CombatRating(rating)));
+
+            uint32 secondCount = 0;
+            Unit::AuraApplicationMap& itsAuras = player->GetAppliedAuras();
+            for (Unit::AuraApplicationMap::iterator i = itsAuras.begin(); i != itsAuras.end();)
+            {
+                Aura const* aura = i->second->GetBase();
+                packet.PlayerDatas[count].AuraInfos[secondCount].CasterGuid = aura->GetCasterGUID();
+                packet.PlayerDatas[count].AuraInfos[secondCount].SpellID = aura->GetId();
+                secondCount++;
+            }
+
+            packet.PlayerDatas[count].SpecID = player->GetSpecializationId();
+
+            PlayerTalentMap const* talents = player->GetTalentMap(player->GetActiveTalentGroup());
+            for (PlayerTalentMap::value_type const& v : *talents)
+            {
+                if (v.second != PLAYERSPELL_REMOVED)
+                    packet.PlayerDatas[count].Talents.push_back(v.first);
+            }
+
+            PlayerPvpTalentMap const& pvpTalents = player->GetPvpTalentMap(player->GetActiveTalentGroup());
+            for (std::size_t i = 0; i < pvpTalents.size(); ++i)
+                packet.PlayerDatas[count].PvpTalents[i] = pvpTalents[i];
+
+            //ToDo send Azerite Power Data
+
+            secondCount = 0;
+            for (EquipmentSlots i = EQUIPMENT_SLOT_HEAD; i < EQUIPMENT_SLOT_TABARD; i = (EquipmentSlots)(int(i) + 1))
+            {
+                if (i == EQUIPMENT_SLOT_BODY) // skip shirt
+                    continue;
+                if (i == EQUIPMENT_SLOT_RANGED) // ranged slot was removed in MOP
+                    continue;
+
+                if (Item* item = player->GetEquippedItem(i))
+                {
+                    packet.PlayerDatas[count].EncounterItemInfos[secondCount].ItemID = item->GetEntry();
+                    packet.PlayerDatas[count].EncounterItemInfos[secondCount].ItemLevel = item->GetItemLevel(player);
+                    packet.PlayerDatas[count].EncounterItemInfos[secondCount].ItemBonusListIDs.reserve(item->m_itemData->BonusListIDs->size());
+                    for (int32 bonusId : *item->m_itemData->BonusListIDs)
+                        packet.PlayerDatas[count].EncounterItemInfos[secondCount].ItemBonusListIDs.emplace_back(bonusId);
+
+                    for (uint32 enchant_slot = PERM_ENCHANTMENT_SLOT; enchant_slot < MAX_ENCHANTMENT_SLOT; ++enchant_slot)
+                        packet.PlayerDatas[count].EncounterItemInfos[secondCount].EnchantmentIDs.push_back(item->GetEnchantmentId(EnchantmentSlot(enchant_slot)));
+
+                    //ToDo send Gem Data
+                    //for (ItemDynamicFieldGems const& gemData : item->GetGems())
+                    //{
+
+                    //}
+
+                    secondCount++;
+                }
+            }
+        }
+    }
+}
+
+void InstanceScript::SendEncounterStart(uint32 encounterID)
+{
+    if (!encounterID)
+        return;
+
+    WorldPackets::Instance::EncounterStart encounterStar;
+    encounterStar.EncounterID = encounterID;
+    encounterStar.DifficultyID = instance->GetDifficultyID();
+    encounterStar.GroupSize = instance->GetPlayers().getSize();
+    //BuildPlayerDatas(encounterStar); Why blizard sent in all sniff 0 in this struct???
+    instance->SendToPlayers(encounterStar.Write());
+}
+
+void InstanceScript::SendEncounterEnd(uint32 encounterID, bool success)
+{
+    if (!encounterID)
+        return;
+
+    WorldPackets::Instance::EncounterEnd encounterEnd;
+    encounterEnd.EncounterID = encounterID;
+    encounterEnd.DifficultyID = instance->GetDifficultyID();
+    encounterEnd.GroupSize = instance->GetPlayers().getSize();
+    encounterEnd.Success = success;
+    instance->SendToPlayers(encounterEnd.Write());
+}
+
+
+uint32 InstanceScript::GetEncounterIDForBoss(Creature* boss) const
+{
+    if (!boss)
+        return 0;
+
+    DungeonEncounterList const* encounters = sObjectMgr->GetDungeonEncounterList(instance->GetId(), instance->GetDifficultyID());
+    if (!encounters || encounters->empty())
+        return 0;
+
+    for (DungeonEncounterList::const_iterator iter = encounters->begin(); iter != encounters->end(); ++iter)
+    {
+        if (iter->dbcEntry->CreatureDisplayID == boss->GetNativeDisplayId() || iter->creditEntry == boss->GetEntry())
+            return iter->dbcEntry->ID;
+    }
+
+    return 0;
+}
+
+void InstanceScript::AddToDamageManager(Creature* creature, uint8 pullNum)
+{
+    if (!creature || !creature->IsAlive())
+        return;
+
+    SetPullDamageManager(creature->GetGUID(), pullNum);
+
+    DamageManager manager;
+    manager.entry = creature->GetEntry();
+    manager.creature = creature;
+    manager.guid = creature->GetGUID();
+
+    damageManager[pullNum].push_back(manager);
+    initDamageManager = true;
+}
+
+bool InstanceScript::CheckDamageManager()
+{
+    return initDamageManager;
+}
+
+void InstanceScript::UpdateDamageManager(ObjectGuid caller, int32 damage, bool heal)
+{
+    if (!damage)
+        return;
+
+    int8 pullNum = GetPullDamageManager(caller);
+    if (pullNum < 0)
+        return;
+
+    DamageManagerMap::const_iterator itr = damageManager.find(pullNum);
+    if (itr == damageManager.end())
+        return;
+
+    std::vector<DamageManager> const* manager = &itr->second;
+    if (manager->empty())
+        return;
+
+    for (auto const& itr2 : *manager)
+    {
+        // Creature* pull = itr->creature; // If crashed comment this
+        if (Creature* pull = instance->GetCreature(itr2.guid)) // If crashed uncomment this
+        {
+            if (!pull->IsAlive() || itr2.guid == caller)
+                continue;
+
+            if (!heal && damage >= pull->GetHealth())
+                pull->Kill(pull, pull, true);
+            else
+                pull->SetHealth(pull->GetHealth() - damage);
+        }
+    }
+}
+
+void InstanceScript::SetPullDamageManager(ObjectGuid guid, uint8 pullId)
+{
+    pullDamageManager[guid] = pullId;
+}
+
+int8 InstanceScript::GetPullDamageManager(ObjectGuid guid) const
+{
+    if (pullDamageManager.empty())
+        return -1;
+
+    auto itr = pullDamageManager.find(guid);
+    if (itr == pullDamageManager.end())
+        return -1;
+
+    return itr->second;
+}
+
+void InstanceScript::ResetChallengeMode(Player* player)
+{
+    if(!player || !player->GetGroup())
+    if (_challenge)
+        _challenge->ResetGo();
+
+    instance->m_respawnChallenge = time(nullptr); // For respawn all mobs  
+    RepopPlayersAtGraveyard();    
+    CreateChallenge(player);
+}
+
+void InstanceScript::AddChallengeModeChest(ObjectGuid chestGuid)
+{
+    _challengeChest = chestGuid;
+}
+
+void InstanceScript::AddChallengeModeDoor(ObjectGuid doorGuid)
+{
+    _challengeDoorGuid = doorGuid;
+}
+
+void InstanceScript::AddChallengeModeOrb(ObjectGuid orbGuid)
+{
+    _challengeOrbGuid = orbGuid;
+}
+
+void InstanceScript::SetChallenge(Challenge* challenge)
+{
+    _challenge = challenge;
+}
+
+Challenge* InstanceScript::GetChallenge() const
+{
+    return _challenge;
+}
+
+bool InstanceScript::IsChallenge() const
+{
+    return _challenge != nullptr;
+}
+
+// Redirect query to challenge
+void InstanceScript::OnCreatureCreateForScript(Creature* creature)
+{
+    if (_challenge)
+        _challenge->OnCreatureCreateForScript(creature);
+}
+
+void InstanceScript::OnCreatureRemoveForScript(Creature* creature)
+{
+    if (_challenge)
+        _challenge->OnCreatureRemoveForScript(creature);
+}
+
+void InstanceScript::OnCreatureUpdateDifficulty(Creature* creature)
+{
+    if (_challenge)
+        _challenge->OnCreatureUpdateDifficulty(creature);
+}
+
+void InstanceScript::EnterCombatForScript(Creature* creature, Unit* enemy)
+{
+    if (_challenge)
+        _challenge->EnterCombatForScript(creature, enemy);
+}
+
+void InstanceScript::CreatureDiesForScript(Creature* creature, Unit* killer)
+{
+    if (_challenge)
+        _challenge->CreatureDiesForScript(creature, killer);
+}
+
+void InstanceScript::OnPlayerEnterForScript(Player* player)
+{
+    if (_challenge)
+        _challenge->OnPlayerEnterForScript(player);
+}
+
+void InstanceScript::OnPlayerLeaveForScript(Player* player)
+{
+    if (_challenge)
+        _challenge->OnPlayerLeaveForScript(player);
+}
+
+void InstanceScript::OnPlayerDiesForScript(Player* player)
+{
+    if (_challenge)
+        _challenge->OnPlayerDiesForScript(player);
+}
+
+void InstanceScript::OnUnitCharmed(Unit* unit, Unit* charmer)
+{
+    if (_challenge)
+        _challenge->OnUnitCharmed(unit, charmer);
+}
+
+void InstanceScript::OnUnitRemoveCharmed(Unit* unit, Unit* charmer)
+{
+    if (_challenge)
+        _challenge->OnUnitRemoveCharmed(unit, charmer);
+}
+
+void InstanceScript::OnGameObjectCreateForScript(GameObject* go)
+{
+    if (_challenge)
+        _challenge->OnGameObjectCreateForScript(go);
+
+    if (sChallengeModeMgr->IsChest(go->GetEntry()))    
+        AddChallengeModeChest(go->GetGUID());
+
+    if (sChallengeModeMgr->IsDoor(go->GetEntry()))    
+        AddChallengeModeDoor(go->GetGUID());     
+
+    if (go->GetEntry() == ChallengeModeOrb)
+        AddChallengeModeOrb(go->GetGUID());
+}
+
+void InstanceScript::OnGameObjectRemoveForScript(GameObject* go)
+{
+    if (_challenge)
+        _challenge->OnGameObjectRemoveForScript(go);
+}
+
+void InstanceScript::BroadcastPacket(WorldPacket const* data) const
+{
+    if (!this || !instance)
+        return;
+
+    instance->DoOnPlayers([data](Player* player)
+    {
+        player->SendDirectMessage(data);
+    });
+}
+
+void InstanceScript::CreateChallenge(Player* player)
+{
+    if (!player)
+        return;
+
+    MapChallengeModeEntry const* m_challengeEntry = player->GetGroup() ? player->GetGroup()->m_challengeEntry : player->m_challengeKeyInfo.challengeEntry;
+    if (!m_challengeEntry)
+        return;
+
+    InstanceMap* instanceMap = instance->ToInstanceMap();
+    uint32 instanceID = instanceMap->GetInstanceId();
+
+    if (!instanceMap || !instanceID)
+        return;
+
+    uint32 scenarioId = 0;
+    // todo
+    //if (ScenarioDBData const* scenarioData = sScenarioMgr->GetScenarioOnMap(player->GetMap()->GetId(), DIFFICULTY_MYTHIC_KEYSTONE))
+    //{
+    //    if (player->GetTeamId() == TEAM_ALLIANCE)
+    //        scenarioId = scenarioData->Scenario_A;
+    //    else
+    //        scenarioId = scenarioData->Scenario_H;
+    //}
+
+    bool canChallengeWithTeeming = false;
+    if (player->m_challengeKeyInfo.Level > MYTHIC_LEVEL_1)
+        canChallengeWithTeeming = player->m_challengeKeyInfo.Affix == Affixes::TEEMING;
+    if (player->m_challengeKeyInfo.Level > MYTHIC_LEVEL_3 && !canChallengeWithTeeming)
+        canChallengeWithTeeming = player->m_challengeKeyInfo.Affix1 == Affixes::TEEMING;
+    if (player->m_challengeKeyInfo.Level > MYTHIC_LEVEL_6 && !canChallengeWithTeeming)
+        canChallengeWithTeeming = player->m_challengeKeyInfo.Affix2 == Affixes::TEEMING;
+    if (player->m_challengeKeyInfo.Level > MYTHIC_LEVEL_9 && !canChallengeWithTeeming)
+        canChallengeWithTeeming = player->m_challengeKeyInfo.Affix3 == Affixes::TEEMING;
+
+    // todo
+     //if(ScenarioData const* scenarioData = sScenarioMgr->GetScenarioData(scenarioId, player->GetTeamId(), sChallengeModeMgr->IsTeemingAffixInRotation() && canChallengeWithTeeming))
+     //    instanceMap->SetInstanceScenario(new InstanceScenario(instanceMap, scenarioData));
+
+    Scenario* scenario = instanceMap->GetInstanceScenario();
+    if (!scenario)
+        return;
+
+    _challenge = new Challenge(instanceMap, player, instanceID, scenario);
+
+    if (!_challenge->CanRun())
+    {
+        delete _challenge;
+        return;
+    }
+
+    // Remove all cooldowns with a recovery time equal or superior than 2 minutes
+    DoRemoveSpellCooldownWithTimeOnPlayers(2 * TimeConstants::IN_MILLISECONDS * TimeConstants::MINUTE);
+    SetChallenge(_challenge);
+    _challenge->SetInstanceScript(this);
 }

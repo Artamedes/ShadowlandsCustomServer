@@ -1629,6 +1629,10 @@ Item* Item::CreateItem(uint32 itemEntry, uint32 count, ItemContext context, Play
         if (item->Create(sObjectMgr->GetGenerator<HighGuid::Item>().Generate(), itemEntry, context, player))
         {
             item->SetCount(count);
+
+            if (player)
+                sScriptMgr->OnItemCreate(const_cast<Player*>(player), item);
+
             return item;
         }
         else
