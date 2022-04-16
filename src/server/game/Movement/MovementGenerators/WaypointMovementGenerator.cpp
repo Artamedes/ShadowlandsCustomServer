@@ -364,10 +364,9 @@ void WaypointMovementGenerator<Creature>::StartMove(Creature* owner, bool relaun
     }
 
     init.MovebyPath(path);
-
-    //! Accepts angles such as 0.00001 and -0.00001, 0 must be ignored, default value in waypoint table
-    if (waypoint.orientation && waypoint.delay)
-        init.SetFacing(waypoint.orientation);
+    
+    if (waypoint.orientation.has_value() && waypoint.delay > 0)
+        init.SetFacing(*waypoint.orientation);
 
     switch (waypoint.moveType)
     {
