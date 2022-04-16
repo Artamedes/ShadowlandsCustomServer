@@ -875,6 +875,16 @@ struct npc_xolmir_700511 : public ScriptedAI
            if (auto voidRift = me->FindNearestCreature(700518, 50.0f))
            {
                voidRift->RemoveUnitFlag(UnitFlags::UNIT_FLAG_NON_ATTACKABLE);
+
+
+               if (auto map = me->GetMap())
+               {
+                   map->DoOnPlayers([](Player* player)
+                       {
+                           Conversation::CreateConversation(700305, player, *player, player->GetGUID());
+                       });
+               }
+
            }
        }
 

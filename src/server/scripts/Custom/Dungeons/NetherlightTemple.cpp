@@ -663,6 +663,15 @@ struct npc_prophet_velen_700412 : public ScriptedAI
                         Talk(2);
                         me->RemoveAurasDueToSpell(365837);
                         DoSummon(700415, {1400.830811f, 1343.949463f, 177.933823f}, 0s, TempSummonType::TEMPSUMMON_MANUAL_DESPAWN);
+
+                        if (auto map = me->GetMap())
+                        {
+                            map->DoOnPlayers([](Player* player)
+                            {
+                                Conversation::CreateConversation(700304, player, *player, player->GetGUID());
+                            });
+                        }
+
                     });
                 });
             }

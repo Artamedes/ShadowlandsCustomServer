@@ -4,6 +4,7 @@
 #include "GameTime.h"
 #include "Player.h"
 #include "GameObjectAI.h"
+#include "Conversation.h"
 
 class instance_skyhold : public InstanceMapScript
 {
@@ -195,6 +196,13 @@ public:
     void JustDied(Unit* killer) override
     {
         me->SummonGameObject(700000, { 836.368f, 7228.57f , 6.49474f , 3.10886f }, { -0.0f, -0.0f,-0.999866f, -0.016364f }, Hours(12), GOSummonType::GO_SUMMON_TIMED_DESPAWN);
+        if (auto map = me->GetMap())
+        {
+            map->DoOnPlayers([](Player* player)
+            {
+                Conversation::CreateConversation(700300, player, *player, player->GetGUID());
+            });
+        }
     }
 
     void UpdateAI(uint32 diff) override
@@ -330,6 +338,13 @@ struct npc_dark_ascended_corrus : public ScriptedAI
         void JustDied(Unit* who) override
         {
             Talk(4);
+            if (auto map = me->GetMap())
+            {
+                map->DoOnPlayers([](Player* player)
+                {
+                    Conversation::CreateConversation(700301, player, *player, player->GetGUID());
+                });
+            }
         }
 
         void UpdateAI(uint32 diff) override

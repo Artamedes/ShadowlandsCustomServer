@@ -10,6 +10,7 @@
 #include "CollectionMgr.h"
 #include "WorldSession.h"
 #include "CovenantMgr.h"
+#include "Conversation.h"
 #include "Mail.h"
 
 struct npc_battle_training : public ScriptedAI
@@ -340,6 +341,12 @@ struct npc_juno_700006 : public ScriptedAI
             return true;
         }
 
+        void OnQuestAccept(Player* player, Quest const* quest) override
+        {
+            if (quest->GetQuestId() == 700019)
+                Conversation::CreateConversation(700302, player, *player, player->GetGUID());
+        }
+
         void OnUnitRelocation(Unit* p_Who) override
         {
             if (p_Who->IsPlayer())
@@ -564,6 +571,7 @@ struct npc_mall_weapongiver : public ScriptedAI
                             player->AddQuestAndCheckCompletion(sObjectMgr->GetQuestTemplate(700020), me);
                             player->GetScheduler().Schedule(100ms, [player](TaskContext context)
                                 {
+                                    Conversation::CreateConversation(700303, player, *player, player->GetGUID());
                                     player->PlayerTalkClass->SendQuestGiverQuestDetails(sObjectMgr->GetQuestTemplate(700020), player->GetGUID(), true, true);
                                 });
                         }
@@ -868,8 +876,8 @@ struct npc_sturzah_800005 : public ScriptedAI
             AddGossipItemFor(player, GossipOptionIcon::None, "|TInterface/Icons/achievement_pvp_h_01.blp:30:30:-28:0|tTier 1", 0, 1);
             AddGossipItemFor(player, GossipOptionIcon::None, "|TInterface/Icons/achievement_pvp_h_02.blp:30:30:-28:0|tTier 2", 0, 2);
             AddGossipItemFor(player, GossipOptionIcon::None, "|TInterface/Icons/achievement_pvp_h_03.blp:30:30:-28:0|tTier 3", 0, 3);
-            AddGossipItemFor(player, GossipOptionIcon::None, "|TInterface/Icons/achievement_pvp_h_04.blp:30:30:-28:0|tTier 4", 0, 4);
-            AddGossipItemFor(player, GossipOptionIcon::None, "|TInterface/Icons/achievement_pvp_h_05.blp:30:30:-28:0|tTier 5", 0, 5);
+            AddGossipItemFor(player, GossipOptionIcon::None, "|TInterface/Icons/achievement_pvp_h_05.blp:30:30:-28:0|tTier 4", 0, 4);
+            //AddGossipItemFor(player, GossipOptionIcon::None, "|TInterface/Icons/achievement_pvp_h_05.blp:30:30:-28:0|tTier 5", 0, 5);
             SendGossipMenuFor(player, 800005, me);
             return true;
         }
@@ -880,7 +888,7 @@ struct npc_sturzah_800005 : public ScriptedAI
 
             switch (actionId)
             {
-                case 1: player->GetSession()->SendListInventory(me->GetGUID(), 8000050); break;
+                case 1: player->GetSession()->SendListInventory(me->GetGUID(), me->GetEntry()); break;
                 case 2: player->GetSession()->SendListInventory(me->GetGUID(), 8000051); break;
                 case 3: player->GetSession()->SendListInventory(me->GetGUID(), 8000052); break;
                 case 4: player->GetSession()->SendListInventory(me->GetGUID(), 8000053); break;
