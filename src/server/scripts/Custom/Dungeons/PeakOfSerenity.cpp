@@ -109,6 +109,13 @@ public:
         {
             done = true;
             me->DespawnOrUnsummon(2500ms);
+            if (clicker->IsPlayer())
+            {
+                if (auto player = clicker->ToPlayer())
+                {
+                    player->ModifyCurrency(10174, 5); // Light essence
+                }
+            }
             scheduler.Schedule(100ms, [this](TaskContext)
                 {
                     DoCastSelf(367667);
