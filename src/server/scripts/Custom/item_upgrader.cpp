@@ -33,6 +33,7 @@ struct ItemUpgrade
     uint32 MaterialID;
     uint32 ReplaceItemID;
     uint32 ReplaceItemQuantity;
+    std::vector<int32> RemoveBonusIDList;
     std::vector<int32> ReplaceBonusIDList;
     std::vector<ItemRequiredMaterials> RequiredMaterials;
 };
@@ -74,7 +75,7 @@ class ItemUpgradeStorage
                 } while (l_Query->NextRow());
             }
 
-            l_Query = WorldDatabase.Query("SELECT EntryID, Type, RequiredID, RequiredAmount, MaterialID, ReplaceItemID, ReplaceItemQuantity, ReplaceBonusIDList FROM z_item_upgrade;");
+            l_Query = WorldDatabase.Query("SELECT EntryID, Type, RequiredID, RequiredAmount, MaterialID, ReplaceItemID, ReplaceItemQuantity, RemoveBonusIds, AddBonusIds FROM z_item_upgrade;");
             if (l_Query)
             {
                 do
@@ -91,6 +92,10 @@ class ItemUpgradeStorage
                     l_Upgrade.ReplaceItemQuantity = l_Fields[6].GetUInt32();
 
                     for (std::string_view token : Trinity::Tokenize(l_Fields[7].GetStringView(), ' ', false))
+                        if (Optional<int32> bonusListID = Trinity::StringTo<int32>(token))
+                            l_Upgrade.RemoveBonusIDList.push_back(*bonusListID);
+
+                    for (std::string_view token : Trinity::Tokenize(l_Fields[8].GetStringView(), ' ', false))
                         if (Optional<int32> bonusListID = Trinity::StringTo<int32>(token))
                             l_Upgrade.ReplaceBonusIDList.push_back(*bonusListID);
 
@@ -451,8 +456,18 @@ class item_upgrader : public ItemScript
                 l_Item.Item.ItemBonus->Context = ItemContext::Torghast;
 
                 for (int32 bonusId : *targets.GetItemTarget()->m_itemData->BonusListIDs)
+                {
                     if (l_ItemUpgrade->Type != ItemUpgradeType::BonusID || bonusId != l_ItemUpgrade->RequiredID)
-                        l_Item.Item.ItemBonus->BonusListIDs.push_back(bonusId);
+                    {
+                        bool add = false;
+
+                        if (std::find(l_ItemUpgrade->RemoveBonusIDList.begin(), l_ItemUpgrade->RemoveBonusIDList.end(), bonusId) == l_ItemUpgrade->RemoveBonusIDList.end())
+                            add = true;
+
+                        if (add)
+                            l_Item.Item.ItemBonus->BonusListIDs.push_back(bonusId);
+                    }
+                }
 
                 for (int32 bonusId : l_ItemUpgrade->ReplaceBonusIDList)
                     l_Item.Item.ItemBonus->BonusListIDs.push_back(bonusId);
@@ -572,13 +587,25 @@ class item_upgrader : public ItemScript
             WorldPackets::Quest::TreasurePickItem l_Item;
             l_Item.Item.ItemID = l_ItemUpgrade->ReplaceItemID ? l_ItemUpgrade->ReplaceItemID : l_ItemTarget->GetEntry();
             l_Item.Quantity = l_ItemUpgrade->ReplaceItemQuantity ? l_ItemUpgrade->ReplaceItemQuantity : 1;
-            if (!l_ItemUpgrade->ReplaceBonusIDList.empty())
+            //if (!l_ItemUpgrade->ReplaceBonusIDList.empty())
             {
                 l_Item.Item.ItemBonus.emplace();
                 l_Item.Item.ItemBonus->Context = ItemContext::Torghast;
+
                 for (int32 bonusId : *l_ItemTarget->m_itemData->BonusListIDs)
+                {
                     if (l_ItemUpgrade->Type != ItemUpgradeType::BonusID || bonusId != l_ItemUpgrade->RequiredID)
-                        l_Item.Item.ItemBonus->BonusListIDs.push_back(bonusId);
+                    {
+                        bool add = false;
+
+                        if (std::find(l_ItemUpgrade->RemoveBonusIDList.begin(), l_ItemUpgrade->RemoveBonusIDList.end(), bonusId) == l_ItemUpgrade->RemoveBonusIDList.end())
+                            add = true;
+
+                        if (add)
+                            l_Item.Item.ItemBonus->BonusListIDs.push_back(bonusId);
+                    }
+                }
+
                 for (int32 bonusId : l_ItemUpgrade->ReplaceBonusIDList)
                     l_Item.Item.ItemBonus->BonusListIDs.push_back(bonusId);
             }
@@ -690,12 +717,16 @@ class item_upgrader : public ItemScript
                 p_Player->DestroyItemCount(l_ItemTarget, l_Count, true);
             }
 
-            if (!l_ItemUpgrade->ReplaceBonusIDList.empty())
+            //if (!l_ItemUpgrade->ReplaceBonusIDList.empty())
             {
                 if (l_ItemTarget->IsEquipped())
                     p_Player->_ApplyItemMods(l_ItemTarget, l_ItemTarget->GetSlot(), false);
 
                 l_ItemTarget->RemoveBonus(l_ItemUpgrade->RequiredID);
+
+                for (auto bonus : l_ItemUpgrade->RemoveBonusIDList)
+                    l_ItemTarget->RemoveBonus(bonus);
+
                 for (auto bonus : l_ItemUpgrade->ReplaceBonusIDList)
                     l_ItemTarget->AddBonuses(bonus, false);
                 p_Player->SendNewItem(l_ItemTarget, 1, true, false, true);
