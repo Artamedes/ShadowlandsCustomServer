@@ -1,6 +1,7 @@
 #include "Player.h"
 #include "ScriptMgr.h"
 #include "CovenantMgr.h"
+#include "Item.h"
 
 class LoginScript : public PlayerScript
 {
@@ -18,8 +19,8 @@ class LoginScript : public PlayerScript
             p_Player->LearnSpell(674, true);
 
             // pvp badges
-            p_Player->StoreNewItemInBestSlots(175921, 1, ItemContext::Raid_Raid_Finder, { 7186 });
-            p_Player->StoreNewItemInBestSlots(178386, 1, ItemContext::Raid_Raid_Finder, { 7186 });
+            p_Player->StoreNewItemInBestSlots(175921, 1, ItemContext::Raid_Raid_Finder, { 7186, 41 }); ///< Added leech to them.
+            p_Player->StoreNewItemInBestSlots(178386, 1, ItemContext::Raid_Raid_Finder, { 7186, 41 }); ///< Added leech to them.
 
             switch (p_Player->GetClass())
             {
@@ -239,6 +240,34 @@ class LoginScript : public PlayerScript
                     p_Player->GetCovenantMgr()->SetSoulbind(SoulbindID::Niya);
                     break;
                 }
+                }
+
+                // learn all conduits
+                auto covenantMgr = p_Player->GetCovenantMgr();
+
+                for (auto entry : sSoulbindConduitItemStore)
+                {
+                    auto entry2 = sSoulbindConduitStore.LookupEntry(entry->ConduitID);
+                    if (entry2)
+                    {
+                        for (auto entry3 : sSpecSetMemberStore)
+                        {
+                            if (entry3->SpecSetID == entry2->SpecSetID)
+                            {
+                                auto entry4 = sChrSpecializationStore.LookupEntry(entry3->ChrSpecializationID);
+                                if (entry4->ClassID == p_Player->GetClass())
+                                {
+                                    auto item = Item::CreateItem(entry->ItemID, 1, ItemContext::NONE);
+                                    if (item)
+                                    {
+                                        covenantMgr->LearnSoulbindConduit(item);
+                                        delete item;
+                                    }
+                                }
+                                break;
+                            }
+                        }
+                    }
                 }
             }
 

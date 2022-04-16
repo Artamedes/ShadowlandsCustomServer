@@ -2,6 +2,17 @@
 #include "Player.h"
 #include "Creature.h"
 #include "ScriptedCreature.h"
+#include "../CustomInstanceScript.h"
+
+
+struct instance_lightdng1 : public CustomInstanceScript
+{
+public:
+    instance_lightdng1(InstanceMap* map) : CustomInstanceScript(map)
+    {
+    }
+};
+
 // 700700 - npc_avatar_of_the_light_700700
 struct npc_avatar_of_the_light_700700 : public ScriptedAI
 {
@@ -657,4 +668,5 @@ void AddSC_PeakOfSerenity()
    RegisterCreatureAI(npc_zaphiel_700708);
    RegisterCreatureAI(npc_beacon_of_light_700709);
    RegisterCreatureAI(npc_protector_of_light_700710);
+   RegisterInstanceScript(instance_lightdng1, 1610);
 }

@@ -2,6 +2,8 @@
 #include "Player.h"
 #include "Creature.h"
 #include "ScriptedCreature.h"
+#include "../CustomInstanceScript.h"
+
 // 700703 - npc_angelic_warrior_700703
 struct npc_angelic_warrior_700703 : public ScriptedAI
 {
@@ -88,6 +90,16 @@ public:
         {
             //clicker->CastSpell(clicker, 367044, true);
             auto clickerGuid = clicker->GetGUID();
+
+            auto status = clicker->ToPlayer()->GetQuestStatus(700028);
+            if (status != QUEST_STATUS_REWARDED)
+            {
+                if (status == QUEST_STATUS_COMPLETE)
+                    clicker->ToPlayer()->RewardQuest(sObjectMgr->GetQuestTemplate(700028), LootItemType::Item, 0, clicker);
+                else
+                    return;
+            }
+
             scheduler.Schedule(800ms, [this, clickerGuid](TaskContext context)
             {
                     if (auto player = ObjectAccessor::GetPlayer(*me, clickerGuid))
@@ -881,6 +893,14 @@ public:
     EventMap events;
 };
 
+struct instance_lightdng2 : public CustomInstanceScript
+{
+public:
+    instance_lightdng2(InstanceMap* map) : CustomInstanceScript(map)
+    {
+    }
+};
+
 
 void AddSC_ShadoPanMonastary()
 {
@@ -899,6 +919,7 @@ void AddSC_ShadoPanMonastary()
    RegisterCreatureAI(npc_high_priest_700718);
    RegisterCreatureAI(npc_inquisitor_700719);
    RegisterCreatureAI(npc_corrupted_priest_700720);
+   RegisterInstanceScript(instance_lightdng2, 959);
 }
 // 
 // UPDATE creature_template set scriptname = 'npc_angelic_warrior_700703' where entry = 700703;

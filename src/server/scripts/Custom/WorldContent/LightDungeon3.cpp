@@ -3,6 +3,7 @@
 #include "Creature.h"
 #include "Containers.h"
 #include "ScriptedCreature.h"
+#include "../CustomInstanceScript.h"
 
 // 700011 - npc_oogway_700011
 struct npc_oogway_700011 : public ScriptedAI
@@ -590,6 +591,32 @@ public:
 };
 
 
+struct instance_lightdng3 : public CustomInstanceScript
+{
+public:
+    instance_lightdng3(InstanceMap* map) : CustomInstanceScript(map)
+    {
+    }
+};
+
+class lightdng3_playerscript : public PlayerScript
+{
+public:
+    lightdng3_playerscript() : PlayerScript("lightdng3_playerscript") { }
+
+
+    void OnQuestStatusChange(Player* player, uint32 questId)
+    {
+        if (player->GetMapId() != 1712)
+            return;
+
+        if (questId == 700030 && player->GetQuestStatus(questId) == QUEST_STATUS_COMPLETE)
+        {
+            Conversation::CreateConversation(700307, player, *player, player->GetGUID());
+        }
+    }
+};
+
 void AddSC_LightDungeon3()
 {
    RegisterCreatureAI(npc_ernoch_700721);
@@ -598,4 +625,7 @@ void AddSC_LightDungeon3()
    RegisterCreatureAI(npc_torzas_700724);
    RegisterCreatureAI(npc_mawsworn_warden_700725);
    RegisterCreatureAI(npc_watcher_of_death_700726);
+   RegisterInstanceScript(instance_lightdng3, 1712);
+
+   new lightdng3_playerscript();
 }

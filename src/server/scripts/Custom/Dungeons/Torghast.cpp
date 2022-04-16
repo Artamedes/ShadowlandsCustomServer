@@ -488,8 +488,8 @@ public:
 
         if (!UpdateVictim())
         {
-            if (!me->isDead() && !me->IsEngaged() && !me->GetCurrentSpell(CurrentSpellTypes::CURRENT_CHANNELED_SPELL))
-                DoCastSelf(346815); // Channel visual
+           //if (!me->isDead() && !me->IsEngaged() && !me->GetCurrentSpell(CurrentSpellTypes::CURRENT_CHANNELED_SPELL))
+           //    DoCastSelf(346815); // Channel visual
             return;
         }
 

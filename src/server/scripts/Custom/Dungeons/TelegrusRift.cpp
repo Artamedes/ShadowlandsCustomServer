@@ -5,6 +5,16 @@
 #include "ScriptedCreature.h"
 #include "Chat.h"
 #include "GenericMovementGenerator.h"
+#include "../CustomInstanceScript.h"
+#include "Conversation.h"
+
+struct instance_telegrusrift : public CustomInstanceScript
+{
+public:
+    instance_telegrusrift(InstanceMap* map) : CustomInstanceScript(map)
+    {
+    }
+};
 
 enum TelegrusRiftSpells
 {
@@ -822,6 +832,24 @@ public:
     EventMap events;
 };
 
+class telegros_rift_playerscript : public PlayerScript
+{
+public:
+    telegros_rift_playerscript() : PlayerScript("telegros_rift_playerscript") { }
+
+
+    void OnQuestStatusChange(Player* player, uint32 questId)
+    {
+        if (player->GetMapId() != 1622)
+            return;
+
+        if (questId == 700025 && player->GetQuestStatus(questId) == QUEST_STATUS_COMPLETE)
+        {
+            Conversation::CreateConversation(700305, player, *player, player->GetGUID());
+        }
+    }
+};
+
 
 void AddSC_TelegrusRift()
 {
@@ -834,4 +862,7 @@ void AddSC_TelegrusRift()
     RegisterCreatureAI(npc_final_boss_void_portal_700632);
     RegisterCreatureAI(npc_sunshine_700616);
     RegisterCreatureAI(npc_vivian_700600);
+
+    RegisterInstanceScript(instance_telegrusrift, 1622);
+    new telegros_rift_playerscript();
 }
