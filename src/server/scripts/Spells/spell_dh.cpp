@@ -325,6 +325,7 @@ public:
                 SPELL_DH_CHAOS_NOVA, SPELL_DH_CONSUME_MAGIC, SPELL_DH_THROW_GLAIVE, SPELL_DH_METAMORPHOSIS,
                 SPELL_DH_EYE_BEAM, SPELL_DH_BLUR, SPELL_DH_VENGEFUL_RETREAT, SPELL_DH_BLADE_DANCE,
                 344866, // vengeful retreat
+                183752, // disrupt
             };
 
             for (auto spell : spellIds)
@@ -4075,6 +4076,40 @@ class spell_dh_essence_break : public SpellScript
     }
 };
 
+// 183782
+class spell_dh_disrupt : public AuraScript
+{
+    PrepareAuraScript(spell_dh_disrupt);
+
+    void HandleProc(AuraEffect* /*aurEff*/, ProcEventInfo& procInfo)
+    {
+        PreventDefaultAction();
+
+        Unit* caster = GetCaster();
+        if (!caster)
+            return;
+
+        Unit* target = procInfo.GetActionTarget();
+        if (!target)
+            return;
+
+        auto spell = procInfo.GetSpellInfo();
+        if (!spell)
+            return;
+        if (!(procInfo.GetHitMask() & PROC_HIT_INTERRUPT))
+            return;
+
+        if (spell->Id == SPELL_DH_DISRUPT)
+            caster->CastSpell(caster, SPELL_DH_DISRUPT_ENERGIZE, true);
+    }
+
+    void Register() override
+    {
+        OnEffectProc += AuraEffectProcFn(spell_dh_disrupt::HandleProc, EFFECT_0, SPELL_AURA_PROC_TRIGGER_SPELL);
+    }
+};
+
+
 // ID - 192611 Fel Rush
 class spell_dh_fel_rush_dmg : public SpellScript
 {
@@ -4200,6 +4235,7 @@ void AddSC_demon_hunter_spell_scripts()
     RegisterSpellScript(spell_dh_serrated_glaive);
     RegisterSpellScript(spell_dh_essence_break);
     RegisterSpellScript(spell_dh_fel_rush_dmg);
+    RegisterSpellScript(spell_dh_disrupt);
 
     /// AreaTrigger Scripts
     RegisterAreaTriggerAI(at_dh_darkness);
