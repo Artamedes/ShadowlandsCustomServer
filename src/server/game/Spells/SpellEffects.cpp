@@ -3945,7 +3945,7 @@ void Spell::EffectKnockBack()
         return;
 
     Position origin;
-    if (effectInfo->Effect == SPELL_EFFECT_KNOCK_BACK_DEST)
+    if (effectInfo->Effect == SPELL_EFFECT_KNOCK_BACK_DEST && m_spellInfo->Id != 198793) ///< vengeful retreat - hack so it knocks you back, not always at 3.14
     {
         if (m_targets.HasDst())
             origin = destTarget->GetPosition();

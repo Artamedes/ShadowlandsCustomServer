@@ -323,7 +323,8 @@ public:
             std::vector<int32> spellIds
             {
                 SPELL_DH_CHAOS_NOVA, SPELL_DH_CONSUME_MAGIC, SPELL_DH_THROW_GLAIVE, SPELL_DH_METAMORPHOSIS,
-                SPELL_DH_EYE_BEAM, SPELL_DH_BLUR, SPELL_DH_VENGEFUL_RETREAT, SPELL_DH_BLADE_DANCE
+                SPELL_DH_EYE_BEAM, SPELL_DH_BLUR, SPELL_DH_VENGEFUL_RETREAT, SPELL_DH_BLADE_DANCE,
+                344866, // vengeful retreat
             };
 
             for (auto spell : spellIds)
