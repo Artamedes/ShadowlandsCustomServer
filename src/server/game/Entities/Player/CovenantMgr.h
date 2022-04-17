@@ -120,7 +120,10 @@ class TC_GAME_API Covenant
         void AddAnima(uint32 anima);
 
         void InitializeCovenant();
+        void UpdateRenownRewards();
         void SocketTalent(WorldPackets::Garrison::GarrisonSocketTalent& packet);
+
+        std::set<uint32> _claimedRenownRewards;
 
     private:
         Player* _player;

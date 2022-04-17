@@ -800,6 +800,9 @@ void CharacterDatabaseConnection::DoPrepareStatements()
     PrepareStatement(CHAR_SEL_COVENANT_SOULBIND, "SELECT Covenant, SpecId, Soulbind FROM character_covenant_soulbinds WHERE guid = ?", CONNECTION_ASYNC);
     PrepareStatement(CHAR_REP_COVENANT_SOULBIND, "REPLACE INTO character_covenant_soulbinds (guid, Covenant, SpecId, Soulbind) VALUES (?, ?, ?, ?)", CONNECTION_ASYNC);
 
+    PrepareStatement(CHAR_SEL_COVENANT_CLAIMED_RENOWN_REWARDS, "SELECT Covenant, ClaimedRewards FROM character_covenant_claimed_renown_rewards WHERE guid = ?", CONNECTION_ASYNC);
+    PrepareStatement(CHAR_REP_COVENANT_CLAIMED_RENOWN_REWARDS, "REPLACE INTO character_covenant_claimed_renown_rewards (guid, Covenant, ClaimedRewards) VALUES (?, ?, ?)", CONNECTION_ASYNC);
+
     // Challenge
     PrepareStatement(CHAR_SEL_CHALLENGE_KEY, "SELECT ID, Level, Affix, Affix1, Affix2, Affix3, KeyIsCharded, timeReset, InstanceID FROM challenge_key WHERE guid = ?", CONNECTION_ASYNC);
     PrepareStatement(CHAR_UPD_CHALLENGE_KEY, "UPDATE challenge_key SET ID = ?, Level = ?, Affix = ?, Affix1 = ?, Affix2 = ?, Affix3 = ?, KeyIsCharded = ?, timeReset = ?, InstanceID = ? WHERE guid = ?", CONNECTION_ASYNC);

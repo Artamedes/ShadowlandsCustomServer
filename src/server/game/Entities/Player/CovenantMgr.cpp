@@ -12,6 +12,9 @@
 #include "QueryHolder.h"
 #include "SpellAuras.h"
 #include "SpellAuraEffects.h"
+#include "StringConvert.h"
+#include "ConditionMgr.h"
+#include <sstream>
 
 Covenant::Covenant(CovenantID covId, Player* player) : _covenantId(covId), _player(player), _soulbindId(SoulbindID::None), _renownLevel(80), _anima(0), _souls(0)
 {
@@ -53,27 +56,7 @@ void Covenant::SetRenown(int32 renown, bool /*modCurr = true*/)
         return;
 
     _player->ModifyCurrency(1822, renown, false, false, true);
-    _player->GetCovenantMgr()->LearnCovenantSpells(); // renown rewards
-
-    // Check Renown
-    auto covIdInt = _player->m_playerData->CovenantID;
-    for (auto reward : sRenownRewardsStore)
-    {
-        if (reward->CovenantID != covIdInt)
-            continue;
-
-        if (reward->Level > GetRenownLevel())
-            continue;
-
-        if (reward->QuestID > 0)
-        {
-            if (auto quest = sObjectMgr->GetQuestTemplate(reward->QuestID))
-            {
-                if (auto questStatus = _player->GetQuestStatus(reward->QuestID) == QUEST_STATUS_NONE)
-                    _player->RewardQuest(quest, LootItemType::Item, 0, _player, false);
-            }
-        }
-    }
+    UpdateRenownRewards();
 }
 
 void Covenant::SetAnima(uint32 anima, bool modCurr /*= true*/, bool inital)
@@ -114,6 +97,54 @@ void Covenant::InitializeCovenant()
     {
         if (_player->GetQuestStatus(questId) == QUEST_STATUS_NONE)
             _player->RewardQuest(sObjectMgr->GetQuestTemplate(questId), LootItemType::Item, 0, _player, false);
+    }
+}
+
+void Covenant::UpdateRenownRewards()
+{
+    _player->GetCovenantMgr()->LearnCovenantSpells(); // renown rewards
+
+    // Check Renown
+    auto covIdInt = _player->m_playerData->CovenantID;
+    for (auto reward : sRenownRewardsStore)
+    {
+        if (reward->CovenantID != covIdInt)
+            continue;
+
+        if (reward->Level > GetRenownLevel())
+            continue;
+
+        if (_claimedRenownRewards.count(reward->ID))
+            continue;
+
+        if (reward->PlayerConditionID > 0)
+            if (PlayerConditionEntry const* playerCondition = sPlayerConditionStore.LookupEntry(reward->PlayerConditionID))
+                if (!ConditionMgr::IsPlayerMeetingCondition(_player, playerCondition))
+                    continue;
+
+        if (reward->QuestID > 0)
+        {
+            if (auto quest = sObjectMgr->GetQuestTemplate(reward->QuestID))
+            {
+                if (auto questStatus = _player->GetQuestStatus(reward->QuestID) == QUEST_STATUS_NONE)
+                    _player->RewardQuest(quest, LootItemType::Item, 0, _player, false);
+            }
+        }
+
+        if (reward->ItemID > 0)
+        {
+            if (!_player->AddItem(reward->ItemID, 1))
+                _player->SendItemRetrievalMail(reward->ItemID, 1, ItemContext::NONE);
+        }
+
+        if (reward->CharTitlesID > 0)
+        {
+            if (auto titleEntry = sCharTitlesStore.LookupEntry(reward->CharTitlesID))
+                _player->SetTitle(titleEntry);
+        }
+
+        // what other rewards to add?
+        _claimedRenownRewards.insert(reward->ID);
     }
 }
 
@@ -320,12 +351,35 @@ void CovenantMgr::LoadFromDB(CharacterDatabaseQueryHolder const& holder)
             _covenantSoulbinds.insert({ covenant, covSoulbind });
         } while (result->NextRow());
     }
+
+    result = holder.GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_CHARACTER_COVENANT_CLAIMED_RENOWN_REWARDS);
+
+    if (result)
+    {
+        do
+        {
+            auto fields = result->Fetch();
+            auto covenant = fields[0].GetUInt32();
+
+            // bad db data.
+            if (covenant > 4)
+                continue;
+
+            auto cov = _playerCovenants[covenant].get();
+
+            for (std::string_view rewardId : Trinity::Tokenize(fields[1].GetStringView(), ',', false))
+                if (Optional<uint32> reward = Trinity::StringTo<uint32>(rewardId))
+                    cov->_claimedRenownRewards.insert(reward.value());
+
+        } while (result->NextRow());
+    }
     _loaded = true;
     OnSpecChange();
 }
 
 void CovenantMgr::SaveToDB(CharacterDatabaseTransaction trans)
 {
+    std::ostringstream ss;
     for (auto const& itr : _playerCovenants)
     {
         if (itr->GetCovenantID() == CovenantID::None)
@@ -338,6 +392,18 @@ void CovenantMgr::SaveToDB(CharacterDatabaseTransaction trans)
         stmt->setUInt32(3, itr->GetAnima());
         stmt->setUInt32(4, itr->GetSouls());
         trans->Append(stmt);
+
+        if (!itr->_claimedRenownRewards.empty())
+        {
+            stmt = CharacterDatabase.GetPreparedStatement(CHAR_REP_COVENANT_CLAIMED_RENOWN_REWARDS);
+            stmt->setUInt64(0, _player->GetGUID().GetCounter());
+            stmt->setUInt32(1, static_cast<uint32>(itr->GetCovenantID()));
+            ss.clear();
+            for (auto rewardId : itr->_claimedRenownRewards)
+                ss << rewardId << ",";
+            stmt->setString(2, ss.str());
+            trans->Append(stmt);
+        }
     }
 
     for (auto const& itr : _covenantSoulbinds)
@@ -468,6 +534,7 @@ void CovenantMgr::SetCovenant(CovenantID covenant)
 
     _currCovenantIndex = newCovenantId;
     InitializeFields();
+    GetCovenant()->UpdateRenownRewards();
 }
 
 void CovenantMgr::LearnCovenantSpells()
