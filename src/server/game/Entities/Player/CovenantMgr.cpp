@@ -102,6 +102,9 @@ void Covenant::InitializeCovenant()
 
 void Covenant::UpdateRenownRewards()
 {
+    if (!_player->GetCovenantMgr()->_loaded)
+        return;
+
     _player->GetCovenantMgr()->LearnCovenantSpells(); // renown rewards
 
     // Check Renown
@@ -374,6 +377,7 @@ void CovenantMgr::LoadFromDB(CharacterDatabaseQueryHolder const& holder)
         } while (result->NextRow());
     }
     _loaded = true;
+    GetCovenant()->UpdateRenownRewards();
     OnSpecChange();
 }
 
@@ -534,7 +538,8 @@ void CovenantMgr::SetCovenant(CovenantID covenant)
 
     _currCovenantIndex = newCovenantId;
     InitializeFields();
-    GetCovenant()->UpdateRenownRewards();
+    if (_loaded)
+        GetCovenant()->UpdateRenownRewards();
 }
 
 void CovenantMgr::LearnCovenantSpells()

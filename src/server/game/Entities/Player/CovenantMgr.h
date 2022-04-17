@@ -215,11 +215,11 @@ class TC_GAME_API CovenantMgr
                     return SoulbindID::None;
             }
         }
+        bool _loaded = false;
 
     private:
         Player* _player;
         size_t _currCovenantIndex;
-        bool _loaded = false;
         std::array<std::unique_ptr<Covenant>, 5> _playerCovenants = { };
         std::unordered_map<int32, int32> CollectionEntries;
         std::unordered_multimap<int32, Conduit> _conduits; // CovenantID, Conduit
