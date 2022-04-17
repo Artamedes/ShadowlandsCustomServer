@@ -264,7 +264,7 @@ namespace WorldPackets
             uint32 ItemLevel;
             std::vector<uint32> EnchantmentIDs;
             std::vector<uint32> ItemBonusListIDs;
-            std::vector<uint32> Gems;
+            std::vector<EncounterItemInfo> Encounters;
         };
 
         struct InstancePlayerData
@@ -300,10 +300,11 @@ namespace WorldPackets
 
             WorldPacket const* Write() override;
 
-            uint32 EncounterID;
-            uint32 DifficultyID;
-            uint32 GroupSize;
-            bool Success;
+            uint32 EncounterID = 0;
+            uint32 DifficultyID = 0;
+            uint32 GroupSize = 0;
+            uint32 Unk = 0;
+            bool Success = false;
         };
 
         class ChangePlayerDifficultyResult final : public ServerPacket
@@ -314,7 +315,7 @@ namespace WorldPackets
             WorldPacket const* Write() override;
 
             ObjectGuid Guid;
-            uint32 CooldownReason = 0;
+            uint64 CooldownReason = 0;
             uint32 InstanceMapID = 0;
             uint32 DifficultyRecID = 0;
             uint32 MapID = 0;

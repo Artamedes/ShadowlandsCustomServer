@@ -37,6 +37,7 @@
 #include "BlackMarketPackets.h"
 #include "CalendarPackets.h"
 #include "ChannelPackets.h"
+#include "ChallengeModePackets.h"
 #include "CharacterPackets.h"
 #include "ChatPackets.h"
 #include "ClientConfigPackets.h"

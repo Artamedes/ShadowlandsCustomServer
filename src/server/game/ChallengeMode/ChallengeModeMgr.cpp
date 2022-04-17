@@ -502,6 +502,15 @@ bool ChallengeModeMgr::GetStartPosition(uint32 mapID, float& x, float& y, float&
     if (WorldSafeLocID == 0)
         return false;
 
+    if (auto entry = sObjectMgr->GetWorldSafeLoc(WorldSafeLocID))
+    {
+        x = entry->Loc.GetPositionX();
+        y = entry->Loc.GetPositionY();
+        z = entry->Loc.GetPositionZ();
+        o = entry->Loc.GetOrientation(); // already converted in load
+        return true;
+    }
+
    // if (WorldSafeLocsEntry const* entry = sWorldSafeLocsStore.LookupEntry(WorldSafeLocID))
    // {
    //     x = entry->Loc.X;

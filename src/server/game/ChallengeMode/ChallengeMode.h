@@ -259,7 +259,7 @@ public:
     void HitTimer();
 
     uint32 GetChallengeLevel() const;
-    std::array<uint32, 4> GetAffixes() const;
+    std::array<int32, 4> GetAffixes() const;
     bool HasAffix(Affixes affix);
 
     uint32 GetChallengeTimerToNow() const;
@@ -305,7 +305,7 @@ private:
     std::map<ObjectGuid, uint8> _countItems;
 
     ObjectGuid _creator;
-    std::array<uint32, 4> _affixes;
+    std::array<int32, 4> _affixes;  // key modifiers
     std::bitset<size_t(MAX_AFFIXES)> _affixesTest;
     uint16 _chestTimers[3];
     Item* _item;

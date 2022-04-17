@@ -31,6 +31,7 @@ struct ChallengeMember
     uint32 ChallengeLevel;          // 2-15 but blizzard store it as uint32? rly?
     uint32 ChestID;
     uint16 Race;
+    // TODO: add bnetaccountid,covenantid,soulbinid
 
     bool operator <(const ChallengeMember& i) const;
     bool operator ==(const ChallengeMember& i) const;
@@ -40,7 +41,7 @@ typedef std::set<ChallengeMember> ChallengeMemberList;
 
 struct ChallengeData
 {
-    std::array<uint32, 4> Affixes;  // key modifiers
+    std::array<int32, 4> Affixes;  // key modifiers
     ObjectGuid::LowType GuildID;    // is it guild group
     ObjectGuid::LowType ID;         // challenge id
     uint32 RecordTime;              // time taken for complete challenge

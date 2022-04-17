@@ -445,7 +445,7 @@ class TC_GAME_API Group
         uint32 m_challengeLevel;
         uint32 m_challengeMapID;
         uint32 m_challengeInstanceID;
-        std::array<uint32, 4> m_affixes;
+        std::array<int32, 4> m_affixes;
 
     protected:
         bool _setMembersGroup(ObjectGuid guid, uint8 group);

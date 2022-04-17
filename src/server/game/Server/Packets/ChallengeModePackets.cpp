@@ -37,51 +37,6 @@ ByteBuffer& operator<<(ByteBuffer& data, WorldPackets::ChallengeMode::ModeAttemp
     return data;
 }
 
-ByteBuffer& operator<<(ByteBuffer& data, WorldPackets::ChallengeMode::MapStatMember const& member)
-{
-    data << member.PlayerGuid;
-    data << member.GuildGuid;
-    data << member.VirtualRealmAddress;
-    data << member.NativeRealmAddress;
-    data << member.SpecializationID;
-    data << member.Race;
-    data << member.Ilevel;
-
-    return data;
-}
-
-ByteBuffer& operator<<(ByteBuffer& data, WorldPackets::ChallengeMode::ChallengeMapStat const& mapStat)
-{
-    data << mapStat.ChallengeID;
-    data << mapStat.CompletedChallengeLevel;
-    data << mapStat.BestCompletionMilliseconds;
-
-    data.AppendPackedTime(mapStat.StartTime);
-    data.AppendPackedTime(mapStat.EndTime);
-
-    for (auto const& v : mapStat.Affixes)
-        data << v;
-
-    data << static_cast<uint32>(mapStat.Members.size());
-
-    for (auto const& member : mapStat.Members)
-        data << member;
-
-    return data;
-}
-
-ByteBuffer& operator<<(ByteBuffer& data, WorldPackets::ChallengeMode::ChallengeMapStatWeekAttempts const& weekAttempts)
-{
-    data << weekAttempts.ChallengeID;
-    data << weekAttempts.ChallengeLevel;
-    data.AppendPackedTime(weekAttempts.StartTime);
-    data.AppendPackedTime(weekAttempts.EndTime);
-    data.WriteBit(weekAttempts.InTime);
-    data.FlushBits();
-
-    return data;
-}
-
 void WorldPackets::ChallengeMode::StartRequest::Read()
 {
     _worldPacket >> Bag;
@@ -97,6 +52,7 @@ void WorldPackets::ChallengeMode::RequestLeaders::Read()
     LastRealmUpdate = _worldPacket.read<uint32>();
 }
 
+// good 9.2
 WorldPacket const* WorldPackets::ChallengeMode::RequestLeadersResult::Write()
 {
     _worldPacket << MapID;
@@ -116,24 +72,19 @@ WorldPacket const* WorldPackets::ChallengeMode::RequestLeadersResult::Write()
     return &_worldPacket;
 }
 
+// updated 9.2
 WorldPacket const* WorldPackets::ChallengeMode::AllMapStats::Write()
 {
-    _worldPacket << static_cast<uint32>(LegionChallengeModeMaps.size());
-    _worldPacket << static_cast<uint32>(BFAChallengeModeMaps.size());
-    _worldPacket << static_cast<uint32>(WeekAttempts.size());
-    _worldPacket << CurrentSeason;
+    _worldPacket << uint32(Runs.size());
+    _worldPacket << uint32(Rewards.size());
+    _worldPacket << Season;
+    _worldPacket << SubSeason;
 
-    for (auto const& legionChallengeModeMap : LegionChallengeModeMaps)
-        _worldPacket << legionChallengeModeMap;
+    for (auto const& run : Runs)
+        _worldPacket << run;
 
-    for (auto const& BFAChallengeModeMap : BFAChallengeModeMaps)
-    {
-        _worldPacket << SeasonID;
-        _worldPacket << BFAChallengeModeMap;
-    }
-
-    for (auto const& WeekAttempt : WeekAttempts)
-        _worldPacket << WeekAttempt;
+    for (auto const& reward : Rewards)
+        _worldPacket << reward;
 
     return &_worldPacket;
 }
@@ -150,6 +101,7 @@ WorldPacket const* WorldPackets::ChallengeMode::Rewards::Write()
     return &_worldPacket;
 }
 
+// 9.2 checked
 WorldPacket const* WorldPackets::ChallengeMode::Start::Write()
 {
     _worldPacket << (uint32)MapID;
@@ -162,51 +114,60 @@ WorldPacket const* WorldPackets::ChallengeMode::Start::Write()
     _worldPacket << DeathCount;
     _worldPacket << uint32(PlayerDatas.size());
 
-    for (auto playerData : PlayerDatas)
-        _worldPacket << playerData;
-    
-    _worldPacket.WriteBit(IsKeyCharged);    
+    _worldPacket.WriteBit(IsKeyCharged);
     _worldPacket.FlushBits();
 
+    for (auto const& playerData : PlayerDatas)
+        _worldPacket << playerData;
+
     return &_worldPacket;
 }
 
+// 9.2 read 4 ints, sniff only reads int
 WorldPacket const* WorldPackets::ChallengeMode::Reset::Write()
 {
-    _worldPacket << (uint32)MapId;
+    _worldPacket << uint32(MapId);
 
     return &_worldPacket;
 }
 
+// 9.2 read 4 ints
 WorldPacket const* WorldPackets::ChallengeMode::UpdateDeathCount::Write()
 {
     _worldPacket << (uint32)DeathCount;
+    _worldPacket << (uint32)0;
+    _worldPacket << (uint32)0;
+    _worldPacket << (uint32)0;
 
     return &_worldPacket;
 }
 
+// checked 9.2
 WorldPacket const* WorldPackets::ChallengeMode::Complete::Write()
 {
-    _worldPacket << (uint32)Duration;
-    _worldPacket << (uint32)MapID;
-    _worldPacket << (uint32)ChallengeId;
-    _worldPacket << (uint32)ChallengeLevel;
-
+    _worldPacket << Run;
+    _worldPacket << int32(0); // Unk
+    _worldPacket << int32(0); // Unk count
     _worldPacket.WriteBit(IsCompletedInTimer);
     _worldPacket.FlushBits();
 
+    // For unk count, read guid, read bit
+
     return &_worldPacket;
 }
 
+// read 4 ints 9.2
 WorldPacket const* WorldPackets::ChallengeMode::NewPlayerRecord::Write()
 {
     _worldPacket << (uint32)ChallengeId;
     _worldPacket << (uint32)Duration;
     _worldPacket << (uint32)ChallengeLevel;
+    _worldPacket << (uint32)0; // unk
 
     return &_worldPacket;
 }
 
+// bad 9.2
 WorldPacket const* WorldPackets::ChallengeMode::NewPlayerSeasonRecord::Write()
 {
     _worldPacket << (uint32)ChallengeId;
@@ -216,13 +177,17 @@ WorldPacket const* WorldPackets::ChallengeMode::NewPlayerSeasonRecord::Write()
     return &_worldPacket;
 }
 
-WorldPacket const* WorldPackets::ChallengeMode::Affixes::Write()
+// updated 9.2
+WorldPacket const* WorldPackets::ChallengeMode::MythicPlusCurrentAffixes::Write()
 {
-    _worldPacket.reserve(affixesFileDatas.size() * 4);
+    _worldPacket.reserve(Affixes.size() * 8);
 
-    _worldPacket << uint32(affixesFileDatas.size());
-    for (uint8 i = 0; i < affixesFileDatas.size(); i++)
-        _worldPacket << affixesFileDatas[i];
+    _worldPacket << uint32(Affixes.size());
+    for (auto const& affix : Affixes)
+    {
+        _worldPacket << affix.KeystoneAffixID;
+        _worldPacket << affix.RequiredSeason;
+    }
 
     return &_worldPacket;
 }

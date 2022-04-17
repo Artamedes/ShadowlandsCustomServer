@@ -616,7 +616,7 @@ void WorldPackets::Misc::SetWarMode::Read()
 {
     Enable = _worldPacket.ReadBit();
 }
-
+ 
 WorldPacket const* WorldPackets::Misc::AccountHeirloomUpdate::Write()
 {
     _worldPacket.WriteBit(IsFullUpdate);
@@ -722,19 +722,22 @@ void WorldPackets::Misc::CloseInteraction::Read()
     _worldPacket >> SourceGuid;
 }
 
+// updated 9.2
 WorldPacket const* WorldPackets::Misc::StartTimer::Write()
 {
     _worldPacket << TimeLeft;
+    _worldPacket << int32(Unk1);
     _worldPacket << TotalTime;
-    _worldPacket << int32(Type);
+    _worldPacket << int32(Unk2);
+    _worldPacket << int32(Type); // 1 - challengemode
 
     return &_worldPacket;
 }
 
 WorldPacket const* WorldPackets::Misc::StartElapsedTimer::Write()
 {
+    _worldPacket << uint64(Timer.CurrentDuration);
     _worldPacket << Timer.TimerID;
-    _worldPacket << uint32(Timer.CurrentDuration);
 
     return &_worldPacket;
 }
@@ -744,8 +747,8 @@ WorldPacket const* WorldPackets::Misc::StartElapsedTimers::Write()
     _worldPacket << static_cast<uint32>(Timers.size());
     for (auto const& v : Timers)
     {
+        _worldPacket << uint64(v.CurrentDuration);
         _worldPacket << v.TimerID;
-        _worldPacket << uint32(v.CurrentDuration);
     }
 
     return &_worldPacket;

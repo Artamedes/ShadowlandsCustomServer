@@ -100,8 +100,20 @@ namespace WorldPackets
             int32 TotalRuns = 0;
         };
 
+        struct Reward
+        {
+            uint32 Field0;
+            uint32 Field4;
+            int64 Field8;
+            int64 Field10;
+            int64 Field20;
+            bool Field24;
+        };
+
+        ByteBuffer& operator<<(ByteBuffer& data, MythicPlusRun const& mythicPlusRun);
         ByteBuffer& operator<<(ByteBuffer& data, DungeonScoreSummary const& dungeonScoreSummary);
         ByteBuffer& operator<<(ByteBuffer& data, DungeonScoreData const& dungeonScoreData);
+        ByteBuffer& operator<<(ByteBuffer& data, Reward const& reward);
     }
 }
 

@@ -1339,9 +1339,9 @@ int8 InstanceScript::GetPullDamageManager(ObjectGuid guid) const
 
 void InstanceScript::ResetChallengeMode(Player* player)
 {
-    if(!player || !player->GetGroup())
-    if (_challenge)
-        _challenge->ResetGo();
+    if (!player || !player->GetGroup())
+        if (_challenge)
+            _challenge->ResetGo();
 
     instance->m_respawnChallenge = time(nullptr); // For respawn all mobs  
     RepopPlayersAtGraveyard();    

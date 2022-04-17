@@ -126,5 +126,17 @@ ByteBuffer& operator<<(ByteBuffer& data, DungeonScoreData const& dungeonScoreDat
 
     return data;
 }
+ByteBuffer& operator<<(ByteBuffer& data, Reward const& reward)
+{
+    data << uint32(reward.Field0);
+    data << uint32(reward.Field4);
+    data << int64(reward.Field8);
+    data << int64(reward.Field10);
+    data << int64(reward.Field20);
+    data.WriteBit(reward.Field24);
+    data.FlushBits();
+
+    return data;
+}
 }
 }

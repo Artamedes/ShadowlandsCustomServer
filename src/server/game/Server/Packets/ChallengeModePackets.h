@@ -20,6 +20,7 @@
 
 #include "Packet.h"
 #include "WorldSession.h"
+#include "MythicPlusPacketsCommon.h"
 #include "InstancePackets.h"
 
 namespace WorldPackets
@@ -47,37 +48,6 @@ namespace WorldPackets
             time_t CompletionDate = time(nullptr);
             uint32 MedalEarned = 0;
             std::vector<MemberAttempt> Members;
-        };
-
-        struct MapStatMember
-        {
-            ObjectGuid PlayerGuid = ObjectGuid::Empty;
-            ObjectGuid GuildGuid = ObjectGuid::Empty;
-            uint32 VirtualRealmAddress = 0;
-            uint32 NativeRealmAddress = 0;
-            uint16 SpecializationID = 0;
-            uint16 Race = 0;
-            uint32 Ilevel = 0;
-        };
-
-        struct ChallengeMapStat
-        {
-            uint32 ChallengeID = 0;
-            uint32 CompletedChallengeLevel = 0;
-            uint32 BestCompletionMilliseconds = 0;
-            time_t StartTime = time(nullptr);
-            time_t EndTime = time(nullptr);
-            std::array<uint32, 4> Affixes;
-            std::vector<MapStatMember> Members;
-        };
-
-        struct ChallengeMapStatWeekAttempts
-        {
-            uint32 ChallengeID = 0;
-            uint32 ChallengeLevel = 0;
-            time_t StartTime = time(nullptr);
-            time_t EndTime = time(nullptr);
-            bool InTime = false;
         };
 
         class StartRequest final : public ClientPacket
@@ -136,28 +106,33 @@ namespace WorldPackets
             void Read() override { }
         };
 
-        class Affixes final : public ServerPacket
+        struct Affix
+        {
+            uint32 KeystoneAffixID = 0;
+            uint32 RequiredSeason;
+        };
+
+        class MythicPlusCurrentAffixes final : public ServerPacket
         {
         public:
-            Affixes() : ServerPacket(SMSG_MYTHIC_PLUS_CURRENT_AFFIXES) { }
+            MythicPlusCurrentAffixes() : ServerPacket(SMSG_MYTHIC_PLUS_CURRENT_AFFIXES) { }
 
             WorldPacket const* Write() override;
 
-            std::vector<uint32> affixesFileDatas;
+            std::vector<Affix> Affixes;
         };
 
         class AllMapStats final : public ServerPacket
         {
         public:
-            AllMapStats() : ServerPacket(SMSG_MYTHIC_PLUS_ALL_MAP_STATS, 4) { }
+            AllMapStats() : ServerPacket(SMSG_MYTHIC_PLUS_ALL_MAP_STATS, 10000) { }
 
             WorldPacket const* Write() override;
             
-            uint32 CurrentSeason;
-            uint32 SeasonID;
-            std::vector<ChallengeMapStat> LegionChallengeModeMaps;
-            std::vector<ChallengeMapStat> BFAChallengeModeMaps;
-            std::vector<ChallengeMapStatWeekAttempts> WeekAttempts;
+            uint32 Season = 0;
+            uint32 SubSeason = 0;
+            std::vector<MythicPlus::MythicPlusRun> Runs;
+            std::vector<MythicPlus::Reward> Rewards;
         };
 
         class Rewards final : public ServerPacket
@@ -183,7 +158,7 @@ namespace WorldPackets
             uint32 MapID;
             uint32 ChallengeId;
             uint32 ChallengeLevel;
-            std::array<uint32, 4> Affixes;
+            std::array<int32, 4> Affixes;
             uint32 DeathCount = 0;
             std::vector<Instance::InstancePlayerData> PlayerDatas;
             bool IsKeyCharged = false;
@@ -216,10 +191,7 @@ namespace WorldPackets
 
             WorldPacket const* Write() override;
 
-            uint32 Duration;
-            uint32 MapID;
-            uint32 ChallengeId;
-            uint32 ChallengeLevel;
+            WorldPackets::MythicPlus::MythicPlusRun Run;
             bool IsCompletedInTimer = false;
         };
 
@@ -258,7 +230,7 @@ namespace WorldPackets
         class ResetChallengeModeCheat final : public ClientPacket
         {
         public:
-            ResetChallengeModeCheat(WorldPacket&& packet) : ClientPacket(CMSG_REQUEST_WEEKLY_REWARDS, std::move(packet)) { }
+            ResetChallengeModeCheat(WorldPacket&& packet) : ClientPacket(CMSG_RESET_CHALLENGE_MODE_CHEAT, std::move(packet)) { }
 
             void Read() override { }
         };        

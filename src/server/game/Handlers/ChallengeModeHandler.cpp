@@ -163,7 +163,7 @@ void WorldSession::HandleChallengeModeStart(WorldPackets::ChallengeMode::StartRe
 
         WorldPackets::Instance::ChangePlayerDifficultyResult result;
         result.Result = AsUnderlyingType(ChangeDifficultyResult::DIFFICULTY_CHANGE_SET_COOLDOWN_S);
-        result.CooldownReason = 2813862382;
+        result.CooldownReason = 18446744072059367961;
         group->BroadcastPacket(result.Write(), true);
 
         WorldPackets::Instance::ChangePlayerDifficultyResult result2;
@@ -203,7 +203,7 @@ void WorldSession::HandleChallengeModeStart(WorldPackets::ChallengeMode::StartRe
 
         WorldPackets::Instance::ChangePlayerDifficultyResult result;
         result.Result = AsUnderlyingType(ChangeDifficultyResult::DIFFICULTY_CHANGE_SET_COOLDOWN_S);
-        result.CooldownReason = 2813862382;
+        result.CooldownReason = 18446744072059367961;
         SendPacket(result.Write(), true);
 
         WorldPackets::Instance::ChangePlayerDifficultyResult result2;
@@ -284,45 +284,46 @@ void WorldSession::HandleChallengeModeRequestMapStats(WorldPackets::ChallengeMod
 {
     WorldPackets::ChallengeMode::AllMapStats stats;
     int8 seasonID = sWorld->getIntConfig(CONFIG_CHALLENGE_SEASON_ID);
-    stats.CurrentSeason = seasonID;
-    stats.SeasonID = seasonID;
+    stats.Season = seasonID; // 7
+    stats.SubSeason = seasonID; // 71
     if (ChallengeByMap* last = sChallengeModeMgr->LastForMember(_player->GetGUID()))
-    {        
+    {
+        stats.Runs.reserve(last->size());
         for (auto const& v : *last)
         {
-            WorldPackets::ChallengeMode::ChallengeMapStat mapStat;            
-            mapStat.ChallengeID = v.second->ChallengeID;
-            mapStat.CompletedChallengeLevel = v.second->ChallengeLevel;
+            WorldPackets::MythicPlus::MythicPlusRun mapStat;            
+            mapStat.MapChallengeModeID = v.second->ChallengeID;
+            mapStat.Level = v.second->ChallengeLevel;
 
             if (ChallengeData* _lastData = sChallengeModeMgr->BestForMemberMap(_player->GetGUID(), v.second->ChallengeID))
-                mapStat.BestCompletionMilliseconds = _lastData->RecordTime;
+                mapStat.DurationMs = _lastData->RecordTime;
             else
-                mapStat.BestCompletionMilliseconds = v.second->RecordTime;
+                mapStat.DurationMs = v.second->RecordTime;
            
-            mapStat.StartTime = v.second->StartDate;
-            mapStat.EndTime = v.second->CompleteDate;
-            mapStat.Affixes = v.second->Affixes;
+            mapStat.StartDate = v.second->StartDate;
+            mapStat.CompletionDate = v.second->CompleteDate;
+            mapStat.KeystoneAffixIDs = v.second->Affixes;
 
             for (auto const& member : v.second->members)
             {
-                WorldPackets::ChallengeMode::MapStatMember memberStatData;
+                WorldPackets::MythicPlus::MythicPlusMember memberStatData;
                 memberStatData.VirtualRealmAddress = GetVirtualRealmAddress();
                 memberStatData.NativeRealmAddress = GetVirtualRealmAddress();
-                memberStatData.PlayerGuid = member.playerGuid;
-                memberStatData.GuildGuid = member.guildGuid;
-                memberStatData.SpecializationID = member.specId;
-                memberStatData.Ilevel = member.Ilevel;
-                memberStatData.Race = member.Race;
+              //  memberStatData.BnetAccountGUID = member.BnetAccountGUID;
+                memberStatData.GUID = member.playerGuid;
+                memberStatData.GuildGUID = member.guildGuid;
+                memberStatData.ChrSpecializationID = member.specId;
+                memberStatData.ItemLevel = member.Ilevel;
+                memberStatData.RaceID = member.Race;
+                memberStatData.SoulbindID = 0;
+                memberStatData.CovenantID = 0; // TODO
                 mapStat.Members.push_back(memberStatData);
             }
 
-            if(v.second->Expansion == EXPANSION_BATTLE_FOR_AZEROTH)
-                stats.BFAChallengeModeMaps.push_back(mapStat);
-            else
-                stats.LegionChallengeModeMaps.push_back(mapStat);
+            stats.Runs.emplace_back(mapStat);
         }
 
-        //ToDo WeekAttempt
+        // send rewards? blizz doesnt
     }
 
     SendPacket(stats.Write());
@@ -330,14 +331,14 @@ void WorldSession::HandleChallengeModeRequestMapStats(WorldPackets::ChallengeMod
 
 void WorldSession::HandleGetChallengeModeRewards(WorldPackets::ChallengeMode::GlobalGetChallengeModeRewards& modeRewards)
 {
-    ObjectGuid lootOwnerGUID = GetPlayer()->GetGUID();
-    OploteLoot* oploteLoot = sChallengeModeMgr->GetOploteLoot(lootOwnerGUID);
-    WorldPackets::ChallengeMode::Rewards rewards;
-    rewards.IsWeeklyRewardAvailable = oploteLoot ? true : false;
-    rewards.LastWeekHighestKeyCompleted = oploteLoot ? oploteLoot->ChallengeLevel : 0;
-    rewards.LastWeekMapChallengeKeyEntry = oploteLoot ? oploteLoot->ChallengeID : 0;
-    rewards.CurrentWeekHighestKeyCompleted = sChallengeModeMgr->GetBestActualWeekChallengeLevel();
-    SendPacket(rewards.Write());
+    //ObjectGuid lootOwnerGUID = GetPlayer()->GetGUID();
+    //OploteLoot* oploteLoot = sChallengeModeMgr->GetOploteLoot(lootOwnerGUID);
+    //WorldPackets::ChallengeMode::Rewards rewards;
+    //rewards.IsWeeklyRewardAvailable = oploteLoot ? true : false;
+    //rewards.LastWeekHighestKeyCompleted = oploteLoot ? oploteLoot->ChallengeLevel : 0;
+    //rewards.LastWeekMapChallengeKeyEntry = oploteLoot ? oploteLoot->ChallengeID : 0;
+    //rewards.CurrentWeekHighestKeyCompleted = sChallengeModeMgr->GetBestActualWeekChallengeLevel();
+    //SendPacket(rewards.Write());
 }
 
 void WorldSession::HandleResetChallengeMode(WorldPackets::ChallengeMode::ResetChallengeMode& /*reset*/)
@@ -349,11 +350,41 @@ void WorldSession::HandleResetChallengeMode(WorldPackets::ChallengeMode::ResetCh
 
 void WorldSession::HandleRequestChallengeModeAffixes(WorldPackets::ChallengeMode::RequestChallengeModeAffixes& /*modeAffixes*/)
 {
-    WorldPackets::ChallengeMode::Affixes affixes;
-    affixes.affixesFileDatas.push_back(sWorld->getWorldState(WS_CHALLENGE_AFFIXE1_RESET_TIME));
-    affixes.affixesFileDatas.push_back(sWorld->getWorldState(WS_CHALLENGE_AFFIXE2_RESET_TIME));
-    affixes.affixesFileDatas.push_back(sWorld->getWorldState(WS_CHALLENGE_AFFIXE3_RESET_TIME));
-    affixes.affixesFileDatas.push_back(sWorld->getWorldState(WS_CHALLENGE_AFFIXE4_RESET_TIME));
+    // ServerToClient: SMSG_MYTHIC_PLUS_CURRENT_AFFIXES (0x2606) Length: 52 ConnIdx: 1 Time: 04/17/2022 04:20:35.602 Number: 2789
+    // [0] KeystoneAffixID: 9
+    // [0] RequiredSeason: 0
+    // [1] KeystoneAffixID: 8
+    // [1] RequiredSeason: 0
+    // [2] KeystoneAffixID: 124
+    // [2] RequiredSeason: 0
+    // [3] KeystoneAffixID: 121
+    // [3] RequiredSeason: 5
+    // [4] KeystoneAffixID: 128
+    // [4] RequiredSeason: 6
+    // [5] KeystoneAffixID: 130
+    // [5] RequiredSeason: 7
+    WorldPackets::ChallengeMode::MythicPlusCurrentAffixes affixes;
+    /// affixes.Affixes.push_back(sWorld->getWorldState(WS_CHALLENGE_AFFIXE1_RESET_TIME));
+    /// affixes.Affixes.push_back(sWorld->getWorldState(WS_CHALLENGE_AFFIXE2_RESET_TIME));
+    /// affixes.Affixes.push_back(sWorld->getWorldState(WS_CHALLENGE_AFFIXE3_RESET_TIME));
+    /// affixes.Affixes.push_back(sWorld->getWorldState(WS_CHALLENGE_AFFIXE4_RESET_TIME));
+
+
+    // TODO: Add correct affixes
+    affixes.Affixes.resize(6);
+    affixes.Affixes[0].KeystoneAffixID = 9;
+    affixes.Affixes[0].RequiredSeason = 0;
+    affixes.Affixes[1].KeystoneAffixID = 8;
+    affixes.Affixes[1].RequiredSeason = 0;
+    affixes.Affixes[2].KeystoneAffixID = 124;
+    affixes.Affixes[2].RequiredSeason = 0;
+    affixes.Affixes[3].KeystoneAffixID = 121;
+    affixes.Affixes[3].RequiredSeason = 5;
+    affixes.Affixes[4].KeystoneAffixID = 128;
+    affixes.Affixes[4].RequiredSeason = 6;
+    affixes.Affixes[5].KeystoneAffixID = 130;
+    affixes.Affixes[5].RequiredSeason = 7;
+
     SendPacket(affixes.Write());
 }
 

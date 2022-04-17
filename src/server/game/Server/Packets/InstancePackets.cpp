@@ -189,7 +189,7 @@ ByteBuffer& operator<<(ByteBuffer& data, WorldPackets::Instance::EncounterItemIn
     data << uint32(encounterItemInfo.ItemLevel);
     data << uint32(encounterItemInfo.EnchantmentIDs.size());
     data << uint32(encounterItemInfo.ItemBonusListIDs.size());
-    data << uint32(encounterItemInfo.Gems.size());
+    data << uint32(encounterItemInfo.Encounters.size());
 
     for (uint32 i = 0; i < encounterItemInfo.EnchantmentIDs.size(); ++i)
         data << uint32(encounterItemInfo.EnchantmentIDs[i]);
@@ -197,19 +197,26 @@ ByteBuffer& operator<<(ByteBuffer& data, WorldPackets::Instance::EncounterItemIn
     for (uint32 i = 0; i < encounterItemInfo.ItemBonusListIDs.size(); ++i)
         data << uint32(encounterItemInfo.ItemBonusListIDs[i]);
 
-    for (uint32 i = 0; i < encounterItemInfo.Gems.size(); ++i)
-        data << uint32(encounterItemInfo.Gems[i]);
+    for (auto const& encounter : encounterItemInfo.Encounters)
+        data << encounter;
 
     return data;
 }
 
+// used in challenge start, encounter start, pvp match start, multifloor new floor
 ByteBuffer& operator<<(ByteBuffer& data, WorldPackets::Instance::InstancePlayerData const& instancePlayerData)
 {
     data << instancePlayerData.PlayerGuid;
+    data.WriteBit(0); // Unk
+    data.FlushBits();
     data << uint32(instancePlayerData.Stats.size());
     data << uint32(instancePlayerData.CombatRatings.size());
     data << uint32(instancePlayerData.AuraInfos.size());
     data << uint32(instancePlayerData.SpecID);
+    data << uint32(0); // Unk
+    data << uint32(0); // Unk
+    data << uint32(0); // Unk
+    data << uint32(0); // Unk
     data << uint32(instancePlayerData.Talents.size());
     data << uint32(instancePlayerData.PvpTalents.size());
 
@@ -219,7 +226,6 @@ ByteBuffer& operator<<(ByteBuffer& data, WorldPackets::Instance::InstancePlayerD
     for (uint32 i = 0; i < instancePlayerData.PvpTalents.size(); ++i)
         data << uint32(instancePlayerData.PvpTalents[i]);
 
-    data << uint32(instancePlayerData.ArtifactPowerInfos.size());
     data << uint32(instancePlayerData.EncounterItemInfos.size());
 
     for (uint32 i = 0; i < instancePlayerData.Stats.size(); ++i)
@@ -228,18 +234,62 @@ ByteBuffer& operator<<(ByteBuffer& data, WorldPackets::Instance::InstancePlayerD
     for (uint32 i = 0; i < instancePlayerData.CombatRatings.size(); ++i)
         data << uint32(instancePlayerData.CombatRatings[i]);
 
-    for (auto auraInfo : instancePlayerData.AuraInfos)
+    for (auto const& auraInfo : instancePlayerData.AuraInfos)
         data << auraInfo;
 
-    for (auto artifactPowerInfo : instancePlayerData.ArtifactPowerInfos)
-        data << artifactPowerInfo;
-
-    for (auto encounterItemInfos : instancePlayerData.EncounterItemInfos)
+    for (auto const& encounterItemInfos : instancePlayerData.EncounterItemInfos)
         data << encounterItemInfos;
+
+    bool bit1 = data.WriteBit(0);
+    bool bit2 = data.WriteBit(0);
+    data.FlushBits();
+
+    if (bit1)
+    {
+        uint32 count1 = 0;
+        uint32 count2 = 0;
+        data << int32(count1);
+        data << int32(count2);
+
+        for (uint32 i = 0; i < count1; ++i)
+        {
+            data << int32(0);
+            data << int16(0);
+            data.WriteBit(0);
+            data.FlushBits();
+        }
+
+        for (uint32 i = 0; i < count2; ++i)
+        {
+            data << int32(0);
+            data.WriteBit(0);
+            data.WriteBit(0);
+            data.FlushBits();
+        }
+    }
+
+    if (bit2)
+    {
+        data << int32(0);
+        data << int32(0);
+        data << int32(0); // iterate int32
+        data << int32(0); // iterate int32 int32
+        data << int32(0); // iterate int32 int32 int32
+    }
+
+    //data << uint32(instancePlayerData.ArtifactPowerInfos.size());
+    //
+    //
+    //for (auto const& artifactPowerInfo : instancePlayerData.ArtifactPowerInfos)
+    //    data << artifactPowerInfo;
+    //
+    //
+    //
 
     return data;
 }
 
+// good 9.2
 WorldPacket const* WorldPackets::Instance::EncounterStart::Write()
 {
     _worldPacket << uint32(EncounterID);
@@ -247,43 +297,46 @@ WorldPacket const* WorldPackets::Instance::EncounterStart::Write()
     _worldPacket << uint32(GroupSize);
     _worldPacket << uint32(PlayerDatas.size());
 
-    for (auto PlayerData : PlayerDatas)
+    for (auto const& PlayerData : PlayerDatas)
         _worldPacket << PlayerData;
 
     return &_worldPacket;
 }
 
+// updated 9.2
 WorldPacket const* WorldPackets::Instance::EncounterEnd::Write()
 {
     _worldPacket << uint32(EncounterID);
     _worldPacket << uint32(DifficultyID);
     _worldPacket << uint32(GroupSize);
+    _worldPacket << uint32(Unk);
     _worldPacket.WriteBit(Success);
     _worldPacket.FlushBits();
 
     return &_worldPacket;
 }
 
+// upadted 9.2
 WorldPacket const* WorldPackets::Instance::ChangePlayerDifficultyResult::Write()
 {
-    _worldPacket.FlushBits();
     _worldPacket.WriteBits(Result, 4);
+    _worldPacket.FlushBits();
     switch (Result)
     {
-        case (uint8)ChangeDifficultyResult::DIFFICULTY_CHANGE_SET_COOLDOWN_S:
-        case (uint8)ChangeDifficultyResult::DIFFICULTY_CHANGE_OTHER_HEROIC_S:
+        case 5:
+        case 0:
             _worldPacket.WriteBit(Cooldown);
             _worldPacket.FlushBits();
             _worldPacket << CooldownReason;
             break;
-        case (uint8)ChangeDifficultyResult::DIFFICULTY_CHANGE_BY_PARTY_LEADER:
+        case 11:
             _worldPacket << InstanceMapID;
             _worldPacket << DifficultyRecID;
             break;
-        case (uint8)ChangeDifficultyResult::DIFFICULTY_CHANGE_ENCOUNTER:
+        case 7:
             _worldPacket << MapID;
             break;
-        case (uint8)ChangeDifficultyResult::DIFFICULTY_CHANGE_PLAYER_BUSY:
+        case 8:
             _worldPacket << Guid;
             break;
         default:

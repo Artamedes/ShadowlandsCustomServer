@@ -938,6 +938,8 @@ namespace WorldPackets
             int32 Type = 0;
             Duration<Seconds> TimeLeft;
             Duration<Seconds> TotalTime;
+            int32 Unk1 = 0;
+            int32 Unk2 = 0;
         };
 
         struct ElaspedTimer

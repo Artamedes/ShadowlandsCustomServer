@@ -508,10 +508,10 @@ void Challenge::Complete()
     if (_challengeEntry)
     {
         WorldPackets::ChallengeMode::Complete complete;
-        complete.MapID = _mapID;
-        complete.Duration = _challengeTimer;
-        complete.ChallengeLevel = _challengeLevel;
-        complete.ChallengeId = _challengeEntry->ID;
+        complete.Run.MapChallengeModeID = _mapID;
+        complete.Run.DurationMs = _challengeTimer;
+        complete.Run.Level = _challengeLevel;
+        complete.Run.MapChallengeModeID = _challengeEntry->ID;
         complete.IsCompletedInTimer = _rewardLevel > CHALLENGE_NOT_IN_TIMER;
         BroadcastPacket(complete.Write());
     }
@@ -691,7 +691,7 @@ uint32 Challenge::GetChallengeLevel() const
     return std::min(_challengeLevel, sWorld->getIntConfig(CONFIG_CHALLENGE_LEVEL_LIMIT));
 }
 
-std::array<uint32, 4> Challenge::GetAffixes() const
+std::array<int32, 4> Challenge::GetAffixes() const
 {
     return _affixes;
 }
