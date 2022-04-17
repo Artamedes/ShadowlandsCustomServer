@@ -1483,6 +1483,8 @@ void InstanceScript::OnPlayerEnterForScript(Player* player)
 
 void InstanceScript::OnPlayerLeaveForScript(Player* player)
 {
+    // just incase
+    player->RemoveAura(SPELL_CHALLENGER_BURDEN);
     if (_challenge)
         _challenge->OnPlayerLeaveForScript(player);
 }
