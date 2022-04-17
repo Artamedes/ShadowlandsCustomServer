@@ -83,6 +83,9 @@ class TC_GAME_API CreatureAI : public UnitAI
 
         virtual ~CreatureAI();
 
+        bool IsInDisable();
+        bool IsInControl();
+
         // Gets the id of the AI (script id)
         uint32 GetId() const { return _scriptId; }
 

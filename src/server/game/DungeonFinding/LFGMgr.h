@@ -444,6 +444,9 @@ class TC_GAME_API LFGMgr
         /// Sends queue status to player
         static void SendLfgQueueStatus(ObjectGuid guid, LfgQueueStatusData const& data);
 
+        LFGDungeonData const* GetPlayerLFGDungeon(ObjectGuid guid);
+        LFGDungeonsEntry const* GetPlayerLFGDungeonEntry(ObjectGuid guid);
+
     private:
         uint8 GetTeam(ObjectGuid guid);
         uint8 FilterClassRoles(Player* player, uint8 roles);

@@ -1103,6 +1103,17 @@ void AuraScript::AuraUpdateHandler::Call(AuraScript* auraScript, uint32 diff)
     (auraScript->*pEffectHandlerScript)(diff);
 }
 
+AuraScript::EffectUpdateHandler::EffectUpdateHandler(AuraEffectUpdateFnType _pEffectHandlerScript, uint8 _effIndex, uint16 _effName)
+    : AuraScript::EffectBase(_effIndex, _effName)
+{
+    pEffectHandlerScript = _pEffectHandlerScript;
+}
+
+void AuraScript::EffectUpdateHandler::Call(AuraScript* auraScript, uint32 diff, AuraEffect* aurEff)
+{
+    (auraScript->*pEffectHandlerScript)(diff, aurEff);
+}
+
 AuraScript::EffectUpdatePeriodicHandler::EffectUpdatePeriodicHandler(AuraEffectUpdatePeriodicFnType _pEffectHandlerScript, uint8 _effIndex, uint16 _effName)
     : AuraScript::EffectBase(_effIndex, _effName), pEffectHandlerScript(_pEffectHandlerScript)
 {

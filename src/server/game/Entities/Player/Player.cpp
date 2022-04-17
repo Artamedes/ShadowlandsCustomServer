@@ -29321,6 +29321,99 @@ uint32 Player::GetDefaultSpecId() const
     return ASSERT_NOTNULL(sDB2Manager.GetDefaultChrSpecializationForClass(GetClass()))->ID;
 }
 
+uint32 Player::GetRoleForGroup() const
+{
+    return GetRoleBySpecializationId(GetSpecializationId());
+}
+
+bool Player::IsRangedDamageDealer(bool allowHeal /*= true*/) const
+{
+    if (GetRoleForGroup() != Roles::ROLE_DAMAGE && !(allowHeal && GetRoleForGroup() == Roles::ROLE_HEALER))
+        return false;
+
+    switch (GetClass())
+    {
+    case Classes::CLASS_HUNTER:
+    case Classes::CLASS_MAGE:
+    case Classes::CLASS_WARLOCK:
+        return true;
+    default:
+        break;
+    }
+
+    switch (GetSpecializationId())
+    {
+    case TALENT_SPEC_DRUID_BALANCE:
+    case TALENT_SPEC_PRIEST_SHADOW:
+    case TALENT_SPEC_SHAMAN_ELEMENTAL:
+        return true;
+    case TALENT_SPEC_DRUID_RESTORATION:
+    case TALENT_SPEC_MONK_MISTWEAVER:
+    case TALENT_SPEC_PALADIN_HOLY:
+    case TALENT_SPEC_PRIEST_DISCIPLINE:
+    case TALENT_SPEC_PRIEST_HOLY:
+    case TALENT_SPEC_SHAMAN_RESTORATION:
+        return allowHeal;
+    default:
+        break;
+    }
+
+    return false;
+}
+
+bool Player::IsMeleeDamageDealer(bool allowTank /*= false*/) const
+{
+    if (GetRoleForGroup() != Roles::ROLE_DAMAGE && !(allowTank && GetRoleForGroup() == Roles::ROLE_TANK))
+        return false;
+
+    if (GetClass() == Classes::CLASS_ROGUE)
+        return true;
+
+    switch (GetSpecializationId())
+    {
+    case TALENT_SPEC_DRUID_CAT:
+    case TALENT_SPEC_SHAMAN_ENHANCEMENT:
+    case TALENT_SPEC_MONK_BATTLEDANCER:
+    case TALENT_SPEC_WARRIOR_ARMS:
+    case TALENT_SPEC_WARRIOR_FURY:
+    case TALENT_SPEC_DEATHKNIGHT_FROST:
+    case TALENT_SPEC_DEATHKNIGHT_UNHOLY:
+    case TALENT_SPEC_PALADIN_RETRIBUTION:
+    case TALENT_SPEC_DEMON_HUNTER_HAVOC:
+        return true;
+    case TALENT_SPEC_DRUID_BEAR:
+    case TALENT_SPEC_MONK_BREWMASTER:
+    case TALENT_SPEC_WARRIOR_PROTECTION:
+    case TALENT_SPEC_DEATHKNIGHT_BLOOD:
+    case TALENT_SPEC_PALADIN_PROTECTION:
+    case TALENT_SPEC_DEMON_HUNTER_VENGEANCE:
+        return allowTank;
+    default:
+        break;
+    }
+
+    return false;
+}
+
+uint32 Player::GetRoleBySpecializationId(uint32 specializationId)
+{
+    if (specializationId)
+        if (ChrSpecializationEntry const* spec = sChrSpecializationStore.LookupEntry(specializationId))
+            return spec->Role;
+
+    return ROLE_DAMAGE;
+}
+
+bool Player::IsActiveSpecTankSpec() const
+{
+    ChrSpecializationEntry const* entry = sChrSpecializationStore.LookupEntry(GetSpecializationId());
+
+    if (!entry)
+        return false;
+
+    return entry->Role == Roles::ROLE_TANK;
+}
+
 void Player::SendSpellCategoryCooldowns() const
 {
     WorldPackets::Spells::CategoryCooldown cooldowns;

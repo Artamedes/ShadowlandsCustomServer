@@ -46,6 +46,7 @@
 #include "SpellAuras.h"
 #include "Spell.h"
 #include "Item.h"
+#include "ScenarioMgr.h"
 
 #ifdef TRINITY_API_USE_DYNAMIC_LINKING
 #include "ScriptMgr.h"
@@ -232,6 +233,7 @@ void InstanceScript::UpdateDoorState(GameObject* door)
         return;
 
     bool open = true;
+    DoorType doorType = DOOR_TYPE_ROOM;
     for (; range.first != range.second && open; ++range.first)
     {
         DoorInfo const& info = range.first->second;
@@ -249,9 +251,29 @@ void InstanceScript::UpdateDoorState(GameObject* door)
             default:
                 break;
         }
+        if (!open)
+            doorType = info.type;
     }
-
-    door->SetGoState(open ? GO_STATE_ACTIVE : GO_STATE_READY);
+    
+    // Delay Door closing, like retail
+    if (!open)
+    {
+        ObjectGuid doorGuid = door->GetGUID();
+        AddTimedDelayedOperation(5 * TimeConstants::IN_MILLISECONDS, [this, doorGuid, doorType]() -> void
+        {
+            if (GameObject* doorFinded = instance->GetGameObject(doorGuid))
+            {
+                // prev expasions bosses die really fast
+                if (InstanceScript* instance = doorFinded->GetInstanceScript())
+                    if (!instance->IsEncounterInProgress() && doorType == DOOR_TYPE_ROOM)
+                        return;
+            
+                doorFinded->SetGoState(GOState::GO_STATE_READY);
+            }
+        });
+    }
+    else
+        door->SetGoState(GOState::GO_STATE_ACTIVE);
 }
 
 void InstanceScript::UpdateMinionState(Creature* minion, EncounterState state)
@@ -601,6 +623,50 @@ void InstanceScript::HandleGameObject(ObjectGuid guid, bool open, GameObject* go
         go->SetGoState(open ? GO_STATE_ACTIVE : GO_STATE_READY);
     else
         TC_LOG_DEBUG("scripts", "InstanceScript: HandleGameObject failed");
+}
+
+void InstanceScript::UpdateOperations(uint32 const diff)
+{
+    for (auto itr = timedDelayedOperations.begin(); itr != timedDelayedOperations.end(); itr++)
+    {
+        try
+        {
+            itr->first -= diff;
+
+            if (itr->first < 0)
+            {
+                itr->second();
+                itr->second = nullptr;
+            }
+        }
+        catch (...)
+        {
+            itr = timedDelayedOperations.erase(itr);
+        }
+    }
+
+
+    uint32 timedDelayedOperationCountToRemove = std::count_if(std::begin(timedDelayedOperations), std::end(timedDelayedOperations), [](const std::pair<int32, std::function<void()>> & pair) -> bool
+    {
+        return pair.second == nullptr;
+    });
+
+    for (uint32 i = 0; i < timedDelayedOperationCountToRemove; i++)
+    {
+        auto itr = std::find_if(std::begin(timedDelayedOperations), std::end(timedDelayedOperations), [](const std::pair<int32, std::function<void()>> & p_Pair) -> bool
+        {
+            return p_Pair.second == nullptr;
+        });
+
+        if (itr != std::end(timedDelayedOperations))
+            timedDelayedOperations.erase(itr);
+    }
+
+    if (timedDelayedOperations.empty() && !emptyWarned)
+    {
+        emptyWarned = true;
+        LastOperationCalled();
+    }
 }
 
 void InstanceScript::DoUseDoorOrButton(ObjectGuid guid, uint32 withRestoreTime /*= 0*/, bool useAlternativeState /*= false*/)
@@ -1487,14 +1553,13 @@ void InstanceScript::CreateChallenge(Player* player)
         return;
 
     uint32 scenarioId = 0;
-    // todo
-    //if (ScenarioDBData const* scenarioData = sScenarioMgr->GetScenarioOnMap(player->GetMap()->GetId(), DIFFICULTY_MYTHIC_KEYSTONE))
-    //{
-    //    if (player->GetTeamId() == TEAM_ALLIANCE)
-    //        scenarioId = scenarioData->Scenario_A;
-    //    else
-    //        scenarioId = scenarioData->Scenario_H;
-    //}
+    if (ScenarioDBData const* scenarioData = sScenarioMgr->GetScenarioOnMap(player->GetMap()->GetId(), DIFFICULTY_MYTHIC_KEYSTONE))
+    {
+        if (player->GetTeamId() == TEAM_ALLIANCE)
+            scenarioId = scenarioData->Scenario_A;
+        else
+            scenarioId = scenarioData->Scenario_H;
+    }
 
     bool canChallengeWithTeeming = false;
     if (player->m_challengeKeyInfo.Level > MYTHIC_LEVEL_1)
@@ -1507,8 +1572,8 @@ void InstanceScript::CreateChallenge(Player* player)
         canChallengeWithTeeming = player->m_challengeKeyInfo.Affix3 == Affixes::TEEMING;
 
     // todo
-     //if(ScenarioData const* scenarioData = sScenarioMgr->GetScenarioData(scenarioId, player->GetTeamId(), sChallengeModeMgr->IsTeemingAffixInRotation() && canChallengeWithTeeming))
-     //    instanceMap->SetInstanceScenario(new InstanceScenario(instanceMap, scenarioData));
+    if (ScenarioData const* scenarioData = sScenarioMgr->GetScenarioData(scenarioId, player->GetTeamId(), sChallengeModeMgr->IsTeemingAffixInRotation() && canChallengeWithTeeming))
+        instanceMap->SetInstanceScenario(new InstanceScenario(instanceMap, scenarioData));
 
     Scenario* scenario = instanceMap->GetInstanceScenario();
     if (!scenario)

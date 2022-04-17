@@ -936,8 +936,8 @@ namespace WorldPackets
             WorldPacket const* Write() override;
 
             int32 Type = 0;
-            Duration<Seconds> TimeLeft;
-            Duration<Seconds> TotalTime;
+            uint32 TimeLeft;
+            uint32 TotalTime;
             int32 Unk1 = 0;
             int32 Unk2 = 0;
         };

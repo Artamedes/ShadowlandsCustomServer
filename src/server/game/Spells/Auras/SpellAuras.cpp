@@ -2235,6 +2235,31 @@ void Aura::CallScriptAuraUpdateHandlers(uint32 diff)
 #endif // PERFORMANCE_LOG
 }
 
+void Aura::CallScriptEffectUpdateHandlers(uint32 diff, AuraEffect* aurEff)
+{
+#ifdef PERFORMANCE_LOG
+    uint32 scriptExecuteTime = getMSTime();
+#endif // PERFORMANCE_LOG
+
+    for (auto scritr = m_loadedScripts.begin(); scritr != m_loadedScripts.end(); ++scritr)
+    {
+        (*scritr)->_PrepareScriptCall(AURA_SCRIPT_HOOK_EFFECT_UPDATE);
+        std::vector<AuraScript::EffectUpdateHandler>::iterator effEndItr = (*scritr)->OnEffectUpdate.end(), effItr = (*scritr)->OnEffectUpdate.begin();
+        for (; effItr != effEndItr; ++effItr)
+        {
+            if ((*effItr).IsEffectAffected(m_spellInfo, aurEff->GetEffIndex()))
+                (*effItr).Call(*scritr, diff, aurEff);
+        }
+        (*scritr)->_FinishScriptCall();
+    }
+
+#ifdef PERFORMANCE_LOG
+    scriptExecuteTime = getMSTime() - scriptExecuteTime;
+    if (scriptExecuteTime > 10)
+        sLog->outPerformance("Aura::CallScriptEffectUpdateHandlers [%u] take more than 10 ms to execute (%u ms)", GetId(), scriptExecuteTime);
+#endif // PERFORMANCE_LOG
+}
+
 void Aura::CallScriptEffectCalcAmountHandlers(AuraEffect const* aurEff, int32& amount, bool& canBeRecalculated)
 {
     for (auto scritr = m_loadedScripts.begin(); scritr != m_loadedScripts.end(); ++scritr)

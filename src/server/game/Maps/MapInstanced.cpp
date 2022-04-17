@@ -29,6 +29,7 @@
 #include "ScenarioMgr.h"
 #include "VMapFactory.h"
 #include "VMapManager2.h"
+#include "LFGMgr.h"
 #include "World.h"
 
 MapInstanced::MapInstanced(uint32 id, time_t expiry) : Map(id, expiry, 0, DIFFICULTY_NORMAL)
@@ -146,6 +147,7 @@ Map* MapInstanced::CreateInstanceForPlayer(const uint32 mapId, Player* player, u
     {
         InstancePlayerBind* pBind = player->GetBoundInstance(GetId(), player->GetDifficultyID(GetEntry()));
         InstanceSave* pSave = pBind ? pBind->save : nullptr;
+        LFGDungeonsEntry const* dungeonEntry = sLFGMgr->GetPlayerLFGDungeonEntry(player->GetGUID());
 
         // priority:
         // 1. player's permanent bind
@@ -158,7 +160,7 @@ Map* MapInstanced::CreateInstanceForPlayer(const uint32 mapId, Player* player, u
             {
                 map = FindInstanceMap(loginInstanceId);
                 if (!map && pSave && pSave->GetInstanceId() == loginInstanceId)
-                    map = CreateInstance(loginInstanceId, pSave, pSave->GetDifficultyID(), player->GetTeamId());
+                    map = CreateInstance(loginInstanceId, pSave, pSave->GetDifficultyID(), player->GetTeamId(), dungeonEntry);
                 return map;
             }
 
@@ -183,7 +185,7 @@ Map* MapInstanced::CreateInstanceForPlayer(const uint32 mapId, Player* player, u
             map = FindInstanceMap(newInstanceId);
             // it is possible that the save exists but the map doesn't
             if (!map)
-                map = CreateInstance(newInstanceId, pSave, pSave->GetDifficultyID(), player->GetTeamId());
+                map = CreateInstance(newInstanceId, pSave, pSave->GetDifficultyID(), player->GetTeamId(), dungeonEntry ? dungeonEntry : nullptr);
         }
         else
         {
@@ -202,7 +204,7 @@ Map* MapInstanced::CreateInstanceForPlayer(const uint32 mapId, Player* player, u
             //ASSERT(!FindInstanceMap(NewInstanceId));
             map = FindInstanceMap(newInstanceId);
             if (!map)
-                map = CreateInstance(newInstanceId, nullptr, diff, player->GetTeamId());
+                map = CreateInstance(newInstanceId, NULL, diff, player->GetTeamId(), dungeonEntry ? dungeonEntry : nullptr);
         }
     }
     else
@@ -216,7 +218,7 @@ Map* MapInstanced::CreateInstanceForPlayer(const uint32 mapId, Player* player, u
     return map;
 }
 
-InstanceMap* MapInstanced::CreateInstance(uint32 InstanceId, InstanceSave* save, Difficulty difficulty, TeamId team)
+InstanceMap* MapInstanced::CreateInstance(uint32 InstanceId, InstanceSave* save, Difficulty difficulty, TeamId team, LFGDungeonsEntry const* dungeonEntry)
 {
     // load/create a map
     std::lock_guard<std::mutex> lock(_mapLock);
@@ -248,7 +250,7 @@ InstanceMap* MapInstanced::CreateInstance(uint32 InstanceId, InstanceSave* save,
 
     bool load_data = save != nullptr;
     map->CreateInstanceData(load_data);
-    if (InstanceScenario* instanceScenario = sScenarioMgr->CreateInstanceScenario(map, team))
+    if (InstanceScenario* instanceScenario = sScenarioMgr->CreateInstanceScenario(map, team, dungeonEntry ? dungeonEntry : nullptr))
         map->SetInstanceScenario(instanceScenario);
 
     if (sWorld->getBoolConfig(CONFIG_INSTANCEMAP_LOAD_GRIDS))

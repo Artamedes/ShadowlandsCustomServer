@@ -745,8 +745,8 @@ void Challenge::SendStartTimer(Player* player)
 {
     WorldPackets::Misc::StartTimer startTimer;
     startTimer.Type = TIMER_TYPE_CHALLENGE;
-    startTimer.TimeLeft = 10s;
-    startTimer.TotalTime = 10s;
+    startTimer.TimeLeft = 9;
+    startTimer.TotalTime = 10;
     if (player)
         player->SendDirectMessage(startTimer.Write());
     else

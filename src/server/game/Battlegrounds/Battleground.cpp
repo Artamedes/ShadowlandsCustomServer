@@ -417,8 +417,8 @@ inline void Battleground::_ProcessJoin(uint32 diff)
 
         WorldPackets::Misc::StartTimer startTimer;
         startTimer.Type         = 0;
-        startTimer.TimeLeft     = std::chrono::duration_cast<Seconds>(countdownMaxForBGType - Milliseconds(GetElapsedTime()));
-        startTimer.TotalTime    = countdownMaxForBGType;
+        startTimer.TimeLeft     = std::chrono::duration_cast<Seconds>(countdownMaxForBGType - Milliseconds(GetElapsedTime())).count();
+        startTimer.TotalTime    = countdownMaxForBGType.count();
 
         for (BattlegroundPlayerMap::const_iterator itr = GetPlayers().begin(); itr != GetPlayers().end(); ++itr)
             if (Player* player = ObjectAccessor::FindPlayer(itr->first))
@@ -1124,8 +1124,8 @@ void Battleground::AddPlayer(Player* player)
 
             WorldPackets::Misc::StartTimer startTimer;
             startTimer.Type         = 0;
-            startTimer.TimeLeft     = std::chrono::duration_cast<Seconds>(countdownMaxForBGType - Milliseconds(GetElapsedTime()));
-            startTimer.TotalTime    = countdownMaxForBGType;
+            startTimer.TimeLeft     = std::chrono::duration_cast<Seconds>(countdownMaxForBGType - Milliseconds(GetElapsedTime())).count();
+            startTimer.TotalTime    = countdownMaxForBGType.count();
             player->SendDirectMessage(startTimer.Write());
         }
 

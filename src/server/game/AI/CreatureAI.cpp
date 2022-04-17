@@ -51,6 +51,27 @@ CreatureAI::~CreatureAI()
 {
 }
 
+bool CreatureAI::IsInDisable()
+{
+    if (me->HasAuraType(SPELL_AURA_MOD_STUN) || me->HasAuraType(SPELL_AURA_MOD_FEAR) ||
+        me->HasAuraType(SPELL_AURA_MOD_CHARM) || me->HasAuraType(SPELL_AURA_MOD_CONFUSE) ||
+        me->HasAuraType(SPELL_AURA_MOD_ROOT) || me->HasAuraType(SPELL_AURA_MOD_FEAR_2) ||
+        me->HasAuraType(SPELL_AURA_MOD_ROOT_2))
+        return true;
+
+    return false;
+}
+
+bool CreatureAI::IsInControl()
+{
+    if (me->HasAuraType(SPELL_AURA_MOD_STUN) || me->HasAuraType(SPELL_AURA_MOD_FEAR) ||
+        me->HasAuraType(SPELL_AURA_MOD_CHARM) || me->HasAuraType(SPELL_AURA_MOD_CONFUSE) ||
+        me->HasAuraType(SPELL_AURA_MOD_FEAR_2) || me->HasAuraType(SPELL_AURA_MOD_PACIFY_SILENCE))
+        return true;
+
+    return false;
+}
+
 void CreatureAI::Talk(uint8 id, WorldObject const* whisperTarget /*= nullptr*/)
 {
     sCreatureTextMgr->SendChat(me, id, whisperTarget);

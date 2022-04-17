@@ -341,8 +341,11 @@ void Creature::AddToWorld()
         if (IsVehicle())
             GetVehicleKit()->Install();
 
-        if (GetZoneScript())
-            GetZoneScript()->OnCreatureCreate(this);
+        if (ZoneScript* zoneScript = GetZoneScript())
+        {
+            zoneScript->OnCreatureCreate(this);
+            zoneScript->OnCreatureCreateForScript(this);
+        }
 
         if (GetMap()->Instanceable())
             m_canBePersonalLooted = false; // Don't allow personal loot in dungeons.
@@ -353,8 +356,11 @@ void Creature::RemoveFromWorld()
 {
     if (IsInWorld())
     {
-        if (GetZoneScript())
-            GetZoneScript()->OnCreatureRemove(this);
+        if (ZoneScript* zoneScript = GetZoneScript())
+        {
+            zoneScript->OnCreatureRemove(this);
+            zoneScript->OnCreatureRemoveForScript(this);
+        }
 
         if (m_formation)
             sFormationMgr->RemoveCreatureFromGroup(m_formation, this);
@@ -3581,6 +3587,10 @@ void Creature::AtEngage(Unit* target)
 
     if (CreatureAI* ai = AI())
         ai->JustEngagedWith(target);
+
+    if (GetZoneScript())
+        GetZoneScript()->EnterCombatForScript(this, target);
+
     if (CreatureGroup* formation = GetFormation())
         formation->MemberEngagingTarget(this, target);
 }

@@ -60,6 +60,14 @@ enum SpellEffIndex : uint8
     EFFECT_31 = 31
 };
 
+enum Roles
+{
+    ROLE_TANK      = 0,
+    ROLE_HEALER    = 1,
+    ROLE_DAMAGE    = 2
+};
+
+
 // used in script definitions
 #define EFFECT_FIRST_FOUND 254
 #define EFFECT_ALL 255

@@ -217,7 +217,10 @@ void GameObject::AddToWorld()
     if (!IsInWorld())
     {
         if (m_zoneScript)
+        {
             m_zoneScript->OnGameObjectCreate(this);
+            m_zoneScript->OnGameObjectCreateForScript(this);
+        }
 
         GetMap()->GetObjectsStore().Insert<GameObject>(GetGUID(), this);
         if (m_spawnId)
@@ -244,7 +247,10 @@ void GameObject::RemoveFromWorld()
     if (IsInWorld())
     {
         if (m_zoneScript)
+        {
             m_zoneScript->OnGameObjectRemove(this);
+            m_zoneScript->OnGameObjectRemoveForScript(this);
+        }
 
         RemoveFromOwner();
         if (m_model)

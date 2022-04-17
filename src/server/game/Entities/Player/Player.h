@@ -1888,6 +1888,12 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void SetActiveTalentGroup(uint8 group){ _specializationInfo.ActiveGroup = group; }
         uint32 GetDefaultSpecId() const;
 
+        static uint32 GetRoleBySpecializationId(uint32 specializationId);
+        uint32 GetRoleForGroup() const;
+        bool IsRangedDamageDealer(bool allowHeal = true) const;
+        bool IsMeleeDamageDealer(bool allowTank = false) const;
+        bool IsActiveSpecTankSpec() const;
+
         bool ResetTalents(bool noCost = false);
         void ResetPvpTalents();
         uint32 GetNextResetTalentsCost() const;

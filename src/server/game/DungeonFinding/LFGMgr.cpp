@@ -2013,6 +2013,27 @@ void LFGMgr::SendLfgQueueStatus(ObjectGuid guid, LfgQueueStatusData const& data)
         player->GetSession()->SendLfgQueueStatus(data);
 }
 
+
+LFGDungeonData const* LFGMgr::GetPlayerLFGDungeon(ObjectGuid guid)
+{
+    if (GetState(guid) != LFG_STATE_NONE)
+    {
+        LfgDungeonSet const& dungeons = GetSelectedDungeons(guid);
+        if (!dungeons.empty())
+            return GetLFGDungeon(*dungeons.begin());
+    }
+
+    return nullptr;
+}
+
+LFGDungeonsEntry const* LFGMgr::GetPlayerLFGDungeonEntry(ObjectGuid guid)
+{
+    if (LFGDungeonData const* data = GetPlayerLFGDungeon(guid))
+        return sLFGDungeonsStore.LookupEntry(data->id);
+
+    return nullptr;
+}
+
 bool LFGMgr::IsLfgGroup(ObjectGuid guid)
 {
     return !guid.IsEmpty() && guid.IsParty() && GroupsStore[guid].IsLfgGroup();

@@ -46,11 +46,13 @@ struct ScenarioDBData
 {
     uint32 MapID;
     uint8 DifficultyID;
+    uint32 DungeonID;
     uint32 Scenario_A;
     uint32 Scenario_H;
 };
 
-typedef std::unordered_map<std::pair<uint32, uint8>, ScenarioDBData> ScenarioDBDataContainer;
+typedef std::unordered_map<std::pair<uint32 /*MapID*/, uint32/*DungeonID*/>, ScenarioDBData> ScenarioDBDataDungeonsContainer;
+typedef std::unordered_map<std::pair<uint32 /*MapID*/, uint8/*DifficultyID*/>, ScenarioDBData> ScenarioDBDataContainer;
 typedef std::map<uint32, ScenarioData> ScenarioDataContainer;
 
 enum ScenarioType
@@ -105,18 +107,25 @@ private:
 public:
     static ScenarioMgr* Instance();
 
-    InstanceScenario* CreateInstanceScenario(Map const* map, TeamId team) const;
+    InstanceScenario* CreateInstanceScenario(Map const* map, TeamId team, LFGDungeonsEntry const* dungeonEntry) const;
 
     void LoadDBData();
     void LoadDB2Data();
     void LoadScenarioPOI();
-
+    ScenarioDBData const* GetScenarioOnMap(uint32 mapId, uint8 difficultyID = 0) const;
+    ScenarioData const* GetScenarioData(uint32 scenarioID, TeamId team, bool teeming = false) const;
     ScenarioPOIVector const* GetScenarioPOIs(int32 criteriaTreeID) const;
+    bool IsAffixesTeemingCriteriaTree(uint32 CriteriaTreeID, bool horde = false) const;
+    bool IsHordeCriteriaTree(uint32 CriteriaTreeID) const;
 
 private:
     ScenarioDataContainer _scenarioData;
+    ScenarioDataContainer _hordeScenarioData;
+    ScenarioDataContainer _scenarioTeemingData;
+    ScenarioDataContainer _hordeScenarioTeemingData;
     ScenarioPOIContainer _scenarioPOIStore;
     ScenarioDBDataContainer _scenarioDBData;
+    ScenarioDBDataDungeonsContainer _scenarioDBDungeonsData;
 
     ScenarioMgr(ScenarioMgr const&) = delete;
     ScenarioMgr& operator=(ScenarioMgr const&) = delete;

@@ -1042,6 +1042,8 @@ void AuraEffect::ApplySpellMod(Unit* target, bool apply, AuraEffect const* trigg
 
 void AuraEffect::Update(uint32 diff, Unit* caster)
 {
+    ((Aura*)m_base)->CallScriptEffectUpdateHandlers(diff, this);
+
     if (!m_isPeriodic || (GetBase()->GetDuration() < 0 && !GetBase()->IsPassive() && !GetBase()->IsPermanent()))
         return;
 

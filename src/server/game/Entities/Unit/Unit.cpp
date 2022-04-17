@@ -11459,6 +11459,15 @@ void Unit::SetMeleeAnimKitId(uint16 animKitId)
         if (Player* killerPlayer = attacker->GetCharmerOrOwnerPlayerOrPlayerItself())
             killerPlayer->UpdateCriteria(CriteriaType::DeliveredKillingBlow, 1, 0, 0, victim);
 
+    if (creature)
+    {
+        if (InstanceScript* instanceScript = creature->GetInstanceScript())
+        {
+            //instanceScript->OnCreatureKilledBy(creature, attacker);
+            instanceScript->CreatureDiesForScript(creature, attacker);
+        }
+    }
+
     if (!skipSettingDeathState)
     {
         TC_LOG_DEBUG("entities.unit", "SET JUST_DIED");
@@ -11509,6 +11518,9 @@ void Unit::SetMeleeAnimKitId(uint16 animKitId)
             plrVictim->CombatStopWithPets(true);
             plrVictim->DuelComplete(DUEL_INTERRUPTED);
         }
+
+        if (InstanceScript* script = plrVictim->GetInstanceScript())
+            script->OnPlayerDiesForScript(plrVictim);
 
         plrVictim->SendClearLossOfControl();
     }
@@ -11937,6 +11949,9 @@ bool Unit::SetCharmedBy(Unit* charmer, CharmType type, AuraApplication const* au
     // Set charmed
     charmer->SetCharm(this, true);
 
+    if (GetZoneScript())
+        GetZoneScript()->OnUnitCharmed(this, charmer);
+
     if (Player* player = ToPlayer())
     {
         if (player->isAFK())
@@ -12056,6 +12071,9 @@ void Unit::RemoveCharmedBy(Unit* charmer)
 
     ///@todo Handle SLOT_IDLE motion resume
     GetMotionMaster()->InitializeDefault();
+
+    if (GetZoneScript())
+        GetZoneScript()->OnUnitRemoveCharmed(this, charmer);
 
     // Vehicle should not attack its passenger after he exists the seat
     if (type != CHARM_TYPE_VEHICLE)

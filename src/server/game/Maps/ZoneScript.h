@@ -47,6 +47,16 @@ class TC_GAME_API ZoneScript
         virtual void OnGameObjectCreate(GameObject* ) { }
         virtual void OnGameObjectRemove(GameObject* ) { }
 
+        virtual void OnCreatureCreateForScript(Creature* /*creature*/) {}
+        virtual void OnCreatureRemoveForScript(Creature* /*creature*/) {}
+        virtual void OnCreatureUpdateDifficulty(Creature* /*creature*/) {}
+        virtual void EnterCombatForScript(Creature* /*creature*/, Unit* /*enemy*/) {}
+        virtual void CreatureDiesForScript(Creature* /*creature*/, Unit* /*killer*/) {}
+        virtual void OnGameObjectCreateForScript(GameObject* /*go*/) {}
+        virtual void OnGameObjectRemoveForScript(GameObject* /*go*/) {}
+        virtual void OnUnitCharmed(Unit* /*unit*/, Unit* /*charmer*/) {}
+        virtual void OnUnitRemoveCharmed(Unit* /*unit*/, Unit* /*charmer*/) {}
+
         virtual void OnUnitDeath(Unit*) { }
 
         //All-purpose data storage ObjectGuid

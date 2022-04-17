@@ -57,6 +57,7 @@
 #include "World.h"
 #include "WorldSession.h"
 #include <sstream>
+#include "ChallengeMode.h"
 
 #include "Hacks/boost_1_74_fibonacci_heap.h"
 BOOST_1_74_FIBONACCI_HEAP_MSVC_COMPILE_FIX(RespawnListContainer::value_type)
@@ -4101,7 +4102,10 @@ bool InstanceMap::AddPlayerToMap(Player* player, bool initPlayer /*= true*/)
     Map::AddPlayerToMap(player, initPlayer);
 
     if (i_data)
+    {
         i_data->OnPlayerEnter(player);
+        i_data->OnPlayerEnterForScript(player);
+    }
 
     if (i_scenario)
         i_scenario->OnPlayerEnter(player);
@@ -4115,8 +4119,11 @@ void InstanceMap::Update(uint32 t_diff)
 
     if (i_data)
     {
+        i_data->UpdateOperations(t_diff);
         i_data->Update(t_diff);
         i_data->UpdateCombatResurrection(t_diff);
+        if (i_data->GetChallenge())
+            i_data->GetChallenge()->Update(t_diff);
     }
 
     if (i_scenario)
@@ -4128,7 +4135,10 @@ void InstanceMap::RemovePlayerFromMap(Player* player, bool remove)
     TC_LOG_DEBUG("maps", "MAP: Removing player '%s' from instance '%u' of map '%s' before relocating to another map", player->GetName().c_str(), GetInstanceId(), GetMapName());
 
     if (i_data)
+    {
         i_data->OnPlayerLeave(player);
+        i_data->OnPlayerLeaveForScript(player);
+    }
 
     // if last player set unload timer
     if (!m_unloadTimer && m_mapRefManager.getSize() == 1)

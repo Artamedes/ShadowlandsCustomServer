@@ -22,6 +22,7 @@
 #include "InstanceSaveMgr.h"
 
 class GarrisonMap;
+struct LFGDungeonsEntry;
 
 class TC_GAME_API MapInstanced : public Map
 {
@@ -55,7 +56,7 @@ class TC_GAME_API MapInstanced : public Map
         virtual void InitVisibilityDistance() override;
 
     private:
-        InstanceMap* CreateInstance(uint32 InstanceId, InstanceSave* save, Difficulty difficulty, TeamId team);
+        InstanceMap* CreateInstance(uint32 InstanceId, InstanceSave* save, Difficulty difficulty, TeamId team, LFGDungeonsEntry const* dungeonEntry);
         BattlegroundMap* CreateBattleground(uint32 InstanceId, Battleground* bg);
         GarrisonMap* CreateGarrison(uint32 instanceId, Player* owner);
 
