@@ -347,6 +347,19 @@ struct npc_juno_700006 : public ScriptedAI
                 Conversation::CreateConversation(700302, player, *player, player->GetGUID());
         }
 
+
+        bool CanSeeOrDetect(WorldObject const* who) const override
+        {
+            if (who->IsPlayer())
+            {
+                auto player = who->ToPlayer();
+                if (player->GetQuestStatus(700036) == QUEST_STATUS_REWARDED)
+                    return false;
+            }
+
+            return true;
+        }
+
         void OnUnitRelocation(Unit* p_Who) override
         {
             if (p_Who->IsPlayer())

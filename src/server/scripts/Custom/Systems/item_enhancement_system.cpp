@@ -135,7 +135,10 @@ class item_enhancement_system_playerscript : public PlayerScript
             {
                 if (player->GetQuestStatus(699999) == QUEST_STATUS_NONE)
                 {
-                    player->SetQuestStatus(699999, QuestStatus::QUEST_STATUS_REWARDED, false);
+                    //player->SetQuestStatus(699999, QuestStatus::QUEST_STATUS_REWARDED, false);
+                    auto q = sObjectMgr->GetQuestTemplate(699999);
+                    player->AddQuest(q, player);
+                    player->RewardQuest(q, LootItemType::Item, 0, player, false);
                     Conversation::CreateConversation(700013, player, *player, player->GetGUID());
                 }
             }

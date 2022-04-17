@@ -45,6 +45,7 @@ void AddSC_DailyRewardsSystem();
 void AddSC_Torghast();
 void AddSC_StabilityTest();
 void AddSC_MawFinale();
+void AddSC_TheUnderrot();
 
 void AddCustomScripts()
 {
@@ -74,4 +75,5 @@ void AddCustomScripts()
     AddSC_Torghast();
     AddSC_StabilityTest();
     AddSC_MawFinale();
+    AddSC_TheUnderrot();
 }

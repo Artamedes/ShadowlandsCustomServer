@@ -54,7 +54,7 @@ public:
                 return;
 
             m_DidIntro = true;
-            who->GetMotionMaster()->MoveSmoothPath(0, playerWalkPos, 2, true);
+            //who->GetMotionMaster()->MoveSmoothPath(0, playerWalkPos, 2, true);
             Talk(0);
              
             scheduler.Schedule(10s, [this](TaskContext context)
@@ -100,14 +100,22 @@ struct npc_helya_mawfinale : public ScriptedAI
 
         enum Helya
         {
-            CorrossiveNova = 228872, // Spam cast this if we not in melee
-            CorruptedBreath = 228565, // Frontal cone, needs to be scripted.
-            Decay = 228127, // Put this on all players on combat i guess.
-            Torrent = 368452,
-            HelyasBoon = 356897, // Summons a tentacle, Needs to be scripted and tentacle shouldnt move
-            ArcaneticDestruction = 277281, // Cast betwene random times
-            SolarDestruction = 277279, // Same with this.
-            NaturalDestruction = 277277, // here as well
+            CorrossiveNova        = 228872, // Spam cast this if we not in melee
+            CorruptedBreath       = 228565, // Frontal cone, needs to be scripted.
+            Decay                 = 228127, // Put this on all players on combat i guess.
+            Torrent               = 368452,
+            HelyasBoon            = 356897, // Summons a tentacle, Needs to be scripted and tentacle shouldnt move
+            ArcaneticDestruction  = 277281, // Cast betwene random times
+            SolarDestruction      = 277279, // Same with this.
+            NaturalDestruction    = 277277, // here as well
+
+
+            EventCorruptedBreath = 1,
+            EventTorrent,
+            EventHelyasBoon,
+            EventDestruction,
+            EventSolarDestruction,
+            EventNaturalDestruction,
         };
 
         void InitializeAI() override
@@ -137,8 +145,13 @@ struct npc_helya_mawfinale : public ScriptedAI
             me->SetReactState(REACT_AGGRESSIVE);
             Talk(2);
             DoCastAOE(Decay);
+            events.ScheduleEvent(EventCorruptedBreath, 10s, 15s);
+            events.ScheduleEvent(EventHelyasBoon, 30s);
+            events.ScheduleEvent(EventDestruction, 20s);
+            canMelee = true;
         }
 
+        bool canMelee = false;
 
         void UpdateAI(uint32 diff) override
         {
@@ -146,6 +159,8 @@ struct npc_helya_mawfinale : public ScriptedAI
 
             if (!UpdateVictim())
                 return;
+
+            events.Update(diff);
 
             if (me->HasUnitState(UNIT_STATE_CASTING))
                 return;
@@ -157,14 +172,107 @@ struct npc_helya_mawfinale : public ScriptedAI
                 return;
             }
 
+            if (uint32 eventId = events.ExecuteEvent())
+            {
+                switch (eventId)
+                {
+                    case EventCorruptedBreath:
+                        DoCastVictim(CorruptedBreath);
+                        events.Repeat(30s);
+                        break;
+                    case EventTorrent:
+                        DoCastAOE(Torrent);
+                        events.Repeat(20s);
+                        break;
+                    case EventHelyasBoon:
+                        DoCastVictim(HelyasBoon);
+                        events.Repeat(30s, 45s);
+                        break;
+                    case EventDestruction:
+                        canMelee = false;
+                        DoCastVictim(ArcaneticDestruction);
+                        events.ScheduleEvent(EventSolarDestruction, 3s);
+                        events.Repeat(40s);
+                        break;
+                    case EventSolarDestruction:
+                        DoCastVictim(SolarDestruction);
+                        events.ScheduleEvent(EventNaturalDestruction, 3s);
+                        break;
+                    case EventNaturalDestruction:
+                        DoCastVictim(NaturalDestruction);
+                        canMelee = true;
+                        break;
+                }
+            }
+
             DoMeleeAttackIfReady();
         }
 
         TaskScheduler scheduler;
+        EventMap events;
+};
+
+// 180331
+struct npc_helyas_boon : public ScriptedAI
+{
+public:
+    npc_helyas_boon(Creature* creature) : ScriptedAI(creature) { }
+
+    void InitializeAI()
+    {
+        SetCombatMovement(false);
+        me->SetControlled(true, UnitState::UNIT_STATE_ROOT);
+    }
+
+    void UpdateAI(uint32 diff) override
+    {
+        if (!UpdateVictim())
+            return;
+
+        if (!me->HasUnitState(UNIT_STATE_CASTING))
+            DoCastAOE(356886); // Smash
+
+        DoMeleeAttackIfReady();
+    }
+
+    void IsSummonedBy(WorldObject* who) override
+    {
+        if (!who)
+            return;
+        auto unit = who->ToUnit();
+        if (!unit)
+            return;
+
+        me->SetLevel(unit->GetLevel());
+        me->SetFaction(unit->GetFaction());
+        if (unit->GetVictim())
+            AttackStart(unit->GetVictim());
+        me->SetMaxHealth(250000);
+        me->SetFullHealth();
+    }
+
+    void DamageDealt(Unit* victim, uint32& damage, DamageEffectType type, SpellInfo const* spellInfo /*= nullptr*/) override
+    {
+        if (spellInfo)
+        {
+            if (spellInfo->Id == 356886)
+                damage = 30000;
+        }
+    }
+};
+
+struct instance_mawfinale : public CustomInstanceScript
+{
+public:
+    instance_mawfinale(InstanceMap* map) : CustomInstanceScript(map)
+    {
+    }
 };
 
 void AddSC_MawFinale()
 {
     RegisterCreatureAI(npc_juno_mawfinale);
     RegisterCreatureAI(npc_helya_mawfinale);
+    RegisterCreatureAI(npc_helyas_boon);
+    RegisterInstanceScript(instance_mawfinale, 1277);
 }

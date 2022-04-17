@@ -56,6 +56,7 @@
 #include "Vehicle.h"
 #include "VMapManager2.h"
 #include "World.h"
+#include "CreatureAI.h"
 #include "ScriptMgr.h"
 #include <G3D/Vector3.h>
 #include <sstream>
@@ -1459,6 +1460,24 @@ bool WorldObject::CanSeeOrDetect(WorldObject const* obj, bool ignoreStealth, boo
 
     if (obj->IsNeverVisibleFor(this) || CanNeverSee(obj))
         return false;
+
+    if (auto creature = ToCreature())
+    {
+        if (auto ai = creature->AI())
+        {
+            if (!ai->CanSeeOrDetect(obj))
+                return false;
+        }
+    }
+
+    if (auto creature = obj->ToCreature())
+    {
+        if (auto ai = creature->AI())
+        {
+            if (!ai->CanSeeOrDetect(this))
+                return false;
+        }
+    }
 
     if (obj->IsAlwaysVisibleFor(this) || CanAlwaysSee(obj))
         return true;

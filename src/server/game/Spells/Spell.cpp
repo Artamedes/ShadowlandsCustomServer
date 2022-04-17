@@ -3364,7 +3364,7 @@ SpellCastResult Spell::prepare(SpellCastTargets const& targets, AuraEffect const
         bool const focusTarget = !m_spellInfo->IsChanneled() && !(_triggeredCastFlags & TRIGGERED_IGNORE_SET_FACING);
         if (focusTarget && m_targets.GetObjectTarget() && m_caster != m_targets.GetObjectTarget())
             m_caster->ToCreature()->SetSpellFocus(this, m_targets.GetObjectTarget());
-        else
+        else if (!m_spellInfo->CasterCanTurnDuringCast())
             m_caster->ToCreature()->SetSpellFocus(this, nullptr);
     }
 
@@ -3613,10 +3613,11 @@ void Spell::_cast(bool skipCheck)
         }
     }
     // The spell focusing is making sure that we have a valid cast target guid when we need it so only check for a guid value here.
-    if (Creature* creatureCaster = m_caster->ToCreature())
-        if (!creatureCaster->GetTarget().IsEmpty() && !creatureCaster->HasUnitFlag(UNIT_FLAG_POSSESSED))
-            if (WorldObject const* target = ObjectAccessor::GetUnit(*creatureCaster, creatureCaster->GetTarget()))
-                creatureCaster->SetInFront(target);
+    if (m_spellInfo->CasterCanTurnDuringCast())
+        if (Creature* creatureCaster = m_caster->ToCreature())
+            if (!creatureCaster->GetTarget().IsEmpty() && !creatureCaster->HasUnitFlag(UNIT_FLAG_POSSESSED))
+                if (WorldObject const* target = ObjectAccessor::GetUnit(*creatureCaster, creatureCaster->GetTarget()))
+                    creatureCaster->SetInFront(target);
 
     SelectSpellTargets();
 
