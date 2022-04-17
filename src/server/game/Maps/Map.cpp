@@ -4080,9 +4080,13 @@ bool InstanceMap::AddPlayerToMap(Player* player, bool initPlayer /*= true*/)
                     // set up a solo bind or continue using it
                     if (!playerBind)
                         player->BindToInstance(mapSave, false);
-                    else
+                    else if (playerBind->save != mapSave && GetEntry()->ExpansionID <= EXPANSION_WARLORDS_OF_DRAENOR)
+                    {
                         // cannot jump to a different instance without resetting it
-                        ASSERT(playerBind->save == mapSave);
+                        if (mapSave && playerBind->save)
+                            TC_LOG_ERROR("maps", "InstanceMap::Add: player %s(%d) is permanently bound to instance %d, %d, %d, %d, %d, %d but he is being put into instance %d, %d, %d, %d, %d, %d", player->GetName(), player->GetGUID().GetCounter(), playerBind->save->GetMapId(), playerBind->save->GetInstanceId(), playerBind->save->GetDifficultyID(), playerBind->save->GetPlayerCount(), playerBind->save->GetGroupCount(), playerBind->save->CanReset(), mapSave->GetMapId(), mapSave->GetInstanceId(), mapSave->GetDifficultyID(), mapSave->GetPlayerCount(), mapSave->GetGroupCount(), mapSave->CanReset());
+                        return false;
+                    }
                 }
             }
         }
