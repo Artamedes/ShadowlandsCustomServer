@@ -310,7 +310,7 @@ namespace WorldPackets
         class ChangePlayerDifficultyResult final : public ServerPacket
         {
         public:
-            ChangePlayerDifficultyResult(uint32 type = 0) : ServerPacket(SMSG_CHANGE_PLAYER_DIFFICULTY_RESULT, 16+4+4+4+4+1+1) { }
+            ChangePlayerDifficultyResult() : ServerPacket(SMSG_CHANGE_PLAYER_DIFFICULTY_RESULT, 16+4+4+4+4+1+1) { }
 
             WorldPacket const* Write() override;
 

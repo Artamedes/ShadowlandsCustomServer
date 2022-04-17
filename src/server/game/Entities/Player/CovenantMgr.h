@@ -114,8 +114,8 @@ class TC_GAME_API Covenant
 
         void SetSoulbind(SoulbindID soulbind, bool sendPacket = false);
         void SetRenown(int32 renown, bool modCurr = true);
-        void SetAnima(uint32 anima, bool modCurr = true);
-        void SetSouls(uint32 souls, bool modCurr = true);
+        void SetAnima(uint32 anima, bool modCurr = true, bool inital = false);
+        void SetSouls(uint32 souls, bool modCurr = true, bool inital = false);
 
         void AddAnima(uint32 anima);
 

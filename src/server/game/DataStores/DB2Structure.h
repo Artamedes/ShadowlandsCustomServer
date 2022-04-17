@@ -551,6 +551,13 @@ struct Cfg_RegionsEntry
     uint32 ChallengeOrigin;
 };
 
+struct CharBaseInfoEntry
+{
+    uint32 ID;
+    int8 RaceID;
+    int8 ClassID;
+};
+
 struct CharTitlesEntry
 {
     uint32 ID;

@@ -76,18 +76,18 @@ void Covenant::SetRenown(int32 renown, bool /*modCurr = true*/)
     }
 }
 
-void Covenant::SetAnima(uint32 anima, bool modCurr /*= true*/)
+void Covenant::SetAnima(uint32 anima, bool modCurr /*= true*/, bool inital)
 {
     _anima = anima;
     if (IsActiveCovenant() && modCurr)
-        _player->ModifyCurrency(1813, anima, true, false, true);
+        _player->ModifyCurrency(1813, anima, !inital, false, true);
 }
 
-void Covenant::SetSouls(uint32 souls, bool modCurr /*= true*/)
+void Covenant::SetSouls(uint32 souls, bool modCurr /*= true*/, bool inital)
 {
     _souls = souls;
     if (IsActiveCovenant() && modCurr)
-        _player->ModifyCurrency(1810, souls, true, false, true);
+        _player->ModifyCurrency(1810, souls, !inital, false, true);
 }
 
 void Covenant::AddAnima(uint32 anima)
@@ -98,8 +98,8 @@ void Covenant::AddAnima(uint32 anima)
 void Covenant::InitializeCovenant()
 {
     SetRenown(_renownLevel);
-    SetAnima(_anima);
-    SetSouls(_souls);
+    SetAnima(_anima, true, true);
+    SetSouls(_souls, true, true);
 
     _player->CompletedAchievement(sAchievementStore.LookupEntry(15247));
     _player->CompletedAchievement(sAchievementStore.LookupEntry(15248));
