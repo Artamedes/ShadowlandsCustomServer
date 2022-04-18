@@ -5256,6 +5256,48 @@ class spell_monk_chi_torpedo : public SpellScript
     }
 };
 
+// 325216
+class spell_monk_bonedust_brew : public AuraScript
+{
+    PrepareAuraScript(spell_monk_bonedust_brew);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        if (DamageInfo* damageInfo = eventInfo.GetDamageInfo())
+        {
+            if (damageInfo->GetDamage())
+                return true;
+        }
+        return false;
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (DamageInfo* damageInfo = eventInfo.GetDamageInfo())
+        {
+            if (Unit* target = eventInfo.GetActionTarget())
+            {
+                if (auto caster = GetCaster())
+                {
+                    auto damage = damageInfo->GetDamage() * 0.5;
+                    SpellNonMeleeDamage* damageLog = new SpellNonMeleeDamage(caster, target, GetSpellInfo(), { GetSpellInfo()->GetSpellXSpellVisualId(), 0 }, GetSpellInfo()->GetSchoolMask());
+                    damageLog->damage = damage;
+                    caster->CalculateSpellDamageTaken(damageLog, damageLog->damage, GetSpellInfo());
+                    caster->DealDamageMods(caster, target, damageLog->damage, &damageLog->absorb);
+                    caster->SendSpellNonMeleeDamageLog(damageLog);
+                    caster->DealDamage(caster, target, damage);
+                }
+            }
+        }
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_monk_bonedust_brew::CheckProc);
+        AfterProc += AuraProcFn(spell_monk_bonedust_brew::HandleProc);
+    }
+};
+
 void AddSC_monk_spell_scripts()
 {
     new spell_monk_black_ox_brew();
@@ -5356,6 +5398,7 @@ void AddSC_monk_spell_scripts()
     RegisterSpellScript(spell_monk_chi_torpedo);
     RegisterSpellScript(aura_monk_teachings_of_the_monastery);
     RegisterSpellScript(aura_monk_teachings_of_the_monastery_buff);
+    RegisterSpellScript(spell_monk_bonedust_brew);
 
     RegisterCreatureAI(npc_monk_sef_spirit);
     RegisterCreatureAI(npc_monk_xuen);
