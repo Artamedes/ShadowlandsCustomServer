@@ -291,10 +291,10 @@ protected:
     void RemoveCriteriaProgress(Criteria const* criteria);
     virtual void SendCriteriaProgressRemoved(uint32 criteriaId) = 0;
 
-    bool IsCompletedCriteriaTree(CriteriaTree const* tree);
+    bool IsCompletedCriteriaTree(CriteriaTree const* tree, Player* referencePlayer);
     virtual bool CanUpdateCriteriaTree(Criteria const* criteria, CriteriaTree const* tree, Player* referencePlayer) const;
     virtual bool CanCompleteCriteriaTree(CriteriaTree const* tree);
-    virtual void CompletedCriteriaTree(CriteriaTree const* tree, Player* referencePlayer) = 0;
+    virtual void CompletedCriteriaTree(CriteriaTree const* tree, Player* referencePlayer);
     virtual void AfterCriteriaTreeUpdate(CriteriaTree const* /*tree*/, Player* /*referencePlayer*/) { }
 
     bool IsCompletedCriteria(Criteria const* criteria, uint64 requiredAmount);
@@ -312,6 +312,7 @@ protected:
     virtual CriteriaList const& GetCriteriaByType(CriteriaType type, uint32 asset) const = 0;
 
     CriteriaProgressMap _criteriaProgress;
+    std::set<uint32> _completedCriteriaTree;
     std::map<uint32, uint32 /*ms time left*/> _timeCriteriaTrees;
 };
 

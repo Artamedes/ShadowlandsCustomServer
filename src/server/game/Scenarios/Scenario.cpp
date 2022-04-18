@@ -17,6 +17,8 @@
 
 #include "Scenario.h"
 #include "InstanceSaveMgr.h"
+#include "InstanceScenario.h"
+#include "InstanceScript.h"
 #include "Log.h"
 #include "ObjectAccessor.h"
 #include "ObjectMgr.h"
@@ -35,6 +37,8 @@ Scenario::Scenario(ScenarioData const* scenarioData) : _data(scenarioData), _cur
         SetStep(step);
     else
         TC_LOG_ERROR("scenario", "Scenario::Scenario: Could not launch Scenario (id: %u), found no valid scenario step", _data->Entry->ID);
+
+    _scenarioType = SCENARIO_INSTANCE_TYPE_SCENARIO;
 }
 
 Scenario::~Scenario()
@@ -78,13 +82,22 @@ void Scenario::CompleteStep(ScenarioStepEntry const* step)
     SetStep(newStep);
     if (IsComplete())
         CompleteScenario();
-    else
+    else if (!newStep)
         TC_LOG_ERROR("scenario", "Scenario::CompleteStep: Scenario (id: %u, step: %u) was completed, but could not determine new step, or validate scenario completion.", step->ScenarioID, step->ID);
 }
 
 void Scenario::CompleteScenario()
 {
-    return SendPacket(WorldPackets::Scenario::ScenarioCompleted(_data->Entry->ID).Write());
+    SendPacket(WorldPackets::Scenario::ScenarioCompleted(_data->Entry->ID).Write());
+
+    for (ObjectGuid guid : _players)
+    {
+        if (Player* player = ObjectAccessor::FindPlayer(guid))
+        {
+            player->UpdateCriteria(CriteriaType::CompleteScenario, GetEntry()->ID, 1);
+            player->UpdateCriteria(CriteriaType::CompleteAnyScenario, 1);
+        }
+    }
 }
 
 void Scenario::SetStep(ScenarioStepEntry const* step)
@@ -185,26 +198,45 @@ bool Scenario::CanUpdateCriteriaTree(Criteria const * /*criteria*/, CriteriaTree
 
 bool Scenario::CanCompleteCriteriaTree(CriteriaTree const* tree)
 {
-    ScenarioStepEntry const* step = ASSERT_NOTNULL(tree->ScenarioStep);
-    ScenarioStepState const state = GetStepState(step);
-    if (state == SCENARIO_STEP_DONE)
+    ScenarioStepEntry const* step = tree->ScenarioStep;
+    if (!step)
         return false;
 
-    ScenarioStepEntry const* currentStep = GetStep();
-    if (!currentStep)
+    if (step->ScenarioID != _data->Entry->ID)
         return false;
 
     if (!step->IsBonusObjective())
-        if (step != currentStep)
-            return false;
+        return !IsComplete();
 
-    return CriteriaHandler::CanCompleteCriteriaTree(tree);
+    if (step != GetStep())
+        return false;
+
+    // does this always return true?
+    //return CriteriaHandler::CanCompleteCriteriaTree(tree);
+    return true;
 }
 
-void Scenario::CompletedCriteriaTree(CriteriaTree const* tree, Player* /*referencePlayer*/)
+void Scenario::CompletedCriteriaTree(CriteriaTree const* tree, Player* referencePlayer)
 {
-    ScenarioStepEntry const* step = ASSERT_NOTNULL(tree->ScenarioStep);
-    if (!IsCompletedStep(step))
+    CriteriaHandler::CompletedCriteriaTree(tree, referencePlayer);
+
+    if (InstanceScenario* instanceScenario = ToInstanceScenario())
+        if (InstanceMap* instanceMap = instanceScenario->GetMap()->ToInstanceMap())
+            if (InstanceScript* instanceScript = instanceMap->GetInstanceScript())
+                instanceScript->OnCompletedCriteriaTree(tree);
+
+    ScenarioStepEntry const* step = tree->ScenarioStep;
+    if (!step)
+        return;
+
+    // Do not complete if it's a sub-tree
+    if (step->Criteriatreeid != tree->ID)
+        return;
+
+    if (!step->IsBonusObjective() && step != GetStep())
+        return;
+
+    if (GetStepState(step) == SCENARIO_STEP_DONE)
         return;
 
     SetStepState(step, SCENARIO_STEP_DONE);
@@ -217,7 +249,7 @@ bool Scenario::IsCompletedStep(ScenarioStepEntry const* step)
     if (!tree)
         return false;
 
-    return IsCompletedCriteriaTree(tree);
+    return IsCompletedCriteriaTree(tree, nullptr);
 }
 
 void Scenario::SendPacket(WorldPacket const* data) const
@@ -344,4 +376,16 @@ void Scenario::SendBootPlayer(Player* player)
     WorldPackets::Scenario::ScenarioVacate scenarioBoot;
     scenarioBoot.ScenarioID = _data->Entry->ID;
     player->SendDirectMessage(scenarioBoot.Write());
+}
+
+void Scenario::SendScenarioEvent(Player* player, uint32 eventId)
+{
+    UpdateCriteria(CriteriaType::AnyoneTriggerGameEventScenario, eventId, 0, 0, nullptr, player);
+}
+
+void Scenario::SendScenarioEventToPlayers(uint32 eventId)
+{
+    for (ObjectGuid guid : _players)
+        if (Player* player = ObjectAccessor::FindPlayer(guid))
+            CriteriaHandler::UpdateCriteria(CriteriaType::AnyoneTriggerGameEventScenario, eventId, 0, 0, nullptr, player);
 }

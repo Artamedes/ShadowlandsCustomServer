@@ -107,7 +107,7 @@ private:
 public:
     static ScenarioMgr* Instance();
 
-    InstanceScenario* CreateInstanceScenario(Map const* map, TeamId team, LFGDungeonsEntry const* dungeonEntry) const;
+    InstanceScenario* CreateInstanceScenario(Map* map, TeamId team, LFGDungeonsEntry const* dungeonEntry) const;
 
     void LoadDBData();
     void LoadDB2Data();

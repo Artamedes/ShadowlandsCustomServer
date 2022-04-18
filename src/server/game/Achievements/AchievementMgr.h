@@ -65,7 +65,7 @@ protected:
     void CompletedCriteriaTree(CriteriaTree const* tree, Player* referencePlayer) override;
     void AfterCriteriaTreeUpdate(CriteriaTree const* tree, Player* referencePlayer) override;
 
-    bool IsCompletedAchievement(AchievementEntry const* entry);
+    bool IsCompletedAchievement(AchievementEntry const* entry, Player* referencePlayer);
 
     bool RequiredAchievementSatisfied(uint32 achievementId) const override;
 

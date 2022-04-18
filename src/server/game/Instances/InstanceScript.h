@@ -41,6 +41,7 @@ class Unit;
 class TempSummon;
 class Challenge;
 struct InstanceSpawnGroupInfo;
+struct CriteriaTree;
 enum class CriteriaType : uint8;
 enum class CriteriaStartEvent : uint8;
 enum EncounterCreditType : uint8;
@@ -255,6 +256,8 @@ class TC_GAME_API InstanceScript : public ZoneScript
         virtual void OnPlayerEnter(Player* /*player*/) { }
         // Called when a player successfully leaves the instance.
         virtual void OnPlayerLeave(Player* /*player*/) { }
+
+        virtual void OnCompletedCriteriaTree(CriteriaTree const* /*tree*/) { }
 
         // Handle open / close objects
         // * use HandleGameObject(0, boolen, GO); in OnObjectCreate in instance scripts

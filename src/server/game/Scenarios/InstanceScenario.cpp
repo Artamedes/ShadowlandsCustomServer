@@ -16,15 +16,20 @@
  */
 
 #include "InstanceScenario.h"
+#include "ChallengeMode.h"
+#include "ChallengeModeMgr.h"
 #include "DatabaseEnv.h"
 #include "DB2Stores.h"
 #include "GameTime.h"
+#include "Group.h"
 #include "InstanceSaveMgr.h"
+#include "InstanceScript.h"
 #include "Log.h"
 #include "Map.h"
+#include "ObjectMgr.h"
 #include "Player.h"
 
-InstanceScenario::InstanceScenario(Map const* map, ScenarioData const* scenarioData) : Scenario(scenarioData), _map(map)
+InstanceScenario::InstanceScenario(Map* map, ScenarioData const* scenarioData) : Scenario(scenarioData), _map(map)
 {
     ASSERT(_map);
     LoadInstanceData(_map->GetInstanceId());
@@ -33,6 +38,8 @@ InstanceScenario::InstanceScenario(Map const* map, ScenarioData const* scenarioD
     for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
         if (Player* player = itr->GetSource()->ToPlayer())
             SendScenarioState(player);
+
+    _scenarioType = SCENARIO_INSTANCE_TYPE_INSTANCE_SCENARIO;
 }
 
 void InstanceScenario::SaveToDB()
@@ -62,6 +69,7 @@ void InstanceScenario::SaveToDB()
         {
             // Blizzard only appears to store creature kills
             case CriteriaType::KillCreature:
+            case CriteriaType::DefeatDungeonEncounter:
                 break;
             default:
                 continue;
@@ -127,6 +135,7 @@ void InstanceScenario::LoadInstanceData(uint32 instanceId)
             {
                 // Blizzard appears to only stores creatures killed progress for unknown reasons. Either technical shortcoming or intentional
                 case CriteriaType::KillCreature:
+                case CriteriaType::DefeatDungeonEncounter:
                     break;
                 default:
                     continue;
@@ -148,10 +157,20 @@ void InstanceScenario::LoadInstanceData(uint32 instanceId)
             if (!step)
                 continue;
 
-            if (IsCompletedCriteriaTree(tree))
+            if (IsCompletedCriteriaTree(tree, nullptr))
                 SetStepState(step, SCENARIO_STEP_DONE);
         }
     }
+}
+
+void InstanceScenario::CompleteScenario()
+{
+    Scenario::CompleteScenario();
+
+    if (InstanceMap* instance = _map->ToInstanceMap())
+        if (InstanceScript* script = instance->GetInstanceScript())
+            if (Challenge* challenge = script->GetChallenge())
+                challenge->Complete();
 }
 
 std::string InstanceScenario::GetOwnerInfo() const
