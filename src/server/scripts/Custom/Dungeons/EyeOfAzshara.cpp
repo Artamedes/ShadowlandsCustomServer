@@ -468,6 +468,16 @@ public:
         DoMeleeAttackIfReady();
     }
 
+    bool didIntro = false;
+    void OnUnitRelocation(Unit* who) override
+    {
+        if (who->IsPlayer() && !didIntro && me->GetSpawnId() == 1054054 && who->GetDistance2d(me) <= 20.0f)
+        {
+            didIntro = true;
+            Talk(0);
+        }
+    }
+
 
     TaskScheduler scheduler;
     EventMap events;
