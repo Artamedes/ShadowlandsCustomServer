@@ -46,6 +46,7 @@ void AddSC_Torghast();
 void AddSC_StabilityTest();
 void AddSC_MawFinale();
 void AddSC_TheUnderrot();
+void AddSC_EyeOfAzshara();
 
 void AddCustomScripts()
 {
@@ -76,4 +77,5 @@ void AddCustomScripts()
     AddSC_StabilityTest();
     AddSC_MawFinale();
     AddSC_TheUnderrot();
+    AddSC_EyeOfAzshara();
 }
