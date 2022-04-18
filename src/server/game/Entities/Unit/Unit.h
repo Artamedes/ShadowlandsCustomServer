@@ -1864,6 +1864,9 @@ class TC_GAME_API Unit : public WorldObject
         void GainSpellComboPoints(int8 count);
         void ClearComboPoints();
 
+        // hack for monk spells
+        std::list<ObjectGuid> damagedTargets;
+
         ///----------Pet responses methods-----------------
         void SendPetActionFeedback(PetActionFeedback msg, uint32 spellId);
         void SendPetTalk(uint32 pettalk);

@@ -87,7 +87,13 @@ void GenericMovementGenerator::Finalize(Unit* owner, bool/* active*/, bool movem
 void GenericMovementGenerator::MovementInform(Unit* owner)
 {
     if (_arrivalSpellId)
-        owner->CastSpell(ObjectAccessor::GetUnit(*owner, _arrivalSpellTargetGuid), _arrivalSpellId, true);
+    {
+        // HACKFIX: Xuen Tiger Lust is cast on itself and NOT on the jump target.
+        if (_arrivalSpellId == 124009)
+            owner->CastSpell(owner, _arrivalSpellId, true);
+        else
+            owner->CastSpell(ObjectAccessor::GetUnit(*owner, _arrivalSpellTargetGuid), _arrivalSpellId, true);
+    }
 
     if (Creature* creature = owner->ToCreature())
     {

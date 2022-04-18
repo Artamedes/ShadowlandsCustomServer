@@ -257,9 +257,6 @@ enum StormEarthAndFireSpells
 
 #define MONK_TRANSCENDENCE_GUID "MONK_TRANSCENDENCE_GUID"
 
-uint8 chiWaveJumps = 0;
-std::list<ObjectGuid> damagedTargets;
-
 // 109132 - Roll
 class spell_monk_roll : public SpellScriptLoader
 {
@@ -487,7 +484,7 @@ class aura_monk_chi_wave_heal_missile : public AuraScript
 			return;
 
 		caster->CastSpell(target, SPELL_MONK_CHI_WAVE_HEAL, true);
-		if (chiWaveJumps < 7)
+		if (caster->Variables.GetValue("chiWaveJumps", 0) < 7)
 			caster->CastCustomSpell(SPELL_MONK_CHI_WAVE_SELECTOR, SPELLVALUE_BASE_POINT1, aurEff->GetAmount() - 1, target, true, NULL, aurEff);
 	}
 
@@ -544,7 +541,7 @@ class aura_monk_chi_wave_damage_missile : public AuraScript
 			return;
 
 		// rerun target selector
-		if (chiWaveJumps < 7)
+		if (caster->Variables.GetValue("chiWaveJumps", 0) < 7)
 			caster->CastCustomSpell(SPELL_MONK_CHI_WAVE_SELECTOR, SPELLVALUE_BASE_POINT1, aurEff->GetAmount() - 1, target, true, NULL, aurEff);
 	}
 
@@ -650,18 +647,20 @@ public:
 				return;
 
 			Unit* target = GetHitUnit();
+            int jumps = GetOriginalCaster()->Variables.GetValue("chiWaveJumps", 0);
 			if (m_shouldHeal)
 			{
-				chiWaveJumps++;
+				jumps++;
 				GetExplTargetUnit()->SendPlaySpellVisual(target->GetGUID(), 38379, 0, 0, 20);
 				GetExplTargetUnit()->CastCustomSpell(SPELL_MONK_CHI_WAVE_HEALING_BOLT, SPELLVALUE_BASE_POINT1, GetEffectValue(), target, true, NULL, NULL, GetOriginalCaster()->GetGUID());
 			}
 			else
 			{
-				chiWaveJumps++;
+                jumps++;
 				GetExplTargetUnit()->SendPlaySpellVisual(target->GetGUID(), 38378, 0, 0, 20);
 				GetExplTargetUnit()->CastCustomSpell(SPELL_MONK_CHI_WAVE_DAMAGE_TARGET, SPELLVALUE_BASE_POINT1, GetEffectValue(), target, true, NULL, NULL, GetOriginalCaster()->GetGUID());
 			}
+            GetOriginalCaster()->Variables.Set("chiWaveJumps", jumps);
 		}
 
 		void Register() override
@@ -2344,7 +2343,7 @@ class spell_monk_chi_wave : public SpellScript
 		if (!target)
 			return;
 
-		chiWaveJumps = 0;
+        caster->Variables.Remove("chiWaveJumps");
 		if (caster->IsFriendlyTo(target))
 		{
 			caster->SendPlaySpellVisual(target->GetGUID(), 38379, 0, 0, 20);
@@ -2720,13 +2719,12 @@ public:
 
             if (caster->HasAura(SPELL_MONK_CYCLONE_STRIKES_AURA))
             {
-                // Check if the target is in the list.
-                for (ObjectGuid guid : damagedTargets)
+                for (ObjectGuid guid : caster->damagedTargets)
                     if (guid == target->GetGUID())
                         return;
 
                 // Target is not in the list, push the target
-                damagedTargets.push_back(target->GetGUID());
+                caster->damagedTargets.push_back(target->GetGUID());
 
                 uint32 currentDuration = 0;
                 if (Aura* aura = caster->GetAura(SPELL_MONK_CYCLONE_STRIKES))
@@ -3503,7 +3501,6 @@ struct npc_monk_sef_spirit : public ScriptedAI
 
         if (!follow)
         {            
-            me->GetMotionMaster()->Clear();
             me->GetMotionMaster()->MoveFollow(owner, PET_FOLLOW_DIST, me->GetEntry() == NPC_FIRE_SPIRIT ? me->GetFollowAngle() + (float)M_PI : me->GetFollowAngle(), MovementSlot::MOTION_SLOT_ACTIVE);
         }
     }
@@ -3563,16 +3560,13 @@ struct npc_monk_sef_spirit : public ScriptedAI
         if (!owner)
             return;
 
-        if (!attackTarget)
-            return;
-
         if (me->HasUnitState(UNIT_STATE_CASTING) || owner->HasUnitState(UNIT_STATE_CASTING))
             return;
 
         Unit* target = GetTarget();
         if (target && owner->IsValidAttackTarget(target))
         {
-            me->GetAI()->AttackStart(target);
+            AttackStart(target);
             DoMeleeAttackIfReady();
             return;
         }
@@ -3584,14 +3578,12 @@ struct npc_monk_sef_spirit : public ScriptedAI
                 if (owner->IsValidAttackTarget(target))
                 {
                     targetGUID = target->GetGUID();
-                    me->GetAI()->AttackStart(target);
+                    AttackStart(target);
                     DoMeleeAttackIfReady();
                     return;
                 }
             }
         }
-
-        EnterEvadeMode(EVADE_REASON_NO_HOSTILES);
     }
 
 private:
@@ -3834,13 +3826,27 @@ struct npc_monk_xuen : public ScriptedAI
         if (!o || !o->IsPlayer())
             return;
 
-        auto owner = o->ToPlayer();
+        auto owner = o->ToPlayer(); 
 
         me->CastSpell(me, SPELL_MONK_XUEN_AURA, true);
         me->SetReactState(REACT_ASSIST);
-        if (Unit* victim = owner->GetVictim())
-            me->GetAI()->AttackStart(victim);
+        if (Unit* victim = ObjectAccessor::GetUnit(*me, owner->GetTarget()))
+            AttackStart(victim);
     }
+
+    void UpdateAI(uint32 diff) override
+    {
+        if (aoe <= 0)
+        {
+            aoe = 1000;
+            DoCastVictim(123996, CastSpellExtraArgs(true).SetOriginalCaster(me->GetOwnerGUID()));
+        }
+        else aoe -= diff;
+
+        DoMeleeAttackIfReady();
+    }
+
+    int32 aoe = 0;
 };
 
 class playerScript_monk_earth_fire_storm : public PlayerScript
@@ -4911,19 +4917,22 @@ class aura_monk_cyclone_strikes : public AuraScript
 
     bool CheckProc(ProcEventInfo& eventInfo)
     {
-        if (Unit* target = eventInfo.GetActionTarget())
-            if (eventInfo.GetSpellInfo() && (eventInfo.GetSpellInfo()->Id == SPELL_MONK_TIGER_PALM || eventInfo.GetSpellInfo()->Id == SPELL_MONK_BLACKOUT_KICK ||
-                eventInfo.GetSpellInfo()->Id == SPELL_MONK_RUSHING_JADE_WIND) && (eventInfo.GetDamageInfo() && eventInfo.GetDamageInfo()->GetDamageType() != NODAMAGE))
-            {
-                // Check if the target is in the list.
-                for (ObjectGuid guid : damagedTargets)
-                    if (guid == target->GetGUID())
-                        return false;
+        if (auto caster = GetCaster())
+        {
+            if (Unit* target = eventInfo.GetActionTarget())
+                if (eventInfo.GetSpellInfo() && (eventInfo.GetSpellInfo()->Id == SPELL_MONK_TIGER_PALM || eventInfo.GetSpellInfo()->Id == SPELL_MONK_BLACKOUT_KICK ||
+                    eventInfo.GetSpellInfo()->Id == SPELL_MONK_RUSHING_JADE_WIND) && (eventInfo.GetDamageInfo() && eventInfo.GetDamageInfo()->GetDamageType() != NODAMAGE))
+                {
+                    // Check if the target is in the list.
+                    for (ObjectGuid guid : caster->damagedTargets)
+                        if (guid == target->GetGUID())
+                            return false;
 
-                // Target is not in the list, push the target
-                damagedTargets.push_back(target->GetGUID());
-                return true;
-            }
+                    // Target is not in the list, push the target
+                    caster->damagedTargets.push_back(target->GetGUID());
+                    return true;
+                }
+        }
 
         return false;
     }
@@ -4959,7 +4968,8 @@ class aura_monk_cyclone_strikes_buff : public AuraScript
     void HandleRemove(const AuraEffect* /*aurEff*/, AuraEffectHandleModes /* mode */)
     {
         // Clear list.
-        damagedTargets.clear();
+        if (GetCaster())
+            GetCaster()->damagedTargets.clear();
     }
 
     void Register() override

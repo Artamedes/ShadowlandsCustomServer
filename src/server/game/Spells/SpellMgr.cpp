@@ -3290,6 +3290,15 @@ void SpellMgr::LoadSpellInfoCorrections()
 
     // Some spells have no amplitude set
     {
+	    // Storm, Earth, and Fire
+	    ApplySpellFix({ 137639 }, [](SpellInfo* spellInfo)
+	    {
+            ApplySpellEffectFix(spellInfo, EFFECT_4, [](SpellEffectInfo* spellEffectInfo)
+            {
+                spellEffectInfo->MiscValue = 0;
+            });
+	    });
+
         ApplySpellFix({
             6727,  // Poison Mushroom
             7331,  // Healing Aura (TEST) (Rank 1)
