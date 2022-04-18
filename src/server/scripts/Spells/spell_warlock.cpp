@@ -2538,42 +2538,40 @@ class spell_npc_warl_demonic_gateway_purple : public CreatureScript
 {
 public:
     spell_npc_warl_demonic_gateway_purple() : CreatureScript("spell_npc_warl_demonic_gateway_purple") { }
-    enum eNpc
-    {
-        DELAY_TO_INTERACT = 50
-    };
+
     struct spell_npc_warl_demonic_gateway_purpleAI : public CreatureAI
     {
-        spell_npc_warl_demonic_gateway_purpleAI(Creature* p_Creature) : CreatureAI(p_Creature) { Init(); }
+        spell_npc_warl_demonic_gateway_purpleAI(Creature* p_Creature) : CreatureAI(p_Creature) { }
 
-        EventMap m_events;
-        uint32 ready_to_jump;
+        TaskScheduler scheduler;
+        uint32 ready_to_jump = 0;
+
+        void IsSummonedBy(WorldObject* who) override
+        {
+            if (who)
+                me->SetOrientation(who->GetOrientation());
+        }
+
+        void InitializeAI()
+        {
+            me->SetControlled(true, UNIT_STATE_ROOT);
+            me->RemoveNpcFlag(UNIT_NPC_FLAG_SPELLCLICK);
+            me->CastSpell(me, eGatewaySpells::PortalVisual, true);
+            ready_to_jump = 0;
+
+            scheduler.Schedule(500ms, [this](TaskContext context)
+            {
+                ready_to_jump = 1;
+                me->SetInteractSpellID(eGatewaySpells::GatewayInteract);
+                me->SetUnitFlag(UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_REMOVE_CLIENT_CONTROL);
+                me->SetNpcFlag(UNIT_NPC_FLAG_SPELLCLICK);
+                me->SetReactState(ReactStates::REACT_PASSIVE);
+            });
+        }
 
         void UpdateAI(uint32 diff) override
         {
-            m_events.Update(diff);
-            while (uint32 eventId = m_events.ExecuteEvent())
-            {
-                switch (eventId)
-                {
-                case DELAY_TO_INTERACT:
-                {
-                    ready_to_jump = 1;
-                    me->SetInteractSpellID(eGatewaySpells::GatewayInteract);
-                    me->SetUnitFlag(UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_REMOVE_CLIENT_CONTROL);
-                    me->SetNpcFlag(UNIT_NPC_FLAG_SPELLCLICK);
-                    me->SetReactState(ReactStates::REACT_PASSIVE);
-                    break;
-                }
-                }
-            }
-        }
-        void Init()
-        {
-            me->SetControlled(true, UNIT_STATE_ROOT);
-            me->CastSpell(me, eGatewaySpells::PortalVisual, true);
-            ready_to_jump = 0;
-            m_events.ScheduleEvent(DELAY_TO_INTERACT, 500ms);
+            scheduler.Update(diff);
         }
 
         void OnSpellClick(Unit* p_Clicker, bool /*result*/) override
@@ -2587,6 +2585,9 @@ public:
 
             /// Can't use gates in control
             if (p_Clicker->IsFeared())
+                return;
+
+            if (ready_to_jump == 0)
                 return;
 
             Unit* l_Owner = me->GetOwner();
@@ -2648,41 +2649,40 @@ class spell_npc_warl_demonic_gateway_green : public CreatureScript
 {
 public:
     spell_npc_warl_demonic_gateway_green() : CreatureScript("spell_npc_warl_demonic_gateway_green") { }
-    enum eNpc
-    {
-        DELAY_TO_INTERACT = 50
-    };
+
     struct spell_npc_warl_demonic_gateway_greenAI : public CreatureAI
     {
-        spell_npc_warl_demonic_gateway_greenAI(Creature* p_Creature) : CreatureAI(p_Creature) { Init(); }
+        spell_npc_warl_demonic_gateway_greenAI(Creature* p_Creature) : CreatureAI(p_Creature) { }
 
-        EventMap m_events;
-        uint32 ready_to_jump;
+        TaskScheduler scheduler;
+        uint32 ready_to_jump = 0;
 
-        void UpdateAI(uint32 diff) override
+        void IsSummonedBy(WorldObject* who) override
         {
-            m_events.Update(diff);
-            while (uint32 eventId = m_events.ExecuteEvent())
-            {
-                switch (eventId)
-                {
-                case DELAY_TO_INTERACT:
+            if (who)
+                me->SetOrientation(who->GetOrientation());
+        }
+
+        void InitializeAI()
+        {
+            me->SetControlled(true, UNIT_STATE_ROOT);
+            me->RemoveNpcFlag(UNIT_NPC_FLAG_SPELLCLICK);
+            me->CastSpell(me, eGatewaySpells::PortalVisual, true);
+            ready_to_jump = 0;
+
+            scheduler.Schedule(500ms, [this](TaskContext context)
                 {
                     ready_to_jump = 1;
                     me->SetInteractSpellID(eGatewaySpells::GatewayInteract);
                     me->SetUnitFlag(UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_REMOVE_CLIENT_CONTROL);
                     me->SetNpcFlag(UNIT_NPC_FLAG_SPELLCLICK);
                     me->SetReactState(ReactStates::REACT_PASSIVE);
-                    break;
-                }
-                }
-            }
+                });
         }
-        void Init()
+
+        void UpdateAI(uint32 diff) override
         {
-            me->SetControlled(true, UNIT_STATE_ROOT);
-            ready_to_jump = 0;
-            m_events.ScheduleEvent(DELAY_TO_INTERACT, 500ms);
+            scheduler.Update(diff);
         }
 
         void OnSpellClick(Unit* p_Clicker, bool /*result*/) override
@@ -2695,6 +2695,9 @@ public:
 
             /// Can't use gates in control
             if (p_Clicker->IsFeared())
+                return;
+
+            if (ready_to_jump == 0)
                 return;
 
             Unit* l_Owner = me->GetOwner();
@@ -7409,6 +7412,12 @@ class aura_warl_drain_life : public AuraScript
 		return ValidateSpellInfo({ SPELL_WARLOCK_ROT_AND_DECAY });
 	}
 
+    enum SoulRot
+    {
+        SoulRotDrainLifeAura = 331623,
+        SoulRotDebuff = 325640,
+    };
+
 	void HandlePeriodic(AuraEffect const* /*aurEff*/)
 	{
 		Unit* caster = GetCaster();
@@ -7430,6 +7439,19 @@ class aura_warl_drain_life : public AuraScript
 			aura->ModDuration(sSpellMgr->GetSpellInfo(SPELL_WARLOCK_ROT_AND_DECAY)->GetEffect(EFFECT_0).BasePoints);
 		if (Aura* aura = owner->GetAura(SPELL_WARLOCK_AGONY, caster->GetGUID()))
 			aura->ModDuration(sSpellMgr->GetSpellInfo(SPELL_WARLOCK_ROT_AND_DECAY)->GetEffect(EFFECT_0).BasePoints);
+
+        // looks like need to make a system
+        //if (caster->HasAura(SoulRotDrainLifeAura))
+        //{
+        //    std::list<Unit*> extraTargets;
+        //    caster->GetAttackableUnitListInRange(extraTargets, 40.0f);
+        //    for (auto unit : extraTargets)
+        //    {
+        //        if (unit != owner)
+        //            if (unit->HasAura(SoulRotDebuff, caster->GetGUID()) && !unit->HasAura(GetSpellInfo()->Id, caster->GetGUID()))
+        //                caster->CastSpell(unit, GetSpellInfo()->Id, true);
+        //    }
+        //}
 	}
 
 	void Register()
@@ -7851,6 +7873,69 @@ class spell_curse_of_fragility : public SpellScript
     }
 };
 
+// 325640 soul rot 
+class spell_warl_soul_rot : public SpellScript
+{
+    PrepareSpellScript(spell_warl_soul_rot);
+
+    enum SoulRot
+    {
+        SoulRotDrainLifeAura = 331623
+    };
+
+    void HandleAfterCast()
+    {
+        if (Unit* caster = GetCaster())
+            caster->CastSpell(caster, SoulRotDrainLifeAura, true);
+    }
+
+    void Register() override
+    {
+        AfterCast += SpellCastFn(spell_warl_soul_rot::HandleAfterCast);
+    }
+};
+
+const uint32 dotAuras[] = {325640, SPELL_WARLOCK_AGONY, SPELL_WARLOCK_UNSTABLE_AFFLICTION, SPELL_WARLOCK_CORRUPTION, 278350, 205179 };
+
+// 324536 
+class spell_warl_malefic_rapture : public SpellScript
+{
+    PrepareSpellScript(spell_warl_malefic_rapture);
+
+    enum MaleficRapture
+    {
+        Dmg = 324540,
+    };
+
+    void HandleAfterCast()
+    {
+        if (Unit* caster = GetCaster())
+        {
+            int32 baseDamage = caster->GetTotalSpellPowerValue(SPELL_SCHOOL_MASK_SHADOW, false) * 0.275f;
+
+            std::list<Unit*> enemies;
+            caster->GetAttackableUnitListInRange(enemies, 100.0f);
+            for (auto enemy : enemies)
+            {
+                uint32 totalAuras = 0;
+                for (auto dot : dotAuras)
+                    if (enemy->HasAura(dot, caster->GetGUID()))
+                        ++totalAuras;
+
+                if (totalAuras > 0)
+                {
+                    caster->CastSpell(enemy, Dmg, CastSpellExtraArgs(true).AddSpellBP0(baseDamage * totalAuras));
+                }
+            }
+        }
+    }
+
+    void Register() override
+    {
+        AfterCast += SpellCastFn(spell_warl_malefic_rapture::HandleAfterCast);
+    }
+};
+
 void AddSC_warlock_spell_scripts()
 {
     RegisterSpellScript(spell_warl_demonskin);
@@ -7964,6 +8049,8 @@ void AddSC_warlock_spell_scripts()
     RegisterSpellScript(spell_warl_laser_beam);
     RegisterSpellScript(spell_warl_axe_toss);
     RegisterSpellScript(spell_curse_of_fragility);
+    RegisterSpellScript(spell_warl_soul_rot);
+    RegisterSpellScript(spell_warl_malefic_rapture);
 
     new spell_warl_demonic_circle_talent();
 
