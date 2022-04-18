@@ -181,7 +181,7 @@ struct npc_skipbot_3000 : public ScriptedAI
             ClearGossipMenuFor(p_Player);
             p_Player->PrepareQuestMenu(me->GetGUID());
             if (DidNotCompleteTutorialQuests(p_Player))
-                AddGossipItemFor(p_Player, GossipOptionIcon::None, "Skip tutorial.", 0, 1);
+                AddGossipItemFor(p_Player, GossipOptionIcon::None, "Skip tutorial.", 0, 1, "Are you sure you want to skip these tutorial quests?", 0, false);
             SendGossipMenuFor(p_Player, me->GetEntry(), me);
             return true;
         }
