@@ -318,8 +318,8 @@ class maelstrom_dungeon_player_script : public PlayerScript
                     if (status == QUEST_STATUS_REWARDED)
                     {
                      //   player->AddQuestAndCheckCompletion(sObjectMgr->GetQuestTemplate(700009), player);
-                        player->AddQuestAndCheckCompletion(sObjectMgr->GetQuestTemplate(700010), player);
-                        player->PlayerTalkClass->SendQuestGiverQuestDetails(sObjectMgr->GetQuestTemplate(700010), player->GetGUID(), true, true);
+                        player->AddQuestAndCheckCompletion(sObjectMgr->GetQuestTemplate(700009), player);
+                        player->PlayerTalkClass->SendQuestGiverQuestDetails(sObjectMgr->GetQuestTemplate(700009), player->GetGUID(), true, true);
                     }
 
                     break;
@@ -338,21 +338,21 @@ class maelstrom_dungeon_player_script : public PlayerScript
 
                     break;
                 }
-                case 700010:
-                {
-                    // add quest - 700011
-                    auto status1 = player->GetQuestStatus(700010);
-
-                    if (status1 == QUEST_STATUS_REWARDED)
-                    {
-                        auto quest = sObjectMgr->GetQuestTemplate(700009);
-                        player->AddQuestAndCheckCompletion(quest, player);
-                        player->PlayerTalkClass->SendQuestGiverQuestDetails(quest, player->GetGUID(), true, true);
-                    }
-
-
-                    break;
-                }
+                //case 700010:
+                //{
+                //    // add quest - 700011
+                //    auto status1 = player->GetQuestStatus(700010);
+                //
+                //    if (status1 == QUEST_STATUS_REWARDED)
+                //    {
+                //        auto quest = sObjectMgr->GetQuestTemplate(700009);
+                //        player->AddQuestAndCheckCompletion(quest, player);
+                //        player->PlayerTalkClass->SendQuestGiverQuestDetails(quest, player->GetGUID(), true, true);
+                //    }
+                //
+                //
+                //    break;
+                //}
             }
         }
 };
