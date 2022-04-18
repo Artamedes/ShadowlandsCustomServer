@@ -142,6 +142,8 @@ struct npc_sir_duke_iro_700112 : public ScriptedAI
         {
             me->SetUnitFlag(UnitFlags::UNIT_FLAG_NON_ATTACKABLE);
             me->SetReactState(ReactStates::REACT_PASSIVE);
+            DoCastSelf(159965);
+            DoCastSelf(355291);
         }
 
         void Reset() override
@@ -171,10 +173,15 @@ struct npc_sir_duke_iro_700112 : public ScriptedAI
             m_Events.ScheduleEvent(2, 25s, 26s);
         }
 
+        bool doneIntro = false;
+
         void DoAction(int32 action) override
         {
             if (action == 1)
             {
+                doneIntro == true;
+                me->RemoveAurasDueToSpell(159965);
+                me->RemoveAurasDueToSpell(345192);
                 me->RemoveUnitFlag(UnitFlags::UNIT_FLAG_NON_ATTACKABLE);
                 me->SetReactState(ReactStates::REACT_AGGRESSIVE);
                 Talk(1);
@@ -184,7 +191,15 @@ struct npc_sir_duke_iro_700112 : public ScriptedAI
         void UpdateAI(uint32 diff) override
         {
             if (!UpdateVictim())
+            {
+                if (!me->isDead() && !me->IsEngaged() && !doneIntro)
+                {
+                    if (!me->GetCurrentSpell(CurrentSpellTypes::CURRENT_CHANNELED_SPELL))
+                        DoCast(345192); // channel
+                }
+
                 return;
+            }
 
             m_Events.Update(diff);
 
