@@ -1129,6 +1129,16 @@ bool WorldObject::IsWithinLOSInMap(WorldObject const* obj, LineOfSightChecks che
     if (!IsInMap(obj))
         return false;
 
+    if (auto unit = obj->ToUnit())
+    {
+        // todo: perf this
+        for (auto eff : unit->GetAuraEffectsByType(SPELL_AURA_CASTER_IGNORE_LOS))
+        {
+            if (eff->GetCaster() == this)
+                return true;
+        }
+    }
+
     float ox, oy, oz;
     if (obj->GetTypeId() == TYPEID_PLAYER)
     {

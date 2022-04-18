@@ -5496,6 +5496,45 @@ class spell_hun_trick_shots_proc : public AuraScript
     }
 };
 
+// 18036
+struct at_hunter_resonating_arrow : AreaTriggerAI
+{
+    at_hunter_resonating_arrow(AreaTrigger* areatrigger) : AreaTriggerAI(areatrigger)
+    {
+    }
+
+    enum ResonatingArrow
+    {
+        Debuff = 308498,
+    };
+
+    void OnUnitEnter(Unit* unit) override
+    {
+        Unit* caster = at->GetCaster();
+
+        if (!caster || !unit)
+            return;
+
+        if (caster->IsValidAttackTarget(unit))
+            caster->CastSpell(unit, Debuff, true);
+    }
+
+    void OnUnitExit(Unit* unit) override
+    {
+        Unit* caster = at->GetCaster();
+
+        if (!caster || !unit)
+            return;
+
+        if (auto debuff = unit->GetAura(Debuff, caster->GetGUID()))
+        {
+            if (debuff->GetDuration() >= 4000)
+                debuff->SetDuration(4000);
+        }
+    }
+};
+
+
 void AddSC_hunter_spell_scripts()
 {
     new spell_hun_harpoon();
@@ -5617,6 +5656,7 @@ void AddSC_hunter_spell_scripts()
     RegisterAreaTriggerAI(at_hunter_hawk);
     RegisterAreaTriggerAI(at_hunter_wild_protector);
     RegisterAreaTriggerAI(at_hunter_steeltrap);
+    RegisterAreaTriggerAI(at_hunter_resonating_arrow);
 
     // Playerscripts
     new PlayerScript_black_arrow();
