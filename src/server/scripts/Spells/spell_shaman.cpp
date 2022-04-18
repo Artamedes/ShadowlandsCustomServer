@@ -6462,11 +6462,119 @@ class spell_sha_flametongue_weapon_aura : public AuraScript
     }
 };
 
+// 320674 chain harvset
+class spell_sha_chain_harvest : public SpellScript
+{
+    PrepareSpellScript(spell_sha_chain_harvest);
 
-// chain harvest - dummy visual 320762
-// visual 2 - (return ? 321310 ) (321311  script effect)
-// 321595  inital target?
-// 368583  - energize
+    // chain harvest - dummy visual 320762
+    // visual 2 - (return ? 321310 ) (321311  script effect)
+    // 321595  inital target?
+    // 368583  - energize
+    enum ChainHarvest
+    {
+        Jump = 320762,
+        VisualReturn = 321310,
+        Heal = 320751,
+        Dmg = 320752,
+        ScriptEffect = 321311,
+        Energize = 368583,
+    };
+
+    void HandleDamage(SpellEffIndex /*effIndex*/)
+    {
+        Unit* caster = GetCaster();
+        Unit* target = GetHitUnit();
+        if (!caster || !target)
+            return;
+
+        int hitUnits = 0;
+
+        caster->CastSpell(target, Jump, true);
+
+        if (caster->IsFriendlyTo(target))
+        {
+            std::list<Unit*> friendlyList;
+            target->GetFriendlyUnitListInRange(friendlyList, 40.0f);
+            friendlyList.sort(Trinity::HealthPctOrderPred());
+
+            uint32 max = 5;
+
+            for (auto unit : friendlyList)
+            {
+                if (--max == 5)
+                    break;
+
+                if (target != unit)
+                    target->CastSpell(unit, Jump, true);
+                caster->CastSpell(unit, Heal, true);
+                ++hitUnits;
+            }
+
+            std::list<Unit*> enemyList;
+            target->GetAttackableUnitListInRange(enemyList, 40.0f);
+            enemyList.sort(Trinity::HealthPctOrderPred());
+            max = 5;
+
+            for (auto unit : enemyList)
+            {
+                if (--max == 5)
+                    break;
+
+                if (target != unit)
+                    target->CastSpell(unit, Jump, true);
+                caster->CastSpell(unit, Dmg, true);
+                ++hitUnits;
+            }
+        }
+        else
+        {
+            std::list<Unit*> friendlyList;
+            caster->GetFriendlyUnitListInRange(friendlyList, 40.0f);
+            friendlyList.sort(Trinity::HealthPctOrderPred());
+
+            uint32 max = 5;
+
+            for (auto unit : friendlyList)
+            {
+                if (--max == 5)
+                    break;
+
+                if (target != unit)
+                    target->CastSpell(unit, Jump, true);
+                caster->CastSpell(unit, Heal, true);
+                ++hitUnits;
+            }
+
+            std::list<Unit*> enemyList;
+            caster->GetAttackableUnitListInRange(enemyList, 40.0f);
+            enemyList.sort(Trinity::HealthPctOrderPred());
+            max = 5;
+
+            for (auto unit : enemyList)
+            {
+                if (--max == 5)
+                    break;
+
+                if (target != unit)
+                    target->CastSpell(unit, Jump, true);
+                caster->CastSpell(unit, Dmg, true);
+                ++hitUnits;
+            }
+        }
+
+
+        caster->CastSpell(target, VisualReturn, true); // add energize to this spellscript in the future.
+
+        for (int i = 0; i < hitUnits; ++i)
+            caster->CastSpell(caster, Energize, true);
+    }
+
+    void Register() override
+    {
+        OnEffectHitTarget += SpellEffectFn(spell_sha_chain_harvest::HandleDamage, EFFECT_0, SPELL_EFFECT_DUMMY);
+    }
+};
 
 void AddSC_shaman_spell_scripts()
 {
@@ -6602,6 +6710,7 @@ void AddSC_shaman_spell_scripts()
     RegisterSpellScript(spell_sha_windfury_weapon_proc);
     RegisterSpellScript(spell_sha_flametongue_weapon);
     RegisterSpellScript(spell_sha_flametongue_weapon_aura);
+    RegisterSpellScript(spell_sha_chain_harvest);
 
     RegisterCreatureAI(npc_ancestral_protection_totem);
     RegisterCreatureAI(npc_cloudburst_totem);
