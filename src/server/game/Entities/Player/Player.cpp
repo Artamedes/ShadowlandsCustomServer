@@ -1860,24 +1860,69 @@ void Player::Regenerate(Powers power)
     if (HasAuraTypeWithValue(SPELL_AURA_PREVENT_REGENERATE_POWER, power))
         return;
 
+    if (HasAuraTypeWithValue(SPELL_AURA_INTERRUPT_REGEN, power))
+        return;
+
+    // Priest Void form checks.
+    // 47585 - Dispersion / 219772 - Sustained Sanity / 262173 - Void Torrent
+    // Dispersion & Sustained Sanity only pauses Insanity progression but NOT the internal TICK counter nor aura stackig.
+    // Void Torrent pauses only the internal TICK counter.
+    if (power == POWER_INSANITY && (HasAura(47585) || HasAura(219772) || HasAura(262173) || HasAura(281574)))
+        return;
+
     int32 curValue = GetPower(power);
+    uint32 maxValue = GetMaxPower(power);
 
     // TODO: updating haste should update UnitData::PowerRegenFlatModifier for certain power types
     PowerTypeEntry const* powerType = sDB2Manager.GetPowerTypeEntry(power);
     if (!powerType)
         return;
 
-    float addvalue = 0.0f;
-    if (!IsInCombat())
+    switch (power)
     {
-        if (powerType->RegenInterruptTimeMS && GetMSTimeDiffToNow(m_combatExitTime) < uint32(powerType->RegenInterruptTimeMS))
-            return;
-
-        addvalue = (powerType->RegenPeace + m_unitData->PowerRegenFlatModifier[powerIndex]) * 0.001f * m_regenTimer;
+        case POWER_MANA:
+        case POWER_FOCUS:
+        case POWER_ENERGY:
+        case POWER_SOUL_SHARDS:
+            if (curValue == maxValue) // stop spamm!
+                return;
+        default:
+            break;
     }
-    else
-        addvalue = (powerType->RegenCombat + m_unitData->PowerRegenInterruptedFlatModifier[powerIndex]) * 0.001f * m_regenTimer;
 
+    float addvalue = 0.0f;
+
+    // Powers now benefit from haste.
+    float HastePct = 1.0f + m_activePlayerData->CombatRatings[CR_HASTE_MELEE] * GetRatingMultiplier(CR_HASTE_MELEE) / 100.0f;
+
+    switch (power)
+    {
+        // Regenerate Focus & Energy
+        case POWER_ENERGY:
+        case POWER_FOCUS:
+        {
+            float modHaste = m_unitData->ModHaste;
+            if (modHaste == 0.0f)
+                modHaste = 1.0f;
+
+            float haste = 1.0f / modHaste * 100.0f;
+            addvalue = powerType->RegenPeace * ((1.f + haste) / 100.f);
+            addvalue *= 0.001f * m_regenTimer + CalculatePct(0.001f, HastePct);
+            break;
+        }
+        default:
+            if (!IsInCombat())
+            {
+                if (powerType->RegenInterruptTimeMS && GetMSTimeDiffToNow(m_combatExitTime) < uint32(powerType->RegenInterruptTimeMS))
+                    return;
+
+                addvalue = (powerType->RegenPeace + m_unitData->PowerRegenFlatModifier[powerIndex]) * 0.001f * m_regenTimer;
+            }
+            else
+                addvalue = (powerType->RegenCombat + m_unitData->PowerRegenInterruptedFlatModifier[powerIndex]) * 0.001f * m_regenTimer;
+
+            break;
+    }
     static Rates const RatesForPower[MAX_POWERS] =
     {
         RATE_POWER_MANA,
@@ -1905,15 +1950,38 @@ void Player::Regenerate(Powers power)
         addvalue *= sWorld->getRate(RatesForPower[power]);
 
     // Mana regen calculated in Player::UpdateManaRegen()
-    if (power != POWER_MANA)
+    if (power != POWER_MANA && power != POWER_CHI && power != POWER_HOLY_POWER && power != POWER_SOUL_SHARDS && power != POWER_COMBO_POINTS)
     {
-        addvalue *= GetTotalAuraMultiplierByMiscValue(SPELL_AURA_MOD_POWER_REGEN_PERCENT, power);
+        AuraEffectList const& ModPowerRegenPCTAuras = GetAuraEffectsByType(SPELL_AURA_MOD_POWER_REGEN_PERCENT);
+        for (AuraEffectList::const_iterator i = ModPowerRegenPCTAuras.begin(); i != ModPowerRegenPCTAuras.end(); ++i)
+            if (Powers((*i)->GetMiscValue()) == power)
+                AddPct(addvalue, (*i)->GetAmount());
 
-        addvalue += GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_POWER_REGEN, power) * ((power != POWER_ENERGY) ? m_regenTimerCount : m_regenTimer) / (5 * IN_MILLISECONDS);
+        if (power != POWER_RUNIC_POWER)
+        {
+            bool useRegenTimerCount = power != POWER_ENERGY && power != POWER_INSANITY && power != POWER_FURY;
+            addvalue += GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_POWER_REGEN, power) * (float(useRegenTimerCount ? m_regenTimerCount : m_regenTimer) / float(5 * IN_MILLISECONDS));
+        }
     }
 
     int32 minPower = powerType->MinPower;
     int32 maxPower = GetMaxPower(power);
+
+    if (addvalue < 0.0f)
+    {
+        if (curValue <= minPower)
+            return;
+    }
+    else if (addvalue > 0.0f)
+    {
+        if (curValue >= maxPower)
+            return;
+    }
+    else
+        return;
+
+    addvalue += m_powerFraction[powerIndex];
+    int32 integerValue = int32(std::fabs(addvalue));
 
     if (powerType->CenterPower)
     {
@@ -1931,9 +1999,6 @@ void Player::Regenerate(Powers power)
             return;
     }
 
-    addvalue += m_powerFraction[powerIndex];
-    int32 integerValue = int32(std::fabs(addvalue));
-
     if (addvalue < 0.0f)
     {
         if (curValue <= minPower)
@@ -1947,7 +2012,6 @@ void Player::Regenerate(Powers power)
     else
         return;
 
-    bool forcesSetPower = false;
     if (addvalue < 0.0f)
     {
         if (curValue > minPower + integerValue)
@@ -1959,7 +2023,6 @@ void Player::Regenerate(Powers power)
         {
             curValue = minPower;
             m_powerFraction[powerIndex] = 0;
-            forcesSetPower = true;
         }
     }
     else
@@ -1973,24 +2036,10 @@ void Player::Regenerate(Powers power)
         {
             curValue = maxPower;
             m_powerFraction[powerIndex] = 0;
-            forcesSetPower = true;
         }
     }
 
-    if (GetCommandStatus(CHEAT_POWER))
-        curValue = maxPower;
-
-    if (m_regenTimerCount >= 2000 || forcesSetPower)
-        SetPower(power, curValue);
-    else
-    {
-        // throttle packet sending
-        DoWithSuppressingObjectUpdates([&]()
-        {
-            SetUpdateFieldValue(m_values.ModifyValue(&Unit::m_unitData).ModifyValue(&UF::UnitData::Power, powerIndex), curValue);
-            const_cast<UF::UnitData&>(*m_unitData).ClearChanged(&UF::UnitData::Power, powerIndex);
-        });
-    }
+    SetPower(power, curValue, true);
 }
 
 void Player::SendPowerUpdate(Powers power, int32 amount)
@@ -2034,11 +2083,17 @@ void Player::RegenerateHealth()
 
         if (!IsInCombat())
         {
-            if (GetLevel() < 15)
-                addValue = (0.20f * ((float)GetMaxHealth()) / GetLevel() * HealthIncreaseRate);
+            if (!IsInWorldPvpZone() && !InBattleground() && !InArena())
+            {
+                addValue = (0.20f * ((float)GetMaxHealth()) * HealthIncreaseRate);
+            }
             else
-                addValue = 0.015f * ((float)GetMaxHealth()) * HealthIncreaseRate;
-
+            {
+                if (GetLevel() < 15)
+                    addValue = (0.20f * ((float)GetMaxHealth()) / GetLevel() * HealthIncreaseRate);
+                else
+                    addValue = 0.015f * ((float)GetMaxHealth()) * HealthIncreaseRate;
+            }
             addValue *= GetTotalAuraMultiplier(SPELL_AURA_MOD_HEALTH_REGEN_PERCENT);
 
             addValue += GetTotalAuraModifier(SPELL_AURA_MOD_REGEN) * 0.4f;
