@@ -1458,6 +1458,37 @@ namespace Trinity
             // prevent clone this object
             NearestCreatureEntryWithLiveStateInObjectRangeCheck(NearestCreatureEntryWithLiveStateInObjectRangeCheck const&) = delete;
     };
+    
+    class NearestCreatureSpawnIdWithLiveStateInObjectRangeCheck
+    {
+        public:
+            NearestCreatureSpawnIdWithLiveStateInObjectRangeCheck(WorldObject const& obj, uint32 spawnId, bool alive, float range)
+                : i_obj(obj), i_spawnId(spawnId), i_alive(alive), i_range(range) { }
+
+            bool operator()(Creature* u)
+            {
+                if (u->getDeathState() != DEAD
+                    && u->GetSpawnId() == i_spawnId
+                    && u->IsAlive() == i_alive
+                    && u->GetGUID() != i_obj.GetGUID()
+                    && i_obj.IsWithinDistInMap(u, i_range)
+                    && u->CheckPrivateObjectOwnerVisibility(&i_obj))
+                {
+                    i_range = i_obj.GetDistance(u);         // use found unit range as new range limit for next check
+                    return true;
+                }
+                return false;
+            }
+
+        private:
+            WorldObject const& i_obj;
+            uint32 i_spawnId;
+            bool   i_alive;
+            float  i_range;
+
+            // prevent clone this object
+            NearestCreatureSpawnIdWithLiveStateInObjectRangeCheck(NearestCreatureSpawnIdWithLiveStateInObjectRangeCheck const&) = delete;
+    };
 
     class TC_GAME_API AnyPlayerInObjectRangeCheck
     {
