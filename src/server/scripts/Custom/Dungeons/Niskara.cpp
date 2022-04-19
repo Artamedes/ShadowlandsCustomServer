@@ -175,7 +175,7 @@ struct npc_nazgrul_700500 : public ScriptedAI
 
      void InitializeAI() override
      {
-        /// TODO: Fill this function
+         me->AddUnitState(UNIT_STATE_IGNORE_PATHFINDING);
      }
 
      void Reset() override
@@ -244,7 +244,7 @@ struct npc_demonic_priest_700501 : public ScriptedAI
 
      void InitializeAI() override
      {
-        /// TODO: Fill this function
+         me->AddUnitState(UNIT_STATE_IGNORE_PATHFINDING);
      }
 
      void Reset() override

@@ -344,7 +344,10 @@ struct npc_juno_700006 : public ScriptedAI
         void OnQuestAccept(Player* player, Quest const* quest) override
         {
             if (quest->GetQuestId() == 700019)
+            {
+                player->TeleportTo(1116, 50.7495f, -2726.76f, 63.047f, 2.47065f);
                 Conversation::CreateConversation(700302, player, *player, player->GetGUID());
+            }
         }
 
 
