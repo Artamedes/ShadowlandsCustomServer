@@ -443,7 +443,7 @@ public:
         events.ScheduleEvent(1, 5s, 15s);
         events.ScheduleEvent(2, 5s, 15s);
         events.ScheduleEvent(3, 5s, 15s);
-        events.ScheduleEvent(4, 15s, 3s);
+        events.ScheduleEvent(4, 15s, 16s);
     }
 
     void UpdateAI(uint32 diff) override
