@@ -406,6 +406,7 @@ public:
                 {
                     TombTimer = TIMER_TOMBOFTHESEVEN;
                     ++TombEventCounter;
+                    TombEventCounter = std::min(TombEventCounter, 6u);
                     TombOfSevenEvent();
                     // Check Killed bosses
                     for (uint8 i = 0; i < 7; ++i)
