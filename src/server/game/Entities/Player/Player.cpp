@@ -27316,7 +27316,8 @@ TalentLearnResult Player::LearnTalent(uint32 talentId, int32* spellOnCooldown)
 
             if (GetSpellHistory()->HasCooldown(talent->SpellID))
             {
-                *spellOnCooldown = talent->SpellID;
+                if (spellOnCooldown)
+                    *spellOnCooldown = talent->SpellID;
                 return TALENT_FAILED_CANT_REMOVE_TALENT;
             }
 
