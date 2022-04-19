@@ -845,7 +845,7 @@ public:
 
         if (questId == 700025 && player->GetQuestStatus(questId) == QUEST_STATUS_COMPLETE)
         {
-            Conversation::CreateConversation(700305, player, *player, player->GetGUID());
+            Conversation::CreateConversation(700306, player, *player, player->GetGUID());
         }
     }
 };

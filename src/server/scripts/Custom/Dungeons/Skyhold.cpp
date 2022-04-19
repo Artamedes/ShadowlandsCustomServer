@@ -47,6 +47,14 @@ struct npc_skyhold_sylvanas : public ScriptedAI
             return true;
         }
 
+        void OnQuestAccept(Player* player, Quest const* quest) override
+        {
+            if (quest->GetQuestId() == 700017)
+            {
+                Talk(2, player);
+            }
+        }
+
         Position const SylvPathOne[18] =
         {
             { 1022.469971f, 7230.910156f, -0.034910f },
