@@ -116,6 +116,9 @@ class TC_GAME_API AuraEffect
         bool IsEffect(SpellEffectName effectName) const { return m_effectInfo.Effect == effectName; }
         bool IsAreaAuraEffect() const;
 
+        // hack for double proc
+        bool IsDoublProcced = false;
+
     private:
         Aura* const m_base;
 

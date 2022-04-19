@@ -240,6 +240,7 @@ enum RogueSpells
     SPELL_ROGUE_FLAGELLATION_AFTER_AURA = 345569,
     SPELL_ROGUE_SEPSIS_AURA = 347037,
     SPELL_ROGUE_SHROUD_OF_CONCEALMENT = 114018,
+    SPELL_ROUGE_GRUDGE_MATCH = 363591,
 };
 
 enum RollTheBones
@@ -301,6 +302,49 @@ uint32 GetFinishngComboPointsAndDropEchoingReprimand(Unit* unitCaster, uint32 pr
 uint32 RogueComboPoints(WorldObject* Caster)
 {
     return Caster->Variables.GetValue("RogueComboPoints", 0);
+}
+
+void HandleGrudgeMatch(Unit* caster, Unit* target, uint32 auraId)
+{
+    if (target->HasAura(SPELL_ROGUE_VENDETTA, caster->GetGUID()))
+    {
+        if (caster->HasAura(SPELL_ROUGE_GRUDGE_MATCH))
+        {
+            if (auto dot = target->GetAura(auraId, caster->GetGUID()))
+            {
+                dot->SetMaxDuration(dot->GetDuration() / 2);
+                dot->RefreshDuration();
+                for (auto eff : dot->GetAuraEffects())
+                {
+                    if (eff && eff->GetAuraType() == AuraType::SPELL_AURA_PERIODIC_DAMAGE)
+                    {
+                        eff->IsDoublProcced = true;
+                        eff->CalculatePeriodic(caster, false, false);
+                    }
+                }
+            }
+        }
+    }
+}
+
+void HandleGrudgeMatch(Unit* caster, Unit* target, Aura* dot)
+{
+    if (target->HasAura(SPELL_ROGUE_VENDETTA, caster->GetGUID()))
+    {
+        if (caster->HasAura(SPELL_ROUGE_GRUDGE_MATCH))
+        {
+            dot->SetMaxDuration(dot->GetDuration() / 2);
+            dot->RefreshDuration();
+            for (auto eff : dot->GetAuraEffects())
+            {
+                if (eff && eff->GetAuraType() == AuraType::SPELL_AURA_PERIODIC_DAMAGE)
+                {
+                    eff->IsDoublProcced = true;
+                    eff->CalculatePeriodic(caster, false, false);
+                }
+            }
+        }
+    }
 }
 
 class rogue_playerscript : public PlayerScript
@@ -1029,6 +1073,7 @@ class spell_rog_rupture : public SpellScript
                             int32 duration = 4 + (4 * cp);
                             ruptureAura->SetDuration(duration * IN_MILLISECONDS);
                             ruptureAura->SetMaxDuration(duration * IN_MILLISECONDS);
+                            HandleGrudgeMatch(GetCaster(), target, ruptureAura);
                         }
                     }
                 }
@@ -2324,6 +2369,8 @@ class aura_rog_garrote : public AuraScript
                         damage += CalculatePct(damage, sSpellMgr->GetSpellInfo(SPELL_ROGUE_SUBTERFUGE_AURA)->GetEffect(EFFECT_1).BasePoints);
 
                     effect->SetDamage(damage * effect->GetDonePct());
+
+                    HandleGrudgeMatch(caster, target, GetAura());
                 }
             }
         }
@@ -3151,6 +3198,8 @@ class aura_rog_deadly_poison : public AuraScript
 				caster->RemoveAura(SPELL_ROGUE_WOUND_POISON);
 			if (caster->HasAura(SPELL_ROGUE_LEECH_POISON_TALENT))
                 caster->SetLifeSteal(caster->GetLifeSteal() + sSpellMgr->GetSpellInfo(SPELL_ROGUE_LEECHING_POISON)->GetEffect(EFFECT_0).BasePoints);
+            if (auto target = GetUnitOwner())
+                HandleGrudgeMatch(caster, target, SPELL_ROGUE_DEADLY_POISON_DOT);
 		}
 	}
 
@@ -3211,14 +3260,20 @@ class spell_rog_cimson_tempest :public SpellScript
 
 	void HandleHit(SpellEffIndex effIndex)
 	{
+        _cp = GetFinishngComboPointsAndDropEchoingReprimand(GetCaster(), _cp);
 		SetHitDamage(GetHitDamage() * (_cp + 1));
 	}
 
 	void HandleAfterHit()
 	{
-		if (Unit* target = GetHitUnit())
+        if (Unit* target = GetHitUnit())
+        {
 			if (Aura* aura = target->GetAura(SPELL_ROGUE_CRIMSON_TEMPEST, GetCaster()->GetGUID()))
+            {
 				aura->SetDuration((_cp + 1) * 2 * IN_MILLISECONDS);
+                HandleGrudgeMatch(GetCaster(), target, aura);
+            }
+        }
 	}
 
 	void Register() override
@@ -3792,20 +3847,43 @@ class spell_rog_sprint : public SpellScript
 	}
 };
 
-// 248744 - Shiv
+// 5938 - Shiv
 class spell_rog_shiv : public SpellScript
 {
 	PrepareSpellScript(spell_rog_shiv);
 
-	void HandleAfterCast()
+    enum Shiv
+    {
+        ShivAssaDebuff = 319504,
+        GrudgeMatch = 364667,
+        GrudgeMatchProc = 364668,
+    };
+
+	void OnHitTarget(SpellEffIndex /*index*/)
 	{
-		//if (Unit* caster = GetCaster())
-		//	caster->GetSpellHistory()->StartCooldown(GetSpellInfo(), 0, GetSpell(), false, true, 12 * IN_MILLISECONDS);
+        if (auto caster = GetCaster())
+            if (auto player = caster->ToPlayer())
+            {
+                if (player->GetSpecializationId() == TALENT_SPEC_ROGUE_ASSASSINATION)
+                {
+                    if (auto target = GetHitUnit())
+                    {
+                        GetCaster()->CastSpell(target, ShivAssaDebuff, true);
+                        std::list<Unit*> attackableUnitsInRange;
+                        caster->GetAttackableUnitListInRange(attackableUnitsInRange, 15.0f);
+                        for (auto unit : attackableUnitsInRange)
+                        {
+                            caster->CastSpell(unit, 364668, true);
+                        }
+                    }
+                }
+            }
+
 	}
 
 	void Register() override
 	{
-		AfterCast += SpellCastFn(spell_rog_shiv::HandleAfterCast);
+        OnEffectHitTarget += SpellEffectFn(spell_rog_shiv::OnHitTarget, EFFECT_1, SPELL_EFFECT_DUMMY);
 	}
 };
 
@@ -4611,6 +4689,13 @@ class spell_rog_sepsis : public AuraScript
 {
     PrepareAuraScript(spell_rog_sepsis);
 
+    void HandleApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+    {
+        if (auto caster = GetCaster())
+            if (auto target = GetUnitOwner())
+                HandleGrudgeMatch(caster, target, 328305);
+    }
+
     void HandleRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
     {
         auto caster = GetCaster();
@@ -4622,6 +4707,7 @@ class spell_rog_sepsis : public AuraScript
 
     void Register() override
     {
+        AfterEffectApply += AuraEffectApplyFn(spell_rog_sepsis::HandleApply, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE, AURA_EFFECT_HANDLE_REAL);
         AfterEffectRemove += AuraEffectRemoveFn(spell_rog_sepsis::HandleRemove, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE, AURA_EFFECT_HANDLE_REAL);
     }
 };
@@ -4688,7 +4774,50 @@ class spell_rog_serrated_bone_spike : public AuraScript
         OnEffectApply += AuraEffectApplyFn(spell_rog_serrated_bone_spike::HandleApply, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE, AURA_EFFECT_HANDLE_REAL);
         OnEffectPeriodic += AuraEffectPeriodicFn(spell_rog_serrated_bone_spike::HandlePeriodic, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE);
     }
+};
 
+// 79140
+class spell_rog_vendetta : public AuraScript
+{
+    PrepareAuraScript(spell_rog_vendetta);
+
+    void HandleApply(const AuraEffect* /*aurEff*/, AuraEffectHandleModes /* mode */)
+    {
+        Unit* caster = GetCaster();
+        Unit* target = GetUnitOwner();
+        if (!caster || !target)
+            return;
+
+        if (target->HasAura(SPELL_ROGUE_VENDETTA, caster->GetGUID()))
+        {
+            if (caster->HasAura(SPELL_ROUGE_GRUDGE_MATCH))
+            {
+                static const uint32 dotAuras[] = { 703, 121411, 1943, 328305, 2818 }; ///< Garrote, Crimson Tempest, Rupture, Sepsis, Deadly Poison
+
+                for (auto aura : dotAuras)
+                {
+                    if (auto dot = target->GetAura(aura, caster->GetGUID()))
+                    {
+                        dot->SetMaxDuration(dot->GetDuration() / 2);
+                        dot->RefreshDuration();
+                        for (auto eff : dot->GetAuraEffects())
+                        {
+                            if (eff && eff->GetAuraType() == AuraType::SPELL_AURA_PERIODIC_DAMAGE)
+                            {
+                                eff->IsDoublProcced = true;
+                                eff->CalculatePeriodic(caster, false, false);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    void Register() override
+    {
+        OnEffectApply += AuraEffectApplyFn(spell_rog_vendetta::HandleApply, EFFECT_0, SPELL_AURA_MOD_SPELL_DAMAGE_FROM_CASTER, AURA_EFFECT_HANDLE_REAL);
+    }
 };
 
 void AddSC_rogue_spell_scripts()
@@ -4789,6 +4918,7 @@ void AddSC_rogue_spell_scripts()
     RegisterSpellScript(spell_rog_sepsis_attack);
     RegisterSpellScript(spell_rog_sepsis);
     RegisterSpellScript(spell_rog_serrated_bone_spike);
+    RegisterSpellScript(spell_rog_vendetta);
 
 	// Areatrigger
     RegisterAreaTriggerAI(at_rog_smoke_bomb);    // 11451
