@@ -652,13 +652,13 @@ namespace WorldPackets
             std::vector<WorldQuestUpdateInfo> WorldQuestUpdates;
         };
 
-        struct PlayerChoiceResponseRewardEntry
+        struct TC_GAME_API PlayerChoiceResponseRewardEntry
         {
             WorldPackets::Item::ItemInstance Item;
             int32 Quantity = 0;
         };
 
-        struct PlayerChoiceResponseReward
+        struct TC_GAME_API PlayerChoiceResponseReward
         {
             int32 TitleID = 0;
             int32 PackageID = 0;
@@ -674,7 +674,7 @@ namespace WorldPackets
             std::vector<PlayerChoiceResponseRewardEntry> ItemChoices;
         };
 
-        struct PlayerChoiceResponseMawPower
+        struct TC_GAME_API PlayerChoiceResponseMawPower
         {
             int32 Unused901_1 = 0;
             int32 TypeArtFileID = 0;
@@ -707,7 +707,7 @@ namespace WorldPackets
             Optional<PlayerChoiceResponseMawPower> MawPower;
         };
 
-        class DisplayPlayerChoice final : public ServerPacket
+        class TC_GAME_API DisplayPlayerChoice final : public ServerPacket
         {
         public:
             DisplayPlayerChoice() : ServerPacket(SMSG_DISPLAY_PLAYER_CHOICE) { }

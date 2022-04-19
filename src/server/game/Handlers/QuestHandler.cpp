@@ -849,6 +849,14 @@ void WorldSession::HandlePlayerChoiceResponse(WorldPackets::Quest::ChoiceRespons
         return;
     }
 
+    // custom script
+    if (choiceResponse.ChoiceID == 682925852)
+    {
+        if (auto item = _player->GetItemByEntry(700000))
+            if (sScriptMgr->OnItemPlayerChoiceResponse(_player, item))
+                return;
+    }
+
     PlayerChoice const* playerChoice = sObjectMgr->GetPlayerChoice(choiceResponse.ChoiceID);
     if (!playerChoice)
         return;

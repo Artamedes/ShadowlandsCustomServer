@@ -38,7 +38,7 @@ namespace WorldPackets
 {
     namespace Item
     {
-        struct ItemBonuses
+        struct TC_GAME_API ItemBonuses
         {
             ItemContext Context = ItemContext(0);
             std::vector<int32> BonusListIDs;
@@ -47,7 +47,7 @@ namespace WorldPackets
             bool operator!=(ItemBonuses const& r) const { return !(*this == r); }
         };
 
-        struct ItemMod
+        struct TC_GAME_API ItemMod
         {
             ItemMod() = default;
             ItemMod(int32 value, ItemModifier type) : Value(value), Type(type) { }
@@ -59,7 +59,7 @@ namespace WorldPackets
             bool operator!=(ItemMod const& r) const { return !(*this == r); }
         };
 
-        struct ItemModList
+        struct TC_GAME_API ItemModList
         {
             Array<ItemMod, MAX_ITEM_MODIFIERS> Values;
 
@@ -67,7 +67,7 @@ namespace WorldPackets
             bool operator!=(ItemModList const& r) const { return !(*this == r); }
         };
 
-        struct ItemInstance
+        struct TC_GAME_API ItemInstance
         {
             void Initialize(::Item const* item);
             void Initialize(UF::SocketedGem const* gem);

@@ -8,8 +8,10 @@
 #include "HotfixDatabase.h"
 #include "DB2Stores.h"
 #include "CovenantPackets.h"
+#include "QuestPackets.h"
 #include "../MagicStone.h"
 #include "../CustomInstanceScript.h"
+#include "Item.h"
 
 #ifdef WIN32
 #include "windows.h"
@@ -1884,6 +1886,7 @@ public:
             { "testpacket",       HandleTestCommand,  rbac::RBAC_PERM_COMMAND_RELOAD_ALL_ITEM, Console::No },
             { "testpacket2",       HandleTest2Command,  rbac::RBAC_PERM_COMMAND_RELOAD_ALL_ITEM, Console::No },
             { "testpacket3",       HandleTest3Command,  rbac::RBAC_PERM_COMMAND_RELOAD_ALL_ITEM, Console::No },
+            { "testpacket4",       HandleTest4Command,  rbac::RBAC_PERM_COMMAND_RELOAD_ALL_ITEM, Console::No },
 
 #ifdef WIN32
             { "gpscopy", HandleGPSCopyCommand,  rbac::RBAC_PERM_COMMAND_RELOAD_ALL_ITEM, Console::No },
@@ -1915,6 +1918,81 @@ public:
         data << handler->GetPlayer()->GetGUID();
         data << uint32(CovenantID.value_or(0));
         handler->GetSession()->SendPacket(&data);
+        return true;
+    }
+    static bool HandleTest4Command(ChatHandler* handler, Optional<uint32> flag)
+    {
+        auto player = handler->GetPlayer();
+        WorldPackets::Quest::DisplayPlayerChoice displayPlayerChoice;
+
+        displayPlayerChoice.SenderGUID = player->GetGUID();
+        displayPlayerChoice.ChoiceID = 682925852;
+        displayPlayerChoice.Question = "Are you sure you want to upgrade?";
+        displayPlayerChoice.CloseChoiceFrame = false;
+        displayPlayerChoice.HideWarboardHeader = false;
+        displayPlayerChoice.KeepOpenAfterChoice = false;
+
+        displayPlayerChoice.UiTextureKitID = 5260;
+        displayPlayerChoice.SoundKitID = 80244; // 80244 brwaler upgrade
+
+        for (int i = 0; i < 1; ++i)
+        {
+            WorldPackets::Quest::PlayerChoiceResponse playerChoiceResponse;
+
+            playerChoiceResponse.ResponseID = 4412414;
+            playerChoiceResponse.ResponseIdentifier = 335;
+            playerChoiceResponse.Flags = 2;
+            playerChoiceResponse.ChoiceArtFileID = flag.value_or(1274664);
+            playerChoiceResponse.UiTextureKitID = 5487;
+            playerChoiceResponse.Reward.emplace();
+            playerChoiceResponse.RewardQuestID = 591918;
+            if (i == 0)
+            {
+                playerChoiceResponse.Header = "Requirements";
+                //playerChoiceResponse.SubHeader = "Requirements";
+                playerChoiceResponse.ButtonTooltip = "Clicking this will consume the requirements!";
+                playerChoiceResponse.Confirmation = "Confirmation";
+                playerChoiceResponse.Flags = 0;
+                playerChoiceResponse.Answer = "Requirements";
+                playerChoiceResponse.ButtonTooltip = "|cffFF0000Not enough x...";
+                playerChoiceResponse.SubHeader = "Consumes";
+            }
+            else
+            {
+                playerChoiceResponse.Header = "Rewards";
+                //playerChoiceResponse.SubHeader = "Rewards";
+                playerChoiceResponse.SubHeader = "Awards";
+                playerChoiceResponse.Answer = "Upgrade";
+                playerChoiceResponse.ButtonTooltip = "Are you sure you want to upgrade?";
+                playerChoiceResponse.Confirmation = "Confirmation";
+            }
+
+            playerChoiceResponse.Reward.emplace();
+            playerChoiceResponse.Reward->Money = 400000;
+            for (int i = 0; i < 2; ++i)
+            {
+                if (auto item = player->GetItemByEntry(i == 0 ? 183021 : 175921))
+                {
+
+                    {
+                        playerChoiceResponse.Reward->Items.emplace_back();
+                        WorldPackets::Quest::PlayerChoiceResponseRewardEntry& rewardEntry = playerChoiceResponse.Reward->Items.back();
+                        rewardEntry.Item.ItemID = item->GetEntry();
+                        rewardEntry.Item.Initialize(item);
+                    }
+                }
+            }
+
+            playerChoiceResponse.Reward->Currencies.emplace_back();
+            WorldPackets::Quest::PlayerChoiceResponseRewardEntry& rewardEntry = playerChoiceResponse.Reward->Currencies.back();
+            rewardEntry.Item.ItemID = 1813;
+            rewardEntry.Quantity = 500;
+
+            displayPlayerChoice.Responses.push_back(playerChoiceResponse);
+        }
+
+
+        handler->GetSession()->SendPacket(displayPlayerChoice.Write());
         return true;
     }
 

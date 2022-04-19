@@ -1723,6 +1723,12 @@ bool ScriptMgr::OnQueryTreasurePicker(Player* player, Item* item)
     return tmpscript->OnQueryTreasurePicker(player, item);
 }
 
+bool ScriptMgr::OnItemPlayerChoiceResponse(Player* player, Item* item)
+{
+    GET_SCRIPT_RET(ItemScript, item->GetScriptId(), tmpscript, true);
+    return tmpscript->OnItemPlayerChoiceResponse(player, item);
+}
+
 bool ScriptMgr::CanCreateCreatureAI(uint32 scriptId) const
 {
     return !!ScriptRegistry<CreatureScript>::Instance()->GetScriptById(scriptId);

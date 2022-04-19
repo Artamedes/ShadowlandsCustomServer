@@ -168,24 +168,204 @@ class item_upgrader : public ItemScript
             if (!BuildPackets(player, item, targets))
                 return true;
 
-            // Need to send this to play like 500 ms after.
-            // fix the crash todo
-            // player->m_Events.AddEventAtOffset([&]()
-            // {
-            //     if (player && player->GetSession())
-            //     {
-            //         BuildPackets(player, item, targets);
-            //     }
-            // }, 500ms);
-
             return true;
+        }
+
+        void DisplayItemUpgrade(Player* player, Item* itemTarget, ItemUpgrade const* itemUpgrade)
+        {
+            m_PlayerItemTargets[player->GetGUID()] = itemTarget->GetGUID();
+            WorldPackets::Quest::DisplayPlayerChoice displayPlayerChoice;
+
+            displayPlayerChoice.SenderGUID = itemTarget->GetGUID();
+            displayPlayerChoice.ChoiceID = 682925852;
+            displayPlayerChoice.Question = "Are you sure you want to upgrade?";
+          //  displayPlayerChoice.PendingChoiceText = "PendingChoiceText";
+            displayPlayerChoice.CloseChoiceFrame = false;
+            displayPlayerChoice.HideWarboardHeader = false;
+            displayPlayerChoice.KeepOpenAfterChoice = false;
+            displayPlayerChoice.UiTextureKitID = 5260;
+            displayPlayerChoice.SoundKitID = 80244; // 80244 brwaler upgrade
+
+            bool l_Good = true;
+
+            for (int i = 0; i < 1; ++i)
+            {
+                WorldPackets::Quest::PlayerChoiceResponse playerChoiceResponse;
+
+                playerChoiceResponse.ResponseID = 4412414;
+                playerChoiceResponse.ResponseIdentifier = 335;
+                playerChoiceResponse.ChoiceArtFileID = urand(3718819, 3718827);
+                playerChoiceResponse.UiTextureKitID = 5487;
+                playerChoiceResponse.WidgetSetID = 120;
+                playerChoiceResponse.Reward.emplace();
+                playerChoiceResponse.RewardQuestID = 591918;
+
+                if (i == 0)
+                {
+                    playerChoiceResponse.Header = "Requirements";
+                    playerChoiceResponse.SubHeader = "Requirements";
+                    playerChoiceResponse.Description = "Tip: Hover over Upgrade to see your reward";
+                    playerChoiceResponse.ButtonTooltip = "Clicking this will consume the requirements!";
+                    playerChoiceResponse.Confirmation = "Confirmation";
+                    playerChoiceResponse.Answer = "Upgrade";
+                    playerChoiceResponse.SubHeader = "Consumes";
+
+                    std::ostringstream ss;
+
+                    if (itemUpgrade->Type == ItemUpgradeType::BonusID)
+                    {
+                        playerChoiceResponse.Reward->Items.emplace_back();
+                        WorldPackets::Quest::PlayerChoiceResponseRewardEntry& l_Item = playerChoiceResponse.Reward->Items.back();
+                        l_Item.Item.Initialize(itemTarget);
+                        l_Item.Quantity = 0;
+                    }
+
+                    for (auto const& l_I : itemUpgrade->RequiredMaterials)
+                    {
+                        switch (l_I.Type)
+                        {
+                            case QuestObjectiveType::QUEST_OBJECTIVE_CURRENCY:
+
+                                if (l_I.RequiredID > 0)
+                                {
+                                    playerChoiceResponse.Reward->Currencies.emplace_back();
+                                    WorldPackets::Quest::PlayerChoiceResponseRewardEntry& rewardEntry = playerChoiceResponse.Reward->Currencies.back();
+                                    rewardEntry.Item.ItemID = l_I.RequiredID;
+                                    rewardEntry.Quantity = l_I.RequiredAmount;
+
+                                    bool l_Has = player->HasCurrency(l_I.RequiredID, l_I.RequiredAmount);
+                                    if (!l_Has)
+                                    {
+                                        l_Good = false;
+                                        ss << "|cffFF0000You don't have enough "
+                                            << sCurrencyTypesStore.LookupEntry(l_I.RequiredID)->Name.Str[0]
+                                            << "\n";
+                                        //<< ", Need "
+                                        //<< l_I.RequiredAmount
+                                        //<< " but you only have "
+                                        //<< player->GetCurrency(l_I.RequiredID)
+                                        //<< ". Need "
+                                        //<< l_I.RequiredAmount - player->GetCurrency(l_I.RequiredID)
+                                        //<< " more\n";
+                                    }
+                                }
+
+                                break;
+                            case QuestObjectiveType::QUEST_OBJECTIVE_ITEM:
+
+                                if (l_I.RequiredID > 0)
+                                {
+                                    // l_Item.RequiredID
+                                    // l_Item.RequiredAmount
+                                    playerChoiceResponse.Reward->Items.emplace_back();
+                                    WorldPackets::Quest::PlayerChoiceResponseRewardEntry& rewardEntry = playerChoiceResponse.Reward->Items.back();
+                                    rewardEntry.Item.ItemID = l_I.RequiredID;
+                                    rewardEntry.Quantity = l_I.RequiredAmount;
+
+                                    bool l_Has = player->HasItemCount(l_I.RequiredID, l_I.RequiredAmount);
+                                    if (!l_Has)
+                                    {
+                                        l_Good = false;
+                                        ss << "|cffFF0000You don't have enough "
+                                            << Item::GetItemLink(l_I.RequiredID)
+                                            << "\n";
+                                        //<< ", Need "
+                                        //<< l_I.RequiredAmount
+                                        //<< " but you only have "
+                                        //<< player->GetItemCount(l_I.RequiredID)
+                                        //<< ". Need "
+                                        //<< l_I.RequiredAmount - player->GetItemCount(l_I.RequiredID)
+                                        //<< " more\n";
+                                    }
+                                }
+                                break;
+                            case QuestObjectiveType::QUEST_OBJECTIVE_MONEY:
+                                if (l_I.RequiredAmount > 0)
+                                {
+                                    // todo: convert this to uint64
+                                    playerChoiceResponse.Reward->Money = l_I.RequiredAmount;
+
+                                    bool l_Has = player->HasEnoughMoney((int64)l_I.RequiredAmount);
+                                    if (!l_Has)
+                                    {
+                                        l_Good = false;
+                                        ss << "|cffFF0000You don't have enough gold\n";
+                                        // << l_I.RequiredAmount / 10000
+                                        // << "  but you only have "
+                                        // << player->GetMoney() / 10000
+                                        // << ". Need "
+                                        // << (l_I.RequiredAmount - player->GetMoney()) / 10000
+                                        // << " more\n";
+                                    }
+                                }
+                                break;
+                            }
+                    }
+
+                    if (!l_Good)
+                    {
+                        playerChoiceResponse.ButtonTooltip = ss.str().c_str();
+                        playerChoiceResponse.Flags = 5;
+                    }
+                    else
+                    {
+                        playerChoiceResponse.ButtonTooltip = "|cff00FBFFItem will be upgraded into";
+                    }
+                }
+                else
+                {
+                    playerChoiceResponse.Header = "Rewards";
+                    //playerChoiceResponse.SubHeader = "Rewards";
+                    playerChoiceResponse.SubHeader = "Awards";
+                    playerChoiceResponse.Answer = "Upgrade";
+                    playerChoiceResponse.ButtonTooltip = "Are you sure you want to upgrade?";
+                    playerChoiceResponse.Confirmation = "Confirmation";
+
+                    playerChoiceResponse.Reward->Items.emplace_back();
+                    WorldPackets::Quest::PlayerChoiceResponseRewardEntry& l_Item = playerChoiceResponse.Reward->Items.back();
+
+                    l_Item.Item.ItemID = itemUpgrade->ReplaceItemID ? itemUpgrade->ReplaceItemID : itemTarget->GetEntry();
+                    l_Item.Quantity = itemUpgrade->ReplaceItemQuantity ? itemUpgrade->ReplaceItemQuantity : 1;
+                    if (itemUpgrade->Type == ItemUpgradeType::BonusID)
+                    {
+                        l_Item.Item.Initialize(itemTarget);
+                        //l_Item.Item.ItemBonus->Context = ItemContext::Torghast;
+
+                        //for (int32 bonusId : *itemTarget->m_itemData->BonusListIDs)
+                        //{
+                        //    if (bonusId != itemUpgrade->RequiredID)
+                        //    {
+                        //        if (std::find(itemUpgrade->RemoveBonusIDList.begin(), itemUpgrade->RemoveBonusIDList.end(), bonusId) == itemUpgrade->RemoveBonusIDList.end())
+                        //            l_Item.Item.ItemBonus->BonusListIDs.push_back(bonusId);
+                        //    }
+                        //}
+
+                        for (int32 bonusId : itemUpgrade->ReplaceBonusIDList)
+                            l_Item.Item.ItemBonus->BonusListIDs.push_back(bonusId);
+                    }
+
+                    if (!l_Good)
+                    {
+                        playerChoiceResponse.Flags = 5;
+                        playerChoiceResponse.ButtonTooltip = "You don't have the required materials!";
+                    }
+                }
+                displayPlayerChoice.Responses.push_back(playerChoiceResponse);
+            }
+
+
+            OnItemQuestQueryResponse(player, itemTarget);
+            OnQueryTreasurePicker(player, itemTarget);
+            player->GetSession()->SendPacket(displayPlayerChoice.Write());
+            player->PlayerTalkClass->GetInteractionData().Reset();
+            player->PlayerTalkClass->GetInteractionData().PlayerChoiceId = 682925852;
         }
 
         bool BuildPackets(Player* player, Item* item, SpellCastTargets const& targets)
         {
 
-            auto l_ItemUpgrade = sItemUpgrader->GetItemUpgrade(targets.GetItemTarget());
-            if (!l_ItemUpgrade)
+            auto itemUpgrade = sItemUpgrader->GetItemUpgrade(targets.GetItemTarget());
+            if (!itemUpgrade)
             {
                 ChatHandler(player->GetSession()).PSendSysMessage("%s |cffFF0000is not upgradeable.|R", targets.GetItemTarget()->GetTemplate()->GetName(LocaleConstant::LOCALE_enUS));
 
@@ -203,8 +383,7 @@ class item_upgrader : public ItemScript
                 return false;
             }
 
-            m_PlayerItemTargets[player->GetGUID()] = targets.GetItemTarget()->GetGUID();
-
+            auto itemTarget = targets.GetItemTarget();
 
             if (player->GetQuestStatus(700002) == QUEST_STATUS_INCOMPLETE)
             {
@@ -217,350 +396,51 @@ class item_upgrader : public ItemScript
                 }
             }
 
-            auto BuildRequireLine([](std::string const& p_Text, std::string const& p_String) -> std::string
-                {
-                    return "|cffCB4335+ |cff05B61D" + p_Text + " |cffE74C3C: " + p_String + "\n";
-                });
+            DisplayItemUpgrade(player, itemTarget, itemUpgrade);
+            return true;
+        }
 
-
-            std::string questDetails;
-            std::ostringstream l_SS;
-
+        bool HasMaterialsForItemUpgrade(Player* player, Item* item, ItemUpgrade const* itemUpgrade)
+        {
+            for (auto const& l_I : itemUpgrade->RequiredMaterials)
             {
-                uint32 l_CurrCount = player->GetItemCount(targets.GetItemTarget()->GetEntry());
-
-                l_SS << Item::GetItemLink(targets.GetItemTarget()->GetEntry());
-
-                if (l_ItemUpgrade->RequiredAmount > 0)
-                {
-                    if (l_CurrCount >= l_ItemUpgrade->RequiredAmount)
-                        l_SS << " |cff09ff1b(" << l_CurrCount << "/" << l_ItemUpgrade->RequiredAmount;
-                    else
-                        l_SS << " |cffff0909(" << l_CurrCount << "/" << l_ItemUpgrade->RequiredAmount;
-                }
-
-                l_SS << ")";
-
-                questDetails += BuildRequireLine("Source", l_SS.str());
-
-                l_SS.clear();
-                l_SS.str("");
-            }
-
-            questDetails += "\n";
-
-            for (auto l_Item : l_ItemUpgrade->RequiredMaterials)
-            {
-                switch (l_Item.Type)
+                switch (l_I.Type)
                 {
                 case QuestObjectiveType::QUEST_OBJECTIVE_CURRENCY:
 
-                    if (l_Item.RequiredID > 0)
+                    if (l_I.RequiredID > 0)
                     {
-                        uint32 l_CurrCount = player->GetCurrency(l_Item.RequiredID);
-
-                        l_SS << sCurrencyTypesStore.LookupEntry(l_Item.RequiredID)->Name.Str[0];
-
-                        if (l_CurrCount >= l_Item.RequiredAmount)
-                            l_SS << " |cff09ff1b(" << l_CurrCount << "/" << l_Item.RequiredAmount;
-                        else
-                            l_SS << " |cffff0909(" << l_CurrCount << "/" << l_Item.RequiredAmount;
-
-                        l_SS << ")";
-
-                        ChatHandler(player).PSendSysMessage("%s", l_SS.str().c_str());
-
-                        questDetails += BuildRequireLine("Require", l_SS.str());
-
-                        l_SS.clear();
-                        l_SS.str("");
+                        bool l_Has = player->HasCurrency(l_I.RequiredID, l_I.RequiredAmount);
+                        if (!l_Has)
+                        {
+                            return false;
+                        }
                     }
 
                     break;
                 case QuestObjectiveType::QUEST_OBJECTIVE_ITEM:
 
-                    if (l_Item.RequiredID > 0)
+                    if (l_I.RequiredID > 0)
                     {
-                        uint32 l_CurrCount = player->GetItemCount(l_Item.RequiredID);
-
-                        l_SS << Item::GetItemLink(l_Item.RequiredID);
-
-                        if (l_CurrCount >= l_Item.RequiredAmount)
-                            l_SS << " |cff09ff1b(" << l_CurrCount << "/" << l_Item.RequiredAmount;
-                        else
-                            l_SS << " |cffff0909(" << l_CurrCount << "/" << l_Item.RequiredAmount;
-
-                        l_SS << ")";
-
-                        ChatHandler(player).PSendSysMessage("%s", l_SS.str().c_str());
-
-                        questDetails += BuildRequireLine("Require", l_SS.str());
-
-                        l_SS.clear();
-                        l_SS.str("");
+                        bool l_Has = player->HasItemCount(l_I.RequiredID, l_I.RequiredAmount);
+                        if (!l_Has)
+                        {
+                            return false;
+                        }
                     }
                     break;
                 case QuestObjectiveType::QUEST_OBJECTIVE_MONEY:
-                    if (l_Item.RequiredAmount > 0)
+                    if (l_I.RequiredAmount > 0)
                     {
-                        uint32 l_CurrCount = player->GetMoney();
-
-                        l_SS << "|cffE74C3C" << l_Item.RequiredAmount << " |cff05B61DGold";
-
-                        if (l_CurrCount >= l_Item.RequiredAmount)
-                            l_SS << " |cff09ff1b(" << l_CurrCount << "/" << l_Item.RequiredAmount;
-                        else
-                            l_SS << " |cffff0909(" << l_CurrCount << "/" << l_Item.RequiredAmount;
-
-                        l_SS << ")";
-
-                        ChatHandler(player).PSendSysMessage("%s", l_SS.str().c_str());
-
-                        questDetails += BuildRequireLine("Require", l_SS.str());
-
-                        l_SS.clear();
-                        l_SS.str("");
+                        bool l_Has = player->HasEnoughMoney((int64)l_I.RequiredAmount);
+                        if (!l_Has)
+                        {
+                            return false;
+                        }
                     }
                     break;
                 }
             }
-
-            questDetails += "\n";
-
-            //if (l_UpgradeData->RequiredMG)
-            //{
-            //    l_SS << "|cffE74C3C" << l_UpgradeData->RequiredMG << " |cff05B61DMg";
-            //    questDetails += BuildRequireLine("Require", l_SS.str());
-            //
-            //    l_SS.clear();
-            //    l_SS.str("");
-            //}
-
-            //if (l_UpgradeData->RequiredGold)
-            //{
-            //    l_SS << "|cffE74C3C" << l_UpgradeData->RequiredGold << " |cff05B61DGold";
-            //    questDetails += BuildRequireLine("Require", l_SS.str());
-            //
-            //    l_SS.clear();
-            //    l_SS.str("");
-            //}
-            //
-            //uint32 l_CalculatedChance = CalculateChance(p_Player, l_UpgradeData->Chance);
-            //l_SS << "|cffE74C3C" << l_UpgradeData->Chance << ".00%";
-            //
-            //if (l_CalculatedChance > l_UpgradeData->Chance)
-            //    l_SS << "|cffFFB109 +(" << (l_CalculatedChance - l_UpgradeData->Chance) << ".00%)";
-
-            //questDetails += BuildRequireLine("Probability", l_SS.str());
-
-
-
-            WorldPackets::Quest::QuestGiverQuestDetails packet;
-
-            packet.QuestTitle = targets.GetItemTarget()->GetTemplate()->GetName(LocaleConstant::LOCALE_enUS);
-            packet.LogDescription = questDetails;
-            packet.DescriptionText = "Upgrading this will reward you with a more powerful item.";
-            packet.PortraitGiverText = "";
-            packet.PortraitGiverName = "";
-            packet.PortraitTurnInText = "";
-            packet.PortraitTurnInName = "";
-
-            packet.QuestGiverGUID = item->GetGUID();
-            packet.InformUnit = ObjectGuid::Empty;
-            packet.QuestID = 591918;
-            packet.QuestPackageID = 0;
-            packet.PortraitGiver = 0;
-            packet.PortraitGiverMount = 0;
-            packet.PortraitGiverModelSceneID = 0;
-            packet.PortraitTurnIn = 0;
-            packet.QuestSessionBonus = 0; //quest->GetQuestSessionBonus(); // this is only sent while quest session is active
-            packet.AutoLaunched = false;
-            packet.DisplayPopup = false;
-            packet.QuestFlags[0] = 0;
-            packet.QuestFlags[1] = 0;
-            packet.SuggestedPartyMembers = 0;
-
-
-            packet.Rewards.ChoiceItemCount = 0;
-            packet.Rewards.ItemCount = 0;
-            packet.Rewards.Money = 0;
-            packet.Rewards.XP = 0;
-            packet.Rewards.ArtifactCategoryID = 0;
-            packet.Rewards.Title = 0;
-            packet.Rewards.FactionFlags = 0;
-
-            packet.Rewards.SpellCompletionID = 0;
-            packet.Rewards.SkillLineID = 0;
-            packet.Rewards.NumSkillUps = 0;
-            packet.Rewards.TreasurePickerID = targets.GetItemTarget()->GetEntry();
-
-            //packet.Rewards.ChoiceItems[0].Item.ItemID = l_ItemUpgrade->ReplaceItemID ? l_ItemUpgrade->ReplaceItemID : targets.GetItemTarget()->GetEntry();
-            //packet.Rewards.ChoiceItems[0].Quantity = l_ItemUpgrade->ReplaceItemQuantity ? l_ItemUpgrade->ReplaceItemQuantity : 1;
-            //if (!l_ItemUpgrade->ReplaceBonusIDList.empty())
-            //{
-            //    packet.Rewards.ChoiceItems[0].Item.ItemBonus.emplace();
-            //    packet.Rewards.ChoiceItems[0].Item.ItemBonus->Context = ItemContext::Torghast;
-            //    for (int32 bonusId : l_ItemUpgrade->ReplaceBonusIDList)
-            //        packet.Rewards.ChoiceItems[0].Item.ItemBonus->BonusListIDs.push_back(bonusId);
-            //}
-
-            for (uint32 i = 0; i < QUEST_REWARD_CHOICES_COUNT; ++i)
-            {
-                // packet.Rewards.ChoiceItems[i].LootItemType =;
-                packet.Rewards.ChoiceItems[i].Item.ItemID = 0;
-                packet.Rewards.ChoiceItems[i].Quantity = 0;
-            }
-
-            for (uint32 i = 0; i < QUEST_REWARD_ITEM_COUNT; ++i)
-            {
-                packet.Rewards.ItemID[i] = 0;
-                packet.Rewards.ItemQty[i] = 0;
-            }
-
-            for (uint32 i = 0; i < QUEST_REWARD_REPUTATIONS_COUNT; ++i)
-            {
-                packet.Rewards.FactionID[i] = 0;
-                packet.Rewards.FactionValue[i] = 0;
-                packet.Rewards.FactionOverride[i] = 0;
-                packet.Rewards.FactionCapIn[i] = 0;
-            }
-
-            for (uint32 i = 0; i < QUEST_REWARD_CURRENCY_COUNT; ++i)
-            {
-                packet.Rewards.CurrencyID[i] = 0;
-                packet.Rewards.CurrencyQty[i] = 0;
-            }
-
-            //QuestObjectives const& objs = quest->GetObjectives();
-            packet.Objectives.resize(l_ItemUpgrade->RequiredMaterials.size());
-            for (uint32 i = 0; i < l_ItemUpgrade->RequiredMaterials.size(); ++i)
-            {
-                packet.Objectives[i].ID = l_ItemUpgrade->RequiredMaterials[i].RequiredID;
-                packet.Objectives[i].ObjectID = i + 100;
-                packet.Objectives[i].Amount = l_ItemUpgrade->RequiredMaterials[i].RequiredAmount;
-                packet.Objectives[i].Type = l_ItemUpgrade->RequiredMaterials[i].Type;
-            }
-
-
-            WorldPackets::Quest::TreasurePickerResponse l_Packet2;
-
-            l_Packet2.QuestID = 591918;
-            l_Packet2.TreasurePickerID = targets.GetItemTarget()->GetEntry();
-
-            WorldPackets::Quest::TreasurePickItem l_Item;
-            l_Item.Item.ItemID = l_ItemUpgrade->ReplaceItemID ? l_ItemUpgrade->ReplaceItemID : targets.GetItemTarget()->GetEntry();
-            l_Item.Quantity = l_ItemUpgrade->ReplaceItemQuantity ? l_ItemUpgrade->ReplaceItemQuantity : 1;
-            if (!l_ItemUpgrade->ReplaceBonusIDList.empty())
-            {
-                l_Item.Item.ItemBonus.emplace();
-                l_Item.Item.ItemBonus->Context = ItemContext::Torghast;
-
-                for (int32 bonusId : *targets.GetItemTarget()->m_itemData->BonusListIDs)
-                {
-                    if (l_ItemUpgrade->Type != ItemUpgradeType::BonusID || bonusId != l_ItemUpgrade->RequiredID)
-                    {
-                        bool add = false;
-
-                        if (std::find(l_ItemUpgrade->RemoveBonusIDList.begin(), l_ItemUpgrade->RemoveBonusIDList.end(), bonusId) == l_ItemUpgrade->RemoveBonusIDList.end())
-                            add = true;
-
-                        if (add)
-                            l_Item.Item.ItemBonus->BonusListIDs.push_back(bonusId);
-                    }
-                }
-
-                for (int32 bonusId : l_ItemUpgrade->ReplaceBonusIDList)
-                    l_Item.Item.ItemBonus->BonusListIDs.push_back(bonusId);
-            }
-
-            l_Item.Quantity = 1;
-            l_Packet2.Items.push_back(l_Item);
-            player->GetSession()->SendPacket(packet.Write());
-            player->GetSession()->SendPacket(l_Packet2.Write());
-            return true;
-        }
-
-        bool OnItemQuestQueryResponse(Player* p_Player, Item* p_Item) override
-        {
-            auto l_Itr = m_PlayerItemTargets.find(p_Player->GetGUID());
-            if (l_Itr == m_PlayerItemTargets.end())
-                return true;
-
-            auto l_ItemTarget = p_Player->GetItemByGuid(l_Itr->second);
-            if (!l_ItemTarget)
-                return true;
-
-            auto l_ItemUpgrade = sItemUpgrader->GetItemUpgrade(l_ItemTarget);
-            if (!l_ItemUpgrade)
-                return true;
-
-
-            WorldPackets::Quest::QueryQuestInfoResponse response;
-
-            response.Allow = true;
-            response.QuestID = 591918;
-
-            response.Info.LogTitle = "Title";
-            response.Info.LogDescription = "logDescription";
-            response.Info.QuestDescription = "QuestDescription";
-            response.Info.AreaDescription = "";
-            response.Info.QuestCompletionLog = "";
-            response.Info.PortraitGiverText  = "";
-            response.Info.PortraitGiverName  = "";
-            response.Info.PortraitTurnInText = "";
-            response.Info.PortraitTurnInName = "";
-
-            response.Info.QuestID = 591918;
-            response.Info.TreasurePickerID = l_ItemTarget->GetEntry();
-
-            for (uint8 i = 0; i < QUEST_ITEM_DROP_COUNT; ++i)
-            {
-                response.Info.ItemDrop[i] = 0;
-                response.Info.ItemDropQuantity[i] = 0;
-            }
-
-            for (uint8 i = 0; i < QUEST_REWARD_ITEM_COUNT; ++i)
-            {
-                response.Info.RewardItems[i] = 0;
-                response.Info.RewardAmount[i] = 0;
-            }
-
-            response.Info.UnfilteredChoiceItems[0].ItemID = l_ItemUpgrade->ReplaceItemID ? l_ItemUpgrade->ReplaceItemID : l_ItemTarget->GetEntry();
-            response.Info.UnfilteredChoiceItems[0].Quantity = l_ItemUpgrade->ReplaceItemQuantity ? l_ItemUpgrade->ReplaceItemQuantity : 1;
-
-
-            for (uint8 i = 1; i < QUEST_REWARD_CHOICES_COUNT; ++i)
-            {
-                response.Info.UnfilteredChoiceItems[i].ItemID = 0;
-                response.Info.UnfilteredChoiceItems[i].Quantity = 0;
-            }
-
-            for (uint8 i = 0; i < QUEST_REWARD_REPUTATIONS_COUNT; ++i)
-            {
-                response.Info.RewardFactionID[i] = 0;
-                response.Info.RewardFactionValue[i] = 0;
-                response.Info.RewardFactionOverride[i] = 0;
-                response.Info.RewardFactionCapIn[i] = 0;
-            }
-
-
-            response.Info.Objectives.resize(l_ItemUpgrade->RequiredMaterials.size());
-            for (uint32 i = 0; i < l_ItemUpgrade->RequiredMaterials.size(); ++i)
-            {
-                response.Info.Objectives[i].ID = l_ItemUpgrade->RequiredMaterials[i].RequiredID;
-                response.Info.Objectives[i].ObjectID = i+100;
-                response.Info.Objectives[i].Amount = l_ItemUpgrade->RequiredMaterials[i].RequiredAmount;
-                response.Info.Objectives[i].Type = l_ItemUpgrade->RequiredMaterials[i].Type;
-            }
-
-            for (uint32 i = 0; i < QUEST_REWARD_CURRENCY_COUNT; ++i)
-            {
-                response.Info.RewardCurrencyID[i] = 0;
-                response.Info.RewardCurrencyQty[i] = 0;
-            }
-
-
-            p_Player->GetSession()->SendPacket(response.Write());
 
             return true;
         }
@@ -612,11 +492,12 @@ class item_upgrader : public ItemScript
 
             l_Item.Quantity = 1;
             l_Packet2.Items.push_back(l_Item);
+
             p_Player->GetSession()->SendPacket(l_Packet2.Write());
             return true;
         }
 
-        bool OnQuestAccept(Player* p_Player, Item* p_Item, Quest const* /*p_Quest*/) override
+        bool OnItemQuestQueryResponse(Player* p_Player, Item* p_Item) override
         {
             auto l_Itr = m_PlayerItemTargets.find(p_Player->GetGUID());
             if (l_Itr == m_PlayerItemTargets.end())
@@ -630,9 +511,94 @@ class item_upgrader : public ItemScript
             if (!l_ItemUpgrade)
                 return true;
 
+
+            WorldPackets::Quest::QueryQuestInfoResponse response;
+
+            response.Allow = true;
+            response.QuestID = 591918;
+
+            response.Info.LogTitle = "Title";
+            response.Info.LogDescription = "logDescription";
+            response.Info.QuestDescription = "QuestDescription";
+            response.Info.AreaDescription = "";
+            response.Info.QuestCompletionLog = "";
+            response.Info.PortraitGiverText = "";
+            response.Info.PortraitGiverName = "";
+            response.Info.PortraitTurnInText = "";
+            response.Info.PortraitTurnInName = "";
+
+            response.Info.QuestID = 591918;
+            response.Info.TreasurePickerID = l_ItemTarget->GetEntry();
+
+            for (uint8 i = 0; i < QUEST_ITEM_DROP_COUNT; ++i)
+            {
+                response.Info.ItemDrop[i] = 0;
+                response.Info.ItemDropQuantity[i] = 0;
+            }
+
+            for (uint8 i = 0; i < QUEST_REWARD_ITEM_COUNT; ++i)
+            {
+                response.Info.RewardItems[i] = 0;
+                response.Info.RewardAmount[i] = 0;
+            }
+
+            response.Info.UnfilteredChoiceItems[0].ItemID = l_ItemUpgrade->ReplaceItemID ? l_ItemUpgrade->ReplaceItemID : l_ItemTarget->GetEntry();
+            response.Info.UnfilteredChoiceItems[0].Quantity = l_ItemUpgrade->ReplaceItemQuantity ? l_ItemUpgrade->ReplaceItemQuantity : 1;
+
+
+            for (uint8 i = 1; i < QUEST_REWARD_CHOICES_COUNT; ++i)
+            {
+                response.Info.UnfilteredChoiceItems[i].ItemID = 0;
+                response.Info.UnfilteredChoiceItems[i].Quantity = 0;
+            }
+
+            for (uint8 i = 0; i < QUEST_REWARD_REPUTATIONS_COUNT; ++i)
+            {
+                response.Info.RewardFactionID[i] = 0;
+                response.Info.RewardFactionValue[i] = 0;
+                response.Info.RewardFactionOverride[i] = 0;
+                response.Info.RewardFactionCapIn[i] = 0;
+            }
+
+
+            response.Info.Objectives.resize(l_ItemUpgrade->RequiredMaterials.size());
+            for (uint32 i = 0; i < l_ItemUpgrade->RequiredMaterials.size(); ++i)
+            {
+                response.Info.Objectives[i].ID = l_ItemUpgrade->RequiredMaterials[i].RequiredID;
+                response.Info.Objectives[i].ObjectID = i + 100;
+                response.Info.Objectives[i].Amount = l_ItemUpgrade->RequiredMaterials[i].RequiredAmount;
+                response.Info.Objectives[i].Type = l_ItemUpgrade->RequiredMaterials[i].Type;
+            }
+
+            for (uint32 i = 0; i < QUEST_REWARD_CURRENCY_COUNT; ++i)
+            {
+                response.Info.RewardCurrencyID[i] = 0;
+                response.Info.RewardCurrencyQty[i] = 0;
+            }
+
+
+            p_Player->GetSession()->SendPacket(response.Write());
+
+            return true;
+        }
+
+        bool OnItemPlayerChoiceResponse(Player* p_Player, Item* p_Item) override
+        {
+            auto l_Itr = m_PlayerItemTargets.find(p_Player->GetGUID());
+            if (l_Itr == m_PlayerItemTargets.end())
+                return true;
+
+            auto l_ItemTarget = p_Player->GetItemByGuid(l_Itr->second);
+            if (!l_ItemTarget)
+                return true;
+
+            auto itemUpgrade = sItemUpgrader->GetItemUpgrade(l_ItemTarget);
+            if (!itemUpgrade)
+                return true;
+
             bool l_Good = true;
 
-            for (auto const& l_I : l_ItemUpgrade->RequiredMaterials)
+            for (auto const& l_I : itemUpgrade->RequiredMaterials)
             {
                 switch (l_I.Type)
                 {
@@ -689,7 +655,7 @@ class item_upgrader : public ItemScript
             if (!l_Good)
                 return false;
             
-            for (auto const& l_I : l_ItemUpgrade->RequiredMaterials)
+            for (auto const& l_I : itemUpgrade->RequiredMaterials)
             {
                 switch (l_I.Type)
                 {
@@ -711,42 +677,59 @@ class item_upgrader : public ItemScript
                 }
             }
 
-            if (l_ItemUpgrade->ReplaceItemID > 0)
+            if (p_Player->GetQuestStatus(700002) == QUEST_STATUS_INCOMPLETE)
+                p_Player->KilledMonsterCredit(700003);
+
+            if (itemUpgrade->ReplaceItemID > 0)
             {
                 uint32 l_Count = 1;
                 p_Player->DestroyItemCount(l_ItemTarget, l_Count, true);
-            }
+                if (!p_Player->AddItem(itemUpgrade->ReplaceItemID, itemUpgrade->ReplaceItemQuantity))
+                    p_Player->SendItemRetrievalMail(itemUpgrade->ReplaceItemID, itemUpgrade->ReplaceItemQuantity, ItemContext::NONE);
+                else
+                {
+                    // todo: display this someday :)
+                    ///if (auto nextUpgrade = sItemUpgrader->GetItemUpgrade(l_ItemTarget))
+                    ///    if (auto nextItemUpgrade = HasMaterialsForItemUpgrade(p_Player, l_ItemTarget, nextUpgrade))
+                    ///        DisplayItemUpgrade(p_Player, l_ItemTarget, nextUpgrade);
+                }
 
-            //if (!l_ItemUpgrade->ReplaceBonusIDList.empty())
+                ChatHandler(p_Player->GetSession()).PSendSysMessage("|cff00FF00Success");
+            }
+            else
             {
-                if (l_ItemTarget->IsEquipped())
-                    p_Player->_ApplyItemMods(l_ItemTarget, l_ItemTarget->GetSlot(), false);
+                //if (!itemUpgrade->ReplaceBonusIDList.empty())
+                {
+                    if (l_ItemTarget->IsEquipped())
+                        p_Player->_ApplyItemMods(l_ItemTarget, l_ItemTarget->GetSlot(), false);
 
-                l_ItemTarget->RemoveBonus(l_ItemUpgrade->RequiredID);
+                    l_ItemTarget->RemoveBonus(itemUpgrade->RequiredID);
 
-                for (auto bonus : l_ItemUpgrade->RemoveBonusIDList)
-                    l_ItemTarget->RemoveBonus(bonus);
+                    for (auto bonus : itemUpgrade->RemoveBonusIDList)
+                        l_ItemTarget->RemoveBonus(bonus);
 
-                for (auto bonus : l_ItemUpgrade->ReplaceBonusIDList)
-                    l_ItemTarget->AddBonuses(bonus, false);
-                p_Player->SendNewItem(l_ItemTarget, 1, true, false, true);
+                    for (auto bonus : itemUpgrade->ReplaceBonusIDList)
+                        l_ItemTarget->AddBonuses(bonus, false);
+                    p_Player->SendNewItem(l_ItemTarget, 1, true, false, true);
 
-                if (l_ItemTarget->IsEquipped())
-                    p_Player->_ApplyItemMods(l_ItemTarget, l_ItemTarget->GetSlot(), true);
+                    if (l_ItemTarget->IsEquipped())
+                        p_Player->_ApplyItemMods(l_ItemTarget, l_ItemTarget->GetSlot(), true);
+                }
+
+                l_ItemTarget->SetState(ITEM_CHANGED, p_Player);
+                p_Player->SetVisibleItemSlot(l_ItemTarget->GetSlot(), l_ItemTarget);
+                l_ItemTarget->SetNotRefundable(p_Player);
+                l_ItemTarget->ClearSoulboundTradeable(p_Player);
+                p_Player->GetSession()->GetCollectionMgr()->AddItemAppearance(l_ItemTarget);
+                ChatHandler(p_Player->GetSession()).PSendSysMessage("|cff00FF00Success");
+
+                if (auto nextUpgrade = sItemUpgrader->GetItemUpgrade(l_ItemTarget))
+                    if (auto nextItemUpgrade = HasMaterialsForItemUpgrade(p_Player, l_ItemTarget, nextUpgrade))
+                        DisplayItemUpgrade(p_Player, l_ItemTarget, nextUpgrade);
             }
 
-            l_ItemTarget->SetState(ITEM_CHANGED, p_Player);
-            p_Player->SetVisibleItemSlot(l_ItemTarget->GetSlot(), l_ItemTarget);
-            l_ItemTarget->SetNotRefundable(p_Player);
-            l_ItemTarget->ClearSoulboundTradeable(p_Player);
-            p_Player->GetSession()->GetCollectionMgr()->AddItemAppearance(l_ItemTarget);
-            ChatHandler(p_Player->GetSession()).PSendSysMessage("|cff00FF00Success");
-
-            if (p_Player->GetQuestStatus(700002) == QUEST_STATUS_INCOMPLETE)
-                p_Player->KilledMonsterCredit(700003);
             return true;
         }
-
 };
 
 void AddSC_item_upgrader()

@@ -433,6 +433,7 @@ class TC_GAME_API ItemScript : public ScriptObject
 
         virtual bool OnItemQuestQueryResponse(Player*, Item*) { return false; }
         virtual bool OnQueryTreasurePicker(Player*, Item*) { return false; }
+        virtual bool OnItemPlayerChoiceResponse(Player*, Item*) { return false; }
 };
 
 class TC_GAME_API UnitScript : public ScriptObject
@@ -1189,6 +1190,7 @@ class TC_GAME_API ScriptMgr
         bool OnItemCreate(Player* player, Item* item);
         bool OnItemQuestQueryResponse(Player* player, Item* item);
         bool OnQueryTreasurePicker(Player* player, Item* item);
+        bool OnItemPlayerChoiceResponse(Player* player, Item* item);
 
     public: /* CreatureScript */
 
