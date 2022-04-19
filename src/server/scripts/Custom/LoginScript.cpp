@@ -129,11 +129,11 @@ class LoginScript : public PlayerScript
                 }
                 case CLASS_MAGE:
                 {
-                    p_Player->SetPrimarySpecialization(TalentSpecialization::TALENT_SPEC_MAGE_FROST);
+                    p_Player->SetPrimarySpecialization(TalentSpecialization::TALENT_SPEC_MAGE_FIRE);
                     p_Player->SetActiveTalentGroup(2);
 
                     static uint32 items[] = { 183021, 183020, 184778, 182998, 182996, 183022, 183004, 183011, 182979, 183037, 183036, 183040, 182405 };
-                    static uint32 talents[] = { 22460, 22443, 22444, 22452, 22448, 23176, 21632 };
+                    static uint32 talents[] = { 22456, 22443, 22444, 22450, 22904, 22472, 22220 };
 
                     for (auto talent : talents)
                         p_Player->LearnTalent(talent, nullptr);
@@ -236,8 +236,8 @@ class LoginScript : public PlayerScript
                     }
                     case CLASS_ROGUE:
                     {
-                        p_Player->GetCovenantMgr()->SetCovenant(CovenantID::Kyrian);
-                        p_Player->GetCovenantMgr()->SetSoulbind(SoulbindID::Pelagos);
+                        p_Player->GetCovenantMgr()->SetCovenant(CovenantID::NightFae);
+                        p_Player->GetCovenantMgr()->SetSoulbind(SoulbindID::Korayn);
 
                         p_Player->CastSpell(p_Player, 2823, true); ///< Deadly Poison
                         p_Player->CastSpell(p_Player, 3408, true); ///< Cripple Poison
