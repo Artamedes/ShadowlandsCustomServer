@@ -1115,6 +1115,8 @@ class spell_rog_stealth : public SpellScriptLoader
             {
                 CloakedInShadowsAura = 341529,
                 CloakedInShadowsBuff = 341530,
+                MarkOfTheMasterAssassin = 340076,
+                MasterAssassinsMark = 340094,
             };
 
             void HandleEffectApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
@@ -1132,6 +1134,9 @@ class spell_rog_stealth : public SpellScriptLoader
                     // Master Assasin
                     if (target->HasAura(SPELL_ROGUE_MASTER_ASSASIN))
                         target->CastSpell(target, SPELL_ROGUE_MASTER_ASSASIN_AURA, true);
+
+                    if (target->HasAura(MarkOfTheMasterAssassin))
+                        target->CastSpell(target, MasterAssassinsMark, true);
 
                     // Shadowstrike Rank 2
                     //if (target->HasAura(SPELL_ROGUE_SHADOWSTRIKE_RANK_2))
@@ -1177,8 +1182,17 @@ class spell_rog_stealth : public SpellScriptLoader
 
                     // Master Assasin
                     if (Aura* aura = target->GetAura(SPELL_ROGUE_MASTER_ASSASIN_AURA))
-                        aura->SetDuration(3 * IN_MILLISECONDS);
-   
+                    {
+                        aura->SetMaxDuration(3000);
+                        aura->RefreshDuration();
+                    }
+
+                    if (Aura* aura = target->GetAura(MasterAssassinsMark))
+                    {
+                        aura->SetMaxDuration(4000);
+                        aura->RefreshDuration();
+                    }
+
                     target->RemoveAurasDueToSpell(SPELL_ROGUE_SHADOW_FOCUS_EFFECT);
                     target->RemoveAurasDueToSpell(SPELL_ROGUE_STEALTH_STEALTH_AURA);
                     target->RemoveAurasDueToSpell(SPELL_ROGUE_STEALTH_SHAPESHIFT_AURA);
@@ -1312,6 +1326,37 @@ class spell_rog_vanish_aura : public SpellScriptLoader
                 });
             }
 
+            enum Vanish
+            {
+                MarkOfTheMasterAssassin = 340076,
+                MasterAssassinsMark = 340094,
+            };
+
+            void HandleEffectApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*modes*/)
+            {
+                Unit* target = GetTarget();
+                if (!target)
+                    return;
+                // Master of Subtlety
+                if (target->HasAura(SPELL_ROGUE_MASTER_OF_SUBTLETY_PASSIVE))
+                    target->CastSpell(target, SPELL_ROGUE_MASTER_OF_SUBTLETY_DAMAGE_PERCENT, TRIGGERED_FULL_MASK);
+
+                // Shadow Focus
+                if (target->HasAura(SPELL_ROGUE_SHADOW_FOCUS))
+                    target->CastSpell(target, SPELL_ROGUE_SHADOW_FOCUS_EFFECT, TRIGGERED_FULL_MASK);
+
+                // Master Assasin
+                if (target->HasAura(SPELL_ROGUE_MASTER_ASSASIN))
+                    target->CastSpell(target, SPELL_ROGUE_MASTER_ASSASIN_AURA, true);
+
+                if (target->HasAura(MarkOfTheMasterAssassin))
+                    target->CastSpell(target, MasterAssassinsMark, true);
+
+                // Shadowstrike Rank 2
+                //if (target->HasAura(SPELL_ROGUE_SHADOWSTRIKE_RANK_2))
+                target->CastSpell(target, SPELL_ROGUE_SHADOWSTRIKE_BONUS, true);
+            }
+
             void HandleEffectRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
 				if (Unit* caster = GetCaster())
@@ -1321,11 +1366,12 @@ class spell_rog_vanish_aura : public SpellScriptLoader
 					// Veil of the Night
 					if (caster->HasAura(SPELL_ROGUE_VEIL_OF_THE_NIGHT))
 						caster->CastSpell(caster, SPELL_ROGUE_VEIL_OF_THE_NIGHT_BUFF, true);
-            }
+                }
             }
 
             void Register() override
             {
+                AfterEffectApply += AuraEffectRemoveFn(spell_rog_vanish_aura_AuraScript::HandleEffectApply, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
                 AfterEffectRemove += AuraEffectRemoveFn(spell_rog_vanish_aura_AuraScript::HandleEffectRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
             }
         };
