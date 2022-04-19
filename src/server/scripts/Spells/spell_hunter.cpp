@@ -2067,9 +2067,22 @@ public:
             return false;
         }
 
+        void HandleProc(AuraEffect* /*aurEff*/, ProcEventInfo& /*eventInfo*/)
+        {
+            if (Player* player = GetCaster()->ToPlayer())
+            {
+                if (SpellCategoryEntry const* mongooseBite = sSpellCategoryStore.LookupEntry(1715))
+                {
+                    player->GetSpellHistory()->RestoreCharge(1715);
+                    player->GetSpellHistory()->ForceSendSetSpellCharges(mongooseBite);
+                }
+            }
+        }
+
         void Register() override
         {
             DoCheckProc += AuraCheckProcFn(spell_hun_lock_and_load_AuraScript::CheckProc);
+            OnEffectProc += AuraEffectProcFn(spell_hun_lock_and_load_AuraScript::HandleProc, EFFECT_0, SPELL_AURA_PROC_TRIGGER_SPELL);
         }
     };
 
