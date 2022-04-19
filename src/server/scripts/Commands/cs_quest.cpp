@@ -33,10 +33,337 @@ EndScriptData */
 #include "RBAC.h"
 #include "ReputationMgr.h"
 #include "World.h"
+#include "QueryPackets.h"
+#include "GossipDef.h"
 
 #if TRINITY_COMPILER == TRINITY_COMPILER_GNU
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #endif
+
+struct QuestPoiData
+{
+    bool RetrieveData = true;
+    float _poix;
+    float _poiy;
+    QuestPOIData PoiData;
+
+    // internal fields
+    uint32 CurrentObjectiveID = 0;
+
+    void Reset(uint32 questId)
+    {
+        PoiData = QuestPOIData();
+        PoiData.QuestID = questId;
+        RetrieveData = true;
+    }
+};
+
+std::unordered_map<ObjectGuid::LowType, QuestPoiData> questPoiData;
+
+class quest_playerscript : public PlayerScript
+{
+    public:
+        quest_playerscript() : PlayerScript("quest_playerscript") { }
+
+        template <class T>
+        static std::string GetTextFromAny(std::string A, T any)
+        {
+            std::ostringstream ss;
+            ss << A << any;
+            return ss.str();
+        }
+
+        enum Senders
+        {
+            SenderNone = 0,
+            SenderObjectiveId = 40,
+            SenderRemovePoint = 41,
+            SenderAddPoint    = 42,
+        };
+
+        enum Actions
+        {
+            Commit = 1,
+            Quest,
+            PoiX,
+            PoiY,
+            SetCompletePOI,
+            Back,
+        };
+
+        static void OnGossipHello(Player* player)
+        {
+            ClearGossipMenuFor(player);
+            auto& Data = questPoiData[player->GetGUID().GetCounter()];
+            Data.CurrentObjectiveID = 0;
+            auto quest = sObjectMgr->GetQuestTemplate(Data.PoiData.QuestID);
+
+            AddGossipItemFor(player, GossipOptionIcon::None, GetTextFromAny(quest ? quest->GetLogTitle() : "Plz set quest: ", Data.PoiData.QuestID), 0, Quest, "Editing this will reset all data", 0, true);
+            AddGossipItemFor(player, GossipOptionIcon::None, GetTextFromAny("Set PoiX (Unimportant): ", Data._poix), 0, PoiX, "", 0, true);
+            AddGossipItemFor(player, GossipOptionIcon::None, GetTextFromAny("Set PoiY (Unimportant): ", Data._poiy), 0, PoiY, "", 0, true);
+            AddGossipItemFor(player, GossipOptionIcon::None, "Set Complete POI here", SenderNone, SetCompletePOI);
+
+            if (quest)
+            {
+                for (auto const& objective : quest->GetObjectives())
+                {
+                    AddGossipItemFor(player, GossipOptionIcon::None, GetTextFromAny("Edit Objective POI for quest_objective: ", objective.ID), SenderObjectiveId, objective.ID);
+                }
+            }
+
+            AddGossipItemFor(player, GossipOptionIcon::None, "Commit", 0, Commit, "Are you sure you're ready to commit?", 0, false);
+            SendGossipMenuFor(player, 1, player);
+            player->PlayerTalkClass->GetGossipMenu().SetMenuId(62767262);
+        }
+
+
+        void DisplayObjectiveData(Player* player)
+        {
+            auto& Data = questPoiData[player->GetGUID().GetCounter()];
+            auto quest = sObjectMgr->GetQuestTemplate(Data.PoiData.QuestID);
+            if (Data.CurrentObjectiveID > 0 && quest)
+            {
+                for (auto const& objective : quest->GetObjectives())
+                {
+                    if (objective.ID == Data.CurrentObjectiveID)
+                    {
+                        AddGossipItemFor(player, GossipOptionIcon::None, GetTextFromAny("Edit Objective POI for quest_objective: ", objective.ID), SenderObjectiveId, objective.ID);
+                        for (int i = 0; i < Data.PoiData.Blobs.size(); ++i)
+                        {
+                            auto const& itr = Data.PoiData.Blobs[i];
+
+                            if (itr.QuestObjectiveID == objective.ID)
+                            {
+                                for (int x = 0; x < itr.Points.size(); ++x)
+                                {
+                                    auto const& point = itr.Points[x];
+
+                                    std::ostringstream ss;
+                                    ss << "[" << x << "] Remove Point [X: " << point.X << " Y: " << point.Y << " Z: " << point.Z << "]";
+
+                                    AddGossipItemFor(player, GossipOptionIcon::None, ss.str(), SenderRemovePoint, x);
+                                }
+                                break;
+                            }
+                        }
+                        AddGossipItemFor(player, GossipOptionIcon::None, "Add Point at current position", SenderAddPoint, 0);
+                        AddGossipItemFor(player, GossipOptionIcon::None, "back", 0, Back);
+                        SendGossipMenuFor(player, 1, player);
+                        break;
+                    }
+                }
+            }
+        }
+
+        void OnGossipSelect(Player* player, uint32 menuId, uint32 sender, uint32 action) override
+        {
+            if (menuId != 62767262)
+                return;
+
+            ClearGossipMenuFor(player);
+
+            auto& Data = questPoiData[player->GetGUID().GetCounter()];
+
+            bool handled = false;
+
+            switch (sender)
+            {
+                case SenderAddPoint:
+                {
+                    bool found = false;
+                    for (int i = 0; i < Data.PoiData.Blobs.size(); ++i)
+                    {
+                        auto& itr = Data.PoiData.Blobs[i];
+
+                        if (itr.QuestObjectiveID == Data.CurrentObjectiveID)
+                        {
+                            ChatHandler(player).PSendSysMessage("added poi point for objective %u", Data.CurrentObjectiveID);
+                            itr.Points.push_back(QuestPOIBlobPoint(player->GetPositionX(), player->GetPositionY(), player->GetPositionZ()));
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (!found)
+                    {
+                        Data.PoiData.Blobs.emplace_back();
+                        auto& itr = Data.PoiData.Blobs.back();
+
+                        itr.ObjectiveIndex = 0;
+                        itr.MapID = player->GetMapId();
+                        itr.QuestObjectiveID = Data.CurrentObjectiveID;
+
+                        int32 uiMapId = 0;
+                        // try to retrieve to ui map id
+                        DB2Manager::GetUiMapPosition(player->GetPositionX(), player->GetPositionY(), player->GetPositionZ(), player->GetMapId(), 0, 0, 0, UI_MAP_SYSTEM_ADVENTURE, false, &uiMapId);
+                        itr.UiMapID = uiMapId;
+                        itr.Points.push_back(QuestPOIBlobPoint(player->GetPositionX(), player->GetPositionY(), player->GetPositionZ()));
+                        ChatHandler(player).PSendSysMessage("added poi point and blob for objective %u", Data.CurrentObjectiveID);
+                    }
+                    DisplayObjectiveData(player);
+                    handled = true;
+                    break;
+                }
+                case SenderRemovePoint:
+                {
+                    auto quest = sObjectMgr->GetQuestTemplate(Data.PoiData.QuestID);
+                    for (int i = 0; i < Data.PoiData.Blobs.size(); ++i)
+                    {
+                        auto& itr = Data.PoiData.Blobs[i];
+
+                        if (itr.QuestObjectiveID == Data.CurrentObjectiveID)
+                        {
+                            if (action < itr.Points.size())
+                                itr.Points.erase(itr.Points.begin() + action);
+                            ChatHandler(player).PSendSysMessage("remove poi point %u and blob for objective %u", action, Data.CurrentObjectiveID);
+                        }
+                        break;
+                    }
+                    DisplayObjectiveData(player);
+                    handled = true;
+                    break;
+                }
+                case SenderObjectiveId:
+                {
+                    Data.CurrentObjectiveID = action;
+                    DisplayObjectiveData(player);
+                    return;
+                }
+            }
+
+            switch (action)
+            {
+                case SetCompletePOI:
+                {
+                    bool found = false;
+                    for (int i = 0; i < Data.PoiData.Blobs.size(); ++i)
+                    {
+                        auto& itr = Data.PoiData.Blobs[i];
+
+                        if (itr.ObjectiveIndex == -1)
+                        {
+                            found = true;
+                            itr.Points.clear();
+                            itr.Points.push_back(QuestPOIBlobPoint(player->GetPositionX(), player->GetPositionY(), player->GetPositionZ()));
+                            ChatHandler(player).PSendSysMessage("Updated complete poi");
+                            break;
+                        }
+                    }
+
+                    if (!found)
+                    {
+                        Data.PoiData.Blobs.emplace_back();
+                        auto& itr = Data.PoiData.Blobs.back();
+
+                        itr.ObjectiveIndex = -1;
+                        itr.MapID = player->GetMapId();
+
+                        int32 uiMapId = 0;
+                        // try to retrieve to ui map id
+                        DB2Manager::GetUiMapPosition(player->GetPositionX(), player->GetPositionY(), player->GetPositionZ(), player->GetMapId(), 0, 0, 0, UI_MAP_SYSTEM_ADVENTURE, false, &uiMapId);
+                        itr.UiMapID = uiMapId;
+                        itr.Points.push_back(QuestPOIBlobPoint(player->GetPositionX(), player->GetPositionY(), player->GetPositionZ()));
+                        ChatHandler(player).PSendSysMessage("set complete poi");
+                    }
+
+                    break;
+                }
+                case Commit:
+                {
+                    uint32 questId = Data.PoiData.QuestID;
+                    WorldDatabase.PQuery("DELETE FROM quest_poi WHERE QuestID = %u", Data.PoiData.QuestID);
+                    WorldDatabase.PQuery("DELETE FROM quest_poi_points WHERE QuestID = %u", Data.PoiData.QuestID);
+                    WorldDatabase.PQuery("UPDATE quest_template set PoiX = %f, PoiY = %f where id = %u", Data._poix, Data._poiy, questId);
+
+                    for (int i = 0; i < Data.PoiData.Blobs.size(); ++i)
+                    {
+                        auto const& itr = Data.PoiData.Blobs[i];
+
+                        for (int x = 0; x < itr.Points.size(); ++x)
+                        {
+                            auto const& point = itr.Points[x];
+
+                            auto stmt = WorldDatabase.GetPreparedStatement(WORLD_INS_QUEST_POI_POINTS);
+                            stmt->setInt32(0, questId);
+                            stmt->setInt32(1, i); // Idx1
+                            stmt->setInt32(2, x); // Idx2
+                            stmt->setInt32(3, point.X); // X
+                            stmt->setInt32(4, point.Y); // Y
+                            stmt->setInt32(5, point.Z); // Z
+                            WorldDatabase.Query(stmt);
+                        }
+
+                        auto stmt = WorldDatabase.GetPreparedStatement(WORLD_INS_QUEST_POI);
+                        stmt->setInt32(0, questId);
+                        stmt->setInt32(1, itr.BlobIndex); // BlobIndex
+                        stmt->setInt32(2, i); // Idx1
+                        stmt->setInt32(3, itr.ObjectiveIndex); // ObjectiveIndex
+                        stmt->setInt32(4, itr.QuestObjectiveID); // QuestObjectiveID
+                        stmt->setInt32(5, itr.QuestObjectID); // QuestObjectID
+                        stmt->setInt32(6, itr.MapID); // MapID
+                        stmt->setInt32(7, itr.UiMapID); // UiMapID
+                        stmt->setInt32(8, itr.Priority); // Priority
+                        stmt->setInt32(9, itr.Flags); // Flags
+                        stmt->setInt32(10, itr.WorldEffectID); // WorldEffectID
+                        stmt->setInt32(11, itr.PlayerConditionID); // PlayerConditionID
+                        stmt->setInt32(12, itr.NavigationPlayerConditionID); // NavigationPlayerConditionID
+                        stmt->setInt32(13, itr.SpawnTrackingID); // SpawnTrackingID
+                        stmt->setInt32(14, itr.AlwaysAllowMergingBlobs); // AlwaysAllowMergingBlobs
+                        WorldDatabase.Query(stmt);
+
+                    }
+
+                    sObjectMgr->LoadQuestPOI();
+
+                    WorldPackets::Query::QuestPOIQueryResponse response;
+
+                    if (player->FindQuestSlot(questId) != MAX_QUEST_LOG_SIZE)
+                        if (QuestPOIData const* poiData = sObjectMgr->GetQuestPOIData(questId))
+                            response.QuestPOIDataStats.push_back(poiData);
+
+                    player->GetSession()->SendPacket(response.Write());
+
+                    ChatHandler(player).SendSysMessage("Retake the quest for update POI");
+                    break;
+                }
+            }
+
+            if (!handled)
+                OnGossipHello(player);
+        }
+        
+        void OnGossipSelectCode(Player* player, uint32 menuId, uint32 sender, uint32 action, char const* code) override
+        {
+            if (menuId != 62767262)
+                return;
+
+            ClearGossipMenuFor(player);
+
+            if (code)
+            {
+                auto& Data = questPoiData[player->GetGUID().GetCounter()];
+
+                switch (action)
+                {
+                    case Quest:
+                    {
+                        Data.Reset(atol(code));
+                        break;
+                    }
+                    case PoiX:
+                    {
+                        Data._poix = atof(code);
+                        break;
+                    }
+                    case PoiY:
+                    {
+                        Data._poiy = atof(code);
+                        break;
+                    }
+                }
+            }
+            OnGossipHello(player);
+        }
+};
 
 class quest_commandscript : public CommandScript
 {
@@ -51,12 +378,23 @@ public:
             { "complete", rbac::RBAC_PERM_COMMAND_QUEST_COMPLETE, false, &HandleQuestComplete, "" },
             { "remove",   rbac::RBAC_PERM_COMMAND_QUEST_REMOVE,   false, &HandleQuestRemove,   "" },
             { "reward",   rbac::RBAC_PERM_COMMAND_QUEST_REWARD,   false, &HandleQuestReward,   "" },
+            { "modpoi",   rbac::RBAC_PERM_COMMAND_DEV,            false, &HandleQuestModPoi,   "" },
         };
         static std::vector<ChatCommand> commandTable =
         {
             { "quest", rbac::RBAC_PERM_COMMAND_QUEST,  false, nullptr, "", questCommandTable },
         };
         return commandTable;
+    }
+
+    static bool HandleQuestModPoi(ChatHandler* handler, Optional<uint32> questId)
+    {
+        auto player = handler->GetPlayer();
+
+        questPoiData[player->GetGUID().GetCounter()].Reset(questId.value_or(0));
+        quest_playerscript::OnGossipHello(player);
+
+        return true;
     }
 
     static bool HandleQuestAdd(ChatHandler* handler, char const* args)
@@ -318,4 +656,5 @@ public:
 void AddSC_quest_commandscript()
 {
     new quest_commandscript();
+    new quest_playerscript();
 }

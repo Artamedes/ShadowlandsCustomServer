@@ -329,7 +329,7 @@ namespace WorldPackets
             std::array<int32, 125> MissingQuestPOIs;
         };
 
-        class QuestPOIQueryResponse final : public ServerPacket
+        class TC_GAME_API QuestPOIQueryResponse final : public ServerPacket
         {
         public:
             QuestPOIQueryResponse() : ServerPacket(SMSG_QUEST_POI_QUERY_RESPONSE, 4 + 4) { }
