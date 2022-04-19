@@ -5014,6 +5014,49 @@ class spell_deposit_anima : public SpellScript
         OnEffectHitTarget += SpellEffectFn(spell_deposit_anima::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
     }
 };
+
+// emergency failsafe - 312916
+class spell_emergency_failsafe : public AuraScript
+{
+    PrepareAuraScript(spell_emergency_failsafe);
+
+    enum EmergencyFailsafe
+    {
+        RecentlyFailed = 313015,
+        Heal = 313010,
+    };
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        if (!eventInfo.GetSpellInfo())
+            return false;
+
+        if (!eventInfo.GetActor())
+            return false;
+
+        if (eventInfo.GetActor()->HasAura(RecentlyFailed))
+            return false;
+
+        return eventInfo.GetActor()->HealthBelowPct(15);
+    }
+
+    void HandleProc(AuraEffect* /*aurEff*/, ProcEventInfo& eventInfo)
+    {
+        PreventDefaultAction();
+        if (auto caster = eventInfo.GetActor())
+        {
+            eventInfo.GetActor()->CastSpell(eventInfo.GetActor(), Heal, true);
+            eventInfo.GetActor()->CastSpell(eventInfo.GetActor(), RecentlyFailed, true);
+        }
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_emergency_failsafe::CheckProc);
+        OnEffectProc += AuraEffectProcFn(spell_emergency_failsafe::HandleProc, EFFECT_0, SPELL_AURA_PROC_TRIGGER_SPELL);
+    }
+};
+
 void AddSC_generic_spell_scripts()
 {
     RegisterSpellScript(spell_gen_absorb0_hitlimit1);
@@ -5169,4 +5212,5 @@ void AddSC_generic_spell_scripts()
     RegisterSpellScript(spell_gen_anchor_here);
     RegisterSpellScript(spell_ancestral_call);
     RegisterSpellScript(spell_deposit_anima);
+    RegisterSpellScript(spell_emergency_failsafe);
 }

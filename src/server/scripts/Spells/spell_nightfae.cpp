@@ -2,6 +2,7 @@
 #include "Unit.h"
 #include "SpellScript.h"
 #include "SpellHistory.h"
+#include "CovenantMgr.h"
 
 // 320221 
 class spell_nightfae_podtender : public AuraScript
@@ -14,7 +15,7 @@ class spell_nightfae_podtender : public AuraScript
         DepletedShell = 320227,
     };
 
-    void OnAbsorb(AuraEffect* aurEff, DamageInfo& dmgInfo, uint32& absorbAmount)
+    void OnAbsorb(AuraEffect* /*aurEff*/, DamageInfo& dmgInfo, uint32& /*absorbAmount*/)
     {
         if (Unit* caster = GetCaster())
         {
@@ -169,14 +170,166 @@ class spell_nightfae_soulshape : public AuraScript
     }
 };
 
+// 322721
+// ID - 342937 Grove Invigoration
+class spell_nightfae_grove_invigoration : public AuraScript
+{
+    PrepareAuraScript(spell_nightfae_grove_invigoration);
 
-// cast 348121 on death
-// 320227 - depleted shell
+    enum Grove
+    {
+        GroveInvigoration = 322721,
+        RedirectedAnima = 342814,
+        BondedHearts = 352503,
+        BondedHeartsHeal = 352871,
+        BondedHeartsBonus = 352881,
+    };
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        if (!eventInfo.GetActor())
+            return false;
+
+        if (eventInfo.GetSpellInfo())
+        {
+            switch (eventInfo.GetSpellInfo()->Id)
+            {
+                case RedirectedAnima:
+                case GroveInvigoration:
+                case BondedHearts:
+                case BondedHeartsHeal:
+                case BondedHeartsBonus:
+                    return false;
+                default:
+                    break;
+            }
+        }
+
+        return true;
+    }
+
+    void HandleProc(AuraEffect* /*aurEff*/, ProcEventInfo& eventInfo)
+    {
+        PreventDefaultAction();
+        if (auto actor = eventInfo.GetActor())
+        {
+            actor->CastSpell(actor, RedirectedAnima, true);
+
+            if (actor->HasAura(BondedHearts))
+            {
+                std::list<Unit*> friends;
+                actor->GetFriendlyUnitListInRange(friends, 40.0f);
+                friends.sort(Trinity::HealthPctOrderPred());
+                friends.remove_if([actor](Unit* unit)
+                {
+                    return unit == actor;
+                });
+
+                if (friends.size() > 5)
+                    friends.resize(5);
+
+                for (auto unit : friends)
+                {
+                    actor->CastSpell(unit, BondedHeartsHeal, true);
+                    if (auto player = unit->ToPlayer())
+                    {
+                        if (player->GetCovenant()->GetCovenantID() == CovenantID::NightFae)
+                            actor->CastSpell(actor, BondedHeartsBonus, true);
+                    }
+                }
+            }
+        }
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_nightfae_grove_invigoration::CheckProc);
+        OnEffectProc += AuraEffectProcFn(spell_nightfae_grove_invigoration::HandleProc, EFFECT_0, SPELL_AURA_PROC_TRIGGER_SPELL);
+    }
+};
+
+// ID - 320659 Niya's Tools: Burrs
+class spell_nightfae_niyas_tools_burrs : public AuraScript
+{
+    PrepareAuraScript(spell_nightfae_niyas_tools_burrs);
+
+    enum Grove
+    {
+        BurrsDmg = 321659,
+    };
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        if (!eventInfo.GetActor())
+            return false;
+
+        return true;
+    }
+
+    void HandleProc(AuraEffect* /*aurEff*/, ProcEventInfo& eventInfo)
+    {
+        PreventDefaultAction();
+        if (auto actor = eventInfo.GetActor())
+            if (auto hitUnit = eventInfo.GetProcTarget())
+                actor->CastSpell(hitUnit, BurrsDmg, true);
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_nightfae_niyas_tools_burrs::CheckProc);
+        OnEffectProc += AuraEffectProcFn(spell_nightfae_niyas_tools_burrs::HandleProc, EFFECT_0, SPELL_AURA_PROC_TRIGGER_SPELL);
+    }
+};
+
+// ID - 352786 Dream Delver
+class spell_nightfae_dream_delver : public AuraScript
+{
+    PrepareAuraScript(spell_nightfae_dream_delver);
+
+    enum DreamDelver
+    {
+        Dmg = 353354,
+        Healing = 353353,
+    };
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        if (!eventInfo.GetActor())
+            return false;
+
+        if (!eventInfo.GetProcTarget())
+            return false;
+
+        return true;
+    }
+
+    void HandleProc(AuraEffect* /*aurEff*/, ProcEventInfo& eventInfo)
+    {
+        PreventDefaultAction();
+        if (auto actor = eventInfo.GetActor())
+            if (auto hitUnit = eventInfo.GetProcTarget())
+            {
+                if (actor->IsValidAssistTarget(hitUnit))
+                    actor->CastSpell(hitUnit, Healing, true);
+                else if (actor->IsValidAttackTarget(hitUnit))
+                    actor->CastSpell(hitUnit, Dmg, true);
+            }
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_nightfae_dream_delver::CheckProc);
+        OnEffectProc += AuraEffectProcFn(spell_nightfae_dream_delver::HandleProc, EFFECT_0, SPELL_AURA_DUMMY);
+    }
+};
 
 void AddSC_spell_nightfae()
 {
     RegisterSpellScript(spell_nightfae_podtender);
     RegisterSpellScript(spell_nightfae_soulshape);
+    RegisterSpellScript(spell_nightfae_grove_invigoration);
+    RegisterSpellScript(spell_nightfae_niyas_tools_burrs);
+    RegisterSpellScript(spell_nightfae_dream_delver);
 
     RegisterCreatureAI(npc_regenerating_wild_seed_164589);
 

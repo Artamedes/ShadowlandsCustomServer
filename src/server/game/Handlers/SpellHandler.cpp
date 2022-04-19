@@ -413,8 +413,15 @@ void WorldSession::HandleCancelAuraOpcode(WorldPackets::Spells::CancelAura& canc
     // non channeled case:
     // don't allow remove non positive spells
     // don't allow cancelling passive auras (some of them are visible)
-    if (!spellInfo->IsPositive() || spellInfo->IsPassive())
-        return;
+    switch (spellInfo->Id)
+    {
+        case 111400:
+            break;
+        default:
+            if (!spellInfo->IsPositive() || spellInfo->IsPassive())
+                return;
+            break;
+    }
 
     _player->RemoveOwnedAura(cancelAura.SpellID, cancelAura.CasterGUID, 0, AURA_REMOVE_BY_CANCEL);
 }

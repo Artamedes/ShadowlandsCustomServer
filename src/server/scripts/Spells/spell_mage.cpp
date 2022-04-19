@@ -38,6 +38,7 @@
 #include "SpellHistory.h"
 #include "SpellMgr.h"
 #include "SpellScript.h"
+#include "CellImpl.h"
 #include "TemporarySummon.h"
 
 enum MageSpells
@@ -210,7 +211,9 @@ enum MageSpells
     SPELL_MAGE_RAY_OF_FROST_FINGERS_OF_FROST     = 269748,
     SPELL_MAGE_WHITEOUT_POWER                    = 278541,
     SPELL_MAGE_BLAST_WAVE_KNOCKBACK              = 268475,
+    SPELL_MAGE_IGNITE                            = 12846,
     SPELL_MAGE_IGNITE_AURA                       = 12654,
+    SPELL_MAGE_CONTROLLED_BURN                   = 280450,
     SPELL_MAGE_TINDER                            = 203275,
     SPELL_MAGE_TINDER_INDICATOR                  = 203277,
     SPELL_MAGE_TINDER_BLOCK                      = 203278,
@@ -230,6 +233,17 @@ enum MageSpells
     SPELL_MAGE_PACKED_ICE_AURA                   = 272970,
     SPELL_MAGE_ARCANE_PRESSURE                   = 274594,
     SPELL_MAGE_FLAMES_OF_ALACRITY_AURA           = 272934,
+    SPELL_MAGE_MASTERY_ICICLES                   = 76613,
+    SPELL_MAGE_ICICLE_DAMAGE                     = 148022,
+    SPELL_MAGE_ICICLE_AURA                       = 205473,
+    SPELL_MAGE_ICE_NINE                          = 214664,
+    SPELL_MAGE_BLACK_ICE                         = 195615,
+    SPELL_MAGE_GLACIAL_SPIKE_PROC                = 199844,
+    SPELL_MAGE_GLACIAL_SPIKE_DAMAGE              = 228600,
+    SPELL_MAGE_GLACIAL_SPIKE_AMOUNT              = 214325,
+    SPELL_MAGE_FLURRY_DPS                        = 228354,
+    SPELL_MAGE_PYROCLASM                         = 269650,
+    SPELL_MAGE_PYROCLASM_PROC                    = 269651,
 };
 
 enum TemporalDisplacementSpells
@@ -1169,6 +1183,8 @@ class spell_mage_pyroblast : public SpellScript
         if (caster->HasAura(SPELL_MAGE_HOT_STREAK))
         {
             caster->RemoveAurasDueToSpell(SPELL_MAGE_HOT_STREAK);
+            if (caster->HasAura(SPELL_MAGE_PYROCLASM) && roll_chance_i(15))
+                caster->CastSpell(caster, SPELL_MAGE_PYROCLASM_PROC, true);
 
             if (AuraEffect* auraEff = caster->GetAuraEffect(SPELL_MAGE_FIREMIND_POWER, EFFECT_0))
                 caster->CastCustomSpell(SPELL_MAGE_FIREMIND_BUFF, SPELLVALUE_BASE_POINT0, auraEff->GetAmount(), caster, true);
@@ -1182,6 +1198,13 @@ class spell_mage_pyroblast : public SpellScript
 
                         caster->CastSpell(caster, SPELL_MAGE_HOT_STREAK, true);
                     }
+        }
+        else if (caster->HasAura(SPELL_MAGE_PYROCLASM_PROC))
+        {
+            caster->RemoveAurasDueToSpell(SPELL_MAGE_PYROCLASM_PROC);
+            auto dmg = GetHitDamage();
+            AddPct(dmg, 240);
+            SetHitDamage(dmg);
         }
     }
 
@@ -1206,6 +1229,8 @@ class spell_mage_flamestrike : public SpellScript
         if (caster->HasAura(SPELL_MAGE_HOT_STREAK))
         {
             caster->RemoveAurasDueToSpell(SPELL_MAGE_HOT_STREAK);
+            if (caster->HasAura(SPELL_MAGE_PYROCLASM) && roll_chance_i(15))
+                caster->CastSpell(caster, SPELL_MAGE_PYROCLASM_PROC, true);
 
             if (AuraEffect* auraEff = caster->GetAuraEffect(SPELL_MAGE_FIREMIND_POWER, EFFECT_0))
                 caster->CastCustomSpell(SPELL_MAGE_FIREMIND_BUFF, SPELLVALUE_BASE_POINT0, auraEff->GetAmount(), caster, true);
@@ -1287,7 +1312,7 @@ class spell_mage_kindling : public AuraScript
         if (!caster)
             return;
 
-        caster->GetSpellHistory()->ModifyCooldown(SPELL_MAGE_COMBUSTION, -aurEff->GetAmount() * IN_MILLISECONDS);
+        caster->GetSpellHistory()->ModifyCooldown(SPELL_MAGE_COMBUSTION, -1);
     }
 
     void Register() override
@@ -4466,12 +4491,31 @@ class spell_mage_shifting_power : public AuraScript
     enum Shift
     {
         ShiftingPowerSpell = 325130,
+        GroveInvigoration = 322721,
+        RedirectedAnima = 342814,
     };
 
     // effect 3
     void HandleApply(const AuraEffect* /*aurEff*/, AuraEffectHandleModes /* mode */)
     {
         PreventDefaultAction();
+
+        if (!GetCaster())
+            return;
+
+        if (auto grove = GetCaster()->GetAura(GroveInvigoration))
+        {
+            if (auto anima = GetCaster()->GetAura(RedirectedAnima))
+            {
+                anima->ModStackAmount(6);
+            }
+            else
+            {
+                GetCaster()->CastSpell(GetCaster(), RedirectedAnima, true);
+                if (auto anima = GetCaster()->GetAura(RedirectedAnima))
+                    anima->ModStackAmount(5);
+            }
+        }
     }
 
     // 342373 Fae Tendrils
@@ -4526,6 +4570,573 @@ class spell_mage_shifting_power : public AuraScript
         OnEffectApply += AuraEffectApplyFn(spell_mage_shifting_power::HandleApply, EFFECT_3, SPELL_AURA_PERIODIC_TRIGGER_SPELL, AURA_EFFECT_HANDLE_REAL);
         OnEffectPeriodic += AuraEffectPeriodicFn(spell_mage_shifting_power::OnTick, EFFECT_3, SPELL_AURA_PERIODIC_TRIGGER_SPELL);
         OnAuraUpdate += AuraUpdateFn(spell_mage_shifting_power::HandleUpdate);
+    }
+};
+
+// Mastery: Ignite - 12846
+class IgniteOrderPred
+{
+public:
+    IgniteOrderPred(Unit const* base, bool ascending = true) : _ascending(ascending), _base(base) { }
+
+    bool operator()(Unit const* objA, Unit const* objB) const
+    {
+        float valA = 0;
+        float valB = 0;
+        if (AuraEffect* eff = objA->GetAuraEffect(SPELL_MAGE_IGNITE_AURA, EFFECT_0, _base->GetGUID()))
+            valA = eff->GetDamage();
+        if (AuraEffect* eff = objB->GetAuraEffect(SPELL_MAGE_IGNITE_AURA, EFFECT_0, _base->GetGUID()))
+            valB = eff->GetDamage();
+        return _ascending ? valA < valB : valA > valB;
+    }
+
+private:
+    bool const _ascending;
+    Unit const* _base;
+};
+
+class spell_mage_mastery_ignite : public AuraScript
+{
+    PrepareAuraScript(spell_mage_mastery_ignite);
+
+    void HandleEffectPeriodic(AuraEffect const* /*aurEff*/)
+    {
+        Unit* caster = GetCaster();
+        if (!caster)
+            return;
+
+        float dist = INTERACTION_DISTANCE;
+        std::list<Unit*> targetList;
+        std::list<Unit*> targetsWithIgnite;
+        std::list<Unit*> targetsWithouthIgnite;
+
+        Trinity::AnyUnitInObjectRangeCheck check(caster, caster->GetVisibilityRange());
+        Trinity::UnitListSearcher<Trinity::AnyUnitInObjectRangeCheck> searcher(caster, targetList, check);
+        Cell::VisitGridObjects(GetCaster(), searcher, caster->GetVisibilityRange());
+
+        for (Unit* unit : targetList)
+        {
+            if (unit->IsTotem() || caster->IsFriendlyTo(unit))
+                continue;
+
+            if (unit->HasAura(SPELL_MAGE_IGNITE_AURA, caster->GetGUID()))
+            {
+                targetsWithIgnite.emplace_back(unit);
+            }
+            else
+            {
+                targetsWithouthIgnite.emplace_back(unit);
+            }
+        }
+        for (Unit* igniter : targetsWithIgnite)
+        {
+            if (Aura* srcIgnite = igniter->GetAura(SPELL_MAGE_IGNITE_AURA, caster->GetGUID()))
+            {
+                std::list<Unit*> targetsToIgnite;
+                std::list<Unit*> targetsToReIgnite;
+                for (Unit* target : targetsWithouthIgnite)
+                {
+                    if (igniter->GetDistance(target) <= dist)
+                    {
+                        if (target->HasAura(SPELL_MAGE_IGNITE_AURA, caster->GetGUID()))
+                            targetsToReIgnite.emplace_back(target);
+                        else
+                            targetsToIgnite.emplace_back(target);
+                    }
+                }
+                Unit* target = nullptr;
+                if (!targetsToIgnite.empty())
+                {
+                    Trinity::Containers::RandomResize(targetsToIgnite, 1);
+                    target = targetsToIgnite.front();
+                }
+                else if (!targetsToReIgnite.empty())
+                {
+                    targetsToReIgnite.sort(IgniteOrderPred(caster));
+                    target = targetsToReIgnite.front();
+                }
+                if (target)
+                    if ((caster->HasAura(SPELL_MAGE_CONTROLLED_BURN) && caster->HasAura(SPELL_MAGE_COMBUSTION)) || !caster->HasAura(SPELL_MAGE_CONTROLLED_BURN))
+                    {
+                        // copy values of base dot
+                        caster->CastSpell(target, SPELL_MAGE_IGNITE_AURA);
+                        //caster->AddAura(SPELL_MAGE_IGNITE_AURA, target);
+                        if (Aura* ignite = target->GetAura(SPELL_MAGE_IGNITE_AURA, caster->GetGUID()))
+                        {
+                            ignite->SetMaxDuration(srcIgnite->GetMaxDuration());
+                            ignite->SetDuration(srcIgnite->GetDuration());
+                            for (AuraEffect* eff : ignite->GetAuraEffects())
+                            {
+                                if (!eff)
+                                    continue;
+                                if (AuraEffect* baseEff = srcIgnite->GetEffect(eff->GetEffIndex()))
+                                {
+                                    eff->SetPeriodicTimer(baseEff->GetPeriodicTimer());
+                                    eff->SetDamage(baseEff->GetDamage());
+                                    eff->ChangeAmount(baseEff->GetAmount());
+                                }
+                            }
+                        }
+                    }
+            }
+        }
+    }
+
+    void Register() override
+    {
+        OnEffectPeriodic += AuraEffectPeriodicFn(spell_mage_mastery_ignite::HandleEffectPeriodic, EFFECT_2, SPELL_AURA_PERIODIC_DUMMY);
+    }
+};
+
+//Update 8.0.1 Build 28153
+// 12846 - Mastery : Ignite
+// Called by Fireball - 133, Inferno Blast - 108853, Scorch - 2948, Pyroblast - 11366, Meteor - 153564, Flamestrike - 2120, Phoenix Flames - 257541
+class spell_mastery_ignite : public SpellScriptLoader
+{
+public:
+    spell_mastery_ignite() : SpellScriptLoader("spell_mastery_ignite") { }
+
+    class spell_mastery_ignite_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_mastery_ignite_SpellScript);
+
+        bool hotStreak = false;
+
+        enum eSpell
+        {
+            SPELL_MAGE_HOT_STREAK = 48108,
+            SPELL_MAGE_PYROBLAST = 11366,
+            SPELL_MAGE_FLAMESTRIKE = 2120
+        };
+
+        void HandleBeforeCast()
+        {
+            if (Unit* caster = GetCaster())
+            {
+                SpellInfo const* spellInfo = GetSpellInfo();
+                if (spellInfo && (spellInfo->Id == SPELL_MAGE_PYROBLAST || spellInfo->Id == SPELL_MAGE_FLAMESTRIKE))
+                {
+                    if (caster->HasAura(SPELL_MAGE_HOT_STREAK))
+                        hotStreak = true;
+                }
+            }
+        }
+
+        void HandleAfterHit()
+        {
+            if (Unit* caster = GetCaster())
+            {
+                if (caster->IsPlayer())
+                if (Unit* target = GetHitUnit())
+                {
+                    if (caster->GetTypeId() == TYPEID_PLAYER && caster->HasAura(SPELL_MAGE_IGNITE))
+                    {
+                        const SpellInfo* igniteAura = sSpellMgr->GetSpellInfo(SPELL_MAGE_IGNITE_AURA);
+                        if (GetSpellInfo()->Id != SPELL_MAGE_IGNITE_AURA && igniteAura != nullptr)
+                        {
+                            float masteryValue = caster->ToPlayer()->m_activePlayerData->Mastery * (hotStreak ? 1.5f : 0.75f);
+                            hotStreak = false;
+
+                            int32 basePoints = GetHitDamage();// +GetAbsorbedDamage();
+                            if (basePoints)
+                            {
+                                basePoints = int32(CalculatePct(basePoints, masteryValue));
+
+                                if (igniteAura->GetEffect(EFFECT_0).ApplyAuraPeriod != 0)
+                                    basePoints = basePoints / (igniteAura->GetMaxDuration() / igniteAura->GetEffect(EFFECT_0).ApplyAuraPeriod);
+
+                                // rollover disabled, cause too op
+                                //if (Aura* previousIgnite = target->GetAura(SPELL_MAGE_IGNITE_AURA, caster->GetGUID()))
+                                //{
+                                //    if (AuraEffect* igniteEffect = previousIgnite->GetEffect(EFFECT_0))
+                                //    {
+                                //        if (uint32 amplitude = igniteEffect->GetPeriod())
+                                //            basePoints += (igniteEffect->GetAmount() * (previousIgnite->GetDuration() / amplitude)) / (previousIgnite->GetMaxDuration() / amplitude);
+                                //    }
+                                //}
+
+                                caster->CastCustomSpell(target, SPELL_MAGE_IGNITE_AURA, &basePoints, NULL, NULL, true);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        void Register() override
+        {
+            BeforeCast += SpellCastFn(spell_mastery_ignite_SpellScript::HandleBeforeCast);
+            AfterHit += SpellHitFn(spell_mastery_ignite_SpellScript::HandleAfterHit);
+        }
+    };
+
+    SpellScript* GetSpellScript() const override
+    {
+        return new spell_mastery_ignite_SpellScript();
+    }
+};
+
+
+const int IcicleAuras[5] = { 214124, 214125, 214126, 214127, 214130 };
+const int IcicleHits[5] = { 148017, 148018, 148019, 148020, 148021 };
+
+// Mastery: Icicles - 76613
+//Last Update 8.0.1 Build 28153
+class spell_mastery_icicles_proc : public AuraScript
+{
+    PrepareAuraScript(spell_mastery_icicles_proc);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        if (eventInfo.GetSpellInfo() && (eventInfo.GetSpellInfo()->Id == SPELL_MAGE_FROSTBOLT || eventInfo.GetSpellInfo()->Id == SPELL_MAGE_FROSTBOLT_TRIGGER ||
+            eventInfo.GetSpellInfo()->Id == SPELL_MAGE_FLURRY))
+            return true;
+        return false;
+    }
+
+    void OnProc(AuraEffect* /*aurEff*/, ProcEventInfo& eventInfo)
+    {
+        Unit* target = eventInfo.GetDamageInfo()->GetVictim();
+        Unit* caster = eventInfo.GetDamageInfo()->GetAttacker();
+        if (!target || !caster)
+            return;
+
+        Player* player = caster->ToPlayer();
+
+        if (!player)
+            return;
+
+        // Calculate damage
+        int32 hitDamage = eventInfo.GetDamageInfo()->GetDamage() + eventInfo.GetDamageInfo()->GetAbsorb();
+
+        if (eventInfo.GetSpellInfo()->Id == SPELL_MAGE_FLURRY)
+        {
+            if (SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(SPELL_MAGE_FLURRY_DPS))
+            {
+                auto const& spellEffect = spellInfo->GetEffect(EFFECT_1);
+                
+                {
+                    hitDamage = player->CalculateSpellDamage(target, spellEffect);
+                    hitDamage = player->SpellDamageBonusDone(target, spellInfo, hitDamage, SPELL_DIRECT_DAMAGE, spellEffect);
+                    hitDamage = target->SpellDamageBonusTaken(player, spellInfo, hitDamage, SPELL_DIRECT_DAMAGE);
+                }
+            }
+        }
+
+        // if hitDamage == 0 we have a miss, so we need to except this variant
+        if (hitDamage != 0)
+        {
+            bool icilesAddSecond = false;
+
+            if (caster->HasAura(SPELL_MAGE_ICE_NINE))
+            {
+                if (roll_chance_i(20))
+                    icilesAddSecond = true;
+            }
+
+            hitDamage *= (player->m_activePlayerData->Mastery * 2.25f) / 100.0f;
+
+            // Prevent huge hits on player after hitting low level creatures
+            if (player->GetLevel() > target->GetLevel())
+                hitDamage = std::min(int32(hitDamage), int32(target->GetMaxHealth()));
+
+            // We need to get the first free icicle slot
+            int8 icicleFreeSlot = -1; // -1 means no free slot
+            int8 icicleSecondFreeSlot = -1; // -1 means no free slot
+            for (int8 i = 0; i < 5; ++i)
+            {
+                if (!player->HasAura(IcicleAuras[i]))
+                {
+                    icicleFreeSlot = i;
+                    if (icilesAddSecond && icicleFreeSlot != 5)
+                        icicleSecondFreeSlot = i + 1;
+                    break;
+                }
+            }
+
+            switch (icicleFreeSlot)
+            {
+            case -1:
+            {
+                // We need to find the icicle with the smallest duration.
+                int8 smallestIcicle = 0;
+                int32 minDuration = 0xFFFFFF;
+                for (int8 i = 0; i < 5; i++)
+                {
+                    if (Aura* tmpCurrentAura = player->GetAura(IcicleAuras[i]))
+                    {
+                        if (minDuration > tmpCurrentAura->GetDuration())
+                        {
+                            minDuration = tmpCurrentAura->GetDuration();
+                            smallestIcicle = i;
+                        }
+                    }
+                }
+
+                // Launch the icicle with the smallest duration
+                if (AuraEffect* currentIcicleAuraEffect = player->GetAuraEffect(IcicleAuras[smallestIcicle], EFFECT_0))
+                {
+                    int32 basePoints = currentIcicleAuraEffect->GetAmount();
+
+                    if (caster->HasAura(SPELL_MAGE_BLACK_ICE))
+                    {
+                        if (roll_chance_i(20))
+                            basePoints *= 2;
+                    }
+
+                    player->CastSpell(target, IcicleHits[smallestIcicle], true);
+                    player->CastCustomSpell(target, SPELL_MAGE_ICICLE_DAMAGE, &basePoints, NULL, NULL, true);
+                    player->RemoveAura(IcicleAuras[smallestIcicle]);
+                }
+
+                icicleFreeSlot = smallestIcicle;
+                // No break because we'll add the icicle in the next case
+            }
+            case 0:
+            case 1:
+            case 2:
+            case 3:
+            case 4:
+            {
+
+                if (Aura* currentIcicleAura = player->AddAura(IcicleAuras[icicleFreeSlot], player))
+                {
+                    if (AuraEffect* effect = currentIcicleAura->GetEffect(EFFECT_0))
+                        effect->SetAmount(hitDamage);
+
+                    player->AddAura(SPELL_MAGE_ICICLE_AURA, player);
+
+                    if (caster->HasSpell(SPELL_MAGE_GLACIAL_SPIKE))
+                    {
+                        if (Aura* glacialSpikeProc = player->GetAura(SPELL_MAGE_ICICLE_AURA))
+                        {
+                            if (glacialSpikeProc->GetStackAmount() == 5)
+                                player->CastSpell(player, SPELL_MAGE_GLACIAL_SPIKE_PROC, true);
+                        }
+                    }
+                }
+                break;
+            }
+            }
+
+            switch (icicleSecondFreeSlot)
+            {
+            case -1:
+            {
+                if (icilesAddSecond)
+                {
+                    // We need to find the icicle with the smallest duration.
+                    int8 smallestIcicle = 0;
+                    int32 minDuration = 0xFFFFFF;
+                    for (int8 i = 0; i < 5; i++)
+                    {
+                        if (Aura* tmpCurrentAura = player->GetAura(IcicleAuras[i]))
+                        {
+                            if (minDuration > tmpCurrentAura->GetDuration())
+                            {
+                                minDuration = tmpCurrentAura->GetDuration();
+                                smallestIcicle = i;
+                            }
+                        }
+                    }
+
+                    // Launch the icicle with the smallest duration
+                    if (AuraEffect* currentIcicleAuraEffect = player->GetAuraEffect(IcicleAuras[smallestIcicle], EFFECT_0))
+                    {
+                        int32 basePoints = currentIcicleAuraEffect->GetAmount();
+
+                        if (caster->HasAura(SPELL_MAGE_BLACK_ICE))
+                        {
+                            if (roll_chance_i(20))
+                                basePoints *= 2;
+                        }
+
+                        player->CastSpell(target, IcicleHits[smallestIcicle], true);
+                        player->CastCustomSpell(target, SPELL_MAGE_ICICLE_DAMAGE, &basePoints, NULL, NULL, true);
+                        player->RemoveAura(IcicleAuras[smallestIcicle]);
+                    }
+
+                    icicleSecondFreeSlot = smallestIcicle;
+                    // No break because we'll add the icicle in the next case
+                }
+            }
+            case 0:
+            case 1:
+            case 2:
+            case 3:
+            case 4:
+            {
+                if (Aura* currentIcicleAura = player->AddAura(IcicleAuras[icicleSecondFreeSlot], player))
+                {
+                    if (AuraEffect* effect = currentIcicleAura->GetEffect(EFFECT_0))
+                        effect->SetAmount(hitDamage);
+
+                    player->AddAura(SPELL_MAGE_ICICLE_AURA, player);
+
+                    if (caster->HasSpell(SPELL_MAGE_GLACIAL_SPIKE))
+                    {
+                        if (Aura* glacialSpikeProc = player->GetAura(SPELL_MAGE_ICICLE_AURA))
+                        {
+                            if (glacialSpikeProc->GetStackAmount() == 5)
+                                player->CastSpell(player, SPELL_MAGE_GLACIAL_SPIKE_PROC, true);
+                        }
+                    }
+                }
+                break;
+            }
+            }
+        }
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_mastery_icicles_proc::CheckProc);
+        OnEffectProc += AuraEffectProcFn(spell_mastery_icicles_proc::OnProc, EFFECT_0, SPELL_AURA_DUMMY);
+    }
+};
+
+// Icicles (Aura Remove) - (214124, 214125, 214126, 214127, 214130) 
+class spell_mastery_icicles_mod_aura : public AuraScript
+{
+    PrepareAuraScript(spell_mastery_icicles_mod_aura);
+
+    void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+    {
+        Unit* caster = GetCaster();
+        if (!caster)
+            return;
+
+        if (Aura* aur = caster->GetAura(SPELL_MAGE_ICICLE_AURA))
+            aur->ModStackAmount(-1);
+
+        if (caster->HasAura(SPELL_MAGE_GLACIAL_SPIKE_PROC))
+            caster->RemoveAura(SPELL_MAGE_GLACIAL_SPIKE_PROC);
+    }
+
+    void Register() override
+    {
+        OnEffectRemove += AuraEffectRemoveFn(spell_mastery_icicles_mod_aura::OnRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+    }
+};
+
+// Icicles (periodic) - 148023
+class spell_mastery_icicles_periodic : public AuraScript
+{
+    PrepareAuraScript(spell_mastery_icicles_periodic);
+
+    uint32 icicles[5];
+    int32 icicleCount;
+
+    void OnApply(AuraEffect const* /*l_AurEff*/, AuraEffectHandleModes /*l_Mode*/)
+    {
+        icicleCount = 0;
+        if (Unit* caster = GetCaster())
+        {
+            for (uint32 i = 0; i < 5; ++i)
+            {
+                if (caster->HasAura(IcicleAuras[i]))
+                    icicles[icicleCount++] = IcicleAuras[i];
+            }
+        }
+    }
+
+    void OnTick(AuraEffect const* /*aurEff*/)
+    {
+        if (Unit* caster = GetCaster())
+        {
+            if (AuraEffect* aura = caster->GetAuraEffect(GetSpellInfo()->Id, EFFECT_0))
+            {
+                // Maybe not the good target selection ...
+                if (Unit* target = ObjectAccessor::GetUnit(*caster, caster->Variables.GetValue<ObjectGuid>("IciclesTarget")))
+                {
+                    if (target->IsAlive())
+                    {
+                        int32 amount = aura->GetAmount();
+                        if (Aura* currentIcicleAura = caster->GetAura(icicles[amount]))
+                        {
+                            int32 basePoints = currentIcicleAura->GetEffect(0)->GetAmount();
+
+                            if (caster->HasAura(SPELL_MAGE_BLACK_ICE))
+                            {
+                                if (roll_chance_i(20))
+                                    basePoints *= 2;
+                            }
+
+                            caster->CastSpell(target, IcicleHits[amount], true);
+                            caster->CastCustomSpell(target, SPELL_MAGE_ICICLE_DAMAGE, &basePoints, NULL, NULL, true);
+                            caster->RemoveAura(IcicleAuras[amount]);
+                        }
+
+                        if (++amount >= icicleCount)
+                            caster->RemoveAura(aura->GetBase());
+                        else
+                            aura->SetAmount(amount);
+                    }
+                    else
+                        caster->RemoveAura(aura->GetBase());
+                }
+            }
+        }
+    }
+
+    void Register() override
+    {
+        OnEffectApply += AuraEffectApplyFn(spell_mastery_icicles_periodic::OnApply, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY, AURA_EFFECT_HANDLE_REAL);
+        OnEffectPeriodic += AuraEffectPeriodicFn(spell_mastery_icicles_periodic::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
+    }
+};
+
+// Glacial Spike - 199786
+class spell_mastery_icicles_glacial_spike : public SpellScript
+{
+    PrepareSpellScript(spell_mastery_icicles_glacial_spike);
+
+    int32 IcicleDamage;
+
+    void HandleOnCast()
+    {
+        Player* player = GetCaster()->ToPlayer();
+
+        if (!player)
+            return;
+
+        // Remove aura with visual icicle and get damage per stored icicle
+        for (int8 i = 0; i < 5; ++i)
+        {
+            if (Aura* currentIcicleAura = player->GetAura(IcicleAuras[i]))
+            {
+                int32 basePoints = currentIcicleAura->GetEffect(0)->GetAmount();
+                player->RemoveAura(IcicleAuras[i]);
+
+                IcicleDamage += basePoints;
+            }
+        }
+    }
+
+    void HandleOnHit(SpellEffIndex /*effIndex*/)
+    {
+
+        Unit* caster = GetCaster();
+        Unit* target = GetHitUnit();
+        if (!caster || !target)
+            return;
+
+        int32 damage = GetHitDamage();
+        damage += IcicleDamage;
+
+        caster->CastCustomSpell(target, SPELL_MAGE_GLACIAL_SPIKE_DAMAGE, &damage, NULL, NULL, true);
+
+        if (caster->HasAura(SPELL_MAGE_ICICLE_AURA))
+            caster->RemoveAurasDueToSpell(SPELL_MAGE_ICICLE_AURA);
+
+        if (caster->HasAura(SPELL_MAGE_GLACIAL_SPIKE_PROC))
+            caster->RemoveAurasDueToSpell(SPELL_MAGE_GLACIAL_SPIKE_PROC);
+    }
+
+    void Register() override
+    {
+        OnCast += SpellCastFn(spell_mastery_icicles_glacial_spike::HandleOnCast);
+        OnEffectHitTarget += SpellEffectFn(spell_mastery_icicles_glacial_spike::HandleOnHit, EFFECT_0, SPELL_EFFECT_DUMMY);
     }
 };
 
@@ -4639,6 +5250,11 @@ void AddSC_mage_spell_scripts()
     RegisterSpellScript(spell_mage_alter_time_aura);
     RegisterSpellScript(spell_mage_alter_time_active);
     RegisterSpellScript(spell_mage_shifting_power);
+    RegisterSpellScript(spell_mastery_icicles_proc);
+    RegisterSpellScript(spell_mastery_icicles_periodic);
+    RegisterSpellScript(spell_mastery_icicles_mod_aura);
+    RegisterSpellScript(spell_mage_mastery_ignite);
+    new spell_mastery_ignite();
 
     // Spell Pet scripts
     RegisterSpellScript(spell_mage_pet_freeze);
