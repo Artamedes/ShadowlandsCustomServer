@@ -1111,6 +1111,12 @@ class spell_rog_stealth : public SpellScriptLoader
                 return false;
             }
 
+            enum Stealth
+            {
+                CloakedInShadowsAura = 341529,
+                CloakedInShadowsBuff = 341530,
+            };
+
             void HandleEffectApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (Unit* target = GetTarget())
@@ -1145,6 +1151,12 @@ class spell_rog_stealth : public SpellScriptLoader
 
                     if (target->HasAura(SPELL_ROGUE_SHOT_IN_THE_DARK))
                         target->CastSpell(target, SPELL_ROGUE_SHOT_IN_THE_DARK_BUFF, true);
+
+                    if (auto aurEff = target->GetAuraEffect(CloakedInShadowsAura, EFFECT_0))
+                    {
+                        auto health = CalculatePct(target->GetMaxHealth(), aurEff->GetAmount());
+                        target->CastSpell(target, CloakedInShadowsBuff, CastSpellExtraArgs(true).AddSpellBP0(health));
+                    }
                 }
             }
         
@@ -2962,13 +2974,28 @@ class aura_rog_seal_fate : public AuraScript
 
 	bool CheckProc(ProcEventInfo& eventInfo)
 	{
-		bool spells = (eventInfo.GetSpellInfo()->Id == SPELL_ROGUE_MUTILATE_MAINHAND || eventInfo.GetSpellInfo()->Id == SPELL_ROGUE_MUTILATE_OFFHAND ||
-			eventInfo.GetSpellInfo()->Id == SPELL_ROGUE_SINISTER_STRIKE || eventInfo.GetSpellInfo()->Id == SPELL_ROGUE_GARROTE_DOT || eventInfo.GetSpellInfo()->Id == SPELL_ROGUE_BLINDSIDE ||
-			eventInfo.GetSpellInfo()->Id == SPELL_ROGUE_TOXIC_BLADE);
-		if (eventInfo.GetSpellInfo() && (eventInfo.GetHitMask() & PROC_HIT_CRITICAL) && spells)
-			return true;
+        if (!eventInfo.GetSpellInfo())
+            return false;
 
-		return false;
+        if (!(eventInfo.GetHitMask() & PROC_HIT_CRITICAL))
+            return false;
+
+        switch (eventInfo.GetSpellInfo()->Id)
+        {
+            case SPELL_ROGUE_MUTILATE_MAINHAND:
+            case SPELL_ROGUE_MUTILATE_OFFHAND:
+            case SPELL_ROGUE_SINISTER_STRIKE:
+            case SPELL_ROGUE_GARROTE_DOT:
+            case SPELL_ROGUE_BLINDSIDE:
+            case SPELL_ROGUE_TOXIC_BLADE:
+            case SPELL_ROGUE_FAN_OF_KNIVES:
+            case 8676: // Ambush
+            case 5938: // Shiv
+            case 323547: // Echoing Reprimand
+                return true;
+            default:
+                return false;
+        }
 	}
 
 	void Register() override
@@ -2984,12 +3011,20 @@ class aura_rog_elaborate_planning : public AuraScript
 
 	bool CheckProc(ProcEventInfo& eventInfo)
 	{
-		bool spells = (eventInfo.GetSpellInfo()->Id == SPELL_ROGUE_ENVENOM || eventInfo.GetSpellInfo()->Id == SPELL_ROGUE_RUPTURE || eventInfo.GetSpellInfo()->Id == SPELL_ROGUE_KIDNEY_SHOT ||
-			           eventInfo.GetSpellInfo()->Id == SPELL_ROGUE_CRIMSON_TEMPEST);
-		if (eventInfo.GetSpellInfo() && spells)
-			return true;
+        if (!eventInfo.GetSpellInfo())
+            return false;
 
-		return false;
+        switch (eventInfo.GetSpellInfo()->Id)
+        {
+            case SPELL_ROGUE_ENVENOM:
+            case SPELL_ROGUE_RUPTURE:
+            case SPELL_ROGUE_KIDNEY_SHOT:
+            case SPELL_ROGUE_CRIMSON_TEMPEST:
+            case SPELL_ROGUE_BLINDSIDE:
+                return true;
+            default:
+                return false;
+        }
 	}
 
 	void Register() override
