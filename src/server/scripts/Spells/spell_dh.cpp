@@ -2018,17 +2018,23 @@ public:
 
         void AfterRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
         {
-            if (Unit* caster = GetCaster())            
-                caster->SetDisableGravity(false);            
+            if (Unit* caster = GetCaster())
+                caster->GetScheduler().Schedule(100ms, [caster](TaskContext /*context*/)
+                    {
+                        if (!caster->HasAura(SPELL_DH_FEL_RUSH_AIR))
+                            caster->SetDisableGravity(false);
+                    });
         }
 
         void CalcSpeed(AuraEffect const* /*aurEff*/, int32& amount, bool& /*canBeRecalculated*/)
         {
-            amount = 1400;
+            amount = 1250;
+            RefreshDuration();
         }
 
         void Register() override
         {
+            DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_dh_fel_rush_dash_AuraScript::CalcSpeed, EFFECT_1, SPELL_AURA_MOD_SPEED_NO_CONTROL);
             DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_dh_fel_rush_dash_AuraScript::CalcSpeed, EFFECT_3, SPELL_AURA_MOD_MINIMUM_SPEED);
             AfterEffectRemove += AuraEffectRemoveFn(spell_dh_fel_rush_dash_AuraScript::AfterRemove, EFFECT_9, SPELL_AURA_MOD_MINIMUM_SPEED_RATE, AURA_EFFECT_HANDLE_SEND_FOR_CLIENT_MASK);
         }
