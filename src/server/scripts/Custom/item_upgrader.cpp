@@ -194,7 +194,7 @@ class item_upgrader : public ItemScript
 
                 playerChoiceResponse.ResponseID = 4412414;
                 playerChoiceResponse.ResponseIdentifier = 335;
-                playerChoiceResponse.ChoiceArtFileID = urand(3718819, 3718827);
+                playerChoiceResponse.ChoiceArtFileID = urand(0, 1) == 1 ? urand(3722245, 3722272) : urand(3718819, 3718827);
                 playerChoiceResponse.UiTextureKitID = 5487;
                 playerChoiceResponse.WidgetSetID = 120;
                 playerChoiceResponse.Reward.emplace();
@@ -467,21 +467,21 @@ class item_upgrader : public ItemScript
             WorldPackets::Quest::TreasurePickItem l_Item;
             l_Item.Item.ItemID = l_ItemUpgrade->ReplaceItemID ? l_ItemUpgrade->ReplaceItemID : l_ItemTarget->GetEntry();
             l_Item.Quantity = l_ItemUpgrade->ReplaceItemQuantity ? l_ItemUpgrade->ReplaceItemQuantity : 1;
-            //if (!l_ItemUpgrade->ReplaceBonusIDList.empty())
+            if (l_ItemUpgrade->Type == ItemUpgradeType::BonusID)
             {
-                l_Item.Item.ItemBonus.emplace();
-                l_Item.Item.ItemBonus->Context = ItemContext::Torghast;
+                l_Item.Item.Initialize(l_ItemTarget);
+                //l_Item.Item.ItemBonus->Context = ItemContext::Torghast;
+
+                if (!l_Item.Item.ItemBonus.has_value())
+                    l_Item.Item.ItemBonus.emplace();
+
+                l_Item.Item.ItemBonus->BonusListIDs.clear();
 
                 for (int32 bonusId : *l_ItemTarget->m_itemData->BonusListIDs)
                 {
-                    if (l_ItemUpgrade->Type != ItemUpgradeType::BonusID || bonusId != l_ItemUpgrade->RequiredID)
+                    if (bonusId != l_ItemUpgrade->RequiredID)
                     {
-                        bool add = false;
-
                         if (std::find(l_ItemUpgrade->RemoveBonusIDList.begin(), l_ItemUpgrade->RemoveBonusIDList.end(), bonusId) == l_ItemUpgrade->RemoveBonusIDList.end())
-                            add = true;
-
-                        if (add)
                             l_Item.Item.ItemBonus->BonusListIDs.push_back(bonusId);
                     }
                 }
@@ -489,6 +489,7 @@ class item_upgrader : public ItemScript
                 for (int32 bonusId : l_ItemUpgrade->ReplaceBonusIDList)
                     l_Item.Item.ItemBonus->BonusListIDs.push_back(bonusId);
             }
+
 
             l_Item.Quantity = 1;
             l_Packet2.Items.push_back(l_Item);
