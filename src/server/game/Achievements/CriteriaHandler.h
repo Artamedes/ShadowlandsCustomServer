@@ -275,13 +275,14 @@ public:
 
     virtual void Reset();
 
-    void UpdateCriteria(CriteriaType type, uint64 miscValue1 = 0, uint64 miscValue2 = 0, uint64 miscValue3 = 0, WorldObject const* ref = nullptr, Player* referencePlayer = nullptr);
+    void UpdateCriteria(CriteriaType type, uint64 miscValue1 = 0, uint64 miscValue2 = 0, uint64 miscValue3 = 0, WorldObject const* ref = nullptr, Player* referencePlayer = nullptr, bool init = false);
 
     virtual void SendAllData(Player const* receiver) const = 0;
 
     void UpdateTimedCriteria(uint32 timeDiff);
     void StartCriteriaTimer(CriteriaStartEvent startEvent, uint32 entry, uint32 timeLost = 0);
     void RemoveCriteriaTimer(CriteriaStartEvent startEvent, uint32 entry);   // used for quest and scripted timed s
+    bool IsCompletedCriteriaTree(CriteriaTree const* tree, Player* referencePlayer);
 
 protected:
     virtual void SendCriteriaUpdate(Criteria const* criteria, CriteriaProgress const* progress, Seconds timeElapsed, bool timedCompleted) const = 0;
@@ -291,7 +292,6 @@ protected:
     void RemoveCriteriaProgress(Criteria const* criteria);
     virtual void SendCriteriaProgressRemoved(uint32 criteriaId) = 0;
 
-    bool IsCompletedCriteriaTree(CriteriaTree const* tree, Player* referencePlayer);
     virtual bool CanUpdateCriteriaTree(Criteria const* criteria, CriteriaTree const* tree, Player* referencePlayer) const;
     virtual bool CanCompleteCriteriaTree(CriteriaTree const* tree);
     virtual void CompletedCriteriaTree(CriteriaTree const* tree, Player* referencePlayer);

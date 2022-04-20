@@ -47,6 +47,7 @@
 #include "Spell.h"
 #include "Item.h"
 #include "ScenarioMgr.h"
+#include "Guild.h"
 
 #ifdef TRINITY_API_USE_DYNAMIC_LINKING
 #include "ScriptMgr.h"
@@ -1039,57 +1040,122 @@ void InstanceScript::SendBossKillCredit(uint32 encounterId)
     instance->SendToPlayers(bossKillCreditMessage.Write());
 }
 
-void InstanceScript::UpdateEncounterState(EncounterCreditType type, uint32 creditEntry, Unit* /*source*/)
+void InstanceScript::UpdateEncounterState(EncounterCreditType type, uint32 creditEntry, Unit* /*source*/, Unit* unit /*= nullptr*/)
 {
     DungeonEncounterList const* encounters = sObjectMgr->GetDungeonEncounterList(instance->GetId(), instance->GetDifficultyID());
     if (!encounters)
         return;
 
-    uint32 dungeonId = 0;
+    uint32 encounterId = 0;
+    bool findCustomDungeon = false;
+    Map::PlayerList const& players = instance->GetPlayers();
 
-    for (auto const& encounter : *encounters)
+    ObjectGuid groupGuid;
+    if (unit)
     {
-        if (encounter.creditType == type && encounter.creditEntry == creditEntry)
+        if (Player* player = unit->ToPlayer())
+            if (Group* group = player->GetGroup())
+                groupGuid = group->GetGUID();
+    }
+    else if (players.begin() != players.end())
+    {
+        if (Player* player = players.begin()->GetSource())
+            if (Group* group = player->GetGroup())
+                groupGuid = group->GetGUID();
+    }
+
+    uint32 dungeonId = sLFGMgr->GetDungeon(groupGuid);
+    bool isLFGEncounter = false;
+    uint32 fullEncounterIndex = 0;
+    if (unit)
+    {
+        //if (lfg::LfgReward const* reward = sLFGMgr->GetDungeonReward(dungeonId, unit->getLevel()))
+        //{
+        //    if (reward->encounterMask)
+        //    {
+        //        isLFGEncounter = true;
+        //        fullEncounterIndex = reward->encounterMask;
+        //    }
+        //}
+    }
+
+    for (DungeonEncounterList::const_iterator iter = encounters->begin(); iter != encounters->end(); ++iter)
+    {
+        auto encounter = iter;
+        uint32 completedEncounter = 1 << encounter->dbcEntry->Bit;
+        if (encounter->creditType == type && encounter->creditEntry == creditEntry)
         {
-            completedEncounters |= 1 << encounter.dbcEntry->Bit;
-            if (encounter.lastEncounterDungeon)
+            if (!isLFGEncounter || (completedEncounter & fullEncounterIndex))
+                completedEncounters |= completedEncounter;
+
+            encounterId = encounter->dbcEntry->ID;
+
+            if (type == ENCOUNTER_CREDIT_KILL_CREATURE)
+                SendBossKillCredit(encounterId);
+
+            if (InstanceScenario* scenario = instance->ToInstanceMap()->GetInstanceScenario())
+                if (players.begin() != players.end())
+                    scenario->UpdateCriteria(CriteriaType::DefeatDungeonEncounter, encounter->dbcEntry->ID, 0, 0, nullptr, players.begin()->GetSource());
+
+            if (encounter->lastEncounterDungeon && !isLFGEncounter)
             {
-                dungeonId = encounter.lastEncounterDungeon;
-                TC_LOG_DEBUG("lfg", "UpdateEncounterState: Instance %s (instanceId %u) completed encounter %s. Credit Dungeon: %u",
-                    instance->GetMapName(), instance->GetInstanceId(), encounter.dbcEntry->Name[sWorld->GetDefaultDbcLocale()], dungeonId);
+                dungeonId = encounter->lastEncounterDungeon;
+                findCustomDungeon = true;
+                //TC_LOG_DEBUG("lfg", "UpdateEncounterState: Instance %s (instanceId %u) completed encounter %s. Credit Dungeon: %u",
+                //    instance->GetMapName(), instance->GetInstanceId(), encounter->dbcEntry->Name->Str[sWorld->GetDefaultDbcLocale()], dungeonId);
                 break;
             }
         }
+
+        if (!isLFGEncounter)
+            fullEncounterIndex |= completedEncounter;
     }
 
-    if (dungeonId)
+    if (dungeonId && (fullEncounterIndex == completedEncounters || findCustomDungeon)) // For auto find dungeonId disable find last encounter from base, need
     {
+        uint8 count = 0;
         Map::PlayerList const& players = instance->GetPlayers();
-        for (auto const& ref : players)
+        for (Map::PlayerList::const_iterator i = players.begin(); i != players.end(); ++i)
         {
-            if (Player* player = ref.GetSource())
+            if (Player* player = i->GetSource())
             {
                 if (Group* grp = player->GetGroup())
                 {
-                    if (grp->isLFGGroup())
+                    if (grp->isRaidGroup())
+                        player->UpdateCriteria(CriteriaType::RunInstance, instance->GetMapDifficulty() ? instance->GetMapDifficulty()->MaxPlayers : 1);
+
+                    //After update the criteria then finish the dungeon
+                    count++;
+                    if (count >= instance->GetPlayersCountExceptGMs())
                     {
-                        sLFGMgr->FinishDungeon(grp->GetGUID(), dungeonId, instance);
-                        return;
+                       //if (player)
+                       //    if (auto guild = player->GetGuild())
+                       //        if (grp->IsGuildGroup())
+                       //            guild->AddGuildNews(GUILD_NEWS_DUNGEON_ENCOUNTER, player->GetGUID(), 0, encounterId);
+
+                        if (grp->isLFGGroup())
+                        {
+                            sLFGMgr->FinishDungeon(grp->GetGUID(), dungeonId, instance);
+                            return;
+                        }
                     }
                 }
             }
         }
     }
+
+    //if (!groupGuid.IsEmpty())
+    //    sLFGMgr->SetCompletedMask(groupGuid, completedEncounters);
 }
 
-void InstanceScript::UpdateEncounterStateForKilledCreature(uint32 creatureId, Unit* source)
+void InstanceScript::UpdateEncounterStateForKilledCreature(uint32 creatureId, Unit* source, Unit* player /*= nullptr*/)
 {
-    UpdateEncounterState(ENCOUNTER_CREDIT_KILL_CREATURE, creatureId, source);
+    UpdateEncounterState(ENCOUNTER_CREDIT_KILL_CREATURE, creatureId, source, player);
 }
 
-void InstanceScript::UpdateEncounterStateForSpellCast(uint32 spellId, Unit* source)
+void InstanceScript::UpdateEncounterStateForSpellCast(uint32 spellId, Unit* source, Unit* player /*= nullptr*/)
 {
-    UpdateEncounterState(ENCOUNTER_CREDIT_CAST_SPELL, spellId, source);
+    UpdateEncounterState(ENCOUNTER_CREDIT_CAST_SPELL, spellId, source, player);
 }
 
 void InstanceScript::UpdatePhasing()
@@ -1593,4 +1659,32 @@ void InstanceScript::CreateChallenge(Player* player)
     DoRemoveSpellCooldownWithTimeOnPlayers(2 * TimeConstants::IN_MILLISECONDS * TimeConstants::MINUTE);
     SetChallenge(_challenge);
     _challenge->SetInstanceScript(this);
+
+    instance->DoOnPlayers([](Player* player)
+    {
+
+        WorldPackets::ChallengeMode::MythicPlusCurrentAffixes affixes;
+        /// affixes.Affixes.push_back(sWorld->getWorldState(WS_CHALLENGE_AFFIXE1_RESET_TIME));
+        /// affixes.Affixes.push_back(sWorld->getWorldState(WS_CHALLENGE_AFFIXE2_RESET_TIME));
+        /// affixes.Affixes.push_back(sWorld->getWorldState(WS_CHALLENGE_AFFIXE3_RESET_TIME));
+        /// affixes.Affixes.push_back(sWorld->getWorldState(WS_CHALLENGE_AFFIXE4_RESET_TIME));
+
+
+        // TODO: Add correct affixes
+        affixes.Affixes.resize(6);
+        affixes.Affixes[0].KeystoneAffixID = 9;
+        affixes.Affixes[0].RequiredSeason = 0;
+        affixes.Affixes[1].KeystoneAffixID = 8;
+        affixes.Affixes[1].RequiredSeason = 0;
+        affixes.Affixes[2].KeystoneAffixID = 124;
+        affixes.Affixes[2].RequiredSeason = 0;
+        affixes.Affixes[3].KeystoneAffixID = 121;
+        affixes.Affixes[3].RequiredSeason = 5;
+        affixes.Affixes[4].KeystoneAffixID = 128;
+        affixes.Affixes[4].RequiredSeason = 6;
+        affixes.Affixes[5].KeystoneAffixID = 130;
+        affixes.Affixes[5].RequiredSeason = 7;
+
+        player->GetSession()->SendPacket(affixes.Write());
+    });
 }

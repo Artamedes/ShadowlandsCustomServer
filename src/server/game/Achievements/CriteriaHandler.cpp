@@ -457,7 +457,7 @@ void CriteriaHandler::Reset()
 /**
  * this function will be called whenever the user might have done a criteria relevant action
  */
-void CriteriaHandler::UpdateCriteria(CriteriaType type, uint64 miscValue1 /*= 0*/, uint64 miscValue2 /*= 0*/, uint64 miscValue3 /*= 0*/, WorldObject const* ref /*= nullptr*/, Player* referencePlayer /*= nullptr*/)
+void CriteriaHandler::UpdateCriteria(CriteriaType type, uint64 miscValue1 /*= 0*/, uint64 miscValue2 /*= 0*/, uint64 miscValue3 /*= 0*/, WorldObject const* ref /*= nullptr*/, Player* referencePlayer /*= nullptr*/, bool init /*= false*/)
 {
     if (type >= CriteriaType::Count)
     {
@@ -760,6 +760,11 @@ void CriteriaHandler::UpdateCriteria(CriteriaType type, uint64 miscValue1 /*= 0*
             case CriteriaType::GuildAttainedLevel:
                 SetCriteriaProgress(criteria, miscValue1, referencePlayer);
                 break;
+            case CriteriaType::DefeatDungeonEncounter:
+                if (miscValue1 != uint64(criteria->Entry->Asset.DungeonEncounterID))
+                    continue;
+                SetCriteriaProgress(criteria, init ? 0 : 1, referencePlayer, PROGRESS_ACCUMULATE);
+                break;
             // FIXME: not triggered in code as result, need to implement
             case CriteriaType::RunInstance:
             case CriteriaType::ParticipateInArena:
@@ -792,7 +797,6 @@ void CriteriaHandler::UpdateCriteria(CriteriaType type, uint64 miscValue1 /*= 0*
             case CriteriaType::PlayerObtainPetThroughBattle:
             case CriteriaType::EnterArea:
             case CriteriaType::LeaveArea:
-            case CriteriaType::DefeatDungeonEncounter:
             case CriteriaType::ActivateGarrisonBuilding:
             case CriteriaType::UpgradeGarrison:
             case CriteriaType::StartAnyGarrisonMissionWithFollowerType:
@@ -848,9 +852,7 @@ void CriteriaHandler::UpdateCriteria(CriteriaType type, uint64 miscValue1 /*= 0*
 
         for (CriteriaTree const* tree : *trees)
         {
-            if (IsCompletedCriteriaTree(tree, referencePlayer))
-                CompletedCriteriaTree(tree, referencePlayer);
-
+            IsCompletedCriteriaTree(tree, referencePlayer);
             AfterCriteriaTreeUpdate(tree, referencePlayer);
         }
     }
@@ -1247,6 +1249,7 @@ bool CriteriaHandler::IsCompletedCriteria(Criteria const* criteria, uint64 requi
         case CriteriaType::BuyItemsFromVendors:
         case CriteriaType::SellItemsToVendors:
         case CriteriaType::EnterTopLevelArea:
+        case CriteriaType::DefeatDungeonEncounter:
             return progress->Counter >= requiredAmount;
         case CriteriaType::EarnAchievement:
         case CriteriaType::CompleteQuest:

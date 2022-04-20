@@ -321,8 +321,8 @@ class TC_GAME_API InstanceScript : public ZoneScript
         virtual bool CheckRequiredBosses(uint32 /*bossId*/, Player const* /*player*/ = nullptr) const { return true; }
 
         // Checks encounter state at kill/spellcast
-        void UpdateEncounterStateForKilledCreature(uint32 creatureId, Unit* source);
-        void UpdateEncounterStateForSpellCast(uint32 spellId, Unit* source);
+        void UpdateEncounterStateForKilledCreature(uint32 creatureId, Unit* source, Unit* player = nullptr);
+        void UpdateEncounterStateForSpellCast(uint32 spellId, Unit* source, Unit* player = nullptr);
 
         // Used only during loading
         void SetCompletedEncountersMask(uint32 newMask) { completedEncounters = newMask; }
@@ -458,7 +458,7 @@ class TC_GAME_API InstanceScript : public ZoneScript
 
     private:
         static void LoadObjectData(ObjectData const* creatureData, ObjectInfoMap& objectInfo);
-        void UpdateEncounterState(EncounterCreditType type, uint32 creditEntry, Unit* source);
+        void UpdateEncounterState(EncounterCreditType type, uint32 creditEntry, Unit* source, Unit* unit = nullptr);
 
         std::vector<char> headers;
         std::vector<BossInfo> bosses;

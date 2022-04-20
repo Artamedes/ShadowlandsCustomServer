@@ -112,8 +112,8 @@ class quest_playerscript : public PlayerScript
             }
 
             AddGossipItemFor(player, GossipOptionIcon::None, "Commit", 0, Commit, "Are you sure you're ready to commit?", 0, false);
-            SendGossipMenuFor(player, 1, player);
             player->PlayerTalkClass->GetGossipMenu().SetMenuId(62767262);
+            SendGossipMenuFor(player, 1, player);
         }
 
 
@@ -194,7 +194,7 @@ class quest_playerscript : public PlayerScript
 
                         int32 uiMapId = 0;
                         // try to retrieve to ui map id
-                        DB2Manager::GetUiMapPosition(player->GetPositionX(), player->GetPositionY(), player->GetPositionZ(), player->GetMapId(), 0, 0, 0, UI_MAP_SYSTEM_ADVENTURE, false, &uiMapId);
+                        DB2Manager::GetUiMapPosition(player->GetPositionX(), player->GetPositionY(), player->GetPositionZ(), player->GetMapId(), 0, 0, 0, UI_MAP_SYSTEM_WORLD, false, &uiMapId);
                         itr.UiMapID = uiMapId;
                         itr.Points.push_back(QuestPOIBlobPoint(player->GetPositionX(), player->GetPositionY(), player->GetPositionZ()));
                         ChatHandler(player).PSendSysMessage("added poi point and blob for objective %u", Data.CurrentObjectiveID);
@@ -259,7 +259,7 @@ class quest_playerscript : public PlayerScript
 
                         int32 uiMapId = 0;
                         // try to retrieve to ui map id
-                        DB2Manager::GetUiMapPosition(player->GetPositionX(), player->GetPositionY(), player->GetPositionZ(), player->GetMapId(), 0, 0, 0, UI_MAP_SYSTEM_ADVENTURE, false, &uiMapId);
+                        DB2Manager::GetUiMapPosition(player->GetPositionX(), player->GetPositionY(), player->GetPositionZ(), player->GetMapId(), 0, 0, 0, UI_MAP_SYSTEM_WORLD, false, &uiMapId);
                         itr.UiMapID = uiMapId;
                         itr.Points.push_back(QuestPOIBlobPoint(player->GetPositionX(), player->GetPositionY(), player->GetPositionZ()));
                         ChatHandler(player).PSendSysMessage("set complete poi");

@@ -140,6 +140,7 @@ class DailyRewardsSystem_player_script : public PlayerScript
             if (diff > 86400)
             {
                 player->_daysLoggedIn = 0;
+                player->_rewardsClaimed.clear();
                 player->SaveToDB();
             }
 

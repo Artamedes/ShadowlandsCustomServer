@@ -44,6 +44,15 @@ enum Affixes : uint32
     QUAKING         = 14,
     RELENTLESS      = 15,
     INFESTED        = 16,
+    Repeating       = 117,
+    Beguiling       = 119,
+    Awakened        = 120,
+    Prideful        = 121,
+    Inspiring       = 122,
+    Storming        = 124,
+    Tormented       = 128,
+    Infernal        = 129,
+    Encrypted       = 130,
 
     MAX_AFFIXES
 };

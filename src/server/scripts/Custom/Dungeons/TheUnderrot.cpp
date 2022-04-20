@@ -2,11 +2,20 @@
 #include "ScriptedCreature.h"
 #include "../CustomInstanceScript.h"
 #include "MoveSpline.h"
+#include "CriteriaHandler.h"
+#include "Scenario.h"
+#include "InstanceScenario.h"
 
 enum Underrot
 {
     NpcBloodBall = 701013,
     SpellDummyChannel = 363390,
+
+    BossA = 701005,
+    BossB = 701003,
+    BossC = 701000,
+
+    UnderrotCriteriaID = 300000,
 };
 
 struct instance_the_underrot : public CustomInstanceScript
@@ -15,6 +24,40 @@ public:
     instance_the_underrot(InstanceMap* map) : CustomInstanceScript(map)
     {
     }
+
+    void OnCompletedCriteriaTree(CriteriaTree const* tree) override
+    {
+        if (InstanceScenario* instanceScenario = instance->GetInstanceScenario())
+        {
+            if (auto tree2 = sCriteriaMgr->GetCriteriaTree(UnderrotCriteriaID))
+                instanceScenario->IsCompletedCriteriaTree(tree2, nullptr);
+        }
+    }
+
+    // unneeded for now - handled internally
+    //void CreatureDiesForScript(Creature* creature, Unit* killer) override
+    //{
+    //    // call parent so challenge updates (runs affixes)
+    //    InstanceScript::CreatureDiesForScript(creature, killer);
+    //
+    //    if (creature->ToTempSummon())
+    //        return;
+    //
+    //    switch (creature->GetEntry())
+    //    {
+    //        case BossA:
+    //          //  DoUpdateCriteria(CriteriaType::DefeatDungeonEncounter, creature->GetEntry());
+    //            break;
+    //        case BossB:
+    //         //   DoUpdateCriteria(CriteriaType::DefeatDungeonEncounter, creature->GetEntry());
+    //            break;
+    //        case BossC:
+    //         //   DoUpdateCriteria(CriteriaType::DefeatDungeonEncounter, creature->GetEntry());
+    //            break;
+    //        default:
+    //            break;
+    //    }
+    //}
 };
 
 // 701000 - npc_mister_doctor_701000
