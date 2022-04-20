@@ -92,44 +92,44 @@ public:
         WildSpiritsDmg = 328757,
     };
 
-    void OnHeal(Unit* healer, Unit* reciever, uint32& gain) override
-    {
-        if (!healer || !reciever)
-            return;
-
-        if (reciever->HealthBelowPct(36))
-        {
-            if (healer->HasAura(WildHuntTactics))
-            {
-                AddPct(gain, 10);
-                if (!healer->HasAura(Stratagem))
-                    healer->CastSpell(healer, Stratagem, true);
-                if (!healer->HasAura(WildHuntTacticsMS))
-                    healer->CastSpell(healer, WildHuntTacticsMS, true);
-                if (healer->HasAura(Stratagem))
-                    healer->CastSpell(reciever, StratagemHealer, true);
-            }
-        }
-    }
+    //void OnHeal(Unit* healer, Unit* reciever, uint32& gain) override
+    //{
+    //    if (!healer || !reciever)
+    //        return;
+    //
+    //    if (reciever->HealthBelowPct(36))
+    //    {
+    //        if (healer->HasAura(WildHuntTactics))
+    //        {
+    //            AddPct(gain, 10);
+    //            if (!healer->HasAura(Stratagem))
+    //                healer->CastSpell(healer, Stratagem, true);
+    //            if (!healer->HasAura(WildHuntTacticsMS))
+    //                healer->CastSpell(healer, WildHuntTacticsMS, true);
+    //            if (healer->HasAura(Stratagem))
+    //                healer->CastSpell(reciever, StratagemHealer, true);
+    //        }
+    //    }
+    //}
 
     void OnDamage(Unit* attacker, Unit* victim, uint32& damage, SpellInfo const* spellInfo)
     {
         if (!attacker || !victim)
             return;
 
-        if (victim->HealthAbovePct(69))
-        {
-            if (attacker->HasAura(WildHuntTactics))
-            {
-                AddPct(damage, 10);
-                if (!attacker->HasAura(Stratagem))
-                    attacker->CastSpell(attacker, Stratagem, true);
-                if (!attacker->HasAura(WildHuntTacticsMS))
-                    attacker->CastSpell(attacker, WildHuntTacticsMS, true);
-                if (attacker->HasAura(Stratagem))
-                    attacker->CastSpell(victim, StratagemDamage, true);
-            }
-        }
+        //if (victim->HealthAbovePct(69))
+        //{
+        //    if (attacker->HasAura(WildHuntTactics))
+        //    {
+        //        AddPct(damage, 10);
+        //        if (!attacker->HasAura(Stratagem))
+        //            attacker->CastSpell(attacker, Stratagem, true);
+        //        if (!attacker->HasAura(WildHuntTacticsMS))
+        //            attacker->CastSpell(attacker, WildHuntTacticsMS, true);
+        //        if (attacker->HasAura(Stratagem))
+        //            attacker->CastSpell(victim, StratagemDamage, true);
+        //    }
+        //}
 
         if (attacker->GetClass() == CLASS_HUNTER && attacker->IsPlayer() && spellInfo && spellInfo->Id != WildSpiritsDmg)
         {
@@ -143,6 +143,67 @@ public:
                 }
             }
         }
+    }
+};
+
+// 328837
+class spell_hunter_wildspirits : public AuraScript
+{
+    PrepareAuraScript(spell_hunter_wildspirits);
+
+    enum eSpells
+    {
+        // Hunter
+        WildSpirits = 328837,
+        WildSpiritsDmg = 328757,
+    };
+    
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        if (!eventInfo.GetActor())
+            return false;
+
+        if (!eventInfo.GetProcTarget())
+            return false;
+
+        if (!eventInfo.GetActor()->IsValidAttackTarget(eventInfo.GetProcTarget()))
+            return false;
+
+        if (eventInfo.GetSpellInfo())
+        {
+            switch (eventInfo.GetSpellInfo()->Id)
+            {
+                case WildSpiritsDmg:
+                    return false;
+                default:
+                    break;
+            }
+        }
+
+        return true;
+    }
+
+    void HandleProc(AuraEffect* /*aurEff*/, ProcEventInfo& eventInfo)
+    {
+        PreventDefaultAction();
+        if (auto attacker = eventInfo.GetActor())
+        {
+            if (auto victim = eventInfo.GetProcTarget())
+            {
+                auto areaTrigger = attacker->GetAreaTrigger(WildSpirits);
+                if (areaTrigger)
+                {
+                    if (areaTrigger->GetInsideUnits().count(victim->GetGUID()))
+                        attacker->CastSpell(victim, WildSpiritsDmg, true);
+                }
+            }
+        }
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_hunter_wildspirits::CheckProc);
+        OnEffectProc += AuraEffectProcFn(spell_hunter_wildspirits::HandleProc, EFFECT_1, SPELL_AURA_DUMMY);
     }
 };
 
@@ -323,13 +384,113 @@ class spell_nightfae_dream_delver : public AuraScript
     }
 };
 
+// ID - 325066 Wild Hunt Tactics
+class spell_nightfae_wild_hunt_tactics : public AuraScript
+{
+    PrepareAuraScript(spell_nightfae_wild_hunt_tactics);
+
+    enum WildHuntE
+    {
+        WildHuntTactics = 325066,
+        WildHuntTacticsMS = 343594,
+        Stratagem = 353286,
+        StratagemHealer = 353793,
+        StratagemDamage = 353254,
+    };
+
+    // SPELL_AURA_MOD_DAMAGE_DONE_VERSUS_AURASTATE is double dipping.
+    // probably just add a hack for it later
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        if (!eventInfo.GetActor())
+            return false;
+
+        if (!eventInfo.GetProcTarget())
+            return false;
+
+        auto actor = eventInfo.GetActor();
+        auto hitUnit = eventInfo.GetProcTarget();
+        if (actor->IsValidAssistTarget(hitUnit) && eventInfo.GetHealInfo())
+            return actor->HealthBelowPct(36);
+        if (actor->IsValidAttackTarget(hitUnit) && eventInfo.GetDamageInfo())
+            return actor->HealthAbovePct(75);
+
+        return false;
+    }
+
+    void HandleProc(AuraEffect* /*aurEff*/, ProcEventInfo& eventInfo)
+    {
+        PreventDefaultAction();
+        if (auto actor = eventInfo.GetActor())
+        {
+            if (auto hitUnit = eventInfo.GetProcTarget())
+            {
+                if (actor->IsValidAttackTarget(hitUnit) && eventInfo.GetDamageInfo())
+                {
+                    auto dmgInfo = eventInfo.GetDamageInfo();
+                    auto damage = dmgInfo->GetDamage();
+                    AddPct(damage, 10);
+                    dmgInfo->ModifyDamage(damage);
+
+                    if (!actor->HasAura(Stratagem) && !actor->GetSpellHistory()->HasCooldown(Stratagem))
+                    {
+                        actor->CastSpell(actor, Stratagem, true);
+                        actor->GetSpellHistory()->AddCooldown(Stratagem, 0, 2s);
+                    }
+                    if (!actor->HasAura(WildHuntTacticsMS) && !actor->GetSpellHistory()->HasCooldown(WildHuntTacticsMS))
+                    {
+                        actor->CastSpell(actor, WildHuntTacticsMS, true);
+                        actor->GetSpellHistory()->AddCooldown(WildHuntTacticsMS, 0, 2s);
+                    }
+                    if (actor->HasAura(Stratagem) && !actor->GetSpellHistory()->HasCooldown(StratagemDamage))
+                    {
+                        actor->CastSpell(hitUnit, StratagemDamage, true);
+                        actor->GetSpellHistory()->AddCooldown(StratagemDamage, 0, 2s);
+                    }
+                }
+                else if (actor->IsValidAssistTarget(hitUnit) && eventInfo.GetHealInfo())
+                {
+                    auto healInfo = eventInfo.GetHealInfo();
+
+                    //AddPct(gain, 10); - figure this out.. 
+                    if (!actor->HasAura(Stratagem) && !actor->GetSpellHistory()->HasCooldown(Stratagem))
+                    {
+                        actor->CastSpell(actor, Stratagem, true);
+                        actor->GetSpellHistory()->AddCooldown(Stratagem, 0, 2s);
+
+                    }
+                    if (!actor->HasAura(WildHuntTacticsMS) && !actor->GetSpellHistory()->HasCooldown(WildHuntTacticsMS))
+                    {
+                        actor->CastSpell(actor, WildHuntTacticsMS, true);
+                        actor->GetSpellHistory()->AddCooldown(WildHuntTacticsMS, 0, 2s);
+                    }
+                    if (actor->HasAura(Stratagem) && !actor->GetSpellHistory()->HasCooldown(StratagemHealer))
+                    {
+                        actor->CastSpell(hitUnit, StratagemHealer, true);
+                        actor->GetSpellHistory()->AddCooldown(StratagemHealer, 0, 2s);
+                    }
+                }
+            }
+        }
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_nightfae_wild_hunt_tactics::CheckProc);
+        OnEffectProc += AuraEffectProcFn(spell_nightfae_wild_hunt_tactics::HandleProc, EFFECT_3, SPELL_AURA_DUMMY);
+    }
+};
+
 void AddSC_spell_nightfae()
 {
     RegisterSpellScript(spell_nightfae_podtender);
+  //  RegisterSpellScript(spell_hunter_wildspirits);
     RegisterSpellScript(spell_nightfae_soulshape);
     RegisterSpellScript(spell_nightfae_grove_invigoration);
     RegisterSpellScript(spell_nightfae_niyas_tools_burrs);
     RegisterSpellScript(spell_nightfae_dream_delver);
+    RegisterSpellScript(spell_nightfae_wild_hunt_tactics);
 
     RegisterCreatureAI(npc_regenerating_wild_seed_164589);
 

@@ -2084,7 +2084,7 @@ public:
                 if (!caster->IsPlayer())
                     return;
 
-                int32 crit = caster->ToPlayer()->GetRatingBonusValue(CR_CRIT_SPELL);
+                int32 crit = caster->ToPlayer()->m_activePlayerData->CombatRatings[CR_CRIT_SPELL];
                 amount += CalculatePct(crit, sSpellMgr->GetSpellInfo(SPELL_MAGE_COMBUSTION)->GetEffect(EFFECT_2).BasePoints);
             }
         }
@@ -2443,39 +2443,30 @@ public:
 
         bool Load() override
         {
-            healtPct = GetSpellInfo()->GetEffect(EFFECT_1).CalcValue(GetCaster());
+            healtPct = GetSpellInfo()->GetEffect(EFFECT_1).CalcValue(GetCaster()); // 35%
             return GetUnitOwner()->GetTypeId() == TYPEID_PLAYER;
         }
 
-        void CalculateAmount(AuraEffect const* /*auraEffect*/, int32& amount, bool& /*canBeRecalculated*/)
+        void OnAbsorb(AuraEffect* /*aurEff*/, DamageInfo& dmgInfo, uint32& /*absorbAmount*/)
         {
-            amount = -1;
-        }
-
-        void Absorb(AuraEffect* /*auraEffect*/, DamageInfo& dmgInfo, uint32& absorbAmount)
-        {
-            Unit* target = GetTarget();
-
-            if (target->GetTypeId() != TYPEID_PLAYER)
-                return;
-            if (dmgInfo.GetDamage() < target->GetHealth())
-                return;
-
-            if (target->ToPlayer()->GetSpellHistory()->HasCooldown(SPELL_MAGE_CAUTERIZE))
-                return;
-
-            int bp1 = target->CountPctFromMaxHealth(healtPct);
-            target->CastCustomSpell(target, SPELL_MAGE_CAUTERIZE, NULL, &bp1, NULL, true);
-            target->CastSpell(target, GetSpellInfo()->GetEffect(EFFECT_2).TriggerSpell, true);
-            target->GetSpellHistory()->AddCooldown(SPELL_MAGE_CAUTERIZE, 0, std::chrono::minutes(2));
-
-            absorbAmount = dmgInfo.GetDamage();
+            if (Unit* caster = GetCaster())
+            {
+                if (!caster->GetSpellHistory()->HasCooldown(SPELL_MAGE_CAUTERIZE) && dmgInfo.GetDamage() >= caster->GetHealth())
+                {
+                    PreventDefaultAction();
+                    uint64 health7 = caster->CountPctFromMaxHealth(35);
+                    HealInfo healInfo(caster, caster, health7, GetSpellInfo(), GetSpellInfo()->GetSchoolMask());
+                    caster->HealBySpell(healInfo);
+                    caster->CastSpell(caster, SPELL_MAGE_CAUTERIZE, true);
+                    caster->CastSpell(caster, GetSpellInfo()->GetEffect(EFFECT_2).TriggerSpell, true); // blazing speed
+                    caster->GetSpellHistory()->AddCooldown(SPELL_MAGE_CAUTERIZE, 0, std::chrono::minutes(2));
+                }
+            }
         }
 
         void Register() override
         {
-            DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_mage_cauterize_AuraScript::CalculateAmount, EFFECT_0, SPELL_AURA_SCHOOL_ABSORB);
-            OnEffectAbsorb += AuraEffectAbsorbFn(spell_mage_cauterize_AuraScript::Absorb, EFFECT_0);
+            OnEffectAbsorb += AuraEffectAbsorbOverkillFn(spell_mage_cauterize_AuraScript::OnAbsorb, EFFECT_0);
         }
     };
 
