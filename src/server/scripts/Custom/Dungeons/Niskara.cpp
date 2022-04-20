@@ -185,6 +185,7 @@ struct npc_nazgrul_700500 : public ScriptedAI
 
      void JustEngagedWith(Unit* who) override
      {
+         me->AddUnitState(UNIT_STATE_IGNORE_PATHFINDING);
          scheduler.CancelAll();
          Talk(2);
      }

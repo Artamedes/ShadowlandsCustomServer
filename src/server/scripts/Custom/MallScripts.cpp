@@ -1017,6 +1017,14 @@ struct npc_general_700000 : public ScriptedAI
 public:
     npc_general_700000(Creature* p_Creature) : ScriptedAI(p_Creature) { }
 
+    void OnQuestAccept(Player* who, Quest const* quest) override
+    {
+        if (quest->GetQuestId() == 700001)
+        {
+            Talk(1, who);
+        }
+    }
+
     void OnUnitRelocation(Unit* p_Who) override
     {
         if (p_Who->IsPlayer() && p_Who->GetDistance2d(me) <= 14.0f)
