@@ -34,10 +34,10 @@ InstanceScenario::InstanceScenario(Map* map, ScenarioData const* scenarioData) :
     ASSERT(_map);
     LoadInstanceData(_map->GetInstanceId());
 
-    Map::PlayerList const& players = map->GetPlayers();
-    for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
-        if (Player* player = itr->GetSource()->ToPlayer())
-            SendScenarioState(player);
+    //Map::PlayerList const& players = map->GetPlayers();
+    //for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
+    //    if (Player* player = itr->GetSource()->ToPlayer())
+    //        SendScenarioState(player);
 
     _scenarioType = SCENARIO_INSTANCE_TYPE_INSTANCE_SCENARIO;
 }

@@ -323,6 +323,7 @@ void Scenario::SendScenarioState(Player* player)
 {
     WorldPackets::Scenario::ScenarioState scenarioState;
     BuildScenarioState(&scenarioState);
+    scenarioState.PlayerGUID = player->GetGUID(); // todo fix this, might be party leader
     player->SendDirectMessage(scenarioState.Write());
 }
 
