@@ -974,9 +974,11 @@ bool Unit::HasBreakableByDamageCrowdControlAura(Unit* excludeCasterChannel) cons
                 damageInfo.AbsorbDamage(currentAbsorb);
 
                 if (deathFullyPrevented)
+                {
                     killed = false;
+                    skipSettingDeathState = true;
+                }
 
-                skipSettingDeathState = true;
 
                 if (currentAbsorb)
                 {
