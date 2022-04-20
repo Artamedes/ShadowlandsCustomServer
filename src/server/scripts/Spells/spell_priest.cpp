@@ -1026,6 +1026,7 @@ public:
             //caster->AddAura(SPELL_PRIEST_SHADOWFORM_STANCE);
             caster->m_Events.AddEventAtOffset([caster]() {
                 caster->CastSpell(caster, SPELL_PRIEST_SHADOWFORM_STANCE, true);
+                caster->GetSpellHistory()->ResetCooldown(SPELL_PRIEST_MIND_BLAST); // fix mind blast stuck
                 }, 100ms);
         }
 
@@ -4843,6 +4844,70 @@ class spell_priest_damnation : public SpellScript
     }
 };
 
+// ID - 341491 Shadowy Apparitions
+class spell_priest_shadowy_apparations : public AuraScript
+{
+    PrepareAuraScript(spell_priest_shadowy_apparations);
+
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        if (!eventInfo.GetActor())
+            return false;
+
+        if (eventInfo.GetSpellInfo())
+        {
+            switch (eventInfo.GetSpellInfo()->Id)
+            {
+                case SPELL_PRIEST_MIND_BLAST:
+                case SPELL_PRIEST_VOID_BOLT:
+                case SPELL_PRIEST_DEVOURING_PLAGUE:
+                case 335467: // Devouring Plague
+                    return true;
+            }
+        }
+
+        return false;
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (auto caster = eventInfo.GetActor())
+        {
+            std::list<Unit*> enemies;
+            caster->GetAttackableUnitListInRange(enemies, 40.0f);
+
+            auto DoShadowApperations([&]()
+            {
+                for (auto target : enemies)
+                {
+                    if (target->HasAura(SPELL_PRIEST_VAMPIRIC_TOUCH, caster->GetGUID()))
+                    {
+                        if (caster->GetRaceMask() == RACE_PANDAREN_ALLIANCE || caster->GetRaceMask() == RACE_PANDAREN_HORDE || caster->GetRaceMask() == RACE_DARK_IRON_DWARF)
+                            caster->SendPlaySpellVisual(target->GetGUID(), 33589, 0, 0, 6.f, false);
+                        else if (caster->GetRaceMask() == RACE_GNOME || caster->GetRaceMask() == RACE_GOBLIN)
+                            caster->SendPlaySpellVisual(target->GetGUID(), 33577, 0, 0, 6.f, false);
+                        else
+                            caster->SendPlaySpellVisual(target->GetGUID(), 33573, 0, 0, 6.f, false);
+                        caster->CastSpell(target, SPELL_PRIEST_NPC_SHADOWY_APPARITION, true);
+                    }
+                }
+            });
+
+            DoShadowApperations();
+
+            if (eventInfo.GetHitMask() & ProcFlagsHit::PROC_HIT_CRITICAL)
+                DoShadowApperations();
+        }
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_priest_shadowy_apparations::CheckProc);
+        OnProc += AuraProcFn(spell_priest_shadowy_apparations::HandleProc);
+    }
+};
+
 void AddSC_priest_spell_scripts()
 {
     // Areatriggers
@@ -4957,6 +5022,7 @@ void AddSC_priest_spell_scripts()
     RegisterSpellScript(spell_pri_premonition);
     RegisterSpellScript(spell_pri_premonition_damage);
     RegisterSpellScript(spell_priest_damnation);
+    RegisterSpellScript(spell_priest_shadowy_apparations);
 
     // PlayerScripts
     new priest_playerscript();
