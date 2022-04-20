@@ -211,11 +211,11 @@ void ChallengeModeMgr::LoadFromDB()
         sWorld->getWorldState(WS_CHALLENGE_AFFIXE3_RESET_TIME) == 0 || sWorld->getWorldState(WS_CHALLENGE_AFFIXE4_RESET_TIME) == 0)
         GenerateCurrentWeekAffixes();
 
-    if ((sWorld->getIntConfig(CONFIG_CHALLENGE_MANUAL_AFFIX1) > 0 && sWorld->getIntConfig(CONFIG_CHALLENGE_MANUAL_AFFIX1) < MAX_AFFIXES)  &&
-        (sWorld->getIntConfig(CONFIG_CHALLENGE_MANUAL_AFFIX2) > 0 && sWorld->getIntConfig(CONFIG_CHALLENGE_MANUAL_AFFIX2) < MAX_AFFIXES)  &&
-        (sWorld->getIntConfig(CONFIG_CHALLENGE_MANUAL_AFFIX3) > 0 && sWorld->getIntConfig(CONFIG_CHALLENGE_MANUAL_AFFIX3) < MAX_AFFIXES)  &&
-        (sWorld->getIntConfig(CONFIG_CHALLENGE_MANUAL_AFFIX4) > 0 && sWorld->getIntConfig(CONFIG_CHALLENGE_MANUAL_AFFIX4) < MAX_AFFIXES))
-        GenerateManualAffixes();
+    //if ((sWorld->getIntConfig(CONFIG_CHALLENGE_MANUAL_AFFIX1) > 0 && sWorld->getIntConfig(CONFIG_CHALLENGE_MANUAL_AFFIX1) < MAX_AFFIXES)  &&
+    //    (sWorld->getIntConfig(CONFIG_CHALLENGE_MANUAL_AFFIX2) > 0 && sWorld->getIntConfig(CONFIG_CHALLENGE_MANUAL_AFFIX2) < MAX_AFFIXES)  &&
+    //    (sWorld->getIntConfig(CONFIG_CHALLENGE_MANUAL_AFFIX3) > 0 && sWorld->getIntConfig(CONFIG_CHALLENGE_MANUAL_AFFIX3) < MAX_AFFIXES)  &&
+    //    (sWorld->getIntConfig(CONFIG_CHALLENGE_MANUAL_AFFIX4) > 0 && sWorld->getIntConfig(CONFIG_CHALLENGE_MANUAL_AFFIX4) < MAX_AFFIXES))
+    //    GenerateManualAffixes();
 }
 
 ChallengeData* ChallengeModeMgr::BestServerChallenge(uint16 ChallengeID)

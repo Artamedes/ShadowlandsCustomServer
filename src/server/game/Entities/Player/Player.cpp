@@ -29981,6 +29981,8 @@ void Player::UpdateChallengeKey(Item* item)
     m_challengeKeyInfo.needUpdate = true;
 }
 
+constexpr uint32 customDungeonsForChallenge[] = { 251, 245, 169 };
+
 void Player::CreateChallengeKey(Item* item)
 {
     if (!m_challengeKeyInfo.IsActive())
@@ -29992,7 +29994,7 @@ void Player::CreateChallengeKey(Item* item)
     item->SetExpiration(sWorld->getNextChallengeKeyReset() - time(nullptr));
 
     if (!item->GetModifier(ITEM_MODIFIER_CHALLENGE_MAP_CHALLENGE_MODE_ID))
-        item->SetModifier(ITEM_MODIFIER_CHALLENGE_MAP_CHALLENGE_MODE_ID, Trinity::Containers::SelectRandomContainerElement(sDB2Manager.GetChallengeMaps()));
+        item->SetModifier(ITEM_MODIFIER_CHALLENGE_MAP_CHALLENGE_MODE_ID, Trinity::Containers::SelectRandomContainerElement(customDungeonsForChallenge));
 
     m_challengeKeyInfo.Affix = sWorld->getWorldState(WS_CHALLENGE_AFFIXE1_RESET_TIME);
     m_challengeKeyInfo.Affix1 = sWorld->getWorldState(WS_CHALLENGE_AFFIXE2_RESET_TIME);
@@ -30040,7 +30042,7 @@ void Player::ChallengeKeyCharded(Item* item, uint32 challengeLevel, bool runRand
         {
             uint16 oldID = m_challengeKeyInfo.ID;
             while (oldID == m_challengeKeyInfo.ID)
-                m_challengeKeyInfo.ID = Trinity::Containers::SelectRandomContainerElement(sDB2Manager.GetChallengeMaps());
+                m_challengeKeyInfo.ID = Trinity::Containers::SelectRandomContainerElement(customDungeonsForChallenge);
         }
         m_challengeKeyInfo.needUpdate = true;
 
