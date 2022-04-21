@@ -391,7 +391,8 @@ public:
     {
         auto player = handler->GetPlayer();
 
-        questPoiData[player->GetGUID().GetCounter()].Reset(questId.value_or(0));
+        if (questId.has_value())
+            questPoiData[player->GetGUID().GetCounter()].Reset(questId.value_or(0));
         quest_playerscript::OnGossipHello(player);
 
         return true;

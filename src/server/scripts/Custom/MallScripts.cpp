@@ -1047,6 +1047,43 @@ private:
     std::unordered_map<ObjectGuid, TimePoint> m_PlayerTalks;
 };
 
+struct npc_combat_testing_shaman : public ScriptedAI
+{
+public:
+    npc_combat_testing_shaman(Creature* creature) : ScriptedAI(creature) { }
+
+    bool OnGossipHello(Player* player) override
+    {
+        ClearGossipMenuFor(player);
+        AddGossipItemFor(player, GossipOptionIcon::None, "Enter Incursion", 0, 1);
+        SendGossipMenuFor(player, 1, me);
+        return true;
+    }
+
+    bool OnGossipSelect(Player* player, uint32 menuId, uint32 gossipListId) override
+    {
+        player->CastSpell(me, 313352); // activating
+        CloseGossipMenuFor(player);
+        return true;
+    }
+};
+
+// 313352
+class spell_activating_313352 : public SpellScript
+{
+    PrepareSpellScript(spell_activating_313352);
+
+    void DoEffect(SpellEffIndex /*eff*/)
+    {
+        if (auto caster = GetCaster())
+            caster->CastSpell(caster, 313445, true); // nyalotha incursion
+    }
+
+    void Register() override
+    {
+        OnEffectHitTarget += SpellEffectFn(spell_activating_313352::DoEffect, EFFECT_0, SPELL_EFFECT_SCRIPT_EFFECT);
+    }
+};
 
 void AddSC_MallScripts()
 {
@@ -1064,4 +1101,7 @@ void AddSC_MallScripts()
     RegisterCreatureAI(npc_covenant_swapper);
     RegisterCreatureAI(npc_soulshape_picker);
     RegisterCreatureAI(npc_general_700000);
+    RegisterCreatureAI(npc_combat_testing_shaman);
+
+    RegisterSpellScript(spell_activating_313352);
 }
