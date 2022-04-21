@@ -877,4 +877,41 @@ namespace MMAP
         delete [] buf;
         fclose(fp);
     }
+    void TerrainBuilder::loadModel(std::string const& basepath, std::string const& fileName, MeshData &meshData)
+    {
+        VMapManager2* vmapManager = new VMapManager2();
+
+        if (WorldModel* worldModel = vmapManager->acquireModelInstance(basepath, fileName))
+        {
+            std::vector<GroupModel> groupModels;
+            worldModel->getGroupModels(groupModels);
+
+            for (std::vector<GroupModel>::iterator it = groupModels.begin(); it != groupModels.end(); ++it)
+            {
+                float scale = 1.0f;
+                G3D::Matrix3 rotation = G3D::Matrix3::fromEulerAnglesZYX(G3D::pi(), 0.f, 0.f);
+                G3D::Vector3 position = G3D::Vector3();
+
+                std::vector<G3D::Vector3> tempVertices;
+                std::vector<G3D::Vector3> transformedVertices;
+                std::vector<MeshTriangle> tempTriangles;
+                WmoLiquid* liquid = NULL;
+
+                it->getMeshData(tempVertices, tempTriangles, liquid);
+
+                auto inversed = rotation.inverse();
+
+                transform(tempVertices, transformedVertices, scale, inversed, position);
+
+                int offset = meshData.solidVerts.size() / 3;
+
+                copyVertices(transformedVertices, meshData.solidVerts);
+                copyIndices(tempTriangles, meshData.solidTris, offset, false);
+            }
+
+            vmapManager->releaseModelInstance(fileName);
+        }
+
+        delete vmapManager;
+    }
 }

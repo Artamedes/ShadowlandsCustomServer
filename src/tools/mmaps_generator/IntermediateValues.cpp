@@ -198,16 +198,22 @@ namespace MMAP
         fwrite(mesh->meshes, sizeof(int), mesh->nmeshes*4, file);
     }
 
-    void IntermediateValues::generateObjFile(uint32 mapID, uint32 tileX, uint32 tileY, MeshData &meshData)
+    void IntermediateValues::generateObjFile(uint32 mapID, uint32 tileX, uint32 tileY, MeshData& meshData)
     {
         char objFileName[255];
-        sprintf(objFileName, "meshes/map%04u%02u%02u.obj", mapID, tileY, tileX);
+        sprintf(objFileName, "map%04u%02u%02u", mapID, tileY, tileX);
+        generateObjFile(objFileName, meshData);
+    }
 
-        FILE* objFile = fopen(objFileName, "wb");
+    void IntermediateValues::generateObjFile(std::string filename, MeshData &meshData)
+    {
+        std::string objFileName = "meshes/" + filename + ".obj";
+
+        FILE* objFile = fopen(objFileName.c_str(), "wb");
         if (!objFile)
         {
             char message[1024];
-            sprintf(message, "Failed to open %s for writing!\n", objFileName);
+            sprintf(message, "Failed to open %s for writing!\n", objFileName.c_str());
             perror(message);
             return;
         }
@@ -233,17 +239,15 @@ namespace MMAP
 
         fclose(objFile);
 
-        char tileString[25];
-        sprintf(tileString, "[%02u,%02u]: ", tileY, tileX);
-        printf("%sWriting debug output...                       \r", tileString);
+        printf("%s Writing debug output...                       \r", filename.c_str());
 
-        sprintf(objFileName, "meshes/%04u.map", mapID);
+        objFileName = "meshes/" + filename + ".map";;
 
-        objFile = fopen(objFileName, "wb");
+        objFile = fopen(objFileName.c_str(), "wb");
         if (!objFile)
         {
             char message[1024];
-            sprintf(message, "Failed to open %s for writing!\n", objFileName);
+            sprintf(message, "Failed to open %s for writing!\n", objFileName.c_str());
             perror(message);
             return;
         }
@@ -252,12 +256,13 @@ namespace MMAP
         fwrite(&b, sizeof(char), 1, objFile);
         fclose(objFile);
 
-        sprintf(objFileName, "meshes/%04u%02u%02u.mesh", mapID, tileY, tileX);
-        objFile = fopen(objFileName, "wb");
+        objFileName = "meshes/" + filename + ".mesh";
+
+        objFile = fopen(objFileName.c_str(), "wb");
         if (!objFile)
         {
             char message[1024];
-            sprintf(message, "Failed to open %s for writing!\n", objFileName);
+            sprintf(message, "Failed to open %s for writing!\n", objFileName.c_str());
             perror(message);
             return;
         }

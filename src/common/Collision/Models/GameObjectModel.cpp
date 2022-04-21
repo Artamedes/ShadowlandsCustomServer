@@ -24,21 +24,6 @@
 #include "MapTree.h"
 #include "Timer.h"
 
-using G3D::Vector3;
-using G3D::Ray;
-using G3D::AABox;
-
-struct GameobjectModelData
-{
-    GameobjectModelData(char const* name_, uint32 nameLength, Vector3 const& lowBound, Vector3 const& highBound, bool isWmo_) :
-        bound(lowBound, highBound), name(name_, nameLength), isWmo(isWmo_) { }
-
-    AABox bound;
-    std::string name;
-    bool isWmo;
-};
-
-typedef std::unordered_map<uint32, GameobjectModelData> ModelList;
 ModelList model_list;
 
 void LoadGameObjectModelList(std::string const& dataPath)

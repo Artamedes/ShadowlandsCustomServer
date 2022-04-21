@@ -1085,6 +1085,8 @@ class spell_activating_313352 : public SpellScript
     }
 };
 
+// make spell script for nyalotha incursion to periodically summon mobs
+
 void AddSC_MallScripts()
 {
     RegisterCreatureAI(npc_battle_training);

@@ -30,8 +30,23 @@
 #include "DetourNavMesh.h"
 #include "Optional.h"
 #include "ProducerConsumerQueue.h"
+#include "GameObjectModel.h"
+
+#include <G3D/Vector3.h>
+#include <G3D/AABox.h>
+#include <unordered_map>
+#include <boost/geometry.hpp>
+#include <boost/geometry/geometries/register/point.hpp>
+#include <boost/geometry/geometries/register/box.hpp>
+#include <boost/geometry/index/rtree.hpp>
 
 using namespace VMAP;
+
+namespace bg = boost::geometry;
+namespace bgi = boost::geometry::index;
+
+BOOST_GEOMETRY_REGISTER_POINT_2D(G3D::Vector3, float, bg::cs::cartesian, x, z)
+BOOST_GEOMETRY_REGISTER_BOX(G3D::AABox, G3D::Vector3, low(), high())
 
 namespace MMAP
 {
@@ -50,6 +65,23 @@ namespace MMAP
             return m_mapId == id;
         }
     };
+
+    struct GameObjectBounds
+    {
+        GameObjectBounds(uint32 guid, uint32 displayId, float height, float size, G3D::Vector3 iPos, G3D::Matrix3 rotation, bool isStatic)
+            : guid(guid), displayId(displayId), height(height), size(size), iPos(iPos), rotation(rotation), isStatic(isStatic) { }
+
+        uint32 guid;
+        uint32 displayId;
+        float height;
+        float bounds[12];
+        float size;
+        G3D::Vector3 iPos;
+        G3D::Matrix3 rotation;
+        bool isStatic;
+    };
+    typedef bgi::rtree<std::pair<G3D::AABox, std::shared_ptr<GameObjectBounds>>, bgi::quadratic<16>> GameObjectTree;
+    typedef std::pair<G3D::AABox, std::shared_ptr<GameObjectBounds>> GOTreeElement;
 
     typedef std::list<MapTiles> TileList;
 
@@ -156,7 +188,13 @@ namespace MMAP
                 bool bigBaseUnit,
                 int mapid,
                 char const* offMeshFilePath,
-                unsigned int threads);
+                unsigned int threads,
+                const char* mysqlHost = "127.0.0.1",
+                const char* mysqlUser = "trinity",
+                const char* mysqlPassword = "trinity",
+                const char* mysqlDB = "world",
+                unsigned int mysqlPort = 0,
+                std::string configPath = "mmap.ini");
 
             ~MapBuilder();
 
@@ -167,6 +205,9 @@ namespace MMAP
 
             // builds list of maps, then builds all of mmap tiles (based on the skip settings)
             void buildMaps(Optional<uint32> mapID);
+            void buildTransports();
+
+            void buildModel(std::string FileName, uint32 modelID);
 
         private:
             // builds all mmap tiles for the specified map id (ignores skip settings)
@@ -176,6 +217,8 @@ namespace MMAP
             std::set<uint32>* getTileList(uint32 mapID);
 
             void buildNavMesh(uint32 mapID, dtNavMesh* &navMesh);
+
+            void buildMoveMapModelTile(uint32 modelID, MeshData& meshData, float bmin[3], float bmax[3], dtNavMesh* navMesh);
 
             void getTileBounds(uint32 tileX, uint32 tileY,
                 float* verts, int vertCount,

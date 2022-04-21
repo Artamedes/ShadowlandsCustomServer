@@ -25,11 +25,16 @@ namespace MMAP
     static char const* const MAP_FILE_NAME_FORMAT = "%smmaps/%04i.mmap";
     static char const* const TILE_FILE_NAME_FORMAT = "%smmaps/%04i%02i%02i.mmtile";
 
+    static char const* const TRANSPORT_MAP_FILE_NAME_FORMAT = "%smmaps/go%05i.mmap";
+    static char const* const TRANSPORT_TILE_FILE_NAME_FORMAT = "%smmaps/go%05i.mmtile";
     // ######################## MMapManager ########################
     MMapManager::~MMapManager()
     {
         for (std::pair<uint32 const, MMapData*>& loadedMMap : loadedMMaps)
             delete loadedMMap.second;
+ 
+        for (TransportMMapDataStore::iterator i = loadedTransportMMaps.begin(); i != loadedTransportMMaps.end(); ++i)
+            delete i->second;
 
         // by now we should not have maps loaded
         // if we had, tiles in MMapData->mmapLoadedTiles, their actual data is lost!
@@ -407,5 +412,235 @@ namespace MMAP
             return nullptr;
 
         return queryItr->second;
+    }
+
+    TransportMMapData::TransportMMapData(dtNavMesh* mesh, uint32 modelID) : _navMeshQuery(nullptr), _loadedTransports(1), _tileRef(0)
+    {
+        _navMesh = mesh;
+        _modelID = modelID;
+    }
+
+    TransportMMapData::~TransportMMapData()
+    {
+        dtFreeNavMeshQuery(_navMeshQuery);
+        dtFreeNavMesh(_navMesh);
+    }
+
+    TransportMMapData* MMapManager::loadTransportMapData(const std::string& basePath, uint32 modelID)
+    {
+        // load and init dtNavMesh - read parameters from file
+        std::string fileName = Trinity::StringFormat(TRANSPORT_MAP_FILE_NAME_FORMAT, basePath.c_str(), modelID);
+        FILE* file = fopen(fileName.c_str(), "rb");
+        if (!file)
+        {
+            TC_LOG_DEBUG("maps", "MMAP:loadMapData model: Error: Could not open model file '%s'", fileName.c_str());
+            return nullptr;
+        }
+
+        dtNavMeshParams params;
+        int count = fread(&params, sizeof(dtNavMeshParams), 1, file);
+        fclose(file);
+        if (count != 1)
+        {
+            TC_LOG_DEBUG("maps", "MMAP:loadMapData model: Error: Could not read params from file '%s'", fileName.c_str());
+            return nullptr;
+        }
+
+        dtNavMesh* mesh = dtAllocNavMesh();
+        ASSERT(mesh);
+        if (dtStatusFailed(mesh->init(&params)))
+        {
+            dtFreeNavMesh(mesh);
+            TC_LOG_ERROR("maps", "MMAP:loadMapData model: Failed to initialize dtNavMesh for model %05u from file %s", modelID, fileName.c_str());
+            return nullptr;
+        }
+
+        TC_LOG_DEBUG("maps", "MMAP:loadMapData model: Loaded %05i.mmap", modelID);
+
+        // store inside our map list
+        TransportMMapData* mmap_data = new TransportMMapData(mesh, modelID);
+
+        loadedTransportMMaps[modelID] = mmap_data;
+
+        return mmap_data;
+    }
+
+    bool MMapManager::loadTransportMap(const std::string& basePath, uint32 modelID)
+    {
+        // we already have this model loaded?
+        TransportMMapDataStore::iterator itr = loadedTransportMMaps.find(modelID);
+        if (itr != loadedTransportMMaps.end())
+        {
+            if (TransportMMapData* mmap = itr->second)
+            {
+                mmap->IncreaseLoadedTransports();
+                return true;
+            }
+        }
+
+        // make sure the mmap is loaded and ready to load tiles
+        TransportMMapData* mmap = loadTransportMapData(basePath, modelID);
+        if (!mmap)
+            return false;
+
+        ASSERT(mmap->GetNavMesh());
+
+        // load this tile :: mmaps/MMMMM.mmtile
+        std::string fileName = Trinity::StringFormat(TRANSPORT_TILE_FILE_NAME_FORMAT, basePath.c_str(), modelID);
+        FILE* file = fopen(fileName.c_str(), "rb");
+        if (!file)
+        {
+            TC_LOG_DEBUG("maps", "MMAP:loadMap model: Could not open mmtile file '%s'", fileName.c_str());
+            return false;
+        }
+
+        // read header
+        MmapTileHeader fileHeader;
+        if (fread(&fileHeader, sizeof(MmapTileHeader), 1, file) != 1 || fileHeader.mmapMagic != MMAP_MAGIC)
+        {
+            TC_LOG_ERROR("maps", "MMAP:loadMap model: Bad header in model %05u.mmtile", modelID);
+            fclose(file);
+            return false;
+        }
+
+        if (fileHeader.mmapVersion != MMAP_VERSION)
+        {
+            TC_LOG_ERROR("maps", "MMAP:loadMap model: %05u.mmtile was built with generator v%i, expected v%i", modelID, fileHeader.mmapVersion, MMAP_VERSION);
+            fclose(file);
+            return false;
+        }
+
+        long pos = ftell(file);
+        fseek(file, 0, SEEK_END);
+        if (int64(fileHeader.size) > ftell(file) - pos)
+        {
+            TC_LOG_ERROR("maps", "MMAP:loadMap model: %05.mmtile has corrupted data size", modelID);
+            fclose(file);
+            return false;
+        }
+
+        fseek(file, pos, SEEK_SET);
+
+        unsigned char* data = (unsigned char*)dtAlloc(fileHeader.size, DT_ALLOC_PERM);
+        ASSERT(data);
+
+        size_t result = fread(data, fileHeader.size, 1, file);
+        if (!result)
+        {
+            TC_LOG_ERROR("maps", "MMAP:loadMap model: Bad header or data in mmap %05.mmtile", modelID);
+            fclose(file);
+            return false;
+        }
+
+        fclose(file);
+
+        dtMeshHeader* header = (dtMeshHeader*)data;
+        dtTileRef tileRef = 0;
+
+        // memory allocated for data is now managed by detour, and will be deallocated when the tile is removed
+        if (dtStatusSucceed(mmap->GetNavMesh()->addTile(data, fileHeader.size, 0, 0, &tileRef)))
+        {
+            mmap->SetTileRef(tileRef);
+
+            TC_LOG_DEBUG("maps", "MMAP:loadMap model: Loaded mmtile %05i", modelID);
+
+            return true;
+        }
+
+        TC_LOG_ERROR("maps", "MMAP:loadMap model: Could not load %05.mmtile into navmesh", modelID);
+        dtFree(data);
+
+        return false;
+    }
+
+    bool MMapManager::unloadTransportMap(uint32 modelID)
+    {
+        TransportMMapDataStore::iterator iter = loadedTransportMMaps.find(modelID);
+        if (iter == loadedTransportMMaps.end())
+        {
+            // file may not exist, therefore not loaded
+            TC_LOG_DEBUG("maps", "MMAP:unloadMap model: Asked to unload not loaded navmesh model %05u", modelID);
+            return false;
+        }
+
+        TransportMMapData* mmap = iter->second;
+        if (!mmap)
+        {
+            // file may not exist, therefore not loaded
+            TC_LOG_DEBUG("maps", "MMAP:unloadMap model: Asked to unload not loaded navmesh model %05u", modelID);
+            return false;
+        }
+
+        // remove model movemap if all references are gone
+        mmap->DecreaseLoadedTransports();
+        if (mmap->GetLoadedTransports() > 0)
+            return false;
+
+        // unload all tiles from given map
+        unsigned char* data = NULL;
+        if (dtStatusFailed(mmap->GetNavMesh()->removeTile(mmap->GetTileRef(), &data, nullptr)))
+            TC_LOG_ERROR("maps", "MMAP:unloadMap model: Could not unload %05u.mmtile from navmesh", modelID);
+        else
+        {
+            dtFree(data);
+            TC_LOG_DEBUG("maps", "MMAP:unloadMap model: Unloaded mmtile %05i", modelID);
+        }
+
+        delete mmap;
+        iter->second = nullptr;
+
+        loadedTransportMMaps.erase(modelID);
+
+        TC_LOG_DEBUG("maps", "MMAP:unloadMap model: Unloaded %05i.mmap", modelID);
+
+        return true;
+    }
+
+    TransportMMapData* MMapManager::GetTransportMMapData(uint32 modelID)
+    {
+        TransportMMapDataStore::iterator itr = loadedTransportMMaps.find(modelID);
+        if (itr == loadedTransportMMaps.end())
+            return nullptr;
+
+        return itr->second;
+    }
+
+    dtNavMesh const* MMapManager::GetTransportNavMesh(uint32 modelID)
+    {
+        TransportMMapData* mmapData = GetTransportMMapData(modelID);
+        if (!mmapData)
+            return nullptr;
+
+        return mmapData->GetNavMesh();
+    }
+
+    dtNavMeshQuery const* MMapManager::GetTransportNavMeshQuery(uint32 modelID)
+    {
+        TransportMMapData* mmapData = GetTransportMMapData(modelID);
+        if (!mmapData)
+            return nullptr;
+
+        dtNavMeshQuery* navMeshQuery = mmapData->GetNavMeshQuery();
+        if (!navMeshQuery)
+        {
+            // allocate mesh query
+            dtNavMeshQuery* query = dtAllocNavMeshQuery();
+            ASSERT(query);
+
+            if (dtStatusFailed(query->init(mmapData->GetNavMesh(), 1024)))
+            {
+                dtFreeNavMeshQuery(query);
+                TC_LOG_ERROR("maps", "MMAP:GetNavMeshQuery: Failed to initialize dtNavMeshQuery for modelID %05u", modelID);
+                return nullptr;
+            }
+
+            TC_LOG_DEBUG("maps", "MMAP:GetNavMeshQuery: created dtNavMeshQuery for modelID %05u", modelID);
+
+            mmapData->SetNavMeshQuery(query);
+
+            return query;
+        }
+
+        return navMeshQuery;
     }
 }

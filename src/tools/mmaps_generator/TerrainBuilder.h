@@ -26,6 +26,9 @@
 
 enum class map_liquidHeaderTypeFlags : uint8;
 
+#define MAX_NUMBER_OF_GRIDS     64
+#define CENTER_GRID_ID          (MAX_NUMBER_OF_GRIDS/2)
+
 namespace MMAP
 {
     enum Spot
@@ -94,6 +97,8 @@ namespace MMAP
             static void copyIndices(std::vector<VMAP::MeshTriangle> &source, G3D::Array<int> &dest, int offest, bool flip);
             static void copyIndices(G3D::Array<int> &src, G3D::Array<int> &dest, int offset);
             static void cleanVertices(G3D::Array<float> &verts, G3D::Array<int> &tris);
+            void loadModel(std::string const& basepath, std::string const& fileName, MeshData &meshData);
+
         private:
             /// Loads a portion of a map's terrain
             bool loadMap(uint32 mapID, uint32 tileX, uint32 tileY, MeshData &meshData, Spot portion);

@@ -38,6 +38,22 @@ class GameObject;
 class PhaseShift;
 struct GameObjectDisplayInfoEntry;
 
+using G3D::Vector3;
+using G3D::Ray;
+using G3D::AABox;
+
+struct GameobjectModelData
+{
+    GameobjectModelData(char const* name_, uint32 nameLength, Vector3 const& lowBound, Vector3 const& highBound, bool isWmo_) :
+        bound(lowBound, highBound), name(name_, nameLength), isWmo(isWmo_) { }
+
+    AABox bound;
+    std::string name;
+    bool isWmo;
+};
+
+typedef std::unordered_map<uint32, GameobjectModelData> ModelList;
+
 class TC_COMMON_API GameObjectModelOwnerBase
 {
 public:

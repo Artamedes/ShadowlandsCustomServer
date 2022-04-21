@@ -24,6 +24,7 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include "Util.h"
 
 //  move map related classes
 namespace MMAP
@@ -53,6 +54,36 @@ namespace MMAP
 
     typedef std::unordered_map<uint32, MMapData*> MMapDataSet;
 
+    class TC_COMMON_API TransportMMapData
+    {
+    public:
+        TransportMMapData(dtNavMesh* mesh, uint32 modelID);
+        ~TransportMMapData();
+
+        dtNavMeshQuery* GetNavMeshQuery() { return _navMeshQuery; }
+        dtNavMesh* GetNavMesh() { return _navMesh; }
+
+        void SetNavMeshQuery(dtNavMeshQuery* navMeshQuery) { _navMeshQuery = navMeshQuery; }
+
+        dtTileRef GetTileRef() { return _tileRef; }
+        void SetTileRef(dtTileRef tileRef) { _tileRef = tileRef; }
+
+        void IncreaseLoadedTransports() { ++_loadedTransports; }
+        void DecreaseLoadedTransports() { --_loadedTransports; }
+        uint32 GetLoadedTransports() const { return _loadedTransports; }
+
+    private:
+        dtNavMeshQuery* _navMeshQuery;
+        dtNavMesh* _navMesh;
+        dtTileRef _tileRef;
+        uint32 _modelID;
+        uint32 _loadedTransports;
+    };
+
+    //typedef std::pair<uint32, uint32> TransportMMapKey;
+    //typedef std::unordered_map<uint32, TransportMMapData*> TransportMMapDataSet;
+    typedef std::unordered_map<uint32, TransportMMapData*> TransportMMapDataStore;
+
     // singleton class
     // holds all all access to mmap loading unloading and meshes
     class TC_COMMON_API MMapManager
@@ -74,6 +105,12 @@ namespace MMAP
 
             uint32 getLoadedTilesCount() const { return loadedTiles; }
             uint32 getLoadedMapsCount() const { return uint32(loadedMMaps.size()); }
+
+            bool loadTransportMap(const std::string& basePath, uint32 modelID);
+            bool unloadTransportMap(uint32 modelID);
+            dtNavMesh const* GetTransportNavMesh(uint32 modelID);
+            dtNavMeshQuery const* GetTransportNavMeshQuery(uint32 modelID);
+
         private:
             bool loadMapData(std::string const& basePath, uint32 mapId);
             bool loadMapImpl(std::string const& basePath, uint32 mapId, int32 x, int32 y);
@@ -89,6 +126,11 @@ namespace MMAP
 
             std::unordered_map<uint32, std::vector<uint32>> childMapData;
             std::unordered_map<uint32, uint32> parentMapData;
+
+            TransportMMapData* loadTransportMapData(const std::string& basePath, uint32 modelID);
+
+            TransportMMapData* GetTransportMMapData(uint32 modelID);
+            TransportMMapDataStore loadedTransportMMaps;
     };
 }
 

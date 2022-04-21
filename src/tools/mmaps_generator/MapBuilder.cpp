@@ -23,9 +23,13 @@
 #include "ModelInstance.h"
 #include "PathCommon.h"
 #include "StringFormat.h"
+#include "VMapDefinitions.h"
 #include <DetourNavMesh.h>
 #include <DetourNavMeshBuilder.h>
 #include <climits>
+
+#include <boost/function_output_iterator.hpp>
+#include <G3D/Quat.h>
 
 namespace MMAP
 {
@@ -57,7 +61,9 @@ namespace MMAP
 
     MapBuilder::MapBuilder(Optional<float> maxWalkableAngle, Optional<float> maxWalkableAngleNotSteep, bool skipLiquid,
         bool skipContinents, bool skipJunkMaps, bool skipBattlegrounds,
-        bool debugOutput, bool bigBaseUnit, int mapid, char const* offMeshFilePath, unsigned int threads) :
+        bool debugOutput, bool bigBaseUnit, int mapid, char const* offMeshFilePath, unsigned int threads,
+        const char* mysqlHost, const char* mysqlUser, const char* mysqlPassword,
+        const char* mysqlDB, unsigned int mysqlPort, std::string configPath) : 
         m_terrainBuilder     (nullptr),
         m_debugOutput        (debugOutput),
         m_offMeshFilePath    (offMeshFilePath),
@@ -267,6 +273,7 @@ namespace MMAP
         for (auto& builder : m_tileBuilders)
             delete builder;
 
+        buildTransports();
         m_tileBuilders.clear();
     }
 
@@ -1118,5 +1125,551 @@ namespace MMAP
     {
         return percentageDone(m_totalTiles, m_totalTilesProcessed);
     }
+    
+    void MapBuilder::buildTransports()
+    {
+        m_totalTiles = 100;
 
+        buildModel("elevatorcar.m2", 360); // Mesa Elevator
+        buildModel("undeadelevator.m2", 455); // Undervator
+        buildModel("undeadelevatordoor.m2", 462); // upperLdoor
+        buildModel("ironforgeelevator.m2", 561); // IronForge Elevator
+        buildModel("ironforgeelevatordoor.m2", 562); // unk
+        buildModel("gnomeelevatorcar01.m2", 807); // Vator
+        buildModel("gnomeelevatorcar02.m2", 808); // Plunger
+        buildModel("gnomeelevatorcar05.m2", 827); // Rail
+        buildModel("gnomeelevatorcar03.m2", 852); // Vator2
+        buildModel("gnomehutelevator.m2", 1587); // Elevator
+        buildModel("burningsteppselevator.m2", 2454); // Scaffold Cars
+        buildModel("transportship.wmo", 3015); // Ship (The Maiden's Fancy)
+        buildModel("transport_zeppelin.wmo", 3031); // Krazzworks Attack Zeppelin
+        buildModel("subwaycar.m2", 3831); // Subway
+        buildModel("blackcitadel.wmo", 6637); // Naxxramas
+        buildModel("ancdrae_elevatorpiece.m2", 7026); // Doodad_AncDrae_elevatorPiece03
+        buildModel("mushroombase_elevator.m2", 7028); // Doodad_mushroombase_elevator01
+        buildModel("cf_elevatorplatform.m2", 7043); // Doodad_CF_elevatorPlatform01
+        buildModel("cf_elevatorplatform_small.m2", 7060); // Doodad_CF_elevatorPlatform_small01
+        buildModel("factoryelevator.m2", 7077); // Doodad_FactoryElevator01
+        buildModel("transportship_ne.wmo", 7087); // Ship, Night Elf (Elune's Blessing)
+        buildModel("ancdrae_elevatorpiece_netherstorm.m2", 7163); // Doodad_AncDrae_elevatorPiece_netherstorm01
+        buildModel("transport_icebreaker_ship.wmo", 7446); // Ship, Icebreaker (Stormwind's Pride)
+        buildModel("vr_elevator_gate.m2", 7451); // Doodad_VR_Elevator_Gate01
+        buildModel("vr_elevator_lift.m2", 7452); // Doodad_VR_Elevator_Lift02
+        buildModel("vr_elevator_pulley.m2", 7491); // Doodad_VR_Elevator_Pulley01
+        buildModel("hf_elevator_gate.m2", 7519); // Doodad_HF_Elevator_Gate01
+        buildModel("hf_elevator_lift_02.m2", 7520); // Doodad_HF_Elevator_Lift_01
+        buildModel("hf_elevator_lift.m2", 7521); // Doodad_HF_Elevator_Lift01
+        buildModel("transport_horde_zeppelin.wmo", 7546); // The Spear of Durotar
+        buildModel("pirateship.wmo", 7552); // pattymac test ship 3
+        buildModel("transport_pirate_ship.wmo", 7570); // Sister Mercy
+        buildModel("transport_tuskarr_ship.wmo", 7636); // Turtle (Green Island)
+        buildModel("vrykul_gondola.m2", 7642); // Doodad_Vrykul_Gondola01
+        buildModel("logrun_pumpelevator01.m2", 7648); // Doodad_LogRun_PumpElevator04
+        buildModel("vrykul_gondola_02.m2", 7767); // Doodad_Vrykul_Gondola_01
+        buildModel("nexus_elevator_basestructure_01.m2", 7793); // Doodad_Nexus_Elevator_BaseStructure_01
+        buildModel("id_elevator.m2", 7794); // Doodad_ID_elevator03
+        buildModel("orc_fortress_elevator01.m2", 7797); // Elevator
+        buildModel("org_arena_pillar.m2", 7966); // Doodad_org_arena_pillar01
+        buildModel("org_arena_elevator.m2", 7973); // Doodad_org_arena_elevator03
+        buildModel("logrun_pumpelevator02.m2", 8079); // Doodad_LogRun_PumpElevator01
+        buildModel("logrun_pumpelevator03.m2", 8080); // Doodad_LogRun_PumpElevator02
+        buildModel("nd_hordegunship.wmo", 8253); // Orc Gunship
+        buildModel("nd_alliancegunship.wmo", 8254); // Alliance Gunship
+        buildModel("org_arena_yellow_elevator.m2", 8258); // Doodad_org_arena_yellow_elevator01
+        buildModel("org_arena_axe_pillar.m2", 8259); // Doodad_org_arena_axe_pillar01
+        buildModel("org_arena_lightning_pillar.m2", 8260); // Doodad_org_arena_lightning_pillar01
+        buildModel("org_arena_ivory_pillar.m2", 8261); // Doodad_org_arena_ivory_pillar01
+        buildModel("gundrak_elevator_01.m2", 8277); // Elevator Mammoth
+        buildModel("nd_icebreaker_ship_bg_transport.wmo", 8409); // The Frostbreaker
+        buildModel("nd_ship_ud_bg_transport.wmo", 8410); // The Blightbringer
+        buildModel("ulduarraid_gnomewing_transport_wmo.wmo", 8587); // Tram
+        buildModel("nd_hordegunship_bg.wmo", 9001); // Horde Gunship
+        buildModel("nd_alliancegunship_bg.wmo", 9002); // The Skybreaker
+        buildModel("sunstrider_ship.wmo", 9008); // Sunstrider Ship (Garrosh Raid)
+        buildModel("uldum_elevator_01.m2", 9052); // Lift of the Makers
+        buildModel("goblin_poolelevator.m2", 9135); // Doodad_Goblin_PoolElevator01
+        buildModel("icecrown_elevator.m2", 9136); // Doodad_icecrown_elevator02
+        buildModel("nd_alliancegunship_icecrown.wmo", 9150); // The Skybreaker
+        buildModel("nd_hordegunship_icecrown.wmo", 9151); // Orgrim's Hammer
+        buildModel("icecrown_elevator02.m2", 9248); // Lady Deathwhisper Elevator
+        buildModel("transport_pirate_ship02.wmo", 9534); // Path to Pandaria
+        buildModel("orgrimmar_elevator_02.m2", 9542); // Elevator
+        buildModel("alliance_submarine.wmo", 9582); // Alliance Submarine to Leviathan Cave
+        buildModel("horde_submarine.wmo", 9583); // Horde Submarine to Leviathan Cave
+        buildModel("goblin_elevator.m2", 9693); // Doodad_Goblin_elevator01
+        buildModel("abyssal_jellyfish_elevator.m2", 9811); // Doodad_Abyssal_Jellyfish_Elevator01
+        buildModel("horde_submarine_closed.wmo", 10308); // Horde Submarine circling Abyssal Maw
+        buildModel("blackwingv2_elevator_onyxia_transport.wmo", 10363); // Doodad_BlackWingV2_Elevator_Onyxia01
+        buildModel("alliance_submarine_sealed.wmo", 10404); // Alliance Submarine circling Abyssal Maw
+        buildModel("blackwingv2_elevator01.wmo", 10407); // Blackwing Descent Elevator
+        buildModel("veb_greatwall_elevator_01.m2", 11334); // Doodad_VEB_greatwall_elevator_002
+        buildModel("jinyu_raft_01.m2", 11593); // Raft
+        buildModel("pa_oven_01.m2", 11682); // Doodad_pa_oven_001
+        buildModel("veb_greatwall_elevator_02.m2", 12448); // Ascenseur mogu
+        buildModel("transport_alliance_battleship.wmo", 12843); // Alliance Battleship (Garrosh Raid)
+        buildModel("zandalari_boat_transport.wmo", 13656); // Zandalari Ship
+        buildModel("merrygoround_transport.m2", 13729); // Doodad_MerrygoRound_transport001
+        buildModel("transport_horde_zeppelin02.wmo", 13737); // The Skybag
+        buildModel("orgrimmar_raid_elevator.m2", 14005); // Doodad_Orgrimmar_Elevator_004
+        buildModel("6dr_draenei_platform_elevator_object.m2", 14677); // Doodad_6DR_Draenei_Platform_Elevator_Object001
+        buildModel("6du_blackrock_train_depot_modular1.wmo", 15264); // Transport 01
+        buildModel("6du_blackrock_train_depot_modular2.wmo", 15265); // Transport 02
+        buildModel("6du_bkfoundry_elevatora.m2", 16457); // Doodad_6DU_BKFoundry_elevatorA001
+        buildModel("6du_bkfoundry_elevatorb.m2", 16458); // Doodad_6DU_BKFoundry_elevatorB001
+        buildModel("6du_highmaulraid_arena_elevator.m2", 17998); // Ascenseur de l
+        buildModel("7an_alliancegunship.wmo", 28177); // The Skyfire
+        buildModel("7hm_highmountain_elevator.m2", 28404); // Doodad_7HM_HighMountain_Elevator002
+        buildModel("7vr_vrykul_elevatorplatform.m2", 28487); // Doodad_7VR_Vrykul_ElevatorPlatform001
+        buildModel("7wd_warden_elevator01.m2", 28522); // 
+        buildModel("7nb_nightborn_gondola_large.m2", 30558); // Gondola
+        buildModel("7lg_legion_platform03.m2", 38977); // Doodad_7LG_Legion_Platform001
+        buildModel("7du_tombofsargeras_titan_elevator.m2", 41205); // Doodad_7DU_TombOfSargeras_Titan_Elevator
+        buildModel("8tr_zandalari_elevator01.m2", 41783); // Doodad_8TR_zandalari_elevator002
+        buildModel("8tr_zandalari_shipmedtransport01.wmo", 44473); // Zandalari Ship
+        buildModel("8hu_kultiras_shipsmall01.wmo", 48226); // Kul Tiran Sloop
+        buildModel("8du_nazmirraid_elevator01_transport.wmo", 49103); // Doodad_8DU_NazmirRaid_Elevator001
+        buildModel("8hu_kultiras_shipmedium02.wmo", 51679); // Kul Tiran Medium Ship A
+        buildModel("8hu_kultiras_shipbarge01.wmo", 51831); // Kul Tiran Barge
+    }
+
+    void MapBuilder::buildModel(std::string FileName, uint32 modelID)
+    {
+        // percentageDone
+        m_totalTilesProcessed++;
+
+        MeshData meshData;
+
+        // get model data
+        m_terrainBuilder->loadModel(std::string("vmaps/"), FileName, meshData);
+
+        // if there is no data, give up now
+        if (!meshData.solidVerts.size() && !meshData.liquidVerts.size())
+        {
+            printf("GameObject model %u - %s not found\n", modelID, FileName.c_str());
+            return;
+        }
+
+        // remove unused vertices
+        TerrainBuilder::cleanVertices(meshData.solidVerts, meshData.solidTris);
+        TerrainBuilder::cleanVertices(meshData.liquidVerts, meshData.liquidTris);
+
+        // gather all mesh data for final data check, and bounds calculation
+        G3D::Array<float> allVerts;
+        allVerts.append(meshData.liquidVerts);
+        allVerts.append(meshData.solidVerts);
+
+        if (!allVerts.size())
+        {
+            printf("GameObject model %u - %s has no mesh data\n", modelID, FileName.c_str());
+            return;
+        }
+
+        printf("%u%% Building model %05u - %s:\n", percentageDone(m_totalTiles, m_totalTilesProcessed), modelID, FileName.c_str());
+
+        float bmin[3], bmax[3];
+        rcCalcBounds(allVerts.getCArray(), allVerts.size() / 3, bmin, bmax);
+
+        // old code for non-statically assigned bitmask sizes:
+        ///*** calculate number of bits needed to store tiles & polys ***/
+        //int tileBits = dtIlog2(dtNextPow2(tiles->size()));
+        //if (tileBits < 1) tileBits = 1;                                     // need at least one bit!
+        //int polyBits = sizeof(dtPolyRef)*8 - SALT_MIN_BITS - tileBits;
+
+        int polyBits = DT_POLY_BITS;
+
+        int maxTiles = 1;
+        int maxPolysPerTile = 1 << polyBits;
+
+        /***       now create the navmesh       ***/
+
+        // navmesh creation params
+        dtNavMeshParams navMeshParams;
+        memset(&navMeshParams, 0, sizeof(dtNavMeshParams));
+        navMeshParams.tileWidth = GRID_SIZE;
+        navMeshParams.tileHeight = GRID_SIZE;
+        rcVcopy(navMeshParams.orig, bmin);
+        navMeshParams.maxTiles = maxTiles;
+        navMeshParams.maxPolys = maxPolysPerTile;
+
+        // build navMesh
+        dtNavMesh* navMesh = dtAllocNavMesh();
+        printf("[Model %05i] Creating navMesh...\n", modelID);
+        if (!navMesh->init(&navMeshParams))
+        {
+            printf("[Model %05i] Failed creating navmesh!                \n", modelID);
+            return;
+        }
+
+        char fileName[25];
+        sprintf(fileName, "mmaps/go%05u.mmap", modelID);
+
+        FILE* file = fopen(fileName, "wb");
+        if (!file)
+        {
+            dtFreeNavMesh(navMesh);
+            char message[1024];
+            sprintf(message, "[Model %05i] Failed to open %s for writing!\n", modelID, fileName);
+            perror(message);
+            return;
+        }
+
+        // now that we know navMesh params are valid, we can write them to file
+        fwrite(&navMeshParams, sizeof(dtNavMeshParams), 1, file);
+        fclose(file);
+
+        // build navmesh tile
+        buildMoveMapModelTile(modelID, meshData, bmin, bmax, navMesh);
+
+        dtFreeNavMesh(navMesh);
+
+        printf("[Model %05i] Complete! \n", modelID);
+    }
+
+    void MapBuilder::buildMoveMapModelTile(uint32 modelID, MeshData &meshData, float bmin[3], float bmax[3], dtNavMesh* navMesh)
+    {
+        char tileString[22];
+        sprintf(tileString, "[Model %05i]: ", modelID);
+        printf("%s Building model tile...\n", tileString);
+
+        IntermediateValues iv;
+
+        float* tVerts = meshData.solidVerts.getCArray();
+        int tVertCount = meshData.solidVerts.size() / 3;
+        int* tTris = meshData.solidTris.getCArray();
+        int tTriCount = meshData.solidTris.size() / 3;
+
+        float* lVerts = meshData.liquidVerts.getCArray();
+        int lVertCount = meshData.liquidVerts.size() / 3;
+        int* lTris = meshData.liquidTris.getCArray();
+        int lTriCount = meshData.liquidTris.size() / 3;
+        uint8* lTriFlags = meshData.liquidType.getCArray();
+
+        // these are WORLD UNIT based metrics
+        // this are basic unit dimentions
+        // value have to divide GRID_SIZE(533.3333f) ( aka: 0.5333, 0.2666, 0.3333, 0.1333, etc )
+        const static float BASE_UNIT_DIM = m_bigBaseUnit ? 0.5333333f : 0.2666666f;
+
+        // All are in UNIT metrics!
+        const static int VERTEX_PER_MAP = int(GRID_SIZE / BASE_UNIT_DIM + 0.5f);
+        const static int VERTEX_PER_TILE = m_bigBaseUnit ? 40 : 80; // must divide VERTEX_PER_MAP
+        const static int TILES_PER_MAP = VERTEX_PER_MAP / VERTEX_PER_TILE;
+
+        rcConfig config;
+        memset(&config, 0, sizeof(rcConfig));
+
+        rcVcopy(config.bmin, bmin);
+        rcVcopy(config.bmax, bmax);
+
+        config.maxVertsPerPoly = DT_VERTS_PER_POLYGON;
+        config.cs = BASE_UNIT_DIM;
+        config.ch = BASE_UNIT_DIM;
+        config.walkableSlopeAngle = m_maxWalkableAngle ? *m_maxWalkableAngle : 55;
+        config.tileSize = VERTEX_PER_TILE;
+        config.walkableRadius = m_bigBaseUnit ? 1 : 2;
+        config.borderSize = config.walkableRadius + 3;
+        config.maxEdgeLen = VERTEX_PER_TILE + 1;        // anything bigger than tileSize
+        config.walkableHeight = m_bigBaseUnit ? 2 : 4;
+        // a value >= 3|6 allows npcs to walk over some fences
+        // a value >= 4|8 allows npcs to walk over all fences
+        config.walkableClimb = m_bigBaseUnit ? 3 : 6;
+        config.minRegionArea = rcSqr(60);
+        config.mergeRegionArea = rcSqr(50);
+        config.maxSimplificationError = 1.8f;           // eliminates most jagged edges (tiny polygons)
+        config.detailSampleDist = config.cs * 64;
+        config.detailSampleMaxError = config.ch * 2;
+
+        // this sets the dimensions of the heightfield - should maybe happen before border padding
+        rcCalcGridSize(config.bmin, config.bmax, config.cs, &config.width, &config.height);
+
+        // allocate subregions : tiles
+        Tile* tiles = new Tile[TILES_PER_MAP * TILES_PER_MAP];
+
+        // Initialize per tile config.
+        rcConfig tileCfg = config;
+        tileCfg.width = config.tileSize + config.borderSize * 2;
+        tileCfg.height = config.tileSize + config.borderSize * 2;
+
+        // merge per tile poly and detail meshes
+        rcPolyMesh** pmmerge = new rcPolyMesh*[TILES_PER_MAP * TILES_PER_MAP];
+        if (!pmmerge)
+        {
+            printf("%s alloc pmmerge FAILED!\n", tileString);
+            return;
+        }
+
+        rcPolyMeshDetail** dmmerge = new rcPolyMeshDetail*[TILES_PER_MAP * TILES_PER_MAP];
+        if (!dmmerge)
+        {
+            printf("%s alloc dmmerge FAILED!\n", tileString);
+            return;
+        }
+
+        int nmerge = 0;
+        // build all tiles
+        for (int y = 0; y < TILES_PER_MAP; ++y)
+        {
+            for (int x = 0; x < TILES_PER_MAP; ++x)
+            {
+                Tile& tile = tiles[x + y * TILES_PER_MAP];
+
+                // Calculate the per tile bounding box.
+                tileCfg.bmin[0] = config.bmin[0] + float(x*config.tileSize - config.borderSize)*config.cs;
+                tileCfg.bmin[2] = config.bmin[2] + float(y*config.tileSize - config.borderSize)*config.cs;
+                tileCfg.bmax[0] = config.bmin[0] + float((x + 1)*config.tileSize + config.borderSize)*config.cs;
+                tileCfg.bmax[2] = config.bmin[2] + float((y + 1)*config.tileSize + config.borderSize)*config.cs;
+
+                // build heightfield
+                tile.solid = rcAllocHeightfield();
+                if (!tile.solid || !rcCreateHeightfield(m_rcContext, *tile.solid, tileCfg.width, tileCfg.height, tileCfg.bmin, tileCfg.bmax, tileCfg.cs, tileCfg.ch))
+                {
+                    printf("%s Failed building heightfield!            \n", tileString);
+                    continue;
+                }
+
+                // mark all walkable tiles, both liquids and solids
+                unsigned char* triFlags = new unsigned char[tTriCount];
+                memset(triFlags, NAV_GROUND, tTriCount * sizeof(unsigned char));
+                rcClearUnwalkableTriangles(m_rcContext, tileCfg.walkableSlopeAngle, tVerts, tVertCount, tTris, tTriCount, triFlags);
+                rcRasterizeTriangles(m_rcContext, tVerts, tVertCount, tTris, triFlags, tTriCount, *tile.solid, config.walkableClimb);
+                delete[] triFlags;
+
+                rcFilterLowHangingWalkableObstacles(m_rcContext, config.walkableClimb, *tile.solid);
+                rcFilterLedgeSpans(m_rcContext, tileCfg.walkableHeight, tileCfg.walkableClimb, *tile.solid);
+                rcFilterWalkableLowHeightSpans(m_rcContext, tileCfg.walkableHeight, *tile.solid);
+
+                rcRasterizeTriangles(m_rcContext, lVerts, lVertCount, lTris, lTriFlags, lTriCount, *tile.solid, config.walkableClimb);
+
+                // compact heightfield spans
+                tile.chf = rcAllocCompactHeightfield();
+                if (!tile.chf || !rcBuildCompactHeightfield(m_rcContext, tileCfg.walkableHeight, tileCfg.walkableClimb, *tile.solid, *tile.chf))
+                {
+                    printf("%s Failed compacting heightfield!            \n", tileString);
+                    continue;
+                }
+
+                // build polymesh intermediates
+                if (!rcErodeWalkableArea(m_rcContext, config.walkableRadius, *tile.chf))
+                {
+                    printf("%s Failed eroding area!                    \n", tileString);
+                    continue;
+                }
+
+                if (!rcBuildDistanceField(m_rcContext, *tile.chf))
+                {
+                    printf("%s Failed building distance field!         \n", tileString);
+                    continue;
+                }
+
+                if (!rcBuildRegions(m_rcContext, *tile.chf, tileCfg.borderSize, tileCfg.minRegionArea, tileCfg.mergeRegionArea))
+                {
+                    printf("%s Failed building regions!                \n", tileString);
+                    continue;
+                }
+
+                tile.cset = rcAllocContourSet();
+                if (!tile.cset || !rcBuildContours(m_rcContext, *tile.chf, tileCfg.maxSimplificationError, tileCfg.maxEdgeLen, *tile.cset))
+                {
+                    printf("%s Failed building contours!               \n", tileString);
+                    continue;
+                }
+
+                // build polymesh
+                tile.pmesh = rcAllocPolyMesh();
+                if (!tile.pmesh || !rcBuildPolyMesh(m_rcContext, *tile.cset, tileCfg.maxVertsPerPoly, *tile.pmesh))
+                {
+                    printf("%s Failed building polymesh!               \n", tileString);
+                    continue;
+                }
+
+                tile.dmesh = rcAllocPolyMeshDetail();
+                if (!tile.dmesh || !rcBuildPolyMeshDetail(m_rcContext, *tile.pmesh, *tile.chf, tileCfg.detailSampleDist, tileCfg.detailSampleMaxError, *tile.dmesh))
+                {
+                    printf("%s Failed building polymesh detail!        \n", tileString);
+                    continue;
+                }
+
+                // free those up
+                // we may want to keep them in the future for debug
+                // but right now, we don't have the code to merge them
+                rcFreeHeightField(tile.solid);
+                tile.solid = NULL;
+                rcFreeCompactHeightfield(tile.chf);
+                tile.chf = NULL;
+                rcFreeContourSet(tile.cset);
+                tile.cset = NULL;
+
+                if (tile.pmesh)
+                {
+                    pmmerge[nmerge] = tile.pmesh;
+                    dmmerge[nmerge] = tile.dmesh;
+                    nmerge++;
+                }
+            }
+        }
+
+        iv.polyMesh = rcAllocPolyMesh();
+        if (!iv.polyMesh)
+        {
+            printf("%s alloc iv.polyMesh FAILED!\n", tileString);
+            return;
+        }
+        rcMergePolyMeshes(m_rcContext, pmmerge, nmerge, *iv.polyMesh);
+
+        iv.polyMeshDetail = rcAllocPolyMeshDetail();
+        if (!iv.polyMeshDetail)
+        {
+            printf("%s alloc m_dmesh FAILED!\n", tileString);
+            return;
+        }
+        rcMergePolyMeshDetails(m_rcContext, dmmerge, nmerge, *iv.polyMeshDetail);
+
+        // free things up
+        delete[] pmmerge;
+        delete[] dmmerge;
+
+        delete[] tiles;
+
+        // set polygons as walkable
+        // TODO: special flags for DYNAMIC polygons, ie surfaces that can be turned on and off
+        for (int i = 0; i < iv.polyMesh->npolys; ++i)
+            if (iv.polyMesh->areas[i] & RC_WALKABLE_AREA)
+                iv.polyMesh->flags[i] = iv.polyMesh->areas[i];
+
+        // setup mesh parameters
+        dtNavMeshCreateParams params;
+        memset(&params, 0, sizeof(params));
+        params.verts = iv.polyMesh->verts;
+        params.vertCount = iv.polyMesh->nverts;
+        params.polys = iv.polyMesh->polys;
+        params.polyAreas = iv.polyMesh->areas;
+        params.polyFlags = iv.polyMesh->flags;
+        params.polyCount = iv.polyMesh->npolys;
+        params.nvp = iv.polyMesh->nvp;
+        params.detailMeshes = iv.polyMeshDetail->meshes;
+        params.detailVerts = iv.polyMeshDetail->verts;
+        params.detailVertsCount = iv.polyMeshDetail->nverts;
+        params.detailTris = iv.polyMeshDetail->tris;
+        params.detailTriCount = iv.polyMeshDetail->ntris;
+
+        params.offMeshConVerts = meshData.offMeshConnections.getCArray();
+        params.offMeshConCount = meshData.offMeshConnections.size() / 6;
+        params.offMeshConRad = meshData.offMeshConnectionRads.getCArray();
+        params.offMeshConDir = meshData.offMeshConnectionDirs.getCArray();
+        params.offMeshConAreas = meshData.offMeshConnectionsAreas.getCArray();
+        params.offMeshConFlags = meshData.offMeshConnectionsFlags.getCArray();
+
+        params.walkableHeight = BASE_UNIT_DIM * config.walkableHeight;    // agent height
+        params.walkableRadius = BASE_UNIT_DIM * config.walkableRadius;    // agent radius
+        params.walkableClimb = BASE_UNIT_DIM * config.walkableClimb;      // keep less that walkableHeight (aka agent height)!
+        params.tileX = (((bmin[0] + bmax[0]) / 2) - navMesh->getParams()->orig[0]) / GRID_SIZE;
+        params.tileY = (((bmin[2] + bmax[2]) / 2) - navMesh->getParams()->orig[2]) / GRID_SIZE;
+        rcVcopy(params.bmin, bmin);
+        rcVcopy(params.bmax, bmax);
+        params.cs = config.cs;
+        params.ch = config.ch;
+        params.tileLayer = 0;
+        params.buildBvTree = true;
+
+        // will hold final navmesh
+        unsigned char* navData = NULL;
+        int navDataSize = 0;
+
+        do
+        {
+            // these values are checked within dtCreateNavMeshData - handle them here
+            // so we have a clear error message
+            if (params.nvp > DT_VERTS_PER_POLYGON)
+            {
+                printf("%s Invalid verts-per-polygon value!        \n", tileString);
+                break;
+            }
+            if (params.vertCount >= 0xffff)
+            {
+                printf("%s Too many vertices!                      \n", tileString);
+                break;
+            }
+            if (!params.vertCount || !params.verts)
+            {
+                // occurs mostly when adjacent tiles have models
+                // loaded but those models don't span into this tile
+
+                // message is an annoyance
+                //printf("%sNo vertices to build tile!              \n", tileString);
+                break;
+            }
+            if (!params.polyCount || !params.polys ||
+                TILES_PER_MAP * TILES_PER_MAP == params.polyCount)
+            {
+                // we have flat tiles with no actual geometry - don't build those, its useless
+                // keep in mind that we do output those into debug info
+                // drop tiles with only exact count - some tiles may have geometry while having less tiles
+                printf("%s No polygons to build on tile!              \n", tileString);
+                break;
+            }
+            if (!params.detailMeshes || !params.detailVerts || !params.detailTris)
+            {
+                printf("%s No detail mesh to build tile!           \n", tileString);
+                break;
+            }
+
+            printf("%s Building navmesh tile...\n", tileString);
+            if (!dtCreateNavMeshData(&params, &navData, &navDataSize))
+            {
+                printf("%s Failed building navmesh tile!           \n", tileString);
+                break;
+            }
+
+            dtTileRef tileRef = 0;
+            printf("%s Adding tile to navmesh...\n", tileString);
+            // DT_TILE_FREE_DATA tells detour to unallocate memory when the tile
+            // is removed via removeTile()
+            dtStatus dtResult = navMesh->addTile(navData, navDataSize, DT_TILE_FREE_DATA, 0, &tileRef);
+            if (!tileRef || dtResult != DT_SUCCESS)
+            {
+                printf("%s Failed adding tile to navmesh!           \n", tileString);
+                break;
+            }
+
+            // file output
+            char fileName[255];
+            sprintf(fileName, "mmaps/go%05u.mmtile", modelID);
+            FILE* file = fopen(fileName, "wb");
+            if (!file)
+            {
+                char message[1024];
+                sprintf(message, "[Model %05i] Failed to open %s for writing!\n", modelID, fileName);
+                perror(message);
+                navMesh->removeTile(tileRef, NULL, NULL);
+                break;
+            }
+
+            printf("%s Writing to file...\n", tileString);
+
+            // write header
+            MmapTileHeader header;
+            header.usesLiquids = m_terrainBuilder->usesLiquids();
+            header.size = uint32(navDataSize);
+            fwrite(&header, sizeof(MmapTileHeader), 1, file);
+
+            // write data
+            fwrite(navData, sizeof(unsigned char), navDataSize, file);
+            fclose(file);
+
+            // now that tile is written to disk, we can unload it
+            navMesh->removeTile(tileRef, NULL, NULL);
+        } while (0);
+
+        /*if (m_debugOutput) // todo: use %05i for naming
+        {
+            // restore padding so that the debug visualization is correct
+            for (int i = 0; i < iv.polyMesh->nverts; ++i)
+            {
+                unsigned short* v = &iv.polyMesh->verts[i * 3];
+                v[0] += (unsigned short)config.borderSize;
+                v[2] += (unsigned short)config.borderSize;
+            }
+            iv.generateObjFile(modelID, CENTER_GRID_ID, CENTER_GRID_ID, meshData);
+            iv.writeIV(modelID, CENTER_GRID_ID, CENTER_GRID_ID);
+        }*/
+    }
 }

@@ -130,6 +130,7 @@ bool handleArgs(int argc, char** argv,
                bool &debugOutput,
                bool &silent,
                bool &bigBaseUnit,
+               bool &onlyTransports,
                char* &offMeshInputPath,
                char* &file,
                unsigned int& threads)
@@ -298,6 +299,19 @@ bool handleArgs(int argc, char** argv,
             silent = true;
             return false;
         }
+        else if (strcmp(argv[i], "--onlyTransports") == 0)
+        {
+            param = argv[++i];
+            if (!param)
+                return false;
+
+            if (strcmp(param, "true") == 0)
+                onlyTransports = true;
+            else if (strcmp(param, "false") == 0)
+                onlyTransports = false;
+            else
+                printf("invalid option for '--onlyTransports', using default false\n");
+        }
         else
         {
             int map = atoi(argv[i]);
@@ -404,14 +418,15 @@ int main(int argc, char** argv)
          skipBattlegrounds = false,
          debugOutput = false,
          silent = false,
-         bigBaseUnit = false;
+         bigBaseUnit = false,
+         onlyTransports = false;
     char* offMeshInputPath = nullptr;
     char* file = nullptr;
 
     bool validParam = handleArgs(argc, argv, mapnum,
                                  tileX, tileY, maxAngle, maxAngleNotSteep,
                                  skipLiquid, skipContinents, skipJunkMaps, skipBattlegrounds,
-                                 debugOutput, silent, bigBaseUnit, offMeshInputPath, file, threads);
+                                 debugOutput, silent, bigBaseUnit, onlyTransports, offMeshInputPath, file, threads);
 
     if (!validParam)
         return silent ? -1 : finish("You have specified invalid parameters", -1);
@@ -446,6 +461,8 @@ int main(int argc, char** argv)
         builder.buildSingleTile(mapnum, tileX, tileY);
     else if (mapnum >= 0)
         builder.buildMaps(uint32(mapnum));
+    else if (onlyTransports)
+        builder.buildTransports();
     else
         builder.buildMaps({});
 
