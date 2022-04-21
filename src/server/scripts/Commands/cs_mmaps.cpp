@@ -35,6 +35,7 @@
 #include "Player.h"
 #include "PointMovementGenerator.h"
 #include "RBAC.h"
+#include "Transport.h"
 #include "WorldSession.h"
 
 #if TRINITY_COMPILER == TRINITY_COMPILER_GNU
@@ -66,14 +67,6 @@ public:
 
     static bool HandleMmapPathCommand(ChatHandler* handler, char const* args)
     {
-        if (!MMAP::MMapFactory::createOrGetMMapManager()->GetNavMesh(handler->GetSession()->GetPlayer()->GetMapId()))
-        {
-            handler->PSendSysMessage("NavMesh not loaded for current map.");
-            return true;
-        }
-
-        handler->PSendSysMessage("mmap path:");
-
         // units
         Player* player = handler->GetSession()->GetPlayer();
         Unit* target = handler->getSelectedUnit();
@@ -83,34 +76,54 @@ public:
             return true;
         }
 
+        MMAP::MMapManager* manager = MMAP::MMapFactory::createOrGetMMapManager();
+
+        Transport* transport = target->GetTransport();
+
+        bool ValidNavMesh = false;
+        if (transport && transport->MMapsLoaded())
+            ValidNavMesh = manager->GetTransportNavMesh(transport->GetDisplayId()) != nullptr;
+        else
+            ValidNavMesh = manager->GetNavMesh(player->GetMapId()) != nullptr;
+
+        if (!ValidNavMesh)
+        {
+            handler->PSendSysMessage("NavMesh not loaded for current map.");
+            return true;
+        }
+
+        handler->PSendSysMessage("mmap path:");
+
         char* para = strtok((char*)args, " ");
 
         bool useStraightPath = false;
         if (para && strcmp(para, "true") == 0)
             useStraightPath = true;
 
-        bool useRaycast = false;
-        if (para && (strcmp(para, "line") == 0 || strcmp(para, "ray") == 0 || strcmp(para, "raycast") == 0))
-            useRaycast = true;
+        bool useStraightLine = false;
+        if (para && strcmp(para, "line") == 0)
+            useStraightLine = true;
 
         // unit locations
-        float x, y, z;
+        float x = 0.0f;
+        float y = 0.0f;
+        float z = 0.0f;
         player->GetPosition(x, y, z);
 
         // path
         PathGenerator path(target);
         path.SetUseStraightPath(useStraightPath);
-        path.SetUseRaycast(useRaycast);
-        bool result = path.CalculatePath(x, y, z, false);
+        G3D::Vector3 startA = G3D::Vector3();
+        bool result = path.CalculatePath(x, y, z, startA, false, useStraightLine);
 
         Movement::PointsArray const& pointPath = path.GetPath();
         handler->PSendSysMessage("%s's path to %s:", target->GetName().c_str(), player->GetName().c_str());
-        handler->PSendSysMessage("Building: %s", useStraightPath ? "StraightPath" : useRaycast ? "Raycast" : "SmoothPath");
+        handler->PSendSysMessage("Building: %s", useStraightPath ? "StraightPath" : useStraightLine ? "Raycast" : "SmoothPath");
         handler->PSendSysMessage("Result: %s - Length: %zu - Type: %u", (result ? "true" : "false"), pointPath.size(), path.GetPathType());
 
-        G3D::Vector3 const& start = path.GetStartPosition();
-        G3D::Vector3 const& end = path.GetEndPosition();
-        G3D::Vector3 const& actualEnd = path.GetActualEndPosition();
+        auto const &start = path.GetStartPosition();
+        auto const &end = path.GetEndPosition();
+        auto const &actualEnd = path.GetActualEndPosition();
 
         handler->PSendSysMessage("StartPosition     (%.3f, %.3f, %.3f)", start.x, start.y, start.z);
         handler->PSendSysMessage("EndPosition       (%.3f, %.3f, %.3f)", end.x, end.y, end.z);
@@ -120,8 +133,19 @@ public:
             handler->PSendSysMessage("Enable GM mode to see the path points.");
 
         for (uint32 i = 0; i < pointPath.size(); ++i)
-            player->SummonCreature(VISUAL_WAYPOINT, pointPath[i].x, pointPath[i].y, pointPath[i].z, 0, TEMPSUMMON_TIMED_DESPAWN, 9s);
+        {
+            float x = pointPath[i].x;
+            float y = pointPath[i].y;
+            float z = pointPath[i].z;
 
+            if (transport)
+            {
+                transport->CalculatePassengerOffset(x, y, z);
+                transport->SummonPassenger(VISUAL_WAYPOINT, Position(x, y, z, 0.0f), TEMPSUMMON_TIMED_DESPAWN, nullptr, 9000);
+            }
+            else
+                player->SummonCreature(VISUAL_WAYPOINT, Position(x, y, z, 0.0f), TEMPSUMMON_TIMED_DESPAWN, 9s);
+        }
         return true;
     }
 
@@ -139,7 +163,7 @@ public:
         player->GetPosition(x, y, z);
 
         handler->PSendSysMessage("%04u%02i%02i.mmtile", player->GetMapId(), gx, gy);
-        handler->PSendSysMessage("tileloc [%i, %i]", gy, gx);
+        handler->PSendSysMessage("gridloc [%i, %i]", gy, gx);
 
         // calculate navmesh tile location
         uint32 terrainMapId = PhasingHandler::GetTerrainMapId(player->GetPhaseShift(), player->GetMap(), x, y);
@@ -163,7 +187,7 @@ public:
         // navmesh poly -> navmesh tile location
         dtQueryFilter filter = dtQueryFilter();
         dtPolyRef polyRef = INVALID_POLYREF;
-        if (dtStatusFailed(navmeshquery->findNearestPoly(location, extents, &filter, &polyRef, nullptr)))
+        if (dtStatusFailed(navmeshquery->findNearestPoly(location, extents, &filter, &polyRef, NULL)))
         {
             handler->PSendSysMessage("Dt     [??,??] (invalid poly, probably no tile loaded)");
             return true;
@@ -180,7 +204,7 @@ public:
                 if (tile)
                 {
                     handler->PSendSysMessage("Dt     [%02i,%02i]", tile->header->x, tile->header->y);
-                    return true;
+                    return false;
                 }
             }
 

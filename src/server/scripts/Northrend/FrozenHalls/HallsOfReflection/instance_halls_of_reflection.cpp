@@ -393,7 +393,7 @@ class instance_halls_of_reflection : public InstanceMapScript
                             _teamInInstance = player->GetTeam();
                 }
 
-                if (Transport* gunship = sTransportMgr->CreateTransport(_teamInInstance == HORDE ? GO_ORGRIMS_HAMMER : GO_THE_SKYBREAKER, UI64LIT(0), instance))
+                if (MapTransport* gunship = sTransportMgr->CreateTransport(_teamInInstance == HORDE ? GO_ORGRIMS_HAMMER : GO_THE_SKYBREAKER, UI64LIT(0), instance))
                     gunship->EnableMovement(GetBossState(DATA_THE_LICH_KING_ESCAPE) == DONE);
             }
 
@@ -640,7 +640,7 @@ class instance_halls_of_reflection : public InstanceMapScript
                         if (GetBossState(DATA_THE_LICH_KING_ESCAPE) == DONE)
                             break;
 
-                        if (Transport* gunship = instance->GetTransport(GunshipGUID))
+                        if (MapTransport* gunship = instance->GetMapTransport(GunshipGUID))
                             gunship->EnableMovement(false);
 
                         if (Creature* jainaOrSylvanas = instance->GetCreature(JainaOrSylvanasEscapeGUID))
@@ -658,7 +658,7 @@ class instance_halls_of_reflection : public InstanceMapScript
                         }
                         break;
                     case EVENT_GUNSHIP_ARRIVAL_2:
-                        if (Transport* gunship = instance->GetTransport(GunshipGUID))
+                        if (MapTransport* gunship = instance->GetMapTransport(GunshipGUID))
                             gunship->EnableMovement(false);
 
                         for (ObjectGuid guid : GunshipStairGUIDs)

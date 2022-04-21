@@ -322,6 +322,7 @@ class TC_GAME_API ObjectGuid
         bool IsCorpse()            const { return GetHigh() == HighGuid::Corpse; }
         bool IsAreaTrigger()       const { return GetHigh() == HighGuid::AreaTrigger; }
         bool IsMOTransport()       const { return GetHigh() == HighGuid::Transport; }
+        bool IsTransport()         const { return GetHigh() == HighGuid::Transport; }
         bool IsAnyTypeGameObject() const { return IsGameObject() || IsMOTransport(); }
         bool IsParty()             const { return GetHigh() == HighGuid::Party; }
         bool IsGuild()             const { return GetHigh() == HighGuid::Guild; }

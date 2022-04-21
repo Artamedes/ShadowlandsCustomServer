@@ -160,7 +160,7 @@ void FleeingMovementGenerator<T>::SetTargetLocation(T* owner)
 
     if (!_path)
     {
-        _path = std::make_unique<PathGenerator>(owner);
+        _path = std::make_unique<PathGenerator>(owner, owner->GetTransport());
         _path->SetPathLengthLimit(30.0f);
     }
 

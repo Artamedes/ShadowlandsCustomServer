@@ -3923,12 +3923,12 @@ void ObjectMgr::LoadPlayerInfo()
                         info->createPositionNPE.reset();
                     }
 
-                    if (info->createPositionNPE && info->createPositionNPE->TransportGuid && !sTransportMgr->GetTransportSpawn(*info->createPositionNPE->TransportGuid))
-                    {
-                        TC_LOG_ERROR("sql.sql", "Invalid NPE transport spawn id " UI64FMTD " for class %u race %u pair in `playercreateinfo` table, ignoring.",
-                            *info->createPositionNPE->TransportGuid, current_class, current_race);
-                        info->createPositionNPE.reset(); // remove entire NPE data - assume user put transport offsets into npe_position fields
-                    }
+                    //if (info->createPositionNPE && info->createPositionNPE->TransportGuid && !sTransportMgr->GetTransportSpawn(*info->createPositionNPE->TransportGuid))
+                    //{
+                    //    TC_LOG_ERROR("sql.sql", "Invalid NPE transport spawn id " UI64FMTD " for class %u race %u pair in `playercreateinfo` table, ignoring.",
+                    //        *info->createPositionNPE->TransportGuid, current_class, current_race);
+                    //    info->createPositionNPE.reset(); // remove entire NPE data - assume user put transport offsets into npe_position fields
+                    //}
                 }
 
                 if (!fields[13].IsNull())

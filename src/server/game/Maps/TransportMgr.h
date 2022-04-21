@@ -1,5 +1,5 @@
 /*
- * This file is part of the TrinityCore Project. See AUTHORS file for Copyright information
+ * Copyright (C) 2008-2018 TrinityCore <https://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -18,33 +18,33 @@
 #ifndef TRANSPORTMGR_H
 #define TRANSPORTMGR_H
 
+#include "DB2Stores.h"
 #include "ObjectGuid.h"
-#include <map>
 #include <memory>
-#include <unordered_map>
 
 struct KeyFrame;
 struct GameObjectTemplate;
-struct TaxiPathNodeEntry;
-struct TransportAnimationEntry;
-struct TransportRotationEntry;
 struct TransportTemplate;
-class Transport;
+class MapTransport;
 class Map;
 
 namespace Movement
 {
-    template <typename length_type> class Spline;
+    template<typename length_type> class Spline;
 }
 
-using TransportSpline = Movement::Spline<double>;
-using KeyFrameVec = std::vector<KeyFrame>;
+typedef Movement::Spline<double>                 TransportSpline;
+typedef std::vector<KeyFrame>                    KeyFrameVec;
+typedef std::unordered_map<uint32, TransportTemplate> TransportTemplates;
+typedef std::set<Transport*>                     TransportSet;
+typedef std::unordered_map<uint32, TransportSet>      TransportMap;
+typedef std::unordered_map<uint32, std::set<uint32> > TransportInstanceMap;
 
 struct KeyFrame
 {
     explicit KeyFrame(TaxiPathNodeEntry const* node) : Index(0), Node(node), InitialOrientation(0.0f),
         DistSinceStop(-1.0f), DistUntilStop(-1.0f), DistFromPrev(-1.0f), TimeFrom(0.0f), TimeTo(0.0f),
-        Teleport(false), ArriveTime(0), DepartureTime(0), Spline(nullptr), NextDistFromPrev(0.0f), NextArriveTime(0)
+        Teleport(false), ArriveTime(0), DepartureTime(0), Spline(NULL), NextDistFromPrev(0.0f), NextArriveTime(0)
     {
     }
 
@@ -66,7 +66,7 @@ struct KeyFrame
     uint32 NextArriveTime;
 
     bool IsTeleportFrame() const { return Teleport; }
-    bool IsStopFrame() const;
+    bool IsStopFrame() const { return (Node->Flags & TAXI_PATH_NODE_FLAG_STOP) != 0; }
 };
 
 struct TransportTemplate
@@ -83,26 +83,22 @@ struct TransportTemplate
     uint32 entry;
 };
 
+typedef std::map<uint32, TransportAnimationEntry const*> TransportPathContainer;
+typedef std::map<uint32, TransportRotationEntry const*> TransportPathRotationContainer;
+
 struct TC_GAME_API TransportAnimation
 {
     TransportAnimation() : TotalTime(0) { }
 
-    std::map<uint32, TransportAnimationEntry const*> Path;
-    std::map<uint32, TransportRotationEntry const*> Rotations;
+    TransportPathContainer Path;
+    TransportPathRotationContainer Rotations;
     uint32 TotalTime;
 
     TransportAnimationEntry const* GetAnimNode(uint32 time) const;
-    TransportRotationEntry const* GetAnimRotation(uint32 time) const;
+    void GetAnimRotation(uint32 time, QuaternionData& curr, QuaternionData& next, float& percRot) const;
 };
 
-struct TransportSpawn
-{
-    ObjectGuid::LowType SpawnId = UI64LIT(0);
-    uint32 TransportGameObjectId = 0; // entry in respective _template table
-    uint8 PhaseUseFlags = 0;
-    uint32 PhaseId = 0;
-    uint32 PhaseGroup = 0;
-};
+typedef std::map<uint32, TransportAnimation> TransportAnimationContainer;
 
 class TC_GAME_API TransportMgr
 {
@@ -115,10 +111,8 @@ class TC_GAME_API TransportMgr
 
         void LoadTransportAnimationAndRotation();
 
-        void LoadTransportSpawns();
-
         // Creates a transport using given GameObject template entry
-        Transport* CreateTransport(uint32 entry, ObjectGuid::LowType guid = UI64LIT(0), Map* map = nullptr, uint8 phaseUseFlags = 0, uint32 phaseId = 0, uint32 phaseGroupId = 0);
+        MapTransport* CreateTransport(uint32 entry, ObjectGuid::LowType guid = UI64LIT(0), Map* map = nullptr, uint8 phaseUseFlags = 0, uint32 phaseId = 0, uint32 phaseGroupId = 0);
 
         // Spawns all continent transports, used at core startup
         void SpawnContinentTransports();
@@ -126,11 +120,22 @@ class TC_GAME_API TransportMgr
         // creates all transports for instance
         void CreateInstanceTransports(Map* map);
 
-        TransportTemplate const* GetTransportTemplate(uint32 entry) const;
+        TransportTemplate const* GetTransportTemplate(uint32 entry) const
+        {
+            TransportTemplates::const_iterator itr = _transportTemplates.find(entry);
+            if (itr != _transportTemplates.end())
+                return &itr->second;
+            return NULL;
+        }
 
-        TransportAnimation const* GetTransportAnimInfo(uint32 entry) const;
+        TransportAnimation const* GetTransportAnimInfo(uint32 entry) const
+        {
+            TransportAnimationContainer::const_iterator itr = _transportAnimations.find(entry);
+            if (itr != _transportAnimations.end())
+                return &itr->second;
 
-        TransportSpawn const* GetTransportSpawn(ObjectGuid::LowType spawnId) const;
+            return NULL;
+        }
 
     private:
         TransportMgr();
@@ -149,14 +154,12 @@ class TC_GAME_API TransportMgr
         }
 
         // Container storing transport templates
-        std::unordered_map<uint32, TransportTemplate> _transportTemplates;
+        TransportTemplates _transportTemplates;
 
         // Container storing transport entries to create for instanced maps
-        std::unordered_map<uint32, std::set<uint32>> _instanceTransports;
+        TransportInstanceMap _instanceTransports;
 
-        std::map<uint32, TransportAnimation> _transportAnimations;
-
-        std::unordered_map<ObjectGuid::LowType, TransportSpawn> _transportSpawns;
+        TransportAnimationContainer _transportAnimations;
 };
 
 #define sTransportMgr TransportMgr::instance()

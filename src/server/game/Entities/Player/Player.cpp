@@ -198,6 +198,8 @@ Player::Player(WorldSession* session) : Unit(true), m_sceneMgr(this)
     m_bCanDelayTeleport = false;
     m_bHasDelayedTeleport = false;
     m_teleport_options = 0;
+    m_teleport_option_param = 0;
+    m_teleport_transport = nullptr;
 
     m_trade = nullptr;
 
@@ -355,6 +357,8 @@ Player::Player(WorldSession* session) : Unit(true), m_sceneMgr(this)
     _covenantMgr = std::make_unique< CovenantMgr>(this);
 
     _usePvpItemLevels = false;
+
+    _transportSpawnID = 0;
 }
 
 Player::~Player()
@@ -449,7 +453,7 @@ bool Player::Create(ObjectGuid::LowType guidlow, WorldPackets::Character::Charac
 
     if (position.TransportGuid)
     {
-        if (Transport* transport = HashMapHolder<Transport>::Find(ObjectGuid::Create<HighGuid::Transport>(*position.TransportGuid)))
+        if (MapTransport* transport = HashMapHolder<MapTransport>::Find(ObjectGuid::Create<HighGuid::Transport>(*position.TransportGuid)))
         {
             transport->AddPassenger(this);
             m_movementInfo.transport.pos.Relocate(position.Loc);
@@ -1247,7 +1251,7 @@ void Player::Update(uint32 p_time)
     //we should execute delayed teleports only for alive(!) players
     //because we don't want player's ghost teleported from graveyard
     if (IsHasDelayedTeleport() && IsAlive())
-        TeleportTo(m_teleport_dest, m_teleport_options);
+        TeleportTo(m_teleport_dest, m_teleport_options, 0, m_teleport_transport);
 
     sScriptMgr->OnPlayerUpdate(this, p_time);
 }
@@ -1327,7 +1331,7 @@ uint8 Player::GetChatFlags() const
     return tag;
 }
 
-bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientation, uint32 options)
+bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientation, uint32 options, uint32 optionParam, Transport* transport, uint32 spellID /*= 0*/)
 {
     if (!MapManager::IsValidMapCoord(mapid, x, y, z, orientation))
     {
@@ -1385,6 +1389,8 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
     {
         if (!(options & TELE_TO_NOT_LEAVE_TRANSPORT))
             transport->RemovePassenger(this);
+
+        m_teleport_transport_offset = m_movementInfo.transport.pos;
     }
 
     // The player was ported to another map and loses the duel immediately.
@@ -1407,6 +1413,8 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
             //lets save teleport destination for player
             m_teleport_dest = WorldLocation(mapid, x, y, z, orientation);
             m_teleport_options = options;
+            m_teleport_option_param = optionParam;
+            m_teleport_transport = transport;
             return true;
         }
 
@@ -1426,11 +1434,14 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
         // this will be used instead of the current location in SaveToDB
         m_teleport_dest = WorldLocation(mapid, x, y, z, orientation);
         m_teleport_options = options;
+        m_teleport_option_param = optionParam;
         SetFallInformation(0, GetPositionZ());
+        m_teleport_transport = transport;
 
         // code for finish transfer called in WorldSession::HandleMovementOpcodes()
         // at client packet CMSG_MOVE_TELEPORT_ACK
-        SetSemaphoreTeleportNear(true);
+        if (!GetTransport())
+            SetSemaphoreTeleportNear(true);
         // near teleport, triggering send CMSG_MOVE_TELEPORT_ACK from client at landing
         if (!GetSession()->PlayerLogout())
             SendTeleportPacket(m_teleport_dest);
@@ -1473,6 +1484,8 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
                 //lets save teleport destination for player
                 m_teleport_dest = WorldLocation(mapid, x, y, z, orientation);
                 m_teleport_options = options;
+                m_teleport_option_param = optionParam;
+                m_teleport_transport = transport;
                 return true;
             }
 
@@ -1564,9 +1577,16 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
     return true;
 }
 
-bool Player::TeleportTo(WorldLocation const& loc, uint32 options /*= 0*/)
+bool Player::TeleportTo(uint32 mapid, Position const& pos, uint32 options /*= 0*/, uint32 optionParam /*= 0*/, Transport* transport /*=nullptr*/)
 {
-    return TeleportTo(loc.GetMapId(), loc.GetPositionX(), loc.GetPositionY(), loc.GetPositionZ(), loc.GetOrientation(), options);
+    WorldLocation loc(mapid);
+    loc.Relocate(pos);
+    return TeleportTo(loc, options, optionParam, transport);
+}
+
+bool Player::TeleportTo(WorldLocation const& loc, uint32 options /*= 0*/, uint32 optionParam /*= 0*/, Transport* transport /*=nullptr*/)
+{
+    return TeleportTo(loc.GetMapId(), loc.GetPositionX(), loc.GetPositionY(), loc.GetPositionZ(), loc.GetOrientation(), options, optionParam, transport);
 }
 
 bool Player::TeleportToBGEntryPoint()
@@ -18495,7 +18515,7 @@ bool Player::LoadFromDB(ObjectGuid guid, CharacterDatabaseQueryHolder const& hol
         ObjectGuid transGUID = ObjectGuid::Create<HighGuid::Transport>(fields.transguid);
 
         Transport* transport = nullptr;
-        if (Transport* go = HashMapHolder<Transport>::Find(transGUID))
+        if (MapTransport* go = HashMapHolder<MapTransport>::Find(transGUID))
             transport = go;
 
         if (transport)
@@ -20642,7 +20662,7 @@ bool Player::_LoadHomeBind(PreparedQueryResult result)
         m_homebind.WorldRelocate(createPosition.Loc);
         if (createPosition.TransportGuid)
         {
-            if (Transport* transport = HashMapHolder<Transport>::Find(ObjectGuid::Create<HighGuid::Transport>(*createPosition.TransportGuid)))
+            if (MapTransport* transport = HashMapHolder<MapTransport>::Find(ObjectGuid::Create<HighGuid::Transport>(*createPosition.TransportGuid)))
             {
                 float orientation = m_homebind.GetOrientation();
                 transport->CalculatePassengerPosition(m_homebind.m_positionX, m_homebind.m_positionY, m_homebind.m_positionZ, &orientation);

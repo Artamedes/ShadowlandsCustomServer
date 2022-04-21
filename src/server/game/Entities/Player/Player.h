@@ -823,7 +823,8 @@ enum TeleportToOptions
     TELE_TO_SPELL               = 0x10,
     TELE_TO_TRANSPORT_TELEPORT  = 0x20, // 3.3.5 only
     TELE_REVIVE_AT_TELEPORT     = 0x40,
-    TELE_TO_SEAMLESS            = 0x80
+    TELE_TO_SEAMLESS            = 0x80,
+    TELE_TO_CAST_ON_ARRIVAL     = 0x100
 };
 
 /// Type of environmental damages
@@ -1190,8 +1191,9 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
 
         void SetObjectScale(float scale) override;
 
-        bool TeleportTo(uint32 mapid, float x, float y, float z, float orientation, uint32 options = 0);
-        bool TeleportTo(WorldLocation const& loc, uint32 options = 0);
+        bool TeleportTo(uint32 mapid, float x, float y, float z, float orientation, uint32 options = 0, uint32 optionParam = 0, Transport* transport = nullptr, uint32 spellID = 0);
+        bool TeleportTo(uint32 mapid, Position const& pos, uint32 options = 0, uint32 optionParam = 0, Transport* transport = nullptr);
+        bool TeleportTo(WorldLocation const& loc, uint32 options = 0, uint32 optionParam = 0, Transport* transport = nullptr);
         bool TeleportToBGEntryPoint();
         void TeleportToChallenge(uint32 mapid, float x, float y, float z, float orientation, Player* keyOwner = nullptr);
 
@@ -2257,6 +2259,9 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         bool IsBeingTeleportedNear() const { return mSemaphoreTeleport_Near; }
         bool IsBeingTeleportedFar() const { return mSemaphoreTeleport_Far; }
         bool IsBeingTeleportedSeamlessly() const { return IsBeingTeleportedFar() && m_teleport_options & TELE_TO_SEAMLESS; }
+        bool IsBeingTeleportedWithCastOnArrival() const { return m_teleport_options & TELE_TO_CAST_ON_ARRIVAL; }
+        uint32 GetOnArrivalCastSpellTeleport() const { return IsBeingTeleportedWithCastOnArrival() ? m_teleport_option_param : 0; }
+        void ResetOnArrivalCastSpellTeleport() { m_teleport_option_param = 0; }
         void SetSemaphoreTeleportNear(bool semphsetting) { mSemaphoreTeleport_Near = semphsetting; }
         void SetSemaphoreTeleportFar(bool semphsetting) { mSemaphoreTeleport_Far = semphsetting; }
         void ProcessDelayedOperations();
@@ -2716,6 +2721,9 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         bool SwapVoidStorageItem(uint8 oldSlot, uint8 newSlot);
         VoidStorageItem* GetVoidStorageItem(uint8 slot) const;
         VoidStorageItem* GetVoidStorageItem(uint64 id, uint8& slot) const;
+
+        uint32 GetTransportSpawnID() const { return _transportSpawnID; }
+        void SetTransportSpawnID(uint32 spawnId) { _transportSpawnID = spawnId; }
 
         void SetKnockBackTime(uint32 timer) { m_knockBackTimer = timer; }
         uint32 GetKnockBackTime() const { return m_knockBackTimer; }
@@ -3229,6 +3237,9 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         Map* m_teleport_target_map;
         WorldLocation m_teleport_dest;
         uint32 m_teleport_options;
+        uint32 m_teleport_option_param;
+        Transport* m_teleport_transport;
+        Position m_teleport_transport_offset;
         bool mSemaphoreTeleport_Near;
         bool mSemaphoreTeleport_Far;
 
@@ -3277,6 +3288,8 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         std::unique_ptr<CovenantMgr> _covenantMgr;
 
         bool _usePvpItemLevels;
+
+        uint32 _transportSpawnID;
 };
 
 TC_GAME_API void AddItemsSetItem(Player* player, Item const* item);

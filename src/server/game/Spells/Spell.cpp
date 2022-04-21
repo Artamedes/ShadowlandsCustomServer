@@ -5957,7 +5957,7 @@ SpellCastResult Spell::CheckCast(bool strict, int32* param1 /*= nullptr*/, int32
                     float objSize = target->GetCombatReach();
                     float range = m_spellInfo->GetMaxRange(true, unitCaster, this) * 1.5f + objSize; // can't be overly strict
 
-                    m_preGeneratedPath = std::make_unique<PathGenerator>(unitCaster);
+                    m_preGeneratedPath = std::make_unique<PathGenerator>(unitCaster, unitCaster->GetTransport());
                     m_preGeneratedPath->SetPathLengthLimit(range);
 
                     // first try with raycast, if it fails fall back to normal path

@@ -118,7 +118,7 @@ bool FollowMovementGenerator::Update(Unit* owner, uint32 diff)
         if (owner->HasUnitState(UNIT_STATE_FOLLOW_MOVE) || !PositionOkay(owner, target, _range + FOLLOW_RANGE_TOLERANCE))
         {
             if (!_path)
-                _path = std::make_unique<PathGenerator>(owner);
+                _path = std::make_unique<PathGenerator>(owner, owner->GetTransport());
 
             float x, y, z;
 

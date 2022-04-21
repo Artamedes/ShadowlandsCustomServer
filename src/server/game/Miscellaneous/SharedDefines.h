@@ -2847,8 +2847,19 @@ enum GOState : uint8
     GO_STATE_ACTIVE             = 0,                        // show in world as used and not reset (closed door open)
     GO_STATE_READY              = 1,                        // show in world as ready (closed door close)
     GO_STATE_DESTROYED          = 2,                        // show the object in-game as already used and not yet reset (e.g. door opened by a cannon blast)
-    GO_STATE_TRANSPORT_ACTIVE   = 24,
-    GO_STATE_TRANSPORT_STOPPED  = 25
+    GO_STATE_TRANSPORT_ACTIVE   = 24,                       // transport exclusive: transport may always move
+    GO_STATE_TRANSPORT_STOPPED  = 25,                       // transport exclusive: transport is going to stop at provided stop frame
+    
+    GO_STATE_TRANSPORT_FLOOR_1   = 24,
+    GO_STATE_TRANSPORT_FLOOR_2   = 25,
+    GO_STATE_TRANSPORT_FLOOR_3   = 26,
+    GO_STATE_TRANSPORT_FLOOR_4   = 27,
+    GO_STATE_TRANSPORT_FLOOR_5   = 28,
+    GO_STATE_TRANSPORT_FLOOR_6   = 29,
+    GO_STATE_TRANSPORT_FLOOR_7   = 30,
+    GO_STATE_TRANSPORT_FLOOR_8   = 31,
+    GO_STATE_TRANSPORT_FLOOR_9   = 32,
+    GO_STATE_TRANSPORT_FLOOR_10  = 33
 };
 
 #define MAX_GO_STATE              3

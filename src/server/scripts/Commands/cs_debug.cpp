@@ -1209,7 +1209,7 @@ public:
 
     static bool HandleDebugTransportCommand(ChatHandler* handler, std::string operation)
     {
-        Transport* transport = handler->GetPlayer()->GetTransport();
+        MapTransport* transport = handler->GetPlayer()->GetMapTransport();
         if (!transport)
             return false;
 
