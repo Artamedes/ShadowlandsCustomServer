@@ -984,6 +984,55 @@ namespace MMAP
 
             if (isTransportMap(mapID))
                 return true;
+            
+            switch (mapID)
+            {
+                case 13:    // test.wdt
+                case 25:    // ScottTest.wdt
+                case 29:    // Test.wdt
+                case 42:    // Colin.wdt
+                case 169:   // EmeraldDream.wdt (unused, and very large)
+                case 451:   // development.wdt
+                case 573:   // ExteriorTest.wdt
+                case 597:   // CraigTest.wdt
+                case 605:   // development_nonweighted.wdt
+                case 606:   // QA_DVD.wdt
+                case 651:   // ElevatorSpawnTest.wdt
+                case 1060:  // LevelDesignLand-DevOnly.wdt
+                case 1181:  // PattyMackTestGarrisonBldgMap.wdt
+                case 1264:  // Propland-DevOnly.wdt
+                case 1270:  // devland3.wdt
+                case 1310:  // Expansion5QAModelMap.wdt
+                case 1407:  // GorgrondFinaleScenarioMap.wdt (zzzOld)
+                case 1427:  // PattyMackTestGarrisonBldgMap2.wdt
+                case 1451:  // TanaanLegionTest.wdt
+                case 1454:  // ArtifactAshbringerOrigin.wdt
+                case 1457:  // FXlDesignLand-DevOnly.wdt
+                case 1471:  // 1466.wdt (Dungeon Test Map 1466)
+                case 1499:  // Artifact-Warrior Fury Acquisition.wdt (oldArtifact - Warrior Fury Acquisition)
+                case 1537:  // BoostExperience.wdt (zzOLD - Boost Experience)
+                case 1538:  // Karazhan Scenario.wdt (test)
+                case 1549:  // TechTestSeamlessWorldTransitionA.wdt
+                case 1550:  // TechTestSeamlessWorldTransitionB.wdt
+                case 1555:  // TransportBoostExperienceAllianceGunship.wdt
+                case 1556:  // TransportBoostExperienceHordeGunship.wdt
+                case 1561:  // TechTestCosmeticParentPerformance.wdt
+                case 1582:  // Artifact?DalaranVaultAcquisition.wdt // no, this weird symbol is not an encoding error.
+                case 1584:  // JulienTestLand-DevOnly.wdt
+                case 1586:  // AssualtOnStormwind.wdt (Assault on Stormwind - Dev Map)
+                case 1588:  // DevMapA.wdt
+                case 1589:  // DevMapB.wdt
+                case 1590:  // DevMapC.wdt
+                case 1591:  // DevMapD.wdt
+                case 1592:  // DevMapE.wdt
+                case 1593:  // DevMapF.wdt
+                case 1594:  // DevMapG.wdt
+                case 1603:  // AbyssalMaw_Interior_Scenario.wdt
+                case 1670:  // BrokenshorePristine.wdt
+                    return true;
+                default:
+                    break;
+            }
         }
 
         if (m_skipBattlegrounds)
@@ -1360,7 +1409,7 @@ namespace MMAP
         rcVcopy(config.bmin, bmin);
         rcVcopy(config.bmax, bmax);
 
-        config.maxVertsPerPoly = DT_VERTS_PER_POLYGON;
+        /*config.maxVertsPerPoly = DT_VERTS_PER_POLYGON;
         config.cs = BASE_UNIT_DIM;
         config.ch = BASE_UNIT_DIM;
         config.walkableSlopeAngle = m_maxWalkableAngle ? *m_maxWalkableAngle : 55;
@@ -1376,7 +1425,24 @@ namespace MMAP
         config.mergeRegionArea = rcSqr(50);
         config.maxSimplificationError = 1.8f;           // eliminates most jagged edges (tiny polygons)
         config.detailSampleDist = config.cs * 64;
-        config.detailSampleMaxError = config.ch * 2;
+        config.detailSampleMaxError = config.ch * 2;*/
+
+        // values tested and taken from RecastDemo
+        config.cs = BASE_UNIT_DIM;
+        config.ch = BASE_UNIT_DIM;
+        config.walkableSlopeAngle = m_maxWalkableAngle ? *m_maxWalkableAngle : 45.0f;
+        config.walkableHeight = 3;
+        config.walkableClimb = 2;
+        config.walkableRadius = 2;
+        config.maxEdgeLen = 40;
+        config.maxSimplificationError = 1.8f;
+        config.minRegionArea = 64;
+        config.mergeRegionArea = 400;
+        config.maxVertsPerPoly = 6;
+        config.detailSampleDist = 1.8f;
+        config.detailSampleMaxError = 0.2f;
+        config.tileSize = VERTEX_PER_TILE;
+        config.borderSize = config.walkableRadius + 3;
 
         // this sets the dimensions of the heightfield - should maybe happen before border padding
         rcCalcGridSize(config.bmin, config.bmax, config.cs, &config.width, &config.height);
@@ -1429,7 +1495,8 @@ namespace MMAP
                 // mark all walkable tiles, both liquids and solids
                 unsigned char* triFlags = new unsigned char[tTriCount];
                 memset(triFlags, NAV_GROUND, tTriCount * sizeof(unsigned char));
-                rcClearUnwalkableTriangles(m_rcContext, tileCfg.walkableSlopeAngle, tVerts, tVertCount, tTris, tTriCount, triFlags);
+                //rcClearUnwalkableTriangles(m_rcContext, tileCfg.walkableSlopeAngle, tVerts, tVertCount, tTris, tTriCount, triFlags);
+                rcMarkWalkableTriangles(m_rcContext, tileCfg.walkableSlopeAngle, tVerts, tVertCount, tTris, tTriCount, triFlags); // taken from RecastDemo
                 rcRasterizeTriangles(m_rcContext, tVerts, tVertCount, tTris, triFlags, tTriCount, *tile.solid, config.walkableClimb);
                 delete[] triFlags;
 
@@ -1558,9 +1625,9 @@ namespace MMAP
         params.offMeshConAreas = meshData.offMeshConnectionsAreas.getCArray();
         params.offMeshConFlags = meshData.offMeshConnectionsFlags.getCArray();
 
-        params.walkableHeight = BASE_UNIT_DIM * config.walkableHeight;    // agent height
-        params.walkableRadius = BASE_UNIT_DIM * config.walkableRadius;    // agent radius
-        params.walkableClimb = BASE_UNIT_DIM * config.walkableClimb;      // keep less that walkableHeight (aka agent height)!
+        params.walkableHeight = config.walkableHeight;
+        params.walkableRadius = config.walkableRadius;
+        params.walkableClimb = config.walkableClimb;
         params.tileX = (((bmin[0] + bmax[0]) / 2) - navMesh->getParams()->orig[0]) / GRID_SIZE;
         params.tileY = (((bmin[2] + bmax[2]) / 2) - navMesh->getParams()->orig[2]) / GRID_SIZE;
         rcVcopy(params.bmin, bmin);
