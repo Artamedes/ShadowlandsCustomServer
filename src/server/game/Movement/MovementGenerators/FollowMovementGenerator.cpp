@@ -151,7 +151,7 @@ bool FollowMovementGenerator::Update(Unit* owner, uint32 diff)
             }
 
             bool success = _path->CalculatePath(x, y, z, allowShortcut);
-            if (!success || (_path->GetPathType() & PATHFIND_NOPATH))
+            if ((_path->GetPathType() & PATHFIND_NOPATH))
             {
                 owner->StopMoving();
                 return true;
@@ -160,11 +160,14 @@ bool FollowMovementGenerator::Update(Unit* owner, uint32 diff)
             owner->AddUnitState(UNIT_STATE_FOLLOW_MOVE);
             AddFlag(MOVEMENTGENERATOR_FLAG_INFORM_ENABLED);
 
-            Movement::MoveSplineInit init(owner);
-            init.MovebyPath(_path->GetPath());
-            init.SetWalk(target->IsWalking());
-            init.SetFacing(target->GetOrientation());
-            init.Launch();
+            if (success)
+            {
+                Movement::MoveSplineInit init(owner);
+                init.MovebyPath(_path->GetPath());
+                init.SetWalk(target->IsWalking());
+                init.SetFacing(target->GetOrientation());
+                init.Launch();
+            }
         }
     }
     return true;

@@ -165,7 +165,7 @@ void FleeingMovementGenerator<T>::SetTargetLocation(T* owner)
     }
 
     bool result = _path->CalculatePath(destination.GetPositionX(), destination.GetPositionY(), destination.GetPositionZ());
-    if (!result || (_path->GetPathType() & PATHFIND_NOPATH)
+    if ((_path->GetPathType() & PATHFIND_NOPATH)
                 || (_path->GetPathType() & PATHFIND_SHORTCUT)
                 || (_path->GetPathType() & PATHFIND_FARFROMPOLY))
     {
@@ -175,11 +175,14 @@ void FleeingMovementGenerator<T>::SetTargetLocation(T* owner)
 
     owner->AddUnitState(UNIT_STATE_FLEEING_MOVE);
 
-    Movement::MoveSplineInit init(owner);
-    init.MovebyPath(_path->GetPath());
-    init.SetWalk(false);
-    int32 traveltime = init.Launch();
-    _timer.Reset(traveltime + urand(800, 1500));
+    if (result)
+    {
+        Movement::MoveSplineInit init(owner);
+        init.MovebyPath(_path->GetPath());
+        init.SetWalk(false);
+        int32 traveltime = init.Launch();
+        _timer.Reset(traveltime + urand(800, 1500));
+    }
 }
 
 template<class T>

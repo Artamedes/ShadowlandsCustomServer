@@ -193,8 +193,12 @@ bool ChaseMovementGenerator::Update(Unit* owner, uint32 diff)
             if (owner->IsHovering())
                 owner->UpdateAllowedPositionZ(x, y, z);
 
-            bool success = _path->CalculatePath(x, y, z, owner->CanFly());
-            if (!success || (_path->GetPathType() & (PATHFIND_NOPATH /* | PATHFIND_INCOMPLETE*/)))
+            // allow pets to use shortcut if no path found when following their master
+            bool forceDest = (owner->GetTypeId() == TYPEID_UNIT && owner->ToCreature()->IsPet()
+                && owner->HasUnitState(UNIT_STATE_FOLLOW));
+
+            bool result = _path->CalculatePath(x, y, z, forceDest);
+            if (_path->GetPathType() & PATHFIND_NOPATH)
             {
                 if (cOwner)
                     cOwner->SetCannotReachTarget(true);
@@ -202,8 +206,9 @@ bool ChaseMovementGenerator::Update(Unit* owner, uint32 diff)
                 return true;
             }
 
-            if (shortenPath)
-                _path->ShortenPathUntilDist(PositionToVector3(target), maxTarget);
+            // maybe reenable this
+            //if (shortenPath)
+            //    _path->ShortenPathUntilDist(PositionToVector3(target), maxTarget);
 
             if (cOwner)
                 cOwner->SetCannotReachTarget(false);
@@ -227,11 +232,14 @@ bool ChaseMovementGenerator::Update(Unit* owner, uint32 diff)
             owner->AddUnitState(UNIT_STATE_CHASE_MOVE);
             AddFlag(MOVEMENTGENERATOR_FLAG_INFORM_ENABLED);
 
-            Movement::MoveSplineInit init(owner);
-            init.MovebyPath(_path->GetPath());
-            init.SetWalk(walk);
-            init.SetFacing(target);
-            init.Launch();
+            if (result)
+            {
+                Movement::MoveSplineInit init(owner);
+                init.MovebyPath(_path->GetPath());
+                init.SetWalk(walk);
+                init.SetFacing(target);
+                init.Launch();
+            }
         }
     }
 

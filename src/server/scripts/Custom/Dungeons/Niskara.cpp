@@ -175,7 +175,7 @@ struct npc_nazgrul_700500 : public ScriptedAI
 
      void InitializeAI() override
      {
-         me->AddUnitState(UNIT_STATE_IGNORE_PATHFINDING);
+         //me->AddUnitState(UNIT_STATE_IGNORE_PATHFINDING);
      }
 
      void Reset() override
@@ -185,7 +185,7 @@ struct npc_nazgrul_700500 : public ScriptedAI
 
      void JustEngagedWith(Unit* who) override
      {
-         me->AddUnitState(UNIT_STATE_IGNORE_PATHFINDING);
+         //me->AddUnitState(UNIT_STATE_IGNORE_PATHFINDING);
          scheduler.CancelAll();
          Talk(2);
      }
@@ -245,7 +245,7 @@ struct npc_demonic_priest_700501 : public ScriptedAI
 
      void InitializeAI() override
      {
-         me->AddUnitState(UNIT_STATE_IGNORE_PATHFINDING);
+         //me->AddUnitState(UNIT_STATE_IGNORE_PATHFINDING);
      }
 
      void Reset() override

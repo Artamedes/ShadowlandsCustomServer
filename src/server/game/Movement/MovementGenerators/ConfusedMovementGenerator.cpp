@@ -107,7 +107,7 @@ bool ConfusedMovementGenerator<T>::DoUpdate(T* owner, uint32 diff)
         }
 
         bool result = _path->CalculatePath(destination.GetPositionX(), destination.GetPositionY(), destination.GetPositionZ());
-        if (!result || (_path->GetPathType() & PATHFIND_NOPATH)
+        if ((_path->GetPathType() & PATHFIND_NOPATH)
                     || (_path->GetPathType() & PATHFIND_SHORTCUT)
                     || (_path->GetPathType() & PATHFIND_FARFROMPOLY))
         {
@@ -117,11 +117,14 @@ bool ConfusedMovementGenerator<T>::DoUpdate(T* owner, uint32 diff)
 
         owner->AddUnitState(UNIT_STATE_CONFUSED_MOVE);
 
-        Movement::MoveSplineInit init(owner);
-        init.MovebyPath(_path->GetPath());
-        init.SetWalk(true);
-        int32 traveltime = init.Launch();
-        _timer.Reset(traveltime + urand(800, 1500));
+        if (result)
+        {
+            Movement::MoveSplineInit init(owner);
+            init.MovebyPath(_path->GetPath());
+            init.SetWalk(true);
+            int32 traveltime = init.Launch();
+            _timer.Reset(traveltime + urand(800, 1500));
+        }
     }
 
     return true;

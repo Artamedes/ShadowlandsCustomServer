@@ -141,7 +141,7 @@ void RandomMovementGenerator<Creature>::SetRandomLocation(Creature* owner)
 
     bool result = _path->CalculatePath(position.GetPositionX(), position.GetPositionY(), position.GetPositionZ());
     // PATHFIND_FARFROMPOLY shouldn't be checked as creatures in water are most likely far from poly
-    if (!result || (_path->GetPathType() & PATHFIND_NOPATH)
+    if ((_path->GetPathType() & PATHFIND_NOPATH)
                 || (_path->GetPathType() & PATHFIND_SHORTCUT)
                 /*|| (_path->GetPathType() & PATHFIND_FARFROMPOLY)*/)
     {
@@ -166,23 +166,26 @@ void RandomMovementGenerator<Creature>::SetRandomLocation(Creature* owner)
             break;
     }
 
-    Movement::MoveSplineInit init(owner);
-    init.MovebyPath(_path->GetPath());
-    init.SetWalk(walk);
-    int32 splineDuration = init.Launch();
-
-    --_wanderSteps;
-    if (_wanderSteps) // Creature has yet to do steps before pausing
-        _timer.Reset(splineDuration);
-    else
+    if (result)
     {
-        // Creature has made all its steps, time for a little break
-        _timer.Reset(splineDuration + urand(4, 10) * IN_MILLISECONDS); // Retails seems to use rounded numbers so we do as well
-        _wanderSteps = urand(2, 10);
-    }
+        Movement::MoveSplineInit init(owner);
+        init.MovebyPath(_path->GetPath());
+        init.SetWalk(walk);
+        int32 splineDuration = init.Launch();
 
-    // Call for creature group update
-    owner->SignalFormationMovement();
+        --_wanderSteps;
+        if (_wanderSteps) // Creature has yet to do steps before pausing
+            _timer.Reset(splineDuration);
+        else
+        {
+            // Creature has made all its steps, time for a little break
+            _timer.Reset(splineDuration + urand(4, 10) * IN_MILLISECONDS); // Retails seems to use rounded numbers so we do as well
+            _wanderSteps = urand(2, 10);
+        }
+
+        // Call for creature group update
+        owner->SignalFormationMovement();
+    }
 }
 
 template<class T>
