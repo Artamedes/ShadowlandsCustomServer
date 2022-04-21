@@ -25,6 +25,8 @@
 /* Return a random number in the range min..max. */
 TC_COMMON_API int32 irand(int32 min, int32 max);
 
+TC_COMMON_API float rand_norm_f(void);
+
 /* Return a random number in the range min..max (inclusive). */
 TC_COMMON_API uint32 urand(uint32 min, uint32 max);
 

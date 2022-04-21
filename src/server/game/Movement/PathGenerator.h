@@ -52,8 +52,11 @@ enum PathType
     PATHFIND_SHORT          = 0x20,   // path is longer or equal to its limited path length
     PATHFIND_FARFROMPOLY_START = 0x40,   // start position is far from the mmap poligon
     PATHFIND_FARFROMPOLY_END   = 0x80,   // end positions is far from the mmap poligon
+    PATHFIND_CASTER = 0x0100,
     PATHFIND_FARFROMPOLY       = PATHFIND_FARFROMPOLY_START | PATHFIND_FARFROMPOLY_END, // start or end positions are far from the mmap poligon
 };
+
+typedef std::set<int32> PointId;
 
 class TC_GAME_API PathGenerator
 {
@@ -87,6 +90,16 @@ class TC_GAME_API PathGenerator
 
         void ReducePathLenghtByDist(float dist); // path must be already built
 
+        void ExcludeSteepSlopes() { _filter.setExcludeFlags(NAV_STEEP_SLOPES); }
+        static dtPolyRef FindWalkPoly(dtNavMeshQuery const* query, float const* pointYZX, dtQueryFilter const& filter, float* closestPointYZX, float zSearchDist = 10.0f);
+
+        bool UpdateForMelee(Unit* pTarget, float meleeReach);
+
+        void CutPathWithDynamicLoS();
+
+        float Length() const;
+
+        bool IsOffMeshPoint(int32 id) { return _offMeshIdPoints.find(id) != _offMeshIdPoints.end(); }
     private:
 
         dtPolyRef _pathPolyRefs[MAX_PATH_LENGTH];   // array of detour polygon references
@@ -109,6 +122,8 @@ class TC_GAME_API PathGenerator
         dtNavMeshQuery const* _navMeshQuery;    // the nav mesh query used to find the path
 
         dtQueryFilter _filter;  // use single filter for all movements, update it when needed
+
+        PointId _offMeshIdPoints;
 
         void SetStartPosition(G3D::Vector3 const& point) { _startPosition = point; }
         void SetEndPosition(G3D::Vector3 const& point) { _actualEndPosition = point; _endPosition = point; }

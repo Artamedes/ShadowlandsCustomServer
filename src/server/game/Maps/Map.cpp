@@ -58,6 +58,7 @@
 #include "WorldSession.h"
 #include <sstream>
 #include "ChallengeMode.h"
+#include "PathGenerator.h"
 
 #include "Hacks/boost_1_74_fibonacci_heap.h"
 BOOST_1_74_FIBONACCI_HEAP_MSVC_COMPILE_FIX(RespawnListContainer::value_type)
@@ -2991,6 +2992,11 @@ bool Map::isInLineOfSight(PhaseShift const& phaseShift, float x1, float y1, floa
     return true;
 }
 
+bool Map::GetDynamicObjectHitPos(PhaseShift const& phaseShift, G3D::Vector3 start, G3D::Vector3 end, G3D::Vector3& out, float finalDistMod) const
+{
+    return _dynamicTree.getObjectHitPos(start, end, out, finalDistMod, phaseShift);
+}
+
 bool Map::getObjectHitPos(PhaseShift const& phaseShift, float x1, float y1, float z1, float x2, float y2, float z2, float& rx, float& ry, float& rz, float modifyDist)
 {
     G3D::Vector3 startPos(x1, y1, z1);
@@ -3003,6 +3009,213 @@ bool Map::getObjectHitPos(PhaseShift const& phaseShift, float x1, float y1, floa
     ry = resultPos.y;
     rz = resultPos.z;
     return result;
+}
+
+bool Map::GetWalkHitPosition(PhaseShift const& phaseShift, Transport* transport, float srcX, float srcY, float srcZ, float& destX, float& destY, float& destZ, uint32 moveAllowedFlags, float zSearchDist, bool locatedOnSteepSlope)
+{
+    if (!Trinity::IsValidMapCoord(srcX, srcY, srcZ))
+    {
+        TC_LOG_ERROR("map", "Map::GetWalkHitPosition invalid source coordinates,"
+            "x1: %f y1: %f z1: %f, x2: %f, y2: %f, z2: %f on map %d",
+            srcX, srcY, srcZ, destX, destY, destZ, GetId());
+        return false;
+    }
+
+    if (!Trinity::IsValidMapCoord(destX, destY, destZ))
+    {
+        TC_LOG_ERROR("map", "Map::GetWalkHitPosition invalid destination coordinates,"
+            "x1: %f y1: %f z1: %f, x2: %f, y2: %f, z2: %f on map %u",
+            srcX, srcY, srcZ, destX, destY, destZ, GetId());
+        return false;
+    }
+
+    MMAP::MMapManager* mmap = MMAP::MMapFactory::createOrGetMMapManager();
+    dtNavMeshQuery const* m_navMeshQuery = transport ? mmap->GetModelNavMeshQuery(transport->GetDisplayId(), transport->GetInstanceId()) : mmap->GetNavMeshQuery(GetId(), GetInstanceId());
+    if (!m_navMeshQuery)
+    {
+        TC_LOG_INFO("map", "WalkHitPos: No nav mesh loaded !");
+        return false;
+    }
+
+    /// Find navmesh position near source
+    float point[3] = { srcY, srcZ, srcX };
+    // Warning : Coord order is Y,Z,X
+    float closestPoint[3] = { 0.0f, 0.0f, 0.0f };
+    float endPosition[3] = { destY, destZ, destX };
+    float unused = 0.0f;
+    if (transport)
+    {
+        transport->CalculatePassengerOffset(point[2], point[0], point[1], &unused);
+        transport->CalculatePassengerOffset(endPosition[2], endPosition[0], endPosition[1], &unused);
+    }
+    dtQueryFilter filter;
+    filter.setIncludeFlags(moveAllowedFlags);
+
+    if (!locatedOnSteepSlope)
+        filter.setExcludeFlags(NAV_STEEP_SLOPES);
+
+    dtPolyRef startRef = PathGenerator::FindWalkPoly(m_navMeshQuery, point, filter, closestPoint, zSearchDist);
+    if (!startRef)
+    {
+        TC_LOG_INFO("map", "WalkHitPos: Start poly not found");
+        return false;
+    }
+    filter.setExcludeFlags(NAV_STEEP_SLOPES);
+
+    /// Walk on the surface found
+    dtPolyRef visited[50] = { 0 };
+    int visitedCount = 0;
+    float t = 0.0f;
+    float hitNormal[3] = { 0 }; // Normal of wall hit. Not always defined by raycast (if no wall hit)
+    dtStatus result = m_navMeshQuery->raycast(startRef, closestPoint, endPosition, &filter, &t, hitNormal, visited, &visitedCount, 50);
+    if (dtStatusFailed(result) || !visitedCount)
+    {
+        TC_LOG_INFO("map", "WalkHitPos: Navmesh raycast failed");
+        return false;
+    }
+    for (int i = 0; i < 3; ++i)
+        endPosition[i] += hitNormal[i] * 0.5f;
+    if (dtStatusFailed(m_navMeshQuery->closestPointOnPoly(visited[visitedCount - 1], endPosition, endPosition, nullptr)))
+        return false;
+
+    /// Compute complete path, and at each path step, check for dynamic LoS collision
+    // Rq: This is non-sense on Transports, since we are using position offsets ...
+    float pathPoints[MAX_POINT_PATH_LENGTH * VERTEX_SIZE];
+    int pointCount = 0;
+    result = m_navMeshQuery->findStraightPath(
+        closestPoint,         // start position
+        endPosition,           // end position
+        visited,                 // current path
+        visitedCount,       // length of current path
+        pathPoints,         // [out] path corner points
+        nullptr,
+        nullptr,
+        (int*)&pointCount,
+        20,                  // maximum number of points/polygons to use
+        DT_STRAIGHTPATH_ALL_CROSSINGS);
+    if (dtStatusFailed(result))
+        return false;
+    // Add 1y height, because navmesh height is not very precise.
+    G3D::Vector3 dstPos = G3D::Vector3(srcX, srcY, srcZ + 1.0f);
+    for (int i = 0; i < pointCount; ++i)
+    {
+        G3D::Vector3 startPos = dstPos;
+        dstPos = G3D::Vector3(pathPoints[i * VERTEX_SIZE + 2], pathPoints[i * VERTEX_SIZE], pathPoints[i * VERTEX_SIZE + 1]);
+        dstPos.z += 1.0f;
+        if (!transport && GetDynamicObjectHitPos(phaseShift, startPos, dstPos, dstPos, -0.1f))
+            break;
+    }
+
+    if (transport)
+        transport->CalculatePassengerPosition(dstPos.x, dstPos.y, dstPos.z, &unused);
+    destX = dstPos.x;
+    destY = dstPos.y;
+    destZ = dstPos.z;
+    if (!Trinity::IsValidMapCoord(destX, destY, destZ))
+        return false;
+    /// Finalize Z-position using vmaps (more accurate)
+    if (transport)
+        destZ += 0.5f;
+    else
+        destZ = GetHeight(phaseShift, destX, destY, destZ);
+    return true;
+}
+
+
+bool Map::GetWalkRandomPosition(PhaseShift const& phaseShift, Transport* transport, float& x, float& y, float& z, float maxRadius, uint32 moveAllowedFlags)
+{
+    ASSERT(Trinity::IsValidMapCoord(x, y, z));
+
+    // Trouver le navMeshQuery
+    MMAP::MMapManager* mmap = MMAP::MMapFactory::createOrGetMMapManager();
+    const dtNavMeshQuery* m_navMeshQuery = transport ? mmap->GetModelNavMeshQuery(transport->GetDisplayId(), transport->GetInstanceId()) : mmap->GetNavMeshQuery(GetId(), GetInstanceId());
+    float radius = maxRadius * rand_norm_f();
+    if (!m_navMeshQuery)
+        return false;
+    // Trouver une position valide a cote.
+    float point[3] = { y, z, x };
+    float unused = 0.0f;
+    if (transport)
+        transport->CalculatePassengerOffset(point[2], point[0], point[1], &unused);
+
+    // ATTENTION : Positions en Y,Z,X
+    float closestPoint[3] = { 0.0f, 0.0f, 0.0f };
+    dtQueryFilter filter;
+    filter.setIncludeFlags(moveAllowedFlags);
+    filter.setExcludeFlags(NAV_STEEP_SLOPES);
+    dtPolyRef startRef = PathGenerator::FindWalkPoly(m_navMeshQuery, point, filter, closestPoint);
+    if (!startRef)
+        return false;
+
+    dtPolyRef randomPosRef = 0;
+    dtStatus result = m_navMeshQuery->findRandomPointAroundCircle(startRef, closestPoint, maxRadius, &filter, rand_norm_f, &randomPosRef, point);
+    if (dtStatusFailed(result) || !Trinity::IsValidMapCoord(point[2], point[0], point[1]))
+        return false;
+
+    // Random point may be at a bigger distance than allowed
+    float d = sqrt(pow(x - point[2], 2) + pow(y - point[0], 2));
+    float endPosition[3] = { y + radius * (y - point[0]) / d, z, x + radius * (x - point[2]) / d };
+    float t = 0.0f;
+    dtPolyRef visited[10] = { 0 };
+    int visitedCount = 0;
+    float hitNormal[3] = { 0 }; // Normal of wall hit.
+    result = m_navMeshQuery->raycast(startRef, closestPoint, endPosition, &filter, &t, hitNormal, visited, &visitedCount, 10);
+    if (dtStatusFailed(result) || !visitedCount)
+        return false;
+    for (int i = 0; i < 3; ++i)
+        endPosition[i] += hitNormal[i] * 0.5f;
+    result = m_navMeshQuery->closestPointOnPoly(visited[visitedCount - 1], endPosition, endPosition, nullptr);
+    if (dtStatusFailed(result) || !Trinity::IsValidMapCoord(endPosition[2], endPosition[0], endPosition[1]))
+        return false;
+
+    if (transport)
+        transport->CalculatePassengerPosition(endPosition[2], endPosition[0], endPosition[1], &unused);
+    if (!Trinity::IsValidMapCoord(endPosition[2], endPosition[0], endPosition[1]))
+        return false;
+    x = endPosition[2];
+    y = endPosition[0];
+    z = endPosition[1];
+    // 2. On precise avec les vmaps (la premiere etape permet en gros de selectionner l'etage)
+    if (transport)
+        z += 0.5f; // Allow us a little error (mmaps not very precise regarding height computations)
+    else
+    {
+        float vmapH = GetHeight(phaseShift, x, y, z);
+        if (vmapH > z)
+            z = vmapH;
+    }
+    return true;
+}
+
+bool Map::GetLosHitPosition(PhaseShift const& phaseShift, float srcX, float srcY, float srcZ, float& destX, float& destY, float& destZ, float modifyDist) const
+{
+    ASSERT(Trinity::IsValidMapCoord(srcX, srcY, srcZ));
+    ASSERT(Trinity::IsValidMapCoord(destX, destY, destZ));
+
+    // at first check all static objects
+    float tempX, tempY, tempZ = 0.0f;
+    bool result0 = VMAP::VMapFactory::createOrGetVMapManager()->getObjectHitPos(GetId(), srcX, srcY, srcZ, destX, destY, destZ, tempX, tempY, tempZ, modifyDist);
+    if (result0)
+    {
+        TC_LOG_DEBUG("map", "Map::GetHitPosition vmaps corrects gained with static objects! new dest coords are X:%f Y:%f Z:%f", destX, destY, destZ);
+        destX = tempX;
+        destY = tempY;
+        destZ = tempZ;
+    }
+    // at second all dynamic objects, if static check has an hit, then we can calculate only to this closer point
+    G3D::Vector3 startPos = G3D::Vector3(srcX, srcY, srcZ);
+    G3D::Vector3 dstPos = G3D::Vector3(destX, destY, destZ);
+    G3D::Vector3 resultPos;
+    bool result1 = GetDynamicObjectHitPos(phaseShift, startPos, dstPos, resultPos, modifyDist);
+    if (result1)
+    {
+        TC_LOG_DEBUG("map", "Map::GetHitPosition vmaps corrects gained with dynamic objects! new dest coords are X:%f Y:%f Z:%f", destX, destY, destZ);
+        destX = resultPos.x;
+        destY = resultPos.y;
+        destZ = resultPos.z;
+    }
+
+    return result0;
 }
 
 bool Map::IsInWater(PhaseShift const& phaseShift, float x, float y, float pZ, LiquidData* data)

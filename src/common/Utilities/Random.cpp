@@ -94,3 +94,9 @@ RandomEngine& RandomEngine::Instance()
 {
     return engine;
 }
+
+float rand_norm_f(void)
+{
+    std::uniform_real_distribution<float> urd;
+    return urd(engine);
+}

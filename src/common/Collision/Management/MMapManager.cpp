@@ -64,6 +64,16 @@ namespace MMAP
         return itr;
     }
 
+    MMapDataSet::const_iterator MMapManager::GetModelData(uint32 modelId) const
+    {
+        // return the iterator if found or end() if not found/NULL
+        MMapDataSet::const_iterator itr = loadedModels.find(modelId);
+        if (itr != loadedModels.cend() && !itr->second)
+            itr = loadedModels.cend();
+
+        return itr;
+    }
+
     bool MMapManager::loadMapData(std::string const& basePath, uint32 mapId)
     {
         // we already have this map loaded?
@@ -135,6 +145,69 @@ namespace MMAP
                     success = false;
 
         return success;
+    }
+
+
+    bool MMapManager::loadGameObject(uint32 displayId, std::string const& basePath)
+    {
+        // we already have this map loaded?
+        if (loadedModels.find(displayId) != loadedModels.end())
+            return true;
+
+        // load and init dtNavMesh - read parameters from file
+        std::string fileName = Trinity::StringFormat(MAP_FILE_NAME_FORMAT, basePath.c_str(), displayId);
+        FILE* file = fopen(fileName.c_str(), "rb");
+        if (!file)
+        {
+            TC_LOG_DEBUG("mmap", "MMAP:loadGameObject: Error: Could not open mmap file %s", fileName.c_str());
+            return false;
+        }
+
+        MmapTileHeader fileHeader;
+        fread(&fileHeader, sizeof(MmapTileHeader), 1, file);
+
+        if (fileHeader.mmapMagic != MMAP_MAGIC)
+        {
+            TC_LOG_ERROR("mmap", "MMAP:loadGameObject: Bad header in mmap %s", fileName.c_str());
+            fclose(file);
+            return false;
+        }
+
+        if (fileHeader.mmapVersion != MMAP_VERSION)
+        {
+            TC_LOG_ERROR("mmap", "MMAP:loadGameObject: %s was built with generator v%i, expected v%i",
+                fileName.c_str(), fileHeader.mmapVersion, MMAP_VERSION);
+            fclose(file);
+            return false;
+        }
+        unsigned char* data = (unsigned char*)dtAlloc(fileHeader.size, DT_ALLOC_PERM);
+        ASSERT(data);
+
+        size_t result = fread(data, fileHeader.size, 1, file);
+        if (!result)
+        {
+            TC_LOG_ERROR("mmap", "MMAP:loadGameObject: Bad header or data in mmap %s", fileName.c_str());
+            fclose(file);
+            return false;
+        }
+
+        fclose(file);
+
+        dtNavMesh* mesh = dtAllocNavMesh();
+        ASSERT(mesh);
+        dtStatus r = mesh->init(data, fileHeader.size, DT_TILE_FREE_DATA);
+        if (dtStatusFailed(r))
+        {
+            dtFreeNavMesh(mesh);
+            TC_LOG_ERROR("mmap", "MMAP:loadGameObject: Failed to initialize dtNavMesh from file %s. Result 0x%x.", fileName.c_str(), r);
+            return false;
+        }
+        TC_LOG_INFO("mmap", "MMAP:loadGameObject: Loaded file %s [size=%u]", fileName.c_str(), fileHeader.size);
+
+        MMapData* mmap_data = new MMapData(mesh);
+        loadedModels.insert(std::pair<uint32, MMapData*>(displayId, mmap_data));
+        return true;
+
     }
 
     bool MMapManager::loadMapImpl(std::string const& basePath, uint32 mapId, int32 x, int32 y)
@@ -412,6 +485,33 @@ namespace MMAP
             return nullptr;
 
         return queryItr->second;
+    }
+
+    dtNavMeshQuery const* MMapManager::GetModelNavMeshQuery(uint32 displayId, uint32 instanceId)
+    {
+        MMapDataSet::const_iterator itr = GetModelData(displayId);
+        if (itr == loadedModels.end())
+            return nullptr;
+
+        MMapData* mmap = itr->second;
+
+        if (mmap->navMeshQueries.find(instanceId) == mmap->navMeshQueries.end())
+        {
+            // allocate mesh query
+            dtNavMeshQuery* query = dtAllocNavMeshQuery();
+            ASSERT(query);
+            if (dtStatusFailed(query->init(mmap->navMesh, 1024)))
+            {
+                dtFreeNavMeshQuery(query);
+                TC_LOG_ERROR("mmap", "MMAP:GetNavMeshQuery: Failed to initialize dtNavMeshQuery for displayid %03u tid %u", displayId, instanceId);
+                return nullptr;
+            }
+
+            TC_LOG_INFO("mmap", "MMAP:GetNavMeshQuery: created dtNavMeshQuery for displayid %03u tid %u", displayId, instanceId);
+            mmap->navMeshQueries.insert(std::pair<uint32, dtNavMeshQuery*>(instanceId, query));
+        }
+
+        return mmap->navMeshQueries[instanceId];
     }
 
     TransportMMapData::TransportMMapData(dtNavMesh* mesh, uint32 modelID) : _navMeshQuery(nullptr), _loadedTransports(1), _tileRef(0)

@@ -182,6 +182,23 @@ dtPolyRef PathGenerator::GetPathPolyByPosition(dtPolyRef const* polyPath, uint32
     return (minDist2d < 3.0f) ? nearestPoly : INVALID_POLYREF;
 }
 
+dtPolyRef PathGenerator::FindWalkPoly(dtNavMeshQuery const* query, float const* pointYZX, dtQueryFilter const& filter, float* closestPointYZX, float zSearchDist)
+{
+    ASSERT(query);
+
+    // WARNING : Nav mesh coords are Y, Z, X (and not X, Y, Z)
+    float extents[3] = { 5.0f, zSearchDist, 5.0f };
+    dtPolyRef polyRef;
+
+    // Default recastnavigation method
+    if (dtStatusFailed(query->findNearestPoly(pointYZX, extents, &filter, &polyRef, closestPointYZX)))
+        return 0;
+    // Do not select points over player pos
+    if (closestPointYZX[1] > pointYZX[1] + 3.0f)
+        return 0;
+    return polyRef;
+}
+
 dtPolyRef PathGenerator::GetPolyByLocation(float const* point, float* distance) const
 {
     // first we check the current path
@@ -1085,4 +1102,63 @@ void PathGenerator::AddFarFromPolyFlags(bool startFarFromPoly, bool endFarFromPo
         _type = PathType(_type | PATHFIND_FARFROMPOLY_START);
     if (endFarFromPoly)
         _type = PathType(_type | PATHFIND_FARFROMPOLY_END);
+}
+
+
+bool PathGenerator::UpdateForMelee(Unit* pTarget, float meleeReach)
+{
+    // Si deja en ligne de vision, et a distance, c'est bon.
+    if (pTarget->IsWithinDist3d(_sourceUnit->GetPositionX(), _sourceUnit->GetPositionY(), _sourceUnit->GetPositionZ(), meleeReach))
+    {
+        Clear();
+        _type = PathType(PATHFIND_SHORTCUT | PATHFIND_NORMAL | PATHFIND_CASTER);
+        _pathPoints.resize(2);
+        _pathPoints[0] = GetStartPosition();
+        _pathPoints[1] = GetStartPosition();
+        return true;
+    }
+
+    uint32 maxIndex = _pathPoints.size() - 1;
+    // We have always keep at least 2 points (else, there is no mvt !)
+    for (uint32 i = 1; i <= maxIndex; ++i)
+    {
+        if (pTarget->IsWithinDist3d(_pathPoints[i].x, _pathPoints[i].y, _pathPoints[i].z, meleeReach))
+        {
+            G3D::Vector3 dirVect;
+            pTarget->GetPosition(dirVect.x, dirVect.y, dirVect.z);
+            dirVect -= _pathPoints[i - 1];
+            float targetDist = pTarget->GetDistance(_pathPoints[i - 1].x, _pathPoints[i - 1].y, _pathPoints[i - 1].z) - meleeReach;
+            float directionLength = sqrt(dirVect.squaredLength());
+            _pathPoints[i] = _pathPoints[i - 1] + dirVect * targetDist / directionLength;
+            _pathPoints.resize(i + 1);
+            return false;
+        }
+    }
+    return false;
+}
+
+void PathGenerator::CutPathWithDynamicLoS()
+{
+    uint32 maxIndex = _pathPoints.size() - 1;
+    G3D::Vector3 out;
+    // We have always keep at least 2 points (else, there is no mvt !)
+    for (uint32 i = 1; i <= maxIndex; ++i)
+    {
+        if (_sourceUnit->GetMap()->GetDynamicObjectHitPos(_sourceUnit->GetPhaseShift(), _pathPoints[i - 1], _pathPoints[i], out, -0.1f))
+        {
+            _pathPoints[i] = out;
+            _pathPoints.resize(i + 1);
+            break;
+        }
+    }
+}
+
+float PathGenerator::Length() const
+{
+    ASSERT(_pathPoints.size());
+    float length = 0.0f;
+    uint32 maxIndex = _pathPoints.size() - 1;
+    for (uint32 i = 1; i <= maxIndex; ++i)
+        length += (_pathPoints[i - 1] - _pathPoints[i]).length();
+    return length;
 }

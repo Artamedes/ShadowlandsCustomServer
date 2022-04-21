@@ -3852,6 +3852,22 @@ float WorldObject::GetFloorZ() const
     return std::max<float>(m_staticFloorZ, GetMap()->GetGameObjectFloor(GetPhaseShift(), GetPositionX(), GetPositionY(), GetPositionZ() + Z_OFFSET_FIND_HEIGHT));
 }
 
+void WorldObject::GetSafePosition(float& x, float& y, float& z, Transport* p_Transport) const
+{
+    float o = GetOrientation();
+
+    if (p_Transport && GetTransGUID() == p_Transport->GetGUID())
+    {
+        //GetTransportPos(x, y, z, o);
+        //return;
+    }
+
+    GetPosition(x, y, z, o);
+
+    if (p_Transport)
+        p_Transport->CalculatePassengerOffset(x, y, z, &o);
+}
+
 float WorldObject::GetMapWaterOrGroundLevel(float x, float y, float z, float* ground/* = nullptr*/) const
 {
     return GetMap()->GetWaterOrGroundLevel(GetPhaseShift(), x, y, z, ground,
