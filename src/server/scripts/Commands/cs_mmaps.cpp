@@ -113,8 +113,8 @@ public:
         // path
         PathGenerator path(target);
         path.SetUseStraightPath(useStraightPath);
-        G3D::Vector3 startA = G3D::Vector3();
-        bool result = path.CalculatePath(x, y, z, startA, false, useStraightLine);
+       // G3D::Vector3 startA = G3D::Vector3();
+        bool result = path.CalculatePath(x, y, z, false, useStraightLine);
 
         Movement::PointsArray const& pointPath = path.GetPath();
         handler->PSendSysMessage("%s's path to %s:", target->GetName().c_str(), player->GetName().c_str());

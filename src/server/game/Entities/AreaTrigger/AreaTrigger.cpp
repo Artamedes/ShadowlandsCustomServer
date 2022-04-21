@@ -169,6 +169,19 @@ bool AreaTrigger::Create(uint32 areaTriggerCreatePropertiesId, Unit* caster, Uni
 
     UpdateShape();
 
+    // movement on transport of areatriggers on unit is handled by themself
+    Transport* transport = m_movementInfo.transport.guid.IsEmpty() ? caster->GetTransport() : nullptr;
+    if (transport)
+    {
+        float x, y, z, o;
+        pos.GetPosition(x, y, z, o);
+        transport->CalculatePassengerOffset(x, y, z, &o);
+        m_movementInfo.transport.pos.Relocate(x, y, z, o);
+
+        // This object must be added to transport before adding to map for the client to properly display it
+        transport->AddPassenger(this);
+    }
+
     uint32 timeToTarget = GetCreateProperties()->TimeToTarget != 0 ? GetCreateProperties()->TimeToTarget : *m_areaTriggerData->Duration;
 
     if (GetCreateProperties()->OrbitInfo)
@@ -184,19 +197,6 @@ bool AreaTrigger::Create(uint32 areaTriggerCreatePropertiesId, Unit* caster, Uni
     else if (GetCreateProperties()->HasSplines())
     {
         InitSplineOffsets(GetCreateProperties()->SplinePoints, timeToTarget);
-    }
-
-    // movement on transport of areatriggers on unit is handled by themself
-    Transport* transport = m_movementInfo.transport.guid.IsEmpty() ? caster->GetTransport() : nullptr;
-    if (transport)
-    {
-        float x, y, z, o;
-        pos.GetPosition(x, y, z, o);
-        transport->CalculatePassengerOffset(x, y, z, &o);
-        m_movementInfo.transport.pos.Relocate(x, y, z, o);
-
-        // This object must be added to transport before adding to map for the client to properly display it
-        transport->AddPassenger(this);
     }
 
     AI_Initialize();
@@ -792,23 +792,42 @@ void AreaTrigger::InitSplineOffsets(std::vector<Position> const& offsets, uint32
 {
     float angleSin = std::sin(GetOrientation());
     float angleCos = std::cos(GetOrientation());
+    float x, y, z;
 
-    // This is needed to rotate the spline, following caster orientation
-    std::vector<G3D::Vector3> rotatedPoints;
-    rotatedPoints.reserve(offsets.size());
-    for (Position const& offset : offsets)
+    GetPosition(x, y, z);
+
+    if (GetTemplate()->HasFlag(AREATRIGGER_FLAG_HAS_FOLLOWS_TERRAIN))
     {
-        float x = GetPositionX() + (offset.GetPositionX() * angleCos - offset.GetPositionY() * angleSin);
-        float y = GetPositionY() + (offset.GetPositionY() * angleCos + offset.GetPositionX() * angleSin);
-        float z = GetPositionZ();
-
+        Position dest = offsets.back();
+        x += (dest.GetPositionX() * angleCos - dest.GetPositionY() * angleSin);
+        y += (dest.GetPositionY() * angleCos + dest.GetPositionX() * angleSin);
+        //z = GetPositionZ();
         UpdateAllowedPositionZ(x, y, z);
-        z += offset.GetPositionZ();
+        z += dest.GetPositionZ();
+        dest = GetPosition();
+        MovePositionToFirstCollision(dest, GetDistance(x, y, z), 0.0f);
 
-        rotatedPoints.emplace_back(x, y, z);
+        SetDestination(dest, timeToTarget, true);
     }
+    else
+    {
+        // This is needed to rotate the spline, following caster orientation
+        std::vector<G3D::Vector3> rotatedPoints;
+        rotatedPoints.reserve(offsets.size());
+        for (Position const& offset : offsets)
+        {
+            x += (offset.GetPositionX() * angleCos - offset.GetPositionY() * angleSin);
+            y += (offset.GetPositionY() * angleCos + offset.GetPositionX() * angleSin);
+            //z = GetPositionZ();
 
-    InitSplines(std::move(rotatedPoints), timeToTarget);
+            UpdateAllowedPositionZ(x, y, z);
+            z += offset.GetPositionZ();
+
+            rotatedPoints.emplace_back(x, y, z);
+        }
+
+        InitSplines(std::move(rotatedPoints), timeToTarget);
+    }
 }
 
 void AreaTrigger::InitSplines(std::vector<G3D::Vector3> splinePoints, uint32 timeToTarget)

@@ -257,7 +257,7 @@ namespace Movement
     {
         if (generatePath)
         {
-            PathGenerator path(unit);
+            PathGenerator path(unit, args.TransformForTransport);
             bool result = path.CalculatePath(dest.x, dest.y, dest.z, forceDestination);
             if (result && !(path.GetPathType() & PATHFIND_NOPATH))
             {

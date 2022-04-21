@@ -72,8 +72,9 @@ PathGenerator::~PathGenerator()
     TC_LOG_DEBUG("maps", "++ PathGenerator::~PathGenerator() for %s", _sourceUnit->GetGUID().ToString().c_str());
 }
 
-bool PathGenerator::CalculatePath(float destX, float destY, float destZ, G3D::Vector3& start, bool forceDest, bool straightLine)
+bool PathGenerator::CalculatePath(float destX, float destY, float destZ, bool forceDest, bool straightLine)
 {
+    G3D::Vector3 start; // temporary test
     if (start.isZero())
         start = G3D::Vector3(_sourceUnit->GetPositionX(), _sourceUnit->GetPositionY(), _sourceUnit->GetPositionZ());
 
