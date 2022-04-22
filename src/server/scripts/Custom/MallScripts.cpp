@@ -1055,9 +1055,18 @@ public:
     bool OnGossipHello(Player* player) override
     {
         ClearGossipMenuFor(player);
-        AddGossipItemFor(player, GossipOptionIcon::None, "Enter Incursion", 0, 1);
+        player->PrepareQuestMenu(me->GetGUID());
+
+        if (player->GetQuestStatus(700001) == QUEST_STATUS_INCOMPLETE)
+            AddGossipItemFor(player, GossipOptionIcon::None, "Enter Incursion", 0, 1);
         SendGossipMenuFor(player, 1, me);
         return true;
+    }
+
+    void OnQuestAccept(Player* player, Quest const* quest) override
+    {
+        if (quest->GetQuestId() == 700001)
+            Talk(0, player);
     }
 
     bool OnGossipSelect(Player* player, uint32 menuId, uint32 gossipListId) override
@@ -1076,7 +1085,11 @@ class spell_activating_313352 : public SpellScript
     void DoEffect(SpellEffIndex /*eff*/)
     {
         if (auto caster = GetCaster())
+        {
             caster->CastSpell(caster, 313445, true); // nyalotha incursion
+            if (auto player = caster->ToPlayer())
+                player->KilledMonsterCredit(700017);
+        }
     }
 
     void Register() override
@@ -1086,6 +1099,124 @@ class spell_activating_313352 : public SpellScript
 };
 
 // make spell script for nyalotha incursion to periodically summon mobs
+// spell_nyalotha_incursion
+class spell_nyalotha_incursion : public AuraScript
+{
+    PrepareAuraScript(spell_nyalotha_incursion);
+
+    void HandleUpdate(uint32 diff)
+    {
+        if (Unit* caster = GetCaster())
+        {
+            switch (caster->GetMapId())
+            {
+                case 1116:
+                    break;
+                default:
+                    return;
+            }
+
+            if (auto player = caster->ToPlayer())
+            {
+                if (player->GetQuestStatus(700001) == QUEST_STATUS_COMPLETE)
+                    player->CastSpell(player, 313613, true); // Leave nyalotha
+            }
+        }
+    }
+
+    void Register() override
+    {
+        OnAuraUpdate += AuraUpdateFn(spell_nyalotha_incursion::HandleUpdate);
+    }
+};
+
+class spell_leave_nyalotha : public SpellScript
+{
+    PrepareSpellScript(spell_leave_nyalotha);
+
+    void DoEffect(SpellEffIndex /*eff*/)
+    {
+        if (auto caster = GetCaster())
+        {
+            if (auto player = caster->ToPlayer())
+            {
+                if (player->GetQuestStatus(700001) == QUEST_STATUS_COMPLETE)
+                {
+                    player->GetScheduler().Schedule(1s, [player](TaskContext context)
+                    {
+                        if (player->GetQuestStatus(700001) == QUEST_STATUS_COMPLETE)
+                            if (auto creature = player->FindNearestCreature(700017, 50.0f, true))
+                            {
+                                if (auto ai = creature->AI())
+                                    ai->Talk(1, player);
+                            }
+                    });
+                }
+            }
+        }
+    }
+
+    void Register() override
+    {
+        OnEffectHitTarget += SpellEffectFn(spell_leave_nyalotha::DoEffect, EFFECT_0, SPELL_EFFECT_REMOVE_AURA);
+    }
+};
+
+struct npc_sensei_700043 : public ScriptedAI
+{
+public:
+    npc_sensei_700043(Creature* creature) : ScriptedAI(creature) { }
+
+    void InitializeAI() override
+    {
+        me->SetEmoteState(Emote::EMOTE_STATE_READY1H);
+        events.ScheduleEvent(1, 5s);
+    }
+
+    void UpdateAI(uint32 diff) override
+    {
+        events.Update(diff);
+        scheduler.Update(diff);
+
+        if (uint32 eventId = events.ExecuteEvent())
+        {
+            if (eventId == 1)
+            {
+                Emote randomEmote = RAND(Emote::EMOTE_ONESHOT_DODGE, Emote::EMOTE_ONESHOT_KICK, EMOTE_ONESHOT_MONKOFFENSE_ATTACKUNARMED, EMOTE_ONESHOT_MONKOFFENSE_SPECIALUNARMED, EMOTE_ONESHOT_MONKOFFENSE_PARRYUNARMED);
+
+                me->HandleEmoteCommand(randomEmote);
+
+                scheduler.Schedule(2s, [this, randomEmote](TaskContext context)
+                    {
+                        std::list<Unit*> trainees;
+                        me->GetFriendlyUnitListInRange(trainees, 50.0f, true);
+                        for (auto u : trainees)
+                        {
+                            if (u->GetEntry() == 700041)
+                                u->HandleEmoteCommand(randomEmote);
+                        }
+                    });
+
+                events.Repeat(15s);
+            }
+        }
+    }
+
+    TaskScheduler scheduler;
+    EventMap events;
+};
+
+
+struct npc_recruit_700041 : public ScriptedAI
+{
+    public:
+        npc_recruit_700041(Creature* creature) : ScriptedAI(creature) { }
+
+        void InitializeAI() override
+        {
+            me->SetEmoteState(Emote::EMOTE_STATE_READY1H);
+        }
+};
 
 void AddSC_MallScripts()
 {
@@ -1104,6 +1235,10 @@ void AddSC_MallScripts()
     RegisterCreatureAI(npc_soulshape_picker);
     RegisterCreatureAI(npc_general_700000);
     RegisterCreatureAI(npc_combat_testing_shaman);
+    RegisterCreatureAI(npc_sensei_700043);
+    RegisterCreatureAI(npc_recruit_700041);
 
     RegisterSpellScript(spell_activating_313352);
+    RegisterSpellScript(spell_nyalotha_incursion);
+    RegisterSpellScript(spell_leave_nyalotha);
 }

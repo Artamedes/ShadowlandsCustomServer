@@ -158,6 +158,25 @@ public:
             ModifyCooldown(itr, -time);
     }
 
+    template<typename Predicate>
+    void ReduceCategories(Predicate predicate, Duration time)
+    {
+        std::vector<uint32> resetCategories;
+        resetCategories.reserve(_categoryCharges.size());
+
+        for (auto itr = _categoryCharges.begin(); itr != _categoryCharges.end();)
+        {
+            if (predicate(itr))
+            {
+                resetCategories.push_back(itr->first);
+            }
+            ++itr;
+        }
+
+        for (uint32 itr : resetCategories)
+            ModifyChargeRecoveryTime(itr, -time);
+    }
+
     void ResetAllCooldowns();
     bool HasCooldown(SpellInfo const* spellInfo, uint32 itemId = 0) const;
     bool HasCooldown(uint32 spellId, uint32 itemId = 0) const;

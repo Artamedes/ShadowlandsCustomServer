@@ -47,6 +47,7 @@ void AddSC_StabilityTest();
 void AddSC_MawFinale();
 void AddSC_TheUnderrot();
 void AddSC_EyeOfAzshara();
+void AddSC_DreadscarRift();
 
 void AddCustomScripts()
 {
@@ -78,4 +79,5 @@ void AddCustomScripts()
     AddSC_MawFinale();
     AddSC_TheUnderrot();
     AddSC_EyeOfAzshara();
+    AddSC_DreadscarRift();
 }
