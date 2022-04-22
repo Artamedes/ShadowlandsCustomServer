@@ -2,6 +2,8 @@
 #include "ScriptMgr.h"
 #include "CovenantMgr.h"
 #include "Item.h"
+#include "GameTime.h"
+#include "TemporarySummon.h"
 
 class LoginScript : public PlayerScript
 {
@@ -198,6 +200,32 @@ class LoginScript : public PlayerScript
                     for (uint32 item : items)
                         p_Player->StoreNewItemInBestSlots(item, 1, ItemContext::Raid_Raid_Finder, { 7186 });
                     break;
+                }
+            }
+        }
+
+        // Piggy
+        std::unordered_map<ObjectGuid::LowType, TimePoint> m_emoteTimer;
+        void OnTextEmote(Player* player, uint32 /*textEmote*/, uint32 emoteNum, ObjectGuid /*guid*/) override
+        {
+            if (emoteNum == 39)
+            {
+                auto key = player->GetGUID().GetCounter();
+                auto itr = m_emoteTimer.find(key);
+                auto now = GameTime::Now();
+                if (itr == m_emoteTimer.end() || now > itr->second || player->IsGameMaster())
+                {
+                    m_emoteTimer[key] = now + 60s;
+                    if (auto summ = player->SummonCreature(700018, *player, TEMPSUMMON_TIMED_DESPAWN, 5s))
+                    {
+                        player->PlayDistanceSound(2837);
+                        summ->SetUnitFlag(UnitFlags::UNIT_FLAG_UNINTERACTIBLE);
+                        summ->SetUnitFlag(UnitFlags::UNIT_FLAG_NON_ATTACKABLE);
+                        summ->GetScheduler().Schedule(2s, [summ](TaskContext context)
+                        {
+                            summ->CastSpell(summ, 356777, true); // Fade out
+                        });
+                    }
                 }
             }
         }
