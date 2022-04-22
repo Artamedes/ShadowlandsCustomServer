@@ -205,15 +205,15 @@ bool ExtractSingleWmo(std::string& fname)
         WMOGroup fgroup(s);
         if (!fgroup.open(&froot))
         {
-            // we skip AntiPortal meshes, ignore the not loaded errors
-            //printf("Could not open all Group file for: %s\n", plain_name);
-            //file_ok = false;
-            //break;
+           //  we skip AntiPortal meshes, ignore the not loaded errors
+            printf("Could not open all Group file for: %s\n", plain_name);
+            file_ok = false;
+            break;
         }
 
         // disabled for text, antiportal checked in open
-        //if (fgroup.ShouldSkip(&froot))
-        //    continue;
+        if (fgroup.ShouldSkip(&froot))
+            continue;
 
         Wmo_nVertices += fgroup.ConvertToVMAPGroupWmo(output, preciseVectorData);
         ++groupCount;

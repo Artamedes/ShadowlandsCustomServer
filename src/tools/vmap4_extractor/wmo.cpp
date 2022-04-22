@@ -238,8 +238,6 @@ bool WMOGroup::open(WMORoot* rootWMO)
             f.read(&groupName, 4);
             f.read(&descGroupName, 4);
             f.read(&mogpFlags, 4);
-            if (mogpFlags & 0x4000000) // skip AntiPortal meshes
-                return false;
             f.read(bbcorn1, 12);
             f.read(bbcorn2, 12);
             f.read(&moprIdx, 2);
