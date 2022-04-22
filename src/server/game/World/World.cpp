@@ -3941,7 +3941,7 @@ void World::ChallengeKeyResetTime()
 
     CharacterDatabase.PQuery("DELETE FROM challenge_key WHERE timeReset < %u", m_NextChallengeKeyReset);
     CharacterDatabase.Query("DELETE FROM item_instance WHERE itemEntry = 158923");
-    CharacterDatabase.Query("DELETE FROM item_instance_modifiers WHERE challengeLevel <> 0");
+    CharacterDatabase.Query("DELETE FROM challenge_key");
 
     for (SessionMap::const_iterator itr = m_sessions.begin(); itr != m_sessions.end(); ++itr)
         if (Player* player = itr->second->GetPlayer())
