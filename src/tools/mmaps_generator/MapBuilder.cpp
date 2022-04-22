@@ -1189,106 +1189,39 @@ namespace MMAP
     {
         m_totalTiles = 100;
 
-        buildModel("elevatorcar.m2", 360); // Mesa Elevator
-        buildModel("undeadelevator.m2", 455); // Undervator
-        buildModel("undeadelevatordoor.m2", 462); // upperLdoor
-        buildModel("ironforgeelevator.m2", 561); // IronForge Elevator
-        buildModel("ironforgeelevatordoor.m2", 562); // unk
-        buildModel("gnomeelevatorcar01.m2", 807); // Vator
-        buildModel("gnomeelevatorcar02.m2", 808); // Plunger
-        buildModel("gnomeelevatorcar05.m2", 827); // Rail
-        buildModel("gnomeelevatorcar03.m2", 852); // Vator2
-        buildModel("gnomehutelevator.m2", 1587); // Elevator
-        buildModel("burningsteppselevator.m2", 2454); // Scaffold Cars
-        buildModel("transportship.wmo", 3015); // Ship (The Maiden's Fancy)
-        buildModel("transport_zeppelin.wmo", 3031); // Krazzworks Attack Zeppelin
-        buildModel("subwaycar.m2", 3831); // Subway
-        buildModel("blackcitadel.wmo", 6637); // Naxxramas
-        buildModel("ancdrae_elevatorpiece.m2", 7026); // Doodad_AncDrae_elevatorPiece03
-        buildModel("mushroombase_elevator.m2", 7028); // Doodad_mushroombase_elevator01
-        buildModel("cf_elevatorplatform.m2", 7043); // Doodad_CF_elevatorPlatform01
-        buildModel("cf_elevatorplatform_small.m2", 7060); // Doodad_CF_elevatorPlatform_small01
-        buildModel("factoryelevator.m2", 7077); // Doodad_FactoryElevator01
-        buildModel("transportship_ne.wmo", 7087); // Ship, Night Elf (Elune's Blessing)
-        buildModel("ancdrae_elevatorpiece_netherstorm.m2", 7163); // Doodad_AncDrae_elevatorPiece_netherstorm01
-        buildModel("transport_icebreaker_ship.wmo", 7446); // Ship, Icebreaker (Stormwind's Pride)
-        buildModel("vr_elevator_gate.m2", 7451); // Doodad_VR_Elevator_Gate01
-        buildModel("vr_elevator_lift.m2", 7452); // Doodad_VR_Elevator_Lift02
-        buildModel("vr_elevator_pulley.m2", 7491); // Doodad_VR_Elevator_Pulley01
-        buildModel("hf_elevator_gate.m2", 7519); // Doodad_HF_Elevator_Gate01
-        buildModel("hf_elevator_lift_02.m2", 7520); // Doodad_HF_Elevator_Lift_01
-        buildModel("hf_elevator_lift.m2", 7521); // Doodad_HF_Elevator_Lift01
-        buildModel("transport_horde_zeppelin.wmo", 7546); // The Spear of Durotar
-        buildModel("pirateship.wmo", 7552); // pattymac test ship 3
-        buildModel("transport_pirate_ship.wmo", 7570); // Sister Mercy
-        buildModel("transport_tuskarr_ship.wmo", 7636); // Turtle (Green Island)
-        buildModel("vrykul_gondola.m2", 7642); // Doodad_Vrykul_Gondola01
-        buildModel("logrun_pumpelevator01.m2", 7648); // Doodad_LogRun_PumpElevator04
-        buildModel("vrykul_gondola_02.m2", 7767); // Doodad_Vrykul_Gondola_01
-        buildModel("nexus_elevator_basestructure_01.m2", 7793); // Doodad_Nexus_Elevator_BaseStructure_01
-        buildModel("id_elevator.m2", 7794); // Doodad_ID_elevator03
-        buildModel("orc_fortress_elevator01.m2", 7797); // Elevator
-        buildModel("org_arena_pillar.m2", 7966); // Doodad_org_arena_pillar01
-        buildModel("org_arena_elevator.m2", 7973); // Doodad_org_arena_elevator03
-        buildModel("logrun_pumpelevator02.m2", 8079); // Doodad_LogRun_PumpElevator01
-        buildModel("logrun_pumpelevator03.m2", 8080); // Doodad_LogRun_PumpElevator02
-        buildModel("nd_hordegunship.wmo", 8253); // Orc Gunship
-        buildModel("nd_alliancegunship.wmo", 8254); // Alliance Gunship
-        buildModel("org_arena_yellow_elevator.m2", 8258); // Doodad_org_arena_yellow_elevator01
-        buildModel("org_arena_axe_pillar.m2", 8259); // Doodad_org_arena_axe_pillar01
-        buildModel("org_arena_lightning_pillar.m2", 8260); // Doodad_org_arena_lightning_pillar01
-        buildModel("org_arena_ivory_pillar.m2", 8261); // Doodad_org_arena_ivory_pillar01
-        buildModel("gundrak_elevator_01.m2", 8277); // Elevator Mammoth
-        buildModel("nd_icebreaker_ship_bg_transport.wmo", 8409); // The Frostbreaker
-        buildModel("nd_ship_ud_bg_transport.wmo", 8410); // The Blightbringer
-        buildModel("ulduarraid_gnomewing_transport_wmo.wmo", 8587); // Tram
-        buildModel("nd_hordegunship_bg.wmo", 9001); // Horde Gunship
-        buildModel("nd_alliancegunship_bg.wmo", 9002); // The Skybreaker
-        buildModel("sunstrider_ship.wmo", 9008); // Sunstrider Ship (Garrosh Raid)
-        buildModel("uldum_elevator_01.m2", 9052); // Lift of the Makers
-        buildModel("goblin_poolelevator.m2", 9135); // Doodad_Goblin_PoolElevator01
-        buildModel("icecrown_elevator.m2", 9136); // Doodad_icecrown_elevator02
-        buildModel("nd_alliancegunship_icecrown.wmo", 9150); // The Skybreaker
-        buildModel("nd_hordegunship_icecrown.wmo", 9151); // Orgrim's Hammer
-        buildModel("icecrown_elevator02.m2", 9248); // Lady Deathwhisper Elevator
-        buildModel("transport_pirate_ship02.wmo", 9534); // Path to Pandaria
-        buildModel("orgrimmar_elevator_02.m2", 9542); // Elevator
-        buildModel("alliance_submarine.wmo", 9582); // Alliance Submarine to Leviathan Cave
-        buildModel("horde_submarine.wmo", 9583); // Horde Submarine to Leviathan Cave
-        buildModel("goblin_elevator.m2", 9693); // Doodad_Goblin_elevator01
-        buildModel("abyssal_jellyfish_elevator.m2", 9811); // Doodad_Abyssal_Jellyfish_Elevator01
-        buildModel("horde_submarine_closed.wmo", 10308); // Horde Submarine circling Abyssal Maw
-        buildModel("blackwingv2_elevator_onyxia_transport.wmo", 10363); // Doodad_BlackWingV2_Elevator_Onyxia01
-        buildModel("alliance_submarine_sealed.wmo", 10404); // Alliance Submarine circling Abyssal Maw
-        buildModel("blackwingv2_elevator01.wmo", 10407); // Blackwing Descent Elevator
-        buildModel("veb_greatwall_elevator_01.m2", 11334); // Doodad_VEB_greatwall_elevator_002
-        buildModel("jinyu_raft_01.m2", 11593); // Raft
-        buildModel("pa_oven_01.m2", 11682); // Doodad_pa_oven_001
-        buildModel("veb_greatwall_elevator_02.m2", 12448); // Ascenseur mogu
-        buildModel("transport_alliance_battleship.wmo", 12843); // Alliance Battleship (Garrosh Raid)
-        buildModel("zandalari_boat_transport.wmo", 13656); // Zandalari Ship
-        buildModel("merrygoround_transport.m2", 13729); // Doodad_MerrygoRound_transport001
-        buildModel("transport_horde_zeppelin02.wmo", 13737); // The Skybag
-        buildModel("orgrimmar_raid_elevator.m2", 14005); // Doodad_Orgrimmar_Elevator_004
-        buildModel("6dr_draenei_platform_elevator_object.m2", 14677); // Doodad_6DR_Draenei_Platform_Elevator_Object001
-        buildModel("6du_blackrock_train_depot_modular1.wmo", 15264); // Transport 01
-        buildModel("6du_blackrock_train_depot_modular2.wmo", 15265); // Transport 02
-        buildModel("6du_bkfoundry_elevatora.m2", 16457); // Doodad_6DU_BKFoundry_elevatorA001
-        buildModel("6du_bkfoundry_elevatorb.m2", 16458); // Doodad_6DU_BKFoundry_elevatorB001
-        buildModel("6du_highmaulraid_arena_elevator.m2", 17998); // Ascenseur de l
-        buildModel("7an_alliancegunship.wmo", 28177); // The Skyfire
-        buildModel("7hm_highmountain_elevator.m2", 28404); // Doodad_7HM_HighMountain_Elevator002
-        buildModel("7vr_vrykul_elevatorplatform.m2", 28487); // Doodad_7VR_Vrykul_ElevatorPlatform001
-        buildModel("7wd_warden_elevator01.m2", 28522); // 
-        buildModel("7nb_nightborn_gondola_large.m2", 30558); // Gondola
-        buildModel("7lg_legion_platform03.m2", 38977); // Doodad_7LG_Legion_Platform001
-        buildModel("7du_tombofsargeras_titan_elevator.m2", 41205); // Doodad_7DU_TombOfSargeras_Titan_Elevator
-        buildModel("8tr_zandalari_elevator01.m2", 41783); // Doodad_8TR_zandalari_elevator002
-        buildModel("8tr_zandalari_shipmedtransport01.wmo", 44473); // Zandalari Ship
-        buildModel("8hu_kultiras_shipsmall01.wmo", 48226); // Kul Tiran Sloop
-        buildModel("8du_nazmirraid_elevator01_transport.wmo", 49103); // Doodad_8DU_NazmirRaid_Elevator001
-        buildModel("8hu_kultiras_shipmedium02.wmo", 51679); // Kul Tiran Medium Ship A
-        buildModel("8hu_kultiras_shipbarge01.wmo", 51831); // Kul Tiran Barge
+        // @TODO: GENERATE THE REST OF THESE.
+        buildModel("FILE001D8567.xxx", 49103); // 1934695;world/wmo/transports/wmo_elevators/8du_nazmirraid_elevator01_transport.wmo
+        buildModel("FILE000CCB90.xxx", 13656); // 838544;world/wmo/transports/zandalari/zandalari_boat_transport.wmo
+        buildModel("FILE000BCF8C.xxx", 18022); // 774028;world/wmo/transports/alliance_battleship/transport_alliance_battleship_sunken.wmo
+        buildModel("FILE0009F4EE.xxx", 12843); // 652526;world/wmo/transports/alliance_battleship/transport_alliance_battleship.wmo
+        buildModel("FILE00072656.xxx", 10407); // 468566;world/wmo/transports/wmo_elevators/blackwingv2_elevator01.wmo
+        buildModel("FILE0006FB07.xxx", 9534); // 457479;world/wmo/transports/transport_ship_pirate/transport_pirate_ship02.wmo
+        buildModel("FILE0006FAA4.xxx", 28495); // 457380;world/wmo/transports/transport_ship_pirate/transport_pirate_ship02_horde.wmo
+        buildModel("FILE0006EF1F.xxx", 10363); // 454431;world/wmo/transports/wmo_elevators/blackwingv2_elevator_onyxia_transport.wmo
+        buildModel("FILE0006EF1D.xxx", 10272); // 454429;world/wmo/transports/wmo_elevators/abyssal_jellyfish_elevator_transport.wmo
+        buildModel("FILE00068C4B.xxx", 13737); // 429131;world/wmo/transports/transport_horde_zeppelin/transport_horde_zeppelin02.wmo
+        buildModel("FILE000546FB.xxx", 35710); // 345851;world/wmo/transports/wmo_elevators/icecrown_grate_01_transport.wmo
+        buildModel("FILE0003D95F.xxx", 8587); // 252255;world/wmo/transports/wmo_elevators/ulduarraid_gnomewing_transport_wmo.wmo
+        buildModel("FILE0003CD06.xxx", 8391); // 249094;world/wmo/transports/wmo_elevators/org_arena_elevator_transport.wmo
+        buildModel("FILE0003CCFA.xxx", 8410); // 249082;world/wmo/transports/wmo_elevators/nd_ship_ud_bg_transport.wmo
+        buildModel("FILE0003CCF8.xxx", 8409); // 249080;world/wmo/transports/wmo_elevators/nd_icebreaker_ship_bg_transport.wmo
+        buildModel("FILE0003CCEA.xxx", 9476); // 249066;world/wmo/transports/undead/ship_ud_transport.wmo
+        buildModel("FILE0003CCE8.xxx", 9144); // 249064;world/wmo/transports/icebreaker/icebreaker_ship_transport.wmo
+        buildModel("FILE0001C680.xxx", 7632); // 116352;world/wmo/transports/vrykulboats/vrykul_gondola.wmo
+        buildModel("FILE0001C67E.xxx", 7614); // 116350;world/wmo/transports/vrykulboats/transport_vrykul_medium.wmo
+        buildModel("FILE0001C67C.xxx", 7598); // 116348;world/wmo/transports/vrykulboats/transport_vrykul_large.wmo
+        buildModel("FILE0001C678.xxx", 7636); // 116344;world/wmo/transports/tuskarrboat/transport_tuskarr_ship.wmo
+        buildModel("FILE0001C676.xxx", 3031); // 116342;world/wmo/transports/transport_zeppelin/transport_zeppelin.wmo
+        buildModel("FILE0001C666.xxx", 7570); // 116326;world/wmo/transports/transport_ship_pirate/transport_pirate_ship.wmobuildModel("FILE0001C664.xxx.vmo", 53548); // 116324;world/wmo/transports/transport_ship_ne/transportship_ne_stationary.wmo
+        buildModel("FILE0001C662.xxx", 7087); // 116322;world/wmo/transports/transport_ship_ne/transportship_ne.wmo
+        buildModel("FILE0001C65D.xxx", 3015); // 116317;world/wmo/transports/transport_ship/transportship.wmo
+        buildModel("FILE0001C65B.xxx", 7546); // 116315;world/wmo/transports/transport_horde_zeppelin/transport_horde_zeppelin.wmo
+        buildModel("FILE0001C656.xxx", 476); // 116310;world/wmo/transports/passengership/transportship_a.wmo
+        buildModel("FILE0001C654.xxx", 12517); // 116308;world/wmo/transports/icebreaker/transport_icebreaker_ship_stationary.wmo
+        buildModel("FILE0001C652.xxx", 7446); // 116306;world/wmo/transports/icebreaker/transport_icebreaker_ship.wmo
+        buildModel("FILE0001C64E.xxx", 7709); // 116302;world/wmo/transports/crashed_zeppelin/crashedzeppelinpiece_01.wmo
+        buildModel("FILE0001C64C.xxx", 10828); // 116300;world/wmo/transports/crashed_zeppelin/crashedtransport_horde_zeppelin.wmo
+        buildModel("FILE0001C64A.xxx", 6637); // 116298;world/wmo/transports/blackcitadel/blackcitadel.wmo
     }
 
     void MapBuilder::buildModel(std::string FileName, uint32 modelID)

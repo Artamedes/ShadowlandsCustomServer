@@ -1460,7 +1460,7 @@ void Spell::SelectImplicitCasterDestTargets(SpellEffectInfo const& spellEffectIn
             }
 
 
-            float waterLevel = m_caster->GetMap()->GetWaterOrGroundLevel(m_caster->GetPhaseShift(), x, y, z, &ground);
+            float waterLevel = m_caster->GetTransport() ? VMAP_INVALID_HEIGHT_VALUE : m_caster->GetMap()->GetWaterOrGroundLevel(m_caster->GetPhaseShift(), x, y, z, &ground);
             x += dis * std::cos(o);
             y += dis * std::sin(o);
             // Underwater blink case

@@ -3030,7 +3030,7 @@ bool Map::GetWalkHitPosition(PhaseShift const& phaseShift, Transport* transport,
     }
 
     MMAP::MMapManager* mmap = MMAP::MMapFactory::createOrGetMMapManager();
-    dtNavMeshQuery const* m_navMeshQuery = transport ? mmap->GetModelNavMeshQuery(transport->GetDisplayId(), transport->GetInstanceId()) : mmap->GetNavMeshQuery(GetId(), GetInstanceId());
+    dtNavMeshQuery const* m_navMeshQuery = transport ? mmap->GetTransportNavMeshQuery(transport->GetDisplayId()) : mmap->GetNavMeshQuery(GetId(), GetInstanceId());
     if (!m_navMeshQuery)
     {
         TC_LOG_INFO("map", "WalkHitPos: No nav mesh loaded !");
@@ -3128,7 +3128,7 @@ bool Map::GetWalkRandomPosition(PhaseShift const& phaseShift, Transport* transpo
 
     // Trouver le navMeshQuery
     MMAP::MMapManager* mmap = MMAP::MMapFactory::createOrGetMMapManager();
-    const dtNavMeshQuery* m_navMeshQuery = transport ? mmap->GetModelNavMeshQuery(transport->GetDisplayId(), transport->GetInstanceId()) : mmap->GetNavMeshQuery(GetId(), GetInstanceId());
+    const dtNavMeshQuery* m_navMeshQuery = transport ? mmap->GetTransportNavMeshQuery(transport->GetDisplayId()) : mmap->GetNavMeshQuery(GetId(), GetInstanceId());
     float radius = maxRadius * rand_norm_f();
     if (!m_navMeshQuery)
         return false;

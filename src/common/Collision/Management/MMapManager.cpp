@@ -714,6 +714,7 @@ namespace MMAP
         return mmapData->GetNavMesh();
     }
 
+    // todo: merge wthis with the model instance
     dtNavMeshQuery const* MMapManager::GetTransportNavMeshQuery(uint32 modelID)
     {
         TransportMMapData* mmapData = GetTransportMMapData(modelID);
