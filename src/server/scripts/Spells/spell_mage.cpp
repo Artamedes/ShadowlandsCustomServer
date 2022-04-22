@@ -378,6 +378,8 @@ class spell_mage_alter_time_aura : public AuraScript
                 unit->GetSpellHistory()->ResetCharges(blink->ChargeCategoryId);
             }
             unit->CastSpell(unit, SPELL_MAGE_ALTER_TIME_VISUAL);
+            // Fixes alter time's cd clientside
+            unit->GetSpellHistory()->StartCooldown(sSpellMgr->GetSpellInfo(108978), 0, nullptr, false, 60s);
         }
     }
 
@@ -2411,9 +2413,10 @@ public:
         {
             if (Unit* caster = GetCaster())
             {
-                caster->CastSpell(caster, SPELL_MAGE_MIRROR_IMAGE_LEFT, true);
-                caster->CastSpell(caster, SPELL_MAGE_MIRROR_IMAGE_FRONT, true);
-                caster->CastSpell(caster, SPELL_MAGE_MIRROR_IMAGE_RIGHT, true);
+                /// @TODO - SHADOWLANDS, these spells were removed!, Need to sniff mirror image.
+                // caster->CastSpell(caster, SPELL_MAGE_MIRROR_IMAGE_LEFT, true);
+                // caster->CastSpell(caster, SPELL_MAGE_MIRROR_IMAGE_FRONT, true);
+                // caster->CastSpell(caster, SPELL_MAGE_MIRROR_IMAGE_RIGHT, true);
             }
         }
 
@@ -4527,26 +4530,28 @@ class spell_mage_shifting_power : public AuraScript
                 auto spellHistory = caster->GetSpellHistory();
                 // Need add conduit supp
                 spellHistory->ReduceCooldowns([caster](SpellHistory::CooldownStorageType::iterator itr) -> bool
+                {
+                    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(itr->first, DIFFICULTY_NONE);
+                    Milliseconds remainingCooldown = caster->GetSpellHistory()->GetRemainingCooldown(spellInfo);
+
+                    bool allow = spellInfo->SpellFamilyName == SPELLFAMILY_MAGE;
+
+                    if (!allow)
                     {
-                        SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(itr->first, DIFFICULTY_NONE);
-                        Milliseconds remainingCooldown = caster->GetSpellHistory()->GetRemainingCooldown(spellInfo);
-
-                        bool allow = spellInfo->SpellFamilyName == SPELLFAMILY_MAGE;
-
-                        if (!allow)
+                        switch (spellInfo->Id)
                         {
-                            switch (spellInfo->Id)
-                            {
-                                case 1953: // Blink
-                                    return true;
-                                default:
-                                    return false;
-                            }
-                        }
+                            case 1953: // Blink
+                            case 310143: // Soulshape
 
-                        return remainingCooldown > 0ms
-                            && !itr->second.OnHold;
-                    }, 1000);
+                                return true;
+                            default:
+                                return false;
+                        }
+                    }
+
+                    return remainingCooldown > 0ms
+                        && !itr->second.OnHold;
+                }, 1000);
             }
             else
                 timer -= diff;
