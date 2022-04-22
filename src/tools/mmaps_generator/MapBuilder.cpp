@@ -822,15 +822,15 @@ namespace MMAP
         params.detailTriCount = iv.polyMeshDetail->ntris;
 
         params.offMeshConVerts = meshData.offMeshConnections.getCArray();
-        params.offMeshConCount = meshData.offMeshConnections.size()/6;
+        params.offMeshConCount = meshData.offMeshConnections.size() / 6;
         params.offMeshConRad = meshData.offMeshConnectionRads.getCArray();
         params.offMeshConDir = meshData.offMeshConnectionDirs.getCArray();
         params.offMeshConAreas = meshData.offMeshConnectionsAreas.getCArray();
         params.offMeshConFlags = meshData.offMeshConnectionsFlags.getCArray();
 
-        params.walkableHeight = BASE_UNIT_DIM*config.walkableHeight;    // agent height
-        params.walkableRadius = BASE_UNIT_DIM*config.walkableRadius;    // agent radius
-        params.walkableClimb = BASE_UNIT_DIM*config.walkableClimb;      // keep less that walkableHeight (aka agent height)!
+        params.walkableHeight = BASE_UNIT_DIM * config.walkableHeight;    // agent height
+        params.walkableRadius = BASE_UNIT_DIM * config.walkableRadius;    // agent radius
+        params.walkableClimb = BASE_UNIT_DIM * config.walkableClimb;      // keep less that walkableHeight (aka agent height)!
         params.tileX = (((bmin[0] + bmax[0]) / 2) - navMesh->getParams()->orig[0]) / GRID_SIZE;
         params.tileY = (((bmin[2] + bmax[2]) / 2) - navMesh->getParams()->orig[2]) / GRID_SIZE;
         rcVcopy(params.bmin, bmin);
@@ -1131,35 +1131,26 @@ namespace MMAP
         rcVcopy(config.bmin, bmin);
         rcVcopy(config.bmax, bmax);
 
-        // these are WORLD UNIT based metrics
-        // this are basic unit dimentions
-        // value have to divide GRID_SIZE(533.3333f) ( aka: 0.5333, 0.2666, 0.3333, 0.1333, etc )
-        const static float BASE_UNIT_DIM = m_bigBaseUnit ? 0.5333333f : 0.2666666f;
-
-        // All are in UNIT metrics!
-        const static int VERTEX_PER_MAP = int(GRID_SIZE / BASE_UNIT_DIM + 0.5f);
-        const static int VERTEX_PER_TILE = m_bigBaseUnit ? 40 : 80; // must divide VERTEX_PER_MAP
-        const static int TILES_PER_MAP = VERTEX_PER_MAP / VERTEX_PER_TILE;
-
+        config.maxVertsPerPoly = DT_VERTS_PER_POLYGON;
         config.cs = tileConfig.BASE_UNIT_DIM;
         config.ch = tileConfig.BASE_UNIT_DIM;
         // Keeping these 2 slope angles the same reduces a lot the number of polys.
         // 55 should be the minimum, maybe 70 is ok (keep in mind blink uses mmaps), 85 is too much for players
+        config.walkableSlopeAngle = m_maxWalkableAngle ? *m_maxWalkableAngle : 55;
         config.walkableSlopeAngleNotSteep = m_maxWalkableAngleNotSteep ? *m_maxWalkableAngleNotSteep : 55;
-        config.walkableSlopeAngle = 55.0f;
-        config.walkableHeight = 3;
-        config.walkableClimb = 3;
-        config.walkableRadius = 2;
-        config.maxEdgeLen = 40;
-        config.maxSimplificationError = 1.8f;
-        config.minRegionArea = 64;
-        config.mergeRegionArea = 400;
-        config.maxVertsPerPoly = 6;
-        config.detailSampleDist = 3.0f;//2.5 min or it will generate bugged height data!
-        config.detailSampleMaxError = 0.2f;
-        config.tileSize = VERTEX_PER_TILE;
         config.tileSize = tileConfig.VERTEX_PER_TILE;
+        config.walkableRadius = m_bigBaseUnit ? 1 : 2;
         config.borderSize = config.walkableRadius + 3;
+        config.maxEdgeLen = tileConfig.VERTEX_PER_TILE + 1;        // anything bigger than tileSize
+        config.walkableHeight = m_bigBaseUnit ? 3 : 6;
+        // a value >= 3|6 allows npcs to walk over some fences
+        // a value >= 4|8 allows npcs to walk over all fences
+        config.walkableClimb = m_bigBaseUnit ? 3 : 6;
+        config.minRegionArea = rcSqr(60);
+        config.mergeRegionArea = rcSqr(50);
+        config.maxSimplificationError = 1.8f;           // eliminates most jagged edges (tiny polygons)
+        config.detailSampleDist = config.cs * 16;
+        config.detailSampleMaxError = config.ch * 1;
 
         switch (mapID)
         {
@@ -1432,6 +1423,7 @@ namespace MMAP
         config.cs = BASE_UNIT_DIM;
         config.ch = BASE_UNIT_DIM;
         config.walkableSlopeAngle = m_maxWalkableAngle ? *m_maxWalkableAngle : 55.0f;
+        config.walkableSlopeAngleNotSteep = m_maxWalkableAngleNotSteep ? *m_maxWalkableAngleNotSteep : 55;
         config.walkableHeight = 3;
         config.walkableClimb = 3;
         config.walkableRadius = 2;
