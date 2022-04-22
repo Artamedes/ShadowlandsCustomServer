@@ -70,6 +70,11 @@ struct npc_item_upgrade_tutorial : public ScriptedAI
     public:
         npc_item_upgrade_tutorial(Creature* p_Creature) : ScriptedAI(p_Creature) { }
 
+        void InitializeAI() override
+        {
+            me->SetEmoteState(Emote::EMOTE_STATE_DANCE);
+        }
+
         void OnQuestAccept(Player* p_Player, Quest const* p_Quest) override
         {
             switch (p_Quest->GetQuestId())
@@ -1197,7 +1202,7 @@ public:
                         }
                     });
 
-                events.Repeat(15s);
+                events.Repeat(5s);
             }
         }
     }
@@ -1216,6 +1221,376 @@ struct npc_recruit_700041 : public ScriptedAI
         {
             me->SetEmoteState(Emote::EMOTE_STATE_READY1H);
         }
+};
+// 700032 - npc_blacksmith_apprentice_700032
+struct npc_blacksmith_apprentice_700032 : public ScriptedAI
+{
+   public:
+      npc_blacksmith_apprentice_700032(Creature* creature) : ScriptedAI(creature) { }
+
+     void InitializeAI() override
+     {
+         events.ScheduleEvent(1, 2s);
+     }
+
+     void Reset() override
+     {
+        /// TODO: Fill this function
+     }
+
+     void UpdateAI(uint32 diff) override
+     {
+        scheduler.Update(diff);
+        events.Update(diff);
+
+        if (uint32 eventId = events.ExecuteEvent())
+        {
+            switch (eventId)
+            {
+                case 1:
+                {
+                    me->SetEmoteState(Emote::EMOTE_ONESHOT_NONE);
+                    me->GetMotionMaster()->MovePoint(1, { 1971.99f, 4717.81f, 335.894f, 2.01259f }, MOVE_PATHFINDING | MOVE_WALK_MODE, 2.01259f)->callbackFunc = [this]()
+                    {
+                        me->SetEmoteState(Emote::EMOTE_STATE_WORK_MINING);
+                    };
+                    events.ScheduleEvent(2, 15s, 20s);
+                    break;
+                }
+                case 2:
+                {
+                    me->SetEmoteState(Emote::EMOTE_ONESHOT_NONE);
+                    me->GetMotionMaster()->MovePoint(1, me->GetHomePosition(), MOVE_PATHFINDING | MOVE_WALK_MODE, me->GetHomePosition().GetOrientation())->callbackFunc = [this]()
+                    {
+                        me->SetEmoteState(Emote::EMOTE_STATE_USE_STANDING);
+                    };
+                    events.ScheduleEvent(3, 3s, 6s);
+                    break;
+                }
+                case 3:
+                {
+                    me->SetEmoteState(Emote::EMOTE_ONESHOT_NONE);
+                    me->GetMotionMaster()->MovePoint(1, { 1976.03f, 4718.24f, 335.893f, 1.47747f }, MOVE_PATHFINDING | MOVE_WALK_MODE, 1.47747f)->callbackFunc = [this]()
+                    {
+                        me->SetEmoteState(Emote::EMOTE_STATE_USE_STANDING);
+                    };
+                    events.ScheduleEvent(1, 10s, 12s);
+                    break;
+                }
+            }
+        }
+        if (UpdateVictim())
+            DoMeleeAttackIfReady();
+     }
+
+     TaskScheduler scheduler;
+     EventMap events;
+};
+
+// 700035 - npc_blacksmith_apprentice_700035
+struct npc_blacksmith_apprentice_700035 : public ScriptedAI
+{
+public:
+    npc_blacksmith_apprentice_700035(Creature* creature) : ScriptedAI(creature) { }
+
+    void InitializeAI() override
+    {
+        DoCastSelf(350558); // Sleep cosmetic zzz
+        me->SetStandState(UnitStandStateType::UNIT_STAND_STATE_SIT_HIGH_CHAIR);
+    }
+
+    void Reset() override
+    {
+        /// TODO: Fill this function
+    }
+
+    void UpdateAI(uint32 diff) override
+    {
+        scheduler.Update(diff);
+
+        if (!UpdateVictim())
+            return;
+
+        events.Update(diff);
+
+        if (uint32 eventId = events.ExecuteEvent())
+        {
+            switch (eventId)
+            {
+            }
+        }
+        DoMeleeAttackIfReady();
+    }
+
+    TaskScheduler scheduler;
+    EventMap events;
+};
+
+// 700060 - npc_dummy_700060
+struct npc_dummy_700060 : public ScriptedAI
+{
+public:
+    npc_dummy_700060(Creature* creature) : ScriptedAI(creature) { }
+
+    void InitializeAI() override
+    {
+        me->SetStandState(UnitStandStateType::UNIT_STAND_STATE_SIT_HIGH_CHAIR);
+    }
+
+    void Reset() override
+    {
+        /// TODO: Fill this function
+    }
+
+    void UpdateAI(uint32 diff) override
+    {
+        scheduler.Update(diff);
+
+        if (!UpdateVictim())
+            return;
+
+        events.Update(diff);
+
+        if (uint32 eventId = events.ExecuteEvent())
+        {
+            switch (eventId)
+            {
+            }
+        }
+        DoMeleeAttackIfReady();
+    }
+
+
+    TaskScheduler scheduler;
+    EventMap events;
+};
+// 700056 - npc_dummy_700056
+struct npc_dummy_700056 : public ScriptedAI
+{
+public:
+    npc_dummy_700056(Creature* creature) : ScriptedAI(creature) { }
+
+    void InitializeAI() override
+    {
+        me->SetStandState(UnitStandStateType::UNIT_STAND_STATE_SIT_HIGH_CHAIR);
+    }
+
+    void Reset() override
+    {
+        /// TODO: Fill this function
+    }
+
+    void UpdateAI(uint32 diff) override
+    {
+        scheduler.Update(diff);
+
+        if (!UpdateVictim())
+            return;
+
+        events.Update(diff);
+
+        if (uint32 eventId = events.ExecuteEvent())
+        {
+            switch (eventId)
+            {
+            }
+        }
+        DoMeleeAttackIfReady();
+    }
+
+
+    TaskScheduler scheduler;
+    EventMap events;
+};
+// 700059 - npc_dummy_700059
+struct npc_dummy_700059 : public ScriptedAI
+{
+public:
+    npc_dummy_700059(Creature* creature) : ScriptedAI(creature) { }
+
+    void InitializeAI() override
+    {
+        me->SetStandState(UnitStandStateType::UNIT_STAND_STATE_SIT_HIGH_CHAIR);
+    }
+
+    void Reset() override
+    {
+        /// TODO: Fill this function
+    }
+
+    void UpdateAI(uint32 diff) override
+    {
+        scheduler.Update(diff);
+
+        if (!UpdateVictim())
+            return;
+
+        events.Update(diff);
+
+        if (uint32 eventId = events.ExecuteEvent())
+        {
+            switch (eventId)
+            {
+            }
+        }
+        DoMeleeAttackIfReady();
+    }
+
+
+    TaskScheduler scheduler;
+    EventMap events;
+};
+// 700057 - npc_dummy_700057
+struct npc_dummy_700057 : public ScriptedAI
+{
+public:
+    npc_dummy_700057(Creature* creature) : ScriptedAI(creature) { }
+
+    void InitializeAI() override
+    {
+        me->SetStandState(UnitStandStateType::UNIT_STAND_STATE_SIT_HIGH_CHAIR);
+    }
+
+    void Reset() override
+    {
+        /// TODO: Fill this function
+    }
+
+    void UpdateAI(uint32 diff) override
+    {
+        scheduler.Update(diff);
+
+        if (!UpdateVictim())
+            return;
+
+        events.Update(diff);
+
+        if (uint32 eventId = events.ExecuteEvent())
+        {
+            switch (eventId)
+            {
+            }
+        }
+        DoMeleeAttackIfReady();
+    }
+
+
+    TaskScheduler scheduler;
+    EventMap events;
+};
+// 700058 - npc_general_yelnats_700058
+struct npc_general_yelnats_700058 : public ScriptedAI
+{
+public:
+    npc_general_yelnats_700058(Creature* creature) : ScriptedAI(creature) { }
+
+    void InitializeAI() override
+    {
+        /// TODO: Fill this function
+    }
+
+    void Reset() override
+    {
+        /// TODO: Fill this function
+    }
+
+    void UpdateAI(uint32 diff) override
+    {
+        scheduler.Update(diff);
+
+        if (!UpdateVictim())
+            return;
+
+        events.Update(diff);
+
+        if (uint32 eventId = events.ExecuteEvent())
+        {
+            switch (eventId)
+            {
+            }
+        }
+        DoMeleeAttackIfReady();
+    }
+
+
+    TaskScheduler scheduler;
+    EventMap events;
+};
+// 700039 - npc_pandaren_scribe_700039
+struct npc_pandaren_scribe_700039 : public ScriptedAI
+{
+public:
+    npc_pandaren_scribe_700039(Creature* creature) : ScriptedAI(creature) { }
+
+    void InitializeAI() override
+    {
+        me->SetEmoteState(Emote::EMOTE_STATE_READ);
+    }
+
+    void Reset() override
+    {
+        /// TODO: Fill this function
+    }
+
+    void UpdateAI(uint32 diff) override
+    {
+        scheduler.Update(diff);
+
+        if (!UpdateVictim())
+            return;
+
+        events.Update(diff);
+
+        if (uint32 eventId = events.ExecuteEvent())
+        {
+            switch (eventId)
+            {
+            }
+        }
+        DoMeleeAttackIfReady();
+    }
+
+
+    TaskScheduler scheduler;
+    EventMap events;
+};
+// 700044 - npc_bank_security_700044
+struct npc_bank_security_700044 : public ScriptedAI
+{
+public:
+    npc_bank_security_700044(Creature* creature) : ScriptedAI(creature) { }
+
+    void InitializeAI() override
+    {
+        /// TODO: Fill this function
+    }
+
+    void Reset() override
+    {
+        /// TODO: Fill this function
+    }
+
+    void UpdateAI(uint32 diff) override
+    {
+        scheduler.Update(diff);
+
+        if (!UpdateVictim())
+            return;
+
+        events.Update(diff);
+
+        if (uint32 eventId = events.ExecuteEvent())
+        {
+            switch (eventId)
+            {
+            }
+        }
+        DoMeleeAttackIfReady();
+    }
+
+
+    TaskScheduler scheduler;
+    EventMap events;
 };
 
 void AddSC_MallScripts()
@@ -1237,6 +1612,15 @@ void AddSC_MallScripts()
     RegisterCreatureAI(npc_combat_testing_shaman);
     RegisterCreatureAI(npc_sensei_700043);
     RegisterCreatureAI(npc_recruit_700041);
+    RegisterCreatureAI(npc_blacksmith_apprentice_700032);
+    RegisterCreatureAI(npc_blacksmith_apprentice_700035);
+    RegisterCreatureAI(npc_dummy_700060);
+    RegisterCreatureAI(npc_dummy_700056);
+    RegisterCreatureAI(npc_dummy_700059);
+    RegisterCreatureAI(npc_dummy_700057);
+    RegisterCreatureAI(npc_general_yelnats_700058);
+    RegisterCreatureAI(npc_pandaren_scribe_700039);
+    RegisterCreatureAI(npc_bank_security_700044);
 
     RegisterSpellScript(spell_activating_313352);
     RegisterSpellScript(spell_nyalotha_incursion);
