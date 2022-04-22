@@ -96,7 +96,7 @@ public:
                     break;
                 case EVENT_MOVE_TO_SAFETY:
                     if (Creature* joren = me->FindNearestCreature(NPC_JOREN_IRONSTOCK, 75.0f, true))
-                         me->GetMotionMaster()->MovePoint(0, joren->GetPosition(), true);
+                         me->GetMotionMaster()->MovePoint(0, joren->GetPosition());
                     me->DespawnOrUnsummon(Seconds(5));
                     break;
                 default:

@@ -159,7 +159,8 @@ class TC_GAME_API MotionMaster
         bool HasMovementGenerator(std::function<bool(MovementGenerator const*)> const& filter, MovementSlot slot = MOTION_SLOT_ACTIVE) const;
 
         void Update(uint32 diff);
-        void Add(MovementGenerator* movement, MovementSlot slot = MOTION_SLOT_ACTIVE);
+        template <class T>
+        T* Add(T* movement, MovementSlot slot = MOTION_SLOT_ACTIVE);
         // NOTE: MOTION_SLOT_DEFAULT will be autofilled with IDLE_MOTION_TYPE
         void Remove(MovementGenerator* movement, MovementSlot slot = MOTION_SLOT_ACTIVE);
         // Removes first found movement
@@ -189,8 +190,8 @@ class TC_GAME_API MotionMaster
         void MoveChase(Unit* target, float dist) { MoveChase(target, ChaseRange(dist)); }
         void MoveConfused();
         void MoveFleeing(Unit* enemy, uint32 time = 0);
-        void MovePoint(uint32 id, Position const& pos, bool generatePath = true, Optional<float> finalOrient = {});
-        void MovePoint(uint32 id, float x, float y, float z, bool generatePath = true, Optional<float> finalOrient = {});
+        MovementGenerator* MovePoint(uint32 id, Position const& pos, uint32 moveOptions = MoveOptions::MOVE_PATHFINDING, Optional<float> finalOrient = {});
+        MovementGenerator* MovePoint(uint32 id, float x, float y, float z, uint32 moveOptions = MoveOptions::MOVE_PATHFINDING, Optional<float> finalOrient = {});
         /*
          *  Makes the unit move toward the target until it is at a certain distance from it. The unit then stops.
          *  Only works in 2D.
@@ -225,7 +226,7 @@ class TC_GAME_API MotionMaster
 
         void LaunchMoveSpline(Movement::MoveSplineInit&& init, uint32 id = 0, MovementGeneratorPriority priority = MOTION_PRIORITY_NORMAL, MovementGeneratorType type = EFFECT_MOTION_TYPE);
 
-        void Move(uint32 p_Id, MoveTypes p_MoveType, uint32 p_Options = MoveOptions::MOVE_PATHFINDING, float p_Distance = 0.0f);
+        MovementGenerator* Move(uint32 p_Id, MoveTypes p_MoveType, uint32 p_Options = MoveOptions::MOVE_PATHFINDING, float p_Distance = 0.0f);
     private:
         typedef std::unique_ptr<MovementGenerator, MovementGeneratorDeleter> MovementGeneratorPointer;
         typedef std::multiset<MovementGenerator*, MovementGeneratorComparator> MotionMasterContainer;

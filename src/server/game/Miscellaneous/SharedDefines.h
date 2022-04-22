@@ -3404,7 +3404,7 @@ enum Emote : uint32
     EMOTE_ONESHOT_QUESTION2                      = 604,
     EMOTE_STATE_CRY                              = 605,
     EMOTE_STATE_USESTANDING_LOOP2                = 606,
-    EMOTE_STATE_WORK_SMITH                       = 613,
+        EMOTE_STATE_WORK_SMITH                       = 613,
     EMOTE_STATE_WORK_CHOPWOOD4                   = 614,
     EMOTE_STATE_CUSTOMSPELL02                    = 615,
     EMOTE_STATE_READ_AND_SIT                     = 616,

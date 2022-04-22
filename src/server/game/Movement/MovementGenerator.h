@@ -80,6 +80,7 @@ class TC_GAME_API MovementGenerator
         uint8 Priority;
         uint16 Flags;
         uint32 BaseUnitState;
+        std::function<void()> callbackFunc;
 };
 
 template<class T, class D>

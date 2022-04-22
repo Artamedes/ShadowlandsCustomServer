@@ -327,15 +327,16 @@ void MotionMaster::Update(uint32 diff)
     ResolveDelayedActions();
 }
 
-void MotionMaster::Add(MovementGenerator* movement, MovementSlot slot/* = MOTION_SLOT_ACTIVE*/)
+template <class T>
+T* MotionMaster::Add(T* movement, MovementSlot slot/* = MOTION_SLOT_ACTIVE*/)
 {
     if (!movement)
-        return;
+        return nullptr;
 
     if (IsInvalidMovementSlot(slot))
     {
         delete movement;
-        return;
+        return nullptr;
     }
 
     if (HasFlag(MOTIONMASTER_FLAG_DELAYED))
@@ -348,6 +349,8 @@ void MotionMaster::Add(MovementGenerator* movement, MovementSlot slot/* = MOTION
     }
     else
         DirectAdd(movement, slot);
+
+    return movement;
 }
 
 void MotionMaster::Remove(MovementGenerator* movement, MovementSlot slot/* = MOTION_SLOT_ACTIVE*/)
@@ -655,22 +658,22 @@ void MotionMaster::MoveFleeing(Unit* enemy, uint32 time)
         Add(new FleeingMovementGenerator<Player>(enemy->GetGUID()));
 }
 
-void MotionMaster::MovePoint(uint32 id, Position const& pos, bool generatePath/* = true*/, Optional<float> finalOrient/* = {}*/)
+MovementGenerator* MotionMaster::MovePoint(uint32 id, Position const& pos, uint32 moveOptions /*= MoveOptions::MOVE_PATHFINDING*/, Optional<float> finalOrient/* = {}*/)
 {
-    MovePoint(id, pos.m_positionX, pos.m_positionY, pos.m_positionZ, generatePath, finalOrient);
+    return MovePoint(id, pos.m_positionX, pos.m_positionY, pos.m_positionZ, moveOptions, finalOrient);
 }
 
-void MotionMaster::MovePoint(uint32 id, float x, float y, float z, bool generatePath, Optional<float> finalOrient)
+MovementGenerator* MotionMaster::MovePoint(uint32 id, float x, float y, float z, uint32 moveOptions /*= MoveOptions::MOVE_PATHFINDING*/, Optional<float> finalOrient)
 {
     if (_owner->GetTypeId() == TYPEID_PLAYER)
     {
         TC_LOG_DEBUG("movement.motionmaster", "MotionMaster::MovePoint: '%s', targeted point Id: %u (X: %f, Y: %f, Z: %f)", _owner->GetGUID().ToString().c_str(), id, x, y, z);
-        Add(new PointMovementGenerator<Player>(id, x, y, z, generatePath, 0.0f, finalOrient));
+        return Add(new PointMovementGenerator<Player>(id, x, y, z, moveOptions, 0.0f, finalOrient));
     }
     else
     {
         TC_LOG_DEBUG("movement.motionmaster", "MotionMaster::MovePoint: '%s', targeted point Id: %u (X: %f, Y: %f, Z: %f)", _owner->GetGUID().ToString().c_str(), id, x, y, z);
-        Add(new PointMovementGenerator<Creature>(id, x, y, z, generatePath, 0.0f, finalOrient));
+        return Add(new PointMovementGenerator<Creature>(id, x, y, z, moveOptions, 0.0f, finalOrient));
     }
 }
 
@@ -1111,7 +1114,7 @@ void MotionMaster::MoveFormation(Unit* leader, float range, float angle, uint32 
     }
 }
 
-void MotionMaster::Move(uint32 p_Id, MoveTypes p_MoveType, uint32 p_Options, float p_Distance)
+MovementGenerator* MotionMaster::Move(uint32 p_Id, MoveTypes p_MoveType, uint32 p_Options, float p_Distance)
 {
     Position l_CurrentPos = *_owner;
 
@@ -1144,7 +1147,7 @@ void MotionMaster::Move(uint32 p_Id, MoveTypes p_MoveType, uint32 p_Options, flo
 
     Movement::MoveSplineInit init(_owner);
     init.MoveTo(PositionToVector3(l_CurrentPos), p_Options & MOVE_PATHFINDING);
-    Add(new GenericMovementGenerator(std::move(init), EFFECT_MOTION_TYPE, p_Id), MOTION_SLOT_ACTIVE);
+    return Add(new GenericMovementGenerator(std::move(init), EFFECT_MOTION_TYPE, p_Id), MOTION_SLOT_ACTIVE);
 }
 
 

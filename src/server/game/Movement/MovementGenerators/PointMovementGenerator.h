@@ -32,7 +32,7 @@ template<class T>
 class PointMovementGenerator : public MovementGeneratorMedium<T, PointMovementGenerator<T>>
 {
     public:
-        explicit PointMovementGenerator(uint32 id, float x, float y, float z, bool generatePath, float speed = 0.0f, Optional<float> finalOrient = {},
+        explicit PointMovementGenerator(uint32 id, float x, float y, float z, uint32 moveOptions, float speed = 0.0f, Optional<float> finalOrient = {},
             Unit const* faceTarget = nullptr, Movement::SpellEffectExtraData const* spellEffectExtraData = nullptr);
 
         MovementGeneratorType GetMovementGeneratorType() const override;
@@ -53,7 +53,7 @@ class PointMovementGenerator : public MovementGeneratorMedium<T, PointMovementGe
         uint32 _movementId;
         Position _destination;
         float _speed;
-        bool _generatePath;
+        uint32 moveOptions;
         //! if set then unit will turn to specified _orient in provided _pos
         Optional<float> _finalOrient;
         Unit const* i_faceTarget;

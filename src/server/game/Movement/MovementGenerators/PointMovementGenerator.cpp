@@ -28,9 +28,9 @@
 //----- Point Movement Generator
 
 template<class T>
-PointMovementGenerator<T>::PointMovementGenerator(uint32 id, float x, float y, float z, bool generatePath, float speed /*= 0.0f*/, Optional<float> finalOrient /*= {}*/,
+PointMovementGenerator<T>::PointMovementGenerator(uint32 id, float x, float y, float z, uint32 p_MoveOptions, float speed /*= 0.0f*/, Optional<float> finalOrient /*= {}*/,
     Unit const* faceTarget /*= nullptr*/, Movement::SpellEffectExtraData const* spellEffectExtraData /*= nullptr*/)
-    : _movementId(id), _destination(x, y, z), _speed(speed), _generatePath(generatePath), _finalOrient(finalOrient),
+    : _movementId(id), _destination(x, y, z), _speed(speed), moveOptions(p_MoveOptions), _finalOrient(finalOrient),
     i_faceTarget(faceTarget)
 {
     this->Mode = MOTION_MODE_DEFAULT;
@@ -70,7 +70,31 @@ void PointMovementGenerator<T>::DoInitialize(T* owner)
     owner->AddUnitState(UNIT_STATE_ROAMING_MOVE);
 
     Movement::MoveSplineInit init(owner);
-    init.MoveTo(_destination.GetPositionX(), _destination.GetPositionY(), _destination.GetPositionZ(), _generatePath);
+    init.MoveTo(_destination.GetPositionX(), _destination.GetPositionY(), _destination.GetPositionZ(), moveOptions & MOVE_PATHFINDING);
+
+    if (moveOptions & MOVE_WALK_MODE)
+        init.SetWalk(true);
+    if (moveOptions & MOVE_RUN_MODE)
+        init.SetWalk(false);
+    if (moveOptions & MOVE_FLY_MODE)
+        init.SetFly();
+    if (moveOptions & MOVE_CYCLIC)
+        init.SetCyclic();
+    //if (moveOptions & MOVE_FALLING)
+    //    init.SetFalling();
+    //if (moveOptions & MOVE_FORCE_DESTINATION)
+    //    init.SetForce();
+    //if (moveOptions & MOVE_EXCLUDE_STEEP_SLOPES)
+    //    init.SetSteep();
+    //if (moveOptions & MOVE_STRAIGHT_PATH)
+    //    init.SetStraight();
+    if (moveOptions & MOVE_SMOOTH_PATH)
+        init.SetSmooth();
+    if (moveOptions & MOVE_CAN_SWIM)
+        init.SetAnimation(AnimTier::Swim);
+    if (moveOptions & MOVE_ANIMATION)
+        init.SetAnimation(AnimTier::Hover);
+
     if (_speed > 0.0f)
         init.SetVelocity(_speed);
     if (i_faceTarget)
@@ -125,7 +149,40 @@ bool PointMovementGenerator<T>::DoUpdate(T* owner, uint32 /*diff*/)
         owner->AddUnitState(UNIT_STATE_ROAMING_MOVE);
 
         Movement::MoveSplineInit init(owner);
-        init.MoveTo(_destination.GetPositionX(), _destination.GetPositionY(), _destination.GetPositionZ(), _generatePath);
+        init.MoveTo(_destination.GetPositionX(), _destination.GetPositionY(), _destination.GetPositionZ(), moveOptions & MOVE_PATHFINDING);
+
+        if (moveOptions & MOVE_WALK_MODE)
+            init.SetWalk(true);
+        if (moveOptions & MOVE_RUN_MODE)
+            init.SetWalk(false);
+        if (moveOptions & MOVE_FLY_MODE)
+            init.SetFly();
+        if (moveOptions & MOVE_CYCLIC)
+            init.SetCyclic();
+        //if (moveOptions & MOVE_FALLING)
+        //    init.SetFalling();
+        //if (moveOptions & MOVE_FORCE_DESTINATION)
+        //    init.SetForce();
+        //if (moveOptions & MOVE_EXCLUDE_STEEP_SLOPES)
+        //    init.SetSteep();
+        //if (moveOptions & MOVE_STRAIGHT_PATH)
+        //    init.SetStraight();
+        if (moveOptions & MOVE_SMOOTH_PATH)
+            init.SetSmooth();
+        if (moveOptions & MOVE_CAN_SWIM)
+            init.SetAnimation(AnimTier::Swim);
+        if (moveOptions & MOVE_ANIMATION)
+            init.SetAnimation(AnimTier::Hover);
+
+        if (_speed > 0.0f)
+            init.SetVelocity(_speed);
+        if (i_faceTarget)
+            init.SetFacing(i_faceTarget);
+        if (i_spellEffectExtra)
+            init.SetSpellEffectExtraData(*i_spellEffectExtra);
+        if (_finalOrient)
+            init.SetFacing(*_finalOrient);
+
         if (_speed > 0.0f) // Default value for point motion type is 0.0, if 0.0 spline will use GetSpeed on unit
             init.SetVelocity(_speed);
         init.Launch();
@@ -170,10 +227,13 @@ void PointMovementGenerator<Creature>::MovementInform(Creature* owner)
 {
     if (owner->AI())
         owner->AI()->MovementInform(POINT_MOTION_TYPE, _movementId);
+
+    if (callbackFunc != nullptr)
+        callbackFunc();
 }
 
-template PointMovementGenerator<Player>::PointMovementGenerator(uint32, float, float, float, bool, float, Optional<float>, Unit const*, Movement::SpellEffectExtraData const*);
-template PointMovementGenerator<Creature>::PointMovementGenerator(uint32, float, float, float, bool, float, Optional<float>, Unit const*, Movement::SpellEffectExtraData const*);
+template PointMovementGenerator<Player>::PointMovementGenerator(uint32, float, float, float, uint32, float, Optional<float>, Unit const*, Movement::SpellEffectExtraData const*);
+template PointMovementGenerator<Creature>::PointMovementGenerator(uint32, float, float, float, uint32, float, Optional<float>, Unit const*, Movement::SpellEffectExtraData const*);
 template MovementGeneratorType PointMovementGenerator<Player>::GetMovementGeneratorType() const;
 template MovementGeneratorType PointMovementGenerator<Creature>::GetMovementGeneratorType() const;
 template void PointMovementGenerator<Player>::DoInitialize(Player*);

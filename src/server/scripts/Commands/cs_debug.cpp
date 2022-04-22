@@ -98,6 +98,7 @@ public:
             { "threatinfo",         HandleDebugThreatInfoCommand,          rbac::RBAC_PERM_COMMAND_DEBUG,   Console::No },
             { "combat",             HandleDebugCombatListCommand,          rbac::RBAC_PERM_COMMAND_DEBUG,   Console::No },
             { "anim",               HandleDebugAnimCommand,                rbac::RBAC_PERM_COMMAND_DEBUG,   Console::No },
+            { "standstate",         HandleDebugStandStateCommand,          rbac::RBAC_PERM_COMMAND_DEBUG,   Console::No },
             { "arena",              HandleDebugArenaCommand,               rbac::RBAC_PERM_COMMAND_DEBUG,   Console::Yes },
             { "bg",                 HandleDebugBattlegroundCommand,        rbac::RBAC_PERM_COMMAND_DEBUG,   Console::Yes },
             { "getitemstate",       HandleDebugGetItemStateCommand,        rbac::RBAC_PERM_COMMAND_DEBUG,   Console::No },
@@ -1114,7 +1115,16 @@ public:
 
         return true;
     }
+    
+    static bool HandleDebugStandStateCommand(ChatHandler* handler, uint32 standState)
+    {
+        if (Unit* unit = handler->getSelectedUnit())
+            unit->SetStandState(UnitStandStateType(standState));
 
+        handler->PSendSysMessage("Playing emote %d", standState);
+
+        return true;
+    }
     // Play emote animation
     static bool HandleDebugAnimCommand(ChatHandler* handler, Emote emote)
     {

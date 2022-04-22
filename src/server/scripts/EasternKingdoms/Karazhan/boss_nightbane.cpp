@@ -261,11 +261,11 @@ public:
             me->AttackStop();
 
             if (me->GetDistance(FlyPositionLeft) < me->GetDistance(FlyPosition))
-                me->GetMotionMaster()->MovePoint(POINT_PHASE_TWO_PRE_FLY, FlyPositionLeft, true);
+                me->GetMotionMaster()->MovePoint(POINT_PHASE_TWO_PRE_FLY, FlyPositionLeft);
             else if (me->GetDistance(FlyPositionRight) < me->GetDistance(FlyPosition))
-                me->GetMotionMaster()->MovePoint(POINT_PHASE_TWO_PRE_FLY, FlyPositionRight, true);
+                me->GetMotionMaster()->MovePoint(POINT_PHASE_TWO_PRE_FLY, FlyPositionRight);
             else
-                me->GetMotionMaster()->MovePoint(POINT_PHASE_TWO_FLY, FlyPosition, true);
+                me->GetMotionMaster()->MovePoint(POINT_PHASE_TWO_FLY, FlyPosition);
          }
 
         void ExecuteEvent(uint32 eventId) override
@@ -312,7 +312,7 @@ public:
                     me->SetReactState(REACT_AGGRESSIVE);
                     break;
                 case EVENT_PRE_FLY_END:
-                    me->GetMotionMaster()->MovePoint(POINT_PHASE_TWO_FLY, FlyPosition, true);
+                    me->GetMotionMaster()->MovePoint(POINT_PHASE_TWO_FLY, FlyPosition);
                     break;
                 case EVENT_PRE_LAND:
                     events.CancelEventGroup(GROUP_FLY);

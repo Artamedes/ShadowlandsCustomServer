@@ -1340,7 +1340,7 @@ void SimpleCharmedPlayerAI::OnCharmed(bool isNew)
         me->AttackStop();
 
         if (me->GetMotionMaster()->Size() <= 1) // if there is no current movement (we dont want to erase/overwrite any existing stuff)
-            me->GetMotionMaster()->MovePoint(0, me->GetPosition(), false); // force re-sync of current position for all clients
+            me->GetMotionMaster()->MovePoint(0, me->GetPosition(), 0); // force re-sync of current position for all clients
     }
     else
     {

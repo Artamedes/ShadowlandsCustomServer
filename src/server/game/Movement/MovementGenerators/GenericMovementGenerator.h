@@ -38,7 +38,6 @@ class GenericMovementGenerator : public MovementGenerator
         void Deactivate(Unit*) override;
         void Finalize(Unit*, bool, bool) override;
         MovementGeneratorType GetMovementGeneratorType() const override { return _type; }
-        std::function<void()> callbackFunc;
 
     private:
         void MovementInform(Unit*);
