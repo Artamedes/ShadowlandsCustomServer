@@ -99,6 +99,7 @@ public:
             { "combat",             HandleDebugCombatListCommand,          rbac::RBAC_PERM_COMMAND_DEBUG,   Console::No },
             { "anim",               HandleDebugAnimCommand,                rbac::RBAC_PERM_COMMAND_DEBUG,   Console::No },
             { "standstate",         HandleDebugStandStateCommand,          rbac::RBAC_PERM_COMMAND_DEBUG,   Console::No },
+            { "talk",               HandleDebugTalkCommand,                rbac::RBAC_PERM_COMMAND_DEBUG,   Console::No },
             { "arena",              HandleDebugArenaCommand,               rbac::RBAC_PERM_COMMAND_DEBUG,   Console::Yes },
             { "bg",                 HandleDebugBattlegroundCommand,        rbac::RBAC_PERM_COMMAND_DEBUG,   Console::Yes },
             { "getitemstate",       HandleDebugGetItemStateCommand,        rbac::RBAC_PERM_COMMAND_DEBUG,   Console::No },
@@ -1125,6 +1126,18 @@ public:
 
         return true;
     }
+
+    static bool HandleDebugTalkCommand(ChatHandler* handler, uint32 groupId)
+    {
+        if (auto creature = handler->getSelectedCreature())
+            if (auto ai = creature->AI())
+                ai->Talk(groupId, handler->GetPlayer());
+
+        handler->PSendSysMessage("Playing groupId %u", groupId);
+
+        return true;
+    }
+
     // Play emote animation
     static bool HandleDebugAnimCommand(ChatHandler* handler, Emote emote)
     {

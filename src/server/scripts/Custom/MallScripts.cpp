@@ -12,6 +12,8 @@
 #include "CovenantMgr.h"
 #include "Conversation.h"
 #include "Mail.h"
+#include "MovementGenerator.h"
+#include "GenericMovementGenerator.h"
 
 struct npc_battle_training : public ScriptedAI
 {
@@ -1017,6 +1019,34 @@ struct npc_soulshape_picker : public ScriptedAI
         }
 };
 
+const Position generalPath[] = {
+    { 1871.39f, 4631.0f, 340.921f, 3.67226f },
+    { 1874.57f, 4632.87f, 340.977f, 3.67226f },
+    { 1878.27f, 4633.75f, 339.793f, 3.67226f },
+    { 1882.13f, 4634.89f, 337.628f, 3.55446f },
+    { 1883.67f, 4635.44f, 336.581f, 3.55446f },
+    { 1886.16f, 4636.14f, 335.893f, 3.55446f },
+    { 1892.34f, 4640.05f, 335.893f, 0.641938f },
+    { 1898.92f, 4646.27f, 335.893f, 0.884102f },
+    { 1899.65f, 4648.37f, 335.893f, 1.5386f },
+    { 1898.88f, 4649.47f, 335.893f, 2.18655f },
+    { 1897.58f, 4650.71f, 335.894f, 2.252f },
+};
+
+const Position generalPath2[] = {
+    { 1897.58f, 4650.71f, 335.894f, 2.252f },
+    { 1898.64f, 4646.6f, 335.894f, 4.76201f },
+    { 1897.44f, 4642.41f, 335.894f, 4.08133f },
+    { 1893.56f, 4639.61f, 335.894f, 3.61009f },
+    { 1889.43f, 4638.06f, 335.894f, 3.48901f },
+    { 1885.47f, 4636.29f, 335.894f, 3.53482f },
+    { 1880.9f, 4634.33f, 338.359f, 3.55773f },
+    { 1877.91f, 4633.34f, 340.063f, 3.47592f },
+    { 1876.33f, 4632.79f, 340.885f, 3.47592f },
+    { 1872.43f, 4631.43f, 340.971f, 3.47592f },
+    { 1871.15f, 4630.95f, 340.91f, 3.76063f },
+};
+
 struct npc_general_700000 : public ScriptedAI
 {
 public:
@@ -1024,15 +1054,19 @@ public:
 
     void OnQuestAccept(Player* who, Quest const* quest) override
     {
-        if (quest->GetQuestId() == 700001)
+        if (quest->GetQuestId() == 700000)
         {
-            Talk(1, who);
+            if (auto clone = me->SummonPersonalClone(*me, TEMPSUMMON_MANUAL_DESPAWN, 0s, 0, 0, who))
+            {
+                clone->SetOwnerGUID(who->GetGUID());
+                clone->AI()->DoAction(1);
+            }
         }
     }
 
     void OnUnitRelocation(Unit* p_Who) override
     {
-        if (p_Who->IsPlayer() && p_Who->GetDistance2d(me) <= 14.0f)
+        if (p_Who->IsPlayer() && p_Who->GetDistance2d(me) <= 14.0f && !me->IsSummon())
         {
             auto l_Player = p_Who->ToPlayer();
             auto l_Itr = m_PlayerTalks.find(p_Who->GetGUID());
@@ -1048,8 +1082,52 @@ public:
             }
         }
     }
+
+    void UpdateAI(uint32 diff) override
+    {
+        scheduler.Update(diff);
+    }
+
+    void DoAction(int32 action) override
+    {
+        TalkWithOwner(1);
+
+        scheduler.Schedule(1s, [this](TaskContext context)
+        {
+            me->GetMotionMaster()->MoveSmoothPath(1, generalPath, 11, true)->callbackFunc = [this]()
+            {
+                TalkWithOwner(2);
+                if (auto owner = me->GetOwner())
+                    if (auto player = owner->ToPlayer())
+                        player->KilledMonsterCredit(me->GetEntry());
+                
+                scheduler.Schedule(6s, [this](TaskContext context)
+                {
+                    if (auto covenantDummy = me->FindNearestCreature(700047, 50.0f))
+                    {
+                        if (auto ai = covenantDummy->AI())
+                            ai->Talk(0, me->GetOwner());
+                    }
+                });
+                scheduler.Schedule(6s, [this](TaskContext context)
+                {
+                    me->GetMotionMaster()->Move(1, MoveTypes::Backwards, MOVE_PATHFINDING, 5.0f)->callbackFunc = [this]()
+                    {
+                        TalkWithOwner(3);
+                    };
+                });
+            };
+        });
+    }
+
+    void TalkWithOwner(uint32 talkId)
+    {
+        Talk(talkId, me->GetOwner());
+    }
+
 private:
     std::unordered_map<ObjectGuid, TimePoint> m_PlayerTalks;
+    TaskScheduler scheduler;
 };
 
 struct npc_combat_testing_shaman : public ScriptedAI
@@ -1592,6 +1670,433 @@ public:
     TaskScheduler scheduler;
     EventMap events;
 };
+// 700063 - npc_captain_myra_700063
+struct npc_captain_myra_700063 : public ScriptedAI
+{
+public:
+    npc_captain_myra_700063(Creature* creature) : ScriptedAI(creature) { }
+
+    struct PlayerDataz
+    {
+        TimePoint Point;
+        uint32 GroupId = 0;
+    };
+
+    std::unordered_map<ObjectGuid::LowType, PlayerDataz> m_playerRelocations;
+
+    Unit* GetReciever(ObjectGuid const& guid)
+    {
+        return ObjectAccessor::GetUnit(*me, guid);
+    }
+
+    void OnUnitRelocation(Unit* who) override
+    {
+        if (who->IsPlayer() && who->GetDistance2d(me) <= 25.0f && !me->isDead())
+        {
+            auto now = GameTime::Now();
+            auto itr = m_playerRelocations.find(who->GetGUID().GetCounter());
+            bool contains = itr != m_playerRelocations.end();
+            if (!contains || now >= itr->second.Point)
+            {
+                if (!contains)
+                {
+                    PlayerDataz data;
+                    data.Point = now + 10s;
+                    m_playerRelocations[who->GetGUID().GetCounter()] = data;
+                }
+
+                auto& data = m_playerRelocations[who->GetGUID().GetCounter()];
+                data.Point = now + 10s;
+                ObjectGuid const& guid = who->GetGUID();
+
+                switch (data.GroupId)
+                {
+                    case 0:
+                        scheduler.Schedule(1s, [this, guid](TaskContext)
+                        {
+                            Talk(0, GetReciever(guid));
+                            scheduler.Schedule(5s, [this, guid](TaskContext context)
+                            {
+                                if (auto scout = me->FindNearestCreature(700061, 50.0f))
+                                    if (auto ai = scout->AI())
+                                        ai->Talk(0, GetReciever(guid));
+                            });
+                        });
+                        data.GroupId++;
+                        break;
+                    case 1:
+                        Talk(1, GetReciever(guid));
+                        scheduler.Schedule(5s, [this, guid](TaskContext context)
+                        {
+                            if (auto scout = me->FindNearestCreature(700062, 50.0f))
+                                if (auto ai = scout->AI())
+                                    ai->Talk(0, GetReciever(guid));
+                        });
+                        data.GroupId++;
+                        break;
+                    case 2:
+                        Talk(2, GetReciever(guid));
+                        scheduler.Schedule(5s, [this, guid](TaskContext context)
+                        {
+                            if (auto scout = me->FindNearestCreature(700062, 50.0f))
+                                if (auto ai = scout->AI())
+                                    ai->Talk(1, GetReciever(guid));
+                            scheduler.Schedule(5s, [this, guid](TaskContext context)
+                            {
+                                if (auto scout = me->FindNearestCreature(700061, 50.0f))
+                                    if (auto ai = scout->AI())
+                                        ai->Talk(1, GetReciever(guid));
+                            });
+                        });
+                        data.GroupId++;
+                        break;
+                    case 3: // nothing left.
+                        data.Point = now + 900000s;
+                        break;
+                }
+            }
+        }
+    }
+
+    void UpdateAI(uint32 diff) override
+    {
+        scheduler.Update(diff);
+
+        if (!UpdateVictim())
+            return;
+
+        DoMeleeAttackIfReady();
+    }
+
+
+    TaskScheduler scheduler;
+};
+
+// 700062 - npc_scout_700062
+struct npc_scout_700062 : public ScriptedAI
+{
+public:
+    npc_scout_700062(Creature* creature) : ScriptedAI(creature) { }
+
+    void InitializeAI() override
+    {
+        /// TODO: Fill this function
+    }
+
+    void Reset() override
+    {
+        /// TODO: Fill this function
+    }
+
+    void UpdateAI(uint32 diff) override
+    {
+        scheduler.Update(diff);
+
+        if (!UpdateVictim())
+            return;
+
+        events.Update(diff);
+
+        if (uint32 eventId = events.ExecuteEvent())
+        {
+            switch (eventId)
+            {
+            }
+        }
+        DoMeleeAttackIfReady();
+    }
+
+
+    TaskScheduler scheduler;
+    EventMap events;
+};
+// 700061 - npc_scout_700061
+struct npc_scout_700061 : public ScriptedAI
+{
+public:
+    npc_scout_700061(Creature* creature) : ScriptedAI(creature) { }
+
+    void InitializeAI() override
+    {
+        /// TODO: Fill this function
+    }
+
+    void Reset() override
+    {
+        /// TODO: Fill this function
+    }
+
+    void UpdateAI(uint32 diff) override
+    {
+        scheduler.Update(diff);
+
+        if (!UpdateVictim())
+            return;
+
+        events.Update(diff);
+
+        if (uint32 eventId = events.ExecuteEvent())
+        {
+            switch (eventId)
+            {
+            }
+        }
+        DoMeleeAttackIfReady();
+    }
+
+
+    TaskScheduler scheduler;
+    EventMap events;
+};
+
+const Position longcloudPath[] = {
+    { 1927.58f, 4673.83f, 335.894f, 5.92453f },
+    { 1956.02f, 4658.9f, 335.894f, 5.5351f },
+    { 1963.45f, 4647.04f, 335.909f, 5.21767f },
+    { 1967.43f, 4638.14f, 335.968f, 4.87733f },
+    { 1967.42f, 4635.29f, 335.915f, 5.20131f },
+    { 1969.95f, 4633.09f, 335.909f, 5.59728f },
+};
+
+// 700051 - npc_galara_longcloud_700051
+struct npc_galara_longcloud_700051 : public ScriptedAI
+{
+public:
+    npc_galara_longcloud_700051(Creature* creature) : ScriptedAI(creature) { }
+
+    void InitializeAI() override
+    {
+        if (!me->IsSummon())
+            events.ScheduleEvent(1, 1s);
+        else
+            events.ScheduleEvent(2, 2s);
+    }
+
+    void Reset() override
+    {
+    }
+
+    void UpdateAI(uint32 diff) override
+    {
+        scheduler.Update(diff);
+
+        events.Update(diff);
+
+        if (uint32 eventId = events.ExecuteEvent())
+        {
+            switch (eventId)
+            {
+                case 1:
+                    if (urand(0, 5) == 1)
+                        me->HandleEmoteCommand(Emote::EMOTE_ONESHOT_EXCLAMATION);
+                    else
+                        me->HandleEmoteCommand(Emote::EMOTE_ONESHOT_TALK);
+                    events.Repeat(5s);
+                    break;
+                case 2:
+                    Talk(0, me->GetOwner());
+                    scheduler.Schedule(3s, [this](TaskContext context)
+                    {
+                        me->GetMotionMaster()->MoveSmoothPath(1, longcloudPath, 6, true)->callbackFunc = [this]()
+                        {
+                            me->GetMotionMaster()->MovePoint(1, { 1970.85f, 4633.2f, 335.91f, 3.98382f }, MOVE_FORCE_DESTINATION, 3.98328f)->callbackFunc = [this]()
+                            {
+                                me->SetStandState(UnitStandStateType::UNIT_STAND_STATE_SIT_HIGH_CHAIR);
+                                me->NearTeleportTo(*me);
+                            };
+                        };
+                    });
+                    break;
+            }
+        }
+
+        if (!UpdateVictim())
+            return;
+
+        DoMeleeAttackIfReady();
+    }
+
+    GuidSet personals;
+
+    void OnUnitRelocation(Unit* who) override
+    {
+        if (who->IsPlayer() && who->GetDistance2d(me) <= 15.0f && !me->IsSummon())
+        {
+            if (!personals.count(who->GetGUID()))
+            {
+                personals.insert(who->GetGUID());
+                if (auto clone = me->SummonPersonalClone(*me, TEMPSUMMON_MANUAL_DESPAWN, 0s, 0, 0, who->ToPlayer()))
+                    clone->SetOwnerGUID(who->GetGUID());
+
+                if (auto jinjin = me->FindNearestCreature(700050, 50.0f))
+                    if (auto clone = jinjin->SummonPersonalClone(*jinjin, TEMPSUMMON_MANUAL_DESPAWN, 0s, 0, 0, who->ToPlayer()))
+                        clone->SetOwnerGUID(who->GetGUID());
+            }
+        }
+    }
+
+
+    TaskScheduler scheduler;
+    EventMap events;
+};
+
+const Position jinjinPath[] = {
+    { 1929.82f, 4676.12f, 335.894f, 5.80213f },
+    { 1946.97f, 4668.35f, 335.894f, 5.86758f },
+    { 1958.25f, 4660.89f, 335.894f, 5.36034f },
+    { 1964.06f, 4647.4f, 335.908f, 5.16399f },
+    { 1967.44f, 4637.32f, 335.949f, 4.96764f },
+    { 1968.95f, 4633.13f, 335.905f, 4.12661f },
+};
+// 700050 - npc_jinjin_700050
+struct npc_jinjin_700050 : public ScriptedAI
+{
+public:
+    npc_jinjin_700050(Creature* creature) : ScriptedAI(creature) { }
+
+    void InitializeAI() override
+    {
+        if (!me->IsSummon())
+            events.ScheduleEvent(1, 3s);
+        else
+            events.ScheduleEvent(2, 5500ms);
+    }
+
+    void Reset() override
+    {
+    }
+
+    void UpdateAI(uint32 diff) override
+    {
+        scheduler.Update(diff);
+        events.Update(diff);
+
+        if (uint32 eventId = events.ExecuteEvent())
+        {
+            switch (eventId)
+            {
+                case 1:
+                    if (urand(0, 5) == 1)
+                        me->HandleEmoteCommand(Emote::EMOTE_ONESHOT_EXCLAMATION);
+                    else
+                        me->HandleEmoteCommand(Emote::EMOTE_ONESHOT_TALK);
+                    events.Repeat(5s);
+                    break;
+                case 2:
+                    me->GetMotionMaster()->MoveSmoothPath(1, jinjinPath, 6, true)->callbackFunc = [this]()
+                    {
+                        me->GetMotionMaster()->MovePoint(1, { 1969.73f, 4634.2f, 335.903f, 3.94335f }, MOVE_FORCE_DESTINATION, 3.98328f)->callbackFunc = [this]()
+                        {
+                            me->SetStandState(UnitStandStateType::UNIT_STAND_STATE_SIT_HIGH_CHAIR);
+                            me->NearTeleportTo(*me);
+                        };
+                    };
+                    break;
+            }
+        }
+
+        if (!UpdateVictim())
+            return;
+
+        DoMeleeAttackIfReady();
+    }
+
+
+    TaskScheduler scheduler;
+    EventMap events;
+};
+// 700045 - npc_gordo_remsay_700045
+struct npc_gordo_remsay_700045 : public ScriptedAI
+{
+public:
+    npc_gordo_remsay_700045(Creature* creature) : ScriptedAI(creature) { }
+
+    void InitializeAI() override
+    {
+    }
+
+    void Reset() override
+    {
+    }
+
+    void UpdateAI(uint32 diff) override
+    {
+        scheduler.Update(diff);
+
+        if (!UpdateVictim())
+            return;
+
+        events.Update(diff);
+
+        if (uint32 eventId = events.ExecuteEvent())
+        {
+            switch (eventId)
+            {
+            }
+        }
+        DoMeleeAttackIfReady();
+    }
+
+    GuidSet personals;
+
+    void OnUnitRelocation(Unit* who) override
+    {
+        if (who->IsPlayer() && who->GetDistance2d(me) <= 15.0f && !personals.count(who->GetGUID()))
+        {
+            personals.insert(who->GetGUID());
+            me->HandleEmoteCommand(Emote::EMOTE_ONESHOT_WAVE, who->ToPlayer());
+        }
+    }
+
+    TaskScheduler scheduler;
+    EventMap events;
+};
+// 700048 - npc_hye_gyo_giftview_700048
+struct npc_hye_gyo_giftview_700048 : public ScriptedAI
+{
+public:
+    npc_hye_gyo_giftview_700048(Creature* creature) : ScriptedAI(creature) { }
+
+    void InitializeAI() override
+    {
+    }
+
+    void Reset() override
+    {
+    }
+
+    void UpdateAI(uint32 diff) override
+    {
+        scheduler.Update(diff);
+
+        if (!UpdateVictim())
+            return;
+
+        events.Update(diff);
+
+        if (uint32 eventId = events.ExecuteEvent())
+        {
+            switch (eventId)
+            {
+            }
+        }
+        DoMeleeAttackIfReady();
+    }
+
+    GuidSet personals;
+
+    void OnUnitRelocation(Unit* who) override
+    {
+        if (who->IsPlayer() && who->GetDistance2d(me) <= 9.0f && !personals.count(who->GetGUID()))
+        {
+            personals.insert(who->GetGUID());
+            Talk(0, who->ToPlayer());
+        }
+    }
+
+    TaskScheduler scheduler;
+    EventMap events;
+};
 
 void AddSC_MallScripts()
 {
@@ -1621,6 +2126,13 @@ void AddSC_MallScripts()
     RegisterCreatureAI(npc_general_yelnats_700058);
     RegisterCreatureAI(npc_pandaren_scribe_700039);
     RegisterCreatureAI(npc_bank_security_700044);
+    RegisterCreatureAI(npc_captain_myra_700063);
+    RegisterCreatureAI(npc_scout_700062);
+    RegisterCreatureAI(npc_scout_700061);
+    RegisterCreatureAI(npc_galara_longcloud_700051);
+    RegisterCreatureAI(npc_jinjin_700050);
+    RegisterCreatureAI(npc_gordo_remsay_700045);
+    RegisterCreatureAI(npc_hye_gyo_giftview_700048);
 
     RegisterSpellScript(spell_activating_313352);
     RegisterSpellScript(spell_nyalotha_incursion);
