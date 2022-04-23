@@ -2752,6 +2752,12 @@ void Spell::TargetInfo::DoDamageAndTriggers(Spell* spell)
                 caster->CalculateSpellDamageTaken(&damageInfo, spell->m_damage, spell->m_spellInfo, spell->m_attackType, IsCrit, spell);
                 Unit::DealDamageMods(damageInfo.attacker, damageInfo.target, damageInfo.damage, &damageInfo.absorb);
 
+                if (Creature* target = damageInfo.target->ToCreature())
+                    if (caster->IsCreature() && !caster->IsCharmedOwnedByPlayerOrPlayer())
+                        if (target->GetNoNpcDamageBelowPctHealthValue() != 0.0f)
+                            if (target->GetHealthPct() <= target->GetNoNpcDamageBelowPctHealthValue())
+                                damageInfo.damage = 0;
+
                 hitMask |= createProcHitMask(&damageInfo, MissCondition);
                 procVictim |= PROC_FLAG_TAKE_ANY_DAMAGE;
 

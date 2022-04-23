@@ -394,6 +394,11 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         }
         void RefreshCanSwimFlag(bool recheck = false);
 
+        // Sets the the max health percentage threshold at which uncontrolled/unowned creatures can no longer deal damage to the creature
+        void SetNoNpcDamageBelowPctHealthValue(float value) { _noNpcDamageBelowPctHealth = std::clamp<float>(value, 0.f, 100.f); }
+        void ResetNoNpcDamageBelowPctHealthValue() { _noNpcDamageBelowPctHealth = 0.f; }
+        float GetNoNpcDamageBelowPctHealthValue() const { return _noNpcDamageBelowPctHealth; }
+
         std::string GetDebugInfo() const override;
 
         void ExitVehicle(Position const* exitPosition = nullptr) override;
@@ -486,6 +491,8 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         bool _regenerateHealthLock; // Dynamically set
 
         bool _isMissingCanSwimFlagOutOfCombat;
+
+        float _noNpcDamageBelowPctHealth;
 };
 
 class TC_GAME_API AssistDelayEvent : public BasicEvent

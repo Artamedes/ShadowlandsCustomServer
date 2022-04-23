@@ -524,6 +524,7 @@ typedef std::unordered_map<uint32, QuestOfferRewardLocale> QuestOfferRewardLocal
 typedef std::unordered_map<uint32, QuestRequestItemsLocale> QuestRequestItemsLocaleContainer;
 typedef std::unordered_map<uint32, PageTextLocale> PageTextLocaleContainer;
 typedef std::unordered_map<uint32, VehicleSeatAddon> VehicleSeatAddonContainer;
+typedef std::unordered_map<uint32, float /*SparringHealthLimit*/> CreatureSparringTemplateMap;
 
 struct GossipMenuItemsLocale
 {
@@ -1219,6 +1220,18 @@ class TC_GAME_API ObjectMgr
         QuestGreeting const* GetQuestGreeting(TypeID type, uint32 id) const;
         QuestGreetingLocale const* GetQuestGreetingLocale(TypeID type, uint32 id) const;
 
+        float GetSparringHealthLimitFor(uint32 entry) const
+        {
+            auto itr = _creatureSparringTemplateStore.find(entry);
+            if (itr != _creatureSparringTemplateStore.end())
+            {
+                return itr->second;
+            }
+
+            return 0.0f;
+        }
+
+
         WorldSafeLocsEntry const* GetDefaultGraveyard(uint32 team) const;
         WorldSafeLocsEntry const* GetClosestGraveyard(WorldLocation const& location, uint32 team, WorldObject* conditionObject) const;
         bool AddGraveyardLink(uint32 id, uint32 zoneId, uint32 team, bool persist = true);
@@ -1314,6 +1327,7 @@ class TC_GAME_API ObjectMgr
         void LoadCreatureLocales();
         void LoadCreatureTemplates();
         void LoadCreatureTemplateAddons();
+        void LoadCreatureSparringTemplate();
         void LoadCreatureTemplate(Field* fields);
         void LoadCreatureTemplateResistances();
         void LoadCreatureTemplateSpells();
@@ -1914,6 +1928,7 @@ class TC_GAME_API ObjectMgr
         CreatureModelContainer _creatureModelStore;
         CreatureAddonContainer _creatureAddonStore;
         CreatureTemplateAddonContainer _creatureTemplateAddonStore;
+        CreatureSparringTemplateMap _creatureSparringTemplateStore;
         std::unordered_map<ObjectGuid::LowType, CreatureMovementData> _creatureMovementOverrides;
         GameObjectAddonContainer _gameObjectAddonStore;
         GameObjectQuestItemMap _gameObjectQuestItemStore;

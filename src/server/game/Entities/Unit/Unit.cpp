@@ -773,6 +773,21 @@ bool Unit::HasBreakableByDamageCrowdControlAura(Unit* excludeCasterChannel) cons
         }
     }
 
+    // Sparring Checks
+    if (Creature* target = victim->ToCreature())
+    {
+        if (attacker && attacker->IsCreature() && !attacker->IsCharmedOwnedByPlayerOrPlayer())
+        {
+            if (target->GetNoNpcDamageBelowPctHealthValue() != 0.0f)
+            {
+                if (damage >= target->GetHealth()) // First check: if we have a sparring limit we will never allow creatures to kill the sparring victim
+                    damage = target->GetHealth() - 1;
+                else if (target->GetHealthPct() <= target->GetNoNpcDamageBelowPctHealthValue()) // Second check: stop incomming damage when we have surpassed the health limit
+                    damage = 0;
+            }
+        }
+    }
+
     if (UnitAI* victimAI = victim->GetAI())
         victimAI->DamageTaken(attacker, damage, damagetype, spellProto);
 
@@ -2012,6 +2027,16 @@ void Unit::HandleEmoteCommand(Emote emoteId, Player* target /*=nullptr*/, Trinit
             uint32 split_absorb = 0;
             Unit::DealDamageMods(damageInfo.GetAttacker(), caster, splitDamage, &split_absorb);
 
+            // Sparring Checks
+            if (damageInfo.GetAttacker())
+            {
+                if (Creature* target = damageInfo.GetVictim()->ToCreature())
+                    if (damageInfo.GetAttacker()->IsCreature() && !damageInfo.GetAttacker()->IsCharmedOwnedByPlayerOrPlayer())
+                        if (target->GetNoNpcDamageBelowPctHealthValue() != 0.0f)
+                            if (target->GetHealthPct() <= target->GetNoNpcDamageBelowPctHealthValue())
+                                damageInfo.ModifyDamage(damageInfo.GetDamage() * -1);
+            }
+
             SpellNonMeleeDamage log(damageInfo.GetAttacker(), caster, (*itr)->GetSpellInfo(), (*itr)->GetBase()->GetSpellVisual(), damageInfo.GetSchoolMask(), (*itr)->GetBase()->GetCastId());
             CleanDamage cleanDamage = CleanDamage(splitDamage, 0, BASE_ATTACK, MELEE_HIT_NORMAL);
             uint32 l_Damage = Unit::DealDamage(damageInfo.GetAttacker(), caster, splitDamage, &cleanDamage, DIRECT_DAMAGE, damageInfo.GetSchoolMask(), (*itr)->GetSpellInfo(), false);
@@ -2169,6 +2194,14 @@ void Unit::AttackerStateUpdate(Unit* victim, WeaponAttackType attType, bool extr
             CalculateMeleeDamage(victim, &damageInfo, attType);
             // Send log damage message to client
             Unit::DealDamageMods(damageInfo.Attacker, victim, damageInfo.Damage, &damageInfo.Absorb);
+
+            // Sparring Checks
+            if (Creature* target = victim->ToCreature())
+                if (IsCreature() && !IsCharmedOwnedByPlayerOrPlayer())
+                    if (target->GetNoNpcDamageBelowPctHealthValue() != 0.0f)
+                        if (target->GetHealthPct() <= target->GetNoNpcDamageBelowPctHealthValue())
+                            damageInfo.HitInfo |= HITINFO_FAKE_DAMAGE;
+
             SendAttackStateUpdate(&damageInfo);
 
             _lastDamagedTargetGuid = victim->GetGUID();
