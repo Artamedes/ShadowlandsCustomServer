@@ -167,6 +167,9 @@ bool AreaTrigger::Create(uint32 areaTriggerCreatePropertiesId, Unit* caster, Uni
         m_movementInfo.transport.guid = target->GetGUID();
     }
 
+    UpdatePositionData();
+    SetZoneScript();
+
     UpdateShape();
 
     // movement on transport of areatriggers on unit is handled by themself
