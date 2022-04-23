@@ -1982,20 +1982,26 @@ GameObject* Map::SummonGameObject(uint32 entry, Position const& pos, QuaternionD
     return go;
 }
 
-void WorldObject::SetZoneScript()
+ZoneScript* WorldObject::FindZoneScript() const
 {
     if (Map* map = FindMap())
     {
         if (InstanceMap* instanceMap = map->ToInstanceMap())
-            m_zoneScript = reinterpret_cast<ZoneScript*>(instanceMap->GetInstanceScript());
+            return reinterpret_cast<ZoneScript*>(instanceMap->GetInstanceScript());
         else if (!map->IsBattlegroundOrArena())
         {
             if (Battlefield* bf = sBattlefieldMgr->GetBattlefieldToZoneId(GetZoneId()))
-                m_zoneScript = bf;
+                return bf;
             else
-                m_zoneScript = sOutdoorPvPMgr->GetZoneScript(GetZoneId());
+                return sOutdoorPvPMgr->GetZoneScript(GetZoneId());
         }
     }
+    return nullptr;
+}
+
+void WorldObject::SetZoneScript()
+{
+    m_zoneScript = FindZoneScript();
 }
 
 Scenario* WorldObject::GetScenario() const
