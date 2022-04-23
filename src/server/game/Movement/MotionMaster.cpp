@@ -1126,8 +1126,8 @@ MovementGenerator* MotionMaster::Move(uint32 p_Id, MoveTypes p_MoveType, uint32 
             l_CurrentPos.SetOrientation(l_CurrentPos.GetAngle(l_CurrentPos.m_positionX, l_CurrentPos.m_positionY));
             break;
         case MoveTypes::Backwards:
-            l_CurrentPos.m_positionX += p_Distance * std::cos(l_CurrentPos.GetOrientation());
-            l_CurrentPos.m_positionY += p_Distance * std::sin(l_CurrentPos.GetOrientation());
+            l_CurrentPos.m_positionX -= p_Distance * std::cos(l_CurrentPos.GetOrientation());
+            l_CurrentPos.m_positionY -= p_Distance * std::sin(l_CurrentPos.GetOrientation());
             l_CurrentPos.SetOrientation(l_CurrentPos.GetAngle(l_CurrentPos.m_positionX, l_CurrentPos.m_positionY));
             break;
         case MoveTypes::Up:
