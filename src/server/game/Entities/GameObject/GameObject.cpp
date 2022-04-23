@@ -1956,6 +1956,8 @@ void GameObject::Use(Unit* user)
                     //unit->TeleportTo(GetMapId(), x_lowest, y_lowest, GetPositionZ(), GetOrientation(), TELE_TO_NOT_LEAVE_TRANSPORT | TELE_TO_NOT_LEAVE_COMBAT | TELE_TO_NOT_UNSUMMON_PET);
                     user->NearTeleportTo({ x_lowest, y_lowest, GetPositionZ(), GetOrientation() }, false);
                     user->SetStandState(UnitStandStateType(UNIT_STAND_STATE_SIT_LOW_CHAIR + info->chair.chairheight));
+                    if (info->chair.triggeredEvent)
+                        GameEvents::Trigger(info->chair.triggeredEvent, user, this);
                     return;
                 }
             }
@@ -2367,6 +2369,9 @@ void GameObject::Use(Unit* user)
                                 bg->EventPlayerClickedOnFlag(player, this);
                             break;
                     }
+
+                    if (info->flagDrop.eventID)
+                        GameEvents::Trigger(info->flagDrop.eventID, player, this);
                 }
                 //this cause to call return, all flags must be deleted here!!
                 spellId = 0;
@@ -2659,6 +2664,9 @@ void GameObject::ModifyHealth(int32 change, WorldObject* attackerOrHealer /*= nu
         packet.SpellID = spellId;
         player->SendDirectMessage(packet.Write());
     }
+
+    if (change < 0 && GetGOInfo()->destructibleBuilding.DamageEvent)
+        GameEvents::Trigger(GetGOInfo()->destructibleBuilding.DamageEvent, attackerOrHealer, this);
 
     GameObjectDestructibleState newState = GetDestructibleState();
 
