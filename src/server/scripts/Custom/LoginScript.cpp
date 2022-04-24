@@ -135,7 +135,7 @@ class LoginScript : public PlayerScript
                     p_Player->SetActiveTalentGroup(1);
 
                     static uint32 items[] = { 183021, 183020, 184778, 182998, 182996, 183022, 183004, 183011, 182979, 183037, 183036, 183040, 182405 };
-                    static uint32 talents[] = { 22456, 22443, 22444, 22450, 22904, 22472, 22220 };
+                    static uint32 talents[] = { 22456, 22443, 22444, 22450, 22904, 22451, 22220 };
 
                     for (auto talent : talents)
                         p_Player->LearnTalent(talent, nullptr);
@@ -239,7 +239,7 @@ class LoginScript : public PlayerScript
                 p_Player->CastSpell(p_Player, 33392, true);
                 p_Player->CastSpell(p_Player, 34092, true);
                 p_Player->CastSpell(p_Player, 90266, true);
-                p_Player->LearnSpell(332400, false); // Sinful Gladiator Mount
+                p_Player->LearnSpell(359372, false); // mount
                 p_Player->ResurrectPlayer(1.0f);
 
                 switch (p_Player->GetClass())
