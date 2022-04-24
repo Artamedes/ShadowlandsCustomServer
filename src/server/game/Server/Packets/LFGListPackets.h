@@ -31,8 +31,6 @@ namespace WorldPackets
 {
     namespace LFG
     {
-        struct RideTicket;
-
         struct ListActivityEntry
         {
             uint32 GroupFinderActivityId;
