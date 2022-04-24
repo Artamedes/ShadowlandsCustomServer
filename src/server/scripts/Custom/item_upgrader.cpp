@@ -9,6 +9,7 @@
 #include "DB2Stores.h"
 #include "WorldSession.h"
 #include "CollectionMgr.h"
+#include "GameTime.h"
 
 enum class ItemUpgradeType
 {
@@ -158,12 +159,28 @@ class item_upgrader : public ItemScript
     public:
         item_upgrader() : ItemScript("item_upgrader") { }
 
-        std::unordered_map<ObjectGuid, ObjectGuid> m_PlayerItemTargets;
+        struct ItemTarget
+        {
+            ObjectGuid ItemGuid;
+            uint32 LastItemUpgrade = 0;
+            TimePoint LastUpgradeTime;
+        };
+
+        std::unordered_map<ObjectGuid, ItemTarget> m_PlayerItemTargets;
 
         bool OnUse(Player* player, Item* item, SpellCastTargets const& targets, ObjectGuid /*castId*/) override
         {
             if (!targets.GetItemTarget())
                 return true;
+
+            if (auto instance = player->GetInstanceScript())
+            {
+                if (instance->IsChallenge())
+                {
+                    Conversation::CreateConversation(700309, player, *player, player->GetGUID());
+                    return true;
+                }
+            }
 
             if (!BuildPackets(player, item, targets))
                 return true;
@@ -173,7 +190,22 @@ class item_upgrader : public ItemScript
 
         void DisplayItemUpgrade(Player* player, Item* itemTarget, ItemUpgrade const* itemUpgrade)
         {
-            m_PlayerItemTargets[player->GetGUID()] = itemTarget->GetGUID();
+            auto itr = m_PlayerItemTargets.find(player->GetGUID());
+
+            auto now = GameTime::Now();
+            bool dispMsg = false;
+            if (itr != m_PlayerItemTargets.end())
+            {
+                itr->second.ItemGuid = itemTarget->GetGUID();
+
+
+                if (itr->second.LastUpgradeTime > now && itr->second.LastItemUpgrade != itemUpgrade->RequiredID)
+                    dispMsg = true;
+
+                itr->second.LastUpgradeTime = now + 30s;
+            }
+            else
+                m_PlayerItemTargets[player->GetGUID()] = { itemTarget->GetGUID(), 0, now + 30s };
             WorldPackets::Quest::DisplayPlayerChoice displayPlayerChoice;
 
             displayPlayerChoice.SenderGUID = itemTarget->GetGUID();
@@ -304,11 +336,20 @@ class item_upgrader : public ItemScript
 
                     if (!l_Good)
                     {
-                        playerChoiceResponse.ButtonTooltip = ss.str();
+                        playerChoiceResponse.ButtonTooltip = std::string_view(ss.str().c_str());
                         playerChoiceResponse.Flags = 5;
+
+                        if (itr != m_PlayerItemTargets.end())
+                            itr->second.LastItemUpgrade = itemUpgrade->RequiredID;
+                        if (dispMsg)
+                        {
+                            Conversation::CreateConversation(700308, player, *player, player->GetGUID());
+                        }
                     }
                     else
                     {
+                        if (itr != m_PlayerItemTargets.end())
+                            itr->second.LastItemUpgrade = 0;
                         playerChoiceResponse.ButtonTooltip = "|cff00FBFFItem will be upgraded into";
                     }
                 }
@@ -451,7 +492,7 @@ class item_upgrader : public ItemScript
             if (l_Itr == m_PlayerItemTargets.end())
                 return true;
 
-            auto l_ItemTarget = p_Player->GetItemByGuid(l_Itr->second);
+            auto l_ItemTarget = p_Player->GetItemByGuid(l_Itr->second.ItemGuid);
             if (!l_ItemTarget)
                 return true;
 
@@ -504,7 +545,7 @@ class item_upgrader : public ItemScript
             if (l_Itr == m_PlayerItemTargets.end())
                 return true;
 
-            auto l_ItemTarget = p_Player->GetItemByGuid(l_Itr->second);
+            auto l_ItemTarget = p_Player->GetItemByGuid(l_Itr->second.ItemGuid);
             if (!l_ItemTarget)
                 return true;
 
@@ -589,7 +630,7 @@ class item_upgrader : public ItemScript
             if (l_Itr == m_PlayerItemTargets.end())
                 return true;
 
-            auto l_ItemTarget = p_Player->GetItemByGuid(l_Itr->second);
+            auto l_ItemTarget = p_Player->GetItemByGuid(l_Itr->second.ItemGuid);
             if (!l_ItemTarget)
                 return true;
 
@@ -725,7 +766,7 @@ class item_upgrader : public ItemScript
                 ChatHandler(p_Player->GetSession()).PSendSysMessage("|cff00FF00Success");
 
                 if (auto nextUpgrade = sItemUpgrader->GetItemUpgrade(l_ItemTarget))
-                    if (auto nextItemUpgrade = HasMaterialsForItemUpgrade(p_Player, l_ItemTarget, nextUpgrade))
+                   // if (auto nextItemUpgrade = HasMaterialsForItemUpgrade(p_Player, l_ItemTarget, nextUpgrade))
                         DisplayItemUpgrade(p_Player, l_ItemTarget, nextUpgrade);
             }
 
