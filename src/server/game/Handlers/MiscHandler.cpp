@@ -87,6 +87,18 @@ void WorldSession::HandleRepopRequest(WorldPackets::Misc::RepopRequest& /*packet
             return;
         }
 
+    switch (GetPlayer()->GetMapId())
+    {
+        case 1116: // Draenor, hack for custom.
+            if (GetPlayer()->GetQuestStatus(700006) != QUEST_STATUS_REWARDED)
+                GetPlayer()->TeleportTo(1116, 1855.65f, 4620.45f, 340.895f, 0.278168f, TELE_REVIVE_AT_TELEPORT);
+            else
+                GetPlayer()->TeleportTo(1116, 159.015f, -2680.81f, 51.5754f, 3.89897f, TELE_REVIVE_AT_TELEPORT);
+            return;
+        default:
+            break;
+    }
+
     GetPlayer()->RepopAtGraveyard();
 }
 
