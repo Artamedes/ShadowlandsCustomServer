@@ -4195,6 +4195,7 @@ Optional<SpellPowerCost> SpellInfo::CalcPowerCost(SpellPowerEntry const* power, 
     SpellPowerCost cost;
     cost.Power = Powers(power->PowerType);
     cost.Amount = powerCost;
+    cost.OptionalAmount = optionalCost;
     return cost;
 }
 
