@@ -1262,14 +1262,14 @@ class spell_mage_flamestrike : public SpellScript
                 if (igniteAura->GetEffect(EFFECT_0).Amplitude > 0)
                     basePoints = basePoints / (igniteAura->GetMaxDuration() / igniteAura->GetEffect(EFFECT_0).Amplitude);
 
-                if (Aura* previousIgnite = target->GetAura(SPELL_MAGE_IGNITE_AURA, caster->GetGUID()))
-                {
-                    if (AuraEffect* igniteEffect = previousIgnite->GetEffect(EFFECT_0))
-                    {
-                        if (uint32 amplitude = igniteEffect->GetPeriod())
-                            basePoints += (igniteEffect->GetAmount() * (previousIgnite->GetDuration() / amplitude)) / (previousIgnite->GetMaxDuration() / amplitude);
-                    }
-                }
+                //if (Aura* previousIgnite = target->GetAura(SPELL_MAGE_IGNITE_AURA, caster->GetGUID()))
+                //{
+                //    if (AuraEffect* igniteEffect = previousIgnite->GetEffect(EFFECT_0))
+                //    {
+                //        if (uint32 amplitude = igniteEffect->GetPeriod())
+                //            basePoints += (igniteEffect->GetAmount() * (previousIgnite->GetDuration() / amplitude)) / (previousIgnite->GetMaxDuration() / amplitude);
+                //    }
+                //}
 
                 caster->CastCustomSpell(target, SPELL_MAGE_IGNITE_AURA, &basePoints, NULL, NULL, true);
             }
@@ -2103,6 +2103,30 @@ public:
             OnEffectRemove += AuraEffectRemoveFn(spell_mage_combustion_AuraScript::HandleRemove, EFFECT_1, SPELL_AURA_MOD_RATING, AURA_EFFECT_HANDLE_REAL);
         }
     };
+
+    class spell_mage_combustion_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_mage_combustion_SpellScript);
+
+        void HandleAfterCast()
+        {
+            if (Unit* caster = GetCaster())
+                if (caster->HasSpell(116011)) // Rune of Power
+                    caster->CastSpell(caster, 116011, CastSpellExtraArgs(TRIGGERED_DONT_CREATE_COOLDOWN | TRIGGERED_FULL_MASK));
+
+        }
+
+        void Register() override
+        {
+            AfterCast += SpellCastFn(spell_mage_combustion_SpellScript::HandleAfterCast);
+        }
+
+    };
+
+    SpellScript* GetSpellScript() const override
+    {
+        return new spell_mage_combustion_SpellScript();
+    }
 
     AuraScript* GetAuraScript() const override
     {
@@ -2984,6 +3008,7 @@ struct at_mage_rune_of_power : AreaTriggerAI
 
     void OnUnitExit(Unit* unit) override
     {
+        // todo: check for other rune of powers on the ground
         if (unit->HasAura(SPELL_MAGE_RUNE_OF_POWER_AURA))
             unit->RemoveAurasDueToSpell(SPELL_MAGE_RUNE_OF_POWER_AURA);
     }
@@ -2995,7 +3020,7 @@ struct at_mage_frozen_orb : AreaTriggerAI
 {
     at_mage_frozen_orb(AreaTrigger* areatrigger) : AreaTriggerAI(areatrigger)
     {
-        damageInterval = 500;
+        damageInterval = 100;
     }
 
     uint32 damageInterval;
@@ -3051,7 +3076,7 @@ struct at_mage_frozen_orb : AreaTriggerAI
             }
 
             caster->CastSpell(at->GetPosition(), SPELL_MAGE_FROZEN_ORB_DAMAGE, true);
-            damageInterval = 500;
+            damageInterval = 100; // custom
         }
         else
             damageInterval -= diff;
@@ -3251,7 +3276,13 @@ struct at_mage_flame_patch : AreaTriggerAI
 
     void OnCreate() override
     {
-        timeInterval = 1000;
+        Unit* caster = at->GetCaster();
+        if (!caster)
+            timeInterval = 1000;
+        else
+        {
+            timeInterval = 100; // custom HASTE
+        }
     }
 
     int32 timeInterval;
@@ -3267,12 +3298,12 @@ struct at_mage_flame_patch : AreaTriggerAI
             return;
 
         timeInterval += diff;
-        if (timeInterval < 1000)
+        if (timeInterval < 100)
             return;
 
         caster->CastSpell(at->GetPosition(), SPELL_MAGE_FLAME_PATCH_AOE_DMG, true);
 
-        timeInterval -= 1000;
+        timeInterval -= 100;
     }
 };
 

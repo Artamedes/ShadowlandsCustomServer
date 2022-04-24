@@ -5057,6 +5057,33 @@ class spell_emergency_failsafe : public AuraScript
     }
 };
 
+// 256374 - Entropic Embrace
+class aura_entropic_embrace : public AuraScript
+{
+    PrepareAuraScript(aura_entropic_embrace);
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        Unit* caster = GetCaster();
+        Unit* target = eventInfo.GetActionTarget();
+        if (!caster || !target)
+            return;
+
+        // Damage
+        if (eventInfo.GetDamageInfo() && (eventInfo.GetDamageInfo()->GetDamageType() != HEAL && eventInfo.GetDamageInfo()->GetDamageType() != NODAMAGE))
+            caster->CastCustomSpell(259756, SPELLVALUE_BASE_POINT0, CalculatePct(eventInfo.GetDamageInfo()->GetDamage(), sSpellMgr->GetSpellInfo(256374)->GetEffect(EFFECT_0).BasePoints), target, true);
+        else if (eventInfo.GetDamageInfo() && eventInfo.GetDamageInfo()->GetDamageType() == HEAL)
+            caster->CastCustomSpell(259760, SPELLVALUE_BASE_POINT0, CalculatePct(eventInfo.GetDamageInfo()->GetDamage(), sSpellMgr->GetSpellInfo(256374)->GetEffect(EFFECT_0).BasePoints), target, true);
+        else if (eventInfo.GetHealInfo())
+            caster->CastCustomSpell(259760, SPELLVALUE_BASE_POINT0, CalculatePct(eventInfo.GetHealInfo()->GetHeal(), sSpellMgr->GetSpellInfo(256374)->GetEffect(EFFECT_0).BasePoints), target, true);
+    }
+
+    void Register() override
+    {
+        OnProc += AuraProcFn(aura_entropic_embrace::HandleProc);
+    }
+};
+
 void AddSC_generic_spell_scripts()
 {
     RegisterSpellScript(spell_gen_absorb0_hitlimit1);
@@ -5213,4 +5240,5 @@ void AddSC_generic_spell_scripts()
     RegisterSpellScript(spell_ancestral_call);
     RegisterSpellScript(spell_deposit_anima);
     RegisterSpellScript(spell_emergency_failsafe);
+    RegisterSpellScript(aura_entropic_embrace);
 }
