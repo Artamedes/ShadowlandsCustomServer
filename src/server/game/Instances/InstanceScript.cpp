@@ -24,6 +24,7 @@
 #include "CreatureAI.h"
 #include "CreatureAIImpl.h"
 #include "DatabaseEnv.h"
+#include "GameEventSender.h"
 #include "GameObject.h"
 #include "Group.h"
 #include "InstancePackets.h"
@@ -144,6 +145,23 @@ ObjectGuid InstanceScript::GetObjectGuid(uint32 type) const
 ObjectGuid InstanceScript::GetGuidData(uint32 type) const
 {
     return GetObjectGuid(type);
+}
+
+void InstanceScript::TriggerGameEvent(uint32 gameEventId, WorldObject* source /*= nullptr*/, WorldObject* target /*= nullptr*/)
+{
+    if (source)
+    {
+        ZoneScript::TriggerGameEvent(gameEventId, source, target);
+        return;
+    }
+
+    ProcessEvent(target, gameEventId, source);
+    instance->DoOnPlayers([gameEventId](Player* player)
+    {
+        GameEvents::TriggerForPlayer(gameEventId, player);
+    });
+
+    GameEvents::TriggerForMap(gameEventId, instance);
 }
 
 Creature* InstanceScript::GetCreature(uint32 type)
@@ -765,15 +783,6 @@ void InstanceScript::DoUpdateCriteria(CriteriaType type, uint32 miscValue1 /*= 0
     instance->DoOnPlayers([type, miscValue1, miscValue2, unit](Player* player)
     {
         player->UpdateCriteria(type, miscValue1, miscValue2, 0, unit);
-    });
-}
-
-// Start timed achievement for all players in instance
-void InstanceScript::DoStartCriteriaTimer(CriteriaStartEvent startEvent, uint32 entry)
-{
-    instance->DoOnPlayers([startEvent, entry](Player* player)
-    {
-        player->StartCriteriaTimer(startEvent, entry);
     });
 }
 
