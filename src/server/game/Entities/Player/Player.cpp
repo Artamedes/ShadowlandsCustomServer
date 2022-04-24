@@ -2036,6 +2036,7 @@ void Player::Regenerate(Powers power)
     else
         return;
 
+    bool forcesSetPower = false;
     if (addvalue < 0.0f)
     {
         if (curValue > minPower + integerValue)
@@ -2047,6 +2048,7 @@ void Player::Regenerate(Powers power)
         {
             curValue = minPower;
             m_powerFraction[powerIndex] = 0;
+            forcesSetPower = true;
         }
     }
     else
@@ -2060,10 +2062,25 @@ void Player::Regenerate(Powers power)
         {
             curValue = maxPower;
             m_powerFraction[powerIndex] = 0;
+            forcesSetPower = true;
         }
     }
 
-    SetPower(power, curValue, true);
+    if (power == POWER_COMBO_POINTS || power == POWER_CHI || power == POWER_ARCANE_CHARGES || power == POWER_RUNES || power == RATE_POWER_HOLY_POWER)
+        forcesSetPower = true;
+
+    if (m_regenTimerCount >= 2000 || forcesSetPower)
+        SetPower(power, curValue, true);
+    else
+    {
+        SetPower(power, curValue, false);
+        // throttle packet sending
+        DoWithSuppressingObjectUpdates([&]()
+        {
+            SetUpdateFieldValue(m_values.ModifyValue(&Unit::m_unitData).ModifyValue(&UF::UnitData::Power, powerIndex), curValue);
+            const_cast<UF::UnitData&>(*m_unitData).ClearChanged(&UF::UnitData::Power, powerIndex);
+        });
+    }
 }
 
 void Player::SendPowerUpdate(Powers power, int32 amount)
