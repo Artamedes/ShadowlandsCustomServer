@@ -1238,7 +1238,7 @@ public:
                     AddGossipItemFor(player, GossipOptionIcon::None, "|cffFF0000<Quest>|R Enter Incursion", 0, 1);
             }
         }
-        SendGossipMenuFor(player, 1, me);
+        SendGossipMenuFor(player, me->GetEntry(), me);
         return true;
     }
 
@@ -2835,6 +2835,18 @@ public:
     EventMap events;
 };
 
+struct mallscripts_playerscript : public PlayerScript
+{
+public:
+    mallscripts_playerscript() : PlayerScript("mallscripts_playerscript") { }
+
+    void OnPlayerAbandonQuest(Player* player, Quest const* quest) override
+    {
+        if (quest->GetQuestId() == 700001)
+            player->CastSpell(player, 313613, true); // Leave nyalotha
+    }
+};
+
 void AddSC_MallScripts()
 {
     RegisterCreatureAI(npc_battle_training);
@@ -2881,4 +2893,6 @@ void AddSC_MallScripts()
     RegisterSpellScript(spell_nyalotha_incursion);
     RegisterSpellScript(spell_leave_nyalotha);
     RegisterSpellAndAuraScriptPair(spell_fade_to_black_365581, spell_fade_to_black_365581_spellscript);
+
+    new mallscripts_playerscript();
 }

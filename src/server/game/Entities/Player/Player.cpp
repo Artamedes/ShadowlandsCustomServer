@@ -16293,6 +16293,8 @@ void Player::AbandonQuest(uint32 questId)
             if (ItemTemplate const* itemTemplate = sObjectMgr->GetItemTemplate(quest->ItemDrop[i]))
                 if (quest->ItemDropQuantity[i] && itemTemplate->GetBonding() == BIND_QUEST)
                     DestroyItemCount(quest->ItemDrop[i], quest->ItemDropQuantity[i], true, true);
+
+        sScriptMgr->OnPlayerAbandonQuest(this, quest);
     }
 }
 

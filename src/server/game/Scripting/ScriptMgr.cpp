@@ -2263,6 +2263,11 @@ void ScriptMgr::OnPlayerModifyCurrency(Player* player, uint32 id, uint32 oldCoun
     FOREACH_SCRIPT(PlayerScript)->OnPlayerModifyCurrency(player, id, oldCount, newCount);
 }
 
+void ScriptMgr::OnPlayerAbandonQuest(Player* player, Quest const* quest)
+{
+    FOREACH_SCRIPT(PlayerScript)->OnPlayerAbandonQuest(player, quest);
+}
+
 // Account
 void ScriptMgr::OnAccountLogin(uint32 accountId)
 {
