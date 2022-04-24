@@ -1545,6 +1545,10 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
                     transferPending.Ship->ID = transport->GetEntry();
                     transferPending.Ship->OriginMapID = GetMapId();
                 }
+                if (spellID)
+                {
+                    transferPending.TransferSpellID = spellID;
+                }
 
                 SendDirectMessage(transferPending.Write());
             }
@@ -17048,6 +17052,19 @@ QuestGiverStatus Player::GetQuestDialogStatus(Object* questgiver)
     }
 
     return result;
+}
+
+QuestObjectiveStatusData const* Player::GetQuestObjectiveStatusData(uint32 questId, QuestObjectiveType type, uint32 entry)
+{
+    for (QuestObjectiveStatusMap::value_type const& objectiveItr : Trinity::Containers::MapEqualRange(m_questObjectiveStatus, { type, entry }))
+    {
+        if (objectiveItr.second.QuestStatusItr->first == questId)
+        {
+            return &objectiveItr.second;
+        }
+    }
+
+    return nullptr;
 }
 
 // not used in Trinity, but used in scripting code

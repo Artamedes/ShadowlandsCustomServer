@@ -132,7 +132,7 @@ class LoginScript : public PlayerScript
                 case CLASS_MAGE:
                 {
                     p_Player->SetPrimarySpecialization(TalentSpecialization::TALENT_SPEC_MAGE_FIRE);
-                    p_Player->SetActiveTalentGroup(2);
+                    p_Player->SetActiveTalentGroup(1);
 
                     static uint32 items[] = { 183021, 183020, 184778, 182998, 182996, 183022, 183004, 183011, 182979, 183037, 183036, 183040, 182405 };
                     static uint32 talents[] = { 22456, 22443, 22444, 22450, 22904, 22472, 22220 };

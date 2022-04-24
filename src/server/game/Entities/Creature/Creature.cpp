@@ -2639,6 +2639,10 @@ bool Creature::_IsTargetAcceptable(Unit const* target) const
 {
     ASSERT(target);
 
+    if (auto ai = AI())
+        if (ai->CanForceAttack(target))
+            return true;
+
     // if the target cannot be attacked, the target is not acceptable
     if (IsFriendlyTo(target)
         || !target->isTargetableForAttack(false)

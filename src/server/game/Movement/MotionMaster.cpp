@@ -574,6 +574,21 @@ void MotionMaster::MoveIdle()
     Add(GetIdleMovementGenerator(), MOTION_SLOT_DEFAULT);
 }
 
+MovementGenerator* MotionMaster::MoveTargetedHomeForce()
+{
+    Creature* owner = _owner->ToCreature();
+    if (!owner)
+    {
+        TC_LOG_ERROR("movement.motionmaster", "MotionMaster::MoveTargetedHome: '%s', attempted to move towards target home.", _owner->GetGUID().ToString().c_str());
+        return nullptr;
+    }
+
+    Clear();
+
+    TC_LOG_DEBUG("movement.motionmaster", "MotionMaster::MoveTargetedHome: '%s', targeted home.", _owner->GetGUID().ToString().c_str());
+    return Add(new HomeMovementGenerator<Creature>());
+}
+
 void MotionMaster::MoveTargetedHome()
 {
     Creature* owner = _owner->ToCreature();

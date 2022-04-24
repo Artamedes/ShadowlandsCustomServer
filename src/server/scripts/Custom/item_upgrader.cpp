@@ -304,7 +304,7 @@ class item_upgrader : public ItemScript
 
                     if (!l_Good)
                     {
-                        playerChoiceResponse.ButtonTooltip = ss.str().c_str();
+                        playerChoiceResponse.ButtonTooltip = ss.str();
                         playerChoiceResponse.Flags = 5;
                     }
                     else

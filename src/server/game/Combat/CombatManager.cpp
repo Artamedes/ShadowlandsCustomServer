@@ -46,8 +46,15 @@
     // ... both units must be allowed to enter combat
     if (a->IsCombatDisallowed() || b->IsCombatDisallowed())
         return false;
-    if (a->IsFriendlyTo(b) || b->IsFriendlyTo(a))
-        return false;
+
+    bool skipFriendlyCheck = false;
+    if (auto ai1 = a->GetAI())
+        if (ai1->CanForceAttack(b))
+            skipFriendlyCheck = true;
+
+    if (!skipFriendlyCheck)
+        if (a->IsFriendlyTo(b) || b->IsFriendlyTo(a))
+            return false;
     Player const* playerA = a->GetCharmerOrOwnerPlayerOrPlayerItself();
     Player const* playerB = b->GetCharmerOrOwnerPlayerOrPlayerItself();
     // ...neither of the two units must be (owned by) a player with .gm on

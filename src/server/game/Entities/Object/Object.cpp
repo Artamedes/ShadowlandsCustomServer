@@ -3081,7 +3081,14 @@ bool WorldObject::IsValidAttackTarget(WorldObject const* target, SpellInfo const
 
     // CvC case - can attack each other only when one of them is hostile
     if (unit && !unit->HasUnitFlag(UNIT_FLAG_PLAYER_CONTROLLED) && unitTarget && !unitTarget->HasUnitFlag(UNIT_FLAG_PLAYER_CONTROLLED))
+    {
+        if (auto ai1 = unit->GetAI())
+            if (auto ai2 = unitTarget->GetAI())
+                if (ai1->CanForceAttack(unitTarget) && ai2->CanForceAttack(unit))
+                    return true;
+
         return IsHostileTo(unitTarget) || unitTarget->IsHostileTo(this);
+    }
 
     // Traps without owner or with NPC owner versus Creature case - can attack to creature only when one of them is hostile
     if (go && go->GetGoType() == GAMEOBJECT_TYPE_TRAP)

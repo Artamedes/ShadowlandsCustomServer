@@ -84,6 +84,9 @@ struct npc_item_upgrade_tutorial : public ScriptedAI
                 case 700002:
                     Talk(0, p_Player);
                     break;
+                case 700006:
+                    Talk(3, p_Player);
+                    break;
             }
         }
 
@@ -278,6 +281,8 @@ struct npc_currency_guy : public ScriptedAI
         {
             if (p_Quest->GetQuestId() == 700006)
                 Talk(1, p_Player);
+            else if (p_Quest->GetQuestId() == 700003)
+                Talk(2, p_Player);
         }
 };
 
@@ -1056,17 +1061,20 @@ public:
     {
         if (quest->GetQuestId() == 700000)
         {
-            if (auto clone = me->SummonPersonalClone(*me, TEMPSUMMON_MANUAL_DESPAWN, 0s, 0, 0, who))
+            if (auto clone = me->SummonPersonalClone(*me, TEMPSUMMON_NO_OWNER_DESPAWN, 0s, 0, 0, who))
             {
+                clone->setActive(true);
                 clone->SetOwnerGUID(who->GetGUID());
-                clone->AI()->DoAction(1);
+                if (clone->AI())
+                    clone->AI()->DoAction(1);
             }
         }
     }
 
+    bool didMagicStoneSay = false;
     void OnUnitRelocation(Unit* p_Who) override
     {
-        if (p_Who->IsPlayer() && p_Who->GetDistance2d(me) <= 14.0f && !me->IsSummon())
+        if (p_Who->IsPlayer() && p_Who->GetDistance2d(me) <= 14.0f && !me->IsSummon() && me->IsInPhase(p_Who))
         {
             auto l_Player = p_Who->ToPlayer();
             auto l_Itr = m_PlayerTalks.find(p_Who->GetGUID());
@@ -1080,6 +1088,19 @@ public:
                     Talk(0, p_Who);
                 }
             }
+        }
+        if (p_Who->IsPlayer() && me->IsSummon() && !didMagicStoneSay && me->IsInPhase(p_Who) && p_Who->GetDistance2d(me) <= 14.0f && p_Who == me->GetOwner() && p_Who->ToPlayer()->GetQuestStatus(700006) == QUEST_STATUS_INCOMPLETE)
+        {
+            didMagicStoneSay = true;
+            Talk(4, me->GetOwner());
+
+            scheduler.Schedule(8s, [this](TaskContext context)
+            {
+                me->GetMotionMaster()->MovePoint(1, { 1871.18f, 4630.88f, 340.91f, 3.67503f }, MOVE_PATHFINDING, 3.67503f)->callbackFunc = [this]()
+                {
+                    me->DespawnOrUnsummon();
+                };
+            });
         }
     }
 
@@ -1097,23 +1118,86 @@ public:
             me->GetMotionMaster()->MoveSmoothPath(1, generalPath, 11, true)->callbackFunc = [this]()
             {
                 TalkWithOwner(2);
-                if (auto owner = me->GetOwner())
-                    if (auto player = owner->ToPlayer())
-                        player->KilledMonsterCredit(me->GetEntry());
-                
                 scheduler.Schedule(6s, [this](TaskContext context)
                 {
                     if (auto covenantDummy = me->FindNearestCreature(700047, 50.0f))
                     {
-                        if (auto ai = covenantDummy->AI())
-                            ai->Talk(0, me->GetOwner());
+                        if (auto clone = covenantDummy->SummonPersonalClone(*covenantDummy, TEMPSUMMON_NO_OWNER_DESPAWN, 0s, 0, 0, me->GetCharmerOrOwnerPlayerOrPlayerItself()))
+                        {
+                            clone->setActive(true);
+                            clone->SetOwnerGUID(me->GetOwnerGUID());
+                            if (auto ai = clone->AI())
+                            {
+                                ai->Talk(0, me->GetOwner());
+                                ai->DoAction(1);
+                            }
+                        }
+
+                        if (auto owner = me->GetOwner())
+                            if (auto player = owner->ToPlayer())
+                                player->KilledMonsterCredit(me->GetEntry());
                     }
-                });
-                scheduler.Schedule(6s, [this](TaskContext context)
-                {
-                    me->GetMotionMaster()->Move(1, MoveTypes::Backwards, MOVE_PATHFINDING, 5.0f)->callbackFunc = [this]()
+                    me->GetMotionMaster()->MovePoint(1, { 1907.14f, 4633.52f, 335.897f, 0.438526f }, MOVE_PATHFINDING | MOVE_WALK_MODE, 0.265084f)->callbackFunc = [this]()
                     {
-                        TalkWithOwner(3);
+                        me->HandleEmoteCommand(Emote::EMOTE_ONESHOT_TALK, OwnerAsPlayer());
+                        scheduler.Schedule(1s, [this](TaskContext context)
+                        {
+                            if (auto c = me->FindNearestCreature(700017, 50.0f))
+                            {
+                                c->HandleEmoteCommand(Emote::EMOTE_ONESHOT_TALK, OwnerAsPlayer());
+                            }
+                            scheduler.Schedule(1s, [this](TaskContext context)
+                            {
+                                me->GetMotionMaster()->MovePoint(1, { 1946.99f, 4693.16f, 335.893f, 1.73771f }, MOVE_PATHFINDING | MOVE_WALK_MODE, 1.73771f)->callbackFunc = [this]()
+                                {
+                                    me->HandleEmoteCommand(Emote::EMOTE_ONESHOT_TALK, OwnerAsPlayer());
+                                    scheduler.Schedule(1s, [this](TaskContext context)
+                                    {
+                                        if (auto c = me->FindNearestCreature(700005, 50.0f))
+                                        {
+                                            c->HandleEmoteCommand(Emote::EMOTE_ONESHOT_TALK, OwnerAsPlayer());
+                                        }
+
+                                        scheduler.Schedule(1s, [this](TaskContext context)
+                                        {
+                                            me->GetMotionMaster()->MovePoint(1, { 1973.46f, 4699.25f, 335.893f, 1.27956f }, MOVE_PATHFINDING | MOVE_WALK_MODE, 1.27956f)->callbackFunc = [this]()
+                                            {
+                                                me->HandleEmoteCommand(Emote::EMOTE_ONESHOT_TALK, OwnerAsPlayer());
+                                                scheduler.Schedule(1s, [this](TaskContext context)
+                                                {
+                                                    if (auto c = me->FindNearestCreature(700003, 50.0f))
+                                                    {
+                                                        c->HandleEmoteCommand(Emote::EMOTE_ONESHOT_TALK, OwnerAsPlayer());
+                                                    }
+
+                                                    scheduler.Schedule(1s, [this](TaskContext context)
+                                                    {
+                                                        me->GetMotionMaster()->MovePoint(1, { 2016.78f, 4682.53f, 339.811f, 6.20794f }, MOVE_PATHFINDING | MOVE_WALK_MODE, 6.20794f)->callbackFunc = [this]()
+                                                        {
+                                                            me->HandleEmoteCommand(Emote::EMOTE_ONESHOT_TALK, OwnerAsPlayer());
+                                                            scheduler.Schedule(1s, [this](TaskContext context)
+                                                            {
+                                                                if (auto c = me->FindNearestCreature(700030, 50.0f))
+                                                                {
+                                                                    c->HandleEmoteCommand(Emote::EMOTE_ONESHOT_TALK, OwnerAsPlayer());
+                                                                }
+
+                                                                scheduler.Schedule(1s, [this](TaskContext context)
+                                                                {
+                                                                    me->GetMotionMaster()->MovePoint(1, { 2000.89f, 4673.6f, 339.882f, 3.09252f }, MOVE_PATHFINDING | MOVE_WALK_MODE, 3.09252f)->callbackFunc = [this]()
+                                                                    {
+                                                                    };
+                                                                });
+                                                            });
+                                                        };
+                                                    });
+                                                });
+                                            };
+                                        });
+                                    });
+                                };
+                            });
+                        });
                     };
                 });
             };
@@ -1123,6 +1207,11 @@ public:
     void TalkWithOwner(uint32 talkId)
     {
         Talk(talkId, me->GetOwner());
+    }
+
+    Player* OwnerAsPlayer()
+    {
+        return me->GetCharmerOrOwnerPlayerOrPlayerItself();
     }
 
 private:
@@ -1141,7 +1230,14 @@ public:
         player->PrepareQuestMenu(me->GetGUID());
 
         if (player->GetQuestStatus(700001) == QUEST_STATUS_INCOMPLETE)
-            AddGossipItemFor(player, GossipOptionIcon::None, "Enter Incursion", 0, 1);
+        {
+            if (auto objective = player->GetQuestObjectiveStatusData(700001, QUEST_OBJECTIVE_MONSTER, 700047))
+            {
+                auto counter = player->GetQuestSlotCounter(objective->QuestStatusItr->second.Slot, objective->Objective->StorageIndex);
+                if (counter > 0)
+                    AddGossipItemFor(player, GossipOptionIcon::None, "|cffFF0000<Quest>|R Enter Incursion", 0, 1);
+            }
+        }
         SendGossipMenuFor(player, 1, me);
         return true;
     }
@@ -1150,6 +1246,8 @@ public:
     {
         if (quest->GetQuestId() == 700001)
             Talk(0, player);
+        else if (quest->GetQuestId() == 700004)
+            Talk(3, player);
     }
 
     bool OnGossipSelect(Player* player, uint32 menuId, uint32 gossipListId) override
@@ -1187,6 +1285,8 @@ class spell_nyalotha_incursion : public AuraScript
 {
     PrepareAuraScript(spell_nyalotha_incursion);
 
+    bool spawnedBoss = false;
+
     void HandleUpdate(uint32 diff)
     {
         if (Unit* caster = GetCaster())
@@ -1201,6 +1301,25 @@ class spell_nyalotha_incursion : public AuraScript
 
             if (auto player = caster->ToPlayer())
             {
+                if (!spawnedBoss)
+                {
+                    if (auto objective = player->GetQuestObjectiveStatusData(700001, QUEST_OBJECTIVE_MONSTER, 700040))
+                    {
+                        auto counter = player->GetQuestSlotCounter(objective->QuestStatusItr->second.Slot, objective->Objective->StorageIndex);
+                        if (counter >= 5)
+                        {
+                            spawnedBoss = true;
+                            if (auto spawn = player->SummonCreature(700065, { 1946.01f, 4652.43f, 335.893f, 3.45576f }, TEMPSUMMON_CORPSE_DESPAWN, 3s, 0, 0, player->GetGUID()))
+                            {
+                                if (auto ai = spawn->AI())
+                                {
+                                    ai->AttackStart(player);
+                                }
+                            }
+                        }
+                    }
+                }
+
                 if (player->GetQuestStatus(700001) == QUEST_STATUS_COMPLETE)
                     player->CastSpell(player, 313613, true); // Leave nyalotha
             }
@@ -1225,7 +1344,9 @@ class spell_leave_nyalotha : public SpellScript
             {
                 if (player->GetQuestStatus(700001) == QUEST_STATUS_COMPLETE)
                 {
-                    player->GetScheduler().Schedule(1s, [player](TaskContext context)
+                    caster->CastSpell(caster, 365581, true); // Fade to black
+                    player->NearTeleportTo({ 1907.97f, 4634.35f, 335.899f, 0.333813f }, true, true);
+                    player->GetScheduler().Schedule(4s, [player](TaskContext context)
                     {
                         if (player->GetQuestStatus(700001) == QUEST_STATUS_COMPLETE)
                             if (auto creature = player->FindNearestCreature(700017, 50.0f, true))
@@ -1242,6 +1363,37 @@ class spell_leave_nyalotha : public SpellScript
     void Register() override
     {
         OnEffectHitTarget += SpellEffectFn(spell_leave_nyalotha::DoEffect, EFFECT_0, SPELL_EFFECT_REMOVE_AURA);
+    }
+};
+
+// 365581
+class spell_fade_to_black_365581 : public AuraScript
+{
+    PrepareAuraScript(spell_fade_to_black_365581);
+
+    void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+    {
+        PreventDefaultAction();
+    }
+
+    void Register() override
+    {
+        OnEffectApply += AuraEffectApplyFn(spell_fade_to_black_365581::OnApply, EFFECT_1, SPELL_AURA_MOD_ROOT, AURA_EFFECT_HANDLE_REAL);
+    }
+};
+
+class spell_fade_to_black_365581_spellscript : public SpellScript
+{
+    PrepareSpellScript(spell_fade_to_black_365581_spellscript);
+
+    void PreventTrigger(SpellEffIndex effIndex)
+    {
+        PreventHitEffect(effIndex);
+    }
+
+    void Register() override
+    {
+        OnEffectHit += SpellEffectFn(spell_fade_to_black_365581_spellscript::PreventTrigger, EFFECT_2, SPELL_EFFECT_TRIGGER_SPELL);
     }
 };
 
@@ -1691,7 +1843,7 @@ public:
 
     void OnUnitRelocation(Unit* who) override
     {
-        if (who->IsPlayer() && who->GetDistance2d(me) <= 25.0f && !me->isDead())
+        if (who->IsPlayer() && who->GetDistance2d(me) <= 25.0f && !me->isDead() && me->IsInPhase(who))
         {
             auto now = GameTime::Now();
             auto itr = m_playerRelocations.find(who->GetGUID().GetCounter());
@@ -1920,17 +2072,23 @@ public:
 
     void OnUnitRelocation(Unit* who) override
     {
-        if (who->IsPlayer() && who->GetDistance2d(me) <= 15.0f && !me->IsSummon())
+        if (who->IsPlayer() && who->GetDistance2d(me) <= 15.0f && !me->IsSummon() && me->IsInPhase(who))
         {
             if (!personals.count(who->GetGUID()))
             {
                 personals.insert(who->GetGUID());
-                if (auto clone = me->SummonPersonalClone(*me, TEMPSUMMON_MANUAL_DESPAWN, 0s, 0, 0, who->ToPlayer()))
+                if (auto clone = me->SummonPersonalClone(*me, TEMPSUMMON_NO_OWNER_DESPAWN, 0s, 0, 0, who->ToPlayer()))
+                {
+                    clone->setActive(true);
                     clone->SetOwnerGUID(who->GetGUID());
+                }
 
-                if (auto jinjin = me->FindNearestCreature(700050, 50.0f))
-                    if (auto clone = jinjin->SummonPersonalClone(*jinjin, TEMPSUMMON_MANUAL_DESPAWN, 0s, 0, 0, who->ToPlayer()))
+                if (auto jinjin = me->FindNearestCreatureBySpawnId(1054589, 50.0f)) // Jinjin
+                    if (auto clone = jinjin->SummonPersonalClone(*jinjin, TEMPSUMMON_NO_OWNER_DESPAWN, 0s, 0, 0, who->ToPlayer()))
+                    {
+                        clone->setActive(true);
                         clone->SetOwnerGUID(who->GetGUID());
+                    }
             }
         }
     }
@@ -2041,7 +2199,7 @@ public:
 
     void OnUnitRelocation(Unit* who) override
     {
-        if (who->IsPlayer() && who->GetDistance2d(me) <= 15.0f && !personals.count(who->GetGUID()))
+        if (who->IsPlayer() && who->GetDistance2d(me) <= 15.0f && !personals.count(who->GetGUID()) && me->IsInPhase(who))
         {
             personals.insert(who->GetGUID());
             me->HandleEmoteCommand(Emote::EMOTE_ONESHOT_WAVE, who->ToPlayer());
@@ -2087,11 +2245,590 @@ public:
 
     void OnUnitRelocation(Unit* who) override
     {
-        if (who->IsPlayer() && who->GetDistance2d(me) <= 9.0f && !personals.count(who->GetGUID()))
+        if (who->IsPlayer() && who->GetDistance2d(me) <= 9.0f && !personals.count(who->GetGUID()) && me->IsInPhase(who))
         {
             personals.insert(who->GetGUID());
             Talk(0, who->ToPlayer());
         }
+    }
+
+    TaskScheduler scheduler;
+    EventMap events;
+};
+// 700054 - npc_captain_flametalon_700054
+struct npc_captain_flametalon_700054 : public ScriptedAI
+{
+public:
+    npc_captain_flametalon_700054(Creature* creature) : ScriptedAI(creature) { }
+
+    void UpdateAI(uint32 diff) override
+    {
+        scheduler.Update(diff);
+
+        if (!UpdateVictim())
+            return;
+
+        events.Update(diff);
+
+        if (uint32 eventId = events.ExecuteEvent())
+        {
+            switch (eventId)
+            {
+            }
+        }
+        DoMeleeAttackIfReady();
+    }
+
+    void SetGUID(ObjectGuid const& guid, int32 id) override
+    {
+        if (id == 1)
+            _RecruitOne = guid;
+        else if (id == 2)
+            _RecruitTwo = guid;
+    }
+
+    void DoAction(int32 action) override
+    {
+        if (action == 1)
+        {
+            scheduler.Schedule(3s, [this](TaskContext context)
+            {
+                if (auto recruit = ObjectAccessor::GetCreature(*me, _RecruitOne))
+                    if (recruit->AI())
+                    {
+                        recruit->AI()->SetGUID(_RecruitTwo, 1);
+                        recruit->AI()->SetGUID(me->GetGUID(), 2);
+                    }
+                if (auto recruit = ObjectAccessor::GetCreature(*me, _RecruitTwo))
+                    if (recruit->AI())
+                    {
+                        recruit->AI()->SetGUID(_RecruitOne, 1);
+                        recruit->AI()->SetGUID(me->GetGUID(), 2);
+                    }
+            });
+        }
+    }
+
+    ObjectGuid _RecruitOne;
+    ObjectGuid _RecruitTwo;
+    GuidUnorderedSet seers;
+
+    void OnUnitRelocation(Unit* who) override
+    {
+        if (who->IsPlayer() && !seers.count(who->GetGUID()) && who->GetDistance2d(me) <= 15.0f && !me->IsSummon() && me->IsInPhase(who))
+        {
+            seers.insert(who->GetGUID());
+            ObjectGuid RecruitOne;
+            ObjectGuid RecruitTwo;
+
+            if (auto recruit = me->FindNearestCreatureBySpawnId(1054591, 50.0f))
+                if (auto clone = recruit->SummonPersonalClone(*recruit, TEMPSUMMON_NO_OWNER_OR_TIMED_DESPAWN, 120s, 0, 0, who->ToPlayer()))
+                {
+                    clone->setActive(true);
+                    clone->SetOwnerGUID(who->GetGUID());
+                    RecruitOne = clone->GetGUID();
+                }
+            if (auto recruit = me->FindNearestCreatureBySpawnId(1054592, 50.0f))
+                if (auto clone = recruit->SummonPersonalClone(*recruit, TEMPSUMMON_NO_OWNER_OR_TIMED_DESPAWN, 120s, 0, 0, who->ToPlayer()))
+                {
+                    clone->setActive(true);
+                    clone->SetOwnerGUID(who->GetGUID());
+                    RecruitTwo = clone->GetGUID();
+                }
+
+            if (auto clone = me->SummonPersonalClone(*me, TEMPSUMMON_NO_OWNER_OR_TIMED_DESPAWN, 120s, 0, 0, who->ToPlayer()))
+            {
+                clone->setActive(true);
+                clone->SetOwnerGUID(who->GetGUID());
+                if (auto ai = clone->AI())
+                {
+                    ai->Talk(0, who);
+                    ai->DoAction(1);
+                    ai->SetGUID(RecruitOne, 1);
+                    ai->SetGUID(RecruitTwo, 2);
+                }
+            }
+        }
+    }
+
+    TaskScheduler scheduler;
+    EventMap events;
+};
+
+enum RecruitSpells
+{
+    Charge = 361176,
+    MortalStrike = 303161,
+    Stormbolt = 93814,
+    BladeStorm = 222634,
+    LayOnHands = 348503,
+};
+
+// 700052 - npc_horde_recruit_700052
+struct npc_horde_recruit_700052 : public ScriptedAI
+{
+public:
+    npc_horde_recruit_700052(Creature* creature) : ScriptedAI(creature) { }
+
+    bool m_Dueling = false;
+    ObjectGuid DuelGuid;
+    ObjectGuid CaptainGuid;
+
+    bool CanForceAttack(Unit const* who) const override
+    {
+        if (!me->IsSummon())
+            return false;
+
+        return m_Dueling && who->GetGUID() == DuelGuid;
+    }
+
+    void SetGUID(ObjectGuid const& guid, int32 actionId) override
+    {
+        if (actionId == 1)
+        {
+            DuelGuid = guid;
+            m_Dueling = true;
+            if (auto d = ObjectAccessor::GetCreature(*me, guid))
+            {
+                AttackStart(d);
+                EngagementStart(d);
+            }
+        }
+        else if (actionId == 2)
+            CaptainGuid = guid;
+    }
+
+    void JustEngagedWith(Unit* who) override
+    {
+        events.Reset();
+
+        DoCast(who, Charge);
+        events.ScheduleEvent(1, 2s, 5s);
+        events.ScheduleEvent(2, 2s, 5s);
+        events.ScheduleEvent(3, 2s, 5s);
+    }
+
+    void UpdateAI(uint32 diff) override
+    {
+        scheduler.Update(diff);
+
+        if (!UpdateVictim())
+            return;
+
+        events.Update(diff);
+
+        if (me->HasUnitState(UNIT_STATE_CASTING) || me->HasUnitState(UNIT_STATE_STUNNED))
+            return;
+
+        if (uint32 eventId = events.ExecuteEvent())
+        {
+            switch (eventId)
+            {
+                case 1:
+                    DoCastVictim(MortalStrike);
+                    events.Repeat(4s, 8s);
+                    break;
+                case 2:
+                    DoCastVictim(Stormbolt);
+                    events.Repeat(20s, 30s);
+                    break;
+                case 3:
+                    DoCast(BladeStorm);
+                    events.Repeat(60s);
+                    break;
+            }
+        }
+        DoMeleeAttackIfReady();
+    }
+
+    void DoAction(int32 actionId) override
+    {
+        if (actionId == 2)
+        {
+            me->RemoveAllAuras();
+            m_Dueling = false;
+            EnterEvadeMode(EVADE_REASON_OTHER);
+
+            scheduler.Schedule(3s, [this](TaskContext context)
+            {
+                me->HandleEmoteCommand(Emote::EMOTE_ONESHOT_BOW);
+            });
+
+            me->DespawnOrUnsummon(4s);
+        }
+    }
+
+    void DamageTaken(Unit* attacker, uint32& damage, DamageEffectType damageType, SpellInfo const* spell) override
+    {
+        if (damage >= me->GetHealth() || me->HealthBelowPctDamaged(2, damage))
+        {
+            damage = 0;
+            if (m_Dueling)
+            {
+                DoAction(2);
+
+                if (auto dueler = ObjectAccessor::GetCreature(*me, DuelGuid))
+                    if (auto ai = dueler->AI())
+                    {
+                        ai->DoAction(2);
+                        dueler->HandleEmoteCommand(Emote::EMOTE_ONESHOT_CHEER);
+                    }
+
+                Talk(0, me->GetOwner());
+                me->SetStandState(UnitStandStateType::UNIT_STAND_STATE_KNEEL);
+
+                scheduler.Schedule(2s, [this](TaskContext context)
+                {
+                    DoCastSelf(LayOnHands);
+                    if (auto leader = ObjectAccessor::GetCreature(*me, CaptainGuid))
+                        if (leader->AI())
+                            leader->AI()->Talk(1, me->GetOwner());
+                });
+            }
+        }
+    }
+
+    void EnterEvadeMode(EvadeReason why) override
+    {
+        if (!CreatureAI::_EnterEvadeMode(why))
+            return;
+
+        me->AddUnitState(UNIT_STATE_EVADE);
+        me->GetMotionMaster()->MoveTargetedHomeForce();
+
+        Reset();
+    }
+
+    TaskScheduler scheduler;
+    EventMap events;
+};
+// 700053 - npc_alliance_recruit_700053
+struct npc_alliance_recruit_700053 : public ScriptedAI
+{
+public:
+    npc_alliance_recruit_700053(Creature* creature) : ScriptedAI(creature) { }
+
+    bool m_Dueling = false;
+    ObjectGuid DuelGuid;
+    ObjectGuid CaptainGuid;
+
+    bool CanForceAttack(Unit const* who) const override
+    {
+        if (!me->IsSummon())
+            return false;
+
+        return m_Dueling && who->GetGUID() == DuelGuid;
+    }
+
+    void SetGUID(ObjectGuid const& guid, int32 actionId) override
+    {
+        if (actionId == 1)
+        {
+            DuelGuid = guid;
+            m_Dueling = true;
+            if (auto d = ObjectAccessor::GetCreature(*me, guid))
+            {
+                AttackStart(d);
+                EngagementStart(d);
+            }
+        }
+        else if (actionId == 2)
+            CaptainGuid = guid;
+    }
+
+    void JustEngagedWith(Unit* who) override
+    {
+        events.Reset();
+
+        DoCast(who, Charge);
+        events.ScheduleEvent(1, 2s, 5s);
+        events.ScheduleEvent(2, 2s, 5s);
+        events.ScheduleEvent(3, 2s, 5s);
+    }
+
+    void UpdateAI(uint32 diff) override
+    {
+        scheduler.Update(diff);
+
+        if (!UpdateVictim())
+            return;
+
+        events.Update(diff);
+
+        if (me->HasUnitState(UNIT_STATE_CASTING) || me->HasUnitState(UNIT_STATE_STUNNED))
+            return;
+
+        if (uint32 eventId = events.ExecuteEvent())
+        {
+            switch (eventId)
+            {
+                case 1:
+                    DoCastVictim(MortalStrike);
+                    events.Repeat(4s, 8s);
+                    break;
+                case 2:
+                    DoCastVictim(Stormbolt);
+                    events.Repeat(20s, 30s);
+                    break;
+                case 3:
+                    DoCast(BladeStorm);
+                    events.Repeat(60s);
+                    break;
+            }
+        }
+        DoMeleeAttackIfReady();
+    }
+
+    void DoAction(int32 actionId) override
+    {
+        if (actionId == 2)
+        {
+            me->RemoveAllAuras();
+            m_Dueling = false;
+            EnterEvadeMode(EVADE_REASON_OTHER);
+
+            scheduler.Schedule(3s, [this](TaskContext context)
+            {
+                me->HandleEmoteCommand(Emote::EMOTE_ONESHOT_BOW);
+            });
+
+            me->DespawnOrUnsummon(9s);
+        }
+    }
+
+    void DamageTaken(Unit* attacker, uint32& damage, DamageEffectType damageType, SpellInfo const* spell) override
+    {
+        if (damage >= me->GetHealth() || me->HealthBelowPctDamaged(2, damage))
+        {
+            damage = 0;
+            if (m_Dueling)
+            {
+                DoAction(2);
+
+                if (auto dueler = ObjectAccessor::GetCreature(*me, DuelGuid))
+                    if (auto ai = dueler->AI())
+                    {
+                        ai->DoAction(2);
+                        dueler->HandleEmoteCommand(Emote::EMOTE_ONESHOT_CHEER);
+                    }
+
+                Talk(0, me->GetOwner());
+                me->HandleEmoteCommand(Emote::EMOTE_ONESHOT_KNEEL);
+
+                scheduler.Schedule(2s, [this](TaskContext context)
+                {
+                    if (auto leader = ObjectAccessor::GetCreature(*me, CaptainGuid))
+                        if (leader->AI())
+                            leader->AI()->Talk(2, me->GetOwner());
+                    DoCastSelf(LayOnHands);
+                });
+            }
+        }
+    }
+
+    void EnterEvadeMode(EvadeReason why) override
+    {
+        if (!CreatureAI::_EnterEvadeMode(why))
+            return;
+
+        me->AddUnitState(UNIT_STATE_EVADE);
+        me->GetMotionMaster()->MoveTargetedHomeForce();
+
+        Reset();
+    }
+
+    TaskScheduler scheduler;
+    EventMap events;
+};
+// 700047 - npc_uvrel_forgefall_700047
+struct npc_uvrel_forgefall_700047 : public ScriptedAI
+{
+public:
+    npc_uvrel_forgefall_700047(Creature* creature) : ScriptedAI(creature) { }
+
+    void UpdateAI(uint32 diff) override
+    {
+        scheduler.Update(diff);
+
+        if (!UpdateVictim())
+            return;
+
+        events.Update(diff);
+
+        if (uint32 eventId = events.ExecuteEvent())
+        {
+            switch (eventId)
+            {
+            }
+        }
+        DoMeleeAttackIfReady();
+    }
+
+    void DoAction(int32 actionId) override
+    {
+        if (actionId == 1)
+        {
+            me->RemoveNpcFlag(NPCFlags::UNIT_NPC_FLAG_QUESTGIVER);
+            scheduler.Schedule(2s, [this](TaskContext context)
+            {
+                Talk(1, me->GetOwner());
+                me->SetFacingTo(3.671757f);
+                me->HandleEmoteCommand(Emote::EMOTE_ONESHOT_POINT);
+                scheduler.Schedule(3s, [this](TaskContext context)
+                {
+                    Talk(2, me->GetOwner());
+                    me->DespawnOrUnsummon();
+                });
+            });
+        }
+        else if (actionId == 2)
+        {
+            scheduler.Schedule(1s, [this](TaskContext context)
+            {
+                Talk(3, me->GetOwner());
+
+                scheduler.Schedule(4s, [this](TaskContext context)
+                {
+                    me->GetMotionMaster()->MovePoint(1, { 1906.86f, 4634.61f, 335.897f, 0.199639f }, MOVE_PATHFINDING | MOVE_WALK_MODE, 0.199639f)->callbackFunc = [this]()
+                    {
+                        Talk(4, me->GetOwner());
+
+                        scheduler.Schedule(3s, [this](TaskContext context)
+                        {
+                            if (auto player = me->GetCharmerOrOwnerPlayerOrPlayerItself())
+                                player->KilledMonsterCredit(me->GetEntry(), me->GetGUID());
+
+                            if (auto c = me->FindNearestCreature(700017, 50.0f))
+                            {
+                                if (auto ai = c->AI())
+                                    ai->Talk(0, me->GetOwner());
+
+                                auto ownerGuid = me->GetOwnerGUID();
+                                c->GetScheduler().Schedule(2s, [c, ownerGuid](TaskContext context)
+                                {
+                                    if (auto ai = c->AI())
+                                        ai->Talk(2, ObjectAccessor::GetUnit(*c, ownerGuid));
+                                });
+                            }
+
+                            scheduler.Schedule(3s, [this](TaskContext context)
+                            {
+                                me->GetMotionMaster()->MovePoint(1, { 1895.14f, 4653.82f, 335.896f, 5.42581f }, MOVE_PATHFINDING | MOVE_WALK_MODE, 5.42851f)->callbackFunc = [this]()
+                                {
+                                    me->DespawnOrUnsummon();
+                                };
+                            });
+                        });
+                    };
+                });
+            });
+        }
+    }
+
+    void OnQuestAccept(Player* player, Quest const* quest) override
+    {
+        if (quest->GetQuestId() == 700001)
+        {
+            if (auto clone = me->SummonPersonalClone(*me, TEMPSUMMON_NO_OWNER_OR_TIMED_DESPAWN, 30s, 0, 0, player))
+            {
+                clone->SetOwnerGUID(player->GetGUID());
+                if (auto ai = clone->AI())
+                {
+                    ai->DoAction(2);
+                }
+            }
+        }
+    }
+
+    bool OnGossipHello(Player* player) override
+    {
+        ClearGossipMenuFor(player);
+        player->PrepareQuestMenu(me->GetGUID());
+        SendGossipMenuFor(player, me->GetEntry(), me);
+        return true;
+    }
+
+    TaskScheduler scheduler;
+    EventMap events;
+};
+
+// 700065 - npc_spawn_of_n_zoth_700065
+struct npc_spawn_of_n_zoth_700065 : public ScriptedAI
+{
+public:
+    npc_spawn_of_n_zoth_700065(Creature* creature) : ScriptedAI(creature) { }
+
+    void InitializeAI() override
+    {
+    }
+
+    void Reset() override
+    {
+    }
+
+    void UpdateAI(uint32 diff) override
+    {
+        scheduler.Update(diff);
+
+        if (!UpdateVictim())
+            return;
+
+        events.Update(diff);
+
+        if (uint32 eventId = events.ExecuteEvent())
+        {
+            switch (eventId)
+            {
+            }
+        }
+        DoMeleeAttackIfReady();
+    }
+
+
+    TaskScheduler scheduler;
+    EventMap events;
+};
+// 700030 - npc_medivh_700030
+struct npc_medivh_700030 : public ScriptedAI
+{
+public:
+    npc_medivh_700030(Creature* creature) : ScriptedAI(creature) { }
+
+    std::unordered_map<ObjectGuid::LowType, TimePoint> plrTexts;
+
+    bool OnGossipHello(Player* player) override
+    {
+        ClearGossipMenuFor(player);
+        if (player->GetQuestStatus(700006) == QUEST_STATUS_INCOMPLETE && !player->HasItemCount(700001))
+            AddGossipItemFor(player, GossipOptionIcon::None, "I'll test the Magic Stone!", 0, 1);
+        else if (player->GetQuestStatus(700006) == QUEST_STATUS_INCOMPLETE)
+        {
+            CloseGossipMenuFor(player);
+
+            auto now = GameTime::Now();
+            auto itr = plrTexts.find(player->GetGUID().GetCounter());
+            bool allow = true;
+            if (itr != plrTexts.end() && itr->second >= now)
+                allow = false;
+
+            if (allow)
+            {
+                plrTexts[player->GetGUID().GetCounter()] = now + 5s;
+                Talk(1, player);
+            }
+            return;
+        }
+        SendGossipMenuFor(player, me->GetEntry(), me);
+        return true;
+    }
+
+    bool OnGossipSelect(Player* player, uint32 menuId, uint32 gossipId) override
+    {
+        player->AddItem(700001, 1);
+        player->KilledMonsterCredit(700030, me->GetGUID());
+        Talk(0, player);
+        CloseGossipMenuFor(player);
+        return true;
     }
 
     TaskScheduler scheduler;
@@ -2133,8 +2870,15 @@ void AddSC_MallScripts()
     RegisterCreatureAI(npc_jinjin_700050);
     RegisterCreatureAI(npc_gordo_remsay_700045);
     RegisterCreatureAI(npc_hye_gyo_giftview_700048);
+    RegisterCreatureAI(npc_captain_flametalon_700054);
+    RegisterCreatureAI(npc_horde_recruit_700052);
+    RegisterCreatureAI(npc_alliance_recruit_700053);
+    RegisterCreatureAI(npc_uvrel_forgefall_700047);
+    RegisterCreatureAI(npc_spawn_of_n_zoth_700065);
+    RegisterCreatureAI(npc_medivh_700030);
 
     RegisterSpellScript(spell_activating_313352);
     RegisterSpellScript(spell_nyalotha_incursion);
     RegisterSpellScript(spell_leave_nyalotha);
+    RegisterSpellAndAuraScriptPair(spell_fade_to_black_365581, spell_fade_to_black_365581_spellscript);
 }

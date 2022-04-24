@@ -160,10 +160,11 @@ void ThreatReference::UnregisterAndFree()
         return false;
 
     // summons cannot have a threat list if they were summoned by a player
-    if (cWho->HasUnitTypeMask(UNIT_MASK_MINION | UNIT_MASK_GUARDIAN))
-        if (TempSummon const* tWho = cWho->ToTempSummon())
-            if (tWho->GetSummonerGUID().IsPlayer())
-                return false;
+    // why not?
+    //if (cWho->HasUnitTypeMask(UNIT_MASK_MINION | UNIT_MASK_GUARDIAN))
+    //    if (TempSummon const* tWho = cWho->ToTempSummon())
+    //        if (tWho->GetSummonerGUID().IsPlayer())
+    //            return false;
 
     return true;
 }

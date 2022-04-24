@@ -80,6 +80,36 @@ void TempSummon::Update(uint32 diff)
         case TEMPSUMMON_MANUAL_DESPAWN:
         case TEMPSUMMON_DEAD_DESPAWN:
             break;
+        case TEMPSUMMON_NO_OWNER_DESPAWN:
+        {
+            // map check shdnt be needed - objectaccessor should only return on this map.
+            if (!GetOwner() || GetOwner()->isDead() || GetOwner()->GetMap() != GetMap())
+            {
+                UnSummon();
+                return;
+            }
+
+            break;
+        }
+        case TEMPSUMMON_NO_OWNER_OR_TIMED_DESPAWN:
+        {
+            // map check shdnt be needed - objectaccessor should only return on this map.
+            if (!GetOwner() || GetOwner()->isDead() || GetOwner()->GetMap() != GetMap())
+            {
+                UnSummon();
+                return;
+            }
+
+            if (m_timer <= diff)
+            {
+                UnSummon();
+                return;
+            }
+
+            m_timer -= diff;
+
+            break;
+        }
         case TEMPSUMMON_TIMED_DESPAWN:
         {
             if (m_timer <= diff)

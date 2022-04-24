@@ -2454,8 +2454,11 @@ void GameObject::Use(Unit* user)
                 case 3: // covenant forge
                 {
                     if (auto covenant = player->GetCovenant())
+                    {
+                        player->KillCreditGO(GetEntry(), GetGUID());
                         if (covenant->GetCovenantID() != CovenantID::None)
                             player->SendDirectMessage(WorldPackets::Covenant::OpenItemForge(GetGUID()).Write());
+                    }
                     break;
                 }
                 default:

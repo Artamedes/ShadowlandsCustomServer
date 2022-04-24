@@ -69,6 +69,7 @@ void WorldSession::HandleGarrisonResearchTalent(WorldPackets::Garrison::Garrison
             if (tree->GarrTypeID == 111)
             {
                 _player->GetCovenantMgr()->LearnConduit(talent, tree);
+                _player->KilledMonsterCredit(7000002);
             }
         }
     }
@@ -77,10 +78,12 @@ void WorldSession::HandleGarrisonResearchTalent(WorldPackets::Garrison::Garrison
 void WorldSession::HandleGarrisonLearnTalent(WorldPackets::Garrison::GarrisonLearnTalent& packet)
 {
     _player->GetCovenantMgr()->LearnTalent(packet);
+    _player->KilledMonsterCredit(7000002);
 }
 
 void WorldSession::HandleGarrisonSocketTalent(WorldPackets::Garrison::GarrisonSocketTalent& packet)
 {
     // TODO: check if they own the SoulbindConduitItemID.
     _player->GetCovenant()->SocketTalent(packet);
+    _player->KilledMonsterCredit(7000002);
 }
