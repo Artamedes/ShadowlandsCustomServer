@@ -2816,7 +2816,7 @@ public:
                 plrTexts[player->GetGUID().GetCounter()] = now + 5s;
                 Talk(1, player);
             }
-            return;
+            return true;
         }
         SendGossipMenuFor(player, me->GetEntry(), me);
         return true;
