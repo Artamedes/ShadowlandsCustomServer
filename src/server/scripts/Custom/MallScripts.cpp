@@ -14,6 +14,7 @@
 #include "Mail.h"
 #include "MovementGenerator.h"
 #include "GenericMovementGenerator.h"
+#include "QuestAI.h"
 
 struct npc_battle_training : public ScriptedAI
 {
@@ -2835,15 +2836,39 @@ public:
     EventMap events;
 };
 
-struct mallscripts_playerscript : public PlayerScript
+struct questscript_incursion : public QuestAI
 {
 public:
-    mallscripts_playerscript() : PlayerScript("mallscripts_playerscript") { }
+    questscript_incursion(Quest const* quest, Player* player) : QuestAI(quest, player) { }
 
-    void OnPlayerAbandonQuest(Player* player, Quest const* quest) override
+    void OnQuestAbandon() override
     {
-        if (quest->GetQuestId() == 700001)
-            player->CastSpell(player, 313613, true); // Leave nyalotha
+        player->CastSpell(player, 313613, true); // Leave nyalotha
+    }
+
+    void OnQuestComplete() override
+    {
+        player->CastSpell(player, 313613, true); // Leave nyalotha
+    }
+
+    bool spawnedBoss = false;
+    void OnQuestProgressUpdate(QuestObjectiveType /*objectiveType*/, int32 objectId, int64 /*addCount*/, ObjectGuid /*victimGuid*/, uint16 logSlot, QuestObjective const& questObjective) override
+    {
+        if (objectId == 700040 && player->GetMapId() == 1116)
+        {
+            auto counter = player->GetQuestSlotCounter(logSlot, questObjective.StorageIndex);
+            if (counter >= 5)
+            {
+                spawnedBoss = true;
+                if (auto spawn = player->SummonCreature(700065, { 1946.01f, 4652.43f, 335.893f, 3.45576f }, TEMPSUMMON_CORPSE_DESPAWN, 3s, 0, 0, player->GetGUID()))
+                {
+                    if (auto ai = spawn->AI())
+                    {
+                        ai->AttackStart(player);
+                    }
+                }
+            }
+        }
     }
 };
 
@@ -2890,9 +2915,9 @@ void AddSC_MallScripts()
     RegisterCreatureAI(npc_medivh_700030);
 
     RegisterSpellScript(spell_activating_313352);
-    RegisterSpellScript(spell_nyalotha_incursion);
+   // RegisterSpellScript(spell_nyalotha_incursion);
     RegisterSpellScript(spell_leave_nyalotha);
     RegisterSpellAndAuraScriptPair(spell_fade_to_black_365581, spell_fade_to_black_365581_spellscript);
 
-    new mallscripts_playerscript();
+    RegisterQuestAI(questscript_incursion);
 }

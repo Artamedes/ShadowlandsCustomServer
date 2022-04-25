@@ -307,7 +307,7 @@ enum class QuestTagType
     CovenantCalling
 };
 
-enum QuestObjectiveType
+enum QuestObjectiveType : uint8
 {
     QUEST_OBJECTIVE_MONSTER                 = 0,
     QUEST_OBJECTIVE_ITEM                    = 1,
@@ -483,6 +483,7 @@ class TC_GAME_API Quest
     public:
         // Loading data. All queries are in ObjectMgr::LoadQuests()
         explicit Quest(Field* questRecord);
+        void LoadQuestTemplate(Field* fields);
         void LoadRewardDisplaySpell(Field* fields);
         void LoadRewardChoiceItems(Field* fields);
         void LoadQuestDetails(Field* fields);

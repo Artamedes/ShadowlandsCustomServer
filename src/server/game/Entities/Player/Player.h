@@ -87,6 +87,7 @@ class PlayerAchievementMgr;
 class PlayerMenu;
 class PlayerSocial;
 class QuestObjectiveCriteriaMgr;
+class QuestAI;
 class ReputationMgr;
 class RestMgr;
 class SpellCastTargets;
@@ -3292,6 +3293,8 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         bool _usePvpItemLevels;
 
         uint32 _transportSpawnID;
+
+        std::unordered_map<uint32, QuestAI*> m_questScripts;
 };
 
 TC_GAME_API void AddItemsSetItem(Player* player, Item const* item);

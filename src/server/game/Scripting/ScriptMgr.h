@@ -51,6 +51,7 @@ class ModuleReference;
 class OutdoorPvP;
 class Player;
 class Quest;
+class QuestAI;
 class ScriptMgr;
 class Spell;
 class SpellInfo;
@@ -1001,6 +1002,20 @@ class TC_GAME_API AreaTriggerEntityScript : public ScriptObject
         virtual AreaTriggerAI* GetAI(AreaTrigger* /*at*/) const { return nullptr; }
 };
 
+class TC_GAME_API QuestEntityScript : public ScriptObject
+{
+    protected:
+
+        QuestEntityScript(char const* name);
+
+    public:
+
+        ~QuestEntityScript();
+
+        // Called when a AreaTriggerAI object is needed for the areatrigger.
+        virtual QuestAI* GetAI(Quest const* /*quest*/, Player* /*player*/) const { return nullptr; }
+};
+
 class TC_GAME_API ConversationScript : public ScriptObject
 {
     protected:
@@ -1370,6 +1385,11 @@ class TC_GAME_API ScriptMgr
         bool CanCreateAreaTriggerAI(uint32 scriptId) const;
         AreaTriggerAI* GetAreaTriggerAI(AreaTrigger* areaTrigger);
 
+    public: /* QuestAIScript */
+
+        bool CanCreateQuestAI(uint32 scriptId) const;
+        QuestAI* GetQuestAI(Quest const* areaTrigger, Player* player);
+
     public: /* ConversationScript */
 
         void OnConversationCreate(Conversation* conversation, Unit* creator);
@@ -1485,6 +1505,15 @@ class GenericAreaTriggerEntityScript : public AreaTriggerEntityScript
         AreaTriggerAI* GetAI(AreaTrigger* at) const override { return new AI(at); }
 };
 #define RegisterAreaTriggerAI(ai_name) new GenericAreaTriggerEntityScript<ai_name>(#ai_name)
+
+template <class AI>
+class GenericQuestEntityScript : public QuestEntityScript
+{
+public:
+    GenericQuestEntityScript(char const* name) : QuestEntityScript(name) { }
+    QuestAI* GetAI(Quest const* q, Player* player) const override { return new AI(q, player); }
+};
+#define RegisterQuestAI(ai_name) new GenericQuestEntityScript<ai_name>(#ai_name)
 
 template <class AI>
 class GenericInstanceMapScript : public InstanceMapScript

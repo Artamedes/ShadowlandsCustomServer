@@ -131,6 +131,108 @@ Quest::Quest(Field* questRecord)
     _questCompletionLog = questRecord[115].GetString();
 }
 
+void Quest::LoadQuestTemplate(Field* questRecord)
+{
+    _id = questRecord[0].GetUInt32();
+    _type = questRecord[1].GetUInt8();
+    _packageID = questRecord[2].GetUInt32();
+    _contentTuningID = questRecord[3].GetInt32();
+    _questSortID = questRecord[4].GetInt16();
+    _questInfoID = questRecord[5].GetUInt16();
+    _suggestedPlayers = questRecord[6].GetUInt8();
+    _nextQuestInChain = questRecord[7].GetUInt32();
+    _rewardXPDifficulty = questRecord[8].GetUInt32();
+    _rewardXPMultiplier = questRecord[9].GetFloat();
+    _rewardMoneyDifficulty = questRecord[10].GetUInt32();
+    _rewardMoneyMultiplier = questRecord[11].GetFloat();
+    _rewardBonusMoney = questRecord[12].GetUInt32();
+    _rewardSpell = questRecord[13].GetUInt32();
+    _rewardHonor = questRecord[14].GetUInt32();
+    _rewardKillHonor = questRecord[15].GetUInt32();
+    _sourceItemId = questRecord[16].GetUInt32();
+    _rewardArtifactXPDifficulty = questRecord[17].GetUInt32();
+    _rewardArtifactXPMultiplier = questRecord[18].GetFloat();
+    _rewardArtifactCategoryID = questRecord[19].GetUInt32();
+    _flags = questRecord[20].GetUInt32();
+    _flagsEx = questRecord[21].GetUInt32();
+    _flagsEx2 = questRecord[22].GetUInt32();
+
+    for (uint32 i = 0; i < QUEST_ITEM_DROP_COUNT; ++i)
+    {
+        RewardItemId[i] = questRecord[23 + i * 4].GetUInt32();
+        RewardItemCount[i] = questRecord[24 + i * 4].GetUInt32();
+        ItemDrop[i] = questRecord[25 + i * 4].GetUInt32();
+        ItemDropQuantity[i] = questRecord[26 + i * 4].GetUInt32();
+
+        if (RewardItemId[i])
+            ++_rewItemsCount;
+    }
+
+    for (uint32 i = 0; i < QUEST_REWARD_CHOICES_COUNT; ++i)
+    {
+        RewardChoiceItemId[i] = questRecord[39 + i * 3].GetUInt32();
+        RewardChoiceItemCount[i] = questRecord[40 + i * 3].GetUInt32();
+        RewardChoiceItemDisplayId[i] = questRecord[41 + i * 3].GetUInt32();
+
+        if (RewardChoiceItemId[i])
+            ++_rewChoiceItemsCount;
+    }
+
+    _poiContinent = questRecord[57].GetUInt32();
+    _poix = questRecord[58].GetFloat();
+    _poiy = questRecord[59].GetFloat();
+    _poiPriority = questRecord[60].GetUInt32();
+
+    _rewardTitleId = questRecord[61].GetUInt32();
+    _rewardArenaPoints = questRecord[62].GetUInt32();
+    _rewardSkillId = questRecord[63].GetUInt32();
+    _rewardSkillPoints = questRecord[64].GetUInt32();
+
+    _questGiverPortrait = questRecord[65].GetUInt32();
+    _questGiverPortraitMount = questRecord[66].GetUInt32();
+    _questGiverPortraitModelSceneId = questRecord[67].GetInt32();
+    _questTurnInPortrait = questRecord[68].GetUInt32();
+
+    for (uint32 i = 0; i < QUEST_REWARD_REPUTATIONS_COUNT; ++i)
+    {
+        RewardFactionId[i] = questRecord[69 + i * 4].GetUInt32();
+        RewardFactionValue[i] = questRecord[70 + i * 4].GetInt32();
+        RewardFactionOverride[i] = questRecord[71 + i * 4].GetInt32();
+        RewardFactionCapIn[i] = questRecord[72 + i * 4].GetInt32();
+    }
+
+    _rewardReputationMask = questRecord[89].GetUInt32();
+
+    for (uint32 i = 0; i < QUEST_REWARD_CURRENCY_COUNT; ++i)
+    {
+        RewardCurrencyId[i] = questRecord[90 + i * 2].GetUInt32();
+        RewardCurrencyCount[i] = questRecord[91 + i * 2].GetUInt32();
+
+        if (RewardCurrencyId[i])
+            ++_rewCurrencyCount;
+    }
+
+    _soundAccept = questRecord[98].GetUInt32();
+    _soundTurnIn = questRecord[99].GetUInt32();
+    _areaGroupID = questRecord[100].GetUInt32();
+    _limitTime = questRecord[101].GetUInt32();
+    _allowableRaces.RawValue = questRecord[102].GetUInt64();
+    _treasurePickerID = questRecord[103].GetInt32();
+    _expansion = questRecord[104].GetInt32();
+    _managedWorldStateID = questRecord[105].GetInt32();
+    _questSessionBonus = questRecord[106].GetInt32();
+
+    _logTitle = questRecord[107].GetString();
+    _logDescription = questRecord[108].GetString();
+    _questDescription = questRecord[109].GetString();
+    _areaDescription = questRecord[110].GetString();
+    _portraitGiverText = questRecord[111].GetString();
+    _portraitGiverName = questRecord[112].GetString();
+    _portraitTurnInText = questRecord[113].GetString();
+    _portraitTurnInName = questRecord[114].GetString();
+    _questCompletionLog = questRecord[115].GetString();
+}
+
 void Quest::LoadRewardDisplaySpell(Field* fields)
 {
     uint32 spellId = fields[1].GetUInt32();
@@ -242,18 +344,40 @@ void Quest::LoadQuestMailSender(Field* fields)
 void Quest::LoadQuestObjective(Field* fields)
 {
     QuestObjective obj;
-    obj.QuestID = fields[0].GetUInt32();
-    obj.ID = fields[1].GetUInt32();
-    obj.Type = fields[2].GetUInt8();
-    obj.StorageIndex = fields[3].GetInt8();
-    obj.ObjectID = fields[4].GetInt32();
-    obj.Amount = fields[5].GetInt32();
-    obj.Flags = fields[6].GetUInt32();
-    obj.Flags2 = fields[7].GetUInt32();
-    obj.ProgressBarWeight = fields[8].GetFloat();
-    obj.Description = fields[9].GetString();
+    obj.QuestID             = fields[0].GetUInt32();
+    obj.ID                  = fields[1].GetUInt32();
+    obj.Type                = fields[2].GetUInt8();
+    obj.StorageIndex        = fields[3].GetInt8();
+    obj.ObjectID            = fields[4].GetInt32();
+    obj.Amount              = fields[5].GetInt32();
+    obj.Flags               = fields[6].GetUInt32();
+    obj.Flags2              = fields[7].GetUInt32();
+    obj.ProgressBarWeight   = fields[8].GetFloat();
+    obj.Description         = fields[9].GetString();
 
-    Objectives.push_back(obj);
+    // try to find existing
+    bool found = false;
+    for (auto& objective : Objectives)
+    {
+        if (objective.ID == obj.ID && objective.QuestID == obj.QuestID && obj.StorageIndex == objective.StorageIndex)
+        {
+            objective.QuestID = obj.QuestID;
+            objective.ID = obj.ID;
+            objective.Type = obj.Type;
+            objective.StorageIndex = obj.StorageIndex;
+            objective.ObjectID = obj.ObjectID;
+            objective.Amount = obj.Amount;
+            objective.Flags = obj.Flags;
+            objective.Flags2 = obj.Flags2;
+            objective.ProgressBarWeight = obj.ProgressBarWeight;
+            objective.Description = obj.Description;
+            found = true;
+            break;
+        }
+    }
+
+    if (!found)
+        Objectives.push_back(obj);
     _usedQuestObjectiveTypes[obj.Type] = true;
 }
 

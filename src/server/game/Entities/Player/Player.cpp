@@ -129,6 +129,8 @@
 #include "GarrisonPackets.h"
 #include "CovenantMgr.h"
 #include "ChallengeMode.h"
+#include "QuestAI.h"
+#include "CreatureAISelector.h"
 
 #define ZONE_UPDATE_INTERVAL (1*IN_MILLISECONDS)
 
@@ -390,6 +392,9 @@ Player::~Player()
 
     for (uint8 i = 0; i < VOID_STORAGE_MAX_SLOT; ++i)
         delete _voidStorageItems[i];
+
+    for (auto itr = m_questScripts.begin(); itr != m_questScripts.end(); ++itr)
+        delete itr->second;
 
     sWorld->DecreasePlayerCount();
 }
@@ -1254,6 +1259,9 @@ void Player::Update(uint32 p_time)
         TeleportTo(m_teleport_dest, m_teleport_options, 0, m_teleport_transport);
 
     sScriptMgr->OnPlayerUpdate(this, p_time);
+
+    for (auto itr = m_questScripts.begin(); itr != m_questScripts.end(); ++itr)
+        itr->second->Update(p_time);
 }
 
 void Player::setDeathState(DeathState s)
@@ -15774,6 +15782,9 @@ void Player::AddQuest(Quest const* quest, Object* questGiver)
         return;
 
     uint32 quest_id = quest->GetQuestId();
+    auto questAI = FactorySelector::SelectQuestAI(quest, this);
+    if (questAI)
+        m_questScripts[quest_id] = questAI;
 
     // if not exist then created with set uState == NEW and rewarded=false
     auto questStatusItr = m_QuestStatus.emplace(quest_id, QuestStatusData{}).first;
@@ -15862,6 +15873,8 @@ void Player::AddQuest(Quest const* quest, Object* questGiver)
 
     sScriptMgr->OnQuestStatusChange(this, quest_id);
     sScriptMgr->OnQuestStatusChange(this, quest, oldStatus, questStatusData.Status);
+    if (questAI)
+        questAI->OnQuestAccept();
 }
 
 void Player::CompleteQuest(uint32 quest_id)
@@ -15876,6 +15889,10 @@ void Player::CompleteQuest(uint32 quest_id)
         if (Quest const* qInfo = sObjectMgr->GetQuestTemplate(quest_id))
             if (qInfo->HasFlag(QUEST_FLAGS_TRACKING))
                 RewardQuest(qInfo, LootItemType::Item, 0, this, false);
+
+        auto itr = m_questScripts.find(quest_id);
+        if (itr != m_questScripts.end())
+            itr->second->OnQuestComplete();
     }
 
     if (sWorld->getBoolConfig(CONFIG_QUEST_ENABLE_QUEST_TRACKER)) // check if Quest Tracker is enabled
@@ -15895,6 +15912,9 @@ void Player::IncompleteQuest(uint32 quest_id)
     if (quest_id)
     {
         SetQuestStatus(quest_id, QUEST_STATUS_INCOMPLETE);
+        auto itr = m_questScripts.find(quest_id);
+        if (itr != m_questScripts.end())
+            itr->second->OnQuestIncomplete();
 
         uint16 log_slot = FindQuestSlot(quest_id);
         if (log_slot < MAX_QUEST_LOG_SIZE)
@@ -16157,6 +16177,10 @@ void Player::RewardQuest(Quest const* quest, LootItemType rewardType, uint32 rew
     else if (quest->IsSeasonal())
         SetSeasonalQuestStatus(quest_id);
 
+    auto itr = m_questScripts.find(quest_id);
+    if (itr != m_questScripts.end())
+        itr->second->OnQuestReward();
+
     RemoveActiveQuest(quest_id, false);
     if (quest->CanIncreaseRewardedQuestCounters())
         SetRewardedQuest(quest_id);
@@ -16295,6 +16319,11 @@ void Player::AbandonQuest(uint32 questId)
                     DestroyItemCount(quest->ItemDrop[i], quest->ItemDropQuantity[i], true, true);
 
         sScriptMgr->OnPlayerAbandonQuest(this, quest);
+        auto itr = m_questScripts.find(questId);
+        if (itr != m_questScripts.end())
+        {
+            itr->second->OnQuestAbandon();
+        }
     }
 }
 
@@ -16878,6 +16907,13 @@ void Player::RemoveActiveQuest(uint32 questId, bool update /*= true*/)
         }
         m_QuestStatus.erase(itr);
         m_QuestStatusSave[questId] = QUEST_DELETE_SAVE_TYPE;
+    }
+
+    auto itr2 = m_questScripts.find(questId);
+    if (itr2 != m_questScripts.end())
+    {
+        delete itr2->second;
+        m_questScripts.erase(itr2);
     }
 
     if (update)
@@ -17506,6 +17542,10 @@ void Player::UpdateQuestObjectiveProgress(QuestObjectiveType objectiveType, int3
 
             if (objectiveWasComplete != objectiveIsNowComplete)
                 anyObjectiveChangedCompletionState = true;
+
+            auto questScript = m_questScripts.find(questId);
+            if (questScript != m_questScripts.end())
+                questScript->second->OnQuestProgressUpdate(objectiveType, objectId, addCount, victimGuid, logSlot, objective);
 
             if (objectiveIsNowComplete && CanCompleteQuest(questId, objective.ID))
                 CompleteQuest(questId);
@@ -19905,6 +19945,14 @@ void Player::_LoadQuestStatus(PreparedQueryResult result)
                         SetQuestSlotState(slot, QUEST_STATE_COMPLETE);
                     else if (questStatusData.Status == QUEST_STATUS_FAILED)
                         SetQuestSlotState(slot, QUEST_STATE_FAIL);
+
+                    if (m_questScripts.find(quest_id) == m_questScripts.end())
+                    {
+                        uint32 quest_id = quest->GetQuestId();
+                        auto questAI = FactorySelector::SelectQuestAI(quest, this);
+                        if (questAI)
+                            m_questScripts[quest_id] = questAI;
+                    }
 
                     ++slot;
                 }

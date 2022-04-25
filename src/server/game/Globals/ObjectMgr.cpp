@@ -4687,9 +4687,21 @@ void ObjectMgr::LoadQuests()
         Field* fields = result->Fetch();
 
         uint32 questId = fields[0].GetUInt32();
-        auto itr = _questTemplates.emplace(std::piecewise_construct, std::forward_as_tuple(questId), std::forward_as_tuple(fields)).first;
-        if (itr->second.IsAutoPush())
-            _questTemplatesAutoPush.push_back(&itr->second);
+        auto itr2 = _questTemplates.find(questId);
+        // reloading case, modify existing quest objects
+        if (itr2 != _questTemplates.end())
+        {
+            itr2->second.LoadQuestTemplate(fields);
+            if (itr2->second.IsAutoPush())
+                _questTemplatesAutoPush.push_back(&itr2->second);
+        }
+        else
+        {
+            auto itr = _questTemplates.emplace(std::piecewise_construct, std::forward_as_tuple(questId), std::forward_as_tuple(fields)).first;
+            if (itr->second.IsAutoPush())
+                _questTemplatesAutoPush.push_back(&itr->second);
+        }
+
     } while (result->NextRow());
 
     struct QuestLoaderHelper

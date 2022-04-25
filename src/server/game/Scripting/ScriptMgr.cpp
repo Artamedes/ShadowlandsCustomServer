@@ -122,6 +122,10 @@ struct is_script_database_bound<AreaTriggerEntityScript>
     : std::true_type { };
 
 template<>
+struct is_script_database_bound<QuestEntityScript>
+    : std::true_type { };
+
+template<>
 struct is_script_database_bound<ConversationScript>
     : std::true_type { };
 
@@ -732,6 +736,11 @@ class ScriptRegistrySwapHooks<AreaTriggerEntityScript, Base>
     : public CreatureGameObjectAreaTriggerScriptRegistrySwapHooks<
     AreaTrigger, AreaTriggerEntityScript, Base
     > { };
+
+// This hook is responsible for swapping QuestAI's
+template<typename Base>
+class ScriptRegistrySwapHooks<QuestEntityScript, Base>
+    : public UnsupportedScriptRegistrySwapHooks<Base> { };
 
 /// This hook is responsible for swapping BattlefieldScripts
 template<typename Base>
@@ -1768,6 +1777,17 @@ AreaTriggerAI* ScriptMgr::GetAreaTriggerAI(AreaTrigger* areatrigger)
     return tmpscript->GetAI(areatrigger);
 }
 
+bool ScriptMgr::CanCreateQuestAI(uint32 scriptId) const
+{
+    return !!ScriptRegistry<QuestEntityScript>::Instance()->GetScriptById(scriptId);
+}
+
+QuestAI* ScriptMgr::GetQuestAI(Quest const* quest, Player* player)
+{
+    GET_SCRIPT_RET(QuestEntityScript, quest->GetScriptId(), tmpscript, nullptr);
+    return tmpscript->GetAI(quest, player);
+}
+
 bool ScriptMgr::OnAreaTrigger(Player* player, AreaTriggerEntry const* trigger, bool entered)
 {
     ASSERT(player);
@@ -2759,6 +2779,15 @@ AreaTriggerEntityScript::AreaTriggerEntityScript(char const* name)
 }
 
 AreaTriggerEntityScript::~AreaTriggerEntityScript() = default;
+
+
+QuestEntityScript::QuestEntityScript(char const* name)
+    : ScriptObject(name)
+{
+    ScriptRegistry<QuestEntityScript>::Instance()->AddScript(this);
+}
+
+QuestEntityScript::~QuestEntityScript() = default;
 
 ConversationScript::ConversationScript(char const* name)
     : ScriptObject(name)

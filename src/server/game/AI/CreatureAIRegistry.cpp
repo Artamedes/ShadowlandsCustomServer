@@ -60,5 +60,6 @@ namespace AIRegistry
         (new WaypointMovementFactory())->RegisterSelf();
 
         (void)sObjectMgr->GetScriptId("NullAreaTriggerAI", false);
+        (void)sObjectMgr->GetScriptId("NullQuestAI", false);
     }
 }

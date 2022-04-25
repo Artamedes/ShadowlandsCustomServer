@@ -27,6 +27,7 @@
 #include "GameObjectAIFactory.h"
 
 #include "AreaTriggerAI.h"
+#include "QuestAI.h"
 
 #include "ScriptMgr.h"
 
@@ -186,5 +187,30 @@ namespace FactorySelector
         }
 
         return GetNullAreaTriggerAIScriptId();
+    }
+
+    static uint32 GetNullQuestAIScriptId()
+    {
+        return sObjectMgr->GetScriptId("NullQuestAI", false);
+    }
+
+    QuestAI* SelectQuestAI(Quest const* q, Player* player)
+    {
+        if (QuestAI* ai = sScriptMgr->GetQuestAI(q, player))
+            return ai;
+        return nullptr;
+    }
+
+    uint32 GetSelectedAIId(Quest const* at)
+    {
+        if (uint32 id = at->GetScriptId())
+        {
+            if (sScriptMgr->CanCreateQuestAI(id))
+            {
+                return id;
+            }
+        }
+
+        return 0;
     }
 }
