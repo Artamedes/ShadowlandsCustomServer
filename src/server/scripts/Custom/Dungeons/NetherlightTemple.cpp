@@ -481,8 +481,19 @@ struct npc_demon_guy_700400 : public ScriptedAI
             events.ScheduleEvent(2, 5s, 30s);
         }
 
+        TaskScheduler scheduler;
+
+        void JustDied(Unit* killer) override
+        {
+            scheduler.Schedule(1s, [this](TaskContext context)
+            {
+                me->SetDisplayId(82018);
+            });
+        }
+
         void UpdateAI(uint32 diff) override
         {
+            scheduler.Update(diff);
             if (!UpdateVictim())
                 return;
             events.Update(diff);
@@ -534,6 +545,10 @@ class instance_netherlight_temple : public InstanceMapScript
                             break;
                         case 700412:
                             VelenGuid = creature->GetGUID();
+
+                            if (DerzaDead > 0)
+                                creature->AI()->DoAction(1);
+
                             break;
                     }
                 }
@@ -566,6 +581,18 @@ class instance_netherlight_temple : public InstanceMapScript
                                 velen->AI()->DoAction(1);
                             break;
                     }
+                }
+
+                uint32 DerzaDead = 0;
+
+                void WriteSaveDataMore(std::ostringstream& data) override
+                {
+                    data << DerzaDead;
+                }
+
+                void ReadSaveDataMore(std::istringstream& data) override
+                {
+                    data >> DerzaDead;
                 }
 
                 uint32 RequiredBossKills = 2;

@@ -382,6 +382,14 @@ public:
         events.ScheduleEvent(2, 5s, 30s);
     }
 
+    void JustDied(Unit* killer) override
+    {
+        scheduler.Schedule(1s, [this](TaskContext context)
+        {
+            me->SetDisplayId(82018);
+        });
+    }
+
     void UpdateAI(uint32 diff) override
     {
         scheduler.Update(diff);
