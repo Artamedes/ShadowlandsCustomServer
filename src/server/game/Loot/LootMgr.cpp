@@ -133,8 +133,8 @@ uint32 LootStore::LoadLootTable()
     // Clearing store (for reloading case)
     Clear();
 
-    //                                                 0       1       2        3         4             5          6       7        8         9
-    QueryResult result = WorldDatabase.PQuery("SELECT Entry, Item, Reference, Chance, QuestRequired, LootMode, GroupId, MinCount, MaxCount, BonusList FROM %s", GetName());
+    //                                                 0      1       2        3         4          5          6       7        8         9         10
+    QueryResult result = WorldDatabase.PQuery("SELECT Entry, Type, Item, Reference, Chance, QuestRequired, LootMode, GroupId, MinCount, MaxCount, BonusList FROM %s", GetName());
 
     if (!result)
         return 0;
@@ -146,18 +146,19 @@ uint32 LootStore::LoadLootTable()
         Field* fields = result->Fetch();
 
         uint32 entry               = fields[0].GetUInt32();
-        uint32 item                = fields[1].GetUInt32();
-        uint32 reference           = fields[2].GetUInt32();
-        float  chance              = fields[3].GetFloat();
-        bool   needsquest          = fields[4].GetBool();
-        uint16 lootmode            = fields[5].GetUInt16();
-        uint8  groupid             = fields[6].GetUInt8();
-        uint8  mincount            = fields[7].GetUInt8();
-        uint8  maxcount            = fields[8].GetUInt8();
+        auto   type                = static_cast<LootItemType>(fields[1].GetUInt8());
+        uint32 item                = fields[2].GetUInt32();
+        uint32 reference           = fields[3].GetUInt32();
+        float  chance              = fields[4].GetFloat();
+        bool   needsquest          = fields[5].GetBool();
+        uint16 lootmode            = fields[6].GetUInt16();
+        uint8  groupid             = fields[7].GetUInt8();
+        uint8  mincount            = fields[8].GetUInt8();
+        uint8  maxcount            = fields[9].GetUInt8();
 
         std::vector<int32> bonusIdList;
 
-        for (std::string_view token : Trinity::Tokenize(fields[9].GetStringView(), ' ', false))
+        for (std::string_view token : Trinity::Tokenize(fields[10].GetStringView(), ' ', false))
             if (Optional<int32> bonusListID = Trinity::StringTo<int32>(token))
                 bonusIdList.push_back(*bonusListID);
 
@@ -167,7 +168,7 @@ uint32 LootStore::LoadLootTable()
             return 0;
         }
 
-        LootStoreItem* storeitem = new LootStoreItem(item, reference, chance, needsquest, lootmode, groupid, mincount, maxcount, bonusIdList);
+        LootStoreItem* storeitem = new LootStoreItem(type, item, reference, chance, needsquest, lootmode, groupid, mincount, maxcount, bonusIdList);
 
         if (!storeitem->IsValid(*this, entry))            // Validity checks
         {

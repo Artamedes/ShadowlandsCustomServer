@@ -27076,11 +27076,74 @@ void Player::StoreLootItem(uint8 lootSlot, Loot* loot, AELootResult* aeResult/* 
         return;
     }
 
-    ItemPosCountVec dest;
-    InventoryResult msg = CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, item->itemid, item->count);
-    if (msg == EQUIP_ERR_OK)
+    if (item->type == LootItemType::Item)
     {
-        Item* newitem = StoreNewItem(dest, item->itemid, true, item->randomBonusListId, item->GetAllowedLooters(), item->context, item->BonusListIDs);
+        ItemPosCountVec dest;
+        InventoryResult msg = CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, item->itemid, item->count);
+        if (msg == EQUIP_ERR_OK)
+        {
+            Item* newitem = StoreNewItem(dest, item->itemid, true, item->randomBonusListId, item->GetAllowedLooters(), item->context, item->BonusListIDs);
+
+            if (qitem)
+            {
+                qitem->is_looted = true;
+                //freeforall is 1 if everyone's supposed to get the quest item.
+                if (item->freeforall || loot->GetPlayerQuestItems().size() == 1)
+                    SendNotifyLootItemRemoved(loot->GetGUID(), lootSlot);
+                else
+                    loot->NotifyQuestItemRemoved(qitem->index);
+            }
+            else
+            {
+                if (ffaitem)
+                {
+                    //freeforall case, notify only one player of the removal
+                    ffaitem->is_looted = true;
+                    SendNotifyLootItemRemoved(loot->GetGUID(), lootSlot);
+                }   
+                else
+                {
+                    //not freeforall, notify everyone
+                    if (conditem)
+                        conditem->is_looted = true;
+                    loot->NotifyItemRemoved(lootSlot);
+                }
+            }
+
+            //if only one person is supposed to loot the item, then set it to looted
+            if (!item->freeforall)
+                item->is_looted = true;
+
+            --loot->unlootedCount;
+
+            if (sObjectMgr->GetItemTemplate(item->itemid))
+                if (newitem->GetQuality() > ITEM_QUALITY_EPIC || (newitem->GetQuality() == ITEM_QUALITY_EPIC && newitem->GetItemLevel(this) >= MinNewsItemLevel))
+                    if (Guild* guild = GetGuild())
+                        guild->AddGuildNews(GUILD_NEWS_ITEM_LOOTED, GetGUID(), 0, item->itemid);
+
+            // if aeLooting then we must delay sending out item so that it appears properly stacked in chat
+            if (!aeResult)
+            {
+                SendNewItem(newitem, uint32(item->count), false, false, true);
+                UpdateCriteria(CriteriaType::LootItem, item->itemid, item->count);
+                UpdateCriteria(CriteriaType::GetLootByType, item->itemid, item->count, loot->loot_type);
+                UpdateCriteria(CriteriaType::LootAnyItem, item->itemid, item->count);
+            }
+            else
+                aeResult->Add(newitem, item->count, loot->loot_type);
+
+            // LootItem is being removed (looted) from the container, delete it from the DB.
+            if (!loot->containerID.IsEmpty())
+                sLootItemStorage->RemoveStoredLootItemForContainer(loot->containerID.GetCounter(), item->itemid, item->count, item->itemIndex);
+
+            ApplyItemLootedSpell(newitem, true);
+        }
+        else
+            SendEquipError(msg, nullptr, nullptr, item->itemid);
+    }
+    else
+    {
+        ModifyCurrency(item->itemid, item->count);
 
         if (qitem)
         {
@@ -27114,30 +27177,21 @@ void Player::StoreLootItem(uint8 lootSlot, Loot* loot, AELootResult* aeResult/* 
 
         --loot->unlootedCount;
 
-        if (sObjectMgr->GetItemTemplate(item->itemid))
-            if (newitem->GetQuality() > ITEM_QUALITY_EPIC || (newitem->GetQuality() == ITEM_QUALITY_EPIC && newitem->GetItemLevel(this) >= MinNewsItemLevel))
-                if (Guild* guild = GetGuild())
-                    guild->AddGuildNews(GUILD_NEWS_ITEM_LOOTED, GetGUID(), 0, item->itemid);
-
         // if aeLooting then we must delay sending out item so that it appears properly stacked in chat
-        if (!aeResult)
-        {
-            SendNewItem(newitem, uint32(item->count), false, false, true);
-            UpdateCriteria(CriteriaType::LootItem, item->itemid, item->count);
-            UpdateCriteria(CriteriaType::GetLootByType, item->itemid, item->count, loot->loot_type);
-            UpdateCriteria(CriteriaType::LootAnyItem, item->itemid, item->count);
-        }
-        else
-            aeResult->Add(newitem, item->count, loot->loot_type);
-
+        //if (!aeResult)
+        //{
+        //    //UpdateCriteria(CriteriaType::LootItem, item->itemid, item->count);
+        //    //UpdateCriteria(CriteriaType::GetLootByType, item->itemid, item->count, loot->loot_type);
+        //    //UpdateCriteria(CriteriaType::LootAnyItem, item->itemid, item->count);
+        //}
+        //else
+        //    aeResult->Add(newitem, item->count, loot->loot_type);
+        //
         // LootItem is being removed (looted) from the container, delete it from the DB.
         if (!loot->containerID.IsEmpty())
             sLootItemStorage->RemoveStoredLootItemForContainer(loot->containerID.GetCounter(), item->itemid, item->count, item->itemIndex);
 
-        ApplyItemLootedSpell(newitem, true);
     }
-    else
-        SendEquipError(msg, nullptr, nullptr, item->itemid);
 }
 
 void Player::_LoadSkills(PreparedQueryResult result)

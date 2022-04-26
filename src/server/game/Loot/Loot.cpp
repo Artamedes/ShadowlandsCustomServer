@@ -36,17 +36,22 @@
 // Constructor, copies most fields from LootStoreItem and generates random count
 LootItem::LootItem(LootStoreItem const& li)
 {
+    type = li.type;
     itemid = li.itemid;
     itemIndex = 0;
     conditions = li.conditions;
 
-    ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemid);
-    freeforall = proto && proto->HasFlag(ITEM_FLAG_MULTI_DROP);
-    follow_loot_rules = proto && (proto->HasFlag(ITEM_FLAGS_CU_FOLLOW_LOOT_RULES));
+    if (type == LootItemType::Item)
+    {
+        ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemid);
+        freeforall = proto && proto->HasFlag(ITEM_FLAG_MULTI_DROP);
+        follow_loot_rules = proto && (proto->HasFlag(ITEM_FLAGS_CU_FOLLOW_LOOT_RULES));
+    }
 
     needs_quest = li.needs_quest;
 
-    randomBonusListId = GenerateItemRandomBonusListId(itemid);
+    if (type == LootItemType::Item)
+        randomBonusListId = GenerateItemRandomBonusListId(itemid);
     context = ItemContext::NONE;
     count = 0;
     is_looted = 0;
@@ -62,6 +67,9 @@ bool LootItem::AllowedForPlayer(Player const* player, bool isGivenByMasterLooter
     // DB conditions check
     if (!sConditionMgr->IsObjectMeetToConditions(const_cast<Player*>(player), conditions))
         return false;
+
+    if (type == LootItemType::Currency)
+        return true;
 
     ItemTemplate const* pProto = sObjectMgr->GetItemTemplate(itemid);
     if (!pProto)
@@ -275,9 +283,10 @@ bool Loot::FillLoot(uint32 lootId, LootStore const& store, Player* lootOwner, bo
 
         for (uint8 i = 0; i < items.size(); ++i)
         {
-            if (ItemTemplate const* proto = sObjectMgr->GetItemTemplate(items[i].itemid))
-                if (proto->GetQuality() < uint32(group->GetLootThreshold()))
-                    items[i].is_underthreshold = true;
+            if (items[i].type == LootItemType::Item)
+                if (ItemTemplate const* proto = sObjectMgr->GetItemTemplate(items[i].itemid))
+                    if (proto->GetQuality() < uint32(group->GetLootThreshold()))
+                        items[i].is_underthreshold = true;
         }
     }
     // ... for personal loot
@@ -290,60 +299,116 @@ bool Loot::FillLoot(uint32 lootId, LootStore const& store, Player* lootOwner, bo
 // Inserts the item into the loot (called by LootTemplate processors)
 void Loot::AddItem(LootStoreItem const& item)
 {
-    ItemTemplate const* proto = sObjectMgr->GetItemTemplate(item.itemid);
-    if (!proto)
-        return;
-
-    uint32 count = urand(item.mincount, item.maxcount);
-    uint32 stacks = count / proto->GetMaxStackSize() + ((count % proto->GetMaxStackSize()) ? 1 : 0);
-
-    std::vector<LootItem>& lootItems = item.needs_quest ? quest_items : items;
-    uint32 limit = item.needs_quest ? MAX_NR_QUEST_ITEMS : MAX_NR_LOOT_ITEMS;
-
-    for (uint32 i = 0; i < stacks && lootItems.size() < limit; ++i)
+    switch (item.type)
     {
-        LootItem generatedLoot(item);
-        generatedLoot.context = _itemContext;
-        generatedLoot.count = std::min(count, proto->GetMaxStackSize());
-        generatedLoot.itemIndex = lootItems.size();
-
-        if (item.bonusIds.empty())
+        case LootItemType::Item:
         {
-            if (_itemContext != ItemContext::NONE)
+            ItemTemplate const* proto = sObjectMgr->GetItemTemplate(item.itemid);
+            if (!proto)
+                return;
+
+            uint32 count = urand(item.mincount, item.maxcount);
+            uint32 stacks = count / proto->GetMaxStackSize() + ((count % proto->GetMaxStackSize()) ? 1 : 0);
+
+            std::vector<LootItem>& lootItems = item.needs_quest ? quest_items : items;
+            uint32 limit = item.needs_quest ? MAX_NR_QUEST_ITEMS : MAX_NR_LOOT_ITEMS;
+
+            for (uint32 i = 0; i < stacks && lootItems.size() < limit; ++i)
             {
-                std::set<uint32> bonusListIDs = sDB2Manager.GetDefaultItemBonusTree(generatedLoot.itemid, _itemContext);
-                generatedLoot.BonusListIDs.insert(generatedLoot.BonusListIDs.end(), bonusListIDs.begin(), bonusListIDs.end());
+                LootItem generatedLoot(item);
+                generatedLoot.context = _itemContext;
+                generatedLoot.count = std::min(count, proto->GetMaxStackSize());
+                generatedLoot.itemIndex = lootItems.size();
+
+                if (item.bonusIds.empty())
+                {
+                    if (_itemContext != ItemContext::NONE)
+                    {
+                        std::set<uint32> bonusListIDs = sDB2Manager.GetDefaultItemBonusTree(generatedLoot.itemid, _itemContext);
+                        generatedLoot.BonusListIDs.insert(generatedLoot.BonusListIDs.end(), bonusListIDs.begin(), bonusListIDs.end());
+                    }
+                }
+                else
+                    generatedLoot.BonusListIDs.insert(generatedLoot.BonusListIDs.end(), item.bonusIds.begin(), item.bonusIds.end());
+
+                lootItems.push_back(generatedLoot);
+                count -= proto->GetMaxStackSize();
+
+                // In some cases, a dropped item should be visible/lootable only for some players in group
+                bool canSeeItemInLootWindow = false;
+                if (Player* player = ObjectAccessor::FindPlayer(lootOwnerGUID))
+                {
+                    if (Group* group = player->GetGroup())
+                    {
+                        for (GroupReference* itr = group->GetFirstMember(); itr != nullptr; itr = itr->next())
+                            if (Player* member = itr->GetSource())
+                                if (generatedLoot.AllowedForPlayer(member))
+                                    canSeeItemInLootWindow = true;
+                    }
+                    else if (generatedLoot.AllowedForPlayer(player))
+                        canSeeItemInLootWindow = true;
+                }
+
+                if (!canSeeItemInLootWindow)
+                    continue;
+
+                // non-conditional one-player only items are counted here,
+                // free for all items are counted in FillFFALoot(),
+                // non-ffa conditionals are counted in FillNonQuestNonFFAConditionalLoot()
+                if (!item.needs_quest && item.conditions.empty() && !proto->HasFlag(ITEM_FLAG_MULTI_DROP))
+                    ++unlootedCount;
             }
+            break;
         }
-        else
-            generatedLoot.BonusListIDs.insert(generatedLoot.BonusListIDs.end(), item.bonusIds.begin(), item.bonusIds.end());
-
-        lootItems.push_back(generatedLoot);
-        count -= proto->GetMaxStackSize();
-
-        // In some cases, a dropped item should be visible/lootable only for some players in group
-        bool canSeeItemInLootWindow = false;
-        if (Player* player = ObjectAccessor::FindPlayer(lootOwnerGUID))
+        case LootItemType::Currency:
         {
-            if (Group* group = player->GetGroup())
+            auto currEntry = sCurrencyTypesStore.LookupEntry(item.itemid);
+            if (!currEntry)
+                return;
+
+            uint32 count = urand(item.mincount, item.maxcount);
+            uint32 stacks = 1;
+
+            std::vector<LootItem>& lootItems = item.needs_quest ? quest_items : items;
+            uint32 limit = item.needs_quest ? MAX_NR_QUEST_ITEMS : MAX_NR_LOOT_ITEMS;
+
+            for (uint32 i = 0; i < stacks && lootItems.size() < limit; ++i)
             {
-                for (GroupReference* itr = group->GetFirstMember(); itr != nullptr; itr = itr->next())
-                    if (Player* member = itr->GetSource())
-                        if (generatedLoot.AllowedForPlayer(member))
-                            canSeeItemInLootWindow = true;
+                LootItem generatedLoot(item);
+                generatedLoot.context = _itemContext;
+                generatedLoot.count = std::min(count, uint32(0x7FFFFFFF - 1));
+                generatedLoot.itemIndex = lootItems.size();
+
+                lootItems.push_back(generatedLoot);
+                count -= uint32(0x7FFFFFFF - 1);
+
+                // In some cases, a dropped item should be visible/lootable only for some players in group
+                bool canSeeItemInLootWindow = false;
+                if (Player* player = ObjectAccessor::FindPlayer(lootOwnerGUID))
+                {
+                    if (Group* group = player->GetGroup())
+                    {
+                        for (GroupReference* itr = group->GetFirstMember(); itr != nullptr; itr = itr->next())
+                            if (Player* member = itr->GetSource())
+                                if (generatedLoot.AllowedForPlayer(member))
+                                    canSeeItemInLootWindow = true;
+                    }
+                    else if (generatedLoot.AllowedForPlayer(player))
+                        canSeeItemInLootWindow = true;
+                }
+
+                if (!canSeeItemInLootWindow)
+                    continue;
+
+                // non-conditional one-player only items are counted here,
+                // free for all items are counted in FillFFALoot(),
+                // non-ffa conditionals are counted in FillNonQuestNonFFAConditionalLoot()
+                if (!item.needs_quest && item.conditions.empty())
+                    ++unlootedCount;
             }
-            else if (generatedLoot.AllowedForPlayer(player))
-                canSeeItemInLootWindow = true;
+
+            break;
         }
-
-        if (!canSeeItemInLootWindow)
-            continue;
-
-        // non-conditional one-player only items are counted here,
-        // free for all items are counted in FillFFALoot(),
-        // non-ffa conditionals are counted in FillNonQuestNonFFAConditionalLoot()
-        if (!item.needs_quest && item.conditions.empty() && !proto->HasFlag(ITEM_FLAG_MULTI_DROP))
-            ++unlootedCount;
     }
 }
 
@@ -559,12 +624,24 @@ void Loot::BuildLootResponse(WorldPackets::Loot::LootResponse& packet, Player* v
                         // item shall not be displayed.
                         continue;
 
-                    WorldPackets::Loot::LootItemData lootItem;
-                    lootItem.LootListID = i + 1;
-                    lootItem.UIType = slot_type;
-                    lootItem.Quantity = items[i].count;
-                    lootItem.Loot.Initialize(items[i]);
-                    packet.Items.push_back(lootItem);
+                    if (items[i].type == LootItemType::Item)
+                    {
+                        WorldPackets::Loot::LootItemData lootItem;
+                        lootItem.LootListID = i + 1;
+                        lootItem.UIType = slot_type;
+                        lootItem.Quantity = items[i].count;
+                        lootItem.Loot.Initialize(items[i]);
+                        packet.Items.push_back(lootItem);
+                    }
+                    else
+                    {
+                        WorldPackets::Loot::LootCurrency lootCurrency;
+                        lootCurrency.LootListID = i + 1;
+                        lootCurrency.UIType = slot_type;
+                        lootCurrency.Quantity = items[i].count;
+                        lootCurrency.CurrencyID = items[i].itemid;
+                        packet.Currencies.push_back(lootCurrency);
+                    }
                 }
             }
             break;
@@ -576,12 +653,24 @@ void Loot::BuildLootResponse(WorldPackets::Loot::LootResponse& packet, Player* v
             {
                 if (!items[i].is_looted && !items[i].freeforall && items[i].conditions.empty() && items[i].AllowedForPlayer(viewer))
                 {
-                    WorldPackets::Loot::LootItemData lootItem;
-                    lootItem.LootListID = i + 1;
-                    lootItem.UIType = permission == OWNER_PERMISSION ? LOOT_SLOT_TYPE_OWNER : LOOT_SLOT_TYPE_ALLOW_LOOT;
-                    lootItem.Quantity = items[i].count;
-                    lootItem.Loot.Initialize(items[i]);
-                    packet.Items.push_back(lootItem);
+                    if (items[i].type == LootItemType::Item)
+                    {
+                        WorldPackets::Loot::LootItemData lootItem;
+                        lootItem.LootListID = i + 1;
+                        lootItem.UIType = permission == OWNER_PERMISSION ? LOOT_SLOT_TYPE_OWNER : LOOT_SLOT_TYPE_ALLOW_LOOT;
+                        lootItem.Quantity = items[i].count;
+                        lootItem.Loot.Initialize(items[i]);
+                        packet.Items.push_back(lootItem);
+                    }
+                    else
+                    {
+                        WorldPackets::Loot::LootCurrency lootCurrency;
+                        lootCurrency.LootListID = i + 1;
+                        lootCurrency.UIType = permission == OWNER_PERMISSION ? LOOT_SLOT_TYPE_OWNER : LOOT_SLOT_TYPE_ALLOW_LOOT;
+                        lootCurrency.Quantity = items[i].count;
+                        lootCurrency.CurrencyID = items[i].itemid;
+                        packet.Currencies.push_back(lootCurrency);
+                    }
                 }
             }
             break;
@@ -602,13 +691,126 @@ void Loot::BuildLootResponse(WorldPackets::Loot::LootResponse& packet, Player* v
             LootItem const& item = quest_items[qi.index];
             if (!qi.is_looted && !item.is_looted)
             {
-                WorldPackets::Loot::LootItemData lootItem;
-                lootItem.LootListID = items.size() + i + 1;
-                lootItem.Quantity = item.count;
-                lootItem.Loot.Initialize(item);
-
-                if (item.follow_loot_rules)
+                if (item.type == LootItemType::Item)
                 {
+                    WorldPackets::Loot::LootItemData lootItem;
+                    lootItem.LootListID = items.size() + i + 1;
+                    lootItem.Quantity = item.count;
+                    lootItem.Loot.Initialize(item);
+
+                    if (item.follow_loot_rules)
+                    {
+                        switch (permission)
+                        {
+                            case MASTER_PERMISSION:
+                                lootItem.UIType = LOOT_SLOT_TYPE_MASTER;
+                                break;
+                            case RESTRICTED_PERMISSION:
+                                lootItem.UIType = item.is_blocked ? LOOT_SLOT_TYPE_LOCKED : LOOT_SLOT_TYPE_ALLOW_LOOT;
+                                break;
+                            case GROUP_PERMISSION:
+                                if (!item.is_blocked)
+                                    lootItem.UIType = LOOT_SLOT_TYPE_ALLOW_LOOT;
+                                else
+                                    lootItem.UIType = LOOT_SLOT_TYPE_ROLL_ONGOING;
+                                break;
+                            default:
+                                lootItem.UIType = slotType;
+                                break;
+                        }
+                    }
+                    else
+                        lootItem.UIType = slotType;
+
+                    packet.Items.push_back(lootItem);
+                }
+                else if (item.type == LootItemType::Currency)
+                {
+                    WorldPackets::Loot::LootCurrency lootCurrency;
+                    lootCurrency.LootListID = items.size() + i + 1;
+                    lootCurrency.Quantity = item.count;
+                    lootCurrency.CurrencyID = item.itemid;
+
+                    if (item.follow_loot_rules)
+                    {
+                        switch (permission)
+                        {
+                            case MASTER_PERMISSION:
+                                lootCurrency.UIType = LOOT_SLOT_TYPE_MASTER;
+                                break;
+                            case RESTRICTED_PERMISSION:
+                                lootCurrency.UIType = item.is_blocked ? LOOT_SLOT_TYPE_LOCKED : LOOT_SLOT_TYPE_ALLOW_LOOT;
+                                break;
+                            case GROUP_PERMISSION:
+                                if (!item.is_blocked)
+                                    lootCurrency.UIType = LOOT_SLOT_TYPE_ALLOW_LOOT;
+                                else
+                                    lootCurrency.UIType = LOOT_SLOT_TYPE_ROLL_ONGOING;
+                                break;
+                            default:
+                                lootCurrency.UIType = slotType;
+                                break;
+                        }
+                    }
+                    else
+                        lootCurrency.UIType = slotType;
+
+                    packet.Currencies.push_back(lootCurrency);
+                }
+            }
+        }
+    }
+
+    NotNormalLootItemMap const& lootPlayerFFAItems = GetPlayerFFAItems();
+    NotNormalLootItemMap::const_iterator ffa_itr = lootPlayerFFAItems.find(viewer->GetGUID());
+    if (ffa_itr != lootPlayerFFAItems.end())
+    {
+        NotNormalLootItemList* ffa_list = ffa_itr->second;
+        for (NotNormalLootItemList::const_iterator fi = ffa_list->begin(); fi != ffa_list->end(); ++fi)
+        {
+            LootItem const& item = items[fi->index];
+            if (!fi->is_looted && !item.is_looted)
+            {
+                if (item.type == LootItemType::Item)
+                {
+                    WorldPackets::Loot::LootItemData lootItem;
+                    lootItem.LootListID = fi->index + 1;
+                    lootItem.UIType = slotType;
+                    lootItem.Quantity = item.count;
+                    lootItem.Loot.Initialize(item);
+                    packet.Items.push_back(lootItem);
+                }
+                else
+                {
+                    WorldPackets::Loot::LootCurrency lootCurrency;
+                    lootCurrency.LootListID = fi->index + 1;
+                    lootCurrency.UIType = slotType;
+                    lootCurrency.Quantity = item.count;
+                    lootCurrency.CurrencyID = item.itemid;
+                    packet.Currencies.push_back(lootCurrency);
+                }
+
+            }
+        }
+    }
+
+    NotNormalLootItemMap const& lootPlayerNonQuestNonFFAConditionalItems = GetPlayerNonQuestNonFFAConditionalItems();
+    NotNormalLootItemMap::const_iterator nn_itr = lootPlayerNonQuestNonFFAConditionalItems.find(viewer->GetGUID());
+    if (nn_itr != lootPlayerNonQuestNonFFAConditionalItems.end())
+    {
+        NotNormalLootItemList* conditional_list = nn_itr->second;
+        for (NotNormalLootItemList::const_iterator ci = conditional_list->begin(); ci != conditional_list->end(); ++ci)
+        {
+            LootItem const& item = items[ci->index];
+            if (!ci->is_looted && !item.is_looted)
+            {
+                if (item.type == LootItemType::Item)
+                {
+                    WorldPackets::Loot::LootItemData lootItem;
+                    lootItem.LootListID = ci->index + 1;
+                    lootItem.Quantity = item.count;
+                    lootItem.Loot.Initialize(item);
+
                     switch (permission)
                     {
                         case MASTER_PERMISSION:
@@ -627,70 +829,37 @@ void Loot::BuildLootResponse(WorldPackets::Loot::LootResponse& packet, Player* v
                             lootItem.UIType = slotType;
                             break;
                     }
+
+                    packet.Items.push_back(lootItem);
                 }
                 else
-                    lootItem.UIType = slotType;
-
-                packet.Items.push_back(lootItem);
-            }
-        }
-    }
-
-    NotNormalLootItemMap const& lootPlayerFFAItems = GetPlayerFFAItems();
-    NotNormalLootItemMap::const_iterator ffa_itr = lootPlayerFFAItems.find(viewer->GetGUID());
-    if (ffa_itr != lootPlayerFFAItems.end())
-    {
-        NotNormalLootItemList* ffa_list = ffa_itr->second;
-        for (NotNormalLootItemList::const_iterator fi = ffa_list->begin(); fi != ffa_list->end(); ++fi)
-        {
-            LootItem const& item = items[fi->index];
-            if (!fi->is_looted && !item.is_looted)
-            {
-                WorldPackets::Loot::LootItemData lootItem;
-                lootItem.LootListID = fi->index + 1;
-                lootItem.UIType = slotType;
-                lootItem.Quantity = item.count;
-                lootItem.Loot.Initialize(item);
-                packet.Items.push_back(lootItem);
-            }
-        }
-    }
-
-    NotNormalLootItemMap const& lootPlayerNonQuestNonFFAConditionalItems = GetPlayerNonQuestNonFFAConditionalItems();
-    NotNormalLootItemMap::const_iterator nn_itr = lootPlayerNonQuestNonFFAConditionalItems.find(viewer->GetGUID());
-    if (nn_itr != lootPlayerNonQuestNonFFAConditionalItems.end())
-    {
-        NotNormalLootItemList* conditional_list = nn_itr->second;
-        for (NotNormalLootItemList::const_iterator ci = conditional_list->begin(); ci != conditional_list->end(); ++ci)
-        {
-            LootItem const& item = items[ci->index];
-            if (!ci->is_looted && !item.is_looted)
-            {
-                WorldPackets::Loot::LootItemData lootItem;
-                lootItem.LootListID = ci->index + 1;
-                lootItem.Quantity = item.count;
-                lootItem.Loot.Initialize(item);
-
-                switch (permission)
                 {
-                    case MASTER_PERMISSION:
-                        lootItem.UIType = LOOT_SLOT_TYPE_MASTER;
-                        break;
-                    case RESTRICTED_PERMISSION:
-                        lootItem.UIType = item.is_blocked ? LOOT_SLOT_TYPE_LOCKED : LOOT_SLOT_TYPE_ALLOW_LOOT;
-                        break;
-                    case GROUP_PERMISSION:
-                        if (!item.is_blocked)
-                            lootItem.UIType = LOOT_SLOT_TYPE_ALLOW_LOOT;
-                        else
-                            lootItem.UIType = LOOT_SLOT_TYPE_ROLL_ONGOING;
-                        break;
-                    default:
-                        lootItem.UIType = slotType;
-                        break;
-                }
+                    WorldPackets::Loot::LootCurrency lootCurrency;
+                    lootCurrency.LootListID = ci->index + 1;
 
-                packet.Items.push_back(lootItem);
+                    switch (permission)
+                    {
+                        case MASTER_PERMISSION:
+                            lootCurrency.UIType = LOOT_SLOT_TYPE_MASTER;
+                            break;
+                        case RESTRICTED_PERMISSION:
+                            lootCurrency.UIType = item.is_blocked ? LOOT_SLOT_TYPE_LOCKED : LOOT_SLOT_TYPE_ALLOW_LOOT;
+                            break;
+                        case GROUP_PERMISSION:
+                            if (!item.is_blocked)
+                                lootCurrency.UIType = LOOT_SLOT_TYPE_ALLOW_LOOT;
+                            else
+                                lootCurrency.UIType = LOOT_SLOT_TYPE_ROLL_ONGOING;
+                            break;
+                        default:
+                            lootCurrency.UIType = slotType;
+                            break;
+                    }
+
+                    lootCurrency.Quantity = item.count;
+                    lootCurrency.CurrencyID = item.itemid;
+                    packet.Currencies.push_back(lootCurrency);
+                }
             }
         }
     }
@@ -727,10 +896,11 @@ void Loot::FillNotNormalLootFor(Player* player, bool presentAtLooting)
         else
             item = &quest_items[i - itemsSize];
 
-        if (!item->is_looted && item->freeforall && item->AllowedForPlayer(player))
-            if (ItemTemplate const* proto = sObjectMgr->GetItemTemplate(item->itemid))
-                if (proto->IsCurrencyToken())
-                    player->StoreLootItem(i, this);
+        if (item->type == LootItemType::Item)
+            if (!item->is_looted && item->freeforall && item->AllowedForPlayer(player))
+                if (ItemTemplate const* proto = sObjectMgr->GetItemTemplate(item->itemid))
+                    if (proto->IsCurrencyToken())
+                        player->StoreLootItem(i, this);
     }
 }
 

@@ -24,6 +24,7 @@
 #include "ItemEnchantmentMgr.h"
 #include "ObjectGuid.h"
 #include "RefManager.h"
+#include "LootItemType.h"
 #include "SharedDefines.h"
 #include <unordered_map>
 #include <vector>
@@ -133,6 +134,7 @@ enum LootSlotType
 
 struct TC_GAME_API LootItem
 {
+    LootItemType type = LootItemType::Currency;
     uint32  itemid;
     uint32  itemIndex;
     ItemRandomBonusListId randomBonusListId;
