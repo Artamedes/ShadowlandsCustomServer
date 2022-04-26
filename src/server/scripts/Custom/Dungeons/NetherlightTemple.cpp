@@ -577,8 +577,10 @@ class instance_netherlight_temple : public InstanceMapScript
                                 derza->AI()->DoAction(2);
                             break;
                         case 700402: // derza
+                            DerzaDead = 1;
                             if (auto velen = instance->GetCreature(VelenGuid))
                                 velen->AI()->DoAction(1);
+                            SaveToDB();
                             break;
                     }
                 }
