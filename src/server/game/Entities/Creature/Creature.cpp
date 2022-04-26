@@ -347,8 +347,8 @@ void Creature::AddToWorld()
             zoneScript->OnCreatureCreateForScript(this);
         }
 
-        if (GetMap()->Instanceable())
-            m_canBePersonalLooted = false; // Don't allow personal loot in dungeons.
+        //if (GetMap()->Instanceable())
+        //    m_canBePersonalLooted = false; // Don't allow personal loot in dungeons.
     }
 }
 
