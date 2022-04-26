@@ -21,8 +21,8 @@ class LoginScript : public PlayerScript
             p_Player->LearnSpell(674, true);
 
             // pvp badges
-            p_Player->StoreNewItemInBestSlots(175921, 1, ItemContext::Raid_Raid_Finder, { 7186, 41 }); ///< Added leech to them.
-            p_Player->StoreNewItemInBestSlots(178386, 1, ItemContext::Raid_Raid_Finder, { 7186, 41 }); ///< Added leech to them.
+            p_Player->StoreNewItemInBestSlots(175921, 1, ItemContext::Raid_Raid_Finder, { 7186, 41, 30000 }); ///< Added leech to them.
+            p_Player->StoreNewItemInBestSlots(178386, 1, ItemContext::Raid_Raid_Finder, { 7186, 41, 30000 }); ///< Added leech to them.
 
             switch (p_Player->GetClass())
             {
@@ -38,7 +38,7 @@ class LoginScript : public PlayerScript
 
                     p_Player->SetCanTitanGrip(true);
                     for (uint32 item : items)
-                        p_Player->StoreNewItemInBestSlots(item, 1, ItemContext::Raid_Raid_Finder, {7186});
+                        p_Player->StoreNewItemInBestSlots(item, 1, ItemContext::Raid_Raid_Finder, {7186, 30000 });
                     break;
                 }
                 case CLASS_PALADIN:
@@ -52,7 +52,7 @@ class LoginScript : public PlayerScript
                         p_Player->LearnTalent(talent, nullptr);
 
                     for (uint32 item : items)
-                        p_Player->StoreNewItemInBestSlots(item, 1, ItemContext::Raid_Raid_Finder, {7186});
+                        p_Player->StoreNewItemInBestSlots(item, 1, ItemContext::Raid_Raid_Finder, {7186, 30000 });
 
                     break;
                 }
@@ -67,7 +67,7 @@ class LoginScript : public PlayerScript
                         p_Player->LearnTalent(talent, nullptr);
 
                     for (uint32 item : items)
-                        p_Player->StoreNewItemInBestSlots(item, 1, ItemContext::Raid_Raid_Finder, {7186});
+                        p_Player->StoreNewItemInBestSlots(item, 1, ItemContext::Raid_Raid_Finder, {7186, 30000 });
 
                     break;
                 }
@@ -82,7 +82,7 @@ class LoginScript : public PlayerScript
                         p_Player->LearnTalent(talent, nullptr);
 
                     for (uint32 item : items)
-                        p_Player->StoreNewItemInBestSlots(item, 1, ItemContext::Raid_Raid_Finder, {7186});
+                        p_Player->StoreNewItemInBestSlots(item, 1, ItemContext::Raid_Raid_Finder, {7186, 30000 });
                     break;
                 }
                 case CLASS_PRIEST:
@@ -97,7 +97,7 @@ class LoginScript : public PlayerScript
                         p_Player->LearnTalent(talent, nullptr);
 
                     for (uint32 item : items)
-                        p_Player->StoreNewItemInBestSlots(item, 1, ItemContext::Raid_Raid_Finder, {7186});
+                        p_Player->StoreNewItemInBestSlots(item, 1, ItemContext::Raid_Raid_Finder, {7186, 30000 });
                     break;
                 }
                 case CLASS_DEATH_KNIGHT:
@@ -111,7 +111,7 @@ class LoginScript : public PlayerScript
                         p_Player->LearnTalent(talent, nullptr);
 
                     for (uint32 item : items)
-                        p_Player->StoreNewItemInBestSlots(item, 1, ItemContext::Raid_Raid_Finder, {7186});
+                        p_Player->StoreNewItemInBestSlots(item, 1, ItemContext::Raid_Raid_Finder, {7186, 30000 });
                     break;
                 }
                 case CLASS_SHAMAN:
@@ -126,7 +126,7 @@ class LoginScript : public PlayerScript
                         p_Player->LearnTalent(talent, nullptr);
 
                     for (uint32 item : items)
-                        p_Player->StoreNewItemInBestSlots(item, 1, ItemContext::Raid_Raid_Finder, {7186});
+                        p_Player->StoreNewItemInBestSlots(item, 1, ItemContext::Raid_Raid_Finder, {7186, 30000 });
                     break;
                 }
                 case CLASS_MAGE:
@@ -141,7 +141,7 @@ class LoginScript : public PlayerScript
                         p_Player->LearnTalent(talent, nullptr);
 
                     for (uint32 item : items)
-                        p_Player->StoreNewItemInBestSlots(item, 1, ItemContext::Raid_Raid_Finder, {7186});
+                        p_Player->StoreNewItemInBestSlots(item, 1, ItemContext::Raid_Raid_Finder, {7186, 30000 });
                     break;
                 }
                 case CLASS_WARLOCK:
@@ -156,7 +156,7 @@ class LoginScript : public PlayerScript
                         p_Player->LearnTalent(talent, nullptr);
 
                     for (uint32 item : items)
-                        p_Player->StoreNewItemInBestSlots(item, 1, ItemContext::Raid_Raid_Finder, {7186});
+                        p_Player->StoreNewItemInBestSlots(item, 1, ItemContext::Raid_Raid_Finder, {7186, 30000 });
                     break;
                 }
                 case CLASS_MONK:
@@ -170,7 +170,7 @@ class LoginScript : public PlayerScript
                         p_Player->LearnTalent(talent, nullptr);
 
                     for (uint32 item : items)
-                        p_Player->StoreNewItemInBestSlots(item, 1, ItemContext::Raid_Raid_Finder, {7186});
+                        p_Player->StoreNewItemInBestSlots(item, 1, ItemContext::Raid_Raid_Finder, {7186, 30000 });
                     break;
                 }
                 case CLASS_DRUID:
@@ -184,7 +184,7 @@ class LoginScript : public PlayerScript
                         p_Player->LearnTalent(talent, nullptr);
 
                     for (uint32 item : items)
-                        p_Player->StoreNewItemInBestSlots(item, 1, ItemContext::Raid_Raid_Finder, {7186});
+                        p_Player->StoreNewItemInBestSlots(item, 1, ItemContext::Raid_Raid_Finder, {7186, 30000 });
                     break;
                 }
                 case CLASS_DEMON_HUNTER:
@@ -198,7 +198,7 @@ class LoginScript : public PlayerScript
                         p_Player->LearnTalent(talent, nullptr);
 
                     for (uint32 item : items)
-                        p_Player->StoreNewItemInBestSlots(item, 1, ItemContext::Raid_Raid_Finder, { 7186 });
+                        p_Player->StoreNewItemInBestSlots(item, 1, ItemContext::Raid_Raid_Finder, { 7186, 30000 });
                     break;
                 }
             }
