@@ -15,6 +15,7 @@
 #include "MovementGenerator.h"
 #include "GenericMovementGenerator.h"
 #include "QuestAI.h"
+#include "GameObjectAI.h"
 
 struct npc_battle_training : public ScriptedAI
 {
@@ -2800,6 +2801,13 @@ public:
     bool OnGossipHello(Player* player) override
     {
         ClearGossipMenuFor(player);
+
+        if (player->GetQuestStatus(700006) == QUEST_STATUS_NONE)
+        {
+            SendGossipMenuFor(player, me->GetEntry(), me);
+            return true;
+        }
+
         if (player->GetQuestStatus(700006) == QUEST_STATUS_INCOMPLETE && !player->HasItemCount(700001))
             AddGossipItemFor(player, GossipOptionIcon::None, "I'll test the Magic Stone!", 0, 1);
         else if (player->GetQuestStatus(700006) == QUEST_STATUS_INCOMPLETE)
@@ -2819,7 +2827,7 @@ public:
             }
             return true;
         }
-        SendGossipMenuFor(player, me->GetEntry(), me);
+        SendGossipMenuFor(player, 7000300, me);
         return true;
     }
 
@@ -2872,6 +2880,24 @@ public:
     }
 };
 
+struct go_golden_treasure_chest_218889 : public GameObjectAI
+{
+public:
+    go_golden_treasure_chest_218889(GameObject* go) : GameObjectAI(go) { }
+
+    bool OnReportUse(Player* player) override
+    {
+        if (auto bankSecurity = me->FindNearestCreature(700044, 15.0f))
+        {
+            bankSecurity->CastSpell(player, 360247, true);
+            if (bankSecurity->AI())
+                bankSecurity->AI()->Talk(0, player);
+        }
+
+        return false;
+    }
+};
+
 void AddSC_MallScripts()
 {
     RegisterCreatureAI(npc_battle_training);
@@ -2920,4 +2946,5 @@ void AddSC_MallScripts()
     RegisterSpellAndAuraScriptPair(spell_fade_to_black_365581, spell_fade_to_black_365581_spellscript);
 
     RegisterQuestAI(questscript_incursion);
+    RegisterGameObjectAI(go_golden_treasure_chest_218889);
 }
