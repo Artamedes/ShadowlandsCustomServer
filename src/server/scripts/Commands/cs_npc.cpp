@@ -216,13 +216,23 @@ class npc_playerscript : public PlayerScript
             if (menu_id != 56818)
                 return;
 
+            MenuDatas& l_Menu = _menuData[player->GetGUID().GetCounter()];
+
             if (!code)
             {
+                switch (action)
+                {
+                    case 2:
+                        l_Menu.Name = "";
+                        break;
+                    case 3:
+                        l_Menu.SubName = "";
+                        break;
+                }
 
                 ShowMenu(player);
                 return;
             }
-            MenuDatas& l_Menu = _menuData[player->GetGUID().GetCounter()];
 
             switch (action)
             {
@@ -332,12 +342,74 @@ public:
             { "addleaderformation", HandleAddLeaderFormation,      rbac::RBAC_PERM_COMMAND_DEV, Console::No },
             { "addformation",   HandleAddFormationCommand,         rbac::RBAC_PERM_COMMAND_DEV, Console::No },
             { "addloot",        HandleAddLootCommand,              rbac::RBAC_PERM_COMMAND_DEV, Console::No },
+            { "replace",        HandleNpcReplaceCommand,           rbac::RBAC_PERM_COMMAND_DEV, Console::No },
+            { "allreplace",     HandleNpcReplaceAllCommand,        rbac::RBAC_PERM_COMMAND_DEV, Console::No },
         };
         static ChatCommandTable commandTable =
         {
             { "npc", npcCommandTable },
         };
         return commandTable;
+    }
+
+    static bool HandleNpcReplaceCommand(ChatHandler* handler, uint32 newEntry)
+    {
+        auto newCreature = sObjectMgr->GetCreatureTemplate(newEntry);
+        if (!newCreature)
+        {
+            handler->SendSysMessage("not exist newEntry! Did you forgot to reload?");
+            return true;
+        }
+
+        auto selected = handler->getSelectedCreature();
+        if (!selected)
+        {
+            handler->SendSysMessage("Not selected a creature!");
+            return true;
+        }
+
+        ObjectGuid::LowType spawnId = selected->GetSpawnId();
+        handler->PSendSysMessage("%u spawnid replaced!", spawnId);
+        WorldDatabase.PExecute("UPDATE creature set id = %u where guid = %u", newEntry, spawnId);
+        auto data = const_cast<CreatureData*>(sObjectMgr->GetCreatureData(spawnId));
+        data->id = newEntry;
+        return true;
+    }
+
+    static bool HandleNpcReplaceAllCommand(ChatHandler* handler, uint32 newEntry)
+    {
+        auto newCreature = sObjectMgr->GetCreatureTemplate(newEntry);
+        if (!newCreature)
+        {
+            handler->SendSysMessage("not exist newEntry! Did you forgot to reload?");
+            return true;
+        }
+
+        auto selected = handler->getSelectedCreature();
+        if (!selected)
+        {
+            handler->SendSysMessage("Not selected a creature!");
+            return true;
+        }
+
+        ObjectGuid::LowType spawnId = selected->GetSpawnId();
+        ObjectGuid::LowType entryId = selected->GetEntry();
+        handler->PSendSysMessage("%u spawnid replaced!", spawnId);
+        auto query = WorldDatabase.PQuery("SELECT guid from creature where id = %u and map = %u", entryId, handler->GetPlayer()->GetMapId());
+        if (query)
+        {
+            do
+            {
+                Field* fields = query->Fetch();
+                if (auto data = sObjectMgr->GetCreatureData(spawnId))
+                {
+                    const_cast<CreatureData*>(data)->id = newEntry;
+                }
+            } while (query->NextRow());
+        }
+
+        WorldDatabase.PExecute("UPDATE creature set id = %u where id = %u and map = %u", newEntry, entryId, handler->GetPlayer()->GetMapId());
+        return true;
     }
 
     static bool HandleAddLootCommand(ChatHandler* handler, uint32 itemId, uint32 count, Optional<uint32> chance)
