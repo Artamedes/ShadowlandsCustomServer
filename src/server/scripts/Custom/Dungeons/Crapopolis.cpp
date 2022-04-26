@@ -5,6 +5,27 @@
 #include "Player.h"
 #include "../CustomInstanceScript.h";
 
+const Position dancePos[] = {
+    { 805.559f, -3699.53f, 12.6373f, 2.12385f },
+    { 803.267f, -3700.16f, 12.6373f, 2.07803f },
+    { 801.064f, -3701.39f, 12.6373f, 2.07803f },
+    { 798.82f, -3703.11f, 12.6373f, 2.07803f },
+    { 799.404f, -3705.47f, 12.6373f, 2.07803f },
+    { 802.142f, -3705.21f, 12.6373f, 1.9864f },
+    { 805.073f, -3703.89f, 12.6373f, 2.19584f },
+    { 806.898f, -3703.01f, 12.6373f, 2.01585f },
+    { 809.159f, -3704.71f, 12.4599f, 2.1173f },
+    { 807.132f, -3705.94f, 12.4599f, 2.1173f },
+    { 804.632f, -3704.74f, 12.6373f, 2.03876f },
+    { 802.147f, -3705.38f, 12.6373f, 2.03876f },
+    { 799.936f, -3705.07f, 12.6373f, 2.03876f },
+    { 797.898f, -3703.67f, 12.6374f, 2.03876f },
+    { 798.84f, -3701.44f, 12.6374f, 2.03876f },
+    { 804.314f, -3703.0f, 12.6374f, 1.7017f },
+};
+
+const Position warMachinePos = { 810.236f, -3714.79f, 13.4624f, 2.17294f };
+
 struct npc_crapopolis_ai_base : public ScriptedAI
 {
     public:
@@ -21,6 +42,12 @@ struct npc_crapopolis_ai_base : public ScriptedAI
             if (me->HasUnitState(UNIT_STATE_CASTING))
                 return;
 
+            if (auto victim = me->GetVictim())
+                if (victim->GetEntry() == 700211)
+                    shouldDance = true;
+                else
+                    shouldDance = false;
+
             RunAIEvents(p_Diff);
 
             DoMeleeAttackIfReady();
@@ -29,6 +56,34 @@ struct npc_crapopolis_ai_base : public ScriptedAI
         virtual void RunAIEvents(uint32 p_Diff)
         {
 
+        }
+
+        bool shouldDance = false;
+
+        void EnterEvadeMode(EvadeReason why) override
+        {
+            ScriptedAI::EnterEvadeMode(why);
+
+            if (shouldDance)
+            {
+                shouldDance = false;
+
+                if (me->GetEntry() == 700217)
+                {
+                    me->GetMotionMaster()->MovePoint(1, warMachinePos, MOVE_PATHFINDING, warMachinePos.GetOrientation())->callbackFunc = [this]()
+                    {
+                        me->SetEmoteState(Emote::EMOTE_STATE_STUN);
+                    };
+                }
+                else
+                {
+                    auto pos = Trinity::Containers::SelectRandomContainerElement(dancePos);
+                    me->GetMotionMaster()->MovePoint(1, me->GetRandomPoint(pos, 5.0f), MOVE_PATHFINDING, pos.GetOrientation())->callbackFunc = [this]()
+                    {
+                        me->SetEmoteState(Emote::EMOTE_STATE_DANCE);
+                    };
+                }
+            }
         }
 
         bool UpdateVictimCrapopolis()
