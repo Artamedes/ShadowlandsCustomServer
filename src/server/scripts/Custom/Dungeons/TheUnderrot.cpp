@@ -6,6 +6,7 @@
 #include "Scenario.h"
 #include "InstanceScenario.h"
 #include "GenericMovementGenerator.h"
+#include "AreaBoundary.h"
 
 enum Underrot
 {
@@ -17,13 +18,34 @@ enum Underrot
     BossC = 701000,
 
     UnderrotCriteriaID = 300000,
+
+    BOSS_SPORECALLER_ZANCHA = 0,
+    BOSS_ANDSID_THE_MECHANIC,
+    BOSS_MISTER_DOCTOR,
+
+    GobWebOne = 295356,
+    GobWebTwo = 296385,
 };
 
+BossBoundaryData const boundaries =
+{
+    { BOSS_SPORECALLER_ZANCHA,  new CircleBoundary({ 857.834f, 982.584f, 39.1488f, 4.15475f }, 200.0f)  },
+    { BOSS_ANDSID_THE_MECHANIC, new CircleBoundary({ 1032.7f, 1059.12f, 33.3364f, 6.23278f }, 56.0f )},
+    { BOSS_MISTER_DOCTOR,       new CircleBoundary({ 1199.37f, 1481.5f, -181.709f, 1.77237f }, 100.0f)  },
+};
+
+DoorData const doorData[] =
+{
+    { GobWebOne, BOSS_SPORECALLER_ZANCHA,  DOOR_TYPE_PASSAGE },
+    { GobWebTwo, BOSS_ANDSID_THE_MECHANIC, DOOR_TYPE_PASSAGE },
+};
 struct instance_the_underrot : public CustomInstanceScript
 {
 public:
     instance_the_underrot(InstanceMap* map) : CustomInstanceScript(map)
     {
+        LoadBossBoundaries(boundaries);
+        LoadDoorData(doorData);
     }
 
     void OnCompletedCriteriaTree(CriteriaTree const* tree) override
@@ -35,6 +57,30 @@ public:
         }
     }
 
+    void OnGameObjectCreate(GameObject* go) override
+    {
+        InstanceScript::OnGameObjectCreate(go);
+
+        switch (go->GetEntry())
+        {
+
+        }
+    }
+
+    bool SetBossState(uint32 id, EncounterState state) override
+    {
+        switch (state)
+        {
+            case EncounterState::DONE:
+                switch (id)
+                {
+
+                }
+                break;
+        }
+
+        return InstanceScript::SetBossState(id, state);
+    }
     // unneeded for now - handled internally
     //void CreatureDiesForScript(Creature* creature, Unit* killer) override
     //{
@@ -62,10 +108,10 @@ public:
 };
 
 // 701000 - npc_mister_doctor_701000
-struct npc_mister_doctor_701000 : public ScriptedAI
+struct npc_mister_doctor_701000 : public BossAI
 {
 public:
-    npc_mister_doctor_701000(Creature* creature) : ScriptedAI(creature), summons(creature) { }
+    npc_mister_doctor_701000(Creature* creature) : BossAI(creature, BOSS_MISTER_DOCTOR) { }
 
     enum eSpell
     {
@@ -78,8 +124,6 @@ public:
         PlagueChannel = 327487,
     };
 
-    SummonList summons;
-
     void JustSummoned(Creature* creature) override
     {
         summons.Summon(creature);
@@ -90,6 +134,15 @@ public:
         {
             creature->DespawnOrUnsummon();
         };
+    }
+
+    void EnterEvadeMode(EvadeReason /*why*/) override
+    {
+        _EnterEvadeMode();
+        if (instance)
+            instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
+        events.Reset();
+        _DespawnAtEvade();
     }
 
     void SummonedCreatureDies(Creature* creature, Unit* /*killer*/) override
@@ -161,6 +214,7 @@ public:
 
     void Reset() override
     {
+        BossAI::Reset();
         summons.DespawnAll();
         Slimes = 10;
         phasing = false;
@@ -177,11 +231,13 @@ public:
 
     void JustDied(Unit* who) override
     {
+        BossAI::JustDied(who);
         Talk(5);
     }
 
-    void JustEngagedWith(Unit* /*who*/) override
+    void JustEngagedWith(Unit* who) override
     {
+        BossAI::JustEngagedWith(who);
         events.Reset();
         events.ScheduleEvent(1, 5s);
         events.ScheduleEvent(2, 10s, 20s);
@@ -323,8 +379,6 @@ public:
         }
     }
 
-    TaskScheduler scheduler;
-    EventMap events;
     int32 Slimes = 10;
     uint32 ActiveSlimes = 0;
 };
@@ -438,10 +492,10 @@ public:
 };
 
 // 701003 - npc_ansid_the_mechanic_701003
-struct npc_ansid_the_mechanic_701003 : public ScriptedAI
+struct npc_ansid_the_mechanic_701003 : public BossAI
 {
 public:
-    npc_ansid_the_mechanic_701003(Creature* creature) : ScriptedAI(creature) { }
+    npc_ansid_the_mechanic_701003(Creature* creature) : BossAI(creature, BOSS_ANDSID_THE_MECHANIC) { }
 
     void InitializeAI() override
     {
@@ -456,6 +510,15 @@ public:
     void JustEngagedWith(Unit* who) override
     {
         Talk(0);
+    }
+
+    void EnterEvadeMode(EvadeReason /*why*/) override
+    {
+        _EnterEvadeMode();
+        if (instance)
+            instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
+        events.Reset();
+        _DespawnAtEvade();
     }
 
     void UpdateAI(uint32 diff) override
@@ -475,10 +538,6 @@ public:
         }
         DoMeleeAttackIfReady();
     }
-
-
-    TaskScheduler scheduler;
-    EventMap events;
 };
 
 // 701004 - npc_ansid_s_helper_701004
@@ -521,10 +580,12 @@ public:
 };
 
 // 701005 - npc_sporecaller_zancha_701005
-struct npc_sporecaller_zancha_701005 : public ScriptedAI
+struct npc_sporecaller_zancha_701005 : public BossAI
 {
 public:
-    npc_sporecaller_zancha_701005(Creature* creature) : ScriptedAI(creature) { }
+    npc_sporecaller_zancha_701005(Creature* creature) : BossAI(creature, BOSS_SPORECALLER_ZANCHA)
+    {
+    }
 
     enum eSpells
     {
@@ -534,18 +595,23 @@ public:
         ImminentDestruction = 360876,
     };
 
-    void InitializeAI() override
-    {
-        /// TODO: Fill this function
-    }
-
     void Reset() override
     {
-        /// TODO: Fill this function
+        BossAI::Reset();
+    }
+
+    void EnterEvadeMode(EvadeReason /*why*/) override
+    {
+        _EnterEvadeMode();
+        if (instance)
+            instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
+        events.Reset();
+        _DespawnAtEvade();
     }
 
     void JustEngagedWith(Unit* who) override
     {
+        BossAI::JustEngagedWith(who);
         events.Reset();
         Talk(1);
         events.ScheduleEvent(1, 10s, 20s);
@@ -600,10 +666,6 @@ public:
             Talk(0);
         }
     }
-
-
-    TaskScheduler scheduler;
-    EventMap events;
 };
 
 // 701006 - npc_plague_witch_701006
