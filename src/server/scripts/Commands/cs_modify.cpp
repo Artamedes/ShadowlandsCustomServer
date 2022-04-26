@@ -1109,35 +1109,35 @@ public:
 
     static bool HandleModifyAnimaCommand(ChatHandler* handler, uint32 anima)
     {
-        auto covenant = handler->getSelectedPlayer()->GetCovenant();
+        auto covenant = handler->getSelectedPlayerOrSelf()->GetCovenant();
         covenant->SetAnima(anima);
         return true;
     }
 
     static bool HandleModifyRenownCommand(ChatHandler* handler, int32 renown)
     {
-        auto covenant = handler->getSelectedPlayer()->GetCovenant();
+        auto covenant = handler->getSelectedPlayerOrSelf()->GetCovenant();
         covenant->SetRenown(renown);
         return true;
     }
 
     static bool HandleModifySoulsCommand(ChatHandler* handler, uint32 souls)
     {
-        auto covenant = handler->getSelectedPlayer()->GetCovenant();
+        auto covenant = handler->getSelectedPlayerOrSelf()->GetCovenant();
         covenant->SetSouls(souls);
         return true;
     }
 
     static bool HandleModifyCovenantCommand(ChatHandler* handler, int32 covenantId)
     {
-        auto covenantMgr = handler->getSelectedPlayer()->GetCovenantMgr();
+        auto covenantMgr = handler->getSelectedPlayerOrSelf()->GetCovenantMgr();
         covenantMgr->SetCovenant(static_cast<CovenantID>(covenantId));
         return true;
     }
 
     static bool HandleModifySoulbindCommand(ChatHandler* handler, int32 soulbindId)
     {
-        auto covenant = handler->getSelectedPlayer()->GetCovenant();
+        auto covenant = handler->getSelectedPlayerOrSelf()->GetCovenant();
         covenant->SetSoulbind(static_cast<SoulbindID>(soulbindId));
         return true;
     }
