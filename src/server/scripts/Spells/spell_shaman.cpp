@@ -38,6 +38,8 @@
 #include "SpellAuras.h"
 #include "Totem.h"
 #include "Item.h"
+#include "TotemAI.h"
+#include "Group.h"
 
 enum ShamanSpells
 {
@@ -140,7 +142,8 @@ enum ShamanSpells
     SPELL_SHAMAN_LIGHTNING_SHIELD_TRIGGER                   = 26364,
     SPELL_SHAMAN_LIQUID_MAGMA_DAMAGE                        = 192231,
     SPELL_SHAMAN_MAELSTROM_WEAPON                           = 187880,
-    SPELL_SHAMAN_MAELSTROM_WEAPON_POWER                     = 187890,
+    SPELL_SHAMAN_MAELSTROM_WEAPON_POWER                     = 187881,
+    SPELL_SHAMAN_MAELSTROM_WEAPON_POWER_DUMMY               = 344179,
     SPELL_SHAMAN_MAIL_SPECIALISATION_INT                    = 86100,
     SPELL_SHAMAN_MAIL_SPECIALIZATION_AGI                    = 86099,
     SPELL_SHAMAN_MANA_TIDE                                  = 16191,
@@ -562,6 +565,11 @@ class spell_sha_feral_spirit : public SpellScriptLoader
 public:
     spell_sha_feral_spirit() : SpellScriptLoader("spell_sha_feral_spirit") {}
 
+    enum FeralSpirits
+    {
+        Periodic = 333957,
+    };
+
     class spell_sha_feral_spirit_SpellScript : public SpellScript
     {
         PrepareSpellScript(spell_sha_feral_spirit_SpellScript);
@@ -576,6 +584,7 @@ public:
             if (caster->IsValidAttackTarget(target))
                 caster->SetInCombatWith(target);
             caster->CastSpell(caster, SPELL_SHAMAN_FERAL_SPIRIT_SUMMON, true);
+            caster->CastSpell(caster, Periodic, true);
         }
 
         void Register() override
@@ -4412,12 +4421,12 @@ struct npc_feral_spirit : public ScriptedAI
         EnterEvadeMode(EVADE_REASON_NO_HOSTILES);
     }
 
-    void DamageDealt(Unit* /*victim*/, uint32& /*damage*/, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
-    {
-        if (Unit* owner = me->GetOwner())
-            if (owner->HasAura(SPELL_SHAMAN_FERAL_SPIRIT_ENERGIZE_DUMMY))
-                owner->ModifyPower(POWER_MAELSTROM, +5);
-    }
+    //void DamageDealt(Unit* /*victim*/, uint32& /*damage*/, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
+    //{
+    //    if (Unit* owner = me->GetOwner())
+    //        if (owner->HasAura(SPELL_SHAMAN_FERAL_SPIRIT_ENERGIZE_DUMMY))
+    //            owner->ModifyPower(POWER_MAELSTROM, +5);
+    //}
 
     void EnterEvadeMode(EvadeReason /*reason*/) override
     {
@@ -6576,6 +6585,197 @@ class spell_sha_chain_harvest : public SpellScript
     }
 };
 
+// ID - 8512 Windfury Totem
+class spell_sha_windfury_totem : public SpellScript
+{
+    PrepareSpellScript(spell_sha_windfury_totem);
+
+    void HandleBeforeCast()
+    {
+        if (auto caster = GetCaster())
+        {
+            if (Creature* totem = caster->GetControlledCreature(6112))
+                if (totem->ToTotem())
+                {
+                    if (totem->AI())
+                        totem->AI()->DoAction(3);
+                    totem->ToTotem()->UnSummon();
+                }
+        }
+    }
+
+    void Register()
+    {
+        BeforeCast += SpellCastFn(spell_sha_windfury_totem::HandleBeforeCast);
+    }
+};
+
+struct npc_shaman_windfury_totem : public TotemAI
+{
+public:
+    npc_shaman_windfury_totem(Creature* creature) : TotemAI(creature) { }
+
+    GuidUnorderedSet wfUsers;
+
+    void DoAction(int32 action) override
+    {
+        if (action == 3)
+        {
+            for (auto it = wfUsers.begin(); it != wfUsers.end(); ++it)
+            {
+                auto obj = ObjectAccessor::GetUnit(*me, *it);
+                if (obj)
+                    obj->RemoveAurasDueToSpell(327942, me->GetGUID());
+            }
+        }
+    }
+
+    void UpdateAI(uint32 diff) override
+    {
+        TotemAI::UpdateAI(diff);
+
+        for (auto it = wfUsers.begin(); it != wfUsers.end();)
+        {
+            auto obj = ObjectAccessor::GetUnit(*me, *it);
+            bool remove = obj == nullptr || obj->GetDistance2d(me) > 30.0f;
+
+            if (remove)
+            {
+                if (obj)
+                    obj->RemoveAurasDueToSpell(327942, me->GetGUID());
+
+                it = wfUsers.erase(it);
+            }
+            else
+            {
+                ++it;
+
+                if (!obj->HasAura(327942))
+                    me->AddAura(327942, obj);
+            }
+        }
+
+        if (wfUsers.size() == 5)
+            return;
+
+        if (auto owner = me->GetCharmerOrOwnerPlayerOrPlayerItself())
+        {
+            std::list<Unit*> friendlies;
+            me->GetFriendlyUnitListInRange(friendlies, 30.0f);
+            for (auto u : friendlies)
+            {
+                if (auto player = u->ToPlayer())
+                {
+                    if (player->IsInSameGroupWith(owner) && !wfUsers.count(player->GetGUID()))
+                    {
+                        wfUsers.insert(player->GetGUID());
+                        me->AddAura(327942, player);
+                    }
+                }
+            }
+        }
+    }
+};
+
+// ID - 333957 Feral Spirit
+class spell_sha_feral_spirit_aura : public AuraScript
+{
+    PrepareAuraScript(spell_sha_feral_spirit_aura);
+
+    void HandleDummy(AuraEffect const* /*aurEff*/)
+    {
+        if (auto caster = GetCaster())
+            caster->CastSpell(caster, SPELL_SHAMAN_MAELSTROM_WEAPON_POWER, true);
+    }
+
+    void Register() override
+    {
+        OnEffectPeriodic += AuraEffectPeriodicFn(spell_sha_feral_spirit_aura::HandleDummy, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY);
+    }
+};
+
+// ID - 187881 Maelstrom Weapon
+class spelL_sha_maelstrom_weapon_187881 : public AuraScript
+{
+    PrepareAuraScript(spelL_sha_maelstrom_weapon_187881);
+
+    void HandleApply(AuraEffect const* aurEff, AuraEffectHandleModes mode)
+    {
+        if (auto caster = GetCaster())
+            caster->CastSpell(caster, SPELL_SHAMAN_MAELSTROM_WEAPON_POWER_DUMMY, true);
+    }
+
+    void HandleRemove(AuraEffect const* aurEff, AuraEffectHandleModes mode)
+    {
+    }
+
+    void Register() override
+    {
+        OnEffectApply += AuraEffectApplyFn(spelL_sha_maelstrom_weapon_187881::HandleApply, EFFECT_0, SPELL_AURA_ADD_PCT_MODIFIER, AURA_EFFECT_HANDLE_REAL_OR_REAPPLY_MASK);
+        OnEffectRemove += AuraEffectRemoveFn(spelL_sha_maelstrom_weapon_187881::HandleRemove, EFFECT_0, SPELL_AURA_ADD_PCT_MODIFIER, AURA_EFFECT_HANDLE_REAL_OR_REAPPLY_MASK);
+    }
+};
+
+// ID - 344179 Maelstrom Weapon
+class spell_sha_maelstrom_weapon_proc : public AuraScript
+{
+    PrepareAuraScript(spell_sha_maelstrom_weapon_proc);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        if (!eventInfo.GetSpellInfo())
+            return false;
+
+        switch (eventInfo.GetSpellInfo()->Id)
+        {
+            case 1064:  // - Chain Heal
+            case 8004: // - Healing Surge
+            case 117014: // - Elemental Blast
+            case 126371: // - Deluge
+            case 188160: // - Earthen Smash
+            case 188196: // - Lightning Bolt
+            case 188443: // - Chain Lightning
+            case 191634: // - Stormkeeper
+            case 204266: // - Swelling Waves
+            case 206427: // - Lava Bolt
+            case 211094: // - Chain Lightning(PvP Talent)
+            case 214815: // - Lightning Bolt
+            case 214816: // - Lightning Bolt Overload
+            case 320137: // - Stormkeeper
+            case 320674: // - Chain Harvest(Venthyr)
+            case 326059: // - Primordial Wave(Necrolord)
+            case 350247: // - Stormkeeper
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    void HandleProc(AuraEffect* /*aurEff*/, ProcEventInfo& /*eventInfo*/)
+    {
+        if (Unit* caster = GetCaster())
+        {
+            caster->RemoveAurasDueToSpell(SPELL_SHAMAN_MAELSTROM_WEAPON_POWER);
+            caster->RemoveAurasDueToSpell(SPELL_SHAMAN_MAELSTROM_WEAPON_POWER_DUMMY);
+        }
+    }
+
+    void HandleRemove(AuraEffect const* aurEff, AuraEffectHandleModes mode)
+    {
+        if (Unit* caster = GetCaster())
+        {
+            caster->RemoveAurasDueToSpell(SPELL_SHAMAN_MAELSTROM_WEAPON_POWER);
+        }
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_sha_maelstrom_weapon_proc::CheckProc);
+        OnEffectProc += AuraEffectProcFn(spell_sha_maelstrom_weapon_proc::HandleProc, EFFECT_0, SPELL_AURA_DUMMY);
+        OnEffectRemove += AuraEffectRemoveFn(spell_sha_maelstrom_weapon_proc::HandleRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+    }
+};
+
 void AddSC_shaman_spell_scripts()
 {
     new shaman_playerscript();
@@ -6711,6 +6911,10 @@ void AddSC_shaman_spell_scripts()
     RegisterSpellScript(spell_sha_flametongue_weapon);
     RegisterSpellScript(spell_sha_flametongue_weapon_aura);
     RegisterSpellScript(spell_sha_chain_harvest);
+    RegisterSpellScript(spell_sha_windfury_totem);
+    RegisterSpellScript(spell_sha_feral_spirit_aura);
+    RegisterSpellScript(spelL_sha_maelstrom_weapon_187881);
+    RegisterSpellScript(spell_sha_maelstrom_weapon_proc);
 
     RegisterCreatureAI(npc_ancestral_protection_totem);
     RegisterCreatureAI(npc_cloudburst_totem);
@@ -6735,4 +6939,5 @@ void AddSC_shaman_spell_scripts()
     RegisterCreatureAI(npc_counterstrike_totem);
     RegisterCreatureAI(npc_earthbind_totem);
     RegisterCreatureAI(npc_greater_storm_elemental);
+    RegisterCreatureAI(npc_shaman_windfury_totem);
 }
