@@ -159,7 +159,7 @@ struct npc_sir_duke_iro_700112 : public ScriptedAI
             if (m_DidIntroText)
                 return;
 
-            if (p_Who->GetDistance(me) <= 20.0f)
+            if (p_Who->GetDistance(me) <= 40.0f)
             {
                 m_DidIntroText = true;
                 Talk(0);

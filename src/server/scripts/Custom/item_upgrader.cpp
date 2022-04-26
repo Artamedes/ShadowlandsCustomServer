@@ -188,7 +188,7 @@ class item_upgrader : public ItemScript
             return true;
         }
 
-        void DisplayItemUpgrade(Player* player, Item* itemTarget, ItemUpgrade const* itemUpgrade)
+        void DisplayItemUpgrade(Player* player, Item* itemTarget, ItemUpgrade const* itemUpgrade, bool hasMaterials = false)
         {
             auto itr = m_PlayerItemTargets.find(player->GetGUID());
 
@@ -199,7 +199,7 @@ class item_upgrader : public ItemScript
                 itr->second.ItemGuid = itemTarget->GetGUID();
 
 
-                if (itr->second.LastUpgradeTime > now && itr->second.LastItemUpgrade != itemUpgrade->RequiredID)
+                if (itr->second.LastUpgradeTime > now && itr->second.LastItemUpgrade != itemUpgrade->RequiredID && !hasMaterials)
                     dispMsg = true;
 
                 itr->second.LastUpgradeTime = now + 30s;
@@ -437,7 +437,7 @@ class item_upgrader : public ItemScript
                 }
             }
 
-            DisplayItemUpgrade(player, itemTarget, itemUpgrade);
+            DisplayItemUpgrade(player, itemTarget, itemUpgrade, HasMaterialsForItemUpgrade(player, itemTarget, itemUpgrade));
             return true;
         }
 
@@ -767,7 +767,7 @@ class item_upgrader : public ItemScript
 
                 if (auto nextUpgrade = sItemUpgrader->GetItemUpgrade(l_ItemTarget))
                    // if (auto nextItemUpgrade = HasMaterialsForItemUpgrade(p_Player, l_ItemTarget, nextUpgrade))
-                        DisplayItemUpgrade(p_Player, l_ItemTarget, nextUpgrade);
+                        DisplayItemUpgrade(p_Player, l_ItemTarget, nextUpgrade, HasMaterialsForItemUpgrade(p_Player, l_ItemTarget, nextUpgrade));
             }
 
             return true;
