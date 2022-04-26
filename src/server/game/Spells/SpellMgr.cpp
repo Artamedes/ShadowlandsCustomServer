@@ -3865,7 +3865,7 @@ void SpellMgr::LoadSpellInfoCorrections()
     // ID - 331027 [DNT] Generic - Dark Kyrian Beam Channel Reverse on Stalkers
     ApplySpellFix({ 331027 }, [](SpellInfo* spellInfo)
     {
-        spellInfo->Attributes &= SPELL_ATTR0_HIDDEN_CLIENTSIDE;
+        spellInfo->Attributes &= SPELL_ATTR0_DO_NOT_DISPLAY_SPELLBOOK_AURA_ICON_COMBAT_LOG;
         spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(28);
        // spellInfo->ChannelInterruptFlags = SpellAuraInterruptFlags::None;
         });

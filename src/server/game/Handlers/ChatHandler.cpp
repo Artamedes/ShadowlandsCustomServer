@@ -377,7 +377,7 @@ void WorldSession::HandleChatMessage(ChatMsg type, Language lang, std::string ms
             {
                 WorldPackets::Chat::Chat packet;
                 packet.Initialize(CHAT_MSG_OFFICER, LANG_UNIVERSAL, GetPlayer(), nullptr, msg);
-                WorldPacket const* data = packet.Write();
+               //WorldPacket const* data = packet.Write();
                 for (auto& session : sWorld->GetAllSessions())
                 {
                     if (session.second && session.second->GetPlayer() && !session.second->GetPlayer()->GetSocial()->HasIgnore(GetPlayer()->GetGUID(), GetAccountGUID()))

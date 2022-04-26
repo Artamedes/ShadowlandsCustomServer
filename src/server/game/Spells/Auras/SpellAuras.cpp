@@ -300,7 +300,7 @@ void AuraApplication::ClientUpdate(bool remove)
     if (auraBase == nullptr || remove)
         return;
 
-    if (auraBase->GetSpellInfo()->Attributes & SPELL_ATTR0_HIDDEN_CLIENTSIDE)
+    if (auraBase->GetSpellInfo()->Attributes & SPELL_ATTR0_DO_NOT_DISPLAY_SPELLBOOK_AURA_ICON_COMBAT_LOG)
         return;
 
     if (auraBase->GetCaster() == _target)

@@ -14486,7 +14486,7 @@ void Unit::SendLossOfControlAuraUpdate(AuraApplication const* aurApp, Mechanics 
     if (aura == nullptr)
         return;
 
-    if (aura->GetSpellInfo()->HasAttribute(SPELL_ATTR0_HIDDEN_CLIENTSIDE) || aura->GetSpellInfo()->HasAttribute(SPELL_ATTR5_HIDE_DURATION))
+    if (aura->GetSpellInfo()->HasAttribute(SPELL_ATTR0_DO_NOT_DISPLAY_SPELLBOOK_AURA_ICON_COMBAT_LOG) || aura->GetSpellInfo()->HasAttribute(SPELL_ATTR5_HIDE_DURATION))
         return;
 
     if (aurApp->IsPositive())
@@ -14526,7 +14526,7 @@ void Unit::SendAddLossOfControl(AuraApplication const* aurApp, Mechanics mechani
     if (aura == nullptr)
         return;
 
-    if (aura->GetSpellInfo()->HasAttribute(SPELL_ATTR0_HIDDEN_CLIENTSIDE) || aura->GetSpellInfo()->HasAttribute(SPELL_ATTR5_HIDE_DURATION) || aura->GetSpellInfo()->HasAttribute(SPELL_ATTR1_DONT_DISPLAY_IN_AURA_BAR))
+    if (aura->GetSpellInfo()->HasAttribute(SPELL_ATTR0_DO_NOT_DISPLAY_SPELLBOOK_AURA_ICON_COMBAT_LOG) || aura->GetSpellInfo()->HasAttribute(SPELL_ATTR5_HIDE_DURATION) || aura->GetSpellInfo()->HasAttribute(SPELL_ATTR1_NO_AURA_ICON))
         return;
 
     if (aurApp->IsPositive())
