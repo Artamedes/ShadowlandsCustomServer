@@ -5,6 +5,7 @@
 #include "CriteriaHandler.h"
 #include "Scenario.h"
 #include "InstanceScenario.h"
+#include "GenericMovementGenerator.h"
 
 enum Underrot
 {
@@ -66,27 +67,124 @@ struct npc_mister_doctor_701000 : public ScriptedAI
 public:
     npc_mister_doctor_701000(Creature* creature) : ScriptedAI(creature), summons(creature) { }
 
+    enum eSpell
+    {
+        BeconSlime = 327604,
+        PlagueBolt = 320120,
+        BroodPlague = 341959,
+        Barrel = 340441,
+        Blasphemy = 361999,
+        WateryAsphyxiate = 147834,
+        PlagueChannel = 327487,
+    };
+
     SummonList summons;
 
     void JustSummoned(Creature* creature) override
     {
         summons.Summon(creature);
+
+        ++ActiveSlimes;
+        creature->SetReactState(REACT_PASSIVE);
+        creature->GetMotionMaster()->MovePoint(1, *me, MOVE_WALK_MODE)->callbackFunc = [creature]()
+        {
+            creature->DespawnOrUnsummon();
+        };
+    }
+
+    void SummonedCreatureDies(Creature* creature, Unit* /*killer*/) override
+    {
+        if (Slimes)
+        {
+            Slimes--;
+            if (Slimes == 0)
+            {
+                didPhase2 = false;
+                phasing = false;
+                me->SetHealth(me->CountPctFromMaxHealth(10));
+                me->RemoveUnitFlag(UnitFlags::UNIT_FLAG_UNINTERACTIBLE);
+                me->RemoveUnitFlag(UnitFlags::UNIT_FLAG_NON_ATTACKABLE_2);
+                me->RemoveUnitFlag2(UnitFlags2::UNIT_FLAG2_HIDE_BODY);
+                me->SetReactState(REACT_AGGRESSIVE);
+                me->ResumeMovement();
+                Talk(4);
+            }
+        }
+        if (ActiveSlimes)
+        {
+            ActiveSlimes--;
+
+            if (ActiveSlimes == 0)
+            {
+                didPhase2 = false;
+                phasing = false;
+                me->SetHealth(me->CountPctFromMaxHealth(7 * Slimes + 10));
+                me->RemoveUnitFlag(UnitFlags::UNIT_FLAG_UNINTERACTIBLE);
+                me->RemoveUnitFlag(UnitFlags::UNIT_FLAG_NON_ATTACKABLE_2);
+                me->RemoveUnitFlag2(UnitFlags2::UNIT_FLAG2_HIDE_BODY);
+                me->SetReactState(REACT_AGGRESSIVE);
+                me->ResumeMovement();
+                Talk(4);
+            }
+        }
+    }
+
+    void SummonedCreatureDespawn(Creature* creature) override
+    {
+        if (!creature->isDead())
+        {
+            if (ActiveSlimes)
+            {
+                ActiveSlimes--;
+
+                if (ActiveSlimes == 0)
+                {
+                    didPhase2 = false;
+                    phasing = false;
+                    me->SetHealth(me->CountPctFromMaxHealth(7 * Slimes + 10));
+                    me->RemoveUnitFlag(UnitFlags::UNIT_FLAG_UNINTERACTIBLE);
+                    me->RemoveUnitFlag(UnitFlags::UNIT_FLAG_NON_ATTACKABLE_2);
+                    me->RemoveUnitFlag2(UnitFlags2::UNIT_FLAG2_HIDE_BODY);
+                    me->SetReactState(REACT_AGGRESSIVE);
+                    me->ResumeMovement();
+                    Talk(4);
+                }
+            }
+        }
     }
 
     void InitializeAI() override
     {
         ApplyAllImmunities(true);
+        me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_INTERRUPT, false);
     }
 
     void Reset() override
     {
+        summons.DespawnAll();
+        Slimes = 10;
         phasing = false;
         didPhase = false;
+        didPhase2 = false;
         me->SetReactState(REACT_AGGRESSIVE);
         me->DeMorph();
+        me->SetObjectScale(2.0f);
         me->RemoveUnitFlag(UnitFlags::UNIT_FLAG_UNINTERACTIBLE);
         me->RemoveUnitFlag(UnitFlags::UNIT_FLAG_NON_ATTACKABLE_2);
         me->RemoveUnitFlag2(UnitFlags2::UNIT_FLAG2_HIDE_BODY);
+        ActiveSlimes = 0;
+    }
+
+    void JustDied(Unit* who) override
+    {
+        Talk(5);
+    }
+
+    void JustEngagedWith(Unit* /*who*/) override
+    {
+        events.Reset();
+        events.ScheduleEvent(1, 5s);
+        events.ScheduleEvent(2, 10s, 20s);
     }
 
     void UpdateAI(uint32 diff) override
@@ -96,24 +194,50 @@ public:
         if (!UpdateVictim())
             return;
 
+        if (phasing)
+            return;
+
         events.Update(diff);
+
+        if (me->HasUnitState(UNIT_STATE_CASTING))
+            return;
 
         if (uint32 eventId = events.ExecuteEvent())
         {
             switch (eventId)
             {
+                case 1:
+                    DoCastVictim(BroodPlague);
+                    events.Repeat(35s);
+                    break;
+                case 2:
+                    DoCastAOE(Barrel);
+                    events.Repeat(15s, 25s);
+                    break;
+                case 3:
+                    DoCastAOE(Blasphemy);
+                    events.Repeat(15s, 30s);
+                    break;
+                case 4:
+                    DoCastVictim(WateryAsphyxiate);
+                    events.Repeat(30s);
+                    break;
             }
         }
+
+        if (!me->HasUnitState(UNIT_STATE_CASTING))
+            DoCastVictim(PlagueBolt);
         DoMeleeAttackIfReady();
     }
 
     bool didIntro = false;
     void OnUnitRelocation(Unit* who) override
     {
-        if (!didIntro && who->IsPlayer() && who->GetDistance2d(me) <= 30.0f && (!who->movespline || who->movespline->Finalized()))
+        if (!didIntro && who->IsPlayer() && who->GetDistance2d(me) <= 30.0f && (!who->movespline || who->movespline->Finalized()) && me->IsValidAttackTarget(who))
         {
             didIntro = true;
             Talk(0);
+            AttackStart(who);
         }
     }
 
@@ -123,22 +247,34 @@ public:
     void DamageTaken(Unit* attacker, uint32& damage, DamageEffectType damageType, SpellInfo const* spell) override
     {
         if (phasing)
+        {
             damage = 0;
+            return;
+        }
 
         if (!didPhase && me->HealthBelowPctDamaged(61, damage))
         {
             didPhase = true;
             Talk(1);
             me->SetReactState(REACT_PASSIVE);
-            me->StopMoving();
+            me->PauseMovement();
             phasing = true;
+            damage = 0;
+            me->InterruptSpell(CurrentSpellTypes::CURRENT_GENERIC_SPELL);
+            me->CastStop();
+            DoCastVictim(PlagueChannel);
             scheduler.Schedule(6s, [this](TaskContext context)
             {
-                    phasing = false;
-                    me->SetReactState(REACT_AGGRESSIVE);
-                    Talk(2);
-                    me->SetDisplayId(96240);
+                me->InterruptSpell(CurrentSpellTypes::CURRENT_CHANNELED_SPELL);
+                me->ResumeMovement();
+                phasing = false;
+                me->SetReactState(REACT_AGGRESSIVE);
+                Talk(2);
+                me->SetDisplayId(96240, 4.0f);
+                events.ScheduleEvent(3, 10s, 20s);
+                events.ScheduleEvent(4, 10s, 20s);
             });
+            return;
         }
 
         // - At 5 % health, ONLY if he morphed(just in case he bugs outand doesnt drink or players find a way to interrupt), he basically does Zac's passive from League:
@@ -152,19 +288,75 @@ public:
         //     - This process repeats whenever he hits 5 % health
         if (!didPhase2 && me->HealthBelowPctDamaged(5, damage))
         {
-            didPhase2 = true;
-            phasing = true;
-            Talk(3);
-            me->SetUnitFlag(UnitFlags::UNIT_FLAG_UNINTERACTIBLE);
-            me->SetUnitFlag(UnitFlags::UNIT_FLAG_NON_ATTACKABLE_2);
-            me->SetUnitFlag2(UnitFlags2::UNIT_FLAG2_HIDE_BODY);
+            if (Slimes > 0)
+            {
+                didPhase2 = true;
+                phasing = true;
+                Talk(3);
+                me->SetUnitFlag(UnitFlags::UNIT_FLAG_UNINTERACTIBLE);
+                me->SetUnitFlag(UnitFlags::UNIT_FLAG_NON_ATTACKABLE_2);
+                me->SetUnitFlag2(UnitFlags2::UNIT_FLAG2_HIDE_BODY);
+                me->SetReactState(REACT_PASSIVE);
+                me->PauseMovement();
+                me->CastStop();
+                events.DelayEvents(5s);
+                damage = 0;
+                ActiveSlimes = 0;
 
+                float orientation = 0.0f;
 
+                int brokenSlimes = 0;
+
+                for (int i = 0; i < Slimes; ++i)
+                {
+                    if (DoCast(me, BeconSlime, true) != SPELL_CAST_OK)
+                        ++brokenSlimes;
+
+                    orientation += 0.628;
+                    me->SetFacingTo(orientation);
+                }
+
+                Slimes -= brokenSlimes;
+                if (Slimes < 0)
+                    Slimes = 0;
+            }
         }
     }
 
     TaskScheduler scheduler;
     EventMap events;
+    int32 Slimes = 10;
+    uint32 ActiveSlimes = 0;
+};
+
+// ID - 327603 Beckon Slime
+class spell_beckon_slime_underrot : public SpellScript
+{
+    PrepareSpellScript(spell_beckon_slime_underrot);
+
+    void HandleSummon(SpellEffIndex effIndex)
+    {
+        PreventHitDefaultEffect(effIndex);
+        uint32 entry = 701001;
+
+        if (!GetCaster())
+            return;
+
+        if (GetExplTargetDest())
+        {
+            GetCaster()->SummonCreature(entry, *GetExplTargetDest(), TEMPSUMMON_MANUAL_DESPAWN);
+         //   GetCaster()->Say((*GetExplTargetDest()).ToString(), LANG_UNIVERSAL, nullptr);
+        }
+
+
+        //if (auto creature = GetCaster()->ToCreature())
+        //    if (auto ai = creature->AI())
+    }
+
+    void Register() override
+    {
+        OnEffectHit += SpellEffectFn(spell_beckon_slime_underrot::HandleSummon, EFFECT_0, SPELL_EFFECT_SUMMON);
+    }
 };
 
 // 701001 - npc_mister_slime_701001
@@ -334,6 +526,14 @@ struct npc_sporecaller_zancha_701005 : public ScriptedAI
 public:
     npc_sporecaller_zancha_701005(Creature* creature) : ScriptedAI(creature) { }
 
+    enum eSpells
+    {
+        NecroticUpheaval = 333216,
+        DinnerTime = 99693,
+        CrashingCharge = 368060,
+        ImminentDestruction = 360876,
+    };
+
     void InitializeAI() override
     {
         /// TODO: Fill this function
@@ -346,7 +546,12 @@ public:
 
     void JustEngagedWith(Unit* who) override
     {
+        events.Reset();
         Talk(1);
+        events.ScheduleEvent(1, 10s, 20s);
+        events.ScheduleEvent(2, 10s, 20s);
+        events.ScheduleEvent(3, 10s, 20s);
+        events.ScheduleEvent(4, 10s, 20s);
     }
 
     void UpdateAI(uint32 diff) override
@@ -358,10 +563,29 @@ public:
 
         events.Update(diff);
 
+        if (me->HasUnitState(UNIT_STATE_CASTING))
+            return;
+
         if (uint32 eventId = events.ExecuteEvent())
         {
             switch (eventId)
             {
+                case 1:
+                    DoCastVictim(NecroticUpheaval);
+                    events.Repeat(10s, 20s);
+                    break;
+                case 2:
+                    DoCastVictim(DinnerTime);
+                    events.Repeat(30s, 40s);
+                    break;
+                case 3:
+                    DoCastVictim(CrashingCharge);
+                    events.Repeat(50s);
+                    break;
+                case 4:
+                    DoCastVictim(ImminentDestruction);
+                    events.Repeat(10s, 20s);
+                    break;
             }
         }
         DoMeleeAttackIfReady();
@@ -427,6 +651,10 @@ public:
             {
             }
         }
+
+        if (!me->HasUnitState(UNIT_STATE_CASTING))
+            DoCastVictim(326829); // Wicked Bolt
+
         DoMeleeAttackIfReady();
     }
 
@@ -514,6 +742,12 @@ public:
         /// TODO: Fill this function
     }
 
+    void JustEngagedWith(Unit* who) override
+    {
+        events.Reset();
+        events.ScheduleEvent(1, 5s, 10s);
+    }
+
     void UpdateAI(uint32 diff) override
     {
         scheduler.Update(diff);
@@ -527,6 +761,10 @@ public:
         {
             switch (eventId)
             {
+                case 1:
+                    DoCastVictim(265540);
+                    events.Repeat(20s, 30s);
+                    break;
             }
         }
         DoMeleeAttackIfReady();
@@ -670,6 +908,13 @@ public:
         /// TODO: Fill this function
     }
 
+    void JustEngagedWith(Unit* who) override
+    {
+        events.Reset();
+        events.ScheduleEvent(1, 5s, 10s);
+        events.ScheduleEvent(2, 5s, 10s);
+    }
+
     void UpdateAI(uint32 diff) override
     {
         scheduler.Update(diff);
@@ -683,6 +928,14 @@ public:
         {
             switch (eventId)
             {
+                case 1:
+                    DoCastVictim(32065); // Fungal decay
+                    events.Repeat(10s, 20s);
+                    break;
+                case 2:
+                    DoCastAOE(15550); // Trample
+                    events.Repeat(10s, 20s);
+                    break;
             }
         }
         DoMeleeAttackIfReady();
@@ -1011,6 +1264,40 @@ public:
     EventMap events;
 };
 
+const Position player_gateway_positions[] =
+{
+    { 1102.52f, 1333.68f, 5.84308f, 0.865922f },
+    { 1114.7883f, 1350.4313f, 11.04261f },
+    { 1122.7559f, 1363.1124f, 12.79088f },
+    { 1154.0913f, 1411.2205f, -11.0111f },
+    { 1174.4086f, 1443.4255f, -27.0167f },
+    { 1199.6218f, 1481.5396f, -42.7930f },
+    { 1199.6218f, 1481.5396f, -100.145f },
+    { 1199.41f, 1481.78f, -181.708f, 2.9505f },
+};
+
+// 253773
+struct spell_underrot_gateway : public AuraScript
+{
+    PrepareAuraScript(spell_underrot_gateway);
+
+    void HandleOnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+    {
+        if (Unit* caster = GetCaster())
+        {
+            caster->GetMotionMaster()->MoveSmoothPath(1, player_gateway_positions, 8, false, true, 35.0f)->callbackFunc = [caster]()
+            {
+                caster->RemoveAurasDueToSpell(253773); // Gateway
+            };
+        }
+    }
+
+    void Register() override
+    {
+        OnEffectApply += AuraEffectApplyFn(spell_underrot_gateway::HandleOnApply, EFFECT_0, SPELL_AURA_FLY, AURA_EFFECT_HANDLE_REAL);
+    }
+};
+
 void AddSC_TheUnderrot()
 {
     RegisterInstanceScript(instance_the_underrot, 1841);
@@ -1035,4 +1322,6 @@ void AddSC_TheUnderrot()
     RegisterCreatureAI(npc_fungo_warrior_701018);
     RegisterCreatureAI(npc_sporeling_701019);
     RegisterCreatureAI(npc_plague_doctor_701020);
+    RegisterSpellScript(spell_beckon_slime_underrot);
+    RegisterSpellScript(spell_underrot_gateway);
 }

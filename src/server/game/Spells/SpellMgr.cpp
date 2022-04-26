@@ -3499,6 +3499,15 @@ void SpellMgr::LoadSpellInfoCorrections()
         });
     });
 
+    ApplySpellFix({ 327603 }, [](SpellInfo* spellInfo)
+    {
+        ApplySpellEffectFix(spellInfo, EFFECT_0, [](SpellEffectInfo* spellEffectInfo)
+        {
+            spellEffectInfo->RadiusEntry = sSpellRadiusStore.LookupEntry(192); // Radius - 35	0	30	35
+            spellEffectInfo->MaxRadiusEntry = sSpellRadiusStore.LookupEntry(192); // Radius - 35	0	30	35
+        });
+    });
+
     ApplySpellFix({
         42818, // Headless Horseman - Wisp Flight Port
         42821  // Headless Horseman - Wisp Flight Missile
