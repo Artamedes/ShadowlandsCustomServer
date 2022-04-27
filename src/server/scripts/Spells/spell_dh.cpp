@@ -3982,9 +3982,23 @@ class spell_dh_the_hunt : public SpellScript
         if (Unit* target = GetHitUnit())
         {
             Unit* caster = GetCaster();
+            if (!caster)
+                return;
 
             std::list<Unit*> units;
-            caster->GetAttackableUnitListInRange(units, MELEE_RANGE);
+
+            CellCoord p(Trinity::ComputeCellCoord(target->GetPositionX(), target->GetPositionY()));
+            Cell cell(p);
+            cell.SetNoCreate();
+
+            Trinity::AttackableUnitInObjectRangeCheck u_check(caster, MELEE_RANGE);
+            Trinity::UnitListSearcher<Trinity::AttackableUnitInObjectRangeCheck> searcher(caster, units, u_check);
+
+            TypeContainerVisitor<Trinity::UnitListSearcher<Trinity::AttackableUnitInObjectRangeCheck>, WorldTypeMapContainer > world_unit_searcher(searcher);
+            TypeContainerVisitor<Trinity::UnitListSearcher<Trinity::AttackableUnitInObjectRangeCheck>, GridTypeMapContainer >  grid_unit_searcher(searcher);
+
+            cell.Visit(p, world_unit_searcher, *target->GetMap(), *target, MELEE_RANGE);
+            cell.Visit(p, grid_unit_searcher, *target->GetMap(), *target, MELEE_RANGE);
 
             for (auto unit : units)
                 caster->CastSpell(unit, 345335, true); // Hunt Dot
