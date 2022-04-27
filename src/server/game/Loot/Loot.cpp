@@ -16,6 +16,9 @@
  */
 
 #include "Loot.h"
+#include "ChallengeMode.h"
+#include "ChallengeModeMgr.h"
+#include "Containers.h"
 #include "DatabaseEnv.h"
 #include "DB2Stores.h"
 #include "Group.h"
@@ -34,8 +37,9 @@
 //
 
 // Constructor, copies most fields from LootStoreItem and generates random count
-LootItem::LootItem(LootStoreItem const& li)
+LootItem::LootItem(LootStoreItem const& li, Loot* loot)
 {
+    currentLoot = loot;
     type = li.type;
     itemid = li.itemid;
     itemIndex = 0;
@@ -64,6 +68,9 @@ LootItem::LootItem(LootStoreItem const& li)
 // Basic checks for player/item compatibility - if false no chance to see the item in the loot
 bool LootItem::AllowedForPlayer(Player const* player, bool isGivenByMasterLooter) const
 {
+    if (!IsPersonalLootFor(player))
+        return false;
+
     // DB conditions check
     if (!sConditionMgr->IsObjectMeetToConditions(const_cast<Player*>(player), conditions))
         return false;
@@ -129,11 +136,27 @@ void LootItem::AddAllowedLooter(const Player* player)
     allowedGUIDs.insert(player->GetGUID());
 }
 
+void LootItem::SetPersonalLooter(Player const* player)
+{
+    personalLooter = player->GetGUID();
+}
+
+bool LootItem::IsPersonalLootFor(Player const* player) const
+{
+    // No personal looter specified, anyone can loot
+    if (personalLooter.IsEmpty())
+        return true;
+    else if (personalLooter == player->GetGUID())
+        return true;
+
+    return false;
+}
+
 //
 // --------- Loot ---------
 //
 
-Loot::Loot(uint32 _gold /*= 0*/) : gold(_gold), unlootedCount(0), roundRobinPlayer(), loot_type(LOOT_NONE), maxDuplicates(1), _itemContext(ItemContext::NONE)
+Loot::Loot(uint32 _gold /*= 0*/) : gold(_gold), unlootedCount(0), roundRobinPlayer(), loot_type(LOOT_NONE), maxDuplicates(1), _itemContext(ItemContext::NONE), _challengeLevel(0), _realChallengeLevel(0), _challengeMap(0), _levelBonus(0)
 {
 }
 
@@ -165,6 +188,10 @@ void Loot::clear()
     loot_type = LOOT_NONE;
     i_LootValidatorRefManager.clearReferences();
     _itemContext = ItemContext::NONE;
+    _challengeLevel = 0;
+    _realChallengeLevel = 0;
+    _challengeMap = 0;
+    _levelBonus = 0;
 }
 
 void Loot::NotifyItemRemoved(uint8 lootIndex)
@@ -246,13 +273,41 @@ void Loot::generateMoneyLoot(uint32 minAmount, uint32 maxAmount)
 }
 
 // Calls processor of corresponding LootTemplate (which handles everything including references)
-bool Loot::FillLoot(uint32 lootId, LootStore const& store, Player* lootOwner, bool personal, bool noEmptyError, uint16 lootMode /*= LOOT_MODE_DEFAULT*/, ItemContext context /*= ItemContext::NONE*/)
+bool Loot::FillLoot(uint32 lootId, LootStore const& store, Player* lootOwner, bool personal, bool noEmptyError, uint16 lootMode /*= LOOT_MODE_DEFAULT*/, bool specOnly /*= false*/, bool personalLoot /*= false*/, bool fishing /* = false*/, bool oploteChest /*= false*/)
 {
     // Must be provided
     if (!lootOwner)
         return false;
 
+    _itemContext = lootOwner->GetMap()->GetDifficultyLootItemContext();
     lootOwnerGUID = lootOwner->GetGUID();
+
+    Challenge* _challenge = nullptr;
+    if (InstanceMap* instance = lootOwner->GetMap()->ToInstanceMap())
+    {
+        if (InstanceScript* script = instance->GetInstanceScript())
+        {
+            if (_challenge = script->GetChallenge())
+            {
+                if (_challenge->IsComplete())
+                {
+                    _realChallengeLevel = _challenge->GetChallengeLevel();
+                    _itemContext = ItemContext(sChallengeModeMgr->GetLootTreeMod(_levelBonus, _challengeLevel, _challenge));
+                }
+            }
+        }
+    }
+
+    if (oploteChest)
+    {
+        if (sChallengeModeMgr->HasOploteLoot(lootOwner->GetGUID()))
+        {
+            lootId = ReplaceLootID(lootId);
+            _itemContext = ItemContext(sChallengeModeMgr->GetLootTreeMod(_levelBonus, _challengeLevel));
+        }
+        else
+            return false;
+    }
 
     LootTemplate const* tab = store.GetLootFor(lootId);
 
@@ -263,16 +318,39 @@ bool Loot::FillLoot(uint32 lootId, LootStore const& store, Player* lootOwner, bo
         return false;
     }
 
-    _itemContext = context;
+    Difficulty difficulty = DIFFICULTY_NONE;
+
+    // if the creature was killed by players in a dungeon
+    // only those players can loot the creature
+    // but not group members who was out of a dungeon
+    if (Map* map = lootOwner->GetMap())
+    {
+        if (map->IsDungeon())
+        {
+            difficulty = map->GetDifficultyID();
+            AllowedPlayers.SetEnabled(true);
+
+            Map::PlayerList const& playersList = map->GetPlayers();
+            for (Map::PlayerList::const_iterator itr = playersList.begin(); itr != playersList.end(); ++itr)
+            {
+                AllowedPlayers.AddPlayerGuid(itr->GetSource()->GetGUID());
+            }
+        }
+    }
 
     items.reserve(MAX_NR_LOOT_ITEMS);
     quest_items.reserve(MAX_NR_QUEST_ITEMS);
 
-    tab->Process(*this, store.IsRatesAllowed(), lootMode);          // Processing is done there, callback via Loot::AddItem()
+    if (oploteChest)
+        tab->ProcessOploteChest(*this);
+    else if (_challengeLevel)
+        tab->ProcessChallengeChest(*this, lootId, _challenge);
+    else
+        tab->Process(*this, store.IsRatesAllowed(), lootMode, difficulty, 0, lootOwner, specOnly, personalLoot, fishing);          // Processing is done there, callback via Loot::AddItem()
 
     // Setting access rights for group loot case
     Group* group = lootOwner->GetGroup();
-    if (!personal && group)
+    if (!personal && !oploteChest && group)
     {
         roundRobinPlayer = lootOwner->GetGUID();
 
@@ -296,29 +374,109 @@ bool Loot::FillLoot(uint32 lootId, LootStore const& store, Player* lootOwner, bo
     return true;
 }
 
+bool Loot::FillPersonalLoot(LootTemplate const* lootTemplate, Player* playerLoot, uint8 context /*= 0*/)
+{
+    std::list<ItemTemplate const*> lootTable;
+    std::vector<uint32> items;
+    lootTemplate->FillAutoAssignationLoot(lootTable, playerLoot, true);
+
+    if (lootTable.empty())
+    {
+        TC_LOG_ERROR("sql.sql", "Loot::FillPersonalLoot loot table is empty.");
+        return false;
+    }
+
+    for (ItemTemplate const* itemTemplate : lootTable)
+        items.push_back(itemTemplate->GetId());
+
+
+    if (items.empty())
+    {
+        TC_LOG_ERROR("sql.sql", "Loot::FillPersonalLoot items list is empty.");
+        return false;
+    }
+
+    uint32 itemID = items[urand(0, items.size() - 1)];
+
+    if (!itemID)
+    {
+        TC_LOG_ERROR("sql.sql", "Loot::FillPersonalLoot couldnt load item id.");
+        return false;
+    }
+
+    switch (context)
+    {
+        case (uint8)ItemContext::NONE:
+            _itemContext = playerLoot->GetMap()->GetDifficultyLootItemContext();
+            break;
+        case (uint8)ItemContext::PVP_Ranked_Jackpot:
+            _itemContext = ItemContext(context);
+            //sDB2Manager.CalculateContextForAzeriteItem(itemID, _itemContext, LOOT_PVP_RATED);
+            break;
+        default:
+            _itemContext = ItemContext(context);
+            break;
+    }
+    std::vector<int32> bonusIds;
+    auto lootItem = LootStoreItem(LootItemType::Item, itemID, 0, 100.0f, false, LOOT_MODE_DEFAULT, 2, 1, 1, bonusIds);
+    AddItem(lootItem, playerLoot, true);
+    return true;
+}
+
 // Inserts the item into the loot (called by LootTemplate processors)
-void Loot::AddItem(LootStoreItem const& item)
+void Loot::AddItem(LootStoreItem const& item, Player const* player /*= nullptr*/, bool personalLoot /*= false*/, bool isOploteLoot /*= false*/)
 {
     switch (item.type)
     {
         case LootItemType::Item:
         {
+
             ItemTemplate const* proto = sObjectMgr->GetItemTemplate(item.itemid);
             if (!proto)
                 return;
 
             uint32 count = urand(item.mincount, item.maxcount);
+
+            // LootType::LOOT_SKINNING is used for the gathering skills
+            // if (loot_type == LootType::LOOT_SKINNING)
+            // {
+            //     if (auto extraLootStore = sObjectMgr->GetGatheringExtraLootStore())
+            //     {
+            //         auto extraLoot = extraLootStore->find(item.itemid);
+            //         if (extraLoot != extraLootStore->end())
+            //         {
+            //             for (auto rank : extraLoot->second)
+            //             {
+            //                 if (player->HasSpell(rank.SpellId))
+            //                 {
+            //                     count = rank.AddExtraLoot(count);
+            //                     break;
+            //                 }
+            //             }
+            //         }
+            //     }
+            // }
+
             uint32 stacks = count / proto->GetMaxStackSize() + ((count % proto->GetMaxStackSize()) ? 1 : 0);
 
-            std::vector<LootItem>& lootItems = item.needs_quest ? quest_items : items;
             uint32 limit = item.needs_quest ? MAX_NR_QUEST_ITEMS : MAX_NR_LOOT_ITEMS;
+
+            std::vector<LootItem>& lootItems = item.needs_quest ? quest_items : items;
 
             for (uint32 i = 0; i < stacks && lootItems.size() < limit; ++i)
             {
-                LootItem generatedLoot(item);
+                LootItem generatedLoot(item, this);
                 generatedLoot.context = _itemContext;
                 generatedLoot.count = std::min(count, proto->GetMaxStackSize());
                 generatedLoot.itemIndex = lootItems.size();
+
+
+                if (personalLoot)
+                {
+                    generatedLoot.SetPersonalLooter(player);
+                    generatedLoot.freeforall = false;
+                    generatedLoot.personal = true;
+                }
 
                 if (item.bonusIds.empty())
                 {
@@ -355,7 +513,7 @@ void Loot::AddItem(LootStoreItem const& item)
                 // non-conditional one-player only items are counted here,
                 // free for all items are counted in FillFFALoot(),
                 // non-ffa conditionals are counted in FillNonQuestNonFFAConditionalLoot()
-                if (!item.needs_quest && item.conditions.empty() && !proto->HasFlag(ITEM_FLAG_MULTI_DROP))
+                if (!item.needs_quest && item.conditions.empty() && !(proto->GetFlags() & ITEM_FLAG_MULTI_DROP))
                     ++unlootedCount;
             }
             break;
@@ -374,7 +532,7 @@ void Loot::AddItem(LootStoreItem const& item)
 
             for (uint32 i = 0; i < stacks && lootItems.size() < limit; ++i)
             {
-                LootItem generatedLoot(item);
+                LootItem generatedLoot(item, this);
                 generatedLoot.context = _itemContext;
                 generatedLoot.count = std::min(count, uint32(0x7FFFFFFF - 1));
                 generatedLoot.itemIndex = lootItems.size();
@@ -1025,4 +1183,64 @@ AELootResult::OrderedStorage::const_iterator AELootResult::begin() const
 AELootResult::OrderedStorage::const_iterator AELootResult::end() const
 {
     return _byOrder.end();
+}
+
+//
+// --------- AssignedLootProcessor ---------
+//
+
+bool AssignedLootProcessor::ProcessLootFor(Player* player, bool checkSpec, float dropChance, LootSource source /*= LOOT_PVP_UNRATED*/)
+{
+    LootTemplate const* lootTemplate = LootTemplates_Creature.GetLootFor(m_creatureLootEntry);
+    if (!lootTemplate)
+        return false;
+
+    if (!roll_chance_i(dropChance))
+        return false;
+
+    std::list<ItemTemplate const*> lootTable;
+    std::vector<uint32> items;
+    lootTemplate->FillAutoAssignationLoot(lootTable, player, checkSpec);
+    if (lootTable.empty())
+        return false;
+
+    for (ItemTemplate const* itemTemplate : lootTable)
+        items.push_back(itemTemplate->GetId());
+
+    if (items.empty())
+        return false;
+
+    uint32 itemID = Trinity::Containers::SelectRandomContainerElement(items);
+    std::set<uint32> bonusIdList;
+    DisplayToastType toastMethod = DisplayToastType::NewItem;
+
+    uint8 contextId = 0;
+    //sDB2Manager.CalculateContextForAzeriteItem(itemID, contextId, source);
+
+    //for (auto bonusUpgradeListID : sDB2Manager.RollItemBonusUpgrade(itemID, player, contextId, bonusIdList))
+    //    bonusIdList.insert(bonusUpgradeListID);
+
+    //for (auto itemLevelBonusId : bonusIdList)
+    //    if (sDB2Manager.ItemBonusListHasType(itemLevelBonusId, ITEM_BONUS_DISPLAY_TOAST_METHOD))
+    //        if (DB2Manager::ItemBonusList const* bonuses = sDB2Manager.GetItemBonusList(itemLevelBonusId))
+    //            for (ItemBonusEntry const* itemBonus : *bonuses)
+    //                if (itemBonus->Type == ITEM_BONUS_DISPLAY_TOAST_METHOD)
+    //                    toastMethod = ToastDisplayMethod(itemBonus->Value[0]);
+
+    //player->AddItem(itemID, 1, bonusIdList, 0, false, contextId);
+    //player->SendDisplayToast(itemID, 1, toastMethod, ToastType::TOAST_ITEM, false, false, bonusIdList, contextId);
+    return true;
+}
+
+
+uint32 Loot::ReplaceLootID(uint32 lootId)
+{
+    if (OploteLoot* oploteLoot = sChallengeModeMgr->GetOploteLoot(_lootOwnerGuid))
+    {
+        _challengeLevel = oploteLoot->ChallengeLevel;
+        _realChallengeLevel = oploteLoot->ChallengeLevel;
+        return Trinity::Containers::SelectRandomContainerElement(ChallengeChestList);
+    }
+
+    return lootId;
 }

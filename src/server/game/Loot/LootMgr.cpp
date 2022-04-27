@@ -15,6 +15,8 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "ChallengeMode.h"
+#include "ChallengeModeMgr.h"
 #include "LootMgr.h"
 #include "Containers.h"
 #include "DatabaseEnv.h"
@@ -29,6 +31,7 @@
 #include "SpellMgr.h"
 #include "World.h"
 #include "StringConvert.h"
+#include "ObjectAccessor.h"
 
 static Rates const qualityToRate[MAX_ITEM_QUALITY] =
 {
@@ -57,12 +60,20 @@ LootStore LootTemplates_Spell("spell_loot_template",                 "spell id (
 // Selects invalid loot items to be removed from group possible entries (before rolling)
 struct LootGroupInvalidSelector
 {
-    explicit LootGroupInvalidSelector(Loot const& loot, uint16 lootMode) : _loot(loot), _lootMode(lootMode) { }
+    explicit LootGroupInvalidSelector(Loot const& loot, uint16 lootMode, Difficulty difficulty, Player const* playerLooter, bool checkSpec) : _loot(loot), _lootMode(lootMode), _difficulty(difficulty), _playerLooter(playerLooter), _checkSpec(checkSpec) { }
 
     bool operator()(LootStoreItem* item) const
     {
         if (!(item->lootmode & _lootMode))
             return true;
+
+        if (item->difficulty && item->difficulty != _difficulty)
+            return true;
+
+        if (_playerLooter)
+            if (ItemTemplate const* itemTemplate = item->GetItemTemplate())
+                if (!_playerLooter->CheckItemCompatibility(itemTemplate, _checkSpec))
+                    return true;
 
         uint8 foundDuplicates = 0;
         for (std::vector<LootItem>::const_iterator itr = _loot.items.begin(); itr != _loot.items.end(); ++itr)
@@ -76,6 +87,9 @@ struct LootGroupInvalidSelector
 private:
     Loot const& _loot;
     uint16 _lootMode;
+    Difficulty _difficulty;
+    Player const* _playerLooter;
+    bool _checkSpec;
 };
 
 class LootTemplate::LootGroup                               // A set of loot definitions for items (refs are not allowed)
@@ -88,7 +102,7 @@ class LootTemplate::LootGroup                               // A set of loot def
         bool HasQuestDrop() const;                          // True if group includes at least 1 quest drop entry
         bool HasQuestDropForPlayer(Player const* player) const;
                                                             // The same for active quests of the player
-        void Process(Loot& loot, uint16 lootMode) const;    // Rolls an item from the group (if any) and adds the item to the loot
+        void Process(Loot& loot, uint16 lootMode, Difficulty difficulty, Player const* player = nullptr, bool specOnly = false, bool personaLoot = false) const;    // Rolls an item from the group (if any) and adds the item to the loot
         float RawTotalChance() const;                       // Overall chance for the group (without equal chanced items)
         float TotalChance() const;                          // Overall chance for the group
 
@@ -101,7 +115,7 @@ class LootTemplate::LootGroup                               // A set of loot def
         LootStoreItemList ExplicitlyChanced;                // Entries with chances defined in DB
         LootStoreItemList EqualChanced;                     // Zero chances - every entry takes the same chance
 
-        LootStoreItem const* Roll(Loot& loot, uint16 lootMode) const;   // Rolls an item from the group, returns NULL if all miss their chances
+        LootStoreItem const* Roll(Loot& loot, uint16 lootMode, Difficulty difficulty, Player const* player = nullptr, bool checkSpec = false) const;   // Rolls an item from the group, returns NULL if all miss their chances
 
         // This class must never be copied - storing pointers
         LootGroup(LootGroup const&) = delete;
@@ -290,19 +304,22 @@ void LootStore::ReportNonExistingId(uint32 lootId, char const* ownerType, uint32
 
 // Checks if the entry (quest, non-quest, reference) takes it's chance (at loot generation)
 // RATE_DROP_ITEMS is no longer used for all types of entries
-bool LootStoreItem::Roll(bool rate) const
+bool LootStoreItem::Roll(bool rate, uint8 extraChance /* = 0 */, Player const* player /*= nullptr*/, bool checkSpec /*= false*/) const
 {
+    ItemTemplate const* pProto = sObjectMgr->GetItemTemplate(itemid);
+    if (player && pProto)
+        if (!player->CheckItemCompatibility(pProto, checkSpec))
+            return false;
+
     if (chance >= 100.0f)
         return true;
 
     if (reference > 0)                                   // reference case
-        return roll_chance_f(chance* (rate ? sWorld->getRate(RATE_DROP_ITEM_REFERENCED) : 1.0f));
-
-    ItemTemplate const* pProto = sObjectMgr->GetItemTemplate(itemid);
+        return roll_chance_f(chance * (rate ? sWorld->getRate(RATE_DROP_ITEM_REFERENCED) : 1.0f));
 
     float qualityModifier = pProto && rate ? sWorld->getRate(qualityToRate[pProto->GetQuality()]) : 1.0f;
 
-    return roll_chance_f(chance * qualityModifier);
+    return roll_chance_f((chance * qualityModifier) + extraChance);
 }
 
 // Checks correctness of values
@@ -355,6 +372,16 @@ bool LootStoreItem::IsValid(LootStore const& store, uint32 entry) const
     return true;                                            // Referenced template existence is checked at whole store level
 }
 
+ItemTemplate const* LootStoreItem::GetItemTemplate()
+{
+    if (type == LootItemType::Item)
+        if (ItemTemplate const* itemTemplate = sObjectMgr->GetItemTemplate(itemid))
+            return itemTemplate;
+
+    return nullptr;
+}
+
+
 //
 // --------- LootTemplate::LootGroup ---------
 //
@@ -384,10 +411,10 @@ void LootTemplate::LootGroup::AddEntry(LootStoreItem* item)
 }
 
 // Rolls an item from the group, returns NULL if all miss their chances
-LootStoreItem const* LootTemplate::LootGroup::Roll(Loot& loot, uint16 lootMode) const
+LootStoreItem const* LootTemplate::LootGroup::Roll(Loot& loot, uint16 lootMode, Difficulty difficulty, Player const* player /*= nullptr*/, bool checkSpec /*= false*/) const
 {
     LootStoreItemList possibleLoot = ExplicitlyChanced;
-    possibleLoot.remove_if(LootGroupInvalidSelector(loot, lootMode));
+    possibleLoot.remove_if(LootGroupInvalidSelector(loot, lootMode, difficulty, player, checkSpec));
 
     if (!possibleLoot.empty())                             // First explicitly chanced entries are checked
     {
@@ -406,11 +433,11 @@ LootStoreItem const* LootTemplate::LootGroup::Roll(Loot& loot, uint16 lootMode) 
     }
 
     possibleLoot = EqualChanced;
-    possibleLoot.remove_if(LootGroupInvalidSelector(loot, lootMode));
+    possibleLoot.remove_if(LootGroupInvalidSelector(loot, lootMode, difficulty, player, checkSpec));
     if (!possibleLoot.empty())                              // If nothing selected yet - an item is taken from equal-chanced part
         return Trinity::Containers::SelectRandomContainerElement(possibleLoot);
 
-    return nullptr;                                            // Empty drop from the group
+    return NULL;                                            // Empty drop from the group
 }
 
 // True if group includes at least 1 quest drop entry
@@ -451,10 +478,226 @@ void LootTemplate::LootGroup::CopyConditions(ConditionContainer /*conditions*/)
 }
 
 // Rolls an item from the group (if any takes its chance) and adds the item to the loot
-void LootTemplate::LootGroup::Process(Loot& loot, uint16 lootMode) const
+void LootTemplate::LootGroup::Process(Loot& loot, uint16 lootMode, Difficulty difficulty, Player const* player /*= nullptr*/, bool specOnly /*= false*/, bool personalLoot /*= false*/) const
 {
-    if (LootStoreItem const* item = Roll(loot, lootMode))
-        loot.AddItem(*item);
+    if (LootStoreItem const* item = Roll(loot, lootMode, difficulty, player, specOnly))
+        loot.AddItem(*item, player, personalLoot);
+}
+
+void LootTemplate::FillAutoAssignationLoot(std::list<const ItemTemplate*>& itemList, Player* player, bool checkSpec /*= true*/, bool checkChance /*= true*/, bool challengeCheck /*= false*/) const
+{
+    InstanceScript* instance = player->GetInstanceScript();
+    Difficulty difficulty = DIFFICULTY_NONE;
+    if (instance && instance->instance)
+        difficulty = instance->instance->GetDifficultyID();
+
+    // Handle Items.
+    if (!Entries.empty())
+    {
+        for (LootStoreItemList::const_iterator ItrA = Entries.begin(); ItrA != Entries.end(); ++ItrA)
+        {
+            if ((*ItrA)->type == LootItemType::Item)
+            {
+                if ((*ItrA)->difficulty && (*ItrA)->difficulty != difficulty)
+                    continue;
+
+                if ((*ItrA)->reference == 0)
+                {
+                    if (ItemTemplate const* itemTemplate = sObjectMgr->GetItemTemplate((*ItrA)->itemid))
+                    {
+                        if (!player->CheckItemCompatibility(itemTemplate, checkSpec))
+                            continue;
+
+                        if (challengeCheck)
+                        {
+                           // if (sDB2Manager.IsAzeriteEmpoweredItem((*ItrA)->itemid))
+                           //     continue;
+
+                            if (itemTemplate->GetId() == ITEM_MYTHIC_KEYSTONE)
+                                continue;
+
+                            if (itemTemplate->IsOtherDrops() || itemTemplate->IsRecipe())
+                                continue;
+                        }
+
+                        if (!(*ItrA)->chance || (*ItrA)->chance >= 100.0f || !checkChance)
+                        {
+                            itemList.push_back(itemTemplate);
+                            continue;
+                        }
+                       
+                        if (roll_chance_i((*ItrA)->chance))
+                            itemList.push_back(itemTemplate);
+                    }
+                }
+                else
+                {
+                    LootTemplate const * lootTemplate = LootTemplates_Reference.GetLootFor((*ItrA)->reference);
+                    if (lootTemplate == nullptr)
+                        continue;
+
+                    if (!lootTemplate->Entries.empty())
+                    {
+                        for (LootStoreItemList::const_iterator ItrB = lootTemplate->Entries.begin(); ItrB != lootTemplate->Entries.end(); ++ItrB)
+                        {
+                            if ((*ItrB)->difficulty && (*ItrB)->difficulty != difficulty)
+                                continue;
+
+                            if (ItemTemplate const* itemTemplate = sObjectMgr->GetItemTemplate((*ItrB)->itemid))
+                            {
+                                if (!player->CheckItemCompatibility(itemTemplate, checkSpec))
+                                    continue;
+
+                                if (challengeCheck)
+                                {
+                                    //if (sDB2Manager.IsAzeriteEmpoweredItem((*ItrB)->itemid))
+                                    //    continue;
+
+                                    if (itemTemplate->GetId() == ITEM_MYTHIC_KEYSTONE)
+                                        continue;
+
+                                    if (itemTemplate->IsOtherDrops() || itemTemplate->IsRecipe())
+                                        continue;
+                                }
+
+                                if (!(*ItrB)->chance || (*ItrB)->chance >= 100.0f || !checkChance)
+                                {
+                                    itemList.push_back(itemTemplate);
+                                    continue;
+                                }
+
+                                if (roll_chance_i((*ItrB)->chance))
+                                    itemList.push_back(itemTemplate);
+                            }
+                        }
+                    }
+                    else if (!lootTemplate->Groups.empty())
+                    {
+                        for (LootGroup* groupLoot : lootTemplate->Groups)
+                        {
+                            LootStoreItemList* groupList = groupLoot->GetEqualChancedItemList();
+                            if (groupList && !groupList->empty())
+                            {
+                                for (LootStoreItemList::const_iterator Itrc = groupList->begin(); Itrc != groupList->end(); ++Itrc)
+                                {
+                                    if ((*Itrc)->difficulty && (*Itrc)->difficulty != difficulty)
+                                        continue;
+
+                                    if (ItemTemplate const* itemTemplate = sObjectMgr->GetItemTemplate((*Itrc)->itemid))
+                                    {
+                                        if (!player->CheckItemCompatibility(itemTemplate, checkSpec))
+                                            continue;
+
+                                        if (challengeCheck)
+                                        {
+                                            //if (sDB2Manager.IsAzeriteEmpoweredItem((*Itrc)->itemid))
+                                            //    continue;
+
+                                            if (itemTemplate->GetId() == ITEM_MYTHIC_KEYSTONE)
+                                                continue;
+
+                                            if (itemTemplate->IsOtherDrops() || itemTemplate->IsRecipe())
+                                                continue;
+                                        }
+
+                                        if (!(*Itrc)->chance || (*Itrc)->chance >= 100.0f || !checkChance)
+                                        {
+                                            itemList.push_back(itemTemplate);
+                                            continue;
+                                        }
+
+                                        if (roll_chance_i((*Itrc)->chance))
+                                            itemList.push_back(itemTemplate);
+                                    }
+                                }
+                            }
+
+                            groupList = groupLoot->GetExplicitlyChancedItemList();
+                            if (groupList && !groupList->empty())
+                            {
+                                for (LootStoreItemList::const_iterator Itrc = groupList->begin(); Itrc != groupList->end(); ++Itrc)
+                                {
+                                    if ((*Itrc)->difficulty && (*Itrc)->difficulty != difficulty)
+                                        continue;
+
+                                    if (ItemTemplate const* itemTemplate = sObjectMgr->GetItemTemplate((*Itrc)->itemid))
+                                    {
+                                        if (!player->CheckItemCompatibility(itemTemplate, checkSpec))
+                                            continue;
+
+                                        if (challengeCheck)
+                                        {
+                                            //if (sDB2Manager.IsAzeriteEmpoweredItem((*Itrc)->itemid))
+                                            //    continue;
+
+                                            if (itemTemplate->GetId() == ITEM_MYTHIC_KEYSTONE)
+                                                continue;
+
+                                            if (itemTemplate->IsOtherDrops() || itemTemplate->IsRecipe())
+                                                continue;
+                                        }
+
+                                        if (!(*Itrc)->chance || (*Itrc)->chance >= 100.0f || !checkChance)
+                                        {
+                                            itemList.push_back(itemTemplate);
+                                            continue;
+                                        }
+
+                                        if (roll_chance_i((*Itrc)->chance))
+                                            itemList.push_back(itemTemplate);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Handle Groups.
+        if (!Groups.empty())
+        {
+            for (auto iterA : Groups)
+            {
+                LootStoreItemList* list = iterA->GetExplicitlyChancedItemList();
+                if (list && !list->empty())
+                {
+                    for (LootStoreItemList::const_iterator Itrc = list->begin(); Itrc != list->end(); ++Itrc)
+                    {
+                        if ((*Itrc)->difficulty && (*Itrc)->difficulty != difficulty)
+                            continue;
+
+                        if (ItemTemplate const* itemTemplate = sObjectMgr->GetItemTemplate((*Itrc)->itemid))
+                        {
+                            if (!player->CheckItemCompatibility(itemTemplate, checkSpec))
+                                continue;
+
+                            if (challengeCheck)
+                            {
+                                //if (sDB2Manager.IsAzeriteEmpoweredItem((*Itrc)->itemid))
+                                //    continue;
+
+                                if (itemTemplate->GetId() == ITEM_MYTHIC_KEYSTONE)
+                                    continue;
+
+                                if (itemTemplate->IsOtherDrops() || itemTemplate->IsRecipe())
+                                    continue;
+                            }
+
+                            if (!(*Itrc)->chance || (*Itrc)->chance >= 100.0f || !checkChance)
+                            {
+                                itemList.push_back(itemTemplate);
+                                continue;
+                            }
+
+                            if (roll_chance_i((*Itrc)->chance))
+                                itemList.push_back(itemTemplate);
+                        }
+                    }
+                }
+            }
+        }
+    }        
 }
 
 // Overall chance for the group without equal chanced items
@@ -571,7 +814,7 @@ void LootTemplate::CopyConditions(LootItem* li) const
 }
 
 // Rolls for every item in the template and adds the rolled items the the loot
-void LootTemplate::Process(Loot& loot, bool rate, uint16 lootMode, uint8 groupId) const
+void LootTemplate::Process(Loot& loot, bool rate, uint16 lootMode, Difficulty difficulty, uint8 groupId, Player const* player /*= nullptr*/, bool specOnly /*= false*/, bool personaLoot /*= false*/, bool fishing /*= false*/) const
 {
     if (groupId)                                            // Group reference uses own processing of the group
     {
@@ -581,7 +824,7 @@ void LootTemplate::Process(Loot& loot, bool rate, uint16 lootMode, uint8 groupId
         if (!Groups[groupId - 1])
             return;
 
-        Groups[groupId - 1]->Process(loot, lootMode);
+        Groups[groupId - 1]->Process(loot, lootMode, difficulty, player, specOnly, personaLoot);
         return;
     }
 
@@ -589,11 +832,17 @@ void LootTemplate::Process(Loot& loot, bool rate, uint16 lootMode, uint8 groupId
     for (LootStoreItemList::const_iterator i = Entries.begin(); i != Entries.end(); ++i)
     {
         LootStoreItem* item = *i;
-        if (!(item->lootmode & lootMode))                       // Do not add if mode mismatch
+
+        if (!(item->lootmode & lootMode) || (item->difficulty && item->difficulty != difficulty)) // Do not add if mode or difficulty mismatch
             continue;
 
-        if (!item->Roll(rate))
-            continue;                                           // Bad luck for the entry
+        // Process bait chance here.
+        uint8 extraChance = 0;
+        //if (fishing)
+        //    extraChance = sLootExtra->GetItemExtra(player, item->itemid);
+
+        if (!item->Roll(rate, extraChance, player, specOnly))
+            continue;                                       // Bad luck for the entry
 
         if (item->reference > 0)                            // References processing
         {
@@ -603,16 +852,165 @@ void LootTemplate::Process(Loot& loot, bool rate, uint16 lootMode, uint8 groupId
 
             uint32 maxcount = uint32(float(item->maxcount) * sWorld->getRate(RATE_DROP_ITEM_REFERENCED_AMOUNT));
             for (uint32 loop = 0; loop < maxcount; ++loop)      // Ref multiplicator
-                Referenced->Process(loot, rate, lootMode, item->groupid);
+                Referenced->Process(loot, rate, lootMode, difficulty, item->groupid, player, specOnly, personaLoot);
         }
         else                                                    // Plain entries (not a reference, not grouped)
-            loot.AddItem(*item);                                // Chance is already checked, just add
+            loot.AddItem(*item, player, personaLoot);       // Chance is already checked, just add
     }
 
     // Now processing groups
     for (LootGroups::const_iterator i = Groups.begin(); i != Groups.end(); ++i)
         if (LootGroup* group = *i)
-            group->Process(loot, lootMode);
+            group->Process(loot, lootMode, difficulty, player, specOnly, personaLoot);
+}
+
+void LootTemplate::ProcessOploteChest(Loot& loot) const
+{
+    Player const* lootOwner = ObjectAccessor::FindPlayer(loot.GetLootOwnerGuid());
+    if (!lootOwner)
+        return;
+
+    LootStoreItemList ItemPossibleDrops;
+    LootStoreItemList OtherPossibleDrops;
+
+    // Rolling non-grouped items
+    for (LootStoreItemList::const_iterator i = Entries.begin(); i != Entries.end(); ++i)
+    {
+        LootStoreItem* item = *i;
+
+        if (item->needs_quest) //Don`t add quest item
+        {
+            OtherPossibleDrops.push_back(*i);
+            continue;
+        }
+
+        if (item->type == LootItemType::Currency) //In BFA always gonna give Azerite, then we don't check the chance
+            continue;
+
+        if (item->reference && item->type == LootItemType::Item)              // References processing
+            continue;
+
+        if (item->type == LootItemType::Item)
+        {
+            if (ItemTemplate const* _proto = sObjectMgr->GetItemTemplate(item->itemid))
+            {
+                if (!lootOwner->CheckItemCompatibility(_proto, true))
+                    continue;
+
+                if (_proto->GetId() == ITEM_MYTHIC_KEYSTONE)
+                    continue;
+
+                if (_proto->IsOtherDrops() || _proto->IsRecipe() || _proto->IsCraftingReagent())
+                    continue;
+            }
+            else
+                continue;
+        }
+
+        ItemPossibleDrops.push_back(*i);
+    }
+
+    if (!ItemPossibleDrops.empty()) // If nothing selected yet - an item is taken from equal-chanced part
+    {
+        LootStoreItemList::iterator itr = ItemPossibleDrops.begin();
+        std::advance(itr, irand(0, ItemPossibleDrops.size() - 1));
+        LootStoreItem* item = *itr;
+        loot.AddItem(*item, lootOwner, true, true);
+    }
+
+    //1200 of currency for the weekly chest in 8.0.1
+   // loot.AddItem(LootStoreItem(CURRENCY_TYPE_AZERITE, LootItemType::Currency, 0, 100, 0, LOOT_MODE_DEFAULT, 1, 1200, 1200), lootOwner, true);
+
+    for (LootStoreItemList::const_iterator i = OtherPossibleDrops.begin(); i != OtherPossibleDrops.end(); ++i)
+    {
+        LootStoreItem* item = *i;
+
+        if (!item->Roll(false))
+            continue;
+
+        loot.AddItem(*item, lootOwner, true);
+    }
+
+    //if (loot.GetChallengeLevel() > MYTHIC_LEVEL_2) // Prevent bug with 1 level key Oo
+    //{
+    //    loot.SetChallengeMap(const_cast<Player*>(lootOwner)->m_challengeKeyInfo.ID);
+    //    const_cast<Player*>(lootOwner)->m_challengeKeyInfo.Level = loot.GetRealChallengeLevel() - MYTHIC_LEVEL_1;
+    //    loot.AddItem(LootStoreItem(ITEM_MYTHIC_KEYSTONE, LOOT_ITEM_TYPE_ITEM, 0, 100.0f, 0, LOOT_MODE_DEFAULT, 1, 1, 1), lootOwner, true);       
+    //}
+}
+
+void LootTemplate::ProcessChallengeChest(Loot& loot, uint32 lootId, Challenge* _challenge) const
+{
+    Player const* lootOwner = ObjectAccessor::FindPlayer(loot.GetLootOwnerGuid());
+    if (!lootOwner)
+        return;
+
+    LootStoreItemList ItemPossibleDrops;
+    LootStoreItemList OtherPossibleDrops;
+
+    // Rolling non-grouped items
+    for (LootStoreItemList::const_iterator i = Entries.begin(); i != Entries.end(); ++i)
+    {
+        LootStoreItem* item = *i;
+        if (item->needs_quest) //Don`t add quest item
+        {
+            OtherPossibleDrops.push_back(*i);
+            continue;
+        }
+
+        if (item->type == LootItemType::Currency)
+        {
+            OtherPossibleDrops.push_back(*i);
+            continue;
+        }
+
+        if (item->reference && item->type == LootItemType::Item)              // References processing
+            continue;
+
+        if (item->type == LootItemType::Item)
+        {
+            if (ItemTemplate const* _proto = sObjectMgr->GetItemTemplate(item->itemid))
+            {
+                //if (sDB2Manager.IsAzeriteEmpoweredItem(item->itemid))
+                //    continue;
+
+                if (!lootOwner->CheckItemCompatibility(_proto, true))
+                    continue;
+
+                if (_proto->GetId() == ITEM_MYTHIC_KEYSTONE)
+                    continue;
+
+                if (_proto->IsOtherDrops() || _proto->IsRecipe())                
+                    continue;
+            }
+            else
+                continue;
+        }
+
+        ItemPossibleDrops.push_back(*i);
+    }
+
+    if (!ItemPossibleDrops.empty()) // If nothing selected yet - an item is taken from equal-chanced part
+    {
+        Trinity::Containers::RandomResize(ItemPossibleDrops, _challenge->GetItemCount(lootOwner->GetGUID()));
+        for (auto const& item : ItemPossibleDrops)        
+            loot.AddItem(*item, lootOwner, true);
+    }
+
+    for (LootStoreItemList::const_iterator i = OtherPossibleDrops.begin(); i != OtherPossibleDrops.end(); ++i)
+    {
+        LootStoreItem* item = *i;
+        if (!item->Roll(false))
+            continue;                                         // Bad luck for the entry
+
+        loot.AddItem(*item, lootOwner, true);                                 // Chance is already checked, just add                                                          
+    }
+
+    //if (!const_cast<Player*>(lootOwner)->m_challengeKeyInfo.IsActive() && !sChallengeModeMgr->HasOploteLoot(lootOwner->GetGUID()))
+    //{
+    //    const_cast<Player*>(lootOwner)->m_challengeKeyInfo.Level = _challenge->GetChallengeLevel() - MYTHIC_LEVEL_1;
+    //    loot.AddItem(LootStoreItem(ITEM_MYTHIC_KEYSTONE, LOOT_ITEM_TYPE_ITEM, 0, 100.0f, 0, LOOT_MODE_DEFAULT, 1, 1, 1), lootOwner, true);
+    //}
 }
 
 // True if template includes at least 1 quest drop entry

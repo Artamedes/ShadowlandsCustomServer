@@ -9159,7 +9159,7 @@ void Player::SendLoot(ObjectGuid guid, LootType loot_type, bool aeLooting/* = fa
                 if (groupRules)
                     group->UpdateLooterGuid(go, true);
 
-                loot->FillLoot(lootid, LootTemplates_Gameobject, this, !groupRules, false, go->GetLootMode(), GetMap()->GetDifficultyLootItemContext());
+                loot->FillLoot(lootid, LootTemplates_Gameobject, this, !groupRules, false, go->GetLootMode());
                 go->SetLootGenerationTime();
 
                 // get next RR player (for next loot)
@@ -27023,7 +27023,7 @@ void Player::InitRunes()
 void Player::AutoStoreLoot(uint8 bag, uint8 slot, uint32 loot_id, LootStore const& store, ItemContext context, bool broadcast, bool createdByPlayer)
 {
     Loot loot;
-    loot.FillLoot (loot_id, store, this, true, false, LOOT_MODE_DEFAULT, context);
+    loot.FillLoot (loot_id, store, this, true, false, LOOT_MODE_DEFAULT);
 
     uint32 max_slot = loot.GetMaxSlotInLootFor(this);
     for (uint32 i = 0; i < max_slot; ++i)
@@ -28629,6 +28629,27 @@ bool Player::AddItem(uint32 itemId, uint32 count)
         SendNewItem(item, count, true, false);
     else
         return false;
+    return true;
+}
+
+bool Player::CheckItemCompatibility(ItemTemplate const* proto, bool checkSpec /*= true*/) const
+{
+    if (!proto->isArmorOrWeapon())
+        return true;
+
+    if ((proto->GetFlags2() & ITEM_FLAG2_FACTION_ALLIANCE) && GetTeam() != ALLIANCE)
+        return false;
+
+    if ((proto->GetFlags2() & ITEM_FLAG2_FACTION_HORDE) && GetTeam() != HORDE)
+        return false;
+
+    if ((proto->GetAllowableClass() & GetClassMask()) == 0 || !proto->GetAllowableRace().HasRace(GetRace()))
+        return false;
+
+    if (checkSpec)
+        if (!proto->IsUsableByLootSpecialization(this, false))
+            return false;
+
     return true;
 }
 

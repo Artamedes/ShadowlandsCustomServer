@@ -7934,4 +7934,13 @@ enum WorldState : uint32
     WS_CHALLENGE_LAST_RESET_TIME          = 20025,    // Last reset time for Challenge key
 };
 
+enum LootSource
+{    
+    LOOT_PVP_UNRATED     = 0,
+    LOOT_PVP_RATED       = 1,
+    LOOT_WORLD_QUEST     = 2,
+    LOOT_DUNGEON         = 3,
+    LOOT_RAID            = 4    
+};
+
 #endif

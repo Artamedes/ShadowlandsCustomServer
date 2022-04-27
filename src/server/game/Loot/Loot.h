@@ -134,6 +134,7 @@ enum LootSlotType
 
 struct TC_GAME_API LootItem
 {
+    Loot* currentLoot;
     LootItemType type = LootItemType::Currency;
     uint32  itemid;
     uint32  itemIndex;
@@ -143,10 +144,12 @@ struct TC_GAME_API LootItem
     ConditionContainer conditions;                          // additional loot condition
     GuidSet allowedGUIDs;
     ObjectGuid rollWinnerGUID;                              // Stores the guid of person who won loot, if his bags are full only he can see the item in loot list!
+    ObjectGuid  personalLooter;
     uint8   count             : 8;
     bool    is_looted         : 1;
     bool    is_blocked        : 1;
     bool    freeforall        : 1;                          // free for all
+    bool    personal          : 1;                          // Personal Loot
     bool    is_underthreshold : 1;
     bool    is_counted        : 1;
     bool    needs_quest       : 1;                          // quest drop
@@ -154,16 +157,20 @@ struct TC_GAME_API LootItem
 
     // Constructor, copies most fields from LootStoreItem, generates random count and random suffixes/properties
     // Should be called for non-reference LootStoreItem entries only (reference = 0)
-    explicit LootItem(LootStoreItem const& li);
+    explicit LootItem(LootStoreItem const& li, Loot* loot);
 
     // Empty constructor for creating an empty LootItem to be filled in with DB data
     LootItem() : itemid(0), itemIndex(0), randomBonusListId(0), context(ItemContext::NONE), count(0), is_looted(false), is_blocked(false),
-                 freeforall(false), is_underthreshold(false), is_counted(false), needs_quest(false), follow_loot_rules(false) { };
+                 freeforall(false), is_underthreshold(false), is_counted(false), needs_quest(false), follow_loot_rules(false), personal(false),
+                 currentLoot(nullptr) { };
 
     // Basic checks for player/item compatibility - if false no chance to see the item in the loot
     bool AllowedForPlayer(Player const* player, bool isGivenByMasterLooter = false) const;
     void AddAllowedLooter(Player const* player);
     GuidSet const& GetAllowedLooters() const { return allowedGUIDs; }
+
+    void SetPersonalLooter(Player const* player);
+    bool IsPersonalLootFor(Player const* player) const;
 };
 
 struct NotNormalLootItem
@@ -207,6 +214,44 @@ public:
 
 //=====================================================
 
+struct TC_GAME_API InstanceLooters
+{
+public:
+
+    InstanceLooters() : m_isEnabled(false) {}
+
+    void SetEnabled(bool value) { m_isEnabled = value; }
+    bool IsEnabled() const { return m_isEnabled; }
+
+    void ClearGuids() { playerGuids.clear(); }
+
+    void AddPlayerGuid(ObjectGuid guid)
+    {
+        playerGuids.push_back(guid);
+    }
+
+    bool HasPlayerGuid(ObjectGuid guid) const
+    {
+        if (playerGuids.empty())
+            return false;
+
+        for (auto _guid : playerGuids)
+        {
+            if (guid == _guid)
+                return true;
+        }
+
+        return false;
+    }
+
+private:
+
+    bool m_isEnabled;
+    std::list<ObjectGuid> playerGuids;
+};
+
+//=====================================================
+
 struct TC_GAME_API Loot
 {
     NotNormalLootItemMap const& GetPlayerQuestItems() const { return PlayerQuestItems; }
@@ -221,7 +266,7 @@ struct TC_GAME_API Loot
     ObjectGuid lootOwnerGUID;
     LootType loot_type;                                     // required for achievement system
     uint8 maxDuplicates;                                    // Max amount of items with the same entry that can drop (default is 1; on 25 man raid mode 3)
-
+    ObjectGuid _sourceLoot;
     // GUID of container that holds this loot (item_instance.entry)
     //  Only set for inventory items that can be right-click looted
     ObjectGuid containerID;
@@ -231,6 +276,9 @@ struct TC_GAME_API Loot
 
     ObjectGuid const& GetGUID() const { return _GUID; }
     void SetGUID(ObjectGuid const& guid) { _GUID = guid; }
+
+    ObjectGuid const& GetSourceLoot() const { return _sourceLoot; }
+    void SetSourceLoot(ObjectGuid sourceLoot) { _sourceLoot = sourceLoot; }
 
     // if loot becomes invalid this reference is used to inform the listener
     void addLootValidatorRef(LootValidatorRef* pLootValidatorRef)
@@ -250,10 +298,11 @@ struct TC_GAME_API Loot
     void RemoveLooter(ObjectGuid GUID) { PlayersLooting.erase(GUID); }
 
     void generateMoneyLoot(uint32 minAmount, uint32 maxAmount);
-    bool FillLoot(uint32 lootId, LootStore const& store, Player* lootOwner, bool personal, bool noEmptyError = false, uint16 lootMode = LOOT_MODE_DEFAULT, ItemContext context = ItemContext::NONE);
+    bool FillLoot(uint32 lootId, LootStore const& store, Player* lootOwner, bool personal, bool noEmptyError = false, uint16 lootMode = LOOT_MODE_DEFAULT, bool specOnly = false, bool personalLoot = false, bool fishing = false, bool oploteChest = false);
+    bool FillPersonalLoot(LootTemplate const* lootTemplate, Player* playerLoot, uint8 context = 0);
 
     // Inserts the item into the loot (called by LootTemplate processors)
-    void AddItem(LootStoreItem const & item);
+    void AddItem(LootStoreItem const& item, Player const* player = nullptr, bool personalLoot = false, bool isOploteLoot = false);
 
     LootItem const* GetItemInSlot(uint32 lootSlot) const;
     LootItem* LootItemInSlot(uint32 lootslot, Player* player, NotNormalLootItem** qitem = nullptr, NotNormalLootItem** ffaitem = nullptr, NotNormalLootItem** conditem = nullptr);
@@ -261,6 +310,16 @@ struct TC_GAME_API Loot
     bool hasItemForAll() const;
     bool hasItemFor(Player const* player) const;
     bool hasOverThresholdItem() const;
+    ObjectGuid GetLootOwnerGuid() const { return _lootOwnerGuid; }
+    uint32 GetChallengeLevel() const { return _challengeLevel; }
+    uint32 GetRealChallengeLevel() const { return _realChallengeLevel; }
+    int32 GetLevelBonus() const { return _levelBonus; }
+    void SetChallengeMap(uint32 challengeMap) { _challengeMap = challengeMap; }
+    uint32 GetChallengeMap() const { return _challengeMap; }
+    uint32 ReplaceLootID(uint32 lootId);
+
+    // there are players that killed the mob (instance only)
+    InstanceLooters AllowedPlayers;
 
     // Builds data for SMSG_LOOT_RESPONSE
     void BuildLootResponse(WorldPackets::Loot::LootResponse& packet, Player* viewer, PermissionTypes permission = ALL_PERMISSION) const;
@@ -283,6 +342,11 @@ private:
     // Loot GUID
     ObjectGuid _GUID;
     ItemContext _itemContext;
+    uint32 _challengeLevel; //Capped to 10 level
+    uint32 _realChallengeLevel; //Real challenge level capped in worldserver config
+    uint32 _challengeMap;
+    int32 _levelBonus;
+    ObjectGuid _lootOwnerGuid;
 };
 
 class TC_GAME_API AELootResult
@@ -305,5 +369,19 @@ public:
     OrderedStorage _byOrder;
     std::unordered_map<Item*, OrderedStorage::size_type> _byItem;
 };
+
+class TC_GAME_API AssignedLootProcessor
+{
+public:
+
+    explicit AssignedLootProcessor(uint32 creatureLootEntry) : m_creatureLootEntry(creatureLootEntry) { }
+
+    bool ProcessLootFor(Player* player, bool checkSpec = true, float dropChance = 25.f, LootSource source = LOOT_RAID);
+
+private:
+
+    uint32 m_creatureLootEntry;
+};
+
 
 #endif // Loot_h__

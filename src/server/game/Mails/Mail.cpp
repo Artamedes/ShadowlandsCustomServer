@@ -115,7 +115,7 @@ void MailDraft::prepareItems(Player* receiver, CharacterDatabaseTransaction tran
     Loot mailLoot;
 
     // can be empty
-    mailLoot.FillLoot(m_mailTemplateId, LootTemplates_Mail, receiver, true, true, LOOT_MODE_DEFAULT, ItemContext::NONE);
+    mailLoot.FillLoot(m_mailTemplateId, LootTemplates_Mail, receiver, true, true, LOOT_MODE_DEFAULT);
 
     uint32 max_slot = mailLoot.GetMaxSlotInLootFor(receiver);
     for (uint32 i = 0; m_items.size() < MAX_MAIL_ITEMS && i < max_slot; ++i)

@@ -741,6 +741,10 @@ struct TC_GAME_API ItemTemplate
     uint32 GetClass() const { return BasicData->ClassID; }
     uint32 GetSubClass() const { return BasicData->SubclassID; }
     uint32 GetQuality() const { return ExtendedData->OverallQualityID; }
+    uint32 GetFlags() const { return ExtendedData->Flags[0]; }
+    uint32 GetFlags2() const { return ExtendedData->Flags[1]; }
+    uint32 GetFlags3() const { return ExtendedData->Flags[2]; }
+    uint32 GetFlags4() const { return ExtendedData->Flags[3]; }
     uint32 GetOtherFactionItemId() const { return ExtendedData->FactionRelated; }
     float GetPriceRandomValue() const { return ExtendedData->PriceRandomValue; }
     float GetPriceVariance() const { return ExtendedData->PriceVariance; }
@@ -818,6 +822,11 @@ struct TC_GAME_API ItemTemplate
     bool IsVellum() const { return HasFlag(ITEM_FLAG3_CAN_STORE_ENCHANTS); }
     bool IsConjuredConsumable() const { return GetClass() == ITEM_CLASS_CONSUMABLE && HasFlag(ITEM_FLAG_CONJURED); }
     bool IsCraftingReagent() const { return HasFlag(ITEM_FLAG2_USED_IN_A_TRADESKILL); }
+    bool IsConsumable() const { return GetClass() == ITEM_CLASS_CONSUMABLE; }
+    bool IsArmor() const { return GetClass() == ITEM_CLASS_ARMOR; }
+    bool isArmorOrWeapon() const { return IsWeapon() || IsArmor(); }
+    bool IsOtherDrops() const;
+    bool IsRecipe() const;
     bool HasSignature() const;
 
     bool IsWeapon() const { return GetClass() == ITEM_CLASS_WEAPON; }

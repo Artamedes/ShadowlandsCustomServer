@@ -11452,7 +11452,7 @@ void Unit::SetMeleeAnimKitId(uint16 animKitId)
                 Loot* loot = creature->GetLootFor(who);
                 loot->clear();
                 if (uint32 lootid = creature->GetCreatureTemplate()->lootid)
-                    loot->FillLoot(lootid, LootTemplates_Creature, looter, personal, false, creature->GetLootMode(), creature->GetMap()->GetDifficultyLootItemContext());
+                    loot->FillLoot(lootid, LootTemplates_Creature, looter, personal, false, creature->GetLootMode(), true, personal); // checking loot spec!
 
                 if (creature->GetLootMode() > 0)
                     loot->generateMoneyLoot(creature->GetCreatureTemplate()->mingold, creature->GetCreatureTemplate()->maxgold);

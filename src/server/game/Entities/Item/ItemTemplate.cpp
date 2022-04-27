@@ -51,6 +51,19 @@ char const* ItemTemplate::GetName(LocaleConstant locale) const
     return ExtendedData->Display[locale];
 }
 
+bool ItemTemplate::IsOtherDrops() const
+{
+    return GetClass() == ITEM_CLASS_CONSUMABLE
+        || GetClass() == ITEM_CLASS_MISCELLANEOUS
+        || GetClass() == ITEM_CLASS_QUEST
+        || GetQuality() < ITEM_QUALITY_UNCOMMON;
+}
+
+bool ItemTemplate::IsRecipe() const
+{
+    return GetClass() == ITEM_CLASS_RECIPE;
+}
+
 bool ItemTemplate::HasSignature() const
 {
     return GetMaxStackSize() == 1 &&

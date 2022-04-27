@@ -25,6 +25,7 @@
 #include <unordered_map>
 #include <vector>
 
+class Challenge;
 class LootStore;
 class LootTemplate;
 class Player;
@@ -43,18 +44,20 @@ struct TC_GAME_API LootStoreItem
     uint8 groupid;
     uint8 mincount;                                        // mincount for drop items
     uint8 maxcount;                                        // max drop count for the item mincount or Ref multiplicator
+    Difficulty difficulty;
     ConditionContainer conditions;                         // additional loot condition
     std::vector<int32> bonusIds;
 
     // Constructor
     // displayid is filled in IsValid() which must be called after
-    LootStoreItem(LootItemType _type, uint32 _itemid, uint32 _reference, float _chance, bool _needs_quest, uint16 _lootmode, uint8 _groupid, uint8 _mincount, uint8 _maxcount, std::vector<int32> &pBonusIds)
+    LootStoreItem(LootItemType _type, uint32 _itemid, uint32 _reference, float _chance, bool _needs_quest, uint16 _lootmode, uint8 _groupid, uint8 _mincount, uint8 _maxcount, std::vector<int32> &pBonusIds, Difficulty _difficulty = DIFFICULTY_NONE)
         : type(_type), itemid(_itemid), reference(_reference), chance(_chance), lootmode(_lootmode),
-        needs_quest(_needs_quest), groupid(_groupid), mincount(_mincount), maxcount(_maxcount), bonusIds(pBonusIds)
+        needs_quest(_needs_quest), groupid(_groupid), mincount(_mincount), maxcount(_maxcount), difficulty(_difficulty), bonusIds(pBonusIds)
          { }
 
-    bool Roll(bool rate) const;                               // Checks if the entry takes it's chance (at loot generation)
+    bool Roll(bool rate, uint8 extraChance = 0, Player const* player = nullptr, bool checkSpec = false) const;        // Checks if the entry takes it's chance (at loot generation)
     bool IsValid(LootStore const& store, uint32 entry) const; // Checks correctness of values
+    ItemTemplate const* GetItemTemplate();
 };
 
 typedef std::list<LootStoreItem*> LootStoreItemList;
@@ -111,9 +114,12 @@ class TC_GAME_API LootTemplate
         // Adds an entry to the group (at loading stage)
         void AddEntry(LootStoreItem* item);
         // Rolls for every item in the template and adds the rolled items the the loot
-        void Process(Loot& loot, bool rate, uint16 lootMode, uint8 groupId = 0) const;
+        void Process(Loot& loot, bool rate, uint16 lootMode, Difficulty difficulty, uint8 groupId = 0, Player const* player = nullptr, bool specOnly = false, bool personalLoot = false, bool fishing = false) const;
+        void ProcessOploteChest(Loot& loot) const;
+        void ProcessChallengeChest(Loot& loot, uint32 lootId, Challenge* _challenge) const;
         void CopyConditions(ConditionContainer const& conditions);
         void CopyConditions(LootItem* li) const;
+        void FillAutoAssignationLoot(std::list<const ItemTemplate*>& itemList, Player* player, bool checkSpec = true, bool checkChance = true, bool challengeCheck = false) const;
 
         // True if template includes at least 1 quest drop entry
         bool HasQuestDrop(LootTemplateMap const& store, uint8 groupId = 0) const;

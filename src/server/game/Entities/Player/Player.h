@@ -1559,6 +1559,8 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
 
         bool AddItem(uint32 itemId, uint32 count);
 
+        bool CheckItemCompatibility(ItemTemplate const* proto, bool checkSpec = true) const;
+
         /*********************************************************/
         /***                    GOSSIP SYSTEM                  ***/
         /*********************************************************/
