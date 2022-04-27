@@ -301,9 +301,8 @@ class item_generic_limit_chance_above_60 : public ItemScript
 };
 
 
-//158923 Challenge Key
-//Last Update 8.0.1 Build 28153
-// todo: add 180653 as well, there are 2 keystones in shadowlands, 1 is current, 1 is timealking
+// 158923, 180653 Mythic keystone
+// Last Update 9.2.0.43340
 class item_challenge_key : public ItemScript
 {
 public:
@@ -311,7 +310,7 @@ public:
 
     bool OnCreate(Player* player, Item* item) override
     {
-        if (player->HasItemCount(ITEM_MYTHIC_KEYSTONE, 1, true))
+        if (player->HasItemCount(item->GetEntry(), 1, true))
             player->InitChallengeKey(item);
         else
             player->CreateChallengeKey(item);

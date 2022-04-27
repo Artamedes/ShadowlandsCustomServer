@@ -49,6 +49,7 @@
 #include "Item.h"
 #include "ScenarioMgr.h"
 #include "Guild.h"
+#include "PlayerChallenge.h"
 
 #ifdef TRINITY_API_USE_DYNAMIC_LINKING
 #include "ScriptMgr.h"
@@ -1610,14 +1611,17 @@ void InstanceScript::CreateChallenge(Player* player)
     if (!player)
         return;
 
-    MapChallengeModeEntry const* m_challengeEntry = player->GetGroup() ? player->GetGroup()->m_challengeEntry : player->m_challengeKeyInfo.challengeEntry;
-    if (!m_challengeEntry)
-        return;
-
     InstanceMap* instanceMap = instance->ToInstanceMap();
     uint32 instanceID = instanceMap->GetInstanceId();
 
     if (!instanceMap || !instanceID)
+        return;
+
+    auto playerChallenge = player->GetPlayerChallenge();
+    auto keystoneInfo = playerChallenge->GetKeystoneInfo(playerChallenge->GetKeystoneEntryFromMap(instanceMap));
+
+    MapChallengeModeEntry const* m_challengeEntry = player->GetGroup() ? player->GetGroup()->m_challengeEntry : (keystoneInfo ? keystoneInfo->challengeEntry : nullptr);
+    if (!m_challengeEntry)
         return;
 
     uint32 scenarioId = 0;
@@ -1630,14 +1634,6 @@ void InstanceScript::CreateChallenge(Player* player)
     }
 
     bool canChallengeWithTeeming = false;
-    if (player->m_challengeKeyInfo.Level > MYTHIC_LEVEL_1)
-        canChallengeWithTeeming = player->m_challengeKeyInfo.Affix == Affixes::TEEMING;
-    if (player->m_challengeKeyInfo.Level > MYTHIC_LEVEL_3 && !canChallengeWithTeeming)
-        canChallengeWithTeeming = player->m_challengeKeyInfo.Affix1 == Affixes::TEEMING;
-    if (player->m_challengeKeyInfo.Level > MYTHIC_LEVEL_6 && !canChallengeWithTeeming)
-        canChallengeWithTeeming = player->m_challengeKeyInfo.Affix2 == Affixes::TEEMING;
-    if (player->m_challengeKeyInfo.Level > MYTHIC_LEVEL_9 && !canChallengeWithTeeming)
-        canChallengeWithTeeming = player->m_challengeKeyInfo.Affix3 == Affixes::TEEMING;
 
     // todo
     if (ScenarioData const* scenarioData = sScenarioMgr->GetScenarioData(scenarioId, player->GetTeamId(), sChallengeModeMgr->IsTeemingAffixInRotation() && canChallengeWithTeeming))
@@ -1659,32 +1655,4 @@ void InstanceScript::CreateChallenge(Player* player)
     DoRemoveSpellCooldownWithTimeOnPlayers(2 * TimeConstants::IN_MILLISECONDS * TimeConstants::MINUTE);
     SetChallenge(_challenge);
     _challenge->SetInstanceScript(this);
-
-    instance->DoOnPlayers([](Player* player)
-    {
-
-        WorldPackets::ChallengeMode::MythicPlusCurrentAffixes affixes;
-        /// affixes.Affixes.push_back(sWorld->getWorldState(WS_CHALLENGE_AFFIXE1_RESET_TIME));
-        /// affixes.Affixes.push_back(sWorld->getWorldState(WS_CHALLENGE_AFFIXE2_RESET_TIME));
-        /// affixes.Affixes.push_back(sWorld->getWorldState(WS_CHALLENGE_AFFIXE3_RESET_TIME));
-        /// affixes.Affixes.push_back(sWorld->getWorldState(WS_CHALLENGE_AFFIXE4_RESET_TIME));
-
-
-        // TODO: Add correct affixes
-        affixes.Affixes.resize(6);
-        affixes.Affixes[0].KeystoneAffixID = 9;
-        affixes.Affixes[0].RequiredSeason = 0;
-        affixes.Affixes[1].KeystoneAffixID = 8;
-        affixes.Affixes[1].RequiredSeason = 0;
-        affixes.Affixes[2].KeystoneAffixID = 124;
-        affixes.Affixes[2].RequiredSeason = 0;
-        affixes.Affixes[3].KeystoneAffixID = 121;
-        affixes.Affixes[3].RequiredSeason = 5;
-        affixes.Affixes[4].KeystoneAffixID = 128;
-        affixes.Affixes[4].RequiredSeason = 6;
-        affixes.Affixes[5].KeystoneAffixID = 130;
-        affixes.Affixes[5].RequiredSeason = 7;
-
-        player->GetSession()->SendPacket(affixes.Write());
-    });
 }

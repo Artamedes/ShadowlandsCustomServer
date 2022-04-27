@@ -36,6 +36,7 @@
 #include "WorldStatePackets.h"
 #include "ObjectAccessor.h"
 #include "TemporarySummon.h"
+#include "PlayerChallenge.h"
 
 Challenge::Challenge(InstanceMap* map, Player* player, uint32 instanceID, Scenario* scenario) : InstanceScript(map), _instanceScript(nullptr), _challengeEntry(nullptr), _isKeyDepleted(false), _scenario(scenario)
 {
@@ -88,26 +89,35 @@ Challenge::Challenge(InstanceMap* map, Player* player, uint32 instanceID, Scenar
     else
     {
         m_ownerGuid = player->GetGUID();
-        if (Item* item = player->GetItemByEntry(ITEM_MYTHIC_KEYSTONE))
+        auto playerChallenge = player->GetPlayerChallenge();
+        uint32 itemEntry = playerChallenge->GetKeystoneEntryFromMap(map);
+
+        if (Item* item = player->GetItemByEntry(itemEntry))
+        {
             m_itemGuid = item->GetGUID();
+
+            if (auto keyInfo = playerChallenge->GetKeystoneInfo(item))
+            {
+                _challengeLevel = keyInfo->Level;
+                _challengeEntry = keyInfo->challengeEntry;
+
+                _affixes.fill(0);
+                if (_challengeLevel > MYTHIC_LEVEL_1)
+                    _affixes[0] = keyInfo->Affix;
+                if (_challengeLevel > MYTHIC_LEVEL_3)
+                    _affixes[1] = keyInfo->Affix1;
+                if (_challengeLevel > MYTHIC_LEVEL_6)
+                    _affixes[2] = keyInfo->Affix2;
+                if (_challengeLevel > MYTHIC_LEVEL_9)
+                    _affixes[3] = keyInfo->Affix3;
+            }
+        }
         else
         {
             _canRun = false;
             ChatHandler(player->GetSession()).PSendSysMessage("Error: Key not found.");
             return;
         }
-        _challengeLevel = player->m_challengeKeyInfo.Level;
-        _challengeEntry = player->m_challengeKeyInfo.challengeEntry;
-
-        _affixes.fill(0);
-        if (_challengeLevel > MYTHIC_LEVEL_1)
-            _affixes[0] = player->m_challengeKeyInfo.Affix;
-        if (_challengeLevel > MYTHIC_LEVEL_3)
-            _affixes[1] = player->m_challengeKeyInfo.Affix1;
-        if (_challengeLevel > MYTHIC_LEVEL_6)
-            _affixes[2] = player->m_challengeKeyInfo.Affix2;
-        if (_challengeLevel > MYTHIC_LEVEL_9)
-            _affixes[3] = player->m_challengeKeyInfo.Affix3;
     }
 
     if (!_challengeEntry)
@@ -161,8 +171,14 @@ void Challenge::OnPlayerLeaveForScript(Player* player)
     Player* keyOwner = ObjectAccessor::FindPlayer(m_ownerGuid);
     if (keyOwner && player == keyOwner)
     {
-        player->m_challengeKeyInfo.InstanceID = 0;
-        player->m_challengeKeyInfo.needUpdate = true;
+        if (auto playerChallenge = keyOwner->GetPlayerChallenge())
+        {
+            if (auto keyInfo = playerChallenge->GetKeystoneInfo(_item))
+            {
+                keyInfo->InstanceID = 0;
+                keyInfo->needUpdate = true;
+            }
+        }
     }
 
     player->SetDungeonDifficultyID(DIFFICULTY_MYTHIC);
@@ -426,8 +442,14 @@ void Challenge::Start()
     if (!_item)
         return;
 
-    keyOwner->m_challengeKeyInfo.InstanceID = keyOwner->GetInstanceId();
-    keyOwner->m_challengeKeyInfo.needUpdate = true;
+    if (auto playerChallenge = keyOwner->GetPlayerChallenge())
+    {
+        if (auto keyInfo = playerChallenge->GetKeystoneInfo(_item))
+        {
+            keyInfo->InstanceID = keyOwner->GetInstanceId();
+            keyInfo->needUpdate = true;
+        }
+    }
 
     _isKeyDepleted = false;
 
@@ -436,7 +458,7 @@ void Challenge::Start()
     float z = 0.0f;
     float o = 0.0f;
 
-    if(!sChallengeModeMgr->GetStartPosition(_map->GetId(), x, y, z, o, m_ownerGuid))
+    if(!sChallengeModeMgr->GetStartPosition(keyOwner->GetInstanceScript(), x, y, z, o, m_ownerGuid))
         return;
 
     _map->DoOnPlayers([&](Player* player)
@@ -538,13 +560,13 @@ void Challenge::Complete()
         {
             if (_challengeEntry)
             {
-                uint16 oldID = _challengeEntry->ID;
-                uint16 newID = _challengeEntry->ID;
-                while (oldID == newID)
-                    newID = Trinity::Containers::SelectRandomContainerElement(sDB2Manager.GetChallengeMaps());
-
-                _item->SetModifier(ITEM_MODIFIER_CHALLENGE_MAP_CHALLENGE_MODE_ID, newID);
-                _item->SetModifier(ITEM_MODIFIER_CHALLENGE_KEYSTONE_LEVEL, std::min(_challengeLevel + _rewardLevel, sWorld->getIntConfig(CONFIG_CHALLENGE_LEVEL_LIMIT)));
+                if (auto keyInfo = keyOwner->GetPlayerChallenge()->GetKeystoneInfo(_item))
+                {
+                    keyInfo->GenerateNewDungeon();
+                    keyInfo->Level = std::min(_challengeLevel + _rewardLevel, sWorld->getIntConfig(CONFIG_CHALLENGE_LEVEL_LIMIT));
+                    _item->SetModifier(ITEM_MODIFIER_CHALLENGE_MAP_CHALLENGE_MODE_ID, keyInfo->ID);
+                    _item->SetModifier(ITEM_MODIFIER_CHALLENGE_KEYSTONE_LEVEL, keyInfo->Level);
+                }
             }            
         }
         else
@@ -808,10 +830,12 @@ void Challenge::SendChallengeModeNewPlayerRecord(Player* player)
 void Challenge::SummonGobject(bool door)
 {
     float x, y, z, o, rot0, rot1, rot2, rot3;
-    sChallengeModeMgr->GetChallengeDoorOrChestPosition(_mapID, x, y, z, o, rot0, rot1, rot2, rot3, door, IsHordeChallenge());
-    if(uint32 entry = sChallengeModeMgr->GetDoorOrChestByMap(_mapID, door, IsHordeChallenge()))
-        if (InstanceScript* script = GetInstanceScript())
-            script->instance->SummonGameObject(entry, Position(x, y, z, o), QuaternionData(rot0, rot1, rot2, rot3), 0);
+    if (sChallengeModeMgr->GetChallengeDoorOrChestPosition(_mapID, x, y, z, o, rot0, rot1, rot2, rot3, door, IsHordeChallenge()))
+    {
+        if (uint32 entry = sChallengeModeMgr->GetDoorOrChestByMap(_mapID, door, IsHordeChallenge()))
+            if (InstanceScript* script = GetInstanceScript())
+                script->instance->SummonGameObject(entry, Position(x, y, z, o), QuaternionData(rot0, rot1, rot2, rot3), 0);
+    }
 }
 
 void Challenge::SetInstanceScript(InstanceScript* instanceScript)

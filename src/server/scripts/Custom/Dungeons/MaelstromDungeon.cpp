@@ -1,7 +1,17 @@
 #include "ScriptMgr.h"
 #include "Creature.h"
 #include "ScriptedCreature.h"
+#include "AchievementMgr.h"
+#include "ScenarioMgr.h"
+#include "InstanceScenario.h"
 #include "../CustomInstanceScript.h";
+
+enum MaelstromInvasion
+{
+    BOSS_CORRUPTED_GRANITE = 0,
+    BOSS_UNKNOWN_ENTITY,
+    BOSS_SIR_DUKE_IRO
+};
 
 struct npc_custom_thrall_700113 : public ScriptedAI
 {
@@ -32,18 +42,19 @@ struct npc_enormous_devourer_700102 : public ScriptedAI
         }
 };
 
-struct boss_corrupted_granite_elemental_700105 : public ScriptedAI
+struct boss_corrupted_granite_elemental_700105 : public BossAI
 {
     public:
-        boss_corrupted_granite_elemental_700105(Creature* p_Creature) : ScriptedAI(p_Creature) { }
+        boss_corrupted_granite_elemental_700105(Creature* p_Creature) : BossAI(p_Creature, BOSS_CORRUPTED_GRANITE) { }
 
         void Reset() override
         {
-
+            BossAI::Reset();
         }
 
-        void JustEngagedWith(Unit* /*p_Who*/) override
+        void JustEngagedWith(Unit* p_Who) override
         {
+            BossAI::JustEngagedWith(p_Who);
             m_Events.ScheduleEvent(1, 5s, 6s);
             m_Events.ScheduleEvent(2, 10s, 12s);
             m_Events.ScheduleEvent(3, 15s, 15s);
@@ -82,18 +93,20 @@ struct boss_corrupted_granite_elemental_700105 : public ScriptedAI
         EventMap m_Events;
 };
 
-struct boss_corrupted_ghost_of_the_primus_700104 : public ScriptedAI
+struct boss_corrupted_ghost_of_the_primus_700104 : public BossAI
 {
     public:
-        boss_corrupted_ghost_of_the_primus_700104(Creature* p_Creature) : ScriptedAI(p_Creature) { }
+        boss_corrupted_ghost_of_the_primus_700104(Creature* p_Creature) : BossAI(p_Creature, BOSS_UNKNOWN_ENTITY) { }
 
         void Reset() override
         {
+            BossAI::Reset();
             DoCastSelf(367432);
         }
 
-        void JustEngagedWith(Unit* /*p_Who*/) override
+        void JustEngagedWith(Unit* p_Who) override
         {
+            BossAI::JustEngagedWith(p_Who);
             me->RemoveAurasDueToSpell(367432);
             m_Events.ScheduleEvent(1, 5s, 6s);
             m_Events.ScheduleEvent(2, 10s, 12s);
@@ -133,10 +146,10 @@ struct boss_corrupted_ghost_of_the_primus_700104 : public ScriptedAI
         EventMap m_Events;
 };
 
-struct npc_sir_duke_iro_700112 : public ScriptedAI
+struct npc_sir_duke_iro_700112 : public BossAI
 {
     public:
-        npc_sir_duke_iro_700112(Creature* p_Creature) : ScriptedAI(p_Creature) { }
+        npc_sir_duke_iro_700112(Creature* p_Creature) : BossAI(p_Creature, BOSS_SIR_DUKE_IRO) { }
 
         void InitializeAI() override
         {
@@ -148,6 +161,7 @@ struct npc_sir_duke_iro_700112 : public ScriptedAI
 
         void Reset() override
         {
+            BossAI::Reset();
             DoCast(353760);
         }
 
@@ -166,8 +180,9 @@ struct npc_sir_duke_iro_700112 : public ScriptedAI
             }
         }
 
-        void JustEngagedWith(Unit* /*p_Who*/) override
+        void JustEngagedWith(Unit* p_Who) override
         {
+            BossAI::JustEngagedWith(p_Who);
             me->RemoveAurasDueToSpell(353760);
             m_Events.ScheduleEvent(1, 5s, 6s);
             m_Events.ScheduleEvent(2, 25s, 26s);
@@ -240,8 +255,18 @@ public:
             // SetBossNumber(EncounterCount);
         }
 
+        void OnCompletedCriteriaTree(CriteriaTree const* tree) override
+        {
+            if (InstanceScenario* instanceScenario = instance->GetInstanceScenario())
+            {
+                if (auto tree2 = sCriteriaMgr->GetCriteriaTree(300200))
+                    instanceScenario->IsCompletedCriteriaTree(tree2, nullptr);
+            }
+        }
+
         void OnCreatureCreate(Creature* p_Creature) override
         {
+            InstanceScript::OnCreatureCreate(p_Creature);
             switch (p_Creature->GetEntry())
             {
                 case 700112:
@@ -252,6 +277,7 @@ public:
 
         void OnUnitDeath(Unit* p_Unit) override
         {
+            InstanceScript::OnUnitDeath(p_Unit);
             if (p_Unit->IsCreature())
             {
                 switch (p_Unit->GetEntry())
@@ -273,6 +299,7 @@ public:
 
         void OnPlayerPositionChange(Player* player) override
         {
+            InstanceScript::OnPlayerPositionChange(player);
             if (player->GetPositionZ() <= -6.0f)
             {
                 player->EnvironmentalDamage(EnviromentalDamage::DAMAGE_FALL, player->GetMaxHealth());

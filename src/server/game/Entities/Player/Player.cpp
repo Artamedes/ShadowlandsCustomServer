@@ -131,6 +131,7 @@
 #include "ChallengeMode.h"
 #include "QuestAI.h"
 #include "CreatureAISelector.h"
+#include "PlayerChallenge.h"
 
 #define ZONE_UPDATE_INTERVAL (1*IN_MILLISECONDS)
 
@@ -357,6 +358,7 @@ Player::Player(WorldSession* session) : Unit(true), m_sceneMgr(this)
 
     _restMgr = std::make_unique<RestMgr>(this);
     _covenantMgr = std::make_unique< CovenantMgr>(this);
+    m_playerChallenge = std::make_unique<PlayerChallenge>(this);
 
     _usePvpItemLevels = false;
 
@@ -2463,7 +2465,13 @@ void Player::RemoveFromGroup(Group* group, ObjectGuid guid, RemoveMethod method 
                     if (guid == group->m_challengeOwner && !_challenge->IsComplete() && _challenge->IsRunning())
                     {
                         if (Player* keyOwner = ObjectAccessor::FindPlayer(guid))
-                            keyOwner->ChallengeKeyCharded(keyOwner->GetItemByEntry(ITEM_MYTHIC_KEYSTONE), keyOwner->m_challengeKeyInfo.Level, false);
+                        {
+                            auto playerChallenge = keyOwner->GetPlayerChallenge();
+                            auto keystoneInfo = playerChallenge->GetKeystoneInfo(playerChallenge->GetKeystoneEntryFromMap(instance));
+
+                            if (keystoneInfo)
+                                keyOwner->ChallengeKeyCharded(keyOwner->GetItemByEntry(keystoneInfo->KeystoneEntry), keystoneInfo->Level, false);
+                        }
                         else
                             CharacterDatabase.PExecute("UPDATE challenge_key SET KeyIsCharded = 0, InstanceID = 0 WHERE guid = %u", guid.GetCounter());
                     }
@@ -30060,198 +30068,40 @@ CovenantMgr* Player::GetCovenantMgr()
 
 void Player::_LoadChallengeKey(PreparedQueryResult result)
 {
-    if (!result)
-        return;
-
-    uint8 index = 0;
-    Field* fields = result->Fetch();
-    m_challengeKeyInfo.ID = fields[index++].GetUInt16();
-    m_challengeKeyInfo.Level = fields[index++].GetUInt8();
-    m_challengeKeyInfo.Affix = fields[index++].GetUInt8();
-    m_challengeKeyInfo.Affix1 = fields[index++].GetUInt8();
-    m_challengeKeyInfo.Affix2 = fields[index++].GetUInt8();
-    m_challengeKeyInfo.Affix3 = fields[index++].GetUInt8();
-    m_challengeKeyInfo.KeyIsCharded = fields[index++].GetUInt8();
-    m_challengeKeyInfo.timeReset = fields[index++].GetUInt32();
-    m_challengeKeyInfo.InstanceID = fields[index++].GetUInt32();
-
-    if (m_challengeKeyInfo.Level < 2)
-        m_challengeKeyInfo.Level = 2;
-
-    if (!m_challengeKeyInfo.KeyIsCharded)
-    {
-        if (m_challengeKeyInfo.Level > MYTHIC_LEVEL_2)
-            ChallengeKeyCharded(nullptr, m_challengeKeyInfo.Level, false);
-        m_challengeKeyInfo.KeyIsCharded = 1;
-    }
+    return m_playerChallenge->_LoadMythicKeystones(result);
 }
 
 void Player::_SaveChallengeKey(CharacterDatabaseTransaction& trans)
 {
-    if (!m_challengeKeyInfo.needSave && !m_challengeKeyInfo.needUpdate)
-        return;
+    return m_playerChallenge->_SaveMythicKeystones(trans);
+}
 
-    if (m_challengeKeyInfo.Level < 2)
-        m_challengeKeyInfo.Level = 2;
-
-    uint8 index = 0;
-    CharacterDatabasePreparedStatement* stmt = nullptr;
-    if (m_challengeKeyInfo.needUpdate)
-        stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_CHALLENGE_KEY);
-    else
-        stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_CHALLENGE_KEY);
-
-    stmt->setUInt16(index++, m_challengeKeyInfo.ID);
-    stmt->setUInt8(index++, m_challengeKeyInfo.Level);
-    stmt->setUInt8(index++, m_challengeKeyInfo.Affix);
-    stmt->setUInt8(index++, m_challengeKeyInfo.Affix1);
-    stmt->setUInt8(index++, m_challengeKeyInfo.Affix2);
-    stmt->setUInt8(index++, m_challengeKeyInfo.Affix3);
-    stmt->setUInt8(index++, m_challengeKeyInfo.KeyIsCharded);
-    stmt->setUInt32(index++, m_challengeKeyInfo.timeReset);
-    stmt->setUInt32(index++, m_challengeKeyInfo.InstanceID);
-    stmt->setUInt64(index++, GetGUID().GetCounter());
-    trans->Append(stmt);
+PlayerChallenge* Player::GetPlayerChallenge()
+{
+    return m_playerChallenge.get();
 }
 
 bool Player::InitChallengeKey(Item* item)
 {
-    if (item->GetEntry() != ITEM_MYTHIC_KEYSTONE)
-        return true;
-
-    if (!m_challengeKeyInfo.IsActive())
-        return false;
-
-    m_challengeKeyInfo.Affix = sWorld->getWorldState(WS_CHALLENGE_AFFIXE1_RESET_TIME);
-    m_challengeKeyInfo.Affix1 = sWorld->getWorldState(WS_CHALLENGE_AFFIXE2_RESET_TIME);
-    m_challengeKeyInfo.Affix2 = sWorld->getWorldState(WS_CHALLENGE_AFFIXE3_RESET_TIME);
-    m_challengeKeyInfo.Affix3 = sWorld->getWorldState(WS_CHALLENGE_AFFIXE4_RESET_TIME);
-
-    if (!item->GetModifier(ITEM_MODIFIER_CHALLENGE_MAP_CHALLENGE_MODE_ID))
-        item->SetModifier(ITEM_MODIFIER_CHALLENGE_MAP_CHALLENGE_MODE_ID, m_challengeKeyInfo.ID);
-
-    item->SetModifier(ITEM_MODIFIER_CHALLENGE_KEYSTONE_LEVEL, m_challengeKeyInfo.Level);
-
-    if (m_challengeKeyInfo.Level > MYTHIC_LEVEL_1)
-        item->SetModifier(ITEM_MODIFIER_CHALLENGE_KEYSTONE_AFFIX_ID_1, m_challengeKeyInfo.Affix);
-    if (m_challengeKeyInfo.Level > MYTHIC_LEVEL_3)
-        item->SetModifier(ITEM_MODIFIER_CHALLENGE_KEYSTONE_AFFIX_ID_2, m_challengeKeyInfo.Affix1);
-    if (m_challengeKeyInfo.Level > MYTHIC_LEVEL_6)
-        item->SetModifier(ITEM_MODIFIER_CHALLENGE_KEYSTONE_AFFIX_ID_3, m_challengeKeyInfo.Affix2);
-    if (m_challengeKeyInfo.Level > MYTHIC_LEVEL_9)
-        item->SetModifier(ITEM_MODIFIER_CHALLENGE_KEYSTONE_AFFIX_ID_4, m_challengeKeyInfo.Affix3);
-
-    return true;
+    return m_playerChallenge->InitMythicKeystone(item);
 }
 
 void Player::UpdateChallengeKey(Item* item)
 {
-    m_challengeKeyInfo.ID = item->GetModifier(ITEM_MODIFIER_CHALLENGE_MAP_CHALLENGE_MODE_ID);
-    m_challengeKeyInfo.Level = item->GetModifier(ITEM_MODIFIER_CHALLENGE_KEYSTONE_LEVEL);
-
-    m_challengeKeyInfo.Affix = sWorld->getWorldState(WS_CHALLENGE_AFFIXE1_RESET_TIME);
-    m_challengeKeyInfo.Affix1 = sWorld->getWorldState(WS_CHALLENGE_AFFIXE2_RESET_TIME);
-    m_challengeKeyInfo.Affix2 = sWorld->getWorldState(WS_CHALLENGE_AFFIXE3_RESET_TIME);
-    m_challengeKeyInfo.Affix3 = sWorld->getWorldState(WS_CHALLENGE_AFFIXE4_RESET_TIME);
-
-    if (m_challengeKeyInfo.Level > MYTHIC_LEVEL_1)
-        item->SetModifier(ITEM_MODIFIER_CHALLENGE_KEYSTONE_AFFIX_ID_1, m_challengeKeyInfo.Affix);
-    if (m_challengeKeyInfo.Level > MYTHIC_LEVEL_3)
-        item->SetModifier(ITEM_MODIFIER_CHALLENGE_KEYSTONE_AFFIX_ID_2, m_challengeKeyInfo.Affix1);
-    if (m_challengeKeyInfo.Level > MYTHIC_LEVEL_6)
-        item->SetModifier(ITEM_MODIFIER_CHALLENGE_KEYSTONE_AFFIX_ID_3, m_challengeKeyInfo.Affix2);
-    if (m_challengeKeyInfo.Level > MYTHIC_LEVEL_9)
-        item->SetModifier(ITEM_MODIFIER_CHALLENGE_KEYSTONE_AFFIX_ID_4, m_challengeKeyInfo.Affix3);
-
-    m_challengeKeyInfo.InstanceID = 0;
-    m_challengeKeyInfo.needUpdate = true;
+    m_playerChallenge->UpdateMythicKeystone(item);
 }
-
-constexpr uint32 customDungeonsForChallenge[] = { 251, 245, 169 };
 
 void Player::CreateChallengeKey(Item* item)
 {
-    if (!m_challengeKeyInfo.IsActive())
-        m_challengeKeyInfo.needSave = true;
-    else
-        m_challengeKeyInfo.needUpdate = true;
-
-    item->SetModifier(ITEM_MODIFIER_CHALLENGE_KEYSTONE_LEVEL, m_challengeKeyInfo.Level ? m_challengeKeyInfo.Level : MYTHIC_LEVEL_2);
-    item->SetExpiration(sWorld->getNextChallengeKeyReset() - time(nullptr));
-
-    if (!item->GetModifier(ITEM_MODIFIER_CHALLENGE_MAP_CHALLENGE_MODE_ID))
-        item->SetModifier(ITEM_MODIFIER_CHALLENGE_MAP_CHALLENGE_MODE_ID, Trinity::Containers::SelectRandomContainerElement(customDungeonsForChallenge));
-
-    m_challengeKeyInfo.Affix = sWorld->getWorldState(WS_CHALLENGE_AFFIXE1_RESET_TIME);
-    m_challengeKeyInfo.Affix1 = sWorld->getWorldState(WS_CHALLENGE_AFFIXE2_RESET_TIME);
-    m_challengeKeyInfo.Affix2 = sWorld->getWorldState(WS_CHALLENGE_AFFIXE3_RESET_TIME);
-    m_challengeKeyInfo.Affix3 = sWorld->getWorldState(WS_CHALLENGE_AFFIXE4_RESET_TIME);
-
-    if (m_challengeKeyInfo.Level > MYTHIC_LEVEL_1)
-        item->SetModifier(ITEM_MODIFIER_CHALLENGE_KEYSTONE_AFFIX_ID_1, m_challengeKeyInfo.Affix);
-    if (m_challengeKeyInfo.Level > MYTHIC_LEVEL_3)
-        item->SetModifier(ITEM_MODIFIER_CHALLENGE_KEYSTONE_AFFIX_ID_2, m_challengeKeyInfo.Affix1);
-    if (m_challengeKeyInfo.Level > MYTHIC_LEVEL_6)
-        item->SetModifier(ITEM_MODIFIER_CHALLENGE_KEYSTONE_AFFIX_ID_3, m_challengeKeyInfo.Affix2);
-    if (m_challengeKeyInfo.Level > MYTHIC_LEVEL_9)
-        item->SetModifier(ITEM_MODIFIER_CHALLENGE_KEYSTONE_AFFIX_ID_4, m_challengeKeyInfo.Affix3);
-
-    m_challengeKeyInfo.ID = item->GetModifier(ITEM_MODIFIER_CHALLENGE_MAP_CHALLENGE_MODE_ID);
-    m_challengeKeyInfo.timeReset = sWorld->getNextChallengeKeyReset();
-
-    item->SetState(ITEM_CHANGED, this);
+    m_playerChallenge->CreateMythicKeystone(item);
 }
 
 void Player::ResetChallengeKey()
 {
-    DestroyItemCount(ITEM_MYTHIC_KEYSTONE, 100, true, false);
-    m_challengeKeyInfo.ID = 0;
-    m_challengeKeyInfo.Level = 0;
-    m_challengeKeyInfo.Affix = 0;
-    m_challengeKeyInfo.Affix1 = 0;
-    m_challengeKeyInfo.Affix2 = 0;
-    m_challengeKeyInfo.Affix3 = 0;
-    m_challengeKeyInfo.KeyIsCharded = 1;
-    m_challengeKeyInfo.InstanceID = 0;
+    m_playerChallenge->ResetMythicKeystone();
 }
 
 void Player::ChallengeKeyCharded(Item* item, uint32 challengeLevel, bool runRand /*= true*/)
 {
-    if (challengeLevel > MYTHIC_LEVEL_2)
-        challengeLevel -= 1;
-
-    m_challengeKeyInfo.challengeEntry = nullptr;
-    if (challengeLevel >= MYTHIC_LEVEL_2)
-    {
-        m_challengeKeyInfo.Level = challengeLevel;
-        if (runRand)
-        {
-            uint16 oldID = m_challengeKeyInfo.ID;
-            while (oldID == m_challengeKeyInfo.ID)
-                m_challengeKeyInfo.ID = Trinity::Containers::SelectRandomContainerElement(customDungeonsForChallenge);
-        }
-        m_challengeKeyInfo.needUpdate = true;
-
-        if (item)
-        {
-            item->SetModifier(ITEM_MODIFIER_CHALLENGE_KEYSTONE_LEVEL, challengeLevel);
-            item->SetModifier(ITEM_MODIFIER_CHALLENGE_MAP_CHALLENGE_MODE_ID, m_challengeKeyInfo.ID);
-            UpdateChallengeKey(item);
-            item->SetState(ITEM_CHANGED, this);
-        }
-        return;
-    }
-
-    if (!m_challengeKeyInfo.IsActive())
-        return;
-
-    m_challengeKeyInfo.ID = 0;
-    m_challengeKeyInfo.Level = MYTHIC_LEVEL_2;
-    m_challengeKeyInfo.Affix = 0;
-    m_challengeKeyInfo.Affix1 = 0;
-    m_challengeKeyInfo.Affix2 = 0;
-    m_challengeKeyInfo.Affix3 = 0;
-    m_challengeKeyInfo.KeyIsCharded = 1;
-    m_challengeKeyInfo.InstanceID = 0;
-    DestroyItemCount(ITEM_MYTHIC_KEYSTONE, 100, true, false);
+    m_playerChallenge->ResetMythicKeystoneTo(item, challengeLevel, runRand);
 }

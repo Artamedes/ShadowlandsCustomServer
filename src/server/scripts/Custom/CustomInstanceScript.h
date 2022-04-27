@@ -85,6 +85,20 @@ public:
         return false;
     }
 
+    bool HandleGetStartPosition(float& x, float& y, float& z, float& o) const
+    {
+        if (auto respawnData = sCustomInstanceRespawn->GetRespawnData(instance->GetId(), m_CheckpointId))
+        {
+            x = respawnData->Pos.GetPositionX();
+            y = respawnData->Pos.GetPositionY();
+            z = respawnData->Pos.GetPositionZ();
+            o = respawnData->Pos.GetOrientation();
+            return true;
+        }
+
+        return false;
+    }
+
     void SetData(uint32 DataId, uint32 Value) override
     {
         if (DataId == SetDataCheckpointId)

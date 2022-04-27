@@ -397,6 +397,7 @@ class TC_GAME_API InstanceScript : public ZoneScript
 
         virtual bool HandlePlayerRepopRequest(Player* ) const { return false; }
         virtual void OnPlayerPositionChange(Player* ) { }
+        virtual bool HandleGetStartPosition(float&, float&, float&, float &) const { return false; }
 
         //Pop all player to the graveyard more near in the instance
         void RepopPlayersAtGraveyard();

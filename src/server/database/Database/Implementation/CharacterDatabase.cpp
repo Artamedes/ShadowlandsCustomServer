@@ -804,9 +804,8 @@ void CharacterDatabaseConnection::DoPrepareStatements()
     PrepareStatement(CHAR_REP_COVENANT_CLAIMED_RENOWN_REWARDS, "REPLACE INTO character_covenant_claimed_renown_rewards (guid, Covenant, ClaimedRewards) VALUES (?, ?, ?)", CONNECTION_ASYNC);
 
     // Challenge
-    PrepareStatement(CHAR_SEL_CHALLENGE_KEY, "SELECT ID, Level, Affix, Affix1, Affix2, Affix3, KeyIsCharded, timeReset, InstanceID FROM challenge_key WHERE guid = ?", CONNECTION_ASYNC);
-    PrepareStatement(CHAR_UPD_CHALLENGE_KEY, "UPDATE challenge_key SET ID = ?, Level = ?, Affix = ?, Affix1 = ?, Affix2 = ?, Affix3 = ?, KeyIsCharded = ?, timeReset = ?, InstanceID = ? WHERE guid = ?", CONNECTION_ASYNC);
-    PrepareStatement(CHAR_INS_CHALLENGE_KEY, "REPLACE INTO challenge_key (ID, Level, Affix, Affix1, Affix2, Affix3, KeyIsCharded, timeReset, InstanceID, guid) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", CONNECTION_ASYNC);
+    PrepareStatement(CHAR_SEL_CHALLENGE_KEY, "SELECT ItemID, ID, Level, Affix, Affix1, Affix2, Affix3, KeyIsCharded, timeReset, InstanceID FROM challenge_key WHERE guid = ?", CONNECTION_ASYNC);
+    PrepareStatement(CHAR_REP_CHALLENGE_KEY, "REPLACE INTO challenge_key (ItemID, ID, Level, Affix, Affix1, Affix2, Affix3, KeyIsCharded, timeReset, InstanceID, guid) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", CONNECTION_ASYNC);
     PrepareStatement(CHAR_DEL_CHALLENGE_KEY, "DELETE FROM challenge_key WHERE guid = ?", CONNECTION_ASYNC);
     PrepareStatement(CHAR_INS_CHALLENGE, "INSERT INTO challenge (`ID`, `GuildID`, `MapID`, `RecordTime`,  `StartDate`, `CompleteDate`, `ChallengeLevel`, `TimerLevel`, `Affixes`, `ChestID`, `ChallengeID`, Expansion) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", CONNECTION_ASYNC);
     PrepareStatement(CHAR_INS_CHALLENGE_MEMBER, "INSERT INTO challenge_member (`ID`, `Member`, `GuildID`, `SpecID`, `ChallengeLevel`, `CompleteDate`, `ChestID`, `Ilevel`, `Race`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", CONNECTION_ASYNC);

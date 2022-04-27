@@ -310,6 +310,7 @@ public:
             { "name",           HandleNpcSetNameCommand,           rbac::RBAC_PERM_COMMAND_NPC_SET_DATA,       Console::No },
             { "subname",        HandleNpcSetSubNameCommand,        rbac::RBAC_PERM_COMMAND_NPC_SET_DATA,       Console::No },
             { "aura",           HandleNpcSetAuraCommand,           rbac::RBAC_PERM_COMMAND_NPC_SET_DATA,       Console::No },
+            { "boss",           HandleNpcSetBossCommand,           rbac::RBAC_PERM_COMMAND_NPC_SET_DATA,       Console::No },
         };
         static ChatCommandTable npcCommandTable =
         {
@@ -350,6 +351,18 @@ public:
             { "npc", npcCommandTable },
         };
         return commandTable;
+    }
+
+    static bool HandleNpcSetBossCommand(ChatHandler* handler)
+    {
+        auto creature = handler->getSelectedCreature();
+        if (!creature)
+            return true;
+
+        const_cast<CreatureTemplate*>(creature->GetCreatureTemplate())->flags_extra |= CREATURE_FLAG_EXTRA_DUNGEON_BOSS;
+        WorldDatabase.PExecute("UPDATE creature_template SET flags_extra = %u where entry = %u", creature->GetCreatureTemplate()->flags_extra, creature->GetEntry());
+        handler->PSendSysMessage("Updated %s to be a boss, you may need to update InstanceScripts to use BossAI!", creature->GetName().c_str());
+        return true;
     }
 
     static bool HandleNpcReplaceCommand(ChatHandler* handler, uint32 newEntry)

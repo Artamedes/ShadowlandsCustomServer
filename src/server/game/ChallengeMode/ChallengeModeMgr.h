@@ -89,6 +89,7 @@ static const std::list<uint32> ChallengeChestList =
 };
 
 class Challenge;
+class InstanceScript;
 
 struct MapChallengeModeEntry;
 
@@ -117,8 +118,8 @@ public:
     void SaveOploteLootToDB();
     void DeleteOploteLoot(ObjectGuid const& guid, CharacterDatabaseTransaction& trans);
     void GenerateOploteLoot(bool manual = false);
-    static bool GetStartPosition(uint32 mapID, float& x, float& y, float& z, float& o, ObjectGuid OwnerGuid);
-    void GetChallengeDoorOrChestPosition(uint32 mapID, float& x, float& y, float& z, float& o, float& rot0, float& rot1, float& rot2, float& rot3, bool door, bool horde);
+    static bool GetStartPosition(InstanceScript* instance, float& x, float& y, float& z, float& o, ObjectGuid OwnerGuid);
+    bool GetChallengeDoorOrChestPosition(uint32 mapID, float& x, float& y, float& z, float& o, float& rot0, float& rot1, float& rot2, float& rot3, bool door, bool horde);
     uint32 GetDoorOrChestByMap(uint32 mapID, bool door, bool horde);
     uint32 GetChallengeChestByBonusLootID(uint32 bonusLootID);
     void GenerateAchievementByMythicLevel(Player* member, uint32 challengeLevel);

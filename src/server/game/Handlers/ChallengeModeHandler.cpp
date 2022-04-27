@@ -27,6 +27,7 @@
 #include "SharedDefines.h"
 #include "WorldSession.h"
 #include "GameObject.h"
+#include "PlayerChallenge.h"
 
 void WorldSession::HandleChallengeModeStart(WorldPackets::ChallengeMode::StartRequest& start)
 {
@@ -81,15 +82,24 @@ void WorldSession::HandleChallengeModeStart(WorldPackets::ChallengeMode::StartRe
         return;
     }
 
-    if (_player->m_challengeKeyInfo.InstanceID)
+    auto playerChallenge = _player->GetPlayerChallenge();
+    auto challengeKeyInfo = playerChallenge->GetKeystoneInfo(playerChallenge->GetKeystoneEntryFromMap(inst));
+    if (!challengeKeyInfo)
+    {
+        ChatHandler(_player).PSendSysMessage("No keystone data found");
+        return;
+    }
+
+    if (challengeKeyInfo->InstanceID)
     {
         ChatHandler(_player->GetSession()).PSendSysMessage("Error: Key allready run in other instance.");
         return;
     }
 
-    if (_player->m_challengeKeyInfo.Level < MYTHIC_LEVEL_2)
+    if (challengeKeyInfo->Level < MYTHIC_LEVEL_2)
     {
-        _player->ChallengeKeyCharded(nullptr, _player->m_challengeKeyInfo.Level, false); // Deleted bugged key
+        if (auto item = _player->GetItemByEntry(challengeKeyInfo->KeystoneEntry))
+            _player->ChallengeKeyCharded(item, challengeKeyInfo->Level, false); // Deleted bugged key
         ChatHandler(_player->GetSession()).PSendSysMessage("Error: Key is bugged.");
         return;
     }
@@ -107,7 +117,7 @@ void WorldSession::HandleChallengeModeStart(WorldPackets::ChallengeMode::StartRe
     }
 
     float x = 0.0f; float y = 0.0f; float z = 0.0f; float o = 0.0f;
-    if (!sChallengeModeMgr->GetStartPosition(_player->GetMapId(), x, y, z, o, _player->GetGUID()))
+    if (!sChallengeModeMgr->GetStartPosition(_player->GetInstanceScript(), x, y, z, o, _player->GetGUID()))
     {
         ChatHandler(_player->GetSession()).PSendSysMessage("Error: Start position not found.");
         return;
@@ -137,7 +147,7 @@ void WorldSession::HandleChallengeModeStart(WorldPackets::ChallengeMode::StartRe
             }
         }
 
-        group->m_challengeEntry = sMapChallengeModeStore.LookupEntry(_player->m_challengeKeyInfo.ID);
+        group->m_challengeEntry = sMapChallengeModeStore.LookupEntry(challengeKeyInfo->ID);
         group->m_affixes.fill(0);
 
         MapChallengeModeEntry const* challengeEntry = sDB2Manager.GetChallengeModeByMapID(_player->GetMapId());
@@ -150,16 +160,16 @@ void WorldSession::HandleChallengeModeStart(WorldPackets::ChallengeMode::StartRe
 
         group->m_challengeOwner = _player->GetGUID();
         group->m_challengeItem = key->GetGUID();
-        group->m_challengeLevel = _player->m_challengeKeyInfo.Level;
+        group->m_challengeLevel = challengeKeyInfo->Level;
 
         if (group->m_challengeLevel > MYTHIC_LEVEL_1)
-            group->m_affixes[0] = _player->m_challengeKeyInfo.Affix;
+            group->m_affixes[0] = challengeKeyInfo->Affix;
         if (group->m_challengeLevel > MYTHIC_LEVEL_3)
-            group->m_affixes[1] = _player->m_challengeKeyInfo.Affix1;
+            group->m_affixes[1] = challengeKeyInfo->Affix1;
         if (group->m_challengeLevel > MYTHIC_LEVEL_6)
-            group->m_affixes[2] = _player->m_challengeKeyInfo.Affix2;
+            group->m_affixes[2] = challengeKeyInfo->Affix2;
         if (group->m_challengeLevel > MYTHIC_LEVEL_9)
-            group->m_affixes[3] = _player->m_challengeKeyInfo.Affix3;        
+            group->m_affixes[3] = challengeKeyInfo->Affix3;        
 
         WorldPackets::Instance::ChangePlayerDifficultyResult result;
         result.Result = AsUnderlyingType(ChangeDifficultyResult::DIFFICULTY_CHANGE_SET_COOLDOWN_S);
@@ -191,12 +201,12 @@ void WorldSession::HandleChallengeModeStart(WorldPackets::ChallengeMode::StartRe
     }
     else
     {
-        _player->m_challengeKeyInfo.challengeEntry = sMapChallengeModeStore.LookupEntry(_player->m_challengeKeyInfo.ID);
+        challengeKeyInfo->challengeEntry = sMapChallengeModeStore.LookupEntry(challengeKeyInfo->ID);
 
         MapChallengeModeEntry const* challengeEntry = sDB2Manager.GetChallengeModeByMapID(_player->GetMapId());
-        if (!_player->m_challengeKeyInfo.challengeEntry || !challengeEntry || challengeEntry->MapID != _player->m_challengeKeyInfo.challengeEntry->MapID)
+        if (!challengeKeyInfo->challengeEntry || !challengeEntry || challengeEntry->MapID != challengeKeyInfo->challengeEntry->MapID)
         {
-            _player->m_challengeKeyInfo.challengeEntry = nullptr;
+            challengeKeyInfo->challengeEntry = nullptr;
             ChatHandler(_player->GetSession()).PSendSysMessage("Error: Is not this challenge.");
             return;
         }

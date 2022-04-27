@@ -92,6 +92,7 @@ class ReputationMgr;
 class RestMgr;
 class SpellCastTargets;
 class TradeData;
+class PlayerChallenge;
 
 enum GroupCategory : uint8;
 enum InventoryType : uint8;
@@ -1133,26 +1134,6 @@ struct TC_GAME_API SpecializationInfo
 private:
     SpecializationInfo(SpecializationInfo const&) = delete;
     SpecializationInfo& operator=(SpecializationInfo const&) = delete;
-};
-
-struct ChallengeKeyInfo
-{
-    ChallengeKeyInfo() : InstanceID(0), timeReset(0), ID(0), Level(2), Affix(0), Affix1(0), Affix2(0), Affix3(0), KeyIsCharded(1), needSave(false), needUpdate(false) { }
-
-    bool IsActive() { return ID != 0; }
-
-    MapChallengeModeEntry const* challengeEntry = nullptr;
-    uint32 InstanceID = 0;
-    uint32 timeReset = 0;
-    uint16 ID = 0;
-    uint8 Level = 0;
-    uint8 Affix = 0;
-    uint8 Affix1 = 0;
-    uint8 Affix2 = 0;
-    uint8 Affix3 = 0;
-    uint8 KeyIsCharded = 0;
-    bool needSave = false;
-    bool needUpdate = false;
 };
 
 uint32 constexpr PLAYER_MAX_HONOR_LEVEL = 500;
@@ -2769,7 +2750,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         bool IsJumping() { return m_isJumping; };
 
         //Challenge
-        ChallengeKeyInfo m_challengeKeyInfo;
+        PlayerChallenge* GetPlayerChallenge();
         bool InitChallengeKey(Item* item);
         void UpdateChallengeKey(Item* item);
         void CreateChallengeKey(Item* item);
@@ -3289,6 +3270,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void _InitHonorLevelOnLoadFromDB(uint32 honor, uint32 honorLevel);
         std::unique_ptr<RestMgr> _restMgr;
         std::unique_ptr<CovenantMgr> _covenantMgr;
+        std::unique_ptr<PlayerChallenge> m_playerChallenge;
 
         bool _usePvpItemLevels;
 

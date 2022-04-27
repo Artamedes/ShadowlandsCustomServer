@@ -454,53 +454,61 @@ void ChallengeModeMgr::GenerateOploteLoot(bool manual)
     }
 }
 
-bool ChallengeModeMgr::GetStartPosition(uint32 mapID, float& x, float& y, float& z, float& o, ObjectGuid OwnerGuid)
+bool ChallengeModeMgr::GetStartPosition(InstanceScript* instance, float& x, float& y, float& z, float& o, ObjectGuid OwnerGuid)
 {
+    if (!instance)
+        return false;
+
     //ToDo Implement in DB
     uint32 WorldSafeLocID = 0;
-    switch (mapID)
+    switch (instance->instance->GetId())
     {
-    case CHALLENGE_MAP_ID_SHRINE_OF_THE_STORM:
-        WorldSafeLocID = 6524; 
-        break; 
-    case CHALLENGE_MAP_ID_TOL_DAGOR: 
-        WorldSafeLocID = 6383;
-        break;
-    case CHALLENGE_MAP_ID_FREE_HOLD: 
-        WorldSafeLocID = 6335;
-        break;
-    case CHALLENGE_MAP_ID_WAYCREST_MANOR: 
-        WorldSafeLocID = 6523;
-        break;
-    case CHALLENGE_MAP_ID_THE_MOTHERLODE: 
-        WorldSafeLocID = 6359;
-        break;
-    case CHALLENGE_MAP_ID_SETHRALIS: 
-        WorldSafeLocID = 6419;
-        break;
-    case CHALLENGE_MAP_ID_THE_UNDERROT: 
-        WorldSafeLocID = 6378;
-        break;
-    case CHALLENGE_MAP_ID_ATALDAZAR: 
-        WorldSafeLocID = 6123;
-        break;
-    case CHALLENGE_MAP_ID_SIEGE_OF_BORALUS: 
-        if (Player* keyOwner = ObjectAccessor::FindPlayer(OwnerGuid))
-        {
-            if (keyOwner->GetTeamId() == TEAM_ALLIANCE)
-                WorldSafeLocID = 6397; 
-            else
-                WorldSafeLocID = 6441; 
-        }
-        break;
-    case CHALLENGE_MAP_ID_KING_REST: 
-        WorldSafeLocID = 6560;
-        break;
-    default:
-        break;
+        case CHALLENGE_MAP_ID_SHRINE_OF_THE_STORM:
+            WorldSafeLocID = 6524; 
+            break; 
+        case CHALLENGE_MAP_ID_TOL_DAGOR: 
+            WorldSafeLocID = 6383;
+            break;
+        case CHALLENGE_MAP_ID_FREE_HOLD: 
+            WorldSafeLocID = 6335;
+            break;
+        case CHALLENGE_MAP_ID_WAYCREST_MANOR: 
+            WorldSafeLocID = 6523;
+            break;
+        case CHALLENGE_MAP_ID_THE_MOTHERLODE: 
+            WorldSafeLocID = 6359;
+            break;
+        case CHALLENGE_MAP_ID_SETHRALIS: 
+            WorldSafeLocID = 6419;
+            break;
+        case CHALLENGE_MAP_ID_THE_UNDERROT: 
+            WorldSafeLocID = 6378;
+            break;
+        case CHALLENGE_MAP_ID_ATALDAZAR: 
+            WorldSafeLocID = 6123;
+            break;
+        case CHALLENGE_MAP_ID_SIEGE_OF_BORALUS: 
+            if (Player* keyOwner = ObjectAccessor::FindPlayer(OwnerGuid))
+            {
+                if (keyOwner->GetTeamId() == TEAM_ALLIANCE)
+                    WorldSafeLocID = 6397; 
+                else
+                    WorldSafeLocID = 6441; 
+            }
+            break;
+        case CHALLENGE_MAP_ID_KING_REST: 
+            WorldSafeLocID = 6560;
+            break;
+        default:
+            break;
     }
+
     if (WorldSafeLocID == 0)
+    {
+        if (instance->HandleGetStartPosition(x, y, z, o))
+            return true;
         return false;
+    }
 
     if (auto entry = sObjectMgr->GetWorldSafeLoc(WorldSafeLocID))
     {
@@ -522,141 +530,144 @@ bool ChallengeModeMgr::GetStartPosition(uint32 mapID, float& x, float& y, float&
     return false;
 }
 
-void ChallengeModeMgr::GetChallengeDoorOrChestPosition(uint32 mapID, float& x, float& y, float& z, float& o, float& rot0, float& rot1, float& rot2, float& rot3, bool door, bool horde)
+bool ChallengeModeMgr::GetChallengeDoorOrChestPosition(uint32 mapID, float& x, float& y, float& z, float& o, float& rot0, float& rot1, float& rot2, float& rot3, bool door, bool horde)
 {
+    // PIGPIGPIG!!!
     switch (mapID)
     {
-    case CHALLENGE_MAP_ID_SHRINE_OF_THE_STORM: 
-        x = door ? DoorPositions[CHALLENGE_SHRINE_OF_THE_STORM][0] : ChestPositions[CHALLENGE_SHRINE_OF_THE_STORM][0];
-        y = door ? DoorPositions[CHALLENGE_SHRINE_OF_THE_STORM][1] : ChestPositions[CHALLENGE_SHRINE_OF_THE_STORM][1];
-        z = door ? DoorPositions[CHALLENGE_SHRINE_OF_THE_STORM][2] : ChestPositions[CHALLENGE_SHRINE_OF_THE_STORM][2];
-        o = door ? DoorPositions[CHALLENGE_SHRINE_OF_THE_STORM][3] : ChestPositions[CHALLENGE_SHRINE_OF_THE_STORM][3];
-        rot0 = door ? DoorPositions[CHALLENGE_SHRINE_OF_THE_STORM][4] : ChestPositions[CHALLENGE_SHRINE_OF_THE_STORM][4];
-        rot1 = door ? DoorPositions[CHALLENGE_SHRINE_OF_THE_STORM][5] : ChestPositions[CHALLENGE_SHRINE_OF_THE_STORM][5];
-        rot2 = door ? DoorPositions[CHALLENGE_SHRINE_OF_THE_STORM][6] : ChestPositions[CHALLENGE_SHRINE_OF_THE_STORM][6];
-        rot3 = door ? DoorPositions[CHALLENGE_SHRINE_OF_THE_STORM][7] : ChestPositions[CHALLENGE_SHRINE_OF_THE_STORM][7];
-        break;
-    case CHALLENGE_MAP_ID_TOL_DAGOR: 
-        x = door ? DoorPositions[CHALLENGE_TOL_DAGOR][0] : ChestPositions[CHALLENGE_TOL_DAGOR][0];
-        y = door ? DoorPositions[CHALLENGE_TOL_DAGOR][1] : ChestPositions[CHALLENGE_TOL_DAGOR][1];
-        z = door ? DoorPositions[CHALLENGE_TOL_DAGOR][2] : ChestPositions[CHALLENGE_TOL_DAGOR][2];
-        o = door ? DoorPositions[CHALLENGE_TOL_DAGOR][3] : ChestPositions[CHALLENGE_TOL_DAGOR][3];
-        rot0 = door ? DoorPositions[CHALLENGE_TOL_DAGOR][4] : ChestPositions[CHALLENGE_TOL_DAGOR][4];
-        rot1 = door ? DoorPositions[CHALLENGE_TOL_DAGOR][5] : ChestPositions[CHALLENGE_TOL_DAGOR][5];
-        rot2 = door ? DoorPositions[CHALLENGE_TOL_DAGOR][6] : ChestPositions[CHALLENGE_TOL_DAGOR][6];
-        rot3 = door ? DoorPositions[CHALLENGE_TOL_DAGOR][7] : ChestPositions[CHALLENGE_TOL_DAGOR][7];
-        break;
-    case CHALLENGE_MAP_ID_FREE_HOLD: 
-        x = door ? DoorPositions[CHALLENGE_FREE_HOLD][0] : ChestPositions[CHALLENGE_FREE_HOLD][0];
-        y = door ? DoorPositions[CHALLENGE_FREE_HOLD][1] : ChestPositions[CHALLENGE_FREE_HOLD][1];
-        z = door ? DoorPositions[CHALLENGE_FREE_HOLD][2] : ChestPositions[CHALLENGE_FREE_HOLD][2];
-        o = door ? DoorPositions[CHALLENGE_FREE_HOLD][3] : ChestPositions[CHALLENGE_FREE_HOLD][3];
-        rot0 = door ? DoorPositions[CHALLENGE_FREE_HOLD][4] : ChestPositions[CHALLENGE_FREE_HOLD][4];
-        rot1 = door ? DoorPositions[CHALLENGE_FREE_HOLD][5] : ChestPositions[CHALLENGE_FREE_HOLD][5];
-        rot2 = door ? DoorPositions[CHALLENGE_FREE_HOLD][6] : ChestPositions[CHALLENGE_FREE_HOLD][6];
-        rot3 = door ? DoorPositions[CHALLENGE_FREE_HOLD][7] : ChestPositions[CHALLENGE_FREE_HOLD][7];
-        break;
-    case CHALLENGE_MAP_ID_WAYCREST_MANOR:
-        x = door ? DoorPositions[CHALLENGE_WAYCREST_MANOR][0] : ChestPositions[CHALLENGE_WAYCREST_MANOR][0];
-        y = door ? DoorPositions[CHALLENGE_WAYCREST_MANOR][1] : ChestPositions[CHALLENGE_WAYCREST_MANOR][1];
-        z = door ? DoorPositions[CHALLENGE_WAYCREST_MANOR][2] : ChestPositions[CHALLENGE_WAYCREST_MANOR][2];
-        o = door ? DoorPositions[CHALLENGE_WAYCREST_MANOR][3] : ChestPositions[CHALLENGE_WAYCREST_MANOR][3];
-        rot0 = door ? DoorPositions[CHALLENGE_WAYCREST_MANOR][4] : ChestPositions[CHALLENGE_WAYCREST_MANOR][4];
-        rot1 = door ? DoorPositions[CHALLENGE_WAYCREST_MANOR][5] : ChestPositions[CHALLENGE_WAYCREST_MANOR][5];
-        rot2 = door ? DoorPositions[CHALLENGE_WAYCREST_MANOR][6] : ChestPositions[CHALLENGE_WAYCREST_MANOR][6];
-        rot3 = door ? DoorPositions[CHALLENGE_WAYCREST_MANOR][7] : ChestPositions[CHALLENGE_WAYCREST_MANOR][7];
-        break;
-    case CHALLENGE_MAP_ID_THE_MOTHERLODE: 
-        x = door ? DoorPositions[CHALLENGE_MOTHERLODE][0] : ChestPositions[CHALLENGE_MOTHERLODE][0];
-        y = door ? DoorPositions[CHALLENGE_MOTHERLODE][1] : ChestPositions[CHALLENGE_MOTHERLODE][1];
-        z = door ? DoorPositions[CHALLENGE_MOTHERLODE][2] : ChestPositions[CHALLENGE_MOTHERLODE][2];
-        o = door ? DoorPositions[CHALLENGE_MOTHERLODE][3] : ChestPositions[CHALLENGE_MOTHERLODE][3];
-        rot0 = door ? DoorPositions[CHALLENGE_MOTHERLODE][4] : ChestPositions[CHALLENGE_MOTHERLODE][4];
-        rot1 = door ? DoorPositions[CHALLENGE_MOTHERLODE][5] : ChestPositions[CHALLENGE_MOTHERLODE][5];
-        rot2 = door ? DoorPositions[CHALLENGE_MOTHERLODE][6] : ChestPositions[CHALLENGE_MOTHERLODE][6];
-        rot3 = door ? DoorPositions[CHALLENGE_MOTHERLODE][7] : ChestPositions[CHALLENGE_MOTHERLODE][7];
-        break;
-    case CHALLENGE_MAP_ID_SETHRALIS: 
-        x = door ? DoorPositions[CHALLENGE_TEMPLE_OF_SETHRALIS][0] : ChestPositions[CHALLENGE_TEMPLE_OF_SETHRALIS][0];
-        y = door ? DoorPositions[CHALLENGE_TEMPLE_OF_SETHRALIS][1] : ChestPositions[CHALLENGE_TEMPLE_OF_SETHRALIS][1];
-        z = door ? DoorPositions[CHALLENGE_TEMPLE_OF_SETHRALIS][2] : ChestPositions[CHALLENGE_TEMPLE_OF_SETHRALIS][2];
-        o = door ? DoorPositions[CHALLENGE_TEMPLE_OF_SETHRALIS][3] : ChestPositions[CHALLENGE_TEMPLE_OF_SETHRALIS][3];
-        rot0 = door ? DoorPositions[CHALLENGE_TEMPLE_OF_SETHRALIS][4] : ChestPositions[CHALLENGE_TEMPLE_OF_SETHRALIS][4];
-        rot1 = door ? DoorPositions[CHALLENGE_TEMPLE_OF_SETHRALIS][5] : ChestPositions[CHALLENGE_TEMPLE_OF_SETHRALIS][5];
-        rot2 = door ? DoorPositions[CHALLENGE_TEMPLE_OF_SETHRALIS][6] : ChestPositions[CHALLENGE_TEMPLE_OF_SETHRALIS][6];
-        rot3 = door ? DoorPositions[CHALLENGE_TEMPLE_OF_SETHRALIS][7] : ChestPositions[CHALLENGE_TEMPLE_OF_SETHRALIS][7];
-        break;
-    case CHALLENGE_MAP_ID_THE_UNDERROT: 
-        x = door ? DoorPositions[CHALLENGE_UNDERROT][0] : ChestPositions[CHALLENGE_UNDERROT][0];
-        y = door ? DoorPositions[CHALLENGE_UNDERROT][1] : ChestPositions[CHALLENGE_UNDERROT][1];
-        z = door ? DoorPositions[CHALLENGE_UNDERROT][2] : ChestPositions[CHALLENGE_UNDERROT][2];
-        o = door ? DoorPositions[CHALLENGE_UNDERROT][3] : ChestPositions[CHALLENGE_UNDERROT][3];
-        rot0 = door ? DoorPositions[CHALLENGE_UNDERROT][4] : ChestPositions[CHALLENGE_UNDERROT][4];
-        rot1 = door ? DoorPositions[CHALLENGE_UNDERROT][5] : ChestPositions[CHALLENGE_UNDERROT][5];
-        rot2 = door ? DoorPositions[CHALLENGE_UNDERROT][6] : ChestPositions[CHALLENGE_UNDERROT][6];
-        rot3 = door ? DoorPositions[CHALLENGE_UNDERROT][7] : ChestPositions[CHALLENGE_UNDERROT][7];
-        break;
-    case CHALLENGE_MAP_ID_ATALDAZAR: 
-        x = door ? DoorPositions[CHALLENGE_ATALDAZAR][0] : ChestPositions[CHALLENGE_ATALDAZAR][0];
-        y = door ? DoorPositions[CHALLENGE_ATALDAZAR][1] : ChestPositions[CHALLENGE_ATALDAZAR][1];
-        z = door ? DoorPositions[CHALLENGE_ATALDAZAR][2] : ChestPositions[CHALLENGE_ATALDAZAR][2];
-        o = door ? DoorPositions[CHALLENGE_ATALDAZAR][3] : ChestPositions[CHALLENGE_ATALDAZAR][3];
-        rot0 = door ? DoorPositions[CHALLENGE_ATALDAZAR][4] : ChestPositions[CHALLENGE_ATALDAZAR][4];
-        rot1 = door ? DoorPositions[CHALLENGE_ATALDAZAR][5] : ChestPositions[CHALLENGE_ATALDAZAR][5];
-        rot2 = door ? DoorPositions[CHALLENGE_ATALDAZAR][6] : ChestPositions[CHALLENGE_ATALDAZAR][6];
-        rot3 = door ? DoorPositions[CHALLENGE_ATALDAZAR][7] : ChestPositions[CHALLENGE_ATALDAZAR][7];
-        break;
-    case CHALLENGE_MAP_ID_SIEGE_OF_BORALUS:
-        x = door ? DoorPositions[horde ? CHALLENGE_SIEGE_OF_BORALUS_HORDE : CHALLENGE_SIEGE_OF_BORALUS][0] : ChestPositions[horde ? CHALLENGE_SIEGE_OF_BORALUS_HORDE : CHALLENGE_SIEGE_OF_BORALUS][0];
-        y = door ? DoorPositions[horde ? CHALLENGE_SIEGE_OF_BORALUS_HORDE : CHALLENGE_SIEGE_OF_BORALUS][1] : ChestPositions[horde ? CHALLENGE_SIEGE_OF_BORALUS_HORDE : CHALLENGE_SIEGE_OF_BORALUS][1];
-        z = door ? DoorPositions[horde ? CHALLENGE_SIEGE_OF_BORALUS_HORDE : CHALLENGE_SIEGE_OF_BORALUS][2] : ChestPositions[horde ? CHALLENGE_SIEGE_OF_BORALUS_HORDE : CHALLENGE_SIEGE_OF_BORALUS][2];
-        o = door ? DoorPositions[horde ? CHALLENGE_SIEGE_OF_BORALUS_HORDE : CHALLENGE_SIEGE_OF_BORALUS][3] : ChestPositions[horde ? CHALLENGE_SIEGE_OF_BORALUS_HORDE : CHALLENGE_SIEGE_OF_BORALUS][3];
-        rot0 = door ? DoorPositions[horde ? CHALLENGE_SIEGE_OF_BORALUS_HORDE : CHALLENGE_SIEGE_OF_BORALUS][4] : ChestPositions[horde ? CHALLENGE_SIEGE_OF_BORALUS_HORDE : CHALLENGE_SIEGE_OF_BORALUS][4];
-        rot1 = door ? DoorPositions[horde ? CHALLENGE_SIEGE_OF_BORALUS_HORDE : CHALLENGE_SIEGE_OF_BORALUS][5] : ChestPositions[horde ? CHALLENGE_SIEGE_OF_BORALUS_HORDE : CHALLENGE_SIEGE_OF_BORALUS][5];
-        rot2 = door ? DoorPositions[horde ? CHALLENGE_SIEGE_OF_BORALUS_HORDE : CHALLENGE_SIEGE_OF_BORALUS][6] : ChestPositions[horde ? CHALLENGE_SIEGE_OF_BORALUS_HORDE : CHALLENGE_SIEGE_OF_BORALUS][6];
-        rot3 = door ? DoorPositions[horde ? CHALLENGE_SIEGE_OF_BORALUS_HORDE : CHALLENGE_SIEGE_OF_BORALUS][7] : ChestPositions[horde ? CHALLENGE_SIEGE_OF_BORALUS_HORDE : CHALLENGE_SIEGE_OF_BORALUS][7];
-        break;
-    case CHALLENGE_MAP_ID_KING_REST: 
-        x = door ? DoorPositions[CHALLENGE_KING_REST][0] : ChestPositions[CHALLENGE_KING_REST][0];
-        y = door ? DoorPositions[CHALLENGE_KING_REST][1] : ChestPositions[CHALLENGE_KING_REST][1];
-        z = door ? DoorPositions[CHALLENGE_KING_REST][2] : ChestPositions[CHALLENGE_KING_REST][2];
-        o = door ? DoorPositions[CHALLENGE_KING_REST][3] : ChestPositions[CHALLENGE_KING_REST][3];
-        rot0 = door ? DoorPositions[CHALLENGE_KING_REST][4] : ChestPositions[CHALLENGE_KING_REST][4];
-        rot1 = door ? DoorPositions[CHALLENGE_KING_REST][5] : ChestPositions[CHALLENGE_KING_REST][5];
-        rot2 = door ? DoorPositions[CHALLENGE_KING_REST][6] : ChestPositions[CHALLENGE_KING_REST][6];
-        rot3 = door ? DoorPositions[CHALLENGE_KING_REST][7] : ChestPositions[CHALLENGE_KING_REST][7];
-        break;
-    default:
-        break;
+        case CHALLENGE_MAP_ID_SHRINE_OF_THE_STORM:
+            x = door ? DoorPositions[CHALLENGE_SHRINE_OF_THE_STORM][0] : ChestPositions[CHALLENGE_SHRINE_OF_THE_STORM][0];
+            y = door ? DoorPositions[CHALLENGE_SHRINE_OF_THE_STORM][1] : ChestPositions[CHALLENGE_SHRINE_OF_THE_STORM][1];
+            z = door ? DoorPositions[CHALLENGE_SHRINE_OF_THE_STORM][2] : ChestPositions[CHALLENGE_SHRINE_OF_THE_STORM][2];
+            o = door ? DoorPositions[CHALLENGE_SHRINE_OF_THE_STORM][3] : ChestPositions[CHALLENGE_SHRINE_OF_THE_STORM][3];
+            rot0 = door ? DoorPositions[CHALLENGE_SHRINE_OF_THE_STORM][4] : ChestPositions[CHALLENGE_SHRINE_OF_THE_STORM][4];
+            rot1 = door ? DoorPositions[CHALLENGE_SHRINE_OF_THE_STORM][5] : ChestPositions[CHALLENGE_SHRINE_OF_THE_STORM][5];
+            rot2 = door ? DoorPositions[CHALLENGE_SHRINE_OF_THE_STORM][6] : ChestPositions[CHALLENGE_SHRINE_OF_THE_STORM][6];
+            rot3 = door ? DoorPositions[CHALLENGE_SHRINE_OF_THE_STORM][7] : ChestPositions[CHALLENGE_SHRINE_OF_THE_STORM][7];
+            return true;
+        case CHALLENGE_MAP_ID_TOL_DAGOR:
+            x = door ? DoorPositions[CHALLENGE_TOL_DAGOR][0] : ChestPositions[CHALLENGE_TOL_DAGOR][0];
+            y = door ? DoorPositions[CHALLENGE_TOL_DAGOR][1] : ChestPositions[CHALLENGE_TOL_DAGOR][1];
+            z = door ? DoorPositions[CHALLENGE_TOL_DAGOR][2] : ChestPositions[CHALLENGE_TOL_DAGOR][2];
+            o = door ? DoorPositions[CHALLENGE_TOL_DAGOR][3] : ChestPositions[CHALLENGE_TOL_DAGOR][3];
+            rot0 = door ? DoorPositions[CHALLENGE_TOL_DAGOR][4] : ChestPositions[CHALLENGE_TOL_DAGOR][4];
+            rot1 = door ? DoorPositions[CHALLENGE_TOL_DAGOR][5] : ChestPositions[CHALLENGE_TOL_DAGOR][5];
+            rot2 = door ? DoorPositions[CHALLENGE_TOL_DAGOR][6] : ChestPositions[CHALLENGE_TOL_DAGOR][6];
+            rot3 = door ? DoorPositions[CHALLENGE_TOL_DAGOR][7] : ChestPositions[CHALLENGE_TOL_DAGOR][7];
+            return true;
+        case CHALLENGE_MAP_ID_FREE_HOLD:
+            x = door ? DoorPositions[CHALLENGE_FREE_HOLD][0] : ChestPositions[CHALLENGE_FREE_HOLD][0];
+            y = door ? DoorPositions[CHALLENGE_FREE_HOLD][1] : ChestPositions[CHALLENGE_FREE_HOLD][1];
+            z = door ? DoorPositions[CHALLENGE_FREE_HOLD][2] : ChestPositions[CHALLENGE_FREE_HOLD][2];
+            o = door ? DoorPositions[CHALLENGE_FREE_HOLD][3] : ChestPositions[CHALLENGE_FREE_HOLD][3];
+            rot0 = door ? DoorPositions[CHALLENGE_FREE_HOLD][4] : ChestPositions[CHALLENGE_FREE_HOLD][4];
+            rot1 = door ? DoorPositions[CHALLENGE_FREE_HOLD][5] : ChestPositions[CHALLENGE_FREE_HOLD][5];
+            rot2 = door ? DoorPositions[CHALLENGE_FREE_HOLD][6] : ChestPositions[CHALLENGE_FREE_HOLD][6];
+            rot3 = door ? DoorPositions[CHALLENGE_FREE_HOLD][7] : ChestPositions[CHALLENGE_FREE_HOLD][7];
+            return true;
+        case CHALLENGE_MAP_ID_WAYCREST_MANOR:
+            x = door ? DoorPositions[CHALLENGE_WAYCREST_MANOR][0] : ChestPositions[CHALLENGE_WAYCREST_MANOR][0];
+            y = door ? DoorPositions[CHALLENGE_WAYCREST_MANOR][1] : ChestPositions[CHALLENGE_WAYCREST_MANOR][1];
+            z = door ? DoorPositions[CHALLENGE_WAYCREST_MANOR][2] : ChestPositions[CHALLENGE_WAYCREST_MANOR][2];
+            o = door ? DoorPositions[CHALLENGE_WAYCREST_MANOR][3] : ChestPositions[CHALLENGE_WAYCREST_MANOR][3];
+            rot0 = door ? DoorPositions[CHALLENGE_WAYCREST_MANOR][4] : ChestPositions[CHALLENGE_WAYCREST_MANOR][4];
+            rot1 = door ? DoorPositions[CHALLENGE_WAYCREST_MANOR][5] : ChestPositions[CHALLENGE_WAYCREST_MANOR][5];
+            rot2 = door ? DoorPositions[CHALLENGE_WAYCREST_MANOR][6] : ChestPositions[CHALLENGE_WAYCREST_MANOR][6];
+            rot3 = door ? DoorPositions[CHALLENGE_WAYCREST_MANOR][7] : ChestPositions[CHALLENGE_WAYCREST_MANOR][7];
+            return true;
+        case CHALLENGE_MAP_ID_THE_MOTHERLODE:
+            x = door ? DoorPositions[CHALLENGE_MOTHERLODE][0] : ChestPositions[CHALLENGE_MOTHERLODE][0];
+            y = door ? DoorPositions[CHALLENGE_MOTHERLODE][1] : ChestPositions[CHALLENGE_MOTHERLODE][1];
+            z = door ? DoorPositions[CHALLENGE_MOTHERLODE][2] : ChestPositions[CHALLENGE_MOTHERLODE][2];
+            o = door ? DoorPositions[CHALLENGE_MOTHERLODE][3] : ChestPositions[CHALLENGE_MOTHERLODE][3];
+            rot0 = door ? DoorPositions[CHALLENGE_MOTHERLODE][4] : ChestPositions[CHALLENGE_MOTHERLODE][4];
+            rot1 = door ? DoorPositions[CHALLENGE_MOTHERLODE][5] : ChestPositions[CHALLENGE_MOTHERLODE][5];
+            rot2 = door ? DoorPositions[CHALLENGE_MOTHERLODE][6] : ChestPositions[CHALLENGE_MOTHERLODE][6];
+            rot3 = door ? DoorPositions[CHALLENGE_MOTHERLODE][7] : ChestPositions[CHALLENGE_MOTHERLODE][7];
+            return true;
+        case CHALLENGE_MAP_ID_SETHRALIS:
+            x = door ? DoorPositions[CHALLENGE_TEMPLE_OF_SETHRALIS][0] : ChestPositions[CHALLENGE_TEMPLE_OF_SETHRALIS][0];
+            y = door ? DoorPositions[CHALLENGE_TEMPLE_OF_SETHRALIS][1] : ChestPositions[CHALLENGE_TEMPLE_OF_SETHRALIS][1];
+            z = door ? DoorPositions[CHALLENGE_TEMPLE_OF_SETHRALIS][2] : ChestPositions[CHALLENGE_TEMPLE_OF_SETHRALIS][2];
+            o = door ? DoorPositions[CHALLENGE_TEMPLE_OF_SETHRALIS][3] : ChestPositions[CHALLENGE_TEMPLE_OF_SETHRALIS][3];
+            rot0 = door ? DoorPositions[CHALLENGE_TEMPLE_OF_SETHRALIS][4] : ChestPositions[CHALLENGE_TEMPLE_OF_SETHRALIS][4];
+            rot1 = door ? DoorPositions[CHALLENGE_TEMPLE_OF_SETHRALIS][5] : ChestPositions[CHALLENGE_TEMPLE_OF_SETHRALIS][5];
+            rot2 = door ? DoorPositions[CHALLENGE_TEMPLE_OF_SETHRALIS][6] : ChestPositions[CHALLENGE_TEMPLE_OF_SETHRALIS][6];
+            rot3 = door ? DoorPositions[CHALLENGE_TEMPLE_OF_SETHRALIS][7] : ChestPositions[CHALLENGE_TEMPLE_OF_SETHRALIS][7];
+            return true;
+        case CHALLENGE_MAP_ID_THE_UNDERROT:
+            x = door ? DoorPositions[CHALLENGE_UNDERROT][0] : ChestPositions[CHALLENGE_UNDERROT][0];
+            y = door ? DoorPositions[CHALLENGE_UNDERROT][1] : ChestPositions[CHALLENGE_UNDERROT][1];
+            z = door ? DoorPositions[CHALLENGE_UNDERROT][2] : ChestPositions[CHALLENGE_UNDERROT][2];
+            o = door ? DoorPositions[CHALLENGE_UNDERROT][3] : ChestPositions[CHALLENGE_UNDERROT][3];
+            rot0 = door ? DoorPositions[CHALLENGE_UNDERROT][4] : ChestPositions[CHALLENGE_UNDERROT][4];
+            rot1 = door ? DoorPositions[CHALLENGE_UNDERROT][5] : ChestPositions[CHALLENGE_UNDERROT][5];
+            rot2 = door ? DoorPositions[CHALLENGE_UNDERROT][6] : ChestPositions[CHALLENGE_UNDERROT][6];
+            rot3 = door ? DoorPositions[CHALLENGE_UNDERROT][7] : ChestPositions[CHALLENGE_UNDERROT][7];
+            return true;
+        case CHALLENGE_MAP_ID_ATALDAZAR:
+            x = door ? DoorPositions[CHALLENGE_ATALDAZAR][0] : ChestPositions[CHALLENGE_ATALDAZAR][0];
+            y = door ? DoorPositions[CHALLENGE_ATALDAZAR][1] : ChestPositions[CHALLENGE_ATALDAZAR][1];
+            z = door ? DoorPositions[CHALLENGE_ATALDAZAR][2] : ChestPositions[CHALLENGE_ATALDAZAR][2];
+            o = door ? DoorPositions[CHALLENGE_ATALDAZAR][3] : ChestPositions[CHALLENGE_ATALDAZAR][3];
+            rot0 = door ? DoorPositions[CHALLENGE_ATALDAZAR][4] : ChestPositions[CHALLENGE_ATALDAZAR][4];
+            rot1 = door ? DoorPositions[CHALLENGE_ATALDAZAR][5] : ChestPositions[CHALLENGE_ATALDAZAR][5];
+            rot2 = door ? DoorPositions[CHALLENGE_ATALDAZAR][6] : ChestPositions[CHALLENGE_ATALDAZAR][6];
+            rot3 = door ? DoorPositions[CHALLENGE_ATALDAZAR][7] : ChestPositions[CHALLENGE_ATALDAZAR][7];
+            return true;
+        case CHALLENGE_MAP_ID_SIEGE_OF_BORALUS:
+            x = door ? DoorPositions[horde ? CHALLENGE_SIEGE_OF_BORALUS_HORDE : CHALLENGE_SIEGE_OF_BORALUS][0] : ChestPositions[horde ? CHALLENGE_SIEGE_OF_BORALUS_HORDE : CHALLENGE_SIEGE_OF_BORALUS][0];
+            y = door ? DoorPositions[horde ? CHALLENGE_SIEGE_OF_BORALUS_HORDE : CHALLENGE_SIEGE_OF_BORALUS][1] : ChestPositions[horde ? CHALLENGE_SIEGE_OF_BORALUS_HORDE : CHALLENGE_SIEGE_OF_BORALUS][1];
+            z = door ? DoorPositions[horde ? CHALLENGE_SIEGE_OF_BORALUS_HORDE : CHALLENGE_SIEGE_OF_BORALUS][2] : ChestPositions[horde ? CHALLENGE_SIEGE_OF_BORALUS_HORDE : CHALLENGE_SIEGE_OF_BORALUS][2];
+            o = door ? DoorPositions[horde ? CHALLENGE_SIEGE_OF_BORALUS_HORDE : CHALLENGE_SIEGE_OF_BORALUS][3] : ChestPositions[horde ? CHALLENGE_SIEGE_OF_BORALUS_HORDE : CHALLENGE_SIEGE_OF_BORALUS][3];
+            rot0 = door ? DoorPositions[horde ? CHALLENGE_SIEGE_OF_BORALUS_HORDE : CHALLENGE_SIEGE_OF_BORALUS][4] : ChestPositions[horde ? CHALLENGE_SIEGE_OF_BORALUS_HORDE : CHALLENGE_SIEGE_OF_BORALUS][4];
+            rot1 = door ? DoorPositions[horde ? CHALLENGE_SIEGE_OF_BORALUS_HORDE : CHALLENGE_SIEGE_OF_BORALUS][5] : ChestPositions[horde ? CHALLENGE_SIEGE_OF_BORALUS_HORDE : CHALLENGE_SIEGE_OF_BORALUS][5];
+            rot2 = door ? DoorPositions[horde ? CHALLENGE_SIEGE_OF_BORALUS_HORDE : CHALLENGE_SIEGE_OF_BORALUS][6] : ChestPositions[horde ? CHALLENGE_SIEGE_OF_BORALUS_HORDE : CHALLENGE_SIEGE_OF_BORALUS][6];
+            rot3 = door ? DoorPositions[horde ? CHALLENGE_SIEGE_OF_BORALUS_HORDE : CHALLENGE_SIEGE_OF_BORALUS][7] : ChestPositions[horde ? CHALLENGE_SIEGE_OF_BORALUS_HORDE : CHALLENGE_SIEGE_OF_BORALUS][7];
+            return true;
+        case CHALLENGE_MAP_ID_KING_REST:
+            x = door ? DoorPositions[CHALLENGE_KING_REST][0] : ChestPositions[CHALLENGE_KING_REST][0];
+            y = door ? DoorPositions[CHALLENGE_KING_REST][1] : ChestPositions[CHALLENGE_KING_REST][1];
+            z = door ? DoorPositions[CHALLENGE_KING_REST][2] : ChestPositions[CHALLENGE_KING_REST][2];
+            o = door ? DoorPositions[CHALLENGE_KING_REST][3] : ChestPositions[CHALLENGE_KING_REST][3];
+            rot0 = door ? DoorPositions[CHALLENGE_KING_REST][4] : ChestPositions[CHALLENGE_KING_REST][4];
+            rot1 = door ? DoorPositions[CHALLENGE_KING_REST][5] : ChestPositions[CHALLENGE_KING_REST][5];
+            rot2 = door ? DoorPositions[CHALLENGE_KING_REST][6] : ChestPositions[CHALLENGE_KING_REST][6];
+            rot3 = door ? DoorPositions[CHALLENGE_KING_REST][7] : ChestPositions[CHALLENGE_KING_REST][7];
+            return true;
+        default:
+            break;
     }
+
+    return false;
 }
 
 uint32 ChallengeModeMgr::GetDoorOrChestByMap(uint32 mapID, bool door, bool horde)
 {    
     switch (mapID)
     {
-    case CHALLENGE_MAP_ID_WAYCREST_MANOR:
-        return door ? MYTHIC_DOOR_2 : MYTHIC_CHEST_WAYCREST_MANOR;
-    case CHALLENGE_MAP_ID_SIEGE_OF_BORALUS: 
-        return door ? (horde ? MYTHIC_DOOR_3 : MYTHIC_DOOR_4) : MYTHIC_CHEST_SIEGE_OF_BORALUS;
-    case CHALLENGE_MAP_ID_TOL_DAGOR: 
-        return door ? MYTHIC_DOOR_4 : MYTHIC_CHEST_TOL_DAGOR;
-    case CHALLENGE_MAP_ID_FREE_HOLD: 
-        return door ? MYTHIC_DOOR_4 : MYTHIC_CHEST_FREE_HOLD;
-    case CHALLENGE_MAP_ID_THE_UNDERROT: 
-        return door ? MYTHIC_DOOR_4 : MYTHIC_CHEST_UNDERROT;
-    case CHALLENGE_MAP_ID_THE_MOTHERLODE: 
-        return door ? MYTHIC_DOOR_5 : MYTHIC_CHEST_MOTHERLODE;
-    case CHALLENGE_MAP_ID_SETHRALIS: 
-        return door ? MYTHIC_DOOR_1 : MYTHIC_CHEST_SETHRALISS;
-    case CHALLENGE_MAP_ID_ATALDAZAR: 
-        return door ? MYTHIC_DOOR_7 : MYTHIC_CHEST_ATALDAZAR;
-    case CHALLENGE_MAP_ID_KING_REST: 
-        return door ? MYTHIC_DOOR_6 : MYTHIC_CHEST_KING_REST;
-    case CHALLENGE_MAP_ID_SHRINE_OF_THE_STORM:
-        return door ? MYTHIC_DOOR_3 : MYTHIC_CHEST_SHRINE_OF_THE_STORM;
-    default:
-        break;
+        case CHALLENGE_MAP_ID_WAYCREST_MANOR:
+            return door ? MYTHIC_DOOR_2 : MYTHIC_CHEST_WAYCREST_MANOR;
+        case CHALLENGE_MAP_ID_SIEGE_OF_BORALUS: 
+            return door ? (horde ? MYTHIC_DOOR_3 : MYTHIC_DOOR_4) : MYTHIC_CHEST_SIEGE_OF_BORALUS;
+        case CHALLENGE_MAP_ID_TOL_DAGOR: 
+            return door ? MYTHIC_DOOR_4 : MYTHIC_CHEST_TOL_DAGOR;
+        case CHALLENGE_MAP_ID_FREE_HOLD: 
+            return door ? MYTHIC_DOOR_4 : MYTHIC_CHEST_FREE_HOLD;
+        case CHALLENGE_MAP_ID_THE_UNDERROT: 
+            return door ? MYTHIC_DOOR_4 : MYTHIC_CHEST_UNDERROT;
+        case CHALLENGE_MAP_ID_THE_MOTHERLODE: 
+            return door ? MYTHIC_DOOR_5 : MYTHIC_CHEST_MOTHERLODE;
+        case CHALLENGE_MAP_ID_SETHRALIS: 
+            return door ? MYTHIC_DOOR_1 : MYTHIC_CHEST_SETHRALISS;
+        case CHALLENGE_MAP_ID_ATALDAZAR: 
+            return door ? MYTHIC_DOOR_7 : MYTHIC_CHEST_ATALDAZAR;
+        case CHALLENGE_MAP_ID_KING_REST: 
+            return door ? MYTHIC_DOOR_6 : MYTHIC_CHEST_KING_REST;
+        case CHALLENGE_MAP_ID_SHRINE_OF_THE_STORM:
+            return door ? MYTHIC_DOOR_3 : MYTHIC_CHEST_SHRINE_OF_THE_STORM;
+        default:
+            break;
     }
 
     return 0;
