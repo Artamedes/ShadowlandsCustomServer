@@ -232,6 +232,7 @@ class LoginScript : public PlayerScript
 
         void OnLogin(Player* p_Player, bool p_First) override
         {
+            p_Player->SetPlayerLocalFlag(PlayerLocalFlags::PLAYER_LOCAL_FLAG_ACCOUNT_SECURED);
             if (p_First)
             {
                 // Learn Riding
