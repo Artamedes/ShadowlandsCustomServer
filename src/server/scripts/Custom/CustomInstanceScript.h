@@ -1,10 +1,13 @@
 #pragma once
 
+#include "ChallengeMode.h"
+#include "ChallengeModeMgr.h"
 #include "ScriptMgr.h"
 #include "Player.h"
 #include "InstanceScript.h"
 #include "Map.h"
 #include "DatabaseEnv.h"
+#include "LootMgr.h"
 
 struct CustomInstanceRespawnData
 {
@@ -105,5 +108,22 @@ public:
             m_CheckpointId = Value;
     }
 
+    void OnChallengeComplete() override
+    {
+        if (auto chest = instance->SummonGameObject(1200005, ChestSpawn, Quad, 0))
+        {
+            instance->DoOnPlayers([this, chest](Player* player)
+            {
+                auto loot = chest->GetLootFor(player, true);
+                loot->FillLoot(GetLootIdForDungeon(), LootTemplates_Gameobject, player, true, false, chest->GetLootMode(), true, true, false, chest->GetGOInfo()->IsOploteChest());
+            });
+
+            chest->SetLootState(LootState::GO_ACTIVATED); // set activated
+            chest->ForceUpdateFieldChange(chest->m_values.ModifyValue(&Object::m_objectData).ModifyValue(&UF::ObjectData::DynamicFlags)); // force update dynflags
+        }
+    }
+
     uint32 m_CheckpointId = 0;
+    Position ChestSpawn;
+    QuaternionData Quad;
 };

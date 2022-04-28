@@ -253,6 +253,8 @@ public:
         {
             // SetHeaders(DataHeader);
             // SetBossNumber(EncounterCount);
+            ChestSpawn = { 1161.27, 1052.53, 3.89255, 2.49364 };
+            Quad = { 0, 0, -0.947977f, -0.318339f };
         }
 
         void OnCompletedCriteriaTree(CriteriaTree const* tree) override
@@ -311,15 +313,6 @@ public:
                     player->TeleportTo(WorldLocation(instance->GetId(), respawnData->Pos), 0);
                     player->RemovePlayerFlag(PLAYER_FLAGS_IS_OUT_OF_BOUNDS);
                 }
-            }
-        }
-
-
-        void OnChallengeComplete() override
-        {
-            if (auto chest = instance->SummonGameObject(1200005, { 1161.27, 1052.53, 3.89255, 2.49364 }, { 0, 0, -0.947977f, -0.318339f }, 0))
-            {
-                chest->SetLootState(LootState::GO_READY);
             }
         }
 

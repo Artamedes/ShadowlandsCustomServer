@@ -84,7 +84,7 @@ void WorldSession::HandleAutostoreLootItemOpcode(WorldPackets::Loot::LootItem& p
                 continue;
             }
 
-            loot = &go->loot;
+            loot = go->GetLootFor(player);
         }
         else if (lguid.IsItem())
         {
@@ -161,7 +161,7 @@ void WorldSession::HandleLootMoneyOpcode(WorldPackets::Loot::LootMoney& /*packet
 
                 // do not check distance for GO if player is the owner of it (ex. fishing bobber)
                 if (go && ((go->GetOwnerGUID() == player->GetGUID() || go->IsWithinDistInMap(player))))
-                    loot = &go->loot;
+                    loot = go->GetLootFor(player);
 
                 break;
             }
@@ -333,7 +333,7 @@ void WorldSession::DoLootRelease(ObjectGuid lguid)
         if (!go || ((go->GetOwnerGUID() != _player->GetGUID() && go->GetGoType() != GAMEOBJECT_TYPE_FISHINGHOLE) && !go->IsWithinDistInMap(_player)))
             return;
 
-        loot = &go->loot;
+        loot = go->GetLootFor(player);
 
         if (go->GetGoType() == GAMEOBJECT_TYPE_DOOR)
         {
@@ -364,6 +364,8 @@ void WorldSession::DoLootRelease(ObjectGuid lguid)
             if (player->GetGUID() == loot->roundRobinPlayer)
                 loot->roundRobinPlayer.Clear();
         }
+
+        go->ForceUpdateFieldChange(go->m_values.ModifyValue(&Object::m_objectData).ModifyValue(&UF::ObjectData::DynamicFlags));
     }
     else if (lguid.IsCorpse())        // ONLY remove insignia at BG
     {
@@ -501,7 +503,7 @@ void WorldSession::HandleLootMasterGiveOpcode(WorldPackets::Loot::MasterLootItem
             if (!pGO)
                 return;
 
-            loot = &pGO->loot;
+            loot = pGO->GetLootFor(GetPlayer());
         }
 
         if (!loot)

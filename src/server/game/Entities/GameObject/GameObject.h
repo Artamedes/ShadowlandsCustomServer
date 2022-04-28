@@ -255,7 +255,12 @@ class TC_GAME_API GameObject : public WorldObject, public GridObject<GameObject>
 
         void SaveRespawnTime(uint32 forceDelay = 0);
 
-        Loot        loot;
+        Loot* GetLootFor(Player* player = nullptr, bool create = false);
+        bool IsAllLooted() const;
+
+        bool m_canBePersonalLooted = false;
+        std::unique_ptr<Loot> loot;
+        std::unordered_map<ObjectGuid, std::unique_ptr<Loot>> m_PersonalLoots;
 
         Player* GetLootRecipient() const;
         Group* GetLootRecipientGroup() const;
