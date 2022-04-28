@@ -314,6 +314,20 @@ public:
             }
         }
 
+
+        void OnChallengeComplete() override
+        {
+            if (auto chest = instance->SummonGameObject(1200005, { 1161.27, 1052.53, 3.89255, 2.49364 }, { 0, 0, -0.947977f, -0.318339f }, 0))
+            {
+                chest->SetLootState(LootState::GO_READY);
+            }
+        }
+
+        uint32 GetLootIdForDungeon() override
+        {
+            return 1200005;
+        }
+
         private:
             uint32 m_Kills = 0;
             ObjectGuid iroGuid;
