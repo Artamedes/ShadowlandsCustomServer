@@ -422,6 +422,7 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
         bool IsScenario() const;
         bool IsGarrison() const;
         bool GetEntrancePos(int32& mapid, float& x, float& y);
+        uint8 Expansion() const;
         bool IsNeedRespawn(uint32 lastRespawn) const;
 
         void AddObjectToRemoveList(WorldObject* obj);

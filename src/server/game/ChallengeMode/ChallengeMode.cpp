@@ -649,6 +649,9 @@ void Challenge::Complete()
     sChallengeModeMgr->CheckBestMapId(challengeData);
     sChallengeModeMgr->CheckBestGuildMapId(challengeData);
     sChallengeModeMgr->SaveChallengeToDB(challengeData);
+
+    if (GetInstanceScript())
+        GetInstanceScript()->OnChallengeComplete();
 }
 
 void Challenge::HitTimer()

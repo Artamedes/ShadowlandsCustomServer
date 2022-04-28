@@ -281,6 +281,7 @@ bool Loot::FillLoot(uint32 lootId, LootStore const& store, Player* lootOwner, bo
 
     _itemContext = lootOwner->GetMap()->GetDifficultyLootItemContext();
     lootOwnerGUID = lootOwner->GetGUID();
+    _lootOwnerGuid = lootOwner->GetGUID(); // PIGPIG
 
     Challenge* _challenge = nullptr;
     if (InstanceMap* instance = lootOwner->GetMap()->ToInstanceMap())
@@ -291,6 +292,11 @@ bool Loot::FillLoot(uint32 lootId, LootStore const& store, Player* lootOwner, bo
             {
                 if (_challenge->IsComplete())
                 {
+                    // can this let players exploit?
+                    if (auto _lootId = script->GetLootIdForDungeon())
+                        lootId = _lootId;
+
+                    _challengeLevel = _challenge->GetChallengeLevel(); // Pigpig
                     _realChallengeLevel = _challenge->GetChallengeLevel();
                     _itemContext = ItemContext(sChallengeModeMgr->GetLootTreeMod(_levelBonus, _challengeLevel, _challenge));
                 }

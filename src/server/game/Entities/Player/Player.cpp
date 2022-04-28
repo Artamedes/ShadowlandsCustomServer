@@ -9148,6 +9148,12 @@ void Player::SendLoot(ObjectGuid guid, LootType loot_type, bool aeLooting/* = fa
                     return;
                 }
 
+            if (!lootid && go->GetEntry() == 1200005)
+            {
+                if (auto instance = GetInstanceScript())
+                    lootid = instance->GetLootIdForDungeon();
+            }
+
             if (lootid)
             {
                 loot->clear();
@@ -9159,12 +9165,23 @@ void Player::SendLoot(ObjectGuid guid, LootType loot_type, bool aeLooting/* = fa
                 if (groupRules)
                     group->UpdateLooterGuid(go, true);
 
-                loot->FillLoot(lootid, LootTemplates_Gameobject, this, !groupRules, false, go->GetLootMode());
+                if (!GetMap()->IsChallengeMode() || (!group && GetMap()->IsChallengeMode()))
+                    loot->FillLoot(lootid, LootTemplates_Gameobject, this, !groupRules, false, go->GetLootMode(), false, false, false, go->GetGOInfo()->IsOploteChest());
+
                 go->SetLootGenerationTime();
 
                 // get next RR player (for next loot)
                 if (groupRules && !go->loot.empty())
                     group->UpdateLooterGuid(go);
+
+                if (group && !go->GetGOInfo()->IsOploteChest())
+                {
+                    if (go->GetMap()->Expansion() >= Expansions::EXPANSION_WARLORDS_OF_DRAENOR)
+                    {
+                        group->SetLootMethod(LootMethod::PERSONAL_LOOT);
+                        group->PersonalLoot(*loot, go);
+                    }
+                }
             }
 
             if (go->GetLootMode() > 0)
@@ -9210,13 +9227,28 @@ void Player::SendLoot(ObjectGuid guid, LootType loot_type, bool aeLooting/* = fa
                     case FREE_FOR_ALL:
                         permission = ALL_PERMISSION;
                         break;
+                    case PERSONAL_LOOT:
+                        permission = OWNER_PERMISSION;
+                        break;
                     default:
                         permission = GROUP_PERMISSION;
                         break;
                 }
             }
             else
-                permission = ALL_PERMISSION;
+            {
+                switch (loot_type)
+                {
+                    case LOOT_SKINNING:
+                    case LOOT_FISHING:
+                    case LOOT_FISHINGHOLE:
+                        permission = OWNER_PERMISSION;
+                        break;
+                    default:
+                        permission = ALL_PERMISSION;
+                        break;
+                }
+            }
         }
     }
     else if (guid.IsItem())
@@ -9466,15 +9498,20 @@ void Player::SendLoot(ObjectGuid guid, LootType loot_type, bool aeLooting/* = fa
 
     if (permission != NONE_PERMISSION)
     {
-        LootMethod _lootMethod = FREE_FOR_ALL;
-        if (Group* group = GetGroup())
+        LootMethod _lootMethod = PERSONAL_LOOT;
+        if (Creature* creature = GetMap()->GetCreature(guid))
         {
-            if (Creature* creature = GetMap()->GetCreature(guid))
+            if (creature->CanHavePersonalLoot())
+                _lootMethod = PERSONAL_LOOT;
+            else
             {
-                if (Player* recipient = creature->GetLootRecipient())
+                if (Group* group = GetGroup())
                 {
-                    if (group == recipient->GetGroup())
-                        _lootMethod = group->GetLootMethod();
+                    if (Player* recipient = creature->GetLootRecipient())
+                    {
+                        if (group == recipient->GetGroup())
+                            _lootMethod = group->GetLootMethod();
+                    }
                 }
             }
         }

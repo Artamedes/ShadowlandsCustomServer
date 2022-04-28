@@ -659,10 +659,14 @@ void GameObject::Update(uint32 diff)
                 case GAMEOBJECT_TYPE_CHEST:
                     if (m_restockTime > GameTime::GetGameTime())
                         return;
-                    // If there is no restock timer, or if the restock timer passed, the chest becomes ready to loot
-                    m_restockTime = 0;
-                    m_lootState = GO_READY;
-                    AddToObjectUpdateIfNeeded();
+
+                    if (GetEntry() != 1200005)
+                    {
+                        // If there is no restock timer, or if the restock timer passed, the chest becomes ready to loot
+                        m_restockTime = 0;
+                        m_lootState = GO_READY;
+                        AddToObjectUpdateIfNeeded();
+                    }
                     break;
                 default:
                     m_lootState = GO_READY;                         // for other GOis same switched without delay to GO_READY
@@ -894,7 +898,7 @@ void GameObject::Update(uint32 diff)
                     }
 
                     // Non-consumable chest was partially looted and restock time passed, restock all loot now
-                    if (GetGOInfo()->chest.consumable == 0 && GameTime::GetGameTime() >= m_restockTime)
+                    if (GetGOInfo()->chest.consumable == 0 && GameTime::GetGameTime() >= m_restockTime && GetEntry() != 1200005)
                     {
                         m_restockTime = 0;
                         m_lootState = GO_READY;

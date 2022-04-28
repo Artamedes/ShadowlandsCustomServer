@@ -402,6 +402,8 @@ class TC_GAME_API Group
         void SendLooter(Creature* creature, Player* pLooter);
         void GroupLoot(Loot* loot, WorldObject* pLootedObject);
         void MasterLoot(Loot* loot, WorldObject* pLootedObject);
+        void PersonalLoot(Loot& loot, WorldObject* pLootedObject);
+        void DoRollForAllMembers(ObjectGuid guid, uint8 slot, uint32 mapid, Loot* loot, LootItem& item, Player* player);
         Rolls::iterator GetRoll(ObjectGuid lootObjectGuid, uint8 lootListId);
         void CountTheRoll(Rolls::iterator roll, Map* allowedMap);
         void CountRollVote(ObjectGuid playerGuid, ObjectGuid lootObjectGuid, uint8 lootListId, uint8 choice);

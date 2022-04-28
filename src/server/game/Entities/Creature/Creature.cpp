@@ -2057,6 +2057,12 @@ bool Creature::IsAllLooted() const
             return false;
     }
 
+    if (m_canBePersonalLooted)
+        return true;
+
+    if (!loot)
+        return true;
+
     return loot->isLooted();
 }
 

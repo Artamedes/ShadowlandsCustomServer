@@ -836,6 +836,11 @@ struct GameObjectTemplate
         }
     }
 
+    bool IsOploteChest() const
+    {
+        return type == GAMEOBJECT_TYPE_CHALLENGE_MODE_REWARD;
+    }
+
     uint32 GetRequireLOS() const
     {
         switch (type)

@@ -15,6 +15,7 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "Containers.h"
 #include "Group.h"
 #include "Battleground.h"
 #include "BattlegroundMgr.h"
@@ -63,7 +64,7 @@ Loot* Roll::getLoot()
 
 Group::Group() : m_leaderGuid(), m_leaderName(""), m_groupFlags(GROUP_FLAG_NONE), m_groupCategory(GROUP_CATEGORY_HOME),
 m_dungeonDifficulty(DIFFICULTY_NORMAL), m_raidDifficulty(DIFFICULTY_NORMAL_RAID), m_legacyRaidDifficulty(DIFFICULTY_10_N),
-m_bgGroup(nullptr), m_bfGroup(nullptr), m_lootMethod(FREE_FOR_ALL), m_lootThreshold(ITEM_QUALITY_UNCOMMON), m_looterGuid(),
+m_bgGroup(nullptr), m_bfGroup(nullptr), m_lootMethod(PERSONAL_LOOT), m_lootThreshold(ITEM_QUALITY_UNCOMMON), m_looterGuid(),
 m_masterLooterGuid(), m_subGroupsCounts(nullptr), m_guid(), m_maxEnchantingLevel(0), m_dbStoreId(0), m_isLeaderOffline(false),
 m_readyCheckStarted(false), m_readyCheckTimer(Milliseconds::zero()), m_activeMarkers(0)//, _lfgListEntry(nullptr)
 {
@@ -173,8 +174,7 @@ bool Group::Create(Player* leader)
     if (m_groupFlags & GROUP_FLAG_RAID)
         _initRaidSubGroupsCounter();
 
-    if (!isLFGGroup())
-        m_lootMethod = GROUP_LOOT;
+    m_lootMethod = PERSONAL_LOOT;
 
     m_lootThreshold = ITEM_QUALITY_UNCOMMON;
     m_looterGuid = leaderGuid;
@@ -292,7 +292,7 @@ void Group::ConvertToLFG()
 {
     m_groupFlags = GroupFlags(m_groupFlags | GROUP_FLAG_LFG | GROUP_FLAG_LFG_RESTRICTED);
     m_groupCategory = GROUP_CATEGORY_INSTANCE;
-    m_lootMethod = GROUP_LOOT;
+    m_lootMethod = PERSONAL_LOOT;
     if (!isBGGroup() && !isBFGroup())
     {
         CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_GROUP_TYPE);
@@ -1228,6 +1228,224 @@ void Group::MasterLoot(Loot* loot, WorldObject* pLootedObject)
         Player* looter = itr->GetSource();
         if (looter->IsAtGroupRewardDistance(pLootedObject))
             looter->SendDirectMessage(masterLootCandidateList.GetRawPacket());
+    }
+}
+
+bool IsLastBossLootOfBFADungeon(WorldObject* lootContainer)
+{
+    switch (lootContainer->GetTypeId())
+    {
+        case TYPEID_UNIT:
+        {
+            switch (lootContainer->GetEntry())
+            {
+                case 126983: // harlan - sweete - (instance)Freehold
+                case 122968: // yazma - (instance)Atal'Dazar
+                case 127503: // overseer - korgus - (instance)Tol Dagor
+                case 144324: // gorak - tul - (instance)Waycrest Manor
+                case 134069: // volzith - the - whisperer - (instance)Shrine of the Storm.
+                case 133007: // unbound - abomination - (instance)Underrot
+                case 131227: // mogul - razdunk - (instance)MOTHERLODE!!
+                    return true;
+                default:
+                    return false;
+            }
+        }
+        case TYPEID_GAMEOBJECT:
+        {
+            switch (lootContainer->GetEntry())
+            {
+                case 288639: // viq'goth chest - (instance) Siege of Boralus.
+                case 268638: //// king - dazar chest - (instance)Kings' Rest
+                case 288640: // Temple of Sethralis Avatar of Sethralis
+                    return true;
+                default:
+                    return false;
+            }
+            break;
+        }
+    }
+    return false;
+}
+
+bool IsDungeonBossLootByChest(WorldObject* lootContainer)
+{
+    if (lootContainer->GetTypeId() == TYPEID_GAMEOBJECT)
+    {
+        switch (lootContainer->GetEntry())
+        {
+            case 288639: // viq'goth chest - (instance) Siege of Boralus.
+            case 268638: // king - dazar chest - (instance)Kings' Rest
+            case 288636: // Council o captains Free Hold
+            case 288637: // Council of tribes Kings Rest
+            case 288640: // Temple of Sethralis Avatar of Sethralis
+            case 291079: // Mother Raid Uldir
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    return false;
+}
+
+uint8 GetCountFromSpawn(uint8 spawnmode, Player* player, WorldObject* lootContainer)
+{
+    uint32 plrCount = 0;
+
+    switch (spawnmode)
+    {
+        case Difficulty::DIFFICULTY_NONE:
+        case Difficulty::DIFFICULTY_NORMAL:
+        case Difficulty::DIFFICULTY_HEROIC:
+        case Difficulty::DIFFICULTY_MYTHIC:
+        {
+            uint8 weekBonus = 0;
+            if (lootContainer && IsLastBossLootOfBFADungeon(lootContainer) && player->HasAura(SPELL_SIGN_OF_THE_WARRIOR))
+                weekBonus++;
+
+            return urand(1, 2) + weekBonus;
+        }
+        case Difficulty::DIFFICULTY_NORMAL_RAID:
+        case Difficulty::DIFFICULTY_HEROIC_RAID:
+        case Difficulty::DIFFICULTY_MYTHIC_RAID:
+            if (player)
+                if (player->GetMap())
+                    plrCount = player->GetMap()->GetPlayersCountExceptGMs();
+
+            return 1 + (plrCount / 5); // Average of 1 item every 5 players
+        case Difficulty::DIFFICULTY_10_N:
+        case Difficulty::DIFFICULTY_10_HC:
+            return 2;
+        case Difficulty::DIFFICULTY_25_N:
+        case Difficulty::DIFFICULTY_25_HC:
+        case Difficulty::DIFFICULTY_40:
+        case Difficulty::DIFFICULTY_LFR_NEW:
+            return 4;
+        case Difficulty::DIFFICULTY_MYTHIC_KEYSTONE:
+            return 5;
+        default:
+            break;
+    }
+
+    return 0;
+}
+
+void Group::PersonalLoot(Loot& loot, WorldObject* pLootedObject)
+{
+    loot.clear();
+
+    Creature* creature = pLootedObject->ToCreature();
+    GameObject* go = pLootedObject->ToGameObject();
+
+    if (!go && !creature)
+        return;
+
+    std::list<Player*> PlayerList;
+    uint8 count = 0;
+    bool checkCount = false;
+
+    for (GroupReference* groupRef = GetFirstMember(); groupRef != nullptr; groupRef = groupRef->next())
+    {
+        Player* member = groupRef->GetSource();
+        if (member == nullptr)
+            continue;
+
+        if (member->GetMap())
+        {
+            if (!checkCount)
+            {
+                checkCount = true;
+                count = GetCountFromSpawn(uint8(member->GetMap()->GetDifficultyID()), member, pLootedObject);
+            }
+
+            if (!member->GetMap()->IsRaid())
+            {
+                //if (pLootedObject && creature && creature->IsDungeonBoss())
+                //    loot.AddItem(LootStoreItem(CURRENCY_TYPE_AZERITE, LOOT_ITEM_TYPE_CURRENCY, 0, 100, 0, LOOT_MODE_DEFAULT, 1, 15, 15), member, true);
+                //else if ((go && IsDungeonBossLootByChest(go)))
+                //    loot.AddItem(LootStoreItem(CURRENCY_TYPE_AZERITE, LOOT_ITEM_TYPE_CURRENCY, 0, 100, 0, LOOT_MODE_DEFAULT, 1, 15, 15), member, true);
+
+                loot.FillNotNormalLootFor(member, false);
+            }
+        }
+
+        PlayerList.push_back(member);
+    }
+
+    if (!PlayerList.empty() && count)
+    {
+        for (uint8 i = 0; i < count; i++)
+        {
+            Player* playerLoot = Trinity::Containers::SelectRandomContainerElement(PlayerList);
+            if (playerLoot && playerLoot->IsInWorld())
+            {
+                PlayerList.remove(playerLoot);
+
+                if (creature && creature->GetCreatureTemplate())
+                {
+                    if (uint32 lootid = creature->GetCreatureTemplate()->lootid)
+                        loot.FillLoot(lootid, LootTemplates_Creature, playerLoot, true, false, creature->GetLootMode(), true, true);
+                }
+                else if (go && go->GetGOInfo())
+                {
+                    if (uint32 lootid = go->GetGOInfo()->GetLootId())
+                        loot.FillLoot(lootid, LootTemplates_Gameobject, playerLoot, true, false, go->GetLootMode(), true, true);
+                }
+            }
+
+            if (PlayerList.empty())
+                break;
+        }
+    }
+}
+
+void Group::DoRollForAllMembers(ObjectGuid guid, uint8 slot, uint32 mapid, Loot* loot, LootItem& item, Player* player)
+{
+    Roll* r = new Roll(item);
+    WorldObject* pLootedObject = nullptr;
+
+    if (guid.IsCreatureOrVehicle())
+        pLootedObject = player->GetMap()->GetCreature(guid);
+    else if (guid.IsGameObject())
+        pLootedObject = player->GetMap()->GetGameObject(guid);
+
+    if (!pLootedObject)
+        return;
+
+    //a vector is filled with only near party members
+    for (GroupReference* itr = GetFirstMember(); itr != NULL; itr = itr->next())
+    {
+        Player* member = itr->GetSource();
+        if (!member || !member->GetSession())
+            continue;
+
+        if (item.AllowedForPlayer(member))
+        {
+            if (member->IsWithinDistInMap(pLootedObject, sWorld->getFloatConfig(CONFIG_GROUP_XP_DISTANCE), false))
+            {
+                r->totalPlayersRolling++;
+                r->playerVote[member->GetGUID()] = NOT_EMITED_YET;
+            }
+        }
+    }
+
+    if (r->totalPlayersRolling > 0)
+    {
+        r->setLoot(loot);
+        r->itemSlot = slot;
+
+        RollId.push_back(r);
+    }
+
+    //Broadcast Pass and Send Rollstart
+    for (Roll::PlayerVote::const_iterator itr = r->playerVote.begin(); itr != r->playerVote.end(); ++itr)
+    {
+        Player* p = ObjectAccessor::FindConnectedPlayer(itr->first);
+        if (!p || !p->GetSession())
+            continue;
+
+        SendLootStartRollToPlayer(180000, mapid, p, true, *r);
     }
 }
 

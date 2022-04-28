@@ -418,7 +418,7 @@ void WorldSession::DoLootRelease(ObjectGuid lguid)
             return;
 
         loot = creature->GetLootFor(player);
-        if (loot->isLooted())
+        if (creature->IsAllLooted())
         {
             creature->RemoveDynamicFlag(UNIT_DYNFLAG_LOOTABLE);
 

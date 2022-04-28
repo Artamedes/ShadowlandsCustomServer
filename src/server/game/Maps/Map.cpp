@@ -4667,6 +4667,11 @@ bool Map::GetEntrancePos(int32 &mapid, float &x, float &y)
     return i_mapEntry->GetEntrancePos(mapid, x, y);
 }
 
+uint8 Map::Expansion() const
+{
+    return i_mapEntry ? i_mapEntry->Expansion() : 0;
+}
+
 bool Map::IsNeedRespawn(uint32 lastRespawn) const
 {
     return lastRespawn < m_respawnChallenge;

@@ -323,10 +323,10 @@ struct TC_GAME_API Loot
 
     // Builds data for SMSG_LOOT_RESPONSE
     void BuildLootResponse(WorldPackets::Loot::LootResponse& packet, Player* viewer, PermissionTypes permission = ALL_PERMISSION) const;
+    void FillNotNormalLootFor(Player* player, bool presentAtLooting);
 
 private:
 
-    void FillNotNormalLootFor(Player* player, bool presentAtLooting);
     NotNormalLootItemList* FillFFALoot(Player* player);
     NotNormalLootItemList* FillQuestLoot(Player* player);
     NotNormalLootItemList* FillNonQuestNonFFAConditionalLoot(Player* player, bool presentAtLooting);

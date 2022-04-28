@@ -7934,6 +7934,16 @@ enum WorldState : uint32
     WS_CHALLENGE_LAST_RESET_TIME          = 20025,    // Last reset time for Challenge key
 };
 
+enum SpellBonusWeekEvent
+{
+    SPELL_SIGN_OF_THE_SKIRMISHER   = 186401,
+    SPELL_SIGN_OF_BATTLE           = 186403,
+    SPELL_SIGN_OF_THE_CRITTER      = 186406,
+    SPELL_SIGN_OF_THE_WARRIOR      = 225787,
+    SPELL_SIGN_OF_THE_EMISSARY_WOD = 186404,
+    SPELL_SIGN_OF_THE_EMISSARY     = 225788
+};
+
 enum LootSource
 {    
     LOOT_PVP_UNRATED     = 0,
