@@ -4460,7 +4460,7 @@ void SpellMgr::LoadSpellInfoCorrections()
     ApplySpellFix({ 75509 }, [](SpellInfo* spellInfo)
     {
         spellInfo->AttributesEx6 |= SPELL_ATTR6_CAN_TARGET_INVISIBLE;
-        spellInfo->AttributesEx2 |= SPELL_ATTR2_CAN_TARGET_NOT_IN_LOS;
+        spellInfo->AttributesEx2 |= SPELL_ATTR2_IGNORE_LINE_OF_SIGHT;
     });
 
     // Awaken Flames
@@ -4484,7 +4484,7 @@ void SpellMgr::LoadSpellInfoCorrections()
     {
         // All spells work even without these changes. The LOS attribute is due to problem
         // from collision between maps & gos with active destroyed state.
-        spellInfo->AttributesEx2 |= SPELL_ATTR2_CAN_TARGET_NOT_IN_LOS;
+        spellInfo->AttributesEx2 |= SPELL_ATTR2_IGNORE_LINE_OF_SIGHT;
     });
 
     ApplySpellFix({ 357616 }, [](SpellInfo* spellInfo)
@@ -4634,7 +4634,7 @@ void SpellMgr::LoadSpellInfoCorrections()
     ApplySpellFix({ 42525 }, [](SpellInfo* spellInfo)
     {
         spellInfo->AttributesEx3 |= SPELL_ATTR3_DEATH_PERSISTENT;
-        spellInfo->AttributesEx2 |= SPELL_ATTR2_CAN_TARGET_DEAD;
+        spellInfo->AttributesEx2 |= SPELL_ATTR2_ALLOW_DEAD_TARGET;
     });
 
     // Soul Sickness (Forge of Souls)
