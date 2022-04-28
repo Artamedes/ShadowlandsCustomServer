@@ -56,9 +56,14 @@ void WorldSession::HandleMoveWorldportAck()
     if (!player->IsBeingTeleportedFar())
         return;
 
+    // We must calculate this before SetSemaphoreTeleportFar(false)
+    uint32 castOnArrivalSpellId = player->GetOnArrivalCastSpellTeleport();
+
     bool seamlessTeleport = player->IsBeingTeleportedSeamlessly();
+
     Map* teleport = player->GetTeleportMap();
     player->ResetTeleMap();
+
     player->SetSemaphoreTeleportFar(false);
 
     // get the teleport destination
@@ -104,6 +109,18 @@ void WorldSession::HandleMoveWorldportAck()
 
     player->ResetMap();
     player->SetMap(newMap);
+
+    //if (Transport* transport = player->GetTeleportTransport())
+    //{
+    //    transport->AddPassenger(player);
+    //    Position transOffset = player->GetTeleportTransportOffset();
+    //    player->m_movementInfo.transport.pos.Relocate(transOffset);
+    //    float destX, destY, destZ, destO;
+    //    player->m_movementInfo.transport.pos.GetPosition(destX, destY, destZ, destO);
+    //    transport->CalculatePassengerPosition(destX, destY, destZ, &destO);
+    //    player->ResetTeleportTransport();
+    //    player->Relocate(destX, destY, destZ, destO);
+    //}
 
     WorldPackets::Movement::ResumeToken resumeToken;
     resumeToken.SequenceIndex = player->m_movementCounter;
@@ -151,6 +168,9 @@ void WorldSession::HandleMoveWorldportAck()
         if (Garrison* garrison = player->GetGarrison())
             garrison->SendRemoteInfo();
     }
+
+    if (oldMap->IsDungeon() && !newMap->IsDungeon() && !player->HasAura(SPELL_ENLISTED) && player->HasPlayerFlag(PLAYER_FLAGS_WAR_MODE_DESIRED))
+        player->CastSpell(player, SPELL_ENLISTED, true);
 
     // flight fast teleport case
     if (player->IsInFlight())
@@ -219,6 +239,13 @@ void WorldSession::HandleMoveWorldportAck()
 
     // resummon pet
     player->ResummonPetTemporaryUnSummonedIfAny();
+
+    // now that the player has been relocated, it's time to cast the arrival spell (if any)
+    if (castOnArrivalSpellId != 0)
+    {
+        player->CastSpell(player, castOnArrivalSpellId, true);
+        player->ResetOnArrivalCastSpellTeleport();
+    }
 
     //lets process all delayed operations on successful teleport
     player->ProcessDelayedOperations();

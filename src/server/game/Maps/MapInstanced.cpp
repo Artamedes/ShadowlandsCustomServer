@@ -154,7 +154,7 @@ Map* MapInstanced::CreateInstanceForPlayer(const uint32 mapId, Player* player, u
         // 2. player's current instance id if this is at login
         // 3. group's current bind
         // 4. player's current bind
-        if (!pBind || !pBind->perm)
+        if (!pBind || !pBind->perm || GetEntry()->ExpansionID >= EXPANSION_WARLORDS_OF_DRAENOR)
         {
             if (loginInstanceId) // if the player has a saved instance id on login, we either use this instance or relocate him out (return null)
             {
@@ -171,10 +171,11 @@ Map* MapInstanced::CreateInstanceForPlayer(const uint32 mapId, Player* player, u
             {
                 groupBind = group->GetBoundInstance(this);
                 if (groupBind)
-                {
-                    // solo saves should be reset when entering a group's instance
-                    player->UnbindInstance(GetId(), player->GetDifficultyID(GetEntry()));
                     pSave = groupBind->save;
+                if (pSave && pSave->SaveIsOld() && !pSave->GetExtended())
+                {
+                    group->UnbindInstance(GetId(), group->GetDifficultyID(GetEntry()));
+                    pSave = nullptr;
                 }
             }
         }
@@ -192,7 +193,19 @@ Map* MapInstanced::CreateInstanceForPlayer(const uint32 mapId, Player* player, u
             // if no instanceId via group members or instance saves is found
             // the instance will be created for the first time
             newInstanceId = sMapMgr->GenerateInstanceId();
-            Difficulty diff = player->GetGroup() ? player->GetGroup()->GetDifficultyID(GetEntry()) : player->GetDifficultyID(GetEntry());
+
+            Difficulty diff = player->GetDifficultyID(GetEntry());
+            Group* group = player->GetGroup();
+            if (group)
+            {
+                if (group->isLFGGroup() && group->isRaidGroup())
+                    diff = group->GetRaidDifficultyID();
+                else
+                    diff = group->GetDifficultyID(GetEntry());
+
+                if (createChallenge)
+                    group->UnbindInstance(GetId(), DIFFICULTY_MYTHIC_KEYSTONE);
+            }
 
             if (createChallenge)
             {
@@ -205,6 +218,10 @@ Map* MapInstanced::CreateInstanceForPlayer(const uint32 mapId, Player* player, u
             map = FindInstanceMap(newInstanceId);
             if (!map)
                 map = CreateInstance(newInstanceId, NULL, diff, player->GetTeamId(), dungeonEntry ? dungeonEntry : nullptr);
+
+            pSave = sInstanceSaveMgr->AddInstanceSave(GetId(), newInstanceId, diff, 0, 0, 0, true);
+            if (group)
+                group->BindToInstance(pSave, false);
         }
     }
     else

@@ -1678,7 +1678,7 @@ void Player::TeleportToChallenge(uint32 mapid, float x, float y, float z, float 
 
     if (!GetSession()->PlayerLogout())
     {
-        if (Map* _map = sMapMgr->CreateMap(mapid, this, 0, true))
+        if (Map* _map = sMapMgr->CreateMap(mapid, this, 0, this == keyOwner))
         {
             if (keyOwner)
                 if (InstanceMap* instance = _map->ToInstanceMap())
@@ -9165,8 +9165,8 @@ void Player::SendLoot(ObjectGuid guid, LootType loot_type, bool aeLooting/* = fa
                 if (groupRules)
                     group->UpdateLooterGuid(go, true);
 
-                if (!GetMap()->IsChallengeMode() || (!group && GetMap()->IsChallengeMode()))
-                    loot->FillLoot(lootid, LootTemplates_Gameobject, this, !groupRules, false, go->GetLootMode(), false, false, false, go->GetGOInfo()->IsOploteChest());
+                //if (!GetMap()->IsChallengeMode() || (!group && GetMap()->IsChallengeMode()))
+                loot->FillLoot(lootid, LootTemplates_Gameobject, this, !groupRules, false, go->GetLootMode(), false, false, false, go->GetGOInfo()->IsOploteChest());
 
                 go->SetLootGenerationTime();
 
@@ -20328,6 +20328,7 @@ void Player::_LoadBoundInstances(PreparedQueryResult result)
             // and in that case it is not used
 
             uint32 entranceId = fields[6].GetUInt32();
+            uint32 completedEncounter = 0;// fields[7].GetUInt32(); - TODO
 
             bool deleteInstance = false;
 
@@ -20376,7 +20377,7 @@ void Player::_LoadBoundInstances(PreparedQueryResult result)
             }
 
             // since non permanent binds are always solo bind, they can always be reset
-            if (InstanceSave* save = sInstanceSaveMgr->AddInstanceSave(mapId, instanceId, Difficulty(difficulty), resetTime, entranceId, !perm, true))
+            if (InstanceSave* save = sInstanceSaveMgr->AddInstanceSave(mapId, instanceId, Difficulty(difficulty), resetTime, entranceId, completedEncounter, !perm, true))
                BindToInstance(save, perm, extendState, true);
         }
         while (result->NextRow());
