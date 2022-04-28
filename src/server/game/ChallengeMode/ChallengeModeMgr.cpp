@@ -207,9 +207,7 @@ void ChallengeModeMgr::LoadFromDB()
         } while (result->NextRow());
     }
 
-    if (sWorld->getWorldState(WS_CHALLENGE_AFFIXE1_RESET_TIME) == 0 || sWorld->getWorldState(WS_CHALLENGE_AFFIXE2_RESET_TIME) == 0 ||
-        sWorld->getWorldState(WS_CHALLENGE_AFFIXE3_RESET_TIME) == 0 || sWorld->getWorldState(WS_CHALLENGE_AFFIXE4_RESET_TIME) == 0)
-        GenerateCurrentWeekAffixes();
+    GenerateCurrentWeekAffixes();
 
     //if ((sWorld->getIntConfig(CONFIG_CHALLENGE_MANUAL_AFFIX1) > 0 && sWorld->getIntConfig(CONFIG_CHALLENGE_MANUAL_AFFIX1) < MAX_AFFIXES)  &&
     //    (sWorld->getIntConfig(CONFIG_CHALLENGE_MANUAL_AFFIX2) > 0 && sWorld->getIntConfig(CONFIG_CHALLENGE_MANUAL_AFFIX2) < MAX_AFFIXES)  &&
@@ -280,20 +278,20 @@ ChallengeData* ChallengeModeMgr::BestForMemberMap(ObjectGuid const& guid, uint32
 
 void ChallengeModeMgr::GenerateCurrentWeekAffixes()
 {
-    uint32 affixes[12][4] =
+    static uint32 affixes[12][4] =
     {
-        { FORTIFIED, SANGUINE, NECROTIC, Awakened },
-        { TYRANNICAL, BURSTING, SKITTISH, Awakened },
-        { FORTIFIED, TEEMING, QUAKING, Awakened },
-        { TYRANNICAL, RAGING, NECROTIC, Awakened },
-        { FORTIFIED, BOLSTERING, SKITTISH, Awakened },
-        { TYRANNICAL, TEEMING, VOLCANIC, Awakened },
-        { FORTIFIED, SANGUINE, GRIEVOUS, Awakened },
-        { TYRANNICAL, BOLSTERING, EXPLOSIVES, Awakened },
-        { FORTIFIED, BURSTING, QUAKING, Awakened },
-        { TYRANNICAL, RAGING, VOLCANIC, Awakened },
-        { FORTIFIED, TEEMING, EXPLOSIVES, Awakened },
-        { TYRANNICAL, BOLSTERING, GRIEVOUS, Awakened },
+        { Fortified,  Sanguine,   Necrotic,  Prideful },
+        { Tyrannical, Bolstering, Bursting,  Prideful },
+        { Fortified,  Volcanic,   Explosive, Prideful },
+        { Tyrannical, Inspiring,  Quaking,   Prideful },
+        { Fortified,  Raging,     Sanguine,  Prideful },
+        { Tyrannical, Inspiring,  Spiteful,  Prideful },
+        { Fortified,  Volcanic,   Bursting,  Prideful },
+        { Tyrannical, Bolstering, Quaking,   Prideful },
+        { Fortified,  Sanguine,   Bursting,  Prideful },
+        { Tyrannical, Spiteful,   Necrotic,  Prideful },
+        { Fortified,  Raging,     Explosive, Prideful },
+        { Tyrannical, Grievous,   Inspiring, Prideful },
     };
 
     auto weekContainer = affixes[GetActiveAffixe()];
@@ -301,7 +299,29 @@ void ChallengeModeMgr::GenerateCurrentWeekAffixes()
     sWorld->setWorldState(WS_CHALLENGE_AFFIXE1_RESET_TIME, weekContainer[0]);
     sWorld->setWorldState(WS_CHALLENGE_AFFIXE2_RESET_TIME, weekContainer[1]);
     sWorld->setWorldState(WS_CHALLENGE_AFFIXE3_RESET_TIME, weekContainer[2]);
-    sWorld->setWorldState(WS_CHALLENGE_AFFIXE4_RESET_TIME, weekContainer[3]);    
+    sWorld->setWorldState(WS_CHALLENGE_AFFIXE4_RESET_TIME, weekContainer[3]);
+
+    static uint32 miniAffixes[12][4] =
+    {
+        { Fortified,  Volcanic,   Bursting,  Beguiling },
+        { Tyrannical, Bolstering, Quaking,   Beguiling },
+        { Fortified,  Sanguine,   Bursting,  Beguiling },
+        { Tyrannical, Spiteful,   Necrotic,  Beguiling },
+        { Fortified,  Raging,     Explosive, Beguiling },
+        { Tyrannical, Grievous,   Inspiring, Beguiling },
+        { Fortified,  Sanguine,   Necrotic,  Beguiling },
+        { Tyrannical, Bolstering, Bursting,  Beguiling },
+        { Fortified,  Volcanic,   Explosive, Beguiling },
+        { Tyrannical, Inspiring,  Quaking,   Beguiling },
+        { Fortified,  Raging,     Sanguine,  Beguiling },
+        { Tyrannical, Inspiring,  Spiteful,  Beguiling },
+    };
+
+    weekContainer = miniAffixes[GetActiveAffixe()];
+    sWorld->setWorldState(WS_CHALLENGE_MINI_AFFIXE1_RESET_TIME, weekContainer[0]);
+    sWorld->setWorldState(WS_CHALLENGE_MINI_AFFIXE2_RESET_TIME, weekContainer[1]);
+    sWorld->setWorldState(WS_CHALLENGE_MINI_AFFIXE3_RESET_TIME, weekContainer[2]);
+    sWorld->setWorldState(WS_CHALLENGE_MINI_AFFIXE4_RESET_TIME, weekContainer[3]);
 }
 
 void ChallengeModeMgr::GenerateManualAffixes()
@@ -912,8 +932,10 @@ bool ChallengeModeMgr::IsAuraAffix(uint32 auraId)
 
 bool ChallengeModeMgr::IsTeemingAffixInRotation()
 {
-    if (sWorld->getWorldState(WS_CHALLENGE_AFFIXE1_RESET_TIME) == Affixes::TEEMING || sWorld->getWorldState(WS_CHALLENGE_AFFIXE2_RESET_TIME) == Affixes::TEEMING ||
-        sWorld->getWorldState(WS_CHALLENGE_AFFIXE3_RESET_TIME) == Affixes::TEEMING || sWorld->getWorldState(WS_CHALLENGE_AFFIXE4_RESET_TIME) == Affixes::TEEMING)
+    if (sWorld->getWorldState(WS_CHALLENGE_AFFIXE1_RESET_TIME) == Affixes::Teeming
+        || sWorld->getWorldState(WS_CHALLENGE_AFFIXE2_RESET_TIME) == Affixes::Teeming
+        || sWorld->getWorldState(WS_CHALLENGE_AFFIXE3_RESET_TIME) == Affixes::Teeming
+        || sWorld->getWorldState(WS_CHALLENGE_AFFIXE4_RESET_TIME) == Affixes::Teeming)
         return true;
 
     return false;

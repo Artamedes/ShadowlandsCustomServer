@@ -223,7 +223,7 @@ void Challenge::OnCreatureUpdateDifficulty(Creature* creature)
 
     if (!creature->IsDungeonBoss())
     {
-        if (HasAffix(INFESTED) && !creature->IsSummon() && roll_chance_f(30.0f)) // Only for real creature summon copy
+        if (HasAffix(Infested) && !creature->IsSummon() && roll_chance_f(30.0f)) // Only for real creature summon copy
         {
             std::list<Creature*> creatures;
             Trinity::UnitAuraCheck check(true, SPELL_CHALLENGER_SIMBIOTE_OF_GHUUN);
@@ -265,17 +265,17 @@ void Challenge::CreatureDiesForScript(Creature* creature, Unit* killer)
 
     if (creature->GetCreatureType() != CREATURE_TYPE_CRITTER)
     {
-        if (HasAffix(Affixes::BOLSTERING))
+        if (HasAffix(Affixes::Bolstering))
             creature->CastSpell(creature, SPELL_CHALLENGER_BOLSTERING, true);
 
-        if (HasAffix(Affixes::SANGUINE))
+        if (HasAffix(Affixes::Sanguine))
             creature->CastSpell(creature, SPELL_CHALLENGER_SANGUINE, true);
 
-        if (HasAffix(Affixes::BURSTING))
+        if (HasAffix(Affixes::Bursting))
             creature->CastSpell(creature, SPELL_CHALLENGER_BURSTING, true);
     }
 
-    if (HasAffix(Affixes::INFESTED) && creature->HasAura(SPELL_CHALLENGER_SIMBIOTE_OF_GHUUN))
+    if (HasAffix(Affixes::Infested) && creature->HasAura(SPELL_CHALLENGER_SIMBIOTE_OF_GHUUN))
     {
         std::list<Creature*> creatures;
        // creature->GetCreatureListInGrid(creatures, 500.0f);
@@ -505,7 +505,7 @@ void Challenge::Start()
 
     _checkStart = false;
 
-    if (HasAffix(Affixes::QUAKING))
+    if (HasAffix(Affixes::Quaking))
         _affixQuakingTimer = 20 * IN_MILLISECONDS;
 }
 

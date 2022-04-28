@@ -273,13 +273,13 @@ class aura_challengers_might : public AuraScript
 
         if (isDungeonBoss)
         {
-            if (challenge->HasAffix(TYRANNICAL))
+            if (challenge->HasAffix(Tyrannical))
             {
                 modHealth += 40.0f;
                 modDamage += 15.0f;
             }
         }
-        else if (challenge->HasAffix(FORTIFIED))
+        else if (challenge->HasAffix(Fortified))
         {
             modHealth += 20.0f;
             modDamage += 30.0f;
@@ -294,36 +294,36 @@ class aura_challengers_might : public AuraScript
             amount = modDamage;
             break;
         case EFFECT_2:
-            amount = challenge->HasAffix(RAGING) && !isDungeonBoss ? 1 : 0;
+            amount = challenge->HasAffix(Raging) && !isDungeonBoss ? 1 : 0;
             break;
         case EFFECT_3:
-            amount = challenge->HasAffix(BOLSTERING) ? 1 : 0;
+            amount = challenge->HasAffix(Bolstering) ? 1 : 0;
             break;
         case EFFECT_4:
-            amount = challenge->HasAffix(TYRANNICAL) && isDungeonBoss ? 1 : 0;
+            amount = challenge->HasAffix(Tyrannical) && isDungeonBoss ? 1 : 0;
             break;
         case EFFECT_7:
-            amount = challenge->HasAffix(VOLCANIC) ? 1 : 0;
+            amount = challenge->HasAffix(Volcanic) ? 1 : 0;
             volcanicTick = urand(3, 10);
             break;
         case EFFECT_8:
-            amount = challenge->HasAffix(NECROTIC) ? 1 : 0;
+            amount = challenge->HasAffix(Necrotic) ? 1 : 0;
             break;
         case EFFECT_9:
-            amount = challenge->HasAffix(FORTIFIED) && !isDungeonBoss ? 1 : 0;
+            amount = challenge->HasAffix(Fortified) && !isDungeonBoss ? 1 : 0;
             break;
         case EFFECT_10:
-            amount = challenge->HasAffix(SANGUINE) ? 1 : 0;
+            amount = challenge->HasAffix(Sanguine) ? 1 : 0;
             break;
         case EFFECT_11:
-            amount = challenge->HasAffix(QUAKING) ? 1 : 0;
+            amount = challenge->HasAffix(Quaking) ? 1 : 0;
             break;
         case EFFECT_12:
-            amount = challenge->HasAffix(EXPLOSIVES) ? 1 : 0;
+            amount = challenge->HasAffix(Explosive) ? 1 : 0;
             explosivesTimer = urandms(2, 10);
             break;
         case EFFECT_13:
-            amount = challenge->HasAffix(BURSTING) ? 1 : 0;
+            amount = challenge->HasAffix(Bursting) ? 1 : 0;
             break;
         default:
             break;
@@ -507,10 +507,10 @@ class aura_challengers_burden : public AuraScript
         {
         case EFFECT_1:
         case EFFECT_3:
-            amount = challenge->HasAffix(GRIEVOUS);
+            amount = challenge->HasAffix(Grievous);
             break;
         case EFFECT_2:
-            if (!challenge->HasAffix(SKITTISH) || !player->IsActiveSpecTankSpec())
+            if (!challenge->HasAffix(Skittish) || !player->IsActiveSpecTankSpec())
                 amount = 0;
             break;
         default:

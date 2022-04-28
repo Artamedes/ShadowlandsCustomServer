@@ -7932,6 +7932,10 @@ enum WorldState : uint32
     WS_CHALLENGE_AFFIXE3_RESET_TIME       = 20023,    // Challenge Affixe 3
     WS_CHALLENGE_AFFIXE4_RESET_TIME       = 20024,    // Challenge Affixe 4
     WS_CHALLENGE_LAST_RESET_TIME          = 20025,    // Last reset time for Challenge key
+    WS_CHALLENGE_MINI_AFFIXE1_RESET_TIME  = 20026,    // Challenge Affixe 1
+    WS_CHALLENGE_MINI_AFFIXE2_RESET_TIME  = 20027,    // Challenge Affixe 2
+    WS_CHALLENGE_MINI_AFFIXE3_RESET_TIME  = 20028,    // Challenge Affixe 3
+    WS_CHALLENGE_MINI_AFFIXE4_RESET_TIME  = 20029,    // Challenge Affixe 4
 };
 
 enum SpellBonusWeekEvent

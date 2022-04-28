@@ -41,10 +41,20 @@ bool PlayerChallenge::InitMythicKeystone(Item* item)
     if (!keystoneInfo->IsActive())
         return false;
 
-    keystoneInfo->Affix = sWorld->getWorldState(WS_CHALLENGE_AFFIXE1_RESET_TIME);
-    keystoneInfo->Affix1 = sWorld->getWorldState(WS_CHALLENGE_AFFIXE2_RESET_TIME);
-    keystoneInfo->Affix2 = sWorld->getWorldState(WS_CHALLENGE_AFFIXE3_RESET_TIME);
-    keystoneInfo->Affix3 = sWorld->getWorldState(WS_CHALLENGE_AFFIXE4_RESET_TIME);
+    if (keystoneInfo->Type == KeystoneType::Normal)
+    {
+        keystoneInfo->Affix = sWorld->getWorldState(WS_CHALLENGE_AFFIXE1_RESET_TIME);
+        keystoneInfo->Affix1 = sWorld->getWorldState(WS_CHALLENGE_AFFIXE2_RESET_TIME);
+        keystoneInfo->Affix2 = sWorld->getWorldState(WS_CHALLENGE_AFFIXE3_RESET_TIME);
+        keystoneInfo->Affix3 = sWorld->getWorldState(WS_CHALLENGE_AFFIXE4_RESET_TIME);
+    }
+    else
+    {
+        keystoneInfo->Affix  = sWorld->getWorldState(WS_CHALLENGE_MINI_AFFIXE1_RESET_TIME);
+        keystoneInfo->Affix1 = sWorld->getWorldState(WS_CHALLENGE_MINI_AFFIXE2_RESET_TIME);
+        keystoneInfo->Affix2 = sWorld->getWorldState(WS_CHALLENGE_MINI_AFFIXE3_RESET_TIME);
+        keystoneInfo->Affix3 = sWorld->getWorldState(WS_CHALLENGE_MINI_AFFIXE4_RESET_TIME);
+    }
 
     if (!item->GetModifier(ITEM_MODIFIER_CHALLENGE_MAP_CHALLENGE_MODE_ID))
         item->SetModifier(ITEM_MODIFIER_CHALLENGE_MAP_CHALLENGE_MODE_ID, keystoneInfo->ID);
