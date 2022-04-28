@@ -54,6 +54,7 @@
 #include "WorldPacket.h"
 #include <G3D/g3dmath.h>
 #include <sstream>
+#include "CustomObjectMgr.h"
 
 CreatureMovementData::CreatureMovementData() : Ground(CreatureGroundMovementType::Run), Flight(CreatureFlightMovementType::None), Swim(true), Rooted(false), Chase(CreatureChaseMovementType::Run),
 Random(CreatureRandomMovementType::Walk), InteractionPauseTimer(sWorld->getIntConfig(CONFIG_CREATURE_STOP_FOR_PLAYER)) { }
@@ -3008,7 +3009,16 @@ uint64 Creature::GetMaxHealthByLevel(uint8 level) const
     CreatureTemplate const* cInfo = GetCreatureTemplate();
     CreatureLevelScaling const* scaling = cInfo->GetLevelScaling(GetMap()->GetDifficultyID());
     float baseHealth = sDB2Manager.EvaluateExpectedStat(ExpectedStatType::CreatureHealth, level, cInfo->GetHealthScalingExpansion(), scaling->ContentTuningID, Classes(cInfo->unit_class));
-    return baseHealth * cInfo->ModHealth * cInfo->ModHealthExtra;
+
+    auto modHealth = cInfo->ModHealth;
+    if (GetMap()->GetDifficultyID() == Difficulty::DIFFICULTY_MYTHIC_KEYSTONE)
+    {
+        auto itr = sCustomObjectMgr->_customScalingEntries.find(GetEntry());
+        if (itr != sCustomObjectMgr->_customScalingEntries.end())
+            modHealth = itr->second.HealthModifier;
+    }
+
+    return baseHealth * modHealth * cInfo->ModHealthExtra;
 }
 
 float Creature::GetHealthMultiplierForTarget(WorldObject const* target) const

@@ -6,6 +6,7 @@
 void CustomObjectMgr::LoadFromDB()
 {
     LoadCustomSpellDmgs();
+    LoadCustomScalingEntries();
 }
 
 void CustomObjectMgr::LoadCustomSpellDmgs()
@@ -32,6 +33,21 @@ void CustomObjectMgr::LoadCustomSpellDmgs()
 
             _customSpellDmgs[creatureId][spellId] = dmg;
 
+        } while (result->NextRow());
+    }
+}
+
+void CustomObjectMgr::LoadCustomScalingEntries()
+{
+    _customScalingEntries.clear();
+    auto result = WorldDatabase.Query("SELECT Entry, HealthModifier, DamageModifier FROM z_custom_scaling_entries");
+    if (result)
+    {
+        do
+        {
+            auto fields = result->Fetch();
+
+            _customScalingEntries[fields[0].GetUInt32()] = { fields[1].GetFloat(), fields[2].GetFloat() };
         } while (result->NextRow());
     }
 }

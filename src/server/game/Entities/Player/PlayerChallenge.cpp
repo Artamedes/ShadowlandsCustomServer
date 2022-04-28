@@ -225,7 +225,8 @@ void PlayerChallenge::_LoadMythicKeystones(PreparedQueryResult result)
         if (!keystoneInfo->KeyIsCharded)
         {
             if (keystoneInfo->Level > MYTHIC_LEVEL_2)
-                ResetMythicKeystoneTo(nullptr, keystoneInfo->Level, false);
+                if (auto item = _player->GetItemByEntry(itemId))
+                    ResetMythicKeystoneTo(item, keystoneInfo->Level, false);
             keystoneInfo->KeyIsCharded = 1;
         }
     } while (result->NextRow());
