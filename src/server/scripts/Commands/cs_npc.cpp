@@ -345,12 +345,40 @@ public:
             { "addloot",        HandleAddLootCommand,              rbac::RBAC_PERM_COMMAND_DEV, Console::No },
             { "replace",        HandleNpcReplaceCommand,           rbac::RBAC_PERM_COMMAND_DEV, Console::No },
             { "allreplace",     HandleNpcReplaceAllCommand,        rbac::RBAC_PERM_COMMAND_DEV, Console::No },
+            { "equip",          HandleNpcEquipCommand,             rbac::RBAC_PERM_COMMAND_DEV, Console::No },
         };
         static ChatCommandTable commandTable =
         {
             { "npc", npcCommandTable },
         };
         return commandTable;
+    }
+
+    static bool HandleNpcEquipCommand(ChatHandler* handler, Optional<uint32> itemId, Optional<uint32> itemId2)
+    {
+        auto creature = handler->getSelectedCreature();
+        if (!creature)
+            return true;
+
+        if (itemId.has_value())
+        {
+            auto stmt = WorldDatabase.GetPreparedStatement(WORLD_REP_CREATURE_EQUIP_TEMPLATE);
+            stmt->setUInt32(0, creature->GetEntry());
+            stmt->setUInt32(1, 1);
+            stmt->setUInt32(2, *itemId);
+            WorldDatabase.Query(stmt);
+        }
+
+        sObjectMgr->LoadEquipmentTemplates();
+        creature->LoadEquipment();
+
+        // if (itemId.has_value())
+        //     const_cast<CreatureData*>(creature->GetCreatureData())->equipmentId = 1;
+        // else
+        //     const_cast<CreatureData*>(creature->GetCreatureData())->equipmentId = 0;
+
+
+        return true;
     }
 
     static bool HandleNpcSetBossCommand(ChatHandler* handler)
