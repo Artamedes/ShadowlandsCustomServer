@@ -1,5 +1,9 @@
 #include "ScriptMgr.h"
 #include "../CustomInstanceScript.h"
+#include "Creature.h"
+#include "ScriptedCreature.h"
+#include "Player.h"
+#include "MoveSpline.h"
 
 struct instance_dreadscarrift : public CustomInstanceScript
 {
@@ -69,7 +73,7 @@ public:
     }
     void JustEngagedWith(Unit* /*who*/) override
     {
-        /// TODO: Fill this function
+        Talk(1);
     }
     void UpdateAI(uint32 diff) override
     {
@@ -89,9 +93,14 @@ public:
         DoMeleeAttackIfReady();
     }
 
+    bool didIntro = false;
     void OnUnitRelocation(Unit* who) override
     {
-        /// TODO: Fill this function
+        if (!didIntro && who->IsPlayer() && who->GetDistance2d(me) <= 40.0f && (!who->movespline || who->movespline->Finalized()))
+        {
+            didIntro = true;
+            Talk(0);
+        }
     }
 
     TaskScheduler scheduler;
@@ -159,7 +168,7 @@ public:
     }
     void JustEngagedWith(Unit* /*who*/) override
     {
-        /// TODO: Fill this function
+        Talk(0);
     }
     void UpdateAI(uint32 diff) override
     {
@@ -204,7 +213,7 @@ public:
     }
     void JustEngagedWith(Unit* /*who*/) override
     {
-        /// TODO: Fill this function
+        Talk(0);
     }
     void UpdateAI(uint32 diff) override
     {
@@ -249,8 +258,14 @@ public:
     }
     void JustEngagedWith(Unit* /*who*/) override
     {
-        /// TODO: Fill this function
+        Talk(1);
     }
+
+    void JustDied(Unit* /*who*/) override
+    {
+        Talk(2);
+    }
+
     void UpdateAI(uint32 diff) override
     {
         scheduler.Update(diff);
@@ -269,9 +284,15 @@ public:
         DoMeleeAttackIfReady();
     }
 
+    bool didIntro = false;
+
     void OnUnitRelocation(Unit* who) override
     {
-        /// TODO: Fill this function
+        if (!didIntro && who->IsPlayer() && who->GetDistance2d(me) <= 30.0f)
+        {
+            didIntro = true;
+            Talk(0);
+        }
     }
 
     TaskScheduler scheduler;
@@ -294,7 +315,7 @@ public:
     }
     void JustEngagedWith(Unit* /*who*/) override
     {
-        /// TODO: Fill this function
+        Talk(1);
     }
     void UpdateAI(uint32 diff) override
     {
@@ -314,9 +335,16 @@ public:
         DoMeleeAttackIfReady();
     }
 
-    void OnUnitRelocation(Unit* who) override
+    bool didIntro = false;
+
+    void MoveInLineOfSight(Unit* who) override
     {
-        /// TODO: Fill this function
+        ScriptedAI::MoveInLineOfSight(who);
+        if (!didIntro && who->IsPlayer() && who->GetDistance2d(me) <= 50.0f)
+        {
+            didIntro = true;
+            Talk(0);
+        }
     }
 
     TaskScheduler scheduler;
@@ -384,7 +412,7 @@ public:
     }
     void JustEngagedWith(Unit* /*who*/) override
     {
-        /// TODO: Fill this function
+        Talk(0);
     }
     void UpdateAI(uint32 diff) override
     {
@@ -507,12 +535,69 @@ public:
 struct npc_demonic_tome_703021 : public ScriptedAI
 {
 public:
-    npc_demonic_tome_703021(Creature* creature) : ScriptedAI(creature) { }
+    npc_demonic_tome_703021(Creature* creature) : ScriptedAI(creature), summons(creature) { }
 
     void InitializeAI() override
     {
-        /// TODO: Fill this function
+        me->SetReactState(REACT_PASSIVE);
+        me->SetUnitFlag(UnitFlags::UNIT_FLAG_NON_ATTACKABLE);
+        me->SetUnitFlag(UnitFlags::UNIT_FLAG_IMMUNE_TO_PC);
+        me->SetUnitFlag(UnitFlags::UNIT_FLAG_IMMUNE_TO_NPC);
+        me->RemoveNpcFlag(NPCFlags::UNIT_NPC_FLAG_SPELLCLICK);
+
+        DoSummon(703025, { 3039.3f, 903.964f, 246.888f, 6.12611f }, 0s, TEMPSUMMON_MANUAL_DESPAWN);
+        DoSummon(703025, { 3052.26f, 883.029f, 246.961f, 1.01775f }, 0s, TEMPSUMMON_MANUAL_DESPAWN);
     }
+
+    SummonList summons;
+    uint32 Summs = 0;
+
+    void JustSummoned(Creature* creature) override
+    {
+        summons.Summon(creature);
+        ++Summs;
+    }
+
+    void SummonedCreatureDies(Creature* summ, Unit* who) override
+    {
+        if (Summs > 0)
+        {
+            --Summs;
+            if (Summs == 0)
+            {
+                me->RemoveUnitFlag(UnitFlags::UNIT_FLAG_IMMUNE_TO_PC);
+                me->RemoveUnitFlag(UnitFlags::UNIT_FLAG_IMMUNE_TO_NPC);
+                me->SetFaction(35);
+                me->SetNpcFlag(NPCFlags::UNIT_NPC_FLAG_SPELLCLICK);
+            }
+        }
+    }
+
+    void DoAction(int32 actionId) override
+    {
+        if (actionId == 40)
+        {
+            if (me->HasNpcFlag(NPCFlags::UNIT_NPC_FLAG_SPELLCLICK))
+            {
+                me->RemoveNpcFlag(NPCFlags::UNIT_NPC_FLAG_SPELLCLICK);
+                DoCastSelf(312216, true); // Fade out
+
+                if (auto instance = me->GetInstanceScript())
+                {
+                    if (auto map = instance->instance)
+                    {
+                        map->DoOnPlayers([](Player* player)
+                        {
+                            player->ModifyCurrency(1813, urand(500, 750));
+                        });
+                    }
+                }
+
+                me->DespawnOrUnsummon(1s);
+            }
+        }
+    }
+
     void Reset() override
     {
         /// TODO: Fill this function
@@ -609,7 +694,7 @@ public:
     }
     void JustEngagedWith(Unit* /*who*/) override
     {
-        /// TODO: Fill this function
+        scheduler.CancelAll();
     }
     void UpdateAI(uint32 diff) override
     {
@@ -629,9 +714,27 @@ public:
         DoMeleeAttackIfReady();
     }
 
-    void OnUnitRelocation(Unit* who) override
+    bool didIntro = false;
+
+    void MoveInLineOfSight(Unit* who) override
     {
-        /// TODO: Fill this function
+        ScriptedAI::MoveInLineOfSight(who);
+        if (!didIntro && who->IsPlayer() && who->GetDistance2d(me) <= 30.0f)
+        {
+            if (me->GetSpawnId() == 1054306)
+            {
+                didIntro = true;
+                Talk(0);
+                scheduler.Schedule(3s, [this](TaskContext context)
+                {
+                    if (auto demon = me->FindNearestCreatureBySpawnId(1054307, 30.0f))
+                    {
+                        if (demon->AI())
+                            demon->AI()->Talk(1);
+                    }
+                });
+            }
+        }
     }
 
     TaskScheduler scheduler;
@@ -1268,6 +1371,26 @@ public:
     EventMap events;
 };
 
+// ID - 369260 Destroying
+class spell_destroying_369260 : public SpellScript
+{
+    PrepareSpellScript(spell_destroying_369260);
+
+    void HandleDummy(SpellEffIndex /*effIndex*/)
+    {
+        Creature* target = GetHitCreature();
+        if (!target || !target->IsAIEnabled())
+            return;
+
+        target->AI()->DoAction(40);
+    }
+
+    void Register() override
+    {
+        OnEffectHitTarget += SpellEffectFn(spell_destroying_369260::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
+    }
+};
+
 void AddSC_DreadscarRift()
 {
     RegisterInstanceScript(instance_dreadscarrift, 1107);
@@ -1299,6 +1422,7 @@ void AddSC_DreadscarRift()
     RegisterCreatureAI(npc_anivia_703006);
     RegisterCreatureAI(npc_demonfly_acidmaw_703023);
     RegisterCreatureAI(npc_fel_conduit_703027);
+    RegisterSpellScript(spell_destroying_369260);
 }
 
 // UPDATE creature_template set ScriptName = 'npc_adageor_703000' WHERE entry = 703000;
