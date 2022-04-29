@@ -662,12 +662,18 @@ struct npc_morpher_admin : public ScriptedAI
     public:
         npc_morpher_admin(Creature* creature) : ScriptedAI(creature), summons(creature) { }
 
+        void InitializeAI() override
+        {
+            me->setActive(true);
+        }
+
         uint32 startEntryId = 0;
         uint32 time = 250;
         uint32 max = 0;
         uint32 iterate = 9;
         bool pause = false;
         SummonList summons;
+        std::string nameLike = "";
 
         void JustSummoned(Creature* creature) override
         {
@@ -685,6 +691,7 @@ struct npc_morpher_admin : public ScriptedAI
             AddGossipItemFor(player, GossipOptionIcon::None, "back: " + std::to_string(startEntryId - 1), 0, 4);
             AddGossipItemFor(player, GossipOptionIcon::None, "next: " + std::to_string(startEntryId + 1), 0, 5);
             AddGossipItemFor(player, GossipOptionIcon::None, "spiral: " + std::to_string(startEntryId + 1), 0, 7);
+            AddGossipItemFor(player, GossipOptionIcon::None, "nameLike: " + nameLike, 0, 10, "", 0, true);
             AddGossipItemFor(player, GossipOptionIcon::None, "DESPAWN: ", 0, 9);
             AddGossipItemFor(player, GossipOptionIcon::None, "go ", 0, 6);
             SendGossipMenuFor(player, 1, me);
@@ -715,13 +722,52 @@ struct npc_morpher_admin : public ScriptedAI
             }
             else if (actionId == 7)
             {
-                for (int i = 0; i < (max + 1); i += 1.0f)
+                if (!nameLike.empty())
                 {
-                    auto displayId = startEntryId + i;
-                    float posX = me->GetPositionX() + float(i % iterate) * 10.0f;
-                    float posY = me->GetPositionY() + float((float)i / (float)iterate) * 10.0f;
-                    if (auto trigger = DoSummon(3, { posX, posY, me->GetPositionZ(), me->GetOrientation() }, 0s, TempSummonType::TEMPSUMMON_MANUAL_DESPAWN))
-                        trigger->SetDisplayId(displayId);
+                    std::ostringstream ss;
+                    ss << "%%" << nameLike << "%%";
+                    auto query = WorldDatabase.PQuery("SELECT FileDataID FROM z_filedata_data WHERE FileName like '%s'", ss.str().c_str());
+                    std::set<uint32> fileDataIds;
+                    if (query)
+                    {
+                        do
+                        {
+                            auto fields = query->Fetch();
+                            fileDataIds.insert(fields[0].GetUInt32());
+                        } while (query->NextRow());
+                    }
+
+                    int x = 0;
+                    for (uint32 i = 0; i < max; i ++)
+                    {
+                        if (auto dispInfo = sCreatureDisplayInfoStore.LookupEntry(i))
+                        {
+                            if (auto model = sCreatureModelDataStore.LookupEntry(dispInfo->ModelID))
+                            {
+                                if (fileDataIds.count(model->FileDataID))
+                                {
+                                    float diff = x++;
+                                    auto displayId = dispInfo->ID;
+                                    float posX = me->GetPositionX() + float(x % iterate) * 10.0f;
+                                    float posY = me->GetPositionY() + float((float)x / (float)iterate) * 10.0f;
+                                    if (auto trigger = DoSummon(3, { posX, posY, me->GetPositionZ(), me->GetOrientation() }, 0s, TempSummonType::TEMPSUMMON_MANUAL_DESPAWN))
+                                        trigger->SetDisplayId(displayId);
+                                }
+                            }
+                        }
+                    }
+                }
+                else
+                {
+
+                    for (int i = 0; i < (max + 1); i += 1.0f)
+                    {
+                        auto displayId = startEntryId + i;
+                        float posX = me->GetPositionX() + float(i % iterate) * 10.0f;
+                        float posY = me->GetPositionY() + float((float)i / (float)iterate) * 10.0f;
+                        if (auto trigger = DoSummon(3, { posX, posY, me->GetPositionZ(), me->GetOrientation() }, 0s, TempSummonType::TEMPSUMMON_MANUAL_DESPAWN))
+                            trigger->SetDisplayId(displayId);
+                    }
                 }
             }
             else if (actionId == 9)
@@ -736,6 +782,16 @@ struct npc_morpher_admin : public ScriptedAI
         {
             auto actionId = player->PlayerTalkClass->GetGossipOptionAction(gossipId);
             ClearGossipMenuFor(player);
+
+            switch (actionId)
+            {
+                case 10:
+                    if (!code)
+                        nameLike = "";
+                    else
+                        nameLike = std::string(code);
+                    break;
+            }
 
             if (code)
             {
