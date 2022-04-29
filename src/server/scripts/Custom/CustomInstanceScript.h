@@ -123,6 +123,48 @@ public:
         }
     }
 
+    uint32 GetLootIdForDungeon() override
+    {
+        if (auto challenge = this->GetChallenge())
+        {
+            switch (challenge->GetChallengeLevel())
+            {
+                case MYTHIC_LEVEL_0:
+                case MYTHIC_LEVEL_1:
+                case MYTHIC_LEVEL_2:
+                    return 1200005;
+                case MYTHIC_LEVEL_3:
+                    return 1200006;
+                case MYTHIC_LEVEL_4:
+                    return 1200007;
+                case MYTHIC_LEVEL_5:
+                    return 1200008;
+                case MYTHIC_LEVEL_6:
+                    return 1200009;
+                case MYTHIC_LEVEL_7:
+                    return 1200010;
+                case MYTHIC_LEVEL_8:
+                    return 1200011;
+                case MYTHIC_LEVEL_9:
+                    return 1200012;
+                case MYTHIC_LEVEL_10:
+                    return 1200013;
+                case MYTHIC_LEVEL_11:
+                    return 1200014;
+                case MYTHIC_LEVEL_12:
+                    return 1200015;
+                case MYTHIC_LEVEL_13:
+                    return 1200016;
+                case MYTHIC_LEVEL_14:
+                    return 1200017;
+                case MYTHIC_LEVEL_15:
+                    return 1200018;
+            }
+        }
+
+        return 0;
+    }
+
     uint32 m_CheckpointId = 0;
     Position ChestSpawn;
     QuaternionData Quad;

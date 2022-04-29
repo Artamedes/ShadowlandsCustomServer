@@ -16,6 +16,7 @@
 #include "GenericMovementGenerator.h"
 #include "QuestAI.h"
 #include "GameObjectAI.h"
+#include "PlayerChallenge.h"
 
 struct npc_battle_training : public ScriptedAI
 {
@@ -2898,6 +2899,76 @@ public:
     }
 };
 
+// 800030
+struct npc_keystone_master : public ScriptedAI
+{
+public:
+    npc_keystone_master(Creature* creature) : ScriptedAI(creature) { }
+
+    bool OnGossipHello(Player* player) override
+    {
+        ClearGossipMenuFor(player);
+        player->PrepareQuestMenu(me->GetGUID());
+        if (!player->HasItemCount(158923, 1, true))
+            AddGossipItemFor(player, GossipOptionIcon::None, "May I have a keystone please?", 0, 1);
+        else
+            AddGossipItemFor(player, GossipOptionIcon::None, "Can you drop my keystone?", 0, 5);
+        if (!player->HasItemCount(180653, 1, true))
+            AddGossipItemFor(player, GossipOptionIcon::None, "May I have a mini-keystone please?", 0, 2);
+        else
+            AddGossipItemFor(player, GossipOptionIcon::None, "Can you drop my mini-keystone?", 0, 6);
+
+        AddGossipItemFor(player, GossipOptionIcon::None, "What can I do with the keystone?", 0, 3);
+        SendGossipMenuFor(player, me->GetEntry(), me);
+        return true;
+    }
+
+    bool OnGossipSelect(Player* player, uint32 menuId, uint32 gossipId) override
+    {
+        uint32 action = player->PlayerTalkClass->GetGossipOptionAction(gossipId);
+        switch (action)
+        {
+            case 1:
+                player->AddItem(158923, 1);
+                break;
+            case 2:
+                player->AddItem(180653, 1);
+                break;
+            case 3:
+                ClearGossipMenuFor(player);
+                AddGossipItemFor(player, GossipOptionIcon::None, "Okay", 0, 4);
+                SendGossipMenuFor(player, 8000031, me);
+                return true;
+            case 4:
+                return OnGossipHello(player);
+            case 5:
+                if (auto item = player->GetItemByEntry(158923))
+                {
+                    auto keystoneInfo = player->GetPlayerChallenge()->GetKeystoneInfo(item);
+                    if (keystoneInfo)
+                    {
+                        player->GetPlayerChallenge()->ResetMythicKeystoneTo(item, keystoneInfo->Level, false);
+                        ChatHandler(player).PSendSysMessage("Keystone dropped to %u", keystoneInfo->Level);
+                    }
+                }
+                return OnGossipHello(player);
+            case 6:
+                if (auto item = player->GetItemByEntry(180653))
+                {
+                    auto keystoneInfo = player->GetPlayerChallenge()->GetKeystoneInfo(item);
+                    if (keystoneInfo)
+                    {
+                        player->GetPlayerChallenge()->ResetMythicKeystoneTo(item, keystoneInfo->Level, false);
+                        ChatHandler(player).PSendSysMessage("Mini-keystone dropped to %u", keystoneInfo->Level);
+                    }
+                }
+                return OnGossipHello(player);
+        }
+        CloseGossipMenuFor(player);
+        return true;
+    }
+};
+
 void AddSC_MallScripts()
 {
     RegisterCreatureAI(npc_battle_training);
@@ -2939,6 +3010,7 @@ void AddSC_MallScripts()
     RegisterCreatureAI(npc_uvrel_forgefall_700047);
     RegisterCreatureAI(npc_spawn_of_n_zoth_700065);
     RegisterCreatureAI(npc_medivh_700030);
+    RegisterCreatureAI(npc_keystone_master);
 
     RegisterSpellScript(spell_activating_313352);
    // RegisterSpellScript(spell_nyalotha_incursion);

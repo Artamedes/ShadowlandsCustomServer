@@ -164,6 +164,7 @@ class item_upgrader : public ItemScript
             ObjectGuid ItemGuid;
             uint32 LastItemUpgrade = 0;
             TimePoint LastUpgradeTime;
+            bool HadMaterials = false;
         };
 
         std::unordered_map<ObjectGuid, ItemTarget> m_PlayerItemTargets;
@@ -199,13 +200,14 @@ class item_upgrader : public ItemScript
                 itr->second.ItemGuid = itemTarget->GetGUID();
 
 
-                if (itr->second.LastUpgradeTime > now && itr->second.LastItemUpgrade != itemUpgrade->RequiredID && !hasMaterials)
+                if (itr->second.LastUpgradeTime > now && itr->second.LastItemUpgrade != itemUpgrade->RequiredID && !hasMaterials && !itr->second.HadMaterials)
                     dispMsg = true;
 
                 itr->second.LastUpgradeTime = now + 30s;
+                itr->second.HadMaterials = hasMaterials;
             }
             else
-                m_PlayerItemTargets[player->GetGUID()] = { itemTarget->GetGUID(), 0, now + 30s };
+                m_PlayerItemTargets[player->GetGUID()] = { itemTarget->GetGUID(), 0, now + 30s, hasMaterials };
             WorldPackets::Quest::DisplayPlayerChoice displayPlayerChoice;
 
             displayPlayerChoice.SenderGUID = itemTarget->GetGUID();
@@ -518,6 +520,9 @@ class item_upgrader : public ItemScript
 
                 l_Item.Item.ItemBonus->BonusListIDs.clear();
 
+                for (int32 bonusId : l_ItemUpgrade->ReplaceBonusIDList)
+                    l_Item.Item.ItemBonus->BonusListIDs.push_back(bonusId);
+
                 for (int32 bonusId : *l_ItemTarget->m_itemData->BonusListIDs)
                 {
                     if (bonusId != l_ItemUpgrade->RequiredID)
@@ -526,9 +531,6 @@ class item_upgrader : public ItemScript
                             l_Item.Item.ItemBonus->BonusListIDs.push_back(bonusId);
                     }
                 }
-
-                for (int32 bonusId : l_ItemUpgrade->ReplaceBonusIDList)
-                    l_Item.Item.ItemBonus->BonusListIDs.push_back(bonusId);
             }
 
 
@@ -747,11 +749,12 @@ class item_upgrader : public ItemScript
 
                     l_ItemTarget->RemoveBonus(itemUpgrade->RequiredID);
 
+                    for (auto bonus : itemUpgrade->ReplaceBonusIDList)
+                        l_ItemTarget->AddBonusesToFront(bonus, false);
+
                     for (auto bonus : itemUpgrade->RemoveBonusIDList)
                         l_ItemTarget->RemoveBonus(bonus);
 
-                    for (auto bonus : itemUpgrade->ReplaceBonusIDList)
-                        l_ItemTarget->AddBonuses(bonus, false);
                     p_Player->SendNewItem(l_ItemTarget, 1, true, false, true);
 
                     if (l_ItemTarget->IsEquipped())

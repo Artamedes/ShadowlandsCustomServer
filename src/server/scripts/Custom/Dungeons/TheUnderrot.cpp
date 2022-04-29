@@ -154,13 +154,7 @@ public:
             {
                 didPhase2 = false;
                 phasing = false;
-                me->SetHealth(me->CountPctFromMaxHealth(10));
-                me->RemoveUnitFlag(UnitFlags::UNIT_FLAG_UNINTERACTIBLE);
-                me->RemoveUnitFlag(UnitFlags::UNIT_FLAG_NON_ATTACKABLE_2);
-                me->RemoveUnitFlag2(UnitFlags2::UNIT_FLAG2_HIDE_BODY);
-                me->SetReactState(REACT_AGGRESSIVE);
-                me->ResumeMovement();
-                Talk(4);
+                me->KillSelf();
             }
         }
         if (ActiveSlimes)
@@ -342,7 +336,7 @@ public:
         //     - If players do not kill all of them, he reforms when they hit the center.Each slime left equals a percentage of his health(see above)
         //     - When / if he is able to reform, he will say : Creature_text entry : 701000 groupID 4
         //     - This process repeats whenever he hits 5 % health
-        if (!didPhase2 && me->HealthBelowPctDamaged(5, damage))
+        if (!didPhase2 && me->HealthBelowPctDamaged(5, damage) && !phasing)
         {
             if (Slimes > 0)
             {

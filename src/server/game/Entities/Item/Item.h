@@ -226,6 +226,7 @@ class TC_GAME_API Item : public Object
         void CheckArtifactRelicSlotUnlock(Player const* owner);
 
         bool HasBonusId(uint32 bonusId);
+        bool AddBonusesToFront(uint32 bonusListID, bool checkExists = true);
         bool AddBonuses(uint32 bonusListID, bool checkExists = true);
         bool RemoveBonus(uint32 bonusListID);
         void SetBonuses(std::vector<int32> bonusListIDs);

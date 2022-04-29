@@ -2510,6 +2510,25 @@ bool Item::HasBonusId(uint32 bonusListID)
     return false;
 }
 
+bool Item::AddBonusesToFront(uint32 bonusListID, bool checkExists)
+{
+    if (checkExists && std::find(m_itemData->BonusListIDs->begin(), m_itemData->BonusListIDs->end(), int32(bonusListID)) != m_itemData->BonusListIDs->end())
+        return false;
+
+    if (DB2Manager::ItemBonusList const* bonuses = sDB2Manager.GetItemBonusList(bonusListID))
+    {
+        std::vector<int32> bonusListIDs = m_itemData->BonusListIDs;
+        bonusListIDs.push_back(bonusListID);
+        std::rotate(bonusListIDs.rbegin(), bonusListIDs.rbegin() + 1, bonusListIDs.rend());
+        SetUpdateFieldValue(m_values.ModifyValue(&Item::m_itemData).ModifyValue(&UF::ItemData::BonusListIDs), std::move(bonusListIDs));
+        for (ItemBonusEntry const* bonus : *bonuses)
+            _bonusData.AddBonus(bonus->Type, bonus->Value);
+        SetUpdateFieldValue(m_values.ModifyValue(&Item::m_itemData).ModifyValue(&UF::ItemData::ItemAppearanceModID), _bonusData.AppearanceModID);
+        return true;
+    }
+    return false;
+}
+
 bool Item::AddBonuses(uint32 bonusListID, bool checkExists)
 {
     if (checkExists && std::find(m_itemData->BonusListIDs->begin(), m_itemData->BonusListIDs->end(), int32(bonusListID)) != m_itemData->BonusListIDs->end())

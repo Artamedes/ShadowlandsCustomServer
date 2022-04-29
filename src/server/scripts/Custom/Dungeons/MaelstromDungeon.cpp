@@ -316,11 +316,6 @@ public:
             }
         }
 
-        uint32 GetLootIdForDungeon() override
-        {
-            return 1200005;
-        }
-
         private:
             uint32 m_Kills = 0;
             ObjectGuid iroGuid;
