@@ -628,16 +628,20 @@ public:
 
     void InitializeAI() override
     {
-        /// TODO: Fill this function
+        SetCombatMovement(false);
+        me->SetReactState(REACT_PASSIVE);
     }
-    void Reset() override
+
+    void JustDied(Unit* who) override
     {
-        /// TODO: Fill this function
+        if (auto instance = me->GetInstanceScript())
+            if (auto map = instance->instance)
+                map->DoOnPlayers([](Player* player)
+            {
+                player->ModifyCurrency(1813, urand(20, 30));
+            });
     }
-    void JustEngagedWith(Unit* /*who*/) override
-    {
-        /// TODO: Fill this function
-    }
+
     void UpdateAI(uint32 diff) override
     {
         scheduler.Update(diff);
@@ -654,15 +658,6 @@ public:
             }
         }
         DoMeleeAttackIfReady();
-    }
-
-    void OnUnitRelocation(Unit* who) override
-    {
-        /// TODO: Fill this function
-    }
-    void DamageTaken(Unit* attacker, uint32& damage, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
-    {
-        /// TODO: Fill this function
     }
 
     TaskScheduler scheduler;
