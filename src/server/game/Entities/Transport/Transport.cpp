@@ -130,7 +130,7 @@ void Transport::RemovePassenger(WorldObject* passenger)
 
         passenger->SetTransport(nullptr);
         passenger->m_movementInfo.transport.Reset();
-        TC_LOG_DEBUG("entities.transport", "Object %s removed from MAPtransport %s.", passenger->GetName(), GetName().c_str());
+        TC_LOG_DEBUG("entities.transport", "Object %s removed from MAPtransport %s.", passenger->GetName().c_str(), GetName().c_str());
         if (Unit* unit = passenger->ToUnit())
         {
             unit->ClearUnitState(UNIT_STATE_IGNORE_PATHFINDING);
@@ -321,7 +321,7 @@ void Transport::Update(uint32 diff)
     {
         SetPathProgress(GetCurrentTransportTime()); // make it precise after stop
         SetMoveDirection(TRANSPORT_MOVE_DIRECTION_STOPPED);
-        TC_LOG_DEBUG("entities.transport", "%s arrived at timeIndex %u state %u", GetName(), GetCurrentTransportTime(), uint32(GetGoState()));
+        TC_LOG_DEBUG("entities.transport", "%s arrived at timeIndex %u state %u", GetName().c_str(), GetCurrentTransportTime(), uint32(GetGoState()));
 
         if (Map* map = GetMap())
         {
@@ -336,7 +336,7 @@ void Transport::Update(uint32 diff)
 
         if (GetGoState() == GO_STATE_TRANSPORT_FLOOR_1)
         {
-            TC_LOG_DEBUG("entities.transport", "%s reset to GO_STATE_TRANSPORT_FLOOR_1 (CurrentTimeIndex set to 0)", GetName());
+            TC_LOG_DEBUG("entities.transport", "%s reset to GO_STATE_TRANSPORT_FLOOR_1 (CurrentTimeIndex set to 0)", GetName().c_str());
             SetCurrentTransportTime(0);
         }
 
@@ -495,26 +495,26 @@ void Transport::SetTransportState(GOState state, bool instant /*= false*/)
 {
     if (GetGoState() == state)
     {
-        TC_LOG_ERROR("entities.transport", "Transport %s already at floor %u or moving to it, SetTransportFloor() failed", GetGUID().ToString(), uint32(state - GO_STATE_TRANSPORT_FLOOR_1 + 1));
+        TC_LOG_ERROR("entities.transport", "Transport %s already at floor %u or moving to it, SetTransportFloor() failed", GetGUID().ToString().c_str(), uint32(state - GO_STATE_TRANSPORT_FLOOR_1 + 1));
         return;
     }
 
     if (m_goValue.Transport.StopFrames->empty())
     {
-        TC_LOG_ERROR("entities.transport", "Transport %s has no stop frames, SetTransportFloor() can not be used", GetGUID().ToString());
+        TC_LOG_ERROR("entities.transport", "Transport %s has no stop frames, SetTransportFloor() can not be used", GetGUID().ToString().c_str());
         return;
     }
 
     if (m_goValue.Transport.StopFrames->size() < state - GO_STATE_TRANSPORT_FLOOR_1)
     {
-        TC_LOG_ERROR("entities.transport", "Transport %s does not have floor %u, SetTransportFloor() failed", GetGUID().ToString(), uint32(state - GO_STATE_TRANSPORT_FLOOR_1 + 1));
+        TC_LOG_ERROR("entities.transport", "Transport %s does not have floor %u, SetTransportFloor() failed", GetGUID().ToString().c_str(), uint32(state - GO_STATE_TRANSPORT_FLOOR_1 + 1));
         return;
     }
 
     if (GetMoveDirection())
     {
         // client can not handle movement change of an already moving transport!
-        TC_LOG_ERROR("entities.transport", "Tried to move transport %s while already moving", GetGUID().ToString());
+        TC_LOG_ERROR("entities.transport", "Tried to move transport %s while already moving", GetGUID().ToString().c_str());
         return;
     }
 
@@ -550,7 +550,7 @@ void Transport::SetTransportState(GOState state, bool instant /*= false*/)
     if (instant)
         newSpeed = 0;
 
-    TC_LOG_DEBUG("entities.transport", "%s started moving to timeIndex %u state %u speed %u", GetName(), GetCurrentTransportTime(), uint32(state), newSpeed);
+    TC_LOG_DEBUG("entities.transport", "%s started moving to timeIndex %u state %u speed %u", GetName().c_str(), GetCurrentTransportTime(), uint32(state), newSpeed);
 
     SetGoState(state);
     SetDestinationStopFrameTime(getMSTime() + newSpeed);
@@ -563,7 +563,7 @@ void Transport::SetTransportLoop(bool on)
 {
     if (IsDynamicTransport())
     {
-        TC_LOG_ERROR("entities.transport", "Transport %s has no stop frames, SetTransportLoop() can not be used", GetGUID().ToString());
+        TC_LOG_ERROR("entities.transport", "Transport %s has no stop frames, SetTransportLoop() can not be used", GetGUID().ToString().c_str());
         return;
     }
 
@@ -832,7 +832,7 @@ Creature* Transport::CreateNPCPassenger(ObjectGuid::LowType guid, CreatureData c
     creature->Relocate(x, y, z, o);
     creature->SetHomePosition(creature->GetPositionX(), creature->GetPositionY(), creature->GetPositionZ(), creature->GetOrientation());
     creature->SetTransportHomePosition(creature->m_movementInfo.transport.pos);
-    TC_LOG_DEBUG("entities.transport", "created npc pessenger %s for %s", creature->GetName(), GetName());
+    TC_LOG_DEBUG("entities.transport", "created npc pessenger %s for %s", creature->GetName().c_str(), GetName().c_str());
     /// @HACK - transport models are not added to map's dynamic LoS calculations
     ///         because the current GameObjectModel cannot be moved without recreating
     if (!_mmapsLoaded)

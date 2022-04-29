@@ -1620,7 +1620,7 @@ void Player::TeleportToChallenge(uint32 mapid, float x, float y, float z, float 
     if (!GetSession() || !mEntry)
         return;
 
-    TC_LOG_DEBUG("maps", "Player %s is being teleported to map %u", GetName(), mapid);
+    TC_LOG_DEBUG("maps", "Player %s is being teleported to map %u", GetName().c_str(), mapid);
 
     if (m_vehicle)
         ExitVehicle();

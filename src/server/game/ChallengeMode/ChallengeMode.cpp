@@ -28,7 +28,7 @@
 #include "GroupMgr.h"
 #include "Guild.h"
 #include "InstancePackets.h"
-#include "item.h"
+#include "Item.h"
 #include "Map.h"
 #include "MiscPackets.h"
 #include "MotionMaster.h"

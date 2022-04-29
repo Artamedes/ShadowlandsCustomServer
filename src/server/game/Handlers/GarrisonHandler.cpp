@@ -61,7 +61,7 @@ void WorldSession::HandleGarrisonGetMapData(WorldPackets::Garrison::GarrisonGetM
 void WorldSession::HandleGarrisonResearchTalent(WorldPackets::Garrison::GarrisonResearchTalent& researchResult)
 {
     TC_LOG_TRACE("network.opcode", "HandleGarrisonResearchTalent GarrTalentID: %u %u %s",
-        researchResult.GarrTalentID, researchResult.UnkInt2, researchResult.UnkGuid.ToString());
+        researchResult.GarrTalentID, researchResult.UnkInt2, researchResult.UnkGuid.ToString().c_str());
     if (auto talent = sGarrTalentStore.LookupEntry(researchResult.GarrTalentID))
     {
         if (auto tree = sGarrTalentTreeStore.LookupEntry(talent->GarrTalentTreeID))
