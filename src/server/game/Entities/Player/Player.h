@@ -1487,7 +1487,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
           * @param  printLog used on SMSG_SET_CURRENCY
           * @param  ignore gain multipliers
         */
-        void ModifyCurrency(uint32 id, int32 count, bool printLog = true, bool ignoreMultipliers = false, bool forceSet = false);
+        void ModifyCurrency(uint32 id, int32 count, bool printLog = true, bool ignoreMultipliers = false, bool forceSet = false, bool withPacket = true);
 
         void SetInvSlot(uint32 slot, ObjectGuid guid) { SetUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::InvSlots, slot), guid); }
 

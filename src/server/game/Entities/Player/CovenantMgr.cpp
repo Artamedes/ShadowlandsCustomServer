@@ -327,8 +327,8 @@ void CovenantMgr::LoadFromDB(CharacterDatabaseQueryHolder const& holder)
             auto cov = _playerCovenants[covenant].get();
 
             cov->SetRenown(Renown);
-            cov->SetAnima(Anima);
-            cov->SetSouls(Souls);
+            cov->SetAnima(Anima, false);
+            cov->SetSouls(Souls, false);
 
         } while (result->NextRow());
     }

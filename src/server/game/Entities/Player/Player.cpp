@@ -7233,9 +7233,9 @@ bool Player::HasCurrency(uint32 id, uint32 count) const
     return itr != _currencyStorage.end() && itr->second.Quantity >= count;
 }
 
-void Player::ModifyCurrency(uint32 id, int32 count, bool printLog/* = true*/, bool ignoreMultipliers/* = false*/, bool forceSet /*= false*/)
+void Player::ModifyCurrency(uint32 id, int32 count, bool printLog/* = true*/, bool ignoreMultipliers/* = false*/, bool forceSet /*= false*/, bool withPacket /*= true*/)
 {
-    if (!count)
+    if (!count && !forceSet)
         return;
 
     CurrencyTypesEntry const* currency = sCurrencyTypesStore.LookupEntry(id);
@@ -7321,7 +7321,7 @@ void Player::ModifyCurrency(uint32 id, int32 count, bool printLog/* = true*/, bo
         newWeekCount = weekCap;
     }
 
-    if (uint32(newTotalCount) != oldTotalCount)
+    if (uint32(newTotalCount) != oldTotalCount || forceSet)
     {
         if (id == 1813) // anima
         {
@@ -7348,16 +7348,19 @@ void Player::ModifyCurrency(uint32 id, int32 count, bool printLog/* = true*/, bo
         if (count > 0)
             UpdateCriteria(CriteriaType::CurrencyGained, id, count);
 
-        WorldPackets::Misc::SetCurrency packet;
-        packet.Type = id;
-        packet.Quantity = newTotalCount;
-        packet.SuppressChatLog = !printLog;
-        packet.WeeklyQuantity = newWeekCount;
-        packet.TrackedQuantity = newTrackedCount;
-        packet.Flags = itr->second.Flags;
-        packet.QuantityChange = count;
+        if (withPacket)
+        {
+            WorldPackets::Misc::SetCurrency packet;
+            packet.Type = id;
+            packet.Quantity = newTotalCount;
+            packet.SuppressChatLog = !printLog;
+            packet.WeeklyQuantity = newWeekCount;
+            packet.TrackedQuantity = newTrackedCount;
+            packet.Flags = itr->second.Flags;
+            packet.QuantityChange = count;
 
-        SendDirectMessage(packet.Write());
+            SendDirectMessage(packet.Write());
+        }
     }
 }
 
@@ -19149,8 +19152,8 @@ bool Player::LoadFromDB(ObjectGuid guid, CharacterDatabaseQueryHolder const& hol
 
     m_achievementMgr->CheckAllAchievementCriteria(this);
     m_questObjectiveCriteriaMgr->CheckAllQuestObjectiveCriteria(this);
-    _covenantMgr->SetCovenant(static_cast<CovenantID>(fields.covenant));
     _covenantMgr->LoadFromDB(holder);
+    _covenantMgr->SetCovenant(static_cast<CovenantID>(fields.covenant));
 
     LoadCustom(holder);
 
