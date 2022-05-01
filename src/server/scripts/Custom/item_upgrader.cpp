@@ -756,6 +756,7 @@ class item_upgrader : public ItemScript
                         l_ItemTarget->RemoveBonus(bonus);
 
                     p_Player->SendNewItem(l_ItemTarget, 1, true, false, true);
+                    l_ItemTarget->SetState(ItemUpdateState::ITEM_CHANGED, p_Player);
 
                     if (l_ItemTarget->IsEquipped())
                         p_Player->_ApplyItemMods(l_ItemTarget, l_ItemTarget->GetSlot(), true);

@@ -7,6 +7,7 @@
 #include "SpellPackets.h"
 #include "Spell.h"
 #include "Conversation.h"
+#include "DatabaseEnv.h"
 
 template<uint32 BonusIDAward>
 class item_enhancement_system : public ItemScript
@@ -78,8 +79,12 @@ class item_enhancement_system : public ItemScript
                 if (itemTarget->IsEquipped())
                     player->_ApplyItemMods(itemTarget, itemTarget->GetSlot(), false);
                 itemTarget->AddBonuses(BonusIDAward);
+                itemTarget->SetState(ItemUpdateState::ITEM_CHANGED, player);
                 if (itemTarget->IsEquipped())
                     player->_ApplyItemMods(itemTarget, itemTarget->GetSlot(), true);
+                CharacterDatabaseTransaction trans = CharacterDatabase.BeginTransaction();
+                itemTarget->SaveToDB(trans);
+                CharacterDatabase.CommitTransaction(trans);
                 ChatHandler(player).PSendSysMessage("|cff00FF00Succesfully enhanced %s!", Item::GetItemLink(itemTarget->GetEntry()).c_str());
             }
         }
