@@ -1012,6 +1012,7 @@ public:
                     recruit->AI()->Talk(0);
                 scheduler.Schedule(3s, [this](TaskContext context)
                 {
+                    Talk(0);
                     me->HandleEmoteCommand(Emote::EMOTE_ONESHOT_LAUGH);
 
                     if (auto recruit = me->FindNearestCreatureBySpawnId(1052851, 10.0f))
@@ -1034,6 +1035,7 @@ public:
             didIntro = true;
             scheduler.CancelAll();
             didIntro2 = true;
+            Talk(1);
 
             if (auto recruit = me->FindNearestCreatureBySpawnId(1052851, 10.0f))
                 DoZoneInCombat(recruit);
@@ -1159,11 +1161,21 @@ public:
 
     void InitializeAI() override
     {
-        me->SetEmoteState(Emote::EMOTE_STATE_WORK_CHOPWOOD);
+        if (me->GetSpawnId() == 1054684)
+        {
+            me->SetReactState(REACT_PASSIVE);
+            me->SetEmoteState(Emote::EMOTE_ONESHOT_SLEEP);
+            DoCastSelf(353814); // Sleep
+            me->SetUnitFlag(UnitFlags::UNIT_FLAG_IMMUNE_TO_PC);
+            me->SetUnitFlag(UnitFlags::UNIT_FLAG_NON_ATTACKABLE);
+        }
+        else
+            me->SetEmoteState(Emote::EMOTE_STATE_WORK_CHOPWOOD);
     }
     void Reset() override
     {
-        me->SetEmoteState(Emote::EMOTE_STATE_WORK_CHOPWOOD);
+        if (me->GetSpawnId() != 1054684)
+            me->SetEmoteState(Emote::EMOTE_STATE_WORK_CHOPWOOD);
     }
     void JustEngagedWith(Unit* /*who*/) override
     {
