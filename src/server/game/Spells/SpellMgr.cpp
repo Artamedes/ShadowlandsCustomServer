@@ -4471,7 +4471,7 @@ void SpellMgr::LoadSpellInfoCorrections()
 
     ApplySpellFix({ 357616 }, [](SpellInfo* spellInfo)
     {
-        spellInfo->AttributesEx3 &= ~SPELL_ATTR3_ONLY_TARGET_PLAYERS;
+        spellInfo->AttributesEx3 &= ~SPELL_ATTR3_ONLY_ON_PLAYER;
 
         ApplySpellEffectFix(spellInfo, EFFECT_0, [](SpellEffectInfo* spellEffectInfo)
             {
@@ -4690,7 +4690,7 @@ void SpellMgr::LoadSpellInfoCorrections()
 	// Shadow Strike
 	ApplySpellFix({ 137619 }, [](SpellInfo* spellInfo)
 	{
-		spellInfo->AttributesEx3 &= ~SPELL_ATTR3_DEATH_PERSISTENT;
+		spellInfo->AttributesEx3 &= ~SPELL_ATTR3_ALLOW_AURA_WHILE_DEAD;
 	});
 
 	// Shadow Strike

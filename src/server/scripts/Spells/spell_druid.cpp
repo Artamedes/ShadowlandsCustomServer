@@ -281,7 +281,7 @@ public:
             if (!spellInfo->StartRecoveryTime || !spellInfo->StartRecoveryCategory)
                 return;
 
-            if (spellInfo->Id != SPELL_DRUID_INNERVATE && !spellInfo->HasAttribute(SPELL_ATTR2_FOOD_BUFF) && !spellInfo->HasAura(SPELL_AURA_MOUNTED))
+            if (spellInfo->Id != SPELL_DRUID_INNERVATE && !spellInfo->HasAttribute(SPELL_ATTR2_RETAIN_ITEM_CAST) && !spellInfo->HasAura(SPELL_AURA_MOUNTED))
             {
                 if (Aura* aura = player->GetAura(SPELL_DRUID_INNERVATE))
                 {
