@@ -210,7 +210,7 @@ struct npc_skipbot_3000 : public ScriptedAI
                 {
                     Talk(0, p_Player);
 
-                    for (uint32 l_Quest : {700000, 700001, 700002, 700003, 700004, 700005, 700006})
+                    for (uint32 l_Quest : {700006})
                     {
                         auto l_QuestPtr = sObjectMgr->GetQuestTemplate(l_Quest);
                         if (!l_QuestPtr)
@@ -228,6 +228,7 @@ struct npc_skipbot_3000 : public ScriptedAI
                         p_Player->RewardQuest(l_QuestPtr, LootItemType::Item, 0, me);
                     }
 
+                    p_Player->AddItem(700001, 1);
                     GameTele const* tele = sObjectMgr->GetGameTele(1779);
                     if (!tele)
                     {
