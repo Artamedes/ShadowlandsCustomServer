@@ -59,6 +59,7 @@ EndScriptData */
 #include <map>
 #include <set>
 #include "QueryHolder.h"
+#include "MiscPackets.h"
 #include <sstream>
 
 using namespace Trinity::ChatCommands;
@@ -133,6 +134,7 @@ public:
             { "warden force",       HandleDebugWardenForce,                rbac::RBAC_PERM_COMMAND_DEBUG,   Console::Yes },
             { "personalclone",      HandleDebugBecomePersonalClone,        rbac::RBAC_PERM_COMMAND_DEBUG,   Console::No },
             { "stabilitytest",      HandleDebugStabilityTestCommand,       rbac::RBAC_PERM_COMMAND_DEBUG,   Console::No },
+            { "splashscreen",       HandleDebugSplashScreenCommand,        rbac::RBAC_PERM_COMMAND_DEBUG,   Console::No },
         };
         static ChatCommandTable commandTable =
         {
@@ -153,6 +155,14 @@ public:
         else
             return false;
 
+        return true;
+    }
+
+    static bool HandleDebugSplashScreenCommand(ChatHandler* handler, uint32 id)
+    {
+        WorldPackets::Misc::SplashScreenShowLatest splashScreenShowLatest;
+        splashScreenShowLatest.UISplashScreenID = id;
+        handler->GetSession()->SendPacket(splashScreenShowLatest.Write());
         return true;
     }
 

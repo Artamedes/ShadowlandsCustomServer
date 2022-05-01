@@ -293,8 +293,8 @@ bool Loot::FillLoot(uint32 lootId, LootStore const& store, Player* lootOwner, bo
                 if (_challenge->IsComplete())
                 {
                     // can this let players exploit?
-                    if (auto _lootId = script->GetLootIdForDungeon())
-                        lootId = _lootId;
+                    // if (auto _lootId = script->GetLootIdForDungeon())
+                    //     lootId = _lootId;
 
                     _challengeLevel = _challenge->GetChallengeLevel(); // Pigpig
                     _realChallengeLevel = _challenge->GetChallengeLevel();
@@ -350,7 +350,7 @@ bool Loot::FillLoot(uint32 lootId, LootStore const& store, Player* lootOwner, bo
     if (oploteChest)
         tab->ProcessOploteChest(*this);
     else if (_challengeLevel)
-        tab->ProcessChallengeChest(*this, lootId, _challenge);
+        tab->ProcessChallengeChest(*this, lootId, _challenge, store.IsRatesAllowed(), lootMode, difficulty);
     else
         tab->Process(*this, store.IsRatesAllowed(), lootMode, difficulty, 0, lootOwner, specOnly, personalLoot, fishing);          // Processing is done there, callback via Loot::AddItem()
 

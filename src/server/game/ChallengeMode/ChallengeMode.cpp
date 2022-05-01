@@ -839,6 +839,12 @@ void Challenge::SummonGobject(bool door)
             if (InstanceScript* script = GetInstanceScript())
                 script->instance->SummonGameObject(entry, Position(x, y, z, o), QuaternionData(rot0, rot1, rot2, rot3), 0);
     }
+    else
+    {
+        if (auto script = GetInstanceScript())
+            script->SummonChallengeGameObject(door);
+        // let instance script handle it.
+    }
 }
 
 void Challenge::SetInstanceScript(InstanceScript* instanceScript)

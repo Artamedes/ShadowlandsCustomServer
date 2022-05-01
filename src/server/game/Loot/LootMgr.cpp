@@ -939,7 +939,7 @@ void LootTemplate::ProcessOploteChest(Loot& loot) const
     //}
 }
 
-void LootTemplate::ProcessChallengeChest(Loot& loot, uint32 lootId, Challenge* _challenge) const
+void LootTemplate::ProcessChallengeChest(Loot& loot, uint32 lootId, Challenge* _challenge, bool rate, uint16 lootMode, Difficulty difficulty) const
 {
     Player const* lootOwner = ObjectAccessor::FindPlayer(loot.GetLootOwnerGuid());
     if (!lootOwner)
@@ -964,8 +964,21 @@ void LootTemplate::ProcessChallengeChest(Loot& loot, uint32 lootId, Challenge* _
             continue;
         }
 
-        if (item->reference && item->type == LootItemType::Item)              // References processing
+        if (!item->Roll(true, 0.0f, lootOwner, true))
+            continue;                                       // Bad luck for the entry
+
+        if (item->reference > 0)                            // References processing
+        {
+            LootTemplate const* Referenced = LootTemplates_Reference.GetLootFor(item->reference);
+            if (!Referenced)
+                continue;                                       // Error message already printed at loading stage
+
+            uint32 maxcount = uint32(float(item->maxcount) * sWorld->getRate(RATE_DROP_ITEM_REFERENCED_AMOUNT));
+            for (uint32 loop = 0; loop < maxcount; ++loop)      // Ref multiplicator
+                Referenced->Process(loot, rate, lootMode, difficulty, item->groupid, lootOwner, true, true);
+
             continue;
+        }
 
         if (item->type == LootItemType::Item)
         {

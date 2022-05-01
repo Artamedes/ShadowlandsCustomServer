@@ -116,7 +116,7 @@ class TC_GAME_API LootTemplate
         // Rolls for every item in the template and adds the rolled items the the loot
         void Process(Loot& loot, bool rate, uint16 lootMode, Difficulty difficulty, uint8 groupId = 0, Player const* player = nullptr, bool specOnly = false, bool personalLoot = false, bool fishing = false) const;
         void ProcessOploteChest(Loot& loot) const;
-        void ProcessChallengeChest(Loot& loot, uint32 lootId, Challenge* _challenge) const;
+        void ProcessChallengeChest(Loot& loot, uint32 lootId, Challenge* _challenge, bool rate, uint16 lootMode, Difficulty difficulty) const;
         void CopyConditions(ConditionContainer const& conditions);
         void CopyConditions(LootItem* li) const;
         void FillAutoAssignationLoot(std::list<const ItemTemplate*>& itemList, Player* player, bool checkSpec = true, bool checkChance = true, bool challengeCheck = false) const;

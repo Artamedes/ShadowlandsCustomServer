@@ -1599,22 +1599,6 @@ uint32 DB2Manager::LoadStores(std::string const& dataPath, LocaleConstant defaul
         }
     }
 
-    // Thrall dungeon
-    const_cast<MapEntry*>(sMapStore.LookupEntry(1469))->InstanceType = 1;
-    const_cast<MapEntry*>(sMapStore.LookupEntry(1469))->MaxPlayers = 5;
-    // Crapopolis Dungeon
-    const_cast<MapEntry*>(sMapStore.LookupEntry(2263))->InstanceType = 1;
-    const_cast<MapEntry*>(sMapStore.LookupEntry(2263))->MaxPlayers = 5;
-    // Skyhold Dungeon
-    const_cast<MapEntry*>(sMapStore.LookupEntry(2472))->InstanceType = 1;
-    const_cast<MapEntry*>(sMapStore.LookupEntry(2472))->MaxPlayers = 5;
-    // Netherlight Temple
-    const_cast<MapEntry*>(sMapStore.LookupEntry(1512))->InstanceType = 1;
-    const_cast<MapEntry*>(sMapStore.LookupEntry(1512))->MaxPlayers = 5;
-    // Niskara
-    const_cast<MapEntry*>(sMapStore.LookupEntry(1604))->InstanceType = 1;
-    const_cast<MapEntry*>(sMapStore.LookupEntry(1604))->MaxPlayers = 5;
-
     for (auto entry : sSoulbindConduitItemStore)
         ItemIDToConduitID[entry->ItemID] = entry->ConduitID;
 

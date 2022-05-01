@@ -11449,24 +11449,28 @@ void Unit::SetMeleeAnimKitId(uint16 animKitId)
         {
             auto GenerateLootAndSendToGroup([&](Player* who, bool personal = false)
             {
-                Loot* loot = creature->GetLootFor(who);
-                loot->clear();
-                if (uint32 lootid = creature->GetCreatureTemplate()->lootid)
-                    loot->FillLoot(lootid, LootTemplates_Creature, who, personal, false, creature->GetLootMode(), true, personal); // checking loot spec!
-
-                if (creature->GetLootMode() > 0)
-                    loot->generateMoneyLoot(creature->GetCreatureTemplate()->mingold, creature->GetCreatureTemplate()->maxgold);
-
-                if (group && !personal)
+                // Don't allow loot on challenge mode
+                if (!creature->GetMap()->IsChallengeMode())
                 {
-                    if (hasLooterGuid)
-                        group->SendLooter(creature, looter);
-                    else
-                        group->SendLooter(creature, nullptr);
+                    Loot* loot = creature->GetLootFor(who);
+                    loot->clear();
+                    if (uint32 lootid = creature->GetCreatureTemplate()->lootid)
+                        loot->FillLoot(lootid, LootTemplates_Creature, who, personal, false, creature->GetLootMode(), true, personal); // checking loot spec!
 
-                    // Update round robin looter only if the creature had loot // TODO RESEARCH CRASH
-                    if (!loot->empty())
-                        group->UpdateLooterGuid(creature);
+                    if (creature->GetLootMode() > 0)
+                        loot->generateMoneyLoot(creature->GetCreatureTemplate()->mingold, creature->GetCreatureTemplate()->maxgold);
+
+                    if (group && !personal)
+                    {
+                        if (hasLooterGuid)
+                            group->SendLooter(creature, looter);
+                        else
+                            group->SendLooter(creature, nullptr);
+
+                        // Update round robin looter only if the creature had loot // TODO RESEARCH CRASH
+                        if (!loot->empty())
+                            group->UpdateLooterGuid(creature);
+                    }
                 }
                 who->RewardPlayerAndGroupAtKill(victim, false);
             });

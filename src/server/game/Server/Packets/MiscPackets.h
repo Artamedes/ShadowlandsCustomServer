@@ -1001,7 +1001,7 @@ namespace WorldPackets
             void Read() override { }
         };
 
-        class SplashScreenShowLatest final : public ServerPacket
+        class TC_GAME_API SplashScreenShowLatest final : public ServerPacket
         {
         public:
             SplashScreenShowLatest() : ServerPacket(SMSG_SPLASH_SCREEN_SHOW_LATEST, 4) { }

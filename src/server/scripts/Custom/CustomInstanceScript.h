@@ -158,6 +158,7 @@ public:
                 case MYTHIC_LEVEL_14:
                     return 1200017;
                 case MYTHIC_LEVEL_15:
+                default:
                     return 1200018;
             }
         }

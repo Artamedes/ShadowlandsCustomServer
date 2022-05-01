@@ -316,6 +316,18 @@ public:
             }
         }
 
+        void SummonChallengeGameObject(bool door) override
+        {
+            if (door)
+            {
+                if (auto go = instance->SummonGameObject(MYTHIC_DOOR_9, { 825.677f, 1030.75f, 48.3032f, 1.47262f }, {}, 0))
+                {
+                    go->SetGoState(GOState::GO_STATE_READY);
+                    go->SetFlag(GameObjectFlags::GO_FLAG_NOT_SELECTABLE);
+                }
+            }
+        }
+
         private:
             uint32 m_Kills = 0;
             ObjectGuid iroGuid;

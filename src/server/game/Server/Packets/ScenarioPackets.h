@@ -92,7 +92,7 @@ namespace WorldPackets
 
             int32 ScenarioID = 0;
             int32 Unk1 = 0;
-            uint8 Unk2 = 0;
+            uint8 Unk2 = 1;
         };
 
         class QueryScenarioPOI final : public ClientPacket

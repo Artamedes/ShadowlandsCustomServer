@@ -663,26 +663,26 @@ bool ChallengeModeMgr::GetChallengeDoorOrChestPosition(uint32 mapID, float& x, f
 }
 
 uint32 ChallengeModeMgr::GetDoorOrChestByMap(uint32 mapID, bool door, bool horde)
-{    
+{
     switch (mapID)
     {
         case CHALLENGE_MAP_ID_WAYCREST_MANOR:
             return door ? MYTHIC_DOOR_2 : MYTHIC_CHEST_WAYCREST_MANOR;
-        case CHALLENGE_MAP_ID_SIEGE_OF_BORALUS: 
+        case CHALLENGE_MAP_ID_SIEGE_OF_BORALUS:
             return door ? (horde ? MYTHIC_DOOR_3 : MYTHIC_DOOR_4) : MYTHIC_CHEST_SIEGE_OF_BORALUS;
-        case CHALLENGE_MAP_ID_TOL_DAGOR: 
+        case CHALLENGE_MAP_ID_TOL_DAGOR:
             return door ? MYTHIC_DOOR_4 : MYTHIC_CHEST_TOL_DAGOR;
-        case CHALLENGE_MAP_ID_FREE_HOLD: 
+        case CHALLENGE_MAP_ID_FREE_HOLD:
             return door ? MYTHIC_DOOR_4 : MYTHIC_CHEST_FREE_HOLD;
-        case CHALLENGE_MAP_ID_THE_UNDERROT: 
+        case CHALLENGE_MAP_ID_THE_UNDERROT:
             return door ? MYTHIC_DOOR_4 : MYTHIC_CHEST_UNDERROT;
-        case CHALLENGE_MAP_ID_THE_MOTHERLODE: 
+        case CHALLENGE_MAP_ID_THE_MOTHERLODE:
             return door ? MYTHIC_DOOR_5 : MYTHIC_CHEST_MOTHERLODE;
-        case CHALLENGE_MAP_ID_SETHRALIS: 
+        case CHALLENGE_MAP_ID_SETHRALIS:
             return door ? MYTHIC_DOOR_1 : MYTHIC_CHEST_SETHRALISS;
-        case CHALLENGE_MAP_ID_ATALDAZAR: 
+        case CHALLENGE_MAP_ID_ATALDAZAR:
             return door ? MYTHIC_DOOR_7 : MYTHIC_CHEST_ATALDAZAR;
-        case CHALLENGE_MAP_ID_KING_REST: 
+        case CHALLENGE_MAP_ID_KING_REST:
             return door ? MYTHIC_DOOR_6 : MYTHIC_CHEST_KING_REST;
         case CHALLENGE_MAP_ID_SHRINE_OF_THE_STORM:
             return door ? MYTHIC_DOOR_3 : MYTHIC_CHEST_SHRINE_OF_THE_STORM;
@@ -694,31 +694,31 @@ uint32 ChallengeModeMgr::GetDoorOrChestByMap(uint32 mapID, bool door, bool horde
 }
 
 uint32 ChallengeModeMgr::GetChallengeChestByBonusLootID(uint32 bonusLootID)
-{ 
+{
     switch (bonusLootID)
     {
-    case CHALLENGE_BONUS_ID_WAYCREST_MANOR:
-        return MYTHIC_CHEST_WAYCREST_MANOR;
-    case CHALLENGE_BONUS_ID_SIEGE_OF_BORALUS:
-        return MYTHIC_CHEST_SIEGE_OF_BORALUS;
-    case CHALLENGE_BONUS_ID_TOL_DAGOR:
-        return MYTHIC_CHEST_TOL_DAGOR;
-    case CHALLENGE_BONUS_ID_FREE_HOLD:
-        return MYTHIC_CHEST_FREE_HOLD;
-    case CHALLENGE_BONUS_ID_THE_UNDERROT:
-        return MYTHIC_CHEST_UNDERROT;
-    case CHALLENGE_BONUS_ID_THE_MOTHERLODE:
-        return MYTHIC_CHEST_MOTHERLODE;
-    case CHALLENGE_BONUS_ID_SETHRALIS:
-        return MYTHIC_CHEST_SETHRALISS;
-    case CHALLENGE_BONUS_ID_ATALDAZAR:
-        return MYTHIC_CHEST_ATALDAZAR;
-    case CHALLENGE_BONUS_ID_KING_REST:
-        return MYTHIC_CHEST_KING_REST;
-    case CHALLENGE_BONUS_ID_SHRINE_OF_THE_STORM:
-        return MYTHIC_CHEST_SHRINE_OF_THE_STORM;
-    default:
-        break;
+        case CHALLENGE_BONUS_ID_WAYCREST_MANOR:
+            return MYTHIC_CHEST_WAYCREST_MANOR;
+        case CHALLENGE_BONUS_ID_SIEGE_OF_BORALUS:
+            return MYTHIC_CHEST_SIEGE_OF_BORALUS;
+        case CHALLENGE_BONUS_ID_TOL_DAGOR:
+            return MYTHIC_CHEST_TOL_DAGOR;
+        case CHALLENGE_BONUS_ID_FREE_HOLD:
+            return MYTHIC_CHEST_FREE_HOLD;
+        case CHALLENGE_BONUS_ID_THE_UNDERROT:
+            return MYTHIC_CHEST_UNDERROT;
+        case CHALLENGE_BONUS_ID_THE_MOTHERLODE:
+            return MYTHIC_CHEST_MOTHERLODE;
+        case CHALLENGE_BONUS_ID_SETHRALIS:
+            return MYTHIC_CHEST_SETHRALISS;
+        case CHALLENGE_BONUS_ID_ATALDAZAR:
+            return MYTHIC_CHEST_ATALDAZAR;
+        case CHALLENGE_BONUS_ID_KING_REST:
+            return MYTHIC_CHEST_KING_REST;
+        case CHALLENGE_BONUS_ID_SHRINE_OF_THE_STORM:
+            return MYTHIC_CHEST_SHRINE_OF_THE_STORM;
+        default:
+            break;
     }
 
     return 0;
@@ -750,16 +750,16 @@ float ChallengeModeMgr::GetChanceItem(uint8 mode, uint32 challengeLevel)
 
     switch (mode)
     {
-    case CHALLENGE_TIMER_LEVEL_3: // 3 chests + 3 levels
-    case CHALLENGE_TIMER_LEVEL_2: // 2 chests + 2 levels
-    case CHALLENGE_TIMER_LEVEL_1: // 1 chest + 1 level
-        base_chance += 100.0f; // 300% is 3 items
-        break;
-    case CHALLENGE_NOT_IN_TIMER:  // 0 chest
-        base_chance += 0.0f; // 200% is 2 items
-        break;
-    default:
-        break;
+        case CHALLENGE_TIMER_LEVEL_3: // 3 chests + 3 levels
+        case CHALLENGE_TIMER_LEVEL_2: // 2 chests + 2 levels
+        case CHALLENGE_TIMER_LEVEL_1: // 1 chest + 1 level
+            base_chance += 100.0f; // 300% is 3 items
+            break;
+        case CHALLENGE_NOT_IN_TIMER:  // 0 chest
+            base_chance += 0.0f; // 200% is 2 items
+            break;
+        default:
+            break;
     }
 
     base_chance += add_chance;
@@ -877,19 +877,20 @@ bool ChallengeModeMgr::IsChest(uint32 goEntry)
 {
     switch (goEntry)
     {        
-    case MYTHIC_CHEST_ATALDAZAR:
-    case MYTHIC_CHEST_FREE_HOLD:
-    case MYTHIC_CHEST_SIEGE_OF_BORALUS: 
-    case MYTHIC_CHEST_TOL_DAGOR: 
-    case MYTHIC_CHEST_MOTHERLODE: 
-    case MYTHIC_CHEST_WAYCREST_MANOR: 
-    case MYTHIC_CHEST_UNDERROT: 
-    case MYTHIC_CHEST_SETHRALISS: 
-    case MYTHIC_CHEST_SHRINE_OF_THE_STORM: 
-    case MYTHIC_CHEST_KING_REST: 
-        return true;
-    default:
-        break;
+        case MYTHIC_CHEST_ATALDAZAR:
+        case MYTHIC_CHEST_FREE_HOLD:
+        case MYTHIC_CHEST_SIEGE_OF_BORALUS: 
+        case MYTHIC_CHEST_TOL_DAGOR: 
+        case MYTHIC_CHEST_MOTHERLODE: 
+        case MYTHIC_CHEST_WAYCREST_MANOR: 
+        case MYTHIC_CHEST_UNDERROT: 
+        case MYTHIC_CHEST_SETHRALISS: 
+        case MYTHIC_CHEST_SHRINE_OF_THE_STORM: 
+        case MYTHIC_CHEST_KING_REST:
+        case MYTHIC_CHEST_CUSTOM:
+            return true;
+        default:
+            break;
     }
 
     return false;
@@ -899,18 +900,19 @@ bool ChallengeModeMgr::IsDoor(uint32 goEntry)
 {
     switch (goEntry)
     {          
-    case MYTHIC_DOOR_0:    
-    case MYTHIC_DOOR_1:  
-    case MYTHIC_DOOR_2:  
-    case MYTHIC_DOOR_3:  
-    case MYTHIC_DOOR_4:  
-    case MYTHIC_DOOR_5:  
-    case MYTHIC_DOOR_6:  
-    case MYTHIC_DOOR_7:  
-    case MYTHIC_DOOR_8:  
-        return true;
-    default:
-        break;
+        case MYTHIC_DOOR_0:    
+        case MYTHIC_DOOR_1:  
+        case MYTHIC_DOOR_2:  
+        case MYTHIC_DOOR_3:  
+        case MYTHIC_DOOR_4:  
+        case MYTHIC_DOOR_5:  
+        case MYTHIC_DOOR_6:  
+        case MYTHIC_DOOR_7:  
+        case MYTHIC_DOOR_8:
+        case MYTHIC_DOOR_9:
+            return true;
+        default:
+            break;
     }
 
     return false;
@@ -920,11 +922,11 @@ bool ChallengeModeMgr::IsAuraAffix(uint32 auraId)
 {
     switch (auraId)
     {
-    case SPELL_CHALLENGER_SIMBIOTE_OF_GHUUN:
-    case SPELL_CHALLENGER_REGENERATIVE_BLOOD_AURA:
-        return true;
-    default:
-        break;
+        case SPELL_CHALLENGER_SIMBIOTE_OF_GHUUN:
+        case SPELL_CHALLENGER_REGENERATIVE_BLOOD_AURA:
+            return true;
+        default:
+            break;
     }
 
     return false;

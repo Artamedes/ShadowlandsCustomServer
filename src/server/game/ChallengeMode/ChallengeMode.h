@@ -145,7 +145,8 @@ enum MythicDoor : uint32
     MYTHIC_DOOR_5 = 212972,  //Challenge Mode - Start Door(Line 3.5)
     MYTHIC_DOOR_6 = 239408,  //Challenge Mode - Start Door(Line 2.5)
     MYTHIC_DOOR_7 = 282393,  //Challenge Mode - Start Door(Line 4.5)
-    MYTHIC_DOOR_8 = 239323   //Challenge Mode - Start Door(Line 2.35)
+    MYTHIC_DOOR_8 = 239323,   //Challenge Mode - Start Door(Line 2.35)
+    MYTHIC_DOOR_9 = 1200006   //Challenge Mode - Start Door (Dome 1.8)
 };
 
 enum MythicChest : uint32
@@ -159,7 +160,8 @@ enum MythicChest : uint32
     MYTHIC_CHEST_UNDERROT            = 290759, 
     MYTHIC_CHEST_SETHRALISS          = 290758, 
     MYTHIC_CHEST_SHRINE_OF_THE_STORM = 290761, 
-    MYTHIC_CHEST_KING_REST           = 288642 
+    MYTHIC_CHEST_KING_REST           = 288642,
+    MYTHIC_CHEST_CUSTOM              = 1200005,
 };
 
 enum ChallengeMapID : uint32
