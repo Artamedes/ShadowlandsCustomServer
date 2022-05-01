@@ -8,7 +8,7 @@
 #include "World.h"
 
 // TODO: move to db
-constexpr uint32 CustomMiniDungeonsForChallenge[] = { 30002, };
+constexpr uint32 CustomMiniDungeonsForChallenge[] = { 30002, 30003, 30004, 30005, 30006, 30007, 30008, 30009, 30010, 30011 };
 constexpr uint32 CustomDungeonsForChallenge[] = { 251, 245, 169 };
 
 void MythicKeystoneInfo::GenerateNewDungeon()
@@ -21,7 +21,6 @@ void MythicKeystoneInfo::GenerateNewDungeon()
         else if (Type == KeystoneType::Mini)
         {
             ID = Trinity::Containers::SelectRandomContainerElement(CustomMiniDungeonsForChallenge);
-            break; // remove this break when more dungs are added.
         }
         else
             break;
