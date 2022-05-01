@@ -408,7 +408,8 @@ struct npc_mall_weapongiver : public ScriptedAI
 
         void InitializeAI() override
         {
-            DoCastSelf(356889);
+            DoCastSelf(137321);
+            events.ScheduleEvent(1, 5s);
             switch (me->GetEntry())
             {
                 case 800027: // Julius (Shield)
@@ -545,13 +546,12 @@ struct npc_mall_weapongiver : public ScriptedAI
 
         void EnterEvadeMode(EvadeReason) override
         {
-            DoCastSelf(356889);
+            DoCastSelf(137321);
         }
 
         void Reset() override
         {
-            DoCastSelf(356889);
-            events.ScheduleEvent(1, 30s);
+            DoCastSelf(137321);
         }
 
         bool OnGossipHello(Player* player) override
@@ -646,7 +646,7 @@ struct npc_mall_weapongiver : public ScriptedAI
 
             if (events.ExecuteEvent() == 1)
             {
-                DoCastSelf(356889);
+                DoCastSelf(137321);
                 events.Repeat(30s);
             }
         }
@@ -740,7 +740,8 @@ struct npc_morpher_admin : public ScriptedAI
                     int x = 0;
                     for (uint32 i = 0; i < max; i ++)
                     {
-                        if (auto dispInfo = sCreatureDisplayInfoStore.LookupEntry(i))
+                        auto displayId = startEntryId + i;
+                        if (auto dispInfo = sCreatureDisplayInfoStore.LookupEntry(displayId))
                         {
                             if (auto model = sCreatureModelDataStore.LookupEntry(dispInfo->ModelID))
                             {
