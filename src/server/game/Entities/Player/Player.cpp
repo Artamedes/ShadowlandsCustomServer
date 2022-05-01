@@ -29489,10 +29489,17 @@ void Player::SendSupercededSpell(uint32 oldSpell, uint32 newSpell) const
 
 Difficulty Player::GetDifficultyID(MapEntry const* mapEntry) const
 {
+    MapDifficultyEntry const* defaultDifficulty = sDB2Manager.GetDefaultMapDifficulty(mapEntry->ID);
+
+    if (!mapEntry->IsRaid())
+    {
+        if (!static_cast<Difficulty>(defaultDifficulty->DifficultyID) != m_dungeonDifficulty)
+            return static_cast<Difficulty>(defaultDifficulty->DifficultyID);
+    }
+
     if (!mapEntry->IsRaid())
         return m_dungeonDifficulty;
 
-    MapDifficultyEntry const* defaultDifficulty = sDB2Manager.GetDefaultMapDifficulty(mapEntry->ID);
     if (!defaultDifficulty)
         return m_legacyRaidDifficulty;
 
