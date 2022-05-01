@@ -572,7 +572,7 @@ void SpellHistory::StartCooldownROG(SpellInfo const* spellInfo, uint32 itemId, S
     Clock::time_point recTime;
     bool needsCooldownPacket = false;
 
-    if (!spellInfo->IsChanneled() && (spellInfo->HasAttribute(SPELL_ATTR8_HASTE_AFFECT_DURATION_RECOVERY)))
+    if (!spellInfo->IsChanneled() && (spellInfo->HasAttribute(SPELL_ATTR8_HASTE_AFFECTS_DURATION)))
         cooldown = Duration((int64(cooldown.count() * _owner->m_unitData->ModSpellHaste)));
 
     cooldown = Duration((int64(cooldown.count() * _owner->m_unitData->ModTimeRate)));
