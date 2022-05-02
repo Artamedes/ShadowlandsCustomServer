@@ -1117,7 +1117,7 @@ bool Aura::ModStackAmount(int32 num, AuraRemoveMode removeMode /*= AURA_REMOVE_B
         return true;
     }
 
-    refresh = refresh && stackAmount >= GetStackAmount() && (m_spellInfo->StackAmount || !m_spellInfo->HasAttribute(SPELL_ATTR1_AURA_UNIQUE));
+    refresh = stackAmount >= GetStackAmount() && (m_spellInfo->StackAmount || (!m_spellInfo->HasAttribute(SPELL_ATTR1_AURA_UNIQUE) && !m_spellInfo->HasAttribute(SPELL_ATTR5_AURA_UNIQUE_PER_CASTER)));
 
     // Update stack amount
     SetStackAmount(stackAmount);
