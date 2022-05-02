@@ -10,6 +10,20 @@ struct instance_dreadscarrift : public CustomInstanceScript
 public:
     instance_dreadscarrift(InstanceMap* map) : CustomInstanceScript(map)
     {
+        ChestSpawn = { 3424.07f, 1515.78f, 436.92f, 1.12574f };
+        Quad = { -0.0f, -0.0f, -0.533614f, -0.845728f };
+    }
+
+    void SummonChallengeGameObject(bool door) override
+    {
+        if (door)
+        {
+            if (auto go = instance->SummonGameObject(MYTHIC_DOOR_5, { 3085.94f, 822.591f, 243.666f, 1.38753f }, { -0.0f, -0.0f, -0.639438f, -0.768843f }, 0))
+            {
+                go->SetGoState(GOState::GO_STATE_READY);
+                go->SetFlag(GameObjectFlags::GO_FLAG_NOT_SELECTABLE);
+            }
+        }
     }
 };
 // 703000 - npc_adageor_703000

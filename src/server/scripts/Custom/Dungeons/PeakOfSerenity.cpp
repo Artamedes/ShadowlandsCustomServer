@@ -10,6 +10,20 @@ struct instance_lightdng1 : public CustomInstanceScript
 public:
     instance_lightdng1(InstanceMap* map) : CustomInstanceScript(map)
     {
+        ChestSpawn = { 4031.4f, 1708.34f, 925.276f, 4.77003f };
+        Quad = { -0.0f, -0.0f, -0.686438f, 0.727188f };
+    }
+
+    void SummonChallengeGameObject(bool door) override
+    {
+        if (door)
+        {
+            if (auto go = instance->SummonGameObject(MYTHIC_DOOR_0, { 3831.19f, 1992.08f, 934.687f, 5.26089f }, { -0.0f, -0.0f, -0.48918f, 0.872183f }, 0))
+            {
+                go->SetGoState(GOState::GO_STATE_READY);
+                go->SetFlag(GameObjectFlags::GO_FLAG_NOT_SELECTABLE);
+            }
+        }
     }
 };
 

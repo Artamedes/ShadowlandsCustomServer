@@ -644,7 +644,7 @@ public:
     bool didIntro = false;
     void OnUnitRelocation(Unit* unit) override
     {
-        if (!didIntro && unit->GetDistance2d(me) <= 167.0f)
+        if (!didIntro && unit->GetDistance2d(me) <= 167.0f && unit->IsPlayer() && !unit->ToPlayer()->IsGameMaster())
         {
             didIntro = true;
             Talk(0);
@@ -1933,6 +1933,20 @@ struct instance_torghast : public CustomInstanceScript
 public:
     instance_torghast(InstanceMap* map) : CustomInstanceScript(map)
     {
+        ChestSpawn = { 10677.3f, -4763.18f, -0.00701382f, 2.24102f };
+        Quad = { -0.0f, -0.0f, -0.900322f, -0.435225f };
+    }
+
+    void SummonChallengeGameObject(bool door) override
+    {
+        if (door)
+        {
+            if (auto go = instance->SummonGameObject(MYTHIC_DOOR_0, { 8735.17, -1353.49, 11.5555, 4.69667 }, { -0.0f, -0.0f, -0.712643f, 0.701527f}, 0))
+            {
+                go->SetGoState(GOState::GO_STATE_READY);
+                go->SetFlag(GameObjectFlags::GO_FLAG_NOT_SELECTABLE);
+            }
+        }
     }
 };
 

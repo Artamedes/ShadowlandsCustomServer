@@ -13,6 +13,20 @@ struct instance_niskara : public CustomInstanceScript
     public:
         instance_niskara(InstanceMap* map) : CustomInstanceScript(map)
         {
+            ChestSpawn = { 0.437609f, 1210.97f, -45.9785f, 5.16073f };
+            Quad = { -0.0f, -0.0f, -0.532226f, 0.846603f };
+        }
+
+        void SummonChallengeGameObject(bool door) override
+        {
+            if (door)
+            {
+                if (auto go = instance->SummonGameObject(MYTHIC_DOOR_4, { 230.551f, 1949.22f, -55.9595f, 0.448333f }, { -0.0f, -0.0f, -0.712643f, 0.701527f }, 0))
+                {
+                    go->SetGoState(GOState::GO_STATE_READY);
+                    go->SetFlag(GameObjectFlags::GO_FLAG_NOT_SELECTABLE);
+                }
+            }
         }
 
         void OnPlayerEnter(Player* player) override

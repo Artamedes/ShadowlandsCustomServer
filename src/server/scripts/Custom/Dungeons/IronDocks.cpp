@@ -1621,6 +1621,30 @@ class spell_t_rex_explode_259463 : public SpellScript
     }
 };
 
+
+
+struct instance_irondocks : public CustomInstanceScript
+{
+public:
+    instance_irondocks(InstanceMap* map) : CustomInstanceScript(map)
+    {
+        ChestSpawn = { 6728.14f, -977.656f, 23.0463f, 6.16439f };
+        Quad = { -0.0f, -0.0f, -0.0593638f, 0.998236f };
+    }
+
+    void SummonChallengeGameObject(bool door) override
+    {
+        if (door)
+        {
+            if (auto go = instance->SummonGameObject(MYTHIC_DOOR_4, { 6746.76f, -546.786f, 4.92545f, 5.52298f }, { -0.0f, -0.0f, -0.712643f, 0.701527f }, 0))
+            {
+                go->SetGoState(GOState::GO_STATE_READY);
+                go->SetFlag(GameObjectFlags::GO_FLAG_NOT_SELECTABLE);
+            }
+        }
+    }
+};
+
 void AddSC_IronDocks()
 {
     RegisterCreatureAI(npc_beastmaster_730609);
@@ -1650,6 +1674,8 @@ void AddSC_IronDocks()
 
     RegisterSpellScript(spell_activate_363754);
     RegisterSpellScript(spell_t_rex_explode_259463);
+
+    RegisterInstanceScript(instance_irondocks, 1195);
 }
 // UPDATE creature_template set ScriptName = 'npc_beastmaster_730609' WHERE entry = 730609;
 // UPDATE creature_template set ScriptName = 'npc_flesh_eater_730610' WHERE entry = 730610;

@@ -589,7 +589,23 @@ public:
 struct instance_lost_glacier : public CustomInstanceScript
 {
     public:
-        instance_lost_glacier(InstanceMap* map) : CustomInstanceScript(map) { }
+        instance_lost_glacier(InstanceMap* map) : CustomInstanceScript(map)
+        {
+            ChestSpawn = { 3084.71f, -217.456f, -31.9818f, 5.00364f };
+            Quad = { -0.0f, -0.0f, -0.0593638f, 0.998236f };
+        }
+
+        void SummonChallengeGameObject(bool door) override
+        {
+            if (door)
+            {
+                if (auto go = instance->SummonGameObject(MYTHIC_DOOR_4, { 2177.58f, 192.1f, 20.4789f, 5.50106f }, { -0.0f, -0.0f, -0.712643f, 0.701527f }, 0))
+                {
+                    go->SetGoState(GOState::GO_STATE_READY);
+                    go->SetFlag(GameObjectFlags::GO_FLAG_NOT_SELECTABLE);
+                }
+            }
+        }
 
         enum eLostGlacier
         {

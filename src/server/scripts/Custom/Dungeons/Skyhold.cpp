@@ -16,6 +16,20 @@ class instance_skyhold : public InstanceMapScript
             public:
                 instance_skyhold_InstanceMapScript(InstanceMap* map) : CustomInstanceScript(map)
                 {
+                    ChestSpawn = { 817.872f, 7216.77f, 6.4894f, 1.54134f };
+                    Quad = { -0.0f, -0.0f, -0.696618f, -0.717442f };
+                }
+
+                void SummonChallengeGameObject(bool door) override
+                {
+                    if (door)
+                    {
+                        if (auto go = instance->SummonGameObject(MYTHIC_DOOR_4, { 1028.66f, 7225.09f, -2.456146f, 3.13832f }, { -0.0f, -0.0f, -0.712643f, 0.701527f }, 0))
+                        {
+                            go->SetGoState(GOState::GO_STATE_READY);
+                            go->SetFlag(GameObjectFlags::GO_FLAG_NOT_SELECTABLE);
+                        }
+                    }
                 }
         };
 

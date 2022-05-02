@@ -13,6 +13,20 @@ struct instance_telegrusrift : public CustomInstanceScript
 public:
     instance_telegrusrift(InstanceMap* map) : CustomInstanceScript(map)
     {
+        ChestSpawn = { 1344.94f, 2836.89f, 63.25f, 0.985017f };
+        Quad = { -0.0f, -0.0f, -0.472838f, -0.88115f };
+    }
+
+    void SummonChallengeGameObject(bool door) override
+    {
+        if (door)
+        {
+            if (auto go = instance->SummonGameObject(MYTHIC_DOOR_4, { 2174.02f, 3324.02f, 54.4243f, 3.39685f }, { -0.0f, -0.0f, -0.712643f, 0.701527f }, 0))
+            {
+                go->SetGoState(GOState::GO_STATE_READY);
+                go->SetFlag(GameObjectFlags::GO_FLAG_NOT_SELECTABLE);
+            }
+        }
     }
 };
 

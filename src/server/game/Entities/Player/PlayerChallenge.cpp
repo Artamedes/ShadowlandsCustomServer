@@ -302,7 +302,16 @@ uint32 PlayerChallenge::GetKeystoneEntryFromMap(InstanceMap* map) const
     // TODO: Convert to DB
     switch (map->GetId())
     {
-        case 1469:
+        case 1469: // Maelstrom
+        case 2263: // Crapopolis
+        case 2472: // Skyhold
+        case 1512: // Netherlight Temple
+        case 1604: // Niskara
+        case 1622: // Telegrus Rift
+        case 1610: // Peak of sereniy
+        case 959: // Shado pan monastary
+        case 1712: // Elarian Sanctruary
+        case 2162: // Torghast
             return MiniMythicKeystone;
     }
 

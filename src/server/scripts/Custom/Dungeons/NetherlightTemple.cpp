@@ -534,6 +534,20 @@ class instance_netherlight_temple : public InstanceMapScript
             public:
                 instance_netherlight_temple_InstanceMapScript(InstanceMap* map) : CustomInstanceScript(map)
                 {
+                    ChestSpawn = { 1394.21f, 1325.69f, 176.738f, 2.15069f };
+                    Quad = { -0.0f, -0.0f, -0.879753f, -0.475431f };
+                }
+
+                void SummonChallengeGameObject(bool door) override
+                {
+                    if (door)
+                    {
+                        if (auto go = instance->SummonGameObject(MYTHIC_DOOR_4, { 1234.53f, 1344.22f, 185.082f, 6.2773f }, { -0.0f, -0.0f, -0.712643f, 0.701527f }, 0))
+                        {
+                            go->SetGoState(GOState::GO_STATE_READY);
+                            go->SetFlag(GameObjectFlags::GO_FLAG_NOT_SELECTABLE);
+                        }
+                    }
                 }
 
                 void OnCreatureCreate(Creature* creature) override

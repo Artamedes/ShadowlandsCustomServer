@@ -3,6 +3,8 @@
 #include "Creature.h"
 #include "ScriptedCreature.h"
 #include "../CustomInstanceScript.h"
+#include "InstanceScenario.h"
+#include "Scenario.h"
 
 // 700703 - npc_angelic_warrior_700703
 struct npc_angelic_warrior_700703 : public ScriptedAI
@@ -615,6 +617,12 @@ public:
                 me->SetUnitFlag(UnitFlags::UNIT_FLAG_NON_ATTACKABLE);
                 if (auto player = attacker->ToPlayer())
                     player->KilledMonsterCredit(700715, me->GetGUID());
+
+                if (auto instanceMap = me->GetMap()->ToInstanceMap())
+                {
+                    if (auto scenario = instanceMap->GetInstanceScenario())
+                        scenario->UpdateCriteria(CriteriaType::DefeatDungeonEncounter, 700715);
+                }
             }
         }
     }
@@ -898,6 +906,20 @@ struct instance_lightdng2 : public CustomInstanceScript
 public:
     instance_lightdng2(InstanceMap* map) : CustomInstanceScript(map)
     {
+        ChestSpawn = { 3853.49f, 2586.39f, 754.541f, 1.25613f };
+        Quad = { -0.0f, -0.0f, -0.587579f, -0.809167f };
+    }
+
+    void SummonChallengeGameObject(bool door) override
+    {
+        if (door)
+        {
+            if (auto go = instance->SummonGameObject(MYTHIC_DOOR_0, { 3682.15f, 2628.64f, 771.248f, 0.460913f }, { -0.0f, -0.0f, -0.228422f, -0.973562f }, 0))
+            {
+                go->SetGoState(GOState::GO_STATE_READY);
+                go->SetFlag(GameObjectFlags::GO_FLAG_NOT_SELECTABLE);
+            }
+        }
     }
 };
 

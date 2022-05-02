@@ -358,6 +358,20 @@ public:
             {
                 // SetHeaders(DataHeader);
                 // SetBossNumber(EncounterCount);
+                ChestSpawn = { 1022.71f, -3545.8f, 11.9448f, 3.42957f };
+                Quad = { -0.0f, -0.0f, -0.989652f, 0.143491f };
+            }
+
+            void SummonChallengeGameObject(bool door) override
+            {
+                if (door)
+                {
+                    if (auto go = instance->SummonGameObject(MYTHIC_DOOR_4, { 632.721f, -3640.98f, 1.597f, 6.03447f }, { -0.0f, -0.0f, -0.48918f, 0.872183f }, 0))
+                    {
+                        go->SetGoState(GOState::GO_STATE_READY);
+                        go->SetFlag(GameObjectFlags::GO_FLAG_NOT_SELECTABLE);
+                    }
+                }
             }
 
          //   void OnCreatureCreate(Creature* p_Creature) override
