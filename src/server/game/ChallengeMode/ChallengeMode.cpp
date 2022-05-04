@@ -408,9 +408,9 @@ void Challenge::Update(uint32 diff)
             keyOwner->ChallengeKeyCharded(_item, _challengeLevel);
         else
         {
-            if (keyOwner = ObjectAccessor::FindPlayer(m_ownerGuid))
+            if (keyOwner == ObjectAccessor::FindPlayer(m_ownerGuid))
             {
-                if (_item = keyOwner->GetItemByGuid(m_itemGuid))
+                if (_item == keyOwner->GetItemByGuid(m_itemGuid))
                     keyOwner->ChallengeKeyCharded(_item, _challengeLevel);
                 else
                     CharacterDatabase.PQuery("UPDATE challenge_key SET KeyIsCharded = 0, InstanceID = 0 WHERE guid = %u", m_ownerGuid.GetCounter());
@@ -577,9 +577,9 @@ void Challenge::Complete()
     }
     else
     {
-        if (keyOwner = ObjectAccessor::FindPlayer(m_ownerGuid))
+        if (keyOwner == ObjectAccessor::FindPlayer(m_ownerGuid))
         {
-            if (_item = keyOwner->GetItemByGuid(m_itemGuid))
+            if (_item == keyOwner->GetItemByGuid(m_itemGuid))
                 keyOwner->ChallengeKeyCharded(_item, _challengeLevel);
             else
                 CharacterDatabase.PQuery("UPDATE challenge_key SET KeyIsCharded = 0, InstanceID = 0 WHERE guid = %u", m_ownerGuid.GetCounter());

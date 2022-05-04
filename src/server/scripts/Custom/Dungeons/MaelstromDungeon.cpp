@@ -4,7 +4,7 @@
 #include "AchievementMgr.h"
 #include "ScenarioMgr.h"
 #include "InstanceScenario.h"
-#include "../CustomInstanceScript.h";
+#include "../CustomInstanceScript.h"
 
 enum MaelstromInvasion
 {
@@ -194,7 +194,7 @@ struct npc_sir_duke_iro_700112 : public BossAI
         {
             if (action == 1)
             {
-                doneIntro == true;
+                doneIntro = true;
                 me->RemoveAurasDueToSpell(159965);
                 me->RemoveAurasDueToSpell(345192);
                 me->RemoveUnitFlag(UnitFlags::UNIT_FLAG_NON_ATTACKABLE);

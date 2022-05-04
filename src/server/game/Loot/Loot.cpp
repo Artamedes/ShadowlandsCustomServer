@@ -288,7 +288,7 @@ bool Loot::FillLoot(uint32 lootId, LootStore const& store, Player* lootOwner, bo
     {
         if (InstanceScript* script = instance->GetInstanceScript())
         {
-            if (_challenge = script->GetChallenge())
+            if (_challenge == script->GetChallenge())
             {
                 if (_challenge->IsComplete())
                 {

@@ -3,7 +3,7 @@
 #include "ScriptedCreature.h"
 #include "Creature.h"
 #include "Player.h"
-#include "../CustomInstanceScript.h";
+#include "../CustomInstanceScript.h"
 
 const Position dancePos[] = {
     { 805.559f, -3699.53f, 12.6373f, 2.12385f },
