@@ -5084,6 +5084,59 @@ class aura_entropic_embrace : public AuraScript
     }
 };
 
+/// ID - 192225 Coin of Many Faces
+class spell_gen_coin_of_many_faces : public AuraScript
+{
+    PrepareAuraScript(spell_gen_coin_of_many_faces);
+
+    void HandleApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+    {
+        if (Unit* caster = GetCaster())
+        {
+            caster->RestoreDisplayId();
+            GarrFollowerEntry const* entry = nullptr;
+            while (entry == nullptr)
+            {
+                auto rand = urand(0, sGarrFollowerStore.GetNumRows());
+                entry = sGarrFollowerStore.LookupEntry(rand);
+                if (entry && entry->CovenantID == 0 && (entry->AllianceCreatureID > 0 || entry->HordeCreatureID > 0))
+                {
+                    uint32 creatureID = entry->AllianceCreatureID;
+                    if (!creatureID)
+                        creatureID = entry->HordeCreatureID;
+                    else if (entry->HordeCreatureID > 0)
+                        creatureID = RAND(entry->AllianceCreatureID, entry->HordeCreatureID);
+
+                    auto creatureTemplate = sObjectMgr->GetCreatureTemplate(creatureID);
+                    if (creatureTemplate)
+                    {
+                        if (auto model = creatureTemplate->GetFirstValidModel())
+                        {
+                            caster->SetDisplayId(model->CreatureDisplayID);
+                        }
+                    }
+                }
+                else
+                    entry = nullptr;
+            }
+        }
+    }
+
+    void HandleRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+    {
+        if (Unit* caster = GetCaster())
+        {
+            caster->RestoreDisplayId();
+        }
+    }
+
+    void Register() override
+    {
+        AfterEffectApply += AuraEffectApplyFn(spell_gen_coin_of_many_faces::HandleApply, EFFECT_0, SPELL_AURA_TRANSFORM, AURA_EFFECT_HANDLE_REAL);
+        AfterEffectRemove += AuraEffectRemoveFn(spell_gen_coin_of_many_faces::HandleRemove, EFFECT_0, SPELL_AURA_TRANSFORM, AURA_EFFECT_HANDLE_REAL);
+    }
+};
+
 void AddSC_generic_spell_scripts()
 {
     RegisterSpellScript(spell_gen_absorb0_hitlimit1);
@@ -5241,4 +5294,5 @@ void AddSC_generic_spell_scripts()
     RegisterSpellScript(spell_deposit_anima);
     RegisterSpellScript(spell_emergency_failsafe);
     RegisterSpellScript(aura_entropic_embrace);
+    RegisterSpellScript(spell_gen_coin_of_many_faces);
 }
