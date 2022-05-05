@@ -321,8 +321,8 @@ std::vector<uint8> RealmList::GetRealmList(uint32 build, std::string const& subR
                 continue;
 
             uint32 flag = realm.second.Flags;
-            if (realm.second.Build != build)
-                flag |= REALM_FLAG_VERSION_MISMATCH;
+            //if (realm.second.Build != build)
+            //    flag |= REALM_FLAG_VERSION_MISMATCH;
 
             JSON::RealmList::RealmState* state = realmList.add_updates();
             state->mutable_update()->set_wowrealmaddress(realm.second.Id.GetAddress());
@@ -376,7 +376,7 @@ uint32 RealmList::JoinRealm(uint32 realmAddress, uint32 build, boost::asio::ip::
     std::shared_lock<std::shared_mutex> lock(_realmsMutex);
     if (Realm const* realm = GetRealm(Battlenet::RealmHandle(realmAddress)))
     {
-        if (realm->Flags & REALM_FLAG_OFFLINE || realm->Build != build)
+        if (realm->Flags & REALM_FLAG_OFFLINE)
             return ERROR_USER_SERVER_NOT_PERMITTED_ON_REALM;
 
         JSON::RealmList::RealmListServerIPAddresses serverAddresses;
