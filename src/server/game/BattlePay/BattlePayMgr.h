@@ -16,7 +16,7 @@ namespace WorldPackets
 
 class WorldSession;
 
-class BattlePayMgr
+class TC_GAME_API BattlePayMgr
 {
     public:
         static BattlePayMgr* instance()
@@ -26,10 +26,9 @@ class BattlePayMgr
         }
 
         void LoadFromDB();
-
         void SendProductListResponseToSession(WorldSession* session);
 
-private:
+    private:
         std::vector<WorldPackets::BattlePay::ProductStruct> ProductStructs;
         std::vector<WorldPackets::BattlePay::Product> Products;
         std::vector<WorldPackets::BattlePay::ShopGroup> Groups;

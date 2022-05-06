@@ -50,6 +50,7 @@ EndScriptData */
 #include "SupportMgr.h"
 #include "WaypointManager.h"
 #include "World.h"
+#include "BattlePayMgr.h"
 #include "CustomObjectMgr.h"
 
 #if TRINITY_COMPILER == TRINITY_COMPILER_GNU
@@ -171,13 +172,29 @@ public:
             { "vehicle_template_accessory",    rbac::RBAC_PERM_COMMAND_RELOAD_VEHICLE_TEMPLATE_ACCESSORY,       true,  &HandleReloadVehicleTemplateAccessoryCommand,   "" },
             { "broadcast_text",                rbac::RBAC_PERM_COMMAND_RELOAD_VEHICLE_TEMPLATE_ACCESSORY,       true,  &HandleReloadBroadcastText,   "" },
             { "instance_template",             rbac::RBAC_PERM_COMMAND_RELOAD_VEHICLE_TEMPLATE_ACCESSORY,       true,  &HandleReloadCreatureTemplateMovement,   "" },
-            { "custom_spell_dmg",             rbac::RBAC_PERM_COMMAND_RELOAD_VEHICLE_TEMPLATE_ACCESSORY,       true,  &HandleReloadCustomSpellDmg,   "" },
+            { "custom_spell_dmg",              rbac::RBAC_PERM_COMMAND_RELOAD_VEHICLE_TEMPLATE_ACCESSORY,       true,  &HandleReloadCustomSpellDmg,   "" },
+            { "battlepay",                     rbac::RBAC_PERM_COMMAND_RELOAD_VEHICLE_TEMPLATE_ACCESSORY,       true,  &HandleReloadBattlepay,   "" },
+            { "z_coin_models",                 rbac::RBAC_PERM_COMMAND_RELOAD_VEHICLE_TEMPLATE_ACCESSORY,       true,  &HandleReloadCoinModels,   "" },
         };
         static std::vector<ChatCommand> commandTable =
         {
             { "reload",                        rbac::RBAC_PERM_COMMAND_RELOAD,                                  true,  nullptr,                                        "", reloadCommandTable },
         };
         return commandTable;
+    }
+
+    static bool HandleReloadCoinModels(ChatHandler* handler)
+    {
+        handler->SendSysMessage("Reloading z_coin_models");
+        sCustomObjectMgr->LoadCoinModels();
+        return true;
+    }
+
+    static bool HandleReloadBattlepay(ChatHandler* handler)
+    {
+        handler->SendSysMessage("Reloading BattlePay");
+        sBattlePayMgr->LoadFromDB();
+        return true;
     }
 
     static bool HandleReloadCustomSpellDmg(ChatHandler* handler)
