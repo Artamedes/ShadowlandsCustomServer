@@ -7,6 +7,7 @@ void CustomObjectMgr::LoadFromDB()
 {
     LoadCustomSpellDmgs();
     LoadCustomScalingEntries();
+    LoadCoinModels();
 }
 
 void CustomObjectMgr::LoadCustomSpellDmgs()
@@ -48,6 +49,22 @@ void CustomObjectMgr::LoadCustomScalingEntries()
             auto fields = result->Fetch();
 
             _customScalingEntries[fields[0].GetUInt32()] = { fields[1].GetFloat(), fields[2].GetFloat() };
+        } while (result->NextRow());
+    }
+}
+
+void CustomObjectMgr::LoadCoinModels()
+{
+    CoinModels.clear();
+    auto result = WorldDatabase.Query("SELECT ID, ModelID, CreatureEntry FROM z_coin_models");
+    if (result)
+    {
+        CoinModels.reserve(result->GetRowCount());
+        do
+        {
+            Field* fields = result->Fetch();
+            CoinModel model = { fields[0].GetUInt32(), fields[1].GetUInt32(), fields[2].GetUInt32() };
+            CoinModels.emplace_back(model);
         } while (result->NextRow());
     }
 }

@@ -46,6 +46,8 @@
 #include "Vehicle.h"
 #include "World.h"
 #include "CovenantMgr.h"
+#include "CustomObjectMgr.h"
+#include "Chat.h"
 
 class spell_gen_absorb0_hitlimit1 : public AuraScript
 {
@@ -5093,32 +5095,65 @@ class spell_gen_coin_of_many_faces : public AuraScript
     {
         if (Unit* caster = GetCaster())
         {
-            caster->RestoreDisplayId();
-            GarrFollowerEntry const* entry = nullptr;
-            while (entry == nullptr)
-            {
-                auto rand = urand(0, sGarrFollowerStore.GetNumRows());
-                entry = sGarrFollowerStore.LookupEntry(rand);
-                if (entry && entry->CovenantID == 0 && (entry->AllianceCreatureID > 0 || entry->HordeCreatureID > 0))
-                {
-                    uint32 creatureID = entry->AllianceCreatureID;
-                    if (!creatureID)
-                        creatureID = entry->HordeCreatureID;
-                    else if (entry->HordeCreatureID > 0)
-                        creatureID = RAND(entry->AllianceCreatureID, entry->HordeCreatureID);
+            auto player = caster->ToPlayer();
 
-                    auto creatureTemplate = sObjectMgr->GetCreatureTemplate(creatureID);
+            while (true)
+            {
+                auto randResult = Trinity::Containers::SelectRandomContainerElement(sCustomObjectMgr->CoinModels);
+                if (randResult.CreatureEntry > 0)
+                {
+                    auto creatureTemplate = sObjectMgr->GetCreatureTemplate(randResult.CreatureEntry);
                     if (creatureTemplate)
                     {
                         if (auto model = creatureTemplate->GetFirstValidModel())
                         {
+                            if (player && player->GetSession()->GetSecurity() >= SEC_ADMINISTRATOR && player->IsGameMaster())
+                            {
+                                ChatHandler(player).PSendSysMessage("|cff00B2FF[Admin] Coin of Many Faces: CreatureEntry: %u (%s)", randResult.CreatureEntry, creatureTemplate->Name.c_str());
+                            }
+
                             caster->SetDisplayId(model->CreatureDisplayID);
+                            break;
                         }
                     }
                 }
-                else
-                    entry = nullptr;
+                else if (randResult.ModelID > 0)
+                {
+                    if (player && player->GetSession()->GetSecurity() >= SEC_ADMINISTRATOR && player->IsGameMaster())
+                    {
+                        ChatHandler(player).PSendSysMessage("|cff00B2FF[Admin] Coin of Many Faces: ModelID: %u", randResult.ModelID);
+                    }
+
+                    caster->SetDisplayId(randResult.ModelID);
+                    break;
+                }
             }
+
+            //GarrFollowerEntry const* entry = nullptr;
+            //while (entry == nullptr)
+            //{
+            //    auto rand = urand(0, sGarrFollowerStore.GetNumRows());
+            //    entry = sGarrFollowerStore.LookupEntry(rand);
+            //    if (entry && entry->CovenantID == 0 && (entry->AllianceCreatureID > 0 || entry->HordeCreatureID > 0))
+            //    {
+            //        uint32 creatureID = entry->AllianceCreatureID;
+            //        if (!creatureID)
+            //            creatureID = entry->HordeCreatureID;
+            //        else if (entry->HordeCreatureID > 0)
+            //            creatureID = RAND(entry->AllianceCreatureID, entry->HordeCreatureID);
+            //
+            //        auto creatureTemplate = sObjectMgr->GetCreatureTemplate(creatureID);
+            //        if (creatureTemplate)
+            //        {
+            //            if (auto model = creatureTemplate->GetFirstValidModel())
+            //            {
+            //                caster->SetDisplayId(model->CreatureDisplayID);
+            //            }
+            //        }
+            //    }
+            //    else
+            //        entry = nullptr;
+            //}
         }
     }
 
@@ -5132,8 +5167,8 @@ class spell_gen_coin_of_many_faces : public AuraScript
 
     void Register() override
     {
-        AfterEffectApply += AuraEffectApplyFn(spell_gen_coin_of_many_faces::HandleApply, EFFECT_0, SPELL_AURA_TRANSFORM, AURA_EFFECT_HANDLE_REAL);
-        AfterEffectRemove += AuraEffectRemoveFn(spell_gen_coin_of_many_faces::HandleRemove, EFFECT_0, SPELL_AURA_TRANSFORM, AURA_EFFECT_HANDLE_REAL);
+        OnEffectApply += AuraEffectApplyFn(spell_gen_coin_of_many_faces::HandleApply, EFFECT_0, SPELL_AURA_TRANSFORM, AURA_EFFECT_HANDLE_REAL_OR_REAPPLY_MASK);
+        OnEffectRemove += AuraEffectRemoveFn(spell_gen_coin_of_many_faces::HandleRemove, EFFECT_0, SPELL_AURA_TRANSFORM, AURA_EFFECT_HANDLE_REAL_OR_REAPPLY_MASK);
     }
 };
 
