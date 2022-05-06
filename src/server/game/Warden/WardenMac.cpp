@@ -18,7 +18,6 @@
 #include "WardenMac.h"
 #include "ByteBuffer.h"
 #include "Common.h"
-#include "CryptoHash.h"
 #include "GameTime.h"
 #include "Log.h"
 #include "Opcodes.h"
@@ -28,6 +27,7 @@
 #include "WorldPacket.h"
 #include "WorldSession.h"
 
+#include <openssl/md5.h>
 #include <array>
 
 WardenMac::WardenMac() : Warden() { }
@@ -230,7 +230,12 @@ void WardenMac::HandleCheckResult(ByteBuffer &buff)
         //found = true;
     }
 
-    std::array<uint8, 16> ourMD5Hash = Trinity::Crypto::MD5::GetDigestOf(str);
+    MD5_CTX ctx;
+    MD5_Init(&ctx);
+    MD5_Update(&ctx, str.c_str(), str.size());
+    std::array<uint8, 16> ourMD5Hash;
+    MD5_Final(ourMD5Hash.data(), &ctx);
+
     std::array<uint8, 16> theirsMD5Hash;
     buff.read(theirsMD5Hash);
 

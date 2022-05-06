@@ -19,7 +19,6 @@
 #include "AccountMgr.h"
 #include "ByteBuffer.h"
 #include "Common.h"
-#include "CryptoHash.h"
 #include "GameTime.h"
 #include "Log.h"
 #include "SmartEnum.h"
@@ -28,6 +27,10 @@
 #include "World.h"
 #include "WorldPacket.h"
 #include "WorldSession.h"
+
+#include <openssl/md5.h>
+#include <openssl/sha.h>
+
 #include <charconv>
 
 Warden::Warden() : _session(nullptr), _checkTimer(10 * IN_MILLISECONDS), _clientResponseTimer(0),
@@ -45,7 +48,10 @@ void Warden::MakeModuleForClient()
     TC_LOG_DEBUG("warden", "Make module for client");
     InitializeModuleForClient(_module.emplace());
 
-    _module->Id = Trinity::Crypto::MD5::GetDigestOf(_module->CompressedData, _module->CompressedSize);
+    MD5_CTX ctx;
+    MD5_Init(&ctx);
+    MD5_Update(&ctx, _module->CompressedData, _module->CompressedSize);
+    MD5_Final(_module->Id.data(), &ctx);
 }
 
 void Warden::SendModuleToClient()
@@ -155,19 +161,28 @@ bool Warden::IsValidCheckSum(uint32 checksum, uint8 const* data, const uint16 le
     }
 }
 
-union keyData
-{
-    std::array<uint8, 20> bytes;
-    std::array<uint32, 5> ints;
+struct keyData {
+    union
+    {
+        struct
+        {
+            uint8 bytes[20];
+        } bytes;
+
+        struct
+        {
+            uint32 ints[5];
+        } ints;
+    };
 };
 
 uint32 Warden::BuildChecksum(uint8 const* data, uint32 length)
 {
     keyData hash;
-    hash.bytes = Trinity::Crypto::SHA1::GetDigestOf(data, size_t(length));
+    SHA1(data, length, hash.bytes.bytes);
     uint32 checkSum = 0;
     for (uint8 i = 0; i < 5; ++i)
-        checkSum = checkSum ^ hash.ints[i];
+        checkSum = checkSum ^ hash.ints.ints[i];
 
     return checkSum;
 }
