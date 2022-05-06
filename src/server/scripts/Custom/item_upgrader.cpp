@@ -161,6 +161,10 @@ class item_upgrader : public ItemScript
 
         struct ItemTarget
         {
+        public:
+            ItemTarget() { }
+            ItemTarget(ObjectGuid itemGuid, uint32 lastItemUpgrade, TimePoint lastUpgradeTime, bool hadMaterials) : ItemGuid(itemGuid), LastItemUpgrade(lastItemUpgrade), LastUpgradeTime(lastUpgradeTime), HadMaterials(hadMaterials) { }
+
             ObjectGuid ItemGuid;
             uint32 LastItemUpgrade = 0;
             TimePoint LastUpgradeTime;
@@ -198,16 +202,14 @@ class item_upgrader : public ItemScript
             if (itr != m_PlayerItemTargets.end())
             {
                 itr->second.ItemGuid = itemTarget->GetGUID();
-
-
-                if (itr->second.LastUpgradeTime > now && itr->second.LastItemUpgrade != itemUpgrade->RequiredID && !hasMaterials && !itr->second.HadMaterials)
+                if (itr->second.LastUpgradeTime > now && itr->second.LastItemUpgrade == itemUpgrade->RequiredID && !hasMaterials && !itr->second.HadMaterials)
                     dispMsg = true;
 
                 itr->second.LastUpgradeTime = now + 30s;
                 itr->second.HadMaterials = hasMaterials;
             }
             else
-                m_PlayerItemTargets[player->GetGUID()] = { itemTarget->GetGUID(), 0, now + 30s, hasMaterials };
+                m_PlayerItemTargets[player->GetGUID()] = ItemTarget(itemTarget->GetGUID(), 0, now + 30s, hasMaterials);
             WorldPackets::Quest::DisplayPlayerChoice displayPlayerChoice;
 
             displayPlayerChoice.SenderGUID = itemTarget->GetGUID();
