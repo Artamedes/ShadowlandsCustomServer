@@ -2968,15 +2968,15 @@ public:
         ClearGossipMenuFor(player);
         player->PrepareQuestMenu(me->GetGUID());
         if (!player->HasItemCount(158923, 1, true))
-            AddGossipItemFor(player, GossipOptionIcon::None, "May I have a keystone please?", 0, 1);
+            AddGossipItemFor(player, GossipOptionIcon::None, "I need a Keystone.", 0, 1);
         else
             AddGossipItemFor(player, GossipOptionIcon::None, "Can you drop my keystone?", 0, 5);
         if (!player->HasItemCount(180653, 1, true))
-            AddGossipItemFor(player, GossipOptionIcon::None, "May I have a mini-keystone please?", 0, 2);
+            AddGossipItemFor(player, GossipOptionIcon::None, "I need a Mini-Keystone", 0, 2);
         else
             AddGossipItemFor(player, GossipOptionIcon::None, "Can you drop my mini-keystone?", 0, 6);
 
-        AddGossipItemFor(player, GossipOptionIcon::None, "What can I do with the keystone?", 0, 3);
+        AddGossipItemFor(player, GossipOptionIcon::None, "Can you tell me about Keystones?", 0, 3);
         SendGossipMenuFor(player, me->GetEntry(), me);
         return true;
     }
@@ -2996,6 +2996,7 @@ public:
                 ClearGossipMenuFor(player);
                 AddGossipItemFor(player, GossipOptionIcon::None, "Okay", 0, 4);
                 SendGossipMenuFor(player, 8000031, me);
+                player->KilledMonsterCredit(me->GetEntry(), me->GetGUID());
                 return true;
             case 4:
                 return OnGossipHello(player);
