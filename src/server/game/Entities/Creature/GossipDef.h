@@ -21,6 +21,7 @@
 #include "Common.h"
 #include "ObjectGuid.h"
 #include <map>
+#include <functional>
 
 class Object;
 class Quest;
@@ -133,6 +134,7 @@ struct GossipMenuItem
     std::string      BoxMessage;
     uint32           BoxMoney;
     uint32           Language;
+    std::function<void(std::string)> _callback = nullptr;
 };
 
 // need an ordered container
@@ -161,7 +163,7 @@ class TC_GAME_API GossipMenu
         GossipMenu();
         ~GossipMenu();
 
-        uint32 AddMenuItem(int32 menuItemId, GossipOptionIcon icon, std::string const& message, uint32 sender, uint32 action, std::string const& boxMessage, uint32 boxMoney, bool coded = false);
+        uint32 AddMenuItem(int32 menuItemId, GossipOptionIcon icon, std::string const& message, uint32 sender, uint32 action, std::string const& boxMessage, uint32 boxMoney, bool coded = false, std::function<void(std::string)> callback = nullptr);
         void AddMenuItem(uint32 menuId, uint32 menuItemId, uint32 sender, uint32 action);
 
         void SetMenuId(uint32 menu_id) { _menuId = menu_id; }

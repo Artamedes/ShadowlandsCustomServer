@@ -262,6 +262,15 @@ void WorldSession::HandleGossipSelectOptionOpcode(WorldPackets::NPC::GossipSelec
         return;
     }
 
+    if (auto menu = _player->PlayerTalkClass->GetGossipMenu().GetItem(packet.GossipIndex))
+    {
+        if (menu->_callback)
+        {
+            menu->_callback(packet.PromotionCode);
+            return;
+        }
+    }
+
     if (!packet.PromotionCode.empty())
     {
         if (unit)

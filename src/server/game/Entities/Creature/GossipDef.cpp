@@ -42,7 +42,7 @@ GossipMenu::~GossipMenu()
     ClearMenu();
 }
 
-uint32 GossipMenu::AddMenuItem(int32 menuItemId, GossipOptionIcon icon, std::string const& message, uint32 sender, uint32 action, std::string const& boxMessage, uint32 boxMoney, bool coded /*= false*/)
+uint32 GossipMenu::AddMenuItem(int32 menuItemId, GossipOptionIcon icon, std::string const& message, uint32 sender, uint32 action, std::string const& boxMessage, uint32 boxMoney, bool coded /*= false*/, std::function<void(std::string)> callback)
 {
     //ASSERT(_menuItems.size() <= GOSSIP_MAX_MENU_ITEMS);
 
@@ -71,6 +71,7 @@ uint32 GossipMenu::AddMenuItem(int32 menuItemId, GossipOptionIcon icon, std::str
     menuItem.OptionType      = action;
     menuItem.BoxMessage      = boxMessage;
     menuItem.BoxMoney        = boxMoney;
+    menuItem._callback       = callback;
     return menuItemId;
 }
 
