@@ -15673,6 +15673,9 @@ bool Player::CanRewardQuest(Quest const* quest, bool msg) const
 
 void Player::AddQuestAndCheckCompletion(Quest const* quest, Object* questGiver)
 {
+    if (!quest)
+        return;
+
     AddQuest(quest, questGiver);
 
     for (QuestObjective const& obj : quest->GetObjectives())

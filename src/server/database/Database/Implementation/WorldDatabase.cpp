@@ -103,6 +103,14 @@ void WorldDatabaseConnection::DoPrepareStatements()
     PrepareStatement(WORLD_SEL_GUILD_REWARDS_REQ_ACHIEVEMENTS, "SELECT AchievementRequired FROM guild_rewards_req_achievements WHERE ItemID = ?", CONNECTION_SYNCH);
     PrepareStatement(WORLD_INS_QUEST_POI, "INSERT INTO quest_poi (QuestID, BlobIndex, Idx1, ObjectiveIndex, QuestObjectiveID, QuestObjectID, MapID, UiMapID, Priority, Flags, WorldEffectID, PlayerConditionID, NavigationPlayerConditionID, SpawnTrackingID, AlwaysAllowMergingBlobs) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", CONNECTION_BOTH);
     PrepareStatement(WORLD_INS_QUEST_POI_POINTS, "INSERT INTO quest_poi_points (QuestID, Idx1, Idx2, X, Y, Z) VALUES (?, ?, ?, ?, ?, ?)", CONNECTION_BOTH);
+
+    PrepareStatement(WORLD_REP_CREATURE_QUESTSTARTER, "REPLACE INTO creature_queststarter (id, quest) VALUES (?, ?)", CONNECTION_BOTH);
+    PrepareStatement(WORLD_REP_CREATURE_QUESTENDER,   "REPLACE INTO creature_questender (id, quest) VALUES (?, ?)", CONNECTION_BOTH);
+    PrepareStatement(WORLD_REP_QUEST_TEMPLATE,        "REPLACE INTO quest_template (ID, QuestType, ContentTuningID, QuestSortID, QuestInfoID, Flags, LogTitle, LogDescription, QuestDescription, AreaDescription, PortraitGiverText, PortraitGiverName, PortraitTurnInText, PortraitTurnInName, QuestCompletionLog, PortraitGiver, PortraitGiverMount, PortraitTurnIn, AllowableRaces) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", CONNECTION_BOTH);
+    PrepareStatement(WORLD_REP_QUEST_TEMPLATE_ADDON,  "REPLACE INTO quest_template_addon (ID, PrevQuestID, NextQuestID) VALUES (?, ?, ?)", CONNECTION_BOTH);
+    PrepareStatement(WORLD_REP_QUEST_OBJECTIVES,      "REPLACE INTO quest_objectives (ID, QuestID, `Type`, `Order`, StorageIndex, ObjectID, Amount, Flags, Flags2, ProgressBarWeight, Description) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", CONNECTION_BOTH);
+    PrepareStatement(WORLD_REP_QUEST_OFFER_REWARD,    "REPLACE INTO quest_offer_reward (ID, RewardText) VALUES (?, ?)", CONNECTION_BOTH);
+
 }
 
 WorldDatabaseConnection::WorldDatabaseConnection(MySQLConnectionInfo& connInfo) : MySQLConnection(connInfo)

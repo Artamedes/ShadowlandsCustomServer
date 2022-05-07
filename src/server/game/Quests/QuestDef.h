@@ -459,6 +459,35 @@ struct QuestObjective
         }
         return false;
     }
+
+    char const* TypeToString()
+    {
+        switch (Type)
+        {
+            case QUEST_OBJECTIVE_MONSTER                 : return "monster";
+            case QUEST_OBJECTIVE_ITEM                    : return "item";
+            case QUEST_OBJECTIVE_GAMEOBJECT              : return "gameobject";
+            case QUEST_OBJECTIVE_TALKTO                  : return "talkto";
+            case QUEST_OBJECTIVE_CURRENCY                : return "currency";
+            case QUEST_OBJECTIVE_LEARNSPELL              : return "learnspell";
+            case QUEST_OBJECTIVE_MIN_REPUTATION          : return "min_reputation";
+            case QUEST_OBJECTIVE_MAX_REPUTATION          : return "max_reputation";
+            case QUEST_OBJECTIVE_MONEY                   : return "money";
+            case QUEST_OBJECTIVE_PLAYERKILLS             : return "playerkills";
+            case QUEST_OBJECTIVE_AREATRIGGER             : return "areatrigger";
+            case QUEST_OBJECTIVE_WINPETBATTLEAGAINSTNPC  : return "winpetbattleagainstnpc";
+            case QUEST_OBJECTIVE_DEFEATBATTLEPET         : return "defeatbattlepet";
+            case QUEST_OBJECTIVE_WINPVPPETBATTLES        : return "winpvppetbattles";
+            case QUEST_OBJECTIVE_CRITERIA_TREE           : return "criteria_tree";
+            case QUEST_OBJECTIVE_PROGRESS_BAR            : return "progress_bar";
+            case QUEST_OBJECTIVE_HAVE_CURRENCY           : return "have_currency";
+            case QUEST_OBJECTIVE_OBTAIN_CURRENCY         : return "obtain_currency";
+            case QUEST_OBJECTIVE_INCREASE_REPUTATION     : return "increase_reputation";
+            case QUEST_OBJECTIVE_AREA_TRIGGER_ENTER      : return "area_trigger_enter";
+            case QUEST_OBJECTIVE_AREA_TRIGGER_EXIT       : return "area_trigger_exit";
+            default: return "Unk";
+        }
+    }
 };
 
 using QuestObjectives = std::vector<QuestObjective>;
