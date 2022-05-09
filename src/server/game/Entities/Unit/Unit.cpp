@@ -4374,7 +4374,7 @@ void Unit::RemoveAurasWithInterruptFlags(InterruptFlags flag, SpellInfo const* s
     }
 
     // interrupt channeled spell
-    if (!source->HasAttribute(SPELL_ATTR9_ALLOW_CAST_WHILE_CHANNELING))
+    if (!source || !source->HasAttribute(SPELL_ATTR9_ALLOW_CAST_WHILE_CHANNELING))
         if (Spell* spell = m_currentSpells[CURRENT_CHANNELED_SPELL])
             if (spell->getState() == SPELL_STATE_CASTING
                 && spell->GetSpellInfo()->HasChannelInterruptFlag(flag)
