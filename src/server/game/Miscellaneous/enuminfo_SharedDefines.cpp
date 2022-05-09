@@ -1428,7 +1428,7 @@ TC_API_EXPORT EnumText EnumUtils<SpellAttr9>::ToString(SpellAttr9 value)
         case SPELL_ATTR9_UNK17: return { "SPELL_ATTR9_UNK17", "Unknown attribute 17@Attr9", "" };
         case SPELL_ATTR9_UNK18: return { "SPELL_ATTR9_UNK18", "Unknown attribute 18@Attr9", "" };
         case SPELL_ATTR9_UNK19: return { "SPELL_ATTR9_UNK19", "Unknown attribute 19@Attr9", "" };
-        case SPELL_ATTR9_UNK20: return { "SPELL_ATTR9_UNK20", "Unknown attribute 20@Attr9", "" };
+        case SPELL_ATTR9_ALLOW_CAST_WHILE_CHANNELING: return { "SPELL_ATTR9_ALLOW_CAST_WHILE_CHANNELING", "Unknown attribute 20@Attr9", "" };
         case SPELL_ATTR9_UNK21: return { "SPELL_ATTR9_UNK21", "Unknown attribute 21@Attr9", "" };
         case SPELL_ATTR9_UNK22: return { "SPELL_ATTR9_UNK22", "Unknown attribute 22@Attr9", "" };
         case SPELL_ATTR9_UNK23: return { "SPELL_ATTR9_UNK23", "Unknown attribute 23@Attr9", "" };
@@ -1472,7 +1472,7 @@ TC_API_EXPORT SpellAttr9 EnumUtils<SpellAttr9>::FromIndex(size_t index)
         case 17: return SPELL_ATTR9_UNK17;
         case 18: return SPELL_ATTR9_UNK18;
         case 19: return SPELL_ATTR9_UNK19;
-        case 20: return SPELL_ATTR9_UNK20;
+        case 20: return SPELL_ATTR9_ALLOW_CAST_WHILE_CHANNELING;
         case 21: return SPELL_ATTR9_UNK21;
         case 22: return SPELL_ATTR9_UNK22;
         case 23: return SPELL_ATTR9_UNK23;
@@ -1513,7 +1513,7 @@ TC_API_EXPORT size_t EnumUtils<SpellAttr9>::ToIndex(SpellAttr9 value)
         case SPELL_ATTR9_UNK17: return 17;
         case SPELL_ATTR9_UNK18: return 18;
         case SPELL_ATTR9_UNK19: return 19;
-        case SPELL_ATTR9_UNK20: return 20;
+        case SPELL_ATTR9_ALLOW_CAST_WHILE_CHANNELING: return 20;
         case SPELL_ATTR9_UNK21: return 21;
         case SPELL_ATTR9_UNK22: return 22;
         case SPELL_ATTR9_UNK23: return 23;

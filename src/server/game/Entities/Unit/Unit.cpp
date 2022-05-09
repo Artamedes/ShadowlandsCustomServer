@@ -4374,12 +4374,13 @@ void Unit::RemoveAurasWithInterruptFlags(InterruptFlags flag, SpellInfo const* s
     }
 
     // interrupt channeled spell
-    if (Spell* spell = m_currentSpells[CURRENT_CHANNELED_SPELL])
-        if (spell->getState() == SPELL_STATE_CASTING
-            && spell->GetSpellInfo()->HasChannelInterruptFlag(flag)
-            && (!source || spell->GetSpellInfo()->Id != source->Id)
-            && !IsInterruptFlagIgnoredForSpell(flag, this, spell->GetSpellInfo(), source))
-            InterruptNonMeleeSpells(false);
+    if (!source->HasAttribute(SPELL_ATTR9_ALLOW_CAST_WHILE_CHANNELING))
+        if (Spell* spell = m_currentSpells[CURRENT_CHANNELED_SPELL])
+            if (spell->getState() == SPELL_STATE_CASTING
+                && spell->GetSpellInfo()->HasChannelInterruptFlag(flag)
+                && (!source || spell->GetSpellInfo()->Id != source->Id)
+                && !IsInterruptFlagIgnoredForSpell(flag, this, spell->GetSpellInfo(), source))
+                InterruptNonMeleeSpells(false);
 
     UpdateInterruptMask();
 }
