@@ -60,6 +60,7 @@ struct ItemTemplate;
 struct MovementInfo;
 struct Petition;
 struct Position;
+struct Purchase;
 enum class AuctionCommand : int8;
 enum class AuctionResult : int8;
 enum InventoryResult : uint8;
@@ -860,6 +861,11 @@ namespace WorldPackets
         class BattlePayGetPurchaseList;
         class BattlePayGetProductList;
         class BattlePayRequestPriceInfo;
+        class BattlePayStartPurchase;
+        class BattlePayConfirmPurchaseResponse;
+        class BattlePayOpenCheckout;
+        class ConsumableTokenCanVeteranBuy;
+        class BattlePayAckFailedResponse;
     }
 
     class Null final : public ClientPacket
@@ -1906,6 +1912,11 @@ class TC_GAME_API WorldSession
         void HandleBattlePayGetProductList(WorldPackets::BattlePay::BattlePayGetProductList& recvPacket);
         void HandleBattlePayGetPurchaseList(WorldPackets::BattlePay::BattlePayGetPurchaseList& recvPacket);
         void HandleBattlePayRequestPriceInfo(WorldPackets::BattlePay::BattlePayRequestPriceInfo& recvPacket);
+        void HandleBattlePayStartPurchase(WorldPackets::BattlePay::BattlePayStartPurchase& startPurchase);
+        void HandleBattlePayConfirmPurchaseResponse(WorldPackets::BattlePay::BattlePayConfirmPurchaseResponse& confirmPurchase);
+        void HandleBattlePayOpenCheckout(WorldPackets::BattlePay::BattlePayOpenCheckout& openCheckout);
+        void HandleConsumableTokenCanVeteranBuy(WorldPackets::BattlePay::ConsumableTokenCanVeteranBuy& consumable);
+        void HandleBattlePayAckFailedResponse(WorldPackets::BattlePay::BattlePayAckFailedResponse& response);
 
         // Artifact
         void HandleArtifactAddPower(WorldPackets::Artifact::ArtifactAddPower& artifactAddPower);
@@ -2067,6 +2078,8 @@ class TC_GAME_API WorldSession
         WorldSession& operator=(WorldSession const& right) = delete;
 
         bool m_IsStabilityTestSession = false;
+
+        Purchase* _battlePayPurchase;
 };
 
 #endif

@@ -32,6 +32,7 @@ using QueryResultPromise = std::promise<QueryResult>;
 class CharacterDatabaseConnection;
 class HotfixDatabaseConnection;
 class LoginDatabaseConnection;
+class WebDatabaseConnection;
 class WorldDatabaseConnection;
 
 class PreparedStatementBase;
@@ -42,6 +43,7 @@ class PreparedStatement;
 using CharacterDatabasePreparedStatement = PreparedStatement<CharacterDatabaseConnection>;
 using HotfixDatabasePreparedStatement = PreparedStatement<HotfixDatabaseConnection>;
 using LoginDatabasePreparedStatement = PreparedStatement<LoginDatabaseConnection>;
+using WebDatabasePreparedStatement = PreparedStatement<WebDatabaseConnection>;
 using WorldDatabasePreparedStatement = PreparedStatement<WorldDatabaseConnection>;
 
 class PreparedResultSet;
@@ -72,6 +74,7 @@ using SQLTransaction = std::shared_ptr<Transaction<T>>;
 using CharacterDatabaseTransaction = SQLTransaction<CharacterDatabaseConnection>;
 using HotfixDatabaseTransaction = SQLTransaction<HotfixDatabaseConnection>;
 using LoginDatabaseTransaction = SQLTransaction<LoginDatabaseConnection>;
+using WebDatabaseTransaction = SQLTransaction<WebDatabaseConnection>;
 using WorldDatabaseTransaction = SQLTransaction<WorldDatabaseConnection>;
 
 class SQLQueryHolderBase;
@@ -84,6 +87,7 @@ class SQLQueryHolder;
 using CharacterDatabaseQueryHolder = SQLQueryHolder<CharacterDatabaseConnection>;
 using HotfixDatabaseQueryHolder = SQLQueryHolder<HotfixDatabaseConnection>;
 using LoginDatabaseQueryHolder = SQLQueryHolder<LoginDatabaseConnection>;
+using WebDatabaseQueryHolder = SQLQueryHolder<WebDatabaseConnection>;
 using WorldDatabaseQueryHolder = SQLQueryHolder<WorldDatabaseConnection>;
 
 class SQLQueryHolderCallback;

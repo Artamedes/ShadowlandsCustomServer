@@ -20,6 +20,7 @@
 #include "Common.h"
 #include "Errors.h"
 #include "Implementation/LoginDatabase.h"
+#include "Implementation/WebDatabase.h"
 #include "Implementation/WorldDatabase.h"
 #include "Implementation/CharacterDatabase.h"
 #include "Implementation/HotfixDatabase.h"
@@ -513,6 +514,7 @@ void DatabaseWorkerPool<T>::ExecuteOrAppend(SQLTransaction<T>& trans, PreparedSt
 }
 
 template class TC_DATABASE_API DatabaseWorkerPool<LoginDatabaseConnection>;
+template class TC_DATABASE_API DatabaseWorkerPool<WebDatabaseConnection>;
 template class TC_DATABASE_API DatabaseWorkerPool<WorldDatabaseConnection>;
 template class TC_DATABASE_API DatabaseWorkerPool<CharacterDatabaseConnection>;
 template class TC_DATABASE_API DatabaseWorkerPool<HotfixDatabaseConnection>;

@@ -98,7 +98,7 @@ void DB2StorageBase::Load(std::string const& path, LocaleConstant locale, char**
     _tableHash = db2.GetTableHash();
     _layoutHash = db2.GetLayoutHash();
 
-    HotfixDatabase.PQuery("REPLACE INTO hotfix_table_hashes (Hash, Name) VALUE (%u, '%s')", _tableHash, _fileName);
+    //HotfixDatabase.PQuery("REPLACE INTO hotfix_table_hashes (Hash, Name) VALUE (%u, '%s')", _tableHash, _fileName);
 
     // load raw non-string data
     _dataTable = db2.AutoProduceData(_indexTableSize, indexTable);

@@ -122,6 +122,7 @@ public:
     void MountSetFavorite(uint32 spellId, bool favorite);
     void SendSingleMountUpdate(std::pair<uint32, MountStatusFlags> mount);
     MountContainer const& GetAccountMounts() const { return _mounts; }
+    bool HasMount(uint32 spellId) const;
 
     // Appearances
     void LoadItemAppearances();

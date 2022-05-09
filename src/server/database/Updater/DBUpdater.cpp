@@ -91,6 +91,34 @@ bool DBUpdater<LoginDatabaseConnection>::IsEnabled(uint32 const updateMask)
     return (updateMask & DatabaseLoader::DATABASE_LOGIN) ? true : false;
 }
 
+
+// Web Database
+template<>
+std::string DBUpdater<WebDatabaseConnection>::GetConfigEntry()
+{
+    return "Updates.Web";
+}
+
+template<>
+std::string DBUpdater<WebDatabaseConnection>::GetTableName()
+{
+    return "Web";
+}
+
+template<>
+std::string DBUpdater<WebDatabaseConnection>::GetBaseFile()
+{
+    return BuiltInConfig::GetSourceDirectory() +
+        "/sql/base/web_database.sql";
+}
+
+template<>
+bool DBUpdater<WebDatabaseConnection>::IsEnabled(uint32 const updateMask)
+{
+    // This way silences warnings under msvc
+    return (updateMask & DatabaseLoader::DATABASE_WEB) ? true : false;
+}
+
 // World Database
 template<>
 std::string DBUpdater<WorldDatabaseConnection>::GetConfigEntry()
@@ -440,6 +468,7 @@ void DBUpdater<T>::ApplyFile(DatabaseWorkerPool<T>& pool, std::string const& hos
 }
 
 template class TC_DATABASE_API DBUpdater<LoginDatabaseConnection>;
+template class TC_DATABASE_API DBUpdater<WebDatabaseConnection>;
 template class TC_DATABASE_API DBUpdater<WorldDatabaseConnection>;
 template class TC_DATABASE_API DBUpdater<CharacterDatabaseConnection>;
 template class TC_DATABASE_API DBUpdater<HotfixDatabaseConnection>;

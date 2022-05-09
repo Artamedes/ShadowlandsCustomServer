@@ -493,6 +493,7 @@ void WorldUpdateLoop()
     CharacterDatabase.WarnAboutSyncQueries(true);
     WorldDatabase.WarnAboutSyncQueries(true);
     HotfixDatabase.WarnAboutSyncQueries(true);
+    WebDatabase.WarnAboutSyncQueries(true);
 
     ///- While we have not World::m_stopEvent, update the world
     while (!World::IsStopped())
@@ -524,6 +525,7 @@ void WorldUpdateLoop()
     CharacterDatabase.WarnAboutSyncQueries(false);
     WorldDatabase.WarnAboutSyncQueries(false);
     HotfixDatabase.WarnAboutSyncQueries(false);
+    WebDatabase.WarnAboutSyncQueries(false);
 }
 
 void SignalHandler(boost::system::error_code const& error, int /*signalNumber*/)
@@ -610,7 +612,8 @@ bool StartDB()
         .AddDatabase(LoginDatabase, "Login")
         .AddDatabase(CharacterDatabase, "Character")
         .AddDatabase(WorldDatabase, "World")
-        .AddDatabase(HotfixDatabase, "Hotfix");
+        .AddDatabase(HotfixDatabase, "Hotfix")
+        .AddDatabase(WebDatabase, "Web");
 
     if (!loader.Load())
         return false;

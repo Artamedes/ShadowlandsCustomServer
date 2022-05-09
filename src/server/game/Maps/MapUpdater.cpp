@@ -106,6 +106,7 @@ void MapUpdater::WorkerThread()
     CharacterDatabase.WarnAboutSyncQueries(true);
     WorldDatabase.WarnAboutSyncQueries(true);
     HotfixDatabase.WarnAboutSyncQueries(true);
+    WebDatabase.WarnAboutSyncQueries(true);
 
     while (1)
     {

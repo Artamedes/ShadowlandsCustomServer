@@ -2823,6 +2823,7 @@ void World::Update(uint32 diff)
         CharacterDatabase.KeepAlive();
         LoginDatabase.KeepAlive();
         WorldDatabase.KeepAlive();
+        WebDatabase.KeepAlive();
     }
 
     if (m_timers[WUPDATE_GUILDSAVE].Passed())

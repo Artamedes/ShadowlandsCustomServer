@@ -439,6 +439,12 @@ void CollectionMgr::SendSingleMountUpdate(std::pair<uint32, MountStatusFlags> mo
     player->SendDirectMessage(mountUpdate.Write());
 }
 
+bool CollectionMgr::HasMount(uint32 spellId) const
+{
+    auto it = _mounts.find(spellId);
+    return it != _mounts.end();
+}
+
 struct DynamicBitsetBlockOutputIterator
 {
     using iterator_category = std::output_iterator_tag;
@@ -753,32 +759,35 @@ void CollectionMgr::AddItemAppearance(ItemModifiedAppearanceEntry const* itemMod
         std::size_t numBlocks = _appearances->num_blocks();
         _appearances->resize(itemModifiedAppearance->ID + 1);
         numBlocks = _appearances->num_blocks() - numBlocks;
-        while (numBlocks--)
+        while (numBlocks-- && owner)
             owner->AddTransmogBlock(0);
     }
 
     _appearances->set(itemModifiedAppearance->ID);
     uint32 blockIndex = itemModifiedAppearance->ID / 32;
     uint32 bitIndex = itemModifiedAppearance->ID % 32;
-    owner->AddTransmogFlag(blockIndex, 1 << bitIndex);
+    if (owner)
+        owner->AddTransmogFlag(blockIndex, 1 << bitIndex);
     auto temporaryAppearance = _temporaryAppearances.find(itemModifiedAppearance->ID);
     if (temporaryAppearance != _temporaryAppearances.end())
     {
-        owner->RemoveConditionalTransmog(itemModifiedAppearance->ID);
+        if (owner)
+            owner->RemoveConditionalTransmog(itemModifiedAppearance->ID);
         _temporaryAppearances.erase(temporaryAppearance);
     }
 
     if (ItemEntry const* item = sItemStore.LookupEntry(itemModifiedAppearance->ItemID))
     {
         int32 transmogSlot = ItemTransmogrificationSlots[item->InventoryType];
-        if (transmogSlot >= 0)
+        if (transmogSlot >= 0 && owner)
             _owner->GetPlayer()->UpdateCriteria(CriteriaType::LearnAnyTransmogInSlot, transmogSlot, itemModifiedAppearance->ID);
     }
 
     if (std::vector<TransmogSetEntry const*> const* sets = sDB2Manager.GetTransmogSetsForItemModifiedAppearance(itemModifiedAppearance->ID))
         for (TransmogSetEntry const* set : *sets)
             if (IsSetCompleted(set->ID))
-                _owner->GetPlayer()->UpdateCriteria(CriteriaType::CollectTransmogSetFromGroup, set->TransmogSetGroupID);
+                if (owner)
+                    _owner->GetPlayer()->UpdateCriteria(CriteriaType::CollectTransmogSetFromGroup, set->TransmogSetGroupID);
 }
 
 void CollectionMgr::AddTemporaryAppearance(ObjectGuid const& itemGuid, ItemModifiedAppearanceEntry const* itemModifiedAppearance)
