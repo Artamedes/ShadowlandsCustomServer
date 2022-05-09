@@ -159,6 +159,7 @@ ByteBuffer& operator<<(ByteBuffer& data, WorldPackets::BattlePay::ShopEntry cons
     data << entry.Ordering;
     data << entry.VasServiceType;
     data << entry.StoreDeliveryType;
+    data.FlushBits();
     if (data.WriteBit(entry.Display.has_value()))
     {
         data << *entry.Display;
