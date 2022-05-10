@@ -49,6 +49,9 @@ void AddSC_TheUnderrot();
 void AddSC_EyeOfAzshara();
 void AddSC_DreadscarRift();
 void AddSC_IronDocks();
+void AddSC_Folnuna();
+void AddSC_Meto();
+void AddSC_Sotanathor();
 
 void AddCustomScripts()
 {
@@ -82,4 +85,7 @@ void AddCustomScripts()
     AddSC_EyeOfAzshara();
     AddSC_DreadscarRift();
     AddSC_IronDocks();
+    AddSC_Folnuna();
+    AddSC_Meto();
+    AddSC_Sotanathor();
 }

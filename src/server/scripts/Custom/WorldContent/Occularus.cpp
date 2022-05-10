@@ -108,6 +108,9 @@ struct npc_jaina_proudmoore_730100 : public ScriptedAI
 
         void UpdateAI(uint32 diff) override
         {
+            if (!me->GetCurrentSpell(CurrentSpellTypes::CURRENT_CHANNELED_SPELL))
+                DoCast(342538);
+
             scheduler.Update(diff);
         }
 

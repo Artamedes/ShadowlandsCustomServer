@@ -2006,7 +2006,7 @@ public:
     }
 
 #ifdef WIN32
-    static bool HandleGPSCopyCommand(ChatHandler* handler)
+    static bool HandleGPSCopyCommand(ChatHandler* handler, Optional<uint32> keep)
     {
         std::ostringstream ss;
 
@@ -2019,7 +2019,8 @@ public:
         memcpy(GlobalLock(hMem), output, len);
         GlobalUnlock(hMem);
         OpenClipboard(0);
-        EmptyClipboard();
+        if (!keep.has_value())
+            EmptyClipboard();
         SetClipboardData(CF_TEXT, hMem);
         CloseClipboard();
         handler->SendSysMessage(ss.str().c_str());
