@@ -5847,8 +5847,12 @@ void Unit::RemoveAreaTrigger(AuraEffect const* aurEff)
 
 void Unit::RemoveAllAreaTriggers()
 {
-    while (!m_areaTrigger.empty())
-        m_areaTrigger.front()->Remove();
+    for (AreaTrigger* areaTrigger : m_areaTrigger)
+        areaTrigger->Remove();
+    // IsInWorld can return false and this can permanent loop.
+
+    //while (!m_areaTrigger.empty())
+    //    m_areaTrigger.front()->Remove();
 }
 
 void Unit::SendSpellNonMeleeDamageLog(SpellNonMeleeDamage const* log)
