@@ -16243,7 +16243,7 @@ void Player::RewardQuest(Quest const* quest, LootItemType rewardType, uint32 rew
 
     auto itr = m_questScripts.find(quest_id);
     if (itr != m_questScripts.end())
-        itr->second->OnQuestReward();
+        itr->second->OnQuestReward(questGiver);
 
     RemoveActiveQuest(quest_id, false);
     if (quest->CanIncreaseRewardedQuestCounters())

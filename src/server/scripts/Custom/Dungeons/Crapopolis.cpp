@@ -795,7 +795,7 @@ public:
         if (who->IsPlayer() && !me->isAnySummons())
         {
             auto player = who->ToPlayer();
-            if (player->GetQuestStatus(800032) == QUEST_STATUS_REWARDED)
+            if (player->GetQuestStatus(800032) == QUEST_STATUS_REWARDED || player->IsGameMaster())
                 return false;
         }
 

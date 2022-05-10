@@ -3045,7 +3045,25 @@ public:
         if (who->IsPlayer() && !me->isAnySummons())
         {
             auto player = who->ToPlayer();
-            if (player->GetQuestStatus(800032) == QUEST_STATUS_REWARDED)
+            if (player->GetQuestStatus(800032) == QUEST_STATUS_REWARDED || player->IsGameMaster())
+                return true;
+        }
+
+        return false;
+    }
+};
+// 800001 - npc_jon_bovi_800001
+struct npc_jon_bovi_800001 : public ScriptedAI
+{
+public:
+    npc_jon_bovi_800001(Creature* creature) : ScriptedAI(creature) { }
+
+    bool CanSeeOrDetect(WorldObject const* who) const override
+    {
+        if (who->IsPlayer() && !me->isAnySummons())
+        {
+            auto player = who->ToPlayer();
+            if (player->GetQuestStatus(800033) == QUEST_STATUS_REWARDED || player->IsGameMaster())
                 return true;
         }
 
@@ -3097,6 +3115,7 @@ void AddSC_MallScripts()
     RegisterCreatureAI(npc_keystone_master);
     RegisterCreatureAI(npc_garan_800032);
     RegisterCreatureAI(npc_innkeeper_bobkin_800007);
+    RegisterCreatureAI(npc_jon_bovi_800001);
 
     RegisterSpellScript(spell_activating_313352);
    // RegisterSpellScript(spell_nyalotha_incursion);

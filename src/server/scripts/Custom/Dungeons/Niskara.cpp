@@ -7,6 +7,8 @@
 #include "GenericMovementGenerator.h"
 #include "GameTime.h"
 #include "ScriptedGossip.h"
+#include "QuestAI.h"
+#include "TemporarySummon.h"
 
 struct instance_niskara : public CustomInstanceScript
 {
@@ -1297,6 +1299,98 @@ public:
     EventMap events;
 };
 
+// 800045 - npc_jon_bovi_800045
+struct npc_jon_bovi_800045 : public ScriptedAI
+{
+public:
+    npc_jon_bovi_800045(Creature* creature) : ScriptedAI(creature) { }
+
+
+    bool OnGossipHello(Player* player)
+    {
+        player->KilledMonsterCredit(me->GetEntry(), me->GetGUID());
+
+        auto status = player->GetQuestStatus(800033);
+        if (status == QUEST_STATUS_INCOMPLETE)
+        {
+            player->KilledMonsterCredit(me->GetEntry(), me->GetGUID());
+            player->PlayerTalkClass->SendQuestGiverOfferReward(sObjectMgr->GetQuestTemplate(800033), me->GetGUID(), false);
+        }
+        else if (status == QUEST_STATUS_NONE)
+        {
+            player->AddQuest(sObjectMgr->GetQuestTemplate(800033), me);
+            player->KilledMonsterCredit(me->GetEntry(), me->GetGUID());
+            player->PlayerTalkClass->SendQuestGiverOfferReward(sObjectMgr->GetQuestTemplate(800033), me->GetGUID(), false);
+        }
+        else if (status == QUEST_STATUS_COMPLETE)
+        {
+            player->PlayerTalkClass->SendQuestGiverOfferReward(sObjectMgr->GetQuestTemplate(800033), me->GetGUID(), false);
+        }
+
+        //player->Preparequ
+        //SendGossipMenuFor(player, 1, me);
+        return true;
+    }
+
+    void OnQuestAccept(Player* player, Quest const* quest) override
+    {
+        player->KilledMonsterCredit(me->GetEntry(), me->GetGUID());
+    }
+
+    bool CanSeeOrDetect(WorldObject const* who) const override
+    {
+        if (who->IsPlayer() && !me->isAnySummons())
+        {
+            auto player = who->ToPlayer();
+            if (player->GetQuestStatus(800033) == QUEST_STATUS_REWARDED || player->IsGameMaster())
+                return false;
+        }
+
+        return true;
+    }
+};
+
+// 800033
+struct quest_the_potionmaster : public QuestAI
+{
+public:
+    quest_the_potionmaster(Quest const* quest, Player* player) : QuestAI(quest, player) { }
+
+    void OnQuestReward(Object* questGiver) override
+    {
+        if (questGiver && questGiver->IsCreature())
+        {
+            auto creature = questGiver->ToCreature();
+
+            if (auto tempSumm = creature->SummonPersonalClone(*creature, TEMPSUMMON_NO_OWNER_DESPAWN, 0s, 0, 0, player))
+            {
+                tempSumm->SetOwnerGUID(player->GetGUID());
+                ObjectGuid creatureGuid = creature->GetGUID();
+                tempSumm->setActive(true);
+                tempSumm->RemoveNpcFlag(UNIT_NPC_FLAG_GOSSIP);
+                tempSumm->RemoveNpcFlag(UNIT_NPC_FLAG_QUESTGIVER);
+                if (player)
+                {
+                    tempSumm->HandleEmoteCommand(Emote::EMOTE_ONESHOT_EAT, player);
+                    if (tempSumm->AI() && player)
+                        tempSumm->AI()->Talk(0, player);
+                }
+
+                tempSumm->GetScheduler().Schedule(3s, [this, tempSumm, creatureGuid](TaskContext context)
+                {
+                    tempSumm->CastSpell(tempSumm, 367044, true);
+                    tempSumm->GetScheduler().Schedule(400ms, [this, tempSumm, creatureGuid](TaskContext context)
+                    {
+                        tempSumm->DespawnOrUnsummon();
+                        if (auto creature = ObjectAccessor::GetCreature(*tempSumm, creatureGuid))
+                            creature->UpdateObjectVisibility();
+                    });
+                });
+            }
+        }
+    }
+};
+
 void AddSC_Niskara()
 {
     RegisterInstanceScript(instance_niskara, 1604);
@@ -1320,4 +1414,7 @@ void AddSC_Niskara()
     RegisterCreatureAI(npc_watcher_of_death_700515);
     RegisterCreatureAI(npc_unknown_creature_700516);
     RegisterCreatureAI(npc_void_rift_700518);
+    RegisterCreatureAI(npc_jon_bovi_800045);
+
+    RegisterQuestAI(quest_the_potionmaster);
 }
