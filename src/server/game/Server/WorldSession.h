@@ -1917,6 +1917,8 @@ class TC_GAME_API WorldSession
         void HandleBattlePayOpenCheckout(WorldPackets::BattlePay::BattlePayOpenCheckout& openCheckout);
         void HandleConsumableTokenCanVeteranBuy(WorldPackets::BattlePay::ConsumableTokenCanVeteranBuy& consumable);
         void HandleBattlePayAckFailedResponse(WorldPackets::BattlePay::BattlePayAckFailedResponse& response);
+        void SendProductList();
+        void SendProductList(uint32 balance);
 
         // Artifact
         void HandleArtifactAddPower(WorldPackets::Artifact::ArtifactAddPower& artifactAddPower);

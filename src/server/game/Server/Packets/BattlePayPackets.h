@@ -20,23 +20,22 @@ namespace WorldPackets
 
         struct DisplayInfo
         {
-            Optional<uint32> CreatureDisplayID;
-            Optional<uint32> VisualID;
-            std::string Name1;
-            std::string Name2;
-            std::string Name3;
-            std::string Name4;
-            std::string Name5;
-            std::string Name6;
-            std::string Name7;
-            Optional<uint32> Flags;
-            Optional<uint32> Unk1;
-            Optional<uint32> Unk2;
-            Optional<uint32> Unk3;
-            uint32 UnkInt1;
-            uint32 UnkInt2;
-            uint32 UnkInt3;
-
+            Optional<uint32>    CreatureDisplayID;
+            Optional<uint32>    VisualID;
+            std::string         Name1;
+            std::string         Name2;
+            std::string         Name3;
+            std::string         Name4;
+            std::string         Name5;
+            std::string         Name6;
+            std::string         Name7;
+            Optional<uint32>    Flags;
+            Optional<uint32>    Unk1;
+            Optional<uint32>    Unk2;
+            Optional<uint32>    Unk3;
+            uint32              UnkInt1;
+            uint32              UnkInt2;
+            uint32              UnkInt3;
             std::vector<Visual> Visuals;
         };
 
@@ -101,12 +100,12 @@ namespace WorldPackets
 
         struct ShopEntry
         {
-            uint32 EntryID;
-            uint32 GroupID;
-            uint32 ProductID;
-            uint32 Ordering;
-            uint32 VasServiceType;
-            uint8 StoreDeliveryType;
+            uint32                EntryID;
+            uint32                GroupID;
+            uint32                ProductID;
+            uint32                Ordering;
+            uint32                VasServiceType;
+            uint8                 StoreDeliveryType;
             Optional<DisplayInfo> Display;
         };
 

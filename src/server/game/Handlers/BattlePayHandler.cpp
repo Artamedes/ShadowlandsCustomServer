@@ -117,7 +117,24 @@ namespace UpdateStatus
     };
 }
 
-void WorldSession::HandleBattlePayGetProductList(WorldPackets::BattlePay::BattlePayGetProductList& recvPacket)
+void WorldSession::SendProductList()
+{
+    auto stmt = WebDatabase.GetPreparedStatement(WEB_SEL_DP);
+    stmt->setUInt32(0, GetAccountId());
+    _queryProcessor.AddCallback(WebDatabase.AsyncQuery(stmt)
+        .WithPreparedCallback([this](PreparedQueryResult result)
+    {
+        uint32 bal = 0;
+        if (result)
+        {
+            auto fields = result->Fetch();
+            bal = fields[0].GetUInt32();
+        }
+        SendProductList(bal);
+    }));
+}
+
+void WorldSession::SendProductList(uint32 balance)
 {
     BattlePayGetProductListResponse packet;
 
@@ -133,23 +150,23 @@ void WorldSession::HandleBattlePayGetProductList(WorldPackets::BattlePay::Battle
     for (auto const& product : products)
     {
         Product p;
-        p.ProductId     = product.second.ProductId          ; 
-        p.Type          = product.second.Type               ; 
-        p.Item          = product.second.Item               ; 
-        p.Unk1          = product.second.Unk1               ; 
-        p.SpellId       = product.second.SpellId            ; 
-        p.CreatureEntry = product.second.CreatureEntry      ; 
-        p.Unk4          = product.second.Unk4               ; 
-        p.Flags         = product.second.Flags              ; 
-        p.Unk6          = product.second.Unk6               ; 
-        p.TransmogSetId = product.second.TransmogSetId      ; 
-        p.Unk8          = product.second.Unk8               ; 
-        p.Unk9          = product.second.Unk9               ; 
-        p.UnkString     = product.second.UnkString          ; 
-        p.AlreadyOwned  = product.second.AlreadyOwned       ; 
-        p.UnkBits       = product.second.UnkBits            ; 
-        p.Items         = product.second.Items              ; 
-        p.Display       = product.second.Display            ;
+        p.ProductId = product.second.ProductId;
+        p.Type = product.second.Type;
+        p.Item = product.second.Item;
+        p.Unk1 = product.second.Unk1;
+        p.SpellId = product.second.SpellId;
+        p.CreatureEntry = product.second.CreatureEntry;
+        p.Unk4 = product.second.Unk4;
+        p.Flags = product.second.Flags;
+        p.Unk6 = product.second.Unk6;
+        p.TransmogSetId = product.second.TransmogSetId;
+        p.Unk8 = product.second.Unk8;
+        p.Unk9 = product.second.Unk9;
+        p.UnkString = product.second.UnkString;
+        p.AlreadyOwned = product.second.AlreadyOwned;
+        p.UnkBits = product.second.UnkBits;
+        p.Items = product.second.Items;
+        p.Display = product.second.Display;
 
         bool alreadyOwns = false;
         if (p.Item > 0)
@@ -189,7 +206,34 @@ void WorldSession::HandleBattlePayGetProductList(WorldPackets::BattlePay::Battle
         pStruct.ChoiceType = productStruct.second.ChoiceType;
         pStruct.ProductIds = productStruct.second.ProductIds;
         pStruct.UnkInts = productStruct.second.UnkInts;
-        pStruct.Display = productStruct.second.Display;
+
+        // Internal Balance
+        if (pStruct.ProductId == 7 && productStruct.second.Display.has_value())
+        {
+            DisplayInfo display;
+            display.CreatureDisplayID = productStruct.second.Display.value().CreatureDisplayID;
+            display.VisualID         = productStruct.second.Display.value().VisualID;
+            display.Name1            = "Balance: $" + std::to_string(balance);
+            display.Name2            = productStruct.second.Display.value().Name2;           
+            display.Name3            = productStruct.second.Display.value().Name3;           
+            display.Name4            = productStruct.second.Display.value().Name4;           
+            display.Name5            = productStruct.second.Display.value().Name5;           
+            display.Name6            = productStruct.second.Display.value().Name6;           
+            display.Name7            = productStruct.second.Display.value().Name7;           
+            display.Flags            = productStruct.second.Display.value().Flags;           
+            display.Unk1             = productStruct.second.Display.value().Unk1;            
+            display.Unk2             = productStruct.second.Display.value().Unk2;            
+            display.Unk3             = productStruct.second.Display.value().Unk3;            
+            display.UnkInt1          = productStruct.second.Display.value().UnkInt1;         
+            display.UnkInt2          = productStruct.second.Display.value().UnkInt2;         
+            display.UnkInt3          = productStruct.second.Display.value().UnkInt3;         
+            display.Visuals          = productStruct.second.Display.value().Visuals;         
+
+            pStruct.Display = display;
+            pStruct.PurchaseEligibility |= (PartiallyOwned | Owned);
+        }
+        else
+            pStruct.Display = productStruct.second.Display;
 
         bool partiallyOwns = false;
         bool fullyOwns = false;
@@ -225,7 +269,7 @@ void WorldSession::HandleBattlePayGetProductList(WorldPackets::BattlePay::Battle
                         partiallyOwns = true;
                     }
                 }
-                else 
+                else
                 {
                     if (!fullyOwns)
                         fullyOwns = true;
@@ -247,10 +291,31 @@ void WorldSession::HandleBattlePayGetProductList(WorldPackets::BattlePay::Battle
     packet.Entries.reserve(entries.size());
     for (auto const& entry : entries)
     {
-        packet.Entries.emplace_back(entry.second);
+        ShopEntry sEntry;
+
+        sEntry.EntryID           = entry.second.EntryID;
+        sEntry.GroupID           = entry.second.GroupID;
+        sEntry.ProductID         = entry.second.ProductID;
+        sEntry.Ordering          = entry.second.Ordering;
+        sEntry.VasServiceType    = entry.second.VasServiceType;
+        sEntry.StoreDeliveryType = entry.second.StoreDeliveryType;
+        sEntry.Display           = entry.second.Display;
+
+        // Internal Balance
+        if (sEntry.ProductID == 7 && sEntry.Display.has_value())
+        {
+            sEntry.Display.value().Name1 = "Balance: $" + std::to_string(balance);
+        }
+
+        packet.Entries.emplace_back(sEntry);
     }
 
     SendPacket(packet.Write());
+}
+
+void WorldSession::HandleBattlePayGetProductList(WorldPackets::BattlePay::BattlePayGetProductList& /*recvPacket*/)
+{
+    SendProductList();
 }
 
 void WorldSession::HandleBattlePayGetPurchaseList(WorldPackets::BattlePay::BattlePayGetPurchaseList& recvPacket)
@@ -521,7 +586,7 @@ void WorldSession::HandleBattlePayConfirmPurchaseResponse(WorldPackets::BattlePa
 
                 if (product->SpellId)
                 {
-                    GetCollectionMgr()->AddMount(product->Item, MountStatusFlags::MOUNT_STATUS_NONE, false, true);
+                    GetCollectionMgr()->AddMount(product->SpellId, MountStatusFlags::MOUNT_STATUS_NONE, false, false);
                 }
 
                 if (product->TransmogSetId)
@@ -542,6 +607,11 @@ void WorldSession::HandleBattlePayConfirmPurchaseResponse(WorldPackets::BattlePa
         packet2.Purchases[0].UnkInt32 = (uint32)GameTime::GetGameTime();
         packet2.Purchases[0].WalletName = "";
         SendPacket(packet2.Write());
+
+        /// @TODO: Send Delivery Frame
+
+        // Send List
+        SendProductList(currDP - cost);
     }));
 }
 
