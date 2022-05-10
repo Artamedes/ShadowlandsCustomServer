@@ -300,33 +300,27 @@ struct npc_char_services : public ScriptedAI
         {
             ClearGossipMenuFor(p_Player);
             p_Player->PrepareQuestMenu(me->GetGUID());
-            AddGossipItemFor(p_Player, GossipOptionIcon::None, "|TInterface\\ICONS\\achievement_general.BLP:30:30:-28:0|tReset my talents.", 0, 2);
-            AddGossipItemFor(p_Player, GossipOptionIcon::None, "|TInterface\\ICONS\\inv_inscription_talenttome01.BLP:30:30:-28:0|tGive me 5 tomes.", 0, 1);
-            AddGossipItemFor(p_Player, GossipOptionIcon::None, "|TInterface\\ICONS\\inv_misc_enggizmos_32.BLP:30:30:-28:0|tGive me the Magic Stone.", 0, 3);
-            AddGossipItemFor(p_Player, GossipOptionIcon::None, "|TInterface\\ICONS\\inv_offhand_1h_ulduarraid_d_01.BLP:30:30:-28:0|tGive me the Item Upgrader.", 0, 4);
-            SendGossipMenuFor(p_Player, me->GetEntry(), me);
-            return true;
-        }
-
-        bool OnGossipSelect(Player* p_Player, uint32 p_MenuId, uint32 p_GossipId) override
-        {
-            uint32 l_ActionId = p_Player->PlayerTalkClass->GetGossipOptionAction(p_GossipId);
-            CloseGossipMenuFor(p_Player);
-            switch (l_ActionId)
+            AddGossipItemFor(p_Player, GossipOptionIcon::None, "|TInterface\\ICONS\\achievement_general.BLP:30:30:-28:0|tReset my talents.", 0, 0, [this, p_Player](std::string /*callback*/)
             {
-                case 1:
-                    p_Player->AddItem(173049, 5);
-                    break;
-                case 2:
-                    p_Player->ResetTalents(true);
-                    break;
-                case 3:
-                    p_Player->AddItem(700001, 1);
-                    break;
-                case 4:
-                    p_Player->AddItem(700000, 1);
-                    break;
-            }
+                p_Player->ResetTalents(true);
+                CloseGossipMenuFor(p_Player);
+            });
+            AddGossipItemFor(p_Player, GossipOptionIcon::None, "|TInterface\\ICONS\\inv_inscription_talenttome01.BLP:30:30:-28:0|tGive me 5 tomes.", 0, 0, [this, p_Player](std::string /*callback*/)
+            {
+                p_Player->AddItem(173049, 5);
+                CloseGossipMenuFor(p_Player);
+            });
+            AddGossipItemFor(p_Player, GossipOptionIcon::None, "|TInterface\\ICONS\\inv_misc_enggizmos_32.BLP:30:30:-28:0|tGive me the Magic Stone.", 0, 0, [this, p_Player](std::string /*callback*/)
+            {
+                p_Player->AddItem(700001, 1);
+                CloseGossipMenuFor(p_Player);
+            });
+            AddGossipItemFor(p_Player, GossipOptionIcon::None, "|TInterface\\ICONS\\inv_offhand_1h_ulduarraid_d_01.BLP:30:30:-28:0|tGive me the Item Upgrader.", 0, 0, [this, p_Player](std::string /*callback*/)
+            {
+                p_Player->AddItem(700000, 1);
+                CloseGossipMenuFor(p_Player);
+            });
+            SendGossipMenuFor(p_Player, me->GetEntry(), me);
             return true;
         }
 };
@@ -3027,6 +3021,37 @@ public:
         return true;
     }
 };
+// 800032 - npc_garan_800032
+struct npc_garan_800032 : public ScriptedAI
+{
+public:
+    npc_garan_800032(Creature* creature) : ScriptedAI(creature) { }
+
+    bool OnGossipHello(Player* player) override
+    {
+        player->PrepareQuestMenu(me->GetGUID());
+        SendGossipMenuFor(player, 800032, me);
+        return true;
+    }
+};
+// 800007 - npc_innkeeper_bobkin_800007
+struct npc_innkeeper_bobkin_800007 : public ScriptedAI
+{
+public:
+    npc_innkeeper_bobkin_800007(Creature* creature) : ScriptedAI(creature) { }
+
+    bool CanSeeOrDetect(WorldObject const* who) const override
+    {
+        if (who->IsPlayer() && !me->isAnySummons())
+        {
+            auto player = who->ToPlayer();
+            if (player->GetQuestStatus(800032) == QUEST_STATUS_REWARDED)
+                return true;
+        }
+
+        return false;
+    }
+};
 
 void AddSC_MallScripts()
 {
@@ -3070,6 +3095,8 @@ void AddSC_MallScripts()
     RegisterCreatureAI(npc_spawn_of_n_zoth_700065);
     RegisterCreatureAI(npc_medivh_700030);
     RegisterCreatureAI(npc_keystone_master);
+    RegisterCreatureAI(npc_garan_800032);
+    RegisterCreatureAI(npc_innkeeper_bobkin_800007);
 
     RegisterSpellScript(spell_activating_313352);
    // RegisterSpellScript(spell_nyalotha_incursion);

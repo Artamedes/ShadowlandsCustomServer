@@ -4,6 +4,9 @@
 #include "Creature.h"
 #include "Player.h"
 #include "../CustomInstanceScript.h"
+#include "GossipDef.h"
+#include "QuestAI.h"
+#include "TemporarySummon.h"
 
 const Position dancePos[] = {
     { 805.559f, -3699.53f, 12.6373f, 2.12385f },
@@ -754,6 +757,92 @@ class crapopolis_dungeon_player_script : public PlayerScript
         }
 };
 
+// 800046 - npc_bobkin_800046
+struct npc_bobkin_800046 : public ScriptedAI
+{
+public:
+    npc_bobkin_800046(Creature* creature) : ScriptedAI(creature) { }
+
+    bool OnGossipHello(Player* player)
+    {
+        player->KilledMonsterCredit(me->GetEntry(), me->GetGUID());
+
+        auto status = player->GetQuestStatus(800032);
+        if (status == QUEST_STATUS_INCOMPLETE)
+        {
+            player->KilledMonsterCredit(me->GetEntry(), me->GetGUID());
+            player->PlayerTalkClass->SendQuestGiverOfferReward(sObjectMgr->GetQuestTemplate(800032), me->GetGUID(), false);
+        }
+        else if (status == QUEST_STATUS_NONE)
+        {
+            player->AddQuest(sObjectMgr->GetQuestTemplate(800032), me);
+            player->KilledMonsterCredit(me->GetEntry(), me->GetGUID());
+            player->PlayerTalkClass->SendQuestGiverOfferReward(sObjectMgr->GetQuestTemplate(800032), me->GetGUID(), false);
+        }
+
+        //player->Preparequ
+        //SendGossipMenuFor(player, 1, me);
+        return true;
+    }
+
+    void OnQuestAccept(Player* player, Quest const* quest) override
+    {
+        player->KilledMonsterCredit(me->GetEntry(), me->GetGUID());
+    }
+
+    bool CanSeeOrDetect(WorldObject const* who) const override
+    {
+        if (who->IsPlayer() && !me->isAnySummons())
+        {
+            auto player = who->ToPlayer();
+            if (player->GetQuestStatus(800032) == QUEST_STATUS_REWARDED)
+                return false;
+        }
+
+        return true;
+    }
+};
+
+// 800032
+struct quest_the_innkeeper : public QuestAI
+{
+public:
+    quest_the_innkeeper(Quest const* quest, Player* player) : QuestAI(quest, player) { }
+
+    void OnQuestReward(Object* questGiver) override
+    {
+        if (questGiver && questGiver->IsCreature())
+        {
+            auto creature = questGiver->ToCreature();
+
+            if (auto tempSumm = creature->SummonPersonalClone(*creature, TEMPSUMMON_NO_OWNER_DESPAWN, 0s, 0, 0, player))
+            {
+                tempSumm->SetOwnerGUID(player->GetGUID());
+                ObjectGuid creatureGuid = creature->GetGUID();
+                tempSumm->setActive(true);
+                tempSumm->RemoveNpcFlag(UNIT_NPC_FLAG_GOSSIP);
+                tempSumm->RemoveNpcFlag(UNIT_NPC_FLAG_QUESTGIVER);
+                if (player)
+                {
+                    tempSumm->HandleEmoteCommand(Emote::EMOTE_ONESHOT_SALUTE, player);
+                    if (tempSumm->AI() && player)
+                        tempSumm->AI()->Talk(0, player);
+                }
+
+                tempSumm->GetScheduler().Schedule(3s, [this, tempSumm, creatureGuid](TaskContext context)
+                {
+                    tempSumm->CastSpell(tempSumm, 367044, true);
+                    tempSumm->GetScheduler().Schedule(400ms, [this, tempSumm, creatureGuid](TaskContext context)
+                    {
+                        tempSumm->DespawnOrUnsummon();
+                        if (auto creature = ObjectAccessor::GetCreature(*tempSumm, creatureGuid))
+                            creature->UpdateObjectVisibility();
+                    });
+                });
+            }
+        }
+    }
+};
 
 void AddSC_Crapopolis()
 {
@@ -768,5 +857,7 @@ void AddSC_Crapopolis()
     RegisterCreatureAI(npc_crap_warden_of_souls);
     RegisterCreatureAI(npc_crap_synod);
     RegisterCreatureAI(npc_trade_prince_gallywix_700200);
+    RegisterCreatureAI(npc_bobkin_800046);
     new crapopolis_dungeon_player_script();
+    RegisterQuestAI(quest_the_innkeeper);
 }
