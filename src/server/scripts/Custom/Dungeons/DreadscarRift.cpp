@@ -4,6 +4,17 @@
 #include "ScriptedCreature.h"
 #include "Player.h"
 #include "MoveSpline.h"
+#include "TemporarySummon.h"
+
+enum DreadscarRift
+{
+    BossBellatrix,
+    BossDolgonir,
+    BossKuryash,
+    BossGoroth,
+
+    NecoWarriorAdd = 703018,
+};
 
 struct instance_dreadscarrift : public CustomInstanceScript
 {
@@ -314,46 +325,90 @@ public:
 };
 
 // 703013 - npc_bellatrix_703013
-struct npc_bellatrix_703013 : public ScriptedAI
+struct npc_bellatrix_703013 : public BossAI
 {
 public:
-    npc_bellatrix_703013(Creature* creature) : ScriptedAI(creature) { }
+    npc_bellatrix_703013(Creature* creature) : BossAI(creature, BossBellatrix) { }
+
+    enum Bellatrix
+    {
+        EventArmyOfDead = 1,
+        EventAsphyxiate,
+
+        SpellArmyOfTheDead = 362862, // trigger - 362863 - triggers - 362864
+        SpellAsphyxiate = 221562,
+        SpellDrainPower = 272445,
+        SpellEmpowered = 354757,
+        CurseOfWeakness = 315079,
+    };
 
     void InitializeAI() override
     {
-        /// TODO: Fill this function
+        BossAI::InitializeAI();
     }
+
     void Reset() override
     {
-        /// TODO: Fill this function
+        BossAI::Reset();
+        summons.DespawnAll();
     }
-    void JustEngagedWith(Unit* /*who*/) override
+
+    void JustEngagedWith(Unit* who) override
     {
+        BossAI::JustEngagedWith(who);
         Talk(1);
+        SetCombatMovement(false);
+        events.ScheduleEvent(EventArmyOfDead, 1ms);
+        events.ScheduleEvent(EventAsphyxiate, 10s, 15s);
     }
+
+    bool setMovement = false;
+
     void UpdateAI(uint32 diff) override
     {
-        scheduler.Update(diff);
+        BossAI::UpdateAI(diff);
 
-        if (!UpdateVictim())
-            return;
-
-        events.Update(diff);
-
-        if (uint32 eventId = events.ExecuteEvent())
+        if (me->IsEngaged() && !me->HasUnitState(UNIT_STATE_CASTING))
         {
-            switch (eventId)
+            if (setMovement)
             {
+                setMovement = false;
+                SetCombatMovement(true);
+                me->AttackStop();
+                if (me->GetVictim())
+                    AttackStart(me->GetVictim());
             }
         }
-        DoMeleeAttackIfReady();
+    }
+
+    void ExecuteEvent(uint32 eventId) override
+    {
+        switch (eventId)
+        {
+            case EventArmyOfDead:
+                me->AttackStop();
+                DoCast(SpellArmyOfTheDead);
+                setMovement = true;
+                events.Repeat(60s);
+                break;
+            case EventAsphyxiate:
+                if (auto target = SelectTarget(SelectTargetMethod::Random, 0, 15.0f, true, false))
+                {
+                    Talk(2);
+                    DoCast(target, SpellAsphyxiate);
+                    events.Repeat(20s);
+                }
+                else
+                    events.Repeat(2s);
+                break;
+        }
     }
 
     bool didIntro = false;
 
     void MoveInLineOfSight(Unit* who) override
     {
-        ScriptedAI::MoveInLineOfSight(who);
+        BossAI::MoveInLineOfSight(who);
         if (!didIntro && who->IsPlayer() && who->GetDistance2d(me) <= 50.0f)
         {
             didIntro = true;
@@ -361,8 +416,96 @@ public:
         }
     }
 
-    TaskScheduler scheduler;
-    EventMap events;
+    void EnterEvadeMode(EvadeReason why) override
+    {
+        SetCombatMovement(true);
+        _DespawnAtEvade(3s);
+        scheduler.CancelAll();
+        me->SetReactState(REACT_AGGRESSIVE);
+        me->GetScheduler().CancelAll();
+        phased = false;
+        phasing = false;
+
+    }
+
+    bool phased = false;
+    bool phasing = false;
+
+    void DamageTaken(Unit* attacker, uint32& damage, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
+    {
+        if (phasing)
+        {
+            if (attacker)
+            {
+                if (attacker->GetTarget() == me->GetGUID())
+                    attacker->AttackStop();
+            }
+            damage = 0;
+        }
+
+        if (me->HealthBelowPctDamaged(51, damage) && !phased)
+        {
+            events.DelayEvents(10s);
+            me->CastStop();
+            phased = true;
+            phasing = true;
+            damage = 0;
+            me->NearTeleportTo({ 3095.94f, 965.095f, 258.774f, 4.46698f });
+            me->SetUnitFlag(UnitFlags::UNIT_FLAG_NON_ATTACKABLE);
+            me->SetReactState(REACT_PASSIVE);
+            me->GetScheduler().Schedule(500ms, [this](TaskContext context)
+            {
+                Talk(3);
+                DoCastSelf(SpellDrainPower);
+            });
+            me->GetScheduler().Schedule(5s, [this](TaskContext context)
+            {
+                setMovement = true;
+                me->CastStop();
+                me->SetReactState(REACT_AGGRESSIVE);
+                me->AddAura(SpellEmpowered, me);
+                phasing = false;
+                me->RemoveUnitFlag(UnitFlags::UNIT_FLAG_NON_ATTACKABLE);
+                DoCastAOE(CurseOfWeakness, true);
+            });
+        }
+    }
+};
+
+// ID - 362864 Echoes of Andorhal
+class spell_362864_echoes_of_andorhal : public SpellScript
+{
+    PrepareSpellScript(spell_362864_echoes_of_andorhal);
+
+    void OverrideEntry(SpellEffIndex effIndex)
+    {
+        PreventHitDefaultEffect(effIndex);
+
+        if (auto caster = GetCaster())
+        {
+            if (auto skelly = caster->SummonCreature(NecoWarriorAdd, *GetExplTargetDest(), TEMPSUMMON_NO_OWNER_DESPAWN))
+            {
+                skelly->SetOwnerGUID(caster->GetGUID());
+                skelly->SetUnitFlag(UnitFlags::UNIT_FLAG_NON_ATTACKABLE);
+             //   skelly->SetUnitFlag(UnitFlags::UNIT_FLAG_UNINTERACTIBLE);
+                skelly->SetReactState(REACT_PASSIVE);
+                skelly->SetControlled(true, UnitState::UNIT_STATE_ROOT);
+                skelly->GetScheduler().Schedule(4s, [this, skelly](TaskContext context)
+                {
+                    skelly->SetControlled(false, UnitState::UNIT_STATE_ROOT);
+                    skelly->RemoveUnitFlag(UnitFlags::UNIT_FLAG_NON_ATTACKABLE);
+                    //skelly->RemoveUnitFlag(UnitFlags::UNIT_FLAG_UNINTERACTIBLE);
+                    skelly->SetReactState(REACT_AGGRESSIVE);
+                });
+            }
+
+        }
+    }
+
+    void Register() override
+    {
+        OnEffectHit += SpellEffectFn(spell_362864_echoes_of_andorhal::OverrideEntry, EFFECT_0, SPELL_EFFECT_SUMMON);
+    }
 };
 
 // 703014 - npc_floating_books_703014
@@ -1437,6 +1580,7 @@ void AddSC_DreadscarRift()
     RegisterCreatureAI(npc_demonfly_acidmaw_703023);
     RegisterCreatureAI(npc_fel_conduit_703027);
     RegisterSpellScript(spell_destroying_369260);
+    RegisterSpellScript(spell_362864_echoes_of_andorhal);
 }
 
 // UPDATE creature_template set ScriptName = 'npc_adageor_703000' WHERE entry = 703000;
