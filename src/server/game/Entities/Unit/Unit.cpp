@@ -3265,6 +3265,20 @@ bool Unit::CanCastSpellWhileMoving(SpellInfo const* spellInfo) const
     if (spellInfo->Id == 75)
         return true;
 
+    if (spellInfo->Id == 362862)
+        return true;
+
+    // ID - 253089 Demonic Crash
+    if (spellInfo->Id == 253089)
+        return true;
+
+    // TODO: add to unit ai
+    switch (spellInfo->Id)
+    {
+        case 307403: ///< Annilation
+            return true;
+    }
+
     return false;
 }
 

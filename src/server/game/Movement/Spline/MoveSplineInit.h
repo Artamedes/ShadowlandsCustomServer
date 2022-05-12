@@ -143,6 +143,10 @@ namespace Movement
          */
         void SetOrientationFixed(bool enable);
 
+        /* Set Unlimited Speed, disabled by default
+        */
+        void SetUnlimitedSpeed(bool enable);
+
         /* Sets the velocity (in case you want to have custom movement velocity)
          * if no set, speed will be selected based on unit's speeds and current movement mode
          * Has no effect if falling mode enabled
@@ -173,6 +177,7 @@ namespace Movement
     inline void MoveSplineInit::SetTransportEnter() { args.flags.EnableTransportEnter(); }
     inline void MoveSplineInit::SetTransportExit() { args.flags.EnableTransportExit(); }
     inline void MoveSplineInit::SetOrientationFixed(bool enable) { args.flags.orientationFixed = enable; }
+    inline void MoveSplineInit::SetUnlimitedSpeed(bool enable) { args.flags.unlimitedSpeed = enable; }
 
     inline void MoveSplineInit::SetParabolic(float amplitude, float time_shift)
     {

@@ -371,6 +371,7 @@ public:
 
         sObjectMgr->LoadEquipmentTemplates();
         creature->LoadEquipment();
+        creature->SaveToDB();
 
         // if (itemId.has_value())
         //     const_cast<CreatureData*>(creature->GetCreatureData())->equipmentId = 1;

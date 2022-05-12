@@ -949,7 +949,10 @@ GenericMovementGenerator* MotionMaster::MoveSmoothPath(uint32 pointId, Position 
     }
 
     if (velocity)
+    {
+        init.SetUnlimitedSpeed(true);
         init.SetVelocity(*velocity);
+    }
 
     Movement::PointsArray path;
     path.reserve(pathSize);

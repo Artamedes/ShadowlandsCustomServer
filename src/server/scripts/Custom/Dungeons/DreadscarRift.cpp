@@ -4,7 +4,10 @@
 #include "ScriptedCreature.h"
 #include "Player.h"
 #include "MoveSpline.h"
+#include "MoveSplineInit.h"
 #include "TemporarySummon.h"
+#include "ObjectAccessor.h"
+#include "GenericMovementGenerator.h"
 
 enum DreadscarRift
 {
@@ -14,6 +17,9 @@ enum DreadscarRift
     BossGoroth,
 
     NecoWarriorAdd = 703018,
+
+    NpcPortalToGoroth = 703028,
+    NpcFelConduit = 703027,
 };
 
 struct instance_dreadscarrift : public CustomInstanceScript
@@ -35,6 +41,21 @@ public:
                 go->SetFlag(GameObjectFlags::GO_FLAG_NOT_SELECTABLE);
             }
         }
+    }
+
+    bool SetBossState(uint32 bossId, EncounterState state) override
+    {
+        bool val = InstanceScript::SetBossState(bossId, state);
+
+        if (bossId == BossDolgonir)
+        {
+            if (state == EncounterState::DONE)
+            {
+                instance->SummonCreature(NpcPortalToGoroth, { 3097.91f, 1095.91f, 284.311f, 0.847346f });
+            }
+        }
+
+        return val;
     }
 };
 // 703000 - npc_adageor_703000
@@ -82,28 +103,49 @@ public:
     EventMap events;
 };
 
+const Position FelConduitPos = { 3452.24f, 1554.11f, 436.707f, 3.18628f };
+
 // 703001 - npc_goroth_703001
-struct npc_goroth_703001 : public ScriptedAI
+struct npc_goroth_703001 : public BossAI
 {
 public:
-    npc_goroth_703001(Creature* creature) : ScriptedAI(creature) { }
+    npc_goroth_703001(Creature* creature) : BossAI(creature, BossGoroth) { ApplyAllImmunities(true); }
 
-    void InitializeAI() override
+    enum Goroth
     {
-        /// TODO: Fill this function
-    }
+        Berserk = 369884,
+
+        EventFelBlast = 1,
+        EventFelflameBolt,
+        EventRoatingFlames,
+
+        SpellFelBlast = 240381,
+        FelFlameBolt = 361170,
+        RoaringFlames = 358749,
+        LumberingRoar = 356169, // aggro
+    };
+
     void Reset() override
     {
-        /// TODO: Fill this function
+        me->AddAura(Berserk, me);
+        DoSummon(NpcFelConduit, FelConduitPos, 0s, TEMPSUMMON_DEAD_DESPAWN);
     }
-    void JustEngagedWith(Unit* /*who*/) override
+
+    bool conduitUp = true;
+
+    void JustEngagedWith(Unit* who) override
     {
+        BossAI::JustEngagedWith(who);
+        me->AddAura(Berserk, me);
         Talk(1);
+
+        DoCastAOE(LumberingRoar);
+        events.ScheduleEvent(EventFelBlast, 5s, 10s);
+        events.ScheduleEvent(EventFelflameBolt, 5s, 10s);
+        events.ScheduleEvent(EventRoatingFlames, 20s);
     }
     void UpdateAI(uint32 diff) override
     {
-        scheduler.Update(diff);
-
         if (!UpdateVictim())
             return;
 
@@ -113,24 +155,100 @@ public:
         {
             switch (eventId)
             {
+                case EventFelBlast:
+                    DoCastVictim(SpellFelBlast);
+                    events.Repeat(10s, 15s);
+                    break;
+                case EventFelflameBolt:
+                    DoCastVictim(FelFlameBolt);
+                    events.Repeat(10s, 15s);
+                    break;
+                case EventRoatingFlames:
+                    DoCastAOE(RoaringFlames);
+                    events.Repeat(20s);
+                    break;
             }
         }
         DoMeleeAttackIfReady();
     }
 
+    void SummonedCreatureDies(Creature* creature, Unit* killer) override
+    {
+        BossAI::SummonedCreatureDies(creature, killer);
+
+        if (creature->GetEntry() == NpcFelConduit)
+        {
+            conduitUp = false;
+            me->RemoveAurasDueToSpell(Berserk);
+        }
+    }
+
+    bool didText = false;
+
+    void DamageTaken(Unit* attacker, uint32& damage, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
+    {
+        if (damage >= me->GetHealth() && conduitUp)
+        {
+            damage = 0;
+
+            me->SetHealth(me->CountPctFromMaxHealth(20));
+
+            if (!didText)
+            {
+                didText = true;
+                Talk(2);
+            }
+        }
+    }
+
     bool didIntro = false;
     void OnUnitRelocation(Unit* who) override
     {
-        if (!didIntro && who->IsPlayer() && who->GetDistance2d(me) <= 40.0f && (!who->movespline || who->movespline->Finalized()))
+        if (!didIntro && who->IsPlayer() && who->GetDistance2d(me) <= 80.0f && (!who->movespline || who->movespline->Finalized()))
         {
             didIntro = true;
             Talk(0);
         }
     }
 
-    TaskScheduler scheduler;
-    EventMap events;
+    void EnterEvadeMode(EvadeReason why) override
+    {
+        didText = false;
+        conduitUp = true;
+        SetCombatMovement(true);
+        _DespawnAtEvade(3s);
+        scheduler.CancelAll();
+        me->SetReactState(REACT_AGGRESSIVE);
+        me->GetScheduler().CancelAll();
+        summons.DespawnAll();
+    }
 };
+
+// 703027 - npc_fel_conduit_703027
+struct npc_fel_conduit_703027 : public ScriptedAI
+{
+public:
+    npc_fel_conduit_703027(Creature* creature) : ScriptedAI(creature) { }
+
+    void InitializeAI() override
+    {
+        SetCombatMovement(false);
+        me->SetReactState(REACT_PASSIVE);
+    }
+
+    void UpdateAI(uint32 diff) override
+    {
+        if (me->isDead())
+            return;
+
+        if (me->GetCurrentSpell(CurrentSpellTypes::CURRENT_CHANNELED_SPELL))
+            return;
+
+        if (auto goroth = me->FindNearestCreature(703001, 100.0f))
+            DoCast(goroth, 353401); // ID - 353401 Eye of the Jailer Channel
+    }
+};
+
 
 // 703007 - npc_harvested_mana_crystal_703007
 struct npc_harvested_mana_crystal_703007 : public ScriptedAI
@@ -140,7 +258,8 @@ public:
 
     void InitializeAI() override
     {
-        /// TODO: Fill this function
+        me->SetReactState(REACT_PASSIVE);
+        SetCombatMovement(false);
     }
     void Reset() override
     {
@@ -268,44 +387,85 @@ public:
 };
 
 // 703012 - npc_dolgonir_703012
-struct npc_dolgonir_703012 : public ScriptedAI
+struct npc_dolgonir_703012 : public BossAI
 {
 public:
-    npc_dolgonir_703012(Creature* creature) : ScriptedAI(creature) { }
+    npc_dolgonir_703012(Creature* creature) : BossAI(creature, BossDolgonir) { }
+
+    enum Dolgonir
+    {
+        EventEyeBeam = 1,
+        EventFelNova,
+        EventAnnilation,
+        EventImmoAura,
+        EventDeathSweep,
+
+        EyeBeam = 264382, // cast victim
+        FelNova = 223395,
+        Anniliation = 307403,
+        ImmolationAura = 360603,
+        DeathSweep = 334107,
+    };
 
     void InitializeAI() override
     {
-        /// TODO: Fill this function
-    }
-    void Reset() override
-    {
-        /// TODO: Fill this function
-    }
-    void JustEngagedWith(Unit* /*who*/) override
-    {
-        Talk(1);
+        me->AddAura(ImmolationAura, me);
     }
 
-    void JustDied(Unit* /*who*/) override
+    void JustEngagedWith(Unit* who) override
     {
+        me->AddAura(ImmolationAura, me);
+        BossAI::JustEngagedWith(who);
+        Talk(1);
+        events.ScheduleEvent(EventEyeBeam, 10s);
+        events.ScheduleEvent(EventFelNova, 3s);
+        events.ScheduleEvent(EventAnnilation, 20s);
+        events.ScheduleEvent(EventDeathSweep, 5s);
+    }
+
+    void JustDied(Unit* who) override
+    {
+        BossAI::JustDied(who);
         Talk(2);
     }
 
     void UpdateAI(uint32 diff) override
     {
-        scheduler.Update(diff);
-
         if (!UpdateVictim())
             return;
 
         events.Update(diff);
 
+        if (me->HasUnitState(UNIT_STATE_CASTING))
+            return;
+
         if (uint32 eventId = events.ExecuteEvent())
         {
             switch (eventId)
             {
+                case EventEyeBeam:
+                    DoCastVictim(EyeBeam);
+                    events.Repeat(20s);
+                    break;
+                case EventFelNova:
+                    DoCastVictim(FelNova, true);
+                    events.Repeat(5s, 10s);
+                    break;
+                case EventAnnilation:
+                    DoCastVictim(Anniliation);
+                    events.Repeat(30s, 40s);
+                    break;
+                case EventDeathSweep:
+                    DoCastVictim(DeathSweep);
+                    events.Repeat(5s, 7s);
+                    break;
+
             }
+
+            if (me->HasUnitState(UNIT_STATE_CASTING))
+                return;
         }
+
         DoMeleeAttackIfReady();
     }
 
@@ -320,8 +480,14 @@ public:
         }
     }
 
-    TaskScheduler scheduler;
-    EventMap events;
+    void EnterEvadeMode(EvadeReason why) override
+    {
+        SetCombatMovement(true);
+        _DespawnAtEvade(3s);
+        scheduler.CancelAll();
+        me->SetReactState(REACT_AGGRESSIVE);
+        me->GetScheduler().CancelAll();
+    }
 };
 
 // 703013 - npc_bellatrix_703013
@@ -334,12 +500,14 @@ public:
     {
         EventArmyOfDead = 1,
         EventAsphyxiate,
+        EventDemonicCrash,
 
         SpellArmyOfTheDead = 362862, // trigger - 362863 - triggers - 362864
         SpellAsphyxiate = 221562,
         SpellDrainPower = 272445,
         SpellEmpowered = 354757,
         CurseOfWeakness = 315079,
+        SpellDemonicCrash = 253089,
     };
 
     void InitializeAI() override
@@ -357,16 +525,19 @@ public:
     {
         BossAI::JustEngagedWith(who);
         Talk(1);
-        SetCombatMovement(false);
         events.ScheduleEvent(EventArmyOfDead, 1ms);
         events.ScheduleEvent(EventAsphyxiate, 10s, 15s);
+        events.ScheduleEvent(EventDemonicCrash, 10s, 15s);
     }
 
     bool setMovement = false;
 
     void UpdateAI(uint32 diff) override
     {
-        BossAI::UpdateAI(diff);
+        if (!UpdateVictim())
+            return;
+
+        events.Update(diff);
 
         if (me->IsEngaged() && !me->HasUnitState(UNIT_STATE_CASTING))
         {
@@ -377,31 +548,45 @@ public:
                 me->AttackStop();
                 if (me->GetVictim())
                     AttackStart(me->GetVictim());
+                return;
             }
         }
+
+        if (me->HasUnitState(UNIT_STATE_CASTING))
+            return;
+
+        while (uint32 eventId = events.ExecuteEvent())
+        {
+            switch (eventId)
+            {
+                case EventArmyOfDead:
+                    DoCast(SpellArmyOfTheDead);
+                    events.Repeat(60s);
+                    return;
+                case EventAsphyxiate:
+                    if (auto target = SelectTarget(SelectTargetMethod::Random, 0, 15.0f, true, false))
+                    {
+                        Talk(2);
+                        DoCast(target, SpellAsphyxiate);
+                        events.Repeat(20s);
+                    }
+                    else
+                        events.Repeat(2s);
+                    break;
+                case EventDemonicCrash:
+                    DoCastVictim(SpellDemonicCrash);
+                    events.Repeat(15s);
+                    break;
+            }
+            if (me->HasUnitState(UNIT_STATE_CASTING))
+                return;
+        }
+
+        DoMeleeAttackIfReady();
     }
 
     void ExecuteEvent(uint32 eventId) override
     {
-        switch (eventId)
-        {
-            case EventArmyOfDead:
-                me->AttackStop();
-                DoCast(SpellArmyOfTheDead);
-                setMovement = true;
-                events.Repeat(60s);
-                break;
-            case EventAsphyxiate:
-                if (auto target = SelectTarget(SelectTargetMethod::Random, 0, 15.0f, true, false))
-                {
-                    Talk(2);
-                    DoCast(target, SpellAsphyxiate);
-                    events.Repeat(20s);
-                }
-                else
-                    events.Repeat(2s);
-                break;
-        }
     }
 
     bool didIntro = false;
@@ -425,7 +610,6 @@ public:
         me->GetScheduler().CancelAll();
         phased = false;
         phasing = false;
-
     }
 
     bool phased = false;
@@ -490,7 +674,7 @@ class spell_362864_echoes_of_andorhal : public SpellScript
              //   skelly->SetUnitFlag(UnitFlags::UNIT_FLAG_UNINTERACTIBLE);
                 skelly->SetReactState(REACT_PASSIVE);
                 skelly->SetControlled(true, UnitState::UNIT_STATE_ROOT);
-                skelly->GetScheduler().Schedule(4s, [this, skelly](TaskContext context)
+                skelly->GetScheduler().Schedule(6s, [this, skelly](TaskContext context)
                 {
                     skelly->SetControlled(false, UnitState::UNIT_STATE_ROOT);
                     skelly->RemoveUnitFlag(UnitFlags::UNIT_FLAG_NON_ATTACKABLE);
@@ -505,6 +689,57 @@ class spell_362864_echoes_of_andorhal : public SpellScript
     void Register() override
     {
         OnEffectHit += SpellEffectFn(spell_362864_echoes_of_andorhal::OverrideEntry, EFFECT_0, SPELL_EFFECT_SUMMON);
+    }
+};
+
+// ID - 253089 Demonic Crash
+class spell_demonic_crash : public SpellScript
+{
+    PrepareSpellScript(spell_demonic_crash);
+
+    Position pos = { 3099.1f, 972.114f, 257.738f, 5.65488f };
+
+    bool Load() override
+    {
+        // Definitely not a good thing, but currently the only way to do something at cast start
+        // Should be replaced as soon as possible with a new hook: BeforeCastStart
+        if (auto caster = GetCaster())
+        {
+            if (auto target = ObjectAccessor::GetUnit(*caster, caster->GetTarget()))
+                pos = *target;
+
+            Movement::MoveSplineInit init(caster);
+            init.MoveTo(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), true);
+            init.SetParabolicVerticalAcceleration(25.0f, 0);
+            init.SetUncompressed();
+            init.SetVelocity(20.0f);
+            Movement::SpellEffectExtraData extraData;
+            extraData.SpellVisualId = 50217;
+            extraData.ProgressCurveId = 1636;
+            extraData.ParabolicCurveId = 0;
+
+            init.SetSpellEffectExtraData(extraData);
+           // init.SetAnimation(AnimTier::Hover);
+            init.Launch();
+
+            //if (hasOrientation)
+            //    init.SetFacing(pos.GetOrientation());
+        }
+        return true;
+    }
+
+
+    void HandleBeforeCast()
+    {
+        if (auto caster = GetCaster())
+        {
+           // caster->GetMotionMaster()->MoveLand(1, pos);
+        }
+    }
+
+    void Register() override
+    {
+        BeforeCast += SpellCastFn(spell_demonic_crash::HandleBeforeCast);
     }
 };
 
@@ -554,44 +789,108 @@ public:
 };
 
 // 703017 - npc_kuryash_703017
-struct npc_kuryash_703017 : public ScriptedAI
+struct npc_kuryash_703017 : public BossAI
 {
 public:
-    npc_kuryash_703017(Creature* creature) : ScriptedAI(creature) { }
+    npc_kuryash_703017(Creature* creature) : BossAI(creature, BossKuryash) { ApplyAllImmunities(true); }
+
+    enum Kuryash
+    {
+        EventArcaneOrbs = 1,
+        EventArcaneExplosion,
+        EventArcaneBarrage,
+        EventArcaneMissles,
+
+        ArcaneOrb = 153626,
+        ArcaneOrbs = 298787,
+        ArcaneExplosionBig = 225960,
+        ArcaneBarrage = 224564,
+        ArcaneMissles = 333820,
+    };
 
     void InitializeAI() override
     {
-        /// TODO: Fill this function
+        BossAI::InitializeAI();
     }
+
     void Reset() override
     {
-        /// TODO: Fill this function
+        BossAI::Reset();
     }
-    void JustEngagedWith(Unit* /*who*/) override
+
+    void JustEngagedWith(Unit* who) override
     {
+        BossAI::JustEngagedWith(who);
         Talk(0);
+        DoCastAOE(ArcaneOrbs);
+        //events.ScheduleEvent(EventArcaneOrbs, 5s);
+        events.ScheduleEvent(EventArcaneExplosion, 1s);
+        events.ScheduleEvent(EventArcaneBarrage, 5s);
+        events.ScheduleEvent(EventArcaneMissles, 5s, 7s);
     }
+
     void UpdateAI(uint32 diff) override
     {
-        scheduler.Update(diff);
-
         if (!UpdateVictim())
             return;
 
+        scheduler.Update(diff);
         events.Update(diff);
+
+        if (me->HasUnitState(UNIT_STATE_CASTING))
+            return;
 
         if (uint32 eventId = events.ExecuteEvent())
         {
             switch (eventId)
             {
+                case EventArcaneOrbs:
+                    if (me->GetVictim())
+                        me->CastSpell(*me->GetVictim(), ArcaneOrb, true);
+                    events.Repeat(5s);
+                    break;
+                case EventArcaneExplosion:
+                    if (phase)
+                        Talk(1);
+                    DoCastAOE(ArcaneExplosionBig);
+                   // events.Repeat(15s, 20s);
+                    break;
+                case EventArcaneBarrage:
+                    DoCastVictim(ArcaneBarrage);
+                    events.Repeat(5s, 10s);
+                    break;
+                case EventArcaneMissles:
+                    DoCastVictim(ArcaneMissles);
+                    events.Repeat(15s, 20s);
+                    break;
             }
+
+            if (me->HasUnitState(UNIT_STATE_CASTING))
+                return;
         }
+
         DoMeleeAttackIfReady();
     }
 
-    void OnUnitRelocation(Unit* who) override
+    bool phase = false;
+    void DamageTaken(Unit* attacker, uint32& damage, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
     {
-        /// TODO: Fill this function
+        if (me->HealthBelowPct(31) && !phase)
+        {
+            damage = 0;
+            phase = true;
+            events.ScheduleEvent(EventArcaneExplosion, 1s);
+        }
+    }
+
+    void EnterEvadeMode(EvadeReason why) override
+    {
+        phase = false;
+        SetCombatMovement(true);
+        _DespawnAtEvade(3s);
+        scheduler.CancelAll();
+        me->SetReactState(REACT_AGGRESSIVE);
+        me->GetScheduler().CancelAll();
     }
 
     TaskScheduler scheduler;
@@ -1483,51 +1782,6 @@ public:
     EventMap events;
 };
 
-// 703027 - npc_fel_conduit_703027
-struct npc_fel_conduit_703027 : public ScriptedAI
-{
-public:
-    npc_fel_conduit_703027(Creature* creature) : ScriptedAI(creature) { }
-
-    void InitializeAI() override
-    {
-        /// TODO: Fill this function
-    }
-    void Reset() override
-    {
-        /// TODO: Fill this function
-    }
-    void JustEngagedWith(Unit* /*who*/) override
-    {
-        /// TODO: Fill this function
-    }
-    void UpdateAI(uint32 diff) override
-    {
-        scheduler.Update(diff);
-
-        if (!UpdateVictim())
-            return;
-
-        events.Update(diff);
-
-        if (uint32 eventId = events.ExecuteEvent())
-        {
-            switch (eventId)
-            {
-            }
-        }
-        DoMeleeAttackIfReady();
-    }
-
-    void OnUnitRelocation(Unit* who) override
-    {
-        /// TODO: Fill this function
-    }
-
-    TaskScheduler scheduler;
-    EventMap events;
-};
-
 // ID - 369260 Destroying
 class spell_destroying_369260 : public SpellScript
 {
@@ -1547,6 +1801,49 @@ class spell_destroying_369260 : public SpellScript
         OnEffectHitTarget += SpellEffectFn(spell_destroying_369260::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
     }
 };
+
+const Position gorothPortalPath[] =
+{
+    { 3097.2f, 1095.18f, 290.47f, 3.99875f },
+    { 3079.34f, 1063.3f, 296.177f, 4.29982f },
+    { 3071.81f, 1026.87f, 307.821f, 4.61071f },
+    { 3078.16f, 995.567f, 321.419f, 5.1834f },
+    { 3105.26f, 974.107f, 336.417f, 5.89353f },
+    { 3140.43f, 969.273f, 352.167f, 0.0521354f },
+    { 3180.66f, 986.297f, 373.925f, 0.634639f },
+    { 3201.18f, 1010.63f, 388.335f, 0.955344f },
+    { 3221.31f, 1046.53f, 405.758f, 1.14515f },
+    { 3241.1f, 1092.63f, 423.376f, 1.18115f },
+    { 3276.8f, 1173.26f, 445.354f, 1.07315f },
+    { 3302.04f, 1219.36f, 453.597f, 1.06988f },
+    { 3368.47f, 1340.69f, 475.195f, 1.06988f },
+    { 3427.75f, 1436.37f, 488.366f, 0.781902f },
+    { 3465.78f, 1473.13f, 470.315f, 1.24987f },
+    { 3473.99f, 1494.19f, 451.932f, 2.03527f },
+    { 3474.13f, 1504.01f, 437.722f, 2.40505f },
+};
+
+// 703028 - npc_portal_to_goroth_703028
+struct npc_portal_to_goroth_703028 : public ScriptedAI
+{
+public:
+    npc_portal_to_goroth_703028(Creature* creature) : ScriptedAI(creature) { }
+
+    bool OnGossipHello(Player* player) override
+    {
+        CloseGossipMenuFor(player);
+        player->SetDisplayId((urand(0, 1) == 1) ? 75922 : 74041);
+        player->GetMotionMaster()->MoveSmoothPath(1, gorothPortalPath, 17, false, true, 90.0f)->callbackFunc = [this, player]()
+        {
+            player->RestoreDisplayId();
+        };
+        return true;
+    }
+
+    TaskScheduler scheduler;
+    EventMap events;
+};
+
 
 void AddSC_DreadscarRift()
 {
@@ -1581,6 +1878,8 @@ void AddSC_DreadscarRift()
     RegisterCreatureAI(npc_fel_conduit_703027);
     RegisterSpellScript(spell_destroying_369260);
     RegisterSpellScript(spell_362864_echoes_of_andorhal);
+    RegisterSpellScript(spell_demonic_crash);
+    RegisterCreatureAI(npc_portal_to_goroth_703028);
 }
 
 // UPDATE creature_template set ScriptName = 'npc_adageor_703000' WHERE entry = 703000;
