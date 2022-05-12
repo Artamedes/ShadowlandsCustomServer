@@ -607,12 +607,12 @@ public:
         return true;
     }
     
-    static bool HandleWpAddCommand(ChatHandler* handler)
+    static bool HandleWpAddCommand(ChatHandler* handler, Optional<uint32> pathz)
     {
         Creature* target = handler->getSelectedCreature();
-        if (!target)
-            return true;
-        uint32 pathid = target->GetSpawnId() * 10;
+        uint32 pathid = pathz.value_or(0);
+        if (target)
+            pathid = target->GetSpawnId() * 10;
 
         uint32 point = 0;
         // path_id -> ID of the Path
