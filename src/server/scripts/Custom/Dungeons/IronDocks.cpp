@@ -1036,6 +1036,7 @@ public:
             scheduler.CancelAll();
             didIntro2 = true;
             Talk(1);
+            me->SetReactState(REACT_DEFENSIVE);
 
             if (auto recruit = me->FindNearestCreatureBySpawnId(1052851, 10.0f))
                 DoZoneInCombat(recruit);
