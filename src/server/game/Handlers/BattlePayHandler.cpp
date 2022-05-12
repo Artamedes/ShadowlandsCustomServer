@@ -207,34 +207,6 @@ void WorldSession::SendProductList(uint32 balance)
         pStruct.ProductIds = productStruct.second.ProductIds;
         pStruct.UnkInts = productStruct.second.UnkInts;
 
-        // Internal Balance
-        if (pStruct.ProductId == 7 && productStruct.second.Display.has_value())
-        {
-            DisplayInfo display;
-            display.CreatureDisplayID = productStruct.second.Display.value().CreatureDisplayID;
-            display.VisualID         = productStruct.second.Display.value().VisualID;
-            display.Name1            = "Balance: $" + std::to_string(balance);
-            display.Name2            = productStruct.second.Display.value().Name2;           
-            display.Name3            = productStruct.second.Display.value().Name3;           
-            display.Name4            = productStruct.second.Display.value().Name4;           
-            display.Name5            = productStruct.second.Display.value().Name5;           
-            display.Name6            = productStruct.second.Display.value().Name6;           
-            display.Name7            = productStruct.second.Display.value().Name7;           
-            display.Flags            = productStruct.second.Display.value().Flags;           
-            display.Unk1             = productStruct.second.Display.value().Unk1;            
-            display.Unk2             = productStruct.second.Display.value().Unk2;            
-            display.Unk3             = productStruct.second.Display.value().Unk3;            
-            display.UnkInt1          = productStruct.second.Display.value().UnkInt1;         
-            display.UnkInt2          = productStruct.second.Display.value().UnkInt2;         
-            display.UnkInt3          = productStruct.second.Display.value().UnkInt3;         
-            display.Visuals          = productStruct.second.Display.value().Visuals;         
-
-            pStruct.Display = display;
-            pStruct.PurchaseEligibility |= (PartiallyOwned | Owned);
-        }
-        else
-            pStruct.Display = productStruct.second.Display;
-
         bool partiallyOwns = false;
         bool fullyOwns = false;
 
@@ -283,6 +255,34 @@ void WorldSession::SendProductList(uint32 balance)
             pStruct.PurchaseEligibility |= PartiallyOwned;
         if (fullyOwns)
             pStruct.PurchaseEligibility |= Owned;
+
+        // Internal Balance
+        if (pStruct.ProductId == 7 && productStruct.second.Display.has_value())
+        {
+            DisplayInfo display;
+            display.CreatureDisplayID = productStruct.second.Display.value().CreatureDisplayID;
+            display.VisualID = productStruct.second.Display.value().VisualID;
+            display.Name1 = "Balance: $" + std::to_string(balance);
+            display.Name2 = productStruct.second.Display.value().Name2;
+            display.Name3 = productStruct.second.Display.value().Name3;
+            display.Name4 = productStruct.second.Display.value().Name4;
+            display.Name5 = productStruct.second.Display.value().Name5;
+            display.Name6 = productStruct.second.Display.value().Name6;
+            display.Name7 = productStruct.second.Display.value().Name7;
+            display.Flags = productStruct.second.Display.value().Flags;
+            display.Unk1 = productStruct.second.Display.value().Unk1;
+            display.Unk2 = productStruct.second.Display.value().Unk2;
+            display.Unk3 = productStruct.second.Display.value().Unk3;
+            display.UnkInt1 = productStruct.second.Display.value().UnkInt1;
+            display.UnkInt2 = productStruct.second.Display.value().UnkInt2;
+            display.UnkInt3 = productStruct.second.Display.value().UnkInt3;
+            display.Visuals = productStruct.second.Display.value().Visuals;
+
+            pStruct.Display = display;
+            pStruct.PurchaseEligibility |= (PartiallyOwned | Owned);
+        }
+        else
+            pStruct.Display = productStruct.second.Display;
 
         packet.ProductStructs.emplace_back(pStruct);
     }
@@ -471,6 +471,12 @@ void WorldSession::HandleBattlePayStartPurchase(WorldPackets::BattlePay::BattleP
         // packet.PurchaseResult = Error::Ok;
         // packet.ClientToken = clientToken;
         // SendPacket(packet.Write());
+
+        BattlePayStartPurchaseResponse packet;
+        packet.PurchaseID = purchase->PurchaseID;
+        packet.PurchaseResult = Error::Ok;
+        packet.ClientToken = clientToken;
+        SendPacket(packet.Write());
 
         // All good send packets to let client buy
         BattlePayPurchaseUpdate packet2;
