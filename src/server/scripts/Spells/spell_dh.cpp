@@ -2230,7 +2230,7 @@ public:
 
             if (const WorldLocation* dest = GetExplTargetDest())
             {
-                player->CastSpell(CastSpellTargetArg({ dest->GetPositionX(), dest->GetPositionY(), dest->GetPositionZ() }), SPELL_DH_METAMORPHOSIS_LEAP, false);
+                player->CastSpell(*dest, SPELL_DH_METAMORPHOSIS_LEAP, false);
             }
 
             player->GetSpellHistory()->ResetCooldown(SPELL_DH_EYE_BEAM, true);
@@ -2777,7 +2777,7 @@ class spell_dh_infernal_strike : public SpellScript
         if (!caster || !dest)
             return;
 
-        caster->CastSpell(CastSpellTargetArg({ dest->GetPositionX(), dest->GetPositionY(), dest->GetPositionZ() }), SPELL_DH_INFERNAL_STRIKE_JUMP, true);
+        caster->CastSpell(*dest, SPELL_DH_INFERNAL_STRIKE_JUMP, true);
         caster->CastSpell(caster, SPELL_DH_INFERNAL_STRIKE_VISUAL, true);
     }
 

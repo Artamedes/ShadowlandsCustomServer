@@ -6,6 +6,19 @@
 #include "GenericMovementGenerator.h"
 #include "../CustomInstanceScript.h"
 
+enum IronDocks
+{
+    IronShot = 167365,
+    IronShot2 = 174177,
+    IncendorySlugs = 172802, // aura
+
+    BossMarc = 0,
+    BossFelloc,
+    BossFleshEater,
+    BossShulloc,
+    BossSkulloc,
+};
+
 // 730609 - npc_beastmaster_730609
 struct npc_beastmaster_730609 : public ScriptedAI
 {
@@ -56,24 +69,38 @@ public:
 };
 
 // 730610 - npc_flesh_eater_730610
-struct npc_flesh_eater_730610 : public ScriptedAI
+struct npc_flesh_eater_730610 : public BossAI
 {
 public:
-    npc_flesh_eater_730610(Creature* creature) : ScriptedAI(creature) { }
+    npc_flesh_eater_730610(Creature* creature) : BossAI(creature, BossFleshEater) { }
 
-    void InitializeAI() override
+    enum FleshEater
     {
-        /// TODO: Fill this function
-    }
-    void Reset() override
+        EventBladeStorm = 1,
+        EventChainCleave,
+        EventHackAndCleave,
+        EventCharge,
+
+        Bladestorm = 314316,
+        ChainCleave = 343664,
+        HackAndCleave = 326694,
+        HeroicLeap = 178368,
+        Charge = 361176,
+    };
+
+    void JustEngagedWith(Unit* who) override
     {
-        /// TODO: Fill this function
-    }
-    void JustEngagedWith(Unit* /*who*/) override
-    {
+        BossAI::JustEngagedWith(who);
         didIntro = true;
         Talk(1);
+        DoCast(who, Charge);
+        //me->CastSpell(Position(6507.4f, -1108.37f, 4.95951f, 4.74936f), HeroicLeap, true);
+        events.ScheduleEvent(EventBladeStorm, 5s, 30s);
+        events.ScheduleEvent(EventChainCleave, 5s, 30s);
+        events.ScheduleEvent(EventHackAndCleave, 5s, 30s);
+        events.ScheduleEvent(EventCharge, 5s, 30s);
     }
+
     void UpdateAI(uint32 diff) override
     {
         scheduler.Update(diff);
@@ -83,14 +110,39 @@ public:
 
         events.Update(diff);
 
+        if (me->HasUnitState(UNIT_STATE_CASTING))
+            return;
+
         if (uint32 eventId = events.ExecuteEvent())
         {
             switch (eventId)
             {
+                case EventBladeStorm:
+                    DoCastVictim(Bladestorm);
+                    events.Repeat(30s);
+                    break;
+                case EventChainCleave:
+                    DoCastVictim(ChainCleave);
+                    events.Repeat(15s);
+                    break;
+                case EventHackAndCleave:
+                    DoCastVictim(HackAndCleave);
+                    events.Repeat(8s);
+                    break;
+                case EventCharge:
+                    DoCastVictim(Charge);
+                    events.Repeat(8s);
+                    break;
             }
+
+            if (me->HasUnitState(UNIT_STATE_CASTING))
+                return;
         }
+
+
         DoMeleeAttackIfReady();
     }
+
     bool didIntro = false;
     void OnUnitRelocation(Unit* who) override
     {
@@ -102,34 +154,46 @@ public:
         }
     }
 
-    void DamageTaken(Unit* attacker, uint32& damage, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
+    void EnterEvadeMode(EvadeReason why) override
     {
-        /// TODO: Fill this function
+        BossAI::EnterEvadeMode(why);
+        _DespawnAtEvade(3s);
     }
-
-    TaskScheduler scheduler;
-    EventMap events;
 };
 
 // 730612 - npc_skulloc_730612
-struct npc_skulloc_730612 : public ScriptedAI
+struct npc_skulloc_730612 : public BossAI
 {
 public:
-    npc_skulloc_730612(Creature* creature) : ScriptedAI(creature) { }
+    npc_skulloc_730612(Creature* creature) : BossAI(creature, BossSkulloc) { }
 
-    void InitializeAI() override
+    enum Skulloc
     {
-        /// TODO: Fill this function
-    }
-    void Reset() override
+        EventCannonBarrage = 1,
+        EventBoulderToss,
+        EventFireBreath,
+        EventHeadButt,
+
+        SpellWarHorn    = 170909,
+        CannonBarrage   = 168511,
+        BoulderToss     = 166207,
+        FireBreath      = 342999,
+        HeadButt        = 330393,
+    };
+
+    void JustEngagedWith(Unit* who) override
     {
-        /// TODO: Fill this function
-    }
-    void JustEngagedWith(Unit* /*who*/) override
-    {
+        BossAI::JustEngagedWith(who);
         scheduler.CancelAll();
         Talk(1);
+        DoCastAOE(SpellWarHorn);
+
+        events.ScheduleEvent(EventCannonBarrage, 30s);
+        events.ScheduleEvent(EventBoulderToss, 5s, 30s);
+        events.ScheduleEvent(EventFireBreath, 5s, 30s);
+        events.ScheduleEvent(EventHeadButt, 5s, 30s);
     }
+
     void UpdateAI(uint32 diff) override
     {
         scheduler.Update(diff);
@@ -139,11 +203,33 @@ public:
 
         events.Update(diff);
 
+        if (me->HasUnitState(UNIT_STATE_CASTING))
+            return;
+
         if (uint32 eventId = events.ExecuteEvent())
         {
             switch (eventId)
             {
+                case EventCannonBarrage:
+                    DoCastVictim(CannonBarrage);
+                    events.Repeat(30s);
+                    break;
+                case EventBoulderToss:
+                    DoCastVictim(BoulderToss);
+                    events.Repeat(5s, 20s);
+                    break;
+                case EventFireBreath:
+                    DoCastVictim(FireBreath);
+                    events.Repeat(20s, 30s);
+                    break;
+                case EventHeadButt:
+                    DoCastVictim(HeadButt);
+                    events.Repeat(20s, 30s);
+                    break;
             }
+
+            if (me->HasUnitState(UNIT_STATE_CASTING))
+                return;
         }
         DoMeleeAttackIfReady();
     }
@@ -162,13 +248,12 @@ public:
             });
         }
     }
-    void DamageTaken(Unit* attacker, uint32& damage, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
-    {
-        /// TODO: Fill this function
-    }
 
-    TaskScheduler scheduler;
-    EventMap events;
+    void EnterEvadeMode(EvadeReason why) override
+    {
+        BossAI::EnterEvadeMode(why);
+        _DespawnAtEvade(3s);
+    }
 };
 
 // 730617 - npc_parc_730617
@@ -572,52 +657,93 @@ public:
 };
 
 // 730613 - npc_shulloc_730613
-struct npc_shulloc_730613 : public ScriptedAI
+struct npc_shulloc_730613 : public BossAI
 {
 public:
-    npc_shulloc_730613(Creature* creature) : ScriptedAI(creature) { }
+    npc_shulloc_730613(Creature* creature) : BossAI(creature, BossShulloc) { ApplyAllImmunities(true); }
 
-    void InitializeAI() override
+    enum Shulloc
     {
-        /// TODO: Fill this function
-    }
-    void Reset() override
+        EventThrowBoulder = 1,
+        EventRoarOfTerror,
+        EventBoulderThrow,
+        EventTrample,
+        EventEarthquake,
+        EventCrushingSlam,
+
+        ThrowBoulder = 282680,
+        RoarOfTerror = 213657,
+        BoulderThrow = 355464,
+        Trample = 275594,
+        Earthquake = 360577,
+        CrushingSlam = 127480,
+    };
+
+    void JustEngagedWith(Unit* who) override
     {
-        /// TODO: Fill this function
-    }
-    void JustEngagedWith(Unit* /*who*/) override
-    {
+        BossAI::JustEngagedWith(who);
         Talk(0);
+
+        events.ScheduleEvent(EventThrowBoulder, 5s, 10s);
+        events.ScheduleEvent(EventRoarOfTerror, 1s);
+        events.ScheduleEvent(EventBoulderThrow, 5s, 10s);
+        events.ScheduleEvent(EventTrample, 5s, 20s);
+        events.ScheduleEvent(EventEarthquake, 5s, 20s);
+        events.ScheduleEvent(EventCrushingSlam, 5s, 20s);
     }
+
     void UpdateAI(uint32 diff) override
     {
-        scheduler.Update(diff);
-
         if (!UpdateVictim())
             return;
 
         events.Update(diff);
 
+        if (me->HasUnitState(UNIT_STATE_CASTING))
+            return;
+
         if (uint32 eventId = events.ExecuteEvent())
         {
             switch (eventId)
             {
+                case EventThrowBoulder:
+                    DoCastVictim(ThrowBoulder);
+                    events.Repeat(20s, 30s);
+                    break;
+                case EventRoarOfTerror:
+                    DoCastVictim(RoarOfTerror);
+                    events.Repeat(40s);
+                    break;
+                case EventBoulderThrow:
+                    DoCastVictim(BoulderThrow);
+                    events.Repeat(20s, 30s);
+                    break;
+                case EventTrample:
+                    DoCastVictim(Trample);
+                    events.Repeat(20s, 30s);
+                    break;
+                case EventEarthquake:
+                    DoCastVictim(Earthquake);
+                    events.Repeat(20s, 30s);
+                    break;
+                case EventCrushingSlam:
+                    DoCastVictim(CrushingSlam);
+                    events.Repeat(20s, 30s);
+                    break;
             }
+
+            if (me->HasUnitState(UNIT_STATE_CASTING))
+                return;
         }
+
         DoMeleeAttackIfReady();
     }
 
-    void OnUnitRelocation(Unit* who) override
+    void EnterEvadeMode(EvadeReason why) override
     {
-        /// TODO: Fill this function
+        BossAI::EnterEvadeMode(why);
+        _DespawnAtEvade(3s);
     }
-    void DamageTaken(Unit* attacker, uint32& damage, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
-    {
-        /// TODO: Fill this function
-    }
-
-    TaskScheduler scheduler;
-    EventMap events;
 };
 
 // 730608 - npc_barrel_730608
@@ -906,52 +1032,100 @@ public:
 };
 
 // 705010 - npc_felloc_705010
-struct npc_felloc_705010 : public ScriptedAI
+struct npc_felloc_705010 : public BossAI
 {
 public:
-    npc_felloc_705010(Creature* creature) : ScriptedAI(creature) { }
+    npc_felloc_705010(Creature* creature) : BossAI(creature, BossFelloc) { }
 
-    void InitializeAI() override
+    enum Felloc
     {
-        /// TODO: Fill this function
-    }
-    void Reset() override
+        EventThrowBoulder = 1,
+        EventRoarOfTerror,
+        EventBoulderThrow,
+        EventTrample,
+        EventEarthquake,
+        EventCrushingSlam,
+        EventFelfireVolley,
+
+        ThrowBoulder = 282680,
+        RoarOfTerror = 213657,
+        BoulderThrow = 355464,
+        Trample = 275594,
+        Earthquake = 360577,
+        CrushingSlam = 127480,
+        FelfireVolley = 340793,
+    };
+
+    void JustEngagedWith(Unit* who) override
     {
-        /// TODO: Fill this function
-    }
-    void JustEngagedWith(Unit* /*who*/) override
-    {
+        BossAI::JustEngagedWith(who);
         Talk(0);
+
+        events.ScheduleEvent(EventThrowBoulder, 5s, 10s);
+        events.ScheduleEvent(EventRoarOfTerror, 1s);
+        events.ScheduleEvent(EventBoulderThrow, 5s, 10s);
+        events.ScheduleEvent(EventTrample, 5s, 20s);
+        events.ScheduleEvent(EventEarthquake, 5s, 20s);
+        events.ScheduleEvent(EventCrushingSlam, 5s, 20s);
+        events.ScheduleEvent(EventFelfireVolley, 5s, 20s);
     }
+
     void UpdateAI(uint32 diff) override
     {
-        scheduler.Update(diff);
-
         if (!UpdateVictim())
             return;
 
         events.Update(diff);
 
+        if (me->HasUnitState(UNIT_STATE_CASTING))
+            return;
+
         if (uint32 eventId = events.ExecuteEvent())
         {
             switch (eventId)
             {
+                case EventThrowBoulder:
+                    DoCastVictim(ThrowBoulder);
+                    events.Repeat(20s, 30s);
+                    break;
+                case EventRoarOfTerror:
+                    DoCastVictim(RoarOfTerror);
+                    events.Repeat(40s);
+                    break;
+                case EventBoulderThrow:
+                    DoCastVictim(BoulderThrow);
+                    events.Repeat(20s, 30s);
+                    break;
+                case EventTrample:
+                    DoCastVictim(Trample);
+                    events.Repeat(20s, 30s);
+                    break;
+                case EventEarthquake:
+                    DoCastVictim(Earthquake);
+                    events.Repeat(20s, 30s);
+                    break;
+                case EventCrushingSlam:
+                    DoCastVictim(CrushingSlam);
+                    events.Repeat(20s, 30s);
+                    break;
+                case EventFelfireVolley:
+                    DoCastVictim(FelfireVolley);
+                    events.Repeat(6s, 10s);
+                    break;
             }
+
+            if (me->HasUnitState(UNIT_STATE_CASTING))
+                return;
         }
+
         DoMeleeAttackIfReady();
     }
 
-    void OnUnitRelocation(Unit* who) override
+    void EnterEvadeMode(EvadeReason why) override
     {
-        /// TODO: Fill this function
+        BossAI::EnterEvadeMode(why);
+        _DespawnAtEvade(3s);
     }
-    void DamageTaken(Unit* attacker, uint32& damage, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
-    {
-        /// TODO: Fill this function
-    }
-
-    TaskScheduler scheduler;
-    EventMap events;
 };
 
 // 705009 - npc_iron_dock_overseer_705009
@@ -1087,42 +1261,38 @@ public:
 };
 
 // 705008 - npc_marc_705008
-struct npc_marc_705008 : public ScriptedAI
+struct npc_marc_705008 : public BossAI
 {
 public:
-    npc_marc_705008(Creature* creature) : ScriptedAI(creature) { }
+    npc_marc_705008(Creature* creature) : BossAI(creature, BossMarc) { }
 
-    void InitializeAI() override
+    void JustEngagedWith(Unit* who) override
     {
-        /// TODO: Fill this function
-    }
-    void Reset() override
-    {
-        /// TODO: Fill this function
-    }
-    void JustEngagedWith(Unit* /*who*/) override
-    {
+        BossAI::JustEngagedWith(who);
         Talk(0);
 
         if (auto parc = me->FindNearestCreature(730617, 50.0f))
+        {
             DoZoneInCombat(parc);
 
-        scheduler.Schedule(3s, [this](TaskContext context)
-        {
-            if (auto parc = me->FindNearestCreature(730617, 50.0f))
+            scheduler.Schedule(3s, [this](TaskContext context)
             {
-                if (parc->AI())
+                if (auto parc = me->FindNearestCreature(730617, 50.0f))
                 {
-                    parc->AI()->Talk(0);
-
-                    scheduler.Schedule(3s, [this](TaskContext context)
+                    if (parc->AI())
                     {
-                        Talk(1);
-                    });
+                        parc->AI()->Talk(0);
+
+                        scheduler.Schedule(3s, [this](TaskContext context)
+                        {
+                            Talk(1);
+                        });
+                    }
                 }
-            }
-        });
+            });
+        }
     }
+
     void UpdateAI(uint32 diff) override
     {
         scheduler.Update(diff);
@@ -1140,18 +1310,6 @@ public:
         }
         DoMeleeAttackIfReady();
     }
-
-    void OnUnitRelocation(Unit* who) override
-    {
-        /// TODO: Fill this function
-    }
-    void DamageTaken(Unit* attacker, uint32& damage, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
-    {
-        /// TODO: Fill this function
-    }
-
-    TaskScheduler scheduler;
-    EventMap events;
 };
 
 // 705007 - npc_iron_dock_worker_705007
@@ -1221,15 +1379,22 @@ public:
 
     void InitializeAI() override
     {
-        /// TODO: Fill this function
+        me->AddAura(IncendorySlugs, me);
+        scheduler.Schedule(1s, [this](TaskContext context)
+        {
+            Position pos = *me;
+            me->MovePositionToFirstCollision(pos, 30.0f, me->GetOrientation());
+            me->CastSpell(WorldLocation(me->GetMapId(), pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), pos.GetOrientation()), IronShot, false);
+            context.Repeat(2s, 3s);
+        });
     }
     void Reset() override
     {
-        /// TODO: Fill this function
+        me->AddAura(IncendorySlugs, me);
     }
     void JustEngagedWith(Unit* /*who*/) override
     {
-        /// TODO: Fill this function
+        scheduler.CancelAll();
     }
     void UpdateAI(uint32 diff) override
     {

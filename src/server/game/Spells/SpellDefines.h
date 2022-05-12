@@ -369,6 +369,7 @@ public:
     WorldLocation const* GetDstPos() const;
     void SetDst(float x, float y, float z, float orientation, uint32 mapId = MAPID_INVALID);
     void SetDst(Position const& pos);
+    void SetDst(WorldLocation const& pos);
     void SetDst(WorldObject const& wObj);
     void SetDst(SpellDestination const& spellDest);
     void SetDst(SpellCastTargets const& spellTargets);
@@ -423,6 +424,11 @@ struct TC_GAME_API CastSpellTargetArg
         Targets->SetItemTarget(itemTarget);
     }
     CastSpellTargetArg(Position const& dest)
+    {
+        Targets.emplace();
+        Targets->SetDst(dest);
+    }
+    CastSpellTargetArg(WorldLocation const& dest)
     {
         Targets.emplace();
         Targets->SetDst(dest);

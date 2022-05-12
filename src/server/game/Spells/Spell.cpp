@@ -396,6 +396,12 @@ void SpellCastTargets::SetDst(Position const& pos)
     m_targetMask |= TARGET_FLAG_DEST_LOCATION;
 }
 
+void SpellCastTargets::SetDst(WorldLocation const& pos)
+{
+    m_dst = SpellDestination(pos);
+    m_targetMask |= TARGET_FLAG_DEST_LOCATION;
+}
+
 void SpellCastTargets::SetDst(WorldObject const& wObj)
 {
     m_dst = SpellDestination(wObj);
@@ -4251,7 +4257,8 @@ void Spell::update(uint32 difftime)
 
     // check if the player caster has moved before the spell finished
     // with the exception of spells affected with SPELL_AURA_CAST_WHILE_WALKING effect
-    if (m_timer != 0 && m_caster->IsUnit() && m_caster->ToUnit()->isMoving() && CheckMovement() != SPELL_CAST_OK)
+    // checking only player.
+    if (m_timer != 0 && m_caster->IsPlayer() && m_caster->ToUnit()->isMoving() && CheckMovement() != SPELL_CAST_OK)
     {
         // if charmed by creature, trust the AI not to cheat and allow the cast to proceed
         // @todo this is a hack, "creature" movesplines don't differentiate turning/moving right now
@@ -4838,6 +4845,11 @@ void Spell::SendSpellGo()
     {
         castFlags |= CAST_FLAG_PENDING;
         m_castFlagsEx |= CAST_FLAG_EX_USE_TOY_SPELL;
+    }
+
+    if (GetSpellInfo()->Id == 167365)
+    {
+        castFlags = 800;
     }
 
     WorldPackets::Spells::SpellGo packet;
