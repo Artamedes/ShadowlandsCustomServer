@@ -574,6 +574,13 @@ bool Condition::Meets(ConditionSourceInfo& sourceInfo) const
                     static_cast<uint8>(ConditionValue2));
             break;
         }
+        case CONDITION_ACCOUNT_LEVEL:
+        {
+            if (Player* player = object->ToPlayer())
+                if (WorldSession* sess = player->GetSession())
+                    condMeets = static_cast<uint32>(sess->GetSecurity()) >= ConditionValue1 && player->IsGameMaster();
+            break;
+        }
         default:
             condMeets = false;
             break;
@@ -776,6 +783,9 @@ uint32 Condition::GetSearcherTypeMaskForCondition() const
             mask |= GRID_MAP_TYPE_MASK_PLAYER;
             break;
         case CONDITION_BATTLE_PET_COUNT:
+            mask |= GRID_MAP_TYPE_MASK_PLAYER;
+            break;
+        case CONDITION_ACCOUNT_LEVEL:
             mask |= GRID_MAP_TYPE_MASK_PLAYER;
             break;
         default:
@@ -2579,6 +2589,7 @@ bool ConditionMgr::isConditionTypeValid(Condition* cond) const
         case CONDITION_CHARMED:
         case CONDITION_TAXI:
         case CONDITION_GAMEMASTER:
+        case CONDITION_ACCOUNT_LEVEL:
             break;
         case CONDITION_DIFFICULTY_ID:
             if (!sDifficultyStore.LookupEntry(cond->ConditionValue1))
