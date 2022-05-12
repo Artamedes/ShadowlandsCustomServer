@@ -7,6 +7,8 @@
 #include "InstanceScenario.h"
 #include "GenericMovementGenerator.h"
 #include "AreaBoundary.h"
+#include "QuestAI.h"
+#include "TemporarySummon.h"
 
 enum Underrot
 {
@@ -1353,6 +1355,173 @@ struct spell_underrot_gateway : public AuraScript
         OnEffectApply += AuraEffectApplyFn(spell_underrot_gateway::HandleOnApply, EFFECT_0, SPELL_AURA_FLY, AURA_EFFECT_HANDLE_REAL);
     }
 };
+// 800055 - npc_scrappie_800055
+struct npc_scrappie_800055 : public ScriptedAI
+{
+public:
+    npc_scrappie_800055(Creature* creature) : ScriptedAI(creature) { }
+
+    void InitializeAI() override
+    {
+        me->AddAura(343980, me); // Frozen
+        me->AddAura(327490, me); // Slime
+        if (!me->IsSummon())
+        {
+            me->RemoveNpcFlag(NPCFlags::UNIT_NPC_FLAG_SPELLCLICK);
+        }
+    }
+
+    bool OnGossipHello(Player* player)
+    {
+        //player->KilledMonsterCredit(me->GetEntry(), me->GetGUID());
+
+        auto status = player->GetQuestStatus(800055);
+        if (status == QUEST_STATUS_INCOMPLETE)
+        {
+          //  player->KilledMonsterCredit(me->GetEntry(), me->GetGUID());
+            player->PlayerTalkClass->SendQuestGiverQuestDetails(sObjectMgr->GetQuestTemplate(800055), me->GetGUID(), false, false);
+        }
+        else if (status == QUEST_STATUS_NONE)
+        {
+            player->AddQuestAndCheckCompletion(sObjectMgr->GetQuestTemplate(800055), me);
+          //  player->KilledMonsterCredit(me->GetEntry(), me->GetGUID());
+            player->PlayerTalkClass->SendQuestGiverQuestDetails(sObjectMgr->GetQuestTemplate(800055), me->GetGUID(), false, false);
+        }
+        else if (status == QUEST_STATUS_COMPLETE)
+        {
+            player->PlayerTalkClass->SendQuestGiverOfferReward(sObjectMgr->GetQuestTemplate(800055), me->GetGUID(), false);
+        }
+        return true;
+    }
+
+    void OnQuestAccept(Player* player, Quest const* quest) override
+    {
+        //player->KilledMonsterCredit(me->GetEntry(), me->GetGUID());
+
+        players.insert(player->GetGUID());
+        if (auto clone = me->SummonPersonalClone(*me, TEMPSUMMON_MANUAL_DESPAWN, 0s, 0, 0, player))
+        {
+            clone->SetNpcFlag(NPCFlags::UNIT_NPC_FLAG_SPELLCLICK);
+            clone->RemoveNpcFlag(NPCFlags::UNIT_NPC_FLAG_QUESTGIVER);
+            if (auto ai = clone->AI())
+                ai->Talk(0, player);
+        }
+    }
+
+    bool CanSeeOrDetect(WorldObject const* who) const override
+    {
+        if (who->IsPlayer() && !me->isAnySummons())
+        {
+            auto player = who->ToPlayer();
+            if (player->IsGameMaster())
+                return true;
+            if (player->GetQuestStatus(800055) == QUEST_STATUS_REWARDED)
+                return false;
+        }
+
+        return true;
+    }
+
+    // handled by spellscript
+    void OnSpellClick(Unit* clicker, bool spellClickHandled) override
+    {
+    }
+
+    void DoAction(int32 actionId) override
+    {
+        if (actionId == 1)
+        {
+            me->RemoveAllAuras();
+            me->SetNpcFlag(NPCFlags::UNIT_NPC_FLAG_QUESTGIVER);
+            me->RemoveNpcFlag(NPCFlags::UNIT_NPC_FLAG_SPELLCLICK);
+           // me->DespawnOrUnsummon();
+        }
+    }
+
+    uint32 checkTimer = 0;
+
+    void UpdateAI(uint32 diff)
+    {
+        if (me->isAnySummons())
+            return;
+
+        checkTimer += diff;
+
+        if (checkTimer >= 250)
+        {
+            checkTimer = 0;
+            std::list<Unit*> unitsInRange;
+            me->GetFriendlyUnitListInRange(unitsInRange, 15.0f);
+            for (auto who : unitsInRange)
+            {
+                if (who->IsPlayer() && who->GetDistance2d(me) <= 15.0f && !players.count(who->GetGUID()) && CanSeeOrDetect(who))
+                {
+                    players.insert(who->GetGUID());
+                    auto status = who->ToPlayer()->GetQuestStatus(800055);
+                    if (status == QUEST_STATUS_INCOMPLETE)
+                    {
+                        if (auto clone = me->SummonPersonalClone(*me, TEMPSUMMON_MANUAL_DESPAWN, 0s, 0, 0, who->ToPlayer()))
+                        {
+                            clone->RemoveNpcFlag(NPCFlags::UNIT_NPC_FLAG_QUESTGIVER);
+                            if (auto ai = clone->AI())
+                                ai->Talk(0, who->ToPlayer());
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    GuidSet players;
+
+    void MoveInLineOfSight(Unit* who) override
+    {
+    }
+};
+
+/// ID - 361487 Cleansing
+class spell_361487_cleansing : public SpellScript
+{
+    PrepareSpellScript(spell_361487_cleansing);
+
+    void HandleDummy(SpellEffIndex /*effIndex*/)
+    {
+        Creature* target = GetHitCreature();
+        if (!target || !target->IsAIEnabled() || target->GetEntry() != 800055)
+            return;
+
+        if (auto caster = GetCaster())
+            if (auto player = caster->ToPlayer())
+                player->KilledMonsterCredit(800055, target->GetGUID());
+        target->AI()->DoAction(1);
+    }
+
+    void Register() override
+    {
+        OnEffectHitTarget += SpellEffectFn(spell_361487_cleansing::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
+    }
+};
+
+struct quest_scrappie : public QuestAI
+{
+public:
+    quest_scrappie(Quest const* quest, Player* player) : QuestAI(quest, player) { }
+
+    void OnQuestReward(Object* questGiver) override
+    {
+        if (questGiver && questGiver->IsCreature())
+        {
+            auto creature = questGiver->ToCreature();
+            if (creature->ToTempSummon())
+            {
+                creature->CastSpell(creature, 367044, true);
+                creature->DespawnOrUnsummon(700ms);
+            }
+            creature->UpdateObjectVisibility();
+        }
+    }
+};
+
 
 void AddSC_TheUnderrot()
 {
@@ -1380,4 +1549,7 @@ void AddSC_TheUnderrot()
     RegisterCreatureAI(npc_plague_doctor_701020);
     RegisterSpellScript(spell_beckon_slime_underrot);
     RegisterSpellScript(spell_underrot_gateway);
+    RegisterSpellScript(spell_361487_cleansing);
+    RegisterCreatureAI(npc_scrappie_800055);
+    RegisterQuestAI(quest_scrappie);
 }
