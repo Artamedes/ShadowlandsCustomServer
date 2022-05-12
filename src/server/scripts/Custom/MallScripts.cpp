@@ -17,6 +17,7 @@
 #include "QuestAI.h"
 #include "GameObjectAI.h"
 #include "PlayerChallenge.h"
+#include "InstanceSaveMgr.h"
 
 struct npc_battle_training : public ScriptedAI
 {
@@ -1019,6 +1020,9 @@ struct npc_soulshape_picker : public ScriptedAI
             auto covenant = player->GetCovenant();
             ClearGossipMenuFor(player);
 
+            if (me->isAnySummons())
+                me->DespawnOrUnsummon();
+
             if (covenant->GetCovenantID() == CovenantID::NightFae)
             {
                 AddGossipItemFor(player, GossipOptionIcon::None, "Vulpin", 0, 0);
@@ -1052,8 +1056,7 @@ struct npc_soulshape_picker : public ScriptedAI
                 AddGossipItemFor(player, GossipOptionIcon::None, "Runestag", 0, 321080);
             }
 
-
-            SendGossipMenuFor(player, 1, me);
+            SendGossipMenuFor(player, me->GetEntry(), me);
             return true;
         }
 
@@ -1073,6 +1076,21 @@ struct npc_soulshape_picker : public ScriptedAI
                 player->CastSpell(player, actionId, true);
                 player->LearnSpell(actionId, false);
                 player->RestoreDisplayId();
+
+                if (auto crea = player->GetSummonedCreatureByEntry(800300))
+                    crea->DestroyForNearbyPlayers();
+                player->UnsummonCreatureByEntry(800300);
+
+                if (auto clone = player->SummonCreature(800300, { 41.3424f, -2781.91f, 63.6578f, 0.0426812f }, TEMPSUMMON_NO_OWNER_OR_TIMED_DESPAWN, 5s, 0, 0, player->GetGUID()))
+                //if (auto clone = me->SummonPersonalClone(*me, TEMPSUMMON_NO_OWNER_OR_TIMED_DESPAWN, 5s, 0, 0, player))
+                {
+                    clone->SetUnitFlag(UnitFlags::UNIT_FLAG_UNINTERACTIBLE);
+                    clone->SetOwnerGUID(player->GetGUID());
+                    clone->CastSpell(clone, actionId, true);
+                    clone->AddAura(310143, clone); //< Soulshape
+                    clone->RestoreDisplayId();
+                    player->AddSummonedCreature(clone->GetGUID(), 800300);
+                }
             }
 
             return OnGossipHello(player);
@@ -2959,18 +2977,26 @@ public:
 
     bool OnGossipHello(Player* player) override
     {
+        auto status = player->GetQuestStatus(800030);
+
         ClearGossipMenuFor(player);
         player->PrepareQuestMenu(me->GetGUID());
-        if (!player->HasItemCount(158923, 1, true))
-            AddGossipItemFor(player, GossipOptionIcon::None, "I need a Keystone.", 0, 1);
-        else
-            AddGossipItemFor(player, GossipOptionIcon::None, "Can you drop my keystone?", 0, 5);
-        if (!player->HasItemCount(180653, 1, true))
-            AddGossipItemFor(player, GossipOptionIcon::None, "I need a Mini-Keystone", 0, 2);
-        else
-            AddGossipItemFor(player, GossipOptionIcon::None, "Can you drop my mini-keystone?", 0, 6);
+        if (status == QUEST_STATUS_REWARDED)
+        {
+            if (!player->HasItemCount(158923, 1, true))
+                AddGossipItemFor(player, GossipOptionIcon::None, "I need a Keystone.", 0, 1);
+            else
+                AddGossipItemFor(player, GossipOptionIcon::None, "Can you drop my keystone?", 0, 5);
+            if (!player->HasItemCount(180653, 1, true))
+                AddGossipItemFor(player, GossipOptionIcon::None, "I need a Mini-Keystone", 0, 2);
+            else
+                AddGossipItemFor(player, GossipOptionIcon::None, "Can you drop my mini-keystone?", 0, 6);
 
-        AddGossipItemFor(player, GossipOptionIcon::None, "Can you tell me about Keystones?", 0, 3);
+            AddGossipItemFor(player, GossipOptionIcon::None, "Can you tell me about Keystones again?", 0, 3);
+        }
+
+        if (status == QUEST_STATUS_INCOMPLETE)
+            AddGossipItemFor(player, GossipOptionIcon::None, "Can you tell me about Keystones?", 0, 3);
         SendGossipMenuFor(player, me->GetEntry(), me);
         return true;
     }
@@ -3070,6 +3096,73 @@ public:
         return false;
     }
 };
+// 800044 - npc_nura_800044
+struct npc_nura_800044 : public ScriptedAI
+{
+public:
+    npc_nura_800044(Creature* creature) : ScriptedAI(creature) { }
+
+    bool OnGossipHello(Player* player) override
+    {
+        ClearGossipMenuFor(player);
+        player->PrepareQuestMenu(me->GetGUID());
+        AddGossipItemFor(player, GossipOptionIcon::None, "Reset all Instances", 0, 0, [this, player](std::string /*callback*/)
+        {
+            uint32 mapId = 0;
+            uint32 counter = 0;
+            for (DifficultyEntry const* difficulty : sDifficultyStore)
+            {
+                auto binds = player->GetBoundInstances(Difficulty(difficulty->ID));
+                if (binds != player->m_boundInstances.end())
+                {
+                    for (auto itr = binds->second.begin(); itr != binds->second.end();)
+                    {
+                        InstanceSave const* save = itr->second.save;
+                        if (itr->first != player->GetMapId())
+                        {
+                            std::string timeleft = secsToTimeString(save->GetResetTime() - GameTime::GetGameTime(), TimeFormat::ShortText);
+                            //handler->PSendSysMessage(LANG_COMMAND_INST_UNBIND_UNBINDING, itr->first, save->GetInstanceId(), itr->second.perm ? "yes" : "no", save->GetDifficultyID(), save->CanReset() ? "yes" : "no", timeleft.c_str());
+                            player->UnbindInstance(itr, binds);
+                            counter++;
+                        }
+                        else
+                            ++itr;
+                    }
+                }
+            }
+
+            if (counter > 0)
+            {
+                Talk(0, player);
+            }
+            else
+                Talk(1, player);
+            CloseGossipMenuFor(player);
+        });
+        SendGossipMenuFor(player, me->GetEntry(), me);
+        return true;
+    }
+};
+
+// 800034 - npc_asculo_800034
+struct npc_asculo_800034 : public ScriptedAI
+{
+public:
+    npc_asculo_800034(Creature* creature) : ScriptedAI(creature) { }
+
+    bool OnGossipHello(Player* player) override
+    {
+        ClearGossipMenuFor(player);
+        player->PrepareQuestMenu(me->GetGUID());
+        AddGossipItemFor(player, GossipOptionIcon::None, "Enter a code", 0, 0, "", 0, true, [this, player](std::string callback)
+        {
+            Talk(1, player);
+            CloseGossipMenuFor(player);
+        });
+        SendGossipMenuFor(player, me->GetEntry(), me);
+        return true;
+    }
+};
 
 void AddSC_MallScripts()
 {
@@ -3116,6 +3209,8 @@ void AddSC_MallScripts()
     RegisterCreatureAI(npc_garan_800032);
     RegisterCreatureAI(npc_innkeeper_bobkin_800007);
     RegisterCreatureAI(npc_jon_bovi_800001);
+    RegisterCreatureAI(npc_nura_800044);
+    RegisterCreatureAI(npc_asculo_800034);
 
     RegisterSpellScript(spell_activating_313352);
    // RegisterSpellScript(spell_nyalotha_incursion);
