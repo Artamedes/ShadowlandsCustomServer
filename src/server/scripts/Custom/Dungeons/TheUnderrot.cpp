@@ -27,6 +27,12 @@ enum Underrot
 
     GobWebOne = 295356,
     GobWebTwo = 296385,
+
+    PyramidWeb = 296384,
+
+    UnderrotGateway = 253773,
+
+    NpcPlagueDoctor = 701020,
 };
 
 BossBoundaryData const boundaries =
@@ -40,6 +46,7 @@ DoorData const doorData[] =
 {
     { GobWebOne, BOSS_SPORECALLER_ZANCHA,  DOOR_TYPE_PASSAGE },
     { GobWebTwo, BOSS_ANDSID_THE_MECHANIC, DOOR_TYPE_PASSAGE },
+    { PyramidWeb, BOSS_ANDSID_THE_MECHANIC, DOOR_TYPE_PASSAGE },
 };
 struct instance_the_underrot : public CustomInstanceScript
 {
@@ -48,6 +55,8 @@ public:
     {
         LoadBossBoundaries(boundaries);
         LoadDoorData(doorData);
+        SetHeaders("UR");
+        SetBossNumber(3);
     }
 
     void OnCompletedCriteriaTree(CriteriaTree const* tree) override
@@ -59,13 +68,40 @@ public:
         }
     }
 
+    ObjectGuid WebDoor;
+    ObjectGuid WebWeb;
+    ObjectGuid WebWebOne;
+    // Creatures
+    ObjectGuid PlagueDoctorGuid;
+
     void OnGameObjectCreate(GameObject* go) override
     {
         InstanceScript::OnGameObjectCreate(go);
 
         switch (go->GetEntry())
         {
+            case PyramidWeb:
+                WebDoor = go->GetGUID();
+                break;
+            case GobWebOne:
+                WebWebOne = go->GetGUID();
+                break;
+            case GobWebTwo: 
+                WebWeb = go->GetGUID();
+                break;
+        }
+    }
 
+    void OnCreatureCreate(Creature* creature) override
+    {
+        InstanceScript::OnCreatureCreate(creature);
+
+        switch (creature->GetEntry())
+        {
+            case NpcPlagueDoctor:
+                PlagueDoctorGuid = creature->GetGUID();
+                creature->setActive(true); // will be moved later and might be out of grid.
+                break;
         }
     }
 
@@ -76,12 +112,38 @@ public:
             case EncounterState::DONE:
                 switch (id)
                 {
-
+                    case BOSS_ANDSID_THE_MECHANIC:
+                        if (auto door = instance->GetGameObject(WebDoor))
+                            door->Delete();
+                        if (auto door = instance->GetGameObject(WebWeb))
+                            door->Delete();
+                        if (auto door = instance->GetGameObject(WebWebOne))
+                            door->Delete();
+                        break;
+                    case BOSS_MISTER_DOCTOR:
+                        if (auto doctor = instance->GetCreature(PlagueDoctorGuid))
+                        {
+                            doctor->setActive(false); // Remove active
+                            doctor->NearTeleportTo({ 1182.17f, 1460.16f, -181.56f, 0.924786f });
+                        }
+                        break;
                 }
                 break;
         }
 
         return InstanceScript::SetBossState(id, state);
+    }
+
+    void OnPlayerPositionChange(Player* player) override
+    {
+        if (GetBossState(BOSS_ANDSID_THE_MECHANIC) != EncounterState::DONE)
+            return;
+
+       // if (player->GetMap()->GetId() == 1841 && newArea->GetId() == 9391 && oldArea->GetId() == 10021)
+           // if (player->GetInstanceScript() && !player->GetInstanceScript()->GetGameObject(GO_PYRAMID_WEB))
+        if (player->GetAreaId() == 9391)
+            if (player->GetPositionX() > 1080.0f && player->GetPositionZ() > 0 && !player->HasAura(Underrot::UnderrotGateway))
+                player->CastSpell(player, Underrot::UnderrotGateway);
     }
     // unneeded for now - handled internally
     //void CreatureDiesForScript(Creature* creature, Unit* killer) override
@@ -144,7 +206,7 @@ public:
         if (instance)
             instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
         events.Reset();
-        _DespawnAtEvade();
+        _DespawnAtEvade(3s);
     }
 
     void SummonedCreatureDies(Creature* creature, Unit* /*killer*/) override
@@ -229,10 +291,15 @@ public:
     {
         BossAI::JustDied(who);
         Talk(5);
+
+        if (instance)
+            instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
     }
 
     void JustEngagedWith(Unit* who) override
     {
+        if (instance)
+            instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, me);
         BossAI::JustEngagedWith(who);
         events.Reset();
         events.ScheduleEvent(1, 5s);
@@ -456,56 +523,57 @@ public:
 
     void InitializeAI() override
     {
-        /// TODO: Fill this function
+        me->SetReactState(REACT_PASSIVE);
+        me->SetUnitFlag(UnitFlags::UNIT_FLAG_NON_ATTACKABLE);
+        SetCombatMovement(false);
     }
-
-    void Reset() override
-    {
-        /// TODO: Fill this function
-    }
-
-    void UpdateAI(uint32 diff) override
-    {
-        scheduler.Update(diff);
-
-        if (!UpdateVictim())
-            return;
-
-        events.Update(diff);
-
-        if (uint32 eventId = events.ExecuteEvent())
-        {
-            switch (eventId)
-            {
-            }
-        }
-        DoMeleeAttackIfReady();
-    }
-
-
-    TaskScheduler scheduler;
-    EventMap events;
 };
 
 // 701003 - npc_ansid_the_mechanic_701003
 struct npc_ansid_the_mechanic_701003 : public BossAI
 {
 public:
-    npc_ansid_the_mechanic_701003(Creature* creature) : BossAI(creature, BOSS_ANDSID_THE_MECHANIC) { }
-
-    void InitializeAI() override
+    npc_ansid_the_mechanic_701003(Creature* creature) : BossAI(creature, BOSS_ANDSID_THE_MECHANIC)
     {
-        /// TODO: Fill this function
+        ApplyAllImmunities(true);
     }
+
+    enum Ansid
+    {
+        EventGroundSmash = 1,
+        EventBloodthirstyLeap,
+        EventThrowVial,
+
+        GroundSmash = 341441,
+        BloodthirstyLeap = 225962,
+        ThrowVial = 211994,
+        FeedinfFrenzy = 297896, // aura
+    };
 
     void Reset() override
     {
-        /// TODO: Fill this function
+        DoCastSelf(FeedinfFrenzy);
     }
 
     void JustEngagedWith(Unit* who) override
     {
+        BossAI::JustEngagedWith(who);
+        if (instance)
+            instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, me);
+        DoCastSelf(FeedinfFrenzy);
+
+        events.ScheduleEvent(EventGroundSmash, 1s, 10s);
+        events.ScheduleEvent(EventBloodthirstyLeap, 1s, 10s);
+        events.ScheduleEvent(EventThrowVial, 1s, 10s);
+
         Talk(0);
+    }
+
+    void JustDied(Unit* who) override
+    {
+        BossAI::JustDied(who);
+        if (instance)
+            instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
     }
 
     void EnterEvadeMode(EvadeReason /*why*/) override
@@ -514,23 +582,39 @@ public:
         if (instance)
             instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
         events.Reset();
-        _DespawnAtEvade();
+        _DespawnAtEvade(3s);
     }
 
     void UpdateAI(uint32 diff) override
     {
-        scheduler.Update(diff);
-
         if (!UpdateVictim())
             return;
 
         events.Update(diff);
 
+        if (me->HasUnitState(UNIT_STATE_CASTING))
+            return;
+
         if (uint32 eventId = events.ExecuteEvent())
         {
             switch (eventId)
             {
+                case EventGroundSmash:
+                    DoCastVictim(GroundSmash);
+                    events.Repeat(10s, 20s);
+                    break;
+                case EventBloodthirstyLeap:
+                    DoCastVictim(BloodthirstyLeap);
+                    events.Repeat(10s, 20s);
+                    break;
+                case EventThrowVial:
+                    DoCastVictim(ThrowVial);
+                    events.Repeat(10s, 20s);
+                    break;
             }
+
+            if (me->HasUnitState(UNIT_STATE_CASTING))
+                return;
         }
         DoMeleeAttackIfReady();
     }
@@ -581,6 +665,7 @@ struct npc_sporecaller_zancha_701005 : public BossAI
 public:
     npc_sporecaller_zancha_701005(Creature* creature) : BossAI(creature, BOSS_SPORECALLER_ZANCHA)
     {
+        ApplyAllImmunities(true);
     }
 
     enum eSpells
@@ -602,11 +687,13 @@ public:
         if (instance)
             instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
         events.Reset();
-        _DespawnAtEvade();
+        _DespawnAtEvade(3s);
     }
 
     void JustEngagedWith(Unit* who) override
     {
+        if (instance)
+            instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, me);
         BossAI::JustEngagedWith(who);
         events.Reset();
         Talk(1);
@@ -1263,37 +1350,25 @@ struct npc_plague_doctor_701020 : public ScriptedAI
 public:
     npc_plague_doctor_701020(Creature* creature) : ScriptedAI(creature) { }
 
-    void InitializeAI() override
+    bool OnGossipHello(Player* player) override
     {
-        /// TODO: Fill this function
-    }
+        ClearGossipMenuFor(player);
+        player->PrepareQuestMenu(me->GetGUID());
 
-    void Reset() override
-    {
-        /// TODO: Fill this function
-    }
-
-    void UpdateAI(uint32 diff) override
-    {
-        scheduler.Update(diff);
-
-        if (!UpdateVictim())
-            return;
-
-        events.Update(diff);
-
-        if (uint32 eventId = events.ExecuteEvent())
+        if (auto instance = me->GetInstanceScript())
         {
-            switch (eventId)
+            if (instance->GetBossState(BOSS_MISTER_DOCTOR) == EncounterState::DONE)
             {
+                AddGossipItemFor(player, GossipOptionIcon::None, "Teleport me back to the entrance", 0, 0, [this, player](std::string /*callback*/)
+                {
+                    player->TeleportTo(WorldLocation(1841, { 625.044f, 1253.41f, 99.8346f, 6.27532f }));
+                });
             }
         }
-        DoMeleeAttackIfReady();
+
+        SendGossipMenuFor(player, me->GetEntry(), me);
+        return true;
     }
-
-
-    TaskScheduler scheduler;
-    EventMap events;
 };
 
 const Position player_gateway_positions[] =

@@ -628,17 +628,13 @@ public:
 
     void JustDied(Unit* who) override
     {
+        // dont run in challenge
+        if (auto inst = me->GetInstanceScript())
+            if (inst->IsChallenge())
+                return;
+
         if (auto portal = me->FindNearestCreature(700835, 500.0f, true))
             portal->RemoveUnitFlag(UnitFlags::UNIT_FLAG_NON_ATTACKABLE);
-
-       // scheduler.Schedule(1s, [this](TaskContext context)
-       //     {
-       //         if (auto thrall = DoSummon(700800, *me))
-       //         {
-       //             thrall->GetMotionMaster()->MovePoint(1, *me);
-       //             thrall->AI()->Talk(0);
-       //         }
-       //     });
     }
 
     bool didIntro = false;

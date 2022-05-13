@@ -97,8 +97,12 @@ public:
 
     enum JSpells
     {
+        FrostBolt = 351173,
+        FrostNova = 287456,
         Blink = 295236,
         KyrianVision = 343156,
+        IceBlock = 290049,
+        Deathborne = 324220,
     };
 
     void InitializeAI() override
@@ -112,34 +116,96 @@ public:
 
     void Reset() override
     {
+        _canFrostNova = true;
+        _isBlinking = false;
+        phase = false;
         DoCastSelf(KyrianVision);
+    }
+
+    void JustEngagedWith(Unit* who) override
+    {
+        scheduler.CancelAll();
+        me->CastStop();
+        //DoCast(Deathborne);
     }
 
     void UpdateAI(uint32 diff) override
     {
-        scheduler.Update(diff);
-
         if (!UpdateVictim())
             return;
 
+        scheduler.Update(diff);
         events.Update(diff);
+
+        if (me->HasUnitState(UNIT_STATE_CASTING))
+            return;
+
+        if (me->HasAura(IceBlock))
+            return;
+
+        auto victim = me->GetVictim();
+        if (!victim)
+            return;
+
+        if (_canFrostNova && me->IsWithinMeleeRange(victim))
+        {
+            DoCastAOE(FrostNova);
+            _canFrostNova = false;
+            _isBlinking = true;
+            scheduler.Schedule(250ms, [this](TaskContext context)
+            {
+                _isBlinking = false;
+                me->SetFacingTo(3.959f);
+                DoCast(Blink);
+            });
+            scheduler.Schedule(40s, [this](TaskContext context)
+            {
+                _canFrostNova = true;
+            });
+        }
+
+        if (_isBlinking)
+            return;
+
+        if (me->HasUnitState(UNIT_STATE_CASTING))
+            return;
 
         if (uint32 eventId = events.ExecuteEvent())
         {
             switch (eventId)
             {
             }
+            if (me->HasUnitState(UNIT_STATE_CASTING))
+                return;
         }
+
+        DoCastVictim(FrostBolt);
+
+        if (me->HasUnitState(UNIT_STATE_CASTING))
+            return;
         DoMeleeAttackIfReady();
     }
 
-    void OnUnitRelocation(Unit* who) override
+    bool phase = false;
+
+    void DamageTaken(Unit* attacker, uint32& damage, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
     {
-        /// TODO: Fill this function
+        if (me->HealthBelowPctDamaged(51, damage) && !phase)
+        {
+            phase = true;
+            me->CastStop();
+            _canFrostNova = true;
+            _isBlinking = false;
+            scheduler.CancelAll();
+            DoCastSelf(IceBlock);
+        }
     }
 
     TaskScheduler scheduler;
     EventMap events;
+
+    bool _canFrostNova = true;
+    bool _isBlinking = false;
 };
 
 // 730500 - npc_two_headed_beast_730500

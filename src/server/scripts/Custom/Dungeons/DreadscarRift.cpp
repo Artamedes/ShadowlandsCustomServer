@@ -259,41 +259,9 @@ public:
     void InitializeAI() override
     {
         me->SetReactState(REACT_PASSIVE);
+        me->SetUnitFlag(UNIT_FLAG_NON_ATTACKABLE);
         SetCombatMovement(false);
     }
-    void Reset() override
-    {
-        /// TODO: Fill this function
-    }
-    void JustEngagedWith(Unit* /*who*/) override
-    {
-        /// TODO: Fill this function
-    }
-    void UpdateAI(uint32 diff) override
-    {
-        scheduler.Update(diff);
-
-        if (!UpdateVictim())
-            return;
-
-        events.Update(diff);
-
-        if (uint32 eventId = events.ExecuteEvent())
-        {
-            switch (eventId)
-            {
-            }
-        }
-        DoMeleeAttackIfReady();
-    }
-
-    void OnUnitRelocation(Unit* who) override
-    {
-        /// TODO: Fill this function
-    }
-
-    TaskScheduler scheduler;
-    EventMap events;
 };
 
 // 703009 - npc_moz_gar_703009
