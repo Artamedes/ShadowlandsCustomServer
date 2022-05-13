@@ -3693,9 +3693,11 @@ public:
         void HandleDamage(SpellEffIndex /*effIndex*/)
         {
             Unit* caster = GetCaster();
-			Unit* owner = caster->GetOwner();
 			Unit* target = GetExplTargetUnit();
-			if (!caster || !target || !owner)
+			if (!caster || !target)
+                return;
+            Unit* owner = caster->GetOwner();
+            if (!owner)
                 return;
 
             // (26% * (rap) * lowNerf * (1 + versability))

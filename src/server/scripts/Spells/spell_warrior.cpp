@@ -3424,8 +3424,10 @@ class spell_warr_whirlind_arms : public SpellScript
     {
         Unit* caster = GetCaster();
         Unit* target = GetHitUnit();
+        if (!caster || !target)
+            return;
         Unit* expTarget = ObjectAccessor::GetUnit(*caster, caster->GetTarget());
-        if (!caster || !target || !expTarget)
+        if (!expTarget)
             return;
 
         if (caster->HasAura(SPELL_WARRIOR_FERVOR_OF_BATTLE) && target->GetGUID() == expTarget->GetGUID())

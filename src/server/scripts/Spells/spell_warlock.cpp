@@ -341,14 +341,14 @@ struct WarlockGlobalVariables
     // Variables
     ObjectGuid ExplicitTarget;
     Position LastPosition;
-    float LastOrientation;
+    float LastOrientation = 0.0f;
     uint8 WildImpCount = 0;
     Position positions[16];
     Position innerDemonPositions[8];
     bool WildImpSlots[16] = { false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false };
     bool InnerLeft = false;
     Position LastPositionInner;
-    float LastOrientationInner;
+    float LastOrientationInner = 0.0f;
 
     // Slots for InnerDemons
     // EOG   - Eyes of Guldan
@@ -2767,8 +2767,10 @@ public:
         SpellCastResult CheckCast()
         {
             Unit* caster = GetCaster();
-            Guardian* pet = caster->GetGuardianPet();
-            if (!caster || !pet)
+            if (!caster)
+                return SPELL_FAILED_DONT_REPORT;
+                        Guardian* pet = caster ? caster->GetGuardianPet() : nullptr;
+            if (!pet)
                 return SPELL_FAILED_DONT_REPORT;
 
             return SPELL_CAST_OK;
@@ -2777,7 +2779,7 @@ public:
         void HandleHit(SpellEffIndex /*effIndex*/)
         {
             Unit* caster = GetCaster();
-            Guardian* pet = caster->GetGuardianPet();
+            Guardian* pet = caster ? caster->GetGuardianPet() : nullptr;
             if (!caster || !pet)
                 return;
         }
@@ -2808,7 +2810,7 @@ public:
         SpellCastResult CheckCast()
         {
             Unit* caster = GetCaster();
-            Guardian* pet = caster->GetGuardianPet();
+                        Guardian* pet = caster ? caster->GetGuardianPet() : nullptr;
             if (!caster || !pet)
                 return SPELL_FAILED_DONT_REPORT;
 
@@ -2819,7 +2821,7 @@ public:
         {
             Unit* caster = GetCaster();
             Unit* target = GetHitUnit();
-            Guardian* pet = caster->GetGuardianPet();
+                        Guardian* pet = caster ? caster->GetGuardianPet() : nullptr;
             if (!caster || !pet || !target)
                 return;
         }
@@ -2850,7 +2852,7 @@ public:
         SpellCastResult CheckCast()
         {
             Unit* caster = GetCaster();
-            Guardian* pet = caster->GetGuardianPet();
+                        Guardian* pet = caster ? caster->GetGuardianPet() : nullptr;
             if (!caster || !pet)
                 return SPELL_FAILED_DONT_REPORT;
 
@@ -2861,7 +2863,7 @@ public:
         {
             Unit* caster = GetCaster();
             Unit* target = GetHitUnit();
-            Guardian* pet = caster->GetGuardianPet();
+                        Guardian* pet = caster ? caster->GetGuardianPet() : nullptr;
             if (!caster || !pet || !target)
                 return;
         }
@@ -2893,7 +2895,7 @@ public:
         {
             Unit* caster = GetCaster();
             WorldLocation const* dest = GetExplTargetDest();
-            Guardian* pet = caster->GetGuardianPet();
+                        Guardian* pet = caster ? caster->GetGuardianPet() : nullptr;
             if (!caster || !pet || !dest)
                 return;
         }
@@ -2901,7 +2903,7 @@ public:
         SpellCastResult CheckCast()
         {
             Unit* caster = GetCaster();
-            Guardian* pet = caster->GetGuardianPet();
+                        Guardian* pet = caster ? caster->GetGuardianPet() : nullptr;
             if (!caster || !pet)
                 return SPELL_FAILED_DONT_REPORT;
 
@@ -2943,7 +2945,7 @@ public:
         SpellCastResult CheckCast()
         {
             Unit* caster = GetCaster();
-            Guardian* pet = caster->GetGuardianPet();
+                        Guardian* pet = caster ? caster->GetGuardianPet() : nullptr;
             if (!caster || !pet)
                 return SPELL_FAILED_DONT_REPORT;
 
@@ -2976,7 +2978,7 @@ public:
         void HandleHit()
         {
             Unit* caster = GetCaster();
-            Guardian* pet = caster->GetGuardianPet();
+                        Guardian* pet = caster ? caster->GetGuardianPet() : nullptr;
             if (!caster || !pet)
                 return;
 
@@ -2985,7 +2987,7 @@ public:
         SpellCastResult CheckCast()
         {
             Unit* caster = GetCaster();
-            Guardian* pet = caster->GetGuardianPet();
+                        Guardian* pet = caster ? caster->GetGuardianPet() : nullptr;
             if (!caster || !pet)
                 return SPELL_FAILED_DONT_REPORT;
 
@@ -3019,7 +3021,7 @@ public:
         {
             Unit* caster = GetCaster();
             Unit* target = GetHitUnit();
-            Guardian* pet = caster->GetGuardianPet();
+                        Guardian* pet = caster ? caster->GetGuardianPet() : nullptr;
             if (!caster || !pet || !target)
                 return;
         }
@@ -3027,7 +3029,7 @@ public:
         SpellCastResult CheckCast()
         {
             Unit* caster = GetCaster();
-            Guardian* pet = caster->GetGuardianPet();
+                        Guardian* pet = caster ? caster->GetGuardianPet() : nullptr;
             if (!caster || !pet)
                 return SPELL_FAILED_DONT_REPORT;
 
@@ -7596,7 +7598,7 @@ class spell_warl_grimoire_of_sacrifice : public SpellScript
         Unit* caster = GetCaster();
         if (!caster)
             return SPELL_FAILED_DONT_REPORT;
-        Guardian* pet = caster->GetGuardianPet();
+                    Guardian* pet = caster ? caster->GetGuardianPet() : nullptr;
         if (!pet)
             return SPELL_FAILED_NO_PET;
 

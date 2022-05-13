@@ -4870,12 +4870,12 @@ class spell_mastery_icicles_proc : public AuraScript
             // We need to get the first free icicle slot
             int8 icicleFreeSlot = -1; // -1 means no free slot
             int8 icicleSecondFreeSlot = -1; // -1 means no free slot
-            for (int8 i = 0; i < 5; ++i)
+            for (int i = 0; i < 5; ++i)
             {
                 if (!player->HasAura(IcicleAuras[i]))
                 {
                     icicleFreeSlot = i;
-                    if (icilesAddSecond && icicleFreeSlot != 5)
+                    if (icilesAddSecond)
                         icicleSecondFreeSlot = i + 1;
                     break;
                 }

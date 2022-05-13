@@ -3044,7 +3044,7 @@ struct at_pri_divine_star : AreaTriggerAI
     }
 
 private:
-    bool returnAt;
+    bool returnAt = false;
 };
 
 // 78203 - Shadowy Apparitions

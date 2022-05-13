@@ -7647,9 +7647,9 @@ void Player::UpdateHostileAreaState(AreaTableEntry const* area)
 
     pvpInfo.IsInHostileArea = false;
 
-    if (area->IsSanctuary()) // sanctuary and arena cannot be overriden
+    if (area && area->IsSanctuary()) // sanctuary and arena cannot be overriden
         pvpInfo.IsInHostileArea = false;
-    else if (area->Flags[0] & AREA_FLAG_ARENA)
+    else if (area && area->Flags[0] & AREA_FLAG_ARENA)
         pvpInfo.IsInHostileArea = true;
     else if (overrideZonePvpType == ZonePVPTypeOverride::None)
     {
