@@ -95,6 +95,9 @@ void WorldSession::HandleRepopRequest(WorldPackets::Misc::RepopRequest& /*packet
             else
                 GetPlayer()->TeleportTo(1116, 159.015f, -2680.81f, 51.5754f, 3.89897f, TELE_REVIVE_AT_TELEPORT);
             return;
+        case 930: // A Dark Place
+            GetPlayer()->TeleportTo(930, -2869.41f, -4533.04f, 1.04904f, 0.755928f, TELE_REVIVE_AT_TELEPORT);
+            return;
         default:
             break;
     }
