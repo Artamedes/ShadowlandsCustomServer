@@ -126,7 +126,7 @@ public:
     {
         scheduler.CancelAll();
         me->CastStop();
-        //DoCast(Deathborne);
+        DoCast(Deathborne);
     }
 
     void UpdateAI(uint32 diff) override
