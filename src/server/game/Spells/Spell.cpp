@@ -3509,7 +3509,7 @@ SpellCastResult Spell::prepare(SpellCastTargets const& targets, AuraEffect const
     if (IsDarkSimulacrum() && !m_spellInfo->IsChanneled())
         m_casttime = 0;
 
-    if (m_caster->IsUnit() && m_caster->ToUnit()->isMoving())
+    if (m_caster->IsPlayer() && m_caster->ToUnit()->isMoving())
     {
         result = CheckMovement();
         if (result != SPELL_CAST_OK)
