@@ -4145,6 +4145,9 @@ InstanceMap::InstanceMap(uint32 id, time_t expiry, uint32 InstanceId, Difficulty
     // the timer is started by default, and stopped when the first player joins
     // this make sure it gets unloaded if for some reason no player joins
     m_unloadTimer = std::max(sWorld->getIntConfig(CONFIG_INSTANCE_UNLOAD_DELAY), (uint32)MIN_UNLOAD_DELAY);
+
+    // loading all cells for dungs
+    LoadAllCells();
 }
 
 InstanceMap::~InstanceMap()
