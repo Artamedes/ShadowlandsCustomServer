@@ -52,6 +52,7 @@ void AddSC_IronDocks();
 void AddSC_Folnuna();
 void AddSC_Meto();
 void AddSC_Sotanathor();
+void AddSC_WorldBosses();
 
 void AddCustomScripts()
 {
@@ -88,4 +89,5 @@ void AddCustomScripts()
     AddSC_Folnuna();
     AddSC_Meto();
     AddSC_Sotanathor();
+    AddSC_WorldBosses();
 }

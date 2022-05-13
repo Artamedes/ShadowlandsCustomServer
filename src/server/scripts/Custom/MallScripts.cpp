@@ -2993,7 +2993,7 @@ public:
 
         ClearGossipMenuFor(player);
         player->PrepareQuestMenu(me->GetGUID());
-        if (status == QUEST_STATUS_REWARDED)
+        if (status == QUEST_STATUS_REWARDED || status == QUEST_STATUS_COMPLETE)
         {
             if (!player->HasItemCount(158923, 1, true))
                 AddGossipItemFor(player, GossipOptionIcon::None, "I need a Keystone.", 0, 1);

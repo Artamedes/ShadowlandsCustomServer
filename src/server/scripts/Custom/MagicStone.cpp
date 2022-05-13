@@ -112,6 +112,8 @@ class MagicStone : public ItemScript
             auto l_Itr1 = sMagicStoneMgr->m_MagicStoneMenuTexts.find(menuId);
             if (l_Itr1 != sMagicStoneMgr->m_MagicStoneMenuTexts.end())
                 l_NpcTextId = l_Itr1->second;
+            // Remove rez sick
+            player->RemoveAurasDueToSpell(15007);
 
             SendGossipMenuFor(player, l_NpcTextId, item->GetGUID());
         }
