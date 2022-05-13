@@ -1262,8 +1262,8 @@ void Player::Update(uint32 p_time)
 
     sScriptMgr->OnPlayerUpdate(this, p_time);
 
-    for (auto itr = m_questScripts.begin(); itr != m_questScripts.end(); ++itr)
-        itr->second->Update(p_time);
+    //for (auto itr = m_questScripts.begin(); itr != m_questScripts.end(); ++itr)
+    //    itr->second->Update(p_time);
 }
 
 void Player::setDeathState(DeathState s)

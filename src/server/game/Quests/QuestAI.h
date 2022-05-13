@@ -23,7 +23,7 @@ public:
 
     virtual void OnInitialize() { }
 
-    virtual void Update(uint32 /*diff*/) { }
+   // virtual void Update(uint32 /*diff*/) { }
 
     virtual void OnQuestAccept() { }
     virtual void OnQuestProgressUpdate(QuestObjectiveType /*objectiveType*/, int32 /*objectId*/, int64 /*addCount*/ , ObjectGuid /*victimGuid*/, uint16 /*logSlot*/, QuestObjective const& /*questObjective*/) { }
