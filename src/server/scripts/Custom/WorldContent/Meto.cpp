@@ -3,6 +3,7 @@
 #include "TemporarySummon.h"
 #include "GossipDef.h"
 #include "ScriptedGossip.h"
+#include "MoveSpline.h"
 
 enum Meto
 {
@@ -77,7 +78,7 @@ public:
 
     void InitializeAI()
     {
-        DoCast(Stealthed);
+        //DoCast(Stealthed);
         for (auto& spawnPoint : RandomSpawnPoints)
         {
             if (auto summ = DoSummon(730212, spawnPoint.Pos, 5s, TEMPSUMMON_CORPSE_TIMED_DESPAWN))
@@ -294,6 +295,26 @@ public:
     TaskScheduler scheduler;
     EventMap events;
 };
+// 730350 - npc_legion_portal_730350
+struct npc_legion_portal_730350 : public ScriptedAI
+{
+public:
+    npc_legion_portal_730350(Creature* creature) : ScriptedAI(creature) { }
+
+    bool OnGossipHello(Player* player) override
+    {
+        player->CastSpell(player, 351474, true);
+
+        player->GetScheduler().Schedule(1400ms, [this, player](TaskContext context)
+        {
+            if (!player->IsBeingTeleported() && !player->IsBeingTeleportedFar() && !player->IsInCombat() && (!player->movespline || player->movespline->Finalized()))
+                player->TeleportTo(WorldLocation(1116, 85.9699f, -2753.94f, 62.5325f, 3.93367f));
+        });
+
+        return true;
+    }
+};
+
 
 void AddSC_Meto()
 {
@@ -301,4 +322,5 @@ void AddSC_Meto()
     RegisterCreatureAI(npc_mushroom_sapper_730212);
     RegisterCreatureAI(npc_mushroom_civilian_730200);
     RegisterCreatureAI(npc_spawn_of_n_zoth_730213);
+    RegisterCreatureAI(npc_legion_portal_730350);
 }

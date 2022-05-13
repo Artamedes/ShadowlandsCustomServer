@@ -19,6 +19,11 @@
 #include "PlayerChallenge.h"
 #include "InstanceSaveMgr.h"
 
+enum MallScript
+{
+    SpellChannel = 368481, // Druid Spiritualist
+};
+
 struct npc_battle_training : public ScriptedAI
 {
     public:
@@ -367,8 +372,15 @@ struct npc_juno_700006 : public ScriptedAI
             if (who->IsPlayer())
             {
                 auto player = who->ToPlayer();
-                if (player->GetQuestStatus(700036) == QUEST_STATUS_REWARDED)
-                    return false;
+                auto status = player->GetQuestStatus(700036); // 700036 finish the fight
+                switch (status)
+                {
+                    case QUEST_STATUS_COMPLETE:
+                    case QUEST_STATUS_REWARDED:
+                        return false;
+                    default:
+                        return true;
+                }
             }
 
             return true;
@@ -3164,6 +3176,54 @@ public:
     }
 };
 
+// 800209 - npc_druid_spiritualist_800209
+struct npc_druid_spiritualist_800209 : public ScriptedAI
+{
+public:
+    npc_druid_spiritualist_800209(Creature* creature) : ScriptedAI(creature) { }
+
+    void UpdateAI(uint32 diff) override
+    {
+        if (me->GetCurrentSpell(CurrentSpellTypes::CURRENT_CHANNELED_SPELL))
+            return;
+
+        DoCastSelf(MallScript::SpellChannel);
+    }
+};
+// 800059 - npc_thrall_800059
+struct npc_thrall_800059 : public ScriptedAI
+{
+public:
+    npc_thrall_800059(Creature* creature) : ScriptedAI(creature) { }
+
+    bool OnGossipHello(Player* player) override
+    {
+        ClearGossipMenuFor(player);
+        player->PrepareQuestMenu(me->GetGUID());
+        SendGossipMenuFor(player, me->GetEntry(), me);
+        return true;
+    }
+
+    bool CanSeeOrDetect(WorldObject const* who) const override
+    {
+        if (who->IsPlayer())
+        {
+            auto player = who->ToPlayer();
+            auto status = player->GetQuestStatus(700036); // 700036 finish the fight
+            switch (status)
+            {
+                case QUEST_STATUS_COMPLETE:
+                case QUEST_STATUS_REWARDED:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        return false;
+    }
+};
+
 void AddSC_MallScripts()
 {
     RegisterCreatureAI(npc_battle_training);
@@ -3207,10 +3267,12 @@ void AddSC_MallScripts()
     RegisterCreatureAI(npc_medivh_700030);
     RegisterCreatureAI(npc_keystone_master);
     RegisterCreatureAI(npc_garan_800032);
-    RegisterCreatureAI(npc_innkeeper_bobkin_800007);
+    RegisterCreatureAI(npc_innkeeper_bobkin_800007);    
     RegisterCreatureAI(npc_jon_bovi_800001);
     RegisterCreatureAI(npc_nura_800044);
     RegisterCreatureAI(npc_asculo_800034);
+    RegisterCreatureAI(npc_druid_spiritualist_800209);
+    RegisterCreatureAI(npc_thrall_800059);
 
     RegisterSpellScript(spell_activating_313352);
    // RegisterSpellScript(spell_nyalotha_incursion);

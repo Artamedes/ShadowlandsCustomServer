@@ -753,35 +753,9 @@ public:
 
     void InitializeAI() override
     {
-        /// TODO: Fill this function
+        me->SetUnitFlag(UnitFlags::UNIT_FLAG_UNINTERACTIBLE);
+        me->SetStandState(UnitStandStateType::UNIT_STAND_STATE_SLEEP);
     }
-
-    void Reset() override
-    {
-        /// TODO: Fill this function
-    }
-
-    void UpdateAI(uint32 diff) override
-    {
-        scheduler.Update(diff);
-
-        if (!UpdateVictim())
-            return;
-
-        events.Update(diff);
-
-        if (uint32 eventId = events.ExecuteEvent())
-        {
-            switch (eventId)
-            {
-            }
-        }
-        DoMeleeAttackIfReady();
-    }
-
-
-    TaskScheduler scheduler;
-    EventMap events;
 };
 
 // 701008 - npc_fetid_maggot_701008

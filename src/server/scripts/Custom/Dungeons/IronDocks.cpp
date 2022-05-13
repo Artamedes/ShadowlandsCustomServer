@@ -939,47 +939,14 @@ struct npc_iron_horde_warlock_730601 : public ScriptedAI
 public:
     npc_iron_horde_warlock_730601(Creature* creature) : ScriptedAI(creature) { }
 
-    void InitializeAI() override
-    {
-        /// TODO: Fill this function
-    }
-    void Reset() override
-    {
-        /// TODO: Fill this function
-    }
-    void JustEngagedWith(Unit* /*who*/) override
-    {
-        /// TODO: Fill this function
-    }
     void UpdateAI(uint32 diff) override
     {
-        scheduler.Update(diff);
-
         if (!UpdateVictim())
             return;
 
-        events.Update(diff);
-
-        if (uint32 eventId = events.ExecuteEvent())
-        {
-            switch (eventId)
-            {
-            }
-        }
-        DoMeleeAttackIfReady();
+        if (!me->HasUnitState(UNIT_STATE_CASTING))
+            DoCastVictim(239591); // Chaos bolt
     }
-
-    void OnUnitRelocation(Unit* who) override
-    {
-        /// TODO: Fill this function
-    }
-    void DamageTaken(Unit* attacker, uint32& damage, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
-    {
-        /// TODO: Fill this function
-    }
-
-    TaskScheduler scheduler;
-    EventMap events;
 };
 
 // 705011 - npc_iron_hound_705011

@@ -11,6 +11,11 @@
 #include "../CustomInstanceScript.h"
 #include "Unit.h"
 
+enum MawFinale
+{
+    BossJuno = 0,
+};
+
 
 const Position playerWalkPos[] = {
     { 131.501f, -2707.79f, 63.8894f, 3.95512f },
@@ -93,10 +98,10 @@ public:
     TaskScheduler scheduler;
 };
 
-struct npc_helya_mawfinale : public ScriptedAI
+struct npc_helya_mawfinale : public BossAI
 {
     public:
-        npc_helya_mawfinale(Creature* creature) : ScriptedAI(creature) { }
+        npc_helya_mawfinale(Creature* creature) : BossAI(creature, BossJuno) { }
 
         enum Helya
         {
@@ -120,6 +125,7 @@ struct npc_helya_mawfinale : public ScriptedAI
 
         void InitializeAI() override
         {
+            BossAI::InitializeAI();
             me->SetReactState(REACT_PASSIVE);
             me->SetUnitFlag(UNIT_FLAG_NON_ATTACKABLE);
             SetCombatMovement(false);
@@ -142,6 +148,7 @@ struct npc_helya_mawfinale : public ScriptedAI
 
         void JustEngagedWith(Unit* who) override
         {
+            BossAI::JustEngagedWith(who);
             me->SetReactState(REACT_AGGRESSIVE);
             Talk(2);
             DoCastAOE(Decay);
@@ -193,6 +200,7 @@ struct npc_helya_mawfinale : public ScriptedAI
                         DoCastVictim(ArcaneticDestruction);
                         events.ScheduleEvent(EventSolarDestruction, 3s);
                         events.Repeat(40s);
+
                         break;
                     case EventSolarDestruction:
                         DoCastVictim(SolarDestruction);
@@ -203,10 +211,38 @@ struct npc_helya_mawfinale : public ScriptedAI
                         canMelee = true;
                         break;
                 }
+
+                if (me->HasUnitState(UNIT_STATE_CASTING))
+                    return;
             }
 
-            DoMeleeAttackIfReady();
+            if (canMelee)
+                DoMeleeAttackIfReady();
         }
+
+        void JustDied(Unit* who) override
+        {
+            BossAI::JustDied(who);
+
+            if (instance)
+            instance->instance->DoOnPlayers([](Player* player)
+            {
+                player->CastSpell(player, 366997, true); // Fade to black
+
+                player->GetScheduler().Schedule(1500ms, [player](TaskContext context)
+                {
+                    player->AddAura(326726, player); // sleep
+                    player->TeleportTo(WorldLocation(1116, *player));
+                });
+            });
+        }
+
+        //void EnterEvadeMode(EvadeReason why)
+        //{
+        //    BossAI::EnterEvadeMode(why);
+        //    _DespawnAtEvade(3s);
+        //    summons.DespawnAll();
+        //}
 
         TaskScheduler scheduler;
         EventMap events;
@@ -266,6 +302,20 @@ struct instance_mawfinale : public CustomInstanceScript
 public:
     instance_mawfinale(InstanceMap* map) : CustomInstanceScript(map)
     {
+    }
+
+    bool SetBossState(uint32 bossId, EncounterState state) override
+    {
+        bool val = InstanceScript::SetBossState(bossId, state);
+
+        if (bossId == BossJuno)
+        {
+            if (state == EncounterState::DONE)
+            {
+            }
+        }
+
+        return val;
     }
 };
 
