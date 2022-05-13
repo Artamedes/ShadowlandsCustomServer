@@ -6,9 +6,10 @@
 #include "Map.h"
 #include "Item.h"
 #include "World.h"
+#include "GameTime.h"
 
 // TODO: move to db
-constexpr uint32 CustomMiniDungeonsForChallenge[] = { 30002, 30003, 30004, 30005, 30006, 30007, 30008, 30009, 30010, 30011 };
+constexpr uint32 CustomMiniDungeonsForChallenge[] = { 30002, 30003, 30004, 30005, 30006, 30007, 30008, 30010, 30011 }; // 30009 - battle for torghast removed
 constexpr uint32 CustomDungeonsForChallenge[] = { 251, 245, 169 };
 
 void MythicKeystoneInfo::GenerateNewDungeon()
@@ -198,7 +199,11 @@ void PlayerChallenge::ResetMythicKeystoneTo(Item* item, uint32 challengeLevel, b
 void PlayerChallenge::_LoadMythicKeystones(PreparedQueryResult result)
 {
     if (!result)
+    {
+        _player->DestroyItemCount(MythicKeystone, 1, true);
+        _player->DestroyItemCount(MiniMythicKeystone, 1, true);
         return;
+    }
 
     do
     {
@@ -228,6 +233,12 @@ void PlayerChallenge::_LoadMythicKeystones(PreparedQueryResult result)
                     ResetMythicKeystoneTo(item, keystoneInfo->Level, false);
             keystoneInfo->KeyIsCharded = 1;
         }
+
+        // reset key
+        if (sWorld->getNextChallengeKeyReset() > keystoneInfo->timeReset)
+            if (auto item = _player->GetItemByEntry(itemId))
+                ResetMythicKeystoneTo(item, keystoneInfo->Level, true);
+
     } while (result->NextRow());
 }
 
