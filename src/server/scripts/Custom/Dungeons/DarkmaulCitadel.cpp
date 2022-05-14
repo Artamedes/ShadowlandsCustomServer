@@ -13,6 +13,8 @@
 #include "Cell.h"
 #include "GridNotifiers.h"
 #include "MoveSpline.h"
+#include "ObjectMgr.h"
+#include "Chat.h"
 #include <sstream>
 
 enum DarkmaulCitadel
@@ -45,23 +47,38 @@ enum DarkmaulCitadel
     StartStageOffset = 1000,
     LeftWaypoints = 2000,
     RightWaypoints = 2001,
+    // Creature set data
+    SetRiftEnergy = 3000,
 
     // Instance Set Data
     SetDataNextStage = 1337,
+    SetMaxRiftEnergy,
+    // Instance Get Data
+    DataGetMaxEnergy = 5000,
 
     // PlayerChoice
     PlayerChoiceID = 682925854,
 
+    // MapId
     DarkmaulMapId = 2236,
 
     // Spells
     CannonFireBall = 329420,
+    Pyroblast = 147600,
 
     // Currencies
     RiftEssence       = 10177,
-    AllotedRiftEnergy = 10178,
-    RiftEnergy        = 10179,
+    AllotedRiftEnergy = 10178, // useless
+    RiftEnergy        = 10179, // per instance currency
     DefensePoints     = 10180,
+
+    // Broadcasts
+    DefenderNpcTextId           = 851001,
+    DungeonDefenseItemNpcTextId = 699999,
+
+    // Temporary
+    MaxRiftEnergyEasyMode = 500,
+    RiftEssenceReward = 5000,
 };
 
 const std::unordered_map<uint32, uint32> CreatureHealths =
@@ -83,7 +100,7 @@ const std::unordered_map<uint32, uint32> CreatureHealths =
     { FriendlyOgre, 2000 },
     { SlowTotem,    100  },
     { BombTotem,    500  },
-    { TauntTotem,   500  },
+    { TauntTotem,   1000 },
 
 };
 
@@ -100,13 +117,36 @@ const std::unordered_map<uint32, float> CreatureDmgs =
 
     // Friendlies
     { RiftCrystal,  500.0f  },
-    { Cannon,       100.0f  },
-    { FireWizard,   75.0f   },
+    { Cannon,       200.0f  },
+    { FireWizard,   100.0f  },
     { Archer,       100.0f  },
-    { FriendlyOgre, 200.0f  },
+    { FriendlyOgre, 225.0f  },
     { SlowTotem,    0.0f    },
     { BombTotem,    300.0f  },
     { TauntTotem,   0.0f    },
+};
+
+const std::unordered_map<uint32, uint32> CreatureRiftEnergyCosts
+{
+    // Friendlies
+    { Cannon,       100  },
+    { FireWizard,   75   },
+    { Archer,       50   },
+    { FriendlyOgre, 150  },
+    { SlowTotem,    75   },
+    { BombTotem,    75   },
+    { TauntTotem,   75   },
+};
+
+const std::unordered_map<uint32, uint32> CreatureRiftEnergyReward
+{
+    { Kobold,       8  },
+    { Goblin,       16 },
+    { GoblinChef,   24 },
+    { Orc,          30 },
+    { OrcBruiser,   50 },
+    { Beholder,     60 },
+    { Ogre,         90 },
 };
 
 const Position CrystalSpawnPos = { 872.208f, -1877.28f, 207.632f, 2.08771f };
@@ -122,6 +162,25 @@ const Position EnemyPointRightTwo = { 865.323f, -1881.52f, 207.745f, 0.562353f }
 const Position EnemyPointLeftOne = { 916.215f, -1854.46f, 196.256f, 2.75493f }; // left one
 const Position EnemyPointLeftTwo = { 877.948f, -1873.99f, 207.624f, 3.69086f }; // left two
 
+void GiveRiftEnergyToPlayer(Player* player, uint32 reward)
+{
+    auto instance = player->GetInstanceScript();
+    uint32 currCurrency = player->GetCurrency(RiftEnergy);
+    uint32 maxCurrency = instance->GetData(DataGetMaxEnergy);
+    if (currCurrency <= maxCurrency)
+    {
+        if (currCurrency + reward > maxCurrency)
+        {
+            uint32 prevReward = reward;
+            reward = maxCurrency - currCurrency;
+            uint32 diff = prevReward - reward;
+            player->ModifyCurrency(RiftEssence, diff);
+        }
+
+        player->ModifyCurrency(RiftEnergy, reward);
+    }
+}
+
 struct instance_darkmaul_citadel : public CustomInstanceScript
 {
 public:
@@ -131,8 +190,9 @@ public:
     }
 
     ObjectGuid CrystalGuid;
+    uint32 MaxRiftEnergy = MaxRiftEnergyEasyMode;
 
-    void Load(char const* data) override
+    void Load(char const* /*data*/) override
     {
 
     }
@@ -157,23 +217,46 @@ public:
 
     bool SetBossState(uint32 id, EncounterState state) override
     {
-        if (id == BossCrystal && state == EncounterState::IN_PROGRESS)
+        if (id == BossCrystal)
         {
-            if (auto oldCrystal = instance->GetCreature(CrystalGuid))
+            if (state == EncounterState::IN_PROGRESS)
             {
-                if (oldCrystal->AI())
-                    oldCrystal->AI()->DoAction(Cleanup);
-                oldCrystal->DespawnOrUnsummon();
-            }
+                instance->DoOnPlayers([](Player* player)
+                {
+                    player->ModifyCurrency(RiftEnergy, MaxRiftEnergyEasyMode, true, false, true);
+                });
 
-            if (auto creature = instance->SummonCreature(RiftCrystal, CrystalSpawnPos))
+                if (auto oldCrystal = instance->GetCreature(CrystalGuid))
+                {
+                    if (oldCrystal->AI())
+                        oldCrystal->AI()->DoAction(Cleanup);
+                    oldCrystal->DespawnOrUnsummon();
+                }
+
+                if (auto creature = instance->SummonCreature(RiftCrystal, CrystalSpawnPos))
+                {
+                    creature->SetTempSummonType(TempSummonType::TEMPSUMMON_CORPSE_DESPAWN);
+                }
+
+                if (auto creature = instance->GetCreature(CrystalGuid))
+                    if (creature->AI())
+                        creature->AI()->DoAction(StartEventEASY);
+            }
+            else if (state == EncounterState::DONE)
             {
-                creature->SetTempSummonType(TempSummonType::TEMPSUMMON_CORPSE_DESPAWN);
-            }
+                if (auto oldCrystal = instance->GetCreature(CrystalGuid))
+                {
+                    uint32 RewardRiftEssence = (uint32)(static_cast<float>(RiftEssenceReward) * (std::min(10.0f, oldCrystal->GetHealthPct()) / 100.0f));
+                    instance->DoOnPlayers([RewardRiftEssence, oldCrystal](Player* player)
+                    {
+                        uint32 riftEnergy = player->GetCurrency(RiftEnergy);
+                        player->ModifyCurrency(RiftEnergy, 0, true, false, true);
 
-            if (auto creature = instance->GetCreature(CrystalGuid))
-                if (creature->AI())
-                    creature->AI()->DoAction(StartEventEASY);
+                        ChatHandler(player).PSendSysMessage("|cffFFA600Crystal lived with %u%% HP! You've earned %u+(%u Bonus) Rift Essence!", (uint32)oldCrystal->GetHealthPct(), RewardRiftEssence, riftEnergy);
+                        player->ModifyCurrency(RiftEssence, RewardRiftEssence + riftEnergy);
+                    });
+                }
+            }
         }
 
         return InstanceScript::SetBossState(id, state);
@@ -187,6 +270,18 @@ public:
                 if (auto ai = creature->AI())
                     ai->DoAction(StartStageOffset);
         }
+        else if (id == SetMaxRiftEnergy)
+        {
+            MaxRiftEnergy = data;
+        }
+    }
+
+    uint32 GetData(uint32 id) const override
+    {
+        if (id == DataGetMaxEnergy)
+            return MaxRiftEnergy;
+
+        return InstanceScript::GetData(id);
     }
 
     ObjectGuid GetGuidData(uint32 type) const override
@@ -199,24 +294,25 @@ public:
 
     void OnPlayerEnter(Player* player) override
     {
-
+        player->ModifyCurrency(RiftEnergy, 0, true, false, true);
     }
 
     void OnPlayerLeave(Player* player) override
     {
-
+        player->ModifyCurrency(RiftEnergy, 0, true, false, true);
     }
 };
 
 class EnemyTargeterCheck
 {
 public:
-    explicit EnemyTargeterCheck(Creature const* creature) : _me(creature) { }
+    explicit EnemyTargeterCheck(Creature const* creature, float range) : _me(creature), _range(range) { }
 
     bool operator()(Unit* u) const;
 
 private:
     Creature const* _me;
+    float _range;
     EnemyTargeterCheck(EnemyTargeterCheck const&) = delete;
 };
 
@@ -225,17 +321,11 @@ bool EnemyTargeterCheck::operator()(Unit* u) const
     if (u->isDead())
         return false;
 
-    //if (u->GetEntry() == RiftCrystal)
-    //    printf("Riftcrystal");
-
     if (_me->AI() && !_me->AI()->CanForceAttack(u))
         return false;
 
-    if (u->GetDistance2d(_me) >= 15.0f)
+    if (u->GetDistance2d(_me) >= _range)
         return false;
-
-    //if (!u->IsWithinLOSInMap(_me))
-    //    return false;
 
     return true;
 }
@@ -243,7 +333,7 @@ bool EnemyTargeterCheck::operator()(Unit* u) const
 struct dungeon_defense_base_ai : public ScriptedAI
 {
 public:
-    dungeon_defense_base_ai(Creature* creature, bool canMelee, bool canMove = true) : ScriptedAI(creature), CanMelee(canMelee)
+    dungeon_defense_base_ai(Creature* creature, bool canMelee, bool canMove = true, float range = 15.0f) : ScriptedAI(creature), CanMelee(canMelee), Range(range)
     {
         SetCombatMovement(canMove);
     }
@@ -306,10 +396,9 @@ public:
     }
 
     // leave empty
-    void EnterEvadeMode(EvadeReason why) override
+    void EnterEvadeMode(EvadeReason /*why*/) override
     {
     }
-
 
     int32 combatTimer = 100;
 
@@ -335,7 +424,7 @@ public:
     {
         if (!UpdateVictimCustom())
         {
-            if (!me->isDead() && !me->IsEngaged())
+            if (!me->isDead())
             {
                 combatTimer -= diff;
                 if (combatTimer <= 0)
@@ -344,6 +433,8 @@ public:
 
                     if (auto target = SelectTowerOrCrystal())
                         AttackStart(target);
+                    else if (IsCombatMovementAllowed() && me->GetFaction() == 35) // TODO: make IsDefender
+                        me->GetMotionMaster()->MoveTargetedHome();
                 }
             }
             return false;
@@ -359,17 +450,17 @@ public:
         Cell cell(p);
         cell.SetNoCreate();
 
-        EnemyTargeterCheck u_check(me);
+        EnemyTargeterCheck u_check(me, Range);
         Trinity::UnitListSearcher<EnemyTargeterCheck> searcher(me, list, u_check);
 
         TypeContainerVisitor<Trinity::UnitListSearcher<EnemyTargeterCheck>, WorldTypeMapContainer > world_unit_searcher(searcher);
         TypeContainerVisitor<Trinity::UnitListSearcher<EnemyTargeterCheck>, GridTypeMapContainer >  grid_unit_searcher(searcher);
 
-        cell.Visit(p, world_unit_searcher, *me->GetMap(), *me, 15.0f);
-        cell.Visit(p, grid_unit_searcher, *me->GetMap(), *me, 15.0f);
+        cell.Visit(p, world_unit_searcher, *me->GetMap(), *me, Range);
+        cell.Visit(p, grid_unit_searcher, *me->GetMap(), *me, Range);
 
         Unit* closest = nullptr;
-        float currDist = 15.0f;
+        float currDist = Range;
 
         for (auto unit : list)
         {
@@ -384,10 +475,11 @@ public:
         return closest;
     }
 
-    virtual void ExecuteEvent(uint32 eventId) { }
+    virtual void ExecuteEvent(uint32 /*eventId*/) { }
 
     TaskScheduler scheduler;
     EventMap events;
+    float Range;
     bool CanMelee = true;
 };
 
@@ -645,12 +737,12 @@ public:
         }
     }
 
-    void JustEngagedWith(Unit* who) override
+    void JustEngagedWith(Unit* /*who*/) override
     {
         Talk(0); // The Crystal is under attack!
     }
 
-    void JustDied(Unit* who) override
+    void JustDied(Unit* /*who*/) override
     {
         Talk(3); // Game Over. Your Crystal has been destroyed.
         RemainingEnemies = 0;
@@ -664,7 +756,7 @@ public:
         }
     }
 
-    void EnterEvadeMode(EvadeReason why) override
+    void EnterEvadeMode(EvadeReason /*why*/) override
     {
         //BossAI::EnterEvadeMode(why);
         //_DespawnAtEvade(3s);
@@ -709,6 +801,12 @@ public:
                     Stage++;
                     DoAction(StartStageOffset + Stage);
                     me->SetNpcFlag(NPCFlags::UNIT_NPC_FLAG_GOSSIP);
+
+                    if (instance)
+                        instance->instance->DoOnPlayers([](Player* player)
+                    {
+                        GiveRiftEnergyToPlayer(player, 100);
+                    });
                 }
             }
         }
@@ -880,7 +978,7 @@ struct npc_darkmaul_citadel_enemy_npc_ai : public dungeon_defense_base_ai
         AccelerateWithPath();
     }
 
-    void JustEngagedWith(Unit* who) override
+    void JustEngagedWith(Unit* /*who*/) override
     {
         me->SetHomePosition(*me);
     }
@@ -918,12 +1016,46 @@ struct npc_darkmaul_citadel_enemy_npc_ai : public dungeon_defense_base_ai
             DoMeleeAttackIfReady();
     }
 
+    void JustDied(Unit* /*killer*/) override
+    {
+        if (auto instance = me->GetInstanceScript())
+        {
+            auto it = CreatureRiftEnergyReward.find(me->GetEntry());
+            if (it != CreatureRiftEnergyReward.end())
+            {
+                uint32 reward = it->second;
+
+                std::list<Player*> players;
+                for (MapReference const& ref : instance->instance->GetPlayers())
+                    if (Player* player = ref.GetSource())
+                        players.push_back(player);
+
+                Player* randPlayer = nullptr;
+
+                int i = 5;
+                while (i > 0)
+                {
+                    randPlayer = Trinity::Containers::SelectRandomContainerElement(players);
+                    if (!randPlayer->IsGameMaster())
+                        break;
+
+                    i--;
+                }
+
+                if (randPlayer)
+                {
+                    GiveRiftEnergyToPlayer(randPlayer, reward);
+                }
+            }
+        }
+    }
+
     std::queue<Position> Path;
 };
 
 struct npc_darkmaul_citadel_defender_ai : public dungeon_defense_base_ai
 {
-    npc_darkmaul_citadel_defender_ai(Creature* creature, bool canMelee, bool canMove = true) : dungeon_defense_base_ai(creature, canMelee, canMove) { }
+    npc_darkmaul_citadel_defender_ai(Creature* creature, bool canMelee, bool canMove = true, float range = 15.0f) : dungeon_defense_base_ai(creature, canMelee, canMove, range) { }
 
     bool CanForceAttack(Unit const* target) const override
     {
@@ -960,6 +1092,130 @@ struct npc_darkmaul_citadel_defender_ai : public dungeon_defense_base_ai
         if (CanMelee)
             DoMeleeAttackIfReady();
     }
+
+    uint32 Invested = 0;
+    uint32 CurrUpgrade = 1;
+    uint32 MaxUpgrade = 3;
+    uint32 NextUpgradeCost = 0;
+
+    void SetData(uint32 id, uint32 data) override
+    {
+        if (id == SetRiftEnergy)
+        {
+            Invested = data;
+            NextUpgradeCost = data;
+        }
+    }
+
+    void UpdateStats()
+    {
+        auto healthPct = me->GetHealthPct();
+        me->SetMaxHealth(me->GetMaxHealth() * 1.5f);
+        currDmg *= 1.5f;
+        me->UpdateDamagePhysical(WeaponAttackType::BASE_ATTACK);
+        me->SetHealth(me->CountPctFromMaxHealth(healthPct));
+    }
+
+    bool OnGossipHello(Player* player) override
+    {
+        ClearGossipMenuFor(player);
+        player->PrepareQuestMenu(me->GetGUID());
+
+        if (auto instance = player->GetInstanceScript())
+        {
+            std::ostringstream ss;
+            ss << "Rift Energy: " << player->GetCurrency(RiftEnergy) << "/" << instance->GetData(DataGetMaxEnergy);
+
+            AddGossipItemFor(player, GossipOptionIcon::None, ss.str(), 0, 0, [this, player](std::string /*callback*/)
+            {
+                OnGossipHello(player);
+            });
+
+            if (me->GetHealth() != me->GetMaxHealth())
+            {
+                ss.clear();
+                ss.str("");
+                ss << "Heal (" << me->GetHealth() << "/" << me->GetMaxHealth() << ")";
+                uint32 cost = ((me->GetMaxHealth() - me->GetHealth()) / 5);
+
+                if (player->GetCurrency(RiftEnergy) >= cost)
+                    ss << " Cost: " << cost;
+                else
+                    ss << " |cffFF0000Cost: " << cost;
+
+                AddGossipItemFor(player, GossipOptionIcon::None, ss.str(), 0, 0, [this, player, cost](std::string /*callback*/)
+                {
+                    uint32 energy = player->GetCurrency(RiftEnergy);
+                    if (energy >= cost)
+                    {
+                        player->ModifyCurrency(RiftEnergy, -static_cast<int32>(cost));
+                        ChatHandler(player).PSendSysMessage("|cffFFA600-%u Rift Energy", cost);
+                        me->SetFullHealth();
+                    }
+                    else
+                    {
+                        if (energy > 0 && energy < cost)
+                        {
+                            energy -= cost;
+
+                            player->ModifyCurrency(RiftEnergy, -static_cast<int32>(energy));
+                            ChatHandler(player).PSendSysMessage("|cffFFA600-%u Rift Energy", energy);
+                            me->SetHealth(me->GetHealth() + energy * 5);
+                        }
+                    }
+
+                    OnGossipHello(player);
+                });
+            }
+
+            ss.clear();
+            ss.str("");
+            ss << "Upgrade (" << CurrUpgrade << "/" << MaxUpgrade << ")";
+
+            if (CurrUpgrade == MaxUpgrade)
+                ss << " MAX";
+            else
+            {
+                if (player->GetCurrency(RiftEnergy) >= NextUpgradeCost)
+                    ss << " Cost: " << NextUpgradeCost;
+                else
+                    ss << " |cffFF0000Cost: " << NextUpgradeCost;
+            }
+
+            AddGossipItemFor(player, GossipOptionIcon::None, ss.str(), 0, 0, [this, player](std::string /*callback*/)
+            {
+                if (player->GetCurrency(RiftEnergy) >= NextUpgradeCost)
+                {
+                    if (CurrUpgrade < MaxUpgrade)
+                    {
+                        Invested += NextUpgradeCost;
+                        player->ModifyCurrency(RiftEnergy, -static_cast<int32>(NextUpgradeCost));
+                        ChatHandler(player).PSendSysMessage("|cffFFA600-%u Rift Energy", NextUpgradeCost);
+                        CurrUpgrade++;
+                        UpdateStats();
+                    }
+                }
+
+                OnGossipHello(player);
+            });
+
+            ss.clear();
+            ss.str("");
+            ss << "Sell for " << (uint32)((float)Invested * 0.75f);
+            AddGossipItemFor(player, GossipOptionIcon::None, ss.str(), 0, 0, "Are you sure you want to sell this defender?", 0, false, [this, player](std::string /*callback*/)
+            {
+                me->DespawnOrUnsummon();
+                me->RemoveNpcFlag(NPCFlags::UNIT_NPC_FLAG_GOSSIP);
+                // Sell
+                GiveRiftEnergyToPlayer(player, Invested * 0.75f);
+
+                CloseGossipMenuFor(player);
+            });
+        }
+
+        SendGossipMenuFor(player, DefenderNpcTextId, me);
+        return true;
+    }
 };
 
 class DarkmaulCitadel_DungeonDefenseSpawner_ItemScript : public ItemScript
@@ -984,86 +1240,55 @@ public:
         {
             if (instance->GetBossState(BossCrystal) == IN_PROGRESS)
             {
-                AddGossipItemFor(player, GossipOptionIcon::None, "Spawn Fire Wizard", 0, 0, [this, player, item](std::string /*callback*/)
+                std::ostringstream ss;
+
+                ss << "Rift Energy: " << player->GetCurrency(RiftEnergy) << "/" << instance->GetData(DataGetMaxEnergy);
+
+                AddGossipItemFor(player, GossipOptionIcon::None, ss.str(), 0, 0, [this, player, item](std::string /*callback*/)
                 {
-                    if (auto instance = player->GetInstanceScript())
-                    {
-                        if (auto crystal = instance->GetCreature(BossCrystal))
-                        {
-                            crystal->SummonCreature(FireWizard, *player, TEMPSUMMON_MANUAL_DESPAWN);
-                        }
-                    }
                     MainMenu(player, item);
                 });
-                AddGossipItemFor(player, GossipOptionIcon::None, "Spawn Archer", 0, 0, [this, player, item](std::string /*callback*/)
+
+                for (auto const& itr : CreatureRiftEnergyCosts)
                 {
-                    if (auto instance = player->GetInstanceScript())
+                    auto creatureTemplate = sObjectMgr->GetCreatureTemplate(itr.first);
+                    if (!creatureTemplate)
+                        continue;
+
+                    uint32 cost = itr.second;
+                    ss.clear();
+                    ss.str("");
+                    ss << "Spawn " << creatureTemplate->Name;
+
+                    if (player->GetCurrency(RiftEnergy) >= cost)
+                        ss << " Cost: " << cost;
+                    else
+                        ss << " |cffFF0000Cost: " << cost;
+
+                    AddGossipItemFor(player, GossipOptionIcon::None, ss.str(), 0, 0, [this, player, item, creatureTemplate, cost](std::string /*callback*/)
                     {
-                        if (auto crystal = instance->GetCreature(BossCrystal))
+                        if (auto instance = player->GetInstanceScript())
                         {
-                            crystal->SummonCreature(Archer, *player, TEMPSUMMON_MANUAL_DESPAWN);
+                            if (auto crystal = instance->GetCreature(BossCrystal))
+                            {
+                                if (player->GetCurrency(RiftEnergy) >= cost)
+                                {
+                                    player->ModifyCurrency(RiftEnergy, -static_cast<int32>(cost));
+                                    ChatHandler(player).PSendSysMessage("|cffFFA600-%u Rift Energy", cost);
+                                    if (auto defense = crystal->SummonCreature(creatureTemplate->Entry, *player, TEMPSUMMON_MANUAL_DESPAWN))
+                                    {
+                                        if (defense->AI())
+                                            defense->AI()->SetData(SetRiftEnergy, cost);
+                                    }
+                                }
+                            }
                         }
-                    }
-                    MainMenu(player, item);
-                });
-                AddGossipItemFor(player, GossipOptionIcon::None, "Spawn Cannon", 0, 0, [this, player, item](std::string /*callback*/)
-                {
-                    if (auto instance = player->GetInstanceScript())
-                    {
-                        if (auto crystal = instance->GetCreature(BossCrystal))
-                        {
-                            crystal->SummonCreature(Cannon, *player, TEMPSUMMON_MANUAL_DESPAWN);
-                        }
-                    }
-                    MainMenu(player, item);
-                });
-                AddGossipItemFor(player, GossipOptionIcon::None, "Spawn Friendly Ogre", 0, 0, [this, player, item](std::string /*callback*/)
-                {
-                    if (auto instance = player->GetInstanceScript())
-                    {
-                        if (auto crystal = instance->GetCreature(BossCrystal))
-                        {
-                            crystal->SummonCreature(FriendlyOgre, *player, TEMPSUMMON_MANUAL_DESPAWN);
-                        }
-                    }
-                    MainMenu(player, item);
-                });
-                AddGossipItemFor(player, GossipOptionIcon::None, "Spawn Slow Totem", 0, 0, [this, player, item](std::string /*callback*/)
-                {
-                    if (auto instance = player->GetInstanceScript())
-                    {
-                        if (auto crystal = instance->GetCreature(BossCrystal))
-                        {
-                            crystal->SummonCreature(SlowTotem, *player, TEMPSUMMON_MANUAL_DESPAWN);
-                        }
-                    }
-                    MainMenu(player, item);
-                });
-                AddGossipItemFor(player, GossipOptionIcon::None, "Spawn Bomb Totem", 0, 0, [this, player, item](std::string /*callback*/)
-                {
-                    if (auto instance = player->GetInstanceScript())
-                    {
-                        if (auto crystal = instance->GetCreature(BossCrystal))
-                        {
-                            crystal->SummonCreature(BombTotem, *player, TEMPSUMMON_MANUAL_DESPAWN);
-                        }
-                    }
-                    MainMenu(player, item);
-                });
-                AddGossipItemFor(player, GossipOptionIcon::None, "Spawn Taunt Totem", 0, 0, [this, player, item](std::string /*callback*/)
-                {
-                    if (auto instance = player->GetInstanceScript())
-                    {
-                        if (auto crystal = instance->GetCreature(BossCrystal))
-                        {
-                            crystal->SummonCreature(TauntTotem, *player, TEMPSUMMON_MANUAL_DESPAWN);
-                        }
-                    }
-                    MainMenu(player, item);
-                });
+                        MainMenu(player, item);
+                    });
+                }
             }
         }
-        SendGossipMenuFor(player, 699999, item->GetGUID());
+        SendGossipMenuFor(player, DungeonDefenseItemNpcTextId, item->GetGUID());
     }
 };
 
@@ -1072,7 +1297,9 @@ public:
 struct npc_archer_851001 : public npc_darkmaul_citadel_defender_ai
 {
 public:
-    npc_archer_851001(Creature* creature) : npc_darkmaul_citadel_defender_ai(creature, false, false) { }
+    npc_archer_851001(Creature* creature) : npc_darkmaul_citadel_defender_ai(creature, false, false, 25.0f) { }
+
+    int32 archerTimer = 1000;
 
     void UpdateAI(uint32 diff) override
     {
@@ -1080,7 +1307,15 @@ public:
             return;
 
         if (!me->HasUnitState(UNIT_STATE_CASTING) && me->GetVictim())
-            DoSpellAttackIfReady(75); // Auto Shot
+        {
+            if (archerTimer >= 1000)
+            {
+                archerTimer = 0;
+                DoCastVictim(75, true); // Auto Shot
+            }
+            else
+                archerTimer += diff;
+        }
     }
 };
 
@@ -1088,7 +1323,7 @@ public:
 struct npc_fire_wizard_851002 : public npc_darkmaul_citadel_defender_ai
 {
 public:
-    npc_fire_wizard_851002(Creature* creature) : npc_darkmaul_citadel_defender_ai(creature, false, false) { }
+    npc_fire_wizard_851002(Creature* creature) : npc_darkmaul_citadel_defender_ai(creature, false, false, 40.0f) { }
 
     void UpdateAI(uint32 diff) override
     {
@@ -1096,7 +1331,7 @@ public:
             return;
 
         if (!me->HasUnitState(UNIT_STATE_CASTING) && me->GetVictim())
-            DoCastVictim(CannonFireBall);
+            DoCastVictim(Pyroblast);
     }
 };
 
@@ -1104,7 +1339,7 @@ public:
 struct npc_cannon_851003 : public npc_darkmaul_citadel_defender_ai
 {
 public:
-    npc_cannon_851003(Creature* creature) : npc_darkmaul_citadel_defender_ai(creature, false, false) { }
+    npc_cannon_851003(Creature* creature) : npc_darkmaul_citadel_defender_ai(creature, false, false, 40.0f) { }
 
     void UpdateAI(uint32 diff) override
     {
@@ -1147,6 +1382,19 @@ struct npc_bomb_totem_851005 : public npc_darkmaul_citadel_defender_ai
 {
 public:
     npc_bomb_totem_851005(Creature* creature) : npc_darkmaul_citadel_defender_ai(creature, false, false) { }
+
+    int32 bombTimer = 1000;
+
+    void UpdateAI(uint32 diff) override
+    {
+        if (!UpdateVictimSpecial(diff))
+            return;
+
+        if (!me->HasUnitState(UNIT_STATE_CASTING) && me->GetVictim())
+        {
+            DoCastSelf(358239);
+        }
+    }
 };
 
 // 851006 - npc_slow_totem_851006
