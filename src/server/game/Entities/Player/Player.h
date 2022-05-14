@@ -1173,9 +1173,9 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
 
         void SetObjectScale(float scale) override;
 
-        bool TeleportTo(uint32 mapid, float x, float y, float z, float orientation, uint32 options = 0, uint32 optionParam = 0, Transport* transport = nullptr, uint32 spellID = 0);
-        bool TeleportTo(uint32 mapid, Position const& pos, uint32 options = 0, uint32 optionParam = 0, Transport* transport = nullptr);
-        bool TeleportTo(WorldLocation const& loc, uint32 options = 0, uint32 optionParam = 0, Transport* transport = nullptr);
+        bool TeleportTo(uint32 mapid, float x, float y, float z, float orientation, uint32 options = 0, uint32 optionParam = 0, Transport* transport = nullptr, uint32 spellID = 0, Optional<uint32> instanceId = {});
+        bool TeleportTo(uint32 mapid, Position const& pos, uint32 options = 0, uint32 optionParam = 0, Transport* transport = nullptr, Optional<uint32> instanceId = {}));
+        bool TeleportTo(WorldLocation const& loc, uint32 options = 0, uint32 optionParam = 0, Transport* transport = nullptr, Optional<uint32> instanceId = {}));
         bool TeleportToBGEntryPoint();
         void TeleportToChallenge(uint32 mapid, float x, float y, float z, float orientation, Player* keyOwner = nullptr);
 
@@ -2246,6 +2246,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         Map* GetTeleportMap() { return m_teleport_target_map; }
         void ResetTeleMap() { m_teleport_target_map = nullptr; }
         WorldLocation& GetTeleportDest() { return m_teleport_dest; }
+        Optional<uint32> GetTeleportDestInstanceId() const { return m_teleport_instanceId; }
         uint32 GetTeleportOptions() const { return m_teleport_options; }
         bool IsBeingTeleported() const { return IsBeingTeleportedNear() || IsBeingTeleportedFar(); }
         bool IsBeingTeleportedNear() const { return mSemaphoreTeleport_Near; }
@@ -2511,8 +2512,12 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         uint32 GetSaveTimer() const { return m_nextSave; }
         void SetSaveTimer(uint32 timer) { m_nextSave = timer; }
 
-        void SaveRecallPosition() { m_recall_location.WorldRelocate(*this); }
-        void Recall() { TeleportTo(m_recall_location); }
+        void SaveRecallPosition()
+        {
+            m_recall_location.WorldRelocate(*this);
+            m_recall_instanceId = GetInstanceId();
+        }
+        void Recall() { TeleportTo(m_recall_location, 0, m_recall_instanceId); }
 
         void SaveBlinkPosition() { m_blink_location.WorldRelocate(*this); }
         void RecallBlink() { TeleportTo(m_blink_location); }
@@ -3172,9 +3177,11 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         // Player summoning
         time_t m_summon_expire;
         WorldLocation m_summon_location;
+        uint32 m_summon_instanceId;
 
         // Recall position
         WorldLocation m_recall_location;
+        uint32 m_recall_instanceId;
 
         WorldLocation m_blink_location;
 
@@ -3229,6 +3236,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         // Current teleport data
         Map* m_teleport_target_map;
         WorldLocation m_teleport_dest;
+        Optional<uint32> m_teleport_instanceId;
         uint32 m_teleport_options;
         uint32 m_teleport_option_param;
         Transport* m_teleport_transport;

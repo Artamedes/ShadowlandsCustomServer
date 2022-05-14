@@ -298,6 +298,9 @@ Player::Player(WorldSession* session) : Unit(true), m_sceneMgr(this)
 
     // Player summoning
     m_summon_expire = 0;
+    m_summon_instanceId = 0;
+
+    m_recall_instanceId = 0;
 
     m_unitMovedByMe = this;
     m_playerMovingMe = this;
@@ -1347,7 +1350,7 @@ uint8 Player::GetChatFlags() const
     return tag;
 }
 
-bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientation, uint32 options, uint32 optionParam, Transport* transport, uint32 spellID /*= 0*/)
+bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientation, uint32 options, uint32 optionParam, Transport* transport, uint32 spellID /*= 0*/, Optional<uint32> instanceId)
 {
     if (!MapManager::IsValidMapCoord(mapid, x, y, z, orientation))
     {
@@ -1415,7 +1418,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
     if (duel && GetMapId() != mapid && GetMap()->GetGameObject(m_playerData->DuelArbiter))
         DuelComplete(DUEL_FLED);
 
-    if (GetMapId() == mapid)
+    if (GetMapId() == mapid && (!instanceId || GetInstanceId() == instanceId))
     {
         //lets reset far teleport flag if it wasn't reset during chained teleport
         SetSemaphoreTeleportFar(false);
@@ -1428,6 +1431,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
             SetSemaphoreTeleportNear(true);
             //lets save teleport destination for player
             m_teleport_dest = WorldLocation(mapid, x, y, z, orientation);
+            m_teleport_instanceId = {};
             m_teleport_options = options;
             m_teleport_option_param = optionParam;
             m_teleport_transport = transport;
@@ -1449,6 +1453,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
 
         // this will be used instead of the current location in SaveToDB
         m_teleport_dest = WorldLocation(mapid, x, y, z, orientation);
+        m_teleport_instanceId = {};
         m_teleport_options = options;
         m_teleport_option_param = optionParam;
         SetFallInformation(0, GetPositionZ());
@@ -1499,6 +1504,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
                 SetSemaphoreTeleportFar(true);
                 //lets save teleport destination for player
                 m_teleport_dest = WorldLocation(mapid, x, y, z, orientation);
+                m_teleport_instanceId = instanceId;
                 m_teleport_options = options;
                 m_teleport_option_param = optionParam;
                 m_teleport_transport = transport;
@@ -1574,6 +1580,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
                 oldmap->RemovePlayerFromMap(this, false);
 
             m_teleport_dest = WorldLocation(mapid, x, y, z, orientation);
+            m_teleport_instanceId = instanceId;
             m_teleport_options = options;
             SetFallInformation(0, GetPositionZ());
             // if the player is saved before worldportack (at logout for example)
@@ -1597,16 +1604,16 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
     return true;
 }
 
-bool Player::TeleportTo(uint32 mapid, Position const& pos, uint32 options /*= 0*/, uint32 optionParam /*= 0*/, Transport* transport /*=nullptr*/)
+bool Player::TeleportTo(uint32 mapid, Position const& pos, uint32 options /*= 0*/, uint32 optionParam /*= 0*/, Transport* transport /*=nullptr*/, Optional<uint32> instanceId)
 {
     WorldLocation loc(mapid);
     loc.Relocate(pos);
-    return TeleportTo(loc, options, optionParam, transport);
+    return TeleportTo(loc, options, optionParam, transport, instanceId);
 }
 
-bool Player::TeleportTo(WorldLocation const& loc, uint32 options /*= 0*/, uint32 optionParam /*= 0*/, Transport* transport /*=nullptr*/)
+bool Player::TeleportTo(WorldLocation const& loc, uint32 options /*= 0*/, uint32 optionParam /*= 0*/, Transport* transport /*=nullptr*/, Optional<uint32> instanceId)
 {
-    return TeleportTo(loc.GetMapId(), loc.GetPositionX(), loc.GetPositionY(), loc.GetPositionZ(), loc.GetOrientation(), options, optionParam, transport);
+    return TeleportTo(loc.GetMapId(), loc.GetPositionX(), loc.GetPositionY(), loc.GetPositionZ(), loc.GetOrientation(), options, optionParam, transport, 0, instanceId);
 }
 
 bool Player::TeleportToBGEntryPoint()
@@ -26103,6 +26110,7 @@ void Player::SendSummonRequestFrom(Unit* summoner)
 
     m_summon_expire = GameTime::GetGameTime() + MAX_PLAYER_SUMMON_DELAY;
     m_summon_location.WorldRelocate(*summoner);
+    m_summon_instanceId = summoner->GetInstanceId();
 
     WorldPackets::Movement::SummonRequest summonRequest;
     summonRequest.SummonerGUID = summoner->GetGUID();
@@ -26136,7 +26144,7 @@ void Player::SummonIfPossible(bool agree)
     UpdateCriteria(CriteriaType::AcceptSummon, 1);
     RemoveAurasWithInterruptFlags(SpellAuraInterruptFlags::Summon);
 
-    TeleportTo(m_summon_location);
+    TeleportTo(m_summon_location, 0, m_summon_instanceId);
 }
 
 void Player::RemoveItemDurations(Item* item)
