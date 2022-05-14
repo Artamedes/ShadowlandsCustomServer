@@ -189,7 +189,8 @@ void GossipMenu::ClearMenu()
     auto it = _menuItems.begin();
     while (it != _menuItems.end())
     {
-        it->second->_callback = nullptr;
+        if (it->second)
+            it->second->_callback = nullptr;
         delete it->second;
         it = _menuItems.erase(it);
     }
