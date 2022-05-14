@@ -53,6 +53,7 @@ void AddSC_Folnuna();
 void AddSC_Meto();
 void AddSC_Sotanathor();
 void AddSC_WorldBosses();
+void AddSC_DarkmaulCitadel();
 
 void AddCustomScripts()
 {
@@ -90,4 +91,5 @@ void AddCustomScripts()
     AddSC_Meto();
     AddSC_Sotanathor();
     AddSC_WorldBosses();
+    AddSC_DarkmaulCitadel();
 }

@@ -243,6 +243,8 @@ class TC_GAME_API CreatureAI : public UnitAI
 
         virtual bool CanSeeOrDetect(WorldObject const* /*obj*/) const { return true; }
 
+        virtual void ModifyDamage(float& /*minDamage*/, float& /*maxDamage*/) { }
+
         // Called when a player is charmed by the creature
         // If a PlayerAI* is returned, that AI is placed on the player instead of the default charm AI
         // Object destruction is handled by Unit::RemoveCharmedBy

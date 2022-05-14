@@ -138,7 +138,7 @@ struct GossipMenuItem
 };
 
 // need an ordered container
-typedef std::map<uint32, GossipMenuItem> GossipMenuItemContainer;
+typedef std::map<uint32, GossipMenuItem*> GossipMenuItemContainer;
 
 struct GossipMenuItemData
 {
@@ -187,7 +187,7 @@ class TC_GAME_API GossipMenu
         {
             GossipMenuItemContainer::const_iterator itr = _menuItems.find(id);
             if (itr != _menuItems.end())
-                return &itr->second;
+                return itr->second;
 
             return nullptr;
         }

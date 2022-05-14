@@ -395,8 +395,14 @@ Player::~Player()
     for (uint8 i = 0; i < VOID_STORAGE_MAX_SLOT; ++i)
         delete _voidStorageItems[i];
 
-    for (auto itr = m_questScripts.begin(); itr != m_questScripts.end(); ++itr)
-        delete itr->second;
+    auto it = m_questScripts.begin();
+    while (it != m_questScripts.end())
+    {
+        it->second->player = nullptr;
+        it->second->quest = nullptr;
+        delete it->second;
+        it = m_questScripts.erase(it);
+    }
 
     sWorld->DecreasePlayerCount();
 }
@@ -15846,9 +15852,12 @@ void Player::AddQuest(Quest const* quest, Object* questGiver)
         return;
 
     uint32 quest_id = quest->GetQuestId();
-    auto questAI = FactorySelector::SelectQuestAI(quest, this);
-    if (questAI)
-        m_questScripts[quest_id] = questAI;
+    if (m_questScripts.find(quest_id) == m_questScripts.end())
+    {
+        auto questAI = FactorySelector::SelectQuestAI(quest, this);
+        if (questAI)
+            m_questScripts[quest_id] = questAI;
+    }
 
     // if not exist then created with set uState == NEW and rewarded=false
     auto questStatusItr = m_QuestStatus.emplace(quest_id, QuestStatusData{}).first;
@@ -15937,8 +15946,11 @@ void Player::AddQuest(Quest const* quest, Object* questGiver)
 
     sScriptMgr->OnQuestStatusChange(this, quest_id);
     sScriptMgr->OnQuestStatusChange(this, quest, oldStatus, questStatusData.Status);
-    if (questAI)
-        questAI->OnQuestAccept();
+    auto it = m_questScripts.find(quest_id);
+    if (it != m_questScripts.end())
+    {
+        it->second->OnQuestAccept();
+    }
 }
 
 void Player::CompleteQuest(uint32 quest_id)
@@ -16976,6 +16988,8 @@ void Player::RemoveActiveQuest(uint32 questId, bool update /*= true*/)
     auto itr2 = m_questScripts.find(questId);
     if (itr2 != m_questScripts.end())
     {
+        itr2->second->player = nullptr;
+        itr2->second->quest = nullptr;
         delete itr2->second;
         m_questScripts.erase(itr2);
     }

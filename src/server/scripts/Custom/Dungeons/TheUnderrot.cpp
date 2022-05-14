@@ -53,10 +53,10 @@ struct instance_the_underrot : public CustomInstanceScript
 public:
     instance_the_underrot(InstanceMap* map) : CustomInstanceScript(map)
     {
+        SetBossNumber(3);
         LoadBossBoundaries(boundaries);
         LoadDoorData(doorData);
         SetHeaders("UR");
-        SetBossNumber(3);
     }
 
     void OnCompletedCriteriaTree(CriteriaTree const* tree) override
@@ -123,8 +123,8 @@ public:
                     case BOSS_MISTER_DOCTOR:
                         if (auto doctor = instance->GetCreature(PlagueDoctorGuid))
                         {
-                            doctor->setActive(false); // Remove active
                             doctor->NearTeleportTo({ 1182.17f, 1460.16f, -181.56f, 0.924786f });
+                            doctor->setActive(false); // Remove active
                         }
                         break;
                 }
@@ -1363,6 +1363,9 @@ public:
                 {
                     player->TeleportTo(WorldLocation(1841, { 625.044f, 1253.41f, 99.8346f, 6.27532f }));
                 });
+
+                SendGossipMenuFor(player, 7010200, me);
+                return true;
             }
         }
 

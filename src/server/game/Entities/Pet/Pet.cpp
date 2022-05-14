@@ -365,7 +365,7 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petEntry, uint32 petnumber, bool c
         uint32 newPetIndex = std::distance(petStable->ActivePets.begin(), activePetItr);
 
         // Check that we either have no pet (unsummoned by player) or it matches temporarily unsummoned pet by server (for example on flying mount)
-        ASSERT(!petStable->CurrentPetIndex || petStable->CurrentPetIndex == newPetIndex);
+        //ASSERT(!petStable->CurrentPetIndex || petStable->CurrentPetIndex == newPetIndex);
 
         petStable->SetCurrentActivePetIndex(newPetIndex);
     }

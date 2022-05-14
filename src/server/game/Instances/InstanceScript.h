@@ -210,7 +210,7 @@ class TC_GAME_API InstanceScript : public ZoneScript
         // When save is needed, this function generates the data
         virtual std::string GetSaveData();
 
-        void SaveToDB();
+        virtual void SaveToDB();
 
         virtual void Update(uint32 /*diff*/) { }
         void UpdateOperations(uint32 const diff);

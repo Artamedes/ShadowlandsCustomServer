@@ -62,16 +62,17 @@ uint32 GossipMenu::AddMenuItem(int32 menuItemId, GossipOptionIcon icon, std::str
         }
     }
 
-    GossipMenuItem& menuItem = _menuItems[menuItemId];
+    auto menuItem = new GossipMenuItem();
 
-    menuItem.MenuItemIcon    = icon;
-    menuItem.Message         = message;
-    menuItem.IsCoded         = coded;
-    menuItem.Sender          = sender;
-    menuItem.OptionType      = action;
-    menuItem.BoxMessage      = boxMessage;
-    menuItem.BoxMoney        = boxMoney;
-    menuItem._callback       = callback;
+    menuItem->MenuItemIcon    = icon;
+    menuItem->Message         = message;
+    menuItem->IsCoded         = coded;
+    menuItem->Sender          = sender;
+    menuItem->OptionType      = action;
+    menuItem->BoxMessage      = boxMessage;
+    menuItem->BoxMoney        = boxMoney;
+    menuItem->_callback       = callback;
+    _menuItems.insert(std::make_pair(menuItemId, menuItem));
     return menuItemId;
 }
 
@@ -153,7 +154,7 @@ uint32 GossipMenu::GetMenuItemSender(uint32 menuItemId) const
     if (itr == _menuItems.end())
         return 0;
 
-    return itr->second.Sender;
+    return itr->second->Sender;
 }
 
 uint32 GossipMenu::GetMenuItemAction(uint32 menuItemId) const
@@ -162,7 +163,7 @@ uint32 GossipMenu::GetMenuItemAction(uint32 menuItemId) const
     if (itr == _menuItems.end())
         return 0;
 
-    return itr->second.OptionType;
+    return itr->second->OptionType;
 }
 
 bool GossipMenu::IsMenuItemCoded(uint32 menuItemId) const
@@ -171,13 +172,13 @@ bool GossipMenu::IsMenuItemCoded(uint32 menuItemId) const
     if (itr == _menuItems.end())
         return false;
 
-    return itr->second.IsCoded;
+    return itr->second->IsCoded;
 }
 
 bool GossipMenu::HasMenuItemType(uint32 optionType) const
 {
     for (auto const& menuItemPair : _menuItems)
-        if (menuItemPair.second.OptionType == optionType)
+        if (menuItemPair.second->OptionType == optionType)
             return true;
 
     return false;
@@ -185,7 +186,14 @@ bool GossipMenu::HasMenuItemType(uint32 optionType) const
 
 void GossipMenu::ClearMenu()
 {
-    _menuItems.clear();
+    auto it = _menuItems.begin();
+    while (it != _menuItems.end())
+    {
+        it->second->_callback = nullptr;
+        delete it->second;
+        it = _menuItems.erase(it);
+    }
+
     _menuItemData.clear();
 }
 
@@ -221,14 +229,14 @@ void PlayerMenu::SendGossipMenu(uint32 titleTextId, ObjectGuid objectGUID)
     for (GossipMenuItemContainer::const_iterator itr = _gossipMenu.GetMenuItems().begin(); itr != _gossipMenu.GetMenuItems().end(); ++itr)
     {
         WorldPackets::NPC::ClientGossipOptions& opt = packet.GossipOptions[count];
-        GossipMenuItem const& item = itr->second;
+        GossipMenuItem const* item = itr->second;
         opt.ClientOption = itr->first;
-        opt.OptionNPC = item.MenuItemIcon;
-        opt.OptionFlags = item.IsCoded;     // makes pop up box password
-        opt.OptionCost = item.BoxMoney;     // money required to open menu, 2.0.3
-        opt.OptionLanguage = item.Language;
-        opt.Text = item.Message;            // text for gossip item
-        opt.Confirm = item.BoxMessage;      // accept text (related to money) pop up box, 2.0.3
+        opt.OptionNPC = item->MenuItemIcon;
+        opt.OptionFlags = item->IsCoded;     // makes pop up box password
+        opt.OptionCost = item->BoxMoney;     // money required to open menu, 2.0.3
+        opt.OptionLanguage = item->Language;
+        opt.Text = item->Message;            // text for gossip item
+        opt.Confirm = item->BoxMessage;      // accept text (related to money) pop up box, 2.0.3
         opt.Status = GossipOptionStatus::Available;
         ++count;
     }

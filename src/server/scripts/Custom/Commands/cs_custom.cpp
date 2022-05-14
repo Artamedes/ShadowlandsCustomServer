@@ -1887,6 +1887,7 @@ public:
             { "testpacket2",       HandleTest2Command,  rbac::RBAC_PERM_COMMAND_RELOAD_ALL_ITEM, Console::No },
             { "testpacket3",       HandleTest3Command,  rbac::RBAC_PERM_COMMAND_RELOAD_ALL_ITEM, Console::No },
             { "testpacket4",       HandleTest4Command,  rbac::RBAC_PERM_COMMAND_RELOAD_ALL_ITEM, Console::No },
+            { "testpacket5",       HandleTest5Command,  rbac::RBAC_PERM_COMMAND_RELOAD_ALL_ITEM, Console::No },
 
 #ifdef WIN32
             { "gpscopy", HandleGPSCopyCommand,  rbac::RBAC_PERM_COMMAND_RELOAD_ALL_ITEM, Console::No },
@@ -1964,6 +1965,82 @@ public:
                 playerChoiceResponse.SubHeader = "Awards";
                 playerChoiceResponse.Answer = "Upgrade";
                 playerChoiceResponse.ButtonTooltip = "Are you sure you want to upgrade?";
+                playerChoiceResponse.Confirmation = "Confirmation";
+            }
+
+            playerChoiceResponse.Reward.emplace();
+            playerChoiceResponse.Reward->Money = 400000;
+            for (int i = 0; i < 2; ++i)
+            {
+                if (auto item = player->GetItemByEntry(i == 0 ? 183021 : 175921))
+                {
+
+                    {
+                        playerChoiceResponse.Reward->Items.emplace_back();
+                        WorldPackets::Quest::PlayerChoiceResponseRewardEntry& rewardEntry = playerChoiceResponse.Reward->Items.back();
+                        rewardEntry.Item.ItemID = item->GetEntry();
+                        rewardEntry.Item.Initialize(item);
+                    }
+                }
+            }
+
+            playerChoiceResponse.Reward->Currencies.emplace_back();
+            WorldPackets::Quest::PlayerChoiceResponseRewardEntry& rewardEntry = playerChoiceResponse.Reward->Currencies.back();
+            rewardEntry.Item.ItemID = 1813;
+            rewardEntry.Quantity = 500;
+
+            displayPlayerChoice.Responses.push_back(playerChoiceResponse);
+        }
+
+
+        handler->GetSession()->SendPacket(displayPlayerChoice.Write());
+        return true;
+    }
+    static bool HandleTest5Command(ChatHandler* handler, Optional<uint32> flag)
+    {
+        auto player = handler->GetPlayer();
+        WorldPackets::Quest::DisplayPlayerChoice displayPlayerChoice;
+
+        displayPlayerChoice.SenderGUID = player->GetGUID();
+        displayPlayerChoice.ChoiceID = 682925853;
+        displayPlayerChoice.Question = "Rewards Chest";
+        displayPlayerChoice.CloseChoiceFrame = false;
+        displayPlayerChoice.HideWarboardHeader = false;
+        displayPlayerChoice.KeepOpenAfterChoice = false;
+
+        displayPlayerChoice.UiTextureKitID = 5240;
+        displayPlayerChoice.SoundKitID = 40319; // 80244 brwaler upgrade
+
+        for (int i = 0; i < 2; ++i)
+        {
+            WorldPackets::Quest::PlayerChoiceResponse playerChoiceResponse;
+
+            playerChoiceResponse.ResponseID = 4412414;
+            playerChoiceResponse.ResponseIdentifier = 335;
+            playerChoiceResponse.Flags = 2;
+            playerChoiceResponse.ChoiceArtFileID = flag.value_or(986496);
+            playerChoiceResponse.UiTextureKitID = 0;
+            playerChoiceResponse.Reward.emplace();
+            //playerChoiceResponse.RewardQuestID = 591918;
+            if (i == 0)
+            {
+                playerChoiceResponse.Header = "Today";
+                //playerChoiceResponse.SubHeader = "Requirements";
+                playerChoiceResponse.ButtonTooltip = "Clicking this will consume the requirements!";
+                playerChoiceResponse.Confirmation = "Confirmation";
+                playerChoiceResponse.Flags = 5;
+                playerChoiceResponse.Answer = "Requirements";
+                playerChoiceResponse.ButtonTooltip = "|cffFF0000Not enough x...";
+                playerChoiceResponse.SubHeader = "";
+            }
+            else
+            {
+                playerChoiceResponse.Header = "Tommorow";
+                //playerChoiceResponse.SubHeader = "Rewards";
+                playerChoiceResponse.Flags = 5;
+                playerChoiceResponse.SubHeader = "";
+                playerChoiceResponse.Answer = "Upgrade";
+                playerChoiceResponse.ButtonTooltip = "Login tommorow to claim!";
                 playerChoiceResponse.Confirmation = "Confirmation";
             }
 

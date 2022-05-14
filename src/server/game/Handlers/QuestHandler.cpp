@@ -857,6 +857,11 @@ void WorldSession::HandlePlayerChoiceResponse(WorldPackets::Quest::ChoiceRespons
                 return;
     }
 
+    if (choiceResponse.ChoiceID == 682925853 || choiceResponse.ChoiceID == 682925854)
+    {
+        sScriptMgr->OnPlayerChoiceResponse(GetPlayer(), choiceResponse.ChoiceID, choiceResponse.ResponseIdentifier);
+    }
+
     PlayerChoice const* playerChoice = sObjectMgr->GetPlayerChoice(choiceResponse.ChoiceID);
     if (!playerChoice)
         return;

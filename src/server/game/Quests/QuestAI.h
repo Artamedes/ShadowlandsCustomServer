@@ -15,9 +15,9 @@ class TC_GAME_API QuestAI
     uint32 _scriptId;
 
 protected:
+public:
     Quest const* quest;
     Player* player;
-public:
     explicit QuestAI(Quest const* a, Player* player, uint32 scriptId = {});
     virtual ~QuestAI();
 

@@ -210,12 +210,11 @@ class item_upgrader : public ItemScript
             }
             else
                 m_PlayerItemTargets[player->GetGUID()] = ItemTarget(itemTarget->GetGUID(), 0, now + 30s, hasMaterials);
-            WorldPackets::Quest::DisplayPlayerChoice displayPlayerChoice;
 
+            WorldPackets::Quest::DisplayPlayerChoice displayPlayerChoice;
             displayPlayerChoice.SenderGUID = itemTarget->GetGUID();
             displayPlayerChoice.ChoiceID = 682925852;
             displayPlayerChoice.Question = "Are you sure you want to upgrade?";
-          //  displayPlayerChoice.PendingChoiceText = "PendingChoiceText";
             displayPlayerChoice.CloseChoiceFrame = false;
             displayPlayerChoice.HideWarboardHeader = false;
             displayPlayerChoice.KeepOpenAfterChoice = false;

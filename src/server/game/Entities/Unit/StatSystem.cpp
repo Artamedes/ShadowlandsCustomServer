@@ -29,6 +29,7 @@
 #include <G3D/g3dmath.h>
 #include <numeric>
 #include "CustomObjectMgr.h"
+#include "ScriptedCreature.h"
 
 inline bool _ModifyUInt32(bool apply, uint32& baseValue, int32& amount)
 {
@@ -68,6 +69,10 @@ void Unit::UpdateDamagePhysical(WeaponAttackType attType)
     float maxDamage = 0.0f;
 
     CalculateMinMaxDamage(attType, false, true, minDamage, maxDamage);
+
+    if (auto crea = ToCreature())
+        if (crea->AI())
+            crea->AI()->ModifyDamage(minDamage, maxDamage);
 
     switch (attType)
     {

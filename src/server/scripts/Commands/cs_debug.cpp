@@ -101,6 +101,7 @@ public:
             { "anim",               HandleDebugAnimCommand,                rbac::RBAC_PERM_COMMAND_DEBUG,   Console::No },
             { "standstate",         HandleDebugStandStateCommand,          rbac::RBAC_PERM_COMMAND_DEBUG,   Console::No },
             { "talk",               HandleDebugTalkCommand,                rbac::RBAC_PERM_COMMAND_DEBUG,   Console::No },
+            { "action",             HandleDebugActionCommand,                rbac::RBAC_PERM_COMMAND_DEBUG,   Console::No },
             { "arena",              HandleDebugArenaCommand,               rbac::RBAC_PERM_COMMAND_DEBUG,   Console::Yes },
             { "bg",                 HandleDebugBattlegroundCommand,        rbac::RBAC_PERM_COMMAND_DEBUG,   Console::Yes },
             { "getitemstate",       HandleDebugGetItemStateCommand,        rbac::RBAC_PERM_COMMAND_DEBUG,   Console::No },
@@ -1144,6 +1145,17 @@ public:
                 ai->Talk(groupId, handler->GetPlayer());
 
         handler->PSendSysMessage("Playing groupId %u", groupId);
+
+        return true;
+    }
+
+    static bool HandleDebugActionCommand(ChatHandler* handler, int32 ac)
+    {
+        if (auto creature = handler->getSelectedCreature())
+            if (auto ai = creature->AI())
+                ai->DoAction(ac);
+
+        handler->PSendSysMessage("Playing ac %u", ac);
 
         return true;
     }
