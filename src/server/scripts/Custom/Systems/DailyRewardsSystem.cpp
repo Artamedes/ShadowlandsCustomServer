@@ -223,7 +223,7 @@ public:
         if (currDay > biggestId)
             currDay = biggestId;
 
-        for (uint32 i = 0; i < currDay; ++i)
+        for (uint32 i = 0; i <= currDay; ++i)
         {
             if (!player->_rewardsClaimed.count(i))
                 return true;
@@ -242,7 +242,7 @@ public:
         if (currDay > biggestId)
             currDay = biggestId;
 
-        for (uint32 i = 0; i < currDay; ++i)
+        for (uint32 i = 0; i <= currDay; ++i)
         {
             if (!player->_rewardsClaimed.count(i))
             {
