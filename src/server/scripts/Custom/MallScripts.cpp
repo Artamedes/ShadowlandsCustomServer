@@ -3583,6 +3583,7 @@ public:
         }
         if (pet_id)
         {
+            CloseGossipMenuFor(player);
             player->UnsummonPetTemporaryIfAny();
             if (!player->GetPet())
             {
@@ -3597,7 +3598,12 @@ public:
 
                 Pet* pet = player->CreateTamedPetFrom(tempPet, 13481);
                 if (!pet)                                               // in very specific state like near world end/etc.
+                {
+                    // "kill" original creature
+                    if (tempPet)
+                        tempPet->DespawnOrUnsummon();
                     return false;
+                }
 
                 // "kill" original creature
                 if (tempPet)
@@ -3615,14 +3621,10 @@ public:
                 // caster have pet now
                 player->SetMinion(pet, true);
 
-                if (player->GetTypeId() == TYPEID_PLAYER)
-                {
-                    pet->SavePetToDB(PetSaveMode::PET_SAVE_FIRST_ACTIVE_SLOT);
-                    player->PetSpellInitialize();
-                    player->GetSession()->SendStablePet(ObjectGuid::Empty);
-                }
+                pet->SavePetToDB(PetSaveMode::PET_SAVE_FIRST_ACTIVE_SLOT);
+                player->PetSpellInitialize();
+                player->GetSession()->SendStablePet(ObjectGuid::Empty);
             }
-            CloseGossipMenuFor(player);
         }
         return true;
     }
@@ -3633,11 +3635,25 @@ public:
         ClearGossipMenuFor(player);
         if (player->GetClass() == CLASS_HUNTER)
         {
+            PetStable& petStable = player->GetOrInitPetStable();
+            auto freeActiveSlotItr = std::find_if(petStable.ActivePets.begin(), petStable.ActivePets.end(), [](Optional<PetStable::PetInfo> const& petInfo)
+            {
+                return !petInfo.has_value();
+            });
+
+            if (freeActiveSlotItr == petStable.ActivePets.end())
+            {
+                Talk(0, player);
+                return;
+            }
+
             AddGossipItemFor(player, GossipOptionIcon::None, "|TInterface\\icons\\Ability_Hunter_BeastSoothe:25|t [Pets] ->", GOSSIP_SENDER_MAIN, 1216);
             if (player->GetSpecializationId() == TALENT_SPEC_HUNTER_BEASTMASTER)
                 AddGossipItemFor(player, GossipOptionIcon::None, "|TInterface\\icons\\Ability_Hunter_BeastMastery:25|t [Exotic pets] ->", GOSSIP_SENDER_MAIN, 1215);
+            SendGossipMenuFor(player, 7000160, me);
+            return;
         }
-        SendGossipMenuFor(player, 1, me);
+        SendGossipMenuFor(player, 700016, me);
     }
 };
 
