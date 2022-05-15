@@ -26123,7 +26123,7 @@ void Player::SendSummonRequestFrom(Unit* summoner)
     {
         WorldPackets::Party::BroadcastSummonCast summonCast;
         summonCast.Target = GetGUID();
-        group->BroadcastPacket(summonCast.Write(), false, -1, GetGUID());
+        group->BroadcastPacket(summonCast.Write(), false);
     }
 }
 
@@ -26136,7 +26136,7 @@ void Player::SummonIfPossible(bool agree)
             WorldPackets::Party::BroadcastSummonResponse summonResponse;
             summonResponse.Target = GetGUID();
             summonResponse.Accepted = accepted;
-            group->BroadcastPacket(summonResponse.Write(), false, -1, GetGUID());
+            group->BroadcastPacket(summonResponse.Write(), false);
         }
     };
 
