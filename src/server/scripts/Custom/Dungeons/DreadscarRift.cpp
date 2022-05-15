@@ -8,6 +8,7 @@
 #include "TemporarySummon.h"
 #include "ObjectAccessor.h"
 #include "GenericMovementGenerator.h"
+#include "InstanceScenario.h"
 
 enum DreadscarRift
 {
@@ -40,6 +41,15 @@ public:
                 go->SetGoState(GOState::GO_STATE_READY);
                 go->SetFlag(GameObjectFlags::GO_FLAG_NOT_SELECTABLE);
             }
+        }
+    }
+
+    void OnCompletedCriteriaTree(CriteriaTree const* tree) override
+    {
+        if (InstanceScenario* instanceScenario = instance->GetInstanceScenario())
+        {
+            if (auto tree2 = sCriteriaMgr->GetCriteriaTree(300100))
+                instanceScenario->IsCompletedCriteriaTree(tree2, nullptr);
         }
     }
 
