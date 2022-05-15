@@ -375,7 +375,7 @@ namespace WorldPackets
             ObjectGuid UnitGUID;
         };
 
-        class QueryPetNameResponse final : public ServerPacket
+        class TC_GAME_API QueryPetNameResponse final : public ServerPacket
         {
         public:
             QueryPetNameResponse() : ServerPacket(SMSG_QUERY_PET_NAME_RESPONSE, 16 + 1) { }

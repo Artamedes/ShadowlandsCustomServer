@@ -11,7 +11,10 @@
 #include "QuestPackets.h"
 #include "../MagicStone.h"
 #include "../CustomInstanceScript.h"
+#include "../DungeonDefense/DungeonDefense.h"
 #include "Item.h"
+#include "QueryPackets.h"
+#include "GameTime.h"
 
 #ifdef WIN32
 #include "windows.h"
@@ -1882,12 +1885,14 @@ public:
             { "start",            HandleStartCommand,      rbac::RBAC_PERM_INSTANT_LOGOUT,          Console::No },
             { "createitem",       HandleCreateItemCommand, rbac::RBAC_PERM_COMMAND_RELOAD_ALL_ITEM, Console::No },
             { "magicstone",       HandleReloadMagicStone,  rbac::RBAC_PERM_COMMAND_RELOAD_ALL_ITEM, Console::No },
+            { "dungeon_defense",       HandleReloadDungeonDefense,  rbac::RBAC_PERM_COMMAND_RELOAD_ALL_ITEM, Console::No },
             { "instance_respawn", HandleReloadInstanceRespawn,  rbac::RBAC_PERM_COMMAND_RELOAD_ALL_ITEM, Console::No },
             { "testpacket",       HandleTestCommand,  rbac::RBAC_PERM_COMMAND_RELOAD_ALL_ITEM, Console::No },
             { "testpacket2",       HandleTest2Command,  rbac::RBAC_PERM_COMMAND_RELOAD_ALL_ITEM, Console::No },
             { "testpacket3",       HandleTest3Command,  rbac::RBAC_PERM_COMMAND_RELOAD_ALL_ITEM, Console::No },
             { "testpacket4",       HandleTest4Command,  rbac::RBAC_PERM_COMMAND_RELOAD_ALL_ITEM, Console::No },
             { "testpacket5",       HandleTest5Command,  rbac::RBAC_PERM_COMMAND_RELOAD_ALL_ITEM, Console::No },
+            { "testpacket6",       HandleTest6Command,  rbac::RBAC_PERM_COMMAND_RELOAD_ALL_ITEM, Console::No },
 
 #ifdef WIN32
             { "gpscopy", HandleGPSCopyCommand,  rbac::RBAC_PERM_COMMAND_RELOAD_ALL_ITEM, Console::No },
@@ -1895,6 +1900,31 @@ public:
 
         };
         return commandTable;
+    }
+    static bool HandleTest6Command(ChatHandler* handler, std::string Name)
+    {
+        auto selectedCreature = handler->getSelectedCreature();
+        if (!selectedCreature)
+            return true;
+
+        selectedCreature->SetPetNameTimestamp(uint32(GameTime::GetGameTime()));
+        WorldPackets::Query::QueryPetNameResponse packet;
+
+        packet.UnitGUID = selectedCreature->GetGUID();
+        packet.Name = Name;
+        packet.Timestamp = GameTime::GetGameTime();
+        packet.Allow = true;
+
+        handler->GetSession()->SendPacket(packet.Write());
+
+        return true;
+    }
+
+    static bool HandleReloadDungeonDefense(ChatHandler* handler)
+    {
+        handler->PSendSysMessage("Reloading dungeon defense data, you may have to reset your instance");
+        sDungeonDefenseMgr->LoadFromDB();
+        return true;
     }
 
     static bool HandleTestCommand(ChatHandler* handler, Optional<uint32> CovenantID)
