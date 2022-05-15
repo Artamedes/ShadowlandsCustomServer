@@ -10,7 +10,7 @@
 
 // TODO: move to db
 constexpr uint32 CustomMiniDungeonsForChallenge[] = { 30002, 30003, 30004, 30005, 30006, 30007, 30008, 30010, 30011 }; // 30009 - battle for torghast removed
-constexpr uint32 CustomDungeonsForChallenge[] = { 251, 245, 169 };
+constexpr uint32 CustomDungeonsForChallenge[] = { 30012, 30013, 30001, 251 };
 
 void MythicKeystoneInfo::GenerateNewDungeon()
 {
