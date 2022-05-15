@@ -6,6 +6,8 @@
 #include "Chat.h"
 #include "Player.h"
 #include "CollectionMgr.h"
+#include "Mail.h"
+#include "Item.h"
 
 using namespace WorldPackets::BattlePay;
 
@@ -587,7 +589,32 @@ void WorldSession::HandleBattlePayConfirmPurchaseResponse(WorldPackets::BattlePa
             {
                 if (product->Item)
                 {
-                    GetCollectionMgr()->AddToy(product->Item, false, false);
+                    if (product->Type == 14)
+                        GetCollectionMgr()->AddToy(product->Item, false, false);
+                    else if (product->Type == 14)
+                    {
+                        // Add Item
+                        if (_player)
+                        {
+                            if (!_player->AddItem(product->Item, 1))
+                                _player->SendItemRetrievalMail(product->Item, 1, ItemContext::NONE);
+                        }
+                        else
+                        {
+                            MailSender sender(MAIL_CREATURE, UI64LIT(34337) /* The Postmaster */);
+                            MailDraft draft("BattlePay", "Your shop purchase.");
+                            CharacterDatabaseTransaction trans = CharacterDatabase.BeginTransaction();
+
+                            if (Item* item = Item::CreateItem(product->Item, 1, ItemContext::NONE, nullptr))
+                            {
+                                item->SaveToDB(trans);
+                                draft.AddItem(item);
+                            }
+
+                            draft.SendMailTo(trans, MailReceiver(nullptr, _battlePayPurchase->CharacterGuid), sender);
+                            CharacterDatabase.CommitTransaction(trans);
+                        }
+                    }
                 }
 
                 if (product->SpellId)
