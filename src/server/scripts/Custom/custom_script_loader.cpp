@@ -53,7 +53,11 @@ void AddSC_Folnuna();
 void AddSC_Meto();
 void AddSC_Sotanathor();
 void AddSC_WorldBosses();
-void AddSC_DarkmaulCitadel();
+// Dungeon Defense
+void AddSC_DungeonDefenseMain();
+void AddSC_DungeonDefenseAI();
+void AddSC_DungeonDefenseItem();
+void AddSC_DungeonDefensePlayer();
 
 void AddCustomScripts()
 {
@@ -91,5 +95,9 @@ void AddCustomScripts()
     AddSC_Meto();
     AddSC_Sotanathor();
     AddSC_WorldBosses();
-    AddSC_DarkmaulCitadel();
+    // Dungeon Defense
+    AddSC_DungeonDefenseMain();
+    AddSC_DungeonDefenseAI();
+    AddSC_DungeonDefenseItem();
+    AddSC_DungeonDefensePlayer();
 }
