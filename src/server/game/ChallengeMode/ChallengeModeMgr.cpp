@@ -924,6 +924,7 @@ bool ChallengeModeMgr::IsAuraAffix(uint32 auraId)
     {
         case SPELL_CHALLENGER_SIMBIOTE_OF_GHUUN:
         case SPELL_CHALLENGER_REGENERATIVE_BLOOD_AURA:
+        case SPELL_CHALLENGER_MIGHT:
             return true;
         default:
             break;

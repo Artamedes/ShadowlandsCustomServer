@@ -3,6 +3,7 @@
 #include "ScriptedCreature.h"
 #include "GameTime.h"
 #include "../CustomInstanceScript.h"
+#include "InstanceScenario.h"
 
 struct npc_demon_priest_700408 : public ScriptedAI
 {
@@ -550,8 +551,18 @@ class instance_netherlight_temple : public InstanceMapScript
                     }
                 }
 
+                void OnCompletedCriteriaTree(CriteriaTree const* tree) override
+                {
+                    if (InstanceScenario* instanceScenario = instance->GetInstanceScenario())
+                    {
+                        if (auto tree2 = sCriteriaMgr->GetCriteriaTree(300300))
+                            instanceScenario->IsCompletedCriteriaTree(tree2, nullptr);
+                    }
+                }
+
                 void OnCreatureCreate(Creature* creature) override
                 {
+                    CustomInstanceScript::OnCreatureCreate(creature);
                     switch (creature->GetEntry())
                     {
                         case 700402:

@@ -11501,7 +11501,12 @@ void Unit::SetMeleeAnimKitId(uint16 animKitId)
             auto GenerateLootAndSendToGroup([&](Player* who, bool personal = false)
             {
                 // Don't allow loot on challenge mode
-                if (!creature->GetMap()->IsChallengeMode())
+                bool isChallengeActive = false;
+
+                if (auto instance = creature->GetInstanceScript())
+                    isChallengeActive = instance->IsChallenge();
+
+                if (!isChallengeActive)
                 {
                     Loot* loot = creature->GetLootFor(who);
                     loot->clear();

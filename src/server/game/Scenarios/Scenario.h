@@ -89,6 +89,7 @@ class TC_GAME_API Scenario : public CriteriaHandler
         inline bool IsInstanceScenario() const { return _scenarioType == SCENARIO_INSTANCE_TYPE_INSTANCE_SCENARIO; }
         InstanceScenario* ToInstanceScenario() { if (IsInstanceScenario()) return reinterpret_cast<InstanceScenario*>(this); else return nullptr; }
         InstanceScenario const* ToInstanceScenario() const { if (IsInstanceScenario()) return reinterpret_cast<InstanceScenario const*>(this); else return nullptr; }
+        void CompletedCriteriaTree(CriteriaTree const* tree, Player* referencePlayer) override;
 
     protected:
         GuidUnorderedSet _players;
@@ -98,7 +99,6 @@ class TC_GAME_API Scenario : public CriteriaHandler
 
         bool CanUpdateCriteriaTree(Criteria const* criteria, CriteriaTree const* tree, Player* referencePlayer) const override;
         bool CanCompleteCriteriaTree(CriteriaTree const* tree) override;
-        void CompletedCriteriaTree(CriteriaTree const* tree, Player* referencePlayer) override;
         void AfterCriteriaTreeUpdate(CriteriaTree const* /*tree*/, Player* /*referencePlayer*/) override { }
 
         void SendPacket(WorldPacket const* data) const override;

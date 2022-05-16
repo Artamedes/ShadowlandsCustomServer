@@ -85,6 +85,31 @@ void SummonList::DespawnAll()
     }
 }
 
+void SummonList::DespawnAll(Milliseconds time)
+{
+    while (!_storage.empty())
+    {
+        Creature* summon = ObjectAccessor::GetCreature(*_me, _storage.front());
+        _storage.pop_front();
+        if (summon)
+            summon->DespawnOrUnsummon(time);
+    }
+}
+
+void SummonList::DoOnSummons(std::function<void(Creature*)> fn)
+{
+    for (StorageType::iterator i = _storage.begin(); i != _storage.end();)
+    {
+        if (auto summ = ObjectAccessor::GetCreature(*_me, *i))
+        {
+            fn(summ);
+            ++i;
+        }
+        else
+            i = _storage.erase(i);
+    }
+}
+
 void SummonList::RemoveNotExisting()
 {
     for (StorageType::iterator i = _storage.begin(); i != _storage.end();)

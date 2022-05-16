@@ -6,6 +6,7 @@
 #include "GenericMovementGenerator.h"
 #include "InstanceScenario.h"
 #include "../CustomInstanceScript.h"
+#include "ReputationMgr.h"
 
 enum IronDocks
 {
@@ -1764,6 +1765,7 @@ public:
     {
         ChestSpawn = { 6728.14f, -977.656f, 23.0463f, 6.16439f };
         Quad = { -0.0f, -0.0f, -0.0593638f, 0.998236f };
+        EnemyForcesCriteriaTreeId = 301401;
     }
 
     void SummonChallengeGameObject(bool door) override
@@ -1785,6 +1787,23 @@ public:
             if (auto tree2 = sCriteriaMgr->GetCriteriaTree(301400))
                 instanceScenario->IsCompletedCriteriaTree(tree2, nullptr);
         }
+    }
+
+    void CreatureDiesForScript(Creature* creature, Unit* killer) override
+    {
+        InstanceScript::CreatureDiesForScript(creature, killer);
+
+        auto shadowMilitia = sFactionStore.LookupEntry(ShadowMilitiaRep);
+        if (!shadowMilitia)
+            return;
+
+        bool isBoss = creature->IsDungeonBoss();
+        uint32 repAmount = isBoss ? 500 : 25;
+
+        instance->DoOnPlayers([repAmount, shadowMilitia](Player* player)
+        {
+            player->GetReputationMgr().ModifyReputation(shadowMilitia, repAmount);
+        });
     }
 };
 

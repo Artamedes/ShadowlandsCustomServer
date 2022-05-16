@@ -283,11 +283,11 @@ public:
     void StartCriteriaTimer(CriteriaStartEvent startEvent, uint32 entry, uint32 timeLost = 0);
     void RemoveCriteriaTimer(CriteriaStartEvent startEvent, uint32 entry);   // used for quest and scripted timed s
     bool IsCompletedCriteriaTree(CriteriaTree const* tree, Player* referencePlayer);
+    CriteriaProgress* GetCriteriaProgress(Criteria const* entry);
 
 protected:
     virtual void SendCriteriaUpdate(Criteria const* criteria, CriteriaProgress const* progress, Seconds timeElapsed, bool timedCompleted) const = 0;
 
-    CriteriaProgress* GetCriteriaProgress(Criteria const* entry);
     void SetCriteriaProgress(Criteria const* criteria, uint64 changeValue, Player* referencePlayer, ProgressType progressType = PROGRESS_SET);
     void RemoveCriteriaProgress(Criteria const* criteria);
     virtual void SendCriteriaProgressRemoved(uint32 criteriaId) = 0;

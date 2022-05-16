@@ -605,7 +605,8 @@ public:
         if (me->GetHealth() <= damage)
         {
             damage = 0;
-            attacker->AttackStop();
+            if (attacker)
+                attacker->AttackStop();
             if (!dead)
             {
                 Talk(0);
@@ -615,13 +616,18 @@ public:
                 me->SetFaction(35);
                 me->SetReactState(REACT_PASSIVE);
                 me->SetUnitFlag(UnitFlags::UNIT_FLAG_NON_ATTACKABLE);
-                if (auto player = attacker->ToPlayer())
-                    player->KilledMonsterCredit(700715, me->GetGUID());
+                if (attacker)
+                    if (auto player = attacker->ToPlayer())
+                        player->KilledMonsterCredit(700715, me->GetGUID());
 
                 if (auto instanceMap = me->GetMap()->ToInstanceMap())
                 {
                     if (auto scenario = instanceMap->GetInstanceScenario())
-                        scenario->UpdateCriteria(CriteriaType::DefeatDungeonEncounter, 700715);
+                    {
+                        scenario->UpdateCriteria(CriteriaType::DefeatDungeonEncounter, 700715, 0, 0, me, attacker->ToPlayer());
+                        if (CriteriaTree const* tree = sCriteriaMgr->GetCriteriaTree(300708))
+                            scenario->CompletedCriteriaTree(tree, nullptr);
+                    }
                 }
             }
         }
@@ -921,6 +927,16 @@ public:
             }
         }
     }
+
+    void OnCompletedCriteriaTree(CriteriaTree const* tree) override
+    {
+        if (InstanceScenario* instanceScenario = instance->GetInstanceScenario())
+        {
+            if (auto tree2 = sCriteriaMgr->GetCriteriaTree(300700))
+                instanceScenario->IsCompletedCriteriaTree(tree2, nullptr);
+        }
+    }
+
 };
 
 

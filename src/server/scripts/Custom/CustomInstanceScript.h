@@ -8,11 +8,41 @@
 #include "Map.h"
 #include "DatabaseEnv.h"
 #include "LootMgr.h"
+#include "InstanceScenario.h"
 
 struct CustomInstanceRespawnData
 {
     uint32 CheckPoint;
     Position Pos;
+};
+
+enum SharedCustomInstanceData
+{
+    ShadowMilitiaRep      = 10000,
+    MerchantAllianceRep   = 10002,
+    LegionAssaultForceRep = 10004,
+    LightBringersRep      = 10006,
+    MawOppositionRep      = 10008,
+
+    // Beguiling
+    NpcEnchantedEmissary   = 155432,
+    SpellQueenDecreesBlowback = 290027,
+    SpellEnchanted = 303632,
+
+    NpcVoidTouchedEmissary = 155433, // no move, immune to all cc, no reset health
+    SpellQueenDecreeHide = 302420, // spell
+    SpellVoidSight       = 302419,
+
+    NpcEmisarryOfTheTides  = 155434, // resets health, all cc lasts max 8 seconds only, No DR
+    SpellQueenDecreeUnstoppable = 302417,
+
+    TeleportTheEternalPalace = 302415, // effect dummy, after cast, despawn
+
+    // Prideful
+    SpellPridefulSpawn = 340381,
+    NpcPrideful = 173729,
+
+    ActionSetActive = 1337,
 };
 
 class CustomInstanceRespawn
@@ -166,6 +196,115 @@ public:
         return 0;
     }
 
+    void OnCreatureCreate(Creature* creature) override
+    {
+        InstanceScript::OnCreatureCreate(creature);
+
+        switch (creature->GetEntry())
+        {
+            case NpcEnchantedEmissary:
+                EnchantedEmissary = creature->GetGUID();
+                creature->SetVisible(false);
+                creature->SetReactState(REACT_PASSIVE);
+                creature->SetUnitFlag(UnitFlags::UNIT_FLAG_IMMUNE_TO_PC);
+                break;
+            case NpcVoidTouchedEmissary:
+                EmissaryOfTheTides = creature->GetGUID();
+                creature->SetVisible(false);
+                creature->SetReactState(REACT_PASSIVE);
+                creature->SetUnitFlag(UnitFlags::UNIT_FLAG_IMMUNE_TO_PC);
+                break;
+            case NpcEmisarryOfTheTides:
+                VoidTouchedEmissary = creature->GetGUID();
+                creature->SetVisible(false);
+                creature->SetReactState(REACT_PASSIVE);
+                creature->SetUnitFlag(UnitFlags::UNIT_FLAG_IMMUNE_TO_PC);
+                break;
+        }
+    }
+
+    void OnChallengeStart() override
+    {
+        if (HasAffix(Affixes::Beguiling))
+            ActivateBeguiling();
+
+        if (HasAffix(Affixes::Prideful))
+            IsPrideful = true;
+    }
+
+    bool HasAffix(Affixes affix)
+    {
+        if (auto challenge = GetChallenge())
+        {
+            if (challenge->HasAffix(affix))
+                return true;
+        }
+
+        return false;
+    }
+
+    void ActivateBeguiling()
+    {
+        auto UpdateFlagsForCreature([](Creature* creature)
+        {
+            creature->SetVisible(true);
+            creature->SetReactState(REACT_AGGRESSIVE);
+            creature->RemoveUnitFlag(UnitFlags::UNIT_FLAG_IMMUNE_TO_PC);
+            if (creature->AI())
+                creature->AI()->DoAction(ActionSetActive);
+        });
+
+        if (auto emissary = instance->GetCreature(EnchantedEmissary))
+            UpdateFlagsForCreature(emissary);
+        if (auto emissary = instance->GetCreature(EmissaryOfTheTides))
+            UpdateFlagsForCreature(emissary);
+        if (auto emissary = instance->GetCreature(VoidTouchedEmissary))
+            UpdateFlagsForCreature(emissary);
+    }
+
+    void Update(uint32 ms) override;
+
+    Player* SelectRandomPlayerPrefNotGM()
+    {
+        std::list<Player*> players;
+        for (MapReference const& ref : instance->GetPlayers())
+            if (Player* player = ref.GetSource())
+                players.push_back(player);
+
+        Player* randPlayer = nullptr;
+        Player* firstPlayer = nullptr;
+
+        int i = 5;
+        while (i > 0)
+        {
+            randPlayer = Trinity::Containers::SelectRandomContainerElement(players);
+            if (!firstPlayer)
+                firstPlayer = randPlayer;
+            if (!randPlayer->IsGameMaster())
+                break;
+
+            i--;
+        }
+
+        return randPlayer ? randPlayer : firstPlayer;
+    }
+
+    void SpawnPrideful()
+    {
+        if (auto randPlayer = SelectRandomPlayerPrefNotGM())
+        {
+            randPlayer->CastSpell(randPlayer, SpellPridefulSpawn, true);
+        }
+    }
+
+    // Beguiling Affix
+    ObjectGuid EnchantedEmissary;
+    ObjectGuid EmissaryOfTheTides;
+    ObjectGuid VoidTouchedEmissary;
+
+    float EnemyPercentPct = 0;
+    uint32 EnemyForcesCriteriaTreeId = 0;
+    bool IsPrideful = false;
     uint32 m_CheckpointId = 0;
     Position ChestSpawn;
     QuaternionData Quad;

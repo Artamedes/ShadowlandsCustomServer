@@ -4,6 +4,7 @@
 #include "Containers.h"
 #include "ScriptedCreature.h"
 #include "../CustomInstanceScript.h"
+#include "InstanceScenario.h"
 
 // 700011 - npc_oogway_700011
 struct npc_oogway_700011 : public ScriptedAI
@@ -617,6 +618,15 @@ public:
                 go->SetGoState(GOState::GO_STATE_READY);
                 go->SetFlag(GameObjectFlags::GO_FLAG_NOT_SELECTABLE);
             }
+        }
+    }
+
+    void OnCompletedCriteriaTree(CriteriaTree const* tree) override
+    {
+        if (InstanceScenario* instanceScenario = instance->GetInstanceScenario())
+        {
+            if (auto tree2 = sCriteriaMgr->GetCriteriaTree(300800))
+                instanceScenario->IsCompletedCriteriaTree(tree2, nullptr);
         }
     }
 };

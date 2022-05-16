@@ -123,7 +123,7 @@ class instance_molten_core : public InstanceMapScript
                 return ObjectGuid::Empty;
             }
 
-            bool SetBossState(uint32 bossId, EncounterState state) override
+            bool SetBossState(uint32 bossId, EncounterState state, bool force = false) override
             {
                 if (!InstanceScript::SetBossState(bossId, state))
                     return false;

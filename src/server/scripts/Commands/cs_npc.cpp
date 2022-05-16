@@ -311,6 +311,7 @@ public:
             { "subname",        HandleNpcSetSubNameCommand,        rbac::RBAC_PERM_COMMAND_NPC_SET_DATA,       Console::No },
             { "aura",           HandleNpcSetAuraCommand,           rbac::RBAC_PERM_COMMAND_NPC_SET_DATA,       Console::No },
             { "boss",           HandleNpcSetBossCommand,           rbac::RBAC_PERM_COMMAND_NPC_SET_DATA,       Console::No },
+            { "trigger",        HandleNpcSetTriggerCommand,        rbac::RBAC_PERM_COMMAND_NPC_SET_DATA,       Console::No },
         };
         static ChatCommandTable npcCommandTable =
         {
@@ -379,6 +380,18 @@ public:
         //     const_cast<CreatureData*>(creature->GetCreatureData())->equipmentId = 0;
 
 
+        return true;
+    }
+    static bool HandleNpcSetTriggerCommand(ChatHandler* handler)
+    {
+        auto creature = handler->getSelectedCreature();
+        if (!creature)
+            return true;
+
+        const_cast<CreatureTemplate*>(creature->GetCreatureTemplate())->flags_extra |= CREATURE_FLAG_EXTRA_TRIGGER;
+        WorldDatabase.PExecute("UPDATE creature_template SET flags_extra = %u where entry = %u", creature->GetCreatureTemplate()->flags_extra, creature->GetEntry());
+        handler->PSendSysMessage("Updated %s to be a trigger", creature->GetName().c_str());
+        creature->UpdateObjectVisibility();
         return true;
     }
 

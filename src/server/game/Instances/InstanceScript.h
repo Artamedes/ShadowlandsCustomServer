@@ -300,7 +300,7 @@ class TC_GAME_API InstanceScript : public ZoneScript
         CreatureGroup* GetCreatureGroup(uint32 creatureGroupID);
         void DespawnCreatureGroup(uint32 creatureGroupID);
 
-        virtual bool SetBossState(uint32 id, EncounterState state);
+        virtual bool SetBossState(uint32 id, EncounterState state, bool forced = false);
         EncounterState GetBossState(uint32 id) const { return id < bosses.size() ? bosses[id].state : TO_BE_DECIDED; }
         static char const* GetBossStateName(uint8 state);
         CreatureBoundary const* GetBossBoundary(uint32 id) const { return id < bosses.size() ? &bosses[id].boundary : nullptr; }
@@ -400,7 +400,8 @@ class TC_GAME_API InstanceScript : public ZoneScript
         virtual void OnPlayerPositionChange(Player* ) { }
         virtual bool HandleGetStartPosition(float&, float&, float&, float &) const { return false; }
         virtual uint32 GetLootIdForDungeon() { return 0; };
-        virtual void OnChallengeComplete() { };
+        virtual void OnChallengeStart() { }
+        virtual void OnChallengeComplete() { }
 
         //Pop all player to the graveyard more near in the instance
         void RepopPlayersAtGraveyard();

@@ -9,6 +9,7 @@
 #include "AreaBoundary.h"
 #include "QuestAI.h"
 #include "TemporarySummon.h"
+#include "ReputationMgr.h"
 
 enum Underrot
 {
@@ -57,6 +58,7 @@ public:
         LoadBossBoundaries(boundaries);
         LoadDoorData(doorData);
         SetHeaders("UR");
+        EnemyForcesCriteriaTreeId = 300004;
     }
 
     void OnCompletedCriteriaTree(CriteriaTree const* tree) override
@@ -94,7 +96,7 @@ public:
 
     void OnCreatureCreate(Creature* creature) override
     {
-        InstanceScript::OnCreatureCreate(creature);
+        CustomInstanceScript::OnCreatureCreate(creature);
 
         switch (creature->GetEntry())
         {
@@ -105,7 +107,7 @@ public:
         }
     }
 
-    bool SetBossState(uint32 id, EncounterState state) override
+    bool SetBossState(uint32 id, EncounterState state, bool force = false) override
     {
         switch (state)
         {
@@ -144,6 +146,23 @@ public:
         if (player->GetAreaId() == 9391)
             if (player->GetPositionX() > 1080.0f && player->GetPositionZ() > 0 && !player->HasAura(Underrot::UnderrotGateway))
                 player->CastSpell(player, Underrot::UnderrotGateway);
+    }
+
+    void CreatureDiesForScript(Creature* creature, Unit* killer) override
+    {
+        InstanceScript::CreatureDiesForScript(creature, killer);
+
+        auto shadowMilitia = sFactionStore.LookupEntry(ShadowMilitiaRep);
+        if (!shadowMilitia)
+            return;
+
+        bool isBoss = creature->IsDungeonBoss();
+        uint32 repAmount = isBoss ? 500 : 25;
+
+        instance->DoOnPlayers([repAmount, shadowMilitia](Player* player)
+        {
+            player->GetReputationMgr().ModifyReputation(shadowMilitia, repAmount);
+        });
     }
     // unneeded for now - handled internally
     //void CreatureDiesForScript(Creature* creature, Unit* killer) override

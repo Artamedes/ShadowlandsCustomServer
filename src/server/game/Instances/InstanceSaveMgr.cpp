@@ -201,6 +201,10 @@ InstanceSave::~InstanceSave()
 */
 void InstanceSave::SaveToDB()
 {
+    // Don't save challenge, only keep in memory.
+    if (GetDifficultyID() == DIFFICULTY_MYTHIC_KEYSTONE)
+        return;
+
     // save instance data too
     std::string data;
     uint32 completedEncounters = 0;

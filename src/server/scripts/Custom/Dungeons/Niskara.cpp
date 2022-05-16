@@ -9,6 +9,7 @@
 #include "ScriptedGossip.h"
 #include "QuestAI.h"
 #include "TemporarySummon.h"
+#include "InstanceScenario.h"
 
 struct instance_niskara : public CustomInstanceScript
 {
@@ -17,6 +18,15 @@ struct instance_niskara : public CustomInstanceScript
         {
             ChestSpawn = { 0.437609f, 1210.97f, -45.9785f, 5.16073f };
             Quad = { -0.0f, -0.0f, -0.532226f, 0.846603f };
+        }
+
+        void OnCompletedCriteriaTree(CriteriaTree const* tree) override
+        {
+            if (InstanceScenario* instanceScenario = instance->GetInstanceScenario())
+            {
+                if (auto tree2 = sCriteriaMgr->GetCriteriaTree(300400))
+                    instanceScenario->IsCompletedCriteriaTree(tree2, nullptr);
+            }
         }
 
         void SummonChallengeGameObject(bool door) override

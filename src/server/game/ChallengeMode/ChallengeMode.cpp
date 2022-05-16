@@ -497,6 +497,8 @@ void Challenge::Start()
 
             if (GameObject* chest = _map->GetGameObject(script->GetChallengeModeChest()))
                 chest->Delete();
+
+            script->OnChallengeStart();
         }
 
         _run = true;
@@ -639,6 +641,7 @@ void Challenge::Complete()
         player->UpdateCriteria(CriteriaType::CompleteAnyChallengeMode, _challengeLevel);
 
         player->RemoveAura(SPELL_CHALLENGER_BURDEN);
+        player->CombatStop();
     });
 
     for (auto const& v : guildCounter)

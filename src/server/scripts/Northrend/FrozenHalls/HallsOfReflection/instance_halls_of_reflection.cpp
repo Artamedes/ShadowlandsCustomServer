@@ -300,7 +300,7 @@ class instance_halls_of_reflection : public InstanceMapScript
                 packet.Worldstates.emplace_back(WORLD_STATE_HOR_WAVE_COUNT, _waveCount);
             }
 
-            bool SetBossState(uint32 type, EncounterState state) override
+            bool SetBossState(uint32 type, EncounterState state, bool force = false) override
             {
                 if (!InstanceScript::SetBossState(type, state))
                     return false;

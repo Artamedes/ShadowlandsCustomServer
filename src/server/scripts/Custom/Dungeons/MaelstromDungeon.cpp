@@ -268,7 +268,7 @@ public:
 
         void OnCreatureCreate(Creature* p_Creature) override
         {
-            InstanceScript::OnCreatureCreate(p_Creature);
+            CustomInstanceScript::OnCreatureCreate(p_Creature);
             switch (p_Creature->GetEntry())
             {
                 case 700112:

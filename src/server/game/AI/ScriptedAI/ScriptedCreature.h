@@ -87,6 +87,9 @@ public:
     void Despawn(Creature const* summon);
     void DespawnEntry(uint32 entry);
     void DespawnAll();
+    void DespawnAll(Milliseconds time);
+
+    void DoOnSummons(std::function<void(Creature*)> fn);
 
     template <typename T>
     void DespawnIf(T const& predicate)

@@ -39,7 +39,7 @@ class instance_blackrock_caverns : public InstanceMapScript
                 LoadObjectData(creatureData, nullptr);
             }
 
-            bool SetBossState(uint32 type, EncounterState state) override
+            bool SetBossState(uint32 type, EncounterState state, bool force = false) override
             {
                 if (!InstanceScript::SetBossState(type, state))
                     return false;

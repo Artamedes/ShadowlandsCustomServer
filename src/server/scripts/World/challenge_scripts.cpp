@@ -557,14 +557,15 @@ class aura_challengers_burst : public AuraScript
 
     void OnTick(AuraEffect const* /*aurEff*/)
     {
+        PreventDefaultAction();
         Unit* target = GetTarget();
         if (!target)
             return;
 
         if (SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(SPELL_CHALLENGER_BURSTING_DAMAGE))
         {
-            int32 bp = spellInfo->GetEffect(EFFECT_0).BasePoints * target->GetAuraCount(GetId());
-            target->CastCustomSpell(target, SPELL_CHALLENGER_BURSTING_DAMAGE, &bp, nullptr, nullptr, true);
+            int32 bp = 5000 * target->GetAuraCount(GetId());
+            target->CastSpell(target, SPELL_CHALLENGER_BURSTING_DAMAGE, CastSpellExtraArgs(true).AddSpellBP0(bp));
         }
     }
 

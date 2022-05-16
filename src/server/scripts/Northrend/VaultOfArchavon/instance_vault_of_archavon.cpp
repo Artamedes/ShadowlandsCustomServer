@@ -54,7 +54,7 @@ class instance_vault_of_archavon : public InstanceMapScript
                 KoralonDeath    = 0;
             }
 
-            bool SetBossState(uint32 type, EncounterState state) override
+            bool SetBossState(uint32 type, EncounterState state, bool force = false) override
             {
                 if (!InstanceScript::SetBossState(type, state))
                     return false;

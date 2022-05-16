@@ -30,7 +30,7 @@ public:
     virtual void OnQuestComplete() { }
     virtual void OnQuestIncomplete() { }
     virtual void OnQuestAbandon() { }
-    virtual void OnQuestReward(Object* questGiver) { }
+    virtual void OnQuestReward(Object* /*questGiver*/) { }
 
     // Gets the id of the AI (script id)
     uint32 GetId() { return _scriptId; }

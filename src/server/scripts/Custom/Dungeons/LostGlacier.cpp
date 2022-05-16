@@ -6,6 +6,7 @@
 #include "GameTime.h"
 #include "SpellHistory.h"
 #include "InstanceScenario.h"
+#include "ReputationMgr.h"
 
 struct npc_soul_of_a_frozen_one : public ScriptedAI
 {
@@ -660,6 +661,7 @@ struct instance_lost_glacier : public CustomInstanceScript
         {
             ChestSpawn = { 3084.71f, -217.456f, -31.9818f, 5.00364f };
             Quad = { -0.0f, -0.0f, -0.0593638f, 0.998236f };
+            EnemyForcesCriteriaTreeId = 301301;
         }
 
         void SummonChallengeGameObject(bool door) override
@@ -688,6 +690,23 @@ struct instance_lost_glacier : public CustomInstanceScript
             SlowAura = 287993,
             IceAura = 314884,
         };
+
+        void CreatureDiesForScript(Creature* creature, Unit* killer) override
+        {
+            InstanceScript::CreatureDiesForScript(creature, killer);
+
+            auto shadowMilitia = sFactionStore.LookupEntry(ShadowMilitiaRep);
+            if (!shadowMilitia)
+                return;
+
+            bool isBoss = creature->IsDungeonBoss();
+            uint32 repAmount = isBoss ? 500 : 25;
+
+            instance->DoOnPlayers([repAmount, shadowMilitia](Player* player)
+            {
+                player->GetReputationMgr().ModifyReputation(shadowMilitia, repAmount);
+            });
+        }
 
         void Update(uint32 diff) override
         {

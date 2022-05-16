@@ -9,6 +9,7 @@
 #include "ObjectAccessor.h"
 #include "GenericMovementGenerator.h"
 #include "InstanceScenario.h"
+#include "ReputationMgr.h"
 
 enum DreadscarRift
 {
@@ -30,6 +31,7 @@ public:
     {
         ChestSpawn = { 3424.07f, 1515.78f, 436.92f, 1.12574f };
         Quad = { -0.0f, -0.0f, -0.533614f, -0.845728f };
+        EnemyForcesCriteriaTreeId = 300101;
     }
 
     void SummonChallengeGameObject(bool door) override
@@ -53,7 +55,7 @@ public:
         }
     }
 
-    bool SetBossState(uint32 bossId, EncounterState state) override
+    bool SetBossState(uint32 bossId, EncounterState state, bool force = false) override
     {
         bool val = InstanceScript::SetBossState(bossId, state);
 
@@ -66,6 +68,28 @@ public:
         }
 
         return val;
+    }
+
+    void CreatureDiesForScript(Creature* creature, Unit* killer) override
+    {
+        InstanceScript::CreatureDiesForScript(creature, killer);
+
+        auto facEntry = sFactionStore.LookupEntry(LegionAssaultForceRep);
+        if (!facEntry)
+            return;
+
+        auto shadowMilitia = sFactionStore.LookupEntry(ShadowMilitiaRep);
+        if (!shadowMilitia)
+            return;
+
+        bool isBoss = creature->IsDungeonBoss();
+        uint32 repAmount = isBoss ? 500 : 25;
+
+        instance->DoOnPlayers([facEntry, repAmount, shadowMilitia](Player* player)
+        {
+            player->GetReputationMgr().ModifyReputation(facEntry, repAmount);
+            player->GetReputationMgr().ModifyReputation(shadowMilitia, repAmount);
+        });
     }
 };
 // 703000 - npc_adageor_703000

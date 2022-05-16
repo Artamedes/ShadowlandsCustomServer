@@ -30,7 +30,7 @@ public:
 
     void OnCreatureCreate(Creature* creature) override
     {
-        InstanceScript::OnCreatureCreate(creature);
+        CustomInstanceScript::OnCreatureCreate(creature);
 
         switch (creature->GetEntry())
         {
@@ -41,7 +41,7 @@ public:
         }
     }
 
-    bool SetBossState(uint32 id, EncounterState state) override
+    bool SetBossState(uint32 id, EncounterState state, bool /*forced = false*/) override
     {
         if (id == BossCrystal)
         {
@@ -83,7 +83,7 @@ public:
                     });
                 }
             }
-            else if (state == EncounterState::FAIL)
+            else if (state == EncounterState::NOT_STARTED)
             {
                 if (auto oldCrystal = instance->GetCreature(CrystalGuid))
                 {
@@ -94,7 +94,7 @@ public:
             }
         }
 
-        return InstanceScript::SetBossState(id, state);
+        return InstanceScript::SetBossState(id, state, true); // force
     }
 
     void SetData(uint32 id, uint32 data) override

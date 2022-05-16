@@ -109,7 +109,7 @@ class instance_stonecore : public InstanceMapScript
                 InstanceScript::OnCreatureCreate(creature);
             }
 
-            bool SetBossState(uint32 type, EncounterState state) override
+            bool SetBossState(uint32 type, EncounterState state, bool force = false) override
             {
                 switch (type)
                 {

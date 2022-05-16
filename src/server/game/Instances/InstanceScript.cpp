@@ -419,7 +419,7 @@ void InstanceScript::AddMinion(Creature* minion, bool add)
         itr->second.bossInfo->minion.erase(minion->GetGUID());
 }
 
-bool InstanceScript::SetBossState(uint32 id, EncounterState state)
+bool InstanceScript::SetBossState(uint32 id, EncounterState state, bool forced /*= false*/)
 {
     if (id < bosses.size())
     {
@@ -435,7 +435,7 @@ bool InstanceScript::SetBossState(uint32 id, EncounterState state)
             if (bossInfo->state == state)
                 return false;
 
-            if (bossInfo->state == DONE)
+            if (bossInfo->state == DONE && !forced)
             {
                 TC_LOG_ERROR("map", "InstanceScript: Tried to set instance boss %u state from %s back to %s for map %u, instance id %u. Blocked!", id, GetBossStateName(bossInfo->state), GetBossStateName(state), instance->GetId(), instance->GetInstanceId());
                 return false;

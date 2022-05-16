@@ -906,13 +906,9 @@ class TC_GAME_API Unit : public WorldObject
         uint8 GetRace() const { return m_unitData->Race; }
         void SetRace(uint8 race) { SetUpdateFieldValue(m_values.ModifyValue(&Unit::m_unitData).ModifyValue(&UF::UnitData::Race), race); }
         uint64 GetRaceMask() const { return UI64LIT(1) << (GetRace() - 1); }
-        uint64 getExactlyRaceMask(bool correct = false) const //Many item don´t have the mask of Dark Iron Dwarf maybe blizz send it as hotfix
+        uint64 getExactlyRaceMask() const
         {
             return GetRaceMask();
-            //if (correct && GetRace() == RACE_DARK_IRON_DWARF)
-            //    return UI64LIT(1) << (RACE_VOID_ELF - 1);
-            //
-            //return UI64LIT(1) << (GetRace() - 1);
         }
         uint8 GetClass() const { return m_unitData->ClassId; }
         void SetClass(uint8 classId) { SetUpdateFieldValue(m_values.ModifyValue(&Unit::m_unitData).ModifyValue(&UF::UnitData::ClassId), classId); }

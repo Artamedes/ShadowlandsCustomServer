@@ -25081,7 +25081,10 @@ void Player::SendInitialPacketsBeforeAddToMap()
 
     /// SMSG_WORLD_SERVER_INFO
     WorldPackets::Misc::WorldServerInfo worldServerInfo;
-    worldServerInfo.InstanceGroupSize = GetMap()->GetMapDifficulty()->MaxPlayers;
+    worldServerInfo.InstanceGroupSize = 0;
+    // crash PIG
+    if (GetMap() && GetMap()->GetMapDifficulty())
+        worldServerInfo.InstanceGroupSize = GetMap()->GetMapDifficulty()->MaxPlayers;
     worldServerInfo.IsTournamentRealm = 0; /// @todo
     // worldServerInfo.RestrictedAccountMaxLevel; /// @todo
     // worldServerInfo.RestrictedAccountMaxMoney; /// @todo
@@ -29519,11 +29522,11 @@ Difficulty Player::GetDifficultyID(MapEntry const* mapEntry) const
 {
     MapDifficultyEntry const* defaultDifficulty = sDB2Manager.GetDefaultMapDifficulty(mapEntry->ID);
 
-    if (!mapEntry->IsRaid())
-    {
-        if (!static_cast<Difficulty>(defaultDifficulty->DifficultyID) != m_dungeonDifficulty)
-            return static_cast<Difficulty>(defaultDifficulty->DifficultyID);
-    }
+    //if (!mapEntry->IsRaid() && defaultDifficulty)
+    //{
+    //    if (!static_cast<Difficulty>(defaultDifficulty->DifficultyID) != m_dungeonDifficulty)
+    //        return static_cast<Difficulty>(defaultDifficulty->DifficultyID);
+    //}
 
     if (!mapEntry->IsRaid())
         return m_dungeonDifficulty;

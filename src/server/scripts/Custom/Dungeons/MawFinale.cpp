@@ -304,7 +304,7 @@ public:
     {
     }
 
-    bool SetBossState(uint32 bossId, EncounterState state) override
+    bool SetBossState(uint32 bossId, EncounterState state, bool force = false) override
     {
         bool val = InstanceScript::SetBossState(bossId, state);
 

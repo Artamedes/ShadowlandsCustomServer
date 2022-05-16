@@ -3,7 +3,7 @@
 #include "Creature.h"
 #include "ScriptedCreature.h"
 #include "../CustomInstanceScript.h"
-
+#include "InstanceScenario.h"
 
 struct instance_lightdng1 : public CustomInstanceScript
 {
@@ -12,6 +12,15 @@ public:
     {
         ChestSpawn = { 4031.4f, 1708.34f, 925.276f, 4.77003f };
         Quad = { -0.0f, -0.0f, -0.686438f, 0.727188f };
+    }
+
+    void OnCompletedCriteriaTree(CriteriaTree const* tree) override
+    {
+        if (InstanceScenario* instanceScenario = instance->GetInstanceScenario())
+        {
+            if (auto tree2 = sCriteriaMgr->GetCriteriaTree(300600))
+                instanceScenario->IsCompletedCriteriaTree(tree2, nullptr);
+        }
     }
 
     void SummonChallengeGameObject(bool door) override

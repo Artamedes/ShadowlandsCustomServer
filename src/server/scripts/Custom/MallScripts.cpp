@@ -1091,8 +1091,16 @@ struct npc_soulshape_picker : public ScriptedAI
                 player->RestoreDisplayId();
 
                 if (auto crea = player->GetSummonedCreatureByEntry(800300))
-                    crea->DestroyForNearbyPlayers();
-                player->UnsummonCreatureByEntry(800300);
+                {
+                    if (auto tempSumm = crea->ToTempSummon())
+                    {
+                        tempSumm->InitStats(5000);
+                        crea->CastSpell(crea, actionId, true);
+                        crea->AddAura(310143, crea); //< Soulshape
+                        crea->RestoreDisplayId();
+                        return OnGossipHello(player);
+                    }
+                }
 
                 if (auto clone = player->SummonCreature(800300, { 41.3424f, -2781.91f, 63.6578f, 0.0426812f }, TEMPSUMMON_NO_OWNER_OR_TIMED_DESPAWN, 5s, 0, 0, player->GetGUID()))
                 //if (auto clone = me->SummonPersonalClone(*me, TEMPSUMMON_NO_OWNER_OR_TIMED_DESPAWN, 5s, 0, 0, player))

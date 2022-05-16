@@ -76,11 +76,11 @@ void WorldSession::HandleChallengeModeStart(WorldPackets::ChallengeMode::StartRe
 
     Difficulty difficulty = DIFFICULTY_MYTHIC_KEYSTONE;
 
-    if (inst->GetSpawnMode() == difficulty)
-    {
-        ChatHandler(_player->GetSession()).PSendSysMessage("Error: For run Mythic please rerun instance.");
-        return;
-    }
+    //if (inst->GetSpawnMode() == difficulty)
+    //{
+    //    ChatHandler(_player->GetSession()).PSendSysMessage("Error: For run Mythic please rerun instance.");
+    //    return;
+    //}
 
     auto playerChallenge = _player->GetPlayerChallenge();
     auto challengeKeyInfo = playerChallenge->GetKeystoneInfo(playerChallenge->GetKeystoneEntryFromMap(inst));
@@ -90,11 +90,11 @@ void WorldSession::HandleChallengeModeStart(WorldPackets::ChallengeMode::StartRe
         return;
     }
 
-    if (challengeKeyInfo->InstanceID)
-    {
-        ChatHandler(_player->GetSession()).PSendSysMessage("Error: Key allready run in other instance.");
-        return;
-    }
+    //if (challengeKeyInfo->InstanceID)
+    //{
+    //    ChatHandler(_player->GetSession()).PSendSysMessage("Error: Key allready run in other instance.");
+    //    return;
+    //}
 
     if (challengeKeyInfo->Level < MYTHIC_LEVEL_2)
     {

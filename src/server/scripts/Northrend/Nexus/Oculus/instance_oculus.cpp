@@ -176,7 +176,7 @@ class instance_oculus : public InstanceMapScript
                         drake->AI()->DoAction(ACTION_CALL_DRAGON_EVENT);
             }
 
-            bool SetBossState(uint32 type, EncounterState state) override
+            bool SetBossState(uint32 type, EncounterState state, bool force = false) override
             {
                 if (!InstanceScript::SetBossState(type, state))
                     return false;

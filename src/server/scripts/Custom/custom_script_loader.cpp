@@ -58,6 +58,8 @@ void AddSC_DungeonDefenseMain();
 void AddSC_DungeonDefenseAI();
 void AddSC_DungeonDefenseItem();
 void AddSC_DungeonDefensePlayer();
+// Dungeons
+void AddSC_CustomAffixes();
 
 void AddCustomScripts()
 {
@@ -100,4 +102,5 @@ void AddCustomScripts()
     AddSC_DungeonDefenseAI();
     AddSC_DungeonDefenseItem();
     AddSC_DungeonDefensePlayer();
+    AddSC_CustomAffixes();
 }

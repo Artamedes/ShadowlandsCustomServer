@@ -149,7 +149,7 @@ public:
             }
         }
 
-        bool SetBossState(uint32 id, EncounterState state) override
+        bool SetBossState(uint32 id, EncounterState state, bool force = false) override
         {
             if (!InstanceScript::SetBossState(id, state))
                 return false;

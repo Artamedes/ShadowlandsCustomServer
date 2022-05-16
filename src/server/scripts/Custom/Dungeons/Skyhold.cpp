@@ -5,6 +5,7 @@
 #include "Player.h"
 #include "GameObjectAI.h"
 #include "Conversation.h"
+#include "InstanceScenario.h"
 
 class instance_skyhold : public InstanceMapScript
 {
@@ -18,6 +19,15 @@ class instance_skyhold : public InstanceMapScript
                 {
                     ChestSpawn = { 817.872f, 7216.77f, 6.4894f, 1.54134f };
                     Quad = { -0.0f, -0.0f, -0.696618f, -0.717442f };
+                }
+
+                void OnCompletedCriteriaTree(CriteriaTree const* tree) override
+                {
+                    if (InstanceScenario* instanceScenario = instance->GetInstanceScenario())
+                    {
+                        if (auto tree2 = sCriteriaMgr->GetCriteriaTree(301100))
+                            instanceScenario->IsCompletedCriteriaTree(tree2, nullptr);
+                    }
                 }
 
                 void SummonChallengeGameObject(bool door) override

@@ -115,16 +115,26 @@ public:
         {
             if (!me->isDead())
             {
-                combatTimer -= diff;
-                if (combatTimer <= 0)
+                if (combatTimer >= 100)
                 {
-                    combatTimer = 100;
-
                     if (auto target = SelectTowerOrCrystal())
+                    {
+                        combatTimer = 0;
                         AttackStart(target);
+                    }
                     else if (IsCombatMovementAllowed() && me->GetFaction() == 35) // TODO: make IsDefender
-                        me->GetMotionMaster()->MoveTargetedHome();
+                    {
+                        if (combatTimer >= 500)
+                        {
+                            me->GetMotionMaster()->MoveTargetedHome();
+                            combatTimer = 0;
+                        }
+                        else
+                            combatTimer += diff;
+                    }
                 }
+                else
+                    combatTimer += diff;
             }
             return false;
         }
@@ -375,7 +385,19 @@ public:
         RemainingEnemies = 0;
         Stage = 0;
         MaxStages = 0;
-        summons.DespawnAll();
+
+        summons.DoOnSummons([](Creature* summ)
+        {
+            if (!summ->IsAlive())
+                return;
+
+            if (summ->GetFaction() == 35)
+                summ->SetEmoteState(Emote::EMOTE_STATE_CRY);
+            else
+                summ->SetEmoteState(Emote::EMOTE_ONESHOT_CHEER);
+        });
+
+        summons.DespawnAll(2s);
         if (instance)
         {
             instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
@@ -420,7 +442,19 @@ public:
                     if (instance)
                         instance->SetBossState(BossCrystal, EncounterState::DONE);
                     Talk(7); // You've won!
-                    summons.DespawnAll();
+
+                    summons.DoOnSummons([](Creature* summ)
+                    {
+                        if (!summ->IsAlive())
+                            return;
+
+                        if (summ->GetFaction() == 35)
+                            summ->SetEmoteState(Emote::EMOTE_ONESHOT_CHEER);
+                        else
+                            summ->SetEmoteState(Emote::EMOTE_STATE_CRY);
+                    });
+
+                    summons.DespawnAll(2s);
                 }
                 else
                 {
@@ -434,6 +468,13 @@ public:
                     {
                         sDungeonDefenseMgr->GiveRiftEnergyToPlayer(player, 100);
                     });
+
+                    summons.DoOnSummons([](Creature* summ)
+                    {
+                        if (!summ->IsAlive())
+                            summ->DespawnOrUnsummon(1s);
+                    });
+                    summons.RemoveNotExisting();
                 }
             }
         }
@@ -544,7 +585,7 @@ public:
                     {
                         if (instance->GetBossState(BossCrystal) == IN_PROGRESS)
                         {
-                            instance->SetBossState(BossCrystal, FAIL);
+                            instance->SetBossState(BossCrystal, NOT_STARTED);
                         }
                     }
                     OnGossipHello(player);
@@ -752,7 +793,7 @@ struct npc_darkmaul_citadel_defender_ai : public dungeon_defense_base_ai
             me->UpdateEntry(UpgradeEntries.front());
             UpgradeEntries.pop();
             //auto healthPct = me->GetHealthPct();
-            //me->SetMaxHealth(me->GetMaxHealth() * 1.5f);
+            me->SetMaxHealth(me->GetMaxHealth() * 1.5f);
             _minDmg *= 1.5f;
             _maxDmg *= 1.5f;
             //me->SetHealth(me->CountPctFromMaxHealth(healthPct));
@@ -787,45 +828,46 @@ struct npc_darkmaul_citadel_defender_ai : public dungeon_defense_base_ai
 
             if (me->GetHealth() != me->GetMaxHealth() && me->GetHealthPct() >= 1.0f)
             {
-                uint32 FullHealthCost = Invested / 2;
-
-                ss.clear();
-                ss.str("");
-                ss << "Heal (" << me->GetHealth() << "/" << me->GetMaxHealth() << ")";
-                uint32 costPerPct = FullHealthCost * (1.0f / 100.0f);
+                float FullHealthCost = Invested / 2.0f;
+                float costPerPct = FullHealthCost * (1.0f / 100.0f);
                 uint32 cost = costPerPct * (100.0f - me->GetHealthPct());
 
-                if (player->GetCurrency(RiftEnergy) >= cost)
-                    ss << " Cost: " << cost;
-                else
-                    ss << " |cffFF0000Cost: " << cost;
-
-                AddGossipItemFor(player, GossipOptionIcon::None, ss.str(), 0, 0, [this, player](std::string /*callback*/)
+                if (cost > 0)
                 {
-                    uint32 FullHealthCost = Invested / 2;
-                    uint32 costPerPct = FullHealthCost * (1.0f / 100.0f);
-                    uint32 cost = costPerPct * (100.0f - me->GetHealthPct());
-                    uint32 energy = player->GetCurrency(RiftEnergy);
-                    if (energy >= cost)
-                    {
-                        player->ModifyCurrency(RiftEnergy, -static_cast<int32>(cost));
-                        sDungeonDefenseMgr->SendRemovedRiftEnergyTo(player, cost);
-                        me->SetFullHealth();
-                    }
+                    ss.clear();
+                    ss.str("");
+                    ss << "Heal (" << me->GetHealth() << "/" << me->GetMaxHealth() << ")";
+
+                    if (player->GetCurrency(RiftEnergy) >= cost)
+                        ss << " Cost: " << cost;
                     else
+                        ss << " |cffFF0000Cost: " << cost;
+
+                    AddGossipItemFor(player, GossipOptionIcon::None, ss.str(), 0, 0, [this, player](std::string /*callback*/)
                     {
-                        if (energy > 0 && energy < cost)
+                        uint32 FullHealthCost = Invested / 2;
+                        float costPerPct = FullHealthCost * (1.0f / 100.0f);
+                        uint32 cost = costPerPct * (100.0f - me->GetHealthPct());
+                        uint32 energy = player->GetCurrency(RiftEnergy);
+                        if (energy >= cost)
                         {
-                            energy -= cost;
-
-                            player->ModifyCurrency(RiftEnergy, -static_cast<int32>(energy));
-                            sDungeonDefenseMgr->SendRemovedRiftEnergyTo(player, energy);
-                            me->SetHealth(me->GetHealth() + energy * costPerPct);
+                            player->ModifyCurrency(RiftEnergy, -static_cast<int32>(cost));
+                            sDungeonDefenseMgr->SendRemovedRiftEnergyTo(player, cost);
+                            me->SetFullHealth();
                         }
-                    }
+                        else
+                        {
+                            if (energy > 0 && energy < cost)
+                            {
+                                player->ModifyCurrency(RiftEnergy, -static_cast<int32>(energy));
+                                sDungeonDefenseMgr->SendRemovedRiftEnergyTo(player, energy);
+                                me->SetHealth(me->GetHealth() + me->CountPctFromMaxHealth(energy * costPerPct));
+                            }
+                        }
 
-                    OnGossipHello(player);
-                });
+                        OnGossipHello(player);
+                    });
+                }
             }
 
             if (MaxUpgrade > 0)

@@ -30,7 +30,9 @@
 #include "VMapFactory.h"
 #include "VMapManager2.h"
 #include "LFGMgr.h"
+#include "InstanceScript.h"
 #include "World.h"
+#include "ChallengeMode.h"
 
 MapInstanced::MapInstanced(uint32 id, time_t expiry) : Map(id, expiry, 0, DIFFICULTY_NORMAL)
 {
@@ -145,7 +147,33 @@ Map* MapInstanced::CreateInstanceForPlayer(const uint32 mapId, Player* player, u
     }
     else if (!IsGarrison())
     {
-        InstancePlayerBind* pBind = player->GetBoundInstance(GetId(), player->GetDifficultyID(GetEntry()));
+        InstancePlayerBind* pBind = nullptr;
+        //We have priority with mythic+ bind, in this way we can return to a challenger running
+        if (GetEntry()->IsDungeon())
+        {
+            if (InstancePlayerBind* challengeBind = player->GetBoundInstance(GetId(), DIFFICULTY_MYTHIC_KEYSTONE))
+            {
+                InstancePlayerBind* newChallengeBind = nullptr;
+
+                if (!challengeBind->save)
+                    newChallengeBind = nullptr;
+                else if (!FindInstanceMap(challengeBind->save->GetInstanceId()))
+                    newChallengeBind = nullptr;
+                else if (Map* challengeMap = FindInstanceMap(challengeBind->save->GetInstanceId()))
+                {
+                    if (challengeMap->ToInstanceMap() && challengeMap->ToInstanceMap()->GetInstanceScript())
+                        if (!challengeMap->ToInstanceMap()->GetInstanceScript()->GetChallenge() || !challengeMap->ToInstanceMap()->GetInstanceScript()->GetChallenge()->IsRunning())
+                            newChallengeBind = nullptr;
+                }
+
+                if (newChallengeBind)
+                    pBind = newChallengeBind;
+            }
+        }
+
+        if (!pBind)
+            pBind = player->GetBoundInstance(GetId(), player->GetDifficultyID(GetEntry()));
+
         InstanceSave* pSave = pBind ? pBind->save : nullptr;
         LFGDungeonsEntry const* dungeonEntry = sLFGMgr->GetPlayerLFGDungeonEntry(player->GetGUID());
 
@@ -212,6 +240,8 @@ Map* MapInstanced::CreateInstanceForPlayer(const uint32 mapId, Player* player, u
                 diff = DIFFICULTY_MYTHIC_KEYSTONE;
                 player->UnbindInstance(GetId(), diff);
             }
+            else
+                sDB2Manager.GetDownscaledMapDifficultyData(GetId(), diff); // try to downscale because if not creating challenge, dont set as keystone
 
             //Seems it is now possible, but I do not know if it should be allowed
             //ASSERT(!FindInstanceMap(NewInstanceId));

@@ -2717,11 +2717,20 @@ MapDifficultyEntry const* DB2Manager::GetDefaultMapDifficulty(uint32 mapId, Diff
     if (itr->second.empty())
         return nullptr;
 
+    DifficultyEntry const* bestEntry = nullptr;
+    MapDifficultyEntry const* bestEntry2 = nullptr;
+
     for (auto& p : itr->second)
     {
         DifficultyEntry const* difficultyEntry = sDifficultyStore.LookupEntry(p.first);
         if (!difficultyEntry)
             continue;
+
+        if (difficultyEntry->ID != DIFFICULTY_MYTHIC_KEYSTONE)
+        {
+            bestEntry = difficultyEntry;
+            bestEntry2 = p.second;
+        }
 
         if (difficultyEntry->Flags & DIFFICULTY_FLAG_DEFAULT)
         {
@@ -2730,6 +2739,14 @@ MapDifficultyEntry const* DB2Manager::GetDefaultMapDifficulty(uint32 mapId, Diff
 
             return p.second;
         }
+    }
+
+    if (bestEntry && bestEntry2)
+    {
+        if (difficulty)
+            *difficulty = Difficulty(bestEntry->ID);
+
+        return bestEntry2;
     }
 
     if (difficulty)

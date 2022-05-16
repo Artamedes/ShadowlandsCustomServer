@@ -110,7 +110,7 @@ class instance_steam_vault : public InstanceMapScript
                 return 0;
             }
 
-            bool SetBossState(uint32 type, EncounterState state) override
+            bool SetBossState(uint32 type, EncounterState state, bool force = false) override
             {
                 if (!InstanceScript::SetBossState(type, state))
                     return false;

@@ -7,6 +7,7 @@
 #include "GenericMovementGenerator.h"
 #include "../CustomInstanceScript.h"
 #include "Conversation.h"
+#include "InstanceScenario.h"
 
 struct instance_telegrusrift : public CustomInstanceScript
 {
@@ -26,6 +27,15 @@ public:
                 go->SetGoState(GOState::GO_STATE_READY);
                 go->SetFlag(GameObjectFlags::GO_FLAG_NOT_SELECTABLE);
             }
+        }
+    }
+
+    void OnCompletedCriteriaTree(CriteriaTree const* tree) override
+    {
+        if (InstanceScenario* instanceScenario = instance->GetInstanceScenario())
+        {
+            if (auto tree2 = sCriteriaMgr->GetCriteriaTree(300500))
+                instanceScenario->IsCompletedCriteriaTree(tree2, nullptr);
         }
     }
 };

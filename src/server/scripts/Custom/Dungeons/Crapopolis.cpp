@@ -6,6 +6,7 @@
 #include "../CustomInstanceScript.h"
 #include "GossipDef.h"
 #include "QuestAI.h"
+#include "InstanceScenario.h"
 #include "TemporarySummon.h"
 
 const Position dancePos[] = {
@@ -374,6 +375,15 @@ public:
                         go->SetGoState(GOState::GO_STATE_READY);
                         go->SetFlag(GameObjectFlags::GO_FLAG_NOT_SELECTABLE);
                     }
+                }
+            }
+
+            void OnCompletedCriteriaTree(CriteriaTree const* tree) override
+            {
+                if (InstanceScenario* instanceScenario = instance->GetInstanceScenario())
+                {
+                    if (auto tree2 = sCriteriaMgr->GetCriteriaTree(301000))
+                        instanceScenario->IsCompletedCriteriaTree(tree2, nullptr);
                 }
             }
 
