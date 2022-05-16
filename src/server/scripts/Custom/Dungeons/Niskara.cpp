@@ -1084,6 +1084,9 @@ struct npc_void_rift_700518 : public ScriptedAI
                 if (!player || !player->GetSession() || player->IsBeingTeleported())
                     continue;
 
+                if (player->GetQuestStatus(700024) == QUEST_STATUS_NONE)
+                    continue;
+
                 if (now >= it->second)
                 {
                     player->RemoveAurasDueToSpell(141480);

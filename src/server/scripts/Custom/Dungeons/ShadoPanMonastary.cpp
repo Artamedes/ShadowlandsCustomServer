@@ -97,7 +97,11 @@ public:
             if (status != QUEST_STATUS_REWARDED)
             {
                 if (status == QUEST_STATUS_COMPLETE)
+                {
                     clicker->ToPlayer()->RewardQuest(sObjectMgr->GetQuestTemplate(700028), LootItemType::Item, 0, clicker);
+                    clicker->ToPlayer()->AddQuestAndCheckCompletion(sObjectMgr->GetQuestTemplate(700029), clicker);
+
+                }
                 else
                     return;
             }

@@ -387,54 +387,34 @@ public:
                 }
             }
 
-         //   void OnCreatureCreate(Creature* p_Creature) override
-         //   {
-         //       switch (p_Creature->GetEntry())
-         //       {
-         //           case 700214:
-         //               mawswornDefilerGuid = p_Creature->GetGUID();
-         //               break;
-         //       }
-         //   }
-         //
-         //   void OnGameObjectCreate(GameObject* p_GameObject) override
-         //   {
-         //       switch (p_GameObject->GetEntry())
-         //       {
-         //           // torghast portal
-         //           case 368984:
-         //               latestTorghastPortal = p_GameObject->GetGUID();
-         //               break;
-         //       }
-         //   }
-         //
-         //   void OnUnitDeath(Unit* p_Unit) override
-         //   {
-         //       if (p_Unit->IsCreature())
-         //       {
-         //           switch (p_Unit->GetEntry())
-         //           {
-         //               case 700214:
-         //                   m_Scheduler.Schedule(1s, [this](TaskContext context)
-         //                   {
-         //                       if (auto l_GameObject = instance->GetGameObject(latestTorghastPortal))
-         //                       {
-         //
-         //                       }
-         //                   });
-         //                   break;
-         //           }
-         //       }
-         //   }
-         //
-         //   void Update(uint32 diff) override
-         //   {
-         //       m_Scheduler.Update(diff);
-         //   }
+            void OnGameObjectCreate(GameObject* go) override
+            {
+                switch (go->GetEntry())
+                {
+                    case 367939:
+                        TormenterDoorGuid = go->GetGUID();
+                        go->SetGoState(GOState::GO_STATE_READY);
+                        go->SetFlag(GameObjectFlags::GO_FLAG_NOT_SELECTABLE);
+                        break;
+                }
+            }
+
+            void CreatureDiesForScript(Creature* creature, Unit* killer) override
+            {
+                CustomInstanceScript::CreatureDiesForScript(creature, killer);
+                switch (creature->GetEntry())
+                {
+                    case 700211:
+                        if (auto door = instance->GetGameObject(TormenterDoorGuid))
+                            door->Delete();
+                        break;
+                }
+            }
 
         private:
             ObjectGuid mawswornDefilerGuid;
             ObjectGuid latestTorghastPortal;
+            ObjectGuid TormenterDoorGuid;
             TaskScheduler m_Scheduler;
     };
 
@@ -470,6 +450,11 @@ struct npc_mawsworn_defiler : public npc_crapopolis_ai_base
             if (auto instance = me->GetInstanceScript())
                 instance->DoCastSpellOnPlayers(368230);
             me->SummonGameObject(368984, { 1029.028076f, -3572.835205f, 12.149024f }, {0.0f, 0.0f, -0.982807f, -0.184636f}, 10s, GOSummonType::GO_SUMMON_TIMED_DESPAWN);
+
+            me->GetMap()->DoOnPlayers([](Player* player)
+            {
+                Conversation::CreateConversation(700310, player, *player, player->GetGUID());
+            });
 
             scheduler.Schedule(5s, [this](TaskContext context)
             {
@@ -525,9 +510,13 @@ struct npc_crap_warden_of_souls : public npc_crapopolis_ai_base
             me->SetEmoteState(Emote::EMOTE_ONESHOT_ROAR);
             DoCast(357822);
             scheduler.Schedule(100ms, [this](TaskContext context)
+            {
+                me->GetMap()->DoOnPlayers([](Player* player)
                 {
-                    me->SetFacingTo(3.894261f);
+                    Conversation::CreateConversation(700311, player, *player, player->GetGUID());
                 });
+                me->SetFacingTo(3.894261f);
+            });
             scheduler.Schedule(2s, [this](TaskContext context)
             {
                 me->SetEmoteState(Emote::EMOTE_ONESHOT_NONE);
@@ -545,6 +534,7 @@ struct npc_crap_warden_of_souls : public npc_crapopolis_ai_base
 
     void JustEngagedWith(Unit* /*who*/) override
     {
+        scheduler.CancelAll();
         me->SetEmoteState(Emote::EMOTE_ONESHOT_NONE);
         events.ScheduleEvent(1, 2s, 4s);
         events.ScheduleEvent(2, 12s, 14s);
@@ -742,20 +732,6 @@ class crapopolis_dungeon_player_script : public PlayerScript
 
                     if (status == QUEST_STATUS_REWARDED)
                     {
-                        player->AddQuestAndCheckCompletion(sObjectMgr->GetQuestTemplate(700014), player);
-                        player->PlayerTalkClass->SendQuestGiverQuestDetails(sObjectMgr->GetQuestTemplate(700014), player->GetGUID(), true, true);
-                    }
-
-                    break;
-
-                }
-                case 700014: //You've gotta be kiddin'
-                {
-
-                    auto status = player->GetQuestStatus(questId);
-
-                    if (status == QUEST_STATUS_REWARDED)
-                    {
                         player->AddQuestAndCheckCompletion(sObjectMgr->GetQuestTemplate(700015), player);
                         player->PlayerTalkClass->SendQuestGiverQuestDetails(sObjectMgr->GetQuestTemplate(700015), player->GetGUID(), true, true);
                     }
@@ -763,6 +739,20 @@ class crapopolis_dungeon_player_script : public PlayerScript
                     break;
 
                 }
+                // case 700014: //You've gotta be kiddin'
+                // {
+                // 
+                //     auto status = player->GetQuestStatus(questId);
+                // 
+                //     if (status == QUEST_STATUS_REWARDED)
+                //     {
+                //         player->AddQuestAndCheckCompletion(sObjectMgr->GetQuestTemplate(700015), player);
+                //         player->PlayerTalkClass->SendQuestGiverQuestDetails(sObjectMgr->GetQuestTemplate(700015), player->GetGUID(), true, true);
+                //     }
+                // 
+                //     break;
+                // 
+                // }
             }
         }
 };
