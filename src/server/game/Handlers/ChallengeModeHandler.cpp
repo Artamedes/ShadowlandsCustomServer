@@ -78,7 +78,7 @@ void WorldSession::HandleChallengeModeStart(WorldPackets::ChallengeMode::StartRe
 
     //if (inst->GetSpawnMode() == difficulty)
     //{
-    //    ChatHandler(_player->GetSession()).PSendSysMessage("Error: For run Mythic please rerun instance.");
+    //    ChatHandler(_player->GetSession()).PSendSysMessage("Error: To run this Mythic please rerun instance.");
     //    return;
     //}
 
@@ -106,7 +106,7 @@ void WorldSession::HandleChallengeModeStart(WorldPackets::ChallengeMode::StartRe
 
     if (!_player->IsAlive())
     {
-        ChatHandler(_player->GetSession()).PSendSysMessage("Error: Player not found or die.");
+        ChatHandler(_player->GetSession()).PSendSysMessage("Error: Player not found or is dead.");
         return;
     }
 
@@ -130,7 +130,7 @@ void WorldSession::HandleChallengeModeStart(WorldPackets::ChallengeMode::StartRe
             Player* player = itr->GetSource();
             if (!player || !player->IsAlive())
             {
-                ChatHandler(_player->GetSession()).PSendSysMessage("Error: Player not found or die.");
+                ChatHandler(_player->GetSession()).PSendSysMessage("Error: Player not found or is dead.");
                 return;
             }
 
@@ -142,7 +142,7 @@ void WorldSession::HandleChallengeModeStart(WorldPackets::ChallengeMode::StartRe
 
             if (!player->GetMap() || player->GetMap()->ToInstanceMap() != inst)
             {
-                ChatHandler(_player->GetSession()).PSendSysMessage("Error: Player in group not this map.");
+                ChatHandler(_player->GetSession()).PSendSysMessage("Error: Internal map error.");
                 return;
             }
         }
@@ -154,7 +154,7 @@ void WorldSession::HandleChallengeModeStart(WorldPackets::ChallengeMode::StartRe
         if (!group->m_challengeEntry || !challengeEntry || challengeEntry->MapID != group->m_challengeEntry->MapID)
         {
             group->m_challengeEntry = nullptr;
-            ChatHandler(_player->GetSession()).PSendSysMessage("Error: Is not this challenge.");
+            ChatHandler(_player->GetSession()).PSendSysMessage("Error: Incorrect challenge.");
             return;
         }
 
@@ -207,7 +207,7 @@ void WorldSession::HandleChallengeModeStart(WorldPackets::ChallengeMode::StartRe
         if (!challengeKeyInfo->challengeEntry || !challengeEntry || challengeEntry->MapID != challengeKeyInfo->challengeEntry->MapID)
         {
             challengeKeyInfo->challengeEntry = nullptr;
-            ChatHandler(_player->GetSession()).PSendSysMessage("Error: Is not this challenge.");
+            ChatHandler(_player->GetSession()).PSendSysMessage("Error: Incorrect challenge.");
             return;
         }
 
