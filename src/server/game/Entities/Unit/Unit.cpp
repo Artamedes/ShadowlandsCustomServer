@@ -3233,9 +3233,9 @@ void Unit::RemoveSummonedCreature(ObjectGuid guid)
 Creature* Unit::GetSummonedCreatureByEntry(uint32 entry)
 {
     auto itr = std::find_if(m_SummonedCreatures.begin(), m_SummonedCreatures.end(), [entry](auto& p)
-        {
-            return p.second == entry;
-        });
+    {
+        return p.second == entry;
+    });
 
     if (itr == m_SummonedCreatures.end())
         return nullptr;
@@ -3248,6 +3248,15 @@ void Unit::UnsummonCreatureByEntry(uint32 entry, uint32 ms/* = 0*/)
     if (Creature* creature = GetSummonedCreatureByEntry(entry))
         if (TempSummon* tempSummon = creature->ToTempSummon())
             tempSummon->UnSummon(ms);
+}
+
+void Unit::DoOnSummons(std::function<void(Creature*)> fn)
+{
+    for (auto itr = m_SummonedCreatures.begin(); itr != m_SummonedCreatures.end(); itr++)
+    {
+        if (auto creature = ObjectAccessor::GetCreature(*this, itr->first))
+            fn(creature);
+    }
 }
 
 bool Unit::CanCastSpellWhileMoving(SpellInfo const* spellInfo) const

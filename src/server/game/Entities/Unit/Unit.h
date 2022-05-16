@@ -1633,6 +1633,7 @@ class TC_GAME_API Unit : public WorldObject
         void RemoveSummonedCreature(ObjectGuid guid);
         Creature* GetSummonedCreatureByEntry(uint32 entry);
         void UnsummonCreatureByEntry(uint32 entry, uint32 ms = 0);
+        void DoOnSummons(std::function<void(Creature*)> fn);
 
         ShapeshiftForm GetShapeshiftForm() const { return ShapeshiftForm(*m_unitData->ShapeshiftForm); }
         void SetShapeshiftForm(ShapeshiftForm form);
@@ -1947,6 +1948,9 @@ class TC_GAME_API Unit : public WorldObject
 
         TempSummon* ToTempSummon() { if (IsSummon()) return reinterpret_cast<TempSummon*>(this); else return nullptr; }
         TempSummon const* ToTempSummon() const { if (IsSummon()) return reinterpret_cast<TempSummon const*>(this); else return nullptr; }
+
+        Minion* ToMinion() { if (isMinion()) return reinterpret_cast<Minion*>(this); else return nullptr; }
+        Minion const* ToMinion() const { if (isMinion()) return reinterpret_cast<Minion const*>(this); else return nullptr; }
 
         ObjectGuid GetTarget() const { return m_unitData->Target; }
         virtual void SetTarget(ObjectGuid const& /*guid*/) = 0;

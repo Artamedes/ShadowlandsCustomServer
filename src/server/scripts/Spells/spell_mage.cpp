@@ -2423,36 +2423,70 @@ public:
     }
 };
 
-// Mirror Image - 55342
-class spell_mage_mirror_image_summon : public SpellScriptLoader
+/// Mirror Image - 55342
+/// Updated 9.2.0.43345
+class spell_mage_mirror_image_summon : public SpellScript
 {
-public:
-    spell_mage_mirror_image_summon() : SpellScriptLoader("spell_mage_mirror_image_summon") { }
+    PrepareSpellScript(spell_mage_mirror_image_summon);
 
-    class spell_mage_mirror_image_summon_SpellScript : public SpellScript
+    enum MirrorImages
     {
-        PrepareSpellScript(spell_mage_mirror_image_summon_SpellScript);
-
-        void HandleDummy(SpellEffIndex /*effIndex*/)
-        {
-            if (Unit* caster = GetCaster())
-            {
-                /// @TODO - SHADOWLANDS, these spells were removed!, Need to sniff mirror image.
-                // caster->CastSpell(caster, SPELL_MAGE_MIRROR_IMAGE_LEFT, true);
-                // caster->CastSpell(caster, SPELL_MAGE_MIRROR_IMAGE_FRONT, true);
-                // caster->CastSpell(caster, SPELL_MAGE_MIRROR_IMAGE_RIGHT, true);
-            }
-        }
-
-        void Register() override
-        {
-            OnEffectHitTarget += SpellEffectFn(spell_mage_mirror_image_summon_SpellScript::HandleDummy, EFFECT_1, SPELL_EFFECT_DUMMY);
-        }
+        MirrorImageSummon    = 321686,
+        MirrorImageSummonNpc = 31216,
+        CloneMe              = 45204,
+        MirrorImageAura      = 252206,
     };
 
-    SpellScript* GetSpellScript() const override
+    void HandleDummy(SpellEffIndex /*effIndex*/)
     {
-        return new spell_mage_mirror_image_summon_SpellScript();
+        if (Unit* caster = GetCaster())
+        {
+            auto SummonMirrorImage([&](float angle)
+            {
+                caster->CastSpell(caster->GetNearPosition(3.0f, angle), MirrorImageSummon, true);
+            });
+
+            // cast - 321686 (MirrorImageSummon) at a location x3
+            SummonMirrorImage(0.0f);
+            SummonMirrorImage(90.0f);
+            SummonMirrorImage(180.0f);
+
+            // casted - 55342 (this spell)
+        }
+    }
+
+    void HandleAfterCast()
+    {
+        if (Unit* caster = GetCaster())
+        {
+            float angle = 90.0f;
+            caster->DoOnSummons([caster, &angle](Creature* creature)
+            {
+                if (creature->GetEntry() == MirrorImageSummonNpc)
+                {
+                    // cast clone me on target 31216
+                    // cast 252206 Mirror Image on target 31216
+                    caster->CastSpell(creature, CloneMe, true);
+                    caster->CastSpell(creature, MirrorImageAura, true);
+
+                    if (auto minion = creature->ToMinion())
+                    {
+                        minion->SetFollowAngle(angle);
+                        angle += 90.0f;
+                        if (!minion->HasUnitState(UnitState::UNIT_STATE_FOLLOW))
+                        {
+                            minion->GetMotionMaster()->MoveFollow(caster, PET_FOLLOW_DIST, minion->GetFollowAngle(), MovementSlot::MOTION_SLOT_ACTIVE);
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+    void Register() override
+    {
+        OnEffectHitTarget += SpellEffectFn(spell_mage_mirror_image_summon::HandleDummy, EFFECT_1, SPELL_EFFECT_DUMMY);
+        AfterCast += SpellCastFn(spell_mage_mirror_image_summon::HandleAfterCast);
     }
 };
 
@@ -3110,8 +3144,10 @@ public:
         SPELL_MAGE_ARCANE_BLAST     = 30451,
         SPELL_MAGE_GLYPH            = 63093,
         SPELL_INITIALIZE_IMAGES     = 102284,
-        SPELL_CLONE_CASTER          = 60352,
-        SPELL_INHERIT_MASTER_THREAT = 58838
+        SPELL_CLONE_CASTER          = 45204, // changed to clone me 9.2.0.43345
+        SPELL_INHERIT_MASTER_THREAT = 58838, // good 9.2.0.43345 - sent after spawn
+        SpellMirrorImage252212      = 252212, // casted after threat list
+        SpellMirrorImage252217      = 252217, // called after last
     };
 
     struct npc_mirror_imageAI : CasterAI
@@ -3127,11 +3163,11 @@ public:
 
             auto owner = o->ToPlayer();
 
-            if (!me->HasUnitState(UnitState::UNIT_STATE_FOLLOW))
-            {
-                me->GetMotionMaster()->Clear();
-                me->GetMotionMaster()->MoveFollow(owner, PET_FOLLOW_DIST, me->GetFollowAngle(), MovementSlot::MOTION_SLOT_ACTIVE);
-            }
+            //if (!me->HasUnitState(UnitState::UNIT_STATE_FOLLOW))
+            //{
+            //    me->GetMotionMaster()->Clear();
+            //    me->GetMotionMaster()->MoveFollow(owner, PET_FOLLOW_DIST, me->GetFollowAngle(), MovementSlot::MOTION_SLOT_ACTIVE);
+            //}
 
             me->SetMaxPower(me->GetPowerType(), owner->GetMaxPower(me->GetPowerType()));
             me->SetFullPower(me->GetPowerType());
@@ -3139,7 +3175,9 @@ public:
             me->SetHealth(owner->GetHealth());
             me->SetReactState(ReactStates::REACT_DEFENSIVE);
 
-            me->CastSpell(owner, SPELL_INHERIT_MASTER_THREAT, true);
+            me->CastSpell(owner, SPELL_INHERIT_MASTER_THREAT, true); // cast flags 10, ex: 1048576
+            me->CastSpell(owner, SpellMirrorImage252212, true); // cast flags 10, ex: 1048576
+            me->CastSpell(owner, SpellMirrorImage252217, true); // cast flags 10, ex: 1048576
 
             // here mirror image casts on summoner spell (not present in client dbc) 49866
             // here should be auras (not present in client dbc): 35657, 35658, 35659, 35660 selfcasted by mirror images (stats related?)
@@ -5177,7 +5215,7 @@ void AddSC_mage_spell_scripts()
     new spell_mage_time_warp();
     new spell_mage_fire_mage_passive();
     new spell_mage_fire_on();
-    new spell_mage_mirror_image_summon();
+    RegisterSpellScript(spell_mage_mirror_image_summon);
     new spell_mage_cauterize();
     new spell_mage_conjure_refreshment();
     RegisterSpellScript(spell_mage_dragon_breath);
