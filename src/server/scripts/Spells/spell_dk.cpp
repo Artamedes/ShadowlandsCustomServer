@@ -552,6 +552,12 @@ class spell_dk_death_coil : public SpellScript
 
         if (Aura* aura = caster->GetAura(SPELL_DK_SUDDEN_DOOM))
             aura->ModStackAmount(-1);
+
+        if (caster->HasAura(SPELL_DK_ARMY_OF_THE_DAMNED))
+        {
+            caster->GetSpellHistory()->ModifyCooldown(SPELL_DK_ARMY_OF_DEATH_TRIGGER, -5s);
+            caster->GetSpellHistory()->ModifyCooldown(SPELL_DK_APOCALYPSE, -1s);
+        }
     }
 
     void Register() override
@@ -2441,11 +2447,16 @@ class spell_dk_epidemic : public SpellScript
 	void HandleAfterCast()
 	{
         if (Unit* caster = GetCaster())
+        {
+            if (Aura* aura = caster->GetAura(SPELL_DK_SUDDEN_DOOM))
+                aura->ModStackAmount(-1);
+
 			if (caster->HasAura(SPELL_DK_ARMY_OF_THE_DAMNED))
 			{
 				caster->GetSpellHistory()->ModifyCooldown(SPELL_DK_ARMY_OF_DEATH_TRIGGER, -5s);
 				caster->GetSpellHistory()->ModifyCooldown(SPELL_DK_APOCALYPSE, -1s);
 			}
+        }
 	}
 
     void Register() override
@@ -3374,6 +3385,7 @@ class spell_dk_death_and_decay_damage : public SpellScript
 };
 
 // 276837 - Army of the Damned
+// broken for some reason, not sure why
 class aura_dk_army_of_the_damned : public AuraScript
 {
 	PrepareAuraScript(aura_dk_army_of_the_damned);
