@@ -280,6 +280,7 @@ class LoginScript : public PlayerScript
                     }
                     case CLASS_DEATH_KNIGHT:
                     {
+                        p_Player->CastSpell(p_Player, 53431, true); // Runeforging
                         p_Player->GetCovenantMgr()->SetCovenant(CovenantID::Necrolord);
                         p_Player->GetCovenantMgr()->SetSoulbind(SoulbindID::PlagueDeviserMarileth);
                         break;
