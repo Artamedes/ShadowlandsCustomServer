@@ -2471,12 +2471,10 @@ class spell_mage_mirror_image_summon : public SpellScript
 
                     if (auto minion = creature->ToMinion())
                     {
+                        minion->Variables.Set("DontUseCombatReach", true);
                         minion->SetFollowAngle(angle);
                         angle += 90.0f;
-                        if (!minion->HasUnitState(UnitState::UNIT_STATE_FOLLOW))
-                        {
-                            minion->GetMotionMaster()->MoveFollow(caster, PET_FOLLOW_DIST, minion->GetFollowAngle(), MovementSlot::MOTION_SLOT_ACTIVE);
-                        }
+                        minion->GetMotionMaster()->MoveFollow(caster, PET_FOLLOW_DIST, minion->GetFollowAngle(), MovementSlot::MOTION_SLOT_ACTIVE);
                     }
                 }
             });
@@ -3174,6 +3172,7 @@ public:
             me->SetMaxHealth(owner->GetMaxHealth());
             me->SetHealth(owner->GetHealth());
             me->SetReactState(ReactStates::REACT_DEFENSIVE);
+            me->SetSpeed(MOVE_RUN, owner->GetSpeed(MOVE_RUN));
 
             me->CastSpell(owner, SPELL_INHERIT_MASTER_THREAT, true); // cast flags 10, ex: 1048576
             me->CastSpell(owner, SpellMirrorImage252212, true); // cast flags 10, ex: 1048576

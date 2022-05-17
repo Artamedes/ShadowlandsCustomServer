@@ -46,9 +46,17 @@ FollowMovementGenerator::~FollowMovementGenerator() = default;
 
 static bool PositionOkay(Unit* owner, Unit* target, float range, Optional<ChaseAngle> angle = {})
 {
-    if (owner->GetExactDistSq(target) > square(owner->GetCombatReach() + target->GetCombatReach() + range))
-        return false;
-
+    if (owner->Variables.GetValue("DontUseCombatReach", false))
+    {
+        if (owner->GetExactDistSq(target) > square(range))
+            return false;
+    }
+    else
+    {
+        if (owner->GetExactDistSq(target) > square(owner->GetCombatReach() + target->GetCombatReach() + range))
+            return false;
+    }
+    
     return !angle || angle->IsAngleOkay(target->GetRelativeAngle(owner));
 }
 
