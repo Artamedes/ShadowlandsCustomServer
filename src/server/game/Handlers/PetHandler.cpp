@@ -246,7 +246,21 @@ void WorldSession::HandlePetActionHelper(Unit* pet, ObjectGuid guid1, uint32 spe
                             if (((Pet*)pet)->getPetType() == HUNTER_PET)
                                 GetPlayer()->RemovePet((Pet*)pet, PET_SAVE_AS_DELETED);
                             else
+                            {
                                 GetPlayer()->RemovePet((Pet*)pet, PET_SAVE_NOT_IN_SLOT);
+                                if (pet->GetEntry() == 26125) ///< Raise Dead
+                                {
+                                    // Also dismiss risen skulker
+                                    for (auto pet2 : GetPlayer()->m_Controlled)
+                                    {
+                                        if (pet2 && pet2->GetEntry() == ENTRY_RISEN_SKULKER)
+                                        {
+                                            pet2->ToCreature()->DespawnOrUnsummon();
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
                         }
                         else if (pet->HasUnitTypeMask(UNIT_MASK_MINION))
                         {
