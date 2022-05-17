@@ -1156,14 +1156,35 @@ public:
     {
         if (quest->GetQuestId() == 700000)
         {
-            if (auto clone = me->SummonPersonalClone(*me, TEMPSUMMON_NO_OWNER_DESPAWN, 0s, 0, 0, who))
-            {
-                clone->setActive(true);
-                clone->SetOwnerGUID(who->GetGUID());
-                if (clone->AI())
-                    clone->AI()->DoAction(1);
-            }
+            StartQuestEvent(who);
         }
+    }
+
+    void StartQuestEvent(Player* who)
+    {
+        if (auto clone = me->SummonPersonalClone(*me, TEMPSUMMON_NO_OWNER_DESPAWN, 0s, 0, 0, who))
+        {
+            clone->setActive(true);
+            clone->SetOwnerGUID(who->GetGUID());
+            if (clone->AI())
+                clone->AI()->DoAction(1);
+        }
+    }
+
+    bool OnGossipHello(Player* player) override
+    {
+        ClearGossipMenuFor(player);
+        player->PrepareQuestMenu(me->GetGUID());
+        if (player->GetQuestStatus(700000) == QUEST_STATUS_INCOMPLETE && !me->IsSummon() && me->HasNpcFlag(NPCFlags::UNIT_NPC_FLAG_QUESTGIVER))
+        {
+            AddGossipItemFor(player, GossipOptionIcon::None, "I'm ready", 0, 0, [this, player](std::string /*callback*/)
+            {
+                CloseGossipMenuFor(player);
+                StartQuestEvent(player);
+            });
+        }
+        SendGossipMenuFor(player, me->GetEntry(), me);
+        return true;
     }
 
     bool didMagicStoneSay = false;
@@ -1206,11 +1227,15 @@ public:
 
     void DoAction(int32 action) override
     {
+        if (action != 1)
+            return;
+
+        me->RemoveNpcFlag(NPCFlags::UNIT_NPC_FLAG_QUESTGIVER);
         TalkWithOwner(1);
 
         scheduler.Schedule(1s, [this](TaskContext context)
         {
-            me->GetMotionMaster()->MoveSmoothPath(1, generalPath, 11, true)->callbackFunc = [this]()
+            me->GetMotionMaster()->MoveSmoothPath(1, generalPath, 11, true, false, 5.0f)->callbackFunc = [this]()
             {
                 TalkWithOwner(2);
                 scheduler.Schedule(6s, [this](TaskContext context)
@@ -2778,6 +2803,7 @@ public:
         }
         else if (actionId == 2)
         {
+            me->RemoveNpcFlag(NPCFlags::UNIT_NPC_FLAG_QUESTGIVER);
             scheduler.Schedule(1s, [this](TaskContext context)
             {
                 Talk(3, me->GetOwner());
@@ -2824,13 +2850,18 @@ public:
     {
         if (quest->GetQuestId() == 700001)
         {
-            if (auto clone = me->SummonPersonalClone(*me, TEMPSUMMON_NO_OWNER_OR_TIMED_DESPAWN, 30s, 0, 0, player))
+            StartQuestEvent(player);
+        }
+    }
+
+    void StartQuestEvent(Player* player)
+    {
+        if (auto clone = me->SummonPersonalClone(*me, TEMPSUMMON_NO_OWNER_OR_TIMED_DESPAWN, 30s, 0, 0, player))
+        {
+            clone->SetOwnerGUID(player->GetGUID());
+            if (auto ai = clone->AI())
             {
-                clone->SetOwnerGUID(player->GetGUID());
-                if (auto ai = clone->AI())
-                {
-                    ai->DoAction(2);
-                }
+                ai->DoAction(2);
             }
         }
     }
@@ -2839,6 +2870,14 @@ public:
     {
         ClearGossipMenuFor(player);
         player->PrepareQuestMenu(me->GetGUID());
+        if (player->GetQuestStatus(700001) == QUEST_STATUS_INCOMPLETE && !me->IsSummon() && me->HasNpcFlag(NPCFlags::UNIT_NPC_FLAG_QUESTGIVER))
+        {
+            AddGossipItemFor(player, GossipOptionIcon::None, "I'm ready", 0, 0, [this, player](std::string /*callback*/)
+            {
+                CloseGossipMenuFor(player);
+                StartQuestEvent(player);
+            });
+        }
         SendGossipMenuFor(player, me->GetEntry(), me);
         return true;
     }
