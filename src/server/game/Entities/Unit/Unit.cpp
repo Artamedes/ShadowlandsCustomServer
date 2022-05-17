@@ -11647,6 +11647,19 @@ void Unit::SetMeleeAnimKitId(uint16 animKitId)
             script->OnPlayerDiesForScript(plrVictim);
 
         plrVictim->SendClearLossOfControl();
+
+        // Hackfix for Retribution Aura, Should give wings
+        if (auto group = plrVictim->GetGroup())
+        {
+            for (GroupReference* itr = group->GetFirstMember(); itr != nullptr; itr = itr->next())
+            {
+                if (auto groupMember = itr->GetSource())
+                {
+                    if (groupMember->IsInMap(plrVictim) && groupMember->GetDistance2d(plrVictim) <= 40.0f && groupMember->HasAura(183435))
+                        groupMember->CastSpell(groupMember, 31884, CastSpellExtraArgs(TRIGGERED_FULL_MASK | TRIGGERED_DONT_CREATE_COOLDOWN));
+                }
+            }
+        }
     }
     else                                                // creature died
     {
