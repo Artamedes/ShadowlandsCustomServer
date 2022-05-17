@@ -1552,7 +1552,10 @@ private:
 
 struct npc_training_dummy : NullCreatureAI
 {
-    npc_training_dummy(Creature* creature) : NullCreatureAI(creature) { }
+    npc_training_dummy(Creature* creature) : NullCreatureAI(creature)
+    {
+        me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_GRIP, true);
+    }
 
     void JustEnteredCombat(Unit* who) override
     {
