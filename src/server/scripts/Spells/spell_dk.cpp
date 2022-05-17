@@ -1156,12 +1156,24 @@ class spell_dk_dark_transformation_form : public SpellScript
 {
     PrepareSpellScript(spell_dk_dark_transformation_form);
 
+    enum DarkTransformation
+    {
+        UnholyPactTalent = 319230,
+        UnholyPactTrigger = 319232,
+        UnholyPactDmg = 319236,
+    };
+
     void HandleOnHit()
     {
         if (Player* _player = GetCaster()->ToPlayer())
         {
             if (Unit* pet = GetHitUnit())
             {
+                if (_player->HasAura(UnholyPactTalent))
+                {
+                    _player->CastSpell(pet, UnholyPactTrigger, true);
+                }
+
                 if (pet->HasAura(SPELL_DK_DARK_INFUSION_STACKS))
                 {
                     _player->RemoveAura(SPELL_DK_DARK_INFUSION_STACKS);
@@ -4626,10 +4638,14 @@ class aura_dk_dancing_rune_weapon : public AuraScript
         if (!weapon)
             return;
 
-        SpellNonMeleeDamage* damageLog = new SpellNonMeleeDamage(weapon, target, eventInfo.GetSpellInfo(), SpellCastVisual(eventInfo.GetSpellInfo()->GetSpellXSpellVisualId(), 0 ), eventInfo.GetSchoolMask());
-        damageLog->damage = eventInfo.GetDamageInfo()->GetOriginalDamage();
-        weapon->SendSpellNonMeleeDamageLog(damageLog);
-        Unit::DealDamage(weapon, target, eventInfo.GetDamageInfo()->GetOriginalDamage());
+        SpellNonMeleeDamage damageLog = SpellNonMeleeDamage(weapon,
+            target,
+            eventInfo.GetSpellInfo(),
+            SpellCastVisual(eventInfo.GetSpellInfo()->GetSpellXSpellVisualId(), 0 ),
+            eventInfo.GetSchoolMask());
+        damageLog.damage = eventInfo.GetDamageInfo()->GetDamage();
+        caster->SendSpellNonMeleeDamageLog(&damageLog);
+        Unit::DealDamage(weapon, target, eventInfo.GetDamageInfo()->GetDamage());
     }
 
     void Register() override

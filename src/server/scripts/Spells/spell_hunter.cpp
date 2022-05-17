@@ -4217,11 +4217,11 @@ class spell_hun_aimed_shot : public SpellScript
         {
             caster->RemoveAura(SPELL_HUNTER_DOUBLE_TAP);
 
-            SpellNonMeleeDamage* damageLog = new SpellNonMeleeDamage(caster, target, GetSpellInfo(), { GetSpellInfo()->GetSpellXSpellVisualId(), 0 }, GetSpellInfo()->GetSchoolMask());
-            damageLog->damage = damage;
-            caster->CalculateSpellDamageTaken(damageLog, damageLog->damage, GetSpellInfo());
-            caster->DealDamageMods(caster, target, damageLog->damage, &damageLog->absorb);
-            caster->SendSpellNonMeleeDamageLog(damageLog);
+            SpellNonMeleeDamage damageLog = SpellNonMeleeDamage(caster, target, GetSpellInfo(), { GetSpellInfo()->GetSpellXSpellVisualId(), 0 }, GetSpellInfo()->GetSchoolMask());
+            damageLog.damage = damage;
+            caster->CalculateSpellDamageTaken(&damageLog, damageLog.damage, GetSpellInfo());
+            caster->DealDamageMods(caster, target, damageLog.damage, &damageLog.absorb);
+            caster->SendSpellNonMeleeDamageLog(&damageLog);
             caster->DealDamage(caster, target, damage);
         }     
     }
@@ -5492,11 +5492,11 @@ class spell_hun_trick_shots_proc : public AuraScript
 
         for (auto target : targetList)
         {
-            SpellNonMeleeDamage* damageLog = new SpellNonMeleeDamage(owner, target, eventInfo.GetSpellInfo(), { eventInfo.GetSpellInfo()->GetSpellXSpellVisualId(), 0 }, eventInfo.GetSchoolMask());
-            damageLog->damage = eventInfo.GetDamageInfo()->GetOriginalDamage();
-            owner->CalculateSpellDamageTaken(damageLog, damageLog->damage, eventInfo.GetSpellInfo());
-            owner->DealDamageMods(owner, target, damageLog->damage, &damageLog->absorb);
-            owner->SendSpellNonMeleeDamageLog(damageLog);
+            SpellNonMeleeDamage damageLog = SpellNonMeleeDamage(owner, target, eventInfo.GetSpellInfo(), { eventInfo.GetSpellInfo()->GetSpellXSpellVisualId(), 0 }, eventInfo.GetSchoolMask());
+            damageLog.damage = eventInfo.GetDamageInfo()->GetOriginalDamage();
+            owner->CalculateSpellDamageTaken(&damageLog, damageLog.damage, eventInfo.GetSpellInfo());
+            owner->DealDamageMods(owner, target, damageLog.damage, &damageLog.absorb);
+            owner->SendSpellNonMeleeDamageLog(&damageLog);
             owner->DealDamage(owner, target, eventInfo.GetDamageInfo()->GetOriginalDamage());
         }
 

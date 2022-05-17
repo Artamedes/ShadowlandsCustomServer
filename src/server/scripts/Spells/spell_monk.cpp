@@ -5280,11 +5280,11 @@ class spell_monk_bonedust_brew : public AuraScript
                 if (auto caster = GetCaster())
                 {
                     auto damage = damageInfo->GetDamage() * 0.5;
-                    SpellNonMeleeDamage* damageLog = new SpellNonMeleeDamage(caster, target, GetSpellInfo(), { GetSpellInfo()->GetSpellXSpellVisualId(), 0 }, GetSpellInfo()->GetSchoolMask());
-                    damageLog->damage = damage;
-                    caster->CalculateSpellDamageTaken(damageLog, damageLog->damage, GetSpellInfo());
-                    caster->DealDamageMods(caster, target, damageLog->damage, &damageLog->absorb);
-                    caster->SendSpellNonMeleeDamageLog(damageLog);
+                    SpellNonMeleeDamage damageLog = SpellNonMeleeDamage(caster, target, GetSpellInfo(), { GetSpellInfo()->GetSpellXSpellVisualId(), 0 }, GetSpellInfo()->GetSchoolMask());
+                    damageLog.damage = damage;
+                    caster->CalculateSpellDamageTaken(&damageLog, damageLog.damage, GetSpellInfo());
+                    caster->DealDamageMods(caster, target, damageLog.damage, &damageLog.absorb);
+                    caster->SendSpellNonMeleeDamageLog(&damageLog);
                     caster->DealDamage(caster, target, damage);
                 }
             }

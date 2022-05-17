@@ -996,11 +996,11 @@ class spell_mage_meteor_damage : public SpellScript
                     if (Unit* target = targetWo->ToUnit())
                     {
                         int32 hitDamage = GetHitDamage() / targetObjects.size();
-                        SpellNonMeleeDamage* damageLog = new SpellNonMeleeDamage(caster, target, GetSpellInfo(), { GetSpellInfo()->GetSpellXSpellVisualId(), 0 }, GetSpellInfo()->GetSchoolMask());
-                        damageLog->damage = hitDamage;
-                        caster->CalculateSpellDamageTaken(damageLog, damageLog->damage, GetSpellInfo());
-                        caster->DealDamageMods(caster, target, damageLog->damage, &damageLog->absorb);
-                        caster->SendSpellNonMeleeDamageLog(damageLog);
+                        SpellNonMeleeDamage damageLog = SpellNonMeleeDamage(caster, target, GetSpellInfo(), { GetSpellInfo()->GetSpellXSpellVisualId(), 0 }, GetSpellInfo()->GetSchoolMask());
+                        damageLog.damage = hitDamage;
+                        caster->CalculateSpellDamageTaken(&damageLog, damageLog.damage, GetSpellInfo());
+                        caster->DealDamageMods(caster, target, damageLog.damage, &damageLog.absorb);
+                        caster->SendSpellNonMeleeDamageLog(&damageLog);
                         caster->DealDamage(caster, target, hitDamage);
                     }
                 }
