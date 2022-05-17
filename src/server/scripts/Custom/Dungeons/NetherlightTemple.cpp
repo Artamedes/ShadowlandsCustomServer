@@ -762,6 +762,9 @@ struct npc_mawswarn_portal_700415 : public ScriptedAI
 
             for (auto player : players)
             {
+                if (player->ToPlayer()->GetQuestStatus(700022) == QUEST_STATUS_NONE)
+                    continue;
+
                 player->CastSpell(player, 141480, true);
                 player->CastSpell(player, 367044, true);
                 m_PlayersToTele[player->GetGUID()] = now + Milliseconds(800);
@@ -771,10 +774,10 @@ struct npc_mawswarn_portal_700415 : public ScriptedAI
             {
                 auto player = ObjectAccessor::GetPlayer(*me, it->first);
                 if (!player || !player->GetSession() || player->IsBeingTeleported())
+                {
+                    ++it;
                     continue;
-
-                if (player->GetQuestStatus(700022) == QUEST_STATUS_NONE)
-                    continue;
+                }
 
                 if (now >= it->second)
                 {
