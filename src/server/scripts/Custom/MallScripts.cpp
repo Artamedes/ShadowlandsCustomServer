@@ -236,6 +236,7 @@ struct npc_skipbot_3000 : public ScriptedAI
                     }
 
                     p_Player->AddItem(700001, 1);
+                    p_Player->AddItem(700000, 1);
                     GameTele const* tele = sObjectMgr->GetGameTele(1779);
                     if (!tele)
                     {
