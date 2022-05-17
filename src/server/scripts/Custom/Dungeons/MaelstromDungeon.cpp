@@ -5,12 +5,21 @@
 #include "ScenarioMgr.h"
 #include "InstanceScenario.h"
 #include "../CustomInstanceScript.h"
+#include "Conversation.h"
 
 enum MaelstromInvasion
 {
     BOSS_CORRUPTED_GRANITE = 0,
     BOSS_UNKNOWN_ENTITY,
-    BOSS_SIR_DUKE_IRO
+    BOSS_SIR_DUKE_IRO,
+
+    // Npcs
+    SirDukeIroEntry = 700112,
+    MawswarnTormenter = 700111,
+    MawswarnCaster = 700110,
+
+    // Conversations
+    ThrallConversationId = 700312,
 };
 
 struct npc_custom_thrall_700113 : public ScriptedAI
@@ -173,10 +182,15 @@ struct npc_sir_duke_iro_700112 : public BossAI
             if (m_DidIntroText)
                 return;
 
-            if (p_Who->GetDistance(me) <= 40.0f)
+            if (p_Who->IsPlayer() && p_Who->GetDistance(me) <= 40.0f && me->IsVisible())
             {
                 m_DidIntroText = true;
                 Talk(0);
+                if (instance)
+                    instance->instance->DoOnPlayers([](Player* player)
+                {
+                    Conversation::CreateConversation(ThrallConversationId, player, *player, player->GetGUID());
+                });
             }
         }
 
@@ -241,7 +255,6 @@ struct npc_sir_duke_iro_700112 : public BossAI
         bool m_DidIntroText = false;
 };
 
-
 class instance_maelstrom_invasion : public InstanceMapScript
 {
 public:
@@ -266,15 +279,47 @@ public:
             }
         }
 
+        GuidSet mawswarnGuids;
+
         void OnCreatureCreate(Creature* p_Creature) override
         {
             CustomInstanceScript::OnCreatureCreate(p_Creature);
             switch (p_Creature->GetEntry())
             {
-                case 700112:
+                case SirDukeIroEntry:
                     iroGuid = p_Creature->GetGUID();
+                    p_Creature->SetReactState(REACT_PASSIVE);
+                    p_Creature->SetVisible(false);
+                    break;
+                case MawswarnTormenter:
+                case MawswarnCaster:
+                    mawswarnGuids.insert(p_Creature->GetGUID());
+                    p_Creature->SetReactState(REACT_PASSIVE);
+                    p_Creature->SetVisible(false);
                     break;
             }
+        }
+
+        bool SetBossState(uint32 id, EncounterState state, bool forced) override
+        {
+            if (id == BOSS_CORRUPTED_GRANITE && state == EncounterState::DONE)
+            {
+                auto activateCreature([&](Creature* creature, ReactStates react = ReactStates::REACT_AGGRESSIVE)
+                {
+                    if (creature)
+                    {
+                        creature->SetReactState(react);
+                        creature->SetVisible(true);
+                    }
+                });
+
+                activateCreature(instance->GetCreature(iroGuid), REACT_PASSIVE);
+
+                for (auto const& guid : mawswarnGuids)
+                    activateCreature(instance->GetCreature(guid));
+            }
+
+            return CustomInstanceScript::SetBossState(id, state, forced);
         }
 
         void OnUnitDeath(Unit* p_Unit) override
@@ -284,8 +329,8 @@ public:
             {
                 switch (p_Unit->GetEntry())
                 {
-                    case 700111:
-                    case 700110:
+                    case MawswarnTormenter:
+                    case MawswarnCaster:
                         m_Kills++;
 
                         if (m_Kills == 5)
@@ -359,41 +404,13 @@ class maelstrom_dungeon_player_script : public PlayerScript
                     if (status == QUEST_STATUS_REWARDED)
                     {
                      //   player->AddQuestAndCheckCompletion(sObjectMgr->GetQuestTemplate(700009), player);
-                        player->AddQuestAndCheckCompletion(sObjectMgr->GetQuestTemplate(700009), player);
-                        player->PlayerTalkClass->SendQuestGiverQuestDetails(sObjectMgr->GetQuestTemplate(700009), player->GetGUID(), true, true);
+                        player->AddQuestAndCheckCompletion(sObjectMgr->GetQuestTemplate(700011), player);
+                        player->PlayerTalkClass->SendQuestGiverQuestDetails(sObjectMgr->GetQuestTemplate(700011), player->GetGUID(), true, true);
                     }
 
                     break;
 
                 }
-                case 700009:
-                {
-                    auto status1 = player->GetQuestStatus(700009);
-
-                    if (status1 == QUEST_STATUS_REWARDED)
-                    {
-                        auto quest = sObjectMgr->GetQuestTemplate(700011);
-                        player->AddQuestAndCheckCompletion(quest, player);
-                        player->PlayerTalkClass->SendQuestGiverQuestDetails(quest, player->GetGUID(), true, true);
-                    }
-
-                    break;
-                }
-                //case 700010:
-                //{
-                //    // add quest - 700011
-                //    auto status1 = player->GetQuestStatus(700010);
-                //
-                //    if (status1 == QUEST_STATUS_REWARDED)
-                //    {
-                //        auto quest = sObjectMgr->GetQuestTemplate(700009);
-                //        player->AddQuestAndCheckCompletion(quest, player);
-                //        player->PlayerTalkClass->SendQuestGiverQuestDetails(quest, player->GetGUID(), true, true);
-                //    }
-                //
-                //
-                //    break;
-                //}
             }
         }
 };
