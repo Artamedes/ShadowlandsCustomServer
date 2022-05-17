@@ -1161,6 +1161,22 @@ public:
     {
         PrepareSpellScript(spell_warr_shattering_throw_SpellScript);
 
+        void HandleDamage(SpellEffIndex eff)
+        {
+            if (auto caster = GetCaster())
+            {
+                if (auto player = caster->ToPlayer())
+                {
+                    // $damage=${($AP*1.0)*(1+$@versadmg)}
+                    auto attackPower = caster->GetTotalAttackPowerValue(BASE_ATTACK);
+                    float vers = player->m_activePlayerData->Versatility + player->m_activePlayerData->VersatilityBonus;
+                    AddPct(attackPower, vers);
+
+                    SetHitDamage(attackPower);
+                }
+            }
+        }
+
         void HandleScript(SpellEffIndex effIndex)
         {
             PreventHitDefaultEffect(effIndex);
@@ -1172,7 +1188,10 @@ public:
 
         void Register() override
         {
-            OnEffectHitTarget += SpellEffectFn(spell_warr_shattering_throw_SpellScript::HandleScript, EFFECT_0, SPELL_EFFECT_SCRIPT_EFFECT);
+            if (m_scriptSpellId == 64382)
+                OnEffectHitTarget += SpellEffectFn(spell_warr_shattering_throw_SpellScript::HandleDamage, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
+            else
+                OnEffectHitTarget += SpellEffectFn(spell_warr_shattering_throw_SpellScript::HandleScript, EFFECT_1, SPELL_EFFECT_SCRIPT_EFFECT);
         }
     };
 
