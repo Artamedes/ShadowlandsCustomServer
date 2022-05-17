@@ -5715,6 +5715,13 @@ void Spell::EffectJumpCharge()
         arrivalCast->SpellId = effectInfo->TriggerSpell;
     }
 
+    if (GetSpellInfo()->Id == 178368)
+    {
+        arrivalCast.emplace();
+        arrivalCast->SpellId = 52174;
+        arrivalCast->Target = m_caster->GetGUID();
+    }
+
     Optional<Movement::SpellEffectExtraData> effectExtra;
     if (params->SpellVisualId || params->ProgressCurveId || params->ParabolicCurveId)
     {
