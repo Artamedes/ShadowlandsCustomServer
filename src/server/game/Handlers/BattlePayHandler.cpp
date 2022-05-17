@@ -498,6 +498,8 @@ void WorldSession::HandleBattlePayStartPurchase(WorldPackets::BattlePay::BattleP
         packet3.PurchaseID = purchase->PurchaseID;
         packet3.ServerToken = purchase->ServerToken;
         SendPacket(packet3.Write());
+
+        ChatHandler(this).SendSysMessage("|cff1DCDE5[BattlePay]: If you get an error please try again!");
     }));
 
     // SMSG_BATTLE_PAY_START_CHECKOUT
