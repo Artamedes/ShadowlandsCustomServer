@@ -4881,7 +4881,7 @@ void AddSC_deathknight_spell_scripts()
     RegisterSpellScript(spell_dk_epidemic_aoe);
     RegisterSpellScript(aura_dk_virulent_plague);
     RegisterSpellScript(spell_dk_scourge_strike);
-    //RegisterSpellScript(aura_dk_defile);
+    RegisterSpellScript(aura_dk_defile);
     RegisterAreaTriggerAI(at_dk_defile);
     RegisterSpellScript(spell_dk_blighted_rune_weapon);
     RegisterAreaTriggerAI(at_dk_decomposing_aura);
