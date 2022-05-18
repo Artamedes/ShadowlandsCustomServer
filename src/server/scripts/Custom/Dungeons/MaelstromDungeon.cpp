@@ -199,7 +199,7 @@ struct npc_sir_duke_iro_700112 : public BossAI
             BossAI::JustEngagedWith(p_Who);
             me->RemoveAurasDueToSpell(353760);
             m_Events.ScheduleEvent(1, 5s, 6s);
-            m_Events.ScheduleEvent(2, 25s, 26s);
+            m_Events.ScheduleEvent(2, 10s);
         }
 
         bool doneIntro = false;
@@ -238,15 +238,22 @@ struct npc_sir_duke_iro_700112 : public BossAI
                 {
                     case 1:
                         DoCast(240006);
-                        m_Events.Repeat(10s, 11s);
+                        m_Events.Repeat(6s, 10s);
                         break;
                     case 2:
-                        //DoCastVictim();
-                        m_Events.Repeat(30s);
+                        //DoCastVictim(363519);
+                        m_Events.Repeat(18s);
                         break;
                 }
+
+                if (me->HasUnitState(UNIT_STATE_CASTING))
+                    return;
             }
 
+            DoCastVictim(324112); // wicked bolt
+
+            if (me->HasUnitState(UNIT_STATE_CASTING))
+                return;
             DoMeleeAttackIfReady();
         }
 
@@ -264,13 +271,13 @@ public:
     {
         instance_maelstrom_invasion_InstanceMapScript(InstanceMap* map) : CustomInstanceScript(map)
         {
-            // SetHeaders(DataHeader);
-            // SetBossNumber(EncounterCount);
-            ChestSpawn = { 1161.27, 1052.53, 3.89255, 2.49364 };
+            SetHeaders("MI");
+            SetBossNumber(3);
+            ChestSpawn = { 1161.27f, 1052.53f, 3.89255f, 2.49364f };
             Quad = { 0, 0, -0.947977f, -0.318339f };
         }
 
-        void OnCompletedCriteriaTree(CriteriaTree const* tree) override
+        void OnCompletedCriteriaTree(CriteriaTree const* /*tree*/ ) override
         {
             if (InstanceScenario* instanceScenario = instance->GetInstanceScenario())
             {
