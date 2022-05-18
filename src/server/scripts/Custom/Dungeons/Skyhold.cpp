@@ -237,8 +237,21 @@ public:
         }
     }
 
+    uint32 corpseTimer = 0;
+
     void UpdateAI(uint32 diff) override
     {
+        if (me->isDead())
+        {
+            corpseTimer += diff;
+            if (corpseTimer >= 3000)
+            {
+                corpseTimer = 0;
+                if (me->IsAllLooted())
+                    me->DespawnOrUnsummon();
+            }
+        }
+
         if (!UpdateVictim())
             return;
 
