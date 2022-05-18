@@ -147,6 +147,9 @@ void SceneMgr::OnSceneComplete(uint32 sceneInstanceID)
 
     SceneTemplate const* sceneTemplate = GetSceneTemplateFromInstanceId(sceneInstanceID);
 
+    if (!sceneTemplate)
+        return;
+
     // Must be done before removing aura
     RemoveSceneInstanceId(sceneInstanceID);
 
