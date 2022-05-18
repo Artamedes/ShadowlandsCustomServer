@@ -3245,6 +3245,13 @@ struct SoulbindConduitEntry
     uint32 Flags;
 };
 
+struct SoulbindConduitEnhancedSocketEntry
+{
+    uint32 ID;
+    uint32 GarrTalentID;
+    uint32 PlayerConditionEntry;
+};
+
 struct SoulbindConduitItemEntry
 {
     uint32 ID;

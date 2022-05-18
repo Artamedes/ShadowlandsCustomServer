@@ -273,6 +273,7 @@ DB2Storage<SkillLineAbilityEntry>               sSkillLineAbilityStore("SkillLin
 DB2Storage<SkillRaceClassInfoEntry>             sSkillRaceClassInfoStore("SkillRaceClassInfo.db2", SkillRaceClassInfoLoadInfo::Instance());
 DB2Storage<SoulbindEntry>                       sSoulbindStore("Soulbind.db2", SoulbindLoadInfo::Instance());
 DB2Storage<SoulbindConduitEntry>                sSoulbindConduitStore("SoulbindConduit.db2", SoulbindConduitLoadInfo::Instance());
+DB2Storage<SoulbindConduitEnhancedSocketEntry>  sSoulbindConduitEnhancedSocketStore("SoulbindConduitEnhancedSocket.db2", SoulbindConduitEnhancedSocket::Instance());
 DB2Storage<SoulbindConduitItemEntry>            sSoulbindConduitItemStore("SoulbindConduitItem.db2", SoulbindConduitItemLoadInfo::Instance());
 DB2Storage<SoulbindConduitRankEntry>            sSoulbindConduitRankStore("SoulbindConduitRank.db2", SoulbindConduitRankLoadInfo::Instance());
 DB2Storage<SoulbindConduitRankPropertiesEntry>  sSoulbindConduitRankPropertiesStore("SoulbindConduitRankProperties.db2", SoulbindConduitRankPropertiesLoadInfo::Instance());
@@ -867,6 +868,7 @@ uint32 DB2Manager::LoadStores(std::string const& dataPath, LocaleConstant defaul
     LOAD_DB2(sSkillLineAbilityStore);
     LOAD_DB2(sSkillRaceClassInfoStore);
     LOAD_DB2(sSoulbindConduitStore);
+    LOAD_DB2(sSoulbindConduitEnhancedSocketStore);
     LOAD_DB2(sSoulbindStore);
     LOAD_DB2(sSoulbindConduitItemStore);
     LOAD_DB2(sSoulbindConduitRankPropertiesStore);

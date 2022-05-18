@@ -5209,6 +5209,21 @@ struct SoulbindConduitLoadInfo
     }
 };
 
+struct SoulbindConduitEnhancedSocket
+{
+    static DB2LoadInfo const* Instance()
+    {
+        static DB2FieldMeta const fields[] =
+        {
+            { false, FT_INT, "ID" },
+            { true, FT_INT, "GarrTalentID" },
+            { true, FT_INT, "PlayerConditionID" },
+        };
+        static DB2LoadInfo const loadInfo(&fields[0], std::extent<decltype(fields)>::value, SoulbindConduitEnhancedSocketMeta::Instance(), HOTFIX_SEL_SOULBIND_ENHANCED_CONDUIT);
+        return &loadInfo;
+    }
+};
+
 struct SoulbindConduitItemLoadInfo
 {
     static DB2LoadInfo const* Instance()

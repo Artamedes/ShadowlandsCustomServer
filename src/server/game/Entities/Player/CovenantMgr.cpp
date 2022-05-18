@@ -179,16 +179,25 @@ void Conduit::FlagsUpdated(bool forceRemove /*= false*/)
         {
             if (!disabled)
             {
+                SoulbindConduitRankEntry const* currRank = nullptr;
+                bool IsEnhanced = IsEnhancedConduit();
                 for (auto entry : *entries)
                 {
-                    if (entry->RankIndex == Socket->SoulbindConduitRank)
+                    currRank = entry;
+                    if (entry->RankIndex == Socket->SoulbindConduitRank + (IsEnhanced ? 2 : 0))
                     {
-                        // activate socket spell.
-                        // todo: research this more
-                        _player->RemoveAurasDueToSpell(entries->at(0)->SpellID);
-                        if (auto aura = _player->AddAura(entry->SpellID))
-                            aura->GetEffect(0)->SetAmount((int32)entry->AuraPointsOverride); // TODO: Some are floats. How to handle this?
                         break;
+                    }
+                }
+
+                if (currRank != nullptr)
+                {
+                    // activate socket spell.
+                    // todo: research this more
+                    _player->RemoveAurasDueToSpell(entries->at(0)->SpellID);
+                    if (auto aura = _player->AddAura(currRank->SpellID))
+                    {
+                        aura->GetEffect(0)->SetAmount((int32)currRank->AuraPointsOverride); // TODO: Some are floats. How to handle this?
                     }
                 }
             }
@@ -211,6 +220,21 @@ void Conduit::BuildGarrisonTalent(WorldPackets::Garrison::GarrisonTalent& talent
     talent.ResearchStartTime = ResearchStartTime; // not 100% sure. other garrison packets used this.
     if (Socket.has_value())
         talent.Socket = Socket;
+}
+
+bool Conduit::IsEnhancedConduit()
+{
+    // TODO: Convert to lookup by map
+    for (auto entry : sSoulbindConduitEnhancedSocketStore)
+    {
+        if (entry->GarrTalentID == TalentEntryId)
+        {
+            if (_player->MeetPlayerCondition(entry->PlayerConditionEntry))
+                return true;
+        }
+    }
+
+    return false;
 }
 
 void Covenant::SocketTalent(WorldPackets::Garrison::GarrisonSocketTalent& packet)

@@ -97,6 +97,8 @@ struct TC_GAME_API Conduit
     }
     bool operator!=(Conduit const& right) const { return !(*this == right); }
 
+    bool IsEnhancedConduit();
+
     Player* _player;
 };
 
