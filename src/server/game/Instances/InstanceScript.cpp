@@ -63,7 +63,7 @@ BossBoundaryData::~BossBoundaryData()
 
 InstanceScript::InstanceScript(InstanceMap* map) : instance(map), completedEncounters(0), _instanceSpawnGroups(sObjectMgr->GetSpawnGroupsForInstance(map->GetId())),
 _entranceId(0), _temporaryEntranceId(0), _combatResurrectionTimer(0), _combatResurrectionCharges(0), _combatResurrectionTimerStarted(false),
-_disabledMask(0), _encounterTime(0), _challenge(nullptr), initDamageManager(false)
+_disabledMask(0), _encounterTime(0), _challenge(nullptr), initDamageManager(false), emptyWarned(false)
 {
 #ifdef TRINITY_API_USE_DYNAMIC_LINKING
     uint32 scriptId = sObjectMgr->GetInstanceTemplate(map->GetId())->ScriptId;
