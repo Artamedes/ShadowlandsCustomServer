@@ -48,6 +48,7 @@
 #include "CovenantMgr.h"
 #include "CustomObjectMgr.h"
 #include "Chat.h"
+#include "AchievementPackets.h"
 
 class spell_gen_absorb0_hitlimit1 : public AuraScript
 {
@@ -5172,6 +5173,40 @@ class spell_gen_coin_of_many_faces : public AuraScript
     }
 };
 
+/// <summary>
+///  ID - 342040 Restoring Memory
+/// </summary>
+class spell_restoring_memory : public SpellScript
+{
+    PrepareSpellScript(spell_restoring_memory);
+
+    void HandleHit(SpellEffIndex /*eff*/)
+    {
+        if (auto caster = GetCaster())
+        {
+            if (auto player = caster->ToPlayer())
+            {
+                player->SendPlaySpellVisualKit(362, 1, 0);
+
+                WorldPackets::Achievement::CriteriaUpdate upd;
+
+                upd.CriteriaID = 49892;
+                upd.Quantity = 21;
+                upd.PlayerGUID = player->GetGUID();
+                upd.Flags = 1;
+                upd.CurrentTime = GameTime::GetGameTime();
+
+                player->SendDirectMessage(upd.Write());
+            }
+        }
+    }
+
+    void Register() override
+    {
+        OnEffectHitTarget += SpellEffectFn(spell_restoring_memory::HandleHit, EFFECT_0, SPELL_EFFECT_DUMMY);
+    }
+};
+
 void AddSC_generic_spell_scripts()
 {
     RegisterSpellScript(spell_gen_absorb0_hitlimit1);
@@ -5330,4 +5365,5 @@ void AddSC_generic_spell_scripts()
     RegisterSpellScript(spell_emergency_failsafe);
     RegisterSpellScript(aura_entropic_embrace);
     RegisterSpellScript(spell_gen_coin_of_many_faces);
+    RegisterSpellScript(spell_restoring_memory);
 }

@@ -85,7 +85,7 @@ namespace WorldPackets
             AllAchievements Data;
         };
 
-        class CriteriaUpdate final : public ServerPacket
+        class TC_GAME_API CriteriaUpdate final : public ServerPacket
         {
         public:
             CriteriaUpdate() : ServerPacket(SMSG_CRITERIA_UPDATE, 4 + 8 + 16 + 4 + 4 + 4 + 4) { }
