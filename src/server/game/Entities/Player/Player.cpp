@@ -19179,6 +19179,7 @@ bool Player::LoadFromDB(ObjectGuid guid, CharacterDatabaseQueryHolder const& hol
     m_questObjectiveCriteriaMgr->CheckAllQuestObjectiveCriteria(this);
     _covenantMgr->LoadFromDB(holder);
     _covenantMgr->SetCovenant(static_cast<CovenantID>(fields.covenant));
+    _covenantMgr->OnSpecChange();
 
     LoadCustom(holder);
 
