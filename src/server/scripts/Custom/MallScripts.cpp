@@ -1085,10 +1085,13 @@ struct npc_soulshape_picker : public ScriptedAI
                 player->RemoveAurasDueToSpell(spell);
             }
 
-            if (actionId > 0)
+            //if (actionId > 0)
             {
-                player->CastSpell(player, actionId, true);
-                player->LearnSpell(actionId, false);
+                if (actionId)
+                {
+                    player->CastSpell(player, actionId, true);
+                    player->LearnSpell(actionId, false);
+                }
                 player->RestoreDisplayId();
 
                 if (auto crea = player->GetSummonedCreatureByEntry(800300))
@@ -1096,7 +1099,16 @@ struct npc_soulshape_picker : public ScriptedAI
                     if (auto tempSumm = crea->ToTempSummon())
                     {
                         tempSumm->InitStats(5000);
-                        crea->CastSpell(crea, actionId, true);
+                        if (actionId)
+                        {
+                            for (auto spell : soulshapeModAuras)
+                            {
+                                //if (crea->HasSpell(spell))
+                                //    crea->RemoveSpell(spell);
+                                crea->RemoveAurasDueToSpell(spell);
+                            }
+                            crea->CastSpell(crea, actionId, true);
+                        }
                         crea->AddAura(310143, crea); //< Soulshape
                         crea->RestoreDisplayId();
                         return OnGossipHello(player);
@@ -1108,7 +1120,8 @@ struct npc_soulshape_picker : public ScriptedAI
                 {
                     clone->SetUnitFlag(UnitFlags::UNIT_FLAG_UNINTERACTIBLE);
                     clone->SetOwnerGUID(player->GetGUID());
-                    clone->CastSpell(clone, actionId, true);
+                    if (actionId)
+                        clone->CastSpell(clone, actionId, true);
                     clone->AddAura(310143, clone); //< Soulshape
                     clone->RestoreDisplayId();
                     player->AddSummonedCreature(clone->GetGUID(), 800300);
