@@ -308,6 +308,7 @@ public:
 
     void JustDied(Unit* who) override
     {
+        scheduler.CancelAll();
         BossAI::JustDied(who);
         Talk(5);
 
