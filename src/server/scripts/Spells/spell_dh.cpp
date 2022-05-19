@@ -2117,37 +2117,8 @@ public:
                 }
         }
 
-        bool targetHit;
-
-        void FilterTargets(std::list<WorldObject*>& targets)
-        {
-            targets.remove(GetCaster());
-        }
-
-        void CountTargets(std::list<WorldObject*>& targets)
-        {
-            Unit* caster = GetCaster();
-            if (!caster)
-                return;
-
-            targets.clear();
-            std::list<Unit*> units;
-            caster->GetAttackableUnitListInRange(units, 25.f);
-            units.remove_if([caster](Unit* unit)
-                {
-                    return !caster->HasInLine(unit, 6.f, caster->GetObjectScale());
-                });
-
-            for (Unit* unit : units)
-                targets.push_back(unit);
-
-            targetHit = !targets.empty();
-        }
-
         void Register() override
         {
-            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_dh_fel_rush_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_RECT_CASTER_ENEMY);
-            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_dh_fel_rush_SpellScript::CountTargets, EFFECT_0, TARGET_UNIT_RECT_CASTER_ENEMY);
             OnEffectHitTarget += SpellEffectFn(spell_dh_fel_rush_SpellScript::HandleDashGround, EFFECT_0, SPELL_EFFECT_DUMMY);
             OnEffectHitTarget += SpellEffectFn(spell_dh_fel_rush_SpellScript::HandleDashAir, EFFECT_1, SPELL_EFFECT_DUMMY);
         }
@@ -4163,8 +4134,27 @@ class spell_dh_fel_rush_dmg : public SpellScript
         }
     }
 
+    void CountTargets(std::list<WorldObject*>& targets)
+    {
+        Unit* caster = GetCaster();
+        if (!caster)
+            return;
+
+        targets.clear();
+        std::list<Unit*> units;
+        caster->GetAttackableUnitListInRange(units, 25.f);
+        units.remove_if([caster](Unit* unit)
+        {
+            return !caster->HasInLine(unit, 6.f, caster->GetObjectScale());
+        });
+
+        for (Unit* unit : units)
+            targets.push_back(unit);
+    }
+
     void Register() override
     {
+        OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_dh_fel_rush_dmg::CountTargets, EFFECT_0, TARGET_UNIT_RECT_CASTER_ENEMY);
         BeforeCast += SpellCastFn(spell_dh_fel_rush_dmg::BeforeSCast);
         OnEffectHitTarget += SpellEffectFn(spell_dh_fel_rush_dmg::HandleDamage, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
     }
