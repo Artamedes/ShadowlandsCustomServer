@@ -114,7 +114,7 @@ class TC_GAME_API Transport : public GameObject, public TransportBase
         bool _mmapsLoaded;
 
     protected:
-        void UpdatePassengerPositions(PassengerSet& passengers);
+        void UpdatePassengerPositions(PassengerSet const& passengers);
 
         PassengerSet _passengers;
         PassengerSet::iterator _passengerTeleportItr;

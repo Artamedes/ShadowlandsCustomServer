@@ -37,6 +37,61 @@
 #include <G3D/Vector3.h>
 #include "MMapFactory.h"
 
+void TransportBase::UpdatePassengerPosition(Map* map, WorldObject* passenger, float x, float y, float z, float o, bool setHomePosition)
+{
+    // transport teleported but passenger not yet (can happen for players)
+    if (passenger->GetMap() != map)
+        return;
+
+    // if passenger is on vehicle we have to assume the vehicle is also on transport
+    // and its the vehicle that will be updating its passengers
+    if (Unit* unit = passenger->ToUnit())
+        if (unit->GetVehicle())
+            return;
+
+    // Do not use Unit::UpdatePosition here, we don't want to remove auras
+    // as if regular movement occurred
+    switch (passenger->GetTypeId())
+    {
+        case TYPEID_UNIT:
+        {
+            Creature* creature = passenger->ToCreature();
+            map->CreatureRelocation(creature, x, y, z, o, false);
+            if (setHomePosition)
+            {
+                creature->GetTransportHomePosition(x, y, z, o);
+                CalculatePassengerPosition(x, y, z, &o);
+                creature->SetHomePosition(x, y, z, o);
+            }
+            break;
+        }
+        case TYPEID_PLAYER:
+            //relocate only passengers in world and skip any player that might be still logging in/teleporting
+            if (passenger->IsInWorld() && !passenger->ToPlayer()->IsBeingTeleported())
+            {
+                map->PlayerRelocation(passenger->ToPlayer(), x, y, z, o);
+                passenger->ToPlayer()->SetFallInformation(0, passenger->GetPositionZ());
+            }
+            break;
+        case TYPEID_GAMEOBJECT:
+            map->GameObjectRelocation(passenger->ToGameObject(), x, y, z, o, false);
+            passenger->ToGameObject()->RelocateStationaryPosition(x, y, z, o);
+            break;
+        case TYPEID_DYNAMICOBJECT:
+            map->DynamicObjectRelocation(passenger->ToDynObject(), x, y, z, o);
+            break;
+        case TYPEID_AREATRIGGER:
+            map->AreaTriggerRelocation(passenger->ToAreaTrigger(), x, y, z, o);
+            break;
+        default:
+            break;
+    }
+
+    if (Unit* unit = passenger->ToUnit())
+        if (Vehicle* vehicle = unit->GetVehicleKit())
+            vehicle->RelocatePassengers();
+}
+
 Transport::Transport() : GameObject(),
 _passengerTeleportItr(_passengers.begin()), _currentTransportTime(0), _destinationStopFrameTime(0),
 _alignmentTransportTime(0), _lastStopFrameTime(0), _isDynamicTransport(false), _initialRelocate(false),
@@ -405,80 +460,17 @@ void Transport::RelocateToProgress(uint32 progress)
     UpdatePassengerPositions(_staticPassengers);
 }
 
-void Transport::UpdatePassengerPositions(PassengerSet& passengers)
+void Transport::UpdatePassengerPositions(PassengerSet const& passengers)
 {
     if (!IsInWorld() || !FindMap())
         return;
 
-    for (PassengerSet::iterator itr = passengers.begin(); itr != passengers.end(); ++itr)
+    for (WorldObject* passenger : passengers)
     {
-        WorldObject* passenger = *itr;
-
-        // Check if the player is in world
-        if (!passenger->IsInWorld())
-            continue;
-
-        if (!passenger->FindMap())
-            continue;
-
-        // transport teleported but passenger not yet (can happen for players)
-        if (passenger->GetMap() != GetMap())
-            continue;
-
-        // if passenger is on vehicle we have to assume the vehicle is also on transport
-        // and its the vehicle that will be updating its passengers
-        if (Unit* unit = passenger->ToUnit())
-        {
-            if (unit->GetVehicle())
-                continue;
-
-            // if spline enabled, position will be updated in Unit::UpdateSplinePosition
-            //if (unit->IsSplineEnabled())
-            //    continue;
-        }
-
-        // Do not use Unit::UpdatePosition here, we don't want to remove auras
-        // as if regular movement occurred
         float x, y, z, o;
         passenger->m_movementInfo.transport.pos.GetPosition(x, y, z, o);
         CalculatePassengerPosition(x, y, z, &o);
-        switch (passenger->GetTypeId())
-        {
-        case TYPEID_UNIT:
-        {
-            Creature* creature = passenger->ToCreature();
-            GetMap()->CreatureRelocation(creature, x, y, z, o, false);
-            creature->GetTransportHomePosition(x, y, z, o);
-            CalculatePassengerPosition(x, y, z, &o);
-            creature->SetHomePosition(x, y, z, o);
-            break;
-        }
-        case TYPEID_PLAYER:
-            //relocate only passengers in world and skip any player that might be still logging in/teleporting
-            if (passenger->IsInWorld() && !passenger->ToPlayer()->IsBeingTeleported())
-            {
-                GetMap()->PlayerRelocation(passenger->ToPlayer(), x, y, z, o);
-                passenger->ToPlayer()->SetFallInformation(0, passenger->GetPositionZ());
-            }
-            break;
-        case TYPEID_GAMEOBJECT:
-            GetMap()->GameObjectRelocation(passenger->ToGameObject(), x, y, z, o, false);
-            passenger->ToGameObject()->RelocateStationaryPosition(x, y, z, o);
-            break;
-        case TYPEID_DYNAMICOBJECT:
-            GetMap()->DynamicObjectRelocation(passenger->ToDynObject(), x, y, z, o);
-            break;
-        case TYPEID_AREATRIGGER:
-            //TC_LOG_ERROR("misc", "UpdatePassengerPositions %f %f %f", x, y, z);
-            GetMap()->AreaTriggerRelocation(passenger->ToAreaTrigger(), x, y, z, o);
-            break;
-        default:
-            break;
-        }
-
-        if (Unit* unit = passenger->ToUnit())
-            if (Vehicle* vehicle = unit->GetVehicleKit())
-                vehicle->RelocatePassengers();
+        UpdatePassengerPosition(GetMap(), passenger, x, y, z, o, true);
     }
 }
 
