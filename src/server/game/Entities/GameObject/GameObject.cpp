@@ -1798,7 +1798,7 @@ void GameObject::ActivateObject(GameObjectActions action, int32 param, WorldObje
     }
 }
 
-void GameObject::SetGoArtKit(uint8 kit)
+void GameObject::SetGoArtKit(uint32 kit)
 {
     SetUpdateFieldValue(m_values.ModifyValue(&GameObject::m_gameObjectData).ModifyValue(&UF::GameObjectData::ArtKit), kit);
     GameObjectData* data = const_cast<GameObjectData*>(sObjectMgr->GetGameObjectData(m_spawnId));
@@ -1806,7 +1806,7 @@ void GameObject::SetGoArtKit(uint8 kit)
         data->artKit = kit;
 }
 
-void GameObject::SetGoArtKit(uint8 artkit, GameObject* go, ObjectGuid::LowType lowguid)
+void GameObject::SetGoArtKit(uint32 artkit, GameObject* go, ObjectGuid::LowType lowguid)
 {
     GameObjectData const* data = nullptr;
     if (go)
