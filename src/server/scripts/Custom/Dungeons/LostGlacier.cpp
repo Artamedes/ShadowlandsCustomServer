@@ -95,7 +95,10 @@ public:
 struct npc_vision_of_jaina_730505 : public ScriptedAI
 {
 public:
-    npc_vision_of_jaina_730505(Creature* creature) : ScriptedAI(creature) { }
+    npc_vision_of_jaina_730505(Creature* creature) : ScriptedAI(creature)
+    {
+        ApplyAllImmunities(true);
+    }
 
     enum JSpells
     {
@@ -302,7 +305,10 @@ public:
 struct npc_icehowl_730504 : public ScriptedAI
 {
 public:
-    npc_icehowl_730504(Creature* creature) : ScriptedAI(creature) { }
+    npc_icehowl_730504(Creature* creature) : ScriptedAI(creature)
+    {
+        ApplyAllImmunities(true);
+    }
 
     void InitializeAI() override
     {
@@ -345,7 +351,10 @@ public:
 struct npc_ice_dragon_730501 : public ScriptedAI
 {
 public:
-    npc_ice_dragon_730501(Creature* creature) : ScriptedAI(creature) { }
+    npc_ice_dragon_730501(Creature* creature) : ScriptedAI(creature)
+    {
+        ApplyAllImmunities(true);
+    }
 
     void InitializeAI() override
     {
@@ -730,6 +739,33 @@ struct instance_lost_glacier : public CustomInstanceScript
             }
         }
 };
+// 800060 - npc_box_of_jewelry_800060
+struct npc_box_of_jewelry_800060 : public ScriptedAI
+{
+public:
+    npc_box_of_jewelry_800060(Creature* creature) : ScriptedAI(creature) { }
+
+    bool OnGossipHello(Player* player) override
+    {
+        CloseGossipMenuFor(player);
+        player->KilledMonsterCredit(me->GetEntry(), me->GetGUID());
+        me->UpdateObjectVisibility();
+        return true;
+    }
+
+    bool CanSeeOrDetect(WorldObject const* who) const override
+    {
+        if (who->IsPlayer())
+        {
+            auto player = who->ToPlayer();
+            auto questStatus = player->GetQuestStatus(700100);
+            if (questStatus == QUEST_STATUS_INCOMPLETE)
+                return true;
+        }
+
+        return false;
+    }
+};
 
 void AddSC_LostGlacier()
 {
@@ -745,5 +781,6 @@ void AddSC_LostGlacier()
     RegisterCreatureAI(npc_ice_whisp_730512);
     RegisterCreatureAI(npc_ice_elemental_730507);
     RegisterCreatureAI(npc_water_elemental_730506);
+    RegisterCreatureAI(npc_box_of_jewelry_800060);
     RegisterInstanceScript(instance_lost_glacier, 1738);
 }

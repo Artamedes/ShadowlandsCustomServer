@@ -326,7 +326,8 @@ struct npc_portal_to_next_700628 : public ScriptedAI
             for (auto unit : unitsInRange)
             {
                 m_UnitCD[unit->GetGUID().GetCounter()] = now + Seconds(2);
-
+                unit->Dismount();
+                unit->RemoveAurasByShapeShift();
 
                 GenericMovementGenerator* result = nullptr;
 
@@ -395,7 +396,10 @@ struct npc_portal_to_next_700628 : public ScriptedAI
 struct npc_void_reaper_700607 : public ScriptedAI
 {
 public:
-    npc_void_reaper_700607(Creature* creature) : ScriptedAI(creature) { }
+    npc_void_reaper_700607(Creature* creature) : ScriptedAI(creature)
+    {
+        ApplyAllImmunities(true);
+    }
 
     void InitializeAI() override
     {
@@ -546,7 +550,10 @@ public:
 struct npc_agony_700620 : public ScriptedAI
 {
 public:
-    npc_agony_700620(Creature* creature) : ScriptedAI(creature) { }
+    npc_agony_700620(Creature* creature) : ScriptedAI(creature)
+    {
+        ApplyAllImmunities(true);
+    }
 
     void InitializeAI() override
     {
@@ -749,7 +756,10 @@ struct npc_final_boss_void_portal_700632 : public ScriptedAI
 struct npc_sunshine_700616 : public ScriptedAI
 {
 public:
-    npc_sunshine_700616(Creature* creature) : ScriptedAI(creature) { }
+    npc_sunshine_700616(Creature* creature) : ScriptedAI(creature)
+    {
+        ApplyAllImmunities(true);
+    }
 
     void InitializeAI() override
     {

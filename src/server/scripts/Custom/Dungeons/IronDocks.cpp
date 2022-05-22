@@ -1806,6 +1806,34 @@ public:
         });
     }
 };
+// 800063 - npc_diamond_bar_800063
+struct npc_diamond_bar_800063 : public ScriptedAI
+{
+public:
+    npc_diamond_bar_800063(Creature* creature) : ScriptedAI(creature) { }
+
+    bool OnGossipHello(Player* player) override
+    {
+        CloseGossipMenuFor(player);
+        player->KilledMonsterCredit(me->GetEntry(), me->GetGUID());
+        me->UpdateObjectVisibility();
+        return true;
+    }
+
+    bool CanSeeOrDetect(WorldObject const* who) const override
+    {
+        if (who->IsPlayer())
+        {
+            auto player = who->ToPlayer();
+            auto questStatus = player->GetQuestStatus(700103);
+            if (questStatus == QUEST_STATUS_INCOMPLETE)
+                return true;
+        }
+
+        return false;
+    }
+};
+
 
 void AddSC_IronDocks()
 {
@@ -1833,6 +1861,7 @@ void AddSC_IronDocks()
     RegisterCreatureAI(npc_explosive_chicken_705013);
     RegisterCreatureAI(npc_siegemaker_705014);
     RegisterCreatureAI(npc_muzgonk_705015);
+    RegisterCreatureAI(npc_diamond_bar_800063);
 
     RegisterSpellScript(spell_activate_363754);
     RegisterSpellScript(spell_t_rex_explode_259463);

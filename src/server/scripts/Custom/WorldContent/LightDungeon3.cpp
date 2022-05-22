@@ -648,6 +648,39 @@ public:
         }
     }
 };
+// 700729 - npc_tome_of_corruption_700729
+struct npc_tome_of_corruption_700729 : public ScriptedAI
+{
+public:
+    npc_tome_of_corruption_700729(Creature* creature) : ScriptedAI(creature) { }
+
+    bool CanSeeOrDetect(WorldObject const* who) const override
+    {
+        if (who->IsPlayer())
+        {
+            auto player = who->ToPlayer();
+            auto status = player->GetQuestStatus(700030); // 700036 finish the fight
+            switch (status)
+            {
+                case QUEST_STATUS_INCOMPLETE:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        return false;
+    }
+
+    void OnSpellClick(Unit* clicker, bool spellClickHandled) override
+    {
+        if (clicker->IsPlayer())
+            clicker->ToPlayer()->KilledMonsterCredit(me->GetEntry(), me->GetGUID());
+
+        me->UpdateObjectVisibility();
+    }
+};
+
 
 void AddSC_LightDungeon3()
 {
@@ -658,6 +691,7 @@ void AddSC_LightDungeon3()
    RegisterCreatureAI(npc_mawsworn_warden_700725);
    RegisterCreatureAI(npc_watcher_of_death_700726);
    RegisterInstanceScript(instance_lightdng3, 1712);
+   RegisterCreatureAI(npc_tome_of_corruption_700729);
 
    new lightdng3_playerscript();
 }

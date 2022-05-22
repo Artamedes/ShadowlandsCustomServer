@@ -1202,3 +1202,34 @@ void WorldSession::HandleRequestLatestSplashScreen(WorldPackets::Misc::RequestLa
     splashScreenShowLatest.UISplashScreenID = splashScreen ? splashScreen->ID : 0;
     SendPacket(splashScreenShowLatest.Write());
 }
+
+void WorldSession::HandleCommentatorEnable(WorldPackets::Misc::CommentatorEnable& commentatorEnable)
+{
+    TC_LOG_DEBUG("network.opcode", "WORLD: Received opcode CMSG_COMMENTATOR_ENABLE");
+
+    Player* _player = GetPlayer();
+
+    // Allow commentator mode only for players in GM mode
+    if (!_player->IsGameMaster())
+        return;
+
+    // This opcode can be used in three ways:
+    // 0 - Request to turn commentator mode off
+    // 1 - Request to turn commentator mode on
+    // 2 - Request to toggle current commentator mode status
+    switch (commentatorEnable.Enable)
+    {
+        case 0:
+            _player->RemovePlayerFlag(PLAYER_FLAGS_COMMENTATOR | PLAYER_FLAGS_COMMENTATOR_UBER);
+            break;
+        case 1:
+            _player->SetPlayerFlag(PLAYER_FLAGS_COMMENTATOR | PLAYER_FLAGS_COMMENTATOR_UBER);
+            break;
+        case 2:
+            _player->ReplaceAllPlayerFlags(PLAYER_FLAGS_COMMENTATOR | PLAYER_FLAGS_COMMENTATOR_UBER);
+            break;
+        default:
+            TC_LOG_ERROR("network.opcode", "WorldSession::HandleCommentatorModeOpcode: player %d sent an invalid commentator mode action", _player->GetGUID().GetCounter());
+            return;
+    }
+}

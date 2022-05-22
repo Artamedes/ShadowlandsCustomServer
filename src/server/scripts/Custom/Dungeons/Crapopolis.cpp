@@ -768,7 +768,7 @@ public:
         player->KilledMonsterCredit(me->GetEntry(), me->GetGUID());
 
         auto status = player->GetQuestStatus(800032);
-        if (status == QUEST_STATUS_INCOMPLETE)
+        if (status == QUEST_STATUS_INCOMPLETE || status == QUEST_STATUS_COMPLETE)
         {
             player->KilledMonsterCredit(me->GetEntry(), me->GetGUID());
             player->PlayerTalkClass->SendQuestGiverOfferReward(sObjectMgr->GetQuestTemplate(800032), me->GetGUID(), false);

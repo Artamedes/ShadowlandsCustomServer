@@ -3066,7 +3066,7 @@ bool WorldObject::IsValidAttackTarget(WorldObject const* target, SpellInfo const
 
     if (Player const* playerAttacker = ToPlayer())
     {
-        if (playerAttacker->HasPlayerFlag(PLAYER_FLAGS_UBER))
+        if (playerAttacker->HasPlayerFlag(PLAYER_FLAGS_COMMENTATOR))
             return false;
     }
 

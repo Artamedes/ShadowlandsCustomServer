@@ -268,8 +268,7 @@ struct npc_currency_guy : public ScriptedAI
         {
             ClearGossipMenuFor(p_Player);
             p_Player->PrepareQuestMenu(me->GetGUID());
-            if (p_Player->GetQuestStatus(700005) == QUEST_STATUS_INCOMPLETE)
-                AddGossipItemFor(p_Player, GossipOptionIcon::AdventureMap, "What are currencies for?", 0, 1);
+            AddGossipItemFor(p_Player, GossipOptionIcon::AdventureMap, "Can you explain currencies again?", 0, 1);
            // AddGossipItemFor(p_Player, GossipOptionIcon::None, "Nevermind", 0, 0);
             SendGossipMenuFor(p_Player, me->GetEntry(), me);
             return true;
@@ -295,6 +294,11 @@ struct npc_currency_guy : public ScriptedAI
                 Talk(1, p_Player);
             else if (p_Quest->GetQuestId() == 700003)
                 Talk(2, p_Player);
+            else if (p_Quest->GetQuestId() == 700005)
+            {
+                Talk(0, p_Player);
+                p_Player->KilledMonsterCredit(700005, me->GetGUID());
+            }
         }
 };
 
@@ -3260,6 +3264,12 @@ public:
 
     bool OnGossipHello(Player* player) override
     {
+        if (player->GetQuestStatus(700036) == QUEST_STATUS_COMPLETE)
+        {
+            player->PlayerTalkClass->SendQuestGiverOfferReward(sObjectMgr->GetQuestTemplate(700036), me->GetGUID(), true);
+            return true;
+        }
+
         ClearGossipMenuFor(player);
         player->PrepareQuestMenu(me->GetGUID());
         SendGossipMenuFor(player, me->GetEntry(), me);
@@ -3718,6 +3728,80 @@ public:
     }
 };
 
+// 800039 - npc_viltro_800039
+struct npc_viltro_800039 : public ScriptedAI
+{
+public:
+    npc_viltro_800039(Creature* creature) : ScriptedAI(creature) { }
+
+    bool OnGossipHello(Player* player) override
+    {
+        ClearGossipMenuFor(player);
+        player->PrepareQuestMenu(me->GetGUID());
+        SendGossipMenuFor(player, me->GetEntry(), me);
+        return true;
+    }
+};
+
+// 800033 - npc_iron_richard_800033
+struct npc_iron_richard_800033 : public ScriptedAI
+{
+public:
+    npc_iron_richard_800033(Creature* creature) : ScriptedAI(creature) { }
+
+    bool OnGossipHello(Player* player) override
+    {
+        ClearGossipMenuFor(player);
+        player->PrepareQuestMenu(me->GetGUID());
+        SendGossipMenuFor(player, me->GetEntry(), me);
+        return true;
+    }
+};
+
+// 800037 - npc_velalus_800037
+struct npc_velalus_800037 : public ScriptedAI
+{
+public:
+    npc_velalus_800037(Creature* creature) : ScriptedAI(creature) { }
+
+    bool OnGossipHello(Player* player) override
+    {
+        ClearGossipMenuFor(player);
+        player->PrepareQuestMenu(me->GetGUID());
+        SendGossipMenuFor(player, me->GetEntry(), me);
+        return true;
+    }
+};
+
+// 800047 - npc_galirt_goldcheek_800047
+struct npc_galirt_goldcheek_800047 : public ScriptedAI
+{
+public:
+    npc_galirt_goldcheek_800047(Creature* creature) : ScriptedAI(creature) { }
+
+    bool OnGossipHello(Player* player) override
+    {
+        ClearGossipMenuFor(player);
+        player->PrepareQuestMenu(me->GetGUID());
+        SendGossipMenuFor(player, me->GetEntry(), me);
+        return true;
+    }
+};
+
+// 800042 - npc_damion_800042
+struct npc_damion_800042 : public ScriptedAI
+{
+public:
+    npc_damion_800042(Creature* creature) : ScriptedAI(creature) { }
+
+    bool OnGossipHello(Player* player) override
+    {
+        ClearGossipMenuFor(player);
+        player->PrepareQuestMenu(me->GetGUID());
+        SendGossipMenuFor(player, me->GetEntry(), me);
+        return true;
+    }
+};
 
 void AddSC_MallScripts()
 {
@@ -3770,6 +3854,11 @@ void AddSC_MallScripts()
     RegisterCreatureAI(npc_thrall_800059);
     RegisterCreatureAI(npc_scrappie_800053);
     RegisterCreatureAI(npc_pakgu_700016);
+    RegisterCreatureAI(npc_viltro_800039);
+    RegisterCreatureAI(npc_iron_richard_800033);
+    RegisterCreatureAI(npc_velalus_800037);
+    RegisterCreatureAI(npc_galirt_goldcheek_800047);
+    RegisterCreatureAI(npc_damion_800042);
 
     RegisterSpellScript(spell_activating_313352);
    // RegisterSpellScript(spell_nyalotha_incursion);

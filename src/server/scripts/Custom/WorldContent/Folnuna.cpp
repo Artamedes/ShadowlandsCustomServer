@@ -194,11 +194,6 @@ public:
     EventMap events;
 };
 
-
-void AddSC_1841()
-{
-}
-
 // 730304 - npc_judo_730304
 struct npc_judo_730304 : public npc_folnuna_base_ai
 {

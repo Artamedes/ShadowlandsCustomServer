@@ -242,7 +242,10 @@ public:
 struct npc_kang_dae_whitegarden_700712 : public ScriptedAI
 {
 public:
-    npc_kang_dae_whitegarden_700712(Creature* creature) : ScriptedAI(creature) { }
+    npc_kang_dae_whitegarden_700712(Creature* creature) : ScriptedAI(creature)
+    {
+        ApplyAllImmunities(true);
+    }
 
     enum eSpells
     {
@@ -336,7 +339,10 @@ public:
 struct npc_lord_darius_700713 : public ScriptedAI
 {
 public:
-    npc_lord_darius_700713(Creature* creature) : ScriptedAI(creature) { }
+    npc_lord_darius_700713(Creature* creature) : ScriptedAI(creature)
+    {
+        ApplyAllImmunities(true);
+    }
 
     void InitializeAI() override
     {
@@ -483,7 +489,10 @@ public:
 struct npc_rehael_700714 : public ScriptedAI
 {
 public:
-    npc_rehael_700714(Creature* creature) : ScriptedAI(creature) { }
+    npc_rehael_700714(Creature* creature) : ScriptedAI(creature)
+    {
+        ApplyAllImmunities(true);
+    }
 
     enum eSpells
     {
@@ -562,7 +571,10 @@ public:
 struct npc_yofiel_700715 : public ScriptedAI
 {
 public:
-    npc_yofiel_700715(Creature* creature) : ScriptedAI(creature) { }
+    npc_yofiel_700715(Creature* creature) : ScriptedAI(creature)
+    {
+        ApplyAllImmunities(true);
+    }
 
     void InitializeAI() override
     {
@@ -798,6 +810,12 @@ public:
         /// TODO: Fill this function
     }
 
+    void JustEngagedWith(Unit* who) override
+    {
+        events.Reset();
+        events.ScheduleEvent(1, 5s, 10s);
+    }
+
     void UpdateAI(uint32 diff) override
     {
         scheduler.Update(diff);
@@ -807,12 +825,28 @@ public:
 
         events.Update(diff);
 
+        if (me->HasUnitState(UNIT_STATE_CASTING))
+            return;
+
         if (uint32 eventId = events.ExecuteEvent())
         {
             switch (eventId)
             {
+                case 1:
+                    DoCastVictim(273770);
+                    events.Repeat(20s);
+                    break;
             }
         }
+
+        if (me->HasUnitState(UNIT_STATE_CASTING))
+            return;
+
+        DoCastVictim(172673);
+
+        if (me->HasUnitState(UNIT_STATE_CASTING))
+            return;
+
         DoMeleeAttackIfReady();
     }
 
@@ -856,6 +890,7 @@ public:
             {
             }
         }
+
         DoMeleeAttackIfReady();
     }
 
@@ -884,6 +919,12 @@ public:
         /// TODO: Fill this function
     }
 
+    void JustEngagedWith(Unit* who) override
+    {
+        events.Reset();
+        events.ScheduleEvent(1, 5s, 10s);
+    }
+
     void UpdateAI(uint32 diff) override
     {
         scheduler.Update(diff);
@@ -893,12 +934,28 @@ public:
 
         events.Update(diff);
 
+        if (me->HasUnitState(UNIT_STATE_CASTING))
+            return;
+
         if (uint32 eventId = events.ExecuteEvent())
         {
             switch (eventId)
             {
+                case 1:
+                    DoCastVictim(316711);
+                    events.Repeat(10s);
+                    break;
             }
         }
+
+        if (me->GetCurrentSpell(CurrentSpellTypes::CURRENT_CHANNELED_SPELL))
+            return;
+
+        if (me->HasUnitState(UNIT_STATE_CASTING))
+            return;
+
+        DoCastVictim(314592);
+
         DoMeleeAttackIfReady();
     }
 

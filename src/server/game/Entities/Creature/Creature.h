@@ -244,6 +244,7 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         GuidSet m_lootRecipientsPersonal;
 
         void SetLootRecipient (Unit* unit, bool withGroup = true);
+        bool wasSkinned = false; // PIGPIG
         void AllLootRemovedFromCorpse();
 
         uint16 GetLootMode() const { return m_LootMode; }

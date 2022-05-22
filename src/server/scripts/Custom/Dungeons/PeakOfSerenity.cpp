@@ -181,6 +181,15 @@ public:
             {
             }
         }
+
+        if (me->HasUnitState(UNIT_STATE_CASTING))
+            return;
+
+        DoCastVictim(332705);
+
+        if (me->HasUnitState(UNIT_STATE_CASTING))
+            return;
+
         DoMeleeAttackIfReady();
     }
 
@@ -210,7 +219,15 @@ public:
 
     void Reset() override
     {
-        /// TODO: Fill this function
+        events.Reset();
+    }
+
+    void JustEngagedWith(Unit* who) override
+    {
+        events.Reset();
+        events.ScheduleEvent(1, 2s, 10s);
+        events.ScheduleEvent(2, 2s, 10s);
+        DoCastSelf(292266); // avenging wrath
     }
 
     void UpdateAI(uint32 diff) override
@@ -222,10 +239,22 @@ public:
 
         events.Update(diff);
 
+        if (me->HasUnitState(UNIT_STATE_CASTING))
+            return;
+
         if (uint32 eventId = events.ExecuteEvent())
         {
             switch (eventId)
             {
+                case 1:
+                    DoCastVictim(267801);
+                    events.Repeat(10s, 20s);
+                    break;
+                case 2:
+                    DoCastVictim(296684);
+                    events.Repeat(10s, 20s);
+                    break;
+                    
             }
         }
         DoMeleeAttackIfReady();
@@ -248,7 +277,10 @@ public:
 struct npc_betzalel_700705 : public ScriptedAI
 {
 public:
-    npc_betzalel_700705(Creature* creature) : ScriptedAI(creature) { }
+    npc_betzalel_700705(Creature* creature) : ScriptedAI(creature)
+    {
+        ApplyAllImmunities(true);
+    }
 
     void InitializeAI() override
     {
@@ -374,7 +406,10 @@ public:
 struct npc_ju_won_brightdraft_700706 : public ScriptedAI
 {
 public:
-    npc_ju_won_brightdraft_700706(Creature* creature) : ScriptedAI(creature) { }
+    npc_ju_won_brightdraft_700706(Creature* creature) : ScriptedAI(creature)
+    {
+        ApplyAllImmunities(true);
+    }
 
     enum eSpells
     {
@@ -454,7 +489,10 @@ public:
 struct npc_yin_li_loudlight_700707 : public ScriptedAI
 {
 public:
-    npc_yin_li_loudlight_700707(Creature* creature) : ScriptedAI(creature) { }
+    npc_yin_li_loudlight_700707(Creature* creature) : ScriptedAI(creature)
+    {
+        ApplyAllImmunities(true);
+    }
 
     enum eSpells
     {
@@ -525,7 +563,10 @@ public:
 struct npc_zaphiel_700708 : public ScriptedAI
 {
 public:
-    npc_zaphiel_700708(Creature* creature) : ScriptedAI(creature) { }
+    npc_zaphiel_700708(Creature* creature) : ScriptedAI(creature)
+    {
+        ApplyAllImmunities(true);
+    }
     
     enum eSpells
     {

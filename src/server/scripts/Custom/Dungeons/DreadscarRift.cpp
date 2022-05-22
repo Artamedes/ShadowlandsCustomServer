@@ -1845,7 +1845,33 @@ public:
     TaskScheduler scheduler;
     EventMap events;
 };
+// 800062 - npc_ruby_necklace_800062
+struct npc_ruby_necklace_800062 : public ScriptedAI
+{
+public:
+    npc_ruby_necklace_800062(Creature* creature) : ScriptedAI(creature) { }
 
+    bool OnGossipHello(Player* player) override
+    {
+        CloseGossipMenuFor(player);
+        player->KilledMonsterCredit(me->GetEntry(), me->GetGUID());
+        me->UpdateObjectVisibility();
+        return true;
+    }
+
+    bool CanSeeOrDetect(WorldObject const* who) const override
+    {
+        if (who->IsPlayer())
+        {
+            auto player = who->ToPlayer();
+            auto questStatus = player->GetQuestStatus(700102);
+            if (questStatus == QUEST_STATUS_INCOMPLETE)
+                return true;
+        }
+
+        return false;
+    }
+};
 
 void AddSC_DreadscarRift()
 {
@@ -1878,10 +1904,12 @@ void AddSC_DreadscarRift()
     RegisterCreatureAI(npc_anivia_703006);
     RegisterCreatureAI(npc_demonfly_acidmaw_703023);
     RegisterCreatureAI(npc_fel_conduit_703027);
+    RegisterCreatureAI(npc_portal_to_goroth_703028);
+    RegisterCreatureAI(npc_ruby_necklace_800062);
+
     RegisterSpellScript(spell_destroying_369260);
     RegisterSpellScript(spell_362864_echoes_of_andorhal);
     RegisterSpellScript(spell_demonic_crash);
-    RegisterCreatureAI(npc_portal_to_goroth_703028);
 }
 
 // UPDATE creature_template set ScriptName = 'npc_adageor_703000' WHERE entry = 703000;

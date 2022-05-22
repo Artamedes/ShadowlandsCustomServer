@@ -481,10 +481,10 @@ enum PlayerFlags
     PLAYER_FLAGS_LOW_LEVEL_RAID_ENABLED = 0x00010000,       // pre-3.0.3 PLAYER_FLAGS_SANCTUARY flag for player entered sanctuary
     PLAYER_FLAGS_TAXI_BENCHMARK         = 0x00020000,       // taxi benchmark mode (on/off) (2.0.1)
     PLAYER_FLAGS_PVP_TIMER              = 0x00040000,       // 3.0.2, pvp timer active (after you disable pvp manually)
-    PLAYER_FLAGS_UBER                   = 0x00080000,
+    PLAYER_FLAGS_COMMENTATOR            = 0x00080000,
     PLAYER_FLAGS_UNK20                  = 0x00100000,
     PLAYER_FLAGS_UNK21                  = 0x00200000,
-    PLAYER_FLAGS_COMMENTATOR2           = 0x00400000,
+    PLAYER_FLAGS_COMMENTATOR_UBER       = 0x00400000,
     PLAYER_FLAGS_HIDE_ACCOUNT_ACHIEVEMENTS = 0x00800000,    // do not send account achievments in inspect packets
     PLAYER_FLAGS_PET_BATTLES_UNLOCKED   = 0x01000000,       // enables pet battles
     PLAYER_FLAGS_NO_XP_GAIN             = 0x02000000,
@@ -2121,6 +2121,13 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         std::unordered_map<ObjectGuid, ObjectGuid> const& GetAELootView() const { return m_AELootView; }
 
         void RemovedInsignia(Player* looterPlr);
+
+        bool CanSwitch() const;
+        bool IsInWorgenForm() const { return HasAuraType(SPELL_AURA_WORGEN_ALTERED_FORM); }
+        void SwitchToHumanForm() { RemoveAurasByType(SPELL_AURA_WORGEN_ALTERED_FORM); }
+
+        void SwitchToWorgenForm() { CastSpell(this, 97709, true); }
+        void SwitchForm();
 
         WorldSession* GetSession() const { return m_session; }
 

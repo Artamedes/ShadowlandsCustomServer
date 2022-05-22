@@ -790,18 +790,23 @@ void CharacterDatabaseConnection::DoPrepareStatements()
 
     PrepareStatement(CHAR_SEL_COVENANT_COLLECTIONS, "SELECT EntryID, Rank FROM character_covenant_collections WHERE guid = ?", CONNECTION_ASYNC);
     PrepareStatement(CHAR_REP_COVENANT_COLLECTIONS, "REPLACE INTO character_covenant_collections (guid, EntryID, Rank) VALUES (?, ?, ?)", CONNECTION_ASYNC);
+    PrepareStatement(CHAR_DEL_COVENANT_COLLECTIONS, "DELETE FROM character_covenant_collections WHERE guid = ?", CONNECTION_ASYNC);
 
     PrepareStatement(CHAR_SEL_COVENANT_CONDUITS, "SELECT CovenantID, GarrTalentID, GarrTalentTreeID, Rank, Flags, ResearchStartTime, SoulbindConduitID, SoulbindConduitRank FROM character_covenant_conduits WHERE guid = ?", CONNECTION_ASYNC);
     PrepareStatement(CHAR_REP_COVENANT_CONDUITS, "REPLACE INTO character_covenant_conduits (guid, CovenantID, GarrTalentID, GarrTalentTreeID, Rank, Flags, ResearchStartTime, SoulbindConduitID, SoulbindConduitRank) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", CONNECTION_ASYNC);
+    PrepareStatement(CHAR_DEL_COVENANT_CONDUITS, "DELETE FROM character_covenant_conduits WHERE guid = ?", CONNECTION_ASYNC);
 
     PrepareStatement(CHAR_SEL_COVENANT, "SELECT Covenant, Renown, Anima, Souls FROM character_covenant WHERE guid = ?", CONNECTION_ASYNC);
     PrepareStatement(CHAR_REP_COVENANT, "REPLACE INTO character_covenant (guid, Covenant, Renown, Anima, Souls) VALUES (?, ?, ?, ?, ?)", CONNECTION_ASYNC);
+    PrepareStatement(CHAR_DEL_COVENANT, "DELETE FROM character_covenant WHERE guid = ?", CONNECTION_ASYNC);
 
     PrepareStatement(CHAR_SEL_COVENANT_SOULBIND, "SELECT Covenant, SpecId, Soulbind FROM character_covenant_soulbinds WHERE guid = ?", CONNECTION_ASYNC);
     PrepareStatement(CHAR_REP_COVENANT_SOULBIND, "REPLACE INTO character_covenant_soulbinds (guid, Covenant, SpecId, Soulbind) VALUES (?, ?, ?, ?)", CONNECTION_ASYNC);
+    PrepareStatement(CHAR_DEL_COVENANT_SOULBIND, "DELETE FROM character_covenant_soulbinds WHERE guid = ?", CONNECTION_ASYNC);
 
     PrepareStatement(CHAR_SEL_COVENANT_CLAIMED_RENOWN_REWARDS, "SELECT Covenant, ClaimedRewards FROM character_covenant_claimed_renown_rewards WHERE guid = ?", CONNECTION_ASYNC);
     PrepareStatement(CHAR_REP_COVENANT_CLAIMED_RENOWN_REWARDS, "REPLACE INTO character_covenant_claimed_renown_rewards (guid, Covenant, ClaimedRewards) VALUES (?, ?, ?)", CONNECTION_ASYNC);
+    PrepareStatement(CHAR_DEL_COVENANT_CLAIMED_RENOWN_REWARDS, "DELETE FROM character_covenant_claimed_renown_rewards WHERE guid = ?", CONNECTION_ASYNC);
 
     // Challenge
     PrepareStatement(CHAR_SEL_CHALLENGE_KEY, "SELECT ItemID, ID, Level, Affix, Affix1, Affix2, Affix3, KeyIsCharded, timeReset, InstanceID FROM challenge_key WHERE guid = ?", CONNECTION_ASYNC);

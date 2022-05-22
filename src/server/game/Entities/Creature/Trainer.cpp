@@ -151,19 +151,19 @@ namespace Trainer
         if (state != SpellState::Available)
             return false;
 
-        SpellInfo const* trainerSpellInfo = sSpellMgr->AssertSpellInfo(trainerSpell->SpellId, DIFFICULTY_NONE);
-        if (trainerSpellInfo->IsPrimaryProfessionFirstRank() && !player->GetFreePrimaryProfessionPoints())
-            return false;
-
-        for (SpellEffectInfo const& effect : trainerSpellInfo->GetEffects())
-        {
-            if (!effect.IsEffect(SPELL_EFFECT_LEARN_SPELL))
-                continue;
-
-            SpellInfo const* learnedSpellInfo = sSpellMgr->GetSpellInfo(effect.TriggerSpell, DIFFICULTY_NONE);
-            if (learnedSpellInfo && learnedSpellInfo->IsPrimaryProfessionFirstRank() && !player->GetFreePrimaryProfessionPoints())
-                return false;
-        }
+        // SpellInfo const* trainerSpellInfo = sSpellMgr->AssertSpellInfo(trainerSpell->SpellId, DIFFICULTY_NONE);
+        // if (trainerSpellInfo->IsPrimaryProfessionFirstRank() && !player->GetFreePrimaryProfessionPoints())
+        //     return false;
+        //
+        // for (SpellEffectInfo const& effect : trainerSpellInfo->GetEffects())
+        // {
+        //     if (!effect.IsEffect(SPELL_EFFECT_LEARN_SPELL))
+        //         continue;
+        //
+        //     SpellInfo const* learnedSpellInfo = sSpellMgr->GetSpellInfo(effect.TriggerSpell, DIFFICULTY_NONE);
+        //     if (learnedSpellInfo && learnedSpellInfo->IsPrimaryProfessionFirstRank() && !player->GetFreePrimaryProfessionPoints())
+        //         return false;
+        // }
 
         return true;
     }

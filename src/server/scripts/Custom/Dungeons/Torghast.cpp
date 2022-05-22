@@ -16,37 +16,48 @@ struct npc_thrall_700800 : public ScriptedAI
 public:
     npc_thrall_700800(Creature* creature) : ScriptedAI(creature) { }
 
-    void InitializeAI() override
+    bool OnGossipHello(Player* player) override
     {
-        /// TODO: Fill this function
-    }
-
-    void Reset() override
-    {
-        /// TODO: Fill this function
-    }
-
-    void UpdateAI(uint32 diff) override
-    {
-        scheduler.Update(diff);
-
-        if (!UpdateVictim())
-            return;
-
-        events.Update(diff);
-
-        if (uint32 eventId = events.ExecuteEvent())
+        if (player->GetQuestStatus(700031) == QUEST_STATUS_COMPLETE)
         {
-            switch (eventId)
+            player->PlayerTalkClass->SendQuestGiverOfferReward(sObjectMgr->GetQuestTemplate(700031), me->GetGUID(), true);
+            return true;
+        }
+
+        for (int i = 0; i < 5; i++)
+        {
+            if (player->GetQuestStatus(700031 + i) == QUEST_STATUS_REWARDED && player->GetQuestStatus(700032 + i) == QUEST_STATUS_NONE)
             {
+                player->PlayerTalkClass->SendQuestGiverQuestDetails(sObjectMgr->GetQuestTemplate(700032 + i), me->GetGUID(), false, false);
+                player->AddQuestAndCheckCompletion(sObjectMgr->GetQuestTemplate(700032 + i), me);
+                return true;
             }
         }
-        DoMeleeAttackIfReady();
+
+        ClearGossipMenuFor(player);
+        player->PrepareQuestMenu(me->GetGUID());
+        SendGossipMenuFor(player, me->GetEntry(), me);
+        return true;
     }
 
+    bool CanSeeOrDetect(WorldObject const* who) const override
+    {
+        if (who->IsPlayer())
+        {
+            auto player = who->ToPlayer();
+            auto status = player->GetQuestStatus(700036); // 700036 finish the fight
+            switch (status)
+            {
+                case QUEST_STATUS_COMPLETE:
+                case QUEST_STATUS_REWARDED:
+                    return false;
+                default:
+                    return true;
+            }
+        }
 
-    TaskScheduler scheduler;
-    EventMap events;
+        return true;
+    }
 };
 
 // 700812 - npc_sir_duke_iro_700812
@@ -453,7 +464,10 @@ public:
 struct npc_maw_guardian_700815 : public ScriptedAI
 {
 public:
-    npc_maw_guardian_700815(Creature* creature) : ScriptedAI(creature) { }
+    npc_maw_guardian_700815(Creature* creature) : ScriptedAI(creature)
+    {
+        ApplyAllImmunities(true);
+    }
 
     void InitializeAI() override
     {
@@ -529,7 +543,10 @@ const Position PositionPortalFour = { 10709.7f, -4733.37f, -0.0569076f, 3.16669f
 struct npc_urgoz_700816 : public ScriptedAI
 {
 public:
-    npc_urgoz_700816(Creature* creature) : ScriptedAI(creature) { }
+    npc_urgoz_700816(Creature* creature) : ScriptedAI(creature)
+    {
+        ApplyAllImmunities(true);
+    }
 
     void InitializeAI() override
     {
@@ -691,29 +708,20 @@ public:
                                             Talk(7); // this wont take long
                                             DoCast(365837); // channel spell
 
-                                            scheduler.Schedule(5s, [this](TaskContext context)
+                                            scheduler.Schedule(10s, [this](TaskContext context)
                                                 {
-                                                    if (auto instance = me->GetInstanceScript())
+                                                    me->GetMap()->DoOnPlayers([](Player* player)
                                                     {
-                                                        auto const& players = instance->instance->GetPlayers();
-                                                        for (auto const& ref : players)
+                                                        if (player->GetQuestStatus(700034) == QUEST_STATUS_INCOMPLETE)
                                                         {
-                                                            auto player = ref.GetSource();
-                                                            if (player)
-                                                            {
-                                                                if (player->GetQuestStatus(700034) == QUEST_STATUS_INCOMPLETE)
-                                                                {
-                                                                    player->CompleteQuest(700034);
-                                                                    player->RewardQuest(sObjectMgr->GetQuestTemplate(700034), LootItemType::Item, 0, player);
-                                                                    if (player->GetQuestStatus(700035) == QUEST_STATUS_NONE)
-                                                                        player->AddQuestAndCheckCompletion(sObjectMgr->GetQuestTemplate(700035), player);
-                                                                    player->PlayerTalkClass->SendQuestGiverQuestDetails(sObjectMgr->GetQuestTemplate(700035), player->GetGUID(), true, true);
-                                                                }
-
-                                                                //player->RemoveAurasDueToSpell(139844);
-                                                            }
+                                                            player->CompleteQuest(700034);
+                                                            player->RewardQuest(sObjectMgr->GetQuestTemplate(700034), LootItemType::Item, 0, player);
+                                                            if (player->GetQuestStatus(700035) == QUEST_STATUS_NONE)
+                                                                player->AddQuestAndCheckCompletion(sObjectMgr->GetQuestTemplate(700035), player);
+                                                            player->PlayerTalkClass->SendQuestGiverQuestDetails(sObjectMgr->GetQuestTemplate(700035), player->GetGUID(), true, true);
+                                                            player->RemoveAurasDueToSpell(139844);
                                                         }
-                                                    }
+                                                    });
                                                     Talk(8); // What is this??
                                                     me->RemoveUnitFlag(UNIT_FLAG_NON_ATTACKABLE);
                                                     me->SetReactState(REACT_AGGRESSIVE);
@@ -773,7 +781,10 @@ const std::vector<uint32> ElitesToSpawn = {
 struct npc_dezgor_700817 : public ScriptedAI
 {
 public:
-    npc_dezgor_700817(Creature* creature) : ScriptedAI(creature), summons(creature) { }
+    npc_dezgor_700817(Creature* creature) : ScriptedAI(creature), summons(creature)
+    {
+        ApplyAllImmunities(true);
+    }
 
     void InitializeAI() override
     {
@@ -795,11 +806,7 @@ public:
         totalSummons++;
         summ->SetReactState(REACT_AGGRESSIVE);
 
-        if (auto victim = SelectVictimCrap(summ))
-        {
-            if (victim != summ->GetVictim())
-                summ->AI()->AttackStart(victim);
-        }
+        DoZoneInCombat(summ);
     }
 
     void SummonedCreatureDies(Creature* summ, Unit* killer) override
@@ -844,7 +851,7 @@ public:
                             scheduler.Schedule(10s, [this](TaskContext context)
                                 {
                                     DoSummon(Trinity::Containers::SelectRandomContainerElement(ElitesToSpawn), PositionPortalOne);
-                                    DoSummon(Trinity::Containers::SelectRandomContainerElement(ElitesToSpawn), PositionPortalTwo);
+                                    //DoSummon(Trinity::Containers::SelectRandomContainerElement(ElitesToSpawn), PositionPortalTwo);
                                     DoSummon(Trinity::Containers::SelectRandomContainerElement(ElitesToSpawn), PositionPortalThree);
                                 });
                         });
@@ -856,7 +863,7 @@ public:
                         urgoz->AI()->Talk(3);
                     scheduler.Schedule(1s, [this](TaskContext context)
                         {
-                            for (int i = 0; i < 3; ++i)
+                            for (int i = 0; i < 2; ++i)
                             {
                                 scheduler.Schedule(250ms * i, [this](TaskContext context)
                                     {
@@ -871,27 +878,27 @@ public:
                                     });
 
                             }
-                            for (int i = 0; i < 2; ++i)
-                            {
-                                scheduler.Schedule(250ms * i, [this](TaskContext context)
-                                    {
-                                        DoSummon(Trinity::Containers::SelectRandomContainerElement(TrashToSpawn), PositionPortalThree);
-                                    });
-
-                            }
-                            for (int i = 0; i < 2; ++i)
-                            {
-                                scheduler.Schedule(250ms * i, [this](TaskContext context)
-                                    {
-                                        DoSummon(Trinity::Containers::SelectRandomContainerElement(TrashToSpawn), PositionPortalFour);
-                                    });
-
-                            }
+                            // for (int i = 0; i < 2; ++i)
+                            // {
+                            //     scheduler.Schedule(250ms * i, [this](TaskContext context)
+                            //         {
+                            //             DoSummon(Trinity::Containers::SelectRandomContainerElement(TrashToSpawn), PositionPortalThree);
+                            //         });
+                            // 
+                            // }
+                            // for (int i = 0; i < 2; ++i)
+                            // {
+                            //     scheduler.Schedule(250ms * i, [this](TaskContext context)
+                            //         {
+                            //             DoSummon(Trinity::Containers::SelectRandomContainerElement(TrashToSpawn), PositionPortalFour);
+                            //         });
+                            // 
+                            // }
 
                             scheduler.Schedule(10s, [this](TaskContext context)
                                 {
                                     DoSummon(Trinity::Containers::SelectRandomContainerElement(ElitesToSpawn), PositionPortalOne);
-                                    DoSummon(Trinity::Containers::SelectRandomContainerElement(ElitesToSpawn), PositionPortalTwo);
+                                    //DoSummon(Trinity::Containers::SelectRandomContainerElement(ElitesToSpawn), PositionPortalTwo);
                                     DoSummon(Trinity::Containers::SelectRandomContainerElement(ElitesToSpawn), PositionPortalThree);
                                     DoSummon(Trinity::Containers::SelectRandomContainerElement(ElitesToSpawn), PositionPortalFour);
                                 });
@@ -1126,17 +1133,24 @@ public:
 
             unit->ToPlayer()->KilledMonsterCredit(me->GetEntry(), me->GetGUID());
             unit->GetScheduler().Schedule(2s, [unit](TaskContext context)
+            {
+                unit->StopMoving();
+
+                unit->GetScheduler().Schedule(100ms, [unit](TaskContext context)
                 {
-                    unit->StopMoving();
+                    if (unit->ToPlayer()->GetQuestStatus(700032) == QUEST_STATUS_COMPLETE)
+                    {
+                        unit->ToPlayer()->RewardQuest(sObjectMgr->GetQuestTemplate(700032), LootItemType::Item, 0, unit);
+                        unit->ToPlayer()->AddQuestAndCheckCompletion(sObjectMgr->GetQuestTemplate(700033), unit);
+                        unit->ToPlayer()->PlayerTalkClass->SendQuestGiverQuestDetails(sObjectMgr->GetQuestTemplate(700033), unit->GetGUID(), true, true);
+                    }
 
-                    unit->GetScheduler().Schedule(100ms, [unit](TaskContext context)
-                        {
-                            GameTele const* tele = sObjectMgr->GetGameTele(1928);
-                            if (tele)
-                                unit->ToPlayer()->TeleportTo(tele->mapId, tele->position_x, tele->position_y, tele->position_z, tele->orientation);
-                        });
-
+                    GameTele const* tele = sObjectMgr->GetGameTele(1928);
+                    if (tele)
+                        unit->ToPlayer()->TeleportTo(tele->mapId, tele->position_x, tele->position_y, tele->position_z, tele->orientation);
                 });
+
+            });
 
             SetCheckpointId(me, 1);
         }
@@ -1178,9 +1192,9 @@ public:
         std::list<Unit*> players;
         me->GetFriendlyUnitListInRange(players, 5.0f, true);
         players.remove_if([&](Unit* unit)
-            {
-                return !unit->IsPlayer() || unit->IsInCombat() || unit->ToPlayer()->IsBeingTeleported() || !unit->movespline || !unit->movespline->Finalized();
-            });
+        {
+            return !unit->IsPlayer() || unit->IsInCombat() || unit->ToPlayer()->IsBeingTeleported() || !unit->movespline || !unit->movespline->Finalized();
+        });
 
         for (auto unit : players)
         {
@@ -1189,17 +1203,24 @@ public:
 
             unit->ToPlayer()->KilledMonsterCredit(me->GetEntry(), me->GetGUID());
             unit->GetScheduler().Schedule(2s, [unit](TaskContext context)
+            {
+                if (unit->ToPlayer()->GetQuestStatus(700033) == QUEST_STATUS_COMPLETE)
                 {
-                    unit->StopMoving();
+                    unit->ToPlayer()->RewardQuest(sObjectMgr->GetQuestTemplate(700033), LootItemType::Item, 0, unit);
+                    unit->ToPlayer()->AddQuestAndCheckCompletion(sObjectMgr->GetQuestTemplate(700034), unit);
+                    unit->ToPlayer()->PlayerTalkClass->SendQuestGiverQuestDetails(sObjectMgr->GetQuestTemplate(700034), unit->GetGUID(), true, true);
+                }
 
-                    unit->GetScheduler().Schedule(100ms, [unit](TaskContext context)
-                        {
-                            GameTele const* tele = sObjectMgr->GetGameTele(1929);
-                            if (tele)
-                                unit->ToPlayer()->TeleportTo(tele->mapId, tele->position_x, tele->position_y, tele->position_z, tele->orientation);
-                        });
+                unit->StopMoving();
 
+                unit->GetScheduler().Schedule(100ms, [unit](TaskContext context)
+                {
+                    GameTele const* tele = sObjectMgr->GetGameTele(1929);
+                    if (tele)
+                        unit->ToPlayer()->TeleportTo(tele->mapId, tele->position_x, tele->position_y, tele->position_z, tele->orientation);
                 });
+
+            });
             SetCheckpointId(me, 2);
         }
     }
@@ -1238,9 +1259,9 @@ public:
         std::list<Unit*> players;
         me->GetFriendlyUnitListInRange(players, 5.0f, true);
         players.remove_if([&](Unit* unit)
-            {
-                return !unit->IsPlayer() || unit->IsInCombat() || unit->ToPlayer()->IsBeingTeleported() || !unit->movespline || !unit->movespline->Finalized();
-            });
+        {
+            return !unit->IsPlayer() || unit->IsInCombat() || unit->ToPlayer()->IsBeingTeleported() || !unit->movespline || !unit->movespline->Finalized();
+        });
 
         for (auto unit : players)
         {
@@ -1249,17 +1270,24 @@ public:
 
             unit->ToPlayer()->KilledMonsterCredit(me->GetEntry(), me->GetGUID());
             unit->GetScheduler().Schedule(2s, [unit](TaskContext context)
+            {
+                if (unit->ToPlayer()->GetQuestStatus(700035) == QUEST_STATUS_COMPLETE)
                 {
-                    unit->StopMoving();
+                    unit->ToPlayer()->RewardQuest(sObjectMgr->GetQuestTemplate(700035), LootItemType::Item, 0, unit);
+                    unit->ToPlayer()->AddQuestAndCheckCompletion(sObjectMgr->GetQuestTemplate(700036), unit);
+                    unit->ToPlayer()->PlayerTalkClass->SendQuestGiverQuestDetails(sObjectMgr->GetQuestTemplate(700036), unit->GetGUID(), true, true);
+                }
 
-                    unit->GetScheduler().Schedule(100ms, [unit](TaskContext context)
-                        {
-                            GameTele const* tele = sObjectMgr->GetGameTele(1935);
-                            if (tele)
-                                unit->ToPlayer()->TeleportTo(tele->mapId, tele->position_x, tele->position_y, tele->position_z, tele->orientation);
-                        });
+                unit->StopMoving();
 
+                unit->GetScheduler().Schedule(100ms, [unit](TaskContext context)
+                {
+                    GameTele const* tele = sObjectMgr->GetGameTele(1935);
+                    if (tele)
+                        unit->ToPlayer()->TeleportTo(tele->mapId, tele->position_x, tele->position_y, tele->position_z, tele->orientation);
                 });
+
+            });
         }
     }
 };

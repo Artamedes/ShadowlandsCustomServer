@@ -210,7 +210,7 @@ namespace WorldPackets
             uint32 Mapid = 0;
         };
 
-        class BattlefieldStatusQueued final : public ServerPacket
+        class TC_GAME_API BattlefieldStatusQueued final : public ServerPacket
         {
         public:
             BattlefieldStatusQueued() : ServerPacket(SMSG_BATTLEFIELD_STATUS_QUEUED, 4 + sizeof(BattlefieldStatusHeader) + 1 + 1 + 1 + 4) { }

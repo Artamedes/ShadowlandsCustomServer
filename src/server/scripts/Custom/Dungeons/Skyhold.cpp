@@ -21,6 +21,16 @@ class instance_skyhold : public InstanceMapScript
                     Quad = { -0.0f, -0.0f, -0.696618f, -0.717442f };
                 }
 
+                void Create() override
+                {
+
+                }
+
+                void Load(char const* data) override
+                {
+
+                }
+
                 void OnCompletedCriteriaTree(CriteriaTree const* tree) override
                 {
                     if (InstanceScenario* instanceScenario = instance->GetInstanceScenario())
@@ -183,7 +193,10 @@ struct npc_skyhold_sylvanas : public ScriptedAI
 struct npc_odyn_700312 : public ScriptedAI
 {
 public:
-    npc_odyn_700312(Creature* creature) : ScriptedAI(creature) { }
+    npc_odyn_700312(Creature* creature) : ScriptedAI(creature)
+    {
+        ApplyAllImmunities(true);
+    }
 
     enum Talks
     {
@@ -248,7 +261,7 @@ public:
             {
                 corpseTimer = 0;
                 if (me->IsAllLooted())
-                    me->DespawnOrUnsummon();
+                    me->DespawnOrUnsummon(0s, 999999s);
             }
         }
 
@@ -340,40 +353,47 @@ struct npc_dark_ascended_corrus : public ScriptedAI
             me->SetUnitFlag(UNIT_FLAG_NON_ATTACKABLE);
             me->SetReactState(REACT_PASSIVE);
 
-            scheduler.Schedule(100ms, [this](TaskContext context)
-                {
-                    if (auto player = me->SelectNearestPlayer(50.0f))
-                        Talk(0, player);
+            me->CastSpell(me, 332284);
 
-                    DoCast(334732);
+            scheduler.Schedule(1s, [this](TaskContext context)
+            {
+                me->GetMap()->DoOnPlayers([this](Player* player)
+                {
+                    Talk(0, player);
                 });
+
+                me->CastSpell(me, 336193);
+            });
 
             scheduler.Schedule(5s, [this](TaskContext context)
+            {
+                if (auto chest = me->FindNearestGameObject(700000, 30.0f))
                 {
-                    if (auto chest = me->FindNearestGameObject(700000, 30.0f))
-                    {
-                        chest->DespawnOrUnsummon(5s);
-                    }
-                    Talk(1);
-                });
+                    chest->DespawnOrUnsummon(5s);
+                }
+                Talk(1);
+            });
 
             scheduler.Schedule(8s, [this](TaskContext context)
-                {
-                    Talk(2);
-                });
+            {
+                Talk(2);
+            });
 
             scheduler.Schedule(10s, [this](TaskContext context)
-                {
-                    me->RemoveAurasDueToSpell(334732);
-                    me->RemoveUnitFlag(UNIT_FLAG_NON_ATTACKABLE);
-                    me->SetReactState(REACT_AGGRESSIVE);
-                });
+            {
+                me->RemoveAurasDueToSpell(336193);
+                me->RemoveAurasDueToSpell(332284);
+                me->RemoveUnitFlag(UNIT_FLAG_NON_ATTACKABLE);
+                me->SetReactState(REACT_AGGRESSIVE);
+                DoZoneInCombat();
+            });
         }
 
         void JustEngagedWith(Unit* who) override
         {
             Talk(3);
 
+            events.Reset();
             events.ScheduleEvent(1, 10s);
             events.ScheduleEvent(2, 15s, 20s);
             events.ScheduleEvent(3, 15s, 20s);
@@ -383,6 +403,7 @@ struct npc_dark_ascended_corrus : public ScriptedAI
         void JustDied(Unit* who) override
         {
             Talk(4);
+            me->GetMotionMaster()->MoveFall();
             if (auto map = me->GetMap())
             {
                 map->DoOnPlayers([](Player* player)
@@ -530,7 +551,10 @@ struct npc_go_to_herald_of_odyn : public ScriptedAI
 struct npc_herald_of_odyn : public ScriptedAI
 {
     public:
-        npc_herald_of_odyn(Creature* creature) : ScriptedAI(creature) { }
+        npc_herald_of_odyn(Creature* creature) : ScriptedAI(creature)
+        {
+            ApplyAllImmunities(true);
+        }
 
         void Reset() override
         {
@@ -589,7 +613,10 @@ struct npc_herald_of_odyn : public ScriptedAI
 struct npc_god_king_skovald : public ScriptedAI
 {
     public:
-        npc_god_king_skovald(Creature* creature) : ScriptedAI(creature) { }
+        npc_god_king_skovald(Creature* creature) : ScriptedAI(creature)
+        {
+            ApplyAllImmunities(true);
+        }
 
         void Reset() override
         {

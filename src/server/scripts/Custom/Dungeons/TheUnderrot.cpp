@@ -723,6 +723,13 @@ public:
         events.ScheduleEvent(4, 10s, 20s);
     }
 
+    void JustDied(Unit* killer) override
+    {
+        BossAI::JustDied(killer);
+        if (instance)
+            instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
+    }
+
     void UpdateAI(uint32 diff) override
     {
         scheduler.Update(diff);
@@ -1593,11 +1600,40 @@ public:
         }
     }
 };
+// 800061 - npc_gold_token_800061
+struct npc_gold_token_800061 : public ScriptedAI
+{
+public:
+    npc_gold_token_800061(Creature* creature) : ScriptedAI(creature) { }
+
+    bool OnGossipHello(Player* player) override
+    {
+        CloseGossipMenuFor(player);
+        player->KilledMonsterCredit(me->GetEntry(), me->GetGUID());
+        me->UpdateObjectVisibility();
+        return true;
+    }
+
+    bool CanSeeOrDetect(WorldObject const* who) const override
+    {
+        if (who->IsPlayer())
+        {
+            auto player = who->ToPlayer();
+            auto questStatus = player->GetQuestStatus(700101);
+            if (questStatus == QUEST_STATUS_INCOMPLETE)
+                return true;
+        }
+
+        return false;
+    }
+};
+
 
 
 void AddSC_TheUnderrot()
 {
     RegisterInstanceScript(instance_the_underrot, 1841);
+
     RegisterCreatureAI(npc_mister_doctor_701000);
     RegisterCreatureAI(npc_mister_slime_701001);
     RegisterCreatureAI(npc_plague_tentacle_701002);
@@ -1619,9 +1655,12 @@ void AddSC_TheUnderrot()
     RegisterCreatureAI(npc_fungo_warrior_701018);
     RegisterCreatureAI(npc_sporeling_701019);
     RegisterCreatureAI(npc_plague_doctor_701020);
+    RegisterCreatureAI(npc_scrappie_800055);
+    RegisterCreatureAI(npc_gold_token_800061);
+
+    RegisterQuestAI(quest_scrappie);
+
     RegisterSpellScript(spell_beckon_slime_underrot);
     RegisterSpellScript(spell_underrot_gateway);
     RegisterSpellScript(spell_361487_cleansing);
-    RegisterCreatureAI(npc_scrappie_800055);
-    RegisterQuestAI(quest_scrappie);
 }

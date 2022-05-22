@@ -655,15 +655,15 @@ public:
             }
 
             auto stmt = WorldDatabase.GetPreparedStatement(WORLD_REP_CREATURE_QUESTSTARTER);
-            stmt->setUInt32(0, data->ID);
-            stmt->setUInt32(1, data->QuestStarter);
+            stmt->setUInt32(0, data->QuestStarter);
+            stmt->setUInt32(1, data->ID);
             WorldDatabase.Query(stmt);
 
             //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
             stmt = WorldDatabase.GetPreparedStatement(WORLD_REP_CREATURE_QUESTENDER);
-            stmt->setUInt32(0, data->ID);
-            stmt->setUInt32(1, data->QuestEnder);
+            stmt->setUInt32(0, data->QuestEnder);
+            stmt->setUInt32(1, data->ID);
             WorldDatabase.Query(stmt);
 
             //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -819,54 +819,54 @@ public:
                     }
                     case TextMenu:
                     {
-                        AddGossipItemFor(player, GossipOptionIcon::None, GetTextFromAny("LogTitle: ", data->LogTitle), SenderUpdateAction, LogTitle, "", 0, true, [this, player, &data](std::string arg)
+                        AddGossipItemFor(player, GossipOptionIcon::None, GetTextFromAny("LogTitle: ", data->LogTitle), SenderUpdateAction, LogTitle, "", 0, true, [this, player, data](std::string arg)
                         {
-                            data->LogTitle = arg;
+                            data->LogTitle = arg.c_str();
                             OnGossipSelect(player, 62767263, SenderMenu, TextMenu);
                         });
                         AddGossipItemFor(player, GossipOptionIcon::None, GetTextFromAny("LogDescription: ", data->LogDescription), SenderUpdateAction, LogDescription, "", 0, true, [this, player, data](std::string arg)
                         {
-                            data->LogDescription = arg;
+                            data->LogDescription = arg.c_str();
                             OnGossipSelect(player, 62767263, SenderMenu, TextMenu);
                         });
                         AddGossipItemFor(player, GossipOptionIcon::None, GetTextFromAny("QuestDescription: ", data->QuestDescription), SenderUpdateAction, QuestDescription, "", 0, true, [this, player, data](std::string arg)
                         {
-                            data->QuestDescription = arg;
+                            data->QuestDescription = arg.c_str();
                             OnGossipSelect(player, 62767263, SenderMenu, TextMenu);
                         });
                         AddGossipItemFor(player, GossipOptionIcon::None, GetTextFromAny("AreaDescription: ", data->AreaDescription), SenderUpdateAction, AreaDescription, "", 0, true, [this, player, data](std::string arg)
                         {
-                            data->AreaDescription = arg;
+                            data->AreaDescription = arg.c_str();
                             OnGossipSelect(player, 62767263, SenderMenu, TextMenu);
                         });
                         AddGossipItemFor(player, GossipOptionIcon::None, GetTextFromAny("PortraitGiverText: ", data->PortraitGiverText), SenderUpdateAction, PortraitGiverText, "", 0, true, [this, player, data](std::string arg)
                         {
-                            data->PortraitGiverText = arg;
+                            data->PortraitGiverText = arg.c_str();
                             OnGossipSelect(player, 62767263, SenderMenu, TextMenu);
                         });
                         AddGossipItemFor(player, GossipOptionIcon::None, GetTextFromAny("PortraitGiverName: ", data->PortraitGiverName), SenderUpdateAction, PortraitGiverName, "", 0, true, [this, player, data](std::string arg)
                         {
-                            data->PortraitGiverName = arg;
+                            data->PortraitGiverName = arg.c_str();
                             OnGossipSelect(player, 62767263, SenderMenu, TextMenu);
                         });
                         AddGossipItemFor(player, GossipOptionIcon::None, GetTextFromAny("PortraitTurnInText: ", data->PortraitTurnInText), SenderUpdateAction, PortraitTurnInText, "", 0, true, [this, player, data](std::string arg)
                         {
-                            data->PortraitTurnInText = arg;
+                            data->PortraitTurnInText = arg.c_str();
                             OnGossipSelect(player, 62767263, SenderMenu, TextMenu);
                         });
                         AddGossipItemFor(player, GossipOptionIcon::None, GetTextFromAny("PortraitTurnInName: ", data->PortraitTurnInName), SenderUpdateAction, PortraitTurnInName, "", 0, true, [this, player, data](std::string arg)
                         {
-                            data->PortraitTurnInName = arg;
+                            data->PortraitTurnInName = arg.c_str();
                             OnGossipSelect(player, 62767263, SenderMenu, TextMenu);
                         });
                         AddGossipItemFor(player, GossipOptionIcon::None, GetTextFromAny("QuestCompletionLog: ", data->QuestCompletionLog), SenderUpdateAction, QuestCompletionLog, "", 0, true, [this, player, data](std::string arg)
                         {
-                            data->QuestCompletionLog = arg;
+                            data->QuestCompletionLog = arg.c_str();
                             OnGossipSelect(player, 62767263, SenderMenu, TextMenu);
                         });
                         AddGossipItemFor(player, GossipOptionIcon::None, GetTextFromAny("RewardText: ", data->RewardText), 0, 0, "", 0, true, [this, player, data](std::string arg)
                         {
-                            data->RewardText = arg;
+                            data->RewardText = arg.c_str();
                             OnGossipSelect(player, 62767263, SenderMenu, TextMenu);
                         });
                         AddGossipItemFor(player, GossipOptionIcon::None, "Return", SenderMenu, MainMenu);

@@ -1001,6 +1001,16 @@ namespace WorldPackets
             void Read() override { }
         };
 
+        class CommentatorEnable final : public ClientPacket
+        {
+        public:
+            CommentatorEnable(WorldPacket&& packet) : ClientPacket(CMSG_COMMENTATOR_ENABLE, std::move(packet)) { }
+
+            void Read() override;
+
+            int32 Enable = 0;        ///< Offset 0x0000 Type _MJVTBL_INT32
+        };
+
         class TC_GAME_API SplashScreenShowLatest final : public ServerPacket
         {
         public:

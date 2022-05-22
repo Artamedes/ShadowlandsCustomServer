@@ -805,3 +805,8 @@ WorldPacket const* WorldPackets::Misc::DisplayToast::Write()
 
     return &_worldPacket;
 }
+
+void WorldPackets::Misc::CommentatorEnable::Read()
+{
+    _worldPacket >> Enable;
+}

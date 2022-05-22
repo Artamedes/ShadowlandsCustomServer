@@ -1893,6 +1893,7 @@ public:
             { "testpacket4",       HandleTest4Command,  rbac::RBAC_PERM_COMMAND_RELOAD_ALL_ITEM, Console::No },
             { "testpacket5",       HandleTest5Command,  rbac::RBAC_PERM_COMMAND_RELOAD_ALL_ITEM, Console::No },
             { "testpacket6",       HandleTest6Command,  rbac::RBAC_PERM_COMMAND_RELOAD_ALL_ITEM, Console::No },
+            { "commentator",       HandleCommentatorCommand, rbac::RBAC_PERM_COMMAND_GM, Console::No },
 
 #ifdef WIN32
             { "gpscopy", HandleGPSCopyCommand,  rbac::RBAC_PERM_COMMAND_RELOAD_ALL_ITEM, Console::No },
@@ -1901,6 +1902,33 @@ public:
         };
         return commandTable;
     }
+
+    static bool HandleCommentatorCommand(ChatHandler* handler, uint32 Action)
+    {
+        auto player = handler->GetPlayer();
+
+        // This opcode can be used in three ways:
+        // 0 - Request to turn commentator mode off
+        // 1 - Request to turn commentator mode on
+        // 2 - Request to toggle current commentator mode status
+        switch (Action)
+        {
+            case 0:
+                player->RemovePlayerFlag(PLAYER_FLAGS_COMMENTATOR | PLAYER_FLAGS_COMMENTATOR_UBER);
+                break;
+            case 1:
+                player->SetPlayerFlag(PLAYER_FLAGS_COMMENTATOR | PLAYER_FLAGS_COMMENTATOR_UBER);
+                break;
+            case 2:
+                player->ReplaceAllPlayerFlags(PLAYER_FLAGS_COMMENTATOR | PLAYER_FLAGS_COMMENTATOR_UBER);
+                break;
+            default:
+                TC_LOG_ERROR("network.opcode", "WorldSession::HandleCommentatorModeOpcode: player %d sent an invalid commentator mode action", player->GetGUID().GetCounter());
+                break;
+        }
+        return true;
+    }
+
     static bool HandleTest6Command(ChatHandler* handler, std::string Name)
     {
         auto selectedCreature = handler->getSelectedCreature();

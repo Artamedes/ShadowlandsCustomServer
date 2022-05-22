@@ -564,6 +564,7 @@ namespace WorldPackets
         class CloseInteraction;
         class ConversationLineStarted;
         class RequestLatestSplashScreen;
+        class CommentatorEnable;
     }
 
     namespace Movement
@@ -1935,6 +1936,7 @@ class TC_GAME_API WorldSession
         void HandleAzeriteEmpoweredItemSelectPower(WorldPackets::Azerite::AzeriteEmpoweredItemSelectPower& azeriteEmpoweredItemSelectPower);
 
         void HandleRequestLatestSplashScreen(WorldPackets::Misc::RequestLatestSplashScreen& requestLatestSplashScreen);
+        void HandleCommentatorEnable(WorldPackets::Misc::CommentatorEnable& commentatorEnable);
 
         union ConnectToKey
         {

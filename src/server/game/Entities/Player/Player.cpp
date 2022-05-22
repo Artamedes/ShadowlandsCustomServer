@@ -2842,7 +2842,7 @@ void Player::InitStatsForLevel(bool reapplyMods)
     SetUnitFlag2(UNIT_FLAG2_REGENERATE_POWER);// must be set
 
     // cleanup player flags (will be re-applied if need at aura load), to avoid have ghost flag without ghost aura, for example.
-    RemovePlayerFlag(PLAYER_FLAGS_AFK | PLAYER_FLAGS_DND | PLAYER_FLAGS_GM | PLAYER_FLAGS_GHOST);
+    RemovePlayerFlag(PLAYER_FLAGS_AFK | PLAYER_FLAGS_DND | PLAYER_FLAGS_GM | PLAYER_FLAGS_GHOST | PLAYER_FLAGS_COMMENTATOR | PLAYER_FLAGS_COMMENTATOR_UBER);
 
     RemoveVisFlag(UNIT_VIS_FLAGS_ALL);                 // one form stealth modified bytes
     RemovePvpFlag(UNIT_BYTE2_FLAG_FFA_PVP | UNIT_BYTE2_FLAG_SANCTUARY);
@@ -4428,6 +4428,34 @@ void Player::DeleteFromDB(ObjectGuid playerguid, uint32 accountId, bool updateRe
             stmt->setUInt64(0, guid);
             trans->Append(stmt);
 
+            stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHALLENGE_KEY);
+            stmt->setUInt64(0, guid);
+            trans->Append(stmt);
+
+            stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHALLENGE_OPLOTE_LOOT_BY_GUID);
+            stmt->setUInt64(0, guid);
+            trans->Append(stmt);
+
+            stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_COVENANT_COLLECTIONS);
+            stmt->setUInt64(0, guid);
+            trans->Append(stmt);
+
+            stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_COVENANT_CONDUITS);
+            stmt->setUInt64(0, guid);
+            trans->Append(stmt);
+
+            stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_COVENANT);
+            stmt->setUInt64(0, guid);
+            trans->Append(stmt);
+
+            stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_COVENANT_SOULBIND);
+            stmt->setUInt64(0, guid);
+            trans->Append(stmt);
+
+            stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_COVENANT_CLAIMED_RENOWN_REWARDS);
+            stmt->setUInt64(0, guid);
+            trans->Append(stmt);
+            
             stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHARACTER_FAVORITE_AUCTIONS_BY_CHAR);
             stmt->setUInt64(0, guid);
             trans->Append(stmt);
@@ -9082,6 +9110,29 @@ void Player::RemovedInsignia(Player* looterPlr)
     bones->loot.gold = GetLevel();
     bones->lootRecipient = looterPlr;
     looterPlr->SendLoot(bones->GetGUID(), LOOT_INSIGNIA);
+}
+
+bool Player::CanSwitch() const
+{
+    if (GetRace() != RACE_WORGEN)
+        return false;
+
+    // We only want to be able to switch if we have completed the quest "14375" or if the player is a Death knight
+    //if (GetQuestStatus(14375) != QUEST_STATUS_COMPLETE && GetClass() != CLASS_DEATH_KNIGHT)
+    //    return false;
+
+    return true;
+}
+
+void Player::SwitchForm()
+{
+    if (!CanSwitch())
+        return;
+
+    if (IsInWorgenForm())
+        SwitchToHumanForm();
+    else
+        SwitchToWorgenForm();
 }
 
 void Player::SendLootRelease(ObjectGuid guid) const
@@ -19246,7 +19297,7 @@ bool Player::isAllowedToLoot(const Creature* creature) const
         return false;
 
     Loot const* loot = (const_cast<Creature*>(creature)->GetLootFor(const_cast<Player*>(this)));
-    if (loot->isLooted()) // nothing to loot or everything looted.
+    if (loot->empty()) // nothing to loot or everything looted.
         return false;
     if (!loot->hasItemForAll() && !loot->hasItemFor(this)) // no loot in creature for this player
         return false;

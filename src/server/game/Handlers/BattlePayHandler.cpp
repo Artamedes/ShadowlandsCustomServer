@@ -593,7 +593,7 @@ void WorldSession::HandleBattlePayConfirmPurchaseResponse(WorldPackets::BattlePa
                 {
                     if (product->Type == 14)
                         GetCollectionMgr()->AddToy(product->Item, false, false);
-                    else if (product->Type == 14)
+                    else
                     {
                         // Add Item
                         if (_player)
