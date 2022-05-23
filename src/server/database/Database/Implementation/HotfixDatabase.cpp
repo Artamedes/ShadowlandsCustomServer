@@ -695,7 +695,7 @@ void HotfixDatabaseConnection::DoPrepareStatements()
         " FROM garr_talent WHERE (`VerifiedBuild` > 0) = ?", CONNECTION_SYNCH);
     PREPARE_MAX_ID_STMT(HOTFIX_SEL_GARR_TALENT, "SELECT MAX(ID) + 1 FROM garr_talent", CONNECTION_SYNCH);
 
-    PrepareStatement(HOTFIX_SEL_GARR_TALENT_RANK, "SELECT ID, Rank, PerkSpellID, PerkPlayerConditionID, Points, ResearchCost, ResearchCostCurrencyTypesID, ResearchGoldCost, ResearchDurationSecs, RespecCost, RespecCostCurrencyTypesID, RespecGoldCost, RespecDurationSecs, AlternateResearchCost, AlternateResearchCostCurrencyTypesID, AlternateResearchGoldCost, GarrTalentID"
+    PrepareStatement(HOTFIX_SEL_GARR_TALENT_RANK, "SELECT ID, `Rank`, PerkSpellID, PerkPlayerConditionID, Points, ResearchCost, ResearchCostCurrencyTypesID, ResearchGoldCost, ResearchDurationSecs, RespecCost, RespecCostCurrencyTypesID, RespecGoldCost, RespecDurationSecs, AlternateResearchCost, AlternateResearchCostCurrencyTypesID, AlternateResearchGoldCost, GarrTalentID"
         " FROM garr_talent_rank WHERE (`VerifiedBuild` > 0) = ?", CONNECTION_SYNCH);
     PREPARE_MAX_ID_STMT(HOTFIX_SEL_GARR_TALENT_RANK, "SELECT MAX(ID) + 1 FROM garr_talent_rank", CONNECTION_SYNCH);
 
@@ -1357,7 +1357,7 @@ void HotfixDatabaseConnection::DoPrepareStatements()
         " FROM soulbind_conduit_enhanced_socket WHERE (`VerifiedBuild` > 0) = ?", CONNECTION_SYNCH);
     PREPARE_MAX_ID_STMT(HOTFIX_SEL_SOULBIND_ENHANCED_CONDUIT, "SELECT MAX(ID) + 1 FROM soulbind_conduit_rank", CONNECTION_SYNCH);
 
-    PrepareStatement(HOTFIX_SEL_SOULBIND_CONDUIT_RANK_PROPERTIES, "SELECT ID, Rank, ItemLevel, QualityID"
+    PrepareStatement(HOTFIX_SEL_SOULBIND_CONDUIT_RANK_PROPERTIES, "SELECT ID, `Rank`, ItemLevel, QualityID"
         " FROM soulbind_conduit_rank_properties WHERE (`VerifiedBuild` > 0) = ?", CONNECTION_SYNCH);
     PREPARE_MAX_ID_STMT(HOTFIX_SEL_SOULBIND_CONDUIT_RANK_PROPERTIES, "SELECT MAX(ID) + 1 FROM soulbind_conduit_rank_properties", CONNECTION_SYNCH);
 
