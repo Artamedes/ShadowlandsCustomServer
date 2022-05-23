@@ -4845,6 +4845,37 @@ class aura_dk_icy_talons : public AuraScript
     }
 };
 
+// ID - 326801 Rune of Sanguination
+class spell_dk_rune_of_sanguination : public AuraScript
+{
+    PrepareAuraScript(spell_dk_rune_of_sanguination);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        if (!eventInfo.GetActor())
+            return false;
+
+        return !eventInfo.GetActor()->GetSpellHistory()->HasCooldown(326808) && !eventInfo.GetActor()->HasAura(326809) && eventInfo.GetActor()->HealthBelowPct(35); // ID - 326809 Satiated
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        PreventDefaultAction();
+        if (Unit* target = eventInfo.GetActor())
+            if (!target->GetSpellHistory()->HasCooldown(326808) && !target->HasAura(326809))
+            {
+                target->CastSpell(target, 326808, true); // Trigger spell(326808) Rune of Sanguination.Chance = 101
+                target->GetSpellHistory()->AddCooldown(326808, 0, 60s);
+            }
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_dk_rune_of_sanguination::CheckProc);
+        OnProc += AuraProcFn(spell_dk_rune_of_sanguination::HandleProc);
+    }
+};
+
 void AddSC_deathknight_spell_scripts()
 {
     new spell_dk_advantage_t10_4p();
@@ -4961,6 +4992,7 @@ void AddSC_deathknight_spell_scripts()
     RegisterSpellScript(spell_dk_zombie_explosion);    
     RegisterSpellScript(spell_dk_decomposing_aura_selector);    
     RegisterSpellScript(spell_dk_chill_streak_damage);
+    RegisterSpellScript(spell_dk_rune_of_sanguination);
 
     // NPCs
 	RegisterCreatureAI(npc_pet_dk_ghoul);
