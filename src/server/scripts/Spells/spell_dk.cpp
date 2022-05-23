@@ -4852,16 +4852,16 @@ class spell_dk_rune_of_sanguination : public AuraScript
 
     bool CheckProc(ProcEventInfo& eventInfo)
     {
-        if (!eventInfo.GetActor())
+        if (!eventInfo.GetActionTarget())
             return false;
 
-        return !eventInfo.GetActor()->GetSpellHistory()->HasCooldown(326808) && !eventInfo.GetActor()->HasAura(326809) && eventInfo.GetActor()->HealthBelowPct(35); // ID - 326809 Satiated
+        return !eventInfo.GetActionTarget()->GetSpellHistory()->HasCooldown(326808) && !eventInfo.GetActionTarget()->HasAura(326809) && eventInfo.GetActionTarget()->HealthBelowPct(35); // ID - 326809 Satiated
     }
 
     void HandleProc(ProcEventInfo& eventInfo)
     {
         PreventDefaultAction();
-        if (Unit* target = eventInfo.GetActor())
+        if (Unit* target = eventInfo.GetActionTarget())
             if (!target->GetSpellHistory()->HasCooldown(326808) && !target->HasAura(326809))
             {
                 target->CastSpell(target, 326808, true); // Trigger spell(326808) Rune of Sanguination.Chance = 101
