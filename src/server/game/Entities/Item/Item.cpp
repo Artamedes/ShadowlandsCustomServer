@@ -489,6 +489,7 @@ bool Item::Create(ObjectGuid::LowType guidlow, uint32 itemId, ItemContext contex
 
     SetExpiration(itemProto->GetDuration());
     SetCreatePlayedTime(0);
+    SetUpdateFieldValue(m_values.ModifyValue(&Item::m_itemData).ModifyValue(&UF::ItemData::CreateTime), GameTime::GetGameTime());
     SetContext(context);
 
     if (itemProto->GetArtifactID())
@@ -612,7 +613,7 @@ void Item::SaveToDB(CharacterDatabaseTransaction trans)
             for (int32 bonusListID : *m_itemData->BonusListIDs)
                 bonusListIDs << bonusListID << ' ';
             stmt->setString(++index, bonusListIDs.str());
-
+         //   stmt->setUInt32(++index, m_itemData->CreateTime);
             stmt->setUInt64(++index, GetGUID().GetCounter());
 
             trans->Append(stmt);
@@ -837,8 +838,8 @@ bool Item::LoadFromDB(ObjectGuid::LowType guid, ObjectGuid ownerGuid, Field* fie
     //        secondaryItemModifiedAppearanceSpec3, secondaryItemModifiedAppearanceSpec4, secondaryItemModifiedAppearanceSpec5,
     //                37           38           39                40          41           42           43                44          45           46           47                48
     //        gemItemId1, gemBonuses1, gemContext1, gemScalingLevel1, gemItemId2, gemBonuses2, gemContext2, gemScalingLevel2, gemItemId3, gemBonuses3, gemContext3, gemScalingLevel3
-    //                       49                      50
-    //        fixedScalingLevel, artifactKnowledgeLevel FROM item_instance
+    //                       49                      50    51
+    //        fixedScalingLevel, artifactKnowledgeLevel, createTime FROM item_instance
 
     // create item before any checks for store correct guid
     // and allow use "FSetState(ITEM_REMOVED); SaveToDB();" for deleting item from DB
@@ -960,6 +961,7 @@ bool Item::LoadFromDB(ObjectGuid::LowType guid, ObjectGuid ownerGuid, Field* fie
 
     SetModifier(ITEM_MODIFIER_TIMEWALKER_LEVEL, fields[49].GetUInt32());
     SetModifier(ITEM_MODIFIER_ARTIFACT_KNOWLEDGE_LEVEL, fields[50].GetUInt32());
+  //  SetUpdateFieldValue(m_values.ModifyValue(&Item::m_itemData).ModifyValue(&UF::ItemData::CreateTime), fields[51].GetUInt32());
 
     // Enchants must be loaded after all other bonus/scaling data
     std::vector<std::string_view> enchantmentTokens = Trinity::Tokenize(fields[8].GetStringView(), ' ', false);

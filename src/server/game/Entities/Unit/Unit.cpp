@@ -6227,6 +6227,14 @@ bool Unit::Attack(Unit* victim, bool meleeAttack)
     if (meleeAttack)
         AddUnitState(UNIT_STATE_MELEE_ATTACKING);
 
+    if (IsPlayer())
+    {
+        if (!ToPlayer()->IsInWorgenForm() && ToPlayer()->CanSwitch())
+        {
+            ToPlayer()->SwitchToWorgenForm();
+        }
+    }
+
     // set position before any AI calls/assistance
     //if (GetTypeId() == TYPEID_UNIT)
     //    ToCreature()->SetCombatStartPosition(GetPositionX(), GetPositionY(), GetPositionZ());
@@ -10716,8 +10724,10 @@ void Unit::GetProcAurasTriggeredOnEvent(AuraApplicationProcContainer& aurasTrigg
     // or generate one on our own
     else
     {
-        for (AuraApplicationMap::iterator itr = GetAppliedAuras().begin(); itr != GetAppliedAuras().end(); ++itr)
-            processAuraApplication(itr->second);
+        AuraApplicationMap appliedAuras = m_appliedAuras;
+        for (AuraApplicationMap::iterator itr = appliedAuras.begin(); itr != appliedAuras.end(); ++itr)
+            if (itr->second)
+                processAuraApplication(itr->second);
     }
 }
 

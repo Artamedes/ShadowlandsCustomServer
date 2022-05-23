@@ -23756,7 +23756,7 @@ inline bool Player::_StoreOrEquipNewItem(uint32 vendorslot, uint32 item, uint8 c
         WorldPackets::Item::BuySucceeded packet;
         packet.VendorGUID = pVendor->GetGUID();
         packet.Muid = vendorslot + 1;
-        packet.NewQuantity = crItem->maxcount > 0 ? new_count : 0xFFFFFFFF;
+        packet.NewQuantity = crItem->maxcount > 0 ? new_count : -1;
         packet.QuantityBought = count;
         SendDirectMessage(packet.Write());
 
@@ -23767,12 +23767,17 @@ inline bool Player::_StoreOrEquipNewItem(uint32 vendorslot, uint32 item, uint8 c
 
         if (pProto->HasFlag(ITEM_FLAG_ITEM_PURCHASE_RECORD) && crItem->ExtendedCost && pProto->GetMaxStackSize() == 1)
         {
-            it->SetItemFlag(ITEM_FIELD_FLAG_REFUNDABLE);
+            it->SetItemFlag(ITEM_FIELD_FLAG_REFUNDABLE); // 1245185 - 0x130001
+            // ITEM_FIELD_FLAG_UNK12 - ITEM_FIELD_FLAG_UNK11 - ITEM_FIELD_FLAG_SOULBOUND - ITEM_FIELD_FLAG_UNK15
+            //it->SetItemFlag(ITEM_FIELD_FLAG_UNK12 | ITEM_FIELD_FLAG_UNK11 | ITEM_FIELD_FLAG_UNK15);
+            //it->SetItemFlag2(ITEM_FIELD_FLAG2_UNK4);
             it->SetRefundRecipient(GetGUID());
             it->SetPaidMoney(price);
             it->SetPaidExtendedCost(crItem->ExtendedCost);
             it->SaveRefundDataToDB();
             AddRefundReference(it->GetGUID());
+            //it->SetCreatePlayedTime(GetTotalPlayedTime());
+            SendRefundInfo(it);
         }
 
         GetSession()->GetCollectionMgr()->OnItemAdded(it);

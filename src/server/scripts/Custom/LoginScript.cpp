@@ -235,6 +235,10 @@ class LoginScript : public PlayerScript
             p_Player->SetPlayerLocalFlag(PlayerLocalFlags::PLAYER_LOCAL_FLAG_ACCOUNT_SECURED);
             if (p_First)
             {
+                if (p_Player->GetRace() == RACE_WORGEN)
+                {
+                    p_Player->CastSpell(p_Player, 72857, true); // Two Forms
+                }
                 // Learn Riding
                 p_Player->CastSpell(p_Player, 33389, true);
                 p_Player->CastSpell(p_Player, 33392, true);

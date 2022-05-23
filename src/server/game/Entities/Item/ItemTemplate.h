@@ -166,7 +166,8 @@ DEFINE_ENUM_FLAG(ItemFieldFlags);
 
 enum ItemFieldFlags2 : uint32
 {
-    ITEM_FIELD_FLAG2_EQUIPPED   = 0x1
+    ITEM_FIELD_FLAG2_EQUIPPED   = 0x1,
+    ITEM_FIELD_FLAG2_UNK4       = 0x4,
 };
 
 DEFINE_ENUM_FLAG(ItemFieldFlags2);
