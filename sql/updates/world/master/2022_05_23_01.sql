@@ -1,0 +1,1 @@
+UPDATE `quest_template` SET `RewardNextQuest`='0' WHERE  `ID`=700022;

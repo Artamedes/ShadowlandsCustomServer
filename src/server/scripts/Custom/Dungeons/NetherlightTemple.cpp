@@ -784,6 +784,10 @@ struct npc_mawswarn_portal_700415 : public ScriptedAI
                     player->RemoveAurasDueToSpell(141480);
                     GameTele const* tele = sObjectMgr->GetGameTele(1793);
                     player->KilledMonsterCredit(me->GetEntry(), me->GetGUID());
+
+                    if (player->ToPlayer()->GetQuestStatus(700022) == QUEST_STATUS_COMPLETE)
+                        player->RewardQuest(sObjectMgr->GetQuestTemplate(700022), LootItemType::Item, 0, player);
+
                     if (tele)
                         player->TeleportTo(tele->mapId, tele->position_x, tele->position_y, tele->position_z, tele->orientation);
 
