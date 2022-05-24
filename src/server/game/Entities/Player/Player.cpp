@@ -5033,6 +5033,15 @@ void Player::DurabilityRepair(uint16 pos, bool takeCost, float discountMod)
 
 void Player::RepopAtGraveyard()
 {
+    if (auto instance = GetInstanceScript())
+    {
+        if (instance->HandlePlayerRepopRequest(this))
+        {
+            RemovePlayerFlag(PLAYER_FLAGS_IS_OUT_OF_BOUNDS);
+            return;
+        }
+    }
+
     // note: this can be called also when the player is alive
     // for example from WorldSession::HandleMovementOpcodes
 

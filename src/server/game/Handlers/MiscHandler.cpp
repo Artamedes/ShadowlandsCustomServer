@@ -94,9 +94,11 @@ void WorldSession::HandleRepopRequest(WorldPackets::Misc::RepopRequest& /*packet
                 GetPlayer()->TeleportTo(1116, 1855.65f, 4620.45f, 340.895f, 0.278168f, TELE_REVIVE_AT_TELEPORT);
             else
                 GetPlayer()->TeleportTo(1116, 159.015f, -2680.81f, 51.5754f, 3.89897f, TELE_REVIVE_AT_TELEPORT);
+            GetPlayer()->RemovePlayerFlag(PLAYER_FLAGS_IS_OUT_OF_BOUNDS);
             return;
         case 930: // A Dark Place
             GetPlayer()->TeleportTo(930, -2869.41f, -4533.04f, 1.04904f, 0.755928f, TELE_REVIVE_AT_TELEPORT);
+            GetPlayer()->RemovePlayerFlag(PLAYER_FLAGS_IS_OUT_OF_BOUNDS);
             return;
         default:
             break;

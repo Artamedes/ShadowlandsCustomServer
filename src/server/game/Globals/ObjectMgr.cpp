@@ -7073,17 +7073,19 @@ void ObjectMgr::LoadGraveyardZones()
 
 WorldSafeLocsEntry const* ObjectMgr::GetDefaultGraveyard(uint32 team) const
 {
-    enum DefaultGraveyard
-    {
-        HORDE_GRAVEYARD    = 10, // Crossroads
-        ALLIANCE_GRAVEYARD = 4   // Westfall
-    };
-
-    if (team == HORDE)
-        return GetWorldSafeLoc(HORDE_GRAVEYARD);
-    else if (team == ALLIANCE)
-        return GetWorldSafeLoc(ALLIANCE_GRAVEYARD);
-    else return nullptr;
+    // CUSTOM PIG
+    return GetWorldSafeLoc(700000); // Custom Graveyard (Mall)
+    //enum DefaultGraveyard
+    //{
+    //    HORDE_GRAVEYARD    = 10, // Crossroads
+    //    ALLIANCE_GRAVEYARD = 4   // Westfall
+    //};
+    //
+    //if (team == HORDE)
+    //    return GetWorldSafeLoc(HORDE_GRAVEYARD);
+    //else if (team == ALLIANCE)
+    //    return GetWorldSafeLoc(ALLIANCE_GRAVEYARD);
+    //else return nullptr;
 }
 
 WorldSafeLocsEntry const* ObjectMgr::GetClosestGraveyard(WorldLocation const& location, uint32 team, WorldObject* conditionObject) const

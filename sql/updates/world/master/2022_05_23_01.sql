@@ -11,3 +11,6 @@ UPDATE `conditions` SET `ConditionValue1`='700030', `Comment`='Check if quest 70
 
 DELETE FROM spell_script_names WHERE spell_id = 342963;
 INSERT INTO spell_script_names (spell_id, scriptname) VALUE (342963, 'spell_dog_dash_342963');
+
+DELETE FROM `world_safe_locs` WHERE `ID`=700000;
+INSERT INTO `world_safe_locs` (`ID`, `MapID`, `LocX`, `LocY`, `LocZ`, `Facing`, `Comment`) VALUES (700000, 1116, 85.9699, -2753.94, 62.5325, 3.93367, 'Karabador');
