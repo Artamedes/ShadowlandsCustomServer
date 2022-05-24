@@ -8,6 +8,7 @@ void CustomObjectMgr::LoadFromDB()
     LoadCustomSpellDmgs();
     LoadCustomScalingEntries();
     LoadCoinModels();
+    LoadCustomTransmogVendorData();
 }
 
 void CustomObjectMgr::LoadCustomSpellDmgs()
@@ -65,6 +66,30 @@ void CustomObjectMgr::LoadCoinModels()
             Field* fields = result->Fetch();
             CoinModel model = { fields[0].GetUInt32(), fields[1].GetUInt32(), fields[2].GetUInt32() };
             CoinModels.emplace_back(model);
+        } while (result->NextRow());
+    }
+}
+
+void CustomObjectMgr::LoadCustomTransmogVendorData()
+{
+    _customTransmogVendorData.clear();
+    auto result = WorldDatabase.Query("SELECT EntryID, TransmogSet, ClassMask, Flags, TransmogTokenCost, Icon FROM z_transmog_vendor_data");
+    if (result)
+    {
+        do
+        {
+            Field* fields = result->Fetch();
+
+            CustomTransmogVendor vendor;
+
+            vendor.TransmogSet          = fields[1].GetUInt32();
+            vendor.ClassMask            = fields[2].GetUInt32();
+            vendor.Flags                = fields[3].GetUInt32();
+            vendor.TransmogTokenCost    = fields[4].GetUInt32();
+            vendor.Icon                 = fields[5].GetString();
+
+            _customTransmogVendorData.insert({ fields[0].GetUInt32(), vendor});
+
         } while (result->NextRow());
     }
 }

@@ -43,6 +43,13 @@ enum SharedCustomInstanceData
     NpcPrideful = 173729,
 
     ActionSetActive = 1337,
+
+    // currencies
+    TransmogToken = 10181,
+    PlagueSample  = 10182,
+    IceFragment   = 10183,
+    Gunpowder     = 10184,
+    InfernalCore  = 10185,
 };
 
 class CustomInstanceRespawn
@@ -295,6 +302,18 @@ public:
         {
             randPlayer->CastSpell(randPlayer, SpellPridefulSpawn, true);
         }
+    }
+
+    void CreatureDiesForScript(Creature* creature, Unit* killer) override
+    {
+        InstanceScript::CreatureDiesForScript(creature, killer);
+
+        instance->DoOnPlayers([creature](Player* player)
+        {
+            if (!creature->IsDungeonBoss() && creature->GetFaction() != 35)
+                if (roll_chance_i(50))
+                    player->ModifyCurrency(TransmogToken, urand(1, 2));
+        });
     }
 
     // Beguiling Affix

@@ -25,6 +25,15 @@ struct CoinModel
     uint32 CreatureEntry;
 };
 
+struct CustomTransmogVendor
+{
+    uint32 TransmogSet;
+    uint32 ClassMask;
+    uint32 Flags;
+    uint32 TransmogTokenCost;
+    std::string Icon;
+};
+
 class TC_GAME_API CustomObjectMgr
 {
     public:
@@ -39,11 +48,13 @@ class TC_GAME_API CustomObjectMgr
         void LoadCustomSpellDmgs();
         void LoadCustomScalingEntries();
         void LoadCoinModels();
+        void LoadCustomTransmogVendorData();
 
         void ModifySpellDmg(Unit* unit, SpellInfo const* spellInfo, uint32& damage);
 
         std::unordered_map<uint32, std::unordered_map<uint32, CustomDamage>> _customSpellDmgs;
         std::unordered_map<uint32, CustomScalingEntry> _customScalingEntries;
+        std::multimap<uint32, CustomTransmogVendor> _customTransmogVendorData;
         std::vector<CoinModel> CoinModels;
 };
 

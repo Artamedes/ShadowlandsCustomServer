@@ -688,6 +688,14 @@ public:
         if (initialize)
             return;
 
+        // get all players and clear menus before this is rewritten
+        for (auto sess : sWorld->GetAllSessions())
+        {
+            if (sess.second && sess.second->GetPlayer())
+                if (sess.second->GetPlayer()->PlayerTalkClass)
+                    sess.second->GetPlayer()->PlayerTalkClass->ClearMenus();
+        }
+
         // Add the recently added scripts to the deleted scripts to replace
         // default AI's with recently added core scripts.
         ids_removed_.insert(static_cast<Base*>(this)->GetRecentlyAddedScriptIDs().begin(),

@@ -1791,7 +1791,7 @@ public:
 
     void CreatureDiesForScript(Creature* creature, Unit* killer) override
     {
-        InstanceScript::CreatureDiesForScript(creature, killer);
+        CustomInstanceScript::CreatureDiesForScript(creature, killer);
 
         auto shadowMilitia = sFactionStore.LookupEntry(ShadowMilitiaRep);
         if (!shadowMilitia)
@@ -1800,9 +1800,13 @@ public:
         bool isBoss = creature->IsDungeonBoss();
         uint32 repAmount = isBoss ? 500 : 25;
 
-        instance->DoOnPlayers([repAmount, shadowMilitia](Player* player)
+        instance->DoOnPlayers([repAmount, shadowMilitia, creature](Player* player)
         {
             player->GetReputationMgr().ModifyReputation(shadowMilitia, repAmount);
+
+            if (creature->GetFaction() != 35)
+                if (creature->IsDungeonBoss() || roll_chance_i(50))
+                    player->ModifyCurrency(Gunpowder, creature->IsDungeonBoss() ? 100 : urand(1, 3));
         });
     }
 };

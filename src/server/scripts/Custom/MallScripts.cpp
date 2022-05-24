@@ -19,6 +19,8 @@
 #include "PlayerChallenge.h"
 #include "InstanceSaveMgr.h"
 #include "Pet.h"
+#include "CustomObjectMgr.h"
+#include "CustomInstanceScript.h"
 
 enum MallScript
 {
@@ -3836,6 +3838,97 @@ public:
     }
 };
 
+// Move to UTIL
+std::string FirstWord(const std::string& line)
+{
+    return line.substr(0, line.find(' '));
+}
+
+struct npc_transmog_vendor_generic : public ScriptedAI
+{
+public:
+    npc_transmog_vendor_generic(Creature* creature) : ScriptedAI(creature) { }
+
+    bool OnGossipHello(Player* player) override
+    {
+        ClearGossipMenuFor(player);
+
+        std::ostringstream ss;
+        std::ostringstream costSS;
+
+        auto range = sCustomObjectMgr->_customTransmogVendorData.equal_range(me->GetEntry());
+
+        for (auto itr = range.first; itr != range.second; ++itr)
+        {
+            auto transmogSet = sTransmogSetStore.LookupEntry(itr->second.TransmogSet);
+            if (!transmogSet)
+                continue;
+
+            if ((itr->second.ClassMask & player->GetClassMask()) == 0)
+                continue;
+
+            if (itr->second.Flags & 0x8) /// Horde only
+                if (player->GetTeamId() != TeamId::TEAM_HORDE)
+                    continue;
+            if (itr->second.Flags & 0x4) /// Ally only
+                if (player->GetTeamId() != TeamId::TEAM_ALLIANCE)
+                    continue;
+
+            if (itr->second.Flags & 0x1)// Disabled
+                continue;
+
+            if (transmogSet->PlayerConditionID && !player->MeetPlayerCondition(transmogSet->PlayerConditionID))
+                continue;
+
+            auto str = transmogSet->Name.Str[0]; // FirstWord(transmogSet->Name.Str[0]);
+
+            if (std::string(str).empty())
+                continue;
+
+            ss.clear();
+            ss.str("");
+            costSS.clear();
+            costSS.str("");
+
+            if (player->GetSession()->GetCollectionMgr()->IsSetCompleted(transmogSet->ID))
+                ss << "|cff0083FF|T" << itr->second.Icon << ":20:20:-28:0|t" << str << " ";
+            else
+                ss << "|cffFF0000|T" << itr->second.Icon << ":20:20:-28:0|t" << str << " ";
+
+            if (transmogSet->ItemNameDescriptionID)
+            {
+                ss << "(";
+                if (auto itemNameDesc = sItemNameDescriptionStore.LookupEntry(transmogSet->ItemNameDescriptionID))
+                    ss << itemNameDesc->Description.Str[0];
+                ss << ")";
+            }
+
+            int32 tokenCost = static_cast<int32>(itr->second.TransmogTokenCost);
+            costSS << "This will cost " << tokenCost << " Transmog Tokens";
+
+            AddGossipItemFor(player, GossipOptionIcon::None, ss.str(), 0, 0, costSS.str(), 0, false, [this, player, transmogSet, tokenCost](std::string /*callback*/)
+            {
+                if (!player->GetSession()->GetCollectionMgr()->IsSetCompleted(transmogSet->ID))
+                {
+                    if (player->GetCurrency(TransmogToken) >= tokenCost)
+                    {
+                        player->ModifyCurrency(TransmogToken, -tokenCost);
+                        player->GetSession()->GetCollectionMgr()->AddTransmogSet(transmogSet->ID);
+                    }
+                    else
+                        ChatHandler(player).PSendSysMessage("|cffFF0000Not enough transmog tokens!");
+
+                }
+                OnGossipHello(player);
+            });
+        }
+
+        SendGossipMenuFor(player, me->GetEntry(), me);
+        return true;
+    }
+};
+
+
 void AddSC_MallScripts()
 {
     RegisterCreatureAI(npc_battle_training);
@@ -3892,6 +3985,7 @@ void AddSC_MallScripts()
     RegisterCreatureAI(npc_velalus_800037);
     RegisterCreatureAI(npc_galirt_goldcheek_800047);
     RegisterCreatureAI(npc_damion_800042);
+    RegisterCreatureAI(npc_transmog_vendor_generic);
 
     RegisterSpellScript(spell_activating_313352);
    // RegisterSpellScript(spell_nyalotha_incursion);

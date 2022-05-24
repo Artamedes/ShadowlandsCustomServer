@@ -72,7 +72,7 @@ public:
 
     void CreatureDiesForScript(Creature* creature, Unit* killer) override
     {
-        InstanceScript::CreatureDiesForScript(creature, killer);
+        CustomInstanceScript::CreatureDiesForScript(creature, killer);
 
         auto facEntry = sFactionStore.LookupEntry(LegionAssaultForceRep);
         if (!facEntry)
@@ -85,10 +85,14 @@ public:
         bool isBoss = creature->IsDungeonBoss();
         uint32 repAmount = isBoss ? 500 : 25;
 
-        instance->DoOnPlayers([facEntry, repAmount, shadowMilitia](Player* player)
+        instance->DoOnPlayers([facEntry, repAmount, shadowMilitia, creature](Player* player)
         {
             player->GetReputationMgr().ModifyReputation(facEntry, repAmount);
             player->GetReputationMgr().ModifyReputation(shadowMilitia, repAmount);
+
+            if (creature->GetFaction() != 35)
+                if (creature->IsDungeonBoss() || roll_chance_i(50))
+                    player->ModifyCurrency(InfernalCore, creature->IsDungeonBoss() ? 100 : urand(1, 3));
         });
     }
 };
@@ -97,44 +101,6 @@ struct npc_adageor_703000 : public ScriptedAI
 {
 public:
     npc_adageor_703000(Creature* creature) : ScriptedAI(creature) { }
-
-    void InitializeAI() override
-    {
-        /// TODO: Fill this function
-    }
-    void Reset() override
-    {
-        /// TODO: Fill this function
-    }
-    void JustEngagedWith(Unit* /*who*/) override
-    {
-        /// TODO: Fill this function
-    }
-    void UpdateAI(uint32 diff) override
-    {
-        scheduler.Update(diff);
-
-        if (!UpdateVictim())
-            return;
-
-        events.Update(diff);
-
-        if (uint32 eventId = events.ExecuteEvent())
-        {
-            switch (eventId)
-            {
-            }
-        }
-        DoMeleeAttackIfReady();
-    }
-
-    void OnUnitRelocation(Unit* who) override
-    {
-        /// TODO: Fill this function
-    }
-
-    TaskScheduler scheduler;
-    EventMap events;
 };
 
 const Position FelConduitPos = { 3452.24f, 1554.11f, 436.707f, 3.18628f };
