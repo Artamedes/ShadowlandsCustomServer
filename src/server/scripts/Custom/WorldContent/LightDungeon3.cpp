@@ -629,6 +629,15 @@ public:
                 instanceScenario->IsCompletedCriteriaTree(tree2, nullptr);
         }
     }
+
+    void OnCreatureCreate(Creature* creature) override
+    {
+        CustomInstanceScript::OnCreatureCreate(creature);
+
+        // Nerf light dungeon by 7%
+        if (!creature->IsDungeonBoss())
+            creature->SetMaxHealth(creature->GetMaxHealth() * 0.93);
+    }
 };
 
 class lightdng3_playerscript : public PlayerScript

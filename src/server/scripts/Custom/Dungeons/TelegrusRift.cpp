@@ -38,6 +38,15 @@ public:
                 instanceScenario->IsCompletedCriteriaTree(tree2, nullptr);
         }
     }
+
+    void OnCreatureCreate(Creature* creature) override
+    {
+        CustomInstanceScript::OnCreatureCreate(creature);
+
+        // Nerf legion dungeon by 5%
+        if (!creature->IsDungeonBoss())
+            creature->SetMaxHealth(creature->GetMaxHealth() * 0.95);
+    }
 };
 
 enum TelegrusRiftSpells

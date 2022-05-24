@@ -574,7 +574,22 @@ struct npc_mall_weapongiver : public ScriptedAI
 
             if (player->HasItemCount(700316, 1))
             {
-                if (AllowableClasses & player->GetClassMask())
+                bool allow = true;
+
+                for (auto entry : m_ItemEntries)
+                {
+                    auto itemTemp = sObjectMgr->GetItemTemplate(entry);
+                    if (!itemTemp)
+                        continue;
+                    auto itemCount = player->GetItemCount(entry);
+                    if (itemTemp->GetMaxCount() > 0 && itemCount >= itemTemp->GetMaxCount())
+                    {
+                        allow = false;
+                        break;
+                    }
+                }
+
+                if ((AllowableClasses & player->GetClassMask()) != 0 && allow)
                 {
                     AddGossipItemFor(player, GossipOptionIcon::None, "Create Weapon", 0, 2, "|cffFF0000Accepting this will use |cffff8000[Legendary Dust]|cffFF0000x1|R", 0, false);
                 }
@@ -608,44 +623,62 @@ struct npc_mall_weapongiver : public ScriptedAI
                     // 700316 - Legendary Dust
                     if (player->HasItemCount(700316, 1) && !m_ItemEntries.empty())
                     {
-                        if (player->GetQuestStatus(700019) == QUEST_STATUS_INCOMPLETE)
+                        bool allow = true;
+
+                        for (auto entry : m_ItemEntries)
                         {
-                            CloseGossipMenuFor(player);
-                            player->CompleteQuest(700019);
-                            player->RewardQuest(sObjectMgr->GetQuestTemplate(700019), LootItemType::Item, 0, me, true);
-                            player->AddQuestAndCheckCompletion(sObjectMgr->GetQuestTemplate(700020), me);
-                            player->GetScheduler().Schedule(100ms, [player](TaskContext context)
+                            auto itemTemp = sObjectMgr->GetItemTemplate(entry);
+                            if (!itemTemp)
+                                continue;
+                            auto itemCount = player->GetItemCount(entry);
+                            if (itemTemp->GetMaxCount() > 0 && itemCount >= itemTemp->GetMaxCount())
+                            {
+                                allow = false;
+                                break;
+                            }
+                        }
+
+                        if (allow)
+                        {
+                            if (player->GetQuestStatus(700019) == QUEST_STATUS_INCOMPLETE)
+                            {
+                                CloseGossipMenuFor(player);
+                                player->CompleteQuest(700019);
+                                player->RewardQuest(sObjectMgr->GetQuestTemplate(700019), LootItemType::Item, 0, me, true);
+                                player->AddQuestAndCheckCompletion(sObjectMgr->GetQuestTemplate(700020), me);
+                                player->GetScheduler().Schedule(100ms, [player](TaskContext context)
                                 {
                                     Conversation::CreateConversation(700303, player, *player, player->GetGUID());
                                     player->PlayerTalkClass->SendQuestGiverQuestDetails(sObjectMgr->GetQuestTemplate(700020), player->GetGUID(), true, true);
                                 });
-                        }
-                        player->DestroyItemCount(700316, 1, true);
-                        for (auto entry : m_ItemEntries)
-                        {
-                            uint32 noSpaceForCount = 0;
-                            ItemPosCountVec dest;
-                            InventoryResult msg = player->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, entry, 1, &noSpaceForCount);
-                            Item* item = Item::CreateItem(entry, 1, ItemContext::NONE, player);
-                            item->SetBonuses(m_BonusListIds);
-                            if (dest.empty())
-                            {
-                                /// @todo Send to mailbox if no space
-                                ChatHandler(player).PSendSysMessage("You don't have any space in your bags, sent to mailbox.");
-                                CharacterDatabaseTransaction trans = CharacterDatabase.BeginTransaction();
-                                // save new item before send
-                                item->SaveToDB(trans);                               // save for prevent lost at next mail load, if send fail then item will deleted
-
-                                auto draft = MailDraft("Lost Item", "Recovered your lost item");
-                                // item
-                                draft.AddItem(item);
-                                draft.SendMailTo(trans, player, MailSender(MAIL_CREATURE, uint64(me->GetEntry())));
-                                CharacterDatabase.CommitTransaction(trans);
-                                continue;
                             }
+                            player->DestroyItemCount(700316, 1, true);
+                            for (auto entry : m_ItemEntries)
+                            {
+                                uint32 noSpaceForCount = 0;
+                                ItemPosCountVec dest;
+                                InventoryResult msg = player->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, entry, 1, &noSpaceForCount);
+                                Item* item = Item::CreateItem(entry, 1, ItemContext::NONE, player);
+                                item->SetBonuses(m_BonusListIds);
+                                if (dest.empty())
+                                {
+                                    /// @todo Send to mailbox if no space
+                                    ChatHandler(player).PSendSysMessage("You don't have any space in your bags, sent to mailbox.");
+                                    CharacterDatabaseTransaction trans = CharacterDatabase.BeginTransaction();
+                                    // save new item before send
+                                    item->SaveToDB(trans);                               // save for prevent lost at next mail load, if send fail then item will deleted
 
-                            player->StoreItem(dest, item, true);
-                            player->SendNewItem(item, 1, true, true, false);
+                                    auto draft = MailDraft("Lost Item", "Recovered your lost item");
+                                    // item
+                                    draft.AddItem(item);
+                                    draft.SendMailTo(trans, player, MailSender(MAIL_CREATURE, uint64(me->GetEntry())));
+                                    CharacterDatabase.CommitTransaction(trans);
+                                    continue;
+                                }
+
+                                player->StoreItem(dest, item, true);
+                                player->SendNewItem(item, 1, true, true, false);
+                            }
                         }
                     }
                     break;

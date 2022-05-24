@@ -51,6 +51,15 @@ struct instance_niskara : public CustomInstanceScript
             }
         }
 
+        void OnCreatureCreate(Creature* creature) override
+        {
+            CustomInstanceScript::OnCreatureCreate(creature);
+
+            // Nerf legion dungeon by 5%
+            if (!creature->IsDungeonBoss())
+                creature->SetMaxHealth(creature->GetMaxHealth() * 0.95);
+        }
+
         bool m_FirstPlayerEntered = false;
 };
 

@@ -3917,6 +3917,9 @@ int32 SpellInfo::GetMaxDuration() const
 
 uint32 SpellInfo::CalcCastTime(Spell* spell /*= nullptr*/) const
 {
+    if (spell && spell->m_SpecialDuration.has_value())
+        return *spell->m_SpecialDuration;
+
     int32 castTime = 0;
     if (CastTimeEntry)
         castTime = std::max(CastTimeEntry->Base, CastTimeEntry->Minimum);

@@ -712,7 +712,7 @@ public:
                                                 {
                                                     me->GetMap()->DoOnPlayers([](Player* player)
                                                     {
-                                                        if (player->GetQuestStatus(700034) == QUEST_STATUS_INCOMPLETE)
+                                                        if (player->GetQuestStatus(700034) == QUEST_STATUS_INCOMPLETE || player->GetQuestStatus(700034) == QUEST_STATUS_COMPLETE)
                                                         {
                                                             player->CompleteQuest(700034);
                                                             player->RewardQuest(sObjectMgr->GetQuestTemplate(700034), LootItemType::Item, 0, player);
@@ -1864,39 +1864,15 @@ public:
 struct npc_ashen_phylactery_700831 : public ScriptedAI
 {
 public:
-    npc_ashen_phylactery_700831(Creature* creature) : ScriptedAI(creature) { }
-
-    void InitializeAI() override
+    npc_ashen_phylactery_700831(Creature* creature) : ScriptedAI(creature)
     {
-        /// TODO: Fill this function
-    }
-
-    void Reset() override
-    {
-        /// TODO: Fill this function
+        SetCombatMovement(false);
+        me->SetReactState(REACT_PASSIVE);
     }
 
     void UpdateAI(uint32 diff) override
     {
-        scheduler.Update(diff);
-
-        if (!UpdateVictim())
-            return;
-
-        events.Update(diff);
-
-        if (uint32 eventId = events.ExecuteEvent())
-        {
-            switch (eventId)
-            {
-            }
-        }
-        DoMeleeAttackIfReady();
     }
-
-
-    TaskScheduler scheduler;
-    EventMap events;
 };
 
 
@@ -1971,6 +1947,15 @@ public:
                 go->SetFlag(GameObjectFlags::GO_FLAG_NOT_SELECTABLE);
             }
         }
+    }
+
+    void OnCreatureCreate(Creature* creature) override
+    {
+        CustomInstanceScript::OnCreatureCreate(creature);
+
+        // Nerf torghast dungeon by 7%
+        if (!creature->IsDungeonBoss())
+            creature->SetMaxHealth(creature->GetMaxHealth() * 0.93);
     }
 };
 

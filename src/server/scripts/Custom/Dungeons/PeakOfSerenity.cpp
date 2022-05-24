@@ -34,6 +34,15 @@ public:
             }
         }
     }
+
+    void OnCreatureCreate(Creature* creature) override
+    {
+        CustomInstanceScript::OnCreatureCreate(creature);
+
+        // Nerf light dungeon by 7%
+        if (!creature->IsDungeonBoss())
+            creature->SetMaxHealth(creature->GetMaxHealth() * 0.93);
+    }
 };
 
 // 700700 - npc_avatar_of_the_light_700700

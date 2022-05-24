@@ -6,53 +6,6 @@
 #include "InstanceScenario.h"
 #include "Scenario.h"
 
-// 700703 - npc_angelic_warrior_700703
-struct npc_angelic_warrior_700703 : public ScriptedAI
-{
-public:
-    npc_angelic_warrior_700703(Creature* creature) : ScriptedAI(creature) { }
-
-    void InitializeAI() override
-    {
-        /// TODO: Fill this function
-    }
-
-    void Reset() override
-    {
-        /// TODO: Fill this function
-    }
-
-    void UpdateAI(uint32 diff) override
-    {
-        scheduler.Update(diff);
-
-        if (!UpdateVictim())
-            return;
-
-        events.Update(diff);
-
-        if (uint32 eventId = events.ExecuteEvent())
-        {
-            switch (eventId)
-            {
-            }
-        }
-        DoMeleeAttackIfReady();
-    }
-
-    void OnUnitRelocation(Unit* who) override
-    {
-        /// TODO: Fill this function
-    }
-    void OnSpellClick(Unit* clicker, bool spellClickHandled) override
-    {
-        /// TODO: Fill this function
-    }
-
-    TaskScheduler scheduler;
-    EventMap events;
-};
-
 // 700704 - npc_portal_of_light_700704
 struct npc_portal_of_light_700704 : public ScriptedAI
 {
@@ -185,53 +138,6 @@ public:
             }
         }
         DoMeleeAttackIfReady();
-    }
-
-    TaskScheduler scheduler;
-    EventMap events;
-};
-
-// 700702 - npc_disciple_of_light_700702
-struct npc_disciple_of_light_700702 : public ScriptedAI
-{
-public:
-    npc_disciple_of_light_700702(Creature* creature) : ScriptedAI(creature) { }
-
-    void InitializeAI() override
-    {
-        /// TODO: Fill this function
-    }
-
-    void Reset() override
-    {
-        /// TODO: Fill this function
-    }
-
-    void UpdateAI(uint32 diff) override
-    {
-        scheduler.Update(diff);
-
-        if (!UpdateVictim())
-            return;
-
-        events.Update(diff);
-
-        if (uint32 eventId = events.ExecuteEvent())
-        {
-            switch (eventId)
-            {
-            }
-        }
-        DoMeleeAttackIfReady();
-    }
-
-    void OnUnitRelocation(Unit* who) override
-    {
-        /// TODO: Fill this function
-    }
-    void OnSpellClick(Unit* clicker, bool spellClickHandled) override
-    {
-        /// TODO: Fill this function
     }
 
     TaskScheduler scheduler;
@@ -653,53 +559,6 @@ public:
     EventMap events;
 };
 
-// 700710 - npc_protector_of_light_700710
-struct npc_protector_of_light_700710 : public ScriptedAI
-{
-public:
-    npc_protector_of_light_700710(Creature* creature) : ScriptedAI(creature) { }
-
-    void InitializeAI() override
-    {
-        /// TODO: Fill this function
-    }
-
-    void Reset() override
-    {
-        /// TODO: Fill this function
-    }
-
-    void UpdateAI(uint32 diff) override
-    {
-        scheduler.Update(diff);
-
-        if (!UpdateVictim())
-            return;
-
-        events.Update(diff);
-
-        if (uint32 eventId = events.ExecuteEvent())
-        {
-            switch (eventId)
-            {
-            }
-        }
-        DoMeleeAttackIfReady();
-    }
-
-    void OnUnitRelocation(Unit* who) override
-    {
-        /// TODO: Fill this function
-    }
-    void OnSpellClick(Unit* clicker, bool spellClickHandled) override
-    {
-        /// TODO: Fill this function
-    }
-
-    TaskScheduler scheduler;
-    EventMap events;
-};
-
 // 700716 - npc_watcher_700716
 struct npc_watcher_700716 : public ScriptedAI
 {
@@ -998,21 +857,25 @@ public:
         }
     }
 
+    void OnCreatureCreate(Creature* creature) override
+    {
+        CustomInstanceScript::OnCreatureCreate(creature);
+
+        // Nerf light dungeon by 7%
+        if (!creature->IsDungeonBoss())
+            creature->SetMaxHealth(creature->GetMaxHealth() * 0.93);
+    }
 };
 
 
 void AddSC_ShadoPanMonastary()
 {
-   //RegisterCreatureAI(npc_angelic_warrior_700703);
-   //RegisterCreatureAI(npc_weapon_of_light_700701);
    RegisterCreatureAI(npc_portal_of_light_700704);
    RegisterCreatureAI(npc_corrupted_light_700711);
- //  RegisterCreatureAI(npc_disciple_of_light_700702);
    RegisterCreatureAI(npc_kang_dae_whitegarden_700712);
    RegisterCreatureAI(npc_lord_darius_700713);
    RegisterCreatureAI(npc_rehael_700714);
    RegisterCreatureAI(npc_yofiel_700715);
- //  RegisterCreatureAI(npc_protector_of_light_700710);
    RegisterCreatureAI(npc_watcher_700716);
    RegisterCreatureAI(npc_paladin_enforcer_700717);
    RegisterCreatureAI(npc_high_priest_700718);

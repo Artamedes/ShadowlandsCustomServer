@@ -197,7 +197,7 @@ struct npc_void_hound_700407 : public ScriptedAI
 
                 if (now >= dashTime)
                 {
-                    dashTime = now + Seconds(8);
+                    dashTime = now + Seconds(18);
                     DoCastVictim(342963); // Dash
                 }
 
@@ -227,6 +227,36 @@ struct npc_void_hound_700407 : public ScriptedAI
         TimePoint dashTime;
 };
 
+/// <summary>
+///  ID - 342963 Dog Dash
+/// </summary>
+class spell_dog_dash_342963 : public SpellScript
+{
+    PrepareSpellScript(spell_dog_dash_342963);
+
+    void CountTargets(std::list<WorldObject*>& targets)
+    {
+        Unit* caster = GetCaster();
+        if (!caster)
+            return;
+
+        targets.clear();
+        std::list<Unit*> units;
+        caster->GetAttackableUnitListInRange(units, 25.f);
+        units.remove_if([caster](Unit* unit)
+        {
+            return !caster->HasInLine(unit, 6.f, caster->GetObjectScale());
+        });
+
+        for (Unit* unit : units)
+            targets.push_back(unit);
+    }
+
+    void Register() override
+    {
+        OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_dog_dash_342963::CountTargets, EFFECT_1, TARGET_UNIT_RECT_CASTER_ENEMY);
+    }
+};
 
 struct npc_derza_700402 : public ScriptedAI
 {
@@ -397,9 +427,13 @@ struct npc_inquisitor_brute_700406 : public ScriptedAI
                 switch (eventId)
                 {
                     case 1: // Slam
-                        DoCastVictim(278222);
+                    {
+                        auto args = CastSpellExtraArgs();
+                        args.SpecialDuration = 5000;
+                        me->CastSpell(me->GetVictim(), 278222, args);
                         events.Repeat(20s, 30s);
                         break;
+                    }
                     case 3:
                         DoCast(316133);
                         break;
@@ -436,6 +470,7 @@ struct npc_mevra_700401 : public ScriptedAI
         {
             if (!UpdateVictim())
                 return;
+
             events.Update(diff);
 
             if (me->HasUnitState(UNIT_STATE_CASTING))
@@ -449,12 +484,17 @@ struct npc_mevra_700401 : public ScriptedAI
                         DoCastVictim(345116);
                         events.Repeat(10s, 20s);
                         break;
-                    case 2: // Cone of death
-                        DoCast(360861);
+                    case 2: // Chaos Bolt
+                        DoCast(243300);
                         events.Repeat(15s, 30s);
                         break;
                 }
             }
+
+            if (me->HasUnitState(UNIT_STATE_CASTING))
+                return;
+
+            DoCastVictim(333298); // Shadow Bolt
 
             if (me->HasUnitState(UNIT_STATE_CASTING))
                 return;
@@ -563,6 +603,11 @@ class instance_netherlight_temple : public InstanceMapScript
                 void OnCreatureCreate(Creature* creature) override
                 {
                     CustomInstanceScript::OnCreatureCreate(creature);
+
+                    // Nerf legion dungeon by 5%
+                    if (!creature->IsDungeonBoss())
+                        creature->SetMaxHealth(creature->GetMaxHealth() * 0.95);
+
                     switch (creature->GetEntry())
                     {
                         case 700402:
@@ -816,5 +861,8 @@ void AddSC_NetherlightTemple()
     RegisterCreatureAI(npc_watcher_of_death);
     RegisterCreatureAI(npc_prophet_velen_700412);
     RegisterCreatureAI(npc_mawswarn_portal_700415);
+
+    RegisterSpellScript(spell_dog_dash_342963);
+
     new instance_netherlight_temple();
 }
