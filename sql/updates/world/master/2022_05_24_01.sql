@@ -2083,7 +2083,7 @@ REPLACE INTO `z_transmog_vendor_data` (`EntryID`, `TransmogSet`, `ClassMask`, `F
 /*!40111 SET SQL_NOTES=IFNULL(@OLD_SQL_NOTES, 1) */;
 
 DELETE FROM npc_text WHERE id IN (800215, 800216, 800217, 800218, 800219, 800220, 800221, 800222, 800223);
-INSERT INTO npc_text (ID, BroadcastTextID0) SELECT entry, entry FROM creature_template WHERE entry IN (800215, 800216, 800217, 800218, 800219, 800220, 800221, 800222, 800223)
+INSERT INTO npc_text (ID, BroadcastTextID0) SELECT entry, entry FROM creature_template WHERE entry IN (800215, 800216, 800217, 800218, 800219, 800220, 800221, 800222, 800223);
 
 REPLACE INTO `reference_loot_template` (`Entry`, `Type`, `Item`, `Reference`, `Chance`, `QuestRequired`, `LootMode`, `GroupId`, `MinCount`, `MaxCount`, `BonusList`, `Comment`) VALUES 
 (1200004, 1, 10181, 0, 0, 0, 1, 5, 20, 20, NULL, 'transmog token'),
