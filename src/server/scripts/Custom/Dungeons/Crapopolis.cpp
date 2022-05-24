@@ -246,7 +246,10 @@ struct npc_mawsworn_axeguard : public npc_crapopolis_ai_base
 struct npc_mawsworn_annihilator : public npc_crapopolis_ai_base
 {
     public:
-        npc_mawsworn_annihilator(Creature* creature) : npc_crapopolis_ai_base(creature) { }
+        npc_mawsworn_annihilator(Creature* creature) : npc_crapopolis_ai_base(creature)
+        {
+            ApplyAllImmunities(true);
+        }
 
         void Reset() override
         {
@@ -426,7 +429,10 @@ public:
 
 struct npc_mawsworn_defiler : public npc_crapopolis_ai_base
 {
-    npc_mawsworn_defiler(Creature* creature) : npc_crapopolis_ai_base(creature) {}
+    npc_mawsworn_defiler(Creature* creature) : npc_crapopolis_ai_base(creature)
+    {
+        ApplyAllImmunities(true);
+    }
 
     TaskScheduler scheduler;
 
@@ -490,7 +496,10 @@ struct npc_mawsworn_defiler : public npc_crapopolis_ai_base
 
 struct npc_crap_warden_of_souls : public npc_crapopolis_ai_base
 {
-    npc_crap_warden_of_souls(Creature* creature) : npc_crapopolis_ai_base(creature) {}
+    npc_crap_warden_of_souls(Creature* creature) : npc_crapopolis_ai_base(creature)
+    {
+        ApplyAllImmunities(true);
+    }
 
     TaskScheduler scheduler;
 
@@ -594,7 +603,10 @@ struct npc_crap_warden_of_souls : public npc_crapopolis_ai_base
 
 struct npc_crap_synod : public npc_crapopolis_ai_base
 {
-    npc_crap_synod(Creature* creature) : npc_crapopolis_ai_base(creature) {}
+    npc_crap_synod(Creature* creature) : npc_crapopolis_ai_base(creature)
+    {
+        ApplyAllImmunities(true);
+    }
 
     TaskScheduler scheduler;
 

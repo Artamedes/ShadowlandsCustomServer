@@ -123,7 +123,10 @@ public:
 struct npc_mawsworn_annihilator_700813 : public ScriptedAI
 {
 public:
-    npc_mawsworn_annihilator_700813(Creature* creature) : ScriptedAI(creature) { }
+    npc_mawsworn_annihilator_700813(Creature* creature) : ScriptedAI(creature)
+    {
+        ApplyAllImmunities(true);
+    }
 
     void InitializeAI() override
     {
