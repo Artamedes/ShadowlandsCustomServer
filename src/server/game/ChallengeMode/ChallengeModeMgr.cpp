@@ -844,8 +844,9 @@ void ChallengeModeMgr::GenerateAchievementByMythicLevel(Player* member, uint32 c
         if(!member->HasAchieved(ACHIEVEMENT_KEYMASTER_MASTER))
             member->CompletedAchievement(ACHIEVEMENT_KEYMASTER_MASTER);
 
-        if(!member->HasAchieved(ACHIEVEMENT_REALM_FIRST_BATTLE_FOR_AZEROTH_KEYSTONE_MASTER))
-            member->CompletedAchievement(ACHIEVEMENT_REALM_FIRST_BATTLE_FOR_AZEROTH_KEYSTONE_MASTER); //This gonna be checked realm size
+        // we not in BFA anymore!
+        //if(!member->HasAchieved(ACHIEVEMENT_REALM_FIRST_BATTLE_FOR_AZEROTH_KEYSTONE_MASTER))
+        //    member->CompletedAchievement(ACHIEVEMENT_REALM_FIRST_BATTLE_FOR_AZEROTH_KEYSTONE_MASTER); //This gonna be checked realm size
 
         if (!member->HasAchieved(ACHIEVEMENT_BATTLE_FOR_AZEROTH_KEYSTONE_MASTER_SEASON_ONE))
         {
