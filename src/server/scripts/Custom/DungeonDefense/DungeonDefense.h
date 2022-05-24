@@ -132,7 +132,7 @@ struct DungeonDefenseTemplate
     uint32 MaxDefensePoints;
 };
 
-using DungeonDefenseTemplateStorage = std::unordered_map<uint32, DungeonDefenseTemplate>;
+using DungeonDefenseTemplateStorage = std::map<uint32, DungeonDefenseTemplate>;
 
 struct DungeonDefenseStageMobs
 {
