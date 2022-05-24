@@ -101,7 +101,10 @@ public:
 struct npc_helya_mawfinale : public BossAI
 {
     public:
-        npc_helya_mawfinale(Creature* creature) : BossAI(creature, BossJuno) { }
+        npc_helya_mawfinale(Creature* creature) : BossAI(creature, BossJuno)
+        {
+            ApplyAllImmunities(true);
+        }
 
         enum Helya
         {
