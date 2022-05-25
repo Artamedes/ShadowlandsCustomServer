@@ -109,7 +109,10 @@ const Position FelConduitPos = { 3452.24f, 1554.11f, 436.707f, 3.18628f };
 struct npc_goroth_703001 : public BossAI
 {
 public:
-    npc_goroth_703001(Creature* creature) : BossAI(creature, BossGoroth) { ApplyAllImmunities(true); }
+    npc_goroth_703001(Creature* creature) : BossAI(creature, BossGoroth)
+    {
+        ApplyAllImmunities(true);
+    }
 
     enum Goroth
     {
@@ -358,7 +361,10 @@ public:
 struct npc_dolgonir_703012 : public BossAI
 {
 public:
-    npc_dolgonir_703012(Creature* creature) : BossAI(creature, BossDolgonir) { }
+    npc_dolgonir_703012(Creature* creature) : BossAI(creature, BossDolgonir)
+    {
+        ApplyAllImmunities(true);
+    }
 
     enum Dolgonir
     {
@@ -462,7 +468,10 @@ public:
 struct npc_bellatrix_703013 : public BossAI
 {
 public:
-    npc_bellatrix_703013(Creature* creature) : BossAI(creature, BossBellatrix) { }
+    npc_bellatrix_703013(Creature* creature) : BossAI(creature, BossBellatrix)
+    {
+        ApplyAllImmunities(true);
+    }
 
     enum Bellatrix
     {
@@ -760,7 +769,10 @@ public:
 struct npc_kuryash_703017 : public BossAI
 {
 public:
-    npc_kuryash_703017(Creature* creature) : BossAI(creature, BossKuryash) { ApplyAllImmunities(true); }
+    npc_kuryash_703017(Creature* creature) : BossAI(creature, BossKuryash)
+    {
+        ApplyAllImmunities(true);
+    }
 
     enum Kuryash
     {
