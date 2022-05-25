@@ -1574,6 +1574,9 @@ void Spell::SelectImplicitCasterDestTargets(SpellEffectInfo const& spellEffectIn
             float angle = targetType.CalcDirectionAngle();
             float objSize = m_caster->GetCombatReach();
 
+            if (m_spellInfo->Id == 327604)
+                dist = 30.0f;
+
             switch (targetType.GetTarget())
             {
                 case TARGET_DEST_CASTER_SUMMON:

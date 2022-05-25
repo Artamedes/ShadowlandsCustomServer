@@ -145,7 +145,11 @@ public:
            // if (player->GetInstanceScript() && !player->GetInstanceScript()->GetGameObject(GO_PYRAMID_WEB))
         if (player->GetAreaId() == 9391)
             if (player->GetPositionX() > 1080.0f && player->GetPositionZ() > 0 && !player->HasAura(Underrot::UnderrotGateway))
+            {
+                /// dismount
+                player->Dismount();
                 player->CastSpell(player, Underrot::UnderrotGateway);
+            }
     }
 
     void CreatureDiesForScript(Creature* creature, Unit* killer) override
@@ -239,7 +243,7 @@ public:
             Slimes--;
             if (Slimes == 0)
             {
-                didPhase2 = false;
+                //didPhase2 = false;
                 phasing = false;
                 me->KillSelf();
             }
@@ -250,7 +254,7 @@ public:
 
             if (ActiveSlimes == 0)
             {
-                didPhase2 = false;
+                //didPhase2 = false;
                 phasing = false;
                 me->SetHealth(me->CountPctFromMaxHealth(7 * Slimes + 10));
                 me->RemoveUnitFlag(UnitFlags::UNIT_FLAG_UNINTERACTIBLE);
@@ -273,7 +277,7 @@ public:
 
                 if (ActiveSlimes == 0)
                 {
-                    didPhase2 = false;
+                    //didPhase2 = false;
                     phasing = false;
                     me->SetHealth(me->CountPctFromMaxHealth(7 * Slimes + 10));
                     me->RemoveUnitFlag(UnitFlags::UNIT_FLAG_UNINTERACTIBLE);
@@ -485,7 +489,11 @@ class spell_beckon_slime_underrot : public SpellScript
 
         if (GetExplTargetDest())
         {
-            GetCaster()->SummonCreature(entry, *GetExplTargetDest(), TEMPSUMMON_MANUAL_DESPAWN);
+            if (auto slime = GetCaster()->SummonCreature(entry, *GetExplTargetDest(), TEMPSUMMON_MANUAL_DESPAWN))
+            {
+                slime->SetMaxHealth(GetCaster()->CountPctFromMaxHealth(5));
+                slime->SetFullHealth();
+            }
          //   GetCaster()->Say((*GetExplTargetDest()).ToString(), LANG_UNIVERSAL, nullptr);
         }
 
