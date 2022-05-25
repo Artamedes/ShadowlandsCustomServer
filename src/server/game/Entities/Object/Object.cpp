@@ -1468,6 +1468,9 @@ bool WorldObject::CanSeeOrDetect(WorldObject const* obj, bool ignoreStealth, boo
     if (this == obj)
         return true;
 
+    if (m_currMap != obj->m_currMap)
+        return false;
+
     if (obj->IsNeverVisibleFor(this) || CanNeverSee(obj))
         return false;
 
@@ -1781,7 +1784,9 @@ void WorldObject::SetMap(Map* map)
 
 void WorldObject::ResetMap()
 {
-    ASSERT(m_currMap);
+    if (!m_currMap)
+        return;
+
     ASSERT(!IsInWorld());
     if (IsWorldObject())
         m_currMap->RemoveWorldObject(this);
