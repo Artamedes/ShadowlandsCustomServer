@@ -365,6 +365,15 @@ void TransportMgr::AddPathNodeToTransport(uint32 transportEntry, uint32 timeSeg,
     animNode.Path[timeSeg] = node;
 }
 
+void TransportMgr::AddPathRotationToTransport(uint32 transportEntry, uint32 timeSeg, TransportRotationEntry const* node)
+{
+    TransportAnimation& animNode = _transportAnimations[transportEntry];
+    animNode.Rotations[timeSeg] = node;
+
+    if (animNode.Path.empty() && animNode.TotalTime < timeSeg)
+        animNode.TotalTime = timeSeg;
+}
+
 MapTransport* TransportMgr::CreateTransport(uint32 entry, ObjectGuid::LowType guid /*= 0*/, Map* map /*= nullptr*/, uint8 phaseUseFlags /*= 0*/, uint32 phaseId /*= 0*/, uint32 phaseGroupId /*= 0*/)
 {
     // instance case, execute GetGameObjectEntry hook
@@ -512,50 +521,50 @@ void TransportMgr::CreateInstanceTransports(Map* map)
         CreateTransport(*itr, UI64LIT(0), map);
 }
 
-TransportAnimationEntry const* TransportAnimation::GetAnimNode(uint32 time) const
+TransportAnimationEntry const* TransportAnimation::GetPrevAnimNode(uint32 time) const
 {
     if (Path.empty())
         return nullptr;
 
-    TransportPathContainer::const_iterator itr = Path.find(time);
-    return itr != Path.end() ? itr->second : nullptr;
+    auto itr = Path.lower_bound(time);
+    if (itr != Path.begin())
+        return std::prev(itr)->second;
+
+    return Path.rbegin()->second;
 }
 
-void TransportAnimation::GetAnimRotation(uint32 time, QuaternionData& curr, QuaternionData& next, float& percRot) const
+TransportRotationEntry const* TransportAnimation::GetPrevAnimRotation(uint32 time) const
 {
     if (Rotations.empty())
-    {
-        curr = QuaternionData(0.0f, 0.0f, 0.0f, 1.0f);
-        next = QuaternionData(0.0f, 0.0f, 0.0f, 1.0f);
-        percRot = 0.0f;
-        return;
-    }
+        return nullptr;
 
-    for (TransportPathRotationContainer::const_reverse_iterator itr = Rotations.rbegin(); itr != Rotations.rend(); ++itr)
-        if (time >= itr->first)
-        {
-            uint32 currSeg = itr->second->TimeIndex;
-            uint32 nextSeg = 0;
+    auto itr = Rotations.lower_bound(time);
+    if (itr != Rotations.begin())
+        return std::prev(itr)->second;
 
-            curr = QuaternionData(itr->second->Rot[0], itr->second->Rot[1], itr->second->Rot[2], itr->second->Rot[3]);
-            if (itr != Rotations.rbegin())
-            {
-                --itr;
-                next = QuaternionData(itr->second->Rot[0], itr->second->Rot[1], itr->second->Rot[2], itr->second->Rot[3]);
-                nextSeg = itr->second->TimeIndex;
-            }
-            else
-            {
-                next = QuaternionData(Rotations.begin()->second->Rot[0], Rotations.begin()->second->Rot[1], Rotations.begin()->second->Rot[2], Rotations.begin()->second->Rot[3]);
-                nextSeg = this->TotalTime;
-            }
+    return Rotations.rbegin()->second;
+}
 
-            percRot = float(time - currSeg) / float(nextSeg - currSeg);
+TransportAnimationEntry const* TransportAnimation::GetNextAnimNode(uint32 time) const
+{
+    if (Path.empty())
+        return nullptr;
 
-            return;
-        }
+    auto itr = Path.lower_bound(time);
+    if (itr != Path.end())
+        return itr->second;
 
-    curr = QuaternionData(0.0f, 0.0f, 0.0f, 1.0f);
-    next = QuaternionData(0.0f, 0.0f, 0.0f, 1.0f);
-    percRot = 0.0f;
+    return Path.begin()->second;
+}
+
+TransportRotationEntry const* TransportAnimation::GetNextAnimRotation(uint32 time) const
+{
+    if (Rotations.empty())
+        return nullptr;
+
+    auto itr = Rotations.lower_bound(time);
+    if (itr != Rotations.end())
+        return itr->second;
+
+    return Rotations.begin()->second;
 }

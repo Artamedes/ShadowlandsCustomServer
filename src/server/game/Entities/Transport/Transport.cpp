@@ -93,7 +93,7 @@ void TransportBase::UpdatePassengerPosition(Map* map, WorldObject* passenger, fl
 }
 
 Transport::Transport() : GameObject(),
-_passengerTeleportItr(_passengers.begin()), _currentTransportTime(0), _destinationStopFrameTime(0),
+_passengerTeleportItr(_passengers.begin()), _currentTransportTime(0), _destinationStopFrameTime(0), _pathProgress(0),
 _alignmentTransportTime(0), _lastStopFrameTime(0), _isDynamicTransport(false), _initialRelocate(false),
 _isLoop(false), _loopTimer(0), _moveDirection(TRANSPORT_MOVE_DIRECTION_STOPPED)
 {
@@ -162,7 +162,7 @@ void Transport::AddPassenger(WorldObject* passenger)
     }
 }
 
-void Transport::RemovePassenger(WorldObject* passenger)
+Transport* Transport::RemovePassenger(WorldObject* passenger)
 {
     bool erased = false;
     if (_passengerTeleportItr != _passengers.end())
@@ -207,6 +207,7 @@ void Transport::RemovePassenger(WorldObject* passenger)
         }
     }
 
+    return this;
 }
 
 bool Transport::Create(uint32 entry, Map* map, Position const& pos, QuaternionData const& rotation, uint32 animProgress, GOState goState, uint32 artKit, bool dynamic, ObjectGuid::LowType spawnid)
@@ -316,6 +317,7 @@ bool Transport::CreateTransport(ObjectGuid::LowType guidlow, uint32 entry, uint3
         ReplaceAllFlags(GameObjectFlags(m_goTemplateAddon->Flags));
     }
 
+    _pathProgress = 0;
     SetObjectScale(goinfo->size);
     SetEntry(goinfo->entry);
     SetDisplayId(goinfo->displayId);
@@ -685,9 +687,9 @@ void MapTransport::Update(uint32 diff)
         return;
 
     if (IsMoving() || !_pendingStop)
-        m_goValue.Transport.PathProgress += diff;
+        _pathProgress += diff;
 
-    uint32 timer = m_goValue.Transport.PathProgress % GetTransportPeriod();
+    uint32 timer = _pathProgress % GetTransportPeriod();
     bool justStopped = false;
 
     // Set current waypoint
@@ -711,9 +713,9 @@ void MapTransport::Update(uint32 diff)
                 if (_pendingStop && GetGoState() != GO_STATE_READY)
                 {
                     SetGoState(GO_STATE_READY);
-                    m_goValue.Transport.PathProgress = (m_goValue.Transport.PathProgress / GetTransportPeriod());
-                    m_goValue.Transport.PathProgress *= GetTransportPeriod();
-                    m_goValue.Transport.PathProgress += _currentFrame->ArriveTime;
+                    _pathProgress = (_pathProgress / GetTransportPeriod());
+                    _pathProgress *= GetTransportPeriod();
+                    _pathProgress += _currentFrame->ArriveTime;
                 }
                 break;  // its a stop frame and we are waiting
             }
@@ -1020,6 +1022,11 @@ TempSummon* Transport::SummonPassenger(uint32 entry, Position const& pos, TempSu
     summon->SetTempSummonType(summonType);
 
     return summon;
+}
+
+int32 Transport::GetMapIdForSpawning() const
+{
+    return GetGOInfo()->moTransport.SpawnMap;
 }
 
 void MapTransport::UpdatePosition(float x, float y, float z, float o)

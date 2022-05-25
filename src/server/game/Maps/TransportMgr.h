@@ -94,8 +94,11 @@ struct TC_GAME_API TransportAnimation
     TransportPathRotationContainer Rotations;
     uint32 TotalTime;
 
-    TransportAnimationEntry const* GetAnimNode(uint32 time) const;
-    void GetAnimRotation(uint32 time, QuaternionData& curr, QuaternionData& next, float& percRot) const;
+    TransportAnimationEntry const* GetPrevAnimNode(uint32 time) const;
+    TransportRotationEntry const* GetPrevAnimRotation(uint32 time) const;
+
+    TransportAnimationEntry const* GetNextAnimNode(uint32 time) const;
+    TransportRotationEntry const* GetNextAnimRotation(uint32 time) const;
 };
 
 typedef std::map<uint32, TransportAnimation> TransportAnimationContainer;
@@ -148,10 +151,7 @@ class TC_GAME_API TransportMgr
 
         void AddPathNodeToTransport(uint32 transportEntry, uint32 timeSeg, TransportAnimationEntry const* node);
 
-        void AddPathRotationToTransport(uint32 transportEntry, uint32 timeSeg, TransportRotationEntry const* node)
-        {
-            _transportAnimations[transportEntry].Rotations[timeSeg] = node;
-        }
+        void AddPathRotationToTransport(uint32 transportEntry, uint32 timeSeg, TransportRotationEntry const* node);
 
         // Container storing transport templates
         TransportTemplates _transportTemplates;

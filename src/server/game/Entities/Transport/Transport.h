@@ -41,31 +41,36 @@ class TC_GAME_API Transport : public GameObject, public TransportBase
         bool CreateTransport(ObjectGuid::LowType guidlow, uint32 entry, uint32 mapid, Position const& pos, uint32 animprogress);
 
         void CleanupsBeforeDelete(bool finalCleanup = true) override;
-
-        void AddPassenger(WorldObject* passenger);
-        virtual void RemovePassenger(WorldObject* passenger);
+        
+        void AddPassenger(WorldObject* passenger) override;
+        Transport* RemovePassenger(WorldObject* passenger) override;
         PassengerSet const& GetPassengers() const { return _passengers; }
 
         /// This method transforms supplied transport offsets into global coordinates
         void CalculatePassengerPosition(float& x, float& y, float& z, float* o = nullptr) const override
         {
-            TransportBase::CalculatePassengerPosition(x, y, z, o, GetPositionX(), GetPositionY(), GetPositionZ(), GetOrientation());
+            TransportBase::CalculatePassengerPosition(x, y, z, o, GetPositionX(), GetPositionY(), GetPositionZ(), GetTransportOrientation());
         }
 
         /// This method transforms supplied global coordinates into local offsets
         void CalculatePassengerOffset(float& x, float& y, float& z, float* o = nullptr) const override
         {
-            TransportBase::CalculatePassengerOffset(x, y, z, o, GetPositionX(), GetPositionY(), GetPositionZ(), GetOrientation());
+            TransportBase::CalculatePassengerOffset(x, y, z, o, GetPositionX(), GetPositionY(), GetPositionZ(), GetTransportOrientation());
         }
 
         void Update(uint32 diff) override;
 
         bool IsDynamicTransport() const { return _isDynamicTransport; }
 
-        uint32 GetPathProgress() const { return GetGOValue()->Transport.PathProgress; }
-        void SetPathProgress(uint32 val) { m_goValue.Transport.PathProgress = val; }
+        uint32 GetPathProgress() const { return _pathProgress; }
+        void SetPathProgress(uint32 val) { _pathProgress = val; }
 
-        virtual uint32 GetTransportPeriod() const;
+        uint32 GetTransportPeriod() const { return m_gameObjectData->Level; }
+        int32 GetMapIdForSpawning() const override;
+
+        void SetPeriod(uint32 period) { SetLevel(period); }
+        uint32 GetTimer() const { return _pathProgress; }
+
         void SetTransportState(GOState state, bool instant = false);
         void SetTransportLoop(bool on);
 
@@ -100,6 +105,10 @@ class TC_GAME_API Transport : public GameObject, public TransportBase
         Creature* CreateNPCPassenger(ObjectGuid::LowType guid, CreatureData const* data);
         GameObject* CreateGOPassenger(ObjectGuid::LowType guid, GameObjectData const* data);
         TempSummon* SummonPassenger(uint32 entry, Position const& pos, TempSummonType summonType, SummonPropertiesEntry const* properties = NULL, uint32 duration = 0, Unit* summoner = NULL, uint32 spellId = 0, uint32 vehId = 0);
+
+        ObjectGuid GetTransportGUID() const override { return GetGUID(); }
+
+        float GetTransportOrientation() const override { return GetOrientation(); }
 
         void LoadMMaps();
         void UnLoadMMaps();
@@ -150,9 +159,6 @@ class TC_GAME_API MapTransport : public Transport
 
         void BuildUpdate(UpdateDataMapType& data_map) override;
 
-        uint32 GetTransportPeriod() const override { return m_gameObjectData->Level; }
-        void SetPeriod(uint32 period) { SetLevel(period); }
-
         KeyFrameVec const& GetKeyFrames() const { return _transportInfo->keyFrames; }
 
         void UpdatePosition(float x, float y, float z, float o);
@@ -180,6 +186,7 @@ class TC_GAME_API MapTransport : public Transport
 
         KeyFrameVec::const_iterator _currentFrame;
         KeyFrameVec::const_iterator _nextFrame;
+        uint32 _pathProgress;
         TimeTracker _positionChangeTimer;
         bool _isMoving;
         bool _pendingStop;
