@@ -74,7 +74,10 @@ public:
 struct npc_flesh_eater_730610 : public BossAI
 {
 public:
-    npc_flesh_eater_730610(Creature* creature) : BossAI(creature, BossFleshEater) { }
+    npc_flesh_eater_730610(Creature* creature) : BossAI(creature, BossFleshEater)
+    {
+        ApplyAllImmunities(true);
+    }
 
     enum FleshEater
     {
@@ -145,6 +148,34 @@ public:
         DoMeleeAttackIfReady();
     }
 
+    void DamageDealt(Unit* victim, uint32& damage, DamageEffectType type, SpellInfo const* spellInfo /*= nullptr*/) override
+    {
+        if (spellInfo && victim)
+        {
+            switch (spellInfo->Id)
+            {
+                case Bladestorm:
+                    damage += victim->CountPctFromMaxHealth(25);
+                    break;
+                case ChainCleave:
+                {
+                    uint32 addition = 5;
+
+                    if (instance && instance->IsChallenge() && instance->GetChallenge())
+                        addition *= instance->GetChallenge()->GetChallengeLevel();
+
+                    damage += victim->CountPctFromMaxHealth(50 + addition);
+                    break;
+                }
+                case HackAndCleave:
+                {
+                    damage += victim->CountPctFromMaxHealth(3);
+                    break;
+                }
+            }
+        }
+    }
+
     bool didIntro = false;
     void OnUnitRelocation(Unit* who) override
     {
@@ -167,7 +198,10 @@ public:
 struct npc_skulloc_730612 : public BossAI
 {
 public:
-    npc_skulloc_730612(Creature* creature) : BossAI(creature, BossSkulloc) { }
+    npc_skulloc_730612(Creature* creature) : BossAI(creature, BossSkulloc)
+    {
+        ApplyAllImmunities(true);
+    }
 
     enum Skulloc
     {
@@ -662,7 +696,10 @@ public:
 struct npc_shulloc_730613 : public BossAI
 {
 public:
-    npc_shulloc_730613(Creature* creature) : BossAI(creature, BossShulloc) { ApplyAllImmunities(true); }
+    npc_shulloc_730613(Creature* creature) : BossAI(creature, BossShulloc)
+    {
+        ApplyAllImmunities(true);
+    }
 
     enum Shulloc
     {
@@ -947,7 +984,7 @@ public:
             return;
 
         if (!me->HasUnitState(UNIT_STATE_CASTING))
-            DoCastVictim(239591); // Chaos bolt
+            DoCastVictim(235951); // Chaos bolt
     }
 };
 
@@ -1004,7 +1041,10 @@ public:
 struct npc_felloc_705010 : public BossAI
 {
 public:
-    npc_felloc_705010(Creature* creature) : BossAI(creature, BossFelloc) { }
+    npc_felloc_705010(Creature* creature) : BossAI(creature, BossFelloc)
+    {
+        ApplyAllImmunities(true);
+    }
 
     enum Felloc
     {
@@ -1233,7 +1273,10 @@ public:
 struct npc_marc_705008 : public BossAI
 {
 public:
-    npc_marc_705008(Creature* creature) : BossAI(creature, BossMarc) { }
+    npc_marc_705008(Creature* creature) : BossAI(creature, BossMarc)
+    {
+        ApplyAllImmunities(true);
+    }
 
     void JustEngagedWith(Unit* who) override
     {
