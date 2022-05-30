@@ -12755,6 +12755,10 @@ uint32 Unit::GetModelForForm(ShapeshiftForm form, uint32 spellId) const
 
     if (Player const* player = ToPlayer())
     {
+        // Check if in Cat Form and have Druid of the Flames or Burning Essence aura
+        if ((form == FORM_CAT_FORM) && (HasAura(99245) || HasAura(138927)))
+            return 38150;
+
         if (Aura* artifactAura = GetAura(ARTIFACTS_ALL_WEAPONS_GENERAL_WEAPON_EQUIPPED_PASSIVE))
             if (Item* artifact = player->GetItemByGuid(artifactAura->GetCastItemGUID()))
                 if (ArtifactAppearanceEntry const* artifactAppearance = sArtifactAppearanceStore.LookupEntry(artifact->GetModifier(ITEM_MODIFIER_ARTIFACT_APPEARANCE_ID)))
@@ -12812,12 +12816,473 @@ uint32 Unit::GetModelForForm(ShapeshiftForm form, uint32 spellId) const
         }
         switch (form)
         {
+            case FORM_CAT_FORM:
+            {
+                // check Incarnation
+                bool epic = HasAura(102543);
+
+                // Based on Hair color
+                if (GetRace() == RACE_NIGHTELF)
+                {
+                    uint8 hairColor = player->GetCustomizationChoice(3);
+                    if (HasAura(210333)) // Glyph of the Feral Chameleon
+                        hairColor = urand(0, 10);
+
+                    switch (hairColor)
+                    {
+                        case 7: // Violet
+                        case 8:
+                            return epic ? 43764 : 29405;
+                        case 3: // Light Blue
+                            return epic ? 43763 : 29406;
+                        case 0: // Green
+                        case 1: // Light Green
+                        case 2: // Dark Green
+                            return epic ? 43762 : 29407;
+                        case 4: // White
+                            return epic ? 43765 : 29408;
+                        default: // Original - Dark Blue
+                            return epic ? 43761 : 892;
+                    }
+                }
+                else if (GetRace() == RACE_TROLL)
+                {
+                    uint8 hairColor = player->GetCustomizationChoice(3);
+                    if (HasAura(210333)) // Glyph of the Feral Chameleon
+                        hairColor = urand(0, 12);
+
+                    switch (hairColor)
+                    {
+                        case 0: // Red
+                        case 1:
+                            return epic ? 43776 : 33668;
+                        case 2: // Yellow
+                        case 3:
+                            return epic ? 43778 : 33667;
+                        case 4: // Blue
+                        case 5:
+                        case 6:
+                            return epic ? 43773 : 33666;
+                        case 7: // Purple
+                        case 10:
+                            return epic ? 43775 : 33665;
+                        default: // Original - White
+                            return epic ? 43777 : 33669;
+                    }
+                }
+                else if (GetRace() == RACE_WORGEN)
+                {
+                    // Based on Skin color
+                    uint8 skinColor = player->GetCustomizationChoice(0);
+                    if (HasAura(210333)) // Glyph of the Feral Chameleon
+                        skinColor = urand(0, 9);
+
+                    // Male
+                    if (GetGender() == GENDER_MALE)
+                    {
+                        switch (skinColor)
+                        {
+                            case 1: // Brown
+                                return epic ? 43781 : 33662;
+                            case 2: // Black
+                            case 7:
+                                return epic ? 43780 : 33661;
+                            case 4: // yellow
+                                return epic ? 43784 : 33664;
+                            case 3: // White
+                            case 5:
+                                return epic ? 43785 : 33663;
+                            default: // original - Gray
+                                return epic ? 43782 : 33660;
+                        }
+                    }
+                    // Female
+                    else
+                    {
+                        switch (skinColor)
+                        {
+                            case 5: // Brown
+                            case 6:
+                                return epic ? 43781 : 33662;
+                            case 7: // Black
+                            case 8:
+                                return epic ? 43780 : 33661;
+                            case 3: // yellow
+                            case 4:
+                                return epic ? 43784 : 33664;
+                            case 2: // White
+                                return epic ? 43785 : 33663;
+                            default: // original - Gray
+                                return epic ? 43782 : 33660;
+                        }
+                    }
+                }
+                // Based on Skin color
+                else if (GetRace() == RACE_TAUREN)
+                {
+                    uint8 skinColor = player->GetCustomizationChoice(0);
+                    if (HasAura(210333)) // Glyph of the Feral Chameleon
+                        skinColor = urand(0, 20);
+
+                    // Male
+                    if (GetGender() == GENDER_MALE)
+                    {
+                        switch (skinColor)
+                        {
+                            case 12: // White
+                            case 13:
+                            case 14:
+                            case 18: // Completly White
+                                return epic ? 43769 : 29409;
+                            case 9: // Light Brown
+                            case 10:
+                            case 11:
+                                return epic ? 43770 : 29410;
+                            case 6: // Brown
+                            case 7:
+                            case 8:
+                                return epic ? 43768 : 29411;
+                            case 0: // Dark
+                            case 1:
+                            case 2:
+                            case 3: // Dark Grey
+                            case 4:
+                            case 5:
+                                return epic ? 43766 : 29412;
+                            default: // original - Grey
+                                return epic ? 43767 : 8571;
+                        }
+                    }
+                    // Female
+                    else
+                    {
+                        switch (skinColor)
+                        {
+                            case 10: // White
+                                return epic ? 43769 : 29409;
+                            case 6: // Light Brown
+                            case 7:
+                                return epic ? 43770 : 29410;
+                            case 4: // Brown
+                            case 5:
+                                return epic ? 43768 : 29411;
+                            case 0: // Dark
+                            case 1:
+                            case 2:
+                            case 3:
+                                return epic ? 43766 : 29412;
+                            default: // original - Grey
+                                return epic ? 43767 : 8571;
+                        }
+                    }
+                }
+                else if (GetRace() == RACE_HIGHMOUNTAIN_TAUREN)
+                {
+                    uint8 skinColor = player->GetCustomizationChoice(0);
+                    if (HasAura(210333)) // Glyph of the Feral Chameleon
+                        skinColor = urand(0, 4);
+
+                    // Highmountain Tauren have only 4 fur colors option :c
+                    switch (skinColor)
+                    {
+                        case 0:
+                            return 80598; // dark brown
+                        case 1:
+                            return 80597; // brown
+                        case 2:
+                            return 80599; // light brown with white horns
+                        case 3:
+                            return 80596; // dark
+                        case 4:
+                        default:
+                            return 80600; // light brown with brown horns (this one possibly bugged)
+
+                    }
+                }
+                else if (Player::TeamForRace(GetRace()) == ALLIANCE)
+                    return 892;
+                else
+                    return 8571;
+            }
+            case FORM_BEAR_FORM:
+            {
+                // check Incarnation
+                bool epic = HasAura(102558);
+                // Based on Hair color
+                if (GetRace() == RACE_NIGHTELF)
+                {
+                    uint8 hairColor = player->GetCustomizationChoice(3);
+                    if (HasAura(107059)) // Glyph of the Ursol Chameleon
+                        hairColor = urand(0, 8);
+
+                    switch (hairColor)
+                    {
+                        case 0: // Green
+                        case 1: // Light Green
+                        case 2: // Dark Green
+                            return epic ? 43759 : 29413;
+                        case 6: // Dark Blue
+                            return epic ? 43756 : 29414;
+                        case 4: // White
+                            return epic ? 43760 : 29416;
+                        case 3: // Light Blue
+                            return epic ? 43757 : 29415;
+                        default: // original - Violet
+                            return epic ? 43758 : 2281;
+                    }
+                }
+                else if (GetRace() == RACE_TROLL)
+                {
+                    uint8 hairColor = player->GetCustomizationChoice(3);
+                    if (HasAura(107059)) // Glyph of the Ursol Chameleon
+                        hairColor = urand(0, 14);
+
+                    switch (hairColor)
+                    {
+                        case 0: // Red
+                        case 1:
+                            return epic ? 43748 : 33657;
+                        case 2: // Yellow
+                        case 3:
+                            return epic ? 43750 : 33659;
+                        case 7: // Purple
+                        case 10:
+                            return epic ? 43747 : 33656;
+                        case 8: // White
+                        case 9:
+                        case 11:
+                        case 12:
+                            return epic ? 43749 : 33658;
+                        default: // Original - Blue
+                            return epic ? 43746 : 33655;
+                    }
+                }
+                else if (GetRace() == RACE_WORGEN)
+                {
+                    // Based on Skin color
+                    uint8 skinColor = player->GetCustomizationChoice(0);
+                    if (HasAura(107059)) // Glyph of the Ursol Chameleon
+                        skinColor = urand(0, 8);
+
+                    // Male
+                    if (GetGender() == GENDER_MALE)
+                    {
+                        switch (skinColor)
+                        {
+                            case 1: // Brown
+                                return epic ? 43752 : 33652;
+                            case 2: // Black
+                            case 7:
+                                return epic ? 43751 : 33651;
+                            case 4: // Yellow
+                                return epic ? 43754 : 33653;
+                            case 3: // White
+                            case 5:
+                                return epic ? 43755 : 33654;
+                            default: // original - Gray
+                                return epic ? 43753 : 33650;
+                        }
+                    }
+                    // Female
+                    else
+                    {
+                        switch (skinColor)
+                        {
+                            case 5: // Brown
+                            case 6:
+                                return epic ? 43752 : 33652;
+                            case 7: // Black
+                            case 8:
+                                return epic ? 43751 : 33651;
+                            case 3: // yellow
+                            case 4:
+                                return epic ? 43755 : 33654;
+                            case 2: // White
+                                return epic ? 43754 : 33653;
+                            default: // original - Gray
+                                return epic ? 43753 : 33650;
+                        }
+                    }
+                }
+                // Based on Skin color
+                else if (GetRace() == RACE_TAUREN)
+                {
+                    uint8 skinColor = player->GetCustomizationChoice(0);
+                    if (HasAura(107059)) // Glyph of the Ursol Chameleon
+                        skinColor = urand(0, 20);
+
+                    // Male
+                    if (GetGender() == GENDER_MALE)
+                    {
+                        switch (skinColor)
+                        {
+                            case 0: // Dark (Black)
+                            case 1:
+                            case 2:
+                                return epic ? 43741 : 29418;
+                            case 3: // White
+                            case 4:
+                            case 5:
+                            case 12:
+                            case 13:
+                            case 14:
+                                return epic ? 43743 : 29419;
+                            case 9: // Light Brown/Grey
+                            case 10:
+                            case 11:
+                            case 15:
+                            case 16:
+                            case 17:
+                                return epic ? 43745 : 29420;
+                            case 18: // Completly White
+                                return epic ? 43744 : 29421;
+                            default: // original - Brown
+                                return epic ? 43742 : 2289;
+                        }
+                    }
+                    // Female
+                    else
+                    {
+                        switch (skinColor)
+                        {
+                            case 0: // Dark (Black)
+                            case 1:
+                                return epic ? 43741 : 29418;
+                            case 2: // White
+                            case 3:
+                                return epic ? 43743 : 29419;
+                            case 6: // Light Brown/Grey
+                            case 7:
+                            case 8:
+                            case 9:
+                                return epic ? 43745 : 29420;
+                            case 10: // Completly White
+                                return epic ? 43744 : 29421;
+                            default: // original - Brown
+                                return epic ? 43742 : 2289;
+                        }
+                    }
+                }
+                else if (GetRace() == RACE_HIGHMOUNTAIN_TAUREN)
+                {
+                    uint8 skinColor = player->GetCustomizationChoice(0);
+                    if (HasAura(107059)) // Glyph of the Ursol Chameleon
+                        skinColor = urand(0, 4);
+
+                    // Highmountain Tauren have only 4 fur colors option :c
+                    switch (skinColor)
+                    {
+                        case 0:
+                            return 80592; // red
+                        case 1:
+                            return 80595; // brown
+                        case 2:
+                            return 80593; // grey
+                        case 3:
+                            return 80591; // dark
+                        case 4:
+                        default:
+                            return 80594; // white
+                    }
+                }
+                else if (Player::TeamForRace(GetRace()) == ALLIANCE)
+                    return 29415;
+                else
+                    return 2289;
+            }
+            case FORM_FLIGHT_FORM:
+                if (Player::TeamForRace(GetRace()) == ALLIANCE)
+                    return 20857;
+                return 20872;
+            case FORM_FLIGHT_FORM_EPIC:
+            {
+                bool isMount = HasAura(231437);
+                bool sentinel = HasAura(219062); // Glyph of the Sentinel
+                if (Player::TeamForRace(GetRace()) == HORDE)
+                {
+                    if (GetRace() == RACE_TROLL)
+                        return sentinel ? 64331 : (isMount ? 74306 : 37730);
+                    else if (GetRace() == RACE_TAUREN)
+                        return sentinel ? 64329 : (isMount ? 74304 : 21244);
+                    else if (GetRace() == RACE_HIGHMOUNTAIN_TAUREN)
+                        return sentinel ? 64329 : (isMount ? 74304 : 81439);
+                }
+                else if (Player::TeamForRace(GetRace()) == ALLIANCE)
+                {
+                    if (GetRace() == RACE_NIGHTELF)
+                        return sentinel ? 64328 : (isMount ? 74305 : 21243);
+                    else if (GetRace() == RACE_WORGEN)
+                        return sentinel ? 64330 : (isMount ? 74307 : 37729);
+                }
+            }
+            case FORM_MOONKIN_FORM:
+            case FORM_MOONKIN_FORM_RESTORATION:
+            {
+                // Glyph of Stars
+                if (HasAura(114301))
+                    return GetNativeDisplayId();
+
+                // check Incarnation
+                bool epic = HasAura(102560);
+
+                switch (GetRace())
+                {
+                    case RACE_NIGHTELF:
+                        return epic ? 43790 : 15374;
+                    case RACE_HIGHMOUNTAIN_TAUREN:
+                    case RACE_TAUREN:
+                        return epic ? 43786 : 15375;
+                    case RACE_WORGEN:
+                        return epic ? 43787 : 37173;
+                    case RACE_TROLL:
+                    default:
+                        return epic ? 43789 : 37174;
+                }
+                break;
+            }
+            case FORM_AQUATIC_FORM:
+                if (HasAura(114333)) // Glyph of the Orca
+                    return 4591;
+                return 2428;
+            case FORM_TRAVEL_FORM:
+            {
+                if (HasAura(131113)) // Glyph of the Cheetah
+                    return 1043;
+
+                if (HasAura(224122)) // Glyph of the Doe
+                    return 70450;
+
+                switch (GetRace())
+                {
+                    case RACE_NIGHTELF:
+                    case RACE_WORGEN:
+                        return 40816;
+                    case RACE_TROLL:
+                    case RACE_TAUREN:
+                        return 45339;
+                    case RACE_HIGHMOUNTAIN_TAUREN:
+                        if (GetGender() == GENDER_MALE)
+                            return 81113;
+                        else
+                            return 81440;
+                    default:
+                        break;
+                }
+                break;
+            }
             case FORM_GHOST_WOLF:
             {
                 if (HasAura(58135)) // Glyph of Spectral Wolf
                     return 60247;
-                break;
+                // Glyph of the Spectral Raptor
+                else if (HasAura(212631))
+                    return 74353;
             }
+            case FORM_SPIRIT_OF_REDEMPTION:
+                // Glyph of the Val'kyr
+                if (HasAura(126094))
+                    return 67161;
+                break;
             default:
                 break;
         }
