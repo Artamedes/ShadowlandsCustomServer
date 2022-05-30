@@ -1413,11 +1413,6 @@ public:
         }
     };
 
-    SpellScript* GetSpellScript() const override
-    {
-        return new spell_warl_life_tap_SpellScript();
-    }
-
     class spell_warl_life_tap_AuraScript : public AuraScript
     {
         PrepareAuraScript(spell_warl_life_tap_AuraScript);
@@ -1435,6 +1430,11 @@ public:
             DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_warl_life_tap_AuraScript::CalculateAmount, EFFECT_2, SPELL_AURA_SCHOOL_HEAL_ABSORB);
         }
     };
+
+    SpellScript* GetSpellScript() const override
+    {
+        return new spell_warl_life_tap_SpellScript();
+    }
 
     AuraScript* GetAuraScript() const override
     {
@@ -7405,61 +7405,93 @@ class aura_warl_cremation : public AuraScript
 };
 
 // 234153 - Drain Life
-class aura_warl_drain_life : public AuraScript
+class aura_warl_drain_life : public SpellScriptLoader
 {
-	PrepareAuraScript(aura_warl_drain_life);
+public:
+    aura_warl_drain_life() : SpellScriptLoader("aura_warl_drain_life") { }
 
-	bool Validate(SpellInfo const* /*spellInfo*/) override
-	{
-		return ValidateSpellInfo({ SPELL_WARLOCK_ROT_AND_DECAY });
-	}
-
-    enum SoulRot
+    class spell_warl_drain_life_SpellScript : public SpellScript
     {
-        SoulRotDrainLifeAura = 331623,
-        SoulRotDebuff = 325640,
+        PrepareSpellScript(spell_warl_drain_life_SpellScript);
+
+
+        enum SoulRot
+        {
+            SoulRotDrainLifeAura = 331623,
+            SoulRotDebuff = 325640,
+        };
+
+        void HandleBeforeCast()
+        {
+            Unit* caster = GetCaster();
+            if (!caster)
+                return;
+            if (caster->HasAura(SoulRotDrainLifeAura))
+            {
+                std::list<Unit*> extraTargets;
+                caster->GetAttackableUnitListInRange(extraTargets, 40.0f);
+                for (auto unit : extraTargets)
+                {
+                    if (unit->HasAura(SoulRotDebuff, caster->GetGUID()) && !unit->HasAura(GetSpellInfo()->Id, caster->GetGUID()))
+                        caster->AddChannelObject(unit->GetGUID());
+                }
+            }
+        }
+
+        void Register() override
+        {
+            BeforeCast += SpellCastFn(spell_warl_drain_life_SpellScript::HandleBeforeCast);
+        }
     };
 
-	void HandlePeriodic(AuraEffect const* /*aurEff*/)
-	{
-		Unit* caster = GetCaster();
-		Unit* owner = GetUnitOwner();
-		if (!caster || !owner)
-			return;
+    class spell_warl_drain_life_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_warl_drain_life_AuraScript);
 
-		if (Aura* aura = owner->GetAura(SPELL_WARLOCK_UNSTABLE_AFFLICTION_DAMAGE_1, caster->GetGUID()))
-			aura->ModDuration(sSpellMgr->GetSpellInfo(SPELL_WARLOCK_ROT_AND_DECAY)->GetEffect(EFFECT_0).BasePoints);
-		if (Aura* aura = owner->GetAura(SPELL_WARLOCK_UNSTABLE_AFFLICTION_DAMAGE_2, caster->GetGUID()))
-			aura->ModDuration(sSpellMgr->GetSpellInfo(SPELL_WARLOCK_ROT_AND_DECAY)->GetEffect(EFFECT_0).BasePoints);
-		if (Aura* aura = owner->GetAura(SPELL_WARLOCK_UNSTABLE_AFFLICTION_DAMAGE_3, caster->GetGUID()))
-			aura->ModDuration(sSpellMgr->GetSpellInfo(SPELL_WARLOCK_ROT_AND_DECAY)->GetEffect(EFFECT_0).BasePoints);
-		if (Aura* aura = owner->GetAura(SPELL_WARLOCK_UNSTABLE_AFFLICTION_DAMAGE_4, caster->GetGUID()))
-			aura->ModDuration(sSpellMgr->GetSpellInfo(SPELL_WARLOCK_ROT_AND_DECAY)->GetEffect(EFFECT_0).BasePoints);
-		if (Aura* aura = owner->GetAura(SPELL_WARLOCK_UNSTABLE_AFFLICTION_DAMAGE_5, caster->GetGUID()))
-			aura->ModDuration(sSpellMgr->GetSpellInfo(SPELL_WARLOCK_ROT_AND_DECAY)->GetEffect(EFFECT_0).BasePoints);
-		if (Aura* aura = owner->GetAura(SPELL_WARLOCK_CORRUPTION_DAMAGE, caster->GetGUID()))
-			aura->ModDuration(sSpellMgr->GetSpellInfo(SPELL_WARLOCK_ROT_AND_DECAY)->GetEffect(EFFECT_0).BasePoints);
-		if (Aura* aura = owner->GetAura(SPELL_WARLOCK_AGONY, caster->GetGUID()))
-			aura->ModDuration(sSpellMgr->GetSpellInfo(SPELL_WARLOCK_ROT_AND_DECAY)->GetEffect(EFFECT_0).BasePoints);
 
-        // looks like need to make a system
-        //if (caster->HasAura(SoulRotDrainLifeAura))
-        //{
-        //    std::list<Unit*> extraTargets;
-        //    caster->GetAttackableUnitListInRange(extraTargets, 40.0f);
-        //    for (auto unit : extraTargets)
-        //    {
-        //        if (unit != owner)
-        //            if (unit->HasAura(SoulRotDebuff, caster->GetGUID()) && !unit->HasAura(GetSpellInfo()->Id, caster->GetGUID()))
-        //                caster->CastSpell(unit, GetSpellInfo()->Id, true);
-        //    }
-        //}
-	}
+        bool Validate(SpellInfo const* /*spellInfo*/) override
+        {
+            return ValidateSpellInfo({ SPELL_WARLOCK_ROT_AND_DECAY });
+        }
 
-	void Register()
-	{
-		OnEffectPeriodic += AuraEffectPeriodicFn(aura_warl_drain_life::HandlePeriodic, EFFECT_0, SPELL_AURA_PERIODIC_LEECH);
-	}
+        void HandlePeriodic(AuraEffect const* /*aurEff*/)
+        {
+            Unit* caster = GetCaster();
+            Unit* owner = GetUnitOwner();
+            if (!caster || !owner)
+                return;
+
+            if (Aura* aura = owner->GetAura(SPELL_WARLOCK_UNSTABLE_AFFLICTION_DAMAGE_1, caster->GetGUID()))
+                aura->ModDuration(sSpellMgr->GetSpellInfo(SPELL_WARLOCK_ROT_AND_DECAY)->GetEffect(EFFECT_0).BasePoints);
+            if (Aura* aura = owner->GetAura(SPELL_WARLOCK_UNSTABLE_AFFLICTION_DAMAGE_2, caster->GetGUID()))
+                aura->ModDuration(sSpellMgr->GetSpellInfo(SPELL_WARLOCK_ROT_AND_DECAY)->GetEffect(EFFECT_0).BasePoints);
+            if (Aura* aura = owner->GetAura(SPELL_WARLOCK_UNSTABLE_AFFLICTION_DAMAGE_3, caster->GetGUID()))
+                aura->ModDuration(sSpellMgr->GetSpellInfo(SPELL_WARLOCK_ROT_AND_DECAY)->GetEffect(EFFECT_0).BasePoints);
+            if (Aura* aura = owner->GetAura(SPELL_WARLOCK_UNSTABLE_AFFLICTION_DAMAGE_4, caster->GetGUID()))
+                aura->ModDuration(sSpellMgr->GetSpellInfo(SPELL_WARLOCK_ROT_AND_DECAY)->GetEffect(EFFECT_0).BasePoints);
+            if (Aura* aura = owner->GetAura(SPELL_WARLOCK_UNSTABLE_AFFLICTION_DAMAGE_5, caster->GetGUID()))
+                aura->ModDuration(sSpellMgr->GetSpellInfo(SPELL_WARLOCK_ROT_AND_DECAY)->GetEffect(EFFECT_0).BasePoints);
+            if (Aura* aura = owner->GetAura(SPELL_WARLOCK_CORRUPTION_DAMAGE, caster->GetGUID()))
+                aura->ModDuration(sSpellMgr->GetSpellInfo(SPELL_WARLOCK_ROT_AND_DECAY)->GetEffect(EFFECT_0).BasePoints);
+            if (Aura* aura = owner->GetAura(SPELL_WARLOCK_AGONY, caster->GetGUID()))
+                aura->ModDuration(sSpellMgr->GetSpellInfo(SPELL_WARLOCK_ROT_AND_DECAY)->GetEffect(EFFECT_0).BasePoints);
+        }
+
+        void Register() override
+        {
+            OnEffectPeriodic += AuraEffectPeriodicFn(spell_warl_drain_life_AuraScript::HandlePeriodic, EFFECT_0, SPELL_AURA_PERIODIC_LEECH);
+        }
+    };
+
+    SpellScript* GetSpellScript() const override
+    {
+        return new spell_warl_drain_life_SpellScript();
+    }
+
+    AuraScript* GetAuraScript() const override
+    {
+        return new spell_warl_drain_life_AuraScript();
+    }
 };
 
 // 212356 - Soulshatter
@@ -8039,7 +8071,7 @@ void AddSC_warlock_spell_scripts()
 	RegisterSpellScript(spell_warl_dreadbite);
     RegisterSpellScript(aura_warl_eye_of_the_observer);
 	RegisterSpellScript(aura_warl_cremation);
-	RegisterSpellScript(aura_warl_drain_life);
+    new aura_warl_drain_life();
 	RegisterSpellScript(spell_warl_soulshatter);
 	RegisterSpellScript(aura_warl_fear);
     RegisterSpellScript(spell_warl_grimoire_of_sacrifice);
