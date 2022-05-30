@@ -3842,8 +3842,8 @@ ObjectGuid WorldObject::GetTransGUID() const
 
 MapTransport* WorldObject::GetMapTransport() const
 {
-    if (GetTransport())
-        return GetTransport()->ToMapTransport();
+    if (auto transport = dynamic_cast<Transport*>(GetTransport()))
+        return transport->ToMapTransport();
 
     return nullptr;
 }

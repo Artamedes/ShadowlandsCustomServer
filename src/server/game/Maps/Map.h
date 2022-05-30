@@ -73,6 +73,7 @@ struct ScriptInfo;
 struct SmoothPhasingInfo;
 struct SummonPropertiesEntry;
 class Transport;
+class TransportBase;
 class MapTransport;
 enum Difficulty : uint8;
 enum WeatherState : uint32;
@@ -561,8 +562,8 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
         bool getObjectHitPos(PhaseShift const& phaseShift, float x1, float y1, float z1, float x2, float y2, float z2, float& rx, float &ry, float& rz, float modifyDist);
 
         bool GetDynamicObjectHitPos(PhaseShift const& phaseShift, G3D::Vector3 start, G3D::Vector3 end, G3D::Vector3& out, float finalDistMod) const;
-        bool GetWalkHitPosition(PhaseShift const& phaseShift, Transport* t, float srcX, float srcY, float srcZ, float& destX, float& destY, float& destZ, uint32 moveAllowedFlags = NAV_DEFAULT, float zSearchDist = 20.0f, bool locatedOnSteepSlope = true);
-        bool GetWalkRandomPosition(PhaseShift const& phaseShift, Transport* t, float& x, float& y, float& z, float maxRadius, uint32 moveAllowedFlags = NAV_DEFAULT);
+        bool GetWalkHitPosition(PhaseShift const& phaseShift, TransportBase* t, float srcX, float srcY, float srcZ, float& destX, float& destY, float& destZ, uint32 moveAllowedFlags = NAV_DEFAULT, float zSearchDist = 20.0f, bool locatedOnSteepSlope = true);
+        bool GetWalkRandomPosition(PhaseShift const& phaseShift, TransportBase* t, float& x, float& y, float& z, float maxRadius, uint32 moveAllowedFlags = NAV_DEFAULT);
         bool GetLosHitPosition(PhaseShift const& phaseShift, float srcX, float srcY, float srcZ, float& destX, float& destY, float& destZ, float modifyDist) const;
 
         virtual ObjectGuid::LowType GetOwnerGuildId(uint32 /*team*/ = TEAM_OTHER) const { return UI64LIT(0); }

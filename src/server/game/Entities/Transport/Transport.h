@@ -58,23 +58,32 @@ class TC_GAME_API Transport : public GameObject, public TransportBase
             TransportBase::CalculatePassengerOffset(x, y, z, o, GetPositionX(), GetPositionY(), GetPositionZ(), GetTransportOrientation());
         }
 
+        int32 GetMapIdForSpawning() const override;
+
+        void SetAutoCycleBetweenStopFrames(bool on)
+        {
+            _autoCycleBetweenStopFrames = on;
+        }
+
+        std::vector<uint32> const* GetPauseTimes() const
+        {
+            return &_stopFrames;
+        }
+
         void Update(uint32 diff) override;
 
         bool IsDynamicTransport() const { return _isDynamicTransport; }
 
+        virtual uint32 GetTransportPeriod() const;
+
         uint32 GetPathProgress() const { return _pathProgress; }
         void SetPathProgress(uint32 val) { _pathProgress = val; }
-
-        uint32 GetTransportPeriod() const { return m_gameObjectData->Level; }
-        int32 GetMapIdForSpawning() const override;
 
         void SetPeriod(uint32 period) { SetLevel(period); }
         uint32 GetTimer() const { return _pathProgress; }
 
         void SetTransportState(GOState state, bool instant = false);
         void SetTransportLoop(bool on);
-
-        void RelocateToProgress(uint32 progress);
 
         void SetDestinationStopFrameTime(uint32 time) { _destinationStopFrameTime = time; }
         uint32 GetDestinationStopFrameTime() const { return _destinationStopFrameTime; }
@@ -141,6 +150,14 @@ class TC_GAME_API Transport : public GameObject, public TransportBase
         bool _isLoop;
         uint32 _loopTimer; // wait 5000ms on every floor, blizzlike value
         TransportMoveDirection _moveDirection; // 0 stopped, 1 up, 2 down
+        uint32 _pathProgress;
+
+        TransportAnimation const* _animationInfo;
+        uint32 _stateChangeTime;
+        uint32 _stateChangeProgress;
+        std::vector<uint32> _stopFrames;
+        bool _autoCycleBetweenStopFrames;
+        TimeTracker _positionUpdateTimer;
 };
 
 class TC_GAME_API MapTransport : public Transport
@@ -169,6 +186,7 @@ class TC_GAME_API MapTransport : public Transport
 
         TransportTemplate const* GetTransportTemplate() const { return _transportInfo; }
 
+        int32 GetMapIdForSpawning() const override;
 
 
     private:
@@ -182,11 +200,12 @@ class TC_GAME_API MapTransport : public Transport
         bool IsMoving() const { return _isMoving; }
         void SetMoving(bool val) { _isMoving = val; }
 
+        uint32 GetTransportPeriod() const override { return m_gameObjectData->Level; }
+
         TransportTemplate const* _transportInfo;
 
         KeyFrameVec::const_iterator _currentFrame;
         KeyFrameVec::const_iterator _nextFrame;
-        uint32 _pathProgress;
         TimeTracker _positionChangeTimer;
         bool _isMoving;
         bool _pendingStop;

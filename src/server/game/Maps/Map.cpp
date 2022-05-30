@@ -3007,7 +3007,7 @@ bool Map::getObjectHitPos(PhaseShift const& phaseShift, float x1, float y1, floa
     return result;
 }
 
-bool Map::GetWalkHitPosition(PhaseShift const& phaseShift, Transport* transport, float srcX, float srcY, float srcZ, float& destX, float& destY, float& destZ, uint32 moveAllowedFlags, float zSearchDist, bool locatedOnSteepSlope)
+bool Map::GetWalkHitPosition(PhaseShift const& phaseShift, TransportBase* transport, float srcX, float srcY, float srcZ, float& destX, float& destY, float& destZ, uint32 moveAllowedFlags, float zSearchDist, bool locatedOnSteepSlope)
 {
     if (!Trinity::IsValidMapCoord(srcX, srcY, srcZ))
     {
@@ -3026,7 +3026,12 @@ bool Map::GetWalkHitPosition(PhaseShift const& phaseShift, Transport* transport,
     }
 
     MMAP::MMapManager* mmap = MMAP::MMapFactory::createOrGetMMapManager();
-    dtNavMeshQuery const* m_navMeshQuery = transport ? mmap->GetTransportNavMeshQuery(transport->GetDisplayId()) : mmap->GetNavMeshQuery(GetId(), GetInstanceId());
+    uint32 transportDisplayId = 0;
+
+    if (auto t = dynamic_cast<Transport*>(transport))
+        transportDisplayId = t->GetDisplayId();
+
+    dtNavMeshQuery const* m_navMeshQuery = transportDisplayId ? mmap->GetTransportNavMeshQuery(transportDisplayId) : mmap->GetNavMeshQuery(GetId(), GetInstanceId());
     if (!m_navMeshQuery)
     {
         TC_LOG_INFO("map", "WalkHitPos: No nav mesh loaded !");
@@ -3118,13 +3123,18 @@ bool Map::GetWalkHitPosition(PhaseShift const& phaseShift, Transport* transport,
 }
 
 
-bool Map::GetWalkRandomPosition(PhaseShift const& phaseShift, Transport* transport, float& x, float& y, float& z, float maxRadius, uint32 moveAllowedFlags)
+bool Map::GetWalkRandomPosition(PhaseShift const& phaseShift, TransportBase* transport, float& x, float& y, float& z, float maxRadius, uint32 moveAllowedFlags)
 {
     ASSERT(Trinity::IsValidMapCoord(x, y, z));
 
     // Trouver le navMeshQuery
     MMAP::MMapManager* mmap = MMAP::MMapFactory::createOrGetMMapManager();
-    const dtNavMeshQuery* m_navMeshQuery = transport ? mmap->GetTransportNavMeshQuery(transport->GetDisplayId()) : mmap->GetNavMeshQuery(GetId(), GetInstanceId());
+    uint32 transportDisplayId = 0;
+
+    if (auto t = dynamic_cast<Transport*>(transport))
+        transportDisplayId = t->GetDisplayId();
+
+    const dtNavMeshQuery* m_navMeshQuery = transportDisplayId ? mmap->GetTransportNavMeshQuery(transportDisplayId) : mmap->GetNavMeshQuery(GetId(), GetInstanceId());
     float radius = maxRadius * rand_norm_f();
     if (!m_navMeshQuery)
         return false;
@@ -3580,9 +3590,17 @@ void Map::DoRespawn(SpawnObjectType type, ObjectGuid::LowType spawnId, uint32 gr
         }
         case SPAWN_TYPE_GAMEOBJECT:
         {
-            GameObject* obj = new GameObject();
-            if (!obj->LoadFromDB(spawnId, this, true))
-                delete obj;
+            GameObjectData const* data = sObjectMgr->GetGameObjectData(spawnId);
+            if (data)
+            {
+                GameObject* obj = nullptr;
+                if (data && sObjectMgr->GetGameObjectTypeByEntry(data->id) == GAMEOBJECT_TYPE_TRANSPORT)
+                    obj = new Transport();
+                else
+                    obj = new GameObject();
+                if (!obj->LoadFromDB(spawnId, this, true))
+                    delete obj;
+            }
             break;
         }
         default:
@@ -3775,7 +3793,11 @@ bool Map::SpawnGroupSpawn(uint32 groupId, bool ignoreRespawn, bool force, std::v
             }
             case SPAWN_TYPE_GAMEOBJECT:
             {
-                GameObject* gameobject = new GameObject();
+                GameObject* gameobject = nullptr;
+                if (data && sObjectMgr->GetGameObjectTypeByEntry(data->id) == GAMEOBJECT_TYPE_TRANSPORT)
+                    gameobject = new Transport();
+                else
+                    gameobject = new GameObject();
                 if (!gameobject->LoadFromDB(data->spawnId, this, true))
                     delete gameobject;
                 else if (spawnedObjects)

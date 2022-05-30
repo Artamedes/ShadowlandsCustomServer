@@ -55,6 +55,7 @@ class SpellEffectInfo;
 class SpellInfo;
 class TempSummon;
 class Transport;
+class TransportBase;
 class MapTransport;
 class Unit;
 class UpdateData;

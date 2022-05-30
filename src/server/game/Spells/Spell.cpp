@@ -1547,6 +1547,9 @@ void Spell::SelectImplicitCasterDestTargets(SpellEffectInfo const& spellEffectIn
                 // If we are leaving water, rather use pathfinding, but increase z-range position research.
                 zSearchDist = 20.0f;
             }
+
+            Transport* transport = nullptr;
+
             if (!m_caster->GetMap()->GetWalkHitPosition(m_caster->GetPhaseShift(), m_caster->GetTransport(), srcX, srcY, srcZ, x, y, z, NAV_GROUND | NAV_WATER, zSearchDist, false))
             {
                 x = srcX;

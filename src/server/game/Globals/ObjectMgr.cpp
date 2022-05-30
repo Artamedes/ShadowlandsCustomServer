@@ -10865,6 +10865,14 @@ ClassAvailability const* ObjectMgr::GetClassExpansionRequirement(uint8 raceId, u
     return &(*classItr);
 }
 
+uint32 ObjectMgr::GetGameObjectTypeByEntry(uint32 entry) const
+{
+    if (GameObjectTemplate const* goinfo = sObjectMgr->GetGameObjectTemplate(entry))
+        return goinfo->type;
+
+    return MAX_GAMEOBJECT_TYPE;
+}
+
 PlayerChoice const* ObjectMgr::GetPlayerChoice(int32 choiceId) const
 {
     return Trinity::Containers::MapGetValuePtr(_playerChoices, choiceId);

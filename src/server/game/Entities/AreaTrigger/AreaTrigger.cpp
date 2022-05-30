@@ -893,7 +893,7 @@ void AreaTrigger::UpdateTimeToTarget(uint32 timeToTarget)
     std::vector<G3D::Vector3> newPoints;
     float x, y, z;
     GetPosition(x, y, z);
-    if (Transport* transport = GetTransport())
+    if (auto transport = GetTransport())
         transport->CalculatePassengerOffset(x, y, z);
     newPoints.push_back(G3D::Vector3(x, y, z));
     newPoints.push_back(newPoints[0]);

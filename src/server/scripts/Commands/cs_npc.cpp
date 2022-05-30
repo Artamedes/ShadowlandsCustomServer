@@ -170,7 +170,7 @@ class npc_playerscript : public PlayerScript
                         Player* chr = player;
                         Map* map = chr->GetMap();
 
-                        if (Transport* trans = chr->GetTransport())
+                        if (Transport* trans = dynamic_cast<Transport*>(chr->GetTransport()))
                         {
                             ObjectGuid::LowType guid = sObjectMgr->GenerateCreatureSpawnId();
                             CreatureData& data = sObjectMgr->NewOrExistCreatureData(guid);
@@ -725,7 +725,7 @@ public:
         Player* chr = handler->GetSession()->GetPlayer();
         Map* map = chr->GetMap();
 
-        if (Transport* trans = chr->GetTransport())
+        if (auto trans = dynamic_cast<Transport*>(chr->GetTransport()))
         {
             ObjectGuid::LowType guid = sObjectMgr->GenerateCreatureSpawnId();
             CreatureData& data = sObjectMgr->NewOrExistCreatureData(guid);

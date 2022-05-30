@@ -756,18 +756,18 @@ bool GameObject::Create(uint32 entry, Map* map, Position const& pos, QuaternionD
             SetUpdateFieldValue(m_values.ModifyValue(&GameObject::m_gameObjectData).ModifyValue(&UF::GameObjectData::ParentRotation), reinterpretId);
             break;
         }
-        case GAMEOBJECT_TYPE_TRANSPORT:
-        {
-            m_goTypeImpl = std::make_unique<GameObjectType::Transport>(*this);
-            if (goInfo->transport.startOpen)
-                SetGoState(GO_STATE_TRANSPORT_STOPPED);
-            else
-                SetGoState(GO_STATE_TRANSPORT_ACTIVE);
-
-            SetGoAnimProgress(animProgress);
-            setActive(true);
-            break;
-        }
+        //case GAMEOBJECT_TYPE_TRANSPORT:
+        //{
+        //    m_goTypeImpl = std::make_unique<GameObjectType::Transport>(*this);
+        //    if (goInfo->transport.startOpen)
+        //        SetGoState(GO_STATE_TRANSPORT_STOPPED);
+        //    else
+        //        SetGoState(GO_STATE_TRANSPORT_ACTIVE);
+        //
+        //    SetGoAnimProgress(animProgress);
+        //    setActive(true);
+        //    break;
+        //}
         case GAMEOBJECT_TYPE_FISHINGNODE:
             SetLevel(1);
             SetGoAnimProgress(255);
@@ -865,7 +865,11 @@ GameObject* GameObject::CreateGameObject(uint32 entry, Map* map, Position const&
     if (!goInfo)
         return nullptr;
 
-    GameObject* go = new GameObject();
+    GameObject* go = nullptr;
+    if (sObjectMgr->GetGameObjectTypeByEntry(goInfo->entry) == GAMEOBJECT_TYPE_TRANSPORT)
+        go = new Transport();
+    else
+        go = new GameObject();
     if (!go->Create(entry, map, pos, rotation, animProgress, goState, artKit, false, 0))
     {
         delete go;
@@ -877,14 +881,23 @@ GameObject* GameObject::CreateGameObject(uint32 entry, Map* map, Position const&
 
 GameObject* GameObject::CreateGameObjectFromDB(ObjectGuid::LowType spawnId, Map* map, bool addToMap /*= true*/)
 {
-    GameObject* go = new GameObject();
-    if (!go->LoadFromDB(spawnId, map, addToMap))
+    GameObjectData const* data = sObjectMgr->GetGameObjectData(spawnId);
+    if (data)
     {
-        delete go;
-        return nullptr;
-    }
+        GameObject* go = nullptr;
+        if (sObjectMgr->GetGameObjectTypeByEntry(data->id) == GAMEOBJECT_TYPE_TRANSPORT)
+            go = new Transport();
+        else
+            go = new GameObject();
+        if (!go->LoadFromDB(spawnId, map, addToMap))
+        {
+            delete go;
+            return nullptr;
+        }
 
-    return go;
+        return go;
+    }
+    return nullptr;
 }
 
 void GameObject::Update(uint32 diff)

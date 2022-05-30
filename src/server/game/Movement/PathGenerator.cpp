@@ -42,11 +42,11 @@ PathGenerator::PathGenerator(const Unit* owner, bool transformTransportPath /*=f
     TC_LOG_DEBUG("maps", "++ PathGenerator::PathGenerator for %u \n", _sourceUnit->GetGUID().GetCounter());
 
     if (_sourceUnit->GetTransport())
-        _transport = _sourceUnit->GetTransport();
+        _transport = dynamic_cast<Transport*>(_sourceUnit->GetTransport());
 
     if (_transport)
     {
-        if (_sourceUnit->GetTransport()->MMapsLoaded())
+        if (_transport->MMapsLoaded())
         {
             MMAP::MMapManager* mmap = MMAP::MMapFactory::createOrGetMMapManager();
             _navMesh = mmap->GetTransportNavMesh(_transport->GetDisplayId());

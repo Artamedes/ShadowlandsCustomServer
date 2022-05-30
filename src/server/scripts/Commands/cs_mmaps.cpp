@@ -78,7 +78,7 @@ public:
 
         MMAP::MMapManager* manager = MMAP::MMapFactory::createOrGetMMapManager();
 
-        Transport* transport = target->GetTransport();
+        Transport* transport = dynamic_cast<Transport*>(target->GetTransport());
 
         bool ValidNavMesh = false;
         if (transport && transport->MMapsLoaded())

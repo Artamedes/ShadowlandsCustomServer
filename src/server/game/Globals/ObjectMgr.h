@@ -1783,6 +1783,8 @@ class TC_GAME_API ObjectMgr
             return nullptr;
         }
 
+        uint32 GetGameObjectTypeByEntry(uint32 entry) const;
+
         PlayerChoice const* GetPlayerChoice(int32 choiceId) const;
 
         JumpChargeParams const* GetJumpChargeParams(int32 id) const;
