@@ -375,6 +375,7 @@ WarlockGlobalVariables* GetVariables(Unit* caster)
     {
         WarlockGlobalVariables newVars;
         m_WarlockGuidMap[caster->GetGUID().GetCounter()] = newVars;
+        itr = m_WarlockGuidMap.find(caster->GetGUID().GetCounter()); // refind should be there now
     }
 
     return &itr->second;
