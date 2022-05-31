@@ -559,7 +559,7 @@ NonDefaultConstructible<pAuraEffectHandler> AuraEffectHandler[TOTAL_AURAS]=
     &AuraEffect::HandleNULL,                                      //490
     &AuraEffect::HandleNULL,                                      //491
     &AuraEffect::HandleNULL,                                      //492
-    &AuraEffect::HandleNULL,                                      //493
+    &AuraEffect::HandleAuraAnimalCompanion,                       //493 SPELL_AURA_ANIMAL_COMPANION
     &AuraEffect::HandleNULL,                                      //494 SPELL_AURA_SET_POWER_POINT_CHARGE
     &AuraEffect::HandleTriggerSpellOnExpire,                      //495 SPELL_AURA_TRIGGER_SPELL_ON_EXPIRE
     &AuraEffect::HandleNULL,                                      //496 SPELL_AURA_ALLOW_CHANGING_EQUIPMENT_IN_TORGHAST
@@ -3142,6 +3142,38 @@ void AuraEffect::HandleAuraControlVehicle(AuraApplication const* aurApp, uint8 m
 
         // some SPELL_AURA_CONTROL_VEHICLE auras have a dummy effect on the player - remove them
         caster->RemoveAurasDueToSpell(GetId());
+    }
+}
+
+void AuraEffect::HandleAuraAnimalCompanion(AuraApplication const* aurApp, uint8 mode, bool apply) const
+{
+    if (!(mode & AURA_EFFECT_HANDLE_CHANGE_AMOUNT_MASK))
+        return;
+
+    Unit* caster = GetCaster();
+    if (!caster)
+        return;
+
+    Player* player = GetCaster()->ToPlayer();
+    if (!player)
+        return;
+
+    if (apply)
+    {
+        if (player->GetPet())
+            if (GetTriggerSpell())
+                caster->CastSpell(caster, GetTriggerSpell(), true);
+    }
+    else
+    {
+        ObjectGuid animalCompanionGuid = player->GetAnimalCompanion();
+        if (animalCompanionGuid.IsEmpty())
+            return;
+        if (!animalCompanionGuid.IsPet())
+            return;
+
+        if (Pet* animalCompanion = ObjectAccessor::GetPet(*player, animalCompanionGuid))
+            player->RemovePet(animalCompanion, PET_SAVE_DISMISS, false, animalCompanion->IsAnimalCompanion());
     }
 }
 

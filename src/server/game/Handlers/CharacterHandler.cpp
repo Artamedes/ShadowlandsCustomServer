@@ -63,6 +63,8 @@
 #include "Util.h"
 #include "World.h"
 #include <sstream>
+#include "SpellAuras.h"
+#include "SpellAuraEffects.h"
 
 LoginQueryHolder::LoginQueryHolder(uint32 accountId, ObjectGuid guid)
     : m_accountId(accountId), m_guid(guid) { }
@@ -1436,6 +1438,14 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder const& holder)
 
     if (!pCurrChar->IsStandState() && !pCurrChar->HasUnitState(UNIT_STATE_STUNNED))
         pCurrChar->SetStandState(UNIT_STAND_STATE_STAND);
+
+    if (pCurrChar->GetPet())
+    {
+        Unit::AuraEffectList const& animalCompanion = _player->GetAuraEffectsByType(SPELL_AURA_ANIMAL_COMPANION);
+        for (AuraEffect const* aurEff : animalCompanion)
+            if (sSpellMgr->GetSpellInfo(aurEff->GetTriggerSpell()))
+                _player->CastSpell(_player, aurEff->GetTriggerSpell(), true);
+    }
 
     pCurrChar->UpdateAverageItemLevelTotal();
     pCurrChar->UpdateAverageItemLevelEquipped();

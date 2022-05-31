@@ -1349,7 +1349,7 @@ class TC_GAME_API Unit : public WorldObject
 
         Creature* GetControlledCreature(uint32 entry);
 
-        void SetMinion(Minion *minion, bool apply);
+        void SetMinion(Minion* minion, bool apply, bool stampeded = false);
         void GetAllMinionsByEntry(std::list<TempSummon*>& Minions, uint32 entry);
         void RemoveAllMinionsByEntry(uint32 entry);
         void SetCharm(Unit* target, bool apply);

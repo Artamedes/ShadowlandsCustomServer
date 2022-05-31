@@ -1275,8 +1275,8 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         PetStable const* GetPetStable() const { return m_petStable.get(); }
 
         Pet* GetPet() const;
-        Pet* SummonPet(uint32 entry, Optional<PetSaveMode> slot, float x, float y, float z, float ang, uint32 despwtime, bool* isNew = nullptr);
-        void RemovePet(Pet* pet, PetSaveMode mode, bool returnreagent = false);
+        Pet* SummonPet(uint32 entry, Optional<PetSaveMode> slot, float x, float y, float z, float ang, uint32 despwtime, bool* isNew = nullptr, bool stampeded = false, bool animalCompanion = false, std::function<void(Pet*, bool)> callback = [](Pet*, bool) {});
+        void RemovePet(Pet* pet, PetSaveMode mode, bool returnreagent = false, bool stampeded = false);
         void SendTameFailure(PetTameResult result);
 
         // pet auras
