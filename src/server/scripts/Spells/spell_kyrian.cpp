@@ -38,8 +38,22 @@ struct npc_kyrian_steward : public ScriptedAI
 
         }
 
+        uint32 OwnerCheck = 0;
+
         void UpdateAI(uint32 diff) override
         {
+            if (OwnerCheck >= 1000)
+            {
+                OwnerCheck = 0;
+                if (!me->GetOwner())
+                {
+                    me->DespawnOrUnsummon();
+                    return;
+                }
+            }
+            else
+                OwnerCheck += diff;
+
             if (!gavePotsToOwner && me->GetOwner() && me->GetOwner()->IsPlayer())
             {
                 if (me->GetDistance2d(me->GetOwner()) <= 3.0f)
