@@ -3756,10 +3756,10 @@ public:
             AddGossipItemFor(player, GossipOptionIcon::None, "|TInterface\\icons\\Ability_Hunter_BeastSoothe:25|t [Pets] ->", GOSSIP_SENDER_MAIN, 1216);
             if (player->GetSpecializationId() == TALENT_SPEC_HUNTER_BEASTMASTER)
                 AddGossipItemFor(player, GossipOptionIcon::None, "|TInterface\\icons\\Ability_Hunter_BeastMastery:25|t [Exotic pets] ->", GOSSIP_SENDER_MAIN, 1215);
-            SendGossipMenuFor(player, 7000160, me);
+            SendGossipMenuFor(player, 700016, me);
             return;
         }
-        SendGossipMenuFor(player, 700016, me);
+        SendGossipMenuFor(player, 7000160, me);
     }
 };
 
