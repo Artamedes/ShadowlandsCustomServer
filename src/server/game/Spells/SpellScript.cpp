@@ -807,8 +807,9 @@ bool SpellScript::IsHitCrit() const
         {
             return targetInfo.TargetGUID == hitUnit->GetGUID();
         });
-        ASSERT(itr != m_spell->m_UniqueTargetInfo.end());
-        return itr->IsCrit;
+
+        if (itr != m_spell->m_UniqueTargetInfo.end())
+            return itr->IsCrit;
     }
     return false;
 }
