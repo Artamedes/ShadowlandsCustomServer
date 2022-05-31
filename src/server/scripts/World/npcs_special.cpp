@@ -1559,6 +1559,10 @@ struct npc_training_dummy : NullCreatureAI
         me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_HORROR, true);
         me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_DISORIENTED, true);
         me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_CHARM, true);
+        me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FEAR, true);
+        me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_KNOCKOUT, true);
+        me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_TURN, true);
+        me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_SAPPED, true);
         me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_DISTRACT, true);
     }
 
