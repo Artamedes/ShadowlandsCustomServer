@@ -1054,7 +1054,7 @@ void Player::Update(uint32 p_time)
 
             if (isAttackReady(BASE_ATTACK))
             {
-                if (!IsWithinMeleeRange(victim))
+                if (!IsWithinMeleeRange(victim) && !HasAuraType(SPELL_AURA_OVERRIDE_AUTOATTACK_WITH_RANGED_SPELL))
                 {
                     setAttackTimer(BASE_ATTACK, 100);
                     if (m_swingErrorMsg != 1)               // send single time (client auto repeat)
@@ -1082,9 +1082,27 @@ void Player::Update(uint32 p_time)
                     //    if (getAttackTimer(OFF_ATTACK) < ATTACK_DISPLAY_DELAY)
                     //        setAttackTimer(OFF_ATTACK, ATTACK_DISPLAY_DELAY);
 
-                    // do attack
-                    AttackerStateUpdate(victim, BASE_ATTACK);
-                    resetAttackTimer(BASE_ATTACK);
+                    // do attack if player doesn't have SPELL_AURA_OVERRIDE_AUTOATTACK_WITH_RANGED_SPELL
+                    if (!HasAuraType(SPELL_AURA_OVERRIDE_AUTOATTACK_WITH_RANGED_SPELL))
+                    {
+                        // do attack
+                        AttackerStateUpdate(victim, BASE_ATTACK);
+                        resetAttackTimer(BASE_ATTACK);
+                    }
+                    else if (HasAuraType(SPELL_AURA_OVERRIDE_AUTOATTACK_WITH_RANGED_SPELL) && IsWithinLOSInMap(victim))
+                    {
+                        if (HasUnitState(UNIT_STATE_CANNOT_AUTOATTACK) || HasUnitFlag(UNIT_FLAG_PACIFIED))
+                            return;
+
+                        // Should have only one aura of this type at the same time
+                        AuraEffectList const& mOverrideAutoAttacks = GetAuraEffectsByType(SPELL_AURA_OVERRIDE_AUTOATTACK_WITH_RANGED_SPELL);
+                        for (AuraEffectList::const_iterator i = mOverrideAutoAttacks.begin(); i != mOverrideAutoAttacks.end(); ++i)
+                        {
+                            CastSpell(victim, (*i)->GetTriggerSpell(), true);
+                            resetAttackTimer(BASE_ATTACK);
+                            break;
+                        }
+                    }
                 }
             }
 
@@ -1102,9 +1120,26 @@ void Player::Update(uint32 p_time)
                     //if (getAttackTimer(BASE_ATTACK) < ATTACK_DISPLAY_DELAY)
                     //    setAttackTimer(BASE_ATTACK, ATTACK_DISPLAY_DELAY);
 
-                    // do attack
-                    AttackerStateUpdate(victim, OFF_ATTACK);
-                    resetAttackTimer(OFF_ATTACK);
+                    // do attack if player doesn't have Shadow Blades or SPELL_AURA_OVERRIDE_AUTOATTACK_WITH_RANGED_SPELL
+                    if (!HasAuraType(SPELL_AURA_OVERRIDE_AUTOATTACK_WITH_RANGED_SPELL))
+                    {
+                        AttackerStateUpdate(victim, OFF_ATTACK);
+                        resetAttackTimer(OFF_ATTACK);
+                    }
+                    else if (HasAuraType(SPELL_AURA_OVERRIDE_AUTOATTACK_WITH_RANGED_SPELL) && IsWithinLOSInMap(victim))
+                    {
+                        if (HasUnitState(UNIT_STATE_CANNOT_AUTOATTACK) || HasUnitFlag(UNIT_FLAG_PACIFIED))
+                            return;
+
+                        // Should have only one aura of this type at the same time
+                        AuraEffectList const& mOverrideAutoAttacks = GetAuraEffectsByType(SPELL_AURA_OVERRIDE_AUTOATTACK_WITH_RANGED_SPELL);
+                        for (AuraEffectList::const_iterator i = mOverrideAutoAttacks.begin(); i != mOverrideAutoAttacks.end(); ++i)
+                        {
+                            CastSpell(victim, (*i)->GetTriggerSpell(), true);
+                            resetAttackTimer(OFF_ATTACK);
+                            break;
+                        }
+                    }
                 }
             }
 
