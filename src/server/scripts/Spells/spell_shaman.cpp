@@ -3922,6 +3922,12 @@ class spell_sha_chain_lightning : public SpellScript
                 SetHitDamage(GetHitDamage() + CalculatePct(GetHitDamage(), aura->GetEffect(EFFECT_0)->GetBaseAmount()));
                 caster->RemoveAurasDueToSpell(SPELL_SHAMAN_MASTER_OF_THE_ELEMENTS);
             }
+
+            if (Aura* aura = caster->GetAura(320137)) ///< Stormkeeper
+            {
+                SetHitDamage(GetHitDamage() + CalculatePct(GetHitDamage(), aura->GetEffect(EFFECT_1)->GetAmount()));
+                aura->DropStack();
+            }
         }
     }
 
@@ -6776,6 +6782,61 @@ class spell_sha_maelstrom_weapon_proc : public AuraScript
     }
 };
 
+/// ID - 342240 Ice Strike
+class spell_sha_ice_strike : public SpellScript
+{
+    PrepareSpellScript(spell_sha_ice_strike);
+
+    void HandleDamage(SpellEffIndex eff)
+    {
+        if (auto caster = GetCaster())
+        {
+            caster->GetSpellHistory()->ResetCooldown(SPELL_SHAMAN_FLAME_SHOCK);
+            caster->GetSpellHistory()->ResetCooldown(SPELL_SHAMAN_FROST_SHOCK);
+        }
+    }
+
+    void Register()
+    {
+        OnEffectHitTarget += SpellEffectFn(spell_sha_ice_strike::HandleDamage, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
+    }
+};
+
+/// ID - 333974 Fire Nova
+class spell_sha_fire_nova_enhance : public SpellScript
+{
+    PrepareSpellScript(spell_sha_fire_nova_enhance);
+
+    enum FireNova
+    {
+        FireNovaDmg = 333977,
+    };
+
+    void HandleDamage(SpellEffIndex eff)
+    {
+        if (auto caster = GetCaster())
+        {
+            std::list<Unit*> targets;
+            if (!targets.empty())
+            {
+                caster->GetAttackableUnitListInRange(targets, 40.0f);
+                targets.sort(Trinity::ObjectDistanceOrderPred(caster));
+                Trinity::Containers::RandomResize(targets, 6);
+
+                for (auto targ : targets)
+                {
+                    caster->CastSpell(targ, FireNovaDmg, true);
+                }
+            }
+        }
+    }
+
+    void Register()
+    {
+        OnEffectHitTarget += SpellEffectFn(spell_sha_fire_nova_enhance::HandleDamage, EFFECT_0, SPELL_EFFECT_DUMMY);
+    }
+};
+
 void AddSC_shaman_spell_scripts()
 {
     new shaman_playerscript();
@@ -6915,6 +6976,8 @@ void AddSC_shaman_spell_scripts()
     RegisterSpellScript(spell_sha_feral_spirit_aura);
     RegisterSpellScript(spelL_sha_maelstrom_weapon_187881);
     RegisterSpellScript(spell_sha_maelstrom_weapon_proc);
+    RegisterSpellScript(spell_sha_ice_strike);
+    RegisterSpellScript(spell_sha_fire_nova_enhance);
 
     RegisterCreatureAI(npc_ancestral_protection_totem);
     RegisterCreatureAI(npc_cloudburst_totem);
