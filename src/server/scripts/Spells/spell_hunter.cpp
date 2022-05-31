@@ -3828,27 +3828,32 @@ class spell_hun_serpent_sting : public SpellScript
 {
 	PrepareSpellScript(spell_hun_serpent_sting);
 
+    ObjectGuid mainTarget;
+
 	void CacheMainTarget(WorldObject*& target)
 	{
-		mainTarget = target;
+        if (target)
+		    mainTarget = target->GetGUID();
 	}
 
 	void FilterTargets(std::list<WorldObject*>& targets)
 	{
 		if (Unit* caster = GetCaster())
 		{
-			if (!mainTarget)
+			if (mainTarget.IsEmpty())
 				return;
+
+            auto mainTargetUnit = ObjectAccessor::GetUnit(*caster, mainTarget);
 
 			if (!caster->HasAura(SPELL_HUNTER_HIDRAS_BITE))
 			{
 				targets.clear();
-				targets.push_back(mainTarget);
+				targets.push_back(mainTargetUnit);
 				return;
 			}
 
-			CreatureList list = mainTarget->FindAllCreaturesInRange(8.0f);
-			list.sort(Trinity::ObjectDistanceOrderPred(mainTarget));
+			CreatureList list = mainTargetUnit->FindAllCreaturesInRange(8.0f);
+			list.sort(Trinity::ObjectDistanceOrderPred(mainTargetUnit));
 			for (Unit* unit : list)
 				targets.push_back(unit);
 
@@ -3882,9 +3887,6 @@ class spell_hun_serpent_sting : public SpellScript
 		OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_hun_serpent_sting::FilterTargets, EFFECT_1, TARGET_UNIT_DEST_AREA_ENEMY);
 		AfterCast += SpellCastFn(spell_hun_serpent_sting::HandleAfterCast);
 	}
-
-private:
-	WorldObject * mainTarget;
 };
 
 //259387 - Mongoose Bite
@@ -4835,8 +4837,6 @@ class spell_hun_wildfire_bomb_missile : public SpellScript
     {
         OnEffectHitTarget += SpellEffectFn(spell_hun_wildfire_bomb_missile::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
     }
-
-    WorldObject* mainTarget;
 };
 
 // 270339 Shrapnel Bomb Dot Last Update 8.0.1 Build 28153
