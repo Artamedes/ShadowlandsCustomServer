@@ -1992,6 +1992,8 @@ enum OpcodeServer : uint16
     SMSG_BF_MGR_ENTRY_INVITE                          = 0xBADD,
     SMSG_BF_MGR_QUEUE_INVITE                          = 0xBADD,
     SMSG_BF_MGR_QUEUE_REQUEST_RESPONSE                = 0xBADD,
+    SMSG_CLEAR_LOSS_OF_CONTROL                        = 0xBADD,
+    SMSG_REMOVE_LOSS_OF_CONTROL                       = 0xBADD,
 };
 
 inline bool IsInstanceOnlyOpcode(uint32 opcode)
