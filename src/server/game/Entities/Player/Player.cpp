@@ -2137,7 +2137,7 @@ void Player::Regenerate(Powers power)
         }
     }
 
-    if (power == POWER_COMBO_POINTS || power == POWER_CHI || power == POWER_ARCANE_CHARGES || power == POWER_RUNES || power == RATE_POWER_HOLY_POWER)
+    if (power == POWER_COMBO_POINTS || power == POWER_CHI || power == POWER_ARCANE_CHARGES || power == POWER_RUNES || power == POWER_HOLY_POWER)
         forcesSetPower = true;
 
     if (m_regenTimerCount >= 2000 || forcesSetPower)
