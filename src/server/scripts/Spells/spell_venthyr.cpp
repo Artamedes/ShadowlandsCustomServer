@@ -1,6 +1,7 @@
 #include "SpellMgr.h"
 #include "Unit.h"
 #include "SpellScript.h"
+#include "SpellAuras.h"
 
 // 300728
 class spell_door_of_shadows : public SpellScript
@@ -45,7 +46,131 @@ class spell_door_of_shadows : public SpellScript
     }
 };
 
+// ID - 331586 Thrill Seeker
+class spell_thrill_seeker : public AuraScript
+{
+    PrepareAuraScript(spell_thrill_seeker);
+
+    enum ThrillSeeker
+    {
+        ThrillSeekerCharge = 331939,
+        ThrillSeekerHasteBuff = 331937,
+    };
+
+    void HandleDummy(AuraEffect const* /*aurEff*/)
+    {
+        if (auto caster = GetTarget())
+        {
+            if (caster->HasAura(ThrillSeekerHasteBuff))
+                return;
+
+            auto thrillSeekerAura = caster->GetAura(ThrillSeekerCharge);
+
+            // lambda functions for easier access of the aura pointer
+            auto addStackOrCreate([caster, thrillSeekerAura]()
+            {
+                if (thrillSeekerAura)
+                    thrillSeekerAura->ModStackAmount(1);
+                else
+                    caster->AddAura(ThrillSeekerCharge, caster);
+            });
+
+            auto dropStack([thrillSeekerAura]() -> bool
+            {
+                if (thrillSeekerAura)
+                    thrillSeekerAura->DropStack();
+
+                return false;
+            });
+
+            auto getStacks([thrillSeekerAura]() -> uint32
+            {
+                if (thrillSeekerAura)
+                    return thrillSeekerAura->GetStackAmount();
+
+                return 0;
+            });
+
+            if (caster->IsInCombat())
+            {
+                if (getStacks() <= 40)
+                    addStackOrCreate();
+                else
+                {
+                    caster->RemoveAurasDueToSpell(ThrillSeekerCharge); // remove all charges.
+                    // grant haste buff
+                    caster->CastSpell(caster, ThrillSeekerHasteBuff, true);
+                }
+            }
+            else
+            {
+                // drop stack if needed
+                dropStack();
+            }
+        }
+    }
+
+    void HandleProc(AuraEffect* /*aurEff*/, ProcEventInfo& /*eventInfo*/)
+    {
+        if (Unit* caster = GetCaster())
+        {
+            // grand 4 stacks on a kill
+            auto thrillSeekerAura = caster->GetAura(ThrillSeekerCharge);
+            if (thrillSeekerAura)
+                thrillSeekerAura->ModStackAmount(4);
+            else
+            {
+                if (auto aura = caster->AddAura(ThrillSeekerCharge, caster))
+                    aura->ModStackAmount(4);
+            }
+        }
+    }
+
+    void Register() override
+    {
+        OnEffectProc += AuraEffectProcFn(spell_thrill_seeker::HandleProc, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
+        OnEffectPeriodic += AuraEffectPeriodicFn(spell_thrill_seeker::HandleDummy, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
+    }
+};
+
+// ID - 331937 Euphoria
+class spell_thrill_seeker_haste : public AuraScript
+{
+    PrepareAuraScript(spell_thrill_seeker_haste);
+
+    enum ThrillSeeker
+    {
+        FatalFlawConduit = 352373,
+        FatalFlawCrit = 354053,
+        FatalFlawVers = 354054,
+    };
+
+    void HandleRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+    {
+        if (Unit* caster = GetCaster())
+        {
+            if (auto player = caster->ToPlayer())
+            {
+                if (player->HasAura(FatalFlawConduit))
+                {
+                    if (player->m_activePlayerData->Versatility >= player->m_activePlayerData->CritPercentage)
+                        player->CastSpell(player, FatalFlawVers, true);
+                    else
+                        player->CastSpell(player, FatalFlawCrit, true);
+                }
+            }
+        }
+    }
+
+    void Register() override
+    {
+        OnEffectRemove += AuraEffectRemoveFn(spell_thrill_seeker_haste::HandleRemove, EFFECT_0, SPELL_AURA_MELEE_SLOW, AURA_EFFECT_HANDLE_REAL);
+    }
+};
+
 void AddSC_spell_venthyr()
 {
     RegisterSpellScript(spell_door_of_shadows);
+    RegisterSpellScript(spell_thrill_seeker);
+    RegisterSpellScript(spell_thrill_seeker_haste);
 }
