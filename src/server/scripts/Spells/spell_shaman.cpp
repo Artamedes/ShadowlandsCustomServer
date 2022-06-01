@@ -2748,8 +2748,29 @@ public:
         void HandleEffectProc(AuraEffect* /*aurEff*/, ProcEventInfo& eventInfo)
         {
             PreventDefaultAction();
-            GetAura()->Variables.Set("procTargetGUID", eventInfo.GetProcTarget()->GetGUID());
-            eventInfo.GetActor()->CastSpell(eventInfo.GetActor(), SPELL_SHAMAN_EARTHEN_RAGE_PERIODIC, true);
+
+            if (!eventInfo.GetProcSpell())
+                return;
+
+            if (eventInfo.GetProcTarget() && eventInfo.GetActor())
+            {
+                switch (eventInfo.GetProcSpell()->GetSpellInfo()->Id)
+                {
+                    case SPELL_SHAMAN_EARTHEN_RAGE_PASSIVE:
+                    case SPELL_SHAMAN_EARTHEN_RAGE_PERIODIC:
+                    case SPELL_SHAMAN_EARTHEN_RAGE_DAMAGE:
+                        return;
+                    default:
+                        break;
+                }
+
+                if (roll_chance_i(50))
+                {
+                    GetAura()->Variables.Set("procTargetGUID", eventInfo.GetProcTarget()->GetGUID());
+                    eventInfo.GetActor()->CastSpell(eventInfo.GetActor(), SPELL_SHAMAN_EARTHEN_RAGE_PERIODIC, true);
+                }
+            }
+
         }
 
         void Register() override

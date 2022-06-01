@@ -1261,6 +1261,15 @@ void Player::Update(uint32 p_time)
             m_deathTimer -= p_time;
     }
 
+    if (m_knockBackTimer)
+    {
+        if (m_knockBackTimer + 1000 < getMSTime())
+        {
+            m_knockBackTimer = 0;
+            ClearUnitState(UNIT_STATE_JUMPING);
+        }
+    }
+
     UpdateEnchantTime(p_time);
     UpdateHomebindTime(p_time);
 
