@@ -13,6 +13,7 @@ class spell_door_of_shadows : public SpellScript
         FancyFootworksAura = 331577,
         AgentOfChaos = 331576,
         AgentOfChaosTrigger = 331866,
+        WatchTheShoes = 336140,
     };
 
     void HandleScript(SpellEffIndex /*eff*/)
@@ -23,6 +24,9 @@ class spell_door_of_shadows : public SpellScript
             GetCaster()->GetScheduler().Schedule(50ms, [this](TaskContext context)
             {
                 GetCaster()->CastSpell(GetCaster(), AgentOfChaosTrigger, true);
+
+                if (GetCaster()->HasAura(WatchTheShoes))
+                    GetCaster()->RemoveAurasWithMechanic(1 << MECHANIC_ROOT);
             });
         }
     }
