@@ -93,7 +93,7 @@ class spell_thrill_seeker : public AuraScript
 
             if (caster->IsInCombat())
             {
-                if (getStacks() <= 40)
+                if (getStacks() < 40)
                     addStackOrCreate();
                 else
                 {
