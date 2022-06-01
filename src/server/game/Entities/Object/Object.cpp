@@ -2884,6 +2884,13 @@ SpellCastResult WorldObject::CastSpell(CastSpellTargetArg const& targets, uint32
         else if (args.TriggeringAura && !args.TriggeringAura->GetBase()->GetCastItemGUID().IsEmpty())
             if (Player const* triggeringAuraCaster = Object::ToPlayer(args.TriggeringAura->GetCaster()))
                 spell->m_CastItem = triggeringAuraCaster->GetItemByGuid(args.TriggeringAura->GetBase()->GetCastItemGUID());
+
+        // check venthyr
+        if (auto player = ToPlayer())
+        {
+            if (player->HasAura(351748)) ///< Life is but an appetizer
+                player->CastSpell(player, 353365, true);
+        }
     }
 
     return spell->prepare(*targets.Targets, args.TriggeringAura);
