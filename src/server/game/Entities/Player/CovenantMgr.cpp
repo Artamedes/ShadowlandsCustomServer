@@ -843,6 +843,17 @@ void CovenantMgr::LearnTalent(WorldPackets::Garrison::GarrisonLearnTalent& resea
             conduit.Flags = GarrisonTalentFlags::TalentFlagEnabled;
 
             _conduits.insert({ covId, conduit });
+
+            // TODO: Verify this.
+            WorldPackets::Garrison::GarrisonResearchTalentResult result;
+            result.GarrTypeID = 111;
+            conduit.BuildGarrisonTalent(result.talent);
+            _player->SendDirectMessage(result.Write());
+
+            WorldPackets::Garrison::GarrisonTalentCompleted result2;
+            result2.GarrTypeID = 111;
+            result2.GarrTalentID = pTalent->ID;
+            _player->SendDirectMessage(result2.Write());
         }
     });
 
