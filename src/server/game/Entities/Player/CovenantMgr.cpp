@@ -161,7 +161,7 @@ void Conduit::FlagsUpdated(bool forceRemove /*= false*/)
         {
             if (disabled)
             {
-                if (_player->HasSpell(talentRank->PerkSpellID))
+                //if (_player->HasSpell(talentRank->PerkSpellID))
                     _player->RemoveSpell(talentRank->PerkSpellID);
             }
             else
@@ -844,7 +844,7 @@ void CovenantMgr::LearnTalent(WorldPackets::Garrison::GarrisonLearnTalent& resea
 
             _conduits.insert({ covId, conduit });
 
-            // TODO: Verify this.
+            // TODO: Verify this. - seems fine
             WorldPackets::Garrison::GarrisonResearchTalentResult result;
             result.GarrTypeID = 111;
             conduit.BuildGarrisonTalent(result.talent);
@@ -899,7 +899,10 @@ void CovenantMgr::LearnTalent(WorldPackets::Garrison::GarrisonLearnTalent& resea
                 i->second.Flags = GarrisonTalentFlags::TalentFlagDisabled;
 
             if (researchResult.SoulbindID == _player->m_playerData->SoulbindID)
+            {
+                i->second.FlagsUpdated(true);
                 i->second.FlagsUpdated();
+            }
             WorldPackets::Garrison::GarrisonTalent garrTalentPacket;
             i->second.BuildGarrisonTalent(garrTalentPacket);
             packet.Talents.push_back(garrTalentPacket);
