@@ -270,7 +270,9 @@ struct npc_currency_guy : public ScriptedAI
         {
             ClearGossipMenuFor(p_Player);
             p_Player->PrepareQuestMenu(me->GetGUID());
-            AddGossipItemFor(p_Player, GossipOptionIcon::AdventureMap, "Can you explain currencies again?", 0, 1);
+
+            if (p_Player->GetQuestStatus(700005) == QUEST_STATUS_REWARDED)
+                AddGossipItemFor(p_Player, GossipOptionIcon::None, "Can you explain currencies again?", 0, 1);
            // AddGossipItemFor(p_Player, GossipOptionIcon::None, "Nevermind", 0, 0);
             SendGossipMenuFor(p_Player, me->GetEntry(), me);
             return true;
