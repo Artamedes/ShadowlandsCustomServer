@@ -2113,7 +2113,33 @@ void Spell::EffectDispel()
     DispelChargesList dispelList;
     unitTarget->GetDispellableAuraList(m_caster, dispelMask, dispelList, targetMissInfo == SPELL_MISS_REFLECT);
     if (dispelList.empty())
+    {
+        if (auto unit = m_caster->ToUnit())
+        {
+            // Shield Slam shouldn't reset the cooldown if dispel list is empty...
+            if (m_spellInfo->Id == 23922)
+                return;
+
+            uint32 lastDispellEffect = effectInfo->EffectIndex;
+            for (auto const& eff : m_spellInfo->GetEffects())
+            {
+                if (eff.IsEffect(SPELL_EFFECT_DISPEL))
+                    lastDispellEffect = eff.EffectIndex;
+            }
+
+            if (!dispellSuccess && lastDispellEffect == effectInfo->EffectIndex)
+            {
+                if (!m_spellInfo->IsAffectingArea())
+                {
+                    if (m_spellInfo->ChargeCategoryId)
+                        unit->GetSpellHistory()->RestoreCharge(m_spellInfo->ChargeCategoryId);
+                    else
+                        unit->GetSpellHistory()->ResetCooldown(m_spellInfo->Id, true);
+                }
+            }
+        }
         return;
+    }
 
     size_t remaining = dispelList.size();
 
@@ -2194,6 +2220,7 @@ void Spell::EffectDispel()
 
     m_caster->SendMessageToSet(spellDispellLog.Write(), true);
 
+    dispellSuccess = true;
     CallScriptSuccessfulDispel(SpellEffIndex(effectInfo->EffectIndex));
 }
 
@@ -4177,8 +4204,19 @@ void Spell::EffectDispelMechanic()
                 dispel_list.emplace_back(aura->GetId(), aura->GetCasterGUID());
     }
 
+    bool dispellSuccess = false;
+
+    if (!dispel_list.empty())
+        dispellSuccess = true;
+
     for (auto itr = dispel_list.begin(); itr != dispel_list.end(); ++itr)
+    {
+        dispellCount++;
         unitTarget->RemoveAura(itr->first, itr->second, 0, AURA_REMOVE_BY_ENEMY_SPELL);
+    }
+
+    if (dispellSuccess)
+        CallScriptSuccessfulDispel(effectInfo->EffectIndex);
 }
 
 void Spell::EffectResurrectPet()
@@ -4706,6 +4744,7 @@ void Spell::EffectStealBeneficialBuff()
         dispellData.SpellID = spellId;
         dispellData.Harmful = false;      // TODO: use me
 
+        dispellCount++;
         unitTarget->RemoveAurasDueToSpellBySteal(spellId, auraCaster, m_caster, stolenCharges);
 
         spellDispellLog.DispellData.emplace_back(dispellData);

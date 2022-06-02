@@ -629,6 +629,9 @@ m_spellValue(new SpellValue(m_spellInfo, caster)), _spellEvent(nullptr)
 
     for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
         m_destTargets[i] = SpellDestination(*m_caster);
+
+    dispellSuccess = false;
+    dispellCount = 0;
 }
 
 Spell::~Spell()

@@ -5207,6 +5207,42 @@ class spell_restoring_memory : public SpellScript
     }
 };
 
+
+enum FirebloodSpells
+{
+    SPELL_FIREBLOOD_STATS = 265226,
+    SPELL_FIREBLOOD_AURA = 273104,
+};
+
+// 265221 - Fireblood (Dark Iron Dwarf Racial)
+class spell_racial_fireblood : public SpellScript
+{
+    PrepareSpellScript(spell_racial_fireblood);
+
+    void HandleAfterCast()
+    {
+        if (Unit* caster = GetCaster())
+        {
+            if (SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(SPELL_FIREBLOOD_STATS))
+            {
+                if (Spell* spell = GetSpell())
+                {
+                    int32 bp = spellInfo->GetEffect(EFFECT_0).CalcValue(caster, nullptr, caster);
+                    bp = bp * 3 + bp * spell->GetDispellCount();
+                    caster->CastCustomSpell(caster, spellInfo->Id, &bp, &bp, &bp, true);
+                    caster->CastSpell(caster, SPELL_FIREBLOOD_AURA, true);
+                    caster->GetSpellHistory()->StartCooldown(GetSpellInfo(), 0, spell, false, true, 120 * IN_MILLISECONDS);
+                }
+            }
+        }
+    }
+
+    void Register() override
+    {
+        AfterCast += SpellCastFn(spell_racial_fireblood::HandleAfterCast);
+    }
+};
+
 void AddSC_generic_spell_scripts()
 {
     RegisterSpellScript(spell_gen_absorb0_hitlimit1);

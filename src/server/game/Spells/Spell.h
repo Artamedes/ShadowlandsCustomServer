@@ -646,6 +646,8 @@ class TC_GAME_API Spell
         std::string GetDebugInfo() const;
         void CallScriptOnResistAbsorbCalculateHandlers(DamageInfo const& damageInfo, uint32& resistAmount, int32& absorbAmount);
 
+        uint32 GetDispellCount() const { return dispellCount; }
+
     protected:
         bool HasGlobalCooldown() const;
         void TriggerGlobalCooldown();
@@ -708,6 +710,8 @@ class TC_GAME_API Spell
         float variance;
         SpellEffectHandleMode effectHandleMode;
         SpellEffectInfo const* effectInfo;
+        bool dispellSuccess;
+        uint32 dispellCount;
         // used in effects handlers
         Unit* GetUnitCasterForEffectHandlers() const;
         UnitAura* _spellAura;
