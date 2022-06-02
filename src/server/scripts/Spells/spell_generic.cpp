@@ -5231,7 +5231,7 @@ class spell_racial_fireblood : public SpellScript
                     bp = bp * 3 + bp * spell->GetDispellCount();
                     caster->CastCustomSpell(caster, spellInfo->Id, &bp, &bp, &bp, true);
                     caster->CastSpell(caster, SPELL_FIREBLOOD_AURA, true);
-                    caster->GetSpellHistory()->StartCooldown(GetSpellInfo(), 0, spell, false, true, 120 * IN_MILLISECONDS);
+                    caster->GetSpellHistory()->StartCooldownROG(GetSpellInfo(), 0, spell, false, true, 120 * IN_MILLISECONDS);
                 }
             }
         }
