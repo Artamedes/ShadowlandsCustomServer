@@ -535,10 +535,12 @@ void CovenantMgr::SetCovenant(CovenantID covenant)
 
     switch (covenant)
     {
-    case CovenantID::Kyrian: newCovenantId = 1; break;
-    case CovenantID::Venthyr: newCovenantId = 2; break;
-    case CovenantID::NightFae: newCovenantId = 3; break;
-    case CovenantID::Necrolord: newCovenantId = 4; break;
+        case CovenantID::Kyrian: newCovenantId = 1; break;
+        case CovenantID::Venthyr: newCovenantId = 2; break;
+        case CovenantID::NightFae: newCovenantId = 3; break;
+        case CovenantID::Necrolord: newCovenantId = 4; break;
+        default:
+            break;
     }
 
     if (newCovenantId == -1)
@@ -590,10 +592,12 @@ std::list<uint32> CovenantMgr::GetCovenantSpells()
 
     switch (covenant->GetCovenantID())
     {
-    case CovenantID::Kyrian: RequiredCovenantPreviewID = 2; break;
-    case CovenantID::Venthyr: RequiredCovenantPreviewID = 7; break;
-    case CovenantID::Necrolord: RequiredCovenantPreviewID = 6; break;
-    case CovenantID::NightFae: RequiredCovenantPreviewID = 5;break;
+        case CovenantID::Kyrian: RequiredCovenantPreviewID = 2; break;
+        case CovenantID::Venthyr: RequiredCovenantPreviewID = 7; break;
+        case CovenantID::Necrolord: RequiredCovenantPreviewID = 6; break;
+        case CovenantID::NightFae: RequiredCovenantPreviewID = 5; break;
+        default:
+            break;
     }
 
     auto soulbind = static_cast<uint32>(GetSoulbindUIDisplayInfoIdFromSoulbindID(covenant->GetSoulbindID()));
@@ -647,6 +651,8 @@ std::list<uint32> CovenantMgr::GetCovenantSpells()
         case CovenantID::NightFae:
             // 321077  - night fae
             SpellsToLearn.push_back(321077);
+            break;
+        default:
             break;
     }
 
