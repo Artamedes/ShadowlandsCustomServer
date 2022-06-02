@@ -75,7 +75,56 @@ class spell_necrolord_fleshcraft_spellscript : public SpellScript
     }
 };
 
+/// ID - 323089 Travel with Bloop
+class spell_travel_with_bloop : public AuraScript
+{
+    PrepareAuraScript(spell_travel_with_bloop);
+
+    enum TravelWithBloop
+    {
+        SpeedSpell    = 323399,
+        StackingSpell = 323396,
+    };
+
+    void HandlePeriodic(AuraEffect const* effect)
+    {
+        Unit* caster = GetCaster();
+        if (!caster)
+            return;
+
+        if (caster->HasAura(SpeedSpell))
+            return;
+
+        if (!caster->isMoving())
+        {
+            bool grantSpeed = false;
+            Aura* stackAura = caster->GetAura(StackingSpell);
+            if (stackAura)
+            {
+                if (stackAura->GetStackAmount() >= 4)
+                {
+                    grantSpeed = true;
+                }
+            }
+
+            caster->CastSpell(caster, StackingSpell, true);
+
+            if (grantSpeed && stackAura)
+            {
+                stackAura->Remove();
+                caster->CastSpell(caster, SpeedSpell, true);
+            }
+        }
+    }
+
+    void Register() override
+    {
+        OnEffectPeriodic += AuraEffectPeriodicFn(spell_travel_with_bloop::HandlePeriodic, EFFECT_0, SPELL_AURA_PERIODIC_TRIGGER_SPELL);
+    }
+};
+
 void AddSC_spell_necrolord()
 {
     RegisterSpellAndAuraScriptPairWithArgs(spell_necrolord_fleshcraft_spellscript, spell_necrolord_fleshcraft, "spell_necrolord_fleshcraft");
+    RegisterSpellScript(spell_travel_with_bloop);
 }
