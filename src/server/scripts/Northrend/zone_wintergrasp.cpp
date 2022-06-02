@@ -617,7 +617,7 @@ public:
     bool OnConditionCheck(Condition const* /* condition */, ConditionSourceInfo& /* sourceInfo */)
     {
         Battlefield* wintergrasp = sBattlefieldMgr->GetBattlefieldByBattleId(BATTLEFIELD_BATTLEID_WG);
-        if (wintergrasp->IsEnabled() && wintergrasp->GetDefenderTeam() == TEAM_HORDE)
+        if (wintergrasp && wintergrasp->IsEnabled() && wintergrasp->GetDefenderTeam() == TEAM_HORDE)
             return true;
         return false;
     }
@@ -631,7 +631,7 @@ public:
     bool OnConditionCheck(Condition const* /* condition */, ConditionSourceInfo& /* sourceInfo */)
     {
         Battlefield* wintergrasp = sBattlefieldMgr->GetBattlefieldByBattleId(BATTLEFIELD_BATTLEID_WG);
-        if (wintergrasp->IsEnabled() && wintergrasp->GetDefenderTeam() == TEAM_ALLIANCE)
+        if (wintergrasp && wintergrasp->IsEnabled() && wintergrasp->GetDefenderTeam() == TEAM_ALLIANCE)
             return true;
         return false;
     }
