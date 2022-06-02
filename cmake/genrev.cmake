@@ -63,6 +63,12 @@ else()
       OUTPUT_STRIP_TRAILING_WHITESPACE
       ERROR_QUIET
     )
+    execute_process(
+      COMMAND ${GIT_EXECUTABLE} rev-list HEAD --count
+      WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+      OUTPUT_VARIABLE "rev_number"
+      ERROR_QUIET
+      OUTPUT_STRIP_TRAILING_WHITESPACE)
 
     # when ran on CI, repository is put in detached HEAD state, attempt to scan for known local branches
     if(NOT rev_branch)
