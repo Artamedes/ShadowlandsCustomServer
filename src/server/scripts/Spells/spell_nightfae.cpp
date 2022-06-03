@@ -698,6 +698,44 @@ class spell_swift_patrol : public AuraScript
     }
 };
 
+/// ID - 352502 Survivor's Rally
+class spell_survivors_rally : public AuraScript
+{
+    PrepareAuraScript(spell_survivors_rally);
+
+    enum SurvivorsRally
+    {
+        SurvivorsRallyId = 352502,
+        ShieldAura = 352857,
+    };
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        if (!eventInfo.GetActionTarget())
+            return false;
+
+        if (eventInfo.GetActionTarget()->GetSpellHistory()->HasCooldown(SurvivorsRallyId))
+            return false;
+
+        return eventInfo.GetActionTarget()->HealthBelowPct(51);
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (auto target = eventInfo.GetActionTarget())
+        {
+            target->GetSpellHistory()->AddCooldown(SurvivorsRallyId, 0, 60s);
+            target->CastSpell(target, ShieldAura, CastSpellExtraArgs(true).AddSpellBP0(target->CountPctFromMaxHealth(21)));
+        }
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_survivors_rally::CheckProc);
+        OnProc += AuraProcFn(spell_survivors_rally::HandleProc);
+    }
+};
+
 void AddSC_spell_nightfae()
 {
     RegisterSpellScript(spell_nightfae_podtender);
@@ -710,6 +748,7 @@ void AddSC_spell_nightfae()
     RegisterSpellScript(spell_niyas_tools_poison);
     RegisterSpellScript(spell_waking_dreams);
     RegisterSpellScript(spell_swift_patrol);
+    RegisterSpellScript(spell_survivors_rally);
 
     RegisterCreatureAI(npc_regenerating_wild_seed_164589);
 
