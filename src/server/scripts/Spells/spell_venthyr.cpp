@@ -4,6 +4,7 @@
 #include "Unit.h"
 #include "SpellScript.h"
 #include "SpellAuras.h"
+#include "GameTime.h"
 
 enum SpellVenthyr
 {
@@ -546,6 +547,77 @@ class spell_dauntless_duelist : public AuraScript
     ObjectGuid CurrentDauntlessTarget;
 };
 
+/// ID - 332754 Hold Your Ground
+class spell_hold_your_ground : public AuraScript
+{
+    PrepareAuraScript(spell_hold_your_ground);
+
+    enum HoldYourGround
+    {
+        HoldYourGroundAura = 333089,
+    };
+
+    // we need a way to tell when last move was. this is a tempfix for now
+    void HandleApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+    {
+        if (Unit* caster = GetCaster())
+        {
+            caster->GetScheduler().Schedule(1s, GetId(), [](TaskContext context)
+            {
+                auto unit = context.GetUnit();
+                auto CurrTimeMS = GameTime::GetGameTimeMS();
+                bool isMoving = unit->isMoving();
+
+                if (isMoving)
+                    unit->Variables.Set("LastMovingTime", CurrTimeMS);
+
+                context.Repeat(1s);
+            });
+        }
+    }
+
+    void HandleRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+    {
+        if (Unit* caster = GetCaster())
+        {
+            caster->GetScheduler().CancelGroup(GetId());
+            caster->Variables.Remove("LastMovingTime");
+            caster->RemoveAurasDueToSpell(HoldYourGroundAura);
+        }
+    }
+
+    void HandlePeriodic(AuraEffect const* /*aurEff*/)
+    {
+        Unit* target = GetTarget();
+        if (!target)
+            return;
+
+        auto CurrTimeMS = GameTime::GetGameTimeMS();
+        auto LastMovingTime = target->Variables.GetValue("LastMovingTime", 0);
+        auto diff = CurrTimeMS - LastMovingTime;
+
+        if (LastMovingTime >= 4000)
+        {
+            target->CastSpell(target, HoldYourGroundAura, true);
+        }
+        else
+        {
+            if (auto aur = target->GetAura(HoldYourGroundAura))
+            {
+                if (aur->GetDuration() < 0)
+                    aur->SetDuration(6000);
+            }
+        }
+    }
+
+    void Register() override
+    {
+        OnEffectApply += AuraEffectApplyFn(spell_hold_your_ground::HandleApply, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY, AURA_EFFECT_HANDLE_REAL);
+        OnEffectRemove += AuraEffectApplyFn(spell_hold_your_ground::HandleRemove, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY, AURA_EFFECT_HANDLE_REAL);
+        OnEffectPeriodic += AuraEffectPeriodicFn(spell_hold_your_ground::HandlePeriodic, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
+    }
+};
+
 void AddSC_spell_venthyr()
 {
     RegisterSpellScript(spell_door_of_shadows);
@@ -557,6 +629,7 @@ void AddSC_spell_venthyr()
     RegisterSpellScript(spell_party_favors_item);
     RegisterSpellScript(spell_built_for_war);
     RegisterSpellScript(spell_dauntless_duelist);
+    RegisterSpellScript(spell_hold_your_ground);
 
     RegisterAreaTriggerAI(at_soothing_shade);
 }
