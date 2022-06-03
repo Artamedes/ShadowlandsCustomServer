@@ -478,6 +478,21 @@ class spell_built_for_war : public AuraScript
     }
 };
 
+///  ID - 332753 Superior Tactics
+class spell_superior_tactics : public AuraScript
+{
+    PrepareAuraScript(spell_superior_tactics);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return (eventInfo.GetHitMask() & PROC_HIT_INTERRUPT) != 0;
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_superior_tactics::CheckProc);
+    }
+};
 
 void AddSC_spell_venthyr()
 {
