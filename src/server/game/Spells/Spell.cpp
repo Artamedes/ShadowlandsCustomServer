@@ -5393,6 +5393,28 @@ void Spell::TakePower()
             continue;
         }
 
+        if (powerType == POWER_RUNIC_POWER)
+        {
+            if (cost.Amount > 0)
+            {
+                if (unitCaster->HasAura(81229) && unitCaster->IsPlayer())
+                {
+                    auto player = unitCaster->ToPlayer();
+                    if (roll_chance_i(std::min(100, cost.Amount * 2)))
+                    {
+                        for (int32 i = 0; i < player->GetMaxPower(POWER_RUNES); ++i)
+                        {
+                            if (player->GetRuneCooldown(i))
+                            {
+                                player->SetRuneCooldown(i, 0);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         if (!cost.Amount)
             continue;
 
