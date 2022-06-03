@@ -3,6 +3,8 @@
 #include "SpellScript.h"
 #include "SpellHistory.h"
 #include "CovenantMgr.h"
+#include "GameTime.h"
+#include "RestMgr.h"
 
 enum NightFae
 {
@@ -755,6 +757,49 @@ class spell_stay_on_the_move : public SpellScript
     }
 };
 
+/// ID - 319216 Somnambulist
+class spell_somnambulist : public AuraScript
+{
+    PrepareAuraScript(spell_somnambulist);
+
+    enum Somnambulist
+    {
+        SpeedBuff = 320235,
+    };
+
+    void HandleDummy(AuraEffect const* /*aurEff*/)
+    {
+        if (auto caster = GetTarget())
+        {
+            if (auto player = caster->ToPlayer())
+            {
+                if (player->HasPlayerFlag(PLAYER_FLAGS_RESTING))
+                {
+                    auto gameTime = GameTime::GetGameTime();
+
+                    if (StartRestTime == 0)
+                        StartRestTime = gameTime;
+                    else
+                    {
+                        auto diff = gameTime - StartRestTime;
+                        if (diff >= 60 && !player->HasAura(SpeedBuff))
+                            player->CastSpell(player, SpeedBuff, true);
+                    }
+                }
+                else if (StartRestTime > 0)
+                    StartRestTime = 0;
+            }
+        }
+    }
+
+    time_t StartRestTime = 0;
+
+    void Register() override
+    {
+        OnEffectPeriodic += AuraEffectPeriodicFn(spell_somnambulist::HandleDummy, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
+    }
+};
+
 void AddSC_spell_nightfae()
 {
     RegisterSpellScript(spell_nightfae_podtender);
@@ -769,6 +814,7 @@ void AddSC_spell_nightfae()
     RegisterSpellScript(spell_swift_patrol);
     RegisterSpellScript(spell_survivors_rally);
     RegisterSpellScript(spell_stay_on_the_move);
+    RegisterSpellScript(spell_somnambulist);
 
     RegisterCreatureAI(npc_regenerating_wild_seed_164589);
 
