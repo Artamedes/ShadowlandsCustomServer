@@ -311,12 +311,16 @@ class spell_brons_call_to_action : public AuraScript
     {
         BronStackAura = 332514,
         BronsCallToAction = 334048,
+        BronActive = 333961,
     };
 
     void HandleProc(ProcEventInfo& eventInfo)
     {
         if (auto actor = eventInfo.GetActor())
         {
+            if (actor->HasAura(BronActive))
+                return;
+
             actor->CastSpell(actor, BronStackAura, true);
 
             if (auto aur = actor->GetAura(BronStackAura))
