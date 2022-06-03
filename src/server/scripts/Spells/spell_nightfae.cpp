@@ -538,6 +538,44 @@ class spell_niyas_tools_poison : public AuraScript
     }
 };
 
+/// ID - 352779 Waking Dreams
+class spell_waking_dreams : public AuraScript
+{
+    PrepareAuraScript(spell_waking_dreams);
+
+    enum Poison
+    {
+        Shield = 353477,
+        CDAura = 358122,
+    };
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        if (!eventInfo.GetActionTarget())
+            return false;
+
+        if (eventInfo.GetActionTarget()->HasAura(CDAura))
+            return false;
+
+        return eventInfo.GetActionTarget()->HealthBelowPct(81);
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (auto target = eventInfo.GetActionTarget())
+        {
+            target->CastSpell(target, CDAura, true);
+            target->CastSpell(target, Shield, CastSpellExtraArgs(true).AddSpellBP0(target->CountPctFromMaxHealth(20)));
+        }
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_waking_dreams::CheckProc);
+        OnProc += AuraProcFn(spell_waking_dreams::HandleProc);
+    }
+};
+
 void AddSC_spell_nightfae()
 {
     RegisterSpellScript(spell_nightfae_podtender);
@@ -548,6 +586,7 @@ void AddSC_spell_nightfae()
     RegisterSpellScript(spell_nightfae_dream_delver);
     RegisterSpellScript(spell_nightfae_wild_hunt_tactics);
     RegisterSpellScript(spell_niyas_tools_poison);
+    RegisterSpellScript(spell_waking_dreams);
 
     RegisterCreatureAI(npc_regenerating_wild_seed_164589);
 
