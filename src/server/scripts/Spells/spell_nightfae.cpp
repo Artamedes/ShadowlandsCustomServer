@@ -4,6 +4,61 @@
 #include "SpellHistory.h"
 #include "CovenantMgr.h"
 
+enum NightFae
+{
+    DeathsDue         = 324128,
+    TheHunt           = 333762,
+    ConvokeTheSpirits = 323764,
+    WildSpirits       = 328231,
+    ShiftingPower     = 314791,
+    FaelineStomp      = 327276,
+    BlessingOfSeasons = 328278,
+    FaeGuardians      = 327661,
+    Sepsis            = 328305,
+    FaeTransfusion    = 328923,
+    SoulRot           = 325640,
+    AncientAftershock = 325886,
+};
+
+const std::unordered_map<uint32, float> GroveInvigorationRates =
+{
+    { DeathsDue        , 0.25f},
+    { TheHunt          , 1.5f},
+    { ConvokeTheSpirits, 2.0f},
+    { WildSpirits      , 2.0f},
+    { ShiftingPower    , 0.75f},
+    { FaelineStomp     , 0.5f},
+    { BlessingOfSeasons, 0.75f},
+    { FaeGuardians     , 1.5f},
+    { Sepsis           , 1.5f},
+    { FaeTransfusion   , 2.0f},
+    { SoulRot          , 1.0f},
+    { AncientAftershock, 1.5f},
+
+};
+
+inline const bool IsNFCovenantAbility(uint32 spellId)
+{
+    switch (spellId)
+    {
+        case SoulRot:
+        case DeathsDue:
+        case TheHunt:
+        case ConvokeTheSpirits:
+        case WildSpirits:
+        case ShiftingPower:
+        case FaelineStomp:
+        case BlessingOfSeasons:
+        case FaeGuardians:
+        case Sepsis:
+        case FaeTransfusion:
+        case AncientAftershock:
+            return true;
+        default:
+            return false;
+    }
+}
+
 // 320221 
 class spell_nightfae_podtender : public AuraScript
 {
@@ -274,7 +329,20 @@ class spell_nightfae_grove_invigoration : public AuraScript
         PreventDefaultAction();
         if (auto actor = eventInfo.GetActor())
         {
-            actor->CastSpell(actor, RedirectedAnima, true);
+            uint32 iterates = 1;
+            if (eventInfo.GetSpellInfo())
+            {
+                if (IsNFCovenantAbility(eventInfo.GetSpellInfo()->Id) && !eventInfo.GetHitMask())
+                {
+                    iterates = 8;
+                    auto it = GroveInvigorationRates.find(eventInfo.GetSpellInfo()->Id);
+                    if (it != GroveInvigorationRates.end())
+                        iterates *= it->second;
+                }
+            }
+
+            for (uint32 i = 0; i < iterates; ++i)
+                actor->CastSpell(actor, RedirectedAnima, true);
 
             if (actor->HasAura(BondedHearts))
             {
@@ -302,10 +370,19 @@ class spell_nightfae_grove_invigoration : public AuraScript
         }
     }
 
+    void OnCalcProc(ProcEventInfo& eventInfo, float& chance)
+    {
+        // need to disable periodic effects here and up. not sure how to check rn without hacks. not a big deal, just you might stack to 50 right away
+        if (eventInfo.GetSpellInfo())
+            if (IsNFCovenantAbility(eventInfo.GetSpellInfo()->Id))
+                chance = 100.0f;
+    }
+
     void Register() override
     {
         DoCheckProc += AuraCheckProcFn(spell_nightfae_grove_invigoration::CheckProc);
         OnEffectProc += AuraEffectProcFn(spell_nightfae_grove_invigoration::HandleProc, EFFECT_0, SPELL_AURA_PROC_TRIGGER_SPELL);
+        OnCalcProcChance += AuraCalcProcChanceFn(spell_nightfae_grove_invigoration::OnCalcProc);
     }
 };
 
