@@ -5393,20 +5393,20 @@ void Spell::TakePower()
             continue;
         }
 
-        if (powerType == POWER_RUNIC_POWER)
-        {
-            if (cost.Amount > 0)
-            {
-                if (unitCaster->HasAura(81229) && unitCaster->IsPlayer())
-                {
-                    auto player = unitCaster->ToPlayer();
-                    if (roll_chance_i(std::min(100, (cost.Amount / 10) * 2)))
-                    {
-                        player->CastSpell(player, 193486, true);
-                    }
-                }
-            }
-        }
+        //if (powerType == POWER_RUNIC_POWER)
+        //{
+        //    if (cost.Amount > 0)
+        //    {
+        //        if (unitCaster->HasAura(81229) && unitCaster->IsPlayer())
+        //        {
+        //            auto player = unitCaster->ToPlayer();
+        //            if (roll_chance_i(std::min(100, (cost.Amount / 10) * 2)))
+        //            {
+        //                player->CastSpell(player, 193486, true);
+        //            }
+        //        }
+        //    }
+        //}
 
         if (!cost.Amount)
             continue;

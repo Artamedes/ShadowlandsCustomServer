@@ -2014,15 +2014,15 @@ public:
         }
 
         // Frost DK
-        //if (player->GetSpecializationId() == TALENT_SPEC_DEATHKNIGHT_FROST)
-        //{
-        //    if (player->HasAura(SPELL_DK_RUNIC_EMPOWERMENT) && newValue < oldValue && power == POWER_RUNIC_POWER)
-        //    {
-        //        float prob = sSpellMgr->GetSpellInfo(SPELL_DK_RUNIC_EMPOWERMENT)->GetEffect(EFFECT_0).BasePoints / 10 * ((oldValue - newValue) / 10);
-        //        if (roll_chance_f(prob))
-        //            player->CastSpell(player, SPELL_DK_RUNIC_EMPOWERMENT_ENERGIZE, true);
-        //    }
-        //}
+        if (player->GetSpecializationId() == TALENT_SPEC_DEATHKNIGHT_FROST)
+        {
+            if (player->HasAura(SPELL_DK_RUNIC_EMPOWERMENT) && newValue < oldValue && power == POWER_RUNIC_POWER)
+            {
+                float prob = 2.0f * ((oldValue - newValue) / 10);
+                if (roll_chance_f(prob))
+                    player->CastSpell(player, SPELL_DK_RUNIC_EMPOWERMENT_ENERGIZE, true);
+            }
+        }
     }
 
 	void OnMapChanged(Player* player) override
