@@ -5243,6 +5243,28 @@ class spell_racial_fireblood : public SpellScript
     }
 };
 
+/// 83958 - Mobile Bank
+class spell_gen_mobile_bank : public SpellScript
+{
+    PrepareSpellScript(spell_gen_mobile_bank);
+
+    enum
+    {
+        GOB_MOBILE_BANK = 206602
+    };
+
+    void SpawnChest(SpellEffIndex /*effIndex*/)
+    {
+        if (GetCaster()->IsPlayer() && GetCaster()->ToPlayer()->GetGuildId())
+            GetCaster()->SummonGameObject(GOB_MOBILE_BANK, GetCaster()->GetPositionWithDistInFront(2.f), QuaternionData::fromEulerAnglesZYX(GetCaster()->GetOrientation() - float(M_PI), 0.f, 0.f), Minutes(5));
+    }
+
+    void Register() override
+    {
+        OnEffectHitTarget += SpellEffectFn(spell_gen_mobile_bank::SpawnChest, EFFECT_0, SPELL_EFFECT_SCRIPT_EFFECT);
+    }
+};
+
 void AddSC_generic_spell_scripts()
 {
     RegisterSpellScript(spell_gen_absorb0_hitlimit1);
@@ -5402,4 +5424,5 @@ void AddSC_generic_spell_scripts()
     RegisterSpellScript(aura_entropic_embrace);
     RegisterSpellScript(spell_gen_coin_of_many_faces);
     RegisterSpellScript(spell_restoring_memory);
+    RegisterSpellScript(spell_gen_mobile_bank);
 }
