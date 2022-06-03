@@ -5402,14 +5402,7 @@ void Spell::TakePower()
                     auto player = unitCaster->ToPlayer();
                     if (roll_chance_i(std::min(100, cost.Amount * 2)))
                     {
-                        for (int32 i = 0; i < player->GetMaxPower(POWER_RUNES); ++i)
-                        {
-                            if (player->GetRuneCooldown(i))
-                            {
-                                player->SetRuneCooldown(i, 0);
-                                break;
-                            }
-                        }
+                        player->CastSpell(player, 193486, true);
                     }
                 }
             }

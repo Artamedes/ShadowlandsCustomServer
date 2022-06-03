@@ -7114,10 +7114,49 @@ void Unit::SendEnergizeSpellLog(Unit* victim, uint32 spellID, int32 damage, int3
 
 void Unit::EnergizeBySpell(Unit* victim, SpellInfo const* spellInfo, int32 damage, Powers powerType)
 {
-    int32 gain = victim->ModifyPower(powerType, damage);
-    int32 overEnergize = damage - gain;
-    victim->GetThreatManager().ForwardThreatForAssistingMe(this, float(damage) / 2, spellInfo, true);
-    SendEnergizeSpellLog(victim, spellInfo->Id, gain, overEnergize, powerType);
+    int32 overEnergize = 0;
+    // Runes work different, they work as cooldowns.
+    if (IsPlayer() && powerType == POWER_RUNES)
+    {
+        Player* player = victim->ToPlayer();
+
+        int32 count = damage;
+        for (uint8 i = 0; i < MAX_RUNES; ++i)
+            if (player->GetRuneCooldown(i))
+            {
+                if (count == 0)
+                    break;
+
+                player->SetRuneCooldown(i, 0);
+                player->AddRunePower(i);
+                count--;
+            }
+
+        overEnergize = count;
+    }
+    else
+    {
+
+        int32 gain = victim->ModifyPower(powerType, damage);
+        // Need to modify damage here.
+        if (damage > 0 && IsPlayer() && (powerType == POWER_INSANITY || powerType == POWER_RUNIC_POWER))
+        {
+            int32 addPct = 0;
+            AuraEffectList increasePowerRegenAuras = GetAuraEffectsByType(SPELL_AURA_MOD_POWER_GAIN_PCT);
+            for (AuraEffect* auraEffect : increasePowerRegenAuras)
+            {
+                if (auraEffect->GetSpellInfo()->Id == 193223 && damage < 0) // Surrender to madness fix on decreasing insanity 100% faster
+                    continue;
+
+                addPct += auraEffect->GetAmount();
+            }
+
+            AddPct(damage, addPct);
+        }
+        overEnergize = damage - gain;
+        victim->GetThreatManager().ForwardThreatForAssistingMe(this, float(damage) / 2, spellInfo, true);
+    }
+    SendEnergizeSpellLog(victim, spellInfo->Id, damage, overEnergize, powerType);
 }
 
 uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uint32 pdamage, DamageEffectType damagetype, SpellEffectInfo const& spellEffectInfo, uint32 stack /*= 1*/) const
