@@ -1564,6 +1564,7 @@ struct npc_training_dummy : NullCreatureAI
         me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_TURN, true);
         me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_SAPPED, true);
         me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_DISTRACT, true);
+        me->SetControlled(true, UnitState::UNIT_STATE_ROOT);
     }
 
     void JustEnteredCombat(Unit* who) override

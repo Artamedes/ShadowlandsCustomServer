@@ -3,7 +3,31 @@
 #include "SpellScript.h"
 #include "CovenantMgr.h"
 #include "Player.h"
+#include "SpellAuras.h"
 #include "SpellHistory.h"
+#include "AreaTriggerAI.h"
+#include "AreaTrigger.h"
+
+enum Kyrian
+{
+    ShackleTheUnworthy               = 312202,
+    ElysianDecree                    = 306830,
+    KindredSpirits                   = 326434, // has 3 spells
+    ResonatingArrow                  = 308491,
+    RadiantSpark                     = 307443,
+    WeaponsOfOrder                   = 310454,
+    DivineToll                       = 304971,
+    BoonOfTheAscended                = 325013,
+    EchoingReprimand                 = 323547,
+    VesperTotem                      = 324386,
+    ScouringTithe                    = 312321,
+    SpearOfBastion                   = 307865,
+
+    // Druid Swaps
+    KindredProtection                = 327037,
+    KindredFocus                     = 327071,
+    KindredEmpowerment               = 327022,
+};
 
 struct npc_kyrian_steward : public ScriptedAI
 {
@@ -146,6 +170,61 @@ struct npc_kyrian_steward : public ScriptedAI
         bool gavePotsToOwner = false;
 };
 
+/// ID - 352188 Effusive Anima Accelerator
+class spell_kyrian_effusive_anima_accelerator_aura : public AuraScript
+{
+    PrepareAuraScript(spell_kyrian_effusive_anima_accelerator_aura);
+
+    enum EffusiveAnima
+    {
+        EffusiveProc = 353248,
+    };
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        if (!eventInfo.GetSpellInfo())
+            return false;
+
+        switch (eventInfo.GetSpellInfo()->Id)
+        {
+            case ShackleTheUnworthy:
+            case ElysianDecree:
+            case KindredSpirits:
+            case ResonatingArrow:
+            case RadiantSpark:
+            case WeaponsOfOrder:
+            case DivineToll:
+            case BoonOfTheAscended:
+            case EchoingReprimand:
+            case VesperTotem:
+            case ScouringTithe:
+            case SpearOfBastion:
+            case KindredProtection:
+            case KindredFocus:
+            case KindredEmpowerment:
+                return true;
+
+            default:
+                return false;
+        }
+
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (auto actor = eventInfo.GetActor())
+        {
+            actor->CastSpell(actor, EffusiveProc, true);
+        }
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_kyrian_effusive_anima_accelerator_aura::CheckProc);
+        OnProc += AuraProcFn(spell_kyrian_effusive_anima_accelerator_aura::HandleProc);
+    }
+};
+
 // ID - 353248 Effusive Anima Accelerator
 class spell_kyrian_effusive_anima_accelerator : public SpellScript
 {
@@ -160,16 +239,37 @@ class spell_kyrian_effusive_anima_accelerator : public SpellScript
             return;
 
         int32 targetsSize = targets.size();
-        int32 cdr = 3000 * targetsSize;
-        if (cdr >= 15000)
-            cdr = 15000;
+        // 1sec per 30sec of base CD
 
-        switch (caster->GetClass())
+        auto ModifyCooldown([&](uint32 spellId)
         {
-            case CLASS_ROGUE:
-                caster->GetSpellHistory()->ModifyCooldown(323547, -cdr); // Echoing Reprimand
-                break;
-        }
+            auto spellInfo = sSpellMgr->GetSpellInfo(spellId);
+            if (!spellInfo)
+                return;
+
+            if (caster->HasSpell(spellId))
+            {
+                int32 baseCDR = spellInfo->RecoveryTime / 30000; // 6 sec
+                int32 cdr = baseCDR * targetsSize * 1000;
+                caster->GetSpellHistory()->ModifyCooldown(spellId, -cdr);
+            }
+        });
+
+        ModifyCooldown(ShackleTheUnworthy);
+        ModifyCooldown(ElysianDecree);
+        ModifyCooldown(KindredSpirits);
+        ModifyCooldown(ResonatingArrow);
+        ModifyCooldown(RadiantSpark);
+        ModifyCooldown(WeaponsOfOrder);
+        ModifyCooldown(DivineToll);
+        ModifyCooldown(BoonOfTheAscended);
+        ModifyCooldown(EchoingReprimand);
+        ModifyCooldown(VesperTotem);
+        ModifyCooldown(ScouringTithe);
+        ModifyCooldown(SpearOfBastion);
+        ModifyCooldown(KindredProtection);
+        ModifyCooldown(KindredFocus);
+        ModifyCooldown(KindredEmpowerment);
     }
 
     void Register() override
@@ -202,9 +302,310 @@ class spell_focusing_mantra : public SpellScript
     }
 };
 
+/// ID - 333950 Bron's Call to Action
+class spell_brons_call_to_action : public AuraScript
+{
+    PrepareAuraScript(spell_brons_call_to_action);
+
+    enum Bron
+    {
+        BronStackAura = 332514,
+        BronsCallToAction = 334048,
+    };
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (auto actor = eventInfo.GetActor())
+        {
+            actor->CastSpell(actor, BronStackAura, true);
+
+            if (auto aur = actor->GetAura(BronStackAura))
+            {
+                if (aur->GetStackAmount() >= 74)
+                {
+                    aur->Remove();
+                    actor->CastSpell(actor, BronsCallToAction, true);
+                }
+            }
+        }
+    }
+
+
+    void Register() override
+    {
+        OnProc += AuraProcFn(spell_brons_call_to_action::HandleProc);
+    }
+};
+
+// 171396
+struct npc_kyrian_goliath : public ScriptedAI
+{
+    public:
+        npc_kyrian_goliath(Creature* creature) : ScriptedAI(creature) { }
+
+        enum BronSpells
+        {
+            BronKnockback = 333963,
+            AnimaCannon = 332525,
+            Smash = 341163,
+            Heal = 332526,
+        };
+
+        void InitializeAI() override
+        {
+            scheduler.SetValidator([this]
+            {
+                return !me->HasUnitState(UNIT_STATE_CASTING);
+            });
+        }
+
+        void JustEngagedWith(Unit* who) override
+        {
+            scheduler.CancelAll();
+
+            DoCastAOE(BronKnockback);
+            scheduler.Schedule(5s, [this](TaskContext context)
+            {
+                DoCastVictim(Smash, true);
+                context.Repeat(5s);
+            });
+            scheduler.Schedule(7s, [this](TaskContext context)
+            {
+                std::list<Unit*> friendlyTargets;
+                me->GetFriendlyUnitListInRange(friendlyTargets, 30.0f, true);
+                if (!friendlyTargets.empty())
+                {
+                    friendlyTargets.sort(Trinity::HealthPctOrderPred());
+                    DoCast(friendlyTargets.front(), Heal);
+                }
+                context.Repeat(10s);
+            });
+            scheduler.Schedule(7s, [this](TaskContext context)
+            {
+                DoCastVictim(AnimaCannon);
+                context.Repeat(7s);
+            });
+        }
+
+        void UpdateAI(uint32 diff) override
+        {
+            if (auto owner = me->GetOwner())
+            {
+                if (me->GetVictim() != owner->GetVictim())
+                {
+                    if (owner->GetVictim())
+                        AttackStart(owner->GetVictim());
+                }
+            }
+
+            if (!UpdateVictim())
+                return;
+
+            scheduler.Update(diff);
+
+            if (me->HasUnitState(UNIT_STATE_CASTING))
+                return;
+
+            DoMeleeAttackIfReady();
+        }
+    private:
+        TaskScheduler scheduler;
+};
+
+/// ID - 328266 Combat Meditation
+class spell_combat_meditation : public AuraScript
+{
+    PrepareAuraScript(spell_combat_meditation);
+
+    enum CombatMeditation
+    {
+        CombatMeditationMastery = 328908,
+    };
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        if (!eventInfo.GetSpellInfo())
+            return false;
+
+        switch (eventInfo.GetSpellInfo()->Id)
+        {
+            case ShackleTheUnworthy:
+            case ElysianDecree:
+            case KindredSpirits:
+            case ResonatingArrow:
+            case RadiantSpark:
+            case WeaponsOfOrder:
+            case DivineToll:
+            case BoonOfTheAscended:
+            case EchoingReprimand:
+            case VesperTotem:
+            case ScouringTithe:
+            case SpearOfBastion:
+            case KindredProtection:
+            case KindredFocus:
+            case KindredEmpowerment:
+                return true;
+
+            default:
+                return false;
+        }
+
+    }
+
+    void HandleProc(AuraEffect* /*aurEff*/, ProcEventInfo& eventInfo)
+    {
+        if (auto actor = eventInfo.GetActor())
+        {
+            actor->CastSpell(actor, CombatMeditationMastery);
+        }
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_combat_meditation::CheckProc);
+        OnEffectProc += AuraEffectProcFn(spell_combat_meditation::HandleProc, EFFECT_0, SPELL_AURA_PROC_TRIGGER_SPELL);
+    }
+};
+
+/// ID - 328908 Combat Meditation (Level 60)
+class spell_combat_meditation_buff : public AuraScript
+{
+    PrepareAuraScript(spell_combat_meditation_buff);
+
+    enum CombatMeditation
+    {
+        MissleAnimaOrb = 328917,
+    };
+
+    void HandlePeriodic(AuraEffect const* effect)
+    {
+        Unit* caster = GetCaster();
+        if (!caster)
+            return;
+
+        caster->CastSpell(caster, MissleAnimaOrb, true);
+    }
+
+    void Register() override
+    {
+        OnEffectPeriodic += AuraEffectPeriodicFn(spell_combat_meditation_buff::HandlePeriodic, EFFECT_1, SPELL_AURA_PERIODIC_TRIGGER_SPELL);
+    }
+};
+
+/// 20456
+struct areatrigger_combat_meditation : public AreaTriggerAI
+{
+public:
+    areatrigger_combat_meditation(AreaTrigger* at) : AreaTriggerAI(at) { }
+
+    enum CombatMeditation
+    {
+        CombatMeditationMastery = 328908,
+    };
+
+    bool consumed = false;
+
+    void OnUnitEnter(Unit* who) override
+    {
+        if (consumed)
+            return;
+
+        if (who == at->GetOwner())
+        {
+            consumed = true;
+            if (auto aura = who->GetAura(CombatMeditationMastery))
+            {
+                aura->ModDuration(3000);
+            }
+            else
+            {
+                if (auto aura = who->AddAura(CombatMeditationMastery, who))
+                {
+                    aura->SetDuration(3000);
+                }
+            }
+            at->Remove();
+        }
+    }
+};
+
+/// ID - 351149 Newfound Resolve
+class spell_newfound_resolve : public AuraScript
+{
+    PrepareAuraScript(spell_newfound_resolve);
+
+    enum NewfoundResolveProc
+    {
+        ProcMissle = 352918,
+    };
+
+    uint32 currChance = 0;
+
+    void HandlePeriodic(AuraEffect const* effect)
+    {
+        Unit* caster = GetCaster();
+        if (!caster)
+            return;
+
+        if (caster->IsInCombat())
+        {
+            //  Proc rate: Deck of Cards Deck Size: 30 Success Cards: 1 1 card is "drawn" every 3 seconds while in combat.
+            currChance += 3;
+
+            if (roll_chance_i(std::min(100u, currChance)))
+            {
+                currChance = 0;
+                caster->CastSpell(caster, ProcMissle, true);
+            }
+            else
+                currChance += 3;
+        }
+
+    }
+
+    void Register() override
+    {
+        OnEffectPeriodic += AuraEffectPeriodicFn(spell_newfound_resolve::HandlePeriodic, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
+    }
+};
+
+// 23044
+struct areatrigger_newfound_resolve : public AreaTriggerAI
+{
+public:
+    areatrigger_newfound_resolve(AreaTrigger* at) : AreaTriggerAI(at) { }
+
+    enum NewfoundResolve
+    {
+        NewfoundResolveBuff = 352917,
+    };
+
+    void OnUpdate(uint32 diff) override
+    {
+        if (auto owner = at->GetOwner())
+        {
+            if (owner->HasInLine(at, at->GetObjectSize(), at->GetObjectSize()))
+            {
+                owner->CastSpell(owner, NewfoundResolveBuff, true);
+                at->Remove();
+            }
+        }
+    }
+};
+
 void AddSC_spell_kyrian()
 {
     RegisterCreatureAI(npc_kyrian_steward);
+    RegisterCreatureAI(npc_kyrian_goliath);
+
+    RegisterSpellScript(spell_kyrian_effusive_anima_accelerator_aura);
     RegisterSpellScript(spell_kyrian_effusive_anima_accelerator);
     RegisterSpellScript(spell_focusing_mantra);
+    RegisterSpellScript(spell_brons_call_to_action);
+    RegisterSpellScript(spell_combat_meditation);
+    RegisterSpellScript(spell_combat_meditation_buff);
+    RegisterSpellScript(spell_newfound_resolve);
+
+    RegisterAreaTriggerAI(areatrigger_combat_meditation);
+    RegisterAreaTriggerAI(areatrigger_newfound_resolve);
 }
