@@ -5400,7 +5400,7 @@ void Spell::TakePower()
                 if (unitCaster->HasAura(81229) && unitCaster->IsPlayer())
                 {
                     auto player = unitCaster->ToPlayer();
-                    if (roll_chance_i(std::min(100, cost.Amount * 2)))
+                    if (roll_chance_i(std::min(100, (cost.Amount / 10) * 2)))
                     {
                         player->CastSpell(player, 193486, true);
                     }
