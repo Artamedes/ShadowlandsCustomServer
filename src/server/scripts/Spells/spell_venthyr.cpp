@@ -558,20 +558,37 @@ class spell_hold_your_ground : public AuraScript
     };
 
     // we need a way to tell when last move was. this is a tempfix for now
+    uint32 LastMovingTime = 0;
+
     void HandleApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
     {
         if (Unit* caster = GetCaster())
         {
-            caster->GetScheduler().Schedule(1s, GetId(), [](TaskContext context)
+            LastMovingTime = GameTime::GetGameTimeMS();
+
+            caster->GetScheduler().Schedule(1s, GetId(), [this](TaskContext context)
             {
+                // this can be garbage if aura is remove while this executes.
                 auto unit = context.GetUnit();
                 auto CurrTimeMS = GameTime::GetGameTimeMS();
                 bool isMoving = unit->isMoving();
 
                 if (isMoving)
-                    unit->Variables.Set("LastMovingTime", CurrTimeMS);
+                {
+                    LastMovingTime = CurrTimeMS;
 
-                context.Repeat(1s);
+                    if (auto aur = unit->GetAura(HoldYourGroundAura))
+                    {
+                        if (aur->GetDuration() < 0)
+                        {
+                            aur->SetDuration(6000);
+                            aur->SetMaxDuration(6000);
+                            aur->SetNeedClientUpdateForTargets();
+                        }
+                    }
+                }
+
+                context.Repeat(100ms);
             });
         }
     }
@@ -581,7 +598,7 @@ class spell_hold_your_ground : public AuraScript
         if (Unit* caster = GetCaster())
         {
             caster->GetScheduler().CancelGroup(GetId());
-            caster->Variables.Remove("LastMovingTime");
+            LastMovingTime = 0;
             caster->RemoveAurasDueToSpell(HoldYourGroundAura);
         }
     }
@@ -593,20 +610,11 @@ class spell_hold_your_ground : public AuraScript
             return;
 
         auto CurrTimeMS = GameTime::GetGameTimeMS();
-        auto LastMovingTime = target->Variables.GetValue("LastMovingTime", 0);
         auto diff = CurrTimeMS - LastMovingTime;
 
-        if (LastMovingTime >= 4000)
+        if (diff >= 4000)
         {
             target->CastSpell(target, HoldYourGroundAura, true);
-        }
-        else
-        {
-            if (auto aur = target->GetAura(HoldYourGroundAura))
-            {
-                if (aur->GetDuration() < 0)
-                    aur->SetDuration(6000);
-            }
         }
     }
 
