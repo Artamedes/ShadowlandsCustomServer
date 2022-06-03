@@ -494,6 +494,58 @@ class spell_superior_tactics : public AuraScript
     }
 };
 
+/// ID - 331584 Dauntless Duelist
+class spell_dauntless_duelist : public AuraScript
+{
+    PrepareAuraScript(spell_dauntless_duelist);
+
+    enum DauntlessDuelist
+    {
+        DmgAura = 331934,
+    };
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (!eventInfo.GetActor())
+            return;
+
+        CheckAndClearDauntlessTargetIfNeed();
+
+        if (!CurrentDauntlessTarget.IsEmpty())
+            return;
+
+        if (auto target = eventInfo.GetActionTarget())
+        {
+            CurrentDauntlessTarget = target->GetGUID();
+            eventInfo.GetActor()->CastSpell(target, DmgAura, true);
+        }
+    }
+
+    Unit* GetDauntlessTarget()
+    {
+        if (GetCaster())
+            return ObjectAccessor::GetUnit(*GetCaster(), CurrentDauntlessTarget);
+        return nullptr;
+    }
+
+    void CheckAndClearDauntlessTargetIfNeed()
+    {
+        auto caster = GetCaster();
+        if (!caster)
+            return;
+        auto targ = GetDauntlessTarget();
+        if (targ == nullptr || caster->IsValidAssistTarget(targ) || targ->isDead() || !targ->HasAura(DmgAura))
+            CurrentDauntlessTarget.Clear();
+    }
+
+    void Register() override
+    {
+        OnProc += AuraProcFn(spell_dauntless_duelist::HandleProc);
+    }
+
+    ObjectGuid CurrentDauntlessTarget;
+};
+
 void AddSC_spell_venthyr()
 {
     RegisterSpellScript(spell_door_of_shadows);
@@ -504,6 +556,7 @@ void AddSC_spell_venthyr()
     RegisterSpellScript(spell_party_favors);
     RegisterSpellScript(spell_party_favors_item);
     RegisterSpellScript(spell_built_for_war);
+    RegisterSpellScript(spell_dauntless_duelist);
 
     RegisterAreaTriggerAI(at_soothing_shade);
 }
