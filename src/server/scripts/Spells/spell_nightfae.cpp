@@ -800,6 +800,30 @@ class spell_somnambulist : public AuraScript
     }
 };
 
+/// ID - 352806 Hunt's Exhilaration
+class spell_hunts_exhilaration : public AuraScript
+{
+    PrepareAuraScript(spell_hunts_exhilaration);
+
+    enum HuntsExhilaration
+    {
+        LeechSpell = 353203,
+    };
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (auto target = eventInfo.GetActor())
+        {
+            target->CastSpell(target, LeechSpell, true);
+        }
+    }
+
+    void Register() override
+    {
+        OnProc += AuraProcFn(spell_hunts_exhilaration::HandleProc);
+    }
+};
+
 void AddSC_spell_nightfae()
 {
     RegisterSpellScript(spell_nightfae_podtender);
@@ -815,6 +839,7 @@ void AddSC_spell_nightfae()
     RegisterSpellScript(spell_survivors_rally);
     RegisterSpellScript(spell_stay_on_the_move);
     RegisterSpellScript(spell_somnambulist);
+    RegisterSpellScript(spell_hunts_exhilaration);
 
     RegisterCreatureAI(npc_regenerating_wild_seed_164589);
 
