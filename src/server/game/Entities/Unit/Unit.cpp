@@ -11614,7 +11614,7 @@ void Unit::SetMeleeAnimKitId(uint16 animKitId)
 
     if (!victim->IsCritter())
     {
-        Unit::ProcSkillsAndAuras(attacker, victim, PROC_FLAG_KILL, PROC_FLAG_NONE, PROC_SPELL_TYPE_MASK_ALL, PROC_SPELL_PHASE_NONE, PROC_HIT_NONE, nullptr, nullptr, nullptr);
+        Unit::ProcSkillsAndAuras(attacker, victim, { PROC_FLAG_KILL, PROC_FLAG_2_TARGET_DIES }, PROC_FLAG_NONE, PROC_SPELL_TYPE_MASK_ALL, PROC_SPELL_PHASE_NONE, PROC_HIT_NONE, nullptr, nullptr, nullptr);
 
         if (player && player->GetGroup())
             for (GroupReference* itr = player->GetGroup()->GetFirstMember(); itr != nullptr; itr = itr->next())

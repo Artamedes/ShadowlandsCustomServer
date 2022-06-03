@@ -653,6 +653,51 @@ class spell_waking_dreams : public AuraScript
     }
 };
 
+/// ID - 320687 Swift Patrol
+class spell_swift_patrol : public AuraScript
+{
+    PrepareAuraScript(spell_swift_patrol);
+
+    enum SwiftPatrol
+    {
+        SwiftPatrolId = 320687,
+        SpeedAura = 321527,
+    };
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        if (!eventInfo.GetActor())
+            return false;
+
+        return true;
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (auto target = eventInfo.GetActor())
+        {
+            target->CastSpell(target, SpeedAura, true);
+            target->GetScheduler().Schedule(100ms, SwiftPatrolId, [](TaskContext context)
+            {
+                auto targ = context.GetUnit();
+                if (targ->HasAura(SpeedAura))
+                {
+                    if (targ->IsInCombat())
+                        targ->RemoveAurasDueToSpell(SpeedAura);
+                    else
+                        context.Repeat(100ms);
+                }
+            });
+        }
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_swift_patrol::CheckProc);
+        OnProc += AuraProcFn(spell_swift_patrol::HandleProc);
+    }
+};
+
 void AddSC_spell_nightfae()
 {
     RegisterSpellScript(spell_nightfae_podtender);
@@ -664,6 +709,7 @@ void AddSC_spell_nightfae()
     RegisterSpellScript(spell_nightfae_wild_hunt_tactics);
     RegisterSpellScript(spell_niyas_tools_poison);
     RegisterSpellScript(spell_waking_dreams);
+    RegisterSpellScript(spell_swift_patrol);
 
     RegisterCreatureAI(npc_regenerating_wild_seed_164589);
 
