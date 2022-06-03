@@ -18,6 +18,8 @@ enum NightFae
     FaeTransfusion    = 328923,
     SoulRot           = 325640,
     AncientAftershock = 325886,
+
+    Soulshape         = 310143,
 };
 
 const std::unordered_map<uint32, float> GroveInvigorationRates =
@@ -736,6 +738,23 @@ class spell_survivors_rally : public AuraScript
     }
 };
 
+/// ID - 321467 Stay on the Move
+class spell_stay_on_the_move : public SpellScript
+{
+    PrepareSpellScript(spell_stay_on_the_move);
+
+    void HandleDummy(SpellEffIndex /*eff*/)
+    {
+        if (auto caster = GetCaster())
+            caster->GetSpellHistory()->ModifyCooldown(310143, -1000);
+    }
+
+    void Register() override
+    {
+        OnEffectHitTarget += SpellEffectFn(spell_stay_on_the_move::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
+    }
+};
+
 void AddSC_spell_nightfae()
 {
     RegisterSpellScript(spell_nightfae_podtender);
@@ -749,6 +768,7 @@ void AddSC_spell_nightfae()
     RegisterSpellScript(spell_waking_dreams);
     RegisterSpellScript(spell_swift_patrol);
     RegisterSpellScript(spell_survivors_rally);
+    RegisterSpellScript(spell_stay_on_the_move);
 
     RegisterCreatureAI(npc_regenerating_wild_seed_164589);
 
