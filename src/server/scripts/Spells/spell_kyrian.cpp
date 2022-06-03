@@ -178,8 +178,33 @@ class spell_kyrian_effusive_anima_accelerator : public SpellScript
     }
 };
 
+/// ID - 328738 Focusing Mantra
+class spell_focusing_mantra : public SpellScript
+{
+    PrepareSpellScript(spell_focusing_mantra);
+
+    enum FocusingMantra
+    {
+        PhialOfSerenitySpell = 323436,
+    };
+    
+    void HandleDummy(SpellEffIndex /*eff*/)
+    {
+        if (Unit* caster = GetCaster())
+        {
+            caster->GetSpellHistory()->ModifyCooldown(PhialOfSerenitySpell, -1000);
+        }
+    }
+
+    void Register()
+    {
+        OnEffectHitTarget += SpellEffectFn(spell_focusing_mantra::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
+    }
+};
+
 void AddSC_spell_kyrian()
 {
     RegisterCreatureAI(npc_kyrian_steward);
     RegisterSpellScript(spell_kyrian_effusive_anima_accelerator);
+    RegisterSpellScript(spell_focusing_mantra);
 }
