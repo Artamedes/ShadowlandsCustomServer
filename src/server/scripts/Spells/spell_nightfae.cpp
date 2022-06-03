@@ -482,6 +482,62 @@ class spell_nightfae_wild_hunt_tactics : public AuraScript
     }
 };
 
+/// ID - 320660 Niya's Tools: Poison
+class spell_niyas_tools_poison : public AuraScript
+{
+    PrepareAuraScript(spell_niyas_tools_poison);
+
+    enum Poison
+    {
+        ParalyticPoison = 321519,
+    };
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return true;
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        PreventDefaultAction();
+        if (auto actor = eventInfo.GetActor())
+        {
+            if (auto hitUnit = eventInfo.GetProcTarget())
+            {
+                if (eventInfo.GetHitMask() & PROC_HIT_INTERRUPT)
+                {
+                    if (auto player = actor->ToPlayer())
+                    {
+                        // $pointsA = ${ $cond($gt($SP,$AP),$SP * 0.05,$AP * 0.05) * (1 + $@versadmg) }
+                        // $pointsB = ${ $cond($gt($SP,$AP),$SP * 0.24,$AP * 0.24) * (1 + $@versadmg) }
+
+                        auto sp = static_cast<float>(actor->GetTotalSpellPowerValue(SpellSchoolMask::SPELL_SCHOOL_MASK_ALL, false));
+                        auto ap = actor->GetTotalAttackPowerValue(WeaponAttackType::BASE_ATTACK);
+
+                        auto apSpMax = std::max(ap, sp);
+                        auto versa = player->m_activePlayerData->Versatility + player->m_activePlayerData->VersatilityBonus;
+
+                        float dmg = 0.0f;
+
+                        if (hitUnit->HasAura(ParalyticPoison))
+                            dmg = apSpMax * 0.24f * (1.0f + versa);
+                        else
+                            dmg = apSpMax * 0.05f * (1.0f + versa);
+
+                        actor->CastSpell(hitUnit, ParalyticPoison, CastSpellExtraArgs(true).AddSpellBP0(dmg));
+                    }
+                }
+            }
+        }
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_niyas_tools_poison::CheckProc);
+        OnProc += AuraProcFn(spell_niyas_tools_poison::HandleProc);
+    }
+};
+
 void AddSC_spell_nightfae()
 {
     RegisterSpellScript(spell_nightfae_podtender);
@@ -491,6 +547,7 @@ void AddSC_spell_nightfae()
     RegisterSpellScript(spell_nightfae_niyas_tools_burrs);
     RegisterSpellScript(spell_nightfae_dream_delver);
     RegisterSpellScript(spell_nightfae_wild_hunt_tactics);
+    RegisterSpellScript(spell_niyas_tools_poison);
 
     RegisterCreatureAI(npc_regenerating_wild_seed_164589);
 

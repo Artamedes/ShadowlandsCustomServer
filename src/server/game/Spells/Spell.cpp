@@ -2739,7 +2739,7 @@ void Spell::TargetInfo::DoDamageAndTriggers(Spell* spell)
         ProcFlagsInit procAttacker = spell->m_procAttacker;
         ProcFlagsInit procVictim = spell->m_procVictim;
         ProcFlagsSpellType procSpellType = PROC_SPELL_TYPE_NONE;
-        ProcFlagsHit hitMask = PROC_HIT_NONE;
+        ProcFlagsHit hitMask = spell->m_hitMask;
 
         // Spells with this flag cannot trigger if effect is cast on self
         bool const canEffectTrigger = (!spell->m_spellInfo->HasAttribute(SPELL_ATTR3_SUPPRESS_CASTER_PROCS) || !spell->m_spellInfo->HasAttribute(SPELL_ATTR3_SUPPRESS_TARGET_PROCS))
@@ -2849,7 +2849,7 @@ void Spell::TargetInfo::DoDamageAndTriggers(Spell* spell)
             // Check damage immunity
             if (spell->unitTarget->IsImmunedToDamage(spell->m_spellInfo))
             {
-                hitMask = PROC_HIT_IMMUNE;
+                hitMask |= PROC_HIT_IMMUNE;
                 spell->m_damage = 0;
 
                 // no packet found in sniffs

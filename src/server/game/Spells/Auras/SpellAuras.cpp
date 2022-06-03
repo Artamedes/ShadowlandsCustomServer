@@ -2686,6 +2686,7 @@ void UnitAura::FillTargetMap(std::unordered_map<Unit*, uint32>& targets, Unit* c
                 if (Unit* pet = ObjectAccessor::GetUnit(*GetUnitOwner(), GetUnitOwner()->GetPetGUID()))
                     if (!condList || sConditionMgr->IsObjectMeetToConditions(pet, ref, *condList))
                         units.push_back(pet);
+                units.push_back(GetUnitOwner()); // also apply on unit owner
                 break;
             }
             case SPELL_EFFECT_APPLY_AREA_AURA_SUMMONS:
