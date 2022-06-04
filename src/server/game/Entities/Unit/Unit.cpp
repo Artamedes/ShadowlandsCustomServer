@@ -15150,6 +15150,11 @@ void Unit::SendRemoveLossOfControl(AuraApplication const* aurApp, LossOfControlT
     if (GetTypeId() != TYPEID_PLAYER)
         return;
 
+    if (GetAura(351147)) ///< Path of the Devoted
+    {
+        CastSpell(this, 352875, true); ///< Path of the Devoted.
+    }
+
     Aura* aura = aurApp->GetBase();
     if (aura == nullptr)
         return;

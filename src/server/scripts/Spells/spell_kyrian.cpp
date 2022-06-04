@@ -7,6 +7,10 @@
 #include "SpellHistory.h"
 #include "AreaTriggerAI.h"
 #include "AreaTrigger.h"
+#include "Group.h"
+#include "SpellAuraEffects.h"
+#include "CellImpl.h"
+#include "Cell.h"
 
 enum Kyrian
 {
@@ -27,6 +31,9 @@ enum Kyrian
     KindredProtection                = 327037,
     KindredFocus                     = 327071,
     KindredEmpowerment               = 327022,
+
+    PhialOfSerenityItem              = 177278,
+    PhialOfSerenitySpell             = 323436,
 };
 
 struct npc_kyrian_steward : public ScriptedAI
@@ -283,11 +290,6 @@ class spell_focusing_mantra : public SpellScript
 {
     PrepareSpellScript(spell_focusing_mantra);
 
-    enum FocusingMantra
-    {
-        PhialOfSerenitySpell = 323436,
-    };
-    
     void HandleDummy(SpellEffIndex /*eff*/)
     {
         if (Unit* caster = GetCaster())
@@ -597,6 +599,794 @@ public:
     }
 };
 
+/// ID: 351488 Spear of the Archon
+class spell_spear_of_the_archon : public AuraScript
+{
+    PrepareAuraScript(spell_spear_of_the_archon);
+
+    enum SpearOfTheArchon
+    {
+        CritSpell = 352720,
+        SpeedSpell = 352719,
+    };
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        if (!eventInfo.GetActionTarget() || !eventInfo.GetActor())
+            return false;
+
+        return eventInfo.GetActionTarget()->HealthAbovePct(90);
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (auto actor = eventInfo.GetActor())
+            actor->CastSpell(actor, CritSpell, true);
+    }
+
+    void HandleCombat(bool combat)
+    {
+        if (!GetTarget())
+            return;
+
+        if (combat)
+            GetTarget()->RemoveAurasDueToSpell(SpeedSpell);
+        else
+            GetTarget()->CastSpell(GetTarget(), SpeedSpell, true);
+    }
+
+    void HandleApply(const AuraEffect* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+    {
+        if (!GetTarget())
+            return;
+
+        if (GetTarget()->IsInCombat())
+            GetTarget()->RemoveAurasDueToSpell(SpeedSpell);
+        else
+            GetTarget()->CastSpell(GetTarget(), SpeedSpell, true);
+    }
+
+    void HandleRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+    {
+        if (!GetTarget())
+            return;
+
+        GetTarget()->RemoveAurasDueToSpell(SpeedSpell);
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_spear_of_the_archon::CheckProc);
+        OnProc += AuraProcFn(spell_spear_of_the_archon::HandleProc);
+        OnEnterLeaveCombat += AuraEnterLeaveCombatFn(spell_spear_of_the_archon::HandleCombat);
+        OnEffectApply += AuraEffectApplyFn(spell_spear_of_the_archon::HandleApply, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY, AURA_EFFECT_HANDLE_REAL);
+        OnEffectRemove += AuraEffectApplyFn(spell_spear_of_the_archon::HandleRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+    }
+};
+
+/// ID: 329791 Valiant Strikes
+class spell_valiant_strikes : public AuraScript
+{
+    PrepareAuraScript(spell_valiant_strikes);
+
+    enum ValiantStrikes
+    {
+        ValiantStrikesBuff = 330943,
+        HealSpell          = 330945,
+        LightOfThePath     = 351491,
+        LightOfThePathBuff = 352981,
+    };
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetHitMask() & ProcFlagsHit::PROC_HIT_CRITICAL && eventInfo.GetActor();
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (auto actor = eventInfo.GetActor())
+        {
+            actor->CastSpell(actor, ValiantStrikesBuff, true);
+
+            if (auto aura = actor->GetAura(ValiantStrikesBuff))
+            {
+                aura->GetEffect(EFFECT_1)->SetAmount(aura->GetStackAmount());
+            }
+        }
+    }
+
+    void HandleRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+    {
+        if (!GetCaster())
+            return;
+
+        GetCaster()->RemoveAurasDueToSpell(ValiantStrikesBuff);
+    }
+
+    uint32 updateTime = 0;
+
+    void HandleUpdate(const uint32 diff)
+    {
+        if (updateTime >= 1000)
+        {
+            updateTime = 0;
+            if (auto target = GetCaster())
+            {
+                if (auto player = target->ToPlayer())
+                {
+                    std::list<Player*> partyMembers;
+
+                    if (auto group = player->GetGroup())
+                    {
+                        for (GroupReference* itr = group->GetFirstMember(); itr != nullptr; itr = itr->next())
+                            if (Player* member = itr->GetSource())
+                                partyMembers.push_back(member);
+                    }
+                    else
+                        partyMembers.push_back(player);
+
+                    if (!partyMembers.empty())
+                    {
+                        partyMembers.sort(Trinity::HealthPctOrderPred());
+                        auto firstUnit = partyMembers.front();
+                        if (firstUnit && firstUnit->HealthBelowPct(50))
+                        {
+                            auto buff = target->GetAura(ValiantStrikesBuff);
+                            if (buff)
+                            {
+                                auto buffStacks = buff->GetStackAmount();
+                                auto health = firstUnit->CountPctFromMaxHealth(buffStacks);
+                                target->CastSpell(firstUnit, HealSpell, CastSpellExtraArgs(true).AddSpellBP0(health));
+
+                                if (auto aura = target->GetAura(ValiantStrikesBuff))
+                                {
+                                    target->CastSpell(target, LightOfThePathBuff, true);
+                                    firstUnit->CastSpell(firstUnit, LightOfThePathBuff, true);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        else
+            updateTime += diff;
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_valiant_strikes::CheckProc);
+        OnProc += AuraProcFn(spell_valiant_strikes::HandleProc);
+        OnEffectRemove += AuraEffectApplyFn(spell_valiant_strikes::HandleRemove, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY, AURA_EFFECT_HANDLE_REAL);
+        OnAuraUpdate += AuraUpdateFn(spell_valiant_strikes::HandleUpdate);
+    }
+};
+
+/// ID: 334066 Mentorship
+class spell_mentorship : public AuraScript
+{
+    PrepareAuraScript(spell_mentorship);
+
+    enum Mentorship
+    {
+        MentorshipHealth = 334067,
+    };
+
+    void HandlePeriodic(AuraEffect const* /*aurEff*/)
+    {
+        auto target = GetCaster();
+        if (!target)
+            return;
+
+        if (target->HealthAbovePct(90))
+        {
+            if (!target->HasAura(MentorshipHealth))
+                target->CastSpell(target, MentorshipHealth, true);
+        }
+        else if (target->HasAura(MentorshipHealth))
+            target->RemoveAura(MentorshipHealth);
+    }
+
+    void Register() override
+    {
+        OnEffectPeriodic += AuraEffectPeriodicFn(spell_mentorship::HandlePeriodic, EFFECT_0, SPELL_AURA_PERIODIC_TRIGGER_SPELL);
+    }
+};
+/// ID: 323436 Purify Soul
+class spell_purify_soul : public SpellScript
+{
+    PrepareSpellScript(spell_purify_soul);
+
+    enum PurifySoul
+    {
+        PurifySoulId        = 323436,
+        AscendantPhialAura  = 329776,
+        AscendantPhialBuff  = 330752,
+        PhialOfPatience     = 329777,
+        PhialOfPatienceBuff = 330749,
+        HopeSpringsEternal  = 351489,
+        HopeSpringsBuff     = 353192,
+        ChargedAdditive     = 331610,
+        ChargedAdditiveKB   = 332336,
+    };
+
+    void HandleDummy(SpellEffIndex eff)
+    {
+        auto caster = GetCaster();
+        if (!caster)
+            return;
+
+        if (caster->HasAura(AscendantPhialAura))
+            caster->CastSpell(caster, AscendantPhialBuff, true);
+
+        if (caster->HasAura(PhialOfPatience))
+        {
+            PreventHitDefaultEffect(eff);
+            caster->CastSpell(caster, PhialOfPatienceBuff, true);
+        }
+
+        if (caster->HasAura(HopeSpringsEternal))
+        {
+            caster->CastSpell(caster, HopeSpringsBuff, true);
+
+            Unit* lowestAlly = nullptr;
+            std::list<Unit*> friendlyList;
+            caster->GetFriendlyUnitListInRange(friendlyList, 40.0f, true);
+            float lastHealth = 99.0f;
+            for (auto unit : friendlyList)
+            {
+                if (unit->GetHealthPct() <= lastHealth)
+                {
+                    lastHealth = unit->GetHealthPct();
+                    lowestAlly = unit;
+                }
+            }
+
+            if (lowestAlly != nullptr)
+            {
+                lowestAlly->CastSpell(lowestAlly, PurifySoulId, CastSpellExtraArgs(TRIGGERED_FULL_MASK | TRIGGERED_DONT_CREATE_COOLDOWN));
+                lowestAlly->CastSpell(lowestAlly, HopeSpringsBuff, true);
+            }
+        }
+
+        if (caster->HasAura(ChargedAdditive))
+        {
+            caster->CastSpell(caster, ChargedAdditiveKB, true);
+        }
+    }
+
+    void Register() override
+    {
+        OnEffectHitTarget += SpellEffectFn(spell_purify_soul::HandleDummy, EFFECT_0, SPELL_EFFECT_HEAL_PCT);
+    }
+};
+/// ID: 329778 Pointed Courage
+class spell_pointed_courage : public AuraScript
+{
+    PrepareAuraScript(spell_pointed_courage);
+
+    enum PointedCourage
+    {
+        Buff = 330511,
+    };
+
+    void HandlePeriodic(AuraEffect const* /*aurEff*/)
+    {
+        auto target = GetCaster();
+        if (!target)
+            return;
+
+        std::list<Unit*> targetList;
+        Trinity::AnyUnitInObjectRangeCheck check(target, 10.0f, true);
+        Trinity::UnitListSearcher<Trinity::AnyUnitInObjectRangeCheck> searcher(target, targetList, check);
+        Cell::VisitWorldObjects(target, searcher, 10.0f);
+
+        uint32 size = 0;
+
+        for (auto unit : targetList)
+        {
+            if (unit != target)
+                size++;
+        }
+
+        size = std::min(3u, size);
+
+        if (size)
+        {
+            if (auto aur = target->GetAura(PointedCourage::Buff))
+                aur->SetStackAmount(size);
+            else if (auto aur = target->AddAura(PointedCourage::Buff, target))
+                    aur->SetStackAmount(size);
+        }
+        else
+            target->RemoveAurasDueToSpell(PointedCourage::Buff);
+    }
+
+    void Register() override
+    {
+        OnEffectPeriodic += AuraEffectPeriodicFn(spell_pointed_courage::HandlePeriodic, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
+    }
+};
+
+/// ID: 329779 Bearer's Pursuit
+class spell_bearers_pursuit : public AuraScript
+{
+    PrepareAuraScript(spell_bearers_pursuit);
+
+    enum BearersPursuit
+    {
+        SlowAura = 321759,
+    };
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (auto actor = eventInfo.GetActor())
+        {
+            if (auto target = eventInfo.GetActionTarget())
+            {
+                actor->CastSpell(target, SlowAura, true);
+            }
+        }
+    }
+
+    void Register() override
+    {
+        OnProc += AuraProcFn(spell_bearers_pursuit::HandleProc);
+    }
+};
+
+/// ID: 329784 Cleansing Rites
+class spell_cleansing_rites : public AuraScript
+{
+    PrepareAuraScript(spell_cleansing_rites);
+
+    enum CleansingRites
+    {
+        OOCShield = 330921,
+        Shield = 330927,
+    };
+
+    void HandlePeriodic(AuraEffect const* /*aurEff*/)
+    {
+        auto target = GetCaster();
+        if (target)
+            return;
+
+        if (target->HasAura(OOCShield) || target->HasAura(Shield))
+            return;
+
+        if (!target->IsInCombat())
+        {
+            target->CastSpell(target, OOCShield, true);
+        }
+        else
+        {
+            target->RemoveAurasDueToSpell(OOCShield);
+        }
+    }
+
+    void Register() override
+    {
+        OnEffectPeriodic += AuraEffectPeriodicFn(spell_cleansing_rites::HandlePeriodic, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
+    }
+};
+
+/// ID: 330921 Cleansing Rites
+class spell_cleansing_rites_aura : public AuraScript
+{
+    PrepareAuraScript(spell_cleansing_rites_aura);
+
+    enum CleansingRites
+    {
+        OOCShield = 330921,
+        Shield = 330927,
+    };
+
+    void HandleRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+    {
+        auto target = GetCaster();
+        if (!target)
+            return;
+
+        target->CastSpell(target, Shield, CastSpellExtraArgs(true).AddSpellBP0(target->CountPctFromMaxHealth(10)));
+    }
+
+    void Register() override
+    {
+        OnEffectRemove += AuraEffectApplyFn(spell_cleansing_rites_aura::HandleRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+    }
+};
+
+/// ID: 329781 Resonant Accolades
+class spell_resonant_accolades : public AuraScript
+{
+    PrepareAuraScript(spell_resonant_accolades);
+
+    enum ResonantAccolades
+    {
+        ResonantAccolades = 329781,
+    };
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        if (!eventInfo.GetActor())
+            return false;
+
+        if (!eventInfo.GetHealInfo())
+            return false;
+
+        auto target = eventInfo.GetActionTarget();
+        if (!target)
+            return false;
+
+        return eventInfo.GetActor()->HealthAbovePct(70);
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        auto actor = eventInfo.GetActor();
+        auto target = eventInfo.GetActionTarget();
+        if (!target || !actor)
+            return;
+
+        if (!eventInfo.GetHealInfo())
+            return;
+
+        actor->CastSpell(target, ResonantAccolades, CastSpellExtraArgs(true).AddSpellBP0(eventInfo.GetHealInfo()->GetHeal() * 0.04f));
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_resonant_accolades::CheckProc);
+        OnProc += AuraProcFn(spell_resonant_accolades::HandleProc);
+    }
+};
+
+/// ID: 333882 Forgelite Filter
+class spell_forgelite_filter : public SpellScript
+{
+    PrepareSpellScript(spell_forgelite_filter);
+
+    void HandleDummy(SpellEffIndex /*eff*/)
+    {
+        if (auto caster = GetCaster())
+        {
+            if (auto player = caster->ToPlayer())
+            {
+                if (player->GetItemCount(PhialOfSerenityItem) >= 1)
+                    if (!player->GetSpellHistory()->HasCooldown(PhialOfSerenitySpell))
+                        player->CastSpell(player, PhialOfSerenitySpell, true);
+            }
+        }
+    }
+
+    void Register() override
+    {
+        OnEffectHitTarget += SpellEffectFn(spell_forgelite_filter::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
+    }
+};
+
+/// ID: 331611 Soulsteel Clamps
+class spell_soulsteel_clamps : public AuraScript
+{
+    PrepareAuraScript(spell_soulsteel_clamps);
+
+    enum SoulsteelClamps
+    {
+        Buff = 332506,
+    };
+
+    time_t LastMoveTime = 0;
+
+    void HandlePeriodic(AuraEffect const* /*aurEff*/)
+    {
+        auto target = GetCaster();
+        if (!target)
+            return;
+
+        auto CurrTime = GameTime::GetGameTime();
+
+        if (target->isMoving())
+        {
+            LastMoveTime = CurrTime;
+
+            if (auto aur = target->GetAura(Buff))
+            {
+                if (aur->GetDuration() == -1)
+                {
+                    aur->SetMaxDuration(4000);
+                    aur->SetDuration(4000);
+                }
+            }
+        }
+
+        if (!LastMoveTime)
+            LastMoveTime = CurrTime;
+        else
+        {
+            auto diff = CurrTime - LastMoveTime;
+            if (diff >= 4)
+            {
+                if (!target->HasAura(Buff))
+                    target->CastSpell(target, Buff, true);
+
+                if (auto aur = target->GetAura(Buff))
+                {
+                    if (aur->GetDuration() != -1)
+                    {
+                        aur->SetMaxDuration(-1);
+                        aur->SetDuration(-1);
+                    }
+                }
+            }
+        }
+
+    }
+
+    void Register() override
+    {
+        OnEffectPeriodic += AuraEffectPeriodicFn(spell_soulsteel_clamps::HandlePeriodic, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE);
+    }
+};
+
+/// ID: 333935 Hammer of Genesis
+class spell_hammer_of_genesis : public AuraScript
+{
+    PrepareAuraScript(spell_hammer_of_genesis);
+
+    enum HammerOfGensis
+    {
+        Buff = 333943,
+    };
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetProcTarget() != nullptr && eventInfo.GetActor() != nullptr;
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        auto target = eventInfo.GetProcTarget();
+        if (!target)
+            return;
+        auto actor = eventInfo.GetActor();
+        if (!actor)
+            return;
+
+        if (newUnits.count(target->GetGUID()))
+            return;
+
+        newUnits.insert(target->GetGUID());
+        actor->CastSpell(actor, Buff, true);
+    }
+
+    void HandlePeriodic(AuraEffect const* /*aurEff*/)
+    {
+        auto target = GetCaster();
+        if (!target)
+            return;
+
+        for (auto it = newUnits.begin(); it != newUnits.end(); )
+        {
+            auto unit = ObjectAccessor::GetUnit(*target, *it);
+            if (!unit || !unit->isDead() || !unit->IsInCombatWith(target))
+            {
+                it = newUnits.erase(it);
+            }
+            else
+            {
+                ++it;
+            }
+        }
+    }
+
+    GuidUnorderedSet newUnits;
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_hammer_of_genesis::CheckProc);
+        OnProc += AuraProcFn(spell_hammer_of_genesis::HandleProc);
+        OnEffectPeriodic += AuraEffectPeriodicFn(spell_hammer_of_genesis::HandlePeriodic, EFFECT_1, SPELL_AURA_PERIODIC_TRIGGER_SPELL);
+    }
+};
+
+/// ID: 352186 Soulglow Spectrometer
+class spell_soulglow_spectrometer : public AuraScript
+{
+    PrepareAuraScript(spell_soulglow_spectrometer);
+
+    enum SoulglowSpectormeter
+    {
+        Proc = 352939,
+        ProcHeal = 352938,
+    };
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetActor() && eventInfo.GetActionTarget();
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        auto target = eventInfo.GetProcTarget();
+        if (!target)
+            return;
+        auto actor = eventInfo.GetActor();
+        if (!actor)
+            return;
+
+        if (actor->IsValidAttackTarget(target))
+            actor->CastSpell(target, Proc, true);
+        else
+            actor->CastSpell(target, ProcHeal, true);
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_soulglow_spectrometer::CheckProc);
+        OnProc += AuraProcFn(spell_soulglow_spectrometer::HandleProc);
+    }
+};
+
+/// ID: 352187 Reactive Retrofitting
+class spell_reactive_retrofitting : public AuraScript
+{
+    PrepareAuraScript(spell_reactive_retrofitting);
+
+    enum Reactive
+    {
+        Shield = 352789,
+    };
+
+    time_t NextMagicTime = 0;
+    time_t NextPhysicalTime = 0;
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        if (!eventInfo.GetDamageInfo())
+            return false;
+
+        if (!eventInfo.GetActor())
+            return false;
+
+        auto now = GameTime::GetGameTime();
+
+        if (eventInfo.GetDamageInfo()->GetSchoolMask() == SPELL_SCHOOL_MASK_NORMAL || eventInfo.GetDamageInfo()->GetSchoolMask() == SPELL_SCHOOL_MASK_NONE)
+        {
+            return now >= NextPhysicalTime;
+        }
+
+        return now >= NextPhysicalTime;
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        auto now = GameTime::GetGameTime();
+
+        if (eventInfo.GetDamageInfo()->GetSchoolMask() == SPELL_SCHOOL_MASK_NORMAL || eventInfo.GetDamageInfo()->GetSchoolMask() == SPELL_SCHOOL_MASK_NONE)
+        {
+            eventInfo.GetActor()->CastSpell(eventInfo.GetActor(), Shield, CastSpellExtraArgs(true).AddSpellBP0(eventInfo.GetActor()->CountPctFromMaxHealth(6)));
+            NextPhysicalTime = now + 30;
+        }
+        else
+            NextMagicTime = now + 30;
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_reactive_retrofitting::CheckProc);
+        OnProc += AuraProcFn(spell_reactive_retrofitting::HandleProc);
+    }
+};
+
+/// ID: 329786 Road of Trials
+class spell_road_of_trials : public AuraScript
+{
+    PrepareAuraScript(spell_road_of_trials);
+
+    enum RoadOfTrials
+    {
+        RoadOfTrialMSBuff = 330896,
+    };
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        /// @TODO: If kill a big mob give more duration. Not sure what blizz does here.
+        if (auto actor = eventInfo.GetActor())
+            actor->CastSpell(actor, RoadOfTrialMSBuff, true);
+    }
+
+    void Register() override
+    {
+        OnProc += AuraProcFn(spell_road_of_trials::HandleProc);
+    }
+};
+
+/// ID: 328257 Let Go of the Past
+class spell_let_go_of_the_past : public AuraScript
+{
+    PrepareAuraScript(spell_let_go_of_the_past);
+
+    enum LetGoOfThePast
+    {
+        Buff = 328900,
+    };
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (!eventInfo.GetSpellInfo())
+            return;
+
+        if (LastSpellCasted != eventInfo.GetSpellInfo()->Id)
+        {
+            LastSpellCasted = eventInfo.GetSpellInfo()->Id;
+            if (auto actor = eventInfo.GetActor())
+                actor->CastSpell(actor, Buff, true);
+        }
+    }
+
+    uint32 LastSpellCasted = 0;
+
+    void Register() override
+    {
+        OnProc += AuraProcFn(spell_let_go_of_the_past::HandleProc);
+    }
+};
+/// ID: 351146 Better Together
+class spell_better_together : public AuraScript
+{
+    PrepareAuraScript(spell_better_together);
+
+    enum BetterTogether
+    {
+        FriendBuff = 352498,
+    };
+
+    bool VerifyFriend(Unit* target)
+    {
+        auto player = ObjectAccessor::GetPlayer(*target, FriendGuid);
+        if (!player || !player->HasAura(FriendBuff))
+        {
+            FriendGuid.Clear();
+            return false;
+        }
+
+        return true;
+    }
+
+    void HandleUpdate(const uint32 diff)
+    {
+        if (updateTime >= 1000)
+        {
+            auto target = GetCaster();
+            if (!target)
+                return;
+
+            if (!VerifyFriend(target) && !target->HasAura(FriendBuff))
+            {
+                if (auto player = target->SelectNearestPlayer(3.0f))
+                {
+                    FriendGuid = player->GetGUID();
+                    player->CastSpell(target, FriendBuff, true);
+                    target->CastSpell(player, FriendBuff, true);
+                }
+            }
+
+            updateTime = 0;
+        }
+        else
+            updateTime += diff;
+    }
+
+    uint32 updateTime = 0;
+    ObjectGuid FriendGuid;
+
+    void Register() override
+    {
+        OnAuraUpdate += AuraUpdateFn(spell_better_together::HandleUpdate);
+    }
+};
+
 void AddSC_spell_kyrian()
 {
     RegisterCreatureAI(npc_kyrian_steward);
@@ -609,6 +1399,23 @@ void AddSC_spell_kyrian()
     RegisterSpellScript(spell_combat_meditation);
     RegisterSpellScript(spell_combat_meditation_buff);
     RegisterSpellScript(spell_newfound_resolve);
+    RegisterSpellScript(spell_spear_of_the_archon);
+    RegisterSpellScript(spell_valiant_strikes);
+    RegisterSpellScript(spell_mentorship);
+    RegisterSpellScript(spell_purify_soul);
+    RegisterSpellScript(spell_pointed_courage);
+    RegisterSpellScript(spell_bearers_pursuit);
+    RegisterSpellScript(spell_cleansing_rites);
+    RegisterSpellScript(spell_cleansing_rites_aura);
+    RegisterSpellScript(spell_resonant_accolades);
+    RegisterSpellScript(spell_forgelite_filter);
+    RegisterSpellScript(spell_soulsteel_clamps);
+    RegisterSpellScript(spell_hammer_of_genesis);
+    RegisterSpellScript(spell_soulglow_spectrometer);
+    RegisterSpellScript(spell_reactive_retrofitting);
+    RegisterSpellScript(spell_road_of_trials);
+    RegisterSpellScript(spell_let_go_of_the_past);
+    RegisterSpellScript(spell_better_together);
 
     RegisterAreaTriggerAI(areatrigger_combat_meditation);
     RegisterAreaTriggerAI(areatrigger_newfound_resolve);

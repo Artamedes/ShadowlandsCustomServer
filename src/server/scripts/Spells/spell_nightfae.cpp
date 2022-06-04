@@ -276,7 +276,7 @@ class spell_nightfae_soulshape : public AuraScript
         Flicker = 324701,
     };
 
-    void HandleApply(const AuraEffect* /*aurEff*/, AuraEffectHandleModes /* mode */)
+    void HandleApply(const AuraEffect* /*aurEff*/, AuraEffectHandleModes /*mode*/)
     {
         // Is this a soulbind? Check plz
         PreventDefaultAction();

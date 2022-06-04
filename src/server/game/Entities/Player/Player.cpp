@@ -27608,6 +27608,11 @@ void Player::HandleFall(MovementInfo const& movementInfo)
 
         float damageperc = 0.018f*(z_diff-safe_fall)-0.2426f;
 
+        if (z_diff >= 20.0f && HasAura(331725) && !HasAura(337697))
+        {
+            CastSpell(this, 337697, true); ///< ID - 331725 Resilient Plumage
+        }
+
         if (damageperc > 0)
         {
             uint32 damage = (uint32)(damageperc * GetMaxHealth()*sWorld->getRate(RATE_DAMAGE_FALL));
