@@ -299,6 +299,7 @@ class spell_nightfae_soulshape : public AuraScript
         RunWithoutTiringBuff = 342309,
         HornOfTheWildHunt    = 325067,
         HornOfTheWildHuntBuff = 325268,
+        HornOfTheWildHuntAT  = 325270,
     };
 
     void HandleApply(const AuraEffect* /*aurEff*/, AuraEffectHandleModes /*mode*/)
@@ -328,11 +329,24 @@ class spell_nightfae_soulshape : public AuraScript
 
         GetCaster()->RemoveAurasDueToSpell(RunWithoutTiringBuff);
         GetCaster()->RemoveAurasDueToSpell(HornOfTheWildHuntBuff);
+        GetCaster()->RemoveAurasDueToSpell(HornOfTheWildHuntAT);
+    }
+
+    void HandleApply3(const AuraEffect* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+    {
+        PreventDefaultAction();
+
+        if (!GetCaster())
+            return;
+
+        if (!GetCaster()->HasAura(HornOfTheWildHunt))
+            GetCaster()->CastSpell(GetCaster(), HornOfTheWildHuntAT, true);
     }
 
     void Register() override
     {
         OnEffectApply += AuraEffectApplyFn(spell_nightfae_soulshape::HandleApply, EFFECT_5, SPELL_AURA_MOD_UNATTACKABLE, AURA_EFFECT_HANDLE_REAL);
+        OnEffectApply += AuraEffectApplyFn(spell_nightfae_soulshape::HandleApply3, EFFECT_3, SPELL_AURA_LINKED_2, AURA_EFFECT_HANDLE_REAL);
         OnEffectRemove += AuraEffectApplyFn(spell_nightfae_soulshape::HandleRemove, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY, AURA_EFFECT_HANDLE_REAL);
     }
 };
@@ -1333,6 +1347,40 @@ class spell_first_strike : public AuraScript
         OnAuraUpdate += AuraUpdateFn(spell_first_strike::HandleUpdate);
     }
 };
+
+/// Horn of the wild hunt
+struct at_horn_of_the_wild_hunt : public AreaTriggerAI
+{
+public:
+    at_horn_of_the_wild_hunt(AreaTrigger* at) : AreaTriggerAI(at) { }
+
+    enum HornOfTheWild
+    {
+        HornOfTheWildHuntBuff = 325268,
+    };
+
+    GuidUnorderedSet BuffTargs;
+
+    void OnUnitEnter(Unit* who) override
+    {
+        if (at->GetOwner())
+        {
+            if (who->IsFriendlyTo(at->GetOwner()))
+            {
+                who->CastSpell(who, HornOfTheWildHuntBuff, true);
+                BuffTargs.insert(who->GetGUID());
+            }
+        }
+    }
+
+    void OnUnitExit(Unit* who) override
+    {
+        if (BuffTargs.count(who->GetGUID()))
+            who->RemoveAurasDueToSpell(HornOfTheWildHuntBuff);
+    }
+};
+
+
 void AddSC_spell_nightfae()
 {
     RegisterSpellScript(spell_nightfae_podtender);
@@ -1364,6 +1412,7 @@ void AddSC_spell_nightfae()
     RegisterCreatureAI(npc_regenerating_wild_seed_164589);
 
     RegisterAreaTriggerAI(at_field_of_blossoms);
+    RegisterAreaTriggerAI(at_horn_of_the_wild_hunt);
 
     new unit_script_nightfae();
 }

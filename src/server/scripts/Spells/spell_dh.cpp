@@ -769,8 +769,11 @@ class spell_dh_fracture : public SpellScript
     {
         if (Unit* caster = GetCaster())
         {
-            //caster->CastSpell(RAND(SPELL_DH_SHATTERED_SOUL_LESSER_SOUL_FRAGMENT_1, SPELL_DH_SHATTERED_SOUL_LESSER_SOUL_FRAGMENT_2), SpellValueMod(SPELLVALUE_TRIGGER_SPELL + EFFECT_1), SPELL_DH_SS_VENGEANCE_LESSER_SOUL, caster, TRIGGERED_FULL_MASK);
-            //caster->CastSpell(RAND(SPELL_DH_SHATTERED_SOUL_LESSER_SOUL_FRAGMENT_1, SPELL_DH_SHATTERED_SOUL_LESSER_SOUL_FRAGMENT_2), SpellValueMod(SPELLVALUE_TRIGGER_SPELL + EFFECT_1), SPELL_DH_SS_VENGEANCE_LESSER_SOUL, caster, TRIGGERED_FULL_MASK);
+            for (int i = 0; i < 2; ++i)
+            {
+                auto randPos = caster->GetRandomNearPosition(10.0f);
+                caster->CastSpell(randPos, SPELL_DH_SS_VENGEANCE_LESSER_SOUL, true);
+            }
         }
     }
 
@@ -822,17 +825,22 @@ class spell_dh_consume_soul_vengeance : public SpellScript
     }
 };
 
-// 187727 - Immolation Aura initial damage
+// 258921 - Immolation Aura initial damage
 class spell_dh_immolation_aura_damage: public SpellScript
 {
 	PrepareSpellScript(spell_dh_immolation_aura_damage);
 
 	void HandleHitTarget(SpellEffIndex /*effIndex*/)
 	{
-		//if (Unit* caster = GetCaster())
-		//	if (roll_chance_i(60) && caster->HasAura(SPELL_DH_FALLOUT))// Missing proc chance, wowhead said that is near to 60-70
-		//		caster->CastSpell(RAND(SPELL_DH_SHATTERED_SOUL_LESSER_SOUL_FRAGMENT_1, SPELL_DH_SHATTERED_SOUL_LESSER_SOUL_FRAGMENT_2), SpellValueMod(SPELLVALUE_TRIGGER_SPELL + EFFECT_1), SPELL_DH_SS_VENGEANCE_LESSER_SOUL, caster, TRIGGERED_FULL_MASK);
-	}
+        if (Unit* caster = GetCaster())
+        {
+            if (roll_chance_i(60) && caster->HasAura(SPELL_DH_FALLOUT))// Missing proc chance, wowhead said that is near to 60-70
+            {
+                auto randPos = caster->GetRandomNearPosition(10.0f);
+                caster->CastSpell(randPos, SPELL_DH_SS_VENGEANCE_LESSER_SOUL, true);
+            }
+        }
+    }
 
 	void Register() override
 	{
@@ -1042,18 +1050,21 @@ class spell_dh_shear_proc : public AuraScript
         return true;
     }
 
-    void HandleProc(AuraEffect const* /*aurEff*/, ProcEventInfo& /*eventInfo*/)
+    void HandleProc(ProcEventInfo& eventInfo)
     {
         PreventDefaultAction();
 
-        //if (Unit* caster = GetCaster())
-        //    caster->CastSpell(RAND(SPELL_DH_SHATTERED_SOUL_LESSER_SOUL_FRAGMENT_1, SPELL_DH_SHATTERED_SOUL_LESSER_SOUL_FRAGMENT_2), SpellValueMod(SPELLVALUE_TRIGGER_SPELL + EFFECT_1), SPELL_DH_SS_VENGEANCE_LESSER_SOUL, caster, TRIGGERED_FULL_MASK);
+        Unit* caster = eventInfo.GetActor();
+        if (!caster)
+            return;
+        auto randPos = caster->GetRandomNearPosition(10.0f);
+        caster->CastSpell(randPos, SPELL_DH_SS_VENGEANCE_LESSER_SOUL, true);
     }
 
     void Register() override
     {
         DoCheckProc += AuraCheckProcFn(spell_dh_shear_proc::CheckProc);
-       // OnEffectProc += AuraEffectProcFn(spell_dh_shear_proc::HandleProc, EFFECT_0, SPELL_AURA_PROC_TRIGGER_SPELL);
+        OnProc += AuraProcFn(spell_dh_shear_proc::HandleProc);
     }
 
 private:
@@ -1735,7 +1746,7 @@ public:
     }
 };
 
-// Immolation aura - 178740
+// Immolation aura - 258920 
 class spell_dh_immolation_aura : public SpellScriptLoader
 {
 public:
@@ -1767,6 +1778,7 @@ public:
             if (caster->HasAura(UnboundChaos))
                 caster->CastSpell(caster, UnboundChaosProc, true);
 
+            caster->CastSpell(caster, 258921, true); ///< DH Immo aura inital DMG
             caster->CastSpell(caster, SPELL_DH_IMMOLATION_AURA_VISUAL, true);
 
             if (Aura* imm = caster->GetAura(SPELL_DH_IMMOLATION_AURA_VISUAL))
@@ -1784,7 +1796,7 @@ public:
         void Register() override
         {
             OnEffectPeriodic += AuraEffectPeriodicFn(spell_dh_immolation_aura_AuraScript::HandlePeriodic, EFFECT_0, SPELL_AURA_PERIODIC_TRIGGER_SPELL);
-            OnEffectApply += AuraEffectApplyFn(spell_dh_immolation_aura_AuraScript::HandleApply, EFFECT_0, SPELL_AURA_PERIODIC_TRIGGER_SPELL, AURA_EFFECT_HANDLE_REAL);
+            OnEffectApply += AuraEffectApplyFn(spell_dh_immolation_aura_AuraScript::HandleApply, EFFECT_0, SPELL_AURA_PERIODIC_TRIGGER_SPELL, AURA_EFFECT_HANDLE_REAL_OR_REAPPLY_MASK);
             OnEffectRemove += AuraEffectRemoveFn(spell_dh_immolation_aura_AuraScript::HandleRemove, EFFECT_0, SPELL_AURA_PERIODIC_TRIGGER_SPELL, AURA_EFFECT_HANDLE_REAL);
         }
     };
@@ -2861,7 +2873,7 @@ class aura_dh_chaos_cleave : public AuraScript
 };
 
 // Sigil of Misery - 207684
-// AreaTriggerID - 11023
+// AreaTriggerID - 6351
 struct at_dh_sigil_of_misery : AreaTriggerAI
 {
     at_dh_sigil_of_misery(AreaTrigger* areatrigger) : AreaTriggerAI(areatrigger) { }
@@ -2936,7 +2948,7 @@ class aura_dh_vengeance_sigil_of_flame : public AuraScript
 };
 
 // Sigil of Chains - 202138
-// AreaTriggerID - 10718
+// AreaTriggerID - 6031
 struct at_dh_sigil_of_chains : AreaTriggerAI
 {
     at_dh_sigil_of_chains(AreaTrigger* areatrigger) : AreaTriggerAI(areatrigger) { }
@@ -2948,27 +2960,30 @@ struct at_dh_sigil_of_chains : AreaTriggerAI
             return;
 
         caster->CastSpell(at->GetPosition(), SPELL_DH_SIGIL_OF_CHAINS_EXPLOSION, true);
+    }
 
-        GuidUnorderedSet const& objects = at->GetInsideUnits();
-        for (ObjectGuid objguid : objects)
+    void OnUnitExit(Unit* unit) override
+    {
+        if (!at->IsRemoved())
+            return;
+
+        Unit* caster = at->GetCaster();
+        if (!caster || !caster->IsPlayer())
+            return;
+
+        if (caster->IsValidAttackTarget(unit))
         {
-            if (Unit* unit = ObjectAccessor::GetUnit(*caster, objguid))
+            caster->CastSpell(unit, SPELL_DH_SIGIL_OF_CHAINS_SLOW, true);
+            unit->CastSpell(at->GetPosition(), SPELL_DH_SIGIL_OF_CHAINS_TRIGGER, true);
+
+            if (AuraEffect* auraEff = caster->GetAuraEffect(SPELL_DH_CYCLE_OF_BLINDING_POWER, EFFECT_0))
             {
-                if (caster->IsValidAttackTarget(unit))
-                {
-                    caster->CastSpell(unit, SPELL_DH_SIGIL_OF_CHAINS_SLOW, true);
-                    unit->CastSpell(at->GetPosition(), SPELL_DH_SIGIL_OF_CHAINS_TRIGGER, true);
+                //  caster->CastSpell(SPELL_DH_CYCLE_OF_BLINDING_BUFF, SPELLVALUE_BASE_POINT0, auraEff->GetAmount(), caster);
 
-                    if (AuraEffect* auraEff = caster->GetAuraEffect(SPELL_DH_CYCLE_OF_BLINDING_POWER, EFFECT_0))
-                    {
-                      //  caster->CastSpell(SPELL_DH_CYCLE_OF_BLINDING_BUFF, SPELLVALUE_BASE_POINT0, auraEff->GetAmount(), caster);
-
-             //           caster->GetSpellHistory()->ModifyCooldown(SPELL_DH_SIGIL_OF_FLAME, -1s * (int32)sSpellMgr->GetSpellInfo(SPELL_DH_CYCLE_OF_BLINDING_POWER)->GetEffect(EFFECT_1).BasePoints);
-                        caster->GetSpellHistory()->ModifyCooldown(SPELL_DH_SIGIL_OF_MISSERY, -1s * (int32)sSpellMgr->GetSpellInfo(SPELL_DH_CYCLE_OF_BLINDING_POWER)->GetEffect(EFFECT_1).BasePoints);
-                        caster->GetSpellHistory()->ModifyCooldown(SPELL_DH_SIGIL_OF_SILENCE, -1s * (int32)sSpellMgr->GetSpellInfo(SPELL_DH_CYCLE_OF_BLINDING_POWER)->GetEffect(EFFECT_1).BasePoints);
-                        caster->GetSpellHistory()->ModifyCooldown(SPELL_DH_SIGIL_OF_CHAINS, -1s * (int32)sSpellMgr->GetSpellInfo(SPELL_DH_CYCLE_OF_BLINDING_POWER)->GetEffect(EFFECT_1).BasePoints);
-                    }
-                }
+       //           caster->GetSpellHistory()->ModifyCooldown(SPELL_DH_SIGIL_OF_FLAME, -1s * (int32)sSpellMgr->GetSpellInfo(SPELL_DH_CYCLE_OF_BLINDING_POWER)->GetEffect(EFFECT_1).BasePoints);
+                caster->GetSpellHistory()->ModifyCooldown(SPELL_DH_SIGIL_OF_MISSERY, -1s * (int32)sSpellMgr->GetSpellInfo(SPELL_DH_CYCLE_OF_BLINDING_POWER)->GetEffect(EFFECT_1).BasePoints);
+                caster->GetSpellHistory()->ModifyCooldown(SPELL_DH_SIGIL_OF_SILENCE, -1s * (int32)sSpellMgr->GetSpellInfo(SPELL_DH_CYCLE_OF_BLINDING_POWER)->GetEffect(EFFECT_1).BasePoints);
+                caster->GetSpellHistory()->ModifyCooldown(SPELL_DH_SIGIL_OF_CHAINS, -1s * (int32)sSpellMgr->GetSpellInfo(SPELL_DH_CYCLE_OF_BLINDING_POWER)->GetEffect(EFFECT_1).BasePoints);
             }
         }
     }
