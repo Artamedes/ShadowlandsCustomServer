@@ -326,6 +326,7 @@ public:
                 SPELL_DH_EYE_BEAM, SPELL_DH_BLUR, SPELL_DH_VENGEFUL_RETREAT, SPELL_DH_BLADE_DANCE,
                 344866, // vengeful retreat
                 183752, // disrupt
+                200749, // dh talent spell
             };
 
             for (auto spell : spellIds)
