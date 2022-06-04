@@ -33,5 +33,7 @@ INSERT INTO spell_script_names (spell_id, scriptname) VALUE (352800, 'spell_vork
 DELETE FROM spell_script_names WHERE spell_id = 325069;
 INSERT INTO spell_script_names (spell_id, scriptname) VALUE (325069, 'spell_first_strike');
 
+DELETE FROM spell_script_names WHERE spell_id = 323916;
+INSERT INTO spell_script_names (spell_id, scriptname) VALUE (323916, 'spell_sulfuric_emission');
 
 UPDATE areatrigger_create_properties SET scriptname = 'at_field_of_blossoms' WHERE id = 21827;

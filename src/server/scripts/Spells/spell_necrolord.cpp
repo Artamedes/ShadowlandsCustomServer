@@ -3,6 +3,7 @@
 #include "SpellScript.h"
 #include "SpellAuras.h"
 #include "SpellAuraEffects.h"
+#include "SpellHistory.h"
 
 // 324631 
 class spell_necrolord_fleshcraft : public AuraScript
@@ -122,9 +123,44 @@ class spell_travel_with_bloop : public AuraScript
         OnEffectPeriodic += AuraEffectPeriodicFn(spell_travel_with_bloop::HandlePeriodic, EFFECT_0, SPELL_AURA_PERIODIC_TRIGGER_SPELL);
     }
 };
+/// ID: 323916 Sulfuric Emission
+class spell_sulfuric_emission : public AuraScript
+{
+    PrepareAuraScript(spell_sulfuric_emission);
+
+    enum SulfuricEmission
+    {
+        SulfuricEmissionFear = 324263,
+    };
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        if (!eventInfo.GetActor())
+            return false;
+
+        return !eventInfo.GetActionTarget()->GetSpellHistory()->HasCooldown(SulfuricEmissionFear);
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        PreventDefaultAction();
+        if (!eventInfo.GetActor())
+            return;
+
+        eventInfo.GetActor()->GetSpellHistory()->AddCooldown(SulfuricEmissionFear, 0, 60s);
+        eventInfo.GetActor()->CastSpell(eventInfo.GetActor(), SulfuricEmissionFear, true);
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_sulfuric_emission::CheckProc);
+        OnProc += AuraProcFn(spell_sulfuric_emission::HandleProc);
+    }
+};
 
 void AddSC_spell_necrolord()
 {
     RegisterSpellAndAuraScriptPairWithArgs(spell_necrolord_fleshcraft_spellscript, spell_necrolord_fleshcraft, "spell_necrolord_fleshcraft");
     RegisterSpellScript(spell_travel_with_bloop);
+    RegisterSpellScript(spell_sulfuric_emission);
 }
