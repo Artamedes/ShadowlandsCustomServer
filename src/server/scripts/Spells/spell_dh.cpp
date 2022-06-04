@@ -1530,7 +1530,7 @@ public:
 
         void HandleTrigger(AuraEffect const* /*aurEff*/)
         {
-            GetCaster()->CastSpell(GetTarget(), SPELL_DH_FEL_BARRAGE_TRIGGER, &_charges);
+            GetCaster()->CastSpell(GetTarget(), SPELL_DH_FEL_BARRAGE_TRIGGER, true);
         }
 
         void Register() override
