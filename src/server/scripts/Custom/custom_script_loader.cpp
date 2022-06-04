@@ -63,6 +63,7 @@ void AddSC_CustomAffixes();
 // Items
 void AddSC_item_currency_exchange();
 void AddSC_npc_1v1arena();
+void AddSC_GMTavern();
 
 void AddCustomScripts()
 {
@@ -110,4 +111,5 @@ void AddCustomScripts()
     // Items
     AddSC_item_currency_exchange();
     AddSC_npc_1v1arena();
+    AddSC_GMTavern();
 }

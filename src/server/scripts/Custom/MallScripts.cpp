@@ -21,6 +21,7 @@
 #include "Pet.h"
 #include "CustomObjectMgr.h"
 #include "CustomInstanceScript.h"
+#include "ReputationMgr.h"
 
 enum MallScript
 {
@@ -233,8 +234,72 @@ struct npc_skipbot_3000 : public ScriptedAI
                         if (p_Player->GetQuestStatus(l_Quest) == QUEST_STATUS_NONE)
                             p_Player->AddQuest(l_QuestPtr, me);
                         if (p_Player->GetQuestStatus(l_Quest) == QUEST_STATUS_INCOMPLETE)
-                            p_Player->CompleteQuest(l_Quest);
-                        p_Player->RewardQuest(l_QuestPtr, LootItemType::Item, 0, me);
+                        {
+                            auto quest = l_QuestPtr;
+                            auto player = p_Player;
+                            for (uint32 i = 0; i < quest->Objectives.size(); ++i)
+                            {
+                                QuestObjective const& obj = quest->Objectives[i];
+
+                                switch (obj.Type)
+                                {
+                                case QUEST_OBJECTIVE_ITEM:
+                                {
+                                    uint32 curItemCount = player->GetItemCount(obj.ObjectID, true);
+                                    ItemPosCountVec dest;
+                                    uint8 msg = player->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, obj.ObjectID, obj.Amount - curItemCount);
+                                    if (msg == EQUIP_ERR_OK)
+                                    {
+                                        Item* item = player->StoreNewItem(dest, obj.ObjectID, true);
+                                        player->SendNewItem(item, obj.Amount - curItemCount, true, false);
+                                    }
+                                    break;
+                                }
+                                case QUEST_OBJECTIVE_MONSTER:
+                                {
+                                    if (CreatureTemplate const* creatureInfo = sObjectMgr->GetCreatureTemplate(obj.ObjectID))
+                                        for (uint16 z = 0; z < obj.Amount; ++z)
+                                            player->KilledMonster(creatureInfo, ObjectGuid::Empty);
+                                    break;
+                                }
+                                case QUEST_OBJECTIVE_GAMEOBJECT:
+                                {
+                                    for (uint16 z = 0; z < obj.Amount; ++z)
+                                        player->KillCreditGO(obj.ObjectID);
+                                    break;
+                                }
+                                case QUEST_OBJECTIVE_MIN_REPUTATION:
+                                {
+                                    uint32 curRep = player->GetReputationMgr().GetReputation(obj.ObjectID);
+                                    if (curRep < uint32(obj.Amount))
+                                        if (FactionEntry const* factionEntry = sFactionStore.LookupEntry(obj.ObjectID))
+                                            player->GetReputationMgr().SetReputation(factionEntry, obj.Amount);
+                                    break;
+                                }
+                                case QUEST_OBJECTIVE_MAX_REPUTATION:
+                                {
+                                    uint32 curRep = player->GetReputationMgr().GetReputation(obj.ObjectID);
+                                    if (curRep > uint32(obj.Amount))
+                                        if (FactionEntry const* factionEntry = sFactionStore.LookupEntry(obj.ObjectID))
+                                            player->GetReputationMgr().SetReputation(factionEntry, obj.Amount);
+                                    break;
+                                }
+                                case QUEST_OBJECTIVE_MONEY:
+                                {
+                                    player->ModifyMoney(obj.Amount);
+                                    break;
+                                }
+                                case QUEST_OBJECTIVE_PLAYERKILLS:
+                                {
+                                    for (uint16 z = 0; z < obj.Amount; ++z)
+                                        player->KilledPlayerCredit(ObjectGuid::Empty);
+                                    break;
+                                }
+                                }
+                            }
+
+                        }
+                        // p_Player->RewardQuest(l_QuestPtr, LootItemType::Item, 0, me);
                     }
 
                     p_Player->AddItem(700001, 1);
