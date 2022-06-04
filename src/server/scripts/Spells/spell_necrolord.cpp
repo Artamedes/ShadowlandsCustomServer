@@ -135,7 +135,10 @@ class spell_sulfuric_emission : public AuraScript
 
     bool CheckProc(ProcEventInfo& eventInfo)
     {
-        if (!eventInfo.GetActor())
+        if (!eventInfo.GetActionTarget())
+            return false;
+
+        if (!eventInfo.GetActionTarget()->HealthBelowPct(21))
             return false;
 
         return !eventInfo.GetActionTarget()->GetSpellHistory()->HasCooldown(SulfuricEmissionFear);
@@ -144,11 +147,11 @@ class spell_sulfuric_emission : public AuraScript
     void HandleProc(ProcEventInfo& eventInfo)
     {
         PreventDefaultAction();
-        if (!eventInfo.GetActor())
+        if (!eventInfo.GetActionTarget())
             return;
 
-        eventInfo.GetActor()->GetSpellHistory()->AddCooldown(SulfuricEmissionFear, 0, 60s);
-        eventInfo.GetActor()->CastSpell(eventInfo.GetActor(), SulfuricEmissionFear, true);
+        eventInfo.GetActionTarget()->GetSpellHistory()->AddCooldown(SulfuricEmissionFear, 0, 60s);
+        eventInfo.GetActionTarget()->CastSpell(eventInfo.GetActor(), SulfuricEmissionFear, true);
     }
 
     void Register() override
