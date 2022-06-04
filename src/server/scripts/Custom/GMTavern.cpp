@@ -48,6 +48,8 @@ public:
         ClearGossipMenuFor(player);
 
         AddGossipItemFor(player, GossipOptionIcon::None, "I want to join the GM Guild.", 0, 1, "Warning! This will remove you from any existing guilds!", 0, false);
+        AddGossipItemFor(player, GossipOptionIcon::None, "Set my hearthstone here.", 0, 2);
+        AddGossipItemFor(player, GossipOptionIcon::None, "Teleport me to the mall.", 0, 3);
 
         SendGossipMenuFor(player, 802001, me);
 
@@ -60,26 +62,45 @@ public:
 
         CloseGossipMenuFor(player);
 
-        if (player->GetSession()->GetSecurity() < SEC_GAMEMASTER)
+        if (actionid == 1)
         {
-            ChatHandler(player).SendSysMessage("You are not eligible to join this guild!");
-            return true;
-        }
-
-        if (Guild* guild = player->GetGuild())
-        {
-            if (guild->GetName() == "GM")
+            if (player->GetSession()->GetSecurity() < SEC_GAMEMASTER)
             {
-                ChatHandler(player).SendSysMessage("You are already in the GM Guild!");
+                ChatHandler(player).SendSysMessage("You are not eligible to join this guild!");
                 return true;
             }
 
-            guild->HandleLeaveMember(player->GetSession());
+            if (Guild* guild = player->GetGuild())
+            {
+                if (guild->GetName() == "GM")
+                {
+                    ChatHandler(player).SendSysMessage("You are already in the GM Guild!");
+                    return true;
+                }
+
+                guild->HandleLeaveMember(player->GetSession());
+            }
+
+            Guild* gmGuild = sGuildMgr->GetGuildByName("GM");
+            if (gmGuild)
+                gmGuild->HandleAcceptMember(player->GetSession());
         }
 
-        Guild* gmGuild = sGuildMgr->GetGuildByName("GM");
-        if (gmGuild)
-            gmGuild->HandleAcceptMember(player->GetSession());
+        if (actionid == 2)
+        {
+            GameTele const* tele = sObjectMgr->GetGameTele(1905);
+            if (tele)
+                player->SetHomebind(WorldLocation(tele->mapId, tele->position_x, tele->position_y, tele->position_z, tele->orientation), 10473);
+            ChatHandler(player).SendSysMessage("Your hearthstone is now set to the GM Tavern.");
+        }
+
+        if (actionid == 3)
+        {
+            GameTele const* tele = sObjectMgr->GetGameTele(1779);
+            if (tele)
+                player->TeleportTo(tele->mapId, tele->position_x, tele->position_y, tele->position_z, tele->orientation);
+        }
+
 
         return true;
     }
