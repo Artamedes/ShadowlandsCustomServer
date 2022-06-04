@@ -22,6 +22,7 @@
 #include "CustomObjectMgr.h"
 #include "CustomInstanceScript.h"
 #include "ReputationMgr.h"
+#include "ChatPackets.h"
 
 enum MallScript
 {
@@ -190,13 +191,13 @@ struct npc_skipbot_3000 : public ScriptedAI
 
         bool DidNotCompleteTutorialQuests(Player* p_Player)
         {
-            return (p_Player->GetQuestStatus(700000) == QUEST_STATUS_INCOMPLETE || p_Player->GetQuestStatus(700000) == QUEST_STATUS_NONE
-                || p_Player->GetQuestStatus(700001) == QUEST_STATUS_INCOMPLETE || p_Player->GetQuestStatus(700001) == QUEST_STATUS_NONE
-                || p_Player->GetQuestStatus(700002) == QUEST_STATUS_INCOMPLETE || p_Player->GetQuestStatus(700002) == QUEST_STATUS_NONE
-                || p_Player->GetQuestStatus(700003) == QUEST_STATUS_INCOMPLETE || p_Player->GetQuestStatus(700003) == QUEST_STATUS_NONE
-                || p_Player->GetQuestStatus(700004) == QUEST_STATUS_INCOMPLETE || p_Player->GetQuestStatus(700004) == QUEST_STATUS_NONE
-                || p_Player->GetQuestStatus(700005) == QUEST_STATUS_INCOMPLETE || p_Player->GetQuestStatus(700005) == QUEST_STATUS_NONE
-                || p_Player->GetQuestStatus(700006) == QUEST_STATUS_INCOMPLETE || p_Player->GetQuestStatus(700006) == QUEST_STATUS_NONE);
+            return (p_Player->GetQuestStatus(700000) == QUEST_STATUS_INCOMPLETE || p_Player->GetQuestStatus(700000) == QUEST_STATUS_NONE);
+                //|| p_Player->GetQuestStatus(700001) == QUEST_STATUS_INCOMPLETE || p_Player->GetQuestStatus(700001) == QUEST_STATUS_NONE
+                //|| p_Player->GetQuestStatus(700002) == QUEST_STATUS_INCOMPLETE || p_Player->GetQuestStatus(700002) == QUEST_STATUS_NONE
+                //|| p_Player->GetQuestStatus(700003) == QUEST_STATUS_INCOMPLETE || p_Player->GetQuestStatus(700003) == QUEST_STATUS_NONE
+                //|| p_Player->GetQuestStatus(700004) == QUEST_STATUS_INCOMPLETE || p_Player->GetQuestStatus(700004) == QUEST_STATUS_NONE
+                //|| p_Player->GetQuestStatus(700005) == QUEST_STATUS_INCOMPLETE || p_Player->GetQuestStatus(700005) == QUEST_STATUS_NONE
+                //|| p_Player->GetQuestStatus(700006) == QUEST_STATUS_INCOMPLETE || p_Player->GetQuestStatus(700006) == QUEST_STATUS_NONE);
         }
 
         bool OnGossipHello(Player* p_Player) override
@@ -220,7 +221,7 @@ struct npc_skipbot_3000 : public ScriptedAI
                 {
                     Talk(0, p_Player);
 
-                    for (uint32 l_Quest : {700006})
+                    for (uint32 l_Quest : {700000, 700006})
                     {
                         auto l_QuestPtr = sObjectMgr->GetQuestTemplate(l_Quest);
                         if (!l_QuestPtr)
@@ -299,7 +300,12 @@ struct npc_skipbot_3000 : public ScriptedAI
                             }
 
                         }
-                        // p_Player->RewardQuest(l_QuestPtr, LootItemType::Item, 0, me);
+
+                        if (l_Quest == 700000)
+                        {
+                            p_Player->CompleteQuest(700000);
+                            p_Player->RewardQuest(l_QuestPtr, LootItemType::Item, 0, me);
+                        }
                     }
 
                     p_Player->AddItem(700001, 1);
@@ -314,6 +320,9 @@ struct npc_skipbot_3000 : public ScriptedAI
                     p_Player->TeleportTo(tele->mapId, tele->position_x, tele->position_y, tele->position_z, tele->orientation);
                     p_Player->SetHomebind(WorldLocation(tele->mapId, tele->position_x, tele->position_y, tele->position_z, tele->orientation), 6719);
 
+                    WorldPackets::Chat::Chat packet;
+                    packet.Initialize(ChatMsg::CHAT_MSG_RAID_WARNING, Language::LANG_UNIVERSAL, p_Player, p_Player, "You have just skipped the intro!, Talk to Juno to continue with the storyline.");
+                    p_Player->SendDirectMessage(packet.Write());
                    //auto l_QuestPtr = sObjectMgr->GetQuestTemplate(700007);
                    //if (!l_QuestPtr)
                    //    break;
