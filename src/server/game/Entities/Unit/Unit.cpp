@@ -4159,6 +4159,14 @@ void Unit::RemoveAurasDueToSpellByDispel(uint32 spellId, uint32 dispellerSpellId
             // Call AfterDispel hook on AuraScript
             aura->CallScriptAfterDispel(&dispelInfo);
 
+            if (auto originalCaster = ObjectAccessor::GetUnit(*this, casterGUID))
+            {
+                if (originalCaster->HasAura(319211)) ///< ID - 319211 Soothing Voice
+                {
+                    originalCaster->CastSpell(this, 320267, true); ///< ID - 320267 Soothing Voice
+                }
+            }
+
             return;
         }
         else
@@ -5870,8 +5878,12 @@ void Unit::RemoveAreaTrigger(AuraEffect const* aurEff)
 
 void Unit::RemoveAllAreaTriggers()
 {
-    for (AreaTrigger* areaTrigger : m_areaTrigger)
+    for (AreaTriggerList::iterator i = m_areaTrigger.begin(); i != m_areaTrigger.end();)
+    {
+        AreaTrigger* areaTrigger = *i;
         areaTrigger->Remove();
+        i = m_areaTrigger.begin();
+    }
     // IsInWorld can return false and this can permanent loop.
 
     //while (!m_areaTrigger.empty())

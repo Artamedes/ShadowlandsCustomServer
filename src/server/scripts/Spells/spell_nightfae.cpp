@@ -5,6 +5,10 @@
 #include "CovenantMgr.h"
 #include "GameTime.h"
 #include "RestMgr.h"
+#include "SpellAuras.h"
+#include "SpellAuraEffects.h"
+#include "AreaTrigger.h"
+#include "AreaTriggerAI.h"
 
 enum NightFae
 {
@@ -22,6 +26,8 @@ enum NightFae
     AncientAftershock = 325886,
 
     Soulshape         = 310143,
+    CunningDreams     = 352782,
+    CunningDreamsSlow = 353472,
 };
 
 const std::unordered_map<uint32, float> GroveInvigorationRates =
@@ -38,7 +44,22 @@ const std::unordered_map<uint32, float> GroveInvigorationRates =
     { FaeTransfusion   , 2.0f},
     { SoulRot          , 1.0f},
     { AncientAftershock, 1.5f},
+};
 
+const std::unordered_map<uint32, float> FieldOfBlossomsRates =
+{
+    { DeathsDue        , 0.25f },
+    { TheHunt          , 1.5f  },
+    { ConvokeTheSpirits, 2.0f  },
+    { WildSpirits      , 2.0f  },
+    { ShiftingPower    , 1.0f },
+    { FaelineStomp     , 0.5f  },
+    { BlessingOfSeasons, 0.75f },
+    { FaeGuardians     , 1.5f  },
+    { Sepsis           , 1.5f  },
+    { FaeTransfusion   , 2.0f  },
+    { SoulRot          , 1.0f  },
+    { AncientAftershock, 1.5f  },
 };
 
 inline const bool IsNFCovenantAbility(uint32 spellId)
@@ -274,6 +295,10 @@ class spell_nightfae_soulshape : public AuraScript
     enum SoulShape
     {
         Flicker = 324701,
+        RunWithoutTiring     = 342270,
+        RunWithoutTiringBuff = 342309,
+        HornOfTheWildHunt    = 325067,
+        HornOfTheWildHuntBuff = 325268,
     };
 
     void HandleApply(const AuraEffect* /*aurEff*/, AuraEffectHandleModes /*mode*/)
@@ -281,12 +306,34 @@ class spell_nightfae_soulshape : public AuraScript
         // Is this a soulbind? Check plz
         PreventDefaultAction();
 
+        if (!GetCaster())
+            return;
+
         GetCaster()->GetSpellHistory()->StartCooldown(sSpellMgr->GetSpellInfo(Flicker), 0, nullptr, false, 4s);
+
+        if (GetCaster()->HasAura(RunWithoutTiring))
+            GetCaster()->CastSpell(GetCaster(), RunWithoutTiring, true);
+
+        if (GetCaster()->HasAura(CunningDreamsSlow))
+            GetCaster()->CastSpell(GetCaster(), CunningDreamsSlow, true);
+
+        if (GetCaster()->HasAura(HornOfTheWildHunt))
+            GetCaster()->CastSpell(GetCaster(), HornOfTheWildHuntBuff, true);
+    }
+
+    void HandleRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+    {
+        if (!GetCaster())
+            return;
+
+        GetCaster()->RemoveAurasDueToSpell(RunWithoutTiringBuff);
+        GetCaster()->RemoveAurasDueToSpell(HornOfTheWildHuntBuff);
     }
 
     void Register() override
     {
         OnEffectApply += AuraEffectApplyFn(spell_nightfae_soulshape::HandleApply, EFFECT_5, SPELL_AURA_MOD_UNATTACKABLE, AURA_EFFECT_HANDLE_REAL);
+        OnEffectRemove += AuraEffectApplyFn(spell_nightfae_soulshape::HandleRemove, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY, AURA_EFFECT_HANDLE_REAL);
     }
 };
 
@@ -824,6 +871,468 @@ class spell_hunts_exhilaration : public AuraScript
     }
 };
 
+/// ID: 319213 Empowered Chrysalis
+class spell_empowered_chrysalis : public AuraScript
+{
+    PrepareAuraScript(spell_empowered_chrysalis);
+
+    enum EmpoweredChrysalis
+    {
+        Shield = 320009,
+    };
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        if (!eventInfo.GetActor())
+            return false;
+
+        if (!eventInfo.GetActionTarget())
+            return false;
+
+        if (!eventInfo.GetHealInfo())
+            return false;
+
+        //if (eventInfo.GetActionTarget()->HasAura(Shield))
+        //    return false;
+
+        auto healInfo = eventInfo.GetHealInfo();
+
+        return int32(healInfo->GetHeal() - healInfo->GetEffectiveHeal()) > 0;
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (!eventInfo.GetActor())
+            return;
+
+        if (!eventInfo.GetActionTarget())
+            return;
+
+        if (!eventInfo.GetHealInfo())
+            return;
+
+        auto healInfo = eventInfo.GetHealInfo();
+        auto overHeal = float(healInfo->GetHeal() - healInfo->GetEffectiveHeal());
+
+        overHeal *= 0.10f;
+
+        eventInfo.GetActor()->CastSpell(eventInfo.GetActionTarget(), Shield, CastSpellExtraArgs(true).AddSpellBP0(overHeal));
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_empowered_chrysalis::CheckProc);
+        OnProc += AuraProcFn(spell_empowered_chrysalis::HandleProc);
+    }
+};
+
+/// ID: 320267 Soothing Voice
+class spell_soothing_voice : public AuraScript
+{
+    PrepareAuraScript(spell_soothing_voice);
+
+    void HandlePeriodic(AuraEffect const* /*aurEff*/)
+    {
+        if (auto aura = GetAura())
+            if (auto eff1 = aura->GetEffect(EFFECT_0))
+                if (eff1->GetAmount() >= 20)
+                    eff1->SetAmount(eff1->GetAmount() - 20);
+    }
+
+    void Register() override
+    {
+        OnEffectPeriodic += AuraEffectPeriodicFn(spell_soothing_voice::HandlePeriodic, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY);
+    }
+};
+
+/// ID: 319191 Field of Blossoms
+class spell_field_of_blossoms : public AuraScript
+{
+    PrepareAuraScript(spell_field_of_blossoms);
+
+    enum FieldOfBlossoms
+    {
+        FieldOfBlossomsAreaTriggerSpawn = 342761,
+    };
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        if (!eventInfo.GetActor() || !eventInfo.GetSpellInfo())
+            return false;
+
+        return IsNFCovenantAbility(eventInfo.GetSpellInfo()->Id);
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (!eventInfo.GetSpellInfo())
+            return;
+
+        if (auto actor = eventInfo.GetActor())
+        {
+            actor->CastSpell(actor, FieldOfBlossomsAreaTriggerSpawn, true);
+
+            if (auto areaTrigger = actor->GetAreaTrigger(FieldOfBlossomsAreaTriggerSpawn))
+            {
+                auto normalDuration = areaTrigger->GetDuration();
+                auto it = FieldOfBlossomsRates.find(eventInfo.GetSpellInfo()->Id);
+                if (it != FieldOfBlossomsRates.end())
+                {
+                    normalDuration *= it->second;
+                    areaTrigger->SetDuration(normalDuration);
+                }
+            }
+        }
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_field_of_blossoms::CheckProc);
+        OnProc += AuraProcFn(spell_field_of_blossoms::HandleProc);
+    }
+};
+
+/// 21827
+struct at_field_of_blossoms : public AreaTriggerAI
+{
+public:
+    at_field_of_blossoms(AreaTrigger* at) : AreaTriggerAI(at) { }
+
+    enum FieldOfBlossoms
+    {
+        FieldOfBlossomsHaste = 342774,
+    };
+
+    void OnUnitEnter(Unit* who) override
+    {
+        if (who == at->GetOwner())
+        {
+            if (auto aur = who->GetAura(FieldOfBlossomsHaste))
+                aur->SetDuration(at->GetDuration());
+            else if (auto aur = who->AddAura(FieldOfBlossomsHaste, who))
+                    aur->SetDuration(at->GetDuration());
+        }
+    }
+
+    void OnUnitExit(Unit* who) override
+    {
+        if (who == at->GetOwner())
+        {
+            who->RemoveAurasDueToSpell(FieldOfBlossomsHaste);
+        }
+    }
+};
+
+/// ID: 324701 Flicker
+class spell_flicker : public SpellScript
+{
+    PrepareSpellScript(spell_flicker);
+
+    void HandleDummy(SpellEffIndex /*eff*/)
+    {
+        if (!GetCaster())
+            return;
+
+        if (GetCaster()->HasAura(CunningDreamsSlow))
+            GetCaster()->CastSpell(GetCaster(), CunningDreamsSlow, true);
+    }
+
+    void Register() override
+    {
+        OnEffectHitTarget += SpellEffectFn(spell_flicker::HandleDummy, EFFECT_1, SPELL_EFFECT_DUMMY);
+    }
+};
+
+/// ID: 325065 Wild Hunt's Charge
+class spell_wild_hunts_charge : public AuraScript
+{
+    PrepareAuraScript(spell_wild_hunts_charge);
+
+    enum WildHuntCharge
+    {
+        WildHuntsChargeBuff = 325305,
+    };
+
+    void HandleApply(const AuraEffect* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+    {
+        if (GetCaster())
+            HandleCombat(GetCaster()->IsInCombat());
+    }
+
+    void HandleRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+    {
+        if (GetCaster())
+            GetCaster()->RemoveAurasDueToSpell(WildHuntsChargeBuff);
+    }
+
+    void HandleCombat(bool combat)
+    {
+        if (!GetCaster())
+            return;
+
+        if (combat)
+            GetCaster()->RemoveAurasDueToSpell(WildHuntsChargeBuff);
+        else if (!GetCaster()->HasAura(WildHuntsChargeBuff))
+            GetCaster()->CastSpell(GetCaster(), WildHuntsChargeBuff, true);
+    }
+
+
+    void Register() override
+    {
+        OnEffectApply += AuraEffectApplyFn(spell_wild_hunts_charge::HandleApply, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+        OnEffectRemove += AuraEffectApplyFn(spell_wild_hunts_charge::HandleRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+        OnEnterLeaveCombat += AuraEnterLeaveCombatFn(spell_wild_hunts_charge::HandleCombat);
+    }
+};
+
+/// ID: 325072 Vorkai Sharpening Techniques
+class spell_vorkai_sharpening_techniques : public AuraScript
+{
+    PrepareAuraScript(spell_vorkai_sharpening_techniques);
+
+    enum Vorkai
+    {
+        VorkaisSharpeningTechniquesMH = 325485,
+        VorkaisSharpeningTechniquesOH = 325486,
+
+    };
+
+    void HandlePeriodic(AuraEffect const* /*aurEff*/)
+    {
+        if (!GetCaster())
+            return;
+
+        GetCaster()->CastSpell(GetCaster(), VorkaisSharpeningTechniquesMH, true);
+        GetCaster()->CastSpell(GetCaster(), VorkaisSharpeningTechniquesOH, true);
+    }
+
+    void Register() override
+    {
+        OnEffectPeriodic += AuraEffectPeriodicFn(spell_vorkai_sharpening_techniques::HandlePeriodic, EFFECT_0, SPELL_AURA_PERIODIC_TRIGGER_SPELL);
+    }
+};
+
+/// ID: 325073 Get In Formation
+class spell_get_in_formation : public AuraScript
+{
+    PrepareAuraScript(spell_get_in_formation);
+
+    enum GetInFormation
+    {
+        MountBuff = 325443,
+    };
+
+    void HandleApply(const AuraEffect* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+    {
+        if (GetCaster())
+        {
+            GetCaster()->CastSpell(GetCaster(), MountBuff, true);
+        }
+    }
+
+    void HandleRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+    {
+        if (GetCaster())
+        {
+            GetCaster()->RemoveAurasDueToSpell(MountBuff);
+        }
+    }
+
+    // requires areatrigger 348392 (20032 )
+
+    void Register() override
+    {
+        OnEffectApply += AuraEffectApplyFn(spell_get_in_formation::HandleApply, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+        OnEffectRemove += AuraEffectApplyFn(spell_get_in_formation::HandleRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+    }
+};
+
+/// ID: 325068 Face Your Foes
+class spell_face_your_foes : public AuraScript
+{
+    PrepareAuraScript(spell_face_your_foes);
+
+    enum FaceYourFoes
+    {
+        FaceYourFoesDebuff = 325437,
+    };
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        if (!eventInfo.GetActor() || !eventInfo.GetActionTarget())
+            return false;
+
+        return eventInfo.GetActor()->isInFront(eventInfo.GetActionTarget());
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (!eventInfo.GetActor() || !eventInfo.GetActionTarget())
+            return;
+
+        eventInfo.GetActor()->CastSpell(eventInfo.GetActionTarget(), FaceYourFoesDebuff, true);
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_face_your_foes::CheckProc);
+        OnProc += AuraProcFn(spell_face_your_foes::HandleProc);
+    }
+};
+
+/// ID: 325601 Hold the Line
+class spell_hold_the_line : public AuraScript
+{
+    PrepareAuraScript(spell_hold_the_line);
+
+    enum HoldTheLine
+    {
+        DefenseAura = 325612,
+    };
+
+    time_t LastMoveTime = 0;
+
+    void HandlePeriodic(AuraEffect const* /*aurEff*/)
+    {
+        auto target = GetCaster();
+        if (!target)
+            return;
+
+        auto CurrTime = GameTime::GetGameTime();
+
+        if (target->isMoving())
+        {
+            LastMoveTime = CurrTime;
+        }
+
+        if (!LastMoveTime)
+            LastMoveTime = CurrTime;
+        else
+        {
+            auto diff = CurrTime - LastMoveTime;
+            if (diff >= 5)
+            {
+                if (!target->HasAura(DefenseAura))
+                    target->CastSpell(target, DefenseAura, true);
+            }
+        }
+    }
+
+    void Register() override
+    {
+        OnEffectPeriodic += AuraEffectPeriodicFn(spell_hold_the_line::HandlePeriodic, EFFECT_0, SPELL_AURA_PERIODIC_TRIGGER_SPELL);
+    }
+};
+
+/// ID: 352800 Vorkai Ambush
+class spell_vorkai_ambush : public AuraScript
+{
+    PrepareAuraScript(spell_vorkai_ambush);
+
+    enum VorkaiAmbush
+    {
+        VorkaiAmbushAura = 353077,
+    };
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        if (!eventInfo.GetSpellInfo())
+            return false;
+
+        if (!eventInfo.GetActionTarget() || !eventInfo.GetActor())
+            return false;
+
+        return eventInfo.GetHitMask() & PROC_HIT_INTERRUPT;
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (!eventInfo.GetActionTarget() || !eventInfo.GetActor())
+            return;
+
+        eventInfo.GetActor()->CastSpell(eventInfo.GetActionTarget(), VorkaiAmbushAura, true);
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_vorkai_ambush::CheckProc);
+        OnProc += AuraProcFn(spell_vorkai_ambush::HandleProc);
+    }
+};
+
+/// ID: 325069 First Strike
+class spell_first_strike : public AuraScript
+{
+    PrepareAuraScript(spell_first_strike);
+
+    enum FirstStrike
+    {
+        Buff = 325381,
+    };
+
+    GuidUnorderedSet ProccedUnits;
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        if (!eventInfo.GetActionTarget() || !eventInfo.GetActor())
+            return false;
+
+        // check hit us
+        if (ProccedUnits.count(eventInfo.GetActionTarget()->GetGUID()) || ProccedUnits.count(eventInfo.GetActionTarget()->GetGUID()))
+            return false;
+
+        return true;
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (!eventInfo.GetActionTarget() || !eventInfo.GetActor())
+            return;
+
+        if (auto caster = GetCaster())
+        {
+            caster->CastSpell(caster, Buff, true);
+
+            ProccedUnits.insert(eventInfo.GetActionTarget()->GetGUID());
+            ProccedUnits.insert(eventInfo.GetActor()->GetGUID());
+        }
+    }
+
+    uint32 updateMS = 0;
+
+    void HandleUpdate(const uint32 diff)
+    {
+        if (updateMS >= 5000)
+        {
+            updateMS = 0;
+
+            if (auto target = GetCaster())
+            {
+                for (auto it = ProccedUnits.begin(); it != ProccedUnits.end(); )
+                {
+                    auto unit = ObjectAccessor::GetUnit(*target, *it);
+                    if (!unit || unit->isDead() || !unit->IsInCombatWith(target))
+                    {
+                        it = ProccedUnits.erase(it);
+                    }
+                    else
+                    {
+                        ++it;
+                    }
+                }
+            }
+        }
+        else
+            updateMS += diff;
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_first_strike::CheckProc);
+        OnProc += AuraProcFn(spell_first_strike::HandleProc);
+        OnAuraUpdate += AuraUpdateFn(spell_first_strike::HandleUpdate);
+    }
+};
 void AddSC_spell_nightfae()
 {
     RegisterSpellScript(spell_nightfae_podtender);
@@ -840,8 +1349,21 @@ void AddSC_spell_nightfae()
     RegisterSpellScript(spell_stay_on_the_move);
     RegisterSpellScript(spell_somnambulist);
     RegisterSpellScript(spell_hunts_exhilaration);
+    RegisterSpellScript(spell_empowered_chrysalis);
+    RegisterSpellScript(spell_soothing_voice);
+    RegisterSpellScript(spell_field_of_blossoms);
+    RegisterSpellScript(spell_flicker);
+    RegisterSpellScript(spell_wild_hunts_charge);
+    RegisterSpellScript(spell_vorkai_sharpening_techniques);
+    RegisterSpellScript(spell_get_in_formation);
+    RegisterSpellScript(spell_face_your_foes);
+    RegisterSpellScript(spell_hold_the_line);
+    RegisterSpellScript(spell_vorkai_ambush);
+    RegisterSpellScript(spell_first_strike);
 
     RegisterCreatureAI(npc_regenerating_wild_seed_164589);
+
+    RegisterAreaTriggerAI(at_field_of_blossoms);
 
     new unit_script_nightfae();
 }

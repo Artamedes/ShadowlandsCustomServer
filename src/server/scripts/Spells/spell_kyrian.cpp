@@ -1169,7 +1169,7 @@ class spell_hammer_of_genesis : public AuraScript
         for (auto it = newUnits.begin(); it != newUnits.end(); )
         {
             auto unit = ObjectAccessor::GetUnit(*target, *it);
-            if (!unit || !unit->isDead() || !unit->IsInCombatWith(target))
+            if (!unit || unit->isDead() || !unit->IsInCombatWith(target))
             {
                 it = newUnits.erase(it);
             }

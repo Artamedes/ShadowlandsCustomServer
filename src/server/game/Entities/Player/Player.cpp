@@ -27612,6 +27612,11 @@ void Player::HandleFall(MovementInfo const& movementInfo)
         {
             CastSpell(this, 337697, true); ///< ID - 331725 Resilient Plumage
         }
+        if (z_diff >= 20.0f && HasAura(319214) && !HasAura(332913) && !HasAura(319970)) ///< ID - 319214 Faerie Dust
+        {
+            CastSpell(this, 319970, true); ///< Faerie Dust
+            CastSpell(this, 332913, true); ///< Faerie Dust CD
+        }
 
         if (damageperc > 0)
         {
