@@ -1,4 +1,5 @@
 #include "ScriptMgr.h"
+#include "WorldSession.h"
 
 struct npc_gm_tailor : ScriptedAI
 {
@@ -21,7 +22,7 @@ public:
         uint32 actionid = player->PlayerTalkClass->GetGossipOptionAction(gossipid);
 
         CloseGossipMenuFor(player);
-        if (actionid == 1)
+        if (actionid == 1 && player->GetSession()->GetSecurity()>=SEC_GAMEMASTER)
         {
             player->AddItem(2586, 1);
             player->AddItem(11508, 1);
