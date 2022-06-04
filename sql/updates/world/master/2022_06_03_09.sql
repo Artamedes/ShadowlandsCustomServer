@@ -50,3 +50,4 @@ INSERT INTO spell_script_names (spell_id, scriptname) VALUE (328257, 'spell_let_
 DELETE FROM spell_script_names WHERE spell_id = 351146;
 INSERT INTO spell_script_names (spell_id, scriptname) VALUE (351146, 'spell_better_together');
 
+UPDATE quest_objectives SET Description='Use the Magic Stone and speak to Thrall' WHERE  ID=700007;
