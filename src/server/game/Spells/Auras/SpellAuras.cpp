@@ -2244,8 +2244,14 @@ void Aura::CallScriptAuraUpdateHandlers(uint32 diff)
     uint32 scriptExecuteTime = getMSTime();
 #endif // PERFORMANCE_LOG
 
+    if (IsRemoved())
+        return;
+
     for (auto scritr = m_loadedScripts.begin(); scritr != m_loadedScripts.end(); ++scritr)
     {
+        if (!(*scritr))
+            continue;
+
         (*scritr)->_PrepareScriptCall(AURA_SCRIPT_HOOK_ON_UPDATE);
         std::vector<AuraScript::AuraUpdateHandler>::iterator hookItrEnd = (*scritr)->OnAuraUpdate.end(), hookItr = (*scritr)->OnAuraUpdate.begin();
         for (; hookItr != hookItrEnd; ++hookItr)

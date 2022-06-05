@@ -17,32 +17,11 @@ public:
         me->SetUnitFlag(UNIT_FLAG_UNINTERACTIBLE);
     }
 
-    void Reset() override
-    {
-    }
-
-    void UpdateAI(uint32 diff) override
-    {
-        scheduler.Update(diff);
-
-        if (!UpdateVictim())
-            return;
-        
-        events.Update(diff);
-
-        if (uint32 eventId = events.ExecuteEvent())
-        {
-            switch (eventId)
-            {
-            }
-        }
-        DoMeleeAttackIfReady();
-    }
-
     void OnSpellClick(Unit* clicker, bool spellClickHandled) override
     {
         if (clicker->IsPlayer())
         {
+            auto player = clicker->ToPlayer();
             //clicker->CastSpell(clicker, 367044, true);
             auto clickerGuid = clicker->GetGUID();
 
@@ -59,21 +38,18 @@ public:
                     return;
             }
 
-            scheduler.Schedule(800ms, [this, clickerGuid](TaskContext context)
+            //scheduler.Schedule(800ms, [this, clickerGuid](TaskContext context)
+            //{
+            if (auto player = ObjectAccessor::GetPlayer(*me, clickerGuid))
             {
-                    if (auto player = ObjectAccessor::GetPlayer(*me, clickerGuid))
-                    {
-                        player->KilledMonsterCredit(me->GetEntry(), me->GetGUID());
-                        GameTele const* tele = sObjectMgr->GetGameTele(1903);
-                        if (tele)
-                            player->TeleportTo(tele->mapId, tele->position_x, tele->position_y, tele->position_z, tele->orientation);
-                    }
-            });
+                player->KilledMonsterCredit(me->GetEntry(), me->GetGUID());
+                GameTele const* tele = sObjectMgr->GetGameTele(1903);
+                if (tele)
+                    player->TeleportTo(tele->mapId, tele->position_x, tele->position_y, tele->position_z, tele->orientation);
+            }
+            //});
         }
     }
-
-    TaskScheduler scheduler;
-    EventMap events;
 };
 
 // 700711 - npc_corrupted_light_700711
