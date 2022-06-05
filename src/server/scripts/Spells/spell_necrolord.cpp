@@ -7,6 +7,8 @@
 #include "Cell.h"
 #include "CellImpl.h"
 #include "GridNotifiers.h"
+#include "AreaTrigger.h"
+#include "AreaTriggerAI.h"
 
 enum Necrolord
 {
@@ -23,7 +25,60 @@ enum Necrolord
     VolatileSolventGiant        = 323506,
     VolatileSolventMechanical   = 323507,
     VolatileSolventUndeadAura   = 323510,
+
+    AbominationLimb             = 315443,
+    FodderToTheFlame            = 329554,
+    AdaptiveSwarm               = 325727,
+    DeathChakram                = 325028,
+    Deathborne                  = 324220,
+    BonedustBrew                = 325216,
+    VanquishersHammer           = 328204,
+    UnholyNova                  = 344481,
+    SerratedBoneSpike           = 328547,
+    PrimordialWave              = 326059,
+    DecimatingBolt              = 325289,
+    ConquerorsBanner            = 324143,
+
+    NpcKevin = 178601,
 };
+
+const std::unordered_map<uint32, float> KevinRates
+{
+    { AbominationLimb  , 2.0f },
+    { FodderToTheFlame , 2.0f },
+    { AdaptiveSwarm    , 0.4f },
+    { DeathChakram     , 0.75f },
+    { Deathborne       , 3.0f },
+    { BonedustBrew     , 1.0f },
+    { VanquishersHammer, 0.5f },
+    { UnholyNova       , 1.0f },
+    { SerratedBoneSpike, 0.5f },
+    { PrimordialWave   , 0.75f },
+    { DecimatingBolt   , 0.75f },
+    { ConquerorsBanner , 2.0f },
+};
+
+inline const bool IsCovenantSpell(uint32 spellId)
+{
+    switch (spellId)
+    {
+        case AbominationLimb:
+        case FodderToTheFlame:
+        case AdaptiveSwarm:
+        case DeathChakram:
+        case Deathborne:
+        case BonedustBrew:
+        case VanquishersHammer:
+        case UnholyNova:
+        case SerratedBoneSpike:
+        case PrimordialWave:
+        case DecimatingBolt:
+        case ConquerorsBanner:
+            return true;
+        default:
+            return false;
+    }
+}
 
 // 324631 
 class spell_necrolord_fleshcraft : public AuraScript
@@ -383,6 +438,241 @@ class spell_volatile_solvent : public AuraScript
     }
 };
 
+/// ID: 323090 Plaguey's Preemptive Strike
+class spell_plagueys_preemptive_strike : public AuraScript
+{
+    PrepareAuraScript(spell_plagueys_preemptive_strike);
+
+    enum Plaguey
+    {
+        StrikeBuff = 323416,
+    };
+
+    GuidUnorderedSet ProccedUnits;
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        if (!eventInfo.GetActionTarget() || !eventInfo.GetActor())
+            return false;
+
+        // check hit us
+        if (ProccedUnits.count(eventInfo.GetActionTarget()->GetGUID()) || ProccedUnits.count(eventInfo.GetActionTarget()->GetGUID()))
+            return false;
+
+        return eventInfo.GetActionTarget() != eventInfo.GetActor();
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (!eventInfo.GetActionTarget() || !eventInfo.GetActor())
+            return;
+
+        if (auto caster = GetCaster())
+        {
+            caster->CastSpell(eventInfo.GetActionTarget(), StrikeBuff, true);
+
+            ProccedUnits.insert(eventInfo.GetActionTarget()->GetGUID());
+            ProccedUnits.insert(eventInfo.GetActor()->GetGUID());
+        }
+    }
+
+    uint32 updateMS = 0;
+
+    void HandleUpdate(const uint32 diff)
+    {
+        if (updateMS >= 5000)
+        {
+            updateMS = 0;
+
+            if (auto target = GetCaster())
+            {
+                for (auto it = ProccedUnits.begin(); it != ProccedUnits.end(); )
+                {
+                    auto unit = ObjectAccessor::GetUnit(*target, *it);
+                    if (!unit || unit->isDead() || !unit->IsInCombatWith(target))
+                    {
+                        it = ProccedUnits.erase(it);
+                    }
+                    else
+                    {
+                        ++it;
+                    }
+                }
+            }
+        }
+        else
+            updateMS += diff;
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_plagueys_preemptive_strike::CheckProc);
+        OnProc += AuraProcFn(spell_plagueys_preemptive_strike::HandleProc);
+    }
+};
+
+/// ID: 352108 Viscous Trail
+class spell_viscous_trail : public AuraScript
+{
+    PrepareAuraScript(spell_viscous_trail);
+
+    enum ViscousTrail
+    {
+        ProcSpell = 352427,
+    };
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        if (!eventInfo.GetSpellInfo())
+            return false;
+
+        if (eventInfo.GetSpellInfo()->HasEffectMechanic(Mechanics::MECHANIC_SNARE))
+            return true;
+
+        return false;
+    }
+
+    void HandleProc(ProcEventInfo& /*eventInfo*/)
+    {
+        PreventDefaultAction();
+        if (auto caster = GetCaster())
+        {
+            caster->CastSpell(caster, ProcSpell, true);
+        }
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_viscous_trail::CheckProc);
+        OnProc += AuraProcFn(spell_viscous_trail::HandleProc);
+    }
+};
+
+/// ID: 22903
+struct at_viscous_trail : public AreaTriggerAI
+{
+public:
+    at_viscous_trail(AreaTrigger* at) : AreaTriggerAI(at) { }
+
+    enum Viscoustrail
+    {
+        Slow = 352448,
+    };
+
+    void OnUnitEnter(Unit* who) override
+    {
+        if (auto caster = at->GetCaster())
+        {
+            if (caster->IsValidAttackTarget(who))
+                caster->CastSpell(who, Slow, true);
+        }
+    }
+};
+
+/// ID: 352110 Kevin's Oozeling
+class spell_kevins_oozeling : public AuraScript
+{
+    PrepareAuraScript(spell_kevins_oozeling);
+
+    enum KevinsOozeling
+    {
+        KevinProc = 352500,
+    };
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        if (!eventInfo.GetSpellInfo())
+            return false;
+
+        return IsCovenantSpell(eventInfo.GetSpellInfo()->Id);
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (!eventInfo.GetSpellInfo())
+            return;
+
+        if (auto caster = GetCaster())
+        {
+            if (!caster->HasAura(KevinProc))
+                caster->CastSpell(caster, KevinProc, true);
+
+            if (auto kevinProc = caster->GetAura(KevinProc))
+            {
+                auto it = KevinRates.find(eventInfo.GetSpellInfo()->Id);
+                if (it != KevinRates.end())
+                {
+                    auto duration = 20000.0f * it->second;
+                    if (kevinProc->GetDuration() == -1)
+                    {
+                        kevinProc->SetDuration(duration);
+                        kevinProc->SetMaxDuration(duration);
+                    }
+                    else
+                        kevinProc->ModDuration(duration);
+                }
+            }
+        }
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_kevins_oozeling::CheckProc);
+        OnProc += AuraProcFn(spell_kevins_oozeling::HandleProc);
+    }
+};
+
+/// ID: 352500 Kevin's Oozeling
+class spell_kevins_oozeling_proc : public AuraScript
+{
+    PrepareAuraScript(spell_kevins_oozeling_proc);
+
+    void HandleApply(const AuraEffect* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+    {
+        if (!GetCaster())
+            return;
+    }
+
+    void HandleRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+    {
+        if (!GetCaster())
+            return;
+
+        GetCaster()->UnsummonCreatureByEntry(NpcKevin);
+    }
+
+    void Register() override
+    {
+        OnEffectApply += AuraEffectApplyFn(spell_kevins_oozeling_proc::HandleApply, EFFECT_1, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+        OnEffectRemove += AuraEffectApplyFn(spell_kevins_oozeling_proc::HandleRemove, EFFECT_1, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+    }
+};
+
+// 178601 - npc_kevin_s_oozeling_178601
+struct npc_kevin_s_oozeling_178601 : public ScriptedAI
+{
+public:
+    npc_kevin_s_oozeling_178601(Creature* creature) : ScriptedAI(creature) { }
+
+    enum KevinaOoze
+    {
+        KevinsWrath = 352528,
+    };
+
+    void UpdateAI(uint32 diff) override
+    {
+        if (!UpdateVictim())
+            return;
+
+        if (me->IsWithinMeleeRange(me->GetVictim()))
+            if (!me->GetVictim()->HasAura(KevinsWrath))
+                if (me->GetOwner())
+                    me->GetOwner()->CastSpell(me->GetVictim(), KevinsWrath, true);
+
+        DoMeleeAttackIfReady();
+    }
+};
+
 void AddSC_spell_necrolord()
 {
     RegisterSpellAndAuraScriptPairWithArgs(spell_necrolord_fleshcraft_spellscript, spell_necrolord_fleshcraft, "spell_necrolord_fleshcraft");
@@ -392,4 +682,12 @@ void AddSC_spell_necrolord()
     RegisterSpellScript(spell_fleshcraft_cdr);
     RegisterSpellScript(spell_volatile_solvent_undead);
     RegisterSpellScript(spell_volatile_solvent);
+    RegisterSpellScript(spell_plagueys_preemptive_strike);
+    RegisterSpellScript(spell_viscous_trail);
+    RegisterSpellScript(spell_kevins_oozeling);
+    RegisterSpellScript(spell_kevins_oozeling_proc);
+
+    RegisterAreaTriggerAI(at_viscous_trail);
+
+    RegisterCreatureAI(npc_kevin_s_oozeling_178601);
 }

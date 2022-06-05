@@ -210,18 +210,26 @@ class spell_kyrian_effusive_anima_accelerator_aura : public AuraScript
             case KindredFocus:
             case KindredEmpowerment:
                 return true;
-
             default:
                 return false;
         }
-
     }
 
     void HandleProc(ProcEventInfo& eventInfo)
     {
         if (auto actor = eventInfo.GetActor())
         {
-            actor->CastSpell(actor, EffusiveProc, true);
+            Position pos = *actor;
+
+            if (eventInfo.GetProcSpell())
+            {
+                if (eventInfo.GetProcSpell()->m_targets.GetDstPos())
+                    pos = *eventInfo.GetProcSpell()->m_targets.GetDstPos();
+                else if (auto targ = eventInfo.GetProcSpell()->m_targets.GetUnitTarget())
+                    pos = *targ;
+            }
+
+            actor->CastSpell(pos, EffusiveProc, true);
         }
     }
 
@@ -1387,6 +1395,88 @@ class spell_better_together : public AuraScript
     }
 };
 
+// 18264
+struct at_elysian_decree : public AreaTriggerAI
+{
+public:
+    at_elysian_decree(AreaTrigger* ai) : AreaTriggerAI(ai) { }
+
+    enum ElysianDecree
+    {
+        Dmg = 307046,
+        RepeatDecreeDmg = 339893,
+    };
+
+    void OnUnitExit(Unit* who) override
+    {
+        if (!at->IsRemoved())
+            return;
+
+        auto caster = at->GetCaster();
+        if (!caster)
+            return;
+
+        if (!caster->IsValidAttackTarget(who))
+            return;
+
+        caster->CastSpell(who, Dmg, true);
+    }
+};
+
+/// ID: 339894 Elysian Decree
+class spell_elysian_decree : public SpellScript
+{
+    PrepareSpellScript(spell_elysian_decree);
+
+    enum ElysianDecrees
+    {
+        RepeatDecree = 339895,
+    };
+
+    void HandleDMG(SpellEffIndex /*eff*/)
+    {
+        if (auto caster = GetCaster())
+        {
+            if (auto target = GetHitUnit())
+            {
+                if (auto aura = caster->GetAuraEffect(RepeatDecree, EFFECT_0))
+                {
+                    auto AP = caster->GetTotalAttackPowerValue(WeaponAttackType::BASE_ATTACK);
+                    SetHitDamage(aura->GetAmount() + AP * 3.5f);
+                }
+            }
+        }
+    }
+
+    void Register() override
+    {
+        OnEffectHitTarget += SpellEffectFn(spell_elysian_decree::HandleDMG, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
+    }
+};
+
+/// ID: 307046 Elysian Decree
+class spell_elysian_decree_dmg : public SpellScript
+{
+    PrepareSpellScript(spell_elysian_decree_dmg);
+
+    enum ElysianDecrees
+    {
+        RepeatDecree = 339895,
+    };
+
+    void HandleDummy(SpellEffIndex eff)
+    {
+        if (auto caster = GetCaster())
+            if (!caster->HasAura(RepeatDecree))
+                PreventHitEffect(eff);
+    }
+
+    void Register() override
+    {
+        OnEffectLaunch += SpellEffectFn(spell_elysian_decree_dmg::HandleDummy, EFFECT_1, SPELL_EFFECT_TRIGGER_SPELL);
+    }
+};
+
 void AddSC_spell_kyrian()
 {
     RegisterCreatureAI(npc_kyrian_steward);
@@ -1416,7 +1506,10 @@ void AddSC_spell_kyrian()
     RegisterSpellScript(spell_road_of_trials);
     RegisterSpellScript(spell_let_go_of_the_past);
     RegisterSpellScript(spell_better_together);
+    RegisterSpellScript(spell_elysian_decree);
+    RegisterSpellScript(spell_elysian_decree_dmg);
 
     RegisterAreaTriggerAI(areatrigger_combat_meditation);
     RegisterAreaTriggerAI(areatrigger_newfound_resolve);
+    RegisterAreaTriggerAI(at_elysian_decree);
 }
