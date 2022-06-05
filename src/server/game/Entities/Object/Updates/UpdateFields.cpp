@@ -4123,7 +4123,7 @@ void ActivePlayerData::ClearChangesMask()
     Base::ClearChangesMask(KnownTitles);
     Base::ClearChangesMask(ResearchSites);
     Base::ClearChangesMask(ResearchSiteProgress);
-    Base::ClearChangesMask(DailyQuestsCompleted);
+    //Base::ClearChangesMask(DailyQuestsCompleted); - causes a crash
     Base::ClearChangesMask(AvailableQuestLineXQuestIDs);
     Base::ClearChangesMask(Heirlooms);
     Base::ClearChangesMask(HeirloomFlags);
