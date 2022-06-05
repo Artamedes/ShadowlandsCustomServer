@@ -4852,6 +4852,8 @@ class spell_mastery_icicles_proc : public AuraScript
 
     bool CheckProc(ProcEventInfo& eventInfo)
     {
+        if (eventInfo.GetDamageInfo() == nullptr)
+            return false;
         if (eventInfo.GetSpellInfo() && (eventInfo.GetSpellInfo()->Id == SPELL_MAGE_FROSTBOLT || eventInfo.GetSpellInfo()->Id == SPELL_MAGE_FROSTBOLT_TRIGGER ||
             eventInfo.GetSpellInfo()->Id == SPELL_MAGE_FLURRY))
             return true;
@@ -4860,6 +4862,9 @@ class spell_mastery_icicles_proc : public AuraScript
 
     void OnProc(AuraEffect* /*aurEff*/, ProcEventInfo& eventInfo)
     {
+        if (eventInfo.GetDamageInfo() == nullptr)
+            return;
+
         Unit* target = eventInfo.GetDamageInfo()->GetVictim();
         Unit* caster = eventInfo.GetDamageInfo()->GetAttacker();
         if (!target || !caster)
