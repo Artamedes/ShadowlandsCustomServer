@@ -377,8 +377,6 @@ void CollectionMgr::SaveAccountMounts(LoginDatabaseTransaction trans)
 bool CollectionMgr::AddMount(uint32 spellId, MountStatusFlags flags, bool factionMount /*= false*/, bool learned /*= false*/)
 {
     Player* player = _owner->GetPlayer();
-    if (!player)
-        return false;
 
     MountEntry const* mount = sDB2Manager.GetMount(spellId);
     if (!mount)
@@ -391,7 +389,7 @@ bool CollectionMgr::AddMount(uint32 spellId, MountStatusFlags flags, bool factio
     _mounts.insert(MountContainer::value_type(spellId, flags));
 
     // Mount condition only applies to using it, should still learn it.
-    if (mount->PlayerConditionID)
+    if (mount->PlayerConditionID && player)
     {
         PlayerConditionEntry const* playerCondition = sPlayerConditionStore.LookupEntry(mount->PlayerConditionID);
         if (playerCondition && !ConditionMgr::IsPlayerMeetingCondition(player, playerCondition))
@@ -402,7 +400,7 @@ bool CollectionMgr::AddMount(uint32 spellId, MountStatusFlags flags, bool factio
     {
         if (!factionMount)
             SendSingleMountUpdate(std::make_pair(spellId, flags));
-        if (!player->HasSpell(spellId))
+        if (player && !player->HasSpell(spellId))
             player->LearnSpell(spellId, true);
     }
 
@@ -425,10 +423,6 @@ void CollectionMgr::MountSetFavorite(uint32 spellId, bool favorite)
 
 void CollectionMgr::SendSingleMountUpdate(std::pair<uint32, MountStatusFlags> mount)
 {
-    Player* player = _owner->GetPlayer();
-    if (!player)
-        return;
-
     // Temporary container, just need to store only selected mount
     MountContainer tempMounts;
     tempMounts.insert(mount);
@@ -436,7 +430,7 @@ void CollectionMgr::SendSingleMountUpdate(std::pair<uint32, MountStatusFlags> mo
     WorldPackets::Misc::AccountMountUpdate mountUpdate;
     mountUpdate.IsFullUpdate = false;
     mountUpdate.Mounts = &tempMounts;
-    player->SendDirectMessage(mountUpdate.Write());
+    _owner->SendPacket(mountUpdate.Write());
 }
 
 bool CollectionMgr::HasMount(uint32 spellId) const
