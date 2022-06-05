@@ -1923,7 +1923,7 @@ class spell_pri_shadow_word_death : public SpellScript
         if (!caster || !target)
             return;
 
-        uint8 energize = (target->GetHealth() < uint64(GetHitDamage())) ? GetSpellInfo()->GetEffect(EFFECT_3).BasePoints : GetSpellInfo()->GetEffect(EFFECT_2).BasePoints;
+        uint8 energize = (target->GetHealth() < uint64(GetHitDamage())) ? GetSpellInfo()->GetEffect(EFFECT_2).BasePoints : GetSpellInfo()->GetEffect(EFFECT_1).BasePoints;
         caster->ModifyPower(POWER_INSANITY, caster->GetPower(POWER_INSANITY) + energize);
     }
 

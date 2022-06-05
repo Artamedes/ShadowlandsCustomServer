@@ -1775,9 +1775,12 @@ void Group::SendUpdateToPlayer(ObjectGuid playerGUID, MemberSlot* slot)
         playerInfos.Name = citr->name;
         playerInfos.Class = citr->_class;
 
-        ChrRacesEntry const* race = sChrRacesStore.AssertEntry(citr->race);
-        FactionTemplateEntry const* raceFaction = sFactionTemplateStore.AssertEntry(race->FactionID);
-        playerInfos.FactionGroup = raceFaction->FactionGroup;
+        ChrRacesEntry const* race = sChrRacesStore.LookupEntry(citr->race);
+        if (race)
+        {
+            FactionTemplateEntry const* raceFaction = sFactionTemplateStore.AssertEntry(race->FactionID);
+            playerInfos.FactionGroup = raceFaction->FactionGroup;
+        }
 
         playerInfos.Status = MEMBER_STATUS_OFFLINE;
         if (member && member->GetSession() && !member->GetSession()->PlayerLogout())

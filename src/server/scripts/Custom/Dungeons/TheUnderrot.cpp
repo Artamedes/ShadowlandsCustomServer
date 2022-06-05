@@ -59,6 +59,20 @@ public:
         LoadDoorData(doorData);
         SetHeaders("UR");
         EnemyForcesCriteriaTreeId = 300004;
+        ChestSpawn = { 1207.40f, 1433.150f,	-181.70f,1.78050f };
+        Quad = { 0.0f, 0.0f, -0.606807f, 0.7948490f };
+    }
+
+    void SummonChallengeGameObject(bool door) override
+    {
+        if (door)
+        {
+            if (auto go = instance->SummonGameObject(MYTHIC_DOOR_4, { 636.715f,	1253.030f,	98.5464f, 0.0f }, { -0.0f, -0.0f, -0.639438f, -0.768843f }, 0))
+            {
+                go->SetGoState(GOState::GO_STATE_READY);
+                go->SetFlag(GameObjectFlags::GO_FLAG_NOT_SELECTABLE);
+            }
+        }
     }
 
     void OnCompletedCriteriaTree(CriteriaTree const* tree) override
