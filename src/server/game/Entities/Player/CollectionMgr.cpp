@@ -103,7 +103,8 @@ bool CollectionMgr::AddToy(uint32 itemId, bool isFavourite, bool hasFanfare)
 {
     if (UpdateAccountToys(itemId, isFavourite, hasFanfare))
     {
-        _owner->GetPlayer()->AddToy(itemId, GetToyFlags(isFavourite, hasFanfare).AsUnderlyingType());
+        if (_owner->GetPlayer())
+            _owner->GetPlayer()->AddToy(itemId, GetToyFlags(isFavourite, hasFanfare).AsUnderlyingType());
         return true;
     }
 

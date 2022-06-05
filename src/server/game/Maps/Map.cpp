@@ -3350,7 +3350,8 @@ void Map::SendObjectUpdates()
         Object* obj = *_updateObjects.begin();
         //ASSERT(obj->IsInWorld());
         _updateObjects.erase(_updateObjects.begin());
-        obj->BuildUpdate(update_players);
+        if (obj->IsInWorld())
+            obj->BuildUpdate(update_players);
     }
 
     WorldPacket packet;                                     // here we allocate a std::vector with a size of 0x10000
