@@ -13,6 +13,16 @@ enum Necrolord
     Fleshcraft             = 324631,
     FleshcraftPeriodicAura = 350228, ///< Used in fleshcraft to eat the corpses to reduce CD.
     FleshcraftMissle       = 331180,
+
+    VolatileSolventHumanoid     = 323491,
+    VolatileSolventAberration   = 323497,
+    VolatileSolventBeast        = 323498,
+    VolatileSolventDemon        = 323500,
+    VolatileSolventDragonkin    = 323502,
+    VolatileSolventElemental    = 323504,
+    VolatileSolventGiant        = 323506,
+    VolatileSolventMechanical   = 323507,
+    VolatileSolventUndeadAura   = 323510,
 };
 
 // 324631 
@@ -204,6 +214,11 @@ class spell_fleshcraft_consume : public AuraScript
 {
     PrepareAuraScript(spell_fleshcraft_consume);
 
+    enum FleshcraftConsume
+    {
+        VolatileSolvent = 323074,
+    };
+
     GuidUnorderedSet consumedCorpses;
 
     void HandlePeriodic(AuraEffect const* /*aurEff*/)
@@ -227,10 +242,51 @@ class spell_fleshcraft_consume : public AuraScript
             return unit->IsFriendlyTo(caster) || unit->IsAlive() || consumedCorpses.count(unit->GetGUID());
         });
 
+        bool volatileSolvent = caster->HasAura(VolatileSolvent);
+
         for (auto enemy : enemyCorpses)
         {
             consumedCorpses.insert(enemy->GetGUID());
             caster->CastSpell(enemy, FleshcraftMissle, true);
+
+            if (volatileSolvent)
+            {
+                uint32 volatileSolventAura = 0;
+                if (enemy->IsPlayer())
+                {
+                    volatileSolventAura = VolatileSolventHumanoid;
+                }
+                else if (auto creature = enemy->ToCreature())
+                {
+                    switch (creature->GetCreatureType())
+                    {
+                        case CREATURE_TYPE_BEAST:       volatileSolventAura = VolatileSolventBeast; break;
+                        case CREATURE_TYPE_DRAGONKIN:   volatileSolventAura = VolatileSolventDragonkin; break;
+                        case CREATURE_TYPE_DEMON:       volatileSolventAura = VolatileSolventDemon; break;
+                        case CREATURE_TYPE_ELEMENTAL:   volatileSolventAura = VolatileSolventElemental; break;
+                        case CREATURE_TYPE_GIANT:       volatileSolventAura = VolatileSolventGiant; break;
+                        case CREATURE_TYPE_MECHANICAL:  volatileSolventAura = VolatileSolventMechanical; break;
+                        case CREATURE_TYPE_ABERRATION:  volatileSolventAura = VolatileSolventAberration; break;
+                        case CREATURE_TYPE_UNDEAD:
+                            volatileSolventAura = VolatileSolventUndeadAura;
+                            break;
+                        case CREATURE_TYPE_CRITTER: // nothing for critters
+                        case CREATURE_TYPE_NON_COMBAT_PET: // or this
+                        case CREATURE_TYPE_GAS_CLOUD: // or this
+                        case CREATURE_TYPE_WILD_PET: // or this
+                        case CREATURE_TYPE_NOT_SPECIFIED: // or this
+                            break;
+                        case CREATURE_TYPE_HUMANOID:
+                        default:
+                            volatileSolventAura = VolatileSolventHumanoid;
+                            break;
+
+                    }
+                }
+
+                if (volatileSolventAura)
+                    caster->CastSpell(caster, volatileSolventAura, true);
+            }
         }
     }
 
@@ -259,6 +315,73 @@ class spell_fleshcraft_cdr : public SpellScript
     }
 };
 
+/// ID: 323510 Volatile Solvent: Undead
+class spell_volatile_solvent_undead : public AuraScript
+{
+    PrepareAuraScript(spell_volatile_solvent_undead);
+
+    bool CheckProc(ProcEventInfo& /*eventInfo*/)
+    {
+        // invalid - spell works different than i thought.
+        return true;
+        //if (!eventInfo.GetActor())
+        //    return false;
+        //auto actionTarget = eventInfo.GetActionTarget();
+        //if (!actionTarget)
+        //    return false;
+        //
+        //if (!actionTarget->IsCreature())
+        //    return false;
+        //
+        //return actionTarget->ToCreature()->GetCreatureType() == CREATURE_TYPE_UNDEAD;
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_volatile_solvent_undead::CheckProc);
+    }
+};
+
+/// ID: 323074 Volatile Solvent
+class spell_volatile_solvent : public AuraScript
+{
+    PrepareAuraScript(spell_volatile_solvent);
+
+    enum VolatileSolvent
+    {
+        VolatileSolventUndeadHeal = 323509, // seems it's handled serperately (in it's own script) - TODO Move before commt
+    };
+
+    void HandleApply(const AuraEffect* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+    {
+        if (!GetCaster())
+            return;
+
+        //GetCaster()->CastSpell(GetCaster(), VolatileSolventUndeadAura, true);
+    }
+
+    void HandleRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+    {
+        if (!GetCaster())
+            return;
+
+        GetCaster()->RemoveAurasDueToSpell(VolatileSolventHumanoid);
+        GetCaster()->RemoveAurasDueToSpell(VolatileSolventAberration);
+        GetCaster()->RemoveAurasDueToSpell(VolatileSolventBeast);
+        GetCaster()->RemoveAurasDueToSpell(VolatileSolventDemon);
+        GetCaster()->RemoveAurasDueToSpell(VolatileSolventDragonkin);
+        GetCaster()->RemoveAurasDueToSpell(VolatileSolventElemental);
+        GetCaster()->RemoveAurasDueToSpell(VolatileSolventGiant);
+        GetCaster()->RemoveAurasDueToSpell(VolatileSolventMechanical);
+        GetCaster()->RemoveAurasDueToSpell(VolatileSolventUndeadAura);
+    }
+
+    void Register() override
+    {
+        OnEffectApply += AuraEffectApplyFn(spell_volatile_solvent::HandleApply, EFFECT_1, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+        OnEffectRemove += AuraEffectApplyFn(spell_volatile_solvent::HandleRemove, EFFECT_1, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+    }
+};
 
 void AddSC_spell_necrolord()
 {
@@ -267,4 +390,6 @@ void AddSC_spell_necrolord()
     RegisterSpellScript(spell_sulfuric_emission);
     RegisterSpellScript(spell_fleshcraft_consume);
     RegisterSpellScript(spell_fleshcraft_cdr);
+    RegisterSpellScript(spell_volatile_solvent_undead);
+    RegisterSpellScript(spell_volatile_solvent);
 }
