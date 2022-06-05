@@ -1085,7 +1085,7 @@ struct npc_void_rift_700518 : public ScriptedAI
                 if (player->ToPlayer()->GetQuestStatus(700024) == QUEST_STATUS_NONE)
                     continue;
 
-                player->CastSpell(player, 141480, true);
+                //player->CastSpell(player, 141480, true);
                 player->CastSpell(player, 367044, true);
                 m_PlayersToTele[player->GetGUID()] = now + Milliseconds(800);
             }
@@ -1101,7 +1101,7 @@ struct npc_void_rift_700518 : public ScriptedAI
 
                 if (now >= it->second)
                 {
-                    player->RemoveAurasDueToSpell(141480);
+                    //player->RemoveAurasDueToSpell(141480);
                     GameTele const* tele = sObjectMgr->GetGameTele(1930);
                     player->KilledMonsterCredit(me->GetEntry(), me->GetGUID());
                     if (tele)

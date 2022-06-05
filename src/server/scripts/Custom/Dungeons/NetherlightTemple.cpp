@@ -976,7 +976,7 @@ struct npc_mawswarn_portal_700415 : public ScriptedAI
                 if (player->ToPlayer()->GetQuestStatus(QuestMysteriousPortal) == QUEST_STATUS_NONE)
                     continue;
 
-                player->CastSpell(player, SelfStun, true);
+                //player->CastSpell(player, SelfStun, true);
                 player->CastSpell(player, MawLazerTeleport, true);
                 m_PlayersToTele[player->GetGUID()] = now + Milliseconds(800);
             }
