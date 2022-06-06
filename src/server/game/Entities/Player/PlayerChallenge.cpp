@@ -305,6 +305,9 @@ void PlayerChallenge::_SaveMythicKeystones(CharacterDatabaseTransaction& trans)
 
 MythicKeystoneInfo* PlayerChallenge::GetKeystoneInfo(Item* item, bool createIfNeed /*= false*/)
 {
+    if (!item)
+        return nullptr;
+
     return GetKeystoneInfo(item->GetEntry(), createIfNeed);
 }
 
