@@ -698,9 +698,11 @@ class spell_niyas_tools_poison : public AuraScript
                         float dmg = 0.0f;
 
                         if (hitUnit->HasAura(ParalyticPoison))
-                            dmg = apSpMax * 0.24f * (1.0f + versa);
+                            dmg = apSpMax * 0.24f;
                         else
-                            dmg = apSpMax * 0.05f * (1.0f + versa);
+                            dmg = apSpMax * 0.05f;
+
+                        AddPct(dmg, versa);
 
                         actor->CastSpell(hitUnit, ParalyticPoison, CastSpellExtraArgs(true).AddSpellBP0(dmg));
                     }

@@ -361,11 +361,21 @@ class spell_fleshcraft_cdr : public SpellScript
 {
     PrepareSpellScript(spell_fleshcraft_cdr);
 
+    enum FleshcraftCdr
+    {
+        ResourcefulFleshcrafting = 326507,
+    };
+
     void HandleDummy(SpellEffIndex /*eff*/)
     {
         if (auto caster = GetCaster())
         {
-            caster->GetSpellHistory()->ModifyCooldown(Fleshcraft, -1000);
+            int32 duration = -1000;
+
+            if (caster->HasAura(ResourcefulFleshcrafting))
+                duration += -1000;
+
+            caster->GetSpellHistory()->ModifyCooldown(Fleshcraft, duration);
         }
     }
 
@@ -883,6 +893,54 @@ class spell_forgeborne_reveries_aura : public AuraScript
     }
 };
 
+/// ID: 326504 Serrated Spaulders
+class spell_serrated_spaulders : public AuraScript
+{
+    PrepareAuraScript(spell_serrated_spaulders);
+
+    enum SerratedSpaulders
+    {
+        ProcSpell = 326939,
+    };
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        if (!eventInfo.GetActionTarget())
+            return false;
+        if (!eventInfo.GetActor())
+            return false;
+
+        return eventInfo.GetActionTarget()->IsWithinMeleeRange(eventInfo.GetActor());
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        PreventDefaultAction();
+        auto caster = GetCaster();
+        if (!caster)
+            return;
+        auto player = caster->ToPlayer();
+        if (!player)
+            return;
+        auto target = eventInfo.GetActor();
+        if (!target)
+            return;
+
+        // $points=${$cond($gt($SP,$AP),$SP*0.03,$AP*0.03)*(1+$@versadmg)}
+        auto AP = caster->GetTotalAttackPowerValue(WeaponAttackType::BASE_ATTACK);
+        auto SP = static_cast<float>(caster->GetTotalSpellPowerValue(SpellSchoolMask::SPELL_SCHOOL_MASK_ALL, false));
+        float points = std::max<float>(AP, SP) * 0.03;
+        AddPct(points, player->m_activePlayerData->Versatility + player->m_activePlayerData->VersatilityBonus);
+        caster->CastSpell(target, SerratedSpaulders::ProcSpell, CastSpellExtraArgs(true).AddSpellBP0(static_cast<int32>(points)));
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_serrated_spaulders::CheckProc);
+        OnProc += AuraProcFn(spell_serrated_spaulders::HandleProc);
+    }
+};
+
 void AddSC_spell_necrolord()
 {
     RegisterSpellAndAuraScriptPairWithArgs(spell_necrolord_fleshcraft_spellscript, spell_necrolord_fleshcraft, "spell_necrolord_fleshcraft");
@@ -901,6 +959,7 @@ void AddSC_spell_necrolord()
     RegisterSpellScript(spell_gnashing_chompers);
     RegisterSpellScript(spell_forgeborne_reveries);
     RegisterSpellScript(spell_forgeborne_reveries_aura);
+    RegisterSpellScript(spell_serrated_spaulders);
 
     RegisterAreaTriggerAI(at_viscous_trail);
 
