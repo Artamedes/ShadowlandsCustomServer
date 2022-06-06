@@ -10139,6 +10139,7 @@ bool Unit::PopAI()
 
 void Unit::RefreshAI()
 {
+    aiIsChanging = false;
     ASSERT(!m_aiLocked, "Tried to change current AI during UpdateAI()");
     if (i_AIs.empty())
         i_AI = nullptr;
@@ -10157,6 +10158,8 @@ void Unit::ScheduleAIChange()
         RestoreDisabledAI();
         PushAI(GetScheduledChangeAI()); //This could actually be PopAI() to get the previous AI but it's required atm to trigger UpdateCharmAI()
     }
+
+    aiIsChanging = true;
 }
 
 void Unit::RestoreDisabledAI()
@@ -10177,10 +10180,7 @@ UnitAI* Unit::GetScheduledChangeAI()
 
 bool Unit::HasScheduledAIChange() const
 {
-    if (UnitAI* ai = GetAI())
-        return dynamic_cast<ScheduledChangeAI*>(ai) != nullptr;
-    else
-        return true;
+    return aiIsChanging;
 }
 
 void Unit::AddToWorld()
