@@ -1589,7 +1589,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
             RemoveAllDynObjects();
 
             // remove all areatriggers entities
-            RemoveAllAreaTriggers();
+            //RemoveAllAreaTriggers();
 
             // stop spellcasting
             // not attempt interrupt teleportation spell at caster teleport
@@ -1701,7 +1701,7 @@ void Player::TeleportToChallenge(uint32 mapid, float x, float y, float z, float 
 
     // remove all dyn objects
     RemoveAllDynObjects();
-    RemoveAllAreaTriggers();
+    //RemoveAllAreaTriggers();
 
     // stop spellcasting
     // not attempt interrupt teleportation spell at caster teleport
