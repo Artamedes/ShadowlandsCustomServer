@@ -5772,7 +5772,7 @@ public:
                                 if (Unit* target = ObjectAccessor::GetUnit(*context.GetUnit(), targetGUID))
                                 {
                                     target->SendPlayOrphanSpellVisual(pos, 76813, 45);
-                                    caster->GetScheduler().Schedule(250ms * summons, [pos, casterGUID, this](TaskContext context)
+                                    caster->GetScheduler().Schedule(250ms * summons, [pos, casterGUID](TaskContext context)
                                     {
                                         if (Unit* caster = ObjectAccessor::GetUnit(*context.GetUnit(), casterGUID))
                                             caster->CastSpell(pos, SPELL_WARLOCK_HAND_OF_GULDAN_SUMMON, true);
@@ -5839,6 +5839,7 @@ public:
                 return;
 
             auto casterguid = caster->GetGUID();
+            auto targetguid = target->GetGUID();
 
             // Select all the Wild Imps.
             std::list<TempSummon*> imps;
@@ -5852,12 +5853,15 @@ public:
 
                 SortByDistanceTo(target, list);
                 for (auto unit : list)
-            {
+                {
                     if (unit && unit->GetAI())
                     {
-                        unit->GetScheduler().Schedule(200ms * count, [unit, target, this, casterguid](TaskContext context)
+                        auto unitGuid = unit->GetGUID();
+                        unit->GetScheduler().Schedule(200ms * count, [targetguid, casterguid, unitGuid](TaskContext context)
                         {
-                                if (auto caster = ObjectAccessor::GetUnit(*unit, casterguid))
+                            auto unit = context.GetUnit();
+                            if (auto caster = ObjectAccessor::GetUnit(*unit, casterguid))
+                                if (auto target = ObjectAccessor::GetUnit(*unit, targetguid))
                                     ((npc_pet_warlock_wild_imp*)unit->GetAI())->Implode(target, caster);
                         });
                         count++;
@@ -6349,11 +6353,11 @@ class spell_war_demonic_strength : public SpellScript
             if (pet->AI())
                 pet->GetAI()->AttackStart(target);
             // Then release a Felstorm.
-            pet->GetScheduler().Schedule(500ms, [pet](TaskContext context)
+            pet->GetScheduler().Schedule(500ms, [](TaskContext context)
             {
-                if (pet->GetSpellHistory()->HasCooldown(SPELL_WARLOCK_FELGUARD_FELSTORM))
-                    pet->GetSpellHistory()->ResetCooldown(SPELL_WARLOCK_FELGUARD_FELSTORM, true);
-                pet->CastSpell(pet, SPELL_WARLOCK_FELGUARD_FELSTORM, true);
+                if (context.GetUnit()->GetSpellHistory()->HasCooldown(SPELL_WARLOCK_FELGUARD_FELSTORM))
+                    context.GetUnit()->GetSpellHistory()->ResetCooldown(SPELL_WARLOCK_FELGUARD_FELSTORM, true);
+                context.GetUnit()->CastSpell(context.GetUnit(), SPELL_WARLOCK_FELGUARD_FELSTORM, true);
             });
         }
     }
