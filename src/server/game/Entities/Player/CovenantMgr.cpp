@@ -830,10 +830,11 @@ void CovenantMgr::LearnTalent(WorldPackets::Garrison::GarrisonLearnTalent& resea
     uint32 covId = (uint32)_currCovenantIndex;
     auto range = _conduits.equal_range(covId);
 
-    auto AddConduitToListIfNeed([range, covId, this](GarrTalentEntry const* pTalent)
+    auto AddConduitToListIfNeed([covId, this](GarrTalentEntry const* pTalent)
     {
         bool found = false;
-        for (auto i = range.first; i != range.second; ++i)
+        auto rangeCopie = _conduits.equal_range(covId);
+        for (auto i = rangeCopie.first; i != rangeCopie.second; ++i)
         {
             if (i->second.TalentEntryId == pTalent->ID)
             {
