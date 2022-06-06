@@ -1878,6 +1878,9 @@ void Aura::ConsumeProcCharges(SpellProcEntry const* procEntry)
 
 uint32 Aura::GetProcEffectMask(AuraApplication* aurApp, ProcEventInfo& eventInfo, TimePoint now)
 {
+    if (!GetSpellInfo())
+        return 0;
+
     SpellProcEntry const* procEntry = sSpellMgr->GetSpellProcEntry(GetSpellInfo());
     // only auras with spell proc entry can trigger proc
     if (!procEntry)

@@ -10745,25 +10745,28 @@ void Unit::GetProcAurasTriggeredOnEvent(AuraApplicationProcContainer& aurasTrigg
 
     auto processAuraApplication = [&](AuraApplication* aurApp)
     {
-        if (uint32 procEffectMask = aurApp->GetBase()->GetProcEffectMask(aurApp, eventInfo, now))
+        if (aurApp && aurApp->GetBase())
         {
-            aurApp->GetBase()->PrepareProcToTrigger(aurApp, eventInfo, now);
-            aurasTriggeringProc.emplace_back(procEffectMask, aurApp);
-        }
-        else
-        {
-            if (aurApp->GetBase()->GetSpellInfo()->HasAttribute(SPELL_ATTR0_PROC_FAILURE_BURNS_CHARGE))
+            if (uint32 procEffectMask = aurApp->GetBase()->GetProcEffectMask(aurApp, eventInfo, now))
             {
-                if (SpellProcEntry const* procEntry = sSpellMgr->GetSpellProcEntry(aurApp->GetBase()->GetSpellInfo()))
-                {
-                    aurApp->GetBase()->PrepareProcChargeDrop(procEntry, eventInfo);
-                    aurApp->GetBase()->ConsumeProcCharges(procEntry);
-                }
+                aurApp->GetBase()->PrepareProcToTrigger(aurApp, eventInfo, now);
+                aurasTriggeringProc.emplace_back(procEffectMask, aurApp);
             }
+            else
+            {
+                if (aurApp->GetBase()->GetSpellInfo()->HasAttribute(SPELL_ATTR0_PROC_FAILURE_BURNS_CHARGE))
+                {
+                    if (SpellProcEntry const* procEntry = sSpellMgr->GetSpellProcEntry(aurApp->GetBase()->GetSpellInfo()))
+                    {
+                        aurApp->GetBase()->PrepareProcChargeDrop(procEntry, eventInfo);
+                        aurApp->GetBase()->ConsumeProcCharges(procEntry);
+                    }
+                }
 
-            if (aurApp->GetBase()->GetSpellInfo()->HasAttribute(SPELL_ATTR2_PROC_COOLDOWN_ON_FAILURE))
-                if (SpellProcEntry const* procEntry = sSpellMgr->GetSpellProcEntry(aurApp->GetBase()->GetSpellInfo()))
-                    aurApp->GetBase()->AddProcCooldown(procEntry, now);
+                if (aurApp->GetBase()->GetSpellInfo()->HasAttribute(SPELL_ATTR2_PROC_COOLDOWN_ON_FAILURE))
+                    if (SpellProcEntry const* procEntry = sSpellMgr->GetSpellProcEntry(aurApp->GetBase()->GetSpellInfo()))
+                        aurApp->GetBase()->AddProcCooldown(procEntry, now);
+            }
         }
     };
 
