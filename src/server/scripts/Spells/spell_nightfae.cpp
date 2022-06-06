@@ -384,6 +384,11 @@ class spell_nightfae_grove_invigoration : public AuraScript
                 default:
                     break;
             }
+
+            if (auto caster = GetCaster())
+                if (auto aur = caster->GetAura(GetId()))
+                    if (aur->GetStackAmount() >= 50)
+                        return true;
         }
 
         return true;
