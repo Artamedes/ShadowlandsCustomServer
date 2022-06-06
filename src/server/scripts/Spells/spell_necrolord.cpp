@@ -89,6 +89,8 @@ class spell_necrolord_fleshcraft : public AuraScript
     {
         FleshcraftAura = 324867,
         UltimateForm = 323095,
+        EmenisMagnificntSkin = 323921,
+        MagnificentSkin = 328210,
     };
 
     int32 amount = 0;
@@ -124,6 +126,9 @@ class spell_necrolord_fleshcraft : public AuraScript
             PreventDefaultAction();
 
         GetCaster()->CastSpell(GetCaster(), FleshcraftPeriodicAura, true);
+
+        if (GetCaster()->HasAura(EmenisMagnificntSkin))
+            GetCaster()->CastSpell(GetCaster(), MagnificentSkin, true);
     }
 
     void Register() override
@@ -673,6 +678,118 @@ public:
     }
 };
 
+/// ID: 323918 Gristled Toes
+class spell_gristled_toes : public AuraScript
+{
+    PrepareAuraScript(spell_gristled_toes);
+
+    enum GristledToes
+    {
+        Buff = 324463,
+    };
+
+    void HandlePeriodic(AuraEffect const* /*aurEff*/)
+    {
+        if (!GetCaster())
+            return;
+
+        std::list<Unit*> enemies;
+        GetCaster()->GetAttackableUnitListInRange(enemies, 10.0f);
+        if (!enemies.empty())
+        {
+            uint32 count = enemies.size();
+
+            if (auto buff = GetCaster()->GetAura(Buff))
+                buff->SetStackAmount(count);
+            else if (auto buff = GetCaster()->AddAura(Buff, GetCaster()))
+                buff->SetStackAmount(count);
+        }
+        else if (GetCaster()->HasAura(Buff))
+            GetCaster()->RemoveAurasDueToSpell(Buff);
+    }
+
+    void HandleRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+    {
+        if (GetCaster())
+            GetCaster()->RemoveAurasDueToSpell(Buff);
+    }
+
+    void Register() override
+    {
+        OnEffectPeriodic += AuraEffectPeriodicFn(spell_gristled_toes::HandlePeriodic, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
+        OnEffectRemove += AuraEffectApplyFn(spell_gristled_toes::HandleRemove, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY, AURA_EFFECT_HANDLE_REAL);
+    }
+};
+
+/// ID: 351093 Resilient Stitching
+class spell_resilient_stitching : public AuraScript
+{
+    PrepareAuraScript(spell_resilient_stitching);
+
+    enum ResilientStiching
+    {
+        Shield = 351921,
+        CDAura = 351922,
+    };
+
+    void HandlePeriodic(AuraEffect const* /*aurEff*/)
+    {
+        if (!GetCaster())
+            return;
+
+        if (!GetCaster()->HealthAbovePct(90))
+            return;
+
+        if (GetCaster()->isDead())
+            return;
+
+        if (GetCaster()->HasAura(CDAura))
+            return;
+
+        auto hp = GetCaster()->GetMaxHealth() * 0.16f;
+        GetCaster()->CastSpell(GetCaster(), Shield, CastSpellExtraArgs(true).AddSpellBP0(hp));
+        //GetCaster()->CastSpell(GetCaster(), CDAura, true);
+    }
+
+    void HandleRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+    {
+        if (!GetCaster())
+            return;
+
+        GetCaster()->RemoveAura(Shield);
+    }
+
+    void Register() override
+    {
+        OnEffectPeriodic += AuraEffectPeriodicFn(spell_resilient_stitching::HandlePeriodic, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
+        OnEffectRemove += AuraEffectApplyFn(spell_resilient_stitching::HandleRemove, EFFECT_1, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+    }
+};
+
+/// ID: 323919 Gnashing Chompers
+class spell_gnashing_chompers : public AuraScript
+{
+    PrepareAuraScript(spell_gnashing_chompers);
+
+    enum GnashingChompers
+    {
+        HasteBuff = 324242,
+    };
+
+    void HandleProc(ProcEventInfo& /*eventInfo*/)
+    {
+        if (auto caster = GetCaster())
+        {
+            caster->CastSpell(caster, HasteBuff, true);
+        }
+    }
+
+    void Register() override
+    {
+        OnProc += AuraProcFn(spell_gnashing_chompers::HandleProc);
+    }
+};
+
 void AddSC_spell_necrolord()
 {
     RegisterSpellAndAuraScriptPairWithArgs(spell_necrolord_fleshcraft_spellscript, spell_necrolord_fleshcraft, "spell_necrolord_fleshcraft");
@@ -686,6 +803,9 @@ void AddSC_spell_necrolord()
     RegisterSpellScript(spell_viscous_trail);
     RegisterSpellScript(spell_kevins_oozeling);
     RegisterSpellScript(spell_kevins_oozeling_proc);
+    RegisterSpellScript(spell_gristled_toes);
+    RegisterSpellScript(spell_resilient_stitching);
+    RegisterSpellScript(spell_gnashing_chompers);
 
     RegisterAreaTriggerAI(at_viscous_trail);
 

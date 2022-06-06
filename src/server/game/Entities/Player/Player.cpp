@@ -27636,6 +27636,11 @@ void Player::HandleFall(MovementInfo const& movementInfo)
                 //Prevent fall damage from being more than the player maximum health
                 if (damage > GetMaxHealth())
                     damage = GetMaxHealth();
+                else
+                {
+                    if (HasAura(324440)) ///< ID - 324440 Cartilaginous Legs
+                        CastSpell(this, 324523, CastSpellExtraArgs(true).AddSpellBP0(damage));
+                }
 
                 // Gust of Wind
                 if (HasAura(43621))
