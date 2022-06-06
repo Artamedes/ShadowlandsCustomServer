@@ -839,6 +839,9 @@ namespace UF
 
         bool HasChanged(uint32 index) const
         {
+            if (_updateMask.empty())
+                return false;
+
             return (_updateMask[index / 32] & (1 << (index % 32))) != 0;
         }
 
@@ -868,7 +871,8 @@ namespace UF
 
         void ClearChangesMask()
         {
-            std::fill(_updateMask.begin(), _updateMask.end(), 0);
+            if (!_updateMask.empty())
+                std::fill(_updateMask.begin(), _updateMask.end(), 0);
         }
 
         std::vector<T> _values;
