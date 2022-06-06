@@ -4175,6 +4175,34 @@ class spell_dh_fel_rush_dmg : public SpellScript
         OnEffectHitTarget += SpellEffectFn(spell_dh_fel_rush_dmg::HandleDamage, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
     }
 };
+/// ID: 328725 Mortal Dance
+class spell_mortal_dance : public AuraScript
+{
+    PrepareAuraScript(spell_mortal_dance);
+
+    enum MortalDance
+    {
+        DeathSweep = 210152,
+    };
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        if (!eventInfo.GetActor())
+            return false;
+        if (!eventInfo.GetActionTarget())
+            return false;
+
+        if (!eventInfo.GetSpellInfo())
+            return false;
+
+        return eventInfo.GetSpellInfo()->Id == SPELL_DH_BLADE_DANCE || eventInfo.GetSpellInfo()->Id == DeathSweep;
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_mortal_dance::CheckProc);
+    }
+};
 
 void AddSC_demon_hunter_spell_scripts()
 {
@@ -4262,6 +4290,7 @@ void AddSC_demon_hunter_spell_scripts()
     RegisterSpellScript(spell_dh_essence_break);
     RegisterSpellScript(spell_dh_fel_rush_dmg);
     RegisterSpellScript(spell_dh_disrupt);
+    RegisterSpellScript(spell_mortal_dance);
 
     /// AreaTrigger Scripts
     RegisterAreaTriggerAI(at_dh_darkness);
