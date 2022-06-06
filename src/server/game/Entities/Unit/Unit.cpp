@@ -5882,13 +5882,12 @@ void Unit::RemoveAreaTrigger(AuraEffect const* aurEff)
 
 void Unit::RemoveAllAreaTriggers()
 {
-    for (AreaTriggerList::iterator i = m_areaTrigger.begin(); i != m_areaTrigger.end();)
+    for (auto areatrigger : m_areaTrigger)
     {
-        AreaTrigger* areaTrigger = *i;
-        if (areaTrigger)
-            areaTrigger->Remove();
-        i = m_areaTrigger.erase(i);
+        if (areatrigger)
+            areatrigger->Remove();
     }
+    m_areaTrigger.clear();
     // IsInWorld can return false and this can permanent loop.
 
     //while (!m_areaTrigger.empty())
