@@ -15,6 +15,7 @@
 #include "Item.h"
 #include "QueryPackets.h"
 #include "GameTime.h"
+#include "LootMgr.h"
 
 #ifdef WIN32
 #include "windows.h"
@@ -1882,18 +1883,19 @@ public:
     {
         static ChatCommandTable commandTable =
         {
-            { "start",            HandleStartCommand,      rbac::RBAC_PERM_INSTANT_LOGOUT,          Console::No },
-            { "createitem",       HandleCreateItemCommand, rbac::RBAC_PERM_COMMAND_RELOAD_ALL_ITEM, Console::No },
-            { "magicstone",       HandleReloadMagicStone,  rbac::RBAC_PERM_COMMAND_RELOAD_ALL_ITEM, Console::No },
-            { "dungeon_defense",       HandleReloadDungeonDefense,  rbac::RBAC_PERM_COMMAND_RELOAD_ALL_ITEM, Console::No },
-            { "instance_respawn", HandleReloadInstanceRespawn,  rbac::RBAC_PERM_COMMAND_RELOAD_ALL_ITEM, Console::No },
-            { "testpacket",       HandleTestCommand,  rbac::RBAC_PERM_COMMAND_RELOAD_ALL_ITEM, Console::No },
-            { "testpacket2",       HandleTest2Command,  rbac::RBAC_PERM_COMMAND_RELOAD_ALL_ITEM, Console::No },
-            { "testpacket3",       HandleTest3Command,  rbac::RBAC_PERM_COMMAND_RELOAD_ALL_ITEM, Console::No },
-            { "testpacket4",       HandleTest4Command,  rbac::RBAC_PERM_COMMAND_RELOAD_ALL_ITEM, Console::No },
-            { "testpacket5",       HandleTest5Command,  rbac::RBAC_PERM_COMMAND_RELOAD_ALL_ITEM, Console::No },
-            { "testpacket6",       HandleTest6Command,  rbac::RBAC_PERM_COMMAND_RELOAD_ALL_ITEM, Console::No },
-            { "commentator",       HandleCommentatorCommand, rbac::RBAC_PERM_COMMAND_GM, Console::No },
+            { "start",            HandleStartCommand,          rbac::RBAC_PERM_INSTANT_LOGOUT,          Console::No },
+            { "createitem",       HandleCreateItemCommand,     rbac::RBAC_PERM_COMMAND_RELOAD_ALL_ITEM, Console::No },
+            { "magicstone",       HandleReloadMagicStone,      rbac::RBAC_PERM_COMMAND_RELOAD_ALL_ITEM, Console::No },
+            { "dungeon_defense",  HandleReloadDungeonDefense,  rbac::RBAC_PERM_COMMAND_RELOAD_ALL_ITEM, Console::No },
+            { "instance_respawn", HandleReloadInstanceRespawn, rbac::RBAC_PERM_COMMAND_RELOAD_ALL_ITEM, Console::No },
+            { "testpacket",       HandleTestCommand,           rbac::RBAC_PERM_COMMAND_RELOAD_ALL_ITEM, Console::No },
+            { "testpacket2",      HandleTest2Command,          rbac::RBAC_PERM_COMMAND_RELOAD_ALL_ITEM, Console::No },
+            { "testpacket3",      HandleTest3Command,          rbac::RBAC_PERM_COMMAND_RELOAD_ALL_ITEM, Console::No },
+            { "testpacket4",      HandleTest4Command,          rbac::RBAC_PERM_COMMAND_RELOAD_ALL_ITEM, Console::No },
+            { "testpacket5",      HandleTest5Command,          rbac::RBAC_PERM_COMMAND_RELOAD_ALL_ITEM, Console::No },
+            { "testpacket6",      HandleTest6Command,          rbac::RBAC_PERM_COMMAND_RELOAD_ALL_ITEM, Console::No },
+            { "commentator",      HandleCommentatorCommand,    rbac::RBAC_PERM_COMMAND_GM, Console::No },
+            { "giveloot",         HandleGiveLootCommand,       rbac::RBAC_PERM_COMMAND_RELOAD_ALL_ITEM, Console::No },
 
 #ifdef WIN32
             { "gpscopy", HandleGPSCopyCommand,  rbac::RBAC_PERM_COMMAND_RELOAD_ALL_ITEM, Console::No },
@@ -1901,6 +1903,49 @@ public:
 
         };
         return commandTable;
+    }
+
+    static bool HandleGiveLootCommand(ChatHandler* handler, uint32 ReferenceLootId)
+    {
+        auto selectedPlayerOrSelf = handler->getSelectedPlayerOrSelf();
+
+        auto loot = LootTemplates_Reference.GetLootFor(ReferenceLootId);
+        if (!loot)
+        {
+            handler->PSendSysMessage("Not Exists Reference loot %u", ReferenceLootId);
+            return true;
+        }
+
+        handler->PSendSysMessage("Giving %s loot %u", selectedPlayerOrSelf->GetName().c_str(), ReferenceLootId);
+
+        Loot personalLoot;
+        personalLoot.clear();
+        if (personalLoot.FillLoot(ReferenceLootId, LootTemplates_Reference, selectedPlayerOrSelf, true, true, LOOT_MODE_DEFAULT, true, true))
+        {
+            auto index = 0;
+            for (auto item : personalLoot.items)
+            {
+                selectedPlayerOrSelf->StoreLootItem(index, &personalLoot);
+                ++index;
+                if (item.type == LootItemType::Currency)
+                {
+                    //selectedPlayerOrSelf->ModifyCurrency(item.itemid, item.count);
+                    handler->PSendSysMessage("Adding Currency %u x%u", item.itemid, (uint32)item.count);
+                }
+                else if (item.type == LootItemType::Item)
+                {
+                    handler->PSendSysMessage("Adding %s x%u", Item::GetItemLink(item.itemid).c_str(), (uint32)item.count);
+                    //if (!selectedPlayerOrSelf->StoreNewItem(item.itemid, item.count))
+                    {
+                       // handler->PSendSysMessage("Sent to mailbox %s x%u", Item::GetItemLink(item.itemid).c_str(), (uint32)item.count);
+                       // selectedPlayerOrSelf->SendItemRetrievalMail(item.itemid, (uint32)item.count, ItemContext::NONE);
+                    }
+                }
+            }
+        }
+
+
+        return true;
     }
 
     static bool HandleCommentatorCommand(ChatHandler* handler, uint32 Action)
