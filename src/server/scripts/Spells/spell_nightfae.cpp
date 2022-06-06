@@ -467,9 +467,18 @@ class spell_redirected_anima : public SpellScript
 {
     PrepareSpellScript(spell_redirected_anima);
 
+    enum RedirectedAnima
+    {
+        BondedHearts = 352503,
+    };
+
     void HandleDummy(SpellEffIndex eff)
     {
-        PreventHitEffect(eff);
+        if (!GetCaster())
+            return;
+
+        if (!GetCaster()->HasAura(BondedHearts))
+            PreventHitEffect(eff);
     }
 
     void Register() override
