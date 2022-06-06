@@ -5768,9 +5768,15 @@ void Spell::EffectJumpCharge()
     if (!params)
         return;
 
+    Position pos = *destTarget;
+
+    if (m_spellInfo->Id == 186260) ///< Harpoon
+        if (Unit* target = m_targets.GetUnitTarget())
+            pos = *target;
+
     float speed = params->Speed;
     if (params->TreatSpeedAsMoveTimeSeconds)
-        speed = unitCaster->GetExactDist(destTarget) / params->MoveTimeInSec;
+        speed = unitCaster->GetExactDist(pos) / params->MoveTimeInSec;
 
     Optional<JumpArrivalCastArgs> arrivalCast;
     if (effectInfo->TriggerSpell)
@@ -5800,7 +5806,7 @@ void Spell::EffectJumpCharge()
             effectExtra->ParabolicCurveId = *params->ParabolicCurveId;
     }
 
-    unitCaster->GetMotionMaster()->MoveJumpWithGravity(*destTarget, speed, params->JumpGravity, EVENT_JUMP, false,
+    unitCaster->GetMotionMaster()->MoveJumpWithGravity(pos, speed, params->JumpGravity, EVENT_JUMP, false,
         arrivalCast ? &*arrivalCast : nullptr,
         effectExtra ? &*effectExtra : nullptr);
 }
