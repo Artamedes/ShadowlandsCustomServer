@@ -790,6 +790,99 @@ class spell_gnashing_chompers : public AuraScript
     }
 };
 
+enum ForgeborneReveries
+{
+    DeathEffect = 327140,
+    DeathCooldown = 358164,
+};
+
+/// ID: 326514 Forgeborne Reveries
+class spell_forgeborne_reveries : public AuraScript
+{
+    PrepareAuraScript(spell_forgeborne_reveries);
+
+    void HandleApply(const AuraEffect* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+    {
+    }
+
+    void HandleRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+    {
+        if (!GetCaster())
+            return;
+
+        GetCaster()->RemoveAurasDueToSpell(DeathEffect);
+        GetCaster()->RemoveAurasDueToSpell(DeathCooldown);
+    }
+
+    void OnAbsorb(AuraEffect* /*aurEff*/, DamageInfo& dmgInfo, uint32& /*absorbAmount*/)
+    {
+        if (Unit* caster = GetCaster())
+        {
+            if (dmgInfo.GetDamage() >= caster->GetHealth())
+            {
+                if (!caster->HasAura(DeathEffect) && !caster->HasAura(DeathCooldown))
+                {
+                    dmgInfo.AbsorbDamage(dmgInfo.GetDamage());
+                    PreventDefaultAction();
+                    caster->CastSpell(caster, DeathEffect, true);
+                    caster->CastSpell(caster, DeathCooldown, true);
+                }
+            }
+        }
+    }
+
+    void Register() override
+    {
+        OnEffectAbsorb += AuraEffectAbsorbOverkillFn(spell_forgeborne_reveries::OnAbsorb, EFFECT_0);
+        OnEffectApply += AuraEffectApplyFn(spell_forgeborne_reveries::HandleApply, EFFECT_1, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+        OnEffectRemove += AuraEffectApplyFn(spell_forgeborne_reveries::HandleRemove, EFFECT_1, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+    }
+};
+
+/// ID: 327140 Forgeborne Reveries
+class spell_forgeborne_reveries_aura : public AuraScript
+{
+    PrepareAuraScript(spell_forgeborne_reveries_aura);
+
+    void OnAbsorb(AuraEffect* /*aurEff*/, DamageInfo& dmgInfo, uint32& /*absorbAmount*/)
+    {
+        if (Unit* caster = GetCaster())
+        {
+            if (dmgInfo.GetDamage() >= caster->GetHealth())
+            {
+                dmgInfo.AbsorbDamage(dmgInfo.GetDamage());
+                PreventDefaultAction();
+            }
+        }
+    }
+
+    void HandleRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+    {
+        if (!GetCaster())
+            return;
+
+        GetCaster()->NearTeleportTo(startPos, true, true);
+        GetCaster()->KillSelf();
+    }
+
+    void HandleApply(const AuraEffect* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+    {
+        if (!GetCaster())
+            return;
+
+        startPos = *GetCaster();
+    }
+
+    Position startPos;
+
+    void Register() override
+    {
+        OnEffectApply += AuraEffectApplyFn(spell_forgeborne_reveries_aura::HandleApply, EFFECT_0, SPELL_AURA_WATER_BREATHING, AURA_EFFECT_HANDLE_REAL);
+        OnEffectRemove += AuraEffectApplyFn(spell_forgeborne_reveries_aura::HandleRemove, EFFECT_0, SPELL_AURA_WATER_BREATHING, AURA_EFFECT_HANDLE_REAL);
+        OnEffectAbsorb += AuraEffectAbsorbOverkillFn(spell_forgeborne_reveries_aura::OnAbsorb, EFFECT_13);
+    }
+};
+
 void AddSC_spell_necrolord()
 {
     RegisterSpellAndAuraScriptPairWithArgs(spell_necrolord_fleshcraft_spellscript, spell_necrolord_fleshcraft, "spell_necrolord_fleshcraft");
@@ -806,6 +899,8 @@ void AddSC_spell_necrolord()
     RegisterSpellScript(spell_gristled_toes);
     RegisterSpellScript(spell_resilient_stitching);
     RegisterSpellScript(spell_gnashing_chompers);
+    RegisterSpellScript(spell_forgeborne_reveries);
+    RegisterSpellScript(spell_forgeborne_reveries_aura);
 
     RegisterAreaTriggerAI(at_viscous_trail);
 
