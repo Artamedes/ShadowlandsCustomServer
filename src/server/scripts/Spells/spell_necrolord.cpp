@@ -1275,7 +1275,6 @@ class spell_waking_bone_breastplate : public AuraScript
         }
         else if (GetCaster()->HasAura(BuffSpell))
             GetCaster()->RemoveAurasDueToSpell(BuffSpell);
-
     }
 
     void Register() override

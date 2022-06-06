@@ -2032,11 +2032,11 @@ public:
         void AfterRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
         {
             if (Unit* caster = GetCaster())
-                caster->GetScheduler().Schedule(100ms, [caster](TaskContext /*context*/)
-                    {
-                        if (!caster->HasAura(SPELL_DH_FEL_RUSH_AIR))
-                            caster->SetDisableGravity(false);
-                    });
+                caster->GetScheduler().Schedule(100ms, [](TaskContext context)
+                {
+                    if (!context.GetUnit()->HasAura(SPELL_DH_FEL_RUSH_AIR))
+                        context.GetUnit()->SetDisableGravity(false);
+                });
         }
 
         void CalcSpeed(AuraEffect const* /*aurEff*/, int32& amount, bool& /*canBeRecalculated*/)
@@ -2108,7 +2108,7 @@ public:
             {
                 if (!caster->IsFalling() || caster->IsInWater())
                 {
-                    caster->CastSpell(caster, SPELL_DH_FEL_RUSH_DASH, true);
+                  //  caster->CastSpell(caster, SPELL_DH_FEL_RUSH_DASH, true);
                     caster->CastSpell(caster, SPELL_DH_FEL_RUSH_DAMAGE, true);
                 }
                 if (caster->HasAura(SPELL_DH_MOMENTUM))
@@ -2124,14 +2124,31 @@ public:
             if (Unit* caster = GetCaster())
                 if (caster->IsFalling())
                 {
-                    caster->SetDisableGravity(true);
-                    caster->CastSpell(caster, SPELL_DH_FEL_RUSH_AIR, true);
+                   // caster->SetDisableGravity(true);
+                  //  caster->CastSpell(caster, SPELL_DH_FEL_RUSH_AIR, true);
                     caster->CastSpell(caster, SPELL_DH_FEL_RUSH_DAMAGE, true);
                 }
         }
 
+        void HandleBeforeStartCast()
+        {
+            if (Unit* caster = GetCaster())
+            {
+                if (caster->HasUnitMovementFlag(MOVEMENTFLAG_FALLING))
+                {
+                    caster->CastSpell(caster, SPELL_DH_FEL_RUSH_AIR, true);
+                }
+                else
+                {
+                    caster->CastSpell(caster, SPELL_DH_FEL_RUSH_DASH, true);
+                }
+            }
+        }
+
+
         void Register() override
         {
+            BeforeCast += SpellCastFn(spell_dh_fel_rush_SpellScript::HandleBeforeStartCast);
             OnEffectHitTarget += SpellEffectFn(spell_dh_fel_rush_SpellScript::HandleDashGround, EFFECT_0, SPELL_EFFECT_DUMMY);
             OnEffectHitTarget += SpellEffectFn(spell_dh_fel_rush_SpellScript::HandleDashAir, EFFECT_1, SPELL_EFFECT_DUMMY);
         }

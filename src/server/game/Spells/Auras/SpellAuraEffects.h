@@ -229,6 +229,7 @@ class TC_GAME_API AuraEffect
         void HandleAuraModDecreaseSpeed(AuraApplication const* aurApp, uint8 mode, bool apply) const;
         void HandleAuraModUseNormalSpeed(AuraApplication const* aurApp, uint8 mode, bool apply) const;
         void HandleAuraModMinimumSpeedRate(AuraApplication const* aurApp, uint8 mode, bool apply) const;
+        void HandleDisableGravity(AuraApplication const* aurApp, uint8 mode, bool apply) const;
         void HandleModMovementForceMagnitude(AuraApplication const* aurApp, uint8 mode, bool apply) const;
         //  immunity
         void HandleModMechanicImmunityMask(AuraApplication const* aurApp, uint8 mode, bool apply) const;

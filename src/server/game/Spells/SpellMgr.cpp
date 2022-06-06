@@ -3938,36 +3938,6 @@ void SpellMgr::LoadSpellInfoCorrections()
     //    spellInfo->AttributesCu |= SPELL_ATTR0_CU_REMOVE_PERIODIC_DAMAGE;
     //});
 
-    // Fel Rush Air
-    ApplySpellFix({ 197923 }, [](SpellInfo* spellInfo)
-    {
-        ApplySpellEffectFix(spellInfo, EFFECT_5, [](SpellEffectInfo* spellEffectInfo)
-        {
-            spellEffectInfo->Effect = SpellEffectName::SPELL_EFFECT_NONE;
-        });
-        ApplySpellEffectFix(spellInfo, EFFECT_1, [](SpellEffectInfo* spellEffectInfo)
-        {
-            spellEffectInfo->Effect = SpellEffectName::SPELL_EFFECT_NONE;
-        });
-        ApplySpellEffectFix(spellInfo, EFFECT_3, [](SpellEffectInfo* spellEffectInfo)
-        {
-            spellEffectInfo->Effect = SpellEffectName::SPELL_EFFECT_NONE;
-        });
-    });
-
-    // Fel Rush dash
-    ApplySpellFix({ 197922 }, [](SpellInfo* spellInfo)
-    {
-        ApplySpellEffectFix(spellInfo, EFFECT_1, [](SpellEffectInfo* spellEffectInfo)
-        {
-            spellEffectInfo->Effect = SpellEffectName::SPELL_EFFECT_NONE;
-        });
-        ApplySpellEffectFix(spellInfo, EFFECT_3, [](SpellEffectInfo* spellEffectInfo)
-        {
-            spellEffectInfo->Effect = SpellEffectName::SPELL_EFFECT_NONE;
-        });
-    });
-
     // Metamorphosis Stun
     ApplySpellFix({ 200166 }, [](SpellInfo* spellInfo)
     {
