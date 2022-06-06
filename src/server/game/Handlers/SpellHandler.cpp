@@ -97,17 +97,19 @@ void WorldSession::HandleUseItemOpcode(WorldPackets::Spells::UseItem& packet)
 
     if (user->IsInCombat())
     {
-        for (ItemEffectEntry const* effect : item->GetEffects())
-        {
-            if (SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(effect->SpellID, user->GetMap()->GetDifficultyID()))
-            {
-                if (!spellInfo->CanBeUsedInCombat())
+        if (auto bonusData = item->GetBonus())
+            for (auto effect : bonusData->Effects)
+                if (effect)
                 {
-                    user->SendEquipError(EQUIP_ERR_NOT_IN_COMBAT, item, nullptr);
-                    return;
+                    if (SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(effect->SpellID, user->GetMap()->GetDifficultyID()))
+                    {
+                        if (!spellInfo->CanBeUsedInCombat())
+                        {
+                            user->SendEquipError(EQUIP_ERR_NOT_IN_COMBAT, item, nullptr);
+                            return;
+                        }
+                    }
                 }
-            }
-        }
     }
 
     // check also  BIND_ON_ACQUIRE and BIND_QUEST for .additem or .additemset case by GM (not binded at adding to inventory)

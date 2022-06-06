@@ -2071,24 +2071,26 @@ void Spell::EffectLearnSpell()
 
     if (m_CastItem && !effectInfo->TriggerSpell)
     {
-        for (ItemEffectEntry const* itemEffect : m_CastItem->GetEffects())
-        {
-            if (itemEffect->TriggerType != ITEM_SPELLTRIGGER_ON_LEARN)
-                continue;
+        if (auto bonusData = m_CastItem->GetBonus())
+            for (auto itemEffect : bonusData->Effects)
+                if (itemEffect)
+                {
+                    if (itemEffect->TriggerType != ITEM_SPELLTRIGGER_ON_LEARN)
+                        continue;
 
-            bool dependent = false;
+                    bool dependent = false;
 
-            if (BattlePetSpeciesEntry const* speciesEntry = sSpellMgr->GetBattlePetSpecies(uint32(itemEffect->SpellID)))
-            {
-                player->GetSession()->GetBattlePetMgr()->AddPet(speciesEntry->ID, BattlePets::BattlePetMgr::SelectPetDisplay(speciesEntry),
-                    BattlePets::BattlePetMgr::RollPetBreed(speciesEntry->ID), BattlePets::BattlePetMgr::GetDefaultPetQuality(speciesEntry->ID));
-                // If the spell summons a battle pet, we fake that it has been learned and the battle pet is added
-                // marking as dependent prevents saving the spell to database (intended)
-                dependent = true;
-            }
+                    if (BattlePetSpeciesEntry const* speciesEntry = sSpellMgr->GetBattlePetSpecies(uint32(itemEffect->SpellID)))
+                    {
+                        player->GetSession()->GetBattlePetMgr()->AddPet(speciesEntry->ID, BattlePets::BattlePetMgr::SelectPetDisplay(speciesEntry),
+                            BattlePets::BattlePetMgr::RollPetBreed(speciesEntry->ID), BattlePets::BattlePetMgr::GetDefaultPetQuality(speciesEntry->ID));
+                        // If the spell summons a battle pet, we fake that it has been learned and the battle pet is added
+                        // marking as dependent prevents saving the spell to database (intended)
+                        dependent = true;
+                    }
 
-            player->LearnSpell(itemEffect->SpellID, dependent);
-        }
+                    player->LearnSpell(itemEffect->SpellID, dependent);
+                }
     }
 
     if (effectInfo->TriggerSpell)
@@ -5155,11 +5157,16 @@ void Spell::EffectRechargeItem()
 
     if (Item* item = player->GetItemByEntry(effectInfo->ItemType))
     {
-        for (ItemEffectEntry const* itemEffect : item->GetEffects())
-            if (itemEffect->LegacySlotIndex <= item->m_itemData->SpellCharges.size())
-                item->SetSpellCharges(itemEffect->LegacySlotIndex, itemEffect->Charges);
+        if (auto bonusData = item->GetBonus())
+            for (auto itemEffect : bonusData->Effects)
+                if (itemEffect)
+                {
+                    for (ItemEffectEntry const* itemEffect : item->GetEffects())
+                        if (itemEffect->LegacySlotIndex <= item->m_itemData->SpellCharges.size())
+                            item->SetSpellCharges(itemEffect->LegacySlotIndex, itemEffect->Charges);
 
-        item->SetState(ITEM_CHANGED, player);
+                    item->SetState(ITEM_CHANGED, player);
+                }
     }
 }
 

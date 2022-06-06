@@ -1207,7 +1207,9 @@ void WorldSession::HandleUseCritterItem(WorldPackets::Item::UseCritterItem& useC
     if (!item)
         return;
 
-    for (ItemEffectEntry const* itemEffect : item->GetEffects())
+    if (auto bonusData = item->GetBonus())
+        for (auto itemEffect : bonusData->Effects)
+            if (itemEffect)
    {
         if (itemEffect->TriggerType != ITEM_SPELLTRIGGER_ON_LEARN)
             continue;

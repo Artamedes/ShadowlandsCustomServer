@@ -5303,7 +5303,9 @@ void Spell::TakeCastItem()
     bool expendable = false;
     bool withoutCharges = false;
 
-    for (ItemEffectEntry const* itemEffect : m_CastItem->GetEffects())
+    if (auto bonusData = m_CastItem->GetBonus())
+        for (auto itemEffect : bonusData->Effects)
+            if (itemEffect)
     {
         if (itemEffect->LegacySlotIndex >= m_CastItem->m_itemData->SpellCharges.size())
             continue;
@@ -5503,7 +5505,9 @@ void Spell::TakeReagents()
         // if CastItem is also spell reagent
         if (m_CastItem && m_CastItem->GetEntry() == itemid)
         {
-            for (ItemEffectEntry const* itemEffect : m_CastItem->GetEffects())
+            if (auto bonusData = m_CastItem->GetBonus())
+                for (auto itemEffect : bonusData->Effects)
+                    if (itemEffect)
             {
                 if (itemEffect->LegacySlotIndex >= m_CastItem->m_itemData->SpellCharges.size())
                     continue;
@@ -7434,7 +7438,9 @@ SpellCastResult Spell::CheckItems(int32* param1 /*= nullptr*/, int32* param2 /*=
                     if (!proto)
                         return SPELL_FAILED_ITEM_NOT_READY;
 
-                    for (ItemEffectEntry const* itemEffect : m_CastItem->GetEffects())
+                    if (auto bonusData = m_CastItem->GetBonus())
+                        for (auto itemEffect : bonusData->Effects)
+                            if (itemEffect)
                     {
                         if (itemEffect->LegacySlotIndex >= m_CastItem->m_itemData->SpellCharges.size())
                             continue;
@@ -7599,7 +7605,9 @@ SpellCastResult Spell::CheckItems(int32* param1 /*= nullptr*/, int32* param2 /*=
                     return SPELL_FAILED_LOWLEVEL;
 
                 bool isItemUsable = false;
-                for (ItemEffectEntry const* itemEffect : targetItem->GetEffects())
+                if (auto bonusData = targetItem->GetBonus())
+                    for (auto itemEffect : bonusData->Effects)
+                        if (itemEffect)
                 {
                     if (itemEffect->SpellID && itemEffect->TriggerType == ITEM_SPELLTRIGGER_ON_USE)
                     {
@@ -7795,11 +7803,17 @@ SpellCastResult Spell::CheckItems(int32* param1 /*= nullptr*/, int32* param2 /*=
                      return SPELL_FAILED_ITEM_AT_MAX_CHARGES;
 
                  if (Item* item = player->GetItemByEntry(itemId))
-                     for (ItemEffectEntry const* itemEffect : item->GetEffects())
-                         if (itemEffect->LegacySlotIndex <= item->m_itemData->SpellCharges.size()
-                             && itemEffect->Charges != 0
-                             && item->GetSpellCharges(itemEffect->LegacySlotIndex) == itemEffect->Charges)
-                             return SPELL_FAILED_ITEM_AT_MAX_CHARGES;
+                 {
+                     if (auto bonusData = item->GetBonus())
+                         for (auto itemEffect : bonusData->Effects)
+                             if (itemEffect)
+                             {
+                                 if (itemEffect->LegacySlotIndex <= item->m_itemData->SpellCharges.size()
+                                     && itemEffect->Charges != 0
+                                     && item->GetSpellCharges(itemEffect->LegacySlotIndex) == itemEffect->Charges)
+                                     return SPELL_FAILED_ITEM_AT_MAX_CHARGES;
+                             }
+                 }
                  break;
             }
             case SPELL_EFFECT_RESPEC_AZERITE_EMPOWERED_ITEM:
