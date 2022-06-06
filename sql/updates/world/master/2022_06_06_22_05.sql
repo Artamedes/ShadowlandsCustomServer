@@ -11,3 +11,10 @@ DELETE FROM spell_script_names WHERE spell_id = 326509;
 INSERT INTO spell_script_names (spell_id, scriptname) VALUE (326509, 'spell_heirmirs_arsenal_ravenous_pendant');
 DELETE FROM spell_script_names WHERE spell_id = 350899;
 INSERT INTO spell_script_names (spell_id, scriptname) VALUE (350899, 'spell_carvers_eye');
+DELETE FROM spell_script_names WHERE spell_id = 350936;
+INSERT INTO spell_script_names (spell_id, scriptname) VALUE (350936, 'spell_mnemonic_equipment');
+
+UPDATE `creature` SET `spawnDifficulties`='0' WHERE  map = 930;
+
+DELETE FROM spell_script_names WHERE spell_id = 350935;
+INSERT INTO spell_script_names (spell_id, scriptname) VALUE (350935, 'spell_waking_bone_breastplate');

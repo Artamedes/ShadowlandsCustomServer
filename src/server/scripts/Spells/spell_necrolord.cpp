@@ -1175,6 +1175,115 @@ class spell_carvers_eye : public AuraScript
     }
 };
 
+/// ID: 350936 Mnemonic Equipment
+class spell_mnemonic_equipment : public AuraScript
+{
+    PrepareAuraScript(spell_mnemonic_equipment);
+
+    enum MnemonicEquipment
+    {
+        DmgSpell = 351687,
+        HealSpell = 0,
+    };
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        auto actor = eventInfo.GetActor();
+        auto target = eventInfo.GetActionTarget();
+        if (!actor || !target)
+            return false;
+
+        if (eventInfo.GetSpellInfo())
+        {
+            switch (eventInfo.GetSpellInfo()->Id)
+            {
+                case DmgSpell:
+                    return false;
+                default:
+                    break;
+            }
+        }
+
+        bool isFriendly = actor->IsFriendlyTo(target);
+
+        if (!isFriendly)
+        {
+            if (!eventInfo.GetDamageInfo())
+                return false;
+
+            if (target->HasAura(DmgSpell, actor->GetGUID()))
+                return false;
+        }
+        else
+        {
+            // NOT SURE RN THE SPELLID
+            //if (!eventInfo.GetHealInfo())
+                return false;
+        }
+
+        return target->HealthBelowPct(35);
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        auto actor = eventInfo.GetActor();
+        auto target = eventInfo.GetActionTarget();
+        if (!actor || !target)
+            return;
+
+        bool isFriendly = actor->IsFriendlyTo(target);
+        if (!isFriendly)
+        {
+            if (!eventInfo.GetDamageInfo())
+                return;
+
+            actor->CastSpell(target, DmgSpell, CastSpellExtraArgs(true).AddSpellBP0(eventInfo.GetDamageInfo()->GetDamage() * 0.03f));
+        }
+        else
+        {
+
+        }
+
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_mnemonic_equipment::CheckProc);
+        OnProc += AuraProcFn(spell_mnemonic_equipment::HandleProc);
+    }
+};
+
+/// ID: 350935 Waking Bone Breastplate
+class spell_waking_bone_breastplate : public AuraScript
+{
+    PrepareAuraScript(spell_waking_bone_breastplate);
+
+    enum BoneBreastplate
+    {
+        BuffSpell = 351433,
+    };
+
+    void HandlePeriodic(AuraEffect const* /*aurEff*/)
+    {
+        if (!GetCaster())
+            return;
+        std::list<Unit*> enemiesNear;
+        GetCaster()->GetAttackableUnitListInRange(enemiesNear, MELEE_RANGE);
+        if (!enemiesNear.empty() && enemiesNear.size() >= 3)
+        {
+            GetCaster()->CastSpell(GetCaster(), BuffSpell, true);
+        }
+        else if (GetCaster()->HasAura(BuffSpell))
+            GetCaster()->RemoveAurasDueToSpell(BuffSpell);
+
+    }
+
+    void Register() override
+    {
+        OnEffectPeriodic += AuraEffectPeriodicFn(spell_waking_bone_breastplate::HandlePeriodic, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
+    }
+};
+
 void AddSC_spell_necrolord()
 {
     RegisterSpellAndAuraScriptPairWithArgs(spell_necrolord_fleshcraft_spellscript, spell_necrolord_fleshcraft, "spell_necrolord_fleshcraft");
@@ -1200,6 +1309,8 @@ void AddSC_spell_necrolord()
     RegisterSpellScript(spell_marrowed_gemstone_enhancement);
     RegisterSpellScript(spell_heirmirs_arsenal_ravenous_pendant);
     RegisterSpellScript(spell_carvers_eye);
+    RegisterSpellScript(spell_mnemonic_equipment);
+    RegisterSpellScript(spell_waking_bone_breastplate);
 
     RegisterAreaTriggerAI(at_viscous_trail);
 
