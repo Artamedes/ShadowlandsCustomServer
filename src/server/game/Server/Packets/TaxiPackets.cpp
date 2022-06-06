@@ -36,8 +36,9 @@ WorldPacket const* WorldPackets::Taxi::ShowTaxiNodes::Write()
     _worldPacket.WriteBit(WindowInfo.has_value());
     _worldPacket.FlushBits();
 
-    _worldPacket << uint32(CanLandNodes.size());
-    _worldPacket << uint32(CanUseNodes.size());
+    // PIGPIGPIG
+    _worldPacket << uint32(0);
+    _worldPacket << uint32(0);
 
     if (WindowInfo.has_value())
     {
@@ -45,8 +46,8 @@ WorldPacket const* WorldPackets::Taxi::ShowTaxiNodes::Write()
         _worldPacket << uint32(WindowInfo->CurrentNode);
     }
 
-    _worldPacket.append(CanLandNodes.data(), CanLandNodes.size());
-    _worldPacket.append(CanUseNodes.data(), CanUseNodes.size());
+    //_worldPacket.append(CanLandNodes.data(), CanLandNodes.size());
+    //_worldPacket.append(CanUseNodes.data(), CanUseNodes.size());
 
     return &_worldPacket;
 }
