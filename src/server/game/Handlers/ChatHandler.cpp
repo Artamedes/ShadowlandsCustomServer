@@ -172,7 +172,7 @@ void WorldSession::HandleChatMessage(ChatMsg type, Language lang, std::string ms
     else
     {
         // send in universal language in two side iteration allowed mode
-        if (HasPermission(rbac::RBAC_PERM_TWO_SIDE_INTERACTION_CHAT))
+        if (true) // two side chat fix.
             lang = LANG_UNIVERSAL;
         else
         {
