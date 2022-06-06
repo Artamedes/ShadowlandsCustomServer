@@ -448,6 +448,8 @@ class spell_nightfae_grove_invigoration : public AuraScript
         if (eventInfo.GetSpellInfo())
             if (IsNFCovenantAbility(eventInfo.GetSpellInfo()->Id))
                 chance = 100.0f;
+            else
+                chance = 3.0f;
     }
 
     void Register() override
