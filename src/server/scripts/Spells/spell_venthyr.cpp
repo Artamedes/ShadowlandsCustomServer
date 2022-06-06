@@ -58,14 +58,15 @@ class spell_door_of_shadows : public SpellScript
         if (GetCaster())
         {
             // TODO: add a way to callback on teleport
-            GetCaster()->GetScheduler().Schedule(50ms, [this](TaskContext context)
+            GetCaster()->GetScheduler().Schedule(50ms, [](TaskContext context)
             {
-                if (GetCaster()->HasAura(AgentOfChaos))
-                    GetCaster()->CastSpell(GetCaster(), AgentOfChaosTrigger, true);
-                if (GetCaster()->HasAura(WatchTheShoes))
-                    GetCaster()->RemoveAurasWithMechanic(1 << MECHANIC_ROOT);
-                if (GetCaster()->HasAura(EnduringGloom))
-                    GetCaster()->CastSpell(GetCaster(), EnduringGloomBuff, CastSpellExtraArgs(true).AddSpellBP0(GetCaster()->CountPctFromMaxHealth(20)));
+                auto caster = context.GetUnit();
+                if (caster->HasAura(AgentOfChaos))
+                    caster->CastSpell(caster, AgentOfChaosTrigger, true);
+                if (caster->HasAura(WatchTheShoes))
+                    caster->RemoveAurasWithMechanic(1 << MECHANIC_ROOT);
+                if (caster->HasAura(EnduringGloom))
+                    caster->CastSpell(caster, EnduringGloomBuff, CastSpellExtraArgs(true).AddSpellBP0(caster->CountPctFromMaxHealth(20)));
             });
         }
     }
