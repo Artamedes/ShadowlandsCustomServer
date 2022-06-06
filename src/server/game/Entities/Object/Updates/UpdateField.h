@@ -820,6 +820,9 @@ namespace UF
 
         int32 FindIndex(T const& value) const
         {
+            if (_values.empty())
+                return -1;
+
             auto itr = std::find(_values.begin(), _values.end(), value);
             if (itr != _values.end())
                 return int32(std::distance(_values.begin(), itr));
@@ -830,6 +833,9 @@ namespace UF
         template<typename Pred>
         int32 FindIndexIf(Pred pred) const
         {
+            if (_values.empty())
+                return -1;
+
             auto itr = std::find_if(_values.begin(), _values.end(), std::ref(pred));
             if (itr != _values.end())
                 return int32(std::distance(_values.begin(), itr));
