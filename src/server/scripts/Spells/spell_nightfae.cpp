@@ -1418,7 +1418,6 @@ public:
     }
 };
 
-
 void AddSC_spell_nightfae()
 {
     RegisterSpellScript(spell_nightfae_podtender);

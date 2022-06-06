@@ -941,6 +941,240 @@ class spell_serrated_spaulders : public AuraScript
     }
 };
 
+/// ID: 326512 Runeforged Spurs
+class spell_runeforged_spurs : public AuraScript
+{
+    PrepareAuraScript(spell_runeforged_spurs);
+
+    enum RuneforgedSpurs
+    {
+        MSAura = 327852,
+    };
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        auto target = eventInfo.GetActionTarget();
+        if (!target)
+            return false;
+
+        return target->IsMounted() && !target->HasAura(MSAura);
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        auto target = eventInfo.GetActionTarget();
+        if (!target)
+            return;
+        target->CastSpell(target, MSAura, true);
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_runeforged_spurs::CheckProc);
+        OnProc += AuraProcFn(spell_runeforged_spurs::HandleProc);
+    }
+};
+
+/// ID: 326511 Heirmir's Arsenal: Gorestompers
+class spell_heirmirs_arsenal_gorestompers : public AuraScript
+{
+    PrepareAuraScript(spell_heirmirs_arsenal_gorestompers);
+
+    enum ArsenalGorestompers
+    {
+        MSBuff  = 327159,
+        CDAura  = 327160,
+    };
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        auto actor = eventInfo.GetActor();
+        auto target = eventInfo.GetActionTarget();
+        if (!actor || !target)
+            return false;
+
+        return target->HealthBelowPct(35) && !actor->HasAura(CDAura);
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        auto actor = eventInfo.GetActor();
+        auto target = eventInfo.GetActionTarget();
+        if (!actor || !target)
+            return;
+
+        actor->CastSpell(actor, MSBuff, true);
+        actor->CastSpell(actor, CDAura, true);
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_heirmirs_arsenal_gorestompers::CheckProc);
+        OnProc += AuraProcFn(spell_heirmirs_arsenal_gorestompers::HandleProc);
+    }
+};
+
+enum MarrowedGemstone
+{
+    StackSpell    = 327066,
+    CooldownSpell = 327073,
+    CritSpell     = 327069,
+};
+
+/// ID: 326572 Heirmir's Arsenal: Marrowed Gemstone
+class spell_heirmirs_arsenal_marrowed_gemstone : public AuraScript
+{
+    PrepareAuraScript(spell_heirmirs_arsenal_marrowed_gemstone);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        if (!eventInfo.GetActor())
+            return false;
+
+        if (eventInfo.GetActor()->HasAura(CooldownSpell) || eventInfo.GetActor()->HasAura(CritSpell))
+            return false;
+
+        return eventInfo.GetHitMask() & ProcFlagsHit::PROC_HIT_CRITICAL;
+    }
+
+    void HandleProc(ProcEventInfo& /*eventInfo*/)
+    {
+        if (auto caster = GetCaster())
+        {
+            caster->CastSpell(caster, StackSpell, true);
+            if (auto aur = caster->GetAura(StackSpell))
+                if (aur->GetStackAmount() >= 9)
+                {
+                    aur->Remove();
+                    caster->CastSpell(caster, CritSpell, true);
+                }
+        }
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_heirmirs_arsenal_marrowed_gemstone::CheckProc);
+        OnProc += AuraProcFn(spell_heirmirs_arsenal_marrowed_gemstone::HandleProc);
+    }
+};
+
+/// ID: 327069 Marrowed Gemstone Enhancement
+class spell_marrowed_gemstone_enhancement : public AuraScript
+{
+    PrepareAuraScript(spell_marrowed_gemstone_enhancement);
+
+    void HandleRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+    {
+        if (!GetCaster())
+            return;
+
+        GetCaster()->CastSpell(GetCaster(), CooldownSpell, true);
+    }
+
+    void Register() override
+    {
+        OnEffectRemove += AuraEffectApplyFn(spell_marrowed_gemstone_enhancement::HandleRemove, EFFECT_0, SPELL_AURA_MOD_CRIT_PCT, AURA_EFFECT_HANDLE_REAL);
+    }
+};
+
+/// ID: 326509 Heirmir's Arsenal: Ravenous Pendant
+class spell_heirmirs_arsenal_ravenous_pendant : public AuraScript
+{
+    PrepareAuraScript(spell_heirmirs_arsenal_ravenous_pendant);
+
+    enum RavenousPendant
+    {
+        HealthRegenSpell = 326946,
+    };
+
+    bool CheckProc(ProcEventInfo& /*eventInfo*/)
+    {
+        return true;
+    }
+
+    void HandleProc(ProcEventInfo& /*eventInfo*/)
+    {
+        if (auto caster = GetCaster())
+        {
+            caster->CastSpell(caster, HealthRegenSpell, true);
+        }
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_heirmirs_arsenal_ravenous_pendant::CheckProc);
+        OnProc += AuraProcFn(spell_heirmirs_arsenal_ravenous_pendant::HandleProc);
+    }
+};
+
+/// ID: 350899 Carver's Eye
+class spell_carvers_eye : public AuraScript
+{
+    PrepareAuraScript(spell_carvers_eye);
+
+    enum CarversEye
+    {
+        MasteryBuff = 351414,
+    };
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        auto actor = eventInfo.GetActor();
+        auto target = eventInfo.GetActionTarget();
+        if (!actor || !target)
+            return false;
+
+        auto now = GameTime::Now();
+        auto it = m_AttackedTargets.find(target->GetGUID());
+
+        return it == m_AttackedTargets.end() || now >= it->second;
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        auto actor = eventInfo.GetActor();
+        auto target = eventInfo.GetActionTarget();
+        if (!actor || !target)
+            return;
+
+        auto now = GameTime::Now();
+        auto it = m_AttackedTargets.find(target->GetGUID());
+        if (it == m_AttackedTargets.end())
+        {
+            m_AttackedTargets[target->GetGUID()] = now + 10s;
+        }
+        else
+            it->second = now + 10s;
+
+        actor->CastSpell(actor, MasteryBuff, true);
+
+        if (m_AttackedTargets.size() >= 10)
+        {
+            for (auto itr = m_AttackedTargets.begin(); itr != m_AttackedTargets.end();)
+            {
+                auto unit = ObjectAccessor::GetUnit(*actor, itr->first);
+                if (!unit || unit->isDead() || !unit->IsInCombatWith(actor) || !actor->IsValidAttackTarget(actor))
+                {
+                    m_AttackedTargets.erase(itr->first);
+                    itr++;
+                }
+                else
+                {
+                    itr++;
+                }
+            }
+        }
+    }
+
+    std::unordered_map<ObjectGuid, TimePoint> m_AttackedTargets;
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_carvers_eye::CheckProc);
+        OnProc += AuraProcFn(spell_carvers_eye::HandleProc);
+    }
+};
+
 void AddSC_spell_necrolord()
 {
     RegisterSpellAndAuraScriptPairWithArgs(spell_necrolord_fleshcraft_spellscript, spell_necrolord_fleshcraft, "spell_necrolord_fleshcraft");
@@ -960,6 +1194,12 @@ void AddSC_spell_necrolord()
     RegisterSpellScript(spell_forgeborne_reveries);
     RegisterSpellScript(spell_forgeborne_reveries_aura);
     RegisterSpellScript(spell_serrated_spaulders);
+    RegisterSpellScript(spell_runeforged_spurs);
+    RegisterSpellScript(spell_heirmirs_arsenal_gorestompers);
+    RegisterSpellScript(spell_heirmirs_arsenal_marrowed_gemstone);
+    RegisterSpellScript(spell_marrowed_gemstone_enhancement);
+    RegisterSpellScript(spell_heirmirs_arsenal_ravenous_pendant);
+    RegisterSpellScript(spell_carvers_eye);
 
     RegisterAreaTriggerAI(at_viscous_trail);
 
