@@ -520,6 +520,7 @@ void WorldSession::HandleMovementOpcode(OpcodeClient opcode, MovementInfo& movem
         const bool fly_flags = movementInfo.HasMovementFlag(MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_FLYING | MOVEMENTFLAG_DISABLE_GRAVITY);
 
         //if (plrMover->GetSession()->GetSecurity() < SEC_MODERATOR)
+        if (!plrMover->GetCommandStatus(CHEAT_FLY))
         {
             if (no_fly_auras && fly_flags)
                 plrMover->SetCanFly(false);

@@ -103,11 +103,13 @@ public:
         {
             target->SetCanFly(true);
             target->SetCanTransitionBetweenSwimAndFly(true);
+            target->SetCommandStatusOn(CHEAT_FLY);
         }
         else
         {
             target->SetCanFly(false);
             target->SetCanTransitionBetweenSwimAndFly(false);
+            target->SetCommandStatusOff(CHEAT_FLY);
         }
 
         handler->PSendSysMessage(LANG_COMMAND_FLYMODE_STATUS, handler->GetNameLink(target).c_str(), enable ? "on" : "off");
