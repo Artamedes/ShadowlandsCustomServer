@@ -5813,7 +5813,11 @@ void Unit::_RegisterAreaTrigger(AreaTrigger* areaTrigger)
 
 void Unit::_UnregisterAreaTrigger(AreaTrigger* areaTrigger)
 {
-    m_areaTrigger.erase(std::remove(m_areaTrigger.begin(), m_areaTrigger.end(), areaTrigger));
+    auto it = std::find(m_areaTrigger.begin(), m_areaTrigger.end(), areaTrigger);
+    auto exists = it != m_areaTrigger.end();
+    if (!exists)
+        return;
+    m_areaTrigger.erase(it);
     if (GetTypeId() == TYPEID_UNIT && IsAIEnabled())
         ToCreature()->AI()->JustUnregisteredAreaTrigger(areaTrigger);
 }
