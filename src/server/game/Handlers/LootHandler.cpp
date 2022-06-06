@@ -147,9 +147,12 @@ void WorldSession::HandleAutostoreLootItemOpcode(WorldPackets::Loot::LootItem& p
 void WorldSession::HandleLootMoneyOpcode(WorldPackets::Loot::LootMoney& /*packet*/)
 {
     Player* player = GetPlayer();
-    for (std::pair<ObjectGuid const, ObjectGuid> const& lootView : player->GetAELootView())
+    for (auto& lootView : player->m_AELootView)
     {
         ObjectGuid guid = lootView.second;
+        if (guid.IsEmpty())
+            continue;
+
         Loot* loot = nullptr;
         bool shareMoney = true;
 
