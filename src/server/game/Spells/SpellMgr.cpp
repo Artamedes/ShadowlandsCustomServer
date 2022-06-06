@@ -3927,6 +3927,71 @@ void SpellMgr::LoadSpellInfoCorrections()
         spellInfo->RecoveryTime = 3000;
     });
 
+    //Polymorph
+    //Freezing Trap
+    //Blind
+    //Paralysis
+    //Blinding Sleet
+    //Imprison
+    //ApplySpellFix({ 118, 3355, 2094, 115078, 207167, 217832, 221527 }, [](SpellInfo* spellInfo)
+    //{
+    //    spellInfo->AttributesCu |= SPELL_ATTR0_CU_REMOVE_PERIODIC_DAMAGE;
+    //});
+
+    // Fel Rush Air
+    ApplySpellFix({ 197923 }, [](SpellInfo* spellInfo)
+    {
+        ApplySpellEffectFix(spellInfo, EFFECT_5, [](SpellEffectInfo* spellEffectInfo)
+        {
+            spellEffectInfo->Effect = SpellEffectName::SPELL_EFFECT_NONE;
+        });
+        ApplySpellEffectFix(spellInfo, EFFECT_1, [](SpellEffectInfo* spellEffectInfo)
+        {
+            spellEffectInfo->Effect = SpellEffectName::SPELL_EFFECT_NONE;
+        });
+        ApplySpellEffectFix(spellInfo, EFFECT_3, [](SpellEffectInfo* spellEffectInfo)
+        {
+            spellEffectInfo->Effect = SpellEffectName::SPELL_EFFECT_NONE;
+        });
+    });
+
+    // Fel Rush dash
+    ApplySpellFix({ 197922 }, [](SpellInfo* spellInfo)
+    {
+        ApplySpellEffectFix(spellInfo, EFFECT_1, [](SpellEffectInfo* spellEffectInfo)
+        {
+            spellEffectInfo->Effect = SpellEffectName::SPELL_EFFECT_NONE;
+        });
+        ApplySpellEffectFix(spellInfo, EFFECT_3, [](SpellEffectInfo* spellEffectInfo)
+        {
+            spellEffectInfo->Effect = SpellEffectName::SPELL_EFFECT_NONE;
+        });
+    });
+
+    // Metamorphosis Stun
+    ApplySpellFix({ 200166 }, [](SpellInfo* spellInfo)
+    {
+        ApplySpellEffectFix(spellInfo, EFFECT_2, [](SpellEffectInfo* spellEffectInfo)
+        {
+            spellEffectInfo->Effect = SpellEffectName::SPELL_EFFECT_NONE;
+        });
+    });
+
+    // 265163 Wildfire Bomb Missile, 270336 Shrapnel Bomb Missile,
+    // 270327 Pheromone Bomb Missile, 271047 Volatile Bomb Missile
+    ApplySpellFix({ 265163, 270336,  270327, 271047 }, [](SpellInfo* spellInfo)
+    {
+        ApplySpellEffectFix(spellInfo, EFFECT_0, [](SpellEffectInfo* spellEffectInfo)
+        {
+            spellEffectInfo->Effect = SpellEffectName::SPELL_EFFECT_DUMMY;
+            spellEffectInfo->TargetA = TARGET_UNIT_TARGET_ENEMY;
+        });
+        ApplySpellEffectFix(spellInfo, EFFECT_1, [](SpellEffectInfo* spellEffectInfo)
+        {
+            spellEffectInfo->Effect = SpellEffectName::SPELL_EFFECT_DUMMY;
+        });
+    });
+
     // Jormungar Strike
     ApplySpellFix({ 56513 }, [](SpellInfo* spellInfo)
     {
