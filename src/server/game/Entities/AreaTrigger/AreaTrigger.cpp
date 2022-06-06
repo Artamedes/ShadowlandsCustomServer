@@ -342,7 +342,7 @@ void AreaTrigger::Update(uint32 diff)
 
 void AreaTrigger::Remove()
 {
-    //if (IsInWorld())
+    if (IsInWorld())
     {
         AddObjectToRemoveList(); // calls RemoveFromWorld
     }
