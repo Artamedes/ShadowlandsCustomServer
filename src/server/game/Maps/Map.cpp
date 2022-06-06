@@ -3919,7 +3919,12 @@ void Map::DelayedUpdate(uint32 t_diff)
 
 void Map::AddObjectToRemoveList(WorldObject* obj)
 {
-    ASSERT(obj->GetMapId() == GetId() && obj->GetInstanceId() == GetInstanceId());
+    if (obj->GetMapId() != GetId() || obj->GetInstanceId() != GetInstanceId())
+    {
+        TC_LOG_FATAL("server.maps", "Object NOT FREED!!!! %s", obj->GetGUID().ToString().c_str());
+
+        return;
+    }
 
     obj->SetDestroyedObject(true);
     obj->CleanupsBeforeDelete(false);                            // remove or simplify at least cross referenced links
