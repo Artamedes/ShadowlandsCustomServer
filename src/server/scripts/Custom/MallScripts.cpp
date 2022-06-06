@@ -724,8 +724,9 @@ struct npc_mall_weapongiver : public ScriptedAI
                                 player->CompleteQuest(700019);
                                 player->RewardQuest(sObjectMgr->GetQuestTemplate(700019), LootItemType::Item, 0, me, true);
                                 player->AddQuestAndCheckCompletion(sObjectMgr->GetQuestTemplate(700020), me);
-                                player->GetScheduler().Schedule(100ms, [player](TaskContext context)
+                                player->GetScheduler().Schedule(100ms, [](TaskContext context)
                                 {
+                                    auto player = context.GetUnit()->ToPlayer();
                                     Conversation::CreateConversation(700303, player, *player, player->GetGUID());
                                     player->PlayerTalkClass->SendQuestGiverQuestDetails(sObjectMgr->GetQuestTemplate(700020), player->GetGUID(), true, true);
                                 });
@@ -1594,13 +1595,14 @@ class spell_leave_nyalotha : public SpellScript
                 {
                     caster->CastSpell(caster, 365581, true); // Fade to black
                     player->NearTeleportTo({ 1907.97f, 4634.35f, 335.899f, 0.333813f }, true, true);
-                    player->GetScheduler().Schedule(4s, [player](TaskContext context)
+                    player->GetScheduler().Schedule(4s, [](TaskContext context)
                     {
-                        if (player->GetQuestStatus(700001) == QUEST_STATUS_COMPLETE)
-                            if (auto creature = player->FindNearestCreature(700017, 50.0f, true))
+                        auto player1 = context.GetUnit()->ToPlayer();
+                        if (player1->GetQuestStatus(700001) == QUEST_STATUS_COMPLETE)
+                            if (auto creature = player1->FindNearestCreature(700017, 50.0f, true))
                             {
                                 if (auto ai = creature->AI())
-                                    ai->Talk(1, player);
+                                    ai->Talk(1, player1);
                             }
                     });
                 }

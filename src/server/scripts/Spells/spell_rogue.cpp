@@ -4865,7 +4865,7 @@ void AddSC_rogue_spell_scripts()
     new spell_rogue_combat_potency();
     new spell_rog_weaponmaster();
 	RegisterSpellScript(aura_rog_marked_for_death);
-    new spell_rog_beetween_the_eyes();
+    RegisterSpellScript(spell_rog_beetween_the_eyes);
     new spell_rog_internal_bleeding_damage();
     new spell_rog_death_from_above_return();
     new spell_rog_death_from_above();

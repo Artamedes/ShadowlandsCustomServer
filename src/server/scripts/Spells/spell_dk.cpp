@@ -4889,7 +4889,6 @@ void AddSC_deathknight_spell_scripts()
     new spell_dk_blood_gorged();
     new spell_dk_blood_mirror();
     new spell_dk_breath_of_sindragosa();
-    new spell_dk_bonestorm();
     RegisterSpellScript(spell_dk_bone_shield);
     RegisterSpellAndAuraScriptPair(spell_dk_dark_transformation_form, aura_spell_dk_dark_transformation);
     new spell_dk_death_and_decay();

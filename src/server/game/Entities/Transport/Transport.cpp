@@ -1240,7 +1240,9 @@ void Transport::LoadMMaps()
 {
     uint32 modelID = GetDisplayId();
 
-    _mmapsLoaded = MMAP::MMapFactory::createOrGetMMapManager()->loadTransportMap(sWorld->GetDataPath(), modelID);
+    _mmapsLoaded = false;
+
+    //_mmapsLoaded = MMAP::MMapFactory::createOrGetMMapManager()->loadTransportMap(sWorld->GetDataPath(), modelID);
 
     if (_mmapsLoaded)
         TC_LOG_DEBUG("mmaps", "Transport MMAP loaded modelID: %d", modelID);

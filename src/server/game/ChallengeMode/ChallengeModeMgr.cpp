@@ -121,67 +121,67 @@ void ChallengeModeMgr::SaveChallengeToDB(ChallengeData const* challengeData)
 
 void ChallengeModeMgr::LoadFromDB()
 {
-    if (QueryResult result = CharacterDatabase.Query("SELECT `ID`, `GuildID`, `MapID`, `RecordTime`, `StartDate`, `CompleteDate`, `ChallengeLevel`, `TimerLevel`, `Affixes`, `ChestID`, `ChallengeID`, Expansion FROM `challenge`"))
-    {
-        do
-        {
-            Field* fields = result->Fetch();
+    //if (QueryResult result = CharacterDatabase.Query("SELECT `ID`, `GuildID`, `MapID`, `RecordTime`, `StartDate`, `CompleteDate`, `ChallengeLevel`, `TimerLevel`, `Affixes`, `ChestID`, `ChallengeID`, Expansion FROM `challenge`"))
+    //{
+    //    do
+    //    {
+    //        Field* fields = result->Fetch();
+    //
+    //        auto challengeData = new ChallengeData;
+    //        challengeData->ID = fields[0].GetUInt64();
+    //        challengeData->GuildID = fields[1].GetUInt64();
+    //        challengeData->MapID = fields[2].GetUInt16();
+    //        challengeData->RecordTime = fields[3].GetUInt32();
+    //        if (challengeData->RecordTime < 10000)
+    //            challengeData->RecordTime *= IN_MILLISECONDS;
+    //        challengeData->StartDate = fields[4].GetUInt32();
+    //        challengeData->CompleteDate = fields[5].GetUInt32();
+    //        challengeData->ChallengeLevel = fields[6].GetUInt8();
+    //        challengeData->TimerLevel = fields[7].GetUInt8();
+    //        challengeData->ChestID = fields[9].GetUInt32();
+    //        challengeData->ChallengeID = fields[10].GetUInt16();
+    //        challengeData->Expansion = fields[11].GetUInt8();
+    //        if (!challengeData->ChallengeID)
+    //            if (MapChallengeModeEntry const* challengeEntry = sDB2Manager.GetChallengeModeByMapID(challengeData->MapID))
+    //                challengeData->ChallengeID = challengeEntry->ID;
+    //
+    //        challengeData->Affixes.fill(0);
+    //
+    //        uint8 i = 0;
+    //        for (auto str : Trinity::Tokenize(fields[8].GetStringView(), ' ', false))
+    //            if (Optional<uint32> affix = Trinity::StringTo<uint32>(str))
+    //                challengeData->Affixes[i] = affix.value();
+    //
+    //        _challengeMap[challengeData->ID] = challengeData;
+    //        CheckBestMapId(challengeData);
+    //        CheckBestGuildMapId(challengeData);
+    //
+    //    } while (result->NextRow());
+    //}
 
-            auto challengeData = new ChallengeData;
-            challengeData->ID = fields[0].GetUInt64();
-            challengeData->GuildID = fields[1].GetUInt64();
-            challengeData->MapID = fields[2].GetUInt16();
-            challengeData->RecordTime = fields[3].GetUInt32();
-            if (challengeData->RecordTime < 10000)
-                challengeData->RecordTime *= IN_MILLISECONDS;
-            challengeData->StartDate = fields[4].GetUInt32();
-            challengeData->CompleteDate = fields[5].GetUInt32();
-            challengeData->ChallengeLevel = fields[6].GetUInt8();
-            challengeData->TimerLevel = fields[7].GetUInt8();
-            challengeData->ChestID = fields[9].GetUInt32();
-            challengeData->ChallengeID = fields[10].GetUInt16();
-            challengeData->Expansion = fields[11].GetUInt8();
-            if (!challengeData->ChallengeID)
-                if (MapChallengeModeEntry const* challengeEntry = sDB2Manager.GetChallengeModeByMapID(challengeData->MapID))
-                    challengeData->ChallengeID = challengeEntry->ID;
-
-            challengeData->Affixes.fill(0);
-
-            uint8 i = 0;
-            for (auto str : Trinity::Tokenize(fields[8].GetStringView(), ' ', false))
-                if (Optional<uint32> affix = Trinity::StringTo<uint32>(str))
-                    challengeData->Affixes[i] = affix.value();
-
-            _challengeMap[challengeData->ID] = challengeData;
-            CheckBestMapId(challengeData);
-            CheckBestGuildMapId(challengeData);
-
-        } while (result->NextRow());
-    }
-
-    if (QueryResult result = CharacterDatabase.Query("SELECT `ID`, `Member`, `GuildID`, `SpecID`, `ChallengeLevel`, `CompleteDate`, `ChestID`, `Ilevel`, `Race` FROM `challenge_member`"))
-    {
-        do
-        {
-            Field* fields = result->Fetch();
-            ChallengeMember member;
-            member.playerGuid = ObjectGuid::Create<HighGuid::Player>(fields[1].GetUInt64());
-            member.guildGuid = ObjectGuid::Create<HighGuid::Guild>(fields[2].GetUInt64());
-            member.specId = fields[3].GetUInt16();
-            member.ChallengeLevel = fields[4].GetUInt32();
-            member.CompleteDate = fields[5].GetUInt32();
-            member.ChestID = fields[6].GetUInt32();   
-            member.Ilevel = fields[7].GetUInt32();
-            member.Race = fields[8].GetUInt32();
-
-            auto itr = _challengeMap.find(fields[0].GetUInt64());
-            if (itr == _challengeMap.end())
-                continue;
-
-            itr->second->members.insert(member);
-            CheckBestMemberMapId(member.playerGuid, itr->second);
-        } while (result->NextRow());
-    }
+    //if (QueryResult result = CharacterDatabase.Query("SELECT `ID`, `Member`, `GuildID`, `SpecID`, `ChallengeLevel`, `CompleteDate`, `ChestID`, `Ilevel`, `Race` FROM `challenge_member`"))
+    //{
+    //    do
+    //    {
+    //        Field* fields = result->Fetch();
+    //        ChallengeMember member;
+    //        member.playerGuid = ObjectGuid::Create<HighGuid::Player>(fields[1].GetUInt64());
+    //        member.guildGuid = ObjectGuid::Create<HighGuid::Guild>(fields[2].GetUInt64());
+    //        member.specId = fields[3].GetUInt16();
+    //        member.ChallengeLevel = fields[4].GetUInt32();
+    //        member.CompleteDate = fields[5].GetUInt32();
+    //        member.ChestID = fields[6].GetUInt32();   
+    //        member.Ilevel = fields[7].GetUInt32();
+    //        member.Race = fields[8].GetUInt32();
+    //
+    //        auto itr = _challengeMap.find(fields[0].GetUInt64());
+    //        if (itr == _challengeMap.end())
+    //            continue;
+    //
+    //        itr->second->members.insert(member);
+    //        CheckBestMemberMapId(member.playerGuid, itr->second);
+    //    } while (result->NextRow());
+    //}
 
     for (auto v : _challengeMap)
         if (v.second->members.empty())
