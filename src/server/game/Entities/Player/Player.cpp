@@ -8330,8 +8330,15 @@ void Player::ApplyItemObtainSpells(Item* item, bool apply)
     if (item->GetTemplate()->HasFlag(ITEM_FLAG_LEGACY))
         return;
 
-    for (ItemEffectEntry const* effect : item->GetEffects())
+    auto bonusData = item->GetBonus();
+    if (!bonusData)
+        return;
+
+    for (auto effect : bonusData->Effects)
     {
+        if (!effect)
+            continue;
+
         if (effect->TriggerType != ITEM_SPELLTRIGGER_ON_PICKUP) // On obtain trigger
             continue;
 
@@ -8432,7 +8439,11 @@ void Player::ApplyItemEquipSpell(Item* item, bool apply, bool formChange /*= fal
     if (!item || item->GetTemplate()->HasFlag(ITEM_FLAG_LEGACY))
         return;
 
-    for (ItemEffectEntry const* effectData : item->GetEffects())
+    auto bonusData = item->GetBonus();
+    if (!bonusData)
+        return;
+
+    for (auto effectData : bonusData->Effects)
     {
         if (!effectData)
             continue;
@@ -8775,8 +8786,15 @@ void Player::CastItemCombatSpell(DamageInfo const& damageInfo, Item* item, ItemT
     {
         if (!item->GetTemplate()->HasFlag(ITEM_FLAG_LEGACY))
         {
-            for (ItemEffectEntry const* effectData : item->GetEffects())
+            auto bonusData = item->GetBonus();
+            if (!bonusData)
+                return;
+
+            for (auto effectData : bonusData->Effects)
             {
+                if (!effectData)
+                    continue;
+
                 // wrong triggering type
                 if (effectData->TriggerType != ITEM_SPELLTRIGGER_ON_PROC)
                     continue;
@@ -8898,8 +8916,15 @@ void Player::CastItemUseSpell(Item* item, SpellCastTargets const& targets, Objec
     if (!item->GetTemplate()->HasFlag(ITEM_FLAG_LEGACY))
     {
         // item spells cast at use
-        for (ItemEffectEntry const* effectData : item->GetEffects())
+        auto bonusData = item->GetBonus();
+        if (!bonusData)
+            return;
+
+        for (auto effectData : bonusData->Effects)
         {
+            if (!effectData)
+                continue;
+
             // wrong triggering type
             if (effectData->TriggerType != ITEM_SPELLTRIGGER_ON_USE)
                 continue;
@@ -8966,6 +8991,10 @@ void Player::CastItemUseSpell(Item* item, SpellCastTargets const& targets, Objec
 void Player::ApplyItemLootedSpell(Item* item, bool apply)
 {
     if (item->GetTemplate()->HasFlag(ITEM_FLAG_LEGACY))
+        return;
+
+    auto bonusData = item->GetBonus();
+    if (!bonusData)
         return;
 
     auto lootedEffectItr = std::find_if(item->GetEffects().begin(), item->GetEffects().end(), [](ItemEffectEntry const* effectData)
@@ -25400,8 +25429,15 @@ void Player::ApplyEquipCooldown(Item* pItem)
         return;
 
     TimePoint now = GameTime::Now();
-    for (ItemEffectEntry const* effectData : pItem->GetEffects())
+    auto bonusData = pItem->GetBonus();
+    if (!bonusData)
+        return;
+
+    for (auto effectData : bonusData->Effects)
     {
+        if (!effectData)
+            continue;
+
         SpellInfo const* effectSpellInfo = sSpellMgr->GetSpellInfo(effectData->SpellID, DIFFICULTY_NONE);
         if (!effectSpellInfo)
             continue;
