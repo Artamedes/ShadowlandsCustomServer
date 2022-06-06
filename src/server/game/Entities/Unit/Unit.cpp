@@ -10212,7 +10212,7 @@ void Unit::RemoveFromWorld()
 
         RemoveAllGameObjects();
         RemoveAllDynObjects();
-        RemoveAllAreaTriggers();
+        //RemoveAllAreaTriggers();
 
         ExitVehicle();  // Remove applied auras with SPELL_AURA_CONTROL_VEHICLE
         UnsummonAllTotems();
