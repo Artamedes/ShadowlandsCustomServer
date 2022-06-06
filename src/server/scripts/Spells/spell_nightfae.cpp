@@ -380,6 +380,7 @@ class spell_nightfae_grove_invigoration : public AuraScript
                 case BondedHearts:
                 case BondedHeartsHeal:
                 case BondedHeartsBonus:
+                case 342937:
                     return false;
                 default:
                     break;
@@ -414,29 +415,29 @@ class spell_nightfae_grove_invigoration : public AuraScript
             for (uint32 i = 0; i < iterates; ++i)
                 actor->CastSpell(actor, RedirectedAnima, true);
 
-            if (actor->HasAura(BondedHearts))
-            {
-                std::list<Unit*> friends;
-                actor->GetFriendlyUnitListInRange(friends, 40.0f);
-                friends.sort(Trinity::HealthPctOrderPred());
-                friends.remove_if([actor](Unit* unit)
-                {
-                    return unit == actor;
-                });
-
-                if (friends.size() > 5)
-                    friends.resize(5);
-
-                for (auto unit : friends)
-                {
-                    actor->CastSpell(unit, BondedHeartsHeal, true);
-                    if (auto player = unit->ToPlayer())
-                    {
-                        if (player->GetCovenant()->GetCovenantID() == CovenantID::NightFae)
-                            actor->CastSpell(actor, BondedHeartsBonus, true);
-                    }
-                }
-            }
+            //if (actor->HasAura(BondedHearts))
+            //{
+            //    std::list<Unit*> friends;
+            //    actor->GetFriendlyUnitListInRange(friends, 40.0f);
+            //    friends.sort(Trinity::HealthPctOrderPred());
+            //    friends.remove_if([actor](Unit* unit)
+            //    {
+            //        return unit == actor;
+            //    });
+            //
+            //    if (friends.size() > 5)
+            //        friends.resize(5);
+            //
+            //    for (auto unit : friends)
+            //    {
+            //        actor->CastSpell(unit, BondedHeartsHeal, true);
+            //        if (auto player = unit->ToPlayer())
+            //        {
+            //            if (player->GetCovenant()->GetCovenantID() == CovenantID::NightFae)
+            //                actor->CastSpell(actor, BondedHeartsBonus, true);
+            //        }
+            //    }
+            //}
         }
     }
 
@@ -453,6 +454,22 @@ class spell_nightfae_grove_invigoration : public AuraScript
         DoCheckProc += AuraCheckProcFn(spell_nightfae_grove_invigoration::CheckProc);
         OnEffectProc += AuraEffectProcFn(spell_nightfae_grove_invigoration::HandleProc, EFFECT_0, SPELL_AURA_PROC_TRIGGER_SPELL);
         OnCalcProcChance += AuraCalcProcChanceFn(spell_nightfae_grove_invigoration::OnCalcProc);
+    }
+};
+
+/// ID: 342814 Redirected Anima
+class spell_redirected_anima : public SpellScript
+{
+    PrepareSpellScript(spell_redirected_anima);
+
+    void HandleDummy(SpellEffIndex eff)
+    {
+        PreventHitEffect(eff);
+    }
+
+    void Register() override
+    {
+        OnEffectHitTarget += SpellEffectFn(spell_redirected_anima::HandleDummy, EFFECT_2, SPELL_EFFECT_TRIGGER_SPELL);
     }
 };
 
@@ -1413,6 +1430,7 @@ void AddSC_spell_nightfae()
     RegisterSpellScript(spell_hold_the_line);
     RegisterSpellScript(spell_vorkai_ambush);
     RegisterSpellScript(spell_first_strike);
+    RegisterSpellScript(spell_redirected_anima);
 
     RegisterCreatureAI(npc_regenerating_wild_seed_164589);
 

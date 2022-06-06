@@ -5031,9 +5031,6 @@ class spell_emergency_failsafe : public AuraScript
 
     bool CheckProc(ProcEventInfo& eventInfo)
     {
-        if (!eventInfo.GetSpellInfo())
-            return false;
-
         if (!eventInfo.GetActor())
             return false;
 
