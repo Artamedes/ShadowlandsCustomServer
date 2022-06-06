@@ -390,10 +390,12 @@ class spell_nightfae_grove_invigoration : public AuraScript
             if (auto caster = GetCaster())
                 if (auto aur = caster->GetAura(GetId()))
                     if (aur->GetStackAmount() >= 50)
-                        return true;
+                        return false;
+
+            return true;
         }
 
-        return true;
+        return false;
     }
 
     void HandleProc(AuraEffect* /*aurEff*/, ProcEventInfo& eventInfo)
