@@ -232,8 +232,9 @@ struct npc_helya_mawfinale : public BossAI
             {
                 player->CastSpell(player, 366997, true); // Fade to black
 
-                player->GetScheduler().Schedule(1500ms, [player](TaskContext context)
+                player->GetScheduler().Schedule(1500ms, [](TaskContext context)
                 {
+                    auto player = context.GetUnit()->ToPlayer();
                     player->AddAura(326726, player); // sleep
                     player->TeleportTo(WorldLocation(1116, *player));
                 });

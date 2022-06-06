@@ -1401,12 +1401,14 @@ public:
                         tempSumm->AI()->Talk(0, player);
                 }
 
-                tempSumm->GetScheduler().Schedule(3s, [this, tempSumm, creatureGuid](TaskContext context)
+                tempSumm->GetScheduler().Schedule(3s, [this, creatureGuid](TaskContext context)
                 {
+                    auto tempSumm = context.GetUnit();
                     tempSumm->CastSpell(tempSumm, 367044, true);
-                    tempSumm->GetScheduler().Schedule(400ms, [this, tempSumm, creatureGuid](TaskContext context)
+                    tempSumm->GetScheduler().Schedule(400ms, [this, creatureGuid](TaskContext context)
                     {
-                        tempSumm->DespawnOrUnsummon();
+                        auto tempSumm = context.GetUnit();
+                        tempSumm->ToCreature()->DespawnOrUnsummon();
                         if (auto creature = ObjectAccessor::GetCreature(*tempSumm, creatureGuid))
                             creature->UpdateObjectVisibility();
                     });

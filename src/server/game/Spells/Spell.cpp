@@ -7329,10 +7329,12 @@ SpellCastResult Spell::CheckItems(int32* param1 /*= nullptr*/, int32* param2 /*=
         if (!proto)
             return SPELL_FAILED_ITEM_NOT_READY;
 
-        for (ItemEffectEntry const* itemEffect : m_CastItem->GetEffects())
-            if (itemEffect->LegacySlotIndex < m_CastItem->m_itemData->SpellCharges.size() && itemEffect->Charges)
-                if (m_CastItem->GetSpellCharges(itemEffect->LegacySlotIndex) == 0)
-                    return SPELL_FAILED_NO_CHARGES_REMAIN;
+        if (auto bonusData = m_CastItem->GetBonus())
+            for (auto itemEffect : bonusData->Effects)
+                if (itemEffect)
+                    if (itemEffect->LegacySlotIndex < m_CastItem->m_itemData->SpellCharges.size() && itemEffect->Charges)
+                        if (m_CastItem->GetSpellCharges(itemEffect->LegacySlotIndex) == 0)
+                            return SPELL_FAILED_NO_CHARGES_REMAIN;
 
         // consumable cast item checks
         if (proto->GetClass() == ITEM_CLASS_CONSUMABLE && m_targets.GetUnitTarget())

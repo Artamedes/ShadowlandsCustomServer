@@ -841,11 +841,13 @@ public:
                         tempSumm->AI()->Talk(0, player);
                 }
 
-                tempSumm->GetScheduler().Schedule(3s, [this, tempSumm, creatureGuid](TaskContext context)
+                tempSumm->GetScheduler().Schedule(3s, [this, creatureGuid](TaskContext context)
                 {
+                    auto tempSumm = context.GetUnit();
                     tempSumm->CastSpell(tempSumm, 367044, true);
-                    tempSumm->GetScheduler().Schedule(400ms, [this, tempSumm, creatureGuid](TaskContext context)
+                    tempSumm->GetScheduler().Schedule(400ms, [this, creatureGuid](TaskContext context)
                     {
+                        auto tempSumm = context.GetUnit()->ToCreature();
                         tempSumm->DespawnOrUnsummon();
                         if (auto creature = ObjectAccessor::GetCreature(*tempSumm, creatureGuid))
                             creature->UpdateObjectVisibility();
@@ -864,12 +866,13 @@ void AddSC_Crapopolis()
     RegisterCreatureAI(npc_mawsworn_axeguard);
     RegisterCreatureAI(npc_mawsworn_annihilator);
     RegisterCreatureAI(npc_venture_co_war_machine);
-    new instance_crapopolis();
     RegisterCreatureAI(npc_mawsworn_defiler);
     RegisterCreatureAI(npc_crap_warden_of_souls);
     RegisterCreatureAI(npc_crap_synod);
     RegisterCreatureAI(npc_trade_prince_gallywix_700200);
     RegisterCreatureAI(npc_bobkin_800046);
-    new crapopolis_dungeon_player_script();
+
     RegisterQuestAI(quest_the_innkeeper);
+    new instance_crapopolis();
+    new crapopolis_dungeon_player_script();
 }

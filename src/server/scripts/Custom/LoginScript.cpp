@@ -221,8 +221,9 @@ class LoginScript : public PlayerScript
                         player->PlayDistanceSound(2837);
                         summ->SetUnitFlag(UnitFlags::UNIT_FLAG_UNINTERACTIBLE);
                         summ->SetUnitFlag(UnitFlags::UNIT_FLAG_NON_ATTACKABLE);
-                        summ->GetScheduler().Schedule(2s, [summ](TaskContext context)
+                        summ->GetScheduler().Schedule(2s, [](TaskContext context)
                         {
+                            auto summ = context.GetUnit();
                             summ->CastSpell(summ, 356777, true); // Fade out
                         });
                     }

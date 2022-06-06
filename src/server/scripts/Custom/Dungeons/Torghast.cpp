@@ -1135,12 +1135,14 @@ public:
             auto path = unit->GetMotionMaster()->MoveSmoothPath(1, skoldusHallPortalPath, 6, true, false, 2.5f);
 
             unit->ToPlayer()->KilledMonsterCredit(me->GetEntry(), me->GetGUID());
-            unit->GetScheduler().Schedule(2s, [unit](TaskContext context)
+            unit->GetScheduler().Schedule(2s, [](TaskContext context)
             {
+                auto unit = context.GetUnit();
                 unit->StopMoving();
 
-                unit->GetScheduler().Schedule(100ms, [unit](TaskContext context)
+                unit->GetScheduler().Schedule(100ms, [](TaskContext context)
                 {
+                    auto unit = context.GetUnit();
                     if (unit->ToPlayer()->GetQuestStatus(700032) == QUEST_STATUS_COMPLETE)
                     {
                         unit->ToPlayer()->RewardQuest(sObjectMgr->GetQuestTemplate(700032), LootItemType::Item, 0, unit);
@@ -1205,8 +1207,9 @@ public:
             auto path = unit->GetMotionMaster()->MoveSmoothPath(1, upperReachesPortalPath, 8, true, false, 2.5f);
 
             unit->ToPlayer()->KilledMonsterCredit(me->GetEntry(), me->GetGUID());
-            unit->GetScheduler().Schedule(2s, [unit](TaskContext context)
+            unit->GetScheduler().Schedule(2s, [](TaskContext context)
             {
+                auto unit = context.GetUnit();
                 if (unit->ToPlayer()->GetQuestStatus(700033) == QUEST_STATUS_COMPLETE)
                 {
                     unit->ToPlayer()->RewardQuest(sObjectMgr->GetQuestTemplate(700033), LootItemType::Item, 0, unit);
@@ -1216,8 +1219,9 @@ public:
 
                 unit->StopMoving();
 
-                unit->GetScheduler().Schedule(100ms, [unit](TaskContext context)
+                unit->GetScheduler().Schedule(100ms, [](TaskContext context)
                 {
+                    auto unit = context.GetUnit();
                     GameTele const* tele = sObjectMgr->GetGameTele(1929);
                     if (tele)
                         unit->ToPlayer()->TeleportTo(tele->mapId, tele->position_x, tele->position_y, tele->position_z, tele->orientation);
@@ -1272,8 +1276,9 @@ public:
             auto path = unit->GetMotionMaster()->MoveSmoothPath(1, owlPortalPath, 6, true, false, 2.5f);
 
             unit->ToPlayer()->KilledMonsterCredit(me->GetEntry(), me->GetGUID());
-            unit->GetScheduler().Schedule(2s, [unit](TaskContext context)
+            unit->GetScheduler().Schedule(2s, [](TaskContext context)
             {
+                auto unit = context.GetUnit();
                 if (unit->ToPlayer()->GetQuestStatus(700035) == QUEST_STATUS_COMPLETE)
                 {
                     unit->ToPlayer()->RewardQuest(sObjectMgr->GetQuestTemplate(700035), LootItemType::Item, 0, unit);
@@ -1283,11 +1288,11 @@ public:
 
                 unit->StopMoving();
 
-                unit->GetScheduler().Schedule(100ms, [unit](TaskContext context)
+                unit->GetScheduler().Schedule(100ms, [](TaskContext context)
                 {
                     GameTele const* tele = sObjectMgr->GetGameTele(1935);
                     if (tele)
-                        unit->ToPlayer()->TeleportTo(tele->mapId, tele->position_x, tele->position_y, tele->position_z, tele->orientation);
+                        context.GetUnit()->ToPlayer()->TeleportTo(tele->mapId, tele->position_x, tele->position_y, tele->position_z, tele->orientation);
                 });
 
             });
