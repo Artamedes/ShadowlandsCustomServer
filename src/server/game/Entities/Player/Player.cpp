@@ -8434,6 +8434,8 @@ void Player::ApplyItemEquipSpell(Item* item, bool apply, bool formChange /*= fal
 
     for (ItemEffectEntry const* effectData : item->GetEffects())
     {
+        if (!effectData)
+            continue;
         // wrong triggering type
         if (apply && effectData->TriggerType != ITEM_SPELLTRIGGER_ON_EQUIP)
             continue;
