@@ -85,7 +85,7 @@ class item_enhancement_system : public ItemScript
                 CharacterDatabaseTransaction trans = CharacterDatabase.BeginTransaction();
                 itemTarget->SaveToDB(trans);
                 CharacterDatabase.CommitTransaction(trans);
-                ChatHandler(player).PSendSysMessage("|cff00FF00Succesfully enhanced %s!", Item::GetItemLink(itemTarget->GetEntry()).c_str());
+                ChatHandler(player).PSendSysMessage("|cff00FF00Succesfully enhanced %s", Item::GetItemLink(itemTarget, player).c_str());
             }
         }
 };
