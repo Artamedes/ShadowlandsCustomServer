@@ -5881,8 +5881,9 @@ void Unit::RemoveAllAreaTriggers()
     for (AreaTriggerList::iterator i = m_areaTrigger.begin(); i != m_areaTrigger.end();)
     {
         AreaTrigger* areaTrigger = *i;
-        areaTrigger->Remove();
-        i = m_areaTrigger.begin();
+        if (areaTrigger)
+            areaTrigger->Remove();
+        i = m_areaTrigger.erase(i);
     }
     // IsInWorld can return false and this can permanent loop.
 
