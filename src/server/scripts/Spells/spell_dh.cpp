@@ -2031,12 +2031,6 @@ public:
 
         void AfterRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
         {
-            if (Unit* caster = GetCaster())
-                caster->GetScheduler().Schedule(100ms, [](TaskContext context)
-                {
-                    if (!context.GetUnit()->HasAura(SPELL_DH_FEL_RUSH_AIR))
-                        context.GetUnit()->SetDisableGravity(false);
-                });
         }
 
         void CalcSpeed(AuraEffect const* /*aurEff*/, int32& amount, bool& /*canBeRecalculated*/)
