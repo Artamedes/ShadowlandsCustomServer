@@ -1418,6 +1418,31 @@ public:
     }
 };
 
+/// ID: 352501 Called Shot
+class spell_called_shot : public AuraScript
+{
+    PrepareAuraScript(spell_called_shot);
+
+    enum CalledShot
+    {
+        MSProc = 352865,
+    };
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        auto actor = eventInfo.GetActor();
+        if (!actor)
+            return false;
+
+        return eventInfo.GetHitMask() & ProcFlagsHit::PROC_HIT_CRITICAL && !actor->GetAura(MSProc);
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_called_shot::CheckProc);
+    }
+};
+
 void AddSC_spell_nightfae()
 {
     RegisterSpellScript(spell_nightfae_podtender);
@@ -1446,6 +1471,7 @@ void AddSC_spell_nightfae()
     RegisterSpellScript(spell_vorkai_ambush);
     RegisterSpellScript(spell_first_strike);
     RegisterSpellScript(spell_redirected_anima);
+    RegisterSpellScript(spell_called_shot);
 
     RegisterCreatureAI(npc_regenerating_wild_seed_164589);
 
