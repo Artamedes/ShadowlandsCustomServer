@@ -5161,9 +5161,8 @@ void Spell::EffectRechargeItem()
             for (auto itemEffect : bonusData->Effects)
                 if (itemEffect)
                 {
-                    for (ItemEffectEntry const* itemEffect : item->GetEffects())
-                        if (itemEffect->LegacySlotIndex <= item->m_itemData->SpellCharges.size())
-                            item->SetSpellCharges(itemEffect->LegacySlotIndex, itemEffect->Charges);
+                    if (itemEffect->LegacySlotIndex <= item->m_itemData->SpellCharges.size())
+                        item->SetSpellCharges(itemEffect->LegacySlotIndex, itemEffect->Charges);
 
                     item->SetState(ITEM_CHANGED, player);
                 }
