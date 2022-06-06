@@ -381,6 +381,7 @@ class spell_nightfae_grove_invigoration : public AuraScript
                 case BondedHeartsHeal:
                 case BondedHeartsBonus:
                 case 342937:
+                case 356608:
                     return false;
                 default:
                     break;
