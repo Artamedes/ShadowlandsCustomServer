@@ -8997,17 +8997,18 @@ void Player::ApplyItemLootedSpell(Item* item, bool apply)
     if (!bonusData)
         return;
 
-    auto lootedEffectItr = std::find_if(item->GetEffects().begin(), item->GetEffects().end(), [](ItemEffectEntry const* effectData)
+    for (auto effectData : bonusData->Effects)
     {
-        return effectData->TriggerType == ITEM_SPELLTRIGGER_ON_LOOTED;
-    });
-
-    if (lootedEffectItr != item->GetEffects().end())
-    {
-        if (apply)
-            CastSpell(this, (*lootedEffectItr)->SpellID, item);
-        else
-            RemoveAurasDueToItemSpell((*lootedEffectItr)->SpellID, item->GetGUID());
+        if (effectData)
+        {
+            if (effectData->TriggerType == ITEM_SPELLTRIGGER_ON_LOOTED)
+            {
+                if (apply)
+                    CastSpell(this, effectData->SpellID, item);
+                else
+                    RemoveAurasDueToItemSpell(effectData->SpellID, item->GetGUID());
+            }
+        }
     }
 }
 
