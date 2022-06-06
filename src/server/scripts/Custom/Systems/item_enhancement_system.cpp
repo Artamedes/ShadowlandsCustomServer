@@ -75,17 +75,27 @@ class item_enhancement_system : public ItemScript
             // Consume the scroll
             if (!itemTarget->HasBonusId(BonusIDAward))
             {
-                player->DestroyItem(item->GetBagSlot(), item->GetSlot(), true);
                 if (itemTarget->IsEquipped())
                     player->_ApplyItemMods(itemTarget, itemTarget->GetSlot(), false);
-                itemTarget->AddBonuses(BonusIDAward);
+
+                bool success = true;
+
+                if (!itemTarget->AddBonuses(BonusIDAward))
+                    success = false;
+
                 itemTarget->SetState(ItemUpdateState::ITEM_CHANGED, player);
                 if (itemTarget->IsEquipped())
                     player->_ApplyItemMods(itemTarget, itemTarget->GetSlot(), true);
                 CharacterDatabaseTransaction trans = CharacterDatabase.BeginTransaction();
                 itemTarget->SaveToDB(trans);
                 CharacterDatabase.CommitTransaction(trans);
-                ChatHandler(player).PSendSysMessage("|cff00FF00Succesfully enhanced %s", Item::GetItemLink(itemTarget, player).c_str());
+                if (success)
+                {
+                    ChatHandler(player).PSendSysMessage("|cff00FF00Succesfully enhanced %s", Item::GetItemLink(itemTarget, player).c_str());
+                    player->DestroyItem(item->GetBagSlot(), item->GetSlot(), true);
+                }
+                else
+                    ChatHandler(player).PSendSysMessage("|cff00FF00%s Internal error trying to upgrade", Item::GetItemLink(itemTarget, player).c_str());
             }
         }
 };

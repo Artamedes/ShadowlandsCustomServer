@@ -2542,7 +2542,8 @@ bool Item::AddBonuses(uint32 bonusListID, bool checkExists)
         bonusListIDs.push_back(bonusListID);
         SetUpdateFieldValue(m_values.ModifyValue(&Item::m_itemData).ModifyValue(&UF::ItemData::BonusListIDs), std::move(bonusListIDs));
         for (ItemBonusEntry const* bonus : *bonuses)
-            _bonusData.AddBonus(bonus->Type, bonus->Value);
+            if (!_bonusData.AddBonus(bonus->Type, bonus->Value))
+                return false;
         SetUpdateFieldValue(m_values.ModifyValue(&Item::m_itemData).ModifyValue(&UF::ItemData::ItemAppearanceModID), _bonusData.AppearanceModID);
         return true;
     }
@@ -2909,14 +2910,18 @@ void BonusData::Initialize(WorldPackets::Item::ItemInstance const& itemInstance)
             AddBonusList(bonusListID);
 }
 
-void BonusData::AddBonusList(uint32 bonusListId)
+bool BonusData::AddBonusList(uint32 bonusListId)
 {
     if (DB2Manager::ItemBonusList const* bonuses = sDB2Manager.GetItemBonusList(bonusListId))
         for (ItemBonusEntry const* bonus : *bonuses)
-            AddBonus(bonus->Type, bonus->Value);
+        {
+            if (!AddBonus(bonus->Type, bonus->Value))
+                return false;
+        }
+    return true;
 }
 
-void BonusData::AddBonus(uint32 type, std::array<int32, 4> const& values)
+bool BonusData::AddBonus(uint32 type, std::array<int32, 4> const& values)
 {
     switch (type)
     {
@@ -3013,8 +3018,13 @@ void BonusData::AddBonus(uint32 type, std::array<int32, 4> const& values)
             break;
         case ITEM_BONUS_ITEM_EFFECT_ID:
             if (ItemEffectEntry const* itemEffect = sItemEffectStore.LookupEntry(values[0]))
-                Effects[EffectCount++] = itemEffect;
+            {
+                if (EffectCount < 13)
+                    Effects[EffectCount++] = itemEffect;
+                else
+                    return false;
             break;
+            }
         case ITEM_BONUS_REQUIRED_LEVEL_CURVE:
             if (values[2] < _state.RequiredLevelCurvePriority)
             {
@@ -3025,6 +3035,7 @@ void BonusData::AddBonus(uint32 type, std::array<int32, 4> const& values)
             }
             break;
     }
+    return true;
 }
 
 /*static*/ std::string Item::GetItemLink(uint32 p_Entry)
