@@ -1038,6 +1038,9 @@ public:
             if (eventInfo.GetActor()->GetGUID() != GetTarget()->GetGUID())
                 return;
 
+            if (!eventInfo.GetDamageInfo())
+                return;
+
             if (eventInfo.GetDamageInfo()->GetSpellInfo() && eventInfo.GetDamageInfo()->GetSpellInfo()->Id == SPELL_HUNTER_BEAST_CLEAVE_DAMAGE)
                 return;
 
