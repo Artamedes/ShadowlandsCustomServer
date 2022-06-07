@@ -3290,6 +3290,10 @@ void SpellMgr::LoadSpellInfoCorrections()
 
     // Some spells have no amplitude set
     {
+        ApplySpellFix({ 75 }, [](SpellInfo* spellInfo)
+        {
+            spellInfo->AttributesEx9 |= SPELL_ATTR9_ALLOW_CAST_WHILE_CHANNELING;
+        });
 	    // Storm, Earth, and Fire
 	    ApplySpellFix({ 137639 }, [](SpellInfo* spellInfo)
 	    {

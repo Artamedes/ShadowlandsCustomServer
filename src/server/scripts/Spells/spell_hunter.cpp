@@ -1527,6 +1527,9 @@ public:
 
                 SetHitDamage(damage);
             }
+
+            if (auto aur = caster->GetAura(SPELL_HUNTER_PRECISE_SHOTS))
+                aur->DropStack();
         }
 
 		void HandleAfterCast()
@@ -3941,17 +3944,24 @@ class spell_hun_multishot_aim : public SpellScript
 
 	void HandleAfterCast()
 	{
-		if (Unit* caster = GetCaster())
+        if (Unit* caster = GetCaster())
+        {
 			if (caster->HasAura(SPELL_HUNTER_MASTER_MARKSMAN_TRIGGER))
 				caster->RemoveAurasDueToSpell(SPELL_HUNTER_MASTER_MARKSMAN_TRIGGER);
+
+            if (auto aur = caster->GetAura(SPELL_HUNTER_PRECISE_SHOTS))
+                aur->DropStack();
+        }
 	}
 
     void HandleAfterHit()
     {
         if (Unit* caster = GetCaster())
+        {
             if (SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(SPELL_HUNTER_TRICK_SHOT_AURA))
                 if (hitCounted >= (uint32)spellInfo->GetEffect(EFFECT_1).BasePoints)
                     caster->CastSpell(caster, SPELL_HUNTER_TRICK_SHOT_PROC, true);
+        }
     }
 
 	void Register() override
@@ -5551,7 +5561,105 @@ struct at_hunter_resonating_arrow : AreaTriggerAI
         }
     }
 };
+/// ID: 260243 Volley
+class spell_volley_ss : public SpellScript
+{
+    PrepareSpellScript(spell_volley_ss);
 
+    void FilterTargets(std::list<WorldObject*>& targets)
+    {
+        if (!GetCaster())
+            return;
+
+        GetCaster()->m_VolleyTargets.clear();
+
+        for (auto targ : targets)
+            if (targ)
+                GetCaster()->m_VolleyTargets.insert(targ->GetGUID());
+    }
+
+    void HandleDummy(SpellEffIndex /*eff*/)
+    {
+        if (!GetCaster())
+            return;
+
+        if (GetHitDest())
+            GetCaster()->Variables.Set("VolleyDest", Position(*GetHitDest()));
+    }
+
+    void Register() override
+    {
+        OnEffectHitTarget += SpellEffectFn(spell_volley_ss::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
+        OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_volley_ss::FilterTargets, EFFECT_0, TARGET_UNIT_DEST_AREA_ENEMY);
+    }
+};
+
+/// ID: 260243 Volley
+class spell_volley : public AuraScript
+{
+    PrepareAuraScript(spell_volley);
+
+    enum Volley
+    {
+        VolleyDmg = 260247,
+    };
+
+    void HandlePeriodic(AuraEffect const* aurEff)
+    {
+        if (!GetCaster())
+            return;
+
+        if (!GetCaster()->Variables.Exist("VolleyDest"))
+            return;
+
+        Position playerPos = GetCaster()->GetPosition();
+        Position pos = GetCaster()->Variables.GetValue("VolleyDest", playerPos);
+
+        GetCaster()->CastSpell(pos, VolleyDmg, true);
+        //for (auto targ : GetCaster()->m_VolleyTargets)
+        //{
+        //    if (auto unit = ObjectAccessor::GetUnit(*GetCaster(), targ))
+        //        GetCaster()->CastSpell(unit, VolleyDmg, true);
+        //}
+    }
+
+    void HandleRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+    {
+        if (!GetCaster())
+            return;
+        GetCaster()->m_VolleyTargets.clear();
+        GetCaster()->Variables.Remove("VolleyDest");
+    }
+
+    void Register() override
+    {
+        OnEffectPeriodic += AuraEffectPeriodicFn(spell_volley::HandlePeriodic, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY);
+        OnEffectRemove += AuraEffectApplyFn(spell_volley::HandleRemove, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY, AURA_EFFECT_HANDLE_REAL);
+    }
+};
+/// ID: 212431 Explosive Shot
+class spell_explosive_shot : public AuraScript
+{
+    PrepareAuraScript(spell_explosive_shot);
+
+    enum ExplosiveShot
+    {
+        Dmg = 212680,
+    };
+
+    void HandleRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+    {
+        if (!GetCaster() || !GetTarget())
+            return;
+
+        GetCaster()->CastSpell(GetTarget(), Dmg, true);
+    }
+
+    void Register() override
+    {
+        OnEffectRemove += AuraEffectApplyFn(spell_explosive_shot::HandleRemove, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY, AURA_EFFECT_HANDLE_REAL);
+    }
+};
 
 void AddSC_hunter_spell_scripts()
 {
@@ -5650,7 +5758,10 @@ void AddSC_hunter_spell_scripts()
     RegisterSpellScript(spell_hun_lethal_shots);
     RegisterSpellScript(spell_hun_dragonscale_armor);
     RegisterSpellScript(spell_hun_trueshot);    
-    RegisterSpellScript(spell_hun_trick_shots_proc); 
+    RegisterSpellScript(spell_hun_trick_shots_proc);
+    RegisterSpellScript(spell_volley);
+    RegisterSpellScript(spell_volley_ss);
+    RegisterSpellScript(spell_explosive_shot);
 
     // Spell Pet scripts
     new spell_hun_pet_heart_of_the_phoenix();

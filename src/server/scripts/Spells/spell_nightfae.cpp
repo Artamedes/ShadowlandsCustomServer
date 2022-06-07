@@ -343,10 +343,17 @@ class spell_nightfae_soulshape : public AuraScript
             GetCaster()->CastSpell(GetCaster(), HornOfTheWildHuntAT, true);
     }
 
+    void HandleApply7(const AuraEffect* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+    {
+        // what triggers this aura?
+        PreventDefaultAction();
+    }
+
     void Register() override
     {
         OnEffectApply += AuraEffectApplyFn(spell_nightfae_soulshape::HandleApply, EFFECT_5, SPELL_AURA_MOD_UNATTACKABLE, AURA_EFFECT_HANDLE_REAL);
         OnEffectApply += AuraEffectApplyFn(spell_nightfae_soulshape::HandleApply3, EFFECT_3, SPELL_AURA_LINKED_2, AURA_EFFECT_HANDLE_REAL);
+        OnEffectApply += AuraEffectApplyFn(spell_nightfae_soulshape::HandleApply7, EFFECT_7, SPELL_AURA_LINKED_2, AURA_EFFECT_HANDLE_REAL);
         OnEffectRemove += AuraEffectApplyFn(spell_nightfae_soulshape::HandleRemove, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY, AURA_EFFECT_HANDLE_REAL);
     }
 };
