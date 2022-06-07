@@ -9,6 +9,12 @@
 #include "Conversation.h"
 #include "InstanceScenario.h"
 
+enum TelegrusRift
+{
+    AnotherPortal = 700024,
+    AnotherPortalCredit = 700518,
+};
+
 struct instance_telegrusrift : public CustomInstanceScript
 {
 public:
@@ -46,6 +52,17 @@ public:
         // Nerf legion dungeon by 5%
         if (!creature->IsDungeonBoss())
             creature->SetMaxHealth(creature->GetMaxHealth() * 0.95);
+    }
+
+    void OnPlayerEnter(Player* player) override
+    {
+        CustomInstanceScript::OnPlayerEnter(player);
+
+        if (auto quest = sObjectMgr->GetQuestTemplate(AnotherPortal))
+            if (player->GetQuestStatus(AnotherPortal) == QUEST_STATUS_INCOMPLETE)
+            {
+                player->KilledMonsterCredit(AnotherPortalCredit);
+            }
     }
 };
 
