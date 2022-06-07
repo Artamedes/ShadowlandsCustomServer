@@ -158,8 +158,8 @@ void AuraApplication::_HandleEffect(uint8 effIndex, bool apply)
         TC_LOG_ERROR("spells", "Aura %u has no effect at effectIndex %u but _HandleEffect was called", GetBase()->GetSpellInfo()->Id, uint32(effIndex));
         return;
     }
-    ASSERT(aurEff);
-    ASSERT(HasEffect(effIndex) == (!apply));
+    //ASSERT(aurEff);
+    //ASSERT(HasEffect(effIndex) == (!apply));
     ASSERT((1<<effIndex) & _effectsToApply);
     TC_LOG_DEBUG("spells", "AuraApplication::_HandleEffect: %u, apply: %u: amount: %u", aurEff->GetAuraType(), apply, aurEff->GetAmount());
 
