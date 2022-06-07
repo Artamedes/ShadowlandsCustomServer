@@ -2176,6 +2176,16 @@ class spell_item_shadowmourne : public AuraScript
     void HandleProc(AuraEffect* aurEff, ProcEventInfo& eventInfo)
     {
         PreventDefaultAction();
+
+        // this can't be handled in AuraScript of SoulFragments because we need to know victim
+        if (Aura* soulFragments = GetTarget()->GetAura(SPELL_SHADOWMOURNE_SOUL_FRAGMENT))
+        {
+            if (soulFragments->GetStackAmount() >= 10)
+            {
+                GetTarget()->Variables.Set("ShadowMourneStrength", soulFragments->GetEffect(EFFECT_0)->GetAmount());
+            }
+        }
+
         GetTarget()->CastSpell(GetTarget(), SPELL_SHADOWMOURNE_SOUL_FRAGMENT, aurEff);
 
         // this can't be handled in AuraScript of SoulFragments because we need to know victim
@@ -2183,6 +2193,8 @@ class spell_item_shadowmourne : public AuraScript
         {
             if (soulFragments->GetStackAmount() >= 10)
             {
+                GetTarget()->Variables.Set("ShadowMourneStrength", soulFragments->GetEffect(EFFECT_0)->GetAmount());
+
                 GetTarget()->CastSpell(eventInfo.GetProcTarget(), SPELL_SHADOWMOURNE_CHAOS_BANE_DAMAGE, aurEff);
                 soulFragments->Remove();
             }
@@ -2231,7 +2243,8 @@ class spell_item_shadowmourne_soul_fragment : public AuraScript
                 break;
             case 10:
                 target->RemoveAurasDueToSpell(SPELL_SHADOWMOURNE_VISUAL_HIGH);
-                target->CastSpell(target, SPELL_SHADOWMOURNE_CHAOS_BANE_BUFF, true);
+                target->CastSpell(target, SPELL_SHADOWMOURNE_CHAOS_BANE_BUFF, CastSpellExtraArgs(true).AddSpellBP0(target->Variables.GetValue("ShadowMourneStrength", 1360)));
+                target->Variables.Remove("ShadowMourneStrength");
                 break;
             default:
                 break;
