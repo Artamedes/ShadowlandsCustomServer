@@ -43,7 +43,7 @@
 AreaTrigger::AreaTrigger() : WorldObject(false), MapObject(), _spawnId(0), _aurEff(nullptr), _maxSearchRadius(0.0f),
     _duration(0), _totalDuration(0), _timeSinceCreated(0), _periodicProcTimer(0), _basePeriodicProcTimer(0), _previousCheckOrientation(std::numeric_limits<float>::infinity()), _radius(0.0f),
     _isRemoved(false), _reachedDestination(true), _setedDestination(false), _lastSplineIndex(0), _movementTime(0),
-    _areaTriggerCreateProperties(nullptr), _areaTriggerTemplate(nullptr)
+    _areaTriggerCreateProperties(nullptr), _areaTriggerTemplate(nullptr), m_Caster(nullptr)
 {
     m_objectType |= TYPEMASK_AREATRIGGER;
     m_objectTypeId = TYPEID_AREATRIGGER;
@@ -78,6 +78,8 @@ void AreaTrigger::RemoveFromWorld()
 
         if (Unit* caster = GetCaster())
             caster->_UnregisterAreaTrigger(this);
+
+        m_Caster = nullptr;
 
         // Handle removal of all units, calling OnUnitExit & deleting auras if needed
         HandleUnitEnterExit({});
@@ -127,6 +129,7 @@ bool AreaTrigger::Create(uint32 areaTriggerCreatePropertiesId, Unit* caster, Uni
     _maxSearchRadius = GetCreateProperties()->GetMaxSearchRadius();
 
     auto areaTriggerData = m_values.ModifyValue(&AreaTrigger::m_areaTriggerData);
+    m_Caster = caster;
     SetUpdateFieldValue(areaTriggerData.ModifyValue(&UF::AreaTriggerData::Caster), caster->GetGUID());
     SetUpdateFieldValue(areaTriggerData.ModifyValue(&UF::AreaTriggerData::CreatingEffectGUID), castId);
 
@@ -584,7 +587,7 @@ uint32 AreaTrigger::GetScriptId() const
 
 Unit* AreaTrigger::GetCaster() const
 {
-    return ObjectAccessor::GetUnit(*this, GetCasterGuid());
+    return m_Caster;
 }
 
 Unit* AreaTrigger::GetTarget() const

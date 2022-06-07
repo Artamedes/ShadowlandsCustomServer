@@ -137,6 +137,7 @@ class TC_GAME_API AreaTrigger : public WorldObject, public GridObject<AreaTrigge
         UF::UpdateField<UF::AreaTriggerData, 0, TYPEID_AREATRIGGER> m_areaTriggerData;
 
     protected:
+        Unit* m_Caster;
         void _UpdateDuration(int32 newDuration);
         float GetProgress() const;
 

@@ -5813,11 +5813,7 @@ void Unit::_RegisterAreaTrigger(AreaTrigger* areaTrigger)
 
 void Unit::_UnregisterAreaTrigger(AreaTrigger* areaTrigger)
 {
-    auto it = std::find(m_areaTrigger.begin(), m_areaTrigger.end(), areaTrigger);
-    auto exists = it != m_areaTrigger.end();
-    if (!exists)
-        return;
-    m_areaTrigger.erase(it);
+    m_areaTrigger.remove(areaTrigger);
     if (GetTypeId() == TYPEID_UNIT && IsAIEnabled())
         ToCreature()->AI()->JustUnregisteredAreaTrigger(areaTrigger);
 }
@@ -5882,16 +5878,8 @@ void Unit::RemoveAreaTrigger(AuraEffect const* aurEff)
 
 void Unit::RemoveAllAreaTriggers()
 {
-    for (auto areatrigger : m_areaTrigger)
-    {
-        if (areatrigger)
-            areatrigger->Remove();
-    }
-    m_areaTrigger.clear();
-    // IsInWorld can return false and this can permanent loop.
-
-    //while (!m_areaTrigger.empty())
-    //    m_areaTrigger.front()->Remove();
+    while (!m_areaTrigger.empty())
+        m_areaTrigger.front()->Remove();
 }
 
 void Unit::SendSpellNonMeleeDamageLog(SpellNonMeleeDamage const* log)
@@ -10212,7 +10200,7 @@ void Unit::RemoveFromWorld()
 
         RemoveAllGameObjects();
         RemoveAllDynObjects();
-        //RemoveAllAreaTriggers();
+        RemoveAllAreaTriggers();
 
         ExitVehicle();  // Remove applied auras with SPELL_AURA_CONTROL_VEHICLE
         UnsummonAllTotems();
