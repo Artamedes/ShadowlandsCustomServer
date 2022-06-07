@@ -764,7 +764,8 @@ class item_upgrader : public ItemScript
                 }
 
                 l_ItemTarget->SetState(ITEM_CHANGED, p_Player);
-                p_Player->SetVisibleItemSlot(l_ItemTarget->GetSlot(), l_ItemTarget);
+                if (l_ItemTarget->GetSlot() < EQUIPMENT_SLOT_END)
+                    p_Player->SetVisibleItemSlot(l_ItemTarget->GetSlot(), l_ItemTarget);
                 l_ItemTarget->SetNotRefundable(p_Player);
                 l_ItemTarget->ClearSoulboundTradeable(p_Player);
                 p_Player->GetSession()->GetCollectionMgr()->AddItemAppearance(l_ItemTarget);

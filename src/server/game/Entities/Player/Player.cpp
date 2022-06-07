@@ -13101,6 +13101,12 @@ void Player::QuickEquipItem(uint16 pos, Item* pItem)
 
 void Player::SetVisibleItemSlot(uint8 slot, Item* pItem)
 {
+    if (pItem && !pItem->IsEquipped())
+        return;
+
+    if (slot > EQUIPMENT_SLOT_END)
+        return;
+
     auto itemField = m_values.ModifyValue(&Player::m_playerData).ModifyValue(&UF::PlayerData::VisibleItems, slot);
     if (pItem)
     {

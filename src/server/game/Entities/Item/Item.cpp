@@ -2521,10 +2521,11 @@ bool Item::AddBonusesToFront(uint32 bonusListID, bool checkExists)
     {
         std::vector<int32> bonusListIDs = m_itemData->BonusListIDs;
         bonusListIDs.push_back(bonusListID);
-        std::rotate(bonusListIDs.rbegin(), bonusListIDs.rbegin() + 1, bonusListIDs.rend());
+        //std::rotate(bonusListIDs.rbegin(), bonusListIDs.rbegin() + 1, bonusListIDs.rend());
         SetUpdateFieldValue(m_values.ModifyValue(&Item::m_itemData).ModifyValue(&UF::ItemData::BonusListIDs), std::move(bonusListIDs));
         for (ItemBonusEntry const* bonus : *bonuses)
-            _bonusData.AddBonus(bonus->Type, bonus->Value);
+            if (!_bonusData.AddBonus(bonus->Type, bonus->Value))
+                return false;
         SetUpdateFieldValue(m_values.ModifyValue(&Item::m_itemData).ModifyValue(&UF::ItemData::ItemAppearanceModID), _bonusData.AppearanceModID);
         return true;
     }
