@@ -31,7 +31,9 @@ SceneMgr::SceneMgr(Player* player) : _player(player)
     _isDebuggingScenes = false;
 }
 
-SceneMgr::~SceneMgr() = default;
+SceneMgr::~SceneMgr()
+{
+}
 
 uint32 SceneMgr::PlayScene(uint32 sceneId, Position const* position /*= nullptr*/)
 {
@@ -174,7 +176,7 @@ bool SceneMgr::HasScene(uint32 sceneInstanceID, uint32 sceneScriptPackageId /*= 
 
 void SceneMgr::AddInstanceIdToSceneMap(uint32 sceneInstanceID, SceneTemplate const* sceneTemplate)
 {
-    _scenesByInstance[sceneInstanceID] = std::make_unique<SceneTemplate>(*sceneTemplate);
+    _scenesByInstance[sceneInstanceID] = sceneTemplate;
 }
 
 void SceneMgr::CancelSceneBySceneId(uint32 sceneId)
@@ -224,7 +226,7 @@ SceneTemplate const* SceneMgr::GetSceneTemplateFromInstanceId(uint32 sceneInstan
     auto itr = _scenesByInstance.find(sceneInstanceID);
 
     if (itr != _scenesByInstance.end())
-        return itr->second.get();
+        return itr->second;
 
     return nullptr;
 }

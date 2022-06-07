@@ -28,7 +28,7 @@ class WorldPacket;
 struct Position;
 struct SceneTemplate;
 
-using SceneTemplateByInstance = std::map<uint32, std::unique_ptr<SceneTemplate>>;
+using SceneTemplateByInstance = std::map<uint32, SceneTemplate const*>;
 
 class TC_GAME_API SceneMgr
 {
