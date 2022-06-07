@@ -332,7 +332,7 @@ NonDefaultConstructible<pAuraEffectHandler> AuraEffectHandler[TOTAL_AURAS]=
     &AuraEffect::HandleNoImmediateEffect,                         //263 SPELL_AURA_DISABLE_CASTING_EXCEPT_ABILITIES implemented in Spell::CheckCast
     &AuraEffect::HandleNoImmediateEffect,                         //264 SPELL_AURA_DISABLE_ATTACKING_EXCEPT_ABILITIES implemented in Spell::CheckCast, Unit::AttackerStateUpdate
     &AuraEffect::HandleUnused,                                    //265 unused (4.3.4)
-    &AuraEffect::HandleNULL,                                      //266 SPELL_AURA_SET_VIGNETTE
+    &AuraEffect::HandleCreateVignette,                            //266 SPELL_AURA_SET_VIGNETTE
     &AuraEffect::HandleNoImmediateEffect,                         //267 SPELL_AURA_MOD_IMMUNE_AURA_APPLY_SCHOOL         implemented in Unit::IsImmunedToSpellEffect
     &AuraEffect::HandleModArmorPctFromStat,                       //268 SPELL_AURA_MOD_ARMOR_PCT_FROM_STAT              also implemented in Player::UpdateArmor()
     &AuraEffect::HandleNoImmediateEffect,                         //269 SPELL_AURA_MOD_IGNORE_TARGET_RESIST implemented in Unit::CalcAbsorbResist and CalcArmorReducedDamage
@@ -6546,3 +6546,48 @@ template TC_GAME_API void AuraEffect::GetTargetList(std::vector<Unit*>&) const;
 template TC_GAME_API void AuraEffect::GetApplicationList(std::list<AuraApplication*>&) const;
 template TC_GAME_API void AuraEffect::GetApplicationList(std::deque<AuraApplication*>&) const;
 template TC_GAME_API void AuraEffect::GetApplicationList(std::vector<AuraApplication*>&) const;
+
+void AuraEffect::HandleCreateVignette(AuraApplication const* auraApp, uint8 mode, bool apply) const
+{
+    if (!(mode & AURA_EFFECT_HANDLE_REAL))
+        return;
+
+    auto target = auraApp->GetTarget();
+    if (!target)
+        return;
+
+    if (Player* pTarget = target->ToPlayer())
+    {
+        if (apply)
+        {
+            pTarget->SetVignetteID(GetAmount());
+            std::list<Player*> targets;
+            Trinity::AnyPlayerInObjectRangeCheck check(pTarget, pTarget->GetVisibilityRange(), false);
+            Trinity::PlayerListSearcher<Trinity::AnyPlayerInObjectRangeCheck> searcher(pTarget, targets, check);
+            Cell::VisitWorldObjects(pTarget, searcher, pTarget->GetVisibilityRange());
+            for (std::list<Player*>::const_iterator iter = targets.begin(); iter != targets.end(); ++iter)
+            {
+                Player* player = (*iter);
+
+                if (player == pTarget)
+                    continue;
+
+                if (pTarget->isType(TYPEMASK_UNIT) && pTarget->ToUnit()->GetCharmerGUID() == player->GetGUID())
+                    continue;
+
+                player->GetVignetteMgr().OnWorldObjectAppear(pTarget);
+            }
+        }
+        else
+        {
+            GuidUnorderedSet vignetteSeeing = pTarget->GetVignetteSeeing();
+            if (!vignetteSeeing.empty())
+                for (auto guid : vignetteSeeing)
+                    if (Player* owner = ObjectAccessor::GetPlayer(*pTarget, guid))
+                        owner->GetVignetteMgr().OnWorldObjectDisappear(pTarget, true);
+
+            pTarget->SetVignetteID(0);
+        }
+    }
+}
+

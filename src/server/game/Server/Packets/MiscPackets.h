@@ -825,6 +825,29 @@ namespace WorldPackets
             int32 Unk = 0;
         };
 
+        struct VignetteClientData
+        {
+            G3D::Vector3 Position;
+            ObjectGuid   ObjGUID;
+            int32        VignetteID;
+            int32        ZoneID;
+        };
+
+        class TC_GAME_API ClientVignetteUpdate final : public ServerPacket
+        {
+        public:
+            ClientVignetteUpdate(bool update = false) : ServerPacket(SMSG_VIGNETTE_UPDATE, 20 + 1), ForceUpdate(update) { }
+
+            WorldPacket const* Write() override;
+
+            bool           ForceUpdate = false;
+            std::vector<ObjectGuid> RemovedIDs;
+            std::vector<ObjectGuid> AddedIDs;
+            std::vector<VignetteClientData> AddedDatas;
+            std::vector<ObjectGuid> UpdatedIDs;
+            std::vector<VignetteClientData> UpdatedDatas;
+        };
+
         class MountSpecial final : public ClientPacket
         {
         public:

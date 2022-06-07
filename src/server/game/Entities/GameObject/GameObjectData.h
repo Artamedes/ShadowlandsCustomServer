@@ -996,6 +996,56 @@ struct GameObjectTemplate
         }
     }
 
+    uint32 GetTrackingQuestId() const
+    {
+        uint32 vignette = GetVignetteId();
+
+        if (VignetteEntry const* vignetteEntry = sVignetteStore.LookupEntry(vignette))
+        {
+            if (vignetteEntry->VisibleTrackingQuestID)
+                return vignetteEntry->VisibleTrackingQuestID;
+        }
+
+        uint32 playerConditionID = 0;
+        switch (type)
+        {
+            case GAMEOBJECT_TYPE_CHEST:
+                playerConditionID = chest.conditionID1;
+                break;
+            case GAMEOBJECT_TYPE_GOOBER:
+                playerConditionID = goober.conditionID1;
+                break;
+                // Maybe somes others gameobject types can have tracking quest
+            default:
+                break;
+        }
+
+        if (!playerConditionID)
+            return 0;
+
+        auto playerCondition = sPlayerConditionStore.LookupEntry(playerConditionID);
+        if (playerCondition == nullptr || !(playerCondition->PrevQuestLogic & 0x10000)) ///< TrackingQuest
+            return 0;
+
+        return playerCondition->PrevQuestID[0];
+    }
+
+    uint32 GetVignetteId() const
+    {
+        switch (type)
+        {
+            case GAMEOBJECT_TYPE_CHEST:
+                return chest.SpawnVignette;
+            case GAMEOBJECT_TYPE_GOOBER:
+                return goober.SpawnVignette;
+            case GAMEOBJECT_TYPE_CAPTURE_POINT:
+                return capturePoint.SpawnVignette;
+            case GAMEOBJECT_TYPE_GATHERING_NODE:
+                return gatheringNode.SpawnVignette;
+        }
+        return 0;
+    }
+
     bool IsInfiniteGameObject() const
     {
         switch (type)

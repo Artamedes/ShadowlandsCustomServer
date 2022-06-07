@@ -1464,7 +1464,12 @@ class TC_GAME_API ObjectMgr
         uint64 GenerateVoidStorageItemId();
         ObjectGuid::LowType GenerateCreatureSpawnId();
         ObjectGuid::LowType GenerateGameObjectSpawnId();
+        uint64 GenerateNewVignetteGUID()
+        {
+            return _HiVignetteGuid++;
+        }
         uint64 GenerateScenarioId();
+        uint64 _HiVignetteGuid;
         uint64 _scenarioId;
 
         SpawnGroupTemplateData const* GetSpawnGroupData(uint32 groupId) const { auto it = _spawnGroupDataStore.find(groupId); return it != _spawnGroupDataStore.end() ? &it->second : nullptr; }

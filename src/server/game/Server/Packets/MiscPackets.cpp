@@ -637,6 +637,52 @@ WorldPacket const* WorldPackets::Misc::AccountHeirloomUpdate::Write()
     return &_worldPacket;
 }
 
+WorldPacket const* WorldPackets::Misc::ClientVignetteUpdate::Write()
+{
+    _worldPacket.WriteBit(ForceUpdate);
+    _worldPacket.WriteBit(false);
+
+    _worldPacket << int32(RemovedIDs.size());
+    for (auto RemoveID : RemovedIDs)
+        _worldPacket << RemoveID;
+
+    _worldPacket << int32(AddedIDs.size());
+    for (auto AddedID : AddedIDs)
+        _worldPacket << AddedID;
+
+    _worldPacket << int32(AddedDatas.size());
+    for (VignetteClientData const& AddedData : AddedDatas)
+    {
+        _worldPacket << AddedData.Position.x;
+        _worldPacket << AddedData.Position.y;
+        _worldPacket << AddedData.Position.z;
+        _worldPacket << AddedData.ObjGUID;
+        _worldPacket << AddedData.VignetteID;
+        _worldPacket << AddedData.ZoneID;            // Zone restricted (Vignette with flag 0x40)
+        _worldPacket << uint32(0);
+        _worldPacket << uint32(0);
+    }
+
+    _worldPacket << int32(UpdatedIDs.size());
+    for (auto UpdateID : UpdatedIDs)
+        _worldPacket << UpdateID;
+
+    _worldPacket << int32(UpdatedDatas.size());
+    for (VignetteClientData const& UpdatedData : UpdatedDatas)
+    {
+        _worldPacket << UpdatedData.Position.x;
+        _worldPacket << UpdatedData.Position.y;
+        _worldPacket << UpdatedData.Position.z;
+        _worldPacket << UpdatedData.ObjGUID;
+        _worldPacket << UpdatedData.VignetteID;
+        _worldPacket << UpdatedData.ZoneID;            // Zone restricted (Vignette with flag 0x40)
+        _worldPacket << uint32(0);
+        _worldPacket << uint32(0);
+    }
+
+    return &_worldPacket;
+}
+
 void WorldPackets::Misc::MountSpecial::Read()
 {
     SpellVisualKitIDs.resize(_worldPacket.read<uint32>());

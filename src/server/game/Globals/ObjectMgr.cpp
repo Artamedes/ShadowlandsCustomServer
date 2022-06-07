@@ -226,6 +226,7 @@ ObjectMgr::ObjectMgr():
     _gameObjectSpawnId(1),
     _voidItemId(1),
     _scenarioId(1),
+    _HiVignetteGuid(1),
     DBCLocaleIndex(LOCALE_enUS)
 {
 }
@@ -501,6 +502,12 @@ void ObjectMgr::LoadCreatureTemplate(Field* fields)
     creatureTemplate.SpellSchoolImmuneMask  = fields[68].GetUInt32();
     creatureTemplate.flags_extra            = fields[69].GetUInt32();
     creatureTemplate.ScriptID               = GetScriptId(fields[70].GetString());
+
+    // If you don't have VignetteID you can assign TrackingQuestID in the field, mostly used for WorldBoss
+    if (VignetteEntry const* vignette = sVignetteStore.LookupEntry(creatureTemplate.VignetteID))
+        creatureTemplate.TrackingQuestID = vignette->VisibleTrackingQuestID;
+    else
+        creatureTemplate.TrackingQuestID = creatureTemplate.VignetteID;
 }
 
 void ObjectMgr::LoadCreatureTemplateResistances()

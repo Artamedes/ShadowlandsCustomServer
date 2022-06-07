@@ -906,6 +906,8 @@ void WorldObject::CleanupsBeforeDelete(bool /*finalCleanup*/)
     if (IsInWorld())
         RemoveFromWorld();
 
+    _seeingVignette.clear();
+
     if (TransportBase* transport = GetTransport())
         transport->RemovePassenger(this);
 }
@@ -3739,6 +3741,8 @@ void WorldObject::DestroyForNearbyPlayers()
 
         DestroyForPlayer(player);
         player->m_clientGUIDs.erase(GetGUID());
+
+        player->GetVignetteMgr().OnWorldObjectDisappear(this, true);
     }
 }
 

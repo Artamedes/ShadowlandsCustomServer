@@ -4091,6 +4091,21 @@ struct VehicleEntry
     std::array<uint16, 3> PowerDisplayID;
 };
 
+struct VignetteEntry
+{
+    uint32              Id;
+    LocalizedString     Name;
+    uint32              PlayerConditionID;
+    uint32              VisibleTrackingQuestID;
+    uint32              QuestFeedbackEffectId;
+    uint32              Flags;
+    float               MaxHeight;
+    float               MinHeight;
+    uint8               VignetteType;
+    uint32              RewardQuestID;
+    uint32              UiWidgetSetID;
+};
+
 struct VehicleSeatEntry
 {
     uint32 ID;

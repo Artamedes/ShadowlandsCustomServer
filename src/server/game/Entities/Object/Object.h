@@ -741,6 +741,11 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
         SmoothPhasing* GetSmoothPhasing() { return _smoothPhasing.get(); }
         SmoothPhasing const* GetSmoothPhasing() const { return _smoothPhasing.get(); }
 
+        void AddVignetteSee(ObjectGuid const& guid) { if (guid.IsPlayer()) _seeingVignette.insert(guid); }
+        bool IsInVignetteSee(ObjectGuid const& guid) const { return _seeingVignette.find(guid) != _seeingVignette.end(); }
+        void RemoveVignetteSee(ObjectGuid const& guid) { if (guid.IsPlayer()) _seeingVignette.erase(guid); }
+        GuidUnorderedSet GetVignetteSeeing() { return _seeingVignette; }
+
     protected:
         std::string m_name;
         bool m_isActive;
@@ -782,6 +787,7 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
         uint16 m_notifyflags;
 
         ObjectGuid _privateObjectOwner;
+        GuidUnorderedSet _seeingVignette;
 
         std::unique_ptr<SmoothPhasing> _smoothPhasing;
 

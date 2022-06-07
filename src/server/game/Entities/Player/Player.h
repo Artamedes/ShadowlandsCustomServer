@@ -33,6 +33,7 @@
 #include "PlayerTaxi.h"
 #include "QuestDef.h"
 #include "SceneMgr.h"
+#include "VignetteMgr.h"
 
 struct AccessRequirement;
 struct AchievementEntry;
@@ -1198,6 +1199,8 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void SendTransferAborted(uint32 mapid, TransferAbortReason reason, uint8 arg = 0, int32 mapDifficultyXConditionID = 0) const;
         void SendInstanceResetWarning(uint32 mapid, Difficulty difficulty, uint32 time, bool welcome) const;
 
+        void AddTrackingQuestIfNeeded(ObjectGuid sourceGuid);
+
         bool CanInteractWithQuestGiver(Object* questGiver) const;
         Creature* GetNPCIfCanInteractWith(ObjectGuid const& guid, NPCFlags npcFlags, NPCFlags2 npcFlags2) const;
         GameObject* GetGameObjectIfCanInteractWith(ObjectGuid const& guid) const;
@@ -1663,6 +1666,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void SetQuestSlotObjectiveFlag(uint16 slot, int8 objectiveIndex);
         void RemoveQuestSlotObjectiveFlag(uint16 slot, int8 objectiveIndex);
         void SetQuestCompletedBit(uint32 questBit, bool completed);
+        bool IsQuestBitFlaged(uint32 bitIndex) const;
 
         uint16 GetReqKillOrCastCurrentCount(uint32 quest_id, int32 entry) const;
         void AreaExploredOrEventHappens(uint32 questId);
@@ -2722,6 +2726,10 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         VoidStorageItem* GetVoidStorageItem(uint8 slot) const;
         VoidStorageItem* GetVoidStorageItem(uint64 id, uint8& slot) const;
 
+        Vignette::Manager& GetVignetteMgr() { return m_VignetteMgr; }
+        void SetVignetteID(uint32 vignetteID) { _vignetteID = vignetteID; }
+        uint32 GetVignetteID() const { return _vignetteID; }
+
         uint32 GetTransportSpawnID() const { return _transportSpawnID; }
         void SetTransportSpawnID(uint32 spawnId) { _transportSpawnID = spawnId; }
 
@@ -3262,6 +3270,10 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         PlayerAchievementMgr* m_achievementMgr;
         ReputationMgr*  m_reputationMgr;
         std::unique_ptr<QuestObjectiveCriteriaMgr> m_questObjectiveCriteriaMgr;
+
+        // Vignette
+        Vignette::Manager m_VignetteMgr;
+        uint32 _vignetteID;
 
         uint32 m_ChampioningFaction;
 

@@ -6865,6 +6865,29 @@ struct VehicleSeatLoadInfo
     }
 };
 
+struct VignetteLoadInfo
+{
+    static DB2LoadInfo const* Instance()
+    {
+        static DB2FieldMeta const fields[] =
+        {
+            { false, FT_INT, "ID" },
+            { false, FT_STRING, "Name" },
+            { false, FT_INT, "PlayerConditionID" },
+            { false, FT_INT, "VisibleTrackingQuestID" },
+            { false, FT_INT, "QuestFeedbackEffectId" },
+            { false, FT_INT, "Flags" },
+            { false, FT_FLOAT, "MaxHeight" },
+            { false, FT_FLOAT, "MinHeight" },
+            { false, FT_BYTE, "VignetteType" },
+            { false, FT_INT, "RewardQuestID" },
+            { false, FT_INT, "UiWidgetSetID" },
+        };
+        static DB2LoadInfo const loadInfo(&fields[0], std::extent<decltype(fields)>::value, VignetteMeta::Instance(), HOTFIX_SEL_VIGNETTE);
+        return &loadInfo;
+    }
+};
+
 struct WmoAreaTableLoadInfo
 {
     static DB2LoadInfo const* Instance()

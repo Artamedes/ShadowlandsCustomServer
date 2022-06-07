@@ -144,7 +144,7 @@ static uint32 copseReclaimDelay[MAX_DEATH_COUNT] = { 30, 60, 120 };
 
 uint64 const MAX_MONEY_AMOUNT = 99999999999ULL;
 
-Player::Player(WorldSession* session) : Unit(true), m_sceneMgr(this)
+Player::Player(WorldSession* session) : Unit(true), m_sceneMgr(this), m_VignetteMgr(this)
 {
     m_speakTime = 0;
     m_speakCount = 0;
@@ -367,6 +367,8 @@ Player::Player(WorldSession* session) : Unit(true), m_sceneMgr(this)
     _usePvpItemLevels = false;
 
     _transportSpawnID = 0;
+
+    _vignetteID = 0;
 }
 
 Player::~Player()
@@ -1313,6 +1315,8 @@ void Player::Update(uint32 p_time)
     //because we don't want player's ghost teleported from graveyard
     if (IsHasDelayedTeleport() && IsAlive())
         TeleportTo(m_teleport_dest, m_teleport_options, 0, m_teleport_transport);
+
+    m_VignetteMgr.Update();
 
     sScriptMgr->OnPlayerUpdate(this, p_time);
 
@@ -13104,7 +13108,7 @@ void Player::SetVisibleItemSlot(uint8 slot, Item* pItem)
     if (pItem && !pItem->IsEquipped())
         return;
 
-    if (slot > EQUIPMENT_SLOT_END)
+    if (slot >= EQUIPMENT_SLOT_END)
         return;
 
     auto itemField = m_values.ModifyValue(&Player::m_playerData).ModifyValue(&UF::PlayerData::VisibleItems, slot);
@@ -17539,6 +17543,20 @@ void Player::SetQuestCompletedBit(uint32 questBit, bool completed)
         RemoveUpdateFieldFlagValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::QuestCompleted, fieldOffset), flag);
 }
 
+bool Player::IsQuestBitFlaged(uint32 bitIndex) const
+{
+    if (!bitIndex)
+        return false;
+
+    uint32 fieldOffset = (bitIndex - 1) >> 6;
+    if (fieldOffset >= QUESTS_COMPLETED_BITS_SIZE)
+        return false;
+
+    uint64 flag = UI64LIT(1) << ((bitIndex - 1) & 63);
+
+    return m_activePlayerData->QuestCompleted[fieldOffset] & flag;
+}
+
 void Player::AreaExploredOrEventHappens(uint32 questId)
 {
     if (questId)
@@ -17628,6 +17646,9 @@ void Player::KilledMonsterCredit(uint32 entry, ObjectGuid guid /*= ObjectGuid::E
         if (killed && killed->GetEntry())
             real_entry = killed->GetEntry();
     }
+
+    if (killed)
+        AddTrackingQuestIfNeeded(killed->GetGUID());
 
     StartCriteriaTimer(CriteriaStartEvent::KillNPC, real_entry);   // MUST BE CALLED FIRST
     UpdateCriteria(CriteriaType::KillCreature, real_entry, addKillCount, 0, killed);
@@ -24934,6 +24955,8 @@ void Player::UpdateVisibilityOf(WorldObject* target)
 
             m_clientGUIDs.erase(target->GetGUID());
 
+            m_VignetteMgr.OnWorldObjectDisappear(target);
+
             #ifdef TRINITY_DEBUG
                 TC_LOG_DEBUG("maps", "Object %s out of range for player %s. Distance = %f", target->GetGUID().ToString().c_str(), GetGUID().ToString().c_str(), GetDistance(target));
             #endif
@@ -24950,6 +24973,7 @@ void Player::UpdateVisibilityOf(WorldObject* target)
                 TC_LOG_DEBUG("maps", "Object %s is visible now for player %s. Distance = %f", target->GetGUID().ToString().c_str(), GetGUID().ToString().c_str(), GetDistance(target));
             #endif
 
+            m_VignetteMgr.OnWorldObjectAppear(target);
             // target aura duration for caster show only if target exist at caster client
             // send data at target visibility change (adding to client)
             if (target->isType(TYPEMASK_UNIT))
@@ -25024,6 +25048,7 @@ void Player::UpdateVisibilityOf(T* target, UpdateData& data, std::set<Unit*>& vi
                 target->BuildDestroyUpdateBlock(&data);
 
             m_clientGUIDs.erase(target->GetGUID());
+            m_VignetteMgr.OnWorldObjectDisappear(target);
 
             #ifdef TRINITY_DEBUG
                 TC_LOG_DEBUG("maps", "Object %s is out of range for player %s. Distance = %f", target->GetGUID().ToString().c_str(), GetGUID().ToString().c_str(), GetDistance(target));
@@ -25036,6 +25061,7 @@ void Player::UpdateVisibilityOf(T* target, UpdateData& data, std::set<Unit*>& vi
         {
             target->BuildCreateUpdateBlockForPlayer(&data, this);
             UpdateVisibilityOf_helper(m_clientGUIDs, target, visibleNow);
+            m_VignetteMgr.OnWorldObjectAppear(target);
 
             #ifdef TRINITY_DEBUG
                 TC_LOG_DEBUG("maps", "Object %s is visible now for player %s. Distance = %f", target->GetGUID().ToString().c_str(), GetGUID().ToString().c_str(), GetDistance(target));
@@ -25221,6 +25247,9 @@ void Player::SendInitialPacketsBeforeAddToMap()
     SendCurrencies();
     /// SMSG_EQUIPMENT_SET_LIST
     SendEquipmentSetList();
+
+    // Reset Vignitte data
+    SendDirectMessage(WorldPackets::Misc::ClientVignetteUpdate(true).Write());
 
     m_achievementMgr->SendAllData(this);
     m_questObjectiveCriteriaMgr->SendAllData(this);
@@ -30424,4 +30453,27 @@ void Player::ResetChallengeKey()
 void Player::ChallengeKeyCharded(Item* item, uint32 challengeLevel, bool runRand /*= true*/)
 {
     m_playerChallenge->ResetMythicKeystoneTo(item, challengeLevel, runRand);
+}
+
+void Player::AddTrackingQuestIfNeeded(ObjectGuid sourceGuid)
+{
+    uint32 trackingQuest = 0;
+
+    if (sourceGuid.IsUnit())
+        if (auto creatureSource = ObjectAccessor::GetCreature(*this, sourceGuid))
+            trackingQuest = creatureSource->GetTrackingQuestID();
+
+    if (sourceGuid.IsGameObject())
+        if (auto gameObjectSource = ObjectAccessor::GetGameObject(*this, sourceGuid))
+            trackingQuest = gameObjectSource->GetGOInfo()->GetTrackingQuestId();
+
+    if (trackingQuest == 0)
+        return;
+
+    auto quest = sObjectMgr->GetQuestTemplate(trackingQuest);
+    if (quest == nullptr)
+        return;
+
+    if (CanTakeQuest(quest, false))
+        CompleteQuest(trackingQuest);
 }
