@@ -9,6 +9,7 @@
 #include "DatabaseEnv.h"
 #include "LootMgr.h"
 #include "InstanceScenario.h"
+#include "Chat.h"
 
 struct CustomInstanceRespawnData
 {
@@ -26,17 +27,14 @@ enum SharedCustomInstanceData
 
     // Beguiling
     NpcEnchantedEmissary   = 155432,
-    SpellQueenDecreesBlowback = 290027,
-    SpellEnchanted = 303632,
-
     NpcVoidTouchedEmissary = 155433, // no move, immune to all cc, no reset health
-    SpellQueenDecreeHide = 302420, // spell
-    SpellVoidSight       = 302419,
-
     NpcEmisarryOfTheTides  = 155434, // resets health, all cc lasts max 8 seconds only, No DR
+    SpellQueenDecreesBlowback   = 290027,
+    SpellEnchanted              = 303632,
+    SpellQueenDecreeHide        = 302420, // spell
+    SpellVoidSight              = 302419,
     SpellQueenDecreeUnstoppable = 302417,
-
-    TeleportTheEternalPalace = 302415, // effect dummy, after cast, despawn
+    TeleportTheEternalPalace    = 302415, // effect dummy, after cast, despawn
 
     // Prideful
     SpellPridefulSpawn = 340381,
@@ -154,6 +152,8 @@ public:
                 auto loot = chest->GetLootFor(player, true);
                 loot->FillLoot(GetLootIdForDungeon(), LootTemplates_Gameobject, player, true, false, chest->GetLootMode(), true, true, false, chest->GetGOInfo()->IsOploteChest());
             });
+
+            ChestGuid = chest->GetGUID();
 
             chest->SetLootState(LootState::GO_ACTIVATED); // set activated
             chest->ForceUpdateFieldChange(chest->m_values.ModifyValue(&Object::m_objectData).ModifyValue(&UF::ObjectData::DynamicFlags)); // force update dynflags
@@ -316,15 +316,23 @@ public:
         });
     }
 
+    void OnPlayerEnter(Player* player) override;
+    void OnPlayerLeave(Player* player) override;
+
     // Beguiling Affix
     ObjectGuid EnchantedEmissary;
     ObjectGuid EmissaryOfTheTides;
     ObjectGuid VoidTouchedEmissary;
 
+    /// Challenge
     float EnemyPercentPct = 0;
     uint32 EnemyForcesCriteriaTreeId = 0;
     bool IsPrideful = false;
     uint32 m_CheckpointId = 0;
+    uint32 CheckCompleteTimer = 0;
+
+    /// Challenge End Chest
     Position ChestSpawn;
     QuaternionData Quad;
+    ObjectGuid ChestGuid;
 };

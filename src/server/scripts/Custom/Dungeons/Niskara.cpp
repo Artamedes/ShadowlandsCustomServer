@@ -20,7 +20,7 @@ struct instance_niskara : public CustomInstanceScript
             Quad = { -0.0f, -0.0f, -0.532226f, 0.846603f };
         }
 
-        void OnCompletedCriteriaTree(CriteriaTree const* tree) override
+        void OnCompletedCriteriaTree(CriteriaTree const* /*tree*/) override
         {
             if (InstanceScenario* instanceScenario = instance->GetInstanceScenario())
             {

@@ -824,7 +824,7 @@ public:
         }
     }
 
-    void OnCompletedCriteriaTree(CriteriaTree const* tree) override
+    void OnCompletedCriteriaTree(CriteriaTree const* /*tree*/) override
     {
         if (InstanceScenario* instanceScenario = instance->GetInstanceScenario())
         {

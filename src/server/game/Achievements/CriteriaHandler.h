@@ -284,6 +284,7 @@ public:
     void RemoveCriteriaTimer(CriteriaStartEvent startEvent, uint32 entry);   // used for quest and scripted timed s
     bool IsCompletedCriteriaTree(CriteriaTree const* tree, Player* referencePlayer);
     CriteriaProgress* GetCriteriaProgress(Criteria const* entry);
+    CriteriaProgressMap _criteriaProgress;
 
 protected:
     virtual void SendCriteriaUpdate(Criteria const* criteria, CriteriaProgress const* progress, Seconds timeElapsed, bool timedCompleted) const = 0;
@@ -311,7 +312,6 @@ protected:
     virtual std::string GetOwnerInfo() const = 0;
     virtual CriteriaList const& GetCriteriaByType(CriteriaType type, uint32 asset) const = 0;
 
-    CriteriaProgressMap _criteriaProgress;
     std::set<uint32> _completedCriteriaTree;
     std::map<uint32, uint32 /*ms time left*/> _timeCriteriaTrees;
 };

@@ -14,7 +14,7 @@ public:
         Quad = { -0.0f, -0.0f, -0.686438f, 0.727188f };
     }
 
-    void OnCompletedCriteriaTree(CriteriaTree const* tree) override
+    void OnCompletedCriteriaTree(CriteriaTree const* /*tree*/) override
     {
         if (InstanceScenario* instanceScenario = instance->GetInstanceScenario())
         {
