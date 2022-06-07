@@ -57,7 +57,7 @@ enum WarriorSpells
     SPELL_WARRIOR_CHARGE_SLOW_EFFECT                = 236027,
     SPELL_WARRIOR_COLOSSUS_SMASH                    = 167105,
     SPELL_WARRIOR_COLOSSUS_SMASH_EFFECT             = 208086,
-    SPELL_WARRIOR_EXECUTE                           = 20647,
+    SPELL_WARRIOR_EXECUTE                           = 163201,
     SPELL_WARRIOR_GLYPH_OF_THE_BLAZING_TRAIL        = 123779,
     SPELL_WARRIOR_GLYPH_OF_HEROIC_LEAP              = 159708,
     SPELL_WARRIOR_GLYPH_OF_HEROIC_LEAP_BUFF         = 133278,
@@ -3142,7 +3142,7 @@ class spell_warr_execute_damages : public SpellScript
             return;
 
         if (target->IsAlive() && caster->Variables.Exist("POWER_TAKEN") && caster->HasAura(SPELL_WARRIOR_EXECUTE_ARMS_RANK_2))
-            caster->ModifyPower(POWER_RAGE, CalculatePct(caster->Variables.GetValue<int32>("POWER_TAKEN"), sSpellMgr->GetSpellInfo(SPELL_WARRIOR_EXECUTE)->GetEffect(EFFECT_1).BasePoints));
+            caster->ModifyPower(POWER_RAGE, CalculatePct(caster->Variables.GetValue<int32>("POWER_TAKEN"), 20));
 
         caster->Variables.Remove("EXECUTE_MULTIPLIER");
         caster->Variables.Remove("POWER_TAKEN");
