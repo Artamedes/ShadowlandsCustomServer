@@ -1667,6 +1667,8 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void RemoveQuestSlotObjectiveFlag(uint16 slot, int8 objectiveIndex);
         void SetQuestCompletedBit(uint32 questBit, bool completed);
         bool IsQuestBitFlaged(uint32 bitIndex) const;
+        void SetRuneforgePowers(uint32 power);
+        bool HasRuneforgePower(uint32 power) const;
 
         uint16 GetReqKillOrCastCurrentCount(uint32 quest_id, int32 entry) const;
         void AreaExploredOrEventHappens(uint32 questId);

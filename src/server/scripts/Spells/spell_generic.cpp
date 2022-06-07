@@ -5183,17 +5183,9 @@ class spell_restoring_memory : public SpellScript
         {
             if (auto player = caster->ToPlayer())
             {
+                player->SetRuneforgePowers(1 | 32);
+
                 player->SendPlaySpellVisualKit(362, 1, 0);
-
-                WorldPackets::Achievement::CriteriaUpdate upd;
-
-                upd.CriteriaID = 49892;
-                upd.Quantity = 21;
-                upd.PlayerGUID = player->GetGUID();
-                upd.Flags = 1;
-                upd.CurrentTime = GameTime::GetGameTime();
-
-                player->SendDirectMessage(upd.Write());
             }
         }
     }

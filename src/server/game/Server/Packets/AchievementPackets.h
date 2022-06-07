@@ -102,7 +102,7 @@ namespace WorldPackets
             Optional<uint64> RafAcceptanceID;
         };
 
-        class AccountCriteriaUpdate final : public ServerPacket
+        class TC_GAME_API AccountCriteriaUpdate final : public ServerPacket
         {
         public:
             AccountCriteriaUpdate() : ServerPacket(SMSG_ACCOUNT_CRITERIA_UPDATE) { }
