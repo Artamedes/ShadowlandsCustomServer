@@ -415,6 +415,37 @@ struct npc_char_services : public ScriptedAI
         }
 };
 
+const uint32 questsToCompleteForStoryline[] = {
+    700007, ///< The Magic Stone
+    700008, ///< Enter the Maelstrom
+    /// 700009, ///< Clear out the Mawsworn - REMOVED
+    /// 700010, ///< DEPCREATED UNKNOWN ENTITY
+    700011, ///< A Dire Warning
+    700012, ///< Investigate Further
+    700013, ///< A Load of Crap
+    /// 700014, ///< You've gotta be kiddin' - DEPRECATED
+    700015, ///< Less Money, More Problems.
+    700016, ///< Secret Plan
+    700017, ///< Betrayal For Power
+    700018, ///< Legendary Dust?
+    700019, ///< Choice of the Champion
+    700020, ///< A Holy Call
+    700021, ///< Purge the Temple
+    700022, ///< Mysterious Portal
+    700024, ///< Another Portal?
+    700025, ///< Embrace the Void
+    700026, ///< Avenging Our Allies
+    700027, ///< Take Out The Trash
+    700028, ///< Stop The Corruption
+    700029, ///< Last Light At The End Of The Tunnel
+    700030, ///< Am I Done Killing?
+    700031, ///< Turn The Tide
+    700032, ///< Time To Fight Back
+    700033, ///< Clear The Way
+    700034, ///< Battle Of The Mawsworn
+    700035, ///< Betrayal
+    700036, ///< Finish The Fight
+};
 
 struct npc_juno_700006 : public ScriptedAI
 {
@@ -425,6 +456,48 @@ struct npc_juno_700006 : public ScriptedAI
         {
             ClearGossipMenuFor(p_Player);
             p_Player->PrepareQuestMenu(me->GetGUID());
+
+            if (p_Player->HasAchieved(700000) && p_Player->GetQuestStatus(700006) == QUEST_STATUS_REWARDED)
+            {
+                AddGossipItemFor(p_Player, GossipOptionIcon::None, "I've heard this tale before.\n|cffFF0000<Skip to Thrall>", 0, 0, "Are you sure? This action cannot be undone.", 0, false, [p_Player, this](std::string /*callback*/)
+                {
+                    if (p_Player->HasAchieved(700000))
+                    {
+                        p_Player->Variables.Set("SEASON1SKIP", true);
+
+                        for (auto questId : questsToCompleteForStoryline)
+                        {
+                            auto quest = sObjectMgr->GetQuestTemplate(questId);
+                            if (!quest)
+                                continue;
+
+                            auto status = p_Player->GetQuestStatus(questId);
+                            switch (status)
+                            {
+                                case QUEST_STATUS_NONE:
+                                    p_Player->AddQuestAndCheckCompletion(quest, p_Player);
+                                    p_Player->CompleteQuest(questId);
+                                    p_Player->RewardQuest(quest, LootItemType::Item, 0, p_Player);
+                                    break;
+                                case QUEST_STATUS_INCOMPLETE:
+                                    p_Player->CompleteQuest(questId);
+                                    p_Player->RewardQuest(quest, LootItemType::Item, 0, p_Player);
+                                    break;
+                                case QUEST_STATUS_COMPLETE:
+                                    p_Player->RewardQuest(quest, LootItemType::Item, 0, p_Player);
+                                    break;
+                            }
+                        }
+
+                        p_Player->AddItem(p_Player, 700316, 1);
+                        p_Player->CastSpell(p_Player, 268065, true); ///< Fade to Black
+                        p_Player->Variables.Remove("SEASON1SKIP");
+                        p_Player->UpdateVisibilityForPlayer();
+                        //me->DestroyForPlayer(p_Player);
+                    }
+                });
+            }
+
             if (p_Player->GetQuestStatus(700007) == QUEST_STATUS_NONE)
                 SendGossipMenuFor(p_Player, 7000060, me);
             else if (p_Player->GetQuestStatus(700008) != QUEST_STATUS_REWARDED)
@@ -445,8 +518,11 @@ struct npc_juno_700006 : public ScriptedAI
         {
             if (quest->GetQuestId() == 700019)
             {
-                player->TeleportTo(1116, 50.7495f, -2726.76f, 63.047f, 2.47065f);
-                Conversation::CreateConversation(700302, player, *player, player->GetGUID());
+                if (!player->Variables.Exist("SEASON1SKIP"))
+                {
+                    player->TeleportTo(1116, 50.7495f, -2726.76f, 63.047f, 2.47065f);
+                    Conversation::CreateConversation(700302, player, *player, player->GetGUID());
+                }
             }
         }
 

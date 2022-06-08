@@ -359,6 +359,22 @@ class LoginScript : public PlayerScript
 
             p_Player->RemoveAurasDueToSpell(141480); // Self stun
             p_Player->RemoveAurasDueToSpell(163091); // Self stun
+
+            if (p_Player->GetQuestStatus(700036) == QUEST_STATUS_REWARDED  && !p_Player->HasAchieved(700000))
+                if (auto achievEntry = sAchievementStore.LookupEntry(700000))
+                    p_Player->CompletedAchievement(achievEntry);
+        }
+
+        void OnQuestStatusChange(Player* player, uint32 quest) override
+        {
+            if (quest != 700036)
+                return;
+
+            auto newStatus = player->GetQuestStatus(quest);
+
+            if (newStatus == QUEST_STATUS_REWARDED && !player->HasAchieved(700000))
+                if (auto achievEntry = sAchievementStore.LookupEntry(700000))
+                    player->CompletedAchievement(achievEntry);
         }
 };
 
