@@ -5347,6 +5347,7 @@ void AddSC_mage_spell_scripts()
     RegisterSpellScript(spell_mage_mastery_ignite);
     new spell_mastery_ignite();
     RegisterSpellScript(spell_mage_arcane_charge_clear);
+    RegisterSpellScript(spell_mastery_icicles_glacial_spike);
 
     // Spell Pet scripts
     RegisterSpellScript(spell_mage_pet_freeze);
