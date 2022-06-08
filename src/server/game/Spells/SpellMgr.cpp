@@ -3298,6 +3298,10 @@ void SpellMgr::LoadSpellInfoCorrections()
         {
             spellInfo->RecoveryTime = 5000;
         });
+        ApplySpellFix({}, [](SpellInfo* spellInfo)
+        {
+            spellInfo->AttributesEx5 &= ~SPELL_ATTR5_SPELL_HASTE_AFFECTS_PERIODIC;
+        });
 	    // Storm, Earth, and Fire
 	    ApplySpellFix({ 137639 }, [](SpellInfo* spellInfo)
 	    {

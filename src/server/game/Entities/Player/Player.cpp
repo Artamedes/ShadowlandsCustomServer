@@ -21768,6 +21768,7 @@ void Player::_SaveInventory(CharacterDatabaseTransaction trans)
                 break;
         }
 
+        // somehow after item deletes itself, some items are not removed from the player inventory resulting in crash
         item->SaveToDB(trans);                                   // item have unchanged inventory record and can be save standalone
     }
     m_itemUpdateQueue.clear();

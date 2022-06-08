@@ -24,26 +24,13 @@ class item_enhancement_system : public ItemScript
 
             auto item = targets.GetItemTarget();
 
+            if (item->GetScriptId() == upgrader->GetScriptId() || item == upgrader)
+            {
+                ChatHandler(player).SendSysMessage("|cffFF0000You can't enhance that item.");
+                return;
+            }
+
             // Allowing everything to be enhanced.
-            //switch (item->GetEntry())
-            //{
-            //    case 46017:
-            //    case 32838:
-            //    case 32837:
-            //    case 19019:
-            //    case 49623:
-            //    case 71352:
-            //    case 71086:
-            //    case 77949:
-            //    case 77950:
-            //    case 186414:
-            //        break;
-            //    default:
-            //    {
-            //        ChatHandler(player).SendSysMessage("|cffFF0000You can't enhance that item.");
-            //        return true;
-            //    }
-            //}
             if (item->HasBonusId(BonusIDAward))
             {
                 ChatHandler(player).PSendSysMessage("|cffFF0000You can't enhance that item with %s anymore.", Item::GetItemLink(upgrader->GetEntry()).c_str());
@@ -72,6 +59,12 @@ class item_enhancement_system : public ItemScript
             if (!itemTarget)
                 return;
 
+            if (itemTarget->GetScriptId() == upgrader->GetScriptId() || item == itemTarget)
+            {
+                ChatHandler(player).SendSysMessage("|cffFF0000You can't enhance that item.");
+                return;
+            }
+
             // Consume the scroll
             if (!itemTarget->HasBonusId(BonusIDAward))
             {
@@ -86,6 +79,7 @@ class item_enhancement_system : public ItemScript
                 itemTarget->SetState(ItemUpdateState::ITEM_CHANGED, player);
                 if (itemTarget->IsEquipped())
                     player->_ApplyItemMods(itemTarget, itemTarget->GetSlot(), true);
+                //player->SaveToDB();
                 CharacterDatabaseTransaction trans = CharacterDatabase.BeginTransaction();
                 itemTarget->SaveToDB(trans);
                 CharacterDatabase.CommitTransaction(trans);
