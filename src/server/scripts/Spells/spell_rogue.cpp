@@ -2807,7 +2807,7 @@ public:
 
         bool CheckProc(ProcEventInfo& eventInfo)
         {
-            if (eventInfo.GetDamageInfo()->GetDamageType() == DIRECT_DAMAGE)
+            if (eventInfo.GetDamageInfo() && eventInfo.GetDamageInfo()->GetDamageType() == DIRECT_DAMAGE)
                 return true;
             return false;
         }
@@ -3255,12 +3255,11 @@ class spell_rog_cimson_tempest :public SpellScript
 	void HandleTakePower(SpellPowerCost& powerCost)
 	{
 		if (powerCost.Power == POWER_COMBO_POINTS)
-			_cp = GetSpell()->GetPowerCost(POWER_COMBO_POINTS)->Amount;
+			_cp = GetFinishngComboPointsAndDropEchoingReprimand(GetCaster(), GetSpell()->GetPowerCost(POWER_COMBO_POINTS)->Amount);
 	}
 
 	void HandleHit(SpellEffIndex effIndex)
 	{
-        _cp = GetFinishngComboPointsAndDropEchoingReprimand(GetCaster(), _cp);
 		SetHitDamage(GetHitDamage() * (_cp + 1));
 	}
 
@@ -3270,7 +3269,6 @@ class spell_rog_cimson_tempest :public SpellScript
         {
 			if (Aura* aura = target->GetAura(SPELL_ROGUE_CRIMSON_TEMPEST, GetCaster()->GetGUID()))
             {
-				aura->SetDuration((_cp + 1) * 2 * IN_MILLISECONDS);
                 HandleGrudgeMatch(GetCaster(), target, aura);
             }
         }
@@ -4820,6 +4818,36 @@ class spell_rog_vendetta : public AuraScript
     }
 };
 
+/// ID: 200806 Exsanguinate
+class spell_exsanguinate : public SpellScript
+{
+    PrepareSpellScript(spell_exsanguinate);
+
+    void HandleDummy(SpellEffIndex /*eff*/)
+    {
+        if (auto caster = GetCaster())
+        {
+            if (auto target = GetHitUnit())
+            {
+                auto ExsanguinateBleed([caster, target](uint32 spellId)
+                {
+                    if (auto bleed = target->GetAura(spellId, caster->GetGUID()))
+                    {
+                        
+                    }
+                });
+
+                // SPELL_ROGUE_INTERNAL_BLEEDING_DOT
+            }
+        }
+    }
+
+    void Register() override
+    {
+        OnEffectHitTarget += SpellEffectFn(spell_exsanguinate::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
+    }
+};
+
 void AddSC_rogue_spell_scripts()
 {
     // SpellScripts
@@ -4919,6 +4947,7 @@ void AddSC_rogue_spell_scripts()
     RegisterSpellScript(spell_rog_sepsis);
     RegisterSpellScript(spell_rog_serrated_bone_spike);
     RegisterSpellScript(spell_rog_vendetta);
+    RegisterSpellScript(spell_exsanguinate);
 
 	// Areatrigger
     RegisterAreaTriggerAI(at_rog_smoke_bomb);    // 11451
