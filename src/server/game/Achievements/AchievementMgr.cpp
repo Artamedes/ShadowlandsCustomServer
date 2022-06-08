@@ -255,8 +255,38 @@ void PlayerAchievementMgr::DeleteFromDB(ObjectGuid const& guid)
     CharacterDatabase.CommitTransaction(trans);
 }
 
-void PlayerAchievementMgr::LoadFromDB(PreparedQueryResult achievementResult, PreparedQueryResult criteriaResult)
+void PlayerAchievementMgr::LoadFromDB(PreparedQueryResult achievementResult, PreparedQueryResult criteriaResult, PreparedQueryResult accountAchievementResult)
 {
+    // load first
+    if (accountAchievementResult)
+    {
+        do
+        {
+            Field* fields = accountAchievementResult->Fetch();
+
+            uint32 achievementid = fields[0].GetUInt32();
+
+            // must not happen: cleanup at server startup in sAchievementMgr->LoadCompletedAchievements()
+            AchievementEntry const* achievement = sAchievementStore.LookupEntry(achievementid);
+            if (!achievement)
+                continue;
+
+            CompletedAchievementData& ca = _completedAchievements[achievementid];
+            ca.Date = fields[1].GetInt64();
+            ca.Changed = false;
+            ca.CompletedByThisCharacter = ObjectGuid::Create<HighGuid::Player>(fields[2].GetUInt64()).GetCounter() == _owner->GetGUID().GetCounter();
+
+            _achievementPoints += achievement->Points;
+
+            // title achievement rewards are retroactive
+            if (AchievementReward const* reward = sAchievementMgr->GetAchievementReward(achievement))
+                if (uint32 titleId = reward->TitleId[Player::TeamForRace(_owner->GetRace()) == ALLIANCE ? 0 : 1])
+                    if (CharTitlesEntry const* titleEntry = sCharTitlesStore.LookupEntry(titleId))
+                        _owner->SetTitle(titleEntry);
+
+        } while (accountAchievementResult->NextRow());
+    }
+
     if (achievementResult)
     {
         do
@@ -269,9 +299,16 @@ void PlayerAchievementMgr::LoadFromDB(PreparedQueryResult achievementResult, Pre
             if (!achievement)
                 continue;
 
+            bool exists = _completedAchievements.find(achievementid) != _completedAchievements.end();
+
             CompletedAchievementData& ca = _completedAchievements[achievementid];
             ca.Date = fields[1].GetInt64();
-            ca.Changed = false;
+            ca.Changed = !exists; // we need to populate the table if char doesnt have acc data
+
+            if (!exists)
+            {
+                ca.FirstGuid = _owner->GetGUID();
+            }
 
             _achievementPoints += achievement->Points;
 
@@ -317,6 +354,7 @@ void PlayerAchievementMgr::LoadFromDB(PreparedQueryResult achievementResult, Pre
             progress.Changed = false;
         } while (criteriaResult->NextRow());
     }
+
 }
 
 void PlayerAchievementMgr::SaveToDB(CharacterDatabaseTransaction trans)
@@ -333,10 +371,22 @@ void PlayerAchievementMgr::SaveToDB(CharacterDatabaseTransaction trans)
             stmt->setUInt64(1, _owner->GetGUID().GetCounter());
             trans->Append(stmt);
 
+            stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHAR_ACC_ACHIEVEMENT_BY_ACHIEVEMENT);
+            stmt->setUInt32(0, completedAchievement.first);
+            stmt->setUInt64(1, _owner->GetSession()->GetAccountId());
+            trans->Append(stmt);
+
             stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_CHAR_ACHIEVEMENT);
             stmt->setUInt64(0, _owner->GetGUID().GetCounter());
             stmt->setUInt32(1, completedAchievement.first);
             stmt->setInt64(2, completedAchievement.second.Date);
+            trans->Append(stmt);
+
+            stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_CHAR_ACC_ACHIEVEMENT);
+            stmt->setUInt64(0, _owner->GetSession()->GetAccountId());
+            stmt->setUInt32(1, completedAchievement.first);
+            stmt->setUInt64(2, _owner->GetGUID().GetCounter());
+            stmt->setInt64(3, completedAchievement.second.Date);
             trans->Append(stmt);
 
             completedAchievement.second.Changed = false;
@@ -424,6 +474,10 @@ void PlayerAchievementMgr::SendAllData(Player const* /*receiver*/) const
         {
             earned.Owner = _owner->GetGUID();
             earned.VirtualRealmAddress = earned.NativeRealmAddress = GetVirtualRealmAddress();
+        }
+        else
+        {
+            earned.Owner = completedAchievement.second.FirstGuid;
         }
         achievementData.Data.Earned.push_back(earned);
     }

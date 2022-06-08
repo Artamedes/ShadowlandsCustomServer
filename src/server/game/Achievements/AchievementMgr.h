@@ -43,6 +43,8 @@ struct CompletedAchievementData
 {
     std::time_t Date = std::time_t(0);
     GuidSet CompletingPlayers;
+    ObjectGuid FirstGuid;
+    bool CompletedByThisCharacter = true;
     bool Changed;
 };
 
@@ -82,7 +84,7 @@ public:
     void Reset() override;
 
     static void DeleteFromDB(ObjectGuid const& guid);
-    void LoadFromDB(PreparedQueryResult achievementResult, PreparedQueryResult criteriaResult);
+    void LoadFromDB(PreparedQueryResult achievementResult, PreparedQueryResult criteriaResult, PreparedQueryResult accountAchievementResult);
     void SaveToDB(CharacterDatabaseTransaction trans);
 
     void ResetCriteria(CriteriaFailEvent failEvent, int32 failAsset, bool evenIfCriteriaComplete = false);
