@@ -116,32 +116,49 @@ void CustomInstanceScript::OnPlayerLeave(Player* player)
         auto loot = chest->GetLootFor(player);
         if (loot && !loot->empty())
         {
-            MailSender sender(MAIL_CREATURE, UI64LIT(34337) /* The Postmaster */);
-            MailDraft draft("Recovered Item", "You left a completed M+ without fully looting the end chest. We recovered the items for you.");
-            CharacterDatabaseTransaction trans = CharacterDatabase.BeginTransaction();
+            bool hasLoot = false;
 
             for (auto item : loot->items)
             {
-                if (item.type == LootItemType::Currency)
-                {
-                    player->ModifyCurrency(item.itemid, item.count);
-                }
-                else if (item.type == LootItemType::Item)
-                {
-                    if (Item* itemObj = Item::CreateItem(item.itemid, item.count, item.context, player))
-                    {
-                        itemObj->SetBonuses(item.BonusListIDs);
-                        itemObj->SaveToDB(trans);
-                        draft.AddItem(itemObj);
-                    }
-                }
+                if (item.is_looted)
+                    continue;
+
+                hasLoot = true;
+                break;
             }
 
-            draft.SendMailTo(trans, MailReceiver(player, player->GetGUID().GetCounter()), sender);
-            CharacterDatabase.CommitTransaction(trans);
+            if (hasLoot)
+            {
+                MailSender sender(MAIL_CREATURE, UI64LIT(34337) /* The Postmaster */);
+                MailDraft draft("Recovered Item", "You left a completed M+ without fully looting the end chest. We recovered the items for you.");
+                CharacterDatabaseTransaction trans = CharacterDatabase.BeginTransaction();
 
-            ChatHandler(player).SendSysMessage("|cff00B9FFM+ Items sent to mailbox!");
-            loot->clear();
+                for (auto item : loot->items)
+                {
+                    if (item.is_looted)
+                        continue;
+
+                    if (item.type == LootItemType::Currency)
+                    {
+                        player->ModifyCurrency(item.itemid, item.count);
+                    }
+                    else if (item.type == LootItemType::Item)
+                    {
+                        if (Item* itemObj = Item::CreateItem(item.itemid, item.count, item.context, player))
+                        {
+                            itemObj->SetBonuses(item.BonusListIDs);
+                            itemObj->SaveToDB(trans);
+                            draft.AddItem(itemObj);
+                        }
+                    }
+                }
+
+                draft.SendMailTo(trans, MailReceiver(player, player->GetGUID().GetCounter()), sender);
+                CharacterDatabase.CommitTransaction(trans);
+
+                ChatHandler(player).SendSysMessage("|cff00B9FFM+ Items sent to mailbox!");
+                loot->clear();
+            }
         }
     }
 }
