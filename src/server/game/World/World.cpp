@@ -2439,8 +2439,9 @@ void World::SetInitialWorldSettings()
     TC_LOG_INFO("server.loading", "Starting Battlefield System");
     //sBattlefieldMgr->InitBattlefield();
 
-    TC_LOG_INFO("server.loading", "Loading Transports...");
-    sTransportMgr->SpawnContinentTransports();
+    /// Temporary disabled, not used for custom and causes some unnecessary grid loads
+    ///TC_LOG_INFO("server.loading", "Loading Transports...");
+    ///sTransportMgr->SpawnContinentTransports();
 
     ///- Initialize Warden
     TC_LOG_INFO("server.loading", "Loading Warden Checks...");
