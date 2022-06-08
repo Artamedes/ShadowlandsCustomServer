@@ -27,7 +27,7 @@ class item_enhancement_system : public ItemScript
             if (item->GetScriptId() == upgrader->GetScriptId() || item == upgrader)
             {
                 ChatHandler(player).SendSysMessage("|cffFF0000You can't enhance that item.");
-                return;
+                return true;
             }
 
             // Allowing everything to be enhanced.
