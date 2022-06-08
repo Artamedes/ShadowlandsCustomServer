@@ -1,4 +1,5 @@
 #include "ScriptMgr.h"
+#include "ScriptedCreature.h"
 #include "WorldSession.h"
 #include "Guild.h"
 #include "GuildMgr.h"

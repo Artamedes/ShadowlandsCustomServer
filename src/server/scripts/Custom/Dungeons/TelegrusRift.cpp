@@ -352,7 +352,7 @@ struct npc_portal_to_next_700628 : public ScriptedAI
             for (auto unit : unitsInRange)
             {
                 m_UnitCD[unit->GetGUID().GetCounter()] = now + Seconds(2);
-                unit->Dismount();
+                unit->RemoveAurasByType(AuraType::SPELL_AURA_MOUNTED);
                 unit->RemoveAurasByShapeShift();
 
                 GenericMovementGenerator* result = nullptr;
