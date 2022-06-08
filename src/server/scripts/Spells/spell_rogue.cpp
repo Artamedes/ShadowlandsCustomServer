@@ -3637,7 +3637,8 @@ struct at_rogue_poison_bomb : AreaTriggerAI
     at_rogue_poison_bomb(AreaTrigger* areatrigger) : AreaTriggerAI(areatrigger)
     {
         // How often should the action be executed
-        areatrigger->SetPeriodicProcTimer(1000);
+        ///< Custom HASTE - set periodic timer to 50, originally is 1000
+        areatrigger->SetPeriodicProcTimer(50);
     }
 
     void OnPeriodicProc() override
