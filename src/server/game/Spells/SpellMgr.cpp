@@ -3294,6 +3294,10 @@ void SpellMgr::LoadSpellInfoCorrections()
         {
             spellInfo->AttributesEx9 |= SPELL_ATTR9_ALLOW_CAST_WHILE_CHANNELING;
         });
+        ApplySpellFix({ 21992 }, [](SpellInfo* spellInfo)
+        {
+            spellInfo->RecoveryTime = 5000;
+        });
 	    // Storm, Earth, and Fire
 	    ApplySpellFix({ 137639 }, [](SpellInfo* spellInfo)
 	    {

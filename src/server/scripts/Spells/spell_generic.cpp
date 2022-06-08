@@ -5254,6 +5254,22 @@ class spell_gen_mobile_bank : public SpellScript
     }
 };
 
+/// ID: 21992 Thunderfury
+class spell_thunderfury : public SpellScript
+{
+    PrepareSpellScript(spell_thunderfury);
+
+    void HandleDmg(SpellEffIndex /*eff*/)
+    {
+        SetHitDamage(GetHitDamage() * 0.55f);
+    }
+
+    void Register() override
+    {
+        OnEffectHitTarget += SpellEffectFn(spell_thunderfury::HandleDmg, EFFECT_1, SPELL_EFFECT_SCHOOL_DAMAGE);
+    }
+};
+
 void AddSC_generic_spell_scripts()
 {
     RegisterSpellScript(spell_gen_absorb0_hitlimit1);
@@ -5414,4 +5430,5 @@ void AddSC_generic_spell_scripts()
     RegisterSpellScript(spell_gen_coin_of_many_faces);
     RegisterSpellScript(spell_restoring_memory);
     RegisterSpellScript(spell_gen_mobile_bank);
+    RegisterSpellScript(spell_thunderfury);
 }
