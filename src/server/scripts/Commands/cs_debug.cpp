@@ -624,43 +624,44 @@ public:
 
         if (listQueue)
         {
-            std::vector<Item*>& updateQueue = player->GetItemUpdateQueue();
-            for (size_t i = 0; i < updateQueue.size(); ++i)
-            {
-                Item* item = updateQueue[i];
-                if (!item)
-                    continue;
-
-                Bag* container = item->GetContainer();
-                uint8 bagSlot = container ? container->GetSlot() : uint8(INVENTORY_SLOT_BAG_0);
-
-                std::string st;
-                switch (item->GetState())
-                {
-                    case ITEM_UNCHANGED:
-                        st = "unchanged";
-                        break;
-                    case ITEM_CHANGED:
-                        st = "changed";
-                        break;
-                    case ITEM_NEW:
-                        st = "new";
-                        break;
-                    case ITEM_REMOVED:
-                        st = "removed";
-                        break;
-                }
-
-                handler->PSendSysMessage("bag: %d slot: %d %s - state: %s", bagSlot, item->GetSlot(), item->GetGUID().ToString().c_str(), st.c_str());
-            }
-            if (updateQueue.empty())
+            if (player->m_itemUpdateQueue.empty())
                 handler->PSendSysMessage("The player's updatequeue is empty");
+            else
+            {
+                for (auto itr = player->m_itemUpdateQueue.begin(); itr != player->m_itemUpdateQueue.end(); ++itr)
+                {
+                    Item* item = itr->second;
+                    if (!item)
+                        continue;
+
+                    Bag* container = item->GetContainer();
+                    uint8 bagSlot = container ? container->GetSlot() : uint8(INVENTORY_SLOT_BAG_0);
+
+                    std::string st;
+                    switch (item->GetState())
+                    {
+                        case ITEM_UNCHANGED:
+                            st = "unchanged";
+                            break;
+                        case ITEM_CHANGED:
+                            st = "changed";
+                            break;
+                        case ITEM_NEW:
+                            st = "new";
+                            break;
+                        case ITEM_REMOVED:
+                            st = "removed";
+                            break;
+                    }
+
+                    handler->PSendSysMessage("bag: %d slot: %d %s - state: %s", bagSlot, item->GetSlot(), item->GetGUID().ToString().c_str(), st.c_str());
+                }
+            }
         }
 
         if (checkAll)
         {
             bool error = false;
-            std::vector<Item*>& updateQueue = player->GetItemUpdateQueue();
             for (uint8 i = PLAYER_SLOT_START; i < PLAYER_SLOT_END; ++i)
             {
                 if (i >= BUYBACK_SLOT_START && i < BUYBACK_SLOT_END)
@@ -694,23 +695,24 @@ public:
                 if (item->IsInUpdateQueue())
                 {
                     uint16 qp = item->GetQueuePos();
-                    if (qp > updateQueue.size())
+                    if (qp > player->m_itemUpdateQueue.size())
                     {
                         handler->PSendSysMessage("The item with slot %d and %s has its queuepos (%d) larger than the update queue size! ", item->GetSlot(), item->GetGUID().ToString().c_str(), qp);
                         error = true;
                         continue;
                     }
 
-                    if (updateQueue[qp] == nullptr)
+                    if (player->m_itemUpdateQueue[item->GetGUID()] == nullptr)
                     {
                         handler->PSendSysMessage("The item with slot %d and %s has its queuepos (%d) pointing to NULL in the queue!", item->GetSlot(), item->GetGUID().ToString().c_str(), qp);
                         error = true;
                         continue;
                     }
 
-                    if (updateQueue[qp] != item)
+                    if (player->m_itemUpdateQueue[item->GetGUID()] != item)
                     {
-                        handler->PSendSysMessage("The item with slot %d and %s has a queuepos (%d) that points to another item in the queue (bag: %d, slot: %d, %s)", item->GetSlot(), item->GetGUID().ToString().c_str(), qp, updateQueue[qp]->GetBagSlot(), updateQueue[qp]->GetSlot(), updateQueue[qp]->GetGUID().ToString().c_str());
+                        handler->PSendSysMessage("The item with slot %d and %s has a queuepos (%d) that points to another item in the queue (bag: %d, slot: %d, %s)", item->GetSlot(), item->GetGUID().ToString().c_str(), qp,
+                            player->m_itemUpdateQueue[item->GetGUID()]->GetBagSlot(), player->m_itemUpdateQueue[item->GetGUID()]->GetSlot(), player->m_itemUpdateQueue[item->GetGUID()]->GetGUID().ToString().c_str());
                         error = true;
                         continue;
                     }
@@ -762,23 +764,24 @@ public:
                         if (item2->IsInUpdateQueue())
                         {
                             uint16 qp = item2->GetQueuePos();
-                            if (qp > updateQueue.size())
+                            if (qp > player->m_itemUpdateQueue.size())
                             {
                                 handler->PSendSysMessage("The item in bag %d at slot %d having %s has a queuepos (%d) larger than the update queue size! ", bag->GetSlot(), item2->GetSlot(), item2->GetGUID().ToString().c_str(), qp);
                                 error = true;
                                 continue;
                             }
 
-                            if (updateQueue[qp] == nullptr)
+                            if (player->m_itemUpdateQueue[item2->GetGUID()] == nullptr)
                             {
                                 handler->PSendSysMessage("The item in bag %d at slot %d having %s has a queuepos (%d) that points to NULL in the queue!", bag->GetSlot(), item2->GetSlot(), item2->GetGUID().ToString().c_str(), qp);
                                 error = true;
                                 continue;
                             }
 
-                            if (updateQueue[qp] != item2)
+                            if (player->m_itemUpdateQueue[item2->GetGUID()] != item2)
                             {
-                                handler->PSendSysMessage("The item in bag %d at slot %d having %s has a queuepos (%d) that points to another item in the queue (bag: %d, slot: %d, %s)", bag->GetSlot(), item2->GetSlot(), item2->GetGUID().ToString().c_str(), qp, updateQueue[qp]->GetBagSlot(), updateQueue[qp]->GetSlot(), updateQueue[qp]->GetGUID().ToString().c_str());
+                                handler->PSendSysMessage("The item in bag %d at slot %d having %s has a queuepos (%d) that points to another item in the queue (bag: %d, slot: %d, %s)", bag->GetSlot(), item2->GetSlot(), item2->GetGUID().ToString().c_str(), qp,
+                                    player->m_itemUpdateQueue[item2->GetGUID()]->GetBagSlot(), player->m_itemUpdateQueue[item2->GetGUID()]->GetSlot(), player->m_itemUpdateQueue[item2->GetGUID()]->GetGUID().ToString().c_str());
                                 error = true;
                                 continue;
                             }
@@ -793,9 +796,13 @@ public:
                 }
             }
 
-            for (size_t i = 0; i < updateQueue.size(); ++i)
+            auto l_I = 0;
+
+            for (auto itr = player->m_itemUpdateQueue.begin(); itr != player->m_itemUpdateQueue.end(); ++itr)
             {
-                Item* item = updateQueue[i];
+                auto i = l_I;
+                l_I++;
+                Item* item = itr->second;
                 if (!item)
                     continue;
 

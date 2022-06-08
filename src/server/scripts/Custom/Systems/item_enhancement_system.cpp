@@ -79,10 +79,10 @@ class item_enhancement_system : public ItemScript
                 itemTarget->SetState(ItemUpdateState::ITEM_CHANGED, player);
                 if (itemTarget->IsEquipped())
                     player->_ApplyItemMods(itemTarget, itemTarget->GetSlot(), true);
-                //player->SaveToDB();
-                CharacterDatabaseTransaction trans = CharacterDatabase.BeginTransaction();
-                itemTarget->SaveToDB(trans);
-                CharacterDatabase.CommitTransaction(trans);
+                player->SaveToDB();
+                /// CharacterDatabaseTransaction trans = CharacterDatabase.BeginTransaction();
+                /// itemTarget->SaveToDB(trans);
+                /// CharacterDatabase.CommitTransaction(trans);
                 if (success)
                 {
                     ChatHandler(player).PSendSysMessage("|cff00FF00Succesfully enhanced %s", Item::GetItemLink(itemTarget, player).c_str());

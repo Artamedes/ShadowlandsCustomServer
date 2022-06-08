@@ -1395,7 +1395,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         Item* GetShield(bool useable = false) const;
         Item* GetChildItemByGuid(ObjectGuid guid) const;
         static WeaponAttackType GetAttackBySlot(uint8 slot, InventoryType inventoryType);        // MAX_ATTACK if not weapon slot
-        std::vector<Item*>& GetItemUpdateQueue() { return m_itemUpdateQueue; }
+        std::unordered_map<ObjectGuid, Item*> m_itemUpdateQueue;
         static bool IsInventoryPos(uint16 pos) { return IsInventoryPos(pos >> 8, pos & 255); }
         static bool IsInventoryPos(uint8 bag, uint8 slot);
         static bool IsEquipmentPos(uint16 pos) { return IsEquipmentPos(pos >> 8, pos & 255); }
@@ -3094,7 +3094,6 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
 
         VoidStorageItem* _voidStorageItems[VOID_STORAGE_MAX_SLOT];
 
-        std::vector<Item*> m_itemUpdateQueue;
         bool m_itemUpdateQueueBlocked;
 
         uint32 m_ExtraFlags;

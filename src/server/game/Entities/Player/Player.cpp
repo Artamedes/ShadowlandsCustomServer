@@ -21701,11 +21701,14 @@ void Player::_SaveInventory(CharacterDatabaseTransaction trans)
     if (m_itemUpdateQueue.empty())
         return;
 
-    for (size_t i = 0; i < m_itemUpdateQueue.size(); ++i)
+    for (auto itr = m_itemUpdateQueue.begin(); itr != m_itemUpdateQueue.end(); ++itr)
     {
-        Item* item = m_itemUpdateQueue[i];
+        auto item = itr->second;
         if (!item)
+        {
+            TC_LOG_ERROR("entities.player", "Player::_SaveInventory: Invalid item in m_itemUpdateQueue for %s %s", GetName().c_str(), GetGUID().ToString().c_str());
             continue;
+        }
 
         Bag* container = item->GetContainer();
         if (item->GetState() != ITEM_REMOVED)
@@ -21755,7 +21758,7 @@ void Player::_SaveInventory(CharacterDatabaseTransaction trans)
                 stmt = CharacterDatabase.GetPreparedStatement(CHAR_REP_INVENTORY_ITEM);
                 stmt->setUInt64(0, GetGUID().GetCounter());
                 stmt->setUInt64(1, container ? container->GetGUID().GetCounter() : UI64LIT(0));
-                stmt->setUInt8 (2, item->GetSlot());
+                stmt->setUInt8(2, item->GetSlot());
                 stmt->setUInt64(3, item->GetGUID().GetCounter());
                 trans->Append(stmt);
                 break;
@@ -21768,9 +21771,10 @@ void Player::_SaveInventory(CharacterDatabaseTransaction trans)
                 break;
         }
 
-        // somehow after item deletes itself, some items are not removed from the player inventory resulting in crash
+        /// Item is deleted here. if it's - ITEM_REMOVED
         item->SaveToDB(trans);                                   // item have unchanged inventory record and can be save standalone
     }
+
     m_itemUpdateQueue.clear();
 }
 

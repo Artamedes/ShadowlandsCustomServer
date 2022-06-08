@@ -1209,7 +1209,7 @@ void AddItemToUpdateQueueOf(Item* item, Player* player)
     if (player->m_itemUpdateQueueBlocked)
         return;
 
-    player->m_itemUpdateQueue.push_back(item);
+    player->m_itemUpdateQueue[item->GetGUID()] = item;
     item->uQueuePos = player->m_itemUpdateQueue.size() - 1;
 }
 
@@ -1230,7 +1230,7 @@ void RemoveItemFromUpdateQueueOf(Item* item, Player* player)
     if (player->m_itemUpdateQueueBlocked)
         return;
 
-    player->m_itemUpdateQueue[item->uQueuePos] = nullptr;
+    player->m_itemUpdateQueue.erase(item->GetGUID());
     item->uQueuePos = -1;
 }
 
