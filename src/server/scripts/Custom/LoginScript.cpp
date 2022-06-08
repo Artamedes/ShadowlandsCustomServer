@@ -4,6 +4,8 @@
 #include "Item.h"
 #include "GameTime.h"
 #include "TemporarySummon.h"
+#include "Chat.h"
+#include "GitRevision.h"
 
 class LoginScript : public PlayerScript
 {
@@ -363,6 +365,9 @@ class LoginScript : public PlayerScript
             if (p_Player->GetQuestStatus(700036) == QUEST_STATUS_REWARDED  && !p_Player->HasAchieved(700000))
                 if (auto achievEntry = sAchievementStore.LookupEntry(700000))
                     p_Player->CompletedAchievement(achievEntry);
+
+            ChatHandler(p_Player).PSendSysMessage("|cff62CBF5Shadowlands v.%s-%s", GitRevision::GetCommitCount(), GitRevision::GetHash());
+            ChatHandler(p_Player).PSendSysMessage("|cff62CBF5Last update %s", GitRevision::GetDate());
         }
 
         void OnQuestStatusChange(Player* player, uint32 quest) override
