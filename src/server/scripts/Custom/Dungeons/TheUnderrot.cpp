@@ -161,7 +161,7 @@ public:
             if (player->GetPositionX() > 1080.0f && player->GetPositionZ() > 0 && !player->HasAura(Underrot::UnderrotGateway))
             {
                 /// dismount
-                player->Dismount();
+                player->RemoveAurasByType(AuraType::SPELL_AURA_MOUNTED);
                 player->CastSpell(player, Underrot::UnderrotGateway);
             }
     }
