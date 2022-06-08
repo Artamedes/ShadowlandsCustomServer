@@ -70,6 +70,7 @@ public:
             { "gender",       rbac::RBAC_PERM_COMMAND_MODIFY_GENDER,       false, &HandleModifyGenderCommand,        "" },
             { "honor",        rbac::RBAC_PERM_COMMAND_MODIFY_HONOR,        false, &HandleModifyHonorCommand,         "" },
             { "hp",           rbac::RBAC_PERM_COMMAND_MODIFY_HP,           false, &HandleModifyHPCommand,            "" },
+            { "corruption",   rbac::RBAC_PERM_COMMAND_MODIFY_HP,           false, &HandleModifyCorruptionCommand,    "" },
             { "mana",         rbac::RBAC_PERM_COMMAND_MODIFY_MANA,         false, &HandleModifyManaCommand,          "" },
             { "money",        rbac::RBAC_PERM_COMMAND_MODIFY_MONEY,        false, &HandleModifyMoneyCommand,         "" },
             { "mount",        rbac::RBAC_PERM_COMMAND_MODIFY_MOUNT,        false, &HandleModifyMountCommand,         "" },
@@ -151,6 +152,14 @@ public:
             return true;
         }
         return false;
+    }
+
+    static bool HandleModifyCorruptionCommand(ChatHandler* handler, uint32 corruption)
+    {
+        Player* target = handler->getSelectedPlayerOrSelf();
+        target->ApplyRatingMod(CR_CORRUPTION, corruption, true);
+        handler->PSendSysMessage("Updated corruption to %u", corruption);
+        return true;
     }
 
     //Edit Player Mana
