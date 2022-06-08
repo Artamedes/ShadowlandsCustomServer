@@ -327,6 +327,7 @@ public:
                 344866, // vengeful retreat
                 183752, // disrupt
                 200749, // dh talent spell
+                195440, // chaos nova
             };
 
             for (auto spell : spellIds)
@@ -336,6 +337,27 @@ public:
             }
             if (!player->HasSpell(258920))
                 player->CastSpell(player, 195447, true);
+        }
+
+        if (player->GetClass() == CLASS_DEMON_HUNTER)
+        {
+            std::vector<uint32> quests
+            {
+                40254,
+            };
+
+            for (auto questid : quests)
+            {
+                auto quest = sObjectMgr->GetQuestTemplate(questid);
+                if (!quest)
+                    continue;
+                if (player->GetQuestStatus(questid) == QUEST_STATUS_NONE)
+                {
+                    player->AddQuestAndCheckCompletion(quest, player);
+                    player->CompleteQuest(questid);
+                    player->RewardQuest(quest, LootItemType::Item, 0, player);
+                }
+            }
         }
     }
 };
