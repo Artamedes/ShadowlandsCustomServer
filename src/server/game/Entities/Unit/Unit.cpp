@@ -776,7 +776,14 @@ bool Unit::HasBreakableByDamageCrowdControlAura(Unit* excludeCasterChannel) cons
         if (float percent = attacker->m_unitData->Lifesteal)
         {
             int32 heal = CalculatePct(damage, (int32)percent);
-            attacker->CastSpell(attacker, 143924, CastSpellExtraArgs(true).AddSpellBP0(heal));
+
+            if (auto instance = attacker->GetInstanceScript())
+            {
+                instance->NerfLeechIfNeed(attacker, heal);
+            }
+
+            if (heal)
+                attacker->CastSpell(attacker, 143924, CastSpellExtraArgs(true).AddSpellBP0(heal));
         }
     }
 

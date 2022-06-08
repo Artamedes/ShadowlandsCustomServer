@@ -3,6 +3,7 @@
 #include "ScriptMgr.h"
 #include "SpellScript.h"
 #include "SpellAuras.h"
+#include "SpellAuraEffects.h"
 
 struct npc_beguiling_emissary_ai : public ScriptedAI
 {
@@ -194,12 +195,14 @@ public:
             scheduler.Schedule(1s, [this](TaskContext context)
             {
                 me->RemoveAurasDueToSpell(PrideVisual);
+                me->RemoveAura(PrideVisual);
 
                 if (auto map = me->GetMap())
                 {
                     map->DoOnPlayers([this](Player* player)
                     {
                         me->RemoveAurasDueToSpell(PrideVisual);
+                        me->RemoveAura(PrideVisual);
                     });
                 }
 
@@ -236,7 +239,7 @@ public:
             return;
 
         PrideTimer += diff;
-        if (PrideTimer >= 3000)
+        if (PrideTimer >= 2000)
         {
             PrideTimer = 0;
             DoCastSelf(BurstingWithPride);
@@ -271,7 +274,20 @@ class spell_bursting_with_pride_342332 : public SpellScript
     {
         if (auto caster = GetCaster())
             if (auto aura = caster->GetAura(BurstingWithPrideAura))
-                SetHitDamage(GetHitDamage() * aura->GetStackAmount());
+            {
+                auto challengeLevel = 1u;
+                if (auto instance = caster->GetInstanceScript())
+                    if (auto challenge = instance->GetChallenge())
+                        challengeLevel = challenge->GetChallengeLevel();
+
+                auto dmg = GetHitDamage() * aura->GetStackAmount();
+
+                if (challengeLevel > 1)
+                    AddPct(dmg, challengeLevel * 30);
+
+                //aura->GetEffect(EFFECT_0)->SetAmount(dmg);
+                SetHitDamage(dmg);
+            }
     }
 
     void Register() override

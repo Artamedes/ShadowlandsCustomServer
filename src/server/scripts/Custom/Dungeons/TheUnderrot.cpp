@@ -67,7 +67,7 @@ public:
     {
         if (door)
         {
-            if (auto go = instance->SummonGameObject(MYTHIC_DOOR_4, { 636.715f,	1253.030f,	98.5464f, 0.0f }, { -0.0f, -0.0f, -0.639438f, -0.768843f }, 0))
+            if (auto go = instance->SummonGameObject(MYTHIC_DOOR_4, { 636.715f,	1253.030f,	95.5464f, 0.0f }, { -0.0f, -0.0f, -0.639438f, -0.768843f }, 0))
             {
                 go->SetGoState(GOState::GO_STATE_READY);
                 go->SetFlag(GameObjectFlags::GO_FLAG_NOT_SELECTABLE);
@@ -336,6 +336,11 @@ public:
 
         if (instance)
             instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
+
+        if (instance)
+            if (auto scenario = instance->instance->GetInstanceScenario())
+                if (auto criteriaTree = sCriteriaMgr->GetCriteriaTree(300003))
+                    scenario->CompletedCriteriaTree(criteriaTree, nullptr);
     }
 
     void JustEngagedWith(Unit* who) override

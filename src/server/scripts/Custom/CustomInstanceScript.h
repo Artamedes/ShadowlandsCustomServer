@@ -230,14 +230,7 @@ public:
         }
     }
 
-    void OnChallengeStart() override
-    {
-        if (HasAffix(Affixes::Beguiling))
-            ActivateBeguiling();
-
-        if (HasAffix(Affixes::Prideful))
-            IsPrideful = true;
-    }
+    void OnChallengeStart() override;
 
     bool HasAffix(Affixes affix)
     {
@@ -318,6 +311,9 @@ public:
 
     void OnPlayerEnter(Player* player) override;
     void OnPlayerLeave(Player* player) override;
+    void NerfLeechIfNeed(Unit* who, int32& heal) override;
+
+    int32 GetLeechEffectiveness(uint32 level) const;
 
     // Beguiling Affix
     ObjectGuid EnchantedEmissary;

@@ -145,3 +145,54 @@ void CustomInstanceScript::OnPlayerLeave(Player* player)
         }
     }
 }
+
+void CustomInstanceScript::NerfLeechIfNeed(Unit* who, int32& heal)
+{
+    if (IsChallenge())
+    {
+        if (auto challenge = GetChallenge())
+        {
+            int32 Effectiveness = GetLeechEffectiveness(challenge->GetChallengeLevel());
+
+            if (Effectiveness > 0 && Effectiveness < 100)
+                heal *= float(Effectiveness / 100.0f);
+            else if (Effectiveness < 0)
+                heal = 0;
+        }
+    }
+}
+
+
+void CustomInstanceScript::OnChallengeStart()
+{
+    if (HasAffix(Affixes::Beguiling))
+        ActivateBeguiling();
+
+    if (HasAffix(Affixes::Prideful))
+        IsPrideful = true;
+
+    if (auto challenge = GetChallenge())
+    {
+        auto effectiveness = GetLeechEffectiveness(challenge->GetChallengeLevel());
+
+        if (effectiveness != 100)
+        {
+            instance->DoOnPlayers([effectiveness](Player* player)
+            {
+                ChatHandler(player).PSendSysMessage("|cffFF0000Leech will only have %u%% effectiveness in this challenge!", effectiveness);
+            });
+        }
+    }
+}
+
+int32 CustomInstanceScript::GetLeechEffectiveness(uint32 level) const
+{
+    int32 Effectiveness = 100;
+
+    if (level >= 5)
+    {
+        Effectiveness -= (level - 4) * 5;
+    }
+
+    return std::max(0, Effectiveness);
+}
