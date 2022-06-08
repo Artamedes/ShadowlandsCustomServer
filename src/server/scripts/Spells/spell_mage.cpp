@@ -47,6 +47,7 @@ enum MageSpells
     SPELL_MAGE_ALTER_TIME_VISUAL                 = 347402,
     SPELL_MAGE_ARCANE_ALTER_TIME_AURA            = 342246,
     SPELL_MAGE_MASTER_OF_TIME                    = 342249,
+    SPELL_MAGE_ARCANE_CHARGE                     = 36032,
     //7.3.2.25549
     SPELL_MAGE_COLD_SNAP                         = 235219,
     SPELL_MAGE_FROST_NOVA                        = 122,
@@ -284,12 +285,13 @@ public:
 
         // Going up in charges is handled by aura 190427
         // Decreasing power seems weird clientside does not always match serverside power amount (client stays at 1, server is at 0)
-        if (oldValue >= newValue)
-        {
-            player->RemoveAurasDueToSpell(AURA_ARCANIC_CHARGE);
-            for (int32 i = 0; i < newValue; ++i)
-                player->CastSpell(player, AURA_ARCANIC_CHARGE, true);
-        }
+        // Not sure if we need this.
+        //if (oldValue >= newValue)
+        //{
+        //    player->RemoveAurasDueToSpell(AURA_ARCANIC_CHARGE);
+        //    for (int32 i = 0; i < newValue; ++i)
+        //        player->CastSpell(player, AURA_ARCANIC_CHARGE, true);
+        //}
         if (player->HasAura(SPELL_MAGE_RULE_OF_THREES))
             if (newValue == 3 && oldValue == 2)
                 player->CastSpell(player, SPELL_MAGE_RULE_OF_THREES_BUFF, true);
@@ -5208,6 +5210,26 @@ class spell_mastery_icicles_glacial_spike : public SpellScript
         OnEffectHitTarget += SpellEffectFn(spell_mastery_icicles_glacial_spike::HandleOnHit, EFFECT_0, SPELL_EFFECT_DUMMY);
     }
 };
+// 195302 - Arcane Charge
+class spell_mage_arcane_charge_clear : public SpellScript
+{
+    PrepareSpellScript(spell_mage_arcane_charge_clear);
+
+    bool Validate(SpellInfo const* /*spellInfo*/) override
+    {
+        return ValidateSpellInfo({ SPELL_MAGE_ARCANE_CHARGE });
+    }
+
+    void RemoveArcaneCharge(SpellEffIndex /*effIndex*/)
+    {
+        GetHitUnit()->RemoveAurasDueToSpell(SPELL_MAGE_ARCANE_CHARGE);
+    }
+
+    void Register() override
+    {
+        OnEffectHitTarget += SpellEffectFn(spell_mage_arcane_charge_clear::RemoveArcaneCharge, EFFECT_0, SPELL_EFFECT_DUMMY);
+    }
+};
 
 void AddSC_mage_spell_scripts()
 {
@@ -5324,6 +5346,7 @@ void AddSC_mage_spell_scripts()
     RegisterSpellScript(spell_mastery_icicles_mod_aura);
     RegisterSpellScript(spell_mage_mastery_ignite);
     new spell_mastery_ignite();
+    RegisterSpellScript(spell_mage_arcane_charge_clear);
 
     // Spell Pet scripts
     RegisterSpellScript(spell_mage_pet_freeze);
