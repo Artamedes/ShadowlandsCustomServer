@@ -489,7 +489,7 @@ struct npc_juno_700006 : public ScriptedAI
                             }
                         }
 
-                        p_Player->AddItem(p_Player, 700316, 1);
+                        p_Player->AddItem(700316, 1);
                         p_Player->CastSpell(p_Player, 268065, true); ///< Fade to Black
                         p_Player->Variables.Remove("SEASON1SKIP");
                         p_Player->UpdateVisibilityForPlayer();
