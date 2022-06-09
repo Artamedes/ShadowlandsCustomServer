@@ -94,6 +94,7 @@ class item_enhancement_system : public ItemScript
                 return true;
 
             auto item = targets.GetItemTarget();
+
             if (!item)
                 return true;
 
@@ -347,6 +348,8 @@ public:
         std::ostringstream ss;
         std::ostringstream ss2;
 
+        bool hasCorruptions = false;
+
         for (auto itr = CorruptionCostsRefunds.begin(); itr != CorruptionCostsRefunds.end(); ++itr)
         {
             if (item->HasBonusId(itr->first))
@@ -364,7 +367,7 @@ public:
 
                     ObjectGuid itemGuid = item->GetGUID();
 
-                    AddGossipItemFor(player, GossipOptionIcon::None, ss.str(), 0, 0, ss2.str(), 0, false, [player, upgrader, targets, corruption, bonusToRemove, itemGuid, currencyId, refundAmount](std::string /*callback*/)
+                    AddGossipItemFor(player, GossipOptionIcon::None, ss.str(), 0, 0, ss2.str(), 0, false, [this, player, upgrader, targets, corruption, bonusToRemove, itemGuid, currencyId, refundAmount](std::string /*callback*/)
                     {
                         if (auto item = player->GetItemByGuid(itemGuid))
                         {
@@ -374,8 +377,7 @@ public:
                                 ChatHandler(player).PSendSysMessage("%s |cff62CBF5has been updated! |cff62CBF5%s|R |cff62CBF5has been removed", item->GetItemLink(item, player).c_str(), corruption.c_str());
                                 item->SetState(ItemUpdateState::ITEM_CHANGED, player);
                                 player->SaveToDB();
-                                CloseGossipMenuFor(player);
-                                //OnUse(player, upgrader, targets, ObjectGuid::Empty);
+                                OnUse(player, upgrader, targets, ObjectGuid::Empty);
                                 return;
                             }
                         }
@@ -387,18 +389,20 @@ public:
                     ss.str("");
                     ss2.clear();
                     ss2.str("");
+                    hasCorruptions = true;
                 }
 
             }
         }
-        SendGossipMenuFor(player, 688881, upgrader->GetGUID());
-        //if (hasCorruptions)
-        //    SendGossipMenuFor(player, 688881, upgrader->GetGUID());
-        //else
-        //{
-        //    ChatHandler(player).PSendSysMessage("%s |cff62CBF5has no corruptions to remove!", item->GetItemLink(item, player).c_str());
-        //    CloseGossipMenuFor(player);
-        //}
+
+        if (hasCorruptions)
+            SendGossipMenuFor(player, 688881, upgrader->GetGUID());
+        else
+        {
+            ChatHandler(player).PSendSysMessage("%s |cff62CBF5has no corruptions to remove!", item->GetItemLink(item, player).c_str());
+            CloseGossipMenuFor(player);
+        }
+        return true;
     }
 };
 
