@@ -380,7 +380,8 @@ public:
                                 ChatHandler(player).PSendSysMessage("%s |cff62CBF5has been updated! |cff62CBF5%s|R |cff62CBF5has been removed", item->GetItemLink(item, player).c_str(), corruption.c_str());
                                 item->SetState(ItemUpdateState::ITEM_CHANGED, player);
                                 player->SaveToDB();
-                                OnUse(player, upgrader, targets, ObjectGuid::Empty);
+                                CloseGossipMenuFor(player);
+                                //OnUse(player, upgrader, targets, ObjectGuid::Empty);
                                 if (item->IsEquipped())
                                     player->_ApplyItemMods(item, item->GetSlot(), true);
                                 return;
