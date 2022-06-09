@@ -32,7 +32,7 @@ public:
     void EnterEvadeMode(EvadeReason why) override
     {
         conduitUp = true;
-        me->GetMotionMaster()->MovePoint(1, { 3452.24f, 1554.11f, 436.707f, 3.18628f });
+        me->GetMotionMaster()->MoveTargetedHome();
         me->SetHealth(me->CountPctFromMaxHealth(100));
     }
 
@@ -55,19 +55,65 @@ public:
         if (me->isDead())
             return;
 
-        if (auto livedummy = me->FindNearestCreature(802003, 100.0f))
+        if (auto livedummy = ObjectAccessor::GetCreature(*me, CurrentDummy))
             DoCast(livedummy, 353401); // ID - 353401 Eye of the Jailer Channel
     }
 
-    void JustDied(Unit* unit) override
+    void doneTesting()
     {
-        if (auto livedummy = me->FindNearestCreature(802003, 100.0f))
+        if (auto livedummy = ObjectAccessor::GetCreature(*me, CurrentDummy))
+        {
             livedummy->KillSelf();
+            livedummy->DespawnOrUnsummon(5s);
+        }
+
+        CurrentDummy.Clear();
     }
 
-    void Reset() override
+    void spawnDummy()
     {
+        if (CurrentDummy.IsEmpty())
+            if (Creature* creature = DoSummon(802003, { 4267.65f, -2805.53f, 5.27405f, 5.44632f }, 0s, TEMPSUMMON_MANUAL_DESPAWN))
+                CurrentDummy = creature->GetGUID();
+    }
 
+    ObjectGuid CurrentDummy;
+
+    bool OnGossipHello(Player* player) override
+    {
+        ClearGossipMenuFor(player);
+
+        if (!CurrentDummy.IsEmpty())
+        {
+            AddGossipItemFor(player, GossipOptionIcon::None, "I'm done testing.", 0, 1);
+        }
+        else
+        {
+            AddGossipItemFor(player, GossipOptionIcon::None, "Summon the bot.", 0, 2);
+        }
+
+        SendGossipMenuFor(player, 802002, me);
+
+        return true;
+    }
+
+    bool OnGossipSelect(Player* player, uint32 menuid, uint32 gossipid) override
+    {
+        uint32 actionid = player->PlayerTalkClass->GetGossipOptionAction(gossipid);
+
+        CloseGossipMenuFor(player);
+
+        if (actionid == 1)
+        {
+            doneTesting();
+        }
+
+        if (actionid == 2)
+        {
+            spawnDummy();
+        }
+
+        return true;
     }
 };
 

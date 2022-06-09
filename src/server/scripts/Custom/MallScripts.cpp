@@ -410,6 +410,11 @@ struct npc_char_services : public ScriptedAI
                 p_Player->AddItem(700000, 1);
                 CloseGossipMenuFor(p_Player);
             });
+            AddGossipItemFor(p_Player, GossipOptionIcon::None, "|TInterface\\ICONS\\inv_gizmo_manasyphon.BLP:30:30:-28:0|tGive me the Corruption Chisel.", 0, 0, [this, p_Player](std::string /*callback*/)
+            {
+                p_Player->AddItem(699998, 1);
+                CloseGossipMenuFor(p_Player);
+            });
             SendGossipMenuFor(p_Player, me->GetEntry(), me);
             return true;
         }
