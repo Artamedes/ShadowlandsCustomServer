@@ -1301,7 +1301,7 @@ class spell_road_of_trials : public AuraScript
     {
         /// @TODO: If kill a big mob give more duration. Not sure what blizz does here.
         if (auto actor = eventInfo.GetActor())
-            actor->CastSpell(actor, RoadOfTrialMSBuff, true);
+            actor->CastSpell(actor, RoadOfTrialMSBuff, CastSpellExtraArgs(true).AddSpellBP0(10));
     }
 
     void Register() override
