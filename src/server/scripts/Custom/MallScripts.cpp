@@ -588,7 +588,7 @@ struct npc_mall_weapongiver : public ScriptedAI
                     m_BonusListIds.emplace_back(1660); // ItemLevel
                     m_BonusListIds.emplace_back(1610); // ItemLevel
                     m_BonusListIds.emplace_back(1602); // ItemLevel
-                    AllowableClasses = 2 + 1;
+                    AllowableClasses = CLASSMASK_WARRIOR + CLASSMASK_PALADIN + CLASSMASK_SHAMAN;
                     break;
                 case 800028: // Draka
                     m_BonusListIds.reserve(3);
@@ -597,7 +597,7 @@ struct npc_mall_weapongiver : public ScriptedAI
                     m_BonusListIds.emplace_back(6606); // Mythic
                     m_BonusListIds.emplace_back(1600); // ItemLevel
                     m_BonusListIds.emplace_back(1611); // ItemLevel
-                    AllowableClasses = 8 + 1024;
+                    AllowableClasses = CLASSMASK_ROGUE + CLASSMASK_DRUID;
                     break;
                 case 800029: // Prophet
                     m_BonusListIds.reserve(3);
@@ -606,7 +606,7 @@ struct npc_mall_weapongiver : public ScriptedAI
                     m_BonusListIds.emplace_back(6606); // Mythic
                     m_BonusListIds.emplace_back(1610); // ItemLevel
                     m_BonusListIds.emplace_back(1601); // ItemLevel
-                    AllowableClasses = 2 + 1 + 32;
+                    AllowableClasses = CLASSMASK_WARRIOR + CLASSMASK_PALADIN + CLASSMASK_DEATH_KNIGHT;
                     break;
                 case 800025: // Sylvanas
                     m_BonusListIds.reserve(3);
@@ -615,7 +615,7 @@ struct npc_mall_weapongiver : public ScriptedAI
                     m_BonusListIds.emplace_back(6606); // Mythic
                     m_BonusListIds.emplace_back(1610); // ItemLevel
                     m_BonusListIds.emplace_back(1601); // ItemLevel
-                    AllowableClasses = 4; // Hunter
+                    AllowableClasses = CLASSMASK_HUNTER; // Hunter
                     break;
                 case 800023: // Wrathion
                     m_ItemEntries.reserve(2);
@@ -626,7 +626,7 @@ struct npc_mall_weapongiver : public ScriptedAI
                     m_BonusListIds.emplace_back(1610); // ItemLevel
                     m_BonusListIds.emplace_back(1618); // ItemLevel
                     m_BonusListIds.emplace_back(1650); // ItemLevel
-                    AllowableClasses = 8; // Rogue
+                    AllowableClasses = CLASSMASK_ROGUE; // Rogue
                     break;
                 case 800022: // Dragonwrath
                     //.add 71086 1 6606;1610;1618;1651
@@ -637,7 +637,7 @@ struct npc_mall_weapongiver : public ScriptedAI
                     m_BonusListIds.emplace_back(1610); // ItemLevel
                     m_BonusListIds.emplace_back(1618); // ItemLevel
                     m_BonusListIds.emplace_back(1651); // ItemLevel
-                    AllowableClasses = CLASSMASK_WAND_USERS + 1024 + 64; // Casters
+                    AllowableClasses = CLASSMASK_WAND_USERS + CLASSMASK_DRUID + CLASSMASK_SHAMAN; // Casters
                     break;
                 case 800021: // Sulfuras
                     //.add 71352 1 6606;1610;1618;1651
@@ -648,7 +648,7 @@ struct npc_mall_weapongiver : public ScriptedAI
                     m_BonusListIds.emplace_back(1610); // ItemLevel
                     m_BonusListIds.emplace_back(1618); // ItemLevel
                     m_BonusListIds.emplace_back(1651); // ItemLevel
-                    AllowableClasses = 1 + 2 + 32;
+                    AllowableClasses = CLASSMASK_WARRIOR + CLASSMASK_PALADIN + CLASSMASK_DEATH_KNIGHT;
                     break;
                 case 800018: // Shadowmourne
                     //.add 49623 1 6606;1610;1618;1653
@@ -659,7 +659,7 @@ struct npc_mall_weapongiver : public ScriptedAI
                     m_BonusListIds.emplace_back(1610); // ItemLevel
                     m_BonusListIds.emplace_back(1618); // ItemLevel
                     m_BonusListIds.emplace_back(1653); // ItemLevel
-                    AllowableClasses = 1 + 2 + 32;
+                    AllowableClasses = CLASSMASK_WARRIOR + CLASSMASK_PALADIN + CLASSMASK_DEATH_KNIGHT;
                     break;
                 case 800019: // Frostmourne
                     //.add 49623 1 6606;1610;1618;1653
@@ -682,7 +682,7 @@ struct npc_mall_weapongiver : public ScriptedAI
                     m_BonusListIds.emplace_back(1618); // ItemLevel
                     m_BonusListIds.emplace_back(1659); // ItemLevel
                     m_BonusListIds.emplace_back(6403); // agil/crit
-                    AllowableClasses = 1 + 2048 + 8 + 512 + 32;
+                    AllowableClasses = CLASSMASK_WARRIOR + CLASSMASK_DEMON_HUNTER + CLASSMASK_ROGUE + CLASSMASK_MONK + CLASSMASK_DEATH_KNIGHT + CLASSMASK_PALADIN;
                     break;
                 case 800017: // Illidan
                     //.add 32837 1 6606;1610;1618;1655
@@ -696,7 +696,7 @@ struct npc_mall_weapongiver : public ScriptedAI
                     m_BonusListIds.emplace_back(1618); // ItemLevel
                     m_BonusListIds.emplace_back(1655); // ItemLevel
                     m_BonusListIds.emplace_back(6403); // agil/crit
-                    AllowableClasses = 1 + 2048 + 8 + 512 + 32;
+                    AllowableClasses = CLASSMASK_WARRIOR + CLASSMASK_DEMON_HUNTER + CLASSMASK_ROGUE + CLASSMASK_MONK + CLASSMASK_DEATH_KNIGHT;
                     break;
                 case 800024: // Magni
                     //.add [Val'anyr, Hammer of Ancient Kings] 1 6606;1610;1618;1653
@@ -707,7 +707,7 @@ struct npc_mall_weapongiver : public ScriptedAI
                     m_BonusListIds.emplace_back(1610); // ItemLevel
                     m_BonusListIds.emplace_back(1618); // ItemLevel
                     m_BonusListIds.emplace_back(1653); // ItemLevel
-                    AllowableClasses = 1024 + 64 + 512; // Casters
+                    AllowableClasses = CLASSMASK_DRUID + CLASSMASK_SHAMAN + CLASSMASK_MONK + CLASSMASK_PALADIN; // Casters
                     break;
             }
         }

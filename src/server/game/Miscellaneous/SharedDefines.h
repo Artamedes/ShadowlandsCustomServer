@@ -159,6 +159,23 @@ enum Classes : uint8
     CLASS_DEMON_HUNTER  = 12  // TITLE Demon Hunter
 };
 
+enum ClassMasks : uint32
+{
+    CLASSMASK_NONE          = 0x000, ///< SKIP
+    CLASSMASK_WARRIOR       = 0x001, ///< TITLE Warrior
+    CLASSMASK_PALADIN       = 0x002, ///< TITLE Paladin
+    CLASSMASK_HUNTER        = 0x004, ///< TITLE Hunter
+    CLASSMASK_ROGUE         = 0x008, ///< TITLE Rogue
+    CLASSMASK_PRIEST        = 0x010, ///< TITLE Priest
+    CLASSMASK_DEATH_KNIGHT  = 0x020, ///< TITLE Death Knight
+    CLASSMASK_SHAMAN        = 0x040, ///< TITLE Shaman
+    CLASSMASK_MAGE          = 0x080, ///< TITLE Mage
+    CLASSMASK_WARLOCK       = 0x100, ///< TITLE Warlock
+    CLASSMASK_MONK          = 0x200, ///< TITLE Monk
+    CLASSMASK_DRUID         = 0x400, ///< TITLE Druid
+    CLASSMASK_DEMON_HUNTER  = 0x800, ///< TITLE Demon Hunter
+};
+
 // max+1 for player class
 #define MAX_CLASSES       13
 
