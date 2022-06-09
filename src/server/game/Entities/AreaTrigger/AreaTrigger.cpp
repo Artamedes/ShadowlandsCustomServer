@@ -732,8 +732,11 @@ bool AreaTrigger::CheckIsInPolygon2D(Position const* pos) const
 
 bool AreaTrigger::SetDestination(Position const& pos, uint32 timeToTarget, bool followTerrain /*= false*/)
 {
+    if (!GetCaster())
+        return false;
+
     PathGenerator path(GetCaster());
-    bool result = path.CalculatePath(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), true);
+    bool result = path.CalculatePath(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), true, true);
 
     if (!result || path.GetPathType() & PATHFIND_NOPATH)
         return false;
@@ -845,6 +848,10 @@ void AreaTrigger::InitSplineOffsets(std::vector<Position> const& offsets, uint32
 
     if (GetTemplate()->HasFlag(AREATRIGGER_FLAG_HAS_FOLLOWS_TERRAIN))
     {
+        float srcX = x;
+        float srcY = y;
+        float srcZ = z;
+
         Position dest = offsets.back();
         x += (dest.GetPositionX() * angleCos - dest.GetPositionY() * angleSin);
         y += (dest.GetPositionY() * angleCos + dest.GetPositionX() * angleSin);
@@ -852,9 +859,15 @@ void AreaTrigger::InitSplineOffsets(std::vector<Position> const& offsets, uint32
         UpdateAllowedPositionZ(x, y, z);
         z += dest.GetPositionZ();
         dest = GetPosition();
-        MovePositionToFirstCollision(dest, GetDistance(x, y, z), 0.0f);
 
-        SetDestination(dest, timeToTarget, true);
+        if (!GetMap()->GetWalkHitPosition(GetPhaseShift(), GetTransport(), srcX, srcY, srcZ, x, y, z, NAV_GROUND | NAV_WATER, 20.0f, false))
+        {
+            x = srcX;
+            y = srcY;
+            z = srcZ;
+        }
+
+        SetDestination({ x, y, z }, timeToTarget, true);
     }
     else
     {

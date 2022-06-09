@@ -136,7 +136,6 @@ enum MageSpells
     SPELL_MAGE_ARCANE_MISSILES                   = 5143,
     SPELL_MAGE_ARCANE_MISSILES_POWER             = 208030,
     SPELL_MAGE_ARCANE_MISSILES_CHARGES           = 79683,
-    SPELL_MAGE_ARCANE_ORB_DAMAGE                 = 153640,
     SPELL_MAGE_ARCANE_AMPLIFICATION              = 236628,
     SPELL_MAGE_GREATER_PYROBLAST                 = 203286,
     SPELL_MAGE_TUNNEL_OF_ICE_BUFF                = 277904,
@@ -3117,20 +3116,6 @@ struct at_mage_frozen_orb : AreaTriggerAI
     }
 };
 
-// Arcane Orb - 153626
-// AreaTriggerID - 1612
-struct at_mage_arcane_orb : AreaTriggerAI
-{
-    at_mage_arcane_orb(AreaTrigger* areatrigger) : AreaTriggerAI(areatrigger) { }
-
-    void OnUnitEnter(Unit* unit) override
-    {
-        if (Unit* caster = at->GetCaster())
-            if (caster->IsValidAttackTarget(unit))
-                caster->CastSpell(unit, SPELL_MAGE_ARCANE_ORB_DAMAGE, true);
-    }
-};
-
 // 31216 - Mirror Image
 class npc_mirror_image : public CreatureScript
 {
@@ -5358,7 +5343,6 @@ void AddSC_mage_spell_scripts()
     new at_mage_blizzard();
     RegisterAreaTriggerAI(at_mage_rune_of_power);
     RegisterAreaTriggerAI(at_mage_frozen_orb);
-    RegisterAreaTriggerAI(at_mage_arcane_orb);
     RegisterAreaTriggerAI(at_mage_flame_patch);
     RegisterAreaTriggerAI(at_mage_cinderstorm);
 
