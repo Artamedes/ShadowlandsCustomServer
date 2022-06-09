@@ -897,33 +897,30 @@ class spell_sha_elemental_blast : public SpellScript
         // Mastery : Elemental Overload
         if (Aura* aura = caster->GetAura(SPELL_SHAMAN_MASTERY_ELEMENTAL_OVERLOAD))
         {
-            if (caster->GetLevel() >= 78)
+            if (roll_chance_i(aura->GetEffect(EFFECT_0)->GetAmount()))
             {
-                if (roll_chance_i(aura->GetEffect(EFFECT_0)->GetAmount()))
+                uint32 duration = sSpellMgr->GetSpellInfo(SPELL_SHAMAN_UNLIMITED_POWER_HASTE)->GetDuration();
+
+                caster->GetScheduler().Schedule(500ms, [caster, target, &duration](TaskContext context)
                 {
-                    uint32 duration = sSpellMgr->GetSpellInfo(SPELL_SHAMAN_UNLIMITED_POWER_HASTE)->GetDuration();
+                    if (!caster || !target)
+                        return;
+                    if (!caster->IsInWorld() || caster->isDead() || !target->IsInWorld() || target->isDead())
+                        return;
 
-                    caster->GetScheduler().Schedule(500ms, [caster, target, &duration](TaskContext context)
-                        {
-                            if (!caster || !target)
-                                return;
-                            if (!caster->IsInWorld() || caster->isDead() || !target->IsInWorld() || target->isDead())
-                                return;
+                    caster->CastSpell(target, SPELL_SHAMAN_ELEMENTAL_BLAST_OVERLOAD, true);
+                    uint32 bonus = RAND(SPELL_SHAMAN_ELEMENTAL_BLAST_CRIT, SPELL_SHAMAN_ELEMENTAL_BLAST_HASTE, SPELL_SHAMAN_ELEMENTAL_BLAST_MASTERY);
+                    caster->CastSpell(caster, bonus, TRIGGERED_FULL_MASK);
+                    if (caster->HasAura(SPELL_SHAMAN_UNLIMTED_POWER))
+                    {
 
-                            caster->CastSpell(target, SPELL_SHAMAN_ELEMENTAL_BLAST_OVERLOAD, true);
-                            uint32 bonus = RAND(SPELL_SHAMAN_ELEMENTAL_BLAST_CRIT, SPELL_SHAMAN_ELEMENTAL_BLAST_HASTE, SPELL_SHAMAN_ELEMENTAL_BLAST_MASTERY);
-                            caster->CastSpell(caster, bonus, TRIGGERED_FULL_MASK);
-                            if (caster->HasAura(SPELL_SHAMAN_UNLIMTED_POWER))
-                            {
-
-                                if (Aura* unlimited_aura = caster->GetAura(SPELL_SHAMAN_UNLIMITED_POWER_HASTE))
-                                    duration = unlimited_aura->GetDuration();
-                                caster->CastSpell(caster, SPELL_SHAMAN_UNLIMITED_POWER_HASTE, true);
-                                if (Aura* unlimited_aura = caster->GetAura(SPELL_SHAMAN_UNLIMITED_POWER_HASTE))
-                                    unlimited_aura->SetDuration(duration);
-                            }
-                        });
-                }
+                        if (Aura* unlimited_aura = caster->GetAura(SPELL_SHAMAN_UNLIMITED_POWER_HASTE))
+                            duration = unlimited_aura->GetDuration();
+                        caster->CastSpell(caster, SPELL_SHAMAN_UNLIMITED_POWER_HASTE, true);
+                        if (Aura* unlimited_aura = caster->GetAura(SPELL_SHAMAN_UNLIMITED_POWER_HASTE))
+                            unlimited_aura->SetDuration(duration);
+                    }
+                });
             }
         }
     }
@@ -3665,7 +3662,7 @@ struct npc_grounding_totem : public ScriptedAI
     }
 };
 
-// 51505 - Lava burst
+// 285452  - Lava burst
 class spell_sha_lava_burst : public SpellScriptLoader
 {
 public:
@@ -3737,34 +3734,31 @@ public:
             // Mastery : Elemental Overload
             if (Aura* aura = caster->GetAura(SPELL_SHAMAN_MASTERY_ELEMENTAL_OVERLOAD))
             {
-                if (caster->GetLevel() >= 78)
+                if (roll_chance_i(aura->GetEffect(EFFECT_0)->GetAmount()))
+                    caster->GetScheduler().Schedule(500ms, [targetGuid, &duration](TaskContext context)
                 {
-                    if (roll_chance_i(aura->GetEffect(EFFECT_0)->GetAmount()))
-                        caster->GetScheduler().Schedule(500ms, [targetGuid, &duration](TaskContext context)
-                            {
-                                auto _caster = GetContextUnit();
-                                if (!_caster)
-                                    return;
+                    auto _caster = GetContextUnit();
+                    if (!_caster)
+                        return;
 
-                                auto _target = ObjectAccessor::GetUnit(*_caster, targetGuid);
-                                if (!_target)
-                                    return;
+                    auto _target = ObjectAccessor::GetUnit(*_caster, targetGuid);
+                    if (!_target)
+                        return;
 
-                                if (!_caster->IsInWorld() || _caster->isDead() || !_target->IsInWorld() || _target->isDead())
-                                    return;
+                    if (!_caster->IsInWorld() || _caster->isDead() || !_target->IsInWorld() || _target->isDead())
+                        return;
 
-                                _caster->CastSpell(_target, SPELL_SHAMAN_LAVA_BURST_OVERLOAD, true);
+                    _caster->CastSpell(_target, SPELL_SHAMAN_LAVA_BURST_OVERLOAD, true);
 
-                                if (_caster->HasAura(SPELL_SHAMAN_UNLIMTED_POWER))
-                                {
-                                    if (Aura* unlimited_aura = _caster->GetAura(SPELL_SHAMAN_UNLIMITED_POWER_HASTE))
-                                        duration = unlimited_aura->GetDuration();
-                                    _caster->CastSpell(_caster, SPELL_SHAMAN_UNLIMITED_POWER_HASTE, true);
-                                    if (Aura* unlimited_aura = _caster->GetAura(SPELL_SHAMAN_UNLIMITED_POWER_HASTE))
-                                        unlimited_aura->SetDuration(duration);
-                                }
-                            });
-                }
+                    if (_caster->HasAura(SPELL_SHAMAN_UNLIMTED_POWER))
+                    {
+                        if (Aura* unlimited_aura = _caster->GetAura(SPELL_SHAMAN_UNLIMITED_POWER_HASTE))
+                            duration = unlimited_aura->GetDuration();
+                        _caster->CastSpell(_caster, SPELL_SHAMAN_UNLIMITED_POWER_HASTE, true);
+                        if (Aura* unlimited_aura = _caster->GetAura(SPELL_SHAMAN_UNLIMITED_POWER_HASTE))
+                            unlimited_aura->SetDuration(duration);
+                    }
+                });
             }
         }
 
@@ -4737,26 +4731,27 @@ class spell_sha_icefury : public SpellScript
 
         // Mastery : Elemental Overload
         if (Aura* aura = caster->GetAura(SPELL_SHAMAN_MASTERY_ELEMENTAL_OVERLOAD))
-            if (caster->GetLevel() >= 78)
-                if (roll_chance_i(aura->GetEffect(EFFECT_0)->GetAmount()))
-                    caster->GetScheduler().Schedule(500ms, [caster, target](TaskContext context)
-                        {
-                            if (!caster || !target)
-                                return;
-                            if (!caster->IsInWorld() || caster->isDead() || !target->IsInWorld() || target->isDead())
-                                return;
+        {
+            if (roll_chance_i(aura->GetEffect(EFFECT_0)->GetAmount()))
+                caster->GetScheduler().Schedule(500ms, [caster, target](TaskContext context)
+            {
+                if (!caster || !target)
+                    return;
+                if (!caster->IsInWorld() || caster->isDead() || !target->IsInWorld() || target->isDead())
+                    return;
 
-                            caster->CastSpell(target, SPELL_SHAMAN_ICEFURY_OVERLOAD, true);
-                            if (caster->HasAura(SPELL_SHAMAN_UNLIMTED_POWER))
-                            {
-                                uint32 duration = sSpellMgr->GetSpellInfo(SPELL_SHAMAN_UNLIMITED_POWER_HASTE)->GetDuration();
-                                if (Aura* unlimited_aura = caster->GetAura(SPELL_SHAMAN_UNLIMITED_POWER_HASTE))
-                                    duration = unlimited_aura->GetDuration();
-                                caster->CastSpell(caster, SPELL_SHAMAN_UNLIMITED_POWER_HASTE, true);
-                                if (Aura* unlimited_aura = caster->GetAura(SPELL_SHAMAN_UNLIMITED_POWER_HASTE))
-                                    unlimited_aura->SetDuration(duration);
-                            }
-                        });
+                caster->CastSpell(target, SPELL_SHAMAN_ICEFURY_OVERLOAD, true);
+                if (caster->HasAura(SPELL_SHAMAN_UNLIMTED_POWER))
+                {
+                    uint32 duration = sSpellMgr->GetSpellInfo(SPELL_SHAMAN_UNLIMITED_POWER_HASTE)->GetDuration();
+                    if (Aura* unlimited_aura = caster->GetAura(SPELL_SHAMAN_UNLIMITED_POWER_HASTE))
+                        duration = unlimited_aura->GetDuration();
+                    caster->CastSpell(caster, SPELL_SHAMAN_UNLIMITED_POWER_HASTE, true);
+                    if (Aura* unlimited_aura = caster->GetAura(SPELL_SHAMAN_UNLIMITED_POWER_HASTE))
+                        unlimited_aura->SetDuration(duration);
+                }
+            });
+        }
     }
 
     void Register() override
