@@ -1583,6 +1583,29 @@ public:
     }
 };
 
+class npc_spirit_healer : public ScriptedAI
+{
+public:
+    npc_spirit_healer(Creature* creature) : ScriptedAI(creature) { }
+
+    bool OnGossipHello(Player* player) override
+    {
+        ClearGossipMenuFor(player);
+
+        AddGossipItemFor(player, GossipOptionIcon::None, "Resurrect me, please.", 0, 1);
+
+        SendGossipMenuFor(player, me->GetEntry(), me);
+        return true;
+    }
+
+    bool OnGossipSelect(Player* player, uint32 menuId, uint32 gossipListId) override
+    {
+        player->ResurrectPlayer(100.0, false);
+        CloseGossipMenuFor(player);
+        return true;
+    }
+};
+
 // 313352
 class spell_activating_313352 : public SpellScript
 {
@@ -4148,4 +4171,6 @@ void AddSC_MallScripts()
 
     RegisterQuestAI(questscript_incursion);
     RegisterGameObjectAI(go_golden_treasure_chest_218889);
+
+    RegisterCreatureAI(npc_spirit_healer);
 }
