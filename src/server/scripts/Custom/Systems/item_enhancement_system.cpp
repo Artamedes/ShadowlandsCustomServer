@@ -331,6 +331,9 @@ public:
 
         auto item = targets.GetItemTarget();
 
+        if (!item)
+            return true;
+
         if (item->GetScriptId() == upgrader->GetScriptId() || item == upgrader)
         {
             ChatHandler(player).SendSysMessage("|cffFF0000You can't use the chisel on that item.");
