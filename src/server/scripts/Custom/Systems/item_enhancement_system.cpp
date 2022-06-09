@@ -371,6 +371,9 @@ public:
                     {
                         if (auto item = player->GetItemByGuid(itemGuid))
                         {
+                            if (item->IsEquipped())
+                                player->_ApplyItemMods(item, item->GetSlot(), false);
+
                             if (item->RemoveBonus(bonusToRemove))
                             {
                                 player->ModifyCurrency(currencyId, refundAmount);
@@ -378,8 +381,12 @@ public:
                                 item->SetState(ItemUpdateState::ITEM_CHANGED, player);
                                 player->SaveToDB();
                                 OnUse(player, upgrader, targets, ObjectGuid::Empty);
+                                if (item->IsEquipped())
+                                    player->_ApplyItemMods(item, item->GetSlot(), true);
                                 return;
                             }
+                            if (item->IsEquipped())
+                                player->_ApplyItemMods(item, item->GetSlot(), true);
                         }
 
                         CloseGossipMenuFor(player);
