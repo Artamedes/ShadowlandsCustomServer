@@ -6056,7 +6056,9 @@ void Spell::EffectLearnTransmogIllusion()
     if (!player)
         return;
 
-    uint16 illusionId = effectInfo->MiscValue;
+    uint32 illusionId = effectInfo->MiscValue;
+    if (!sTransmogIllusionStore.LookupEntry(illusionId))
+        return;
 
     player->GetSession()->GetCollectionMgr()->AddTransmogIllusion(illusionId);
 }
