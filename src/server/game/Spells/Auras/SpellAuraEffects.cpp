@@ -5150,6 +5150,7 @@ void AuraEffect::HandleComprehendLanguage(AuraApplication const* aurApp, uint8 m
     }
 }
 
+#pragma optimize( "", off )
 void AuraEffect::HandleAuraLinked(AuraApplication const* aurApp, uint8 mode, bool apply) const
 {
     Unit* target = aurApp->GetTarget();
@@ -5164,7 +5165,7 @@ void AuraEffect::HandleAuraLinked(AuraApplication const* aurApp, uint8 mode, boo
         return;
 
     auto amount = GetAmount();
-    if (triggeredSpellInfo->HasAura(SPELL_AURA_MOD_RATING_PCT) && amount && mode & AURA_EFFECT_HANDLE_REAL_OR_REAPPLY_MASK)
+    if (triggeredSpellInfo->HasAura(SPELL_AURA_MOD_RATING_PCT) && amount && mode & AURA_EFFECT_HANDLE_REAL)
     {
         ObjectGuid casterGUID = triggeredSpellInfo->NeedsToBeTriggeredByCaster(m_spellInfo) ? GetCasterGUID() : target->GetGUID();
         if (auto aura = target->GetAura(triggeredSpellInfo->Id, casterGUID))
@@ -5179,6 +5180,8 @@ void AuraEffect::HandleAuraLinked(AuraApplication const* aurApp, uint8 mode, boo
                         if (eff->GetAmount() == 0)
                         {
                             target->RemoveAura(triggeredSpellId, casterGUID);
+                            if (target->IsPlayer())
+                                target->ToPlayer()->UpdateAllRatings(); // update ratings
                             return;
                         }
                     }
@@ -5229,6 +5232,7 @@ void AuraEffect::HandleAuraLinked(AuraApplication const* aurApp, uint8 mode, boo
             triggeredAura->ModStackAmount(GetBase()->GetStackAmount() - triggeredAura->GetStackAmount());
     }
 }
+#pragma optimize( "", on ) 
 
 void AuraEffect::HandleTriggerSpellOnPowerPercent(AuraApplication const* aurApp, uint8 mode, bool apply) const
 {
