@@ -186,9 +186,6 @@ enum RogueSpells
 	SPELL_ROGUE_MIND_NUMBING_POISON					= 197050,
 	SPELL_ROGUE_MIND_NUMBING_POISON_PROC			= 197051,
 	SPELL_ROGUE_MIND_NUMBING_POISON_DAMAGE			= 197062,
-    SPELL_ROGUE_POISON_BOMB                         = 255544,
-    SPELL_ROGUE_POISON_BOMB_POOL                    = 255545,
-    SPELL_ROGUE_POISON_BOMB_DAMAGE                  = 255546,
 	SPELL_ROGUE_VEIL_OF_THE_NIGHT					= 198952,
 	SPELL_ROGUE_VEIL_OF_THE_NIGHT_BUFF				= 199027,
 	SPELL_ROGUE_DAGGER_IN_THE_DARK_DEBUFF			= 198688,
@@ -3631,23 +3628,6 @@ struct at_rog_smoke_bomb : AreaTriggerAI
 	}
 };
 
-// 11866 - Poison Bomb
-struct at_rogue_poison_bomb : AreaTriggerAI
-{
-    at_rogue_poison_bomb(AreaTrigger* areatrigger) : AreaTriggerAI(areatrigger)
-    {
-        // How often should the action be executed
-        ///< Custom HASTE - set periodic timer to 50, originally is 1000
-        areatrigger->SetPeriodicProcTimer(50);
-    }
-
-    void OnPeriodicProc() override
-    {
-        if (Unit* caster = at->GetCaster())        
-            caster->CastSpell(at->GetPosition(), SPELL_ROGUE_POISON_BOMB_DAMAGE, true);        
-    }
-};
-
 // 212217 - Control is King
 // AT - 6952
 //Last Update 8.0.1 Build 28153
@@ -3785,70 +3765,6 @@ class aura_rog_control_is_king_effect : public AuraScript
     void Register() override
     {
         DoCheckProc += AuraCheckProcFn(aura_rog_control_is_king_effect::CheckProc);
-    }
-};
-
-// 255544 - Poison Bomb
-class aura_rog_poison_bomb : public AuraScript
-{
-    PrepareAuraScript(aura_rog_poison_bomb);
-
-    bool CheckProc(ProcEventInfo& eventInfo)
-    {
-        auto caster = GetCaster();
-        if (!caster)
-            return false;
-
-        if (!eventInfo.GetSpellInfo())
-            return false;
-
-        switch (eventInfo.GetSpellInfo()->Id)
-        {
-            case SPELL_ROGUE_RUPTURE:
-            case SPELL_ROGUE_ENVENOM:
-                if (caster->Variables.Exist("CP"))
-                {
-                    auto cp = caster->Variables.GetValue<uint8>("CP", 0);
-                    return roll_chance_i(cp*4);
-                }
-                break;
-            default:
-                break;
-        }
-
-        return false;
-    }
-
-    void HandleProc(ProcEventInfo& eventInfo)
-    {
-        Unit* caster = GetCaster();
-        Unit* target = eventInfo.GetActionTarget();
-        if (!caster || !target)
-            return;
-
-        caster->CastSpell(target, SPELL_ROGUE_POISON_BOMB_POOL, true);
-    }
-
-    void Register() override
-    {
-        DoCheckProc += AuraCheckProcFn(aura_rog_poison_bomb::CheckProc);
-        OnProc += AuraProcFn(aura_rog_poison_bomb::HandleProc);
-    }
-};
-
-// 255546 - Poison Bomb Damage
-class spell_rog_poison_bomb_damage : public SpellScript
-{
-    PrepareSpellScript(spell_rog_poison_bomb_damage);
-
-    void HandleHitTarget(SpellEffIndex /*effIndex*/)
-    {
-        SetHitDamage(GetHitDamage() * sSpellMgr->GetSpellInfo(SPELL_ROGUE_POISON_BOMB)->GetEffect(EFFECT_1).BasePoints);
-    }
-
-    void Register() override
-    {
-        OnEffectHitTarget += SpellEffectFn(spell_rog_poison_bomb_damage::HandleHitTarget, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
     }
 };
 
@@ -5023,8 +4939,6 @@ void AddSC_rogue_spell_scripts()
 	RegisterSpellScript(spell_rog_shadowstep);
 	RegisterSpellScript(aura_rog_creeping_venom);
 	RegisterSpellScript(aura_mind_numbing_poison);
-    RegisterSpellScript(aura_rog_poison_bomb);
-    RegisterSpellScript(spell_rog_poison_bomb_damage);
 	RegisterSpellScript(aura_dagger_in_the_dark);
 	RegisterSpellScript(aura_dagger_in_the_dark_debuff);
 	RegisterSpellScript(aura_rog_cold_blood);
@@ -5061,7 +4975,6 @@ void AddSC_rogue_spell_scripts()
 
 	// Areatrigger
     RegisterAreaTriggerAI(at_rog_smoke_bomb);    // 11451
-    RegisterAreaTriggerAI(at_rogue_poison_bomb); // 16552
     RegisterAreaTriggerAI(at_rog_control_is_king); // 6952
 
     // Playerscript
