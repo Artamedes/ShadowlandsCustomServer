@@ -784,11 +784,11 @@ class spell_dru_ferocious_bite : public SpellScript
 
         SetHitDamage(damage);
 
-        // If caster's target is below 25% health or the caster have Sabertooth talent,
-        // refresh the duration of caster's Rip on the target
-        if (caster->HasAura(SPELL_DRUID_FEROCIOUS_BITE_RANK_2) && (target->GetHealthPct() <= 25 || caster->HasAura(SPELL_DRUID_SABERTOOTH)))
+        /// Updated 9.2.5.44061
+        /// Increase rip duration per combo spent
+        if (caster->HasAura(SPELL_DRUID_SABERTOOTH))
             if (Aura* rip = target->GetAura(SPELL_DRUID_RIP, caster->GetGUID()))
-                rip->RefreshDuration();
+                rip->ModDuration(comboPoints * 1000);
 
 		// Ferocius Bite
 		if (caster->HasAura(SPELL_DRUID_FEROCIUS_BITE) && comboPoints == 5 && (target->IsPlayer() || caster->GetMap()->IsBattlegroundOrArena())) //Can be used in Alterac Valley agains boss
