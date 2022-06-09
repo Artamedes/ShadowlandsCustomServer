@@ -280,18 +280,15 @@ class spell_token_of_appreciation : public AuraScript
 
     void HandleProc(AuraEffect* /*aurEff*/, ProcEventInfo& eventInfo)
     {
+        if (!eventInfo.GetActor())
+            return;
+
         if (Unit* caster = GetCaster())
         {
             if (auto player = caster->ToPlayer())
             {
                 // $points=${$cond($gt($SP,$AP),$SP*1.5,$AP*1.5)*(1+$@versadmg)}
-                auto ap = caster->GetTotalAttackPowerValue(BASE_ATTACK) * 1.5f;
-                auto sp = caster->GetTotalSpellPowerValue(SpellSchoolMask::SPELL_SCHOOL_MASK_ALL, true) * 1.5f;
-
-                auto base = std::max(ap, sp);
-                auto versa = player->m_activePlayerData->Versatility + player->m_activePlayerData->VersatilityBonus;
-
-                auto result = base * (1 + versa);
+                auto result = eventInfo.GetActor()->CountPctFromMaxHealth(5);
 
                 caster->CastSpell(eventInfo.GetActor(), ShieldAura, CastSpellExtraArgs(true).AddSpellBP0(result));
                 caster->CastSpell(eventInfo.GetActor(), CooldownAura, CastSpellExtraArgs(true).SetOriginalCaster(caster->GetGUID()));
