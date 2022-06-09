@@ -368,6 +368,10 @@ class LoginScript : public PlayerScript
 
             ChatHandler(p_Player).PSendSysMessage("|cff62CBF5Shadowlands v.%s-%s", GitRevision::GetCommitCount(), GitRevision::GetHash());
             ChatHandler(p_Player).PSendSysMessage("|cff62CBF5Last update %s", GitRevision::GetDate());
+
+            // Add chisel
+            if (!p_Player->HasItemCount(699998, 1))
+                p_Player->AddItem(699998, 1);
         }
 
         void OnQuestStatusChange(Player* player, uint32 quest) override
