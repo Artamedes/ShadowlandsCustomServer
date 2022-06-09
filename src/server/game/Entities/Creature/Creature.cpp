@@ -3514,8 +3514,13 @@ bool Creature::IsMovementPreventedByCasting() const
     if (Spell* spell = m_currentSpells[CURRENT_CHANNELED_SPELL])
     {
         if (spell->getState() != SPELL_STATE_FINISHED && spell->IsChannelActive())
+        {
             if (spell->CheckMovement() != SPELL_CAST_OK)
                 return false;
+            else if (spell->GetSpellInfo()->Id == 319695)
+                return false;
+        }
+        
     }
 
     if (HasSpellFocus())

@@ -4725,6 +4725,8 @@ void Player::ResurrectPlayer(float restore_percent, bool applySickness)
     // recast lost by death auras of any items held in the inventory
     CastAllObtainSpells();
 
+    UpdateRating(CR_CORRUPTION);
+
     if (!applySickness)
         return;
 

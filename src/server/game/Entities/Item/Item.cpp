@@ -911,9 +911,91 @@ bool Item::LoadFromDB(ObjectGuid::LowType guid, ObjectGuid ownerGuid, Field* fie
     std::vector<std::string_view> bonusListString = Trinity::Tokenize(fields[18].GetStringView(), ' ', false);
     std::vector<int32> bonusListIDs;
     bonusListIDs.reserve(bonusListString.size());
+
+    //std::vector<int32> corruptionIds;
+
     for (std::string_view token : bonusListString)
+    {
         if (Optional<int32> bonusListID = Trinity::StringTo<int32>(token))
+        {
+    
+            //switch (*bonusListID)
+            //{
+            //    case 6477: ///< T1
+            //    case 6471: ///< T1
+            //    case 6474: ///< T1
+            //    case 6480: ///< T1
+            //    case 6483: ///< T1
+            //    case 6493: ///< T1
+            //    case 6547: ///< T1
+            //
+            //    case 6478: ///< T2
+            //    case 6472: ///< T2
+            //    case 6475: ///< T2
+            //    case 6481: ///< T2
+            //    case 6484: ///< T2
+            //    case 6494: ///< T2
+            //    case 6548: ///< T2
+            //
+            //    case 6479: ///< T3
+            //    case 6473: ///< T3
+            //    case 6476: ///< T3
+            //    case 6482: ///< T3
+            //    case 6485: ///< T3
+            //    case 6495: ///< T3
+            //    case 6549: ///< T3
+            //        corruptionIds.push_back(*bonusListID);
+            //        break;
+            //    default:
+            //        break;
+            //}
+    
             bonusListIDs.push_back(*bonusListID);
+        }
+    }
+    // uncomment this after we make the changelog
+    //static const std::unordered_map<uint32, std::pair<uint32, uint32>> CorruptionsMap
+    //{
+    //    { 6479, { 6478, 6477 } }, ///< T3
+    //    { 6473, { 6472, 6471 } }, ///< T3
+    //    { 6476, { 6475, 6474 } }, ///< T3
+    //    { 6482, { 6481, 6480 } }, ///< T3
+    //    { 6485, { 6484, 6483 } }, ///< T3
+    //    { 6495, { 6494, 6493 } }, ///< T3
+    //    { 6549, { 6548, 6547 } }, ///< T3
+    //
+    //    { 6478, { 6477, 0 } }, ///< T2
+    //    { 6472, { 6471, 0 } }, ///< T2
+    //    { 6475, { 6474, 0 } }, ///< T2
+    //    { 6481, { 6480, 0 } }, ///< T2
+    //    { 6484, { 6483, 0 } }, ///< T2
+    //    { 6494, { 6493, 0 } }, ///< T2
+    //    { 6548, { 6547, 0 } }, ///< T2
+    //};
+    //
+    //std::set<int32> corruptionsToRemove;
+    //for (auto bonusId : bonusListIDs)
+    //{
+    //    auto itr = CorruptionsMap.find(bonusId);
+    //    if (itr != CorruptionsMap.end())
+    //    {
+    //        if (itr->second.first)
+    //            corruptionsToRemove.insert(itr->second.first);
+    //        if (itr->second.second)
+    //            corruptionsToRemove.insert(itr->second.second);
+    //    }
+    //}
+    //
+    //if (!corruptionsToRemove.empty())
+    //{
+    //    for (auto bonusId : corruptionsToRemove)
+    //    {
+    //        auto it = std::find(bonusListIDs.begin(), bonusListIDs.end(), bonusId);
+    //        if (it != bonusListIDs.end())
+    //            bonusListIDs.erase(it);
+    //    }
+    //}
+
     SetBonuses(std::move(bonusListIDs));
 
     // load charges after bonuses, they can add more item effects

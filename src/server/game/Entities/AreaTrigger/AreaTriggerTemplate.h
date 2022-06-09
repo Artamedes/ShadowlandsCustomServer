@@ -24,6 +24,8 @@
 #include "SpawnData.h"
 #include <vector>
 
+class AreaTrigger;
+
 #define MAX_AREATRIGGER_ENTITY_DATA 8
 #define MAX_AREATRIGGER_SCALE 7
 
@@ -125,7 +127,7 @@ struct AreaTriggerShapeInfo
     bool IsPolygon()    const { return Type == AREATRIGGER_TYPE_POLYGON;    }
     bool IsCylinder()   const { return Type == AREATRIGGER_TYPE_CYLINDER;   }
     bool IsDisk()       const { return Type == AREATRIGGER_TYPE_DISK;   }
-    float GetMaxSearchRadius() const;
+    float GetMaxSearchRadius(float overrideRadius = 0.0f, float overrideRadiusTarget = 0.0f) const;
 
     AreaTriggerTypes Type;
 
@@ -219,7 +221,7 @@ public:
     ~AreaTriggerCreateProperties();
 
     bool HasSplines() const;
-    float GetMaxSearchRadius() const;
+    float GetMaxSearchRadius(AreaTrigger* at = nullptr) const;
 
     uint32 Id;
     AreaTriggerTemplate const* Template;

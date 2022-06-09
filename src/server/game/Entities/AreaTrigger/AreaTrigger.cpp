@@ -43,7 +43,7 @@
 AreaTrigger::AreaTrigger() : WorldObject(false), MapObject(), _spawnId(0), _aurEff(nullptr), _maxSearchRadius(0.0f),
     _duration(0), _totalDuration(0), _timeSinceCreated(0), _periodicProcTimer(0), _basePeriodicProcTimer(0), _previousCheckOrientation(std::numeric_limits<float>::infinity()), _radius(0.0f),
     _isRemoved(false), _reachedDestination(true), _setedDestination(false), _lastSplineIndex(0), _movementTime(0),
-    _areaTriggerCreateProperties(nullptr), _areaTriggerTemplate(nullptr), m_Caster(nullptr)
+    _areaTriggerCreateProperties(nullptr), _areaTriggerTemplate(nullptr), m_Caster(nullptr), OverrideRadiusTarget(0.0f), OverrideRadius(0.0f)
 {
     m_objectType |= TYPEMASK_AREATRIGGER;
     m_objectTypeId = TYPEID_AREATRIGGER;
@@ -114,6 +114,36 @@ bool AreaTrigger::Create(uint32 areaTriggerCreatePropertiesId, Unit* caster, Uni
         return false;
     }
 
+    if (_areaTriggerCreateProperties->Shape.Type == AreaTriggerTypes::AREATRIGGER_TYPE_SPHERE)
+    {
+        OverrideRadiusTarget = _areaTriggerCreateProperties->Shape.SphereDatas.RadiusTarget;
+        OverrideRadius = _areaTriggerCreateProperties->Shape.SphereDatas.Radius;
+    }
+    else if (_areaTriggerCreateProperties->Shape.Type == AreaTriggerTypes::AREATRIGGER_TYPE_CYLINDER)
+    {
+        OverrideRadiusTarget = _areaTriggerCreateProperties->Shape.CylinderDatas.RadiusTarget;
+        OverrideRadius = _areaTriggerCreateProperties->Shape.CylinderDatas.Radius;
+    }
+
+    // we must do this before object update is sent
+    if (areaTriggerCreatePropertiesId == 18755 && caster)
+    {
+        if (auto player = caster->ToPlayer())
+        {
+            auto corruptionToRadius = OverrideRadius;
+
+            if (float cor = player->GetEffectiveCorruption())
+                if (cor >= 20.0f)
+                    corruptionToRadius += (cor - 20.0f) * 0.65f;
+
+            if (corruptionToRadius >= 30.0f)
+                corruptionToRadius = 30.0f;
+
+            OverrideRadius = corruptionToRadius;
+            OverrideRadiusTarget = corruptionToRadius;
+        }
+    }
+
     _areaTriggerTemplate = _areaTriggerCreateProperties->Template;
 
     Object::_Create(ObjectGuid::Create<HighGuid::AreaTrigger>(GetMapId(), GetTemplate() ? GetTemplate()->Id.Id : 0, caster->GetMap()->GenerateLowGuid<HighGuid::AreaTrigger>()));
@@ -126,7 +156,7 @@ bool AreaTrigger::Create(uint32 areaTriggerCreatePropertiesId, Unit* caster, Uni
     SetObjectScale(1.0f);
 
     _shape = GetCreateProperties()->Shape;
-    _maxSearchRadius = GetCreateProperties()->GetMaxSearchRadius();
+    _maxSearchRadius = GetCreateProperties()->GetMaxSearchRadius(this);
 
     auto areaTriggerData = m_values.ModifyValue(&AreaTrigger::m_areaTriggerData);
     m_Caster = caster;
@@ -152,9 +182,13 @@ bool AreaTrigger::Create(uint32 areaTriggerCreatePropertiesId, Unit* caster, Uni
     {
         Position point(GetCreateProperties()->ExtraScale.Data.Structured.Points[2], GetCreateProperties()->ExtraScale.Data.Structured.Points[3]);
         SetUpdateFieldValue(areaTriggerData.ModifyValue(&UF::AreaTriggerData::ExtraScaleCurve).ModifyValue(&UF::ScaleCurve::Points, 1), point);
+
+    if (areaTriggerCreatePropertiesId == 18755)
+        SetUpdateFieldValue(areaTriggerData.ModifyValue(&UF::AreaTriggerData::ExtraScaleCurve).ModifyValue(&UF::ScaleCurve::OverrideActive), GetCreateProperties()->ExtraScale.Data.Structured.OverrideActive);
     }
     if (GetCreateProperties()->ExtraScale.Data.Raw[5])
-        SetUpdateFieldValue(areaTriggerData.ModifyValue(&UF::AreaTriggerData::ExtraScaleCurve).ModifyValue(&UF::ScaleCurve::ParameterCurve), GetCreateProperties()->ExtraScale.Data.Raw[5]);
+        SetUpdateFieldValue(areaTriggerData.ModifyValue(&UF::AreaTriggerData::ExtraScaleCurve).ModifyValue(&UF::ScaleCurve::ParameterCurve), 1065353217);
+
     if (GetCreateProperties()->ExtraScale.Data.Structured.OverrideActive)
         SetUpdateFieldValue(areaTriggerData.ModifyValue(&UF::AreaTriggerData::ExtraScaleCurve).ModifyValue(&UF::ScaleCurve::OverrideActive), GetCreateProperties()->ExtraScale.Data.Structured.OverrideActive);
 
@@ -433,13 +467,13 @@ void AreaTrigger::SearchUnits(std::vector<Unit*>& targetList, float radius, bool
 
 void AreaTrigger::SearchUnitInSphere(std::vector<Unit*>& targetList)
 {
-    float radius = _shape.SphereDatas.Radius;
+    float radius = OverrideRadiusTarget;
     if (GetTemplate() && GetTemplate()->HasFlag(AREATRIGGER_FLAG_HAS_DYNAMIC_SHAPE))
     {
         if (GetCreateProperties()->MorphCurveId)
         {
             radius = G3D::lerp(_shape.SphereDatas.Radius,
-                _shape.SphereDatas.RadiusTarget,
+                OverrideRadiusTarget,
                 sDB2Manager.GetCurveValueAt(GetCreateProperties()->MorphCurveId, GetProgress()));
         }
     }
@@ -712,6 +746,13 @@ bool AreaTrigger::SetDestination(Position const& pos, uint32 timeToTarget, bool 
 
     InitSplines(path.GetPath(), timeToTarget);
     return true;
+}
+
+void AreaTrigger::SetMaxSearchRadius(float radius)
+{
+    _maxSearchRadius = radius;
+    auto areaTriggerData = m_values.ModifyValue(&AreaTrigger::m_areaTriggerData);
+    SetUpdateFieldValue(areaTriggerData.ModifyValue(&UF::AreaTriggerData::BoundsRadius2D), radius);
 }
 
 void AreaTrigger::UpdateShape()

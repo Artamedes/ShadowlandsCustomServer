@@ -129,12 +129,16 @@ class TC_GAME_API AreaTrigger : public WorldObject, public GridObject<AreaTrigge
         bool HasOrbit() const;
         bool SetDestination(Position const& pos, uint32 timeToTarget, bool followTerrain = false);
         Optional<AreaTriggerOrbitInfo> const& GetCircularMovementInfo() const { return _orbitInfo; }
+        void SetMaxSearchRadius(float radius);
 
         void UpdateShape();
 
         float GetRadius() { return _radius; }
         float GetCurrentTimePercent();
         UF::UpdateField<UF::AreaTriggerData, 0, TYPEID_AREATRIGGER> m_areaTriggerData;
+
+        float OverrideRadiusTarget;
+        float OverrideRadius;
 
     protected:
         Unit* m_Caster;

@@ -16,6 +16,7 @@
  */
 
 #include "AreaTriggerTemplate.h"
+#include "AreaTrigger.h"
 #include <G3D/Vector3.h>
 #include <algorithm>
 #include <cstring>
@@ -32,16 +33,16 @@ AreaTriggerShapeInfo::AreaTriggerShapeInfo()
     memset(DefaultDatas.Data, 0, sizeof(DefaultDatas.Data));
 }
 
-float AreaTriggerShapeInfo::GetMaxSearchRadius() const
+float AreaTriggerShapeInfo::GetMaxSearchRadius(float overrideRadius, float overrideRadiusTarget) const
 {
     switch (Type)
     {
         case AREATRIGGER_TYPE_SPHERE:
-            return std::max(SphereDatas.Radius, SphereDatas.RadiusTarget);
+            return std::max(overrideRadius ? overrideRadius : SphereDatas.Radius, overrideRadiusTarget ? overrideRadiusTarget : SphereDatas.RadiusTarget);
         case AREATRIGGER_TYPE_BOX:
             return std::sqrt(BoxDatas.Extents[0] * BoxDatas.Extents[0] / 4 + BoxDatas.Extents[1] * BoxDatas.Extents[1] / 4);
         case AREATRIGGER_TYPE_CYLINDER:
-            return std::max(CylinderDatas.Radius, CylinderDatas.RadiusTarget);
+            return std::max(overrideRadius ? overrideRadius : CylinderDatas.Radius, overrideRadius ? overrideRadius : CylinderDatas.RadiusTarget);
         case AREATRIGGER_TYPE_DISK:
             return std::max(DiskDatas.OuterRadius, DiskDatas.OuterRadiusTarget);
         default:
@@ -99,7 +100,7 @@ bool AreaTriggerCreateProperties::HasSplines() const
     return SplinePoints.size() >= 2;
 }
 
-float AreaTriggerCreateProperties::GetMaxSearchRadius() const
+float AreaTriggerCreateProperties::GetMaxSearchRadius(AreaTrigger* at) const
 {
     if (Shape.Type == AREATRIGGER_TYPE_POLYGON)
     {
@@ -116,6 +117,9 @@ float AreaTriggerCreateProperties::GetMaxSearchRadius() const
 
         return maxSearchRadius;
     }
+
+    if (at)
+        return Shape.GetMaxSearchRadius(at->OverrideRadius, at->OverrideRadiusTarget);
 
     return Shape.GetMaxSearchRadius();
 }

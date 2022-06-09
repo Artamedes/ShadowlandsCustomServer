@@ -511,8 +511,8 @@ void Object::BuildMovementUpdate(ByteBuffer* data, CreateObjectBits flags, Playe
 
         if (hasAreaTriggerSphere)
         {
-            *data << float(shape.SphereDatas.Radius);
-            *data << float(shape.SphereDatas.RadiusTarget);
+            *data << float(areaTrigger->OverrideRadius);
+            *data << float(areaTrigger->OverrideRadiusTarget);
         }
 
         if (hasAreaTriggerBox)
@@ -541,8 +541,8 @@ void Object::BuildMovementUpdate(ByteBuffer* data, CreateObjectBits flags, Playe
 
         if (hasAreaTriggerCylinder)
         {
-            *data << float(shape.CylinderDatas.Radius);
-            *data << float(shape.CylinderDatas.RadiusTarget);
+            *data << float(areaTrigger->OverrideRadius);
+            *data << float(areaTrigger->OverrideRadiusTarget);
             *data << float(shape.CylinderDatas.Height);
             *data << float(shape.CylinderDatas.HeightTarget);
             *data << float(shape.CylinderDatas.LocationZOffset);

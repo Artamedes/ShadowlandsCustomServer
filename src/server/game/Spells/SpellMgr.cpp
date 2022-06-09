@@ -3298,10 +3298,19 @@ void SpellMgr::LoadSpellInfoCorrections()
         {
             spellInfo->RecoveryTime = 5000;
         });
-        ApplySpellFix({}, [](SpellInfo* spellInfo)
+
+        /// Niya's Poison
+        ApplySpellFix({ 321519 }, [](SpellInfo* spellInfo)
         {
             spellInfo->AttributesEx5 &= ~SPELL_ATTR5_SPELL_HASTE_AFFECTS_PERIODIC;
         });
+
+        ApplySpellFix({ 315175, 315169, 315184, 315857, 317438, 315179, 337612 }, [](SpellInfo* spellInfo)
+        {
+            spellInfo->AttributesEx3 |= SPELL_ATTR3_ALLOW_AURA_WHILE_DEAD;
+        });
+
+
 	    // Storm, Earth, and Fire
 	    ApplySpellFix({ 137639 }, [](SpellInfo* spellInfo)
 	    {

@@ -749,6 +749,20 @@ void Player::UpdateCorruption()
         }
 
         CastSpell(this, corruptionEffect->Aura, true);
+
+        if (corruptionEffect->Aura == 315179) ///< Inevitable Doom
+        {
+            int32 debuffAmount = std::min<int32>(100, effectiveCorruption - 80);
+
+            if (auto aur = GetAuraEffect(315179, EFFECT_0))
+                aur->SetAmount(debuffAmount);
+            if (auto aur = GetAuraEffect(315179, EFFECT_1))
+                aur->SetAmount(-debuffAmount);
+            if (auto aur = GetAuraEffect(315179, EFFECT_2))
+                aur->SetAmount(-debuffAmount);
+            if (auto aur = GetAura(315179))
+                aur->SetNeedClientUpdateForTargets();
+        }
     }
 }
 
@@ -851,6 +865,11 @@ void Player::UpdateAllRunesRegen()
     uint32 cooldown = GetRuneBaseCooldown();
     SetUpdateFieldValue(m_values.ModifyValue(&Unit::m_unitData).ModifyValue(&UF::UnitData::PowerRegenFlatModifier, runeIndex), float(1 * IN_MILLISECONDS) / float(cooldown) - runeEntry->RegenPeace);
     SetUpdateFieldValue(m_values.ModifyValue(&Unit::m_unitData).ModifyValue(&UF::UnitData::PowerRegenInterruptedFlatModifier, runeIndex), float(1 * IN_MILLISECONDS) / float(cooldown) - runeEntry->RegenCombat);
+}
+
+float Player::GetEffectiveCorruption() const
+{
+    return GetRatingBonusValue(CR_CORRUPTION) - GetRatingBonusValue(CR_CORRUPTION_RESISTANCE);
 }
 
 void Player::_ApplyAllStatBonuses()
