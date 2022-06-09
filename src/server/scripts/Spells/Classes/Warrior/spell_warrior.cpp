@@ -4235,6 +4235,52 @@ class aura_warr_recklessness : public AuraScript
     }
 };
 
+/// ID: 3411 Intervene
+class spell_intervene : public SpellScript
+{
+    PrepareSpellScript(spell_intervene);
+
+    enum Intervene
+    {
+        InterveneTrigger = 34784,
+    };
+
+    SpellCastResult CheckWay()
+    {
+        Unit* caster = GetCaster();
+        if (!caster)
+            return SPELL_FAILED_DONT_REPORT;
+
+        if (!GetExplTargetUnit())
+            return SPELL_FAILED_NO_VALID_TARGETS;
+
+        if (Unit* target = GetExplTargetUnit())
+        {
+            Position const& pos = target->GetPosition();
+            if (!caster->IsWithinLOS(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ()))
+                return SPELL_FAILED_LINE_OF_SIGHT;
+        }
+
+        return SPELL_CAST_OK;
+    }
+
+
+    void HandleDummy(SpellEffIndex /*eff*/)
+    {
+        if (Unit* caster = GetCaster())
+        {
+            if (Unit* target = GetHitUnit())
+                caster->CastSpell(target, InterveneTrigger, true);
+        }
+    }
+
+    void Register() override
+    {
+        OnCheckCast += SpellCheckCastFn(spell_intervene::CheckWay);
+        OnEffectHitTarget += SpellEffectFn(spell_intervene::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
+    }
+};
+
 void AddSC_warrior_spell_scripts()
 {
     RegisterSpellScript(spell_warr_bloodthirst);
@@ -4343,6 +4389,7 @@ void AddSC_warrior_spell_scripts()
     RegisterSpellScript(aura_warr_recklessness);
     RegisterSpellScript(aura_warr_second_wind);
     RegisterSpellScript(aura_warr_second_wind_damaged);
+    RegisterSpellScript(spell_intervene);
 
     // Area Trigger scripts
     RegisterAreaTriggerAI(at_warr_into_the_fray);

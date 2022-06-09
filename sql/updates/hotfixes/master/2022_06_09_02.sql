@@ -13,3 +13,5 @@ INSERT INTO `spell_script_names` (`spell_id`, `ScriptName`) VALUES (61882, 'aura
 
 DELETE FROM spell_script_names WHERE spell_id = 324143;
 INSERT INTO spell_script_names (spell_id, scriptname) VALUE (324143, 'spell_conquerors_banner');
+DELETE FROM spell_script_names WHERE spell_id = 3411;
+INSERT INTO spell_script_names (spell_id, scriptname) VALUE (3411, 'spell_intervene');
