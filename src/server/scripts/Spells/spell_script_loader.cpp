@@ -32,6 +32,7 @@ void AddSC_spell_rogue_assassination();
 void AddSC_shaman_spell_scripts();
 void AddSC_warlock_spell_scripts();
 void AddSC_warrior_spell_scripts();
+void AddSC_spell_warrior_covenant();
 void AddSC_quest_spell_scripts();
 void AddSC_item_spell_scripts();
 void AddSC_spell_nightfae();
@@ -60,6 +61,7 @@ void AddSpellsScripts()
     AddSC_shaman_spell_scripts();
     AddSC_warlock_spell_scripts();
     AddSC_warrior_spell_scripts();
+    AddSC_spell_warrior_covenant();
     AddSC_quest_spell_scripts();
     AddSC_item_spell_scripts();
     AddSC_spell_nightfae();

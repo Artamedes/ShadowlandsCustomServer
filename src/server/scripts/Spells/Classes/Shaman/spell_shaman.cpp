@@ -1828,8 +1828,17 @@ class aura_sha_earthquake : public AuraScript
             if (AreaTrigger* at = caster->GetAreaTrigger(SPELL_SHAMAN_EARTHQUAKE))
             {
                 // damage = $SPN * 0.25 * ($137040s1 + 100) / 100
-                int32 damage = caster->GetTotalSpellPowerValue(SPELL_SCHOOL_MASK_NATURE, false) * 0.25f * (sSpellMgr->GetSpellInfo(SPELL_SHAMAN_ELEMENTAL_SHAMAN)->GetEffect(EFFECT_0).BasePoints + 100) / 100;
-                caster->CastCustomSpell(at->GetPositionX(), at->GetPositionY(), at->GetPositionZ(), SPELL_SHAMAN_EARTHQUAKE_TICK, &damage, NULL, NULL, true);
+                // $damage=${$SPN*0.391*$d/$t2*(1+$@versadmg)*(($137040s1+100)/100)*$<mawPower>}
+                auto sp = caster->GetTotalSpellPowerValue(SPELL_SCHOOL_MASK_NATURE, false);
+                int32 damage = sp * 0.391f * (sSpellMgr->GetSpellInfo(SPELL_SHAMAN_ELEMENTAL_SHAMAN)->GetEffect(EFFECT_0).BasePoints + 100) / 100;
+
+                if (auto player = caster->ToPlayer())
+                {
+                    auto versa = player->m_activePlayerData->Versatility + player->m_activePlayerData->VersatilityBonus;
+                    AddPct(damage, versa);
+                }
+
+                caster->CastSpell(*at, SPELL_SHAMAN_EARTHQUAKE_TICK, CastSpellExtraArgs(true).AddSpellBP0(damage));
             }
     }
 
