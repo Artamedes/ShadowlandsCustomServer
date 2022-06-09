@@ -19,25 +19,23 @@ struct CorruptionCostRefund
 
 const std::unordered_map<uint32, CorruptionCostRefund> CorruptionCostsRefunds =
 {
-    { 6477, { "spell_arcane_arcanetactics",       "Versatile I",        10170, 50 } },
-    { 6471, { "ability_rogue_sinistercalling",    "Masterful I",        10170, 50 } },
-    { 6474, { "ability_mage_netherwindpresence",  "Expedient I",        10170, 50 } },
-    { 6480, { "ability_priest_shadowyapparition", "Severe I",           10170, 50 } },
-    { 6483, { "spell_warlock_demonsoul",          "Avoidant I",         10170, 50 } },
-    { 6493, { "spell_shadow_lifedrain02_purple",  "Siphoner I",         10170, 50 } },
-    { 6547, { "inv_wand_1h_nzothraid_d_01",       "Ineffable Truth I",  10170, 50 } },
-
-    { 6478, { "spell_arcane_arcanetactics",       "Versatile II",        10174, 50 } },
-    { 6472, { "ability_rogue_sinistercalling",    "Masterful II",        10174, 50 } },
+    { 6477, { "spell_arcane_arcanetactics",       "Versatile I",          10170, 50 } },
+    { 6471, { "ability_rogue_sinistercalling",    "Masterful I",          10170, 50 } },
+    { 6474, { "ability_mage_netherwindpresence",  "Expedient I",          10170, 50 } },
+    { 6480, { "ability_priest_shadowyapparition", "Severe I",             10170, 50 } },
+    { 6483, { "spell_warlock_demonsoul",          "Avoidant I",           10170, 50 } },
+    { 6493, { "spell_shadow_lifedrain02_purple",  "Siphoner I",           10170, 50 } },
+    { 6547, { "inv_wand_1h_nzothraid_d_01",       "Ineffable Truth I",    10170, 50 } },
+    { 6478, { "spell_arcane_arcanetactics",       "Versatile II",         10174, 50 } },
+    { 6472, { "ability_rogue_sinistercalling",    "Masterful II",         10174, 50 } },
     { 6475, { "ability_mage_netherwindpresence",  "Expedient II",         10174, 50 } },
-    { 6481, { "ability_priest_shadowyapparition", "Severe II",           10174, 50 } },
-    { 6484, { "spell_warlock_demonsoul",          "Avoidant II",         10174, 50 } },
-    { 6494, { "spell_shadow_lifedrain02_purple",  "Siphoner II",         10174, 50 } },
-    { 6548, { "inv_wand_1h_nzothraid_d_01",       "Ineffable Truth II",  10174, 50 } },
-
+    { 6481, { "ability_priest_shadowyapparition", "Severe II",            10174, 50 } },
+    { 6484, { "spell_warlock_demonsoul",          "Avoidant II",          10174, 50 } },
+    { 6494, { "spell_shadow_lifedrain02_purple",  "Siphoner II",          10174, 50 } },
+    { 6548, { "inv_wand_1h_nzothraid_d_01",       "Ineffable Truth II",   10174, 50 } },
     { 6479, { "spell_arcane_arcanetactics",       "Versatile III",        10175, 50 } },
     { 6473, { "ability_rogue_sinistercalling",    "Masterful III",        10175, 50 } },
-    { 6476, { "ability_mage_netherwindpresence",  "Expedient III",         10175, 50 } },
+    { 6476, { "ability_mage_netherwindpresence",  "Expedient III",        10175, 50 } },
     { 6482, { "ability_priest_shadowyapparition", "Severe III",           10175, 50 } },
     { 6485, { "spell_warlock_demonsoul",          "Avoidant III",         10175, 50 } },
     { 6495, { "spell_shadow_lifedrain02_purple",  "Siphoner III",         10175, 50 } },
@@ -307,7 +305,7 @@ class item_enhancement_system_playerscript : public PlayerScript
 
         void OnPlayerModifyCurrency(Player* player, uint32 id, uint32 /*oldCount*/, int32 newCount)
         {
-            if (id == 10170 && newCount >= 50) ///< Shadow Essence
+            if (id == 10170 && newCount >= 100) ///< Shadow Essence
             {
                 if (player->GetQuestStatus(699999) == QUEST_STATUS_NONE)
                 {
