@@ -4068,6 +4068,7 @@ class spell_dru_enraged_maim : public SpellScript
 
     void Register() override
     {
+        OnTakePower += SpellOnTakePowerFn(spell_dru_enraged_maim::HandleOnTakePower);
         OnEffectHitTarget += SpellEffectFn(spell_dru_enraged_maim::HandleEffectHitTarget, EFFECT_2, SPELL_EFFECT_SCHOOL_DAMAGE);
         OnCalcCritChance += SpellOnCalcCritChanceFn(spell_dru_enraged_maim::CalcCrit);
     }
