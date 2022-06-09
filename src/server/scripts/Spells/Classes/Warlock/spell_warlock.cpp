@@ -2420,7 +2420,8 @@ struct at_warl_rain_of_fire : AreaTriggerAI
 
     at_warl_rain_of_fire(AreaTrigger* areatrigger) : AreaTriggerAI(areatrigger)
     {
-        timeInterval = 1000;
+        /// < CUSTOM
+        timeInterval = 100;
     }
 
     void OnCreate() override
