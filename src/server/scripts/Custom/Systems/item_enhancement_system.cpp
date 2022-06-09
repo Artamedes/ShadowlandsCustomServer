@@ -345,8 +345,6 @@ public:
         std::ostringstream ss;
         std::ostringstream ss2;
 
-        bool hasCorruptions = false;
-
         for (auto itr = CorruptionCostsRefunds.begin(); itr != CorruptionCostsRefunds.end(); ++itr)
         {
             if (item->HasBonusId(itr->first))
@@ -386,19 +384,18 @@ public:
                     ss.str("");
                     ss2.clear();
                     ss2.str("");
-                    hasCorruptions = true;
                 }
 
             }
         }
-
-        if (hasCorruptions)
-            SendGossipMenuFor(player, 688881, upgrader->GetGUID());
-        else
-        {
-            ChatHandler(player).PSendSysMessage("%s |cff62CBF5has no corruptions to remove!", item->GetItemLink(item, player).c_str());
-            CloseGossipMenuFor(player);
-        }
+        SendGossipMenuFor(player, 688881, upgrader->GetGUID());
+        //if (hasCorruptions)
+        //    SendGossipMenuFor(player, 688881, upgrader->GetGUID());
+        //else
+        //{
+        //    ChatHandler(player).PSendSysMessage("%s |cff62CBF5has no corruptions to remove!", item->GetItemLink(item, player).c_str());
+        //    CloseGossipMenuFor(player);
+        //}
     }
 };
 
