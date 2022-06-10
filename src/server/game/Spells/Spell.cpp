@@ -652,7 +652,11 @@ Spell::~Spell()
     }
 
     if (m_caster && m_caster->GetTypeId() == TYPEID_PLAYER)
-        ASSERT(m_caster->ToPlayer()->m_spellModTakingSpell != this);
+        if (m_caster->ToPlayer()->m_spellModTakingSpell == this)
+        {
+            TC_LOG_FATAL("spells", "SPELL: deleting spell for spell ID %u. However, spell still referenced. in m_spellModTakingSpell", m_spellInfo->Id);
+            m_caster->ToPlayer()->m_spellModTakingSpell = nullptr;
+        }
 
     delete m_spellValue;
 }
