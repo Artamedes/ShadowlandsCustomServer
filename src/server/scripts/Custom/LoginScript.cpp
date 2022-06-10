@@ -362,9 +362,11 @@ class LoginScript : public PlayerScript
             p_Player->RemoveAurasDueToSpell(141480); // Self stun
             p_Player->RemoveAurasDueToSpell(163091); // Self stun
 
-            if (p_Player->GetQuestStatus(700036) == QUEST_STATUS_REWARDED  && !p_Player->HasAchieved(700000))
+            if (p_Player->GetQuestStatus(700036) == QUEST_STATUS_REWARDED && !p_Player->HasAchieved(700000))
+            {
                 if (auto achievEntry = sAchievementStore.LookupEntry(700000))
                     p_Player->CompletedAchievement(achievEntry);
+            }
 
             ChatHandler(p_Player).PSendSysMessage("|cff62CBF5Shadowlands v.%s-%s", GitRevision::GetCommitCount(), GitRevision::GetHash());
             ChatHandler(p_Player).PSendSysMessage("|cff62CBF5Last update %s", GitRevision::GetDate());
@@ -381,9 +383,13 @@ class LoginScript : public PlayerScript
 
             auto newStatus = player->GetQuestStatus(quest);
 
-            if (newStatus == QUEST_STATUS_REWARDED && !player->HasAchieved(700000))
-                if (auto achievEntry = sAchievementStore.LookupEntry(700000))
-                    player->CompletedAchievement(achievEntry);
+            if (newStatus == QUEST_STATUS_REWARDED)
+            {
+                player->ModifyCurrency(10186, 3);
+                if (!player->HasAchieved(700000))
+                    if (auto achievEntry = sAchievementStore.LookupEntry(700000))
+                        player->CompletedAchievement(achievEntry);
+            }
         }
 };
 
