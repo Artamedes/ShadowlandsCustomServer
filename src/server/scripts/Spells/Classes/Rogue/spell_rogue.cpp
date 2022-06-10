@@ -4873,6 +4873,39 @@ class spell_shroud_of_concealment : public AuraScript
     }
 };
 
+/// ID: 3408 Crippling Poison
+class spell_crippling_poison : public AuraScript
+{
+    PrepareAuraScript(spell_crippling_poison);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetDamageInfo();
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_crippling_poison::CheckProc);
+    }
+};
+
+/// ID: 315584 Instant Poison
+/// ID - 2823 Deadly Poison
+class spell_instant_poison : public AuraScript
+{
+    PrepareAuraScript(spell_instant_poison);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetDamageInfo();
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_instant_poison::CheckProc);
+    }
+};
+
 void AddSC_rogue_spell_scripts()
 {
     // SpellScripts
@@ -4972,6 +5005,8 @@ void AddSC_rogue_spell_scripts()
     RegisterSpellScript(spell_rog_vendetta);
     RegisterSpellScript(spell_exsanguinate);
     RegisterSpellScript(spell_shroud_of_concealment);
+    RegisterSpellScript(spell_crippling_poison);
+    RegisterSpellScript(spell_instant_poison);
 
 	// Areatrigger
     RegisterAreaTriggerAI(at_rog_smoke_bomb);    // 11451
