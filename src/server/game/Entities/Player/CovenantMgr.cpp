@@ -197,7 +197,13 @@ void Conduit::FlagsUpdated(bool forceRemove /*= false*/)
                     _player->RemoveAurasDueToSpell(entries->at(0)->SpellID);
                     if (auto aura = _player->AddAura(currRank->SpellID))
                     {
-                        aura->GetEffect(0)->SetAmount((int32)currRank->AuraPointsOverride); // TODO: Some are floats. How to handle this?
+                        if (auto eff = aura->GetEffect(EFFECT_0))
+                        {
+                            eff->ApplySpellMod(_player, false);
+                            eff->SetAmount((int32)currRank->AuraPointsOverride); // TODO: Some are floats. How to handle this?
+                            eff->ApplySpellMod(_player, true);
+                            eff->CalculateSpellMod();
+                        }
                     }
                 }
             }
