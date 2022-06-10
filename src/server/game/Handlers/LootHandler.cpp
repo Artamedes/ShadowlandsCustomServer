@@ -150,12 +150,11 @@ void WorldSession::HandleLootMoneyOpcode(WorldPackets::Loot::LootMoney& /*packet
 
     std::vector<ObjectGuid> lootReleaseGuids;
 
-    for (auto itr = player->m_AELootView.begin(); itr != player->m_AELootView.end();)
+    for (auto itr = player->m_AELootView.begin(); itr != player->m_AELootView.end(); ++itr)
     {
         ObjectGuid guid = itr->second;
         if (guid.IsEmpty())
         {
-            itr++;
             continue;
         }
 
@@ -211,13 +210,11 @@ void WorldSession::HandleLootMoneyOpcode(WorldPackets::Loot::LootMoney& /*packet
                 break;
             }
             default:
-                itr++;
                 continue;                                         // unlootable type
         }
 
         if (!loot)
         {
-            itr++;
             continue;
         }
 
@@ -276,7 +273,6 @@ void WorldSession::HandleLootMoneyOpcode(WorldPackets::Loot::LootMoney& /*packet
         // Delete container if empty
         if (loot->isLooted() && guid.IsItem())
             lootReleaseGuids.push_back(guid);
-        itr++;
     }
 
     for (auto lootReleaseGuid : lootReleaseGuids)
