@@ -164,6 +164,7 @@ DamageInfo::DamageInfo(CalcDamageInfo const& dmgInfo)
             break;
         case MELEE_HIT_DODGE:
             m_hitMask |= PROC_HIT_DODGE;
+            m_hitMask |= PROC_HIT_NORMAL; ///< Added to fix the rogue dodge conduit.
             break;
         case MELEE_HIT_PARRY:
             m_hitMask |= PROC_HIT_PARRY;

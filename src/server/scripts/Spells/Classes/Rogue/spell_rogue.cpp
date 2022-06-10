@@ -4726,6 +4726,56 @@ class spell_instant_poison : public AuraScript
         DoCheckProc += AuraCheckProcFn(spell_instant_poison::CheckProc);
     }
 };
+/// ID: 341535 Prepared for All
+class spell_prepared_for_all : public AuraScript
+{
+    PrepareAuraScript(spell_prepared_for_all);
+
+    enum PreparedForAll
+    {
+        Cloak = 31224,
+        Evasion = 5277,
+    };
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        auto caster = GetCaster();
+        if (!caster)
+            return;
+
+        if (auto aur = GetAura())
+        {
+            if (auto eff = aur->GetEffect(EFFECT_0))
+            {
+                int32 baseCdDodge = 2000;
+                int32 baseCdInterrupt = 4000;
+
+                if (eff->ConduitRankEntry != nullptr)
+                {
+                    /// Formula comes from spell tooltip
+                    baseCdDodge = int32(eff->ConduitRankEntry->AuraPointsOverride * 1000.0f);
+                    baseCdInterrupt = int32(eff->ConduitRankEntry->AuraPointsOverride * 2000.0f);
+                }
+
+                if (eventInfo.GetHitMask() & ProcFlagsHit::PROC_HIT_DODGE)
+                {
+                    caster->GetSpellHistory()->ModifyCooldown(Evasion, -baseCdDodge);
+                }
+
+                if (eventInfo.GetHitMask() & ProcFlagsHit::PROC_HIT_INTERRUPT)
+                {
+                    caster->GetSpellHistory()->ModifyCooldown(Cloak, -baseCdInterrupt);
+                }
+
+            }
+        }
+    }
+
+    void Register() override
+    {
+        OnProc += AuraProcFn(spell_prepared_for_all::HandleProc);
+    }
+};
 
 void AddSC_rogue_spell_scripts()
 {
@@ -4825,6 +4875,7 @@ void AddSC_rogue_spell_scripts()
     RegisterSpellScript(spell_shroud_of_concealment);
     RegisterSpellScript(spell_crippling_poison);
     RegisterSpellScript(spell_instant_poison);
+    RegisterSpellScript(spell_prepared_for_all);
 
 	// Areatrigger
     RegisterAreaTriggerAI(at_rog_smoke_bomb);    // 11451
