@@ -1207,6 +1207,10 @@ bool Aura::CanBeSaved() const
     if (!GetCastItemGUID().IsEmpty() && IsPermanent())
         return false;
 
+    // handled by core
+    if (GetSpellInfo()->HasAura(SPELL_AURA_MOD_RATING_PCT))
+        return false;
+
     return true;
 }
 
