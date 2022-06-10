@@ -43,6 +43,8 @@
 
 enum ShamanSpells
 {
+    SPELL_CHAIN_HEAL                                        = 1064,
+    SPELL_RIPTIDE                                           = 61295,
     SPELL_PET_NETHERWINDS_FATIGUED                          = 160455,
     SPELL_SHAMAN_ANCESTRAL_AWAKENING                        = 52759,
     SPELL_SHAMAN_ANCESTRAL_AWAKENING_PROC                   = 52752,
@@ -1766,6 +1768,23 @@ class spell_sha_tidal_waves : public AuraScript
         return ValidateSpellInfo({ SPELL_SHAMAN_TIDAL_WAVES });
     }
 
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        if (!eventInfo.GetSpellInfo())
+            return false;
+
+        switch (eventInfo.GetSpellInfo()->Id)
+        {
+            case SPELL_CHAIN_HEAL:
+            case SPELL_RIPTIDE:
+                return true;
+            default:
+                return false;
+        }
+
+        return false;
+    }
+
     void HandleEffectProc(AuraEffect* /*aurEff*/, ProcEventInfo& /*eventInfo*/)
     {
         PreventDefaultAction();
@@ -1774,6 +1793,7 @@ class spell_sha_tidal_waves : public AuraScript
 
     void Register() override
     {
+        DoCheckProc += AuraCheckProcFn(spell_sha_tidal_waves::CheckProc);
         OnEffectProc += AuraEffectProcFn(spell_sha_tidal_waves::HandleEffectProc, EFFECT_0, SPELL_AURA_DUMMY);
     }
 };
@@ -2045,10 +2065,8 @@ enum Resurgence
     /* Spells that can cause the proc  */
     SPELL_HEALING_WAVE = 331,
     SPELL_GREATER_HEALING_WAVE = 77472,
-    SPELL_RIPTIDE = 61295,
     SPELL_HEALING_SURGE = 8004,
     SPELL_UNLEASH_LIFE = 73685, // Triggered when Unleashed Elements is used on Earthliving Weapon
-    SPELL_CHAIN_HEAL = 1064,
 };
 
 // Script to handle the dummy proc of 16196
