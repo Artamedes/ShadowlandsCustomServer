@@ -5,6 +5,7 @@
 #include "SpellScript.h"
 #include "SpellAuras.h"
 #include "GameTime.h"
+#include "SpellAuraEffects.h"
 
 enum SpellVenthyr
 {
@@ -624,6 +625,58 @@ class spell_hold_your_ground : public AuraScript
     }
 };
 
+/// ID: 319982 Move As One
+class spell_move_as_one : public AuraScript
+{
+    PrepareAuraScript(spell_move_as_one);
+
+    enum MoveAsOne
+    {
+        MoveAsOneSpeedAura = 333104,
+    };
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        if (!eventInfo.GetSpellInfo())
+            return false;
+
+        return eventInfo.GetSpellInfo()->HasAura(AuraType::SPELL_AURA_MOD_INCREASE_SPEED) && eventInfo.GetActionTarget();
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        auto caster = GetCaster();
+        if (!caster)
+            return;
+
+        if (!eventInfo.GetSpellInfo())
+            return;
+
+        if (!eventInfo.GetActionTarget())
+            return;
+
+        if (auto aur = eventInfo.GetActionTarget()->GetAura(eventInfo.GetSpellInfo()->Id))
+        {
+            for (auto eff : aur->GetAuraEffects())
+            {
+                if (eff->GetAuraType() == SPELL_AURA_MOD_INCREASE_SPEED)
+                {
+                    auto speed = std::min(30, eff->GetAmount());
+                    caster->CastSpell(caster, MoveAsOneSpeedAura, CastSpellExtraArgs(true).AddSpellBP0(speed));
+                    break;
+                }
+            }
+        }
+
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_move_as_one::CheckProc);
+        OnProc += AuraProcFn(spell_move_as_one::HandleProc);
+    }
+};
+
 void AddSC_spell_venthyr()
 {
     RegisterSpellScript(spell_door_of_shadows);
@@ -636,6 +689,7 @@ void AddSC_spell_venthyr()
     RegisterSpellScript(spell_built_for_war);
     RegisterSpellScript(spell_dauntless_duelist);
     RegisterSpellScript(spell_hold_your_ground);
+    RegisterSpellScript(spell_move_as_one);
 
     RegisterAreaTriggerAI(at_soothing_shade);
 }
