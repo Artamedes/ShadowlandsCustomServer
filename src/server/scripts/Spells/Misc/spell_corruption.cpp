@@ -48,7 +48,7 @@ class spell_grasping_tendrils : public AuraScript
             return;
 
         auto corruptionAmount = player->GetEffectiveCorruption();
-        auto slowAmount = std::min<int32>(99, corruptionAmount + 10.0f);
+        auto slowAmount = std::min<int32>(80, corruptionAmount + 10.0f);
         player->CastSpell(player, MSReduction, CastSpellExtraArgs(true).AddSpellBP0(-slowAmount));
         player->GetSpellHistory()->AddCooldown(MSReduction, 0, 15s);
 
