@@ -1541,6 +1541,7 @@ class aura_monk_touch_of_death_amplifer : public AuraScript
 };
 
 // Fortifying brew - 115203
+/// DISABLED, why is this casting itself?
 class spell_monk_fortifying_brew : public SpellScriptLoader
 {
 public:

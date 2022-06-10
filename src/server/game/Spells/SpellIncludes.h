@@ -40,7 +40,7 @@ enum class SimpleTalentSpecs : uint32
     HPriest             = 257,
     Shadow              = 258,
     Assassination       = 259,
-    Combat              = 260,
+    Outlaw              = 260,
     Subtlety            = 261,
     Elemental           = 262,
     Enhancement         = 263,
