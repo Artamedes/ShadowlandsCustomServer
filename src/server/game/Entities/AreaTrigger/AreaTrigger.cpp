@@ -39,6 +39,8 @@
 #include "Unit.h"
 #include "UpdateData.h"
 #include "PathGenerator.h"
+#include "IVMapManager.h"
+#include "TemporarySummon.h"
 
 AreaTrigger::AreaTrigger() : WorldObject(false), MapObject(), _spawnId(0), _aurEff(nullptr), _maxSearchRadius(0.0f),
     _duration(0), _totalDuration(0), _timeSinceCreated(0), _periodicProcTimer(0), _basePeriodicProcTimer(0), _previousCheckOrientation(std::numeric_limits<float>::infinity()), _radius(0.0f),
@@ -735,8 +737,8 @@ bool AreaTrigger::SetDestination(Position const& pos, uint32 timeToTarget, bool 
     if (!GetCaster())
         return false;
 
-    PathGenerator path(GetCaster());
-    bool result = path.CalculatePath(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), true, true);
+    PathGenerator path(GetCaster(), GetTransport(), true);
+    bool result = path.CalculatePath(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ());
 
     if (!result || path.GetPathType() & PATHFIND_NOPATH)
         return false;
@@ -745,7 +747,22 @@ bool AreaTrigger::SetDestination(Position const& pos, uint32 timeToTarget, bool 
         _setedDestination = true;
 
     //We Have a new destination
-    _reachedDestination = false; 
+    _reachedDestination = false;
+
+    for (auto const& point : path.GetPath())
+    {
+
+        if (Unit* caster = GetCaster())
+            if (Player* player = caster->ToPlayer())
+                if (player->isDebugAreaTriggers)
+                    if (auto waypoint = player->SummonCreature(3, { point.x, point.y, point.z }, TEMPSUMMON_TIMED_DESPAWN, Milliseconds(10s)))
+                    {
+                        waypoint->SetFaction(35);
+                        waypoint->SetFlying(true);
+                        waypoint->SetDisplayId(105);
+                        waypoint->SetReactState(REACT_PASSIVE);
+                    }
+    }
 
     InitSplines(path.GetPath(), timeToTarget);
     return true;
@@ -859,13 +876,52 @@ void AreaTrigger::InitSplineOffsets(std::vector<Position> const& offsets, uint32
         UpdateAllowedPositionZ(x, y, z);
         z += dest.GetPositionZ();
         dest = GetPosition();
+        float ground = 0.0f;
 
-        if (!GetMap()->GetWalkHitPosition(GetPhaseShift(), GetTransport(), srcX, srcY, srcZ, x, y, z, NAV_GROUND | NAV_WATER, 20.0f, false))
+        float waterLevel = GetTransport() ? VMAP_INVALID_HEIGHT_VALUE : GetMap()->GetWaterOrGroundLevel(GetPhaseShift(), x, y, z, &ground);
+
+        float zSearchDist = 20.0f; // Falling case
+
+        if (waterLevel != VMAP_INVALID_HEIGHT_VALUE && waterLevel > ground)
+        {
+            if (z < ground)
+                z = ground;
+            // If blinking up to the surface, limit z position (do not teleport out of water)
+            if (z > waterLevel && (z - srcZ) > 1.0f)
+            {
+                float t = (waterLevel - srcZ) / (z - srcZ);
+                x = (x - srcX) * t + srcX;
+                y = (y - srcY) * t + srcY;
+                z = waterLevel;
+            }
+            //GetMap()->GetLosHitPosition(GetPhaseShift(), srcX, srcY, srcZ, x, y, z, -0.5f);
+            ground = GetMap()->GetHeight(GetPhaseShift(), x, y, z);
+            waterLevel = GetMap()->GetWaterOrGroundLevel(GetPhaseShift(), x, y, z, &ground);
+
+            if (ground != VMAP_INVALID_HEIGHT_VALUE && waterLevel != VMAP_INVALID_HEIGHT_VALUE && ground < z)
+            {
+            }
+            // If we are leaving water, rather use pathfinding, but increase z-range position research.
+            zSearchDist = 20.0f;
+        }
+
+        if (!GetMap()->GetWalkHitPosition(GetPhaseShift(), GetTransport(), srcX, srcY, srcZ, x, y, z, NAV_GROUND | NAV_WATER, zSearchDist, false))
         {
             x = srcX;
             y = srcY;
             z = srcZ;
         }
+
+        if (Unit* caster = GetCaster())
+            if (Player* player = caster->ToPlayer())
+                if (player->isDebugAreaTriggers)
+                    if (auto waypoint = player->SummonCreature(3, {x, y, z}, TEMPSUMMON_TIMED_DESPAWN, Milliseconds(10s)))
+                    {
+                        waypoint->SetFaction(35);
+                        waypoint->SetFlying(true);
+                        waypoint->SetDisplayId(101);
+                        waypoint->SetReactState(REACT_PASSIVE);
+                    }
 
         SetDestination({ x, y, z }, timeToTarget, true);
     }
@@ -902,11 +958,7 @@ void AreaTrigger::InitSplines(std::vector<G3D::Vector3> splinePoints, uint32 tim
     _spline->initLengths();
 
     // should be sent in object create packets only
-    DoWithSuppressingObjectUpdates([&]()
-    {
-        SetUpdateFieldValue(m_values.ModifyValue(&AreaTrigger::m_areaTriggerData).ModifyValue(&UF::AreaTriggerData::TimeToTarget), timeToTarget);
-        const_cast<UF::AreaTriggerData&>(*m_areaTriggerData).ClearChanged(&UF::AreaTriggerData::TimeToTarget);
-    });
+    SetUpdateFieldValue(m_values.ModifyValue(&AreaTrigger::m_areaTriggerData).ModifyValue(&UF::AreaTriggerData::TimeToTarget), timeToTarget);
 
     if (IsInWorld())
     {
@@ -1055,8 +1107,8 @@ void AreaTrigger::UpdateOrbitPosition(uint32 /*diff*/)
     Position pos = CalculateOrbitPosition();
 
     GetMap()->AreaTriggerRelocation(this, pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), pos.GetOrientation());
-#ifdef TRINITY_DEBUG
     DebugVisualizePosition();
+#ifdef TRINITY_DEBUG
 #endif
 }
 
@@ -1077,8 +1129,8 @@ void AreaTrigger::UpdateSplinePosition(uint32 diff)
 
         G3D::Vector3 lastSplinePosition = _spline->getPoint(_lastSplineIndex);
         GetMap()->AreaTriggerRelocation(this, lastSplinePosition.x, lastSplinePosition.y, lastSplinePosition.z, GetOrientation());
-#ifdef TRINITY_DEBUG
         DebugVisualizePosition();
+#ifdef TRINITY_DEBUG
 #endif
 
         _ai->OnSplineIndexReached(_lastSplineIndex);
@@ -1103,8 +1155,8 @@ void AreaTrigger::UpdateSplinePosition(uint32 diff)
     }
 
     GetMap()->AreaTriggerRelocation(this, currentPosition.x, currentPosition.y, currentPosition.z, orientation);
-#ifdef TRINITY_DEBUG
     DebugVisualizePosition();
+#ifdef TRINITY_DEBUG
 #endif
 
     if (_lastSplineIndex != lastPositionIndex)
