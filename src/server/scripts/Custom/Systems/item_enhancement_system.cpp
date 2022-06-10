@@ -200,9 +200,6 @@ class item_enhancement_system : public ItemScript
 
                 itemTarget->SetState(ItemUpdateState::ITEM_CHANGED, player);
 
-                if (itemTarget->IsEquipped())
-                    player->_ApplyItemMods(itemTarget, itemTarget->GetSlot(), true);
-
                 if (success)
                 {
                     std::vector<int32> bonusListIDs = itemTarget->m_itemData->BonusListIDs;
@@ -236,17 +233,13 @@ class item_enhancement_system : public ItemScript
                                 bonusListIDs.erase(it);
                             }
                         }
-
-                        itemTarget->SetBonuses(bonusListIDs);
-
-                        if (itemTarget->IsEquipped())
-                        {
-                            player->_ApplyItemMods(itemTarget, itemTarget->GetSlot(), false);
-                            player->_ApplyItemMods(itemTarget, itemTarget->GetSlot(), true);
-                        }
                     }
+
+                    itemTarget->SetBonuses(bonusListIDs);
                 }
 
+                if (itemTarget->IsEquipped())
+                    player->_ApplyItemMods(itemTarget, itemTarget->GetSlot(), true);
                 player->SaveToDB();
                 /// CharacterDatabaseTransaction trans = CharacterDatabase.BeginTransaction();
                 /// itemTarget->SaveToDB(trans);

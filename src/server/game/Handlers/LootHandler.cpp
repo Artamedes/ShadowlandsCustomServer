@@ -147,11 +147,15 @@ void WorldSession::HandleAutostoreLootItemOpcode(WorldPackets::Loot::LootItem& p
 void WorldSession::HandleLootMoneyOpcode(WorldPackets::Loot::LootMoney& /*packet*/)
 {
     Player* player = GetPlayer();
-    for (auto& lootView : player->m_AELootView)
+
+    for (auto itr = player->m_AELootView.begin(); itr != player->m_AELootView.end();)
     {
-        ObjectGuid guid = lootView.second;
+        ObjectGuid guid = itr->second;
         if (guid.IsEmpty())
+        {
+            itr++;
             continue;
+        }
 
         Loot* loot = nullptr;
         bool shareMoney = true;
@@ -201,15 +205,19 @@ void WorldSession::HandleLootMoneyOpcode(WorldPackets::Loot::LootMoney& /*packet
                         shareMoney = false;
                 }
                 else
-                    player->SendLootError(lootView.first, lootView.second, lootAllowed ? LOOT_ERROR_TOO_FAR : LOOT_ERROR_DIDNT_KILL);
+                    player->SendLootError(itr->first, itr->second, lootAllowed ? LOOT_ERROR_TOO_FAR : LOOT_ERROR_DIDNT_KILL);
                 break;
             }
             default:
+                itr++;
                 continue;                                         // unlootable type
         }
 
         if (!loot)
+        {
+            itr++;
             continue;
+        }
 
         loot->NotifyMoneyRemoved();
         if (shareMoney && player->GetGroup())      //item, pickpocket and players can be looted only single player
@@ -266,6 +274,7 @@ void WorldSession::HandleLootMoneyOpcode(WorldPackets::Loot::LootMoney& /*packet
         // Delete container if empty
         if (loot->isLooted() && guid.IsItem())
             player->GetSession()->DoLootRelease(guid);
+        itr++;
     }
 }
 

@@ -8440,6 +8440,8 @@ bool Player::CheckAttackFitToAuraRequirement(WeaponAttackType attackType, AuraEf
     return true;
 }
 
+#pragma optimize( "", off )
+
 void Player::ApplyItemEquipSpell(Item* item, bool apply, bool formChange /*= false*/)
 {
     if (!item || item->GetTemplate()->HasFlag(ITEM_FLAG_LEGACY))
@@ -8468,6 +8470,7 @@ void Player::ApplyItemEquipSpell(Item* item, bool apply, bool formChange /*= fal
         ApplyEquipSpell(spellproto, item, apply, formChange);
     }
 }
+#pragma optimize( "", on )
 
 void Player::ApplyEquipSpell(SpellInfo const* spellInfo, Item* item, bool apply, bool formChange /*= false*/)
 {
@@ -12864,6 +12867,7 @@ Item* Player::EquipNewItem(uint16 pos, uint32 item, ItemContext context, bool up
     return nullptr;
 }
 
+#pragma optimize( "", off )
 Item* Player::EquipItem(uint16 pos, Item* pItem, bool update)
 {
     AddEnchantmentDurations(pItem);
@@ -12980,6 +12984,7 @@ Item* Player::EquipItem(uint16 pos, Item* pItem, bool update)
     return pItem;
 }
 
+#pragma optimize( "", on )
 void Player::EquipChildItem(uint8 parentBag, uint8 parentSlot, Item* parentItem)
 {
     if (ItemChildEquipmentEntry const* itemChildEquipment = sDB2Manager.GetItemChildEquipment(parentItem->GetEntry()))

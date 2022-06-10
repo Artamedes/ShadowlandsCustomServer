@@ -119,6 +119,8 @@ class TC_GAME_API AuraEffect
         // hack for double proc
         bool IsDoublProcced = false;
 
+        GuidUnorderedSet CorruptionItemCastHack;
+
     private:
         Aura* const m_base;
 

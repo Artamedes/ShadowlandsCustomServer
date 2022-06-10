@@ -173,6 +173,7 @@ void WorldSession::HandleSwapItem(WorldPackets::Item::SwapItem& swapItem)
     _player->SwapItem(src, dst);
 }
 
+#pragma optimize( "", off )
 void WorldSession::HandleAutoEquipItemOpcode(WorldPackets::Item::AutoEquipItem& autoEquipItem)
 {
     if (autoEquipItem.Inv.Items.size() != 1)
@@ -310,6 +311,7 @@ void WorldSession::HandleAutoEquipItemOpcode(WorldPackets::Item::AutoEquipItem& 
             _player->ApplyItemDependentAuras((Item*)nullptr, false);
     }
 }
+#pragma optimize( "", on )
 
 void WorldSession::HandleDestroyItemOpcode(WorldPackets::Item::DestroyItem& destroyItem)
 {

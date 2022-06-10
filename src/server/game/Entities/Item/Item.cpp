@@ -2651,6 +2651,7 @@ bool Item::RemoveBonus(uint32 bonusListID)
 
 void Item::SetBonuses(std::vector<int32> bonusListIDs)
 {
+    ClearBonuses();
     SetUpdateFieldValue(m_values.ModifyValue(&Item::m_itemData).ModifyValue(&UF::ItemData::BonusListIDs), std::move(bonusListIDs));
 
     for (int32 bonusListID : *m_itemData->BonusListIDs)

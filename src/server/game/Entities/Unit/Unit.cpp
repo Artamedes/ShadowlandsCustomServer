@@ -3988,7 +3988,7 @@ void Unit::RemoveAura(uint32 spellId, ObjectGuid caster, uint32 reqEffMask, Aura
     {
         Aura const* aura = iter->second->GetBase();
         if (((aura->GetEffectMask() & reqEffMask) == reqEffMask)
-                && (!caster || aura->GetCasterGUID() == caster))
+                && (!caster || aura->GetCasterGUID() == caster || aura->GetCastItemGUID() == caster))
         {
             RemoveAura(iter, removeMode);
             return;

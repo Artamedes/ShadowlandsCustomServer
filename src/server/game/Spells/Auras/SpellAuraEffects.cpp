@@ -5165,7 +5165,7 @@ void AuraEffect::HandleAuraLinked(AuraApplication const* aurApp, uint8 mode, boo
         return;
 
     auto amount = GetAmount();
-    if (triggeredSpellInfo->HasAura(SPELL_AURA_MOD_RATING_PCT) && amount && mode & AURA_EFFECT_HANDLE_REAL)
+    if (triggeredSpellInfo->HasAura(SPELL_AURA_MOD_RATING_PCT) && amount && mode & AURA_EFFECT_HANDLE_REAL_OR_REAPPLY_MASK)
     {
         ObjectGuid casterGUID = triggeredSpellInfo->NeedsToBeTriggeredByCaster(m_spellInfo) ? GetCasterGUID() : target->GetGUID();
         if (auto aura = target->GetAura(triggeredSpellInfo->Id, casterGUID))
@@ -5176,17 +5176,21 @@ void AuraEffect::HandleAuraLinked(AuraApplication const* aurApp, uint8 mode, boo
                 {
                     if (!apply)
                     {
+                        eff->CorruptionItemCastHack.erase(GetBase()->GetCastItemGUID());
                         eff->SetAmount(std::max(0, eff->GetAmount() - amount));
+                        if (target->IsPlayer())
+                            target->ToPlayer()->UpdateAllRatings(); // update ratings
                         if (eff->GetAmount() == 0)
                         {
                             target->RemoveAura(triggeredSpellId, casterGUID);
-                            if (target->IsPlayer())
-                                target->ToPlayer()->UpdateAllRatings(); // update ratings
                             return;
                         }
                     }
-                    else
+                    else if (!eff->CorruptionItemCastHack.count(GetBase()->GetCastItemGUID()))
+                    {
+                        eff->CorruptionItemCastHack.insert(GetBase()->GetCastItemGUID());
                         eff->SetAmount(eff->GetAmount() + amount);
+                    }
                 }
             }
 
@@ -5203,6 +5207,18 @@ void AuraEffect::HandleAuraLinked(AuraApplication const* aurApp, uint8 mode, boo
                 args.AddSpellMod(SPELLVALUE_BASE_POINT0, amount);
 
             caster->CastSpell(target, triggeredSpellId, args);
+
+
+            if (auto aura = target->GetAura(triggeredSpellInfo->Id, casterGUID))
+            {
+                for (auto eff : aura->GetAuraEffects())
+                {
+                    if (eff->GetAuraType() == SPELL_AURA_MOD_RATING_PCT)
+                    {
+                        eff->CorruptionItemCastHack.insert(GetBase()->GetCastItemGUID());
+                    }
+                }
+            }
         }
 
         return;
@@ -5232,8 +5248,8 @@ void AuraEffect::HandleAuraLinked(AuraApplication const* aurApp, uint8 mode, boo
             triggeredAura->ModStackAmount(GetBase()->GetStackAmount() - triggeredAura->GetStackAmount());
     }
 }
-#pragma optimize( "", on ) 
 
+#pragma optimize( "", on )
 void AuraEffect::HandleTriggerSpellOnPowerPercent(AuraApplication const* aurApp, uint8 mode, bool apply) const
 {
     if (!(mode & AURA_EFFECT_HANDLE_REAL) || !apply)
