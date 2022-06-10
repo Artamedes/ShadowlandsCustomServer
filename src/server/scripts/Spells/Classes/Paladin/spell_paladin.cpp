@@ -592,6 +592,12 @@ class spell_pal_shield_of_the_righteous : public SpellScript
             if (caster->GetSpellHistory()->HasCooldown(SPELL_PALADIN_AVENGING_WRATH))
                 caster->GetSpellHistory()->ModifyCooldown(SPELL_PALADIN_AVENGING_WRATH, -cooldownReduction);
 		}
+
+        auto dmg = GetHitDamage();
+        if (caster->Variables.Exist("EmpoweredShieldOfTheRighteous"))
+            if (caster->Variables.GetValue("EmpoweredShieldOfTheRighteous", false))
+                AddPct(dmg, 25);
+        SetHitDamage(dmg);
 	}
 
 	void HandleAfterCast()
@@ -759,45 +765,6 @@ class spell_pal_shield_of_vengeance : public AuraScript
         OnEffectRemove += AuraEffectRemoveFn(spell_pal_shield_of_vengeance::OnRemove, EFFECT_0, SPELL_AURA_SCHOOL_ABSORB, AURA_EFFECT_HANDLE_REAL);
         OnEffectAbsorb += AuraEffectAbsorbFn(spell_pal_shield_of_vengeance::Absorb, EFFECT_0);
     }
-};
-
-// 53385 - Divine Storm
-class spell_pal_divine_storm : public SpellScript
-{
-    PrepareSpellScript(spell_pal_divine_storm);
-
-    bool Validate(SpellInfo const* /*spellInfo*/) override
-    {
-        return ValidateSpellInfo({ SPELL_PALADIN_DIVINE_STORM_DAMAGE });
-    }
-
-    void HandleTakePower(SpellPowerCost& powerCost)
-    {
-        if (powerCost.Power == POWER_HOLY_POWER)
-            m_powerTaken = powerCost.Amount;
-    }
-
-    void HandleOnCast()
-    {
-        if (Unit* caster = GetCaster())
-        {
-            caster->SendPlaySpellVisualKit(PALADIN_VISUAL_KIT_DIVINE_STORM, 0, 0);
-
-            std::list<Unit*> ennemies;
-            caster->GetAttackableUnitListInRange(ennemies, 8.0f);
-            for (Unit* u : ennemies)
-                caster->CastSpell(u, SPELL_PALADIN_DIVINE_STORM_DAMAGE, true);
-        }
-    }
-
-    void Register() override
-    {
-        OnTakePower += SpellOnTakePowerFn(spell_pal_divine_storm::HandleTakePower);
-        OnCast += SpellCastFn(spell_pal_divine_storm::HandleOnCast);
-    }
-
-private:
-    uint8 m_powerTaken = 0;
 };
 
 // 85256 - Templar's Verdict
@@ -1575,6 +1542,9 @@ public:
 					}
 
 				caster->RemoveAurasDueToSpell(SPELL_PALADIN_DARKEST_BEFORE_THE_DAWN_BUFF);
+
+                if (caster->Variables.Exist("EmpoweredLightOfDawn"))
+                    caster->Variables.Remove("EmpoweredLightOfDawn");
             }
         }
 
@@ -4665,7 +4635,6 @@ void AddSC_paladin_spell_scripts()
     RegisterSpellScript(spell_pal_holy_shock);
     RegisterSpellScript(spell_pal_templar_s_verdict);
     RegisterSpellScript(spell_pal_seraphim);
-    RegisterSpellScript(spell_pal_divine_storm);
     RegisterSpellScript(spell_pal_divine_steed);
     RegisterSpellScript(spell_pal_divine_shield);
     RegisterSpellScript(spell_pal_activate_forbearance);
