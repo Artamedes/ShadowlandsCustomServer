@@ -4859,11 +4859,19 @@ class aura_hun_shrapnel_bomb_proc : public AuraScript
 
     bool CheckProc(ProcEventInfo& eventInfo)
     {
-        if (eventInfo.GetSpellInfo() && (eventInfo.GetSpellInfo()->Id == SPELL_HUNTER_MONGOOSE_BITE ||
-            eventInfo.GetSpellInfo()->Id == SPELL_HUNTER_BUTCHERY || eventInfo.GetSpellInfo()->Id == SPELL_HUNTER_RAPTOR_STRIKE))
-            return true;
+        if (!eventInfo.GetSpellInfo())
+            return false;
 
-        return false;
+        switch (eventInfo.GetSpellInfo()->Id)
+        {
+            case SPELL_HUNTER_CARVE:
+            case SPELL_HUNTER_BUTCHERY:
+            case SPELL_HUNTER_MONGOOSE_BITE:
+            case SPELL_HUNTER_RAPTOR_STRIKE:
+                return true;
+            default:
+                return false;
+        }
     }
 
     void HandleProc(AuraEffect* aurEff, ProcEventInfo& /*eventInfo*/)
