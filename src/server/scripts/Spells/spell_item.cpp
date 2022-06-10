@@ -4491,6 +4491,168 @@ class spell_wrath_of_tarecgosa : public AuraScript
     }
 };
 
+
+enum CacheOfAcquiredTreasures
+{
+    AcquiredWand      = 368654,
+    AcquiredWandDmg   = 368653,
+    AcquiredSword     = 368657,
+    AcquiredSwordAura = 368649,
+    AcquiredAxe       = 368656,
+    AcquiredAxeAura   = 368650,
+};
+
+bool HasAnyAcquiredTreasureAura(Unit* caster)
+{
+    if (!caster)
+        return false;
+
+    return caster->HasAura(AcquiredWand) || caster->HasAura(AcquiredSword) || caster->HasAura(AcquiredAxe);
+}
+
+/// ID - 367804 Cache of Acquired Treasures
+class spell_item_cache_of_acquired_treasures : public AuraScript
+{
+    PrepareAuraScript(spell_item_cache_of_acquired_treasures);
+
+    void PeriodicTick(AuraEffect const* aurEff)
+    {
+        auto caster = GetCaster();
+        if (!caster)
+            return;
+
+        if (caster->GetSpellHistory()->HasCooldown(GetId()))
+            return;
+
+        //if (HasAnyAcquiredTreasureAura(caster))
+        //    return;
+
+        caster->RemoveAurasDueToSpell(AcquiredSword);
+        caster->RemoveAurasDueToSpell(AcquiredAxe);
+        caster->RemoveAurasDueToSpell(AcquiredWand);
+
+        if (SpellQueue.empty())
+        {
+            SpellQueue.push(AcquiredSword);
+            SpellQueue.push(AcquiredAxe);
+            SpellQueue.push(AcquiredWand);
+        }
+
+        caster->CastSpell(caster, SpellQueue.front(), true);
+        SpellQueue.pop();
+    }
+
+    std::queue<uint32> SpellQueue;
+
+    void Register() override
+    {
+        OnEffectPeriodic += AuraEffectPeriodicFn(spell_item_cache_of_acquired_treasures::PeriodicTick, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
+    }
+};
+
+/// ID - 367805 Cache of Acquired Treasures
+class spell_item_cache_of_acquired_treasures_use : public SpellScript
+{
+    PrepareSpellScript(spell_item_cache_of_acquired_treasures_use);
+
+    void HandleDummy(SpellEffIndex /*eff*/)
+    {
+        auto caster = GetCaster();
+        if (!caster)
+            return;
+
+        auto hitUnit = GetHitUnit();
+        if (!hitUnit)
+            return;
+
+        if (auto aur = caster->GetAura(AcquiredWand))
+        {
+            caster->CastSpell(hitUnit, AcquiredWandDmg, CastSpellExtraArgs(true).AddSpellBP0(115312));
+            aur->Remove();
+        }
+        else if (auto aur = caster->GetAura(AcquiredSword))
+        {
+            caster->CastSpell(caster, AcquiredSwordAura, true);
+            aur->Remove();
+        }
+        else if (auto aur = caster->GetAura(AcquiredAxe))
+        {
+            caster->CastSpell(caster, AcquiredAxeAura, true);
+            aur->Remove();
+        }
+    }
+
+    void Register() override
+    {
+        OnEffectHitTarget += SpellEffectFn(spell_item_cache_of_acquired_treasures_use::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
+    }
+};
+
+/// ID: 368649 Acquired Sword
+class spell_acquired_sword : public AuraScript
+{
+    PrepareAuraScript(spell_acquired_sword);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetDamageInfo() && eventInfo.GetDamageInfo()->GetDamage() > 0;
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (auto aur = GetAura())
+        {
+            if (aur->GetStackAmount() <= 9)
+            {
+                aur->ModStackAmount(1);
+                if (auto aurEff = aur->GetEffect(EFFECT_0))
+                    aurEff->SetAmount(aur->GetStackAmount() * 75);
+                aur->SetNeedClientUpdateForTargets();
+            }
+        }
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_acquired_sword::CheckProc);
+        OnProc += AuraProcFn(spell_acquired_sword::HandleProc);
+    }
+};
+
+/// ID: 368650 Acquired Axe
+class spell_acquired_axe : public AuraScript
+{
+    PrepareAuraScript(spell_acquired_axe);
+
+    enum eAcquiredAxe
+    {
+        ViciousWound = 368651,
+    };
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetDamageInfo() && eventInfo.GetDamageInfo()->GetDamage() > 0 && eventInfo.GetHitMask() & ProcFlagsHit::PROC_HIT_CRITICAL && eventInfo.GetActionTarget();
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        auto caster = GetCaster();
+        if (!caster)
+            return;
+
+        if (!eventInfo.GetActionTarget())
+            return;
+
+        caster->CastSpell(eventInfo.GetActionTarget(), ViciousWound, CastSpellExtraArgs(true));
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_acquired_axe::CheckProc);
+        OnProc += AuraProcFn(spell_acquired_axe::HandleProc);
+    }
+};
+
 void AddSC_item_spell_scripts()
 {
     // 23074 Arcanite Dragonling
@@ -4626,4 +4788,9 @@ void AddSC_item_spell_scripts()
 
     RegisterSpellScript(spell_item_heart_of_azeroth);
     RegisterSpellScript(spell_wrath_of_tarecgosa);
+
+    RegisterSpellScript(spell_item_cache_of_acquired_treasures);
+    RegisterSpellScript(spell_item_cache_of_acquired_treasures_use);
+    RegisterSpellScript(spell_acquired_sword);
+    RegisterSpellScript(spell_acquired_axe);
 }
