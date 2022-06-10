@@ -1574,7 +1574,12 @@ struct npc_training_dummy : NullCreatureAI
 
     void DamageTaken(Unit* attacker, uint32& damage, DamageEffectType damageType, SpellInfo const* /*spellInfo = nullptr*/) override
     {
-        damage = 0;
+        if (damage >= me->GetHealth())
+        {
+            damage = 0;
+
+            me->SetHealth(me->CountPctFromMaxHealth(100));
+        }
 
         if (!attacker || damageType == DOT)
             return;
