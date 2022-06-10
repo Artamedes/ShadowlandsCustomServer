@@ -4727,6 +4727,8 @@ void Player::ResurrectPlayer(float restore_percent, bool applySickness)
 
     UpdateRating(CR_CORRUPTION);
 
+    SpawnCorpseBones();
+
     if (!applySickness)
         return;
 
