@@ -584,7 +584,7 @@ m_base(base), m_spellInfo(base->GetSpellInfo()), m_effectInfo(spellEfffectInfo),
 m_baseAmount(baseAmount ? *baseAmount : spellEfffectInfo.CalcBaseValue(caster, base->GetType() == UNIT_AURA_TYPE ? base->GetOwner()->ToUnit() : nullptr, base->GetCastItemId(), base->GetCastItemLevel())),
 m_damage(0), m_critChance(0.0f), m_donePct(1.0f),
 _amount(), _periodicTimer(0), _period(0), _ticksDone(0),
-m_canBeRecalculated(true), m_isPeriodic(false)
+m_canBeRecalculated(true), m_isPeriodic(false), ConduitRankEntry(nullptr)
 {
     CalculatePeriodic(caster, true, false);
 

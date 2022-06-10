@@ -199,8 +199,9 @@ void Conduit::FlagsUpdated(bool forceRemove /*= false*/)
                     {
                         if (auto eff = aura->GetEffect(EFFECT_0))
                         {
+                            eff->ConduitRankEntry = currRank;
                             eff->ApplySpellMod(_player, false);
-                            eff->SetAmount((int32)currRank->AuraPointsOverride); // TODO: Some are floats. How to handle this?
+                            eff->SetAmount((int32)currRank->AuraPointsOverride); ///< Some are floats. How to handle this? - we can handle this by storing the SoulbindConduitRankEntry and scripting the effect in the SpellScript :)
                             eff->ApplySpellMod(_player, true);
                             eff->CalculateSpellMod();
                         }

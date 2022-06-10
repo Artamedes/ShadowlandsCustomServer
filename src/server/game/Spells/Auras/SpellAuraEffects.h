@@ -121,6 +121,8 @@ class TC_GAME_API AuraEffect
 
         GuidUnorderedSet CorruptionItemCastHack;
 
+        SoulbindConduitRankEntry const* ConduitRankEntry;
+
     private:
         Aura* const m_base;
 
