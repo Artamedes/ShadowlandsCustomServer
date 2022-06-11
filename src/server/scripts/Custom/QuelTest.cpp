@@ -57,6 +57,8 @@ public:
 
         if (auto livedummy = ObjectAccessor::GetCreature(*me, CurrentDummy))
             DoCast(livedummy, 353401); // ID - 353401 Eye of the Jailer Channel
+
+        me->SetUnitFlag(UnitFlags::UNIT_FLAG_STUNNED);
     }
 
     void doneTesting()
@@ -83,16 +85,24 @@ public:
     {
         ClearGossipMenuFor(player);
 
-        if (!CurrentDummy.IsEmpty())
+        if (player->GetSession()->GetSecurity() >= SEC_GAMEMASTER)
         {
-            AddGossipItemFor(player, GossipOptionIcon::None, "I'm done testing.", 0, 1);
+            if (!CurrentDummy.IsEmpty())
+            {
+                AddGossipItemFor(player, GossipOptionIcon::None, "I'm done testing.", 0, 1);
+            }
+            else
+            {
+                AddGossipItemFor(player, GossipOptionIcon::None, "Summon the bot.", 0, 2);
+            }
+            SendGossipMenuFor(player, 802002, me);
         }
         else
         {
-            AddGossipItemFor(player, GossipOptionIcon::None, "Summon the bot.", 0, 2);
+            SendGossipMenuFor(player, 8020020, me);
         }
 
-        SendGossipMenuFor(player, 802002, me);
+        
 
         return true;
     }
