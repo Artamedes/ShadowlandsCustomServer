@@ -225,6 +225,11 @@ public:
         me->GetScheduler().CancelAll();
         summons.DespawnAll();
     }
+
+    void JustDied(Unit* who) override
+    {
+        Talk(3);
+    }
 };
 
 // 703027 - npc_fel_conduit_703027
@@ -306,6 +311,11 @@ public:
     void OnUnitRelocation(Unit* who) override
     {
         /// TODO: Fill this function
+    }
+
+    void JustDied(Unit* who) override
+    {
+        Talk(1);
     }
 
     TaskScheduler scheduler;
@@ -505,6 +515,11 @@ public:
         events.ScheduleEvent(EventArmyOfDead, 1ms);
         events.ScheduleEvent(EventAsphyxiate, 10s, 15s);
         events.ScheduleEvent(EventDemonicCrash, 10s, 15s);
+    }
+
+    void JustDied(Unit* who) override
+    {
+        Talk(4);
     }
 
     bool setMovement = false;
@@ -807,6 +822,11 @@ public:
         events.ScheduleEvent(EventArcaneExplosion, 1s);
         events.ScheduleEvent(EventArcaneBarrage, 5s);
         events.ScheduleEvent(EventArcaneMissles, 5s, 7s);
+    }
+
+    void JustDied(Unit* who) override
+    {
+        Talk(2);
     }
 
     void UpdateAI(uint32 diff) override

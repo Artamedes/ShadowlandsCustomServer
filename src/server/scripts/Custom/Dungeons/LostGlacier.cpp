@@ -132,6 +132,8 @@ public:
         scheduler.CancelAll();
         me->CastStop();
         DoCast(Deathborne);
+
+        Talk(0);
     }
 
     void UpdateAI(uint32 diff) override

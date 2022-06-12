@@ -688,6 +688,8 @@ struct npc_mevra_700401 : public BossAI
 
             if (instance)
                 instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, me);
+
+            Talk(0, who);
         }
 
         void EnterEvadeMode(EvadeReason why) override
@@ -704,6 +706,8 @@ struct npc_mevra_700401 : public BossAI
                 instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
 
             BossAI::JustDied(who);
+
+            Talk(1);
         }
 
         void UpdateAI(uint32 diff) override
@@ -759,6 +763,8 @@ struct npc_demon_guy_700400 : public BossAI
 
             if (instance)
                 instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, me);
+
+            Talk(0);
         }
 
         void EnterEvadeMode(EvadeReason why) override
@@ -780,6 +786,8 @@ struct npc_demon_guy_700400 : public BossAI
             {
                 me->SetDisplayId(82018);
             });
+
+            Talk(1);
         }
 
         void UpdateAI(uint32 diff) override

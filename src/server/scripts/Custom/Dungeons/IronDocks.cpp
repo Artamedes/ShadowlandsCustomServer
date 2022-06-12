@@ -71,6 +71,7 @@ public:
 };
 
 // 730610 - npc_flesh_eater_730610
+// Mugarod boss
 struct npc_flesh_eater_730610 : public BossAI
 {
 public:
@@ -192,6 +193,11 @@ public:
         BossAI::EnterEvadeMode(why);
         _DespawnAtEvade(3s);
     }
+
+    void JustDied(Unit* who) override
+    {
+        Talk(2);
+    }
 };
 
 // 730612 - npc_skulloc_730612
@@ -290,6 +296,11 @@ public:
         BossAI::EnterEvadeMode(why);
         _DespawnAtEvade(3s);
     }
+
+    void JustDied(Unit* who) override
+    {
+        Talk(2);
+    }
 };
 
 // 730617 - npc_parc_730617
@@ -336,6 +347,14 @@ public:
     void DamageTaken(Unit* attacker, uint32& damage, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
     {
         /// TODO: Fill this function
+    }
+
+    void JustDied(Unit* who) override
+    {
+        if (auto marc = me->FindNearestCreature(705008, 50.0f))
+            if (marc->IsAlive())
+                if (marc->AI())
+                    marc->AI()->Talk(2);
     }
 
     TaskScheduler scheduler;
@@ -476,6 +495,10 @@ public:
             Talk(4);
         else if (me->GetSpawnId() == 1054637)
             Talk(6);
+        else if (me->GetSpawnId() == 1054663)
+            Talk(7);
+        else if (me->GetSpawnId() == 1052853)
+            Talk(8);
     }
 
     void JustDied(Unit* who) override
@@ -484,8 +507,13 @@ public:
 
         if (me->GetSpawnId() == 1054637) // todo achievement
         {
-
+            // if using no weapons:
+            // Talk(10);
+            // else if they DID use weapons:
+            // Talk(11);
         }
+        else if (me->GetSpawnId() == 1052853)
+            Talk(9);
     }
 
     void UpdateAI(uint32 diff) override
@@ -1135,6 +1163,11 @@ public:
         BossAI::EnterEvadeMode(why);
         _DespawnAtEvade(3s);
     }
+
+    void JustDied(Unit* who) override
+    {
+        Talk(1);
+    }
 };
 
 // 705009 - npc_iron_dock_overseer_705009
@@ -1321,6 +1354,14 @@ public:
             }
         }
         DoMeleeAttackIfReady();
+    }
+
+    void JustDied(Unit* who) override
+    {
+        if (auto parc = me->FindNearestCreature(730617, 50.0f))
+            if (parc->IsAlive())
+                if (parc->AI())
+                    parc->AI()->Talk(1);
     }
 };
 

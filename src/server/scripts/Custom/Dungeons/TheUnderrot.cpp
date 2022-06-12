@@ -625,6 +625,8 @@ public:
         BossAI::JustDied(who);
         if (instance)
             instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
+
+        Talk(1);
     }
 
     void EnterEvadeMode(EvadeReason /*why*/) override
@@ -759,6 +761,8 @@ public:
         BossAI::JustDied(killer);
         if (instance)
             instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
+
+        Talk(2);
     }
 
     void UpdateAI(uint32 diff) override
@@ -1317,6 +1321,11 @@ public:
             }
         }
         DoMeleeAttackIfReady();
+    }
+
+    void JustDied(Unit* who) override
+    {
+        Talk(1);
     }
 
 
