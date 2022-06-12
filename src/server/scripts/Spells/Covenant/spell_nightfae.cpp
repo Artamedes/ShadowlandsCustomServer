@@ -273,6 +273,9 @@ class spell_hunter_wildspirits : public AuraScript
             switch (eventInfo.GetSpellInfo()->Id)
             {
                 case WildSpiritsDmg:
+                case 256374:
+                case 259756:
+                case 259760:
                     return false;
                 default:
                     break;
@@ -282,7 +285,7 @@ class spell_hunter_wildspirits : public AuraScript
         return true;
     }
 
-    void HandleProc(AuraEffect* /*aurEff*/, ProcEventInfo& eventInfo)
+    void HandleProc(ProcEventInfo& eventInfo)
     {
         PreventDefaultAction();
         if (auto attacker = eventInfo.GetActor())
@@ -302,7 +305,7 @@ class spell_hunter_wildspirits : public AuraScript
     void Register() override
     {
         DoCheckProc += AuraCheckProcFn(spell_hunter_wildspirits::CheckProc);
-        OnEffectProc += AuraEffectProcFn(spell_hunter_wildspirits::HandleProc, EFFECT_1, SPELL_AURA_DUMMY);
+        OnProc += AuraProcFn(spell_hunter_wildspirits::HandleProc);
     }
 };
 
@@ -1472,7 +1475,7 @@ class spell_called_shot : public AuraScript
 void AddSC_spell_nightfae()
 {
     RegisterSpellScript(spell_nightfae_podtender);
-  //  RegisterSpellScript(spell_hunter_wildspirits);
+    RegisterSpellScript(spell_hunter_wildspirits);
     RegisterSpellScript(spell_nightfae_soulshape);
     RegisterSpellScript(spell_nightfae_grove_invigoration);
     RegisterSpellScript(spell_nightfae_niyas_tools_burrs);
@@ -1504,5 +1507,6 @@ void AddSC_spell_nightfae()
     RegisterAreaTriggerAI(at_field_of_blossoms);
     RegisterAreaTriggerAI(at_horn_of_the_wild_hunt);
 
-    new unit_script_nightfae();
+    /// PIGPIG
+    /// new unit_script_nightfae();
 }
