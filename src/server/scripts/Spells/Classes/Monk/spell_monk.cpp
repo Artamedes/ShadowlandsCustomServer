@@ -702,6 +702,13 @@ public:
                 // In Pandaria with Wisdom of the Four Winds
                 if (!_player->HasSpell(115913) && (_player->GetMapId() == 870))
                     return SPELL_FAILED_NOT_HERE;
+
+                if (AreaTableEntry const* area = sAreaTableStore.LookupEntry(_player->GetAreaId()))
+                    if (area->Flags[0] & AREA_FLAG_NO_FLY_ZONE)
+                        return SPELL_FAILED_NOT_HERE;
+
+                if (_player->GetMap()->Instanceable())
+                    return SPELL_FAILED_NOT_HERE;
             }
 
             return SPELL_CAST_OK;
