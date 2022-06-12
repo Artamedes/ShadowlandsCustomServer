@@ -60,7 +60,107 @@ class spell_primal_wrath : public SpellScript
     }
 };
 
+/// ID: 319439 Bloodtalons
+class spell_bloodtalons : public AuraScript
+{
+    PrepareAuraScript(spell_bloodtalons);
+
+    enum eBloodTalons
+    {
+        BloodTalonsProc = 145152,
+    };
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        if (!eventInfo.GetSpellInfo())
+            return false;
+
+        if (!IsFinisher(eventInfo.GetSpellInfo()->Id))
+            return false;
+
+        return !UniqueFinishers.count(eventInfo.GetSpellInfo()->Id);
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        PreventDefaultAction();
+
+        if (!eventInfo.GetSpellInfo())
+            return;
+
+        auto caster = GetCaster();
+        if (!caster)
+            return;
+
+        UniqueFinishers.insert(eventInfo.GetSpellInfo()->Id);
+
+        switch (eventInfo.GetSpellInfo()->Id)
+        {
+            case Rip:
+            case FerociousBite:
+                /// Updated 9.2.5.44061
+                /// Proc script isn't working, drop it here. Dmg shd be handled by ApplySpellMod
+                if (auto bloodTalons = caster->GetAura(BloodTalonsProc))
+                    bloodTalons->DropCharge();
+                break;
+            default:
+                break;
+        }
+
+        if (UniqueFinishers.size() >= 3)
+        {
+            UniqueFinishers.clear();
+            if (auto caster = GetCaster())
+                caster->CastSpell(caster, BloodTalonsProc, true);
+        }
+    }
+
+    std::unordered_set<uint32> UniqueFinishers;
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_bloodtalons::CheckProc);
+        OnProc += AuraProcFn(spell_bloodtalons::HandleProc);
+    }
+};
+
+/// ID: 145152 Bloodtalons
+class spell_bloodtalons_proc : public AuraScript
+{
+    PrepareAuraScript(spell_bloodtalons_proc);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        if (!eventInfo.GetSpellInfo())
+            return false;
+
+        switch (eventInfo.GetSpellInfo()->Id)
+        {
+            case Rip:
+            case FerociousBite:
+                return true;
+        }
+
+        return false;
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        PreventDefaultAction();
+        if (auto aur = GetAura())
+            aur->DropStack();
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_bloodtalons_proc::CheckProc);
+        OnProc += AuraProcFn(spell_bloodtalons_proc::HandleProc);
+    }
+};
+
 void AddSC_spell_druid_feral()
 {
     RegisterSpellScript(spell_primal_wrath);
+    RegisterSpellScript(spell_bloodtalons);
+    RegisterSpellScript(spell_bloodtalons_proc);
 }

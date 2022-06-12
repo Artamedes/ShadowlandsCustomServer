@@ -802,7 +802,6 @@ class spell_dru_ferocious_bite : public SpellScript
         if (Aura* aura = caster->GetAura(SPELL_DRUID_IRON_JAWS))
             if (roll_chance_i(sSpellMgr->GetSpellInfo(SPELL_DRUID_IRON_JAWS)->GetEffect(EFFECT_1).BasePoints * comboPoints))
                 caster->CastCustomSpell(SPELL_DRUID_IRON_JAWS_BUFF, SPELLVALUE_BASE_POINT0, aura->GetEffect(EFFECT_0)->GetAmount(), caster, true);
-
     }
 
     void Register() override
@@ -1655,9 +1654,6 @@ class spell_dru_rake : public SpellScript
         if (stealthed && caster->HasAura(SPELL_DRUID_RAKE_RANK_2))
             caster->CastSpell(target, SPELL_DRUID_RAKE_STUN, true);
 
-		if (Aura* aura = caster->GetAura(SPELL_DRUID_BLOODTALONS_AURA))
-			damage += CalculatePct(damage, aura->GetEffect(EFFECT_0)->GetBaseAmount());
-
 		SetHitDamage(damage);
     }
 
@@ -1786,8 +1782,10 @@ class spell_dru_rip : public SpellScript
 	void HandleEffectHit(SpellEffIndex /*effIndex*/)
 	{
         if (Unit* caster = GetCaster())
+        {
             if (caster->HasAura(SPELL_DRUID_SOUL_OF_THE_FOREST))
                 caster->CastCustomSpell(SPELL_DRUID_SOUL_OF_THE_FOREST_FERAL_ENERGIZE, SPELLVALUE_BASE_POINT0, comboPoints * sSpellMgr->GetSpellInfo(SPELL_DRUID_SOUL_OF_THE_FOREST)->GetEffect(EFFECT_0).BasePoints, caster, true);
+        }
 	}
 
     void HandleAfterHit()
@@ -2647,9 +2645,6 @@ class spell_dru_thrash_cat : public SpellScript
             caster->ModifyPower(POWER_COMBO_POINTS, 1);
 
         m_awardComboPoint = false;
-
-		if (Aura* aura = caster->GetAura(SPELL_DRUID_BLOODTALONS_AURA))
-			SetHitDamage(GetHitDamage() + CalculatePct(GetHitDamage(), aura->GetEffect(EFFECT_0)->GetBaseAmount()));
     }
 
     void HandleAfterCast()
@@ -3295,9 +3290,6 @@ class spell_dru_predatory_swiftness_aura : public SpellScript
         {
             if (caster->HasAura(SPELL_DRUID_PREDATORY_SWIFTNESS_AURA))
                 caster->RemoveAurasDueToSpell(SPELL_DRUID_PREDATORY_SWIFTNESS_AURA);
-
-			if (caster->HasAura(SPELL_DRUID_BLOODTALONS))
-				caster->CastSpell(caster, SPELL_DRUID_BLOODTALONS_AURA, true);
         }
     }
 
@@ -3340,9 +3332,6 @@ class spell_dru_regrowth : public SpellScript
 
         if (caster->HasAura(SPELL_DRUID_PREDATORY_SWIFTNESS_AURA))
             caster->RemoveAurasDueToSpell(SPELL_DRUID_PREDATORY_SWIFTNESS_AURA);
-
-        if (caster->HasAura(SPELL_DRUID_BLOODTALONS))
-            caster->CastSpell(caster, SPELL_DRUID_BLOODTALONS_AURA, true);
 
         if (caster->HasAura(SPELL_DRUID_PROTECTOR_OF_THE_GROVE) && caster->GetGUID() != target->GetGUID())
             caster->CastSpell(caster, SPELL_DRUID_PROTECTOR_OF_THE_GROVE_CAST, true);
