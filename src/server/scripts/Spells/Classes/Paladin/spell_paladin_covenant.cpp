@@ -20,7 +20,7 @@ class spell_vanquishers_hammer : public AuraScript
             case SimpleTalentSpecs::HPally:
                 return eventInfo.GetSpellInfo()->Id == PaladinSpells::WordOfGlory;
             case SimpleTalentSpecs::ProtPally:
-                return eventInfo.GetSpellInfo()->Id == PaladinSpells::TemplarsVerdict;
+                return eventInfo.GetSpellInfo()->Id == PaladinSpells::TemplarsVerdict || eventInfo.GetSpellInfo()->Id == 224266;
             case SimpleTalentSpecs::Retribution:
                 return eventInfo.GetSpellInfo()->Id == PaladinSpells::WordOfGlory;
             default:

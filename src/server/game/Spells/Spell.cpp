@@ -1797,6 +1797,20 @@ void Spell::SelectImplicitChainTargets(SpellEffectInfo const& spellEffectInfo, S
     if (Player* modOwner = m_caster->GetSpellModOwner())
         modOwner->ApplySpellMod(m_spellInfo, SpellModOp::ChainTargets, maxTargets, this);
 
+    // Warlock - Havoc / Bane of Havoc
+    if (auto l_UnitCaster = m_caster->ToUnit())
+    {
+        if (l_UnitCaster->HasSpell(80240) && target->ToUnit() && !target->ToUnit()->HasAura(80240))
+            if (GetSpellInfo()->HasEffect(SPELL_EFFECT_SCHOOL_DAMAGE) && (GetSpellInfo()->HasAttribute(SPELL_ATTR5_LIMIT_N)))
+                if ((GetSpellInfo()->Id == 29722 && !l_UnitCaster->HasAura(196408)) || (GetSpellInfo()->Id == 116858 && !l_UnitCaster->HasAura(233577)) ||
+                    (GetSpellInfo()->Id != 29722 && GetSpellInfo()->Id != 116858))
+                    if (l_UnitCaster->HasAura(137046))
+                        if (l_UnitCaster->Variables.Exist("HAVOC_LIST"))
+                            for (ObjectGuid guid : m_caster->Variables.GetValue<std::list<ObjectGuid>>("HAVOC_LIST"))
+                                if (Unit* havocTarget = ObjectAccessor::GetUnit(*l_UnitCaster, guid))
+                                    AddUnitTarget(havocTarget, effMask, false);
+    }
+
     if (maxTargets > 1)
     {
         // mark damage multipliers as used

@@ -1630,7 +1630,10 @@ class spell_mage_ice_lance : public SpellScript
         {
             Aura* fingersOfFrost = caster->GetAura(SPELL_MAGE_FINGERS_OF_FROST_AURA);
             if (fingersOfFrost && fingersOfFrost->GetStackAmount() < 2)
+            {
                 caster->RemoveAura(SPELL_MAGE_FINGERS_OF_FROST_VISUAL_UI);
+                fingersOfFrost->DropStack();
+            }
         }
     }
 
@@ -4857,6 +4860,9 @@ class spell_mastery_icicles_proc : public AuraScript
         if (!target || !caster)
             return;
 
+        if (!caster->IsValidAttackTarget(target))
+            return;
+
         Player* player = caster->ToPlayer();
 
         if (!player)
@@ -4941,7 +4947,7 @@ class spell_mastery_icicles_proc : public AuraScript
                     }
 
                     player->CastSpell(target, IcicleHits[smallestIcicle], true);
-                    player->CastCustomSpell(target, SPELL_MAGE_ICICLE_DAMAGE, &basePoints, NULL, NULL, true);
+                    player->CastSpell(target, SPELL_MAGE_ICICLE_DAMAGE, true); ///< not need base points
                     player->RemoveAura(IcicleAuras[smallestIcicle]);
                 }
 
@@ -5008,7 +5014,7 @@ class spell_mastery_icicles_proc : public AuraScript
                         }
 
                         player->CastSpell(target, IcicleHits[smallestIcicle], true);
-                        player->CastCustomSpell(target, SPELL_MAGE_ICICLE_DAMAGE, &basePoints, NULL, NULL, true);
+                        player->CastSpell(target, SPELL_MAGE_ICICLE_DAMAGE, true); ///< not need base points
                         player->RemoveAura(IcicleAuras[smallestIcicle]);
                     }
 
@@ -5105,7 +5111,7 @@ class spell_mastery_icicles_periodic : public AuraScript
                 // Maybe not the good target selection ...
                 if (Unit* target = ObjectAccessor::GetUnit(*caster, caster->Variables.GetValue<ObjectGuid>("IciclesTarget")))
                 {
-                    if (target->IsAlive())
+                    if (target->IsAlive() && caster->IsValidAttackTarget(target))
                     {
                         int32 amount = aura->GetAmount();
                         if (Aura* currentIcicleAura = caster->GetAura(icicles[amount]))
@@ -5119,7 +5125,7 @@ class spell_mastery_icicles_periodic : public AuraScript
                             }
 
                             caster->CastSpell(target, IcicleHits[amount], true);
-                            caster->CastCustomSpell(target, SPELL_MAGE_ICICLE_DAMAGE, &basePoints, NULL, NULL, true);
+                            caster->CastSpell(target, SPELL_MAGE_ICICLE_DAMAGE, true); ///< not need base points
                             caster->RemoveAura(IcicleAuras[amount]);
                         }
 
@@ -5213,6 +5219,26 @@ class spell_mage_arcane_charge_clear : public SpellScript
     void Register() override
     {
         OnEffectHitTarget += SpellEffectFn(spell_mage_arcane_charge_clear::RemoveArcaneCharge, EFFECT_0, SPELL_EFFECT_DUMMY);
+    }
+};
+
+/// ID: 148022 Icicle
+class spell_icicle : public SpellScript
+{
+    PrepareSpellScript(spell_icicle);
+
+    void HandleDmg(SpellEffIndex /*eff*/)
+    {
+        auto caster = GetCaster();
+        if (!caster)
+            return;
+        auto sp = caster->GetTotalSpellPowerValue(SpellSchoolMask::SPELL_SCHOOL_MASK_FROST, false);
+        SetHitDamage(sp);
+    }
+
+    void Register() override
+    {
+        OnEffectHitTarget += SpellEffectFn(spell_icicle::HandleDmg, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
     }
 };
 
@@ -5336,6 +5362,7 @@ void AddSC_mage_spell_scripts()
 
     // Spell Pet scripts
     RegisterSpellScript(spell_mage_pet_freeze);
+    RegisterSpellScript(spell_icicle);
 
     // AreaTrigger scripts
     new at_mage_meteor_timer();

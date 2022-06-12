@@ -242,7 +242,7 @@ public:
                 if (player)
                 {
                     auto corruptionAmount = player->GetEffectiveCorruption();
-                    auto slowAmount = std::min<int32>(99, corruptionAmount + 10.0f);
+                    auto slowAmount = std::min<int32>(80, corruptionAmount + 10.0f);
                     player->GetSpellHistory()->ResetCooldown(MSReduction);
                     player->CastSpell(player, MSReduction, CastSpellExtraArgs(true).AddSpellBP0(-slowAmount));
                 }

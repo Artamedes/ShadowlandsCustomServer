@@ -3290,6 +3290,14 @@ void SpellMgr::LoadSpellInfoCorrections()
 
     // Some spells have no amplitude set
     {
+        /// Icicle DMG
+        ApplySpellFix({ 148022 }, [](SpellInfo* info)
+        {
+            ApplySpellEffectFix(info, EFFECT_0, [](SpellEffectInfo* spellEffectInfo)
+            {
+                spellEffectInfo->TargetA = SpellImplicitTargetInfo(TARGET_UNIT_TARGET_ENEMY);
+            });
+        });
         ApplySpellFix({ 75 }, [](SpellInfo* spellInfo)
         {
             spellInfo->AttributesEx9 |= SPELL_ATTR9_ALLOW_CAST_WHILE_CHANNELING;
