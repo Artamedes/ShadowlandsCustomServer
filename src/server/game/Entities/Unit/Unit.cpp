@@ -7255,7 +7255,7 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
     {
         modOwner->ApplySpellMod(spellProto, damagetype == DOT ? SpellModOp::PeriodicHealingAndDamage : SpellModOp::HealingAndDamage, tmpDamage);
 
-        if (damagetype != DOT)
+        if (damagetype != DOT && spellProto && spellProto->SpellFamilyName == SPELLFAMILY_PALADIN)
         {
             switch (GetClass())
             {
