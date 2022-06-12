@@ -75,10 +75,7 @@ class spell_bloodtalons : public AuraScript
         if (!eventInfo.GetSpellInfo())
             return false;
 
-        if (!IsFinisher(eventInfo.GetSpellInfo()->Id))
-            return false;
-
-        return !UniqueFinishers.count(eventInfo.GetSpellInfo()->Id);
+        return IsFinisher(eventInfo.GetSpellInfo()->Id);
     }
 
     void HandleProc(ProcEventInfo& eventInfo)
@@ -92,7 +89,8 @@ class spell_bloodtalons : public AuraScript
         if (!caster)
             return;
 
-        UniqueFinishers.insert(eventInfo.GetSpellInfo()->Id);
+        if (!UniqueFinishers.count(eventInfo.GetSpellInfo()->Id))
+            UniqueFinishers.insert(eventInfo.GetSpellInfo()->Id);
 
         switch (eventInfo.GetSpellInfo()->Id)
         {
