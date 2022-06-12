@@ -6186,6 +6186,9 @@ void AuraEffect::HandleAuraForceWeather(AuraApplication const* aurApp, uint8 mod
     if (!target)
         return;
 
+    if (m_spellInfo->Id == 305422)
+        return;
+
     if (apply)
         target->SendDirectMessage(WorldPackets::Misc::Weather(WeatherState(GetMiscValue()), 1.0f).Write());
     else

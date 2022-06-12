@@ -3296,6 +3296,10 @@ bool Unit::CanCastSpellWhileMoving(SpellInfo const* spellInfo) const
             return true;
     }
 
+    if (auto ai = GetAI())
+        if (ai->CanCastSpellWhileMoving(spellInfo))
+            return true;
+
     return false;
 }
 

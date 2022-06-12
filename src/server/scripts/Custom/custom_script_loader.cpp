@@ -60,6 +60,7 @@ void AddSC_DungeonDefenseItem();
 void AddSC_DungeonDefensePlayer();
 // Dungeons
 void AddSC_CustomAffixes();
+void AddSC_Desmotareon();
 // Items
 void AddSC_item_currency_exchange();
 void AddSC_npc_1v1arena();
@@ -109,6 +110,7 @@ void AddCustomScripts()
     AddSC_DungeonDefensePlayer();
     // Dungs
     AddSC_CustomAffixes();
+    AddSC_Desmotareon();
     // Items
     AddSC_item_currency_exchange();
     AddSC_npc_1v1arena();

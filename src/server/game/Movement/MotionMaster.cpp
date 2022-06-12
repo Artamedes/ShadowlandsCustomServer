@@ -898,7 +898,7 @@ void MotionMaster::MoveJumpWithGravity(Position const& pos, float speedXY, float
     Add(movement);
 }
 
-void MotionMaster::MoveCirclePath(float x, float y, float z, float radius, bool clockwise, uint8 stepCount)
+GenericMovementGenerator* MotionMaster::MoveCirclePath(float x, float y, float z, float radius, bool clockwise, uint8 stepCount)
 {
     float step = 2 * float(M_PI) / stepCount * (clockwise ? -1.0f : 1.0f);
     Position const& pos = { x, y, z, 0.0f };
@@ -935,7 +935,7 @@ void MotionMaster::MoveCirclePath(float x, float y, float z, float radius, bool 
         init.SetCyclic();
     }
 
-    Add(new GenericMovementGenerator(std::move(init), EFFECT_MOTION_TYPE, 0));
+    return Add(new GenericMovementGenerator(std::move(init), EFFECT_MOTION_TYPE, 0));
 }
 
 GenericMovementGenerator* MotionMaster::MoveSmoothPath(uint32 pointId, Position const* pathPoints, size_t pathSize, bool walk, bool fly, Optional<float> velocity)
