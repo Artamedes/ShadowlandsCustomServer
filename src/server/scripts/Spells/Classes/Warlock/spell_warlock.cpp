@@ -7935,7 +7935,7 @@ class spell_warl_soul_rot : public SpellScript
     }
 };
 
-const uint32 dotAuras[] = {325640, SPELL_WARLOCK_AGONY, SPELL_WARLOCK_UNSTABLE_AFFLICTION, SPELL_WARLOCK_CORRUPTION, 278350, 205179 };
+const uint32 dotAuras[] = {325640, SPELL_WARLOCK_AGONY, SPELL_WARLOCK_UNSTABLE_AFFLICTION, SPELL_WARLOCK_CORRUPTION, 278350, 205179, 316099 };
 
 // 324536 
 class spell_warl_malefic_rapture : public SpellScript
