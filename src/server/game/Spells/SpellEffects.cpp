@@ -5772,7 +5772,13 @@ void Spell::EffectJumpCharge()
 
     JumpChargeParams const* params = sObjectMgr->GetJumpChargeParams(effectInfo->MiscValue);
     if (!params)
+    {
+        if (effectInfo->MiscValue)
+        {
+            TC_LOG_ERROR("spells.effect.nospell", "Spell::EffectJumpCharge spell %u tried to trigger unknown JumpChargeParams %u", m_spellInfo->Id, effectInfo->MiscValue);
+        }
         return;
+    }
 
     Position pos = *destTarget;
 
@@ -5791,10 +5797,17 @@ void Spell::EffectJumpCharge()
         arrivalCast->SpellId = effectInfo->TriggerSpell;
     }
 
+    /// @TODO: Move to db
     if (GetSpellInfo()->Id == 178368)
     {
         arrivalCast.emplace();
         arrivalCast->SpellId = 52174;
+        arrivalCast->Target = m_caster->GetGUID();
+    }
+    if (GetSpellInfo()->Id == 227180)
+    {
+        arrivalCast.emplace();
+        arrivalCast->SpellId = 348486;
         arrivalCast->Target = m_caster->GetGUID();
     }
 

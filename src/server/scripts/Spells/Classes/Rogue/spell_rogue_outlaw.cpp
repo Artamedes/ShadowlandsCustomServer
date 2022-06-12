@@ -1,4 +1,5 @@
 #include "SpellIncludes.h"
+#include "PathGenerator.h"
 
 enum eOutlaw
 {
@@ -148,10 +149,74 @@ class spell_dispatch : public SpellScript
         OnEffectHitTarget += SpellEffectFn(spell_dispatch::HandleDummy, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
     }
 };
+/// ID: 195457 Grappling Hook
+class spell_grappling_hook : public SpellScript
+{
+    PrepareSpellScript(spell_grappling_hook);
+
+    enum eGrapple
+    {
+        GrappleTrigger = 227180,
+        Harpoon = 348486,
+    };
+
+    SpellCastResult CheckElevation()
+    {
+        if (WorldLocation const* dest = GetExplTargetDest())
+        {
+            if (GetCaster()->HasUnitMovementFlag(MOVEMENTFLAG_ROOT))
+                return SPELL_FAILED_ROOTED;
+
+            if (GetCaster()->GetMap()->Instanceable())
+            {
+                float range = GetSpellInfo()->GetMaxRange(true, GetCaster()) * 1.5f;
+
+                PathGenerator generatedPath(GetCaster());
+                generatedPath.SetPathLengthLimit(range);
+
+                bool result = generatedPath.CalculatePath(dest->GetPositionX(), dest->GetPositionY(), dest->GetPositionZ(), false, true);
+                if (generatedPath.GetPathType() & PATHFIND_SHORT)
+                    return SPELL_FAILED_OUT_OF_RANGE;
+                else if (!result || generatedPath.GetPathType() & PATHFIND_NOPATH)
+                {
+                    result = generatedPath.CalculatePath(dest->GetPositionX(), dest->GetPositionY(), dest->GetPositionZ(), false, false);
+                    if (generatedPath.GetPathType() & PATHFIND_SHORT)
+                        return SPELL_FAILED_OUT_OF_RANGE;
+                    else if (!result || generatedPath.GetPathType() & PATHFIND_NOPATH)
+                        return SPELL_FAILED_NOPATH;
+                }
+            }
+            else if (dest->GetPositionZ() > GetCaster()->GetPositionZ() + 14.0f)
+                return SPELL_FAILED_NOPATH;
+
+            return SPELL_CAST_OK;
+        }
+
+        return SPELL_FAILED_NO_VALID_TARGETS;
+    }
+
+    void HandleDummy(SpellEffIndex /*eff*/)
+    {
+        auto caster = GetCaster();
+        auto hitDest = GetHitDest();
+
+        if (!caster || !hitDest)
+            return;
+
+        caster->CastSpell(*hitDest, GrappleTrigger, true);
+    }
+
+    void Register() override
+    {
+        OnCheckCast += SpellCheckCastFn(spell_grappling_hook::CheckElevation);
+        OnEffectHit += SpellEffectFn(spell_grappling_hook::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
+    }
+};
 
 void AddSC_spell_rogue_outlaw()
 {
     RegisterSpellScript(spell_rog_roll_the_bones);
     RegisterSpellScript(spell_ambush);
     RegisterSpellScript(spell_dispatch);
+    RegisterSpellScript(spell_grappling_hook);
 }

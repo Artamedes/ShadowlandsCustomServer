@@ -564,47 +564,6 @@ class aura_rog_between_the_eyes : public AuraScript
     }
 };
 
-// Grappling Hook - 195457
-class spell_rog_grappling_hook : public SpellScriptLoader
-{
-public:
-    spell_rog_grappling_hook() : SpellScriptLoader("spell_rog_grappling_hook") {}
-
-    class spell_rog_grappling_hook_SpellScript : public SpellScript
-    {
-        PrepareSpellScript(spell_rog_grappling_hook_SpellScript);
-
-        bool Validate(SpellInfo const* /*spellInfo*/) override
-        {
-            return ValidateSpellInfo(
-            {
-                SPELL_ROGUE_GRAPPLING_HOOK,
-                SPELL_ROGUE_GRAPPLING_HOOK_TRIGGER
-            });
-        }
-
-        void HandleDummy()
-        {
-            Unit* caster = GetCaster();
-            WorldLocation const* dest = GetExplTargetDest();
-            if (!caster || !dest)
-                return;
-
-            caster->CastSpell(Position(dest->GetPositionX(), dest->GetPositionY(), dest->GetPositionZ()), SPELL_ROGUE_GRAPPLING_HOOK_TRIGGER, true);
-        }
-
-        void Register() override
-        {
-            OnCast += SpellCastFn(spell_rog_grappling_hook_SpellScript::HandleDummy);
-        }
-    };
-
-    SpellScript* GetSpellScript() const override
-    {
-        return new spell_rog_grappling_hook_SpellScript();
-    }
-};
-
 /// Blade Flurry - 13877
 class spell_rog_blade_flurry : public AuraScript
 {
@@ -4794,7 +4753,6 @@ void AddSC_rogue_spell_scripts()
     RegisterSpellScript(spell_rog_eviscerate);
     new spell_rog_fan_of_knives();
     RegisterSpellAndAuraScriptPair(spell_rog_garrote, aura_rog_garrote);
-    new spell_rog_grappling_hook();
     RegisterSpellAndAuraScriptPair(spell_rog_kidney_shot, aura_rog_kidney_shot);
     new spell_rog_killing_spree();
     new spell_rog_nerve_strike();
