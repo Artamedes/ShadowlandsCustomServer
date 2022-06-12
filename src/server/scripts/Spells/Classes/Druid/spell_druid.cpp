@@ -5540,6 +5540,22 @@ class spell_dru_convoke : public AuraScript
     }
 };
 
+/// ID: 363498 Sickle of the Lion
+class spell_sickle_of_the_lion : public AuraScript
+{
+    PrepareAuraScript(spell_sickle_of_the_lion);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && (eventInfo.GetSpellInfo()->Id == 106951 || eventInfo.GetSpellInfo()->Id == 102543);
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_sickle_of_the_lion::CheckProc);
+    }
+};
+
 void AddSC_druid_spell_scripts()
 {
     // Spells Scripts
@@ -5645,6 +5661,7 @@ void AddSC_druid_spell_scripts()
     RegisterSpellScript(aura_dru_innervate);
     RegisterSpellAndAuraScriptPair(spell_dru_tranquility_heal, aura_dru_tranquility_heal);
     RegisterSpellScript(spell_dru_convoke);
+    RegisterSpellScript(spell_sickle_of_the_lion);
 
 	// Affinity
     RegisterSpellScript(aura_dru_guaridan_affinity_balance_resto);
