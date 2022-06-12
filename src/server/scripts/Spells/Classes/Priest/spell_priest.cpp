@@ -3526,11 +3526,17 @@ class spell_pri_mind_blast : public SpellScript
 
 	void HandleAfterCast()
 	{
-		if (Unit* caster = GetCaster())
+        if (Unit* caster = GetCaster())
+        {
             if (caster->HasAura(SPELL_PRIEST_SHADOWY_INSIGHT) && caster->GetCurrentSpellCastTime(SPELL_PRIEST_MIND_BLAST) > 0)
                 caster->GetSpellHistory()->RestoreCharge(sSpellMgr->GetSpellInfo(SPELL_PRIEST_MIND_BLAST)->ChargeCategoryId);
             else
 			    caster->RemoveAurasDueToSpell(SPELL_PRIEST_SHADOWY_INSIGHT);
+
+            ///< Dark Thought
+            if (auto aur = caster->GetAura(341207))
+                aur->DropStack();
+        }
 	}
 
 	void Register() override

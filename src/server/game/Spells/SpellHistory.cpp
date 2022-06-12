@@ -991,6 +991,12 @@ bool SpellHistory::ConsumeCharge(uint32 chargeCategoryId, bool withPacket /*= fa
     if (!sSpellCategoryStore.LookupEntry(chargeCategoryId))
         return false;
 
+    if (_owner)
+    {
+        if (_owner->HasAuraTypeWithMiscvalue(SPELL_AURA_IGNORE_SPELL_CHARGE_COOLDOWN, chargeCategoryId))
+            return true;
+    }
+
     int32 chargeRecovery = GetChargeRecoveryTime(chargeCategoryId, spellinfo);
     if (chargeRecovery > 0 && GetMaxCharges(chargeCategoryId) > 0)
     {
@@ -1285,6 +1291,12 @@ bool SpellHistory::HasCharge(uint32 chargeCategoryId) const
     int32 maxCharges = GetMaxCharges(chargeCategoryId);
     if (maxCharges <= 0)
         return true;
+
+    if (_owner)
+    {
+        if (_owner->HasAuraTypeWithMiscvalue(SPELL_AURA_IGNORE_SPELL_CHARGE_COOLDOWN, chargeCategoryId))
+            return true;
+    }
 
     auto itr = _categoryCharges.find(chargeCategoryId);
     return itr == _categoryCharges.end() || int32(itr->second.size()) < maxCharges;
