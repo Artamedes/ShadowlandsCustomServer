@@ -237,8 +237,8 @@ public:
                 auto areaTrigger = attacker->GetAreaTrigger(WildSpirits);
                 if (areaTrigger)
                 {
-                    if (areaTrigger->GetInsideUnits().count(victim->GetGUID()))
-                        attacker->CastSpell(victim, WildSpiritsDmg, true);
+                    //if (areaTrigger->GetInsideUnits().count(victim->GetGUID()))
+                    //    attacker->CastSpell(victim, WildSpiritsDmg, true);
                 }
             }
         }
