@@ -7252,7 +7252,27 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
 
     // apply spellmod to Done damage (flat and pct)
     if (Player* modOwner = GetSpellModOwner())
+    {
         modOwner->ApplySpellMod(spellProto, damagetype == DOT ? SpellModOp::PeriodicHealingAndDamage : SpellModOp::HealingAndDamage, tmpDamage);
+
+        if (damagetype != DOT)
+        {
+            switch (GetClass())
+            {
+                case CLASS_PALADIN:
+                {
+                    tmpDamage *= 5.0f;
+                    break;
+                }
+                case CLASS_WARRIOR:
+                {
+                    break;
+                }
+                default:
+                    break;
+            }
+        }
+    }
 
     auto l_Itr = sObjectMgr->m_CustomSpellBuffs.find(spellProto->Id);
     if (l_Itr != sObjectMgr->m_CustomSpellBuffs.end())
