@@ -53,7 +53,7 @@ void WorldSession::SendAuthResponse(uint32 code, bool queued, uint32 queuePos)
 
         // TEMPORARY - prevent creating characters in uncompletable zone
         // This has the side effect of disabling Exile's Reach choice clientside without actually forcing character templates
-        response.SuccessInfo->ForceCharacterTemplate = DisableMgr::IsDisabledFor(DISABLE_TYPE_MAP, 2175 /*Exile's Reach*/, nullptr);
+        response.SuccessInfo->ForceCharacterTemplate = true;// DisableMgr::IsDisabledFor(DISABLE_TYPE_MAP, 2175 /*Exile's Reach*/, nullptr);
     }
 
     if (queued)

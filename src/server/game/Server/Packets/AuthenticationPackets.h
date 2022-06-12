@@ -159,7 +159,7 @@ namespace WorldPackets
                 std::vector<RaceClassAvailability> const* AvailableClasses = nullptr; ///< the minimum AccountExpansion required to select race/class combinations
 
                 bool IsExpansionTrial = false;
-                bool ForceCharacterTemplate = false; ///< forces the client to always use a character template when creating a new character. @see Templates. @todo implement
+                bool ForceCharacterTemplate = true; ///< forces the client to always use a character template when creating a new character. @see Templates. @todo implement
                 Optional<uint16> NumPlayersHorde; ///< number of horde players in this realm. @todo implement
                 Optional<uint16> NumPlayersAlliance; ///< number of alliance players in this realm. @todo implement
                 Optional<int32> ExpansionTrialExpiration; ///< expansion trial expiration unix timestamp
