@@ -211,6 +211,26 @@ public:
         //    }
         //}
 
+        /// <summary>
+        ///  @TODO
+        /// </summary>
+        /// <param name="attacker"></param>
+        /// <param name="victim"></param>
+        /// <param name="damage"></param>
+        /// <param name="spellInfo"></param>
+        if (spellInfo)
+        {
+            switch (spellInfo->Id)
+            {
+                case 259756:
+                case 259760:
+                case 259760:
+                    return false;
+                default:
+                    break;
+            }
+        }
+
         if (attacker->GetClass() == CLASS_HUNTER && attacker->IsPlayer() && spellInfo && spellInfo->Id != WildSpiritsDmg)
         {
             if (attacker->HasAura(WildSpirits))
