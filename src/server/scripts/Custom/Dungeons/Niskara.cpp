@@ -43,7 +43,14 @@ struct instance_niskara : public CustomInstanceScript
 
         void OnPlayerEnter(Player* player) override
         {
+            if (IsChallenge())
+                return;
+
             player->CastSpell(player, 352467, true); // visual
+
+            if (IsChallenge())
+                return;
+
             if (!m_FirstPlayerEntered)
             {
                 m_FirstPlayerEntered = true;
@@ -71,46 +78,46 @@ struct npc_prophet_velen_700499 : public ScriptedAI
         void InitializeAI() override
         {
             scheduler.Schedule(100ms, [this](TaskContext context)
-                {
-                    DoCastSelf(367044, true);
-                });
+            {
+                DoCastSelf(367044, true);
+            });
 
-                scheduler.Schedule(1200ms, [this](TaskContext context)
-                    {
-                        me->GetMotionMaster()->MovePoint(1, { 245.263947f, 1966.496460f, -54.270882f, 4.329511f });
-                        scheduler.Schedule(100ms, [this](TaskContext context)
-                            {
-                                Talk(0);
-                            });
-                    });
+            scheduler.Schedule(1200ms, [this](TaskContext context)
+            {
+                me->GetMotionMaster()->MovePoint(1, { 245.263947f, 1966.496460f, -54.270882f, 4.329511f });
+                scheduler.Schedule(100ms, [this](TaskContext context)
+                {
+                    Talk(0);
+                });
+            });
         }
 
         void MovementInform(uint32 type, uint32 point) override
         {
             scheduler.Schedule(100ms, [this](TaskContext context)
+            {
+                me->SetFacingTo(4.054619f);
+
+                scheduler.Schedule(100ms, [this](TaskContext context)
                 {
-                    me->SetFacingTo(4.054619f);
+                    Talk(1);
 
-                    scheduler.Schedule(100ms, [this](TaskContext context)
-                        {
-                            Talk(1);
+                    scheduler.Schedule(5s, [this](TaskContext context)
+                    {
+                        Talk(2);
 
-                            scheduler.Schedule(5s, [this](TaskContext context)
-                                {
-                                    Talk(2);
-
-                                    scheduler.Schedule(5s, [this](TaskContext context)
-                                        {
-                                        //    DoCast(286210);
-
-                                            scheduler.Schedule(100ms, [this](TaskContext context)
-                                                {
-                                                //    me->DespawnOrUnsummon();
-                                                });
-                                        });
-                                });
-                        });
+                        ///scheduler.Schedule(5s, [this](TaskContext context)
+                        ///{
+                        ///    //    DoCast(286210);
+                        ///
+                        ///    scheduler.Schedule(100ms, [this](TaskContext context)
+                        ///    {
+                        ///        //    me->DespawnOrUnsummon();
+                        ///    });
+                        ///});
+                    });
                 });
+            });
         }
 
         void UpdateAI(uint32 diff) override
@@ -165,13 +172,13 @@ struct npc_bob_700099 : public ScriptedAI
      {
          me->RemoveNpcFlag(UNIT_NPC_FLAG_GOSSIP);
          scheduler.Schedule(1s, [this](TaskContext context)
-             {
-                 Talk(0);
-                 auto path = me->GetMotionMaster()->MoveSmoothPath(1, bobPath, 13, false, true, 3.0f);
-                 path->callbackFunc = [this]() {
-                     me->DespawnOrUnsummon(1s);
-                 };
-             });
+         {
+             Talk(0);
+             auto path = me->GetMotionMaster()->MoveSmoothPath(1, bobPath, 13, false, true, 3.0f);
+             path->callbackFunc = [this]() {
+                 me->DespawnOrUnsummon(1s);
+             };
+         });
          return true;
      }
 
