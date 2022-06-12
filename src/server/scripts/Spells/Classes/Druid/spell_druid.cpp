@@ -5555,6 +5555,22 @@ class spell_sickle_of_the_lion : public AuraScript
         DoCheckProc += AuraCheckProcFn(spell_sickle_of_the_lion::CheckProc);
     }
 };
+/// ID: 363496 Architect's Aligner
+class spell_architects_aligner : public AuraScript
+{
+    PrepareAuraScript(spell_architects_aligner);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        auto caster = GetCaster();
+        return caster && (caster->HasAura(50334) || caster->HasAura(102558));
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_architects_aligner::CheckProc);
+    }
+};
 
 void AddSC_druid_spell_scripts()
 {
@@ -5662,6 +5678,7 @@ void AddSC_druid_spell_scripts()
     RegisterSpellAndAuraScriptPair(spell_dru_tranquility_heal, aura_dru_tranquility_heal);
     RegisterSpellScript(spell_dru_convoke);
     RegisterSpellScript(spell_sickle_of_the_lion);
+    RegisterSpellScript(spell_architects_aligner);
 
 	// Affinity
     RegisterSpellScript(aura_dru_guaridan_affinity_balance_resto);
