@@ -52,6 +52,8 @@ class spell_vanquishers_hammer : public AuraScript
                         caster->CastSpell(hitUnit, PaladinSpells::DivineStorm, CastSpellExtraArgs(TRIGGERED_FULL_MASK));
                         break;
                 }
+                if (auto aur = GetAura())
+                    aur->Remove();
             }
         }
     }

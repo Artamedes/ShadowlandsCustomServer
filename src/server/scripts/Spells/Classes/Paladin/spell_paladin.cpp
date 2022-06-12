@@ -152,7 +152,6 @@ enum PaladinSpells
 	SPELL_PALADIN_DEVOTION_AURA_TALENT			= 183425,
 	SPELL_PALADIN_DEVOTION_AURA					= 210320,
 	SPELL_PALADIN_RETRIBUTION					= 183436,
-	SPELL_PALADIN_EXECUTION_SENTENCE			= 267798,
 	SPELL_PALADIN_JUDGMENT_PROTE_RANK			= 231657,
     SPELL_PALADIN_AURA_OF_MERCY                 = 210291,
     SPELL_PALADIN_AURA_MASTERY                  = 31821,
@@ -262,6 +261,12 @@ public:
                     player->GetAura(SPELL_PALADIN_CRUSADE)->ModStackAmount(value);
                     aura->SetDuration(duration);
                 }
+            }
+
+            ///< Sanctified Wrath
+            if (player->HasAura(317866) && power == POWER_HOLY_POWER && oldValue > newValue)
+            {
+                player->CastSpell(player, 326731, CastSpellExtraArgs(true));
             }
         }
     }
@@ -4088,24 +4093,6 @@ class spell_divine_storm_damage : public SpellScript
     }
 };
 
-// 267798 - Execution Sentence
-class spell_divine_execution_sentence : public SpellScript
-{
-    PrepareSpellScript(spell_divine_execution_sentence);
-
-    void HandleHitTarget(SpellEffIndex /*effIndex*/)
-    {
-        if (Unit* caster = GetCaster())
-            if (caster->HasAura(SPELL_PALADIN_DIVINE_JUDGMENT))
-                caster->CastSpell(caster, SPELL_PALADIN_DIVINE_JUDGMENT_AURA, true);
-    }
-
-    void Register() override
-    {
-        OnEffectHitTarget += SpellEffectFn(spell_divine_execution_sentence::HandleHitTarget, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
-    }
-};
-
 // 203791 - Last Defender
 class aura_pal_last_defender : public AuraScript
 {
@@ -4708,7 +4695,6 @@ void AddSC_paladin_spell_scripts()
     RegisterSpellScript(aura_pal_divine_judgment_aura);
     RegisterSpellScript(aura_pal_divine_judgment);
     RegisterSpellScript(spell_divine_storm_damage);
-    RegisterSpellScript(spell_divine_execution_sentence);
     RegisterSpellScript(spell_pal_light_of_the_martyr);
     RegisterSpellScript(aura_pal_light_of_the_martyr);
     RegisterSpellScript(spell_pal_holy_shield);

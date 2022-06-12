@@ -8108,6 +8108,7 @@ bool Unit::IsImmunedToDamage(SpellInfo const* spellInfo) const
     return false;
 }
 
+#pragma optimize( "", off )
 bool Unit::IsImmunedToSpell(SpellInfo const* spellInfo, WorldObject const* caster) const
 {
     if (!spellInfo)
@@ -8143,10 +8144,14 @@ bool Unit::IsImmunedToSpell(SpellInfo const* spellInfo, WorldObject const* caste
         // Ignore effects with mechanic, they are supposed to be checked separately
         if (!spellEffectInfo.IsEffect())
             continue;
+
+        /// PIGPIGPIG
+        if (this == caster && spellEffectInfo.IsEffect(SPELL_EFFECT_ENERGIZE))
+            return false;
         if (!IsImmunedToSpellEffect(spellInfo, spellEffectInfo, caster))
         {
             immuneToAllEffects = false;
-            break;
+            continue;
         }
         if (spellInfo->HasAttribute(SPELL_ATTR4_NO_PARTIAL_IMMUNITY))
             return true;
@@ -8177,6 +8182,7 @@ bool Unit::IsImmunedToSpell(SpellInfo const* spellInfo, WorldObject const* caste
 
     return false;
 }
+#pragma optimize( "", on )
 
 uint32 Unit::GetSchoolImmunityMask() const
 {
@@ -8894,7 +8900,7 @@ void Unit::TriggerOnHealthChangeAuras(uint64 oldVal, uint64 newVal)
         CastSpell(this, triggerSpell, effect);
     }
 }
-
+#pragma optimize( "", off )
 // returns negative amount on power reduction
 int32 Unit::ModifyPower(Powers power, int32 dVal, bool withPowerUpdate /*= true*/)
 {
@@ -8930,7 +8936,7 @@ int32 Unit::ModifyPower(Powers power, int32 dVal, bool withPowerUpdate /*= true*
 
     return gain;
 }
-
+#pragma optimize( "", on ) 
 bool Unit::IsAlwaysVisibleFor(WorldObject const* seer) const
 {
     if (WorldObject::IsAlwaysVisibleFor(seer))

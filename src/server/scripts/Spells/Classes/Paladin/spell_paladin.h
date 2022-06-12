@@ -10,6 +10,10 @@ namespace Paladin
         WordOfGlory          = 85673,
         ShieldOfTheRighteous = 53600,
 
+        /// Ret
+        BladeOfJustice = 184575,
+        ExecutionSentence = 343527,
+
         /// Holy
         LightOfDawn = 85222
 
