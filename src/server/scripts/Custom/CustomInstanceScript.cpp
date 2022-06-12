@@ -161,6 +161,8 @@ void CustomInstanceScript::OnPlayerLeave(Player* player)
             }
         }
     }
+
+    player->RemoveAurasDueToSpell(340880); ///< Prideful buff
 }
 
 void CustomInstanceScript::NerfLeechIfNeed(Unit* who, int32& heal)
@@ -178,7 +180,6 @@ void CustomInstanceScript::NerfLeechIfNeed(Unit* who, int32& heal)
         }
     }
 }
-
 
 void CustomInstanceScript::OnChallengeStart()
 {
@@ -208,7 +209,7 @@ int32 CustomInstanceScript::GetLeechEffectiveness(uint32 level) const
 
     if (level >= 5)
     {
-        Effectiveness -= (level - 4) * 5;
+        Effectiveness -= (level - 4) * 10;
     }
 
     return std::max(0, Effectiveness);
