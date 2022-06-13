@@ -1180,7 +1180,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         bool TeleportTo(uint32 mapid, Position const& pos, uint32 options = 0, uint32 optionParam = 0, Transport* transport = nullptr, Optional<uint32> instanceId = {});
         bool TeleportTo(WorldLocation const& loc, uint32 options = 0, uint32 optionParam = 0, Transport* transport = nullptr, Optional<uint32> instanceId = {});
         bool TeleportToBGEntryPoint();
-        void TeleportToChallenge(uint32 mapid, float x, float y, float z, float orientation, Player* keyOwner = nullptr);
+        void TeleportToChallenge(Map* map, float x, float y, float z, float orientation, Player* keyOwner = nullptr);
 
         bool HasSummonPending() const;
         void SendSummonRequestFrom(Unit* summoner);

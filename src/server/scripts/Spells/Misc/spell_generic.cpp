@@ -5184,8 +5184,8 @@ class spell_restoring_memory : public SpellScript
         {
             if (auto player = caster->ToPlayer())
             {
-                player->SetRuneforgePowers(11);
-                player->SetRuneforgePowers(12);
+                //player->SetRuneforgePowers(11);
+                //player->SetRuneforgePowers(12);
 
                 player->SendPlaySpellVisualKit(362, 1, 0);
             }

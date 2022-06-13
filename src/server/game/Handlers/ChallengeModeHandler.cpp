@@ -28,6 +28,7 @@
 #include "WorldSession.h"
 #include "GameObject.h"
 #include "PlayerChallenge.h"
+#include "MapManager.h"
 
 void WorldSession::HandleChallengeModeStart(WorldPackets::ChallengeMode::StartRequest& start)
 {
@@ -121,10 +122,21 @@ void WorldSession::HandleChallengeModeStart(WorldPackets::ChallengeMode::StartRe
     {
         ChatHandler(_player->GetSession()).PSendSysMessage("Error: Start position not found.");
         return;
-    }    
+    }
+
+    challengeKeyInfo->challengeEntry = sMapChallengeModeStore.LookupEntry(challengeKeyInfo->ID);
 
     if (Group* group = _player->GetGroup())
-    {    
+    {
+        group->m_challengeEntry = sMapChallengeModeStore.LookupEntry(challengeKeyInfo->ID);
+        MapChallengeModeEntry const* challengeEntry = sDB2Manager.GetChallengeModeByMapID(_player->GetMapId());
+        if (!group->m_challengeEntry || !challengeEntry || challengeEntry->MapID != group->m_challengeEntry->MapID)
+        {
+            group->m_challengeEntry = nullptr;
+            ChatHandler(_player->GetSession()).PSendSysMessage("Error: Incorrect challenge.");
+            return;
+        }
+
         for (GroupReference* itr = group->GetFirstMember(); itr != nullptr; itr = itr->next())
         {
             Player* player = itr->GetSource();
@@ -146,17 +158,30 @@ void WorldSession::HandleChallengeModeStart(WorldPackets::ChallengeMode::StartRe
                 return;
             }
         }
-
-        group->m_challengeEntry = sMapChallengeModeStore.LookupEntry(challengeKeyInfo->ID);
-        group->m_affixes.fill(0);
-
+    }
+    else
+    {
         MapChallengeModeEntry const* challengeEntry = sDB2Manager.GetChallengeModeByMapID(_player->GetMapId());
-        if (!group->m_challengeEntry || !challengeEntry || challengeEntry->MapID != group->m_challengeEntry->MapID)
+        if (!challengeKeyInfo->challengeEntry || !challengeEntry || challengeEntry->MapID != challengeKeyInfo->challengeEntry->MapID)
         {
-            group->m_challengeEntry = nullptr;
+            challengeKeyInfo->challengeEntry = nullptr;
             ChatHandler(_player->GetSession()).PSendSysMessage("Error: Incorrect challenge.");
             return;
         }
+    }
+
+    auto mapId = _player->GetMapId();
+    Map* newMap = sMapMgr->CreateMap(mapId, _player, 0, true);
+
+    if (!newMap)
+    {
+        ChatHandler(_player->GetSession()).PSendSysMessage("Error: Couldn't create challenge");
+        return;
+    }
+
+    if (Group* group = _player->GetGroup())
+    {
+        group->m_affixes.fill(0);
 
         group->m_challengeOwner = _player->GetGUID();
         group->m_challengeItem = key->GetGUID();
@@ -184,7 +209,7 @@ void WorldSession::HandleChallengeModeStart(WorldPackets::ChallengeMode::StartRe
         group->SetDungeonDifficultyID(difficulty);
         _player->GetMap()->SetSpawnMode(difficulty);
         _player->SendDirectMessage(result2.Write());
-        _player->TeleportToChallenge(_player->GetMapId(), x, y, z, o, _player);
+        _player->TeleportToChallenge(newMap, x, y, z, o, _player);
 
         for (GroupReference* itr = group->GetFirstMember(); itr != nullptr; itr = itr->next())
         {
@@ -194,23 +219,13 @@ void WorldSession::HandleChallengeModeStart(WorldPackets::ChallengeMode::StartRe
                     continue;
                 
                 player->SendDirectMessage(result2.Write());
-                player->TeleportToChallenge(_player->GetMapId(), x, y, z, o);               
+                player->TeleportToChallenge(newMap, x, y, z, o);
                 player->CastSpell(player, SPELL_CHALLENGER_BURDEN, true);
             }
         }        
     }
     else
     {
-        challengeKeyInfo->challengeEntry = sMapChallengeModeStore.LookupEntry(challengeKeyInfo->ID);
-
-        MapChallengeModeEntry const* challengeEntry = sDB2Manager.GetChallengeModeByMapID(_player->GetMapId());
-        if (!challengeKeyInfo->challengeEntry || !challengeEntry || challengeEntry->MapID != challengeKeyInfo->challengeEntry->MapID)
-        {
-            challengeKeyInfo->challengeEntry = nullptr;
-            ChatHandler(_player->GetSession()).PSendSysMessage("Error: Incorrect challenge.");
-            return;
-        }
-
         WorldPackets::Instance::ChangePlayerDifficultyResult result;
         result.Result = AsUnderlyingType(ChangeDifficultyResult::DIFFICULTY_CHANGE_SET_COOLDOWN_S);
         result.CooldownReason = 18446744072059367961;
@@ -224,7 +239,7 @@ void WorldSession::HandleChallengeModeStart(WorldPackets::ChallengeMode::StartRe
         _player->GetMap()->SetSpawnMode(difficulty);
         _player->SetDungeonDifficultyID(difficulty);
         _player->SendDirectMessage(result2.Write());
-        _player->TeleportToChallenge(_player->GetMapId(), x, y, z, o, _player);
+        _player->TeleportToChallenge(newMap, x, y, z, o, _player);
         _player->CastSpell(_player, SPELL_CHALLENGER_BURDEN, true);
     }        
 

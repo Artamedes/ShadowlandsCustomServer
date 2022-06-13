@@ -1673,13 +1673,11 @@ bool Player::TeleportToBGEntryPoint()
     return TeleportTo(m_bgData.joinPos);
 }
 
-void Player::TeleportToChallenge(uint32 mapid, float x, float y, float z, float orientation, Player* keyOwner /*= nullptr*/)
+void Player::TeleportToChallenge(Map* map, float x, float y, float z, float orientation, Player* keyOwner /*= nullptr*/)
 {
-    MapEntry const* mEntry = sMapStore.LookupEntry(mapid);
+    MapEntry const* mEntry = map->GetEntry();
     if (!GetSession() || !mEntry)
         return;
-
-    TC_LOG_DEBUG("maps", "Player %s is being teleported to map %u", GetName().c_str(), mapid);
 
     if (m_vehicle)
         ExitVehicle();
@@ -1726,8 +1724,8 @@ void Player::TeleportToChallenge(uint32 mapid, float x, float y, float z, float 
         packet.clear();
     }
 
-    m_teleport_dest = WorldLocation(mapid, x, y, z, orientation);
-    m_teleport_options = TELE_TO_SEAMLESS;
+    m_teleport_dest = WorldLocation(map->GetId(), x, y, z, orientation);
+    m_teleport_options = 0;
 
     SetSemaphoreTeleportFar(true);
 
@@ -1737,20 +1735,17 @@ void Player::TeleportToChallenge(uint32 mapid, float x, float y, float z, float 
 
     if (!GetSession()->PlayerLogout())
     {
-        if (Map* _map = sMapMgr->CreateMap(mapid, this, 0, this == keyOwner))
-        {
-            if (keyOwner)
-                if (InstanceMap* instance = _map->ToInstanceMap())
-                    if (!instance->GetInstanceScript()->IsChallenge())
-                        instance->GetInstanceScript()->CreateChallenge(keyOwner);
+        if (keyOwner)
+            if (InstanceMap* instance = map->ToInstanceMap())
+                if (!instance->GetInstanceScript()->IsChallenge())
+                    instance->GetInstanceScript()->CreateChallenge(keyOwner);
 
-            m_teleport_target_map = _map;
+        m_teleport_target_map = map;
 
-            WorldPackets::Movement::SuspendToken suspendToken;
-            suspendToken.SequenceIndex = m_movementCounter; // not incrementing
-            suspendToken.Reason = m_teleport_options & TELE_TO_SEAMLESS ? 2 : 1;
-            SendDirectMessage(suspendToken.Write());
-        }
+        WorldPackets::Movement::SuspendToken suspendToken;
+        suspendToken.SequenceIndex = m_movementCounter; // not incrementing
+        suspendToken.Reason = 0;
+        SendDirectMessage(suspendToken.Write());
     }
 }
 
