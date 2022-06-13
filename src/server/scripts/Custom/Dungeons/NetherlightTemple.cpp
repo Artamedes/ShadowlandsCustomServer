@@ -524,10 +524,16 @@ struct npc_derza_700402 : public BossAI
 
         void InitializeAI() override
         {
-            me->SetReactState(REACT_PASSIVE);
-            me->SetUnitFlag(UNIT_FLAG_NON_ATTACKABLE);
-            me->SetUnitFlag(UNIT_FLAG_IMMUNE_TO_PC);
-            DoCast(MagisterSoulChannel); // Channel
+            if (instance)
+            {
+                if (instance->GetBossState(BossDerza) == EncounterState::NOT_STARTED)
+                {
+                    me->SetReactState(REACT_PASSIVE);
+                    me->SetUnitFlag(UNIT_FLAG_NON_ATTACKABLE);
+                    me->SetUnitFlag(UNIT_FLAG_IMMUNE_TO_PC);
+                    DoCast(MagisterSoulChannel); // Channel
+                }
+            }
         }
 
         void Reset() override
@@ -558,6 +564,8 @@ struct npc_derza_700402 : public BossAI
         void EnterEvadeMode(EvadeReason why) override
         {
             _EnterEvadeMode(why);
+
+            _DespawnAtEvade(10s);
 
             if (instance)
                 instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
