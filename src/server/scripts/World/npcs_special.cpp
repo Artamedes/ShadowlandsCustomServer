@@ -1586,7 +1586,7 @@ struct npc_training_dummy : NullCreatureAI
         {
             damage = 0;
 
-            me->SetHealth(me->CountPctFromMaxHealth(100));
+            //me->SetHealth(me->CountPctFromMaxHealth(100));
         }
 
         if (!attacker || damageType == DOT)
