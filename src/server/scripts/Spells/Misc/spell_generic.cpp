@@ -5031,22 +5031,23 @@ class spell_emergency_failsafe : public AuraScript
 
     bool CheckProc(ProcEventInfo& eventInfo)
     {
-        if (!eventInfo.GetActor())
+        auto caster = GetCaster();
+        if (!caster)
             return false;
 
-        if (eventInfo.GetActor()->HasAura(RecentlyFailed))
+        if (caster->HasAura(RecentlyFailed))
             return false;
 
-        return eventInfo.GetActor()->HealthBelowPct(15);
+        return caster->HealthBelowPct(15);
     }
 
     void HandleProc(AuraEffect* /*aurEff*/, ProcEventInfo& eventInfo)
     {
         PreventDefaultAction();
-        if (auto caster = eventInfo.GetActor())
+        if (auto caster = GetCaster())
         {
-            eventInfo.GetActor()->CastSpell(eventInfo.GetActor(), Heal, true);
-            eventInfo.GetActor()->CastSpell(eventInfo.GetActor(), RecentlyFailed, true);
+            caster->CastSpell(caster, Heal, true);
+            caster->CastSpell(caster, RecentlyFailed, true);
         }
     }
 
@@ -5183,7 +5184,8 @@ class spell_restoring_memory : public SpellScript
         {
             if (auto player = caster->ToPlayer())
             {
-                player->SetRuneforgePowers(1 | 32);
+                player->SetRuneforgePowers(11);
+                player->SetRuneforgePowers(12);
 
                 player->SendPlaySpellVisualKit(362, 1, 0);
             }
