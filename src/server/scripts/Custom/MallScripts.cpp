@@ -580,289 +580,46 @@ struct npc_mall_weapongiver : public ScriptedAI
     public:
         npc_mall_weapongiver(Creature* creature) : ScriptedAI(creature) { }
 
-        void InitializeAI() override
+        bool OnBuyItemFromVendorSlot(Player* player, uint32 /*vendorslot*/, uint32 /*item*/, uint8 /*count*/, uint8 /*bag*/, uint8 /*slot*/, uint64 /*price*/, ItemTemplate const* /*pProto*/, VendorItem const* /*crItem*/)
         {
-            DoCastSelf(137321);
-            events.ScheduleEvent(1, 5s);
-            switch (me->GetEntry())
+            if (player->GetQuestStatus(700019) == QUEST_STATUS_INCOMPLETE)
             {
-                case 800027: // Julius (Shield)
-                    m_BonusListIds.reserve(4);
-                    m_ItemEntries.reserve(1);
-                    m_ItemEntries.emplace_back(113653);
-                    m_BonusListIds.emplace_back(6606); // Mythic
-                    m_BonusListIds.emplace_back(1660); // ItemLevel
-                    m_BonusListIds.emplace_back(1610); // ItemLevel
-                    m_BonusListIds.emplace_back(1602); // ItemLevel
-                    AllowableClasses = CLASSMASK_WARRIOR + CLASSMASK_PALADIN + CLASSMASK_SHAMAN;
-                    break;
-                case 800028: // Draka
-                    m_BonusListIds.reserve(3);
-                    m_ItemEntries.reserve(1);
-                    m_ItemEntries.emplace_back(186398);
-                    m_BonusListIds.emplace_back(6606); // Mythic
-                    m_BonusListIds.emplace_back(1600); // ItemLevel
-                    m_BonusListIds.emplace_back(1611); // ItemLevel
-                    AllowableClasses = CLASSMASK_ROGUE + CLASSMASK_DRUID;
-                    break;
-                case 800029: // Prophet
-                    m_BonusListIds.reserve(3);
-                    m_ItemEntries.reserve(1);
-                    m_ItemEntries.emplace_back(189851);
-                    m_BonusListIds.emplace_back(6606); // Mythic
-                    m_BonusListIds.emplace_back(1610); // ItemLevel
-                    m_BonusListIds.emplace_back(1601); // ItemLevel
-                    AllowableClasses = CLASSMASK_WARRIOR + CLASSMASK_PALADIN + CLASSMASK_DEATH_KNIGHT;
-                    break;
-                case 800025: // Sylvanas
-                    m_BonusListIds.reserve(3);
-                    m_ItemEntries.reserve(1);
-                    m_ItemEntries.emplace_back(186414);
-                    m_BonusListIds.emplace_back(6606); // Mythic
-                    m_BonusListIds.emplace_back(1610); // ItemLevel
-                    m_BonusListIds.emplace_back(1601); // ItemLevel
-                    AllowableClasses = CLASSMASK_HUNTER; // Hunter
-                    break;
-                case 800023: // Wrathion
-                    m_ItemEntries.reserve(2);
-                    m_ItemEntries.emplace_back(77949);
-                    m_ItemEntries.emplace_back(77950);
-                    m_BonusListIds.reserve(4);
-                    m_BonusListIds.emplace_back(6606); // Mythic
-                    m_BonusListIds.emplace_back(1610); // ItemLevel
-                    m_BonusListIds.emplace_back(1618); // ItemLevel
-                    m_BonusListIds.emplace_back(1650); // ItemLevel
-                    AllowableClasses = CLASSMASK_ROGUE; // Rogue
-                    break;
-                case 800022: // Dragonwrath
-                    //.add 71086 1 6606;1610;1618;1651
-                    m_ItemEntries.reserve(1);
-                    m_ItemEntries.emplace_back(71086);
-                    m_BonusListIds.reserve(4);
-                    m_BonusListIds.emplace_back(6606); // Mythic
-                    m_BonusListIds.emplace_back(1610); // ItemLevel
-                    m_BonusListIds.emplace_back(1618); // ItemLevel
-                    m_BonusListIds.emplace_back(1651); // ItemLevel
-                    AllowableClasses = CLASSMASK_WAND_USERS + CLASSMASK_DRUID + CLASSMASK_SHAMAN; // Casters
-                    break;
-                case 800021: // Sulfuras
-                    //.add 71352 1 6606;1610;1618;1651
-                    m_ItemEntries.reserve(1);
-                    m_ItemEntries.emplace_back(71352);
-                    m_BonusListIds.reserve(4);
-                    m_BonusListIds.emplace_back(6606); // Mythic
-                    m_BonusListIds.emplace_back(1610); // ItemLevel
-                    m_BonusListIds.emplace_back(1618); // ItemLevel
-                    m_BonusListIds.emplace_back(1651); // ItemLevel
-                    AllowableClasses = CLASSMASK_WARRIOR + CLASSMASK_PALADIN + CLASSMASK_DEATH_KNIGHT;
-                    break;
-                case 800018: // Shadowmourne
-                    //.add 49623 1 6606;1610;1618;1653
-                    m_ItemEntries.reserve(1);
-                    m_ItemEntries.emplace_back(49623);
-                    m_BonusListIds.reserve(4);
-                    m_BonusListIds.emplace_back(6606); // Mythic
-                    m_BonusListIds.emplace_back(1610); // ItemLevel
-                    m_BonusListIds.emplace_back(1618); // ItemLevel
-                    m_BonusListIds.emplace_back(1653); // ItemLevel
-                    AllowableClasses = CLASSMASK_WARRIOR + CLASSMASK_PALADIN + CLASSMASK_DEATH_KNIGHT;
-                    break;
-                case 800019: // Frostmourne
-                    //.add 49623 1 6606;1610;1618;1653
-                    //m_ItemEntries.reserve(1);
-                    //m_ItemEntries.emplace_back(49623);
-                    //m_BonusListIds.reserve(4);
-                    //m_BonusListIds.emplace_back(6606); // Mythic
-                    //m_BonusListIds.emplace_back(1610); // ItemLevel
-                    //m_BonusListIds.emplace_back(1618); // ItemLevel
-                    //m_BonusListIds.emplace_back(1653); // ItemLevel
-                    //AllowableClasses = 1 + 2 + 32;
-                    break;
-                case 800020: // Highlord
-                    //.add 19019 1 6606;1610;1618;1659
-                    m_ItemEntries.reserve(1);
-                    m_ItemEntries.emplace_back(19019);
-                    m_BonusListIds.reserve(5);
-                    m_BonusListIds.emplace_back(6606); // Mythic
-                    m_BonusListIds.emplace_back(1610); // ItemLevel
-                    m_BonusListIds.emplace_back(1618); // ItemLevel
-                    m_BonusListIds.emplace_back(1659); // ItemLevel
-                    m_BonusListIds.emplace_back(6403); // agil/crit
-                    AllowableClasses = CLASSMASK_WARRIOR + CLASSMASK_DEMON_HUNTER + CLASSMASK_ROGUE + CLASSMASK_MONK + CLASSMASK_DEATH_KNIGHT + CLASSMASK_PALADIN;
-                    break;
-                case 800017: // Illidan
-                    //.add 32837 1 6606;1610;1618;1655
-                    //.add 32838 1 6606;1610;1618;1655
-                    m_ItemEntries.reserve(2);
-                    m_ItemEntries.emplace_back(32837);
-                    m_ItemEntries.emplace_back(32838);
-                    m_BonusListIds.reserve(5);
-                    m_BonusListIds.emplace_back(6606); // Mythic
-                    m_BonusListIds.emplace_back(1610); // ItemLevel
-                    m_BonusListIds.emplace_back(1618); // ItemLevel
-                    m_BonusListIds.emplace_back(1655); // ItemLevel
-                    m_BonusListIds.emplace_back(6403); // agil/crit
-                    AllowableClasses = CLASSMASK_WARRIOR + CLASSMASK_DEMON_HUNTER + CLASSMASK_ROGUE + CLASSMASK_MONK + CLASSMASK_DEATH_KNIGHT;
-                    break;
-                case 800024: // Magni
-                    //.add [Val'anyr, Hammer of Ancient Kings] 1 6606;1610;1618;1653
-                    m_ItemEntries.reserve(1);
-                    m_ItemEntries.emplace_back(46017);
-                    m_BonusListIds.reserve(4);
-                    m_BonusListIds.emplace_back(6606); // Mythic
-                    m_BonusListIds.emplace_back(1610); // ItemLevel
-                    m_BonusListIds.emplace_back(1618); // ItemLevel
-                    m_BonusListIds.emplace_back(1653); // ItemLevel
-                    AllowableClasses = CLASSMASK_DRUID + CLASSMASK_SHAMAN + CLASSMASK_MONK + CLASSMASK_PALADIN; // Casters
-                    break;
-            }
-        }
-
-        void EnterEvadeMode(EvadeReason) override
-        {
-            DoCastSelf(137321);
-        }
-
-        void Reset() override
-        {
-            DoCastSelf(137321);
-        }
-
-        bool OnGossipHello(Player* player) override
-        {
-            ClearGossipMenuFor(player);
-
-            if (player->HasItemCount(700316, 1))
-            {
-                bool allow = true;
-
-                for (auto entry : m_ItemEntries)
+                player->CompleteQuest(700019);
+                player->RewardQuest(sObjectMgr->GetQuestTemplate(700019), LootItemType::Item, 0, me, true);
+                player->AddQuestAndCheckCompletion(sObjectMgr->GetQuestTemplate(700020), me);
+                player->GetScheduler().Schedule(100ms, [](TaskContext context)
                 {
-                    auto itemTemp = sObjectMgr->GetItemTemplate(entry);
-                    if (!itemTemp)
-                        continue;
-                    auto itemCount = player->GetItemCount(entry);
-                    if (itemTemp->GetMaxCount() > 0 && itemCount >= itemTemp->GetMaxCount())
-                    {
-                        allow = false;
-                        break;
-                    }
-                }
-
-                if ((AllowableClasses & player->GetClassMask()) != 0 && allow)
-                {
-                    AddGossipItemFor(player, GossipOptionIcon::None, "Create Weapon", 0, 2, "|cffFF0000Accepting this will use |cffff8000[Legendary Dust]|cffFF0000x1|R", 0, false);
-                }
+                    auto player = context.GetUnit()->ToPlayer();
+                    Conversation::CreateConversation(700303, player, *player, player->GetGUID());
+                    player->PlayerTalkClass->SendQuestGiverQuestDetails(sObjectMgr->GetQuestTemplate(700020), player->GetGUID(), true, true);
+                });
             }
 
-            AddGossipItemFor(player, GossipOptionIcon::None, "Preview Weapon", 0, 1);
-            SendGossipMenuFor(player, 800017, me);
             return true;
         }
 
-        bool OnGossipSelect(Player* player, uint32 menuId, uint32 gossipId) override
+
+        bool CanSeeOrDetect(WorldObject const* who) const override
         {
-            uint32 actionId = player->PlayerTalkClass->GetGossipOptionAction(gossipId);
-            ClearGossipMenuFor(player);
-
-            switch (actionId)
+            if (who->IsPlayer())
             {
-                case 1:
-                    for (auto entry : m_ItemEntries)
-                    {
-                        Item* item = Item::CreateItem(entry, 1, ItemContext::NONE, player);
-                        if (item)
-                        {
-                            item->SetBonuses(m_BonusListIds);
-                            ChatHandler(player).PSendSysMessage("%s", Item::GetItemLink(item).c_str());
-                            delete item;
-                        }
-                    }
-                    break;
-                case 2:
-                    // 700316 - Legendary Dust
-                    if (player->HasItemCount(700316, 1) && !m_ItemEntries.empty())
-                    {
-                        bool allow = true;
+                auto player = who->ToPlayer();
 
-                        for (auto entry : m_ItemEntries)
-                        {
-                            auto itemTemp = sObjectMgr->GetItemTemplate(entry);
-                            if (!itemTemp)
-                                continue;
-                            auto itemCount = player->GetItemCount(entry);
-                            if (itemTemp->GetMaxCount() > 0 && itemCount >= itemTemp->GetMaxCount())
-                            {
-                                allow = false;
-                                break;
-                            }
-                        }
+                if (player->IsGameMaster())
+                    return true;
 
-                        if (allow)
-                        {
-                            if (player->GetQuestStatus(700019) == QUEST_STATUS_INCOMPLETE)
-                            {
-                                CloseGossipMenuFor(player);
-                                player->CompleteQuest(700019);
-                                player->RewardQuest(sObjectMgr->GetQuestTemplate(700019), LootItemType::Item, 0, me, true);
-                                player->AddQuestAndCheckCompletion(sObjectMgr->GetQuestTemplate(700020), me);
-                                player->GetScheduler().Schedule(100ms, [](TaskContext context)
-                                {
-                                    auto player = context.GetUnit()->ToPlayer();
-                                    Conversation::CreateConversation(700303, player, *player, player->GetGUID());
-                                    player->PlayerTalkClass->SendQuestGiverQuestDetails(sObjectMgr->GetQuestTemplate(700020), player->GetGUID(), true, true);
-                                });
-                            }
-                            player->DestroyItemCount(700316, 1, true);
-                            for (auto entry : m_ItemEntries)
-                            {
-                                uint32 noSpaceForCount = 0;
-                                ItemPosCountVec dest;
-                                InventoryResult msg = player->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, entry, 1, &noSpaceForCount);
-                                Item* item = Item::CreateItem(entry, 1, ItemContext::NONE, player);
-                                item->SetBonuses(m_BonusListIds);
-                                if (dest.empty())
-                                {
-                                    /// @todo Send to mailbox if no space
-                                    ChatHandler(player).PSendSysMessage("You don't have any space in your bags, sent to mailbox.");
-                                    CharacterDatabaseTransaction trans = CharacterDatabase.BeginTransaction();
-                                    // save new item before send
-                                    item->SaveToDB(trans);                               // save for prevent lost at next mail load, if send fail then item will deleted
-
-                                    auto draft = MailDraft("Lost Item", "Recovered your lost item");
-                                    // item
-                                    draft.AddItem(item);
-                                    draft.SendMailTo(trans, player, MailSender(MAIL_CREATURE, uint64(me->GetEntry())));
-                                    CharacterDatabase.CommitTransaction(trans);
-                                    continue;
-                                }
-
-                                player->StoreItem(dest, item, true);
-                                player->SendNewItem(item, 1, true, true, false);
-                            }
-                        }
-                    }
-                    break;
+                auto status = player->GetQuestStatus(700019); // Choice of the champion
+                switch (status)
+                {
+                    case QUEST_STATUS_NONE:
+                        return true;
+                    default:
+                        return false;
+                }
             }
 
-            return OnGossipHello(player);
+            return false;
         }
-
-        void UpdateAI(uint32 diff) override
-        {
-            events.Update(diff);
-
-            if (events.ExecuteEvent() == 1)
-            {
-                DoCastSelf(137321);
-                events.Repeat(30s);
-            }
-        }
-
-        std::vector<uint32> m_ItemEntries;
-        std::vector<int32> m_BonusListIds;
-        int32 AllowableClasses = -1;
-        EventMap events;
 };
 
 struct npc_morpher_admin : public ScriptedAI

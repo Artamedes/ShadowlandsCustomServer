@@ -24294,7 +24294,7 @@ bool Player::BuyItemFromVendorSlot(ObjectGuid vendorguid, uint32 vendorslot, uin
 
     if (auto ai = creature->AI())
     {
-        if (!ai->OnBuyItemFromVendorSlot(vendorslot, item, count, bag, slot, price, pProto, crItem))
+        if (!ai->OnBuyItemFromVendorSlot(this, vendorslot, item, count, bag, slot, price, pProto, crItem))
             return false;
     }
 
