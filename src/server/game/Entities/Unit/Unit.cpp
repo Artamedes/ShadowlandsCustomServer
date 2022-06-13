@@ -7293,25 +7293,25 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
         modOwner->ApplySpellMod(spellProto, damagetype == DOT ? SpellModOp::PeriodicHealingAndDamage : SpellModOp::HealingAndDamage, tmpDamage);
         SendMsgToPlayerIfDebugging("|cffFFBD00Damage ater applying spell mod %f", tmpDamage);
 
-        if (damagetype != DOT && spellProto)
-        {
-            switch (GetClass())
-            {
-                case CLASS_PALADIN:
-                {
-                    if (spellProto->SpellFamilyName == SPELLFAMILY_PALADIN)
-                        tmpDamage *= 2.5f;
-                    break;
-                }
-                case CLASS_WARRIOR:
-                {
-                    break;
-                }
-                default:
-                    break;
-            }
-            SendMsgToPlayerIfDebugging("|cffFFBD00Damage ater class buffs", tmpDamage);
-        }
+        ///if (damagetype != DOT && spellProto)
+        ///{
+        ///    switch (GetClass())
+        ///    {
+        ///        case CLASS_PALADIN:
+        ///        {
+        ///            if (spellProto->SpellFamilyName == SPELLFAMILY_PALADIN)
+        ///                tmpDamage *= 2.5f;
+        ///            break;
+        ///        }
+        ///        case CLASS_WARRIOR:
+        ///        {
+        ///            break;
+        ///        }
+        ///        default:
+        ///            break;
+        ///    }
+        ///    SendMsgToPlayerIfDebugging("|cffFFBD00Damage ater class buffs", tmpDamage);
+        ///}
     }
 
     auto l_Itr = sObjectMgr->m_CustomSpellBuffs.find(spellProto->Id);
@@ -8575,7 +8575,7 @@ float Unit::GetPPMProcChance(uint32 WeaponSpeed, float PPM, SpellInfo const* spe
 void Unit::Mount(uint32 mount, uint32 VehicleId, uint32 creatureEntry)
 {
     RemoveAurasByType(SPELL_AURA_COSMETIC_MOUNTED);
-    if (mount && mount != 54464)
+    if (mount && mount != 38482)
         SetMountDisplayId(mount);
 
     SetUnitFlag(UNIT_FLAG_MOUNT);
