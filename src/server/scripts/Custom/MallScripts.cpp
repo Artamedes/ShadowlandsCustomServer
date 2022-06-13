@@ -612,9 +612,9 @@ struct npc_mall_weapongiver : public ScriptedAI
                 switch (status)
                 {
                     case QUEST_STATUS_NONE:
-                        return true;
-                    default:
                         return false;
+                    default:
+                        return true;
                 }
             }
 
