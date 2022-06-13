@@ -1121,12 +1121,12 @@ namespace Trinity
     class AttackableUnitInObjectRangeCheck
     {
     public:
-        AttackableUnitInObjectRangeCheck(WorldObject const* obj, float range, bool check3D = true) : i_obj(obj), i_range(range), i_check3D(check3D) { }
+        AttackableUnitInObjectRangeCheck(WorldObject const* obj, float range, bool check3D = true, WorldObject const* centerObj = nullptr) : i_obj(obj), i_range(range), i_check3D(check3D), i_center(centerObj ? centerObj : obj) { }
 
         bool operator()(Unit* u) const
         {
             if (i_obj->IsUnit())
-                if (u->IsAlive() && i_obj->IsWithinDistInMap(u, i_range, i_check3D) && i_obj->ToUnit()->IsValidAttackTarget(u))
+                if (u->IsAlive() && i_center->IsWithinDistInMap(u, i_range, i_check3D) && i_obj->ToUnit()->IsValidAttackTarget(u))
                     return true;
 
             return false;
@@ -1136,6 +1136,7 @@ namespace Trinity
         WorldObject const* i_obj;
         float i_range;
         bool i_check3D;
+        WorldObject const* i_center;
     };
 
     class AnyAreatriggerInObjectRangeCheck

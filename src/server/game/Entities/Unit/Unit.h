@@ -1988,6 +1988,7 @@ class TC_GAME_API Unit : public WorldObject
         TaskScheduler& GetScheduler() { return _scheduler; }
 
         void GetAttackableUnitListInRange(std::list<Unit*>& list, float fMaxSearchRange) const;
+        void GetAttackableUnitListInRangeFromCenterObj(WorldObject* centerObj, std::list<Unit*>& list, float fMaxSearchRange) const;
         void GetFriendlyUnitListInRange(std::list<Unit*>& list, float fMaxSearchRange, bool exceptSelf = false) const;
 
         // Control Alert
