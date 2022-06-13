@@ -17566,18 +17566,6 @@ bool Player::IsQuestBitFlaged(uint32 bitIndex) const
     return m_activePlayerData->QuestCompleted[fieldOffset] & flag;
 }
 
-void Player::SetRuneforgePowers(uint32 power)
-{
-    uint32 block = power / 32;
-    //if (block >= m_activePlayerData->RuneforgePowers.size())
-    //    return false;
-
-    uint32 bit = power % 32;
-    //return referencePlayer->m_activePlayerData->RuneforgePowers[block] & (1 << bit);
-
-    AddDynamicUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::RuneforgePowers)) = bit;
-}
-
 bool Player::HasRuneforgePower(uint32 power) const
 {
     return m_activePlayerData->RuneforgePowers.FindIndex(power) == -1;
