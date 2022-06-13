@@ -125,7 +125,7 @@ void Scenario::OnPlayerEnter(Player* player)
     }
 
     // send empty TEST
-    SendBootPlayer(player);
+    ///SendBootPlayer(player);
 
     SendScenarioState(player);
 }

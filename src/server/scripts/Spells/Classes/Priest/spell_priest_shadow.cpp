@@ -184,7 +184,7 @@ class spell_torment_mind : public AuraScript
         if (!caster)
             return;
 
-        auto dam = caster->GetTotalSpellPowerValue(SpellSchoolMask::SPELL_SCHOOL_MASK_SHADOW, false) * 0.173f;
+        //auto dam = caster->GetTotalSpellPowerValue(SpellSchoolMask::SPELL_SCHOOL_MASK_SHADOW, false) * 0.173f;
         caster->CastSpell(target, TormentMindDam, true);
     }
 
