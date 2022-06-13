@@ -2184,6 +2184,12 @@ class spell_pal_art_of_war : public AuraScript
 {
     PrepareAuraScript(spell_pal_art_of_war);
 
+    enum eArtOfWar
+    {
+        AshestoAshes2pc = 363677,
+        AshesToAshes4pc = 364370,
+    };
+
     void OnCalcProc(ProcEventInfo& eventInfo, float& chance)
     {
         //Blade of Wrath Chance of Art of War x 2
@@ -2202,7 +2208,36 @@ class spell_pal_art_of_war : public AuraScript
             else
                 caster->CastSpell(caster, SPELL_BLADE_OF_WRATH_PROC, true);
 
-			caster->GetSpellHistory()->ResetCooldown(SPELL_PALADIN_BLADE_OF_JUSTICE, true);
+            if (!caster->HasAura(AshesToAshes4pc))
+			    caster->GetSpellHistory()->ResetCooldown(SPELL_PALADIN_BLADE_OF_JUSTICE, true);
+            else
+            {
+                if (roll_chance_i(50))
+                {
+                    caster->GetSpellHistory()->ResetCooldown(SPELL_PALADIN_WAKE_OF_ASHES, true);
+                }
+                else
+                    caster->GetSpellHistory()->ResetCooldown(SPELL_PALADIN_BLADE_OF_JUSTICE, true);
+            }
+
+            if (caster->HasAura(AshestoAshes2pc))
+            {
+                if (Aura* seraphimAura = caster->GetAura(SPELL_PALADIN_SERAPHIM))
+                {
+                    auto dur = seraphimAura->GetDuration();
+                    dur += 3000;
+                    if (dur >= seraphimAura->GetMaxDuration())
+                        dur = seraphimAura->GetMaxDuration();
+                    seraphimAura->SetDuration(dur);
+                }
+                else
+                {
+                    if (auto seraphim = caster->AddAura(SPELL_PALADIN_SERAPHIM, caster))
+                    {
+                        seraphim->SetDuration(3000);
+                    }
+                }
+            }
 		}
     }
 
