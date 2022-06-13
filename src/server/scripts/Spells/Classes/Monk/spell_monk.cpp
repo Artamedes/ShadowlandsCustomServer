@@ -2111,7 +2111,9 @@ public:
     {
         PrepareAuraScript(spell_monk_touch_of_karma_AuraScript);
 
-        uint32 totalAbsorbAmount;
+        bool fullyAbsorbed = false;
+        uint32 totalAbsorbAmount = 0;
+        uint32 maxAbsorbAmount = 0;
         ObjectGuid targetGuid;
 
         bool Load() override
@@ -2139,27 +2141,37 @@ public:
         void CalculateAmount(const AuraEffect* /*aurEff*/, int32& amount, bool & /*canBeRecalculated*/)
         {
             if (GetCaster())
+            {
                 amount = CalculatePct(GetCaster()->GetMaxHealth(), GetSpellInfo()->GetEffect(EFFECT_2).BasePoints);
+                maxAbsorbAmount = CalculatePct(amount, 70);
+            }
         }
 
         void AfterAbsorb(AuraEffect* aurEff, DamageInfo& dmgInfo, uint32& absorbAmount)
         {
+            if (fullyAbsorbed)
+                return;
+
             if (Unit* caster = dmgInfo.GetVictim())
             {
                 if (Player* player = caster->ToPlayer())
-                {
+                {   
                     if (Unit* attacker = dmgInfo.GetAttacker())
                     {
                         if (attacker->HasAura(aurEff->GetSpellInfo()->Id, caster->GetGUID()))
                         {
                             totalAbsorbAmount += absorbAmount;
 
-                            AddPct(totalAbsorbAmount, player->m_activePlayerData->Versatility + player->m_activePlayerData->VersatilityBonus);
-
-                            totalAbsorbAmount /= 6;
+                            if (totalAbsorbAmount >= maxAbsorbAmount)
+                            {
+                                totalAbsorbAmount = maxAbsorbAmount;
+                                fullyAbsorbed = true;
+                            }
 
                             if (totalAbsorbAmount)
-                                caster->CastCustomSpell(SPELL_MONK_TOUCH_OF_KARMA_REDIRECT_DAMAGE, SPELLVALUE_BASE_POINT0, totalAbsorbAmount, attacker, TRIGGERED_FULL_MASK);
+                            {
+                                caster->CastSpell(attacker, SPELL_MONK_TOUCH_OF_KARMA_REDIRECT_DAMAGE, CastSpellExtraArgs(true).AddSpellBP0(totalAbsorbAmount));
+                            }
                         }                        
                     }
                 }
