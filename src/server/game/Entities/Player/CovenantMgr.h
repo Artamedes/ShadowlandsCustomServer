@@ -76,6 +76,28 @@ enum GarrisonTalentFlags
     TalentFlagEnabled  = 0x1,
 };
 
+static SoulbindID GetSoulbindIDFromTalentTreeId(uint32 talentTreeId)
+{
+    switch (talentTreeId)
+    {
+        case GarrTalentTreeIds::Niya: return SoulbindID::Niya;
+        case GarrTalentTreeIds::Dreamweaver: return SoulbindID::Dreamweaver;
+        case GarrTalentTreeIds::GeneralDraven: return SoulbindID::GeneralDraven;
+        case GarrTalentTreeIds::Marileth: return SoulbindID::PlagueDeviserMarileth;
+        case GarrTalentTreeIds::Emeni: return SoulbindID::Emeni;
+        case GarrTalentTreeIds::Korayn: return SoulbindID::Korayn;
+        case GarrTalentTreeIds::Pelagos: return SoulbindID::Pelagos;
+        case GarrTalentTreeIds::Heimer: return SoulbindID::BonesmithHeimer;
+        case GarrTalentTreeIds::Kleia: return SoulbindID::Kleia;
+        case GarrTalentTreeIds::Mikanikos: return SoulbindID::ForgePrimeMikanikos;
+        case GarrTalentTreeIds::Nadjia: return SoulbindID::NadjiaTheMistblade;
+        case GarrTalentTreeIds::Nadjia2: return SoulbindID::NadjiaTheMistblade;
+        case GarrTalentTreeIds::Theotar: return SoulbindID::TheotarTheMadDuke;
+        default:
+            return SoulbindID::None;
+    }
+}
+
 struct TC_GAME_API Conduit
 {
     Conduit(Player* player) : _player(player) { }
@@ -89,7 +111,7 @@ struct TC_GAME_API Conduit
     Optional<WorldPackets::Garrison::GarrisonTalentSocketData> Socket;
 
     void FlagsUpdated(bool forceRemove = false);
-    void BuildGarrisonTalent(WorldPackets::Garrison::GarrisonTalent& result);
+    void BuildGarrisonTalent(WorldPackets::Garrison::GarrisonTalent& result) const;
 
     bool operator==(Conduit const& right) const
     {
@@ -98,6 +120,7 @@ struct TC_GAME_API Conduit
     bool operator!=(Conduit const& right) const { return !(*this == right); }
 
     bool IsEnhancedConduit();
+    int32 GetSoulbindID() const;
 
     Player* _player;
 };
@@ -127,6 +150,35 @@ class TC_GAME_API Covenant
 
         std::set<uint32> _claimedRenownRewards;
 
+        /// <summary>
+        /// Use for swapping covenants
+        /// </summary>
+        void DisableAllConduits();
+        /// <summary>
+        /// Use for swapping soulbinds
+        /// </summary>
+        void DisableAllConduitsForSoulbind();
+        /// <summary>
+        /// updates all conduits use after swap covenant only
+        /// </summary>
+        void UpdateAllConduits();
+        /// <summary>
+        /// updates all conduits use after swap conduits on soulbind
+        /// </summary>
+        void UpdateAllConduitsForSoulbind();
+
+        std::multimap<uint32, Conduit>& GetConduits()
+        {
+            return _conduits;
+        }
+
+        /// <summary>
+        /// Adds a conduit to the conduit map
+        /// </summary>
+        /// <param name="SoulbindID">what soulbind to add it to</param>
+        /// <param name="conduit">reference to the conduit passed</param>
+        void AddConduit(Conduit& conduit);
+
     private:
         Player* _player;
         CovenantID _covenantId;
@@ -134,7 +186,7 @@ class TC_GAME_API Covenant
         int32 _renownLevel;
         uint32 _anima;
         uint32 _souls;
-        //std::vector<Conduit> _conduits;
+        std::multimap<uint32, Conduit> _conduits; ///< SoulbindID, Conduit
 };
 
 struct TC_GAME_API CovenantSoulbind
@@ -196,27 +248,6 @@ class TC_GAME_API CovenantMgr
             }
         }
 
-        static SoulbindID GetSoulbindIDFromTalentTreeId(uint32 talentTreeId)
-        {
-            switch (talentTreeId)
-            {
-                case GarrTalentTreeIds::Niya: return SoulbindID::Niya;
-                case GarrTalentTreeIds::Dreamweaver: return SoulbindID::Dreamweaver;
-                case GarrTalentTreeIds::GeneralDraven: return SoulbindID::GeneralDraven;
-                case GarrTalentTreeIds::Marileth: return SoulbindID::PlagueDeviserMarileth;
-                case GarrTalentTreeIds::Emeni: return SoulbindID::Emeni;
-                case GarrTalentTreeIds::Korayn: return SoulbindID::Korayn;
-                case GarrTalentTreeIds::Pelagos: return SoulbindID::Pelagos;
-                case GarrTalentTreeIds::Heimer: return SoulbindID::BonesmithHeimer;
-                case GarrTalentTreeIds::Kleia: return SoulbindID::Kleia;
-                case GarrTalentTreeIds::Mikanikos: return SoulbindID::ForgePrimeMikanikos;
-                case GarrTalentTreeIds::Nadjia: return SoulbindID::NadjiaTheMistblade;
-                case GarrTalentTreeIds::Nadjia2: return SoulbindID::NadjiaTheMistblade;
-                case GarrTalentTreeIds::Theotar: return SoulbindID::TheotarTheMadDuke;
-                default:
-                    return SoulbindID::None;
-            }
-        }
         bool _loaded = false;
 
     private:
@@ -224,6 +255,5 @@ class TC_GAME_API CovenantMgr
         size_t _currCovenantIndex;
         std::array<std::unique_ptr<Covenant>, 5> _playerCovenants = { };
         std::unordered_map<int32, int32> CollectionEntries;
-        std::unordered_multimap<int32, Conduit> _conduits; // CovenantID, Conduit
         std::unordered_multimap <int32, CovenantSoulbind> _covenantSoulbinds;
 };
