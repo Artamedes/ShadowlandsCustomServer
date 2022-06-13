@@ -671,7 +671,10 @@ public:
             if (sWorld->getBoolConfig(CONFIG_DIE_COMMAND_MODE))
                 Unit::Kill(handler->GetSession()->GetPlayer(), target);
             else
-                Unit::DealDamage(handler->GetSession()->GetPlayer(), target, target->GetHealth(), nullptr, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, nullptr, false);
+            {
+                uint32 dam = target->GetHealth();
+                Unit::DealDamage(handler->GetSession()->GetPlayer(), target, dam, nullptr, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, nullptr, false);
+            }
         }
 
         return true;

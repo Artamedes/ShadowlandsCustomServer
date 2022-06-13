@@ -4645,7 +4645,8 @@ class aura_dk_dancing_rune_weapon : public AuraScript
             eventInfo.GetSchoolMask());
         damageLog.damage = eventInfo.GetDamageInfo()->GetDamage();
         caster->SendSpellNonMeleeDamageLog(&damageLog);
-        Unit::DealDamage(weapon, target, eventInfo.GetDamageInfo()->GetDamage());
+        uint32 dam = eventInfo.GetDamageInfo()->GetDamage();
+        Unit::DealDamage(weapon, target, dam);
     }
 
     void Register() override

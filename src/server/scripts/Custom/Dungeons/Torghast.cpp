@@ -1905,7 +1905,8 @@ public:
     {
         if (auto guardian = me->FindNearestCreature(700815, 500.0f))
         {
-            unit->DealDamage(unit, guardian, guardian->CountPctFromMaxHealth(25));
+            uint32 dam = guardian->CountPctFromMaxHealth(25);
+            unit->DealDamage(unit, guardian,  dam);
             guardian->CastSpell(guardian, 368631, true);
             guardian->AI()->Talk(1);
         }

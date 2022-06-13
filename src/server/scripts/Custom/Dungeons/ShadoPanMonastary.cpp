@@ -105,7 +105,10 @@ public:
                     {
                         if (u)
                             if (u->HasAura(365834))
-                                Unit::DealDamage(me, u, u->GetHealth());
+                            {
+                                uint32 dam = u->GetHealth();
+                                Unit::DealDamage(me, u, dam);
+                            }
                     }
 
                     events.Repeat(7s, 20s);

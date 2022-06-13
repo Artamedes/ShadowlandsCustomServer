@@ -2703,6 +2703,8 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
 
         float GetAverageItemLevel() const;
         bool isDebugAreaTriggers;
+        bool IsDebugSpells = false;
+        uint32 DebugSpellId = 0;
 
         void ClearWhisperWhiteList() { WhisperList.clear(); }
         void AddWhisperWhiteList(ObjectGuid guid) { WhisperList.push_back(guid); }

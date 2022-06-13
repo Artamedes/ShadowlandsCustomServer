@@ -85,6 +85,7 @@
 #include "WorldSession.h"
 #include <sstream>
 #include <cmath>
+#include "Chat.h"
 
 #define SPELL_PLAYER_LIFE_STEAL 146347
 
@@ -769,7 +770,7 @@ bool Unit::HasBreakableByDamageCrowdControlAura(Unit* excludeCasterChannel) cons
         damage *= attacker->GetDamageMultiplierForTarget(victim);
 }
 
-/*static*/ uint32 Unit::DealDamage(Unit* attacker, Unit* victim, uint32 damage, CleanDamage const* cleanDamage, DamageEffectType damagetype, SpellSchoolMask damageSchoolMask, SpellInfo const* spellProto, bool durabilityLoss)
+/*static*/ uint32 Unit::DealDamage(Unit* attacker, Unit* victim, uint32& damage, CleanDamage const* cleanDamage, DamageEffectType damagetype, SpellSchoolMask damageSchoolMask, SpellInfo const* spellProto, bool durabilityLoss)
 {
     // Handle Leech.
     if (attacker && attacker->IsPlayer() && damage > 0 && (!spellProto || spellProto->Id != 143924)) ///< 143924 - Leech
@@ -1298,7 +1299,7 @@ void Unit::DealSpellDamage(SpellNonMeleeDamage const* damageInfo, bool durabilit
 
     // Call default DealDamage
     CleanDamage cleanDamage(damageInfo->cleanDamage, damageInfo->absorb, BASE_ATTACK, MELEE_HIT_NORMAL);
-    Unit::DealDamage(this, victim, damageInfo->damage, &cleanDamage, SPELL_DIRECT_DAMAGE, SpellSchoolMask(damageInfo->schoolMask), damageInfo->Spell, durabilityLoss);
+    Unit::DealDamage(this, victim, const_cast<SpellNonMeleeDamage*>(damageInfo)->damage, &cleanDamage, SPELL_DIRECT_DAMAGE, SpellSchoolMask(damageInfo->schoolMask), damageInfo->Spell, durabilityLoss);
     SendSpellNonMeleeDamageLog(damageInfo);
 }
 
@@ -7190,13 +7191,37 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
         if (Unit* owner = GetOwner())
             return owner->SpellDamageBonusDone(victim, spellProto, pdamage, damagetype, spellEffectInfo, stack);
 
+    auto SendMsgToPlayerIfDebugging([&](const char* format, ...)
+    {
+        if (auto player = ToPlayer())
+        {
+            if (player->IsDebugSpells && (player->DebugSpellId == 0 || player->DebugSpellId == spellProto->Id))
+            {
+                va_list ap;
+                char str[2048];
+                va_start(ap, format);
+                vsnprintf(str, 2048, format, ap);
+                va_end(ap);
+                ChatHandler(player->GetSession()).SendSysMessage(str);
+            }
+        }
+    });
+
+    SendMsgToPlayerIfDebugging("|cffD50909===========Unit::SpellDamageBonusDone %s %u===========", spellProto->SpellName->Str[0], spellProto->Id);
+    SendMsgToPlayerIfDebugging("|cffFFBD00p_Damage: %u, DamageType: %u, Stack: %u, Effect: %u", pdamage, damagetype, stack, spellEffectInfo.Effect);
+
+
     int32 DoneTotal = 0;
     float DoneTotalMod = SpellDamagePctDone(victim, spellProto, damagetype, spellEffectInfo);
 
+
+    SendMsgToPlayerIfDebugging("|cffFFBD00DoneTotalMod %f", DoneTotalMod);
     // Done fixed damage bonus auras
     int32 DoneAdvertisedBenefit  = SpellBaseDamageBonusDone(spellProto->GetSchoolMask());
+    SendMsgToPlayerIfDebugging("|cffFFBD00DoneAdvertisedBenefit %d", DoneAdvertisedBenefit);
     // modify spell power by victim's SPELL_AURA_MOD_DAMAGE_TAKEN auras (eg Amplify/Dampen Magic)
     DoneAdvertisedBenefit += victim->GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_DAMAGE_TAKEN, spellProto->GetSchoolMask());
+    SendMsgToPlayerIfDebugging("|cffFFBD00SPELL_AURA_MOD_DAMAGE_TAKEN new DoneAdvertisedBenefit %d", DoneAdvertisedBenefit);
 
     // Pets just add their bonus damage to their spell damage
     // note that their spell damage is just gain of their own auras
@@ -7207,11 +7232,13 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
     if (spellEffectInfo.BonusCoefficientFromAP > 0.0f)
     {
         float ApCoeffMod = spellEffectInfo.BonusCoefficientFromAP;
+        SendMsgToPlayerIfDebugging("|cffFFBD00BonusCoefficientFromAP %f", ApCoeffMod);
         if (Player* modOwner = GetSpellModOwner())
         {
             ApCoeffMod *= 100.0f;
             modOwner->ApplySpellMod(spellProto, SpellModOp::BonusCoefficient, ApCoeffMod);
             ApCoeffMod /= 100.0f;
+            SendMsgToPlayerIfDebugging("|cffFFBD00BonusCoefficientFromAP %f (after mods)", ApCoeffMod);
         }
 
         WeaponAttackType const attType = [&]()
@@ -7224,15 +7251,22 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
 
             return BASE_ATTACK;
         }();
+
         float APbonus = float(victim->GetTotalAuraModifier(attType != RANGED_ATTACK ? SPELL_AURA_MELEE_ATTACK_POWER_ATTACKER_BONUS : SPELL_AURA_RANGED_ATTACK_POWER_ATTACKER_BONUS));
+        SendMsgToPlayerIfDebugging("|cffFFBD00APBonus %f", APbonus);
         APbonus += GetTotalAttackPowerValue(attType);
+        SendMsgToPlayerIfDebugging("|cffFFBD00APBonus %f (after attack power value)", APbonus);
         DoneTotal += int32(stack * ApCoeffMod * APbonus);
+        SendMsgToPlayerIfDebugging("|cffFFBD00DoneTotal %d", DoneTotal);
     }
     else
     {
         // No bonus damage for SPELL_DAMAGE_CLASS_NONE class spells by default
         if (spellProto->DmgClass == SPELL_DAMAGE_CLASS_NONE)
+        {
+            SendMsgToPlayerIfDebugging("|cffFFBD00No bonus damage for SPELL_DAMAGE_CLASS_NONE class spells by default pdamage: %u DoneTotalMod: %u", pdamage, DoneTotalMod);
             return uint32(std::max(pdamage * DoneTotalMod, 0.0f));
+        }
     }
 
     // Default calculation
@@ -7244,17 +7278,20 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
             coeff *= 100.0f;
             modOwner->ApplySpellMod(spellProto, SpellModOp::BonusCoefficient, coeff);
             coeff /= 100.0f;
+            SendMsgToPlayerIfDebugging("|cffFFBD00Bonus Coeff %f", coeff);
         }
 
         DoneTotal += int32(DoneAdvertisedBenefit * coeff * stack);
     }
 
     float tmpDamage = float(int32(pdamage) + DoneTotal) * DoneTotalMod;
+    SendMsgToPlayerIfDebugging("|cffFFBD00TmpDmg: %f", tmpDamage);
 
     // apply spellmod to Done damage (flat and pct)
     if (Player* modOwner = GetSpellModOwner())
     {
         modOwner->ApplySpellMod(spellProto, damagetype == DOT ? SpellModOp::PeriodicHealingAndDamage : SpellModOp::HealingAndDamage, tmpDamage);
+        SendMsgToPlayerIfDebugging("|cffFFBD00Damage ater applying spell mod %f", tmpDamage);
 
         if (damagetype != DOT && spellProto)
         {
@@ -7273,12 +7310,16 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
                 default:
                     break;
             }
+            SendMsgToPlayerIfDebugging("|cffFFBD00Damage ater class buffs", tmpDamage);
         }
     }
 
     auto l_Itr = sObjectMgr->m_CustomSpellBuffs.find(spellProto->Id);
     if (l_Itr != sObjectMgr->m_CustomSpellBuffs.end())
+    {
         tmpDamage *= l_Itr->second;
+        SendMsgToPlayerIfDebugging("|cffFFBD00Damage ater spell buffs", tmpDamage);
+    }
 
     return uint32(std::max(tmpDamage, 0.0f));
 }

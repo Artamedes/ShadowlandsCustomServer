@@ -74,7 +74,8 @@ struct boss_aeonus : public BossAI
             if (me->IsWithinDistInMap(who, 20.0f))
             {
                 Talk(SAY_BANISH);
-                Unit::DealDamage(me, who, who->GetHealth(), nullptr, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, nullptr, false);
+                uint32 dam = who->GetHealth();
+                Unit::DealDamage(me, who, dam, nullptr, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, nullptr, false);
             }
         }
 

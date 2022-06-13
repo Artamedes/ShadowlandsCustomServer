@@ -1125,7 +1125,8 @@ class spell_algalon_collapse : public AuraScript
     void HandlePeriodic(AuraEffect const* /*aurEff*/)
     {
         PreventDefaultAction();
-        Unit::DealDamage(GetTarget(), GetTarget(), GetTarget()->CountPctFromMaxHealth(1), nullptr, NODAMAGE);
+        uint32 dam = GetTarget()->CountPctFromMaxHealth(1);
+        Unit::DealDamage(GetTarget(), GetTarget(), dam, nullptr, NODAMAGE);
     }
 
     void Register() override

@@ -136,6 +136,7 @@ public:
             { "personalclone",      HandleDebugBecomePersonalClone,        rbac::RBAC_PERM_COMMAND_DEBUG,   Console::No },
             { "stabilitytest",      HandleDebugStabilityTestCommand,       rbac::RBAC_PERM_COMMAND_DEBUG,   Console::No },
             { "splashscreen",       HandleDebugSplashScreenCommand,        rbac::RBAC_PERM_COMMAND_DEBUG,   Console::No },
+            { "spell",              HandleDebugSpells,                     rbac::RBAC_PERM_INSTANT_LOGOUT,   Console::No },
         };
         static ChatCommandTable commandTable =
         {
@@ -155,6 +156,24 @@ public:
             outFaction = TEAM_NEUTRAL;
         else
             return false;
+
+        return true;
+    }
+
+    static bool HandleDebugSpells(ChatHandler* handler, Optional<uint32> spellid)
+    {
+        auto player = handler->getSelectedPlayerOrSelf();
+
+        player->IsDebugSpells = !player->IsDebugSpells;
+
+        if (spellid.has_value())
+        {
+            player->DebugSpellId = *spellid;
+            player->IsDebugSpells = true;
+            handler->PSendSysMessage("Set debugging spells to %s for spellid: %u", player->IsDebugSpells ? "true" : "false", *spellid);
+        }
+        else
+            handler->PSendSysMessage("Set debugging spells to %s", player->IsDebugSpells ? "true" : "false");
 
         return true;
     }

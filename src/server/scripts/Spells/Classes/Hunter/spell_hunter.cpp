@@ -4251,7 +4251,7 @@ class spell_hun_aimed_shot : public SpellScript
 	}
 
 private:
-    int32 damage;
+    uint32 damage;
 };
 
 // 260240 - Precise Shots
@@ -5518,7 +5518,8 @@ class spell_hun_trick_shots_proc : public AuraScript
             owner->CalculateSpellDamageTaken(&damageLog, damageLog.damage, eventInfo.GetSpellInfo());
             owner->DealDamageMods(owner, target, damageLog.damage, &damageLog.absorb);
             owner->SendSpellNonMeleeDamageLog(&damageLog);
-            owner->DealDamage(owner, target, eventInfo.GetDamageInfo()->GetOriginalDamage());
+            uint32 dam = eventInfo.GetDamageInfo()->GetOriginalDamage();
+            owner->DealDamage(owner, target, dam);
         }
 
         if(eventInfo.GetSpellInfo()->Id == SPELL_HUNTER_AIMED_SHOT)

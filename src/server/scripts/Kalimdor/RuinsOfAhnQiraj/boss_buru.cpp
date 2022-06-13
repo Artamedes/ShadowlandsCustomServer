@@ -100,8 +100,11 @@ class boss_buru : public CreatureScript
             void DoAction(int32 action) override
             {
                 if (action == ACTION_EXPLODE)
-                    if (_phase == PHASE_EGG)
-                        Unit::DealDamage(me, me, 45000);
+                    if (_phase == PHASE_EGG) /// WTF
+                    {
+                        uint32 dam = 45000;
+                        Unit::DealDamage(me, me, dam);
+                    }
             }
 
             void KilledUnit(Unit* victim) override

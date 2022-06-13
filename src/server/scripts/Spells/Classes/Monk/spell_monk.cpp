@@ -5287,7 +5287,7 @@ class spell_monk_bonedust_brew : public AuraScript
             {
                 if (auto caster = GetCaster())
                 {
-                    auto damage = damageInfo->GetDamage() * 0.5;
+                    uint32 damage = (damageInfo->GetDamage() * 0.5f);
                     SpellNonMeleeDamage damageLog = SpellNonMeleeDamage(caster, target, GetSpellInfo(), { GetSpellInfo()->GetSpellXSpellVisualId(), 0 }, GetSpellInfo()->GetSchoolMask());
                     damageLog.damage = damage;
                     caster->CalculateSpellDamageTaken(&damageLog, damageLog.damage, GetSpellInfo());
