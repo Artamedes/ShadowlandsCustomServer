@@ -612,6 +612,18 @@ namespace WorldPackets
             uint8 Flags = 0;
         };
 
+        class TC_GAME_API UpdateCooldown : public ServerPacket
+        {
+        public:
+            UpdateCooldown() : ServerPacket(SMSG_UPDATE_COOLDOWN, 4 + 4 + 4) { }
+
+            WorldPacket const* Write() override;
+
+            uint32 SpellID = 0;
+            float ModRate = 1.0f;
+            float ModRate2 = 1.0f;
+        };
+
         struct SpellHistoryEntry
         {
             uint32 SpellID = 0;

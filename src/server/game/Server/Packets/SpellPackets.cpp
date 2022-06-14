@@ -1075,3 +1075,11 @@ WorldPacket const* WorldPackets::Spells::LossControlClear::Write()
     _worldPacket << int32(0);
     return &_worldPacket;
 }
+
+WorldPacket const* WorldPackets::Spells::UpdateCooldown::Write()
+{
+    _worldPacket << SpellID;
+    _worldPacket << ModRate;
+    _worldPacket << ModRate2;
+    return &_worldPacket;
+}

@@ -40,6 +40,7 @@
 #include "Item.h"
 #include "TotemAI.h"
 #include "Group.h"
+#include "SpellPackets.h"
 
 enum ShamanSpells
 {
@@ -1510,47 +1511,22 @@ public:
             return GetCaster()->GetTypeId() == TYPEID_PLAYER;
         }
 
-        void FilterTargets(std::list<WorldObject*>& targets)
-        {
-            targets.remove_if(Trinity::UnitAuraCheck(true, SPELL_SHAMAN_FLAME_SHOCK, GetCaster()->GetGUID()));
-        }
-
         void HandleScript(SpellEffIndex /*effIndex*/)
         {
+            if (!GetCaster())
+                return;
+
             if (Unit* mainTarget = GetExplTargetUnit())
             {
-                //if (Aura* flameShock = mainTarget->GetAura(SPELL_SHAMAN_FLAME_SHOCK, GetCaster()->GetGUID()))
+                if (Aura* flameShock = mainTarget->GetAura(SPELL_SHAMAN_FLAME_SHOCK_ELEM, GetCaster()->GetGUID()))
                 {
-                    std::list<Unit*> list;
-                    GetCaster()->GetAttackableUnitListInRange(list, MELEE_RANGE);
-
-                    auto limit = 0;
-
-                    for (auto unit : list)
-                    {
-                        if (!unit->HasAura(188389, GetCaster()->GetGUID()))
-                        {
-                            ++limit;
-                           // GetCaster()->CastSpell(unit, SPELL_SHAMAN_FLAME_SHOCK, true);
-                            GetCaster()->AddAura(188389, unit);
-                        }
-
-                        if (limit >= 3)
-                            break;
-                    }
-
-                    //if (Aura* newAura = GetCaster()->AddAura(SPELL_SHAMAN_FLAME_SHOCK, GetHitUnit()))
-                    //{
-                    //    newAura->SetDuration(flameShock->GetDuration());
-                    //    newAura->SetMaxDuration(flameShock->GetDuration());
-                    //}
+                    flameShock->RefreshDuration();
                 }
             }
         }
 
         void Register() override
         {
-            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_sha_lava_lash_spread_flame_shock_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_DEST_AREA_ENEMY);
             OnEffectHitTarget += SpellEffectFn(spell_sha_lava_lash_spread_flame_shock_SpellScript::HandleScript, EFFECT_0, SPELL_EFFECT_SCRIPT_EFFECT);
         }
     };
@@ -2179,61 +2155,6 @@ enum ShamanTotems
     SPELL_MAGMA_TOTEM = 8188,     // Ticks every two seconds, inflicting damages to all the creatures in a 8 yards radius
     SPELL_HEALING_STREAM = 5672,     // Ticks every two seconds, targeting the group member with lowest hp in a 40 yards radius
     SPELL_HEALING_TIDE = 114941,   // Ticks every two seconds, targeting 5 / 12 group / raid members with lowest hp in a 40 yards radius
-};
-
-// 33757 - Windfury
-class spell_sha_windfury : public AuraScript
-{
-    PrepareAuraScript(spell_sha_windfury);
-
-    bool Validate(SpellInfo const* /*spellInfo*/) override
-    {
-        return ValidateSpellInfo({ SPELL_SHAMAN_WINDFURY_ATTACK });
-    }
-
-    bool CheckProc(ProcEventInfo& eventInfo)
-    {
-        if (eventInfo.GetDamageInfo() && eventInfo.GetDamageInfo()->GetAttackType() == BASE_ATTACK && roll_chance_i(25))
-            return true;
-        return false;
-    }
-
-    void HandleEffectProc(AuraEffect* aurEff, ProcEventInfo& eventInfo)
-    {
-        Unit* caster = GetCaster();
-        Unit* target = eventInfo.GetActionTarget();
-        if (!caster || !target)
-            return;
-
-        PreventDefaultAction();
-        for (uint32 i = 0; i < 2; ++i)
-        {
-            caster->CastSpell(target, SPELL_SHAMAN_WINDFURY_ATTACK, CastSpellExtraArgs(true).SetTriggeringAura(aurEff));
-            if (caster->HasAura(SPELL_SHAMAN_FORCEFUL_WINDS) && !caster->HasAura(SPELL_SHAMAN_FORCEFUL_WINDS_BUFF) && i == 1)
-            {
-                caster->CastSpell(caster, SPELL_SHAMAN_FORCEFUL_WINDS_BUFF, true);
-                if (Aura* aura = caster->GetAura(SPELL_SHAMAN_FORCEFUL_WINDS_BUFF))
-                    caster->ModifyPower(POWER_MAELSTROM, aura->GetStackAmount());
-            }
-            else if (caster->HasAura(SPELL_SHAMAN_FORCEFUL_WINDS) && caster->HasAura(SPELL_SHAMAN_FORCEFUL_WINDS_BUFF))
-            {
-                int32 duration = 0;
-                if (Aura* aura = caster->GetAura(SPELL_SHAMAN_FORCEFUL_WINDS_BUFF))
-                {
-                    duration = aura->GetDuration();
-                    caster->CastSpell(caster, SPELL_SHAMAN_FORCEFUL_WINDS_BUFF, true);
-                    caster->ModifyPower(POWER_MAELSTROM, aura->GetStackAmount());
-                    aura->SetDuration(duration);
-                }
-            }
-        }
-    }
-
-    void Register() override
-    {
-        DoCheckProc += AuraCheckProcFn(spell_sha_windfury::CheckProc);
-        OnEffectProc += AuraEffectProcFn(spell_sha_windfury::HandleEffectProc, EFFECT_0, SPELL_AURA_DUMMY);
-    }
 };
 
 //188196 - Lightning bolt (Elemental)
@@ -5009,7 +4930,7 @@ class aura_sha_hot_hand : public AuraScript
     bool CheckProc(ProcEventInfo& eventInfo)
     {
         if (Unit* caster = GetCaster())
-            if (caster->HasAura(SPELL_SHAMAN_FLAMETONGUE_BUFF))
+            if (caster->HasAura(SPELL_SHAMAN_FLAMETONGUE_WEAPON_AURA))
                 return true;
 
         return false;
@@ -5018,7 +4939,25 @@ class aura_sha_hot_hand : public AuraScript
     void HandleProc(ProcEventInfo& eventInfo)
     {
         if (Unit* caster = GetCaster())
+        {
             caster->CastSpell(caster, SPELL_SHAMAN_HOT_HAND, true);
+            
+            // ServerToClient: SMSG_UPDATE_COOLDOWN (0x2758) Length: 12 ConnIdx: 1 Time: 06/14/2022 01:39:09.445 Number: 9122
+            // SpellId: 60103
+            // SpeedRate: 4
+            // SpeedRate2: 1
+
+            caster->GetSpellHistory()->ModifyCooldown(60103, -8000);
+
+            //if (auto player = caster->ToPlayer())
+            //{
+            //    WorldPackets::Spells::UpdateCooldown cooldown;
+            //    cooldown.SpellID = 60103;
+            //    cooldown.ModRate = 4.0f;
+            //    player->SendDirectMessage(cooldown.Write());
+            //}
+
+        }
     }
 
     void Register() override
@@ -6240,7 +6179,6 @@ class spell_sha_lava_lash : public SpellScript
     {
         if (Unit* caster = GetCaster())
         {
-
             if (Unit* target = GetHitUnit())
             {
                 if (caster->HasAura(SPELL_SHAMAN_PRIMAL_PRIMER_POWER))
@@ -6249,6 +6187,26 @@ class spell_sha_lava_lash : public SpellScript
 
                 if (caster->HasAura(SPELL_SHAMAN_FLAMETONGUE_WEAPON_AURA))
                     caster->CastSpell(target, SPELL_SHAMAN_LAVA_LASH_SPREAD_FLAME_SHOCK, true);
+
+                if (Aura* flameShock = target->GetAura(SPELL_SHAMAN_FLAME_SHOCK_ELEM, GetCaster()->GetGUID()))
+                {
+                    std::list<Unit*> list;
+                    GetCaster()->GetAttackableUnitListInRangeFromCenterObj(target, list, MELEE_RANGE);
+
+                    auto limit = 0;
+
+                    for (auto unit : list)
+                    {
+                        if (!unit->HasAura(SPELL_SHAMAN_FLAME_SHOCK_ELEM, GetCaster()->GetGUID()))
+                        {
+                            ++limit;
+                            GetCaster()->CastSpell(unit, SPELL_SHAMAN_FLAME_SHOCK_ELEM, true);
+                        }
+
+                        if (limit >= 3)
+                            break;
+                    }
+                }
             }
         }
     }
@@ -6405,8 +6363,32 @@ class spell_sha_windfury_weapon_proc : public AuraScript
     {
         PreventDefaultAction();
 
+        auto caster = GetCaster();
+        if (!caster)
+            return;
+        auto target = eventInfo.GetProcTarget();
+        if (!target)
+            return;
+
         for (uint32 i = 0; i < 2; ++i)
+        {
             eventInfo.GetActor()->CastSpell(eventInfo.GetProcTarget(), SPELL_SHAMAN_WINDFURY_ATTACK, aurEff);
+
+            if (caster->HasAura(SPELL_SHAMAN_FORCEFUL_WINDS) && !caster->HasAura(SPELL_SHAMAN_FORCEFUL_WINDS_BUFF) && i == 1)
+            {
+                caster->CastSpell(caster, SPELL_SHAMAN_FORCEFUL_WINDS_BUFF, true);
+            }
+            else if (caster->HasAura(SPELL_SHAMAN_FORCEFUL_WINDS) && caster->HasAura(SPELL_SHAMAN_FORCEFUL_WINDS_BUFF))
+            {
+                int32 duration = 0;
+                if (Aura* aura = caster->GetAura(SPELL_SHAMAN_FORCEFUL_WINDS_BUFF))
+                {
+                    duration = aura->GetDuration();
+                    caster->CastSpell(caster, SPELL_SHAMAN_FORCEFUL_WINDS_BUFF, true);
+                    aura->SetDuration(duration);
+                }
+            }
+        }
     }
 
     void Register() override
@@ -6805,7 +6787,11 @@ class spell_sha_maelstrom_weapon_proc : public AuraScript
         if (Unit* caster = GetCaster())
         {
             caster->RemoveAurasDueToSpell(SPELL_SHAMAN_MAELSTROM_WEAPON_POWER);
-            caster->RemoveAurasDueToSpell(SPELL_SHAMAN_MAELSTROM_WEAPON_POWER_DUMMY);
+            if (auto aur = caster->GetAura(SPELL_SHAMAN_MAELSTROM_WEAPON_POWER_DUMMY))
+            {
+                int32 stacks = std::min(5, (int32)aur->GetStackAmount());
+                aur->ModStackAmount(-stacks);
+            }
         }
     }
 
@@ -6941,7 +6927,6 @@ void AddSC_shaman_spell_scripts()
     RegisterSpellScript(spell_sha_tidal_waves);
     new spell_sha_totem_mastery();
     new spell_sha_wellspring();
-    RegisterSpellScript(spell_sha_windfury);
     new spell_shaman_windfury_weapon();
     RegisterSpellScript(spell_sha_undulation);
     RegisterSpellScript(spell_sha_chain_lightning);
