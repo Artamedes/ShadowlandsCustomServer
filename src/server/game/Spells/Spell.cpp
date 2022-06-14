@@ -158,9 +158,9 @@ SpellCastTargets::SpellCastTargets(Unit* caster, WorldPackets::Spells::SpellCast
     }
 
     /// PIGPIGPIG
-    OptionalReagents_1 = std::make_pair(spellCastRequest.OptionalReagents[0].ItemID, spellCastRequest.OptionalReagents[0].Slot);
-    OptionalReagents_2 = std::make_pair(spellCastRequest.OptionalReagents[1].ItemID, spellCastRequest.OptionalReagents[1].Slot);
-    OptionalReagents_3 = std::make_pair(spellCastRequest.OptionalReagents[2].ItemID, spellCastRequest.OptionalReagents[2].Slot);
+   //OptionalReagents_1 = std::make_pair(spellCastRequest.OptionalReagents[0].ItemID, spellCastRequest.OptionalReagents[0].Slot);
+   //OptionalReagents_2 = std::make_pair(spellCastRequest.OptionalReagents[1].ItemID, spellCastRequest.OptionalReagents[1].Slot);
+   //OptionalReagents_3 = std::make_pair(spellCastRequest.OptionalReagents[2].ItemID, spellCastRequest.OptionalReagents[2].Slot);
 
     SetPitch(spellCastRequest.MissileTrajectory.Pitch);
     SetSpeed(spellCastRequest.MissileTrajectory.Speed);
