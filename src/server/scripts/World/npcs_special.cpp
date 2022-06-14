@@ -1575,6 +1575,12 @@ struct npc_training_dummy : NullCreatureAI
         me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_CONFUSE, apply);
     }
 
+    void InitializeAI()
+    {
+        me->SetMaxHealth(40000000000);
+        me->SetFullHealth();
+    }
+
     void JustEnteredCombat(Unit* who) override
     {
         _combatTimer[who->GetGUID()] = 5s;
@@ -1584,9 +1590,7 @@ struct npc_training_dummy : NullCreatureAI
     {
         if (damage >= me->GetHealth())
         {
-            damage = 0;
-
-            //me->SetHealth(me->CountPctFromMaxHealth(100));
+            me->SetFullHealth();
         }
 
         if (!attacker || damageType == DOT)
