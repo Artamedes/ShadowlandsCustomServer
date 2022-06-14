@@ -1084,6 +1084,9 @@ class TC_GAME_API Unit : public WorldObject
         void KillSelf(bool durabilityLoss = true, bool skipSettingDeathState = false) { Unit::Kill(this, this, durabilityLoss, skipSettingDeathState); }
         static void DealHeal(HealInfo& healInfo);
 
+        uint32 m_NextLeech = 0;
+        uint32 m_NextLeechTimer = 0;
+
         static void ProcSkillsAndAuras(Unit* actor, Unit* actionTarget, ProcFlagsInit const& typeMaskActor, ProcFlagsInit const& typeMaskActionTarget,
                                 ProcFlagsSpellType spellTypeMask, ProcFlagsSpellPhase spellPhaseMask, ProcFlagsHit hitMask, Spell* spell,
                                 DamageInfo* damageInfo, HealInfo* healInfo);

@@ -517,6 +517,20 @@ void Unit::Update(uint32 p_time)
     // All position info based actions have been executed, reset info
     _positionUpdateInfo.Reset();
 
+    if (m_NextLeechTimer >= 5000)
+    {
+        if (m_NextLeech)
+        {
+            if (m_NextLeech >= GetMaxHealth())
+                m_NextLeech = GetMaxHealth();
+            CastSpell(this, 143924, CastSpellExtraArgs(true).AddSpellBP0(m_NextLeech));
+        }
+        m_NextLeech = 0;
+        m_NextLeechTimer = 0;
+    }
+    else
+        m_NextLeechTimer += p_time;
+
     if (HasScheduledAIChange() && (GetTypeId() != TYPEID_PLAYER || (IsCharmed() && GetCharmerGUID().IsCreature())))
         UpdateCharmAI();
     RefreshAI();
@@ -781,13 +795,12 @@ bool Unit::HasBreakableByDamageCrowdControlAura(Unit* excludeCasterChannel) cons
         {
             int32 heal = CalculatePct(damage, (int32)percent);
 
+            attacker->m_NextLeech += heal;
+
             if (auto instance = attacker->GetInstanceScript())
             {
                 instance->NerfLeechIfNeed(attacker, heal);
             }
-
-            if (heal)
-                attacker->CastSpell(attacker, 143924, CastSpellExtraArgs(true).AddSpellBP0(heal));
         }
     }
 
