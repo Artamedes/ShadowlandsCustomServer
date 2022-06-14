@@ -82,6 +82,7 @@ enum DesmotareonSpells
     SoulflameTorrent = 357327,
     GiantSlam = 218077,
     ChargedWeapons = 310835,
+    Thunderclap = 277743,
 
     ///< End Boss
     EphemeralBody  = 339006,
@@ -974,7 +975,7 @@ public:
         TalkAggressionProtocolInitiated, ///< Used
         TalkDeath,                       ///< Used
         TalkKilled,                      ///< Used
-        TalkIdle,                        ///<
+        TalkIdle,                        ///< Used
     };
 
     void JustEngagedWith(Unit* who) override
@@ -989,10 +990,14 @@ public:
             NextIntruderDetectTime = 0;
             Talk(TalkSecurityMeasuresActivated);
             DoCast(SoulflameTorrent);
+            scheduler.Schedule(3s, [this](TaskContext context)
+            {
+                Talk(TalkIdle);
+            });
             context.Repeat(30s, 40s);
         });
 
-        scheduler.Schedule(1s, [this](TaskContext context)
+        scheduler.Schedule(4s, [this](TaskContext context)
         {
             DoCast(GiantSlam);
             context.Repeat(15s, 20s);
@@ -1002,6 +1007,12 @@ public:
         {
             Talk(TalkArmingWeapons);
             DoCast(ChargedWeapons);
+        });
+
+        scheduler.Schedule(30s, [this](TaskContext context)
+        {
+            DoCast(Thunderclap);
+            context.Repeat(15s, 20s);
         });
     }
 
