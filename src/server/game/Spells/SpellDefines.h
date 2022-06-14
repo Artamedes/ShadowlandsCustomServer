@@ -394,9 +394,7 @@ public:
     std::string GetTargetString() const { return m_strTarget; }
 
     /// PIGPIGPIG
-    std::pair<int32, int32> OptionalReagents_1;
-    std::pair<int32, int32> OptionalReagents_2;
-    std::pair<int32, int32> OptionalReagents_3;
+    std::vector<std::pair<int32, int32>> OptionalReagents;
 
 private:
     uint32 m_targetMask;

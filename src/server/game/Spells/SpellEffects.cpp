@@ -6076,8 +6076,22 @@ void Spell::EffectCraftRuneforgeLegendary()
         return;
 
     /// Get used missives.
-    uint32 Missive1 = m_targets.OptionalReagents_1.first;
-    uint32 Missive2 = m_targets.OptionalReagents_2.first;
+    uint32 Missive1 = 0;
+    uint32 Missive2 = 0;
+
+    uint32 i = 0;
+
+    for (auto const& pair : m_targets.OptionalReagents)
+    {
+        if (i == 0)
+            Missive1 = pair.first;
+        else
+        {
+            Missive2 = pair.first;
+            break;
+        }
+        ++i;
+    }
 
     if (!Missive1 || !Missive2)
         return;
