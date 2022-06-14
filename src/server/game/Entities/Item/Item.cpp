@@ -2972,6 +2972,7 @@ void BonusData::Initialize(ItemTemplate const* proto)
 
     CanDisenchant = !proto->HasFlag(ITEM_FLAG_NO_DISENCHANT);
     CanScrap = proto->HasFlag(ITEM_FLAG4_SCRAPABLE);
+    ItemLimitCategory = proto->GetItemLimitCategory();
 
     _state.SuffixPriority = std::numeric_limits<int32>::max();
     _state.AppearanceModPriority = std::numeric_limits<int32>::max();
@@ -3117,6 +3118,9 @@ bool BonusData::AddBonus(uint32 type, std::array<int32, 4> const& values)
                 if (values[1])
                     ContentTuningId = static_cast<uint32>(values[1]);
             }
+            break;
+        case ITEM_BONUS_ITEM_LIMIT_CATEGORY:
+            ItemLimitCategory = values[0];
             break;
     }
     return true;

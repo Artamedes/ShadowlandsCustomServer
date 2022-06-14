@@ -93,6 +93,7 @@ struct BonusData
     bool CanDisenchant;
     bool CanScrap;
     bool HasFixedLevel;
+    uint32 ItemLimitCategory = 0;
 
     void Initialize(ItemTemplate const* proto);
     void Initialize(WorldPackets::Item::ItemInstance const& itemInstance);
@@ -336,6 +337,7 @@ class TC_GAME_API Item : public Object
         bool IsConjuredConsumable() const { return GetTemplate()->IsConjuredConsumable(); }
         bool IsRangedWeapon() const { return GetTemplate()->IsRangedWeapon(); }
         uint32 GetQuality() const { return _bonusData.Quality; }
+        uint32 GetItemLimitCategory() const { return _bonusData.ItemLimitCategory; }
         uint32 GetItemLevel(Player const* owner) const;
         static uint32 GetItemLevel(ItemTemplate const* itemTemplate, BonusData const& bonusData, uint32 level, uint32 fixedLevel,
             uint32 minItemLevel, uint32 minItemLevelCutoff, uint32 maxItemLevel, bool pvpBonus, uint32 azeriteLevel);

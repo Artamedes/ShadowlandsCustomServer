@@ -10658,7 +10658,7 @@ uint32 Player::GetItemCountWithLimitCategory(uint32 limitCategory, Item* skipIte
     {
         if (item != skipItem)
             if (ItemTemplate const* pProto = item->GetTemplate())
-                if (pProto->GetItemLimitCategory() == limitCategory)
+                if (item->GetItemLimitCategory() == limitCategory)
                     count += item->GetCount();
 
         return ItemSearchCallbackResult::Continue;
@@ -11039,7 +11039,7 @@ bool Player::HasItemWithLimitCategoryEquipped(uint32 limitCategory, uint32 count
         if (pItem->GetSlot() == except_slot)
             return ItemSearchCallbackResult::Continue;
 
-        if (pItem->GetTemplate()->GetItemLimitCategory() != limitCategory)
+        if (pItem->GetItemLimitCategory() != limitCategory)
             return ItemSearchCallbackResult::Continue;
 
         tempcount += pItem->GetCount();
@@ -11083,8 +11083,12 @@ InventoryResult Player::CanTakeMoreSimilarItems(uint32 entry, uint32 count, Item
     if (pItem && pItem->m_lootGenerated)
         return EQUIP_ERR_LOOT_GONE;
 
+    uint32 itemLimitCategory = pProto->GetItemLimitCategory();
+    if (pItem)
+        itemLimitCategory = pItem->GetItemLimitCategory();
+
     // no maximum
-    if ((pProto->GetMaxCount() <= 0 && pProto->GetItemLimitCategory() == 0) || pProto->GetMaxCount() == 2147483647)
+    if ((pProto->GetMaxCount() <= 0 && itemLimitCategory == 0) || pProto->GetMaxCount() == 2147483647)
         return EQUIP_ERR_OK;
 
     if (pProto->GetMaxCount() > 0)
@@ -11099,9 +11103,9 @@ InventoryResult Player::CanTakeMoreSimilarItems(uint32 entry, uint32 count, Item
     }
 
     // check unique-equipped limit
-    if (pProto->GetItemLimitCategory())
+    if (itemLimitCategory)
     {
-        ItemLimitCategoryEntry const* limitEntry = sItemLimitCategoryStore.LookupEntry(pProto->GetItemLimitCategory());
+        ItemLimitCategoryEntry const* limitEntry = sItemLimitCategoryStore.LookupEntry(itemLimitCategory);
         if (!limitEntry)
         {
             if (no_space_count)
@@ -11112,7 +11116,7 @@ InventoryResult Player::CanTakeMoreSimilarItems(uint32 entry, uint32 count, Item
         if (limitEntry->Flags == ITEM_LIMIT_CATEGORY_MODE_HAVE)
         {
             uint8 limitQuantity = GetItemLimitCategoryQuantity(limitEntry);
-            uint32 curcount = GetItemCountWithLimitCategory(pProto->GetItemLimitCategory(), pItem);
+            uint32 curcount = GetItemCountWithLimitCategory(itemLimitCategory, pItem);
             if (curcount + count > uint32(limitQuantity))
             {
                 if (no_space_count)
@@ -14405,6 +14409,9 @@ void Player::SendEquipError(InventoryResult msg, Item const* item1 /*= nullptr*/
             {
                 ItemTemplate const* proto = item1 ? item1->GetTemplate() : sObjectMgr->GetItemTemplate(itemId);
                 failure.LimitCategory = proto ? proto->GetItemLimitCategory() : 0;
+
+                if (item1)
+                    failure.LimitCategory = item1->GetItemLimitCategory();
                 break;
             }
             default:
@@ -27652,7 +27659,7 @@ InventoryResult Player::CanEquipUniqueItem(Item* pItem, uint8 eslot, uint32 limi
     ItemTemplate const* pProto = pItem->GetTemplate();
 
     // proto based limitations
-    if (InventoryResult res = CanEquipUniqueItem(pProto, eslot, limit_count))
+    if (InventoryResult res = CanEquipUniqueItem(pProto, eslot, limit_count, pItem))
         return res;
 
     // check unique-equipped on gems
@@ -27673,7 +27680,7 @@ InventoryResult Player::CanEquipUniqueItem(Item* pItem, uint8 eslot, uint32 limi
     return EQUIP_ERR_OK;
 }
 
-InventoryResult Player::CanEquipUniqueItem(ItemTemplate const* itemProto, uint8 except_slot, uint32 limit_count) const
+InventoryResult Player::CanEquipUniqueItem(ItemTemplate const* itemProto, uint8 except_slot, uint32 limit_count, Item* item) const
 {
     // check unique-equipped on item
     if (itemProto->HasFlag(ITEM_FLAG_UNIQUE_EQUIPPABLE))
@@ -27683,10 +27690,15 @@ InventoryResult Player::CanEquipUniqueItem(ItemTemplate const* itemProto, uint8 
             return EQUIP_ERR_ITEM_UNIQUE_EQUIPPABLE;
     }
 
+
+    uint32 itemLimitCategory = itemProto->GetItemLimitCategory();
+    if (item)
+        itemLimitCategory = item->GetItemLimitCategory();
+
     // check unique-equipped limit
-    if (itemProto->GetItemLimitCategory())
+    if (itemLimitCategory)
     {
-        ItemLimitCategoryEntry const* limitEntry = sItemLimitCategoryStore.LookupEntry(itemProto->GetItemLimitCategory());
+        ItemLimitCategoryEntry const* limitEntry = sItemLimitCategoryStore.LookupEntry(itemLimitCategory);
         if (!limitEntry)
             return EQUIP_ERR_NOT_EQUIPPABLE;
 
@@ -27697,9 +27709,9 @@ InventoryResult Player::CanEquipUniqueItem(ItemTemplate const* itemProto, uint8 
             return EQUIP_ERR_ITEM_MAX_LIMIT_CATEGORY_EQUIPPED_EXCEEDED_IS;
 
         // there is an equip limit on this item
-        if (HasItemWithLimitCategoryEquipped(itemProto->GetItemLimitCategory(), limitQuantity - limit_count + 1, except_slot))
+        if (HasItemWithLimitCategoryEquipped(itemLimitCategory, limitQuantity - limit_count + 1, except_slot))
             return EQUIP_ERR_ITEM_MAX_LIMIT_CATEGORY_EQUIPPED_EXCEEDED_IS;
-        else if (HasGemWithLimitCategoryEquipped(itemProto->GetItemLimitCategory(), limitQuantity - limit_count + 1, except_slot))
+        else if (HasGemWithLimitCategoryEquipped(itemLimitCategory, limitQuantity - limit_count + 1, except_slot))
             return EQUIP_ERR_ITEM_MAX_COUNT_EQUIPPED_SOCKETED;
     }
 
