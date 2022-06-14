@@ -522,10 +522,11 @@ void CovenantMgr::SaveToDB(CharacterDatabaseTransaction trans)
             stmt = CharacterDatabase.GetPreparedStatement(CHAR_REP_COVENANT_CLAIMED_RENOWN_REWARDS);
             stmt->setUInt64(0, _player->GetGUID().GetCounter());
             stmt->setUInt32(1, static_cast<uint32>(itr->GetCovenantID()));
-            ss.clear();
             for (auto rewardId : itr->_claimedRenownRewards)
                 ss << rewardId << ",";
             stmt->setString(2, ss.str());
+            ss.clear();
+            ss.str("");
             trans->Append(stmt);
         }
     }
