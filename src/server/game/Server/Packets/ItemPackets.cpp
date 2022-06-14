@@ -357,3 +357,18 @@ void WorldPackets::Item::RemoveNewItem::Read()
 {
     _worldPacket >> ItemGuid;
 }
+
+WorldPacket const* WorldPackets::Item::ItemChanged::Write()
+{
+    _worldPacket << PlayerGUID;
+    _worldPacket << Before;
+    _worldPacket << After;
+    return &_worldPacket;
+}
+
+WorldPacket const* WorldPackets::Item::ItemInteractionComplete::Write()
+{
+    _worldPacket.WriteBit(Complete);
+    _worldPacket.FlushBits();
+    return &_worldPacket;
+}

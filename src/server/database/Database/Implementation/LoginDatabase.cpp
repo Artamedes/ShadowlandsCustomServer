@@ -189,6 +189,9 @@ void LoginDatabaseConnection::DoPrepareStatements()
     PrepareStatement(LOGIN_SEL_BNET_TRANSMOG_ILLUSIONS, "SELECT blobIndex, illusionMask FROM battlenet_account_transmog_illusions WHERE battlenetAccountId = ? ORDER BY blobIndex DESC", CONNECTION_ASYNC);
     PrepareStatement(LOGIN_INS_BNET_TRANSMOG_ILLUSIONS, "INSERT INTO battlenet_account_transmog_illusions (battlenetAccountId, blobIndex, illusionMask) VALUES (?, ?, ?) "
         "ON DUPLICATE KEY UPDATE illusionMask = illusionMask | VALUES(illusionMask)", CONNECTION_ASYNC);
+    PrepareStatement(LOGIN_SEL_BNET_RUNEFORGE_MEMORIES, "SELECT blobIndex, runeForgeMask FROM battlenet_account_runeforge_memories WHERE battlenetAccountId = ? ORDER BY blobIndex DESC", CONNECTION_ASYNC);
+    PrepareStatement(LOGIN_INS_BNET_RUNEFORGE_MEMORIES, "INSERT INTO battlenet_account_runeforge_memories (battlenetAccountId, blobIndex, runeForgeMask) VALUES (?, ?, ?) "
+        "ON DUPLICATE KEY UPDATE runeForgeMask = runeForgeMask | VALUES(runeForgeMask)", CONNECTION_ASYNC);
 }
 
 LoginDatabaseConnection::LoginDatabaseConnection(MySQLConnectionInfo& connInfo) : MySQLConnection(connInfo)

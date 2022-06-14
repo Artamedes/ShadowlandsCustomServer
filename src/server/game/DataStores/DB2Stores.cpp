@@ -262,6 +262,7 @@ DB2Storage<RenownRewardsEntry>                  sRenownRewardsStore("RenownRewar
 DB2Storage<RewardPackEntry>                     sRewardPackStore("RewardPack.db2", RewardPackLoadInfo::Instance());
 DB2Storage<RewardPackXCurrencyTypeEntry>        sRewardPackXCurrencyTypeStore("RewardPackXCurrencyType.db2", RewardPackXCurrencyTypeLoadInfo::Instance());
 DB2Storage<RewardPackXItemEntry>                sRewardPackXItemStore("RewardPackXItem.db2", RewardPackXItemLoadInfo::Instance());
+DB2Storage<RuneforgeLegendaryAbilityEntry>      sRuneforgeLegendaryAbilityStore("RuneforgeLegendaryAbility.db2", RuneforgeLegendaryAbilityLoadInfo::Instance());
 DB2Storage<ScenarioEntry>                       sScenarioStore("Scenario.db2", ScenarioLoadInfo::Instance());
 DB2Storage<ScenarioStepEntry>                   sScenarioStepStore("ScenarioStep.db2", ScenarioStepLoadInfo::Instance());
 DB2Storage<SceneScriptEntry>                    sSceneScriptStore("SceneScript.db2", SceneScriptLoadInfo::Instance());
@@ -515,6 +516,8 @@ namespace
     std::unordered_map<uint32, GarrTalentRankEntry const*> _talentRankEntriesByTalentId;
     std::unordered_map<uint32, std::vector<GarrTalentEntry const*>> _garrTalentEntriesByPrerequisiteTalentID;
     std::unordered_map<uint32, std::vector<SoulbindConduitRankEntry const*>> _soulbindConduitRankBySoulbindConduitIDs;
+    std::unordered_map<uint32, RuneforgeLegendaryAbilityEntry const*> _legendaryAbilityEntriesByItemId;
+    std::unordered_map<uint32, RuneforgeLegendaryAbilityEntry const*> _legendaryAbilityEntriesBySpellId;
     WMOAreaTableLookupContainer _wmoAreaTableLookup;
 }
 
@@ -859,6 +862,7 @@ uint32 DB2Manager::LoadStores(std::string const& dataPath, LocaleConstant defaul
     LOAD_DB2(sRewardPackStore);
     LOAD_DB2(sRewardPackXCurrencyTypeStore);
     LOAD_DB2(sRewardPackXItemStore);
+    LOAD_DB2(sRuneforgeLegendaryAbilityStore);
     LOAD_DB2(sScenarioStore);
     LOAD_DB2(sScenarioStepStore);
     LOAD_DB2(sSceneScriptStore);
@@ -1601,6 +1605,12 @@ uint32 DB2Manager::LoadStores(std::string const& dataPath, LocaleConstant defaul
 
     for (auto entry : sSoulbindConduitRankStore)
         _soulbindConduitRankBySoulbindConduitIDs[entry->SoulbindConduitID].push_back(entry);
+
+    for (auto entry : sRuneforgeLegendaryAbilityStore)
+    {
+        _legendaryAbilityEntriesByItemId[entry->UnlockItemID] = entry;
+        _legendaryAbilityEntriesBySpellId[entry->SpellID] = entry;
+    }
 
     TC_LOG_INFO("server.loading", ">> Initialized " SZFMTD " DB2 data stores in %u ms", _stores.size(), GetMSTimeDiffToNow(oldMSTime));
 
@@ -3551,4 +3561,22 @@ int32 DB2Manager::GetChallengeLevelReward(uint32 challengeLevel, int8 seasonID, 
     // }
 
     return 0;
+}
+
+RuneforgeLegendaryAbilityEntry const* DB2Manager::GetRuneforgeLegendaryAbilityEntryByItemID(uint32 itemId)
+{
+    auto it = _legendaryAbilityEntriesByItemId.find(itemId);
+    if (it != _legendaryAbilityEntriesByItemId.end())
+        return it->second;
+
+    return nullptr;
+}
+
+RuneforgeLegendaryAbilityEntry const* DB2Manager::GetRuneforgeLegendaryAbilityEntryBySpellID(uint32 spellId)
+{
+    auto it = _legendaryAbilityEntriesBySpellId.find(spellId);
+    if (it != _legendaryAbilityEntriesBySpellId.end())
+        return it->second;
+
+    return nullptr;
 }

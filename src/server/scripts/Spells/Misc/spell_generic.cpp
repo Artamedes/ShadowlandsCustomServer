@@ -49,6 +49,7 @@
 #include "CustomObjectMgr.h"
 #include "Chat.h"
 #include "AchievementPackets.h"
+#include "CollectionMgr.h"
 
 class spell_gen_absorb0_hitlimit1 : public AuraScript
 {
@@ -5184,10 +5185,14 @@ class spell_restoring_memory : public SpellScript
         {
             if (auto player = caster->ToPlayer())
             {
-                //player->SetRuneforgePowers(11);
-                //player->SetRuneforgePowers(12);
-
-                player->SendPlaySpellVisualKit(362, 1, 0);
+                if (auto item = GetCastItem())
+                {
+                    if (auto runecarver = sDB2Manager.GetRuneforgeLegendaryAbilityEntryByItemID(item->GetEntry()))
+                    {
+                        player->GetSession()->GetCollectionMgr()->AddRuneforgeMemory(runecarver->ID);
+                        player->SendPlaySpellVisualKit(362, 1, 0);
+                    }
+                }
             }
         }
     }

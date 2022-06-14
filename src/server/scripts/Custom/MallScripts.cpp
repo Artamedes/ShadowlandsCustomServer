@@ -3868,6 +3868,43 @@ public:
     }
 };
 
+// 180509 - npc_runecarver_180509
+struct npc_runecarver_180509 : public ScriptedAI
+{
+public:
+    npc_runecarver_180509(Creature* creature) : ScriptedAI(creature) { }
+
+    void InitializeAI() override
+    {
+        me->SetNpcFlag2(UNIT_NPC_FLAG_2_RUNECARVER);
+        me->SetUnitFlag2(UNIT_FLAG2_CANNOT_TURN | UNIT_FLAG2_REGENERATE_POWER);
+    }
+
+    bool OnGossipHello(Player* player) override
+    {
+        ClearGossipMenuFor(player);
+
+        AddGossipItemFor(player, GossipOptionIcon::None, "I'd like to craft a legendary item.", 0, 0, [this, player](std::string callback)
+        {
+            WorldPacket data(SMSG_RUNEFORGE_LEGENDARY_CRAFTING_OPEN_NPC, 17);
+            data << me->GetGUID();
+            data.WriteBit(0);
+            data.FlushBits();
+            player->GetSession()->SendPacket(&data);
+        });
+        AddGossipItemFor(player, GossipOptionIcon::None, "I'd like to upgrade my legendary item.", 0, 0, [this, player](std::string callback)
+        {
+            WorldPacket data(SMSG_RUNEFORGE_LEGENDARY_CRAFTING_OPEN_NPC, 17);
+            data << me->GetGUID();
+            data.WriteBit(1);
+            data.FlushBits();
+            player->GetSession()->SendPacket(&data);
+        });
+
+        SendGossipMenuFor(player, 25682, me);
+        return true;
+    }
+};
 
 void AddSC_MallScripts()
 {
@@ -3926,6 +3963,8 @@ void AddSC_MallScripts()
     RegisterCreatureAI(npc_galirt_goldcheek_800047);
     RegisterCreatureAI(npc_damion_800042);
     RegisterCreatureAI(npc_transmog_vendor_generic);
+    RegisterCreatureAI(npc_spirit_healer);
+    RegisterCreatureAI(npc_runecarver_180509);
 
     RegisterSpellScript(spell_activating_313352);
    // RegisterSpellScript(spell_nyalotha_incursion);
@@ -3934,6 +3973,4 @@ void AddSC_MallScripts()
 
     RegisterQuestAI(questscript_incursion);
     RegisterGameObjectAI(go_golden_treasure_chest_218889);
-
-    RegisterCreatureAI(npc_spirit_healer);
 }

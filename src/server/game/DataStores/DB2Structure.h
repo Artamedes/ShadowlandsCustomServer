@@ -3073,6 +3073,21 @@ struct RewardPackEntry
     uint32 TreasurePickerID;
 };
 
+struct RuneforgeLegendaryAbilityEntry
+{
+    LocalizedString Name;
+    uint32 ID;
+    uint32 SpecSetID;
+    uint32 InventoryTypeMask;
+    uint32 SpellID;
+    uint32 ItemBonusListID;
+    uint32 PlayerConditionID;
+    uint32 Unk;
+    uint32 UnlockItemID;
+    uint32 CovenantID;
+    uint32 PlayerConditionID2;
+};
+
 struct RewardPackXCurrencyTypeEntry
 {
     uint32 ID;

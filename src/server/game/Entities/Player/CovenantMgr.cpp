@@ -15,6 +15,7 @@
 #include "StringConvert.h"
 #include "ConditionMgr.h"
 #include <sstream>
+#include "CollectionMgr.h"
 
 Covenant::Covenant(CovenantID covId, Player* player) : _covenantId(covId), _player(player), _soulbindId(SoulbindID::None), _renownLevel(80), _anima(0), _souls(0)
 {
@@ -136,6 +137,14 @@ void Covenant::UpdateRenownRewards()
 
         if (reward->ItemID > 0)
         {
+            /// Check if they already have runeforge memory
+            if (auto runeforgeLegendary = sDB2Manager.GetRuneforgeLegendaryAbilityEntryByItemID(reward->ItemID))
+                if (_player->GetSession()->GetCollectionMgr()->HasRuneforgeMemory(runeforgeLegendary->ID))
+                {
+                    _claimedRenownRewards.insert(reward->ID);
+                    continue;
+                }
+
             if (!_player->AddItem(reward->ItemID, 1))
                 _player->SendItemRetrievalMail(reward->ItemID, 1, ItemContext::NONE);
         }

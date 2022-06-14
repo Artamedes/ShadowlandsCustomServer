@@ -4999,6 +4999,29 @@ struct RewardPackXItemLoadInfo
     }
 };
 
+struct RuneforgeLegendaryAbilityLoadInfo
+{
+    static DB2LoadInfo const* Instance()
+    {
+        static DB2FieldMeta const fields[] =
+        {
+            { true, FT_STRING, "Name"},
+            { false , FT_INT,  "ID"},
+            { true  , FT_INT,  "SpecSetID"},
+            { true  , FT_INT,  "InventoryTypeMask"},
+            { true  , FT_INT,  "SpellID"},
+            { true  , FT_INT,  "ItemBonusListID"},
+            { true  , FT_INT,  "PlayerConditionID"},
+            { true  , FT_INT,  "Unk"},
+            { true  , FT_INT,  "UnlockItemID"},
+            { true  , FT_INT,  "CovenantID"},
+            { true  , FT_INT,  "PlayerConditionID2"},
+        };
+        static DB2LoadInfo const loadInfo(&fields[0], std::extent<decltype(fields)>::value, RuneforgeLegendaryAbilityMeta::Instance(), HOTFIX_SEL_RUNEFORGE_LEGENDARY_ABILITY);
+        return &loadInfo;
+    }
+};
+
 struct ScenarioLoadInfo
 {
     static DB2LoadInfo const* Instance()

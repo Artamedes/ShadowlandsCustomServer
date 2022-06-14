@@ -80,6 +80,7 @@
 #include "WorldPacket.h"
 #include "WorldSession.h"
 #include "CovenantMgr.h"
+#include "ItemPackets.h"
 
 NonDefaultConstructible<SpellEffectHandlerFn> SpellEffectHandlers[TOTAL_SPELL_EFFECTS] =
 {
@@ -356,7 +357,7 @@ NonDefaultConstructible<SpellEffectHandlerFn> SpellEffectHandlers[TOTAL_SPELL_EF
     &Spell::EffectNULL,                                     //270 SPELL_EFFECT_270
     &Spell::EffectUnused,                                   //271 SPELL_EFFECT_APPLY_AREA_AURA_PARTY_NONRANDOM
     &Spell::EffectSetCovenant,                              //272 SPELL_EFFECT_SET_COVENANT
-    &Spell::EffectNULL,                                     //273 SPELL_EFFECT_CRAFT_RUNEFORGE_LEGENDARY
+    &Spell::EffectCraftRuneforgeLegendary,                  //273 SPELL_EFFECT_CRAFT_RUNEFORGE_LEGENDARY
     &Spell::EffectUnused,                                   //274 SPELL_EFFECT_274
     &Spell::EffectUnused,                                   //275 SPELL_EFFECT_275
     &Spell::EffectLearnTransmogIllusion,                    //276 SPELL_EFFECT_LEARN_TRANSMOG_ILLUSION
@@ -6029,6 +6030,116 @@ void Spell::EffectSetCovenant()
     uint32 covenantId = effectInfo->MiscValue;
     if (covenantId <= 4)
         playerCaster->GetCovenantMgr()->SetCovenant(static_cast<CovenantID>(covenantId));
+}
+
+enum eMissives
+{
+    MissiveOfHaste          = 173160,
+    MissiveofCriticalStrike = 173161,
+    MissiveOfMastery        = 173162,
+    MissiveofVersatility    = 173163,
+};
+
+void Spell::EffectCraftRuneforgeLegendary()
+{
+    if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT)
+        return;
+
+    Player* playerCaster = m_caster->ToPlayer();
+    if (!playerCaster)
+        return;
+
+    auto targetItem = m_targets.GetItemTarget();
+    if (!targetItem)
+        return;
+
+    if (targetItem->GetTemplate()->GetItemLimitCategory() != 473) ///< Shadowlands Crafted Legendary
+        return;
+
+    if (targetItem->GetQuality() == ITEM_QUALITY_LEGENDARY)
+        return;
+
+    uint32 runeCarveId = m_misc.Raw.Data[0];
+    auto runeForge = sRuneforgeLegendaryAbilityStore.LookupEntry(runeCarveId);
+    if (!runeForge)
+        return;
+
+    if ((runeForge->InventoryTypeMask & (1 << targetItem->GetTemplate()->GetInventoryType())) == 0)
+        return;
+
+    // this needs to be checked on learning ig.
+    //if (PlayerConditionEntry const* playerCondition = sPlayerConditionStore.LookupEntry(runeForge->PlayerConditionID))
+    //    if (!ConditionMgr::IsPlayerMeetingCondition(playerCaster, playerCondition))
+    //        return;
+
+    if (!playerCaster->GetSession()->GetCollectionMgr()->HasRuneforgeMemory(runeCarveId))
+        return;
+
+    /// Get used missives.
+    uint32 Missive1 = m_targets.OptionalReagents_1.first;
+    uint32 Missive2 = m_targets.OptionalReagents_2.first;
+
+    if (!Missive1 || !Missive2)
+        return;
+
+    auto TestMissive([](uint32 MissiveId) -> bool
+    {
+        switch (MissiveId)
+        {
+            case MissiveOfHaste:
+            case MissiveofCriticalStrike:
+            case MissiveOfMastery:
+            case MissiveofVersatility:
+                return true;
+            default:
+                return false;
+        }
+    });
+
+    if (!TestMissive(Missive1) || !TestMissive(Missive2))
+        return;
+
+    auto GetItemBonusIdFromMissive([](uint32 MissiveId) -> uint32
+    {
+        switch (MissiveId)
+        {
+            case MissiveofVersatility:
+                return 6650; ///< Vers
+            case MissiveOfHaste:
+                return 6649; ///< Haste
+            case MissiveofCriticalStrike:
+                return 6647; ///< Crit
+            case MissiveOfMastery:
+                return 6648; ///< Mastery
+        }
+    });
+
+    uint32 BonusId1 = GetItemBonusIdFromMissive(Missive1);
+    uint32 BonusId2 = GetItemBonusIdFromMissive(Missive1);
+
+    if (targetItem->HasBonusId(BonusId1) || targetItem->HasBonusId(BonusId2) || targetItem->HasBonusId(runeForge->ItemBonusListID))
+        return;
+
+    /// SMSG_CRITERIA_UPDATE
+    playerCaster->UpdateCriteria(CriteriaType::CastSpell, m_spellInfo->Id);
+
+    /// SMSG_ITEM_CHANGED
+    WorldPackets::Item::ItemChanged packet;
+    packet.PlayerGUID = playerCaster->GetGUID();
+    packet.Before.Initialize(targetItem);
+
+    /// Add bonuses
+    targetItem->AddBonuses(BonusId1);
+    targetItem->AddBonuses(BonusId2);
+    targetItem->AddBonuses(runeForge->ItemBonusListID);
+
+    packet.After.Initialize(targetItem);
+    playerCaster->SendDirectMessage(packet.Write());
+
+    /// SMSG_ITEM_INTERACTION_COMPLETE
+    WorldPackets::Item::ItemInteractionComplete packet2;
+    packet2.Complete = false;
+    playerCaster->SendDirectMessage(packet2.Write());
 }
 
 void Spell::EffectLearnSoulbindConduit()

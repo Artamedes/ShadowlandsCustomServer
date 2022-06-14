@@ -85,7 +85,7 @@ namespace
     }
 }
 
-CollectionMgr::CollectionMgr(WorldSession* owner) : _owner(owner), _appearances(std::make_unique<boost::dynamic_bitset<uint32>>()), _transmogIllusions(std::make_unique<boost::dynamic_bitset<uint32>>())
+CollectionMgr::CollectionMgr(WorldSession* owner) : _owner(owner), _appearances(std::make_unique<boost::dynamic_bitset<uint32>>()), _transmogIllusions(std::make_unique<boost::dynamic_bitset<uint32>>()), _runeforgingMemories(std::make_unique<boost::dynamic_bitset<uint32>>())
 {
 }
 
@@ -976,4 +976,75 @@ void CollectionMgr::AddTransmogIllusion(uint32 transmogIllusionId)
 bool CollectionMgr::HasTransmogIllusion(uint32 transmogIllusionId) const
 {
     return transmogIllusionId < _transmogIllusions->size() && _transmogIllusions->test(transmogIllusionId);
+}
+
+void CollectionMgr::LoadRuneforgeMemorys()
+{
+    Player* owner = _owner->GetPlayer();
+    boost::to_block_range(*_runeforgingMemories, DynamicBitsetBlockOutputIterator([owner](uint32 blockValue)
+    {
+        owner->AddRuneforgeBlock(blockValue);
+    }));
+}
+
+void CollectionMgr::LoadAccountRuneforgeMemorys(PreparedQueryResult result)
+{
+    if (result)
+    {
+        std::vector<uint32> blocks;
+        do
+        {
+            Field* fields = result->Fetch();
+            uint16 blobIndex = fields[0].GetUInt16();
+            if (blobIndex >= blocks.size())
+                blocks.resize(blobIndex + 1);
+
+            blocks[blobIndex] = fields[1].GetUInt32();
+
+        } while (result->NextRow());
+
+        _runeforgingMemories->init_from_block_range(blocks.begin(), blocks.end());
+    }
+}
+
+void CollectionMgr::SaveAccountRuneforgeMemorys(LoginDatabaseTransaction trans)
+{
+    uint16 blockIndex = 0;
+
+    boost::to_block_range(*_runeforgingMemories, DynamicBitsetBlockOutputIterator([this, &blockIndex, trans](uint32 blockValue)
+    {
+        if (blockValue) // this table is only appended/bits are set (never cleared) so don't save empty blocks
+        {
+            LoginDatabasePreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_INS_BNET_RUNEFORGE_MEMORIES);
+            stmt->setUInt32(0, _owner->GetBattlenetAccountId());
+            stmt->setUInt16(1, blockIndex);
+            stmt->setUInt32(2, blockValue);
+            trans->Append(stmt);
+        }
+        ++blockIndex;
+    }));
+}
+
+void CollectionMgr::AddRuneforgeMemory(uint32 id)
+{
+    Player* owner = _owner->GetPlayer();
+    if (_runeforgingMemories->size() <= id)
+    {
+        std::size_t numBlocks = _runeforgingMemories->num_blocks();
+        _runeforgingMemories->resize(id + 1);
+        numBlocks = _runeforgingMemories->num_blocks() - numBlocks;
+        while (numBlocks--)
+            owner->AddRuneforgeBlock(0);
+    }
+
+    _runeforgingMemories->set(id);
+    uint32 blockIndex = id / 32;
+    uint32 bitIndex = id % 32;
+
+    owner->AddRuneforgeFlag(blockIndex, 1 << bitIndex);
+}
+
+bool CollectionMgr::HasRuneforgeMemory(uint32 id) const
+{
+    return id < _runeforgingMemories->size() && _runeforgingMemories->test(id);
 }

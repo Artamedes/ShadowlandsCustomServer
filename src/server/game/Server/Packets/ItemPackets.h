@@ -531,6 +531,28 @@ namespace WorldPackets
 
             WorldPacket const* Write() override { return &_worldPacket; }
         };
+
+        class ItemChanged final : public ServerPacket
+        {
+        public:
+            ItemChanged() : ServerPacket(SMSG_ITEM_CHANGED, 1000) { }
+
+            WorldPacket const* Write();
+
+            ObjectGuid PlayerGUID;
+            ItemInstance Before;
+            ItemInstance After;
+        };
+
+        class ItemInteractionComplete final : public ServerPacket
+        {
+        public:
+            ItemInteractionComplete() : ServerPacket(SMSG_ITEM_INTERACTION_COMPLETE, 1) { }
+
+            WorldPacket const* Write();
+
+            bool Complete = false;
+        };
     }
 }
 

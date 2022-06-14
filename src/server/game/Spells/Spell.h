@@ -406,6 +406,7 @@ class TC_GAME_API Spell
         void EffectGrantBattlePetExperience();
         void EffectLearnTransmogIllusion();
         void EffectSetCovenant();
+        void EffectCraftRuneforgeLegendary();
         void EffectLearnSoulbindConduit();
 
         typedef std::unordered_set<Aura*> UsedSpellMods;

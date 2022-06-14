@@ -1300,6 +1300,11 @@ void HotfixDatabaseConnection::DoPrepareStatements()
         " WHERE (`VerifiedBuild` > 0) = ?", CONNECTION_SYNCH);
     PREPARE_MAX_ID_STMT(HOTFIX_SEL_REWARD_PACK_X_ITEM, "SELECT MAX(ID) + 1 FROM reward_pack_x_item", CONNECTION_SYNCH);
 
+    // RuneforgeLegendaryAbility.db2
+    PrepareStatement(HOTFIX_SEL_RUNEFORGE_LEGENDARY_ABILITY, "SELECT `Name`, ID, SpecSetID, InventoryTypeMask, SpellID, ItemBonusListID, PlayerConditionID, Unk, UnlockItemID, CovenantID, PlayerConditionID2 FROM runeforge_legendary_ability"
+        " WHERE (`VerifiedBuild` > 0) = ?", CONNECTION_SYNCH);
+    PREPARE_MAX_ID_STMT(HOTFIX_SEL_RUNEFORGE_LEGENDARY_ABILITY, "SELECT MAX(ID) + 1 FROM runeforge_legendary_ability", CONNECTION_SYNCH);
+
     // Scenario.db2
     PrepareStatement(HOTFIX_SEL_SCENARIO, "SELECT ID, Name, AreaTableID, Type, Flags, UiTextureKitID FROM scenario WHERE (`VerifiedBuild` > 0) = ?", CONNECTION_SYNCH);
     PREPARE_MAX_ID_STMT(HOTFIX_SEL_SCENARIO, "SELECT MAX(ID) + 1 FROM scenario", CONNECTION_SYNCH);

@@ -157,6 +157,11 @@ SpellCastTargets::SpellCastTargets(Unit* caster, WorldPackets::Spells::SpellCast
             pos->SetOrientation(*spellCastRequest.Target.Orientation);
     }
 
+    /// PIGPIGPIG
+    OptionalReagents_1 = std::make_pair(spellCastRequest.OptionalReagents[0].ItemID, spellCastRequest.OptionalReagents[0].Slot);
+    OptionalReagents_2 = std::make_pair(spellCastRequest.OptionalReagents[1].ItemID, spellCastRequest.OptionalReagents[1].Slot);
+    OptionalReagents_3 = std::make_pair(spellCastRequest.OptionalReagents[2].ItemID, spellCastRequest.OptionalReagents[2].Slot);
+
     SetPitch(spellCastRequest.MissileTrajectory.Pitch);
     SetSpeed(spellCastRequest.MissileTrajectory.Speed);
 
@@ -5355,7 +5360,9 @@ void Spell::TakeCastItem()
     if (expendable && withoutCharges)
     {
         uint32 count = 1;
-        m_caster->ToPlayer()->DestroyItemCount(m_CastItem, count, true);
+        // prevent destroying removed items.
+        if (m_CastItem->GetState() != ITEM_REMOVED)
+            m_caster->ToPlayer()->DestroyItemCount(m_CastItem, count, true);
 
         // prevent crash at access to deleted m_targets.GetItemTarget
         if (m_CastItem == m_targets.GetItemTarget())

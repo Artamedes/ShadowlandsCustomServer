@@ -194,6 +194,7 @@ TC_GAME_API extern DB2Storage<QuestXPEntry>                         sQuestXPStor
 TC_GAME_API extern DB2Storage<RandPropPointsEntry>                  sRandPropPointsStore;
 TC_GAME_API extern DB2Storage<RenownRewardsEntry>                   sRenownRewardsStore;
 TC_GAME_API extern DB2Storage<RewardPackEntry>                      sRewardPackStore;
+TC_GAME_API extern DB2Storage<RuneforgeLegendaryAbilityEntry>       sRuneforgeLegendaryAbilityStore;
 TC_GAME_API extern DB2Storage<ScenarioEntry>                        sScenarioStore;
 TC_GAME_API extern DB2Storage<ScenarioStepEntry>                    sScenarioStepStore;
 TC_GAME_API extern DB2Storage<SkillLineEntry>                       sSkillLineStore;
@@ -493,6 +494,8 @@ public:
     std::vector<GarrTalentEntry const*> const* GetTalentEntriesByGarrTalentId(uint32 garrTalentId);
     std::vector < SoulbindConduitRankEntry const*> const* GetSoulbindConduitRankBySoulbindConduitID(uint32 soulbindConduitID);
     int32 GetChallengeLevelReward(uint32 challengeLevel, int8 seasonID, bool isOploteChest) const;
+    RuneforgeLegendaryAbilityEntry const* GetRuneforgeLegendaryAbilityEntryByItemID(uint32 itemId);
+    RuneforgeLegendaryAbilityEntry const* GetRuneforgeLegendaryAbilityEntryBySpellID(uint32 spellId);
 
 private:
     friend class DB2HotfixGeneratorBase;

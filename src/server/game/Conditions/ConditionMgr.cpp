@@ -51,6 +51,7 @@
 #include "SpellMgr.h"
 #include "World.h"
 #include "WorldSession.h"
+#include "CollectionMgr.h"
 #include <random>
 #include <sstream>
 
@@ -3061,11 +3062,23 @@ bool ConditionMgr::IsPlayerMeetingCondition(Player const* player, PlayerConditio
     {
         std::array<bool, std::tuple_size_v<decltype(condition->ItemID)>> results;
         results.fill(true);
+        bool skip = false;
         for (std::size_t i = 0; i < condition->ItemID.size(); ++i)
             if (condition->ItemID[i])
-                results[i] = player->GetItemCount(condition->ItemID[i], condition->ItemFlags != 0) >= condition->ItemCount[i];
+            {
+                /// PIGPIGPIG - check if runecarve is unlocked
+                if (auto runecarve = sDB2Manager.GetRuneforgeLegendaryAbilityEntryByItemID(condition->ItemID[i]))
+                    if (player->GetSession()->GetCollectionMgr()->HasRuneforgeMemory(runecarve->ID))
+                    {
+                        results[i] = true;
+                        skip = true;
+                        continue;
+                    }
 
-        if (!PlayerConditionLogic(condition->ItemLogic, results))
+                results[i] = player->GetItemCount(condition->ItemID[i], condition->ItemFlags != 0) >= condition->ItemCount[i];
+            }
+
+        if (!skip && !PlayerConditionLogic(condition->ItemLogic, results))
             return false;
     }
 

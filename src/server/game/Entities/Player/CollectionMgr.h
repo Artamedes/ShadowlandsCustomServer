@@ -146,6 +146,12 @@ public:
     void AddTransmogIllusion(uint32 transmogIllusionId);
     bool HasTransmogIllusion(uint32 transmogIllusionId) const;
 
+    void LoadRuneforgeMemorys();
+    void LoadAccountRuneforgeMemorys(PreparedQueryResult result);
+    void SaveAccountRuneforgeMemorys(LoginDatabaseTransaction trans);
+    void AddRuneforgeMemory(uint32 id);
+    bool HasRuneforgeMemory(uint32 id) const;
+
     enum class FavoriteAppearanceState
     {
         New,
@@ -170,6 +176,7 @@ private:
     std::unordered_map<uint32, std::unordered_set<ObjectGuid>> _temporaryAppearances;
     std::unordered_map<uint32, FavoriteAppearanceState> _favoriteAppearances;
     std::unique_ptr<boost::dynamic_bitset<uint32>> _transmogIllusions;
+    std::unique_ptr<boost::dynamic_bitset<uint32>> _runeforgingMemories;
 };
 
 #endif // CollectionMgr_h__
