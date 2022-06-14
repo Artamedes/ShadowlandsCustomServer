@@ -3906,6 +3906,31 @@ public:
     }
 };
 
+// 800065 - npc_runecarver_s_portal_800065
+struct npc_runecarver_s_portal_800065 : public ScriptedAI
+{
+public:
+    npc_runecarver_s_portal_800065(Creature* creature) : ScriptedAI(creature) { }
+
+    void InitializeAI() override
+    {
+        //me->SetUnitFlag(UNIT_FLAG_UNINTERACTIBLE);
+    }
+
+    void OnSpellClick(Unit* clicker, bool spellClickHandled) override
+    {
+        clicker->GetScheduler().Schedule(1s, 800065, [](TaskContext context)
+        {
+            auto player = GetContextPlayer();
+
+            if (player->GetMapId() == 1116)
+                player->TeleportTo(2453, 2737.32f, 2099.82f, 320.26f, 3.14028f);
+            else
+                player->TeleportTo(1116, 85.9699f, -2753.94f, 62.5325f, 3.93367f);
+        });
+    }
+};
+
 void AddSC_MallScripts()
 {
     RegisterCreatureAI(npc_battle_training);
@@ -3965,6 +3990,7 @@ void AddSC_MallScripts()
     RegisterCreatureAI(npc_transmog_vendor_generic);
     RegisterCreatureAI(npc_spirit_healer);
     RegisterCreatureAI(npc_runecarver_180509);
+    RegisterCreatureAI(npc_runecarver_s_portal_800065);
 
     RegisterSpellScript(spell_activating_313352);
    // RegisterSpellScript(spell_nyalotha_incursion);
