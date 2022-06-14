@@ -3919,6 +3919,7 @@ public:
 
     void OnSpellClick(Unit* clicker, bool spellClickHandled) override
     {
+        clicker->GetScheduler().CancelGroup(800065);
         clicker->GetScheduler().Schedule(1s, 800065, [](TaskContext context)
         {
             auto player = GetContextPlayer();
