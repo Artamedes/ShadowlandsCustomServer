@@ -498,7 +498,7 @@ struct npc_fading_demon_700505 : public ScriptedAI
 struct npc_oglaz_700506 : public ScriptedAI
 {
    public:
-       npc_oglaz_700506(Creature* creature) : ScriptedAI(creature) { }
+       npc_oglaz_700506(Creature* creature) : ScriptedAI(creature) { ApplyAllImmunities(true); }
 
      void InitializeAI() override
      {
@@ -703,7 +703,7 @@ struct npc_jazgolluth_700507 : public ScriptedAI
 struct npc_annaxin_700508 : public ScriptedAI
 {
     public:
-        npc_annaxin_700508(Creature* creature) : ScriptedAI(creature) { }
+        npc_annaxin_700508(Creature* creature) : ScriptedAI(creature) { ApplyAllImmunities(true); }
 
         void InitializeAI() override
         {
@@ -900,7 +900,7 @@ public:
 struct npc_xolmir_700511 : public ScriptedAI
 {
    public:
-       npc_xolmir_700511(Creature* creature) : ScriptedAI(creature) { }
+       npc_xolmir_700511(Creature* creature) : ScriptedAI(creature) { ApplyAllImmunities(true); }
 
        enum GulDan
        {
@@ -917,15 +917,22 @@ struct npc_xolmir_700511 : public ScriptedAI
        {
            if (auto voidRift = me->FindNearestCreature(700518, 50.0f))
            {
-               voidRift->RemoveUnitFlag(UnitFlags::UNIT_FLAG_NON_ATTACKABLE);
-
 
                if (auto map = me->GetMap())
                {
-                   map->DoOnPlayers([](Player* player)
+                   if (auto instance = me->GetInstanceScript())
+                   {
+                       if (!instance->IsChallenge())
                        {
-                           Conversation::CreateConversation(700305, player, *player, player->GetGUID());
-                       });
+                           voidRift->RemoveUnitFlag(UnitFlags::UNIT_FLAG_NON_ATTACKABLE);
+                           map->DoOnPlayers([](Player* player)
+                           {
+                               Conversation::CreateConversation(700305, player, *player, player->GetGUID());
+                           });
+                       }
+                       else
+                           voidRift->DespawnOrUnsummon();
+                   }
                }
 
            }
