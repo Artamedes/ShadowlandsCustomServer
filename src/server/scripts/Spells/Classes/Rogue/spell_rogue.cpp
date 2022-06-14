@@ -564,6 +564,11 @@ class aura_rog_between_the_eyes : public AuraScript
     }
 };
 
+enum eBladeFlurry
+{
+    BladFlurryStart = 331850,
+};
+
 /// Blade Flurry - 13877
 class spell_rog_blade_flurry : public AuraScript
 {
@@ -571,8 +576,17 @@ class spell_rog_blade_flurry : public AuraScript
 
     bool CheckProc(ProcEventInfo& eventInfo)
     {
-        if (eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == SPELL_ROGUE_BLADE_FLURRY_EXTRA_ATTACK)
-            return false;
+        if (eventInfo.GetSpellInfo())
+        {
+            switch (eventInfo.GetSpellInfo()->Id)
+            {
+                case BladFlurryStart:
+                case SPELL_ROGUE_BLADE_FLURRY_EXTRA_ATTACK:
+                    return false;
+                default:
+                    break;
+            }
+        }
 
         if (!eventInfo.GetDamageInfo())
             return false;
@@ -591,7 +605,10 @@ class spell_rog_blade_flurry : public AuraScript
         if (!caster || !target)
             return;
 
-        int32 damage = CalculatePct(eventInfo.GetDamageInfo()->GetDamage(), sSpellMgr->GetSpellInfo(SPELL_ROGUE_BLADE_FLURRY)->GetEffect(EFFECT_0).BasePoints);
+        if (!eventInfo.GetDamageInfo())
+            return;
+
+        int32 damage = CalculatePct(eventInfo.GetDamageInfo()->GetDamage(), 60);
 
         CastSpellExtraArgs args(TRIGGERED_FULL_MASK);
         args.AddSpellBP0(damage);
@@ -605,6 +622,27 @@ class spell_rog_blade_flurry : public AuraScript
     }
 };
 
+/// <summary>
+///  13877
+/// </summary>
+class spell_rog_blade_flurry_dummy : public SpellScript
+{
+    PrepareSpellScript(spell_rog_blade_flurry_dummy);
+
+    void HandleAfterCast()
+    {
+        Unit* caster = GetCaster();
+        if (!caster)
+            return;
+
+        caster->CastSpell(caster, BladFlurryStart, true);
+    }
+
+    void Register() override
+    {
+        AfterCast += SpellCastFn(spell_rog_blade_flurry_dummy::HandleAfterCast);
+    }
+};
 
 // 31230 - Cheat Death
 class spell_rog_cheat_death : public SpellScriptLoader
@@ -3843,11 +3881,18 @@ class aura_rog_restless_blades : public AuraScript
 
     bool CheckProc(ProcEventInfo& eventInfo)
     {
-        if (eventInfo.GetSpellInfo() && (eventInfo.GetSpellInfo()->Id == SPELL_ROGUE_BETWEEN_THE_EYES || eventInfo.GetSpellInfo()->Id == SPELL_ROGUE_RUN_THROUGH ||
-            eventInfo.GetSpellInfo()->Id == SPELL_ROGUE_ROLL_THE_BONES || eventInfo.GetSpellInfo()->Id == SPELL_ROGUE_SLICE_AND_DICE))
-            return true;
+        if (!eventInfo.GetSpellInfo())
+            return false;
 
-        return false;
+        switch (eventInfo.GetSpellInfo()->Id)
+        {
+            case SPELL_ROGUE_BETWEEN_THE_EYES:
+            case SPELL_ROGUE_SLICE_AND_DICE:
+            case 2098: ///< DIspatch
+                return true;
+            default:
+                return false;
+        }
     }
 
     void HandleProc(ProcEventInfo& eventInfo)
@@ -3860,6 +3905,7 @@ class aura_rog_restless_blades : public AuraScript
             caster->GetSpellHistory()->ModifyCooldown(SPELL_ROGUE_GRAPPLING_HOOK, (1000 * RogueComboPoints(caster)) * -1);
             caster->GetSpellHistory()->ModifyCooldown(SPELL_ROGUE_SPRINT, (1000 * RogueComboPoints(caster)) * -1);
             caster->GetSpellHistory()->ModifyCooldown(SPELL_ROGUE_VANISH, (1000 * RogueComboPoints(caster)) * -1);
+            caster->GetSpellHistory()->ModifyCooldown(SPELL_ROGUE_BLADE_FLURRY, (1000 * RogueComboPoints(caster)) * -1);
             if (caster->HasSpell(SPELL_ROGUE_GHOSTLY_STRIKE))
                 caster->GetSpellHistory()->ModifyCooldown(SPELL_ROGUE_GHOSTLY_STRIKE, (1000 * RogueComboPoints(caster)) * -1);
             if (caster->HasSpell(SPELL_ROGUE_MARKED_FOR_DEATH))
@@ -4742,7 +4788,7 @@ void AddSC_rogue_spell_scripts()
     new spell_rog_alacrity();
     new spell_rog_backstab();
     RegisterSpellAndAuraScriptPair(spell_rog_between_the_eyes, aura_rog_between_the_eyes);    
-    RegisterSpellScript(spell_rog_blade_flurry);
+    RegisterSpellAndAuraScriptPair(spell_rog_blade_flurry, spell_rog_blade_flurry_dummy);
     new spell_rog_cannonball_barrage();
     new spell_rog_cheat_death();
     new spell_rog_cloak_and_dagger();

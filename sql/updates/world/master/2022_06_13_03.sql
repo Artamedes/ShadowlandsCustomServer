@@ -4,4 +4,4 @@ REPLACE INTO `creature` (`guid`, `id`, `map`, `zoneId`, `areaId`, `spawnDifficul
 REPLACE INTO `creature` (`guid`, `id`, `map`, `zoneId`, `areaId`, `spawnDifficulties`, `phaseUseFlags`, `PhaseId`, `PhaseGroup`, `terrainSwapMap`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `wander_distance`, `currentwaypoint`, `curhealth`, `curmana`, `MovementType`, `npcflag`, `unit_flags`, `unit_flags2`, `unit_flags3`, `dynamicflags`, `ScriptName`, `VerifiedBuild`) VALUES (1056097, 800065, 2453, 0, 0, '0', 0, 0, 0, -1, 0, 0, 2746.38, 2099.32, 322.192, 0.0378873, 300, 0, 0, 11791, 0, 0, 0, 0, 0, 0, 0, '', 0);
 REPLACE INTO `creature_template_model` (`CreatureID`, `Idx`, `CreatureDisplayID`, `DisplayScale`, `Probability`, `VerifiedBuild`) VALUES (800065, 0, 101762, 1, 1, 0);
 REPLACE INTO `npc_spellclick_spells` (`npc_entry`, `spell_id`, `cast_flags`, `user_type`) VALUES (800065, 280036, 1, 0);
-UPDATE creature_template SET `RANK` = 1, maxlevel = 1, maxlevel = 60 WHERE entry = 180509;
+UPDATE creature_template SET `RANK` = 1, maxlevel = 60, maxlevel = 60 WHERE entry = 180509;
