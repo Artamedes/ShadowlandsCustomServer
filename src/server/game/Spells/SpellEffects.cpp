@@ -6096,8 +6096,11 @@ void Spell::EffectCraftRuneforgeLegendary()
     if (!Missive1 || !Missive2)
         return;
 
-    auto TestMissive([](uint32 MissiveId) -> bool
+    auto TestMissive([playerCaster](uint32 MissiveId) -> bool
     {
+        if (!playerCaster->HasItemCount(MissiveId))
+            return false;
+
         switch (MissiveId)
         {
             case MissiveOfHaste:
@@ -6129,7 +6132,7 @@ void Spell::EffectCraftRuneforgeLegendary()
     });
 
     uint32 BonusId1 = GetItemBonusIdFromMissive(Missive1);
-    uint32 BonusId2 = GetItemBonusIdFromMissive(Missive1);
+    uint32 BonusId2 = GetItemBonusIdFromMissive(Missive2);
 
     if (targetItem->HasBonusId(BonusId1) || targetItem->HasBonusId(BonusId2) || targetItem->HasBonusId(runeForge->ItemBonusListID))
         return;
@@ -6142,9 +6145,38 @@ void Spell::EffectCraftRuneforgeLegendary()
     packet.PlayerGUID = playerCaster->GetGUID();
     packet.Before.Initialize(targetItem);
 
+    switch (targetItem->GetEntry())
+    {
+        case 710050:
+            targetItem->SetEntry(710056);
+            targetItem->AddBonuses(30000);
+            break;
+        case 710051:
+            targetItem->SetEntry(710057);
+            targetItem->AddBonuses(30000);
+            break;
+        case 710052:
+            targetItem->SetEntry(710058);
+            targetItem->AddBonuses(30000);
+            break;
+        case 710053:
+            targetItem->SetEntry(710059);
+            targetItem->AddBonuses(30000);
+            break;
+        case 710054:
+            targetItem->SetEntry(710060);
+            targetItem->AddBonuses(30000);
+            break;
+        case 710055:
+            targetItem->SetEntry(710061);
+            targetItem->AddBonuses(30000);
+            break;
+    }
+
     /// Add bonuses
     targetItem->AddBonuses(BonusId1);
     targetItem->AddBonuses(BonusId2);
+    targetItem->AddBonuses(29980); ///< Base upgrade so we can upgrade by 20 each time.
     targetItem->AddBonuses(runeForge->ItemBonusListID);
 
     packet.After.Initialize(targetItem);
@@ -6154,6 +6186,12 @@ void Spell::EffectCraftRuneforgeLegendary()
     WorldPackets::Item::ItemInteractionComplete packet2;
     packet2.Complete = false;
     playerCaster->SendDirectMessage(packet2.Write());
+
+    targetItem->SendUpdateToPlayer(playerCaster);
+
+    playerCaster->DestroyItemCount(Missive1, 1, true);
+    playerCaster->DestroyItemCount(Missive2, 1, true);
+    playerCaster->ModifyCurrency(1813, -2000);
 }
 
 void Spell::EffectLearnSoulbindConduit()

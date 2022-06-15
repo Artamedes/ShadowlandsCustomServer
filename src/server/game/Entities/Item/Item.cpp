@@ -518,6 +518,14 @@ bool Item::Create(ObjectGuid::LowType guidlow, uint32 itemId, ItemContext contex
     return true;
 }
 
+void Item::SetEntry(uint32 entry)
+{
+    Object::SetEntry(entry);
+    // TODO: Update visible appearances or whatever entry is stored here
+    SetDurability(75);
+    SetMaxDurability(75);
+}
+
 std::string Item::GetNameForLocaleIdx(LocaleConstant locale) const
 {
     ItemTemplate const* itemTemplate = GetTemplate();

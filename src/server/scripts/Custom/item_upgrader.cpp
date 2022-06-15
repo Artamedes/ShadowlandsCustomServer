@@ -10,6 +10,7 @@
 #include "WorldSession.h"
 #include "CollectionMgr.h"
 #include "GameTime.h"
+#include "ItemPackets.h"
 
 enum class ItemUpgradeType
 {
@@ -745,6 +746,10 @@ class item_upgrader : public ItemScript
             {
                 //if (!itemUpgrade->ReplaceBonusIDList.empty())
                 {
+                    WorldPackets::Item::ItemChanged packet;
+                    packet.PlayerGUID = p_Player->GetGUID();
+                    packet.Before.Initialize(l_ItemTarget);
+
                     if (l_ItemTarget->IsEquipped())
                         p_Player->_ApplyItemMods(l_ItemTarget, l_ItemTarget->GetSlot(), false);
 
@@ -756,7 +761,10 @@ class item_upgrader : public ItemScript
                     for (auto bonus : itemUpgrade->RemoveBonusIDList)
                         l_ItemTarget->RemoveBonus(bonus);
 
-                    p_Player->SendNewItem(l_ItemTarget, 1, true, false, true);
+                    packet.After.Initialize(l_ItemTarget);
+                    p_Player->SendDirectMessage(packet.Write());
+
+                    //p_Player->SendNewItem(l_ItemTarget, 1, true, false, true);
                     l_ItemTarget->SetState(ItemUpdateState::ITEM_CHANGED, p_Player);
 
                     if (l_ItemTarget->IsEquipped())

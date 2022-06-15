@@ -3290,6 +3290,11 @@ void SpellMgr::LoadSpellInfoCorrections()
 
     // Some spells have no amplitude set
     {
+        /// Thunderfury
+        ApplySpellFix({ 21992 }, [](SpellInfo* info)
+        {
+            info->ProcChance = 20.0f;
+        });
         /// Icicle DMG
         ApplySpellFix({ 148022 }, [](SpellInfo* info)
         {

@@ -563,6 +563,7 @@ namespace WorldPackets
         class SetTaxiBenchmarkMode;
         class MountSetFavorite;
         class CloseInteraction;
+        class CloseRuneforgeInteraction;
         class ConversationLineStarted;
         class RequestLatestSplashScreen;
         class CommentatorEnable;
@@ -1836,6 +1837,7 @@ class TC_GAME_API WorldSession
         void HandleObjectUpdateRescuedOpcode(WorldPackets::Misc::ObjectUpdateRescued& objectUpdateRescued);
         void HandleRequestCategoryCooldowns(WorldPackets::Spells::RequestCategoryCooldowns& requestCategoryCooldowns);
         void HandleCloseInteraction(WorldPackets::Misc::CloseInteraction& closeInteraction);
+        void HandleCloseRuneforgeInteraction(WorldPackets::Misc::CloseRuneforgeInteraction& packet);
         void HandleConversationLineStarted(WorldPackets::Misc::ConversationLineStarted& conversationLineStarted);
 
         // Adventure Journal

@@ -1206,6 +1206,23 @@ void WorldSession::HandleCloseInteraction(WorldPackets::Misc::CloseInteraction& 
         _player->PlayerTalkClass->GetInteractionData().Reset();
 }
 
+void WorldSession::HandleCloseRuneforgeInteraction(WorldPackets::Misc::CloseRuneforgeInteraction& packet)
+{
+    if (_player->GetQuestStatus(700019) == QUEST_STATUS_INCOMPLETE)
+    {
+        _player->CompleteQuest(700019);
+        _player->RewardQuest(sObjectMgr->GetQuestTemplate(700019), LootItemType::Item, 0, _player, true);
+        _player->AddQuestAndCheckCompletion(sObjectMgr->GetQuestTemplate(700020), _player);
+        _player->GetScheduler().CancelGroup(700019);
+        _player->GetScheduler().Schedule(100ms, 700019, [](TaskContext context)
+        {
+            auto player = context.GetUnit()->ToPlayer();
+            Conversation::CreateConversation(700303, player, *player, player->GetGUID());
+            player->PlayerTalkClass->SendQuestGiverQuestDetails(sObjectMgr->GetQuestTemplate(700020), player->GetGUID(), true, true);
+        });
+    }
+}
+
 void WorldSession::HandleConversationLineStarted(WorldPackets::Misc::ConversationLineStarted& conversationLineStarted)
 {
     if (Conversation* convo = ObjectAccessor::GetConversation(*_player, conversationLineStarted.ConversationGUID))

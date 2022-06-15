@@ -645,6 +645,7 @@ struct VendorItem
     std::vector<int32> BonusListIDs;
     uint32 PlayerConditionId;
     bool IgnoreFiltering;
+    ItemContext Context = ItemContext::Vendor;
 
     //helpers
     bool IsGoldRequired(ItemTemplate const* pProto) const;

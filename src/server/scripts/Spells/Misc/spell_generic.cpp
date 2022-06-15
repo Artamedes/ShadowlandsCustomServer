@@ -5277,6 +5277,60 @@ class spell_thunderfury : public SpellScript
     }
 };
 
+/// ID - 288097 Runecarving
+class spell_runecarving : public SpellScript
+{
+    PrepareSpellScript(spell_runecarving);
+
+    SpellCastResult CheckRequirement()
+    {
+        if (auto spell = GetSpell())
+        {
+            if (spell->m_targets.OptionalReagents.empty())
+                return SpellCastResult::SPELL_FAILED_NEED_MORE_ITEMS;
+
+            if (auto caster = GetCaster())
+            {
+                if (auto player = caster->ToPlayer())
+                {
+                    for (auto const& regeant : spell->m_targets.OptionalReagents)
+                    {
+                        if (regeant.first)
+                            if (!player->HasItemCount(regeant.first))
+                                return SpellCastResult::SPELL_FAILED_NEED_MORE_ITEMS;
+                    }
+
+                    if (!player->GetSession()->GetCollectionMgr()->HasRuneforgeMemory(spell->m_misc.Raw.Data[0]))
+                        return SpellCastResult::SPELL_FAILED_NEED_MORE_ITEMS;
+
+                    auto covenant = player->GetCovenant();
+                    if (!covenant || covenant->GetCovenantID() == CovenantID::None)
+                        return SpellCastResult::SPELL_FAILED_NEED_MORE_ITEMS;
+
+                    if (covenant->GetAnima() < 2000)
+                        return SpellCastResult::SPELL_FAILED_NEED_MORE_ITEMS;
+                }
+            }
+
+            return SPELL_CAST_OK;
+        }
+
+        return SpellCastResult::SPELL_FAILED_NEED_MORE_ITEMS;
+    }
+
+    void HandleRuneCarve(SpellEffIndex eff)
+    {
+        if (CheckRequirement() != SPELL_CAST_OK)
+            PreventHitDefaultEffect(eff);
+    }
+
+    void Register() override
+    {
+        OnCheckCast += SpellCheckCastFn(spell_runecarving::CheckRequirement);
+        OnEffectLaunch += SpellEffectFn(spell_runecarving::HandleRuneCarve, EFFECT_0, SPELL_EFFECT_CRAFT_RUNEFORGE_LEGENDARY);
+    }
+};
+
 void AddSC_generic_spell_scripts()
 {
     RegisterSpellScript(spell_gen_absorb0_hitlimit1);
@@ -5438,4 +5492,5 @@ void AddSC_generic_spell_scripts()
     RegisterSpellScript(spell_restoring_memory);
     RegisterSpellScript(spell_gen_mobile_bank);
     RegisterSpellScript(spell_thunderfury);
+    RegisterSpellScript(spell_runecarving);
 }

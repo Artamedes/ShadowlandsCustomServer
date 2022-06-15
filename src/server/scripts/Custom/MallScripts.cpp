@@ -526,12 +526,14 @@ struct npc_juno_700006 : public ScriptedAI
             {
                 if (!player->Variables.Exist("SEASON1SKIP"))
                 {
-                    player->TeleportTo(1116, 50.7495f, -2726.76f, 63.047f, 2.47065f);
-                    Conversation::CreateConversation(700302, player, *player, player->GetGUID());
+                    player->TeleportTo(2453, 2721.22f, 2099.52f, 317.48f, 3.14282f);
+                    player->TeleportCallback = [player]()
+                    {
+                        Conversation::CreateConversation(700302, player, *player, player->GetGUID());
+                    };
                 }
             }
         }
-
 
         bool CanSeeOrDetect(WorldObject const* who) const override
         {
@@ -579,25 +581,6 @@ struct npc_mall_weapongiver : public ScriptedAI
 {
     public:
         npc_mall_weapongiver(Creature* creature) : ScriptedAI(creature) { }
-
-        bool OnBuyItemFromVendorSlot(Player* player, uint32 /*vendorslot*/, uint32 /*item*/, uint8 /*count*/, uint8 /*bag*/, uint8 /*slot*/, uint64 /*price*/, ItemTemplate const* /*pProto*/, VendorItem const* /*crItem*/)
-        {
-            if (player->GetQuestStatus(700019) == QUEST_STATUS_INCOMPLETE)
-            {
-                player->CompleteQuest(700019);
-                player->RewardQuest(sObjectMgr->GetQuestTemplate(700019), LootItemType::Item, 0, me, true);
-                player->AddQuestAndCheckCompletion(sObjectMgr->GetQuestTemplate(700020), me);
-                player->GetScheduler().Schedule(100ms, [](TaskContext context)
-                {
-                    auto player = context.GetUnit()->ToPlayer();
-                    Conversation::CreateConversation(700303, player, *player, player->GetGUID());
-                    player->PlayerTalkClass->SendQuestGiverQuestDetails(sObjectMgr->GetQuestTemplate(700020), player->GetGUID(), true, true);
-                });
-            }
-
-            return true;
-        }
-
 
         bool CanSeeOrDetect(WorldObject const* who) const override
         {
@@ -3884,8 +3867,33 @@ public:
     {
         ClearGossipMenuFor(player);
 
+        /// PIGPIGPIG
+        auto status = player->GetQuestStatus(60272);
+        if (status == QUEST_STATUS_INCOMPLETE)
+        {
+            player->CompleteQuest(60272);
+            player->RewardQuest(sObjectMgr->GetQuestTemplate(60272), LootItemType::Item, 0, me, true);
+        }
+        else if (status == QUEST_STATUS_NONE)
+        {
+            player->AddQuest(sObjectMgr->GetQuestTemplate(60272), me);
+            player->CompleteQuest(60272);
+            player->RewardQuest(sObjectMgr->GetQuestTemplate(60272), LootItemType::Item, 0, me, true);
+        }
+        else if (status == QUEST_STATUS_COMPLETE)
+        {
+            player->RewardQuest(sObjectMgr->GetQuestTemplate(60272), LootItemType::Item, 0, me, true);
+        }
+
+        static const uint32 legendaries[] = { 500, 501, 502, 503, 504, 505, 506 };
+
+        for (uint32 legendary : legendaries)
+            if (!player->GetSession()->GetCollectionMgr()->HasRuneforgeMemory(legendary))
+                player->GetSession()->GetCollectionMgr()->AddRuneforgeMemory(legendary);
+
         AddGossipItemFor(player, GossipOptionIcon::None, "I'd like to craft a legendary item.", 0, 0, [this, player](std::string callback)
         {
+            /// MOVE TO WORLDPACKETS CLASS
             WorldPacket data(SMSG_RUNEFORGE_LEGENDARY_CRAFTING_OPEN_NPC, 17);
             data << me->GetGUID();
             data.WriteBit(0);
@@ -3901,7 +3909,7 @@ public:
             player->GetSession()->SendPacket(&data);
         });
 
-        SendGossipMenuFor(player, 25682, me);
+        SendGossipMenuFor(player, 40538, me);
         return true;
     }
 };

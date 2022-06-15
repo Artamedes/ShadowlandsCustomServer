@@ -1,0 +1,114 @@
+-- runecarving
+UPDATE creature_template SET minlevel = 60, maxlevel = 60, npcflag = 3 WHERE entry = 180509;
+DELETE FROM `scene_template` WHERE `SceneId`=2597;
+INSERT INTO `scene_template` (`SceneId`, `Flags`, `ScriptPackageID`, `Encrypted`, `ScriptName`) VALUES (2597, 9, 3018, 0, '');
+
+DELETE FROM npc_vendor WHERE entry = 800064;
+
+REPLACE INTO `npc_vendor` (`entry`, `slot`, `item`, `maxcount`, `incrtime`, `ExtendedCost`, `type`, `BonusListIDs`, `PlayerConditionID`, `IgnoreFiltering`, `VerifiedBuild`) VALUES (800064, 0, 173160, 0, 0, 0, 1, NULL, 0, 0, 0);
+REPLACE INTO `npc_vendor` (`entry`, `slot`, `item`, `maxcount`, `incrtime`, `ExtendedCost`, `type`, `BonusListIDs`, `PlayerConditionID`, `IgnoreFiltering`, `VerifiedBuild`) VALUES (800064, 0, 173161, 0, 0, 0, 1, NULL, 0, 0, 0);
+REPLACE INTO `npc_vendor` (`entry`, `slot`, `item`, `maxcount`, `incrtime`, `ExtendedCost`, `type`, `BonusListIDs`, `PlayerConditionID`, `IgnoreFiltering`, `VerifiedBuild`) VALUES (800064, 0, 173162, 0, 0, 0, 1, NULL, 0, 0, 0);
+REPLACE INTO `npc_vendor` (`entry`, `slot`, `item`, `maxcount`, `incrtime`, `ExtendedCost`, `type`, `BonusListIDs`, `PlayerConditionID`, `IgnoreFiltering`, `VerifiedBuild`) VALUES (800064, 0, 173163, 0, 0, 0, 1, NULL, 0, 0, 0);
+REPLACE INTO `npc_vendor` (`entry`, `slot`, `item`, `maxcount`, `incrtime`, `ExtendedCost`, `type`, `BonusListIDs`, `PlayerConditionID`, `IgnoreFiltering`, `VerifiedBuild`) VALUES (800064, 6, 710001, 0, 0, 0, 1, '', 0, 0, 0);
+REPLACE INTO `npc_vendor` (`entry`, `slot`, `item`, `maxcount`, `incrtime`, `ExtendedCost`, `type`, `BonusListIDs`, `PlayerConditionID`, `IgnoreFiltering`, `VerifiedBuild`) VALUES (800064, 7, 710002, 0, 0, 0, 1, '', 0, 0, 0);
+REPLACE INTO `npc_vendor` (`entry`, `slot`, `item`, `maxcount`, `incrtime`, `ExtendedCost`, `type`, `BonusListIDs`, `PlayerConditionID`, `IgnoreFiltering`, `VerifiedBuild`) VALUES (800064, 8, 710003, 0, 0, 0, 1, '', 0, 0, 0);
+REPLACE INTO `npc_vendor` (`entry`, `slot`, `item`, `maxcount`, `incrtime`, `ExtendedCost`, `type`, `BonusListIDs`, `PlayerConditionID`, `IgnoreFiltering`, `VerifiedBuild`) VALUES (800064, 9, 710004, 0, 0, 0, 1, '', 0, 0, 0);
+REPLACE INTO `npc_vendor` (`entry`, `slot`, `item`, `maxcount`, `incrtime`, `ExtendedCost`, `type`, `BonusListIDs`, `PlayerConditionID`, `IgnoreFiltering`, `VerifiedBuild`) VALUES (800064, 10, 710005, 0, 0, 0, 1, '', 0, 0, 0);
+REPLACE INTO `npc_vendor` (`entry`, `slot`, `item`, `maxcount`, `incrtime`, `ExtendedCost`, `type`, `BonusListIDs`, `PlayerConditionID`, `IgnoreFiltering`, `VerifiedBuild`) VALUES (800064, 11, 710006, 0, 0, 0, 1, '', 0, 0, 0);
+REPLACE INTO `npc_vendor` (`entry`, `slot`, `item`, `maxcount`, `incrtime`, `ExtendedCost`, `type`, `BonusListIDs`, `PlayerConditionID`, `IgnoreFiltering`, `VerifiedBuild`) VALUES (800064, 12, 710007, 0, 0, 0, 1, '', 0, 0, 0);
+REPLACE INTO `npc_vendor` (`entry`, `slot`, `item`, `maxcount`, `incrtime`, `ExtendedCost`, `type`, `BonusListIDs`, `PlayerConditionID`, `IgnoreFiltering`, `VerifiedBuild`) VALUES (800064, 0, 710050, 0, 0, 800064, 1, '1597 6758 7193 8156 6717', 0, 0, 0);
+REPLACE INTO `npc_vendor` (`entry`, `slot`, `item`, `maxcount`, `incrtime`, `ExtendedCost`, `type`, `BonusListIDs`, `PlayerConditionID`, `IgnoreFiltering`, `VerifiedBuild`) VALUES (800064, 1, 710051, 0, 0, 800064, 1, '1597 6758 7193 8156 6717', 0, 0, 0);
+REPLACE INTO `npc_vendor` (`entry`, `slot`, `item`, `maxcount`, `incrtime`, `ExtendedCost`, `type`, `BonusListIDs`, `PlayerConditionID`, `IgnoreFiltering`, `VerifiedBuild`) VALUES (800064, 2, 710052, 0, 0, 800064, 1, '1597 6758 7193 8156 6717', 0, 0, 0);
+REPLACE INTO `npc_vendor` (`entry`, `slot`, `item`, `maxcount`, `incrtime`, `ExtendedCost`, `type`, `BonusListIDs`, `PlayerConditionID`, `IgnoreFiltering`, `VerifiedBuild`) VALUES (800064, 0, 710053, 0, 0, 800064, 1, '1597 6758 7193 8156 6717', 0, 0, 0);
+REPLACE INTO `npc_vendor` (`entry`, `slot`, `item`, `maxcount`, `incrtime`, `ExtendedCost`, `type`, `BonusListIDs`, `PlayerConditionID`, `IgnoreFiltering`, `VerifiedBuild`) VALUES (800064, 4, 710054, 0, 0, 800064, 1, '1597 6758 7193 8156 6717', 0, 0, 0);
+REPLACE INTO `npc_vendor` (`entry`, `slot`, `item`, `maxcount`, `incrtime`, `ExtendedCost`, `type`, `BonusListIDs`, `PlayerConditionID`, `IgnoreFiltering`, `VerifiedBuild`) VALUES (800064, 5, 710055, 0, 0, 800064, 1, '1597 6758 7193 8156 6717', 0, 0, 0);
+
+REPLACE INTO `creature` (`guid`, `id`, `map`, `zoneId`, `areaId`, `spawnDifficulties`, `phaseUseFlags`, `PhaseId`, `PhaseGroup`, `terrainSwapMap`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `wander_distance`, `currentwaypoint`, `curhealth`, `curmana`, `MovementType`, `npcflag`, `unit_flags`, `unit_flags2`, `unit_flags3`, `dynamicflags`, `ScriptName`, `VerifiedBuild`) VALUES (1056100, 800064, 2453, 0, 0, '0', 0, 0, 0, -1, 0, 0, 2715.41, 2089.56, 317.663, 1.99203, 300, 0, 0, 65502276, 0, 0, 0, 0, 0, 0, 0, '', 0);
+
+UPDATE `quest_template` SET `RewardCurrencyQty1`='2000' WHERE  `ID`=700018;
+
+REPLACE INTO spell_script_names (spell_id, scriptname) VALUE (288097, 'spell_runecarving');
+
+REPLACE INTO `z_item_upgrade_materials` (`MaterialID`, `Ordering`, `Type`, `RequiredID`, `RequiredAmount`) VALUES (100, 0, 4, 1813, 500);
+REPLACE INTO `z_item_upgrade_materials` (`MaterialID`, `Ordering`, `Type`, `RequiredID`, `RequiredAmount`) VALUES (100, 1, 4, 10176, 1);
+REPLACE INTO `z_item_upgrade_materials` (`MaterialID`, `Ordering`, `Type`, `RequiredID`, `RequiredAmount`) VALUES (101, 0, 4, 1813, 1000);
+REPLACE INTO `z_item_upgrade_materials` (`MaterialID`, `Ordering`, `Type`, `RequiredID`, `RequiredAmount`) VALUES (101, 1, 4, 10176, 2);
+REPLACE INTO `z_item_upgrade_materials` (`MaterialID`, `Ordering`, `Type`, `RequiredID`, `RequiredAmount`) VALUES (102, 0, 4, 1813, 1500);
+REPLACE INTO `z_item_upgrade_materials` (`MaterialID`, `Ordering`, `Type`, `RequiredID`, `RequiredAmount`) VALUES (102, 1, 4, 10176, 3);
+REPLACE INTO `z_item_upgrade_materials` (`MaterialID`, `Ordering`, `Type`, `RequiredID`, `RequiredAmount`) VALUES (103, 0, 4, 1813, 2000);
+REPLACE INTO `z_item_upgrade_materials` (`MaterialID`, `Ordering`, `Type`, `RequiredID`, `RequiredAmount`) VALUES (103, 1, 4, 10176, 4);
+REPLACE INTO `z_item_upgrade_materials` (`MaterialID`, `Ordering`, `Type`, `RequiredID`, `RequiredAmount`) VALUES (104, 0, 4, 1813, 2500);
+REPLACE INTO `z_item_upgrade_materials` (`MaterialID`, `Ordering`, `Type`, `RequiredID`, `RequiredAmount`) VALUES (104, 1, 4, 10176, 5);
+REPLACE INTO `z_item_upgrade_materials` (`MaterialID`, `Ordering`, `Type`, `RequiredID`, `RequiredAmount`) VALUES (105, 0, 4, 1813, 3000);
+REPLACE INTO `z_item_upgrade_materials` (`MaterialID`, `Ordering`, `Type`, `RequiredID`, `RequiredAmount`) VALUES (105, 1, 4, 10176, 6);
+REPLACE INTO `z_item_upgrade_materials` (`MaterialID`, `Ordering`, `Type`, `RequiredID`, `RequiredAmount`) VALUES (106, 0, 4, 1813, 3500);
+REPLACE INTO `z_item_upgrade_materials` (`MaterialID`, `Ordering`, `Type`, `RequiredID`, `RequiredAmount`) VALUES (106, 1, 4, 10176, 7);
+REPLACE INTO `z_item_upgrade_materials` (`MaterialID`, `Ordering`, `Type`, `RequiredID`, `RequiredAmount`) VALUES (107, 0, 4, 1813, 4000);
+REPLACE INTO `z_item_upgrade_materials` (`MaterialID`, `Ordering`, `Type`, `RequiredID`, `RequiredAmount`) VALUES (107, 1, 4, 10176, 8);
+REPLACE INTO `z_item_upgrade_materials` (`MaterialID`, `Ordering`, `Type`, `RequiredID`, `RequiredAmount`) VALUES (108, 0, 4, 1813, 4500);
+REPLACE INTO `z_item_upgrade_materials` (`MaterialID`, `Ordering`, `Type`, `RequiredID`, `RequiredAmount`) VALUES (108, 1, 4, 10176, 9);
+REPLACE INTO `z_item_upgrade_materials` (`MaterialID`, `Ordering`, `Type`, `RequiredID`, `RequiredAmount`) VALUES (109, 0, 4, 1813, 5000);
+REPLACE INTO `z_item_upgrade_materials` (`MaterialID`, `Ordering`, `Type`, `RequiredID`, `RequiredAmount`) VALUES (109, 1, 4, 10176, 10);
+
+
+REPLACE INTO `z_item_upgrade` (`EntryID`, `Type`, `RequiredID`, `RequiredAmount`, `MaterialID`, `ReplaceItemID`, `ReplaceItemQuantity`, `RemoveBonusIds`, `AddBonusIds`) VALUES (710056, 1, 29980, 1, 100, 0, 0, '', '29981');
+REPLACE INTO `z_item_upgrade` (`EntryID`, `Type`, `RequiredID`, `RequiredAmount`, `MaterialID`, `ReplaceItemID`, `ReplaceItemQuantity`, `RemoveBonusIds`, `AddBonusIds`) VALUES (710056, 1, 29981, 1, 101, 0, 0, '', '29982');
+REPLACE INTO `z_item_upgrade` (`EntryID`, `Type`, `RequiredID`, `RequiredAmount`, `MaterialID`, `ReplaceItemID`, `ReplaceItemQuantity`, `RemoveBonusIds`, `AddBonusIds`) VALUES (710056, 1, 29982, 1, 102, 0, 0, '', '29983');
+REPLACE INTO `z_item_upgrade` (`EntryID`, `Type`, `RequiredID`, `RequiredAmount`, `MaterialID`, `ReplaceItemID`, `ReplaceItemQuantity`, `RemoveBonusIds`, `AddBonusIds`) VALUES (710056, 1, 29983, 1, 103, 0, 0, '', '29984');
+REPLACE INTO `z_item_upgrade` (`EntryID`, `Type`, `RequiredID`, `RequiredAmount`, `MaterialID`, `ReplaceItemID`, `ReplaceItemQuantity`, `RemoveBonusIds`, `AddBonusIds`) VALUES (710056, 1, 29984, 1, 104, 0, 0, '', '29985');
+REPLACE INTO `z_item_upgrade` (`EntryID`, `Type`, `RequiredID`, `RequiredAmount`, `MaterialID`, `ReplaceItemID`, `ReplaceItemQuantity`, `RemoveBonusIds`, `AddBonusIds`) VALUES (710056, 1, 29985, 1, 105, 0, 0, '', '29986');
+REPLACE INTO `z_item_upgrade` (`EntryID`, `Type`, `RequiredID`, `RequiredAmount`, `MaterialID`, `ReplaceItemID`, `ReplaceItemQuantity`, `RemoveBonusIds`, `AddBonusIds`) VALUES (710056, 1, 29986, 1, 106, 0, 0, '', '29987');
+REPLACE INTO `z_item_upgrade` (`EntryID`, `Type`, `RequiredID`, `RequiredAmount`, `MaterialID`, `ReplaceItemID`, `ReplaceItemQuantity`, `RemoveBonusIds`, `AddBonusIds`) VALUES (710056, 1, 29987, 1, 107, 0, 0, '', '29988');
+REPLACE INTO `z_item_upgrade` (`EntryID`, `Type`, `RequiredID`, `RequiredAmount`, `MaterialID`, `ReplaceItemID`, `ReplaceItemQuantity`, `RemoveBonusIds`, `AddBonusIds`) VALUES (710056, 1, 29988, 1, 108, 0, 0, '', '29989');
+REPLACE INTO `z_item_upgrade` (`EntryID`, `Type`, `RequiredID`, `RequiredAmount`, `MaterialID`, `ReplaceItemID`, `ReplaceItemQuantity`, `RemoveBonusIds`, `AddBonusIds`) VALUES (710056, 1, 29989, 1, 109, 0, 0, '30000', '29990');
+REPLACE INTO `z_item_upgrade` (`EntryID`, `Type`, `RequiredID`, `RequiredAmount`, `MaterialID`, `ReplaceItemID`, `ReplaceItemQuantity`, `RemoveBonusIds`, `AddBonusIds`) VALUES (710057, 1, 29980, 1, 100, 0, 0, '', '29981');
+REPLACE INTO `z_item_upgrade` (`EntryID`, `Type`, `RequiredID`, `RequiredAmount`, `MaterialID`, `ReplaceItemID`, `ReplaceItemQuantity`, `RemoveBonusIds`, `AddBonusIds`) VALUES (710057, 1, 29981, 1, 101, 0, 0, '', '29982');
+REPLACE INTO `z_item_upgrade` (`EntryID`, `Type`, `RequiredID`, `RequiredAmount`, `MaterialID`, `ReplaceItemID`, `ReplaceItemQuantity`, `RemoveBonusIds`, `AddBonusIds`) VALUES (710057, 1, 29982, 1, 102, 0, 0, '', '29983');
+REPLACE INTO `z_item_upgrade` (`EntryID`, `Type`, `RequiredID`, `RequiredAmount`, `MaterialID`, `ReplaceItemID`, `ReplaceItemQuantity`, `RemoveBonusIds`, `AddBonusIds`) VALUES (710057, 1, 29983, 1, 103, 0, 0, '', '29984');
+REPLACE INTO `z_item_upgrade` (`EntryID`, `Type`, `RequiredID`, `RequiredAmount`, `MaterialID`, `ReplaceItemID`, `ReplaceItemQuantity`, `RemoveBonusIds`, `AddBonusIds`) VALUES (710057, 1, 29984, 1, 104, 0, 0, '', '29985');
+REPLACE INTO `z_item_upgrade` (`EntryID`, `Type`, `RequiredID`, `RequiredAmount`, `MaterialID`, `ReplaceItemID`, `ReplaceItemQuantity`, `RemoveBonusIds`, `AddBonusIds`) VALUES (710057, 1, 29985, 1, 105, 0, 0, '', '29986');
+REPLACE INTO `z_item_upgrade` (`EntryID`, `Type`, `RequiredID`, `RequiredAmount`, `MaterialID`, `ReplaceItemID`, `ReplaceItemQuantity`, `RemoveBonusIds`, `AddBonusIds`) VALUES (710057, 1, 29986, 1, 106, 0, 0, '', '29987');
+REPLACE INTO `z_item_upgrade` (`EntryID`, `Type`, `RequiredID`, `RequiredAmount`, `MaterialID`, `ReplaceItemID`, `ReplaceItemQuantity`, `RemoveBonusIds`, `AddBonusIds`) VALUES (710057, 1, 29987, 1, 107, 0, 0, '', '29988');
+REPLACE INTO `z_item_upgrade` (`EntryID`, `Type`, `RequiredID`, `RequiredAmount`, `MaterialID`, `ReplaceItemID`, `ReplaceItemQuantity`, `RemoveBonusIds`, `AddBonusIds`) VALUES (710057, 1, 29988, 1, 108, 0, 0, '', '29989');
+REPLACE INTO `z_item_upgrade` (`EntryID`, `Type`, `RequiredID`, `RequiredAmount`, `MaterialID`, `ReplaceItemID`, `ReplaceItemQuantity`, `RemoveBonusIds`, `AddBonusIds`) VALUES (710057, 1, 29989, 1, 109, 0, 0, '30000', '29990');
+REPLACE INTO `z_item_upgrade` (`EntryID`, `Type`, `RequiredID`, `RequiredAmount`, `MaterialID`, `ReplaceItemID`, `ReplaceItemQuantity`, `RemoveBonusIds`, `AddBonusIds`) VALUES (710058, 1, 29980, 1, 100, 0, 0, '', '29981');
+REPLACE INTO `z_item_upgrade` (`EntryID`, `Type`, `RequiredID`, `RequiredAmount`, `MaterialID`, `ReplaceItemID`, `ReplaceItemQuantity`, `RemoveBonusIds`, `AddBonusIds`) VALUES (710058, 1, 29981, 1, 101, 0, 0, '', '29982');
+REPLACE INTO `z_item_upgrade` (`EntryID`, `Type`, `RequiredID`, `RequiredAmount`, `MaterialID`, `ReplaceItemID`, `ReplaceItemQuantity`, `RemoveBonusIds`, `AddBonusIds`) VALUES (710058, 1, 29982, 1, 102, 0, 0, '', '29983');
+REPLACE INTO `z_item_upgrade` (`EntryID`, `Type`, `RequiredID`, `RequiredAmount`, `MaterialID`, `ReplaceItemID`, `ReplaceItemQuantity`, `RemoveBonusIds`, `AddBonusIds`) VALUES (710058, 1, 29983, 1, 103, 0, 0, '', '29984');
+REPLACE INTO `z_item_upgrade` (`EntryID`, `Type`, `RequiredID`, `RequiredAmount`, `MaterialID`, `ReplaceItemID`, `ReplaceItemQuantity`, `RemoveBonusIds`, `AddBonusIds`) VALUES (710058, 1, 29984, 1, 104, 0, 0, '', '29985');
+REPLACE INTO `z_item_upgrade` (`EntryID`, `Type`, `RequiredID`, `RequiredAmount`, `MaterialID`, `ReplaceItemID`, `ReplaceItemQuantity`, `RemoveBonusIds`, `AddBonusIds`) VALUES (710058, 1, 29985, 1, 105, 0, 0, '', '29986');
+REPLACE INTO `z_item_upgrade` (`EntryID`, `Type`, `RequiredID`, `RequiredAmount`, `MaterialID`, `ReplaceItemID`, `ReplaceItemQuantity`, `RemoveBonusIds`, `AddBonusIds`) VALUES (710058, 1, 29986, 1, 106, 0, 0, '', '29987');
+REPLACE INTO `z_item_upgrade` (`EntryID`, `Type`, `RequiredID`, `RequiredAmount`, `MaterialID`, `ReplaceItemID`, `ReplaceItemQuantity`, `RemoveBonusIds`, `AddBonusIds`) VALUES (710058, 1, 29987, 1, 107, 0, 0, '', '29988');
+REPLACE INTO `z_item_upgrade` (`EntryID`, `Type`, `RequiredID`, `RequiredAmount`, `MaterialID`, `ReplaceItemID`, `ReplaceItemQuantity`, `RemoveBonusIds`, `AddBonusIds`) VALUES (710058, 1, 29988, 1, 108, 0, 0, '', '29989');
+REPLACE INTO `z_item_upgrade` (`EntryID`, `Type`, `RequiredID`, `RequiredAmount`, `MaterialID`, `ReplaceItemID`, `ReplaceItemQuantity`, `RemoveBonusIds`, `AddBonusIds`) VALUES (710058, 1, 29989, 1, 109, 0, 0, '30000', '29990');
+REPLACE INTO `z_item_upgrade` (`EntryID`, `Type`, `RequiredID`, `RequiredAmount`, `MaterialID`, `ReplaceItemID`, `ReplaceItemQuantity`, `RemoveBonusIds`, `AddBonusIds`) VALUES (710059, 1, 29980, 1, 100, 0, 0, '', '29981');
+REPLACE INTO `z_item_upgrade` (`EntryID`, `Type`, `RequiredID`, `RequiredAmount`, `MaterialID`, `ReplaceItemID`, `ReplaceItemQuantity`, `RemoveBonusIds`, `AddBonusIds`) VALUES (710059, 1, 29981, 1, 101, 0, 0, '', '29982');
+REPLACE INTO `z_item_upgrade` (`EntryID`, `Type`, `RequiredID`, `RequiredAmount`, `MaterialID`, `ReplaceItemID`, `ReplaceItemQuantity`, `RemoveBonusIds`, `AddBonusIds`) VALUES (710059, 1, 29982, 1, 102, 0, 0, '', '29983');
+REPLACE INTO `z_item_upgrade` (`EntryID`, `Type`, `RequiredID`, `RequiredAmount`, `MaterialID`, `ReplaceItemID`, `ReplaceItemQuantity`, `RemoveBonusIds`, `AddBonusIds`) VALUES (710059, 1, 29983, 1, 103, 0, 0, '', '29984');
+REPLACE INTO `z_item_upgrade` (`EntryID`, `Type`, `RequiredID`, `RequiredAmount`, `MaterialID`, `ReplaceItemID`, `ReplaceItemQuantity`, `RemoveBonusIds`, `AddBonusIds`) VALUES (710059, 1, 29984, 1, 104, 0, 0, '', '29985');
+REPLACE INTO `z_item_upgrade` (`EntryID`, `Type`, `RequiredID`, `RequiredAmount`, `MaterialID`, `ReplaceItemID`, `ReplaceItemQuantity`, `RemoveBonusIds`, `AddBonusIds`) VALUES (710059, 1, 29985, 1, 105, 0, 0, '', '29986');
+REPLACE INTO `z_item_upgrade` (`EntryID`, `Type`, `RequiredID`, `RequiredAmount`, `MaterialID`, `ReplaceItemID`, `ReplaceItemQuantity`, `RemoveBonusIds`, `AddBonusIds`) VALUES (710059, 1, 29986, 1, 106, 0, 0, '', '29987');
+REPLACE INTO `z_item_upgrade` (`EntryID`, `Type`, `RequiredID`, `RequiredAmount`, `MaterialID`, `ReplaceItemID`, `ReplaceItemQuantity`, `RemoveBonusIds`, `AddBonusIds`) VALUES (710059, 1, 29987, 1, 107, 0, 0, '', '29988');
+REPLACE INTO `z_item_upgrade` (`EntryID`, `Type`, `RequiredID`, `RequiredAmount`, `MaterialID`, `ReplaceItemID`, `ReplaceItemQuantity`, `RemoveBonusIds`, `AddBonusIds`) VALUES (710059, 1, 29988, 1, 108, 0, 0, '', '29989');
+REPLACE INTO `z_item_upgrade` (`EntryID`, `Type`, `RequiredID`, `RequiredAmount`, `MaterialID`, `ReplaceItemID`, `ReplaceItemQuantity`, `RemoveBonusIds`, `AddBonusIds`) VALUES (710059, 1, 29989, 1, 109, 0, 0, '30000', '29990');
+REPLACE INTO `z_item_upgrade` (`EntryID`, `Type`, `RequiredID`, `RequiredAmount`, `MaterialID`, `ReplaceItemID`, `ReplaceItemQuantity`, `RemoveBonusIds`, `AddBonusIds`) VALUES (710060, 1, 29980, 1, 100, 0, 0, '', '29981');
+REPLACE INTO `z_item_upgrade` (`EntryID`, `Type`, `RequiredID`, `RequiredAmount`, `MaterialID`, `ReplaceItemID`, `ReplaceItemQuantity`, `RemoveBonusIds`, `AddBonusIds`) VALUES (710060, 1, 29981, 1, 101, 0, 0, '', '29982');
+REPLACE INTO `z_item_upgrade` (`EntryID`, `Type`, `RequiredID`, `RequiredAmount`, `MaterialID`, `ReplaceItemID`, `ReplaceItemQuantity`, `RemoveBonusIds`, `AddBonusIds`) VALUES (710060, 1, 29982, 1, 102, 0, 0, '', '29983');
+REPLACE INTO `z_item_upgrade` (`EntryID`, `Type`, `RequiredID`, `RequiredAmount`, `MaterialID`, `ReplaceItemID`, `ReplaceItemQuantity`, `RemoveBonusIds`, `AddBonusIds`) VALUES (710060, 1, 29983, 1, 103, 0, 0, '', '29984');
+REPLACE INTO `z_item_upgrade` (`EntryID`, `Type`, `RequiredID`, `RequiredAmount`, `MaterialID`, `ReplaceItemID`, `ReplaceItemQuantity`, `RemoveBonusIds`, `AddBonusIds`) VALUES (710060, 1, 29984, 1, 104, 0, 0, '', '29985');
+REPLACE INTO `z_item_upgrade` (`EntryID`, `Type`, `RequiredID`, `RequiredAmount`, `MaterialID`, `ReplaceItemID`, `ReplaceItemQuantity`, `RemoveBonusIds`, `AddBonusIds`) VALUES (710060, 1, 29985, 1, 105, 0, 0, '', '29986');
+REPLACE INTO `z_item_upgrade` (`EntryID`, `Type`, `RequiredID`, `RequiredAmount`, `MaterialID`, `ReplaceItemID`, `ReplaceItemQuantity`, `RemoveBonusIds`, `AddBonusIds`) VALUES (710060, 1, 29986, 1, 106, 0, 0, '', '29987');
+REPLACE INTO `z_item_upgrade` (`EntryID`, `Type`, `RequiredID`, `RequiredAmount`, `MaterialID`, `ReplaceItemID`, `ReplaceItemQuantity`, `RemoveBonusIds`, `AddBonusIds`) VALUES (710060, 1, 29987, 1, 107, 0, 0, '', '29988');
+REPLACE INTO `z_item_upgrade` (`EntryID`, `Type`, `RequiredID`, `RequiredAmount`, `MaterialID`, `ReplaceItemID`, `ReplaceItemQuantity`, `RemoveBonusIds`, `AddBonusIds`) VALUES (710060, 1, 29988, 1, 108, 0, 0, '', '29989');
+REPLACE INTO `z_item_upgrade` (`EntryID`, `Type`, `RequiredID`, `RequiredAmount`, `MaterialID`, `ReplaceItemID`, `ReplaceItemQuantity`, `RemoveBonusIds`, `AddBonusIds`) VALUES (710060, 1, 29989, 1, 109, 0, 0, '30000', '29990');
+REPLACE INTO `z_item_upgrade` (`EntryID`, `Type`, `RequiredID`, `RequiredAmount`, `MaterialID`, `ReplaceItemID`, `ReplaceItemQuantity`, `RemoveBonusIds`, `AddBonusIds`) VALUES (710061, 1, 29980, 1, 100, 0, 0, '', '29981');
+REPLACE INTO `z_item_upgrade` (`EntryID`, `Type`, `RequiredID`, `RequiredAmount`, `MaterialID`, `ReplaceItemID`, `ReplaceItemQuantity`, `RemoveBonusIds`, `AddBonusIds`) VALUES (710061, 1, 29981, 1, 101, 0, 0, '', '29982');
+REPLACE INTO `z_item_upgrade` (`EntryID`, `Type`, `RequiredID`, `RequiredAmount`, `MaterialID`, `ReplaceItemID`, `ReplaceItemQuantity`, `RemoveBonusIds`, `AddBonusIds`) VALUES (710061, 1, 29982, 1, 102, 0, 0, '', '29983');
+REPLACE INTO `z_item_upgrade` (`EntryID`, `Type`, `RequiredID`, `RequiredAmount`, `MaterialID`, `ReplaceItemID`, `ReplaceItemQuantity`, `RemoveBonusIds`, `AddBonusIds`) VALUES (710061, 1, 29983, 1, 103, 0, 0, '', '29984');
+REPLACE INTO `z_item_upgrade` (`EntryID`, `Type`, `RequiredID`, `RequiredAmount`, `MaterialID`, `ReplaceItemID`, `ReplaceItemQuantity`, `RemoveBonusIds`, `AddBonusIds`) VALUES (710061, 1, 29984, 1, 104, 0, 0, '', '29985');
+REPLACE INTO `z_item_upgrade` (`EntryID`, `Type`, `RequiredID`, `RequiredAmount`, `MaterialID`, `ReplaceItemID`, `ReplaceItemQuantity`, `RemoveBonusIds`, `AddBonusIds`) VALUES (710061, 1, 29985, 1, 105, 0, 0, '', '29986');
+REPLACE INTO `z_item_upgrade` (`EntryID`, `Type`, `RequiredID`, `RequiredAmount`, `MaterialID`, `ReplaceItemID`, `ReplaceItemQuantity`, `RemoveBonusIds`, `AddBonusIds`) VALUES (710061, 1, 29986, 1, 106, 0, 0, '', '29987');
+REPLACE INTO `z_item_upgrade` (`EntryID`, `Type`, `RequiredID`, `RequiredAmount`, `MaterialID`, `ReplaceItemID`, `ReplaceItemQuantity`, `RemoveBonusIds`, `AddBonusIds`) VALUES (710061, 1, 29987, 1, 107, 0, 0, '', '29988');
+REPLACE INTO `z_item_upgrade` (`EntryID`, `Type`, `RequiredID`, `RequiredAmount`, `MaterialID`, `ReplaceItemID`, `ReplaceItemQuantity`, `RemoveBonusIds`, `AddBonusIds`) VALUES (710061, 1, 29988, 1, 108, 0, 0, '', '29989');
+REPLACE INTO `z_item_upgrade` (`EntryID`, `Type`, `RequiredID`, `RequiredAmount`, `MaterialID`, `ReplaceItemID`, `ReplaceItemQuantity`, `RemoveBonusIds`, `AddBonusIds`) VALUES (710061, 1, 29989, 1, 109, 0, 0, '30000', '29990');
+

@@ -159,7 +159,7 @@ class TC_GAME_API Object
         static ObjectGuid GetGUID(Object const* o) { return o ? o->GetGUID() : ObjectGuid::Empty; }
         ObjectGuid const& GetGUID() const { return m_guid; }
         uint32 GetEntry() const { return m_objectData->EntryID; }
-        void SetEntry(uint32 entry) { SetUpdateFieldValue(m_values.ModifyValue(&Object::m_objectData).ModifyValue(&UF::ObjectData::EntryID), entry); }
+        virtual void SetEntry(uint32 entry) { SetUpdateFieldValue(m_values.ModifyValue(&Object::m_objectData).ModifyValue(&UF::ObjectData::EntryID), entry); }
 
         float GetObjectScale() const { return m_objectData->Scale; }
         virtual void SetObjectScale(float scale) { SetUpdateFieldValue(m_values.ModifyValue(&Object::m_objectData).ModifyValue(&UF::ObjectData::Scale), scale); }

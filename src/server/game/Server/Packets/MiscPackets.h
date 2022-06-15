@@ -951,6 +951,14 @@ namespace WorldPackets
             ObjectGuid SourceGuid;
         };
 
+        class CloseRuneforgeInteraction final : public ClientPacket
+        {
+        public:
+            CloseRuneforgeInteraction(WorldPacket&& packet) : ClientPacket(CMSG_CLOSE_RUNEFORGE_INTERACTION, std::move(packet)) { }
+
+            void Read() override { }
+        };
+
         class StartTimer final : public ServerPacket
         {
         public:

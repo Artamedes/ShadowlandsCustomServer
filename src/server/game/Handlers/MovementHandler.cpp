@@ -251,6 +251,12 @@ void WorldSession::HandleMoveWorldportAck()
 
     //lets process all delayed operations on successful teleport
     player->ProcessDelayedOperations();
+
+    if (player->TeleportCallback)
+    {
+        player->TeleportCallback();
+        player->TeleportCallback = nullptr;
+    }
 }
 
 void WorldSession::HandleSuspendTokenResponse(WorldPackets::Movement::SuspendTokenResponse& /*suspendTokenResponse*/)

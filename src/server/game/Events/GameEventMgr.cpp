@@ -861,6 +861,10 @@ void GameEventMgr::LoadFromDB()
                     if (Optional<int32> bonusListID = Trinity::StringTo<int32>(token))
                         vItem.BonusListIDs.push_back(*bonusListID);
 
+                /// PIGPIGPIG
+                if (vItem.item >= 710050 && vItem.item <= 710070)
+                    vItem.Context = ItemContext::Legendary_Crafting_1;
+
                 // check validity with event's npcflag
                 if (!sObjectMgr->IsVendorItemValid(entry, vItem, nullptr, nullptr, event_npc_flag))
                     continue;

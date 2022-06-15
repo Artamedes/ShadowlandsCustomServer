@@ -180,6 +180,7 @@ class TC_GAME_API Item : public Object
         ~Item();
 
         virtual bool Create(ObjectGuid::LowType guidlow, uint32 itemId, ItemContext context, Player const* owner);
+        virtual void SetEntry(uint32 entry) override;
 
         std::string GetNameForLocaleIdx(LocaleConstant locale) const override;
 

@@ -4891,6 +4891,9 @@ void Player::DurabilityLossAll(double percent, bool inventory)
 
 void Player::DurabilityLoss(Item* item, double percent)
 {
+    // durability is now disabled.
+    return;
+
     if (!item)
         return;
 
@@ -23923,8 +23926,8 @@ inline bool Player::_StoreOrEquipNewItem(uint32 vendorslot, uint32 item, uint8 c
     }
 
     Item* it = bStore ?
-        StoreNewItem(vDest, item, true, GenerateItemRandomBonusListId(item), {}, ItemContext::Vendor, crItem->BonusListIDs, false) :
-        EquipNewItem(uiDest, item, ItemContext::Vendor, true);
+        StoreNewItem(vDest, item, true, GenerateItemRandomBonusListId(item), {}, crItem->Context, crItem->BonusListIDs, false) :
+        EquipNewItem(uiDest, item, crItem->Context, true);
     if (it)
     {
         uint32 new_count = pVendor->UpdateVendorItemCurrentCount(crItem, count);

@@ -9727,6 +9727,10 @@ void ObjectMgr::LoadVendors()
                 if (Optional<int32> bonusListID = Trinity::StringTo<int32>(token))
                     vItem.BonusListIDs.push_back(*bonusListID);
 
+            /// PIGPIGPIG
+            if (vItem.item >= 710050 && vItem.item <= 710070)
+                vItem.Context = ItemContext::Legendary_Crafting_1;
+
             if (!IsVendorItemValid(entry, vItem, nullptr, &skip_vendors))
                 continue;
 
