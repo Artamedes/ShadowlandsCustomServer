@@ -4118,8 +4118,28 @@ class spell_divine_storm_damage : public SpellScript
     void HandleHitTarget(SpellEffIndex /*effIndex*/)
     {
         if (Unit* caster = GetCaster())
+        {
             if (caster->HasAura(SPELL_PALADIN_DIVINE_JUDGMENT))
                 caster->CastSpell(caster, SPELL_PALADIN_DIVINE_JUDGMENT_AURA, true);
+
+            if (auto spell = GetSpell())
+            {
+                if (spell->GetTriggeredCastFlags() & TRIGGERED_CASTED_BY_AREATRIGGER)
+                {
+                    if (caster->Variables.Exist("DivineStormDamage"))
+                        SetHitDamage(caster->Variables.GetValue("DivineStormDamage", 0u) * 0.20f);
+                }
+                else
+                {
+                    if (caster->Variables.Exist("DivineStormDamage"))
+                    {
+                        uint32 damage = caster->Variables.GetValue("DivineStormDamage", 0u);
+                        damage += GetHitDamage();
+                        caster->Variables.Set("DivineStormDamage", damage);
+                    }
+                }
+            }
+        }
     }
 
     void Register() override
@@ -4511,6 +4531,40 @@ private:
     ObjectGuid mainTarget;
 };
 
+/// ID: 24275 Hammer of Wrath
+class spell_hammer_of_wrath : public SpellScript
+{
+    PrepareSpellScript(spell_hammer_of_wrath);
+
+    enum eHammerOfWrath
+    {
+        TheMadParagon = 337594,
+    };
+
+    void HandleDmg(SpellEffIndex /*eff*/)
+    {
+        if (auto caster = GetCaster())
+        {
+            if (caster->HasAura(TheMadParagon))
+            {
+                if (auto avengingWrath = caster->GetAura(SPELL_PALADIN_AVENGING_WRATH))
+                {
+                    avengingWrath->ModDuration(1000);
+                }
+                if (auto avengingWrath = caster->GetAura(SPELL_PALADIN_CRUSADE))
+                {
+                    avengingWrath->ModDuration(1000);
+                }
+            }
+        }
+    }
+
+    void Register() override
+    {
+        OnEffectHitTarget += SpellEffectFn(spell_hammer_of_wrath::HandleDmg, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
+    }
+};
+
 void AddSC_paladin_spell_scripts()
 {
     new spell_pal_bastion_of_light();
@@ -4616,6 +4670,7 @@ void AddSC_paladin_spell_scripts()
     RegisterSpellScript(aura_pal_pure_of_heart_trigger);
     RegisterSpellScript(aura_pal_avening_light);
     RegisterSpellScript(spell_pal_avenging_light_damage);
+    RegisterSpellScript(spell_hammer_of_wrath);
 
     // NPC Scripts
     RegisterCreatureAI(npc_pal_lights_hammer);

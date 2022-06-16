@@ -3,6 +3,13 @@
 
 using namespace Paladin;
 
+enum eRetribution
+{
+    DivineTempest = 186775, ///< Areatrigger - 4366
+    DivineStormDmg = 224239,
+    TempestOfTheLightbringer = 337257,
+};
+
 // 53385 - Divine Storm
 class spell_pal_divine_storm : public SpellScript
 {
@@ -16,6 +23,16 @@ class spell_pal_divine_storm : public SpellScript
             holyPower = powerCost.Amount;
     }
 
+    void HandleBeforeCast()
+    {
+        auto caster = GetCaster();
+        if (!caster)
+            return;
+
+        if (caster->Variables.Exist("DivineStormDamage"))
+            caster->Variables.Remove("DivineStormDamage");
+    }
+
     void HandleAfterCast()
     {
         auto caster = GetCaster();
@@ -24,6 +41,9 @@ class spell_pal_divine_storm : public SpellScript
 
         if (caster->Variables.Exist("EmpoweredDivineStorm"))
             caster->Variables.Remove("EmpoweredDivineStorm");
+
+        if (caster->HasAura(TempestOfTheLightbringer))
+            caster->CastSpell(caster, DivineTempest, true);
     }
 
     void HandleDmg(SpellEffIndex /*eff*/)
@@ -63,6 +83,7 @@ class spell_pal_divine_storm : public SpellScript
     {
         OnTakePower += SpellOnTakePowerFn(spell_pal_divine_storm::HandleTakePower);
         OnEffectHitTarget += SpellEffectFn(spell_pal_divine_storm::HandleDmg, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
+        BeforeCast += SpellCastFn(spell_pal_divine_storm::HandleBeforeCast);
         AfterCast += SpellCastFn(spell_pal_divine_storm::HandleAfterCast);
     }
 };
@@ -384,6 +405,27 @@ class spell_templars_vindication : public AuraScript
     }
 };
 
+// 4366
+struct at_divine_tempest : public AreaTriggerAI
+{
+public:
+    at_divine_tempest(AreaTrigger* at) : AreaTriggerAI(at)
+    {
+
+    }
+
+    void OnUnitEnter(Unit* who) override
+    {
+        if (auto caster = at->GetCaster())
+        {
+            if (caster->IsValidAttackTarget(who))
+            {
+                caster->CastSpell(who, DivineStormDmg, CastSpellExtraArgs(TRIGGERED_FULL_MASK | TRIGGERED_CASTED_BY_AREATRIGGER));
+            }
+        }
+    }
+};
+
 void AddSC_spell_paladin_retribution()
 {
     RegisterSpellScript(spell_pal_divine_storm);
@@ -396,4 +438,6 @@ void AddSC_spell_paladin_retribution()
     RegisterSpellScript(spell_virtuous_command);
     RegisterSpellScript(spell_virtuous_command_proc);
     RegisterSpellScript(spell_templars_vindication);
+
+    RegisterAreaTriggerAI(at_divine_tempest);
 }
