@@ -690,9 +690,23 @@ class aura_pri_twist_of_fate_discipline : public AuraScript
 
 	bool CheckProc(ProcEventInfo& eventInfo)
 	{
+        if (!eventInfo.GetSpellInfo())
+            return false;
+
+        switch (eventInfo.GetSpellInfo()->Id)
+        {
+            case 265258: ///< inner proc
+            case 198069: ///< Power of the Dark Side
+                return false;
+
+            default:
+                break;
+        }
+
 		if (Unit* target = eventInfo.GetActionTarget())
 			if (eventInfo.GetHealInfo() && eventInfo.GetHealInfo()->GetHeal() > 0 && target->HealthBelowPct(sSpellMgr->GetSpellInfo(SPELL_PRIEST_TWIST_OF_FATE_SHADOW)->GetEffect(EFFECT_0).BasePoints))
 				return true;
+
 		return false;
 	}
 
