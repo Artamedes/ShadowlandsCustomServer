@@ -171,10 +171,229 @@ class spell_execution_sentence : public AuraScript
 //    }
 //};
 
+/// ID: 336872 Final Verdict
+class spell_final_verdict : public SpellScript
+{
+    PrepareSpellScript(spell_final_verdict);
+
+    enum eFinalVerdict
+    {
+        FinalVerdictHammerOfWrathProc = 337228,
+    };
+
+    void HandleDummy(SpellEffIndex /*eff*/)
+    {
+        if (auto caster = GetCaster())
+        {
+            if (roll_chance_i(15))
+                caster->CastSpell(caster, FinalVerdictHammerOfWrathProc, true);
+        }
+
+    }
+
+    void Register() override
+    {
+        OnEffectHitTarget += SpellEffectFn(spell_final_verdict::HandleDummy, EFFECT_1, SPELL_EFFECT_DUMMY);
+    }
+};
+
+/// ID: 337228 Final Verdict
+class spell_final_verdict_proc : public AuraScript
+{
+    PrepareAuraScript(spell_final_verdict_proc);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == 24275; ///< Hammer of wrath
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_final_verdict_proc::CheckProc);
+    }
+};
+
+/// ID: 339374 Truth's Wake
+class spell_truths_wake : public AuraScript
+{
+    PrepareAuraScript(spell_truths_wake);
+
+    enum eTruthsWake
+    {
+        TruthsWakeDot = 339376,
+    };
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == 255937 && eventInfo.GetDamageInfo(); ///< Wake of ashes
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (auto caster = GetCaster())
+        {
+            if (auto target = eventInfo.GetActionTarget())
+            {
+                if (auto aurEff = GetEffect(EFFECT_0))
+                    if (aurEff->ConduitRankEntry)
+                        if (eventInfo.GetDamageInfo())
+                        {
+                            auto dam = eventInfo.GetDamageInfo()->GetDamage();
+                            dam = CalculatePct(dam, aurEff->ConduitRankEntry->AuraPointsOverride);
+                            caster->CastSpell(target, TruthsWakeDot, CastSpellExtraArgs(true).AddSpellBP0(dam));
+                        }
+            }
+        }
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_truths_wake::CheckProc);
+        OnProc += AuraProcFn(spell_truths_wake::HandleProc);
+    }
+};
+
+enum eVirtousCommandConduit
+{
+    VirtousCommandConduit = 339518,
+    VirtousCommandProc = 339664,
+    VirtousCommandDmg = 339669,
+};
+
+/// ID: 339518 Virtuous Command
+class spell_virtuous_command : public AuraScript
+{
+    PrepareAuraScript(spell_virtuous_command);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == PaladinSpells::Judgement && eventInfo.GetDamageInfo() && eventInfo.GetDamageInfo()->GetDamage() > 0;
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (auto caster = GetCaster())
+            caster->CastSpell(caster, VirtousCommandProc, true);
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_virtuous_command::CheckProc);
+        OnProc += AuraProcFn(spell_virtuous_command::HandleProc);
+    }
+};
+
+/// ID: 339664 Virtuous Command
+class spell_virtuous_command_proc : public AuraScript
+{
+    PrepareAuraScript(spell_virtuous_command_proc);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        if (!eventInfo.GetDamageInfo())
+            return false;
+
+        if (!eventInfo.GetDamageInfo()->GetDamage())
+            return false;
+
+        if (eventInfo.GetSpellInfo())
+        {
+            switch (eventInfo.GetSpellInfo()->Id)
+            {
+                case 336872: ///< Final verdict
+                case TemplarsVerdict:
+                case BladeOfJustice:
+                case CrusaderStrike:
+                    return true;
+
+                default:
+                    return false;
+            }
+        }
+
+        return true;
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (auto caster = GetCaster())
+        {
+            if (auto target = eventInfo.GetActionTarget())
+            {
+                if (eventInfo.GetDamageInfo())
+                {
+                    if (auto aurEff = caster->GetAuraEffect(VirtousCommandConduit, EFFECT_0))
+                    {
+                        if (aurEff->ConduitRankEntry)
+                        {
+                            auto dmg = eventInfo.GetDamageInfo()->GetDamage();
+                            dmg = CalculatePct(dmg, aurEff->ConduitRankEntry->AuraPointsOverride);
+                            caster->CastSpell(target, eVirtousCommandConduit::VirtousCommandDmg, CastSpellExtraArgs(true).AddSpellBP0(dmg));
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_virtuous_command_proc::CheckProc);
+        OnProc += AuraProcFn(spell_virtuous_command_proc::HandleProc);
+    }
+};
+
+/// ID: 339531 Templar's Vindication
+class spell_templars_vindication : public AuraScript
+{
+    PrepareAuraScript(spell_templars_vindication);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        if (!eventInfo.GetSpellInfo())
+            return false;
+
+        switch (eventInfo.GetSpellInfo()->Id)
+        {
+            case TemplarsVerdict:
+            case 336872: ///< Final verdict
+                return roll_chance_i(GetEffect(EFFECT_0)->GetAmount());
+            default:
+                return false;
+        }
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (auto caster = GetCaster())
+        {
+            if (auto target = eventInfo.GetActionTarget())
+            {
+                if (auto spellInfo = eventInfo.GetSpellInfo())
+                {
+                    caster->CastSpell(target, spellInfo->Id, true);
+                }
+            }
+        }
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_templars_vindication::CheckProc);
+        OnProc += AuraProcFn(spell_templars_vindication::HandleProc);
+    }
+};
+
 void AddSC_spell_paladin_retribution()
 {
     RegisterSpellScript(spell_pal_divine_storm);
     RegisterSpellScript(spell_expurgation);
     RegisterSpellScript(spell_execution_sentence);
     //RegisterSpellScript(spell_execution_sentence_dmg);
+    RegisterSpellScript(spell_final_verdict);
+    RegisterSpellScript(spell_final_verdict_proc);
+    RegisterSpellScript(spell_truths_wake);
+    RegisterSpellScript(spell_virtuous_command);
+    RegisterSpellScript(spell_virtuous_command_proc);
+    RegisterSpellScript(spell_templars_vindication);
 }

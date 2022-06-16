@@ -2397,6 +2397,11 @@ SpellCastResult SpellInfo::CheckTarget(WorldObject const* caster, WorldObject co
 
 SpellCastResult SpellInfo::CheckExplicitTarget(WorldObject const* caster, WorldObject const* target, Item const* itemTarget /*= nullptr*/) const
 {
+    /// DontFailSpellOnTargetingFailure
+    // must implement in future - if we do this server asserts later..
+    //if (Id == 304971)
+    //    return SPELL_CAST_OK;
+
     uint32 neededTargets = GetExplicitTargetMask();
     if (!target)
     {
@@ -2425,6 +2430,7 @@ SpellCastResult SpellInfo::CheckExplicitTarget(WorldObject const* caster, WorldO
             if ((neededTargets & TARGET_FLAG_UNIT_PASSENGER) && unitCaster)
                 if (unitTarget->IsOnVehicle(unitCaster))
                     return SPELL_CAST_OK;
+
             return SPELL_FAILED_BAD_TARGETS;
         }
     }

@@ -3290,6 +3290,11 @@ void SpellMgr::LoadSpellInfoCorrections()
 
     // Some spells have no amplitude set
     {
+        ///  Ashen Hallow
+        ApplySpellFix({ 317223, 317221 }, [](SpellInfo* info)
+        {
+            info->AttributesEx2 |= SPELL_ATTR2_IGNORE_LINE_OF_SIGHT;
+        });
         /// Thunderfury
         ApplySpellFix({ 21992 }, [](SpellInfo* info)
         {
