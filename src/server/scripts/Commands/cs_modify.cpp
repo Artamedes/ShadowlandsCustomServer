@@ -1013,6 +1013,7 @@ public:
             return false;
 
         target->ModifyCurrency(currencyId, amount, true, true);
+        handler->PSendSysMessage("Sent [%s]x%u to %s", currencyType->Name.Str[0], amount, target->GetName().c_str());
 
         return true;
     }

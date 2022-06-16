@@ -966,11 +966,11 @@ GenericMovementGenerator* MotionMaster::MoveSmoothPath(uint32 pointId, Position 
     {
         init.MovebyPath(path);
         init.SetWalk(walk);
+        init.SetUncompressed();
+        init.SetSmooth();
         if (fly)
         {
             init.SetFly();
-            init.SetUncompressed();
-            init.SetSmooth();
         }
         if (velocity)
         {
