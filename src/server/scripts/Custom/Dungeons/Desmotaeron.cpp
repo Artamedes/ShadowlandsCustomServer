@@ -63,13 +63,13 @@ enum DesmotareonSpells
     FocusedAnnihilation = 348757,
 
     /// Brutes / Guards
-    ColossalSmash = 356088,
-    DefilingDreadslam = 357364,
-    BeastialHowl = 333929,
-    BellowingRoar = 335485,
-    BlazingInferno = 357181,
-    TouchOfFlame = 346121, ///< Aura on spawn/Reset
-    RisingHeat = 357194, ///< Ramp up on HP %
+    ColossalSmash       = 356088,
+    DefilingDreadslam   = 357364,
+    BeastialHowl        = 333929,
+    BellowingRoar       = 335485,
+    BlazingInferno      = 357181,
+    TouchOfFlame        = 346121, ///< Aura on spawn/Reset
+    RisingHeat          = 357194, ///< Ramp up on HP %
 
     ///< Guards
     IronShackles = 347163,
@@ -1040,21 +1040,21 @@ public:
             {
                 case 357333: ///< Soulflame Torrent
                     if (type != DamageEffectType::DOT)
-                        damage = victim->CountPctFromMaxHealth(50);
+                        damage += victim->CountPctFromMaxHealth(50);
 
                     if (instance)
                         if (auto challenge = instance->GetChallenge())
                             damage += 5 * challenge->GetChallengeLevel();
                     break;
                 case GiantSlam:
-                    damage = victim->CountPctFromMaxHealth(50);
+                    damage += victim->CountPctFromMaxHealth(50);
 
                     if (instance)
                         if (auto challenge = instance->GetChallenge())
                             damage += 5 * challenge->GetChallengeLevel();
                     break;
                 case 308864: ///< Charged Weapons
-                    damage = victim->CountPctFromMaxHealth(30);
+                    damage += victim->CountPctFromMaxHealth(30);
 
                     if (instance)
                         if (auto challenge = instance->GetChallenge())
@@ -1250,14 +1250,14 @@ public:
                 case DeathWave:
                 case 297028: ///< Soul Echo Missle DMG
                     if (type != DamageEffectType::DOT)
-                        damage = victim->CountPctFromMaxHealth(80);
+                        damage += victim->CountPctFromMaxHealth(80);
 
                     if (instance)
                         if (auto challenge = instance->GetChallenge())
                             damage += 5 * challenge->GetChallengeLevel();
                     break;
                 case 308864: ///< Charged Weapons
-                    damage = victim->CountPctFromMaxHealth(30);
+                    damage += victim->CountPctFromMaxHealth(30);
 
                     if (instance)
                         if (auto challenge = instance->GetChallenge())
@@ -1336,6 +1336,354 @@ public:
     bool phased = false;
 };
 
+const Position UnboundShadeMongrelPathOne[] =
+{
+    { 4430.86f, 5817.04f, 4784.69f, 2.53783f },
+    { 4407.82f, 5830.98f, 4784.69f, 2.50248f },
+    { 4394.71f, 5848.27f, 4784.69f, 2.21974f },
+    { 4383.55f, 5865.14f, 4784.69f, 2.1844f },
+    { 4375.72f, 5876.59f, 4784.08f, 1.75243f },
+    { 4371.11f, 5894.01f, 4784.45f, 1.94093f },
+    { 4356.94f, 5911.34f, 4784.06f, 2.31006f },
+    { 4341.17f, 5925.21f, 4786.24f, 2.42002f },
+    { 4331.18f, 5938.62f, 4789.42f, 2.20011f },
+    { 4316.96f, 5962.5f, 4795.42f, 2.09015f },
+    { 4309.46f, 5975.14f, 4795.75f, 2.13335f },
+    { 4289.49f, 5986.17f, 4795.36f, 2.85199f },
+    { 4262.99f, 5987.65f, 4807.47f, 3.10724f },
+    { 4252.5f, 5987.76f, 4814.74f, 3.1308f },
+    { 4224.44f, 5996.74f, 4815.34f, 1.85453f },
+    { 4214.65f, 6027.4f, 4815.24f, 1.91344f },
+    { 4204.21f, 6045.17f, 4815.23f, 2.37682f },
+    { 4194.07f, 6053.77f, 4823.46f, 2.49856f },
+    { 4182.69f, 6061.92f, 4832.57f, 2.52212f },
+    { 4160.4f, 6076.99f, 4833.97f, 2.62422f },
+};
+
+using UnboundShadeMongrelPathSizeOne = std::extent<decltype(UnboundShadeMongrelPathOne)>;
+
+const Position UnboundShadeMongrelPathTwo[] =
+{
+    { 4146.49f, 6078.07f, 4836.24f, 3.06404f },
+    { 4123.65f, 6079.35f, 4844.37f, 3.16222f },
+    { 4111.13f, 6079.79f, 4847.29f, 3.19756f },
+    { 4095.99f, 6070.54f, 4847.93f, 4.23036f },
+    { 4093.1f, 6059.26f, 4848.35f, 4.48561f },
+    { 4092.23f, 6009.72f, 4852.68f, 4.7173f },
+    { 4058.39f, 5952.26f, 4855.36f, 4.08899f },
+    { 4086.53f, 5901.49f, 4854.84f, 5.24744f },
+    { 4102.44f, 5856.89f, 4856.1f, 4.92544f },
+    { 4106.98f, 5833.85f, 4853.44f, 5.12964f },
+    { 4114.17f, 5826.21f, 4850.98f, 5.5027f },
+    { 4130.75f, 5818.09f, 4846.71f, 0.248382f },
+    { 4147.35f, 5825.46f, 4842.6f, 0.507564f },
+    { 4154.81f, 5832.85f, 4840.25f, 1.3126f },
+    { 4156.72f, 5846.71f, 4836.67f, 1.4147f },
+    { 4160.31f, 5885.72f, 4836.09f, 1.52858f },
+    { 4161.54f, 5905.27f, 4836.09f, 1.46968f },
+    { 4168.44f, 5925.74f, 4832.44f, 1.07305f },
+    { 4190.47f, 5939.59f, 4826.96f, 0.232673f },
+    { 4215.94f, 5950.11f, 4820.71f, 0.664642f },
+    { 4219.53f, 5965.81f, 4817.09f, 1.34794f },
+    { 4230.64f, 5985.86f, 4815.49f, 0.868846f },
+    { 4247.33f, 5987.48f, 4815.06f, 0.00490713f },
+    { 4251.53f, 5987.5f, 4815.07f, 0.00490713f },
+    { 4280.22f, 5986.97f, 4795.85f, 0.000979424f },
+    { 4337.3f, 5973.96f, 4797.64f, 6.05247f },
+    { 4370.35f, 5969.64f, 4801.74f, 6.23704f },
+    { 4395.49f, 5967.97f, 4818.85f, 6.18206f },
+    { 4399.43f, 5963.06f, 4819.29f, 5.271f },
+    { 4405.13f, 5952.1f, 4819.74f, 4.8783f },
+    { 4403.64f, 5932.58f, 4819.74f, 4.572f },
+    { 4401.15f, 5909.64f, 4819.74f, 4.71337f },
+    { 4407.1f, 5888.96f, 4819.74f, 5.11785f },
+    { 4417.43f, 5869.89f, 4819.74f, 5.271f },
+    { 4431.01f, 5856.8f, 4819.75f, 5.62835f },
+    { 4420.31f, 5865.64f, 4819.74f, 2.25899f },
+};
+
+using UnboundShadeMongrelPathSizeTwo = std::extent<decltype(UnboundShadeMongrelPathTwo)>;
+
+const Position UnboundShadeMongrelPathThree[] =
+{
+    { 4420.31f, 5865.64f, 4819.74f, 2.1883f },
+    { 4413.64f, 5878.73f, 4819.74f, 2.02337f },
+    { 4405.59f, 5896.59f, 4819.74f, 1.90949f },
+    { 4402.77f, 5913.13f, 4819.74f, 1.71314f },
+    { 4403.25f, 5931.32f, 4819.74f, 1.52857f },
+    { 4404.55f, 5941.74f, 4819.74f, 1.59925f },
+};
+
+using UnboundShadeMongrelPathSizeThree = std::extent<decltype(UnboundShadeMongrelPathThree)>;
+
+// 708016 - npc_unbound_shademongrel_708016
+struct npc_unbound_shademongrel_708016 : public BaseCustomScriptedAI
+{
+public:
+    npc_unbound_shademongrel_708016(Creature* creature) : BaseCustomScriptedAI(creature) { }
+
+    enum eUnboundShademongrel
+    {
+        HollowBite = 336803,
+        Rake = 319628,
+    };
+
+    void InitializeAI() override
+    {
+        if (me->GetSpawnId() == 1056047)
+            DoPath();
+    }
+
+    void Reset() override
+    {
+        BaseCustomScriptedAI::Reset();
+
+        if (me->GetSpawnId() == 1056047)
+            DoPath();
+    }
+
+    void JustEngagedWith(Unit* who) override
+    {
+        scheduler.Schedule(1s, 4s, [this](TaskContext context)
+        {
+            DoCastVictim(HollowBite);
+            context.Repeat(10s, 15s);
+        });
+        scheduler.Schedule(1s, 4s, [this](TaskContext context)
+        {
+            DoCastVictim(Rake);
+            context.Repeat(10s, 15s);
+        });
+    }
+
+    void UpdateAI(uint32 diff) override
+    {
+        if (me->GetSpawnId() == 1056047 && !me->IsEngaged() && !PathDone)
+            me->SignalFormationMovement();
+
+        BaseCustomScriptedAI::UpdateAI(diff);
+    }
+
+    bool PathDone = false;
+
+    void DoPath()
+    {
+        if (PathDone)
+            return;
+
+        me->GetMotionMaster()->MoveSmoothPath(0, UnboundShadeMongrelPathOne, UnboundShadeMongrelPathSizeOne::value)->callbackFunc = [this]
+        {
+            me->GetMotionMaster()->MoveSmoothPath(0, UnboundShadeMongrelPathTwo, UnboundShadeMongrelPathSizeTwo::value)->callbackFunc = [this]
+            {
+                PathDone = true;
+            };
+        };
+    }
+
+    void OnUnitRelocation(Unit* who) override
+    {
+        if (who->IsPlayer() && PathDone && who->GetDistance2d(me) <= 50.0f)
+        {
+            me->GetMotionMaster()->MoveSmoothPath(0, UnboundShadeMongrelPathThree, UnboundShadeMongrelPathSizeThree::value)->callbackFunc = [this]
+            {
+
+            };
+        }
+    }
+};
+
+// 707019 - npc_bagnok_the_infernal_707019
+struct npc_bagnok_the_infernal_707019 : public BaseCustomScriptedAI
+{
+public:
+    npc_bagnok_the_infernal_707019(Creature* creature) : BaseCustomScriptedAI(creature) { }
+
+    void Reset() override
+    {
+        BaseCustomScriptedAI::Reset();
+        DidPhase90Pct = false;
+        DidPhase80Pct = false;
+        DidPhase70Pct = false;
+        DidPhase60Pct = false;
+        DidPhase50Pct = false;
+        DidPhase40Pct = false;
+        DidPhase30Pct = false;
+        DidPhase20Pct = false;
+        DidPhase10Pct = false;
+
+        DoCastSelf(TouchOfFlame);
+    }
+
+    void JustEngagedWith(Unit* /*who*/) override
+    {
+        scheduler.Schedule(1s, 11s, [this](TaskContext context)
+        {
+            DoCastVictim(BeastialHowl);
+            context.Repeat(10s, 15s);
+        });
+        scheduler.Schedule(1s, 14s, [this](TaskContext context)
+        {
+            DoCastVictim(BellowingRoar);
+            context.Repeat(10s, 15s);
+        });
+        scheduler.Schedule(1s, 14s, [this](TaskContext context)
+        {
+            DoCastVictim(BlazingInferno);
+            context.Repeat(10s, 15s);
+        });
+    }
+
+    void DamageDealt(Unit* victim, uint32& damage, DamageEffectType type, SpellInfo const* spellInfo /*= nullptr*/) override
+    {
+        if (spellInfo && victim)
+        {
+            switch (spellInfo->Id)
+            {
+                case 357179: ///< Blazing Inferno DMG
+                    damage += victim->CountPctFromMaxHealth(70);
+                    ApplyChallengeDMGIncrease(me, damage, 5);
+                    break;
+                case BellowingRoar:
+                    damage += victim->CountPctFromMaxHealth(30);
+                    ApplyChallengeDMGIncrease(me, damage, 5);
+                    break;
+            }
+        }
+    }
+
+    bool DidPhase90Pct = false;
+    bool DidPhase80Pct = false;
+    bool DidPhase70Pct = false;
+    bool DidPhase60Pct = false;
+    bool DidPhase50Pct = false;
+    bool DidPhase40Pct = false;
+    bool DidPhase30Pct = false;
+    bool DidPhase20Pct = false;
+    bool DidPhase10Pct = false;
+
+    void DamageTaken(Unit* attacker, uint32& damage, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
+    {
+        auto CheckHealthAndDoPhaseIfNeed([&](uint32 healthPct, bool& phaseVar)
+        {
+            if (me->HealthBelowPctDamaged(healthPct, damage) && !phaseVar)
+            {
+                phaseVar = true;
+                DoCastSelf(RisingHeat);
+            }
+        });
+
+        CheckHealthAndDoPhaseIfNeed(91, DidPhase90Pct);
+        CheckHealthAndDoPhaseIfNeed(81, DidPhase80Pct);
+        CheckHealthAndDoPhaseIfNeed(71, DidPhase70Pct);
+        CheckHealthAndDoPhaseIfNeed(61, DidPhase60Pct);
+        CheckHealthAndDoPhaseIfNeed(51, DidPhase50Pct);
+        CheckHealthAndDoPhaseIfNeed(41, DidPhase40Pct);
+        CheckHealthAndDoPhaseIfNeed(31, DidPhase30Pct);
+        CheckHealthAndDoPhaseIfNeed(21, DidPhase20Pct);
+        CheckHealthAndDoPhaseIfNeed(11, DidPhase10Pct);
+    }
+};
+
+// 707012 - npc_prison_guard_707012
+struct npc_prison_guard_707012 : public BaseCustomScriptedAI
+{
+public:
+    npc_prison_guard_707012(Creature* creature) : BaseCustomScriptedAI(creature) { }
+
+    void JustEngagedWith(Unit* /*who*/) override
+    {
+        scheduler.Schedule(1s, 11s, [this](TaskContext context)
+        {
+            DoCastVictim(ColossalSmash);
+            context.Repeat(10s, 15s);
+        });
+        scheduler.Schedule(1s, 14s, [this](TaskContext context)
+        {
+            DoCastVictim(DefilingDreadslam);
+            context.Repeat(10s, 15s);
+        });
+        scheduler.Schedule(1s, 14s, [this](TaskContext context)
+        {
+            DoCastVictim(IronShackles);
+            context.Repeat(10s, 15s);
+        });
+    }
+
+    void DamageDealt(Unit* victim, uint32& damage, DamageEffectType type, SpellInfo const* spellInfo /*= nullptr*/) override
+    {
+        if (spellInfo && victim)
+        {
+            switch (spellInfo->Id)
+            {
+                case ColossalSmash: ///< Collosal Smash
+                    damage += victim->CountPctFromMaxHealth(70);
+                    ApplyChallengeDMGIncrease(me, damage, 5);
+                    break;
+                case DreadslamDefile:
+                    damage += victim->CountPctFromMaxHealth(30);
+                    ApplyChallengeDMGIncrease(me, damage, 5);
+                    break;
+            }
+        }
+    }
+};
+
+enum eLicethDovarax
+{
+    MawChanneling = 350480,
+    SoulBolt = 357086,
+    SoulBoltVolley = 357402,
+    BurningDesacration = 353443,
+};
+// 707008 - npc_liceth_dovarax_707008
+struct npc_liceth_dovarax_707008 : public BaseCustomCasterAI
+{
+public:
+    npc_liceth_dovarax_707008(Creature* creature) : BaseCustomCasterAI(creature, SoulBolt) { }
+
+    void Reset() override
+    {
+        BaseCustomScriptedAI::Reset();
+        DoCastSelf(MawChanneling);
+    }
+
+    void JustEngagedWith(Unit* /*who*/) override
+    {
+        scheduler.Schedule(1s, 11s, [this](TaskContext context)
+        {
+            DoCastVictim(SoulBoltVolley);
+            context.Repeat(10s, 15s);
+        });
+        scheduler.Schedule(1s, 20s, [this](TaskContext context)
+        {
+            DoCastVictim(BurningDesacration);
+            context.Repeat(30s, 45s);
+        });
+    }
+
+    void DamageDealt(Unit* victim, uint32& damage, DamageEffectType type, SpellInfo const* spellInfo /*= nullptr*/) override
+    {
+        if (spellInfo && victim)
+        {
+            switch (spellInfo->Id)
+            {
+                case SoulBoltVolley:
+                    damage += victim->CountPctFromMaxHealth(30);
+                    ApplyChallengeDMGIncrease(me, damage, 5);
+                    break;
+                case SoulBolt:
+                    damage += victim->CountPctFromMaxHealth(25);
+                    ApplyChallengeDMGIncrease(me, damage, 5);
+                    break;
+                case 353444: ///< Burning Desacration
+                    damage += victim->CountPctFromMaxHealth(25);
+                    ApplyChallengeDMGIncrease(me, damage, 5);
+                    break;
+            }
+        }
+    }
+};
+
 void AddSC_Desmotareon()
 {
     RegisterCreatureAI(boss_shirgantai);
@@ -1348,6 +1696,10 @@ void AddSC_Desmotareon()
     RegisterCreatureAI(npc_general_nephmir_707000);
     RegisterCreatureAI(npc_vicious_souleater_708019);
     RegisterCreatureAI(npc_ecidus_707004);
+    RegisterCreatureAI(npc_unbound_shademongrel_708016);
+    RegisterCreatureAI(npc_bagnok_the_infernal_707019);
+    RegisterCreatureAI(npc_prison_guard_707012);
+    RegisterCreatureAI(npc_liceth_dovarax_707008);
 
     FieryPlegm::Register();
     DarkDischarge::Register();

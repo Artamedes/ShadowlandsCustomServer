@@ -104,6 +104,17 @@ static void SetCheckpointId(WorldObject* obj, uint32 checkpoint)
         instance->SetData(SetDataCheckpointId, checkpoint);
 }
 
+static void ApplyChallengeDMGIncrease(WorldObject* obj, uint32& damage, uint32 amountPerLevel)
+{
+    if (auto instance = obj->GetInstanceScript())
+    {
+        if (auto challenge = instance->GetChallenge())
+        {
+            damage += challenge->GetChallengeLevel() * amountPerLevel;
+        }
+    }
+}
+
 struct CustomInstanceScript : public InstanceScript
 {
 public:
@@ -331,4 +342,60 @@ public:
     Position ChestSpawn;
     QuaternionData Quad;
     ObjectGuid ChestGuid;
+};
+
+struct BaseCustomScriptedAI : public ScriptedAI
+{
+    BaseCustomScriptedAI(Creature* creature) : ScriptedAI(creature)
+    {
+        scheduler.SetValidator([this]
+        {
+            return !me->HasUnitState(UNIT_STATE_CASTING);
+        });
+    }
+
+    void Reset()
+    {
+        scheduler.CancelAll();
+    }
+
+    void UpdateAI(uint32 diff)
+    {
+        if (!UpdateVictim())
+            return;
+
+        scheduler.Update(diff);
+
+        if (me->HasUnitState(UNIT_STATE_CASTING))
+            return;
+
+        DoMeleeAttackIfReady();
+    }
+
+    TaskScheduler scheduler;
+};
+
+struct BaseCustomCasterAI : public BaseCustomScriptedAI
+{
+    BaseCustomCasterAI(Creature* creature, uint32 SpellToSpam) : BaseCustomScriptedAI(creature), m_SpellToSpam(SpellToSpam) { }
+
+    void UpdateAI(uint32 diff)
+    {
+        if (!UpdateVictim())
+            return;
+
+        scheduler.Update(diff);
+
+        if (me->HasUnitState(UNIT_STATE_CASTING))
+            return;
+
+        DoCastVictim(m_SpellToSpam);
+
+        if (me->HasUnitState(UNIT_STATE_CASTING))
+            return;
+
+        DoMeleeAttackIfReady();
+    }
+
+    uint32 m_SpellToSpam;
 };
