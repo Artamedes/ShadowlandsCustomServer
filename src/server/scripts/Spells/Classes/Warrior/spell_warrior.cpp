@@ -3208,6 +3208,12 @@ class aura_warr_deep_wounds : public AuraScript
 
     bool CheckProc(ProcEventInfo& eventInfo)
     {
+        if (!eventInfo.GetDamageInfo())
+            return false;
+
+        if (!eventInfo.GetDamageInfo()->GetDamage())
+            return false;
+
         if (eventInfo.GetSpellInfo() && (eventInfo.GetSpellInfo()->Id == SPELL_WARRIOR_MORTAL_STRIKE || eventInfo.GetSpellInfo()->Id == SPELL_WARRIOR_EXECUTE ||
             eventInfo.GetSpellInfo()->Id == SPELL_WARRIOR_EXECUTE_PVP || eventInfo.GetSpellInfo()->Id == SPELL_WARRIOR_BLADESTORM_PERIODIC_WHIRLWIND))
             return true;
