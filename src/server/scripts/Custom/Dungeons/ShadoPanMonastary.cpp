@@ -517,12 +517,14 @@ public:
                 me->SetFaction(35);
                 me->SetReactState(REACT_PASSIVE);
                 me->SetUnitFlag(UnitFlags::UNIT_FLAG_NON_ATTACKABLE);
-                if (attacker)
-                    if (auto player = attacker->ToPlayer())
-                        player->KilledMonsterCredit(700715, me->GetGUID());
 
                 if (auto instanceMap = me->GetMap()->ToInstanceMap())
                 {
+                    instanceMap->DoOnPlayers([this](Player* player)
+                    {
+                        player->KilledMonsterCredit(700715, me->GetGUID());
+                    });
+
                     if (auto scenario = instanceMap->GetInstanceScenario())
                     {
                         scenario->UpdateCriteria(CriteriaType::DefeatDungeonEncounter, 700715, 0, 0, me, attacker->ToPlayer());
@@ -843,6 +845,16 @@ public:
         // Nerf light dungeon by 7%
         if (!creature->IsDungeonBoss())
             creature->SetMaxHealth(creature->GetMaxHealth() * 0.93);
+    }
+
+    void OnPlayerEnter(Player* player) override
+    {
+        CustomInstanceScript::OnPlayerEnter(player);
+
+        if (player->GetQuestStatus(700028) == QUEST_STATUS_INCOMPLETE)
+        {
+            player->KilledMonsterCredit(700699);
+        }
     }
 };
 
