@@ -414,42 +414,6 @@ public:
     }
 };
 
-//Master Marksman 260309 Last Update 8.0.1 28153
-class spell_hun_master_marksman : public SpellScriptLoader
-{
-public:
-    spell_hun_master_marksman() : SpellScriptLoader("spell_hun_master_marksman") {}
-
-    class spell_hun_master_marksman_AuraScript : public AuraScript
-    {
-        PrepareAuraScript(spell_hun_master_marksman_AuraScript);
-
-        bool Validate(SpellInfo const* /*spellInfo*/) override
-        {
-            if (!sSpellMgr->GetSpellInfo(SPELL_HUNTER_MASTER_MARKSMAN))
-                return false;
-            return true;
-        }
-
-        bool CheckProc(ProcEventInfo& eventInfo)
-        {
-            if (eventInfo.GetSpellInfo()->Id == SPELL_HUNTER_AIMED_SHOT)
-                return true;
-            return false;
-        }
-
-        void Register() override
-        {
-            DoCheckProc += AuraCheckProcFn(spell_hun_master_marksman_AuraScript::CheckProc);
-        }
-    };
-
-    AuraScript* GetAuraScript() const override
-    {
-        return new spell_hun_master_marksman_AuraScript();
-    }
-};
-
 //259387  Mongoose Bite Last Update 8.0.1 Build 28153
 class spell_hun_mongoose_bite : public SpellScriptLoader
 {
@@ -4340,6 +4304,7 @@ private:
 };
 
 // 257044 - Rapid Fire Update 8.0.1 build 28153
+/// Updated 9.2.5
 class aura_hun_rapid_fire : public AuraScript
 {
     PrepareAuraScript(aura_hun_rapid_fire);
@@ -4354,7 +4319,11 @@ class aura_hun_rapid_fire : public AuraScript
     void OnPeriodic(AuraEffect const* /*aurEff*/)
     {
         if (Unit* caster = GetCaster())
-            caster->CastSpell(caster, SPELL_HUNTER_RAPID_FIRE_ENERGIZE, true);            
+            if (auto target = GetTarget())
+            {
+                caster->CastSpell(caster, SPELL_HUNTER_RAPID_FIRE_ENERGIZE, true);
+                caster->CastSpell(target, SPELL_HUNTER_RAPID_FIRE_DAMAGE, true);
+            }
     }
 
     void HandleRemove(const AuraEffect* /*aurEff*/, AuraEffectHandleModes /* mode */)
@@ -4369,9 +4338,9 @@ class aura_hun_rapid_fire : public AuraScript
 
     void Register() override
     {
-        AfterEffectApply += AuraEffectApplyFn(aura_hun_rapid_fire::AfterApply, EFFECT_1, SPELL_AURA_PERIODIC_TRIGGER_SPELL, AURA_EFFECT_HANDLE_REAL);
-        OnEffectPeriodic += AuraEffectPeriodicFn(aura_hun_rapid_fire::OnPeriodic, EFFECT_1, SPELL_AURA_PERIODIC_TRIGGER_SPELL);
-        OnEffectRemove += AuraEffectApplyFn(aura_hun_rapid_fire::HandleRemove, EFFECT_1, SPELL_AURA_PERIODIC_TRIGGER_SPELL, AURA_EFFECT_HANDLE_REAL);
+        AfterEffectApply += AuraEffectApplyFn(aura_hun_rapid_fire::AfterApply, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY, AURA_EFFECT_HANDLE_REAL);
+        OnEffectPeriodic += AuraEffectPeriodicFn(aura_hun_rapid_fire::OnPeriodic, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY);
+        OnEffectRemove += AuraEffectApplyFn(aura_hun_rapid_fire::HandleRemove, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY, AURA_EFFECT_HANDLE_REAL);
     }
 };
 
@@ -5708,7 +5677,6 @@ void AddSC_hunter_spell_scripts()
     new spell_hun_camouflage();
     new spell_hun_steady_shot();
     new spell_hun_spirit_mend();
-    new spell_hun_master_marksman();
     new spell_hun_cobra_shot();
     new spell_hun_lock_and_load();
     new spell_hun_sentinel();

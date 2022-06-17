@@ -22,6 +22,7 @@ void AddSC_druid_spell_scripts();
 void AddSC_spell_druid_feral();
 void AddSC_generic_spell_scripts();
 void AddSC_hunter_spell_scripts();
+void AddSC_spell_hunter_marksman();
 void AddSC_mage_spell_scripts();
 void AddSC_monk_spell_scripts();
 void AddSC_spell_monk_windwalker();
@@ -57,6 +58,7 @@ void AddSpellsScripts()
     AddSC_spell_druid_feral();
     AddSC_generic_spell_scripts();
     AddSC_hunter_spell_scripts();
+    AddSC_spell_hunter_marksman();
     AddSC_mage_spell_scripts();
     AddSC_monk_spell_scripts();
     AddSC_spell_monk_windwalker();
