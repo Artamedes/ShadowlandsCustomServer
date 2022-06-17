@@ -157,6 +157,12 @@ void WorldSession::HandleChallengeModeStart(WorldPackets::ChallengeMode::StartRe
                 ChatHandler(_player->GetSession()).PSendSysMessage("Error: Internal map error.");
                 return;
             }
+
+            if (player->GetScheduler().HasGroup(700000) || player->IsBeingTeleported())
+            {
+                ChatHandler(_player->GetSession()).PSendSysMessage("Error: player is teleporting");
+                return;
+            }
         }
     }
     else
@@ -166,6 +172,12 @@ void WorldSession::HandleChallengeModeStart(WorldPackets::ChallengeMode::StartRe
         {
             challengeKeyInfo->challengeEntry = nullptr;
             ChatHandler(_player->GetSession()).PSendSysMessage("Error: Incorrect challenge.");
+            return;
+        }
+
+        if (_player->GetScheduler().HasGroup(700000) || _player->IsBeingTeleported())
+        {
+            ChatHandler(_player->GetSession()).PSendSysMessage("Error: player is teleporting");
             return;
         }
     }

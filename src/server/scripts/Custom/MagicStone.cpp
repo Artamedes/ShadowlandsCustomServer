@@ -162,8 +162,9 @@ class MagicStone : public ItemScript
                         if (tele->mapId != player->GetMapId() || player->GetDistance2d(tele->position_x, tele->position_y) >= 200.0f)
                         {
                             player->CastSpell(player, 367044, true);
-                            player->m_Events.AddEventAtOffset([player, tele]()
+                            player->GetScheduler().Schedule(800ms, 700000, [tele](TaskContext context)
                             {
+                                auto player = GetContextPlayer();
                                 if (!player->IsBeingTeleported())
                                 {
                                     if ((player->IsSplineEnabled() && !player->movespline->Finalized()) || player->HasUnitState(UnitState::UNIT_STATE_STUNNED) || player->IsInCombat())
@@ -171,7 +172,7 @@ class MagicStone : public ItemScript
 
                                     player->TeleportTo(tele->mapId, tele->position_x, tele->position_y, tele->position_z, tele->orientation);
                                 }
-                            }, 800ms);
+                            });
                         }
                         else
                             player->TeleportTo(tele->mapId, tele->position_x, tele->position_y, tele->position_z, tele->orientation);
