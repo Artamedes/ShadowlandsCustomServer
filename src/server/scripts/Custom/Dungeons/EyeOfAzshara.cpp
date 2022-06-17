@@ -3,7 +3,7 @@
 #include "ScriptedCreature.h"
 #include "Creature.h"
 #include "Player.h"
-#include "../CustomInstanceScript.h"
+#include "CustomInstanceScript.h"
 
 // 702000 - npc_wrath_of_azshara_702000
 struct npc_wrath_of_azshara_702000 : public ScriptedAI

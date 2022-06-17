@@ -5,7 +5,7 @@
 #include "InstanceScript.h"
 #include "GenericMovementGenerator.h"
 #include "InstanceScenario.h"
-#include "../CustomInstanceScript.h"
+#include "CustomInstanceScript.h"
 #include "ReputationMgr.h"
 
 enum IronDocks

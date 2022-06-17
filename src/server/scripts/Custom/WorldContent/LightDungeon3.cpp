@@ -3,7 +3,7 @@
 #include "Creature.h"
 #include "Containers.h"
 #include "ScriptedCreature.h"
-#include "../CustomInstanceScript.h"
+#include "CustomInstanceScript.h"
 #include "InstanceScenario.h"
 
 // 700011 - npc_oogway_700011

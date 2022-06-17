@@ -3,7 +3,7 @@
 #include "ScriptedCreature.h"
 #include "Creature.h"
 #include "Player.h"
-#include "../CustomInstanceScript.h"
+#include "CustomInstanceScript.h"
 #include "GossipDef.h"
 #include "QuestAI.h"
 #include "InstanceScenario.h"

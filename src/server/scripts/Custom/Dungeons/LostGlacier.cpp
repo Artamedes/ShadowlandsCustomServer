@@ -2,7 +2,7 @@
 #include "Player.h"
 #include "Creature.h"
 #include "ScriptedCreature.h"
-#include "../CustomInstanceScript.h"
+#include "CustomInstanceScript.h"
 #include "GameTime.h"
 #include "SpellHistory.h"
 #include "InstanceScenario.h"

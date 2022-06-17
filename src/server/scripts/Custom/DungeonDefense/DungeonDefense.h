@@ -18,7 +18,7 @@
 #include <map>
 #include <sstream>
 
-#include "../CustomInstanceScript.h"
+#include "CustomInstanceScript.h"
 
 enum DarkmaulCitadel
 {

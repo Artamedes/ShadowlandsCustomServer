@@ -1,5 +1,5 @@
 #include "ScriptedCreature.h"
-#include "../CustomInstanceScript.h"
+#include "CustomInstanceScript.h"
 #include "ScriptMgr.h"
 #include "SpellScript.h"
 #include "SpellAuras.h"

@@ -1,6 +1,6 @@
 #include "ScriptMgr.h"
 #include "ScriptedCreature.h"
-#include "../CustomInstanceScript.h"
+#include "CustomInstanceScript.h"
 #include "MoveSpline.h"
 #include "CriteriaHandler.h"
 #include "Scenario.h"

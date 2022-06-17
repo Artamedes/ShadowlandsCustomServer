@@ -8,7 +8,7 @@
 #include "MoveSpline.h"
 #include "GenericMovementGenerator.h"
 #include "GameTime.h"
-#include "../CustomInstanceScript.h"
+#include "CustomInstanceScript.h"
 #include "Unit.h"
 
 enum MawFinale

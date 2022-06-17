@@ -10,7 +10,7 @@
 #include "CovenantPackets.h"
 #include "QuestPackets.h"
 #include "../MagicStone.h"
-#include "../CustomInstanceScript.h"
+#include "CustomInstanceScript.h"
 #include "../DungeonDefense/DungeonDefense.h"
 #include "Item.h"
 #include "QueryPackets.h"

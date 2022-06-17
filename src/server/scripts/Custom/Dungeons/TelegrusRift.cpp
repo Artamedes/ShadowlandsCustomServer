@@ -5,7 +5,7 @@
 #include "ScriptedCreature.h"
 #include "Chat.h"
 #include "GenericMovementGenerator.h"
-#include "../CustomInstanceScript.h"
+#include "CustomInstanceScript.h"
 #include "Conversation.h"
 #include "InstanceScenario.h"
 

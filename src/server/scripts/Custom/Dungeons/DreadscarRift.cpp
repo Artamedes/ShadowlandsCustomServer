@@ -1,5 +1,5 @@
 #include "ScriptMgr.h"
-#include "../CustomInstanceScript.h"
+#include "CustomInstanceScript.h"
 #include "Creature.h"
 #include "ScriptedCreature.h"
 #include "Player.h"

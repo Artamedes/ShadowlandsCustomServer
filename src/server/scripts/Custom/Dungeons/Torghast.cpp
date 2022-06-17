@@ -8,7 +8,7 @@
 #include "MoveSpline.h"
 #include "GenericMovementGenerator.h"
 #include "GameTime.h"
-#include "../CustomInstanceScript.h"
+#include "CustomInstanceScript.h"
 
 // 700800 - npc_thrall_700800
 struct npc_thrall_700800 : public ScriptedAI

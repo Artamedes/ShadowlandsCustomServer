@@ -2,7 +2,7 @@
 #include "Creature.h"
 #include "ScriptedCreature.h"
 #include "GameTime.h"
-#include "../CustomInstanceScript.h"
+#include "CustomInstanceScript.h"
 #include "InstanceScenario.h"
 
 const Position ChestSpawnPos = { 1394.21f, 1325.69f, 176.738f, 2.15069f };

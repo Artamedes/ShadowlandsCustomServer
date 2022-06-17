@@ -1,5 +1,5 @@
 #include "ScriptMgr.h"
-#include "../CustomInstanceScript.h"
+#include "CustomInstanceScript.h"
 #include "ScriptedCreature.h"
 #include "MotionMaster.h"
 #include "CellImpl.h"

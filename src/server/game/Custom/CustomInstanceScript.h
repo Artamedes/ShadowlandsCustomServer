@@ -1,15 +1,24 @@
 #pragma once
 
+#include "AreaTrigger.h"
+#include "AreaTriggerAI.h"
+#include "Chat.h"
+#include "CreatureAI.h"
 #include "ChallengeMode.h"
 #include "ChallengeModeMgr.h"
-#include "ScriptMgr.h"
-#include "Player.h"
-#include "InstanceScript.h"
-#include "Map.h"
 #include "DatabaseEnv.h"
-#include "LootMgr.h"
+#include "GameTime.h"
+#include "GenericMovementGenerator.h"
 #include "InstanceScenario.h"
-#include "Chat.h"
+#include "InstanceScript.h"
+#include "LootMgr.h"
+#include "Map.h"
+#include "MotionMaster.h"
+#include "Player.h"
+#include "ScriptedCreature.h"
+#include "ScriptMgr.h"
+#include "SpellAuras.h"
+#include "TemporarySummon.h"
 
 struct CustomInstanceRespawnData
 {
@@ -26,9 +35,9 @@ enum SharedCustomInstanceData
     MawOppositionRep      = 10008,
 
     // Beguiling
-    NpcEnchantedEmissary   = 155432,
-    NpcVoidTouchedEmissary = 155433, // no move, immune to all cc, no reset health
-    NpcEmisarryOfTheTides  = 155434, // resets health, all cc lasts max 8 seconds only, No DR
+    NpcEnchantedEmissary        = 155432,
+    NpcVoidTouchedEmissary      = 155433, // no move, immune to all cc, no reset health
+    NpcEmisarryOfTheTides       = 155434, // resets health, all cc lasts max 8 seconds only, No DR
     SpellQueenDecreesBlowback   = 290027,
     SpellEnchanted              = 303632,
     SpellQueenDecreeHide        = 302420, // spell

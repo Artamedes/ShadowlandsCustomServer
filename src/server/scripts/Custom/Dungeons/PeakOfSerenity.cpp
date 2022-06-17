@@ -2,7 +2,7 @@
 #include "Player.h"
 #include "Creature.h"
 #include "ScriptedCreature.h"
-#include "../CustomInstanceScript.h"
+#include "CustomInstanceScript.h"
 #include "InstanceScenario.h"
 
 struct instance_lightdng1 : public CustomInstanceScript

@@ -61,6 +61,10 @@ void AddSC_DungeonDefensePlayer();
 // Dungeons
 void AddSC_CustomAffixes();
 void AddSC_Desmotareon();
+void AddSC_Desmotaeron_Spells();
+void AddSC_boss_shirgantai();
+void AddSC_instance_desmotareon();
+void AddSC_boss_xarvius();
 // Items
 void AddSC_item_currency_exchange();
 void AddSC_npc_1v1arena();
@@ -111,6 +115,10 @@ void AddCustomScripts()
     // Dungs
     AddSC_CustomAffixes();
     AddSC_Desmotareon();
+    AddSC_Desmotaeron_Spells();
+    AddSC_boss_shirgantai();
+    AddSC_instance_desmotareon();
+    AddSC_boss_xarvius();
     // Items
     AddSC_item_currency_exchange();
     AddSC_npc_1v1arena();

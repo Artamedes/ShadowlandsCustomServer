@@ -4,7 +4,7 @@
 #include "AchievementMgr.h"
 #include "ScenarioMgr.h"
 #include "InstanceScenario.h"
-#include "../CustomInstanceScript.h"
+#include "CustomInstanceScript.h"
 #include "Conversation.h"
 
 enum MaelstromInvasion
