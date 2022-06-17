@@ -74,7 +74,7 @@ struct npc_jaina_proudmoore_730100 : public ScriptedAI
             {
                 _setup = true;
 
-                for (int i = 0; i < 5; ++i)
+                for (int i = 0; i < 15; ++i)
                     SummonNextEnemy();
             }
         }
