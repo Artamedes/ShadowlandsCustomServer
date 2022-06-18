@@ -244,6 +244,16 @@ SpellScript::OnSummonHandler::OnSummonHandler(SpellOnSummonFnType OnSummonHandle
     _onSummonHandlerScript = OnSummonHandlerScript;
 }
 
+SpellScript::OnJumpChargeHandler::OnJumpChargeHandler(SpellOnJumpChargeFnType OnSummonHandlerScript)
+{
+    _onJumpChargenHandlerScript = OnSummonHandlerScript;
+}
+
+void SpellScript::OnJumpChargeHandler::Call(SpellScript* spellScript, Optional<JumpArrivalCastArgs>& arrivalCast)
+{
+    (spellScript->*_onJumpChargenHandlerScript)(arrivalCast);
+}
+
 void SpellScript::OnTakePowerHandler::Call(SpellScript* spellScript, SpellPowerCost& powerCost)
 {
     (spellScript->*_onTakePowerHandlerScript)(powerCost);

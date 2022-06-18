@@ -899,13 +899,15 @@ void MotionMaster::MoveJumpWithGravity(Position const& pos, float speedXY, float
 
     uint32 arrivalSpellId = 0;
     ObjectGuid arrivalSpellTargetGuid;
+    GenericMovementGenerator* movement = new GenericMovementGenerator(std::move(initializer), EFFECT_MOTION_TYPE, id, arrivalSpellId, arrivalSpellTargetGuid);
+
     if (arrivalCast)
     {
         arrivalSpellId = arrivalCast->SpellId;
         arrivalSpellTargetGuid = arrivalCast->Target;
+        movement->callbackFunc = arrivalCast->Callback;
     }
 
-    GenericMovementGenerator* movement = new GenericMovementGenerator(std::move(initializer), EFFECT_MOTION_TYPE, id, arrivalSpellId, arrivalSpellTargetGuid);
     movement->Priority = MOTION_PRIORITY_HIGHEST;
     movement->BaseUnitState = UNIT_STATE_JUMPING;
     movement->AddFlag(MOVEMENTGENERATOR_FLAG_PERSIST_ON_DEATH);

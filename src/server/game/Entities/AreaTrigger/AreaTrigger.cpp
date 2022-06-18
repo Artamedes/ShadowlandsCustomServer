@@ -81,12 +81,13 @@ void AreaTrigger::RemoveFromWorld()
         if (Unit* caster = GetCaster())
             caster->_UnregisterAreaTrigger(this);
 
-        m_Caster = nullptr;
-
         // Handle removal of all units, calling OnUnitExit & deleting auras if needed
         HandleUnitEnterExit({});
 
         _ai->OnRemove();
+
+        // has to be set here because OnRemove can still call for caster
+        m_Caster = nullptr;
 
         WorldObject::RemoveFromWorld();
 

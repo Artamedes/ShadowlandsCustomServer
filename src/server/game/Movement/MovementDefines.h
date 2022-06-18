@@ -21,6 +21,7 @@
 #include "Common.h"
 #include "ObjectGuid.h"
 #include "Optional.h"
+#include <functional>
 
 #define SPEED_CHARGE 42.0f // assume it is 25 yard per 0.6 second
 
@@ -104,6 +105,7 @@ struct JumpArrivalCastArgs
 {
     uint32 SpellId = 0;
     ObjectGuid Target;
+    std::function<void()> Callback;
 };
 
 struct JumpChargeParams

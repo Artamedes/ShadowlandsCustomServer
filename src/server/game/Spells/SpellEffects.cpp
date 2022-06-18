@@ -5798,7 +5798,7 @@ void Spell::EffectJumpCharge()
         arrivalCast->SpellId = effectInfo->TriggerSpell;
     }
 
-    /// @TODO: Move to db
+    /// @TODO: Move to db or spellscripts
     if (GetSpellInfo()->Id == 178368)
     {
         arrivalCast.emplace();
@@ -5811,6 +5811,8 @@ void Spell::EffectJumpCharge()
         arrivalCast->SpellId = 348486;
         arrivalCast->Target = m_caster->GetGUID();
     }
+
+    CallScriptOnJumpChargeHandlers(arrivalCast);
 
     Optional<Movement::SpellEffectExtraData> effectExtra;
     if (params->SpellVisualId || params->ProgressCurveId || params->ParabolicCurveId)

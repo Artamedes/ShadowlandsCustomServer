@@ -8933,6 +8933,19 @@ void Spell::CallScriptOnSummonHandlers(Creature* creature)
 #endif // PERFORMANCE_LOG
 }
 
+void Spell::CallScriptOnJumpChargeHandlers(Optional<JumpArrivalCastArgs>& arrivalCast)
+{
+    for (auto scritr = m_loadedScripts.begin(); scritr != m_loadedScripts.end(); ++scritr)
+    {
+        (*scritr)->_PrepareScriptCall(SPELL_SCRIPT_HOOK_ON_JUMP_CHARGE);
+        auto hookItrEnd = (*scritr)->OnJumpCharge.end(), hookItr = (*scritr)->OnJumpCharge.begin();
+        for (; hookItr != hookItrEnd; ++hookItr)
+            hookItr->Call(*scritr, arrivalCast);
+
+        (*scritr)->_FinishScriptCall();
+    }
+}
+
 void Spell::CallScriptDestinationTargetSelectHandlers(SpellDestination& target, SpellEffIndex effIndex, SpellImplicitTargetInfo const& targetType)
 {
     for (auto scritr = m_loadedScripts.begin(); scritr != m_loadedScripts.end(); ++scritr)

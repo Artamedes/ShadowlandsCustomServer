@@ -848,6 +848,7 @@ class TC_GAME_API Spell
         void CallScriptOnHitHandlers();
         void CallScriptAfterHitHandlers();
         void CallScriptOnSummonHandlers(Creature* creature);
+        void CallScriptOnJumpChargeHandlers(Optional<JumpArrivalCastArgs>& arrivalCast);
     public:
         void CallScriptCalcCritChanceHandlers(Unit const* victim, float& chance);
     protected:
