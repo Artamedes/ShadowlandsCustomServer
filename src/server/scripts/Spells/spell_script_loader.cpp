@@ -18,6 +18,7 @@
 // This is where scripts' loading functions should be declared:
 void AddSC_deathknight_spell_scripts();
 void AddSC_demon_hunter_spell_scripts();
+void AddSC_spell_dh_havoc();
 void AddSC_druid_spell_scripts();
 void AddSC_spell_druid_feral();
 void AddSC_generic_spell_scripts();
@@ -54,6 +55,7 @@ void AddSpellsScripts()
 {
     AddSC_deathknight_spell_scripts();
     AddSC_demon_hunter_spell_scripts();
+    AddSC_spell_dh_havoc();
     AddSC_druid_spell_scripts();
     AddSC_spell_druid_feral();
     AddSC_generic_spell_scripts();

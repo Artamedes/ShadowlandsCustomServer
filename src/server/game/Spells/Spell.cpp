@@ -860,6 +860,9 @@ void Spell::SelectSpellTargets(bool checkDelay /*= false*/)
     {
         if (uint64 dstDelay = CalculateDelayMomentForDst(m_spellInfo->LaunchDelay))
             m_delayMoment = dstDelay;
+
+        if (m_spellInfo->Id == 342817) ///< glaive tempest should have no delay!
+            m_delayMoment = 0;
     }
 }
 
