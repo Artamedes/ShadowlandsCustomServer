@@ -4034,6 +4034,7 @@ void Spell::EffectLeapBack()
 
     float speedxy = effectInfo->MiscValue / 10.f;
     float speedz = damage / 10.f;
+
     // Disengage
     unitTarget->JumpTo(speedxy, speedz, effectInfo->PositionFacing);
 

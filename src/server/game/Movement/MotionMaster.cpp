@@ -826,6 +826,8 @@ void MotionMaster::MoveJumpTo(float angle, float speedXY, float speedZ)
     if (_owner->GetTypeId() == TYPEID_PLAYER)
         return;
 
+    float srcX, srcY, srcZ;
+    _owner->GetPosition(srcX, srcY, srcZ);
     float x, y, z = _owner->GetPositionZ();
 
     float moveTimeHalf = speedZ / Movement::gravity;
@@ -833,6 +835,13 @@ void MotionMaster::MoveJumpTo(float angle, float speedXY, float speedZ)
 
     _owner->GetNearPoint2D(nullptr, x, y, dist, _owner->GetOrientation() + angle);
     _owner->UpdateAllowedPositionZ(x, y, z);
+
+    if (!_owner->GetMap()->GetWalkHitPosition(_owner->GetPhaseShift(), _owner->GetTransport(), srcX, srcY, srcZ, x, y, z, NAV_GROUND | NAV_WATER, dist, false))
+    {
+        x = srcX;
+        y = srcY;
+        z = srcZ;
+    }
 
     MoveJump(x, y, z, 0.0f, speedXY, speedZ);
 }
