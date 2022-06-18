@@ -795,12 +795,12 @@ bool Unit::HasBreakableByDamageCrowdControlAura(Unit* excludeCasterChannel) cons
         {
             int32 heal = CalculatePct(damage, (int32)percent);
 
-            attacker->m_NextLeech += heal;
-
             if (auto instance = attacker->GetInstanceScript())
             {
                 instance->NerfLeechIfNeed(attacker, heal);
             }
+
+            attacker->m_NextLeech += heal;
         }
     }
 

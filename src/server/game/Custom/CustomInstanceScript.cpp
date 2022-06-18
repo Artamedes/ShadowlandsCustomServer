@@ -175,7 +175,7 @@ void CustomInstanceScript::NerfLeechIfNeed(Unit* who, int32& heal)
 
             if (Effectiveness > 0 && Effectiveness < 100)
                 heal *= float(Effectiveness / 100.0f);
-            else if (Effectiveness < 0)
+            else if (Effectiveness <= 0)
                 heal = 0;
         }
     }
