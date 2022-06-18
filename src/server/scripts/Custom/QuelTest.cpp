@@ -102,8 +102,6 @@ public:
             SendGossipMenuFor(player, 8020020, me);
         }
 
-        
-
         return true;
     }
 
