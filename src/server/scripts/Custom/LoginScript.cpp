@@ -6,6 +6,7 @@
 #include "TemporarySummon.h"
 #include "Chat.h"
 #include "GitRevision.h"
+#include "World.h"
 
 class LoginScript : public PlayerScript
 {
@@ -369,7 +370,8 @@ class LoginScript : public PlayerScript
             }
 
             ChatHandler(p_Player).PSendSysMessage("|cff62CBF5Shadowlands v.%s-%s", GitRevision::GetCommitCount(), GitRevision::GetHash());
-            ChatHandler(p_Player).PSendSysMessage("|cff62CBF5Last update %s", GitRevision::GetDate());
+            ChatHandler(p_Player).PSendSysMessage("|cff62CBF5Last update: %s", GitRevision::GetDate());
+            ChatHandler(p_Player).PSendSysMessage("|cff62CBF5Uptime: %s", secsToTimeString(GameTime::GetUptime()).c_str());
 
             // Add chisel
             if (!p_Player->HasItemCount(699998, 1))
