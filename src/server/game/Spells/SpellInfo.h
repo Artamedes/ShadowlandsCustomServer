@@ -105,7 +105,8 @@ enum SpellTargetDirectionTypes
     TARGET_DIR_BACK_LEFT,
     TARGET_DIR_FRONT_LEFT,
     TARGET_DIR_RANDOM,
-    TARGET_DIR_ENTRY
+    TARGET_DIR_ENTRY,
+    TARGET_DIR_TARGET
 };
 
 enum SpellEffectImplicitTargetTypes

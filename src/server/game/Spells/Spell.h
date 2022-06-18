@@ -968,7 +968,7 @@ namespace Trinity
     {
         Position _position;
         float _lineWidth;
-        WorldObjectSpellLineTargetCheck(Position const* srcPosition, Position const* dstPosition, float lineWidth, float range, WorldObject* caster,
+        WorldObjectSpellLineTargetCheck(Position const* srcPosition, Position const* dstPosition, float lineWidth, float range, WorldObject* caster, Optional<float> orientation,
             SpellInfo const* spellInfo, SpellTargetCheckTypes selectionType, ConditionContainer const* condList, SpellTargetObjectTypes objectType);
 
         bool operator()(WorldObject* target) const;

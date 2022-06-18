@@ -61,6 +61,7 @@
 #include "WorldSession.h"
 #include <numeric>
 #include <sstream>
+#include "Chat.h"
 
 extern NonDefaultConstructible<SpellEffectHandlerFn> SpellEffectHandlers[TOTAL_SPELL_EFFECTS];
 
@@ -1976,10 +1977,36 @@ void Spell::SelectImplicitLineTargets(SpellEffectInfo const& spellEffectInfo, Sp
 
     ConditionContainer* condList = spellEffectInfo.ImplicitTargetConditions;
     float radius = spellEffectInfo.CalcRadius(m_caster) * m_spellValue->RadiusMod;
+    float width = m_spellInfo->Width ? m_spellInfo->Width : m_caster->GetObjectSize();
+    Optional<float> orientation;
+
+    if (targetType.GetDirectionType() == TARGET_DIR_TARGET)
+    {
+        if (m_targets.HasDst())
+            orientation = m_caster->GetAngle(m_targets.GetDstPos());
+        else if (Unit* target = m_targets.GetUnitTarget())
+            orientation = m_caster->GetAngle(target);
+    }
+
+    if (m_caster)
+    {
+        if (auto player = m_caster->ToPlayer())
+        {
+            ChatHandler(player).PSendSysMessage("start %s", m_caster->GetPosition().ToString().c_str());
+            if (m_targets.HasDst())
+            {
+                ChatHandler(player).PSendSysMessage("dest %s", m_targets.GetDstPos()->ToString().c_str());
+                ChatHandler(player).PSendSysMessage("Radius %f", radius);
+                ChatHandler(player).PSendSysMessage("Width %f", width);
+                ChatHandler(player).PSendSysMessage("combatReach %f", m_caster->GetCombatReach());
+                ChatHandler(player).PSendSysMessage("dist %f", m_caster->GetDistance(*m_targets.GetDstPos()));
+            }
+        }
+    }
 
     if (uint32 containerTypeMask = GetSearcherTypeMask(objectType, condList))
     {
-        Trinity::WorldObjectSpellLineTargetCheck check(m_caster, dst, m_spellInfo->Width ? m_spellInfo->Width : m_caster->GetCombatReach(), radius, m_caster, m_spellInfo, selectionType, condList, objectType);
+        Trinity::WorldObjectSpellLineTargetCheck check(m_caster, dst, width, radius, m_caster, orientation, m_spellInfo, selectionType, condList, objectType);
         Trinity::WorldObjectListSearcher<Trinity::WorldObjectSpellLineTargetCheck> searcher(m_caster, targets, check, containerTypeMask);
         SearchTargets<Trinity::WorldObjectListSearcher<Trinity::WorldObjectSpellLineTargetCheck>>(searcher, containerTypeMask, m_caster, m_caster, radius);
 
@@ -9336,17 +9363,20 @@ bool WorldObjectSpellTrajTargetCheck::operator()(WorldObject* target) const
     return WorldObjectSpellTargetCheck::operator ()(target);
 }
 
-WorldObjectSpellLineTargetCheck::WorldObjectSpellLineTargetCheck(Position const* srcPosition, Position const* dstPosition, float lineWidth, float range, WorldObject* caster,
+WorldObjectSpellLineTargetCheck::WorldObjectSpellLineTargetCheck(Position const* srcPosition, Position const* dstPosition, float lineWidth, float range, WorldObject* caster, Optional<float> orientation,
     SpellInfo const* spellInfo, SpellTargetCheckTypes selectionType, ConditionContainer const* condList, SpellTargetObjectTypes objectType)
     : WorldObjectSpellAreaTargetCheck(range, caster, caster, caster, spellInfo, selectionType, condList, objectType), _position(*srcPosition), _lineWidth(lineWidth)
 {
     if (dstPosition && *srcPosition != *dstPosition)
         _position.SetOrientation(srcPosition->GetAbsoluteAngle(dstPosition));
+
+    if (orientation.has_value())
+        _position.SetOrientation(*orientation);
 }
 
 bool WorldObjectSpellLineTargetCheck::operator()(WorldObject* target) const
 {
-    if (!_position.HasInLine(target, target->GetCombatReach(), _lineWidth))
+    if (!_position.HasInLineWithOrientation(target, _lineWidth, _position.GetOrientation(), target->GetCombatReach()))
         return false;
 
     return WorldObjectSpellTargetCheck::operator ()(target);

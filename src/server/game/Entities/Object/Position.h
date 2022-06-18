@@ -176,6 +176,7 @@ public:
 
     bool HasInArc(float arcangle, Position const* pos, float border = 2.0f) const;
     bool HasInLine(Position const* pos, float objSize, float width) const;
+    bool HasInLineWithOrientation(Position const* pos, float width, float orientation, float objSize) const;
     std::string ToString() const;
 
     // constrain arbitrary radian orientation to interval [0,2*PI)

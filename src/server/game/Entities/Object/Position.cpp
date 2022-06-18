@@ -133,6 +133,33 @@ bool Position::HasInLine(Position const* pos, float objSize, float width) const
     return std::fabs(std::sin(angle)) * GetExactDist2d(pos->GetPositionX(), pos->GetPositionY()) < width;
 }
 
+bool Position::HasInLineWithOrientation(Position const* obj, float orientation, float width, float objSize) const
+{
+    // always have self in arc
+    if (obj == this)
+        return true;
+
+    float angle = GetAngle(obj);
+    angle -= orientation;
+
+    // move angle to range -pi ... +pi
+    angle = NormalizeOrientation(angle);
+    if (angle > float(M_PI))
+        angle -= 2.0f * float(M_PI);
+
+    float lborder = -1 * (float(M_PI_2));
+    float rborder = float(M_PI_2);
+
+    if ((angle >= lborder) && (angle <= rborder))
+    {
+        float rel_angle = GetRelativeAngle(obj);
+        width += objSize;
+        return std::fabs(std::sin(rel_angle)) * GetExactDist2d(obj->GetPositionX(), obj->GetPositionY()) < width;
+    }
+
+    return false;
+}
+
 std::string Position::ToString() const
 {
     std::stringstream sstr;
