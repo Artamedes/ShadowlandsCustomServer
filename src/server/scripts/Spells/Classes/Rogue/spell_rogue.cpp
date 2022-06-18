@@ -1208,6 +1208,21 @@ class spell_rog_vanish_aura : public SpellScriptLoader
                 MasterAssassinsMark = 340094,
             };
 
+            enum eSpells
+            {
+                WodPvpCombat4pBonus                 = 182303,
+                WodPvpCombat4pBonusTrigger          = 182304,
+                WodPvpAssassination4pBonus          = 170883,
+                WodPvpAssassination4pBonusTrigger   = 170882,
+                Stealth                             = 1784,
+                StealthShapeshift                   = 158188,
+                Subterfuge                          = 108208,
+                StealthSubterfuge                   = 115191,
+                StealthSubterfugeEffect             = 115192,
+                MasterAssassinsInitiative           = 235022,
+                MasterAssassinsCritical             = 235027
+            };
+
             void HandleEffectApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*modes*/)
             {
                 Unit* target = GetTarget();
@@ -1238,7 +1253,12 @@ class spell_rog_vanish_aura : public SpellScriptLoader
             {
 				if (Unit* caster = GetCaster())
 				{
-					caster->CastSpell(caster, SPELL_ROGUE_STEALTH, true);
+                    /// Stealth should be applied just after Vanish buff remove
+                    int32 l_CurrentStealthId = caster->HasAura(eSpells::Subterfuge) ? eSpells::StealthSubterfuge : eSpells::Stealth;
+
+                    caster->GetSpellHistory()->ResetCooldown(l_CurrentStealthId, true);
+                    caster->CastSpell(caster, l_CurrentStealthId, true);
+                    caster->GetSpellHistory()->ResetCooldown(l_CurrentStealthId, true);
 
 					// Veil of the Night
 					if (caster->HasAura(SPELL_ROGUE_VEIL_OF_THE_NIGHT))
