@@ -20850,30 +20850,30 @@ bool Player::Satisfy(AccessRequirement const* ar, uint32 target_map, bool report
 
         Difficulty target_difficulty = GetDifficultyID(mapEntry);
         MapDifficultyEntry const* mapDiff = sDB2Manager.GetDownscaledMapDifficultyData(target_map, target_difficulty);
-        if (!sWorld->getBoolConfig(CONFIG_INSTANCE_IGNORE_LEVEL))
-        {
-            if (DB2Manager::MapDifficultyConditionsContainer const* mapDifficultyConditions = sDB2Manager.GetMapDifficultyConditions(mapDiff->ID))
-            {
-                for (auto&& itr : *mapDifficultyConditions)
-                {
-                    if (!ConditionMgr::IsPlayerMeetingCondition(this, itr.second))
-                    {
-                        failedMapDifficultyXCondition = itr.first;
-                        break;
-                    }
-                }
-            }
-        }
+       // if (!sWorld->getBoolConfig(CONFIG_INSTANCE_IGNORE_LEVEL))
+       // {
+       //     if (DB2Manager::MapDifficultyConditionsContainer const* mapDifficultyConditions = sDB2Manager.GetMapDifficultyConditions(mapDiff->ID))
+       //     {
+       //         for (auto&& itr : *mapDifficultyConditions)
+       //         {
+       //             if (!ConditionMgr::IsPlayerMeetingCondition(this, itr.second))
+       //             {
+       //                 failedMapDifficultyXCondition = itr.first;
+       //                 break;
+       //             }
+       //         }
+       //     }
+       // }
 
         if (ar)
         {
-            if (!sWorld->getBoolConfig(CONFIG_INSTANCE_IGNORE_LEVEL))
-            {
-                if (ar->levelMin && GetLevel() < ar->levelMin)
-                    LevelMin = ar->levelMin;
-                if (ar->levelMax && GetLevel() > ar->levelMax)
-                    LevelMax = ar->levelMax;
-            }
+            //if (!sWorld->getBoolConfig(CONFIG_INSTANCE_IGNORE_LEVEL))
+            //{
+            //    if (ar->levelMin && GetLevel() < ar->levelMin)
+            //        LevelMin = ar->levelMin;
+            //    if (ar->levelMax && GetLevel() > ar->levelMax)
+            //        LevelMax = ar->levelMax;
+            //}
 
             if (ar->item)
             {
