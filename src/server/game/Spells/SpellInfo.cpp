@@ -4468,6 +4468,158 @@ bool SpellInfo::IsHighRankOf(SpellInfo const* spellInfo) const
     return false;
 }
 
+bool SpellInfo::IsBreakingCamouflageAfterHit() const
+{
+    // Traps
+    if (SpellFamilyFlags[1] & 0x8002000 ||
+        SpellFamilyFlags[2] & 0x20000)
+        return true;
+
+    // Damage casts
+    switch (Id)
+    {
+        case 19434: // Aimed Shot
+        case 82928: // Aimed Shot
+        case 77767: // Cobra Shot
+            return true;
+    }
+
+    return false;
+}
+
+bool SpellInfo::IsBreakingCamouflage() const
+{
+    // This is bad but I dont't see another way
+    // I cannot check spells using any mask
+    // Use it only for hunter camouflage
+    switch (GetSpellSpecific())
+    {
+        case SpellSpecificType::SPELL_SPECIFIC_FOOD:
+        case SpellSpecificType::SPELL_SPECIFIC_FOOD_AND_DRINK:
+        case SpellSpecificType::SPELL_SPECIFIC_ASPECT:
+        //case SpellSpecificType::SpellSpecificWellFed:
+            return false;
+        default:
+            break;
+    }
+
+    switch (Id)
+    {
+        case 136:   // Mend Pet
+        case 982:   // Revive Pet
+        case 1130:  // Hunter's Mark
+        case 1462:  // Beast Lore
+        case 1499:  // Frost Trap
+        case 1543:  // Flare
+        case 3045:  // Rapid Fire
+        case 5384:  // Feign Death
+        case 6197:  // Eagle Eye
+        case 6991:  // Feed Pet
+        case 13795: // Immolation Trap
+        case 13809: // Ice Trap
+        case 13813: // Explosive Trap
+        case 19263: // Deterence
+        case 19434: // Aimed Shot
+        case 23989: // Readiness
+        case 26297: // Berserking (Troll Racial)
+        case 34477: // Misdirection
+        case 34600: // Snake Trap
+        case 42292: // PvP Trinket
+        case 53271: // Master's Call
+        case 60192: // Frost Trap launcher
+        case 77767: // Cobra Shot
+        case 82935: // Immplation Trap launcher
+        case 82939: // Explosive Trap launcher
+        case 82941: // Ice Trap launcher
+        case 82945: // Immolation Trap Launcher
+        case 82948: // Snake Trap launcher
+        case 93435: // Roar of Courage (Special Ability)
+            return false;
+    }
+
+    return true;
+}
+
+bool SpellInfo::IsBreakingStealth(Unit* m_caster) const
+{
+    if (!m_caster)
+        return false;
+
+    if (m_caster->HasAura(115192))
+        return false;
+
+    /// Hearthstone shouldn't call subterfuge effect
+    if ((IconFileDataId == 776 || SpellFamilyName == SPELLFAMILY_POTION) && m_caster->HasAura(115191))
+    {
+        m_caster->RemoveAura(115191);
+        return true;
+    }
+
+    switch (GetSpellSpecific())
+    {
+        case SpellSpecificType::SPELL_SPECIFIC_FOOD:
+        case SpellSpecificType::SPELL_SPECIFIC_FOOD_AND_DRINK:
+        //case SpellSpecificType::SpellSpecificWellFed:
+            return true;
+        default:
+            break;
+    }
+
+    //bool callSubterfuge = true;
+    //if (m_caster->HasAura(108208) && m_caster->HasAura(115191) && !m_caster->HasAura(115192) &&
+    //    !HasAttribute(SPELL_ATTR1_ALLOW_WHILE_STEALTHED) && Id != 127802)
+    //{
+    //    /// Mounts shouldn't call subterfuge effect
+    //    if (HasAura(SPELL_AURA_MOUNTED))
+    //        callSubterfuge = false;
+    //
+    //    if (callSubterfuge)
+    //    {
+    //        m_caster->CastSpell(m_caster, 115192, true);
+    //        return true;
+    //    }
+    //}
+
+    if (m_caster->HasAura(115191))
+        return false;
+
+    switch (Id)
+    {
+        case 99:    ///< Incapaciting Roar
+        case 2643:  ///< Multi-shot
+        case 3600:  ///< Earthbind
+        case 12323: ///< Piercing Howl
+        case 64695: ///< Earthgrab
+            return false;
+        default:
+            break;
+    }
+
+    if (IsTargetingArea())
+    {
+        /// Dispel etc spells
+        for (auto const& eff : GetEffects())
+        {
+            switch (eff.Effect)
+            {
+                case SPELL_EFFECT_DISPEL:
+                case SPELL_EFFECT_DISPEL_MECHANIC:
+                case SPELL_EFFECT_THREAT:
+                case SPELL_EFFECT_MODIFY_THREAT_PERCENT:
+                case SPELL_EFFECT_DISTRACT:
+                    return false;
+                default:
+                    break;
+            }
+        }
+    }
+
+    if (HasAttribute(SPELL_ATTR4_REACTIVE_DAMAGE_PROC) || HasAttribute(SPELL_ATTR1_ALLOW_WHILE_STEALTHED))
+        return false;
+
+    return true;
+}
+
 uint32 SpellInfo::GetSpellXSpellVisualId(WorldObject const* caster /*= nullptr*/, WorldObject const* viewer /*= nullptr*/) const
 {
     for (SpellXSpellVisualEntry const* visual : _visuals)

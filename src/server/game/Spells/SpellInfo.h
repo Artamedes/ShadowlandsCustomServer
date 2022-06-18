@@ -594,6 +594,11 @@ class TC_GAME_API SpellInfo
         bool IsDifferentRankOf(SpellInfo const* spellInfo) const;
         bool IsHighRankOf(SpellInfo const* spellInfo) const;
 
+        // helpers for breaking by damage spells
+        bool IsBreakingCamouflage() const;
+        bool IsBreakingCamouflageAfterHit() const;
+        bool IsBreakingStealth(Unit* m_caster = nullptr) const;
+
         uint32 GetSpellXSpellVisualId(WorldObject const* caster = nullptr, WorldObject const* viewer = nullptr) const;
         uint32 GetSpellVisual(WorldObject const* caster = nullptr, WorldObject const* viewer = nullptr) const;
 

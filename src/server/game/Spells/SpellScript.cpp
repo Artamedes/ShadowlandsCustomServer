@@ -234,6 +234,16 @@ SpellScript::OnPrepareHandler::OnPrepareHandler(SpellOnPrepareFnType OnPrepareHa
     _onPrepareHandlerScript = OnPrepareHandlerScript;
 }
 
+SpellScript::CheckInterruptHandler::CheckInterruptHandler(SpellCheckInterruptFnType CheckInterruptHandlerScript)
+{
+    _checkInterruptHandlerScript = CheckInterruptHandlerScript;
+}
+
+bool SpellScript::CheckInterruptHandler::Call(SpellScript* spellScript)
+{
+    return (spellScript->*_checkInterruptHandlerScript)();
+}
+
 void SpellScript::OnSummonHandler::Call(SpellScript* spellScript, Creature* creature)
 {
     (spellScript->*_onSummonHandlerScript)(creature);

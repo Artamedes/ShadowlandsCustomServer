@@ -222,6 +222,7 @@ enum SpellScriptHookType
     SPELL_SCRIPT_HOOK_AFTER_CAST,
     SPELL_SCRIPT_HOOK_CALC_CRIT_CHANCE,
     SPELL_SCRIPT_HOOK_ON_PRECAST,
+    SPELL_SCRIPT_HOOK_CHECK_INTERRUPT,
 };
 
 #define HOOK_SPELL_HIT_START SPELL_SCRIPT_HOOK_EFFECT_HIT
@@ -234,6 +235,7 @@ class TC_GAME_API SpellScript : public _SpellScript
     public:
         #define SPELLSCRIPT_FUNCTION_TYPE_DEFINES(CLASSNAME) \
             typedef SpellCastResult(CLASSNAME::*SpellCheckCastFnType)(); \
+            typedef bool(CLASSNAME::*SpellCheckInterruptFnType)(); \
             typedef void(CLASSNAME::*SpellEffectFnType)(SpellEffIndex); \
             typedef void(CLASSNAME::*SpellBeforeHitFnType)(SpellMissInfo missInfo); \
             typedef void(CLASSNAME::*SpellHitFnType)(); \
@@ -250,6 +252,15 @@ class TC_GAME_API SpellScript : public _SpellScript
             typedef void(CLASSNAME::*SpellDestinationTargetSelectFnType)(SpellDestination&);
 
         SPELLSCRIPT_FUNCTION_TYPE_DEFINES(SpellScript)
+            
+        class TC_GAME_API CheckInterruptHandler
+        {
+            public:
+                CheckInterruptHandler(SpellCheckInterruptFnType CheckInterruptHandlerScript);
+                bool Call(SpellScript* spellScript);
+            private:
+                SpellCheckInterruptFnType _checkInterruptHandlerScript;
+        };
 
         class TC_GAME_API CastHandler
         {
@@ -458,6 +469,7 @@ class TC_GAME_API SpellScript : public _SpellScript
 
         #define SPELLSCRIPT_FUNCTION_CAST_DEFINES(CLASSNAME) \
         class CastHandlerFunction : public SpellScript::CastHandler { public: explicit CastHandlerFunction(SpellCastFnType _pCastHandlerScript) : SpellScript::CastHandler((SpellScript::SpellCastFnType)_pCastHandlerScript) { } }; \
+        class CheckInterruptHandlerFunction : public SpellScript::CheckInterruptHandler { public: CheckInterruptHandlerFunction(SpellCheckInterruptFnType _checkInterruptHandlerScript) : SpellScript::CheckInterruptHandler((SpellScript::SpellCheckInterruptFnType)_checkInterruptHandlerScript) {} }; \
         class OnPrepareHandlerFunction : public SpellScript::OnPrepareHandler { public: OnPrepareHandlerFunction(SpellOnPrepareFnType _onPrepareHandlerScript) : SpellScript::OnPrepareHandler((SpellScript::SpellOnPrepareFnType)_onPrepareHandlerScript) {} }; \
         class OnSummonHandlerFunction : public SpellScript::OnSummonHandler { public: OnSummonHandlerFunction(SpellOnSummonFnType _onSummonHandlerScript) : SpellScript::OnSummonHandler((SpellScript::SpellOnSummonFnType)_onSummonHandlerScript) {} }; \
         class OnJumpChargeHandlerFunction : public SpellScript::OnJumpChargeHandler { public: OnJumpChargeHandlerFunction(SpellOnJumpChargeFnType _onSummonHandlerScript) : SpellScript::OnJumpChargeHandler((SpellScript::SpellOnJumpChargeFnType)_onSummonHandlerScript) {} }; \
@@ -509,6 +521,11 @@ class TC_GAME_API SpellScript : public _SpellScript
         HookList<CastHandler> AfterCast;
         #define SpellCastFn(F) CastHandlerFunction(&F)
         
+        // example: OnCheckInterrupt += SpellCheckInterruptFn();
+        // where function is bool function()
+        HookList<CheckInterruptHandler> OnCheckInterrupt;
+        #define SpellCheckInterruptFn(F) CheckInterruptHandlerFunction(&F)
+
         // example: OnPrepare += SpellOnPrepareFn();
         // where function is void function()
         HookList<OnPrepareHandler> OnPrepare;

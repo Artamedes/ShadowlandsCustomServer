@@ -444,6 +444,7 @@ class TC_GAME_API Spell
         GameObject* SearchSpellFocus();
 
         SpellCastResult prepare(SpellCastTargets const& targets, AuraEffect const* triggeredByAura = nullptr);
+        bool CheckInterrupt();
         void cancel();
         void update(uint32 difftime);
         void cast(bool skipCheck = false);
@@ -836,6 +837,7 @@ class TC_GAME_API Spell
         void LoadScripts();
         void CallScriptOnPrecastHandler();
         void CallScriptBeforeCastHandlers();
+        bool CallScriptCheckInterruptHandlers();
         void CallScriptOnPrepareHandlers();
         void CallScriptOnCastHandlers();
         void CallScriptAfterCastHandlers();
@@ -873,6 +875,8 @@ class TC_GAME_API Spell
         void PrepareTriggersExecutedOnHit();
         typedef std::vector<HitTriggerSpell> HitTriggerSpellList;
         HitTriggerSpellList m_hitTriggerSpells;
+
+        uint32 GetNonInterruptableSpellBy(uint32 p_SpellId);
 
         // effect helpers
         void SummonGuardian(SpellEffectInfo const* effect, uint32 entry, SummonPropertiesEntry const* properties, uint32 numSummons, ObjectGuid privateObjectOwner);

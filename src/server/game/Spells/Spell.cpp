@@ -3149,7 +3149,15 @@ SpellMissInfo Spell::PreprocessSpellHit(Unit* unit, TargetInfo& hitInfo)
             return SPELL_MISS_EVADE;
 
         if (m_caster->IsValidAttackTarget(unit, m_spellInfo))
-            unit->RemoveAurasWithInterruptFlags(SpellAuraInterruptFlags::HostileActionReceived);
+        {
+            if (m_spellInfo->IsBreakingStealth(unit))
+            {
+                unit->RemoveAurasWithInterruptFlags(SpellAuraInterruptFlags::HostileActionReceived);
+                //TODO: This is a hack. But we do not know what types of stealth should be interrupted by CC
+                //if (AttributesCustomCu & SPELL_ATTR0_CU_AURA_CC && unit->IsControlledByPlayer())
+                //    unit->RemoveAurasByType(SPELL_AURA_MOD_STEALTH, 0, NULL, 131361);
+            }
+        }
         else if (m_caster->IsFriendlyTo(unit))
         {
             // for delayed spells ignore negative spells (after duel end) for friendly targets
@@ -3624,8 +3632,18 @@ SpellCastResult Spell::prepare(SpellCastTargets const& targets, AuraEffect const
         {
             // stealth must be removed at cast starting (at show channel bar)
             // skip triggered spell (item equip spell casting and other not explicit character casts/item uses)
-            if (!(_triggeredCastFlags & TRIGGERED_IGNORE_AURA_INTERRUPT_FLAGS) && !m_spellInfo->HasAttribute(SPELL_ATTR2_NOT_AN_ACTION))
-                unitCaster->RemoveAurasWithInterruptFlags(SpellAuraInterruptFlags::Action, m_spellInfo);
+            if (CheckInterrupt() && !m_spellInfo->HasAttribute(SPELL_ATTR2_NOT_AN_ACTION))
+            {
+                uint32 l_Except = GetNonInterruptableSpellBy(m_spellInfo->Id);
+                for (auto const& effect : m_spellInfo->GetEffects())
+                {
+                    if (effect.GetUsedTargetObjectType() == TARGET_OBJECT_TYPE_UNIT)
+                    {
+                        unitCaster->RemoveAurasWithInterruptFlags(SpellAuraInterruptFlags::Action, m_spellInfo);
+                        break;
+                    }
+                }
+            }
 
             // Do not register as current spell when requested to ignore cast in progress
             // We don't want to interrupt that other spell with cast time
@@ -3647,6 +3665,20 @@ SpellCastResult Spell::prepare(SpellCastTargets const& targets, AuraEffect const
     }
 
     return SPELL_CAST_OK;
+}
+
+bool Spell::CheckInterrupt()
+{
+    if (CallScriptCheckInterruptHandlers())
+        return true;
+
+    if (Unit* unitCaster = m_caster->ToUnit())
+    {
+        if (!(_triggeredCastFlags & TRIGGERED_IGNORE_AURA_INTERRUPT_FLAGS) && m_spellInfo->IsBreakingStealth(unitCaster) && (!unitCaster->HasAuraType(SPELL_AURA_MOD_CAMOUFLAGE) || m_spellInfo->IsBreakingCamouflage()))
+            return true;
+    }
+
+    return false;
 }
 
 void Spell::cancel()
@@ -8692,6 +8724,27 @@ void Spell::CallScriptBeforeCastHandlers()
     }
 }
 
+bool Spell::CallScriptCheckInterruptHandlers()
+{
+    bool l_CanInterrupt = false;
+
+    for (auto l_Scritr = m_loadedScripts.begin(); l_Scritr != m_loadedScripts.end(); ++l_Scritr)
+    {
+        (*l_Scritr)->_PrepareScriptCall(SPELL_SCRIPT_HOOK_CHECK_INTERRUPT);
+        auto l_HookItrEnd = (*l_Scritr)->OnCheckInterrupt.end(), l_HookItr = (*l_Scritr)->OnCheckInterrupt.begin();
+        for (; l_HookItr != l_HookItrEnd; ++l_HookItr)
+        {
+            bool l_TempResult = (*l_HookItr).Call(*l_Scritr);
+            if (l_TempResult == true)
+                l_CanInterrupt = l_TempResult;
+        }
+
+        (*l_Scritr)->_FinishScriptCall();
+    }
+
+    return l_CanInterrupt;
+}
+
 void Spell::CallScriptOnPrepareHandlers()
 {
     for (auto scritr = m_loadedScripts.begin(); scritr != m_loadedScripts.end(); ++scritr)
@@ -9164,6 +9217,22 @@ void Spell::CallScriptOnResistAbsorbCalculateHandlers(DamageInfo const& damageIn
 
         (*scritr)->_FinishScriptCall();
     }
+}
+
+uint32 Spell::GetNonInterruptableSpellBy(uint32 p_SpellId)
+{
+    switch (p_SpellId)
+    {
+        case 227344: ///< Effuse (Ancient Mistweaver Arts - 209520)
+        case 227345: ///< Enveloping Mist (Ancient Mistweaver Arts - 209520)
+            return 209525; ///< Soothing Mist (Ancient Mistweaver Arts - 209520)
+        case 211412:
+            return 211408;
+        default:
+            return 0;
+    }
+
+    return 0;
 }
 
 namespace Trinity
