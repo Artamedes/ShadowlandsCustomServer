@@ -1,8 +1,18 @@
 #include "SpellIncludes.h"
+#include "spell_rogue.h"
 #include "PathGenerator.h"
 
 enum eOutlaw
 {
+    /// Generators
+    SinisterStrike = 193315,
+    PistolShot     = 185763,
+    GhostlyStrike  = 196937,
+    /// Finishers
+    Dispatch       = 2098,
+    BetweenTheEyes = 315341,
+    SliceAndDice   = 315496,
+    /// Conduits
     CountTheOdds = 341546,
     SleightOfHand = 341543,
 };
@@ -20,6 +30,11 @@ enum RollTheBones
 static uint32 constexpr RTBSpells[] = { SPELL_ROGUE_SKULL_AND_CROSSBONES, SPELL_ROGUE_GRAND_MELEE, SPELL_ROGUE_RUTHLESS_PRECISION,
     SPELL_ROGUE_TRUE_BEARING, SPELL_ROGUE_BURIED_TREASURE, SPELL_ROGUE_BROADSIDE };
 
+/// <summary>
+/// Apples count the odds when you use a spell like Ambush or Dispatch
+/// Calculates their conduit level to see what they roll
+/// </summary>
+/// <param name="caster">The caster who casted the spell</param>
 void ApplyCountTheOdds(Unit* caster)
 {
     if (caster && IsSpec(caster, SimpleTalentSpecs::Outlaw))
@@ -28,19 +43,19 @@ void ApplyCountTheOdds(Unit* caster)
         {
             bool stealthed = caster->HasAuraType(AuraType::SPELL_AURA_MOD_STEALTH);
 
-            uint32 chance = countTheOdds->GetAmount();
+            float chance = countTheOdds->ConduitRankEntry ? countTheOdds->ConduitRankEntry->AuraPointsOverride : 0.0f;
             uint32 duration = 5000;
 
             if (caster->HasAuraType(AuraType::SPELL_AURA_MOD_STEALTH))
             {
-                chance *= 3;
+                chance *= 3.0f;
                 duration *= 3;
             }
 
-            if (chance > 100)
-                chance = 100;
+            if (chance > 100.0f)
+                chance = 100.0f;
 
-            if (roll_chance_i(chance))
+            if (roll_chance_f(chance))
             {
                 std::vector<uint32> NotHaveRTBBuffs;
                 for (uint32 spellId : RTBSpells)
@@ -53,9 +68,7 @@ void ApplyCountTheOdds(Unit* caster)
 
                 if (!NotHaveRTBBuffs.empty())
                 {
-                    CastSpellExtraArgs args(true);
-                    args.AddSpellMod(SPELLVALUE_DURATION, duration);
-                    caster->CastSpell(caster, Trinity::Containers::SelectRandomContainerElement(NotHaveRTBBuffs), args);
+                    caster->CastSpell(caster, Trinity::Containers::SelectRandomContainerElement(NotHaveRTBBuffs), CastSpellExtraArgs(true).AddSpellMod(SpellValueMod::SPELLVALUE_DURATION, duration));
                 }
             }
         }
@@ -117,6 +130,7 @@ class spell_rog_roll_the_bones : public SpellScript
 };
 
 /// ID: 8676 Ambush
+/// Used for Count the Odds conduit
 class spell_ambush : public SpellScript
 {
     PrepareSpellScript(spell_ambush);
@@ -134,6 +148,7 @@ class spell_ambush : public SpellScript
 };
 
 /// ID: 2098 Dispatch
+/// Used for Count the Odds Conduit
 class spell_dispatch : public SpellScript
 {
     PrepareSpellScript(spell_dispatch);
@@ -149,7 +164,9 @@ class spell_dispatch : public SpellScript
         OnEffectHitTarget += SpellEffectFn(spell_dispatch::HandleDummy, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
     }
 };
+
 /// ID: 195457 Grappling Hook
+/// 
 class spell_grappling_hook : public SpellScript
 {
     PrepareSpellScript(spell_grappling_hook);
@@ -213,10 +230,109 @@ class spell_grappling_hook : public SpellScript
     }
 };
 
+/// ID: 343142 Dreadblades
+/// Used for preventing proccing from every spell. Should only proc from outlaw generators.
+/// Also have to damage self on using finishing move.
+class spell_dreadblades : public AuraScript
+{
+    PrepareAuraScript(spell_dreadblades);
+
+    enum eDreadblades
+    {
+        DreadbladesEnergize = 343143,
+        DreadbladesDmgSelf  = 343145,
+    };
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        if (!eventInfo.GetSpellInfo())
+            return false;
+
+        switch (eventInfo.GetSpellInfo()->Id)
+        {
+            /// Generators
+            case SinisterStrike:
+            case PistolShot:
+            case GhostlyStrike:
+            case EchoingReprimand:
+            case Sepsis:
+            case SerratedBoneSpike:
+            /// Finishers
+            case Dispatch:
+            case BetweenTheEyes:
+            case SliceAndDice:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        PreventDefaultAction();
+
+        if (!eventInfo.GetSpellInfo())
+            return;
+
+        if (!eventInfo.GetActor())
+            return;
+
+        switch (eventInfo.GetSpellInfo()->Id)
+        {
+            case SinisterStrike:
+            case PistolShot:
+            case GhostlyStrike:
+            case EchoingReprimand:
+            case Sepsis:
+            case SerratedBoneSpike:
+            {
+                eventInfo.GetActor()->CastSpell(eventInfo.GetActor(), DreadbladesEnergize, true);
+                break;
+            }
+            case Dispatch:
+            case BetweenTheEyes:
+            case SliceAndDice:
+            {
+                eventInfo.GetActor()->CastSpell(eventInfo.GetActor(), DreadbladesDmgSelf, true);
+                break;
+            }
+            default:
+                break;
+        }
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_dreadblades::CheckProc);
+        OnProc += AuraProcFn(spell_dreadblades::HandleProc);
+    }
+};
+
+/// ID: 343145 Dreadblades
+class spell_dreadblades_self_dmg : public SpellScript
+{
+    PrepareSpellScript(spell_dreadblades_self_dmg);
+
+    void HandleDmg(SpellEffIndex /*eff*/)
+    {
+        if (auto caster = GetCaster())
+        {
+            SetHitDamage(caster->CountPctFromCurHealth(5));
+        }
+    }
+
+    void Register() override
+    {
+        OnEffectHitTarget += SpellEffectFn(spell_dreadblades_self_dmg::HandleDmg, EFFECT_1, SPELL_EFFECT_SCHOOL_DAMAGE);
+    }
+};
+
 void AddSC_spell_rogue_outlaw()
 {
     RegisterSpellScript(spell_rog_roll_the_bones);
     RegisterSpellScript(spell_ambush);
     RegisterSpellScript(spell_dispatch);
     RegisterSpellScript(spell_grappling_hook);
+    RegisterSpellScript(spell_dreadblades);
+    RegisterSpellScript(spell_dreadblades_self_dmg);
 }

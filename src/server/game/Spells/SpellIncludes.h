@@ -2,6 +2,7 @@
 
 #include "AreaTrigger.h"
 #include "AreaTriggerAI.h"
+#include "Containers.h"
 #include "Player.h"
 #include "ScriptMgr.h"
 #include "Spell.h"

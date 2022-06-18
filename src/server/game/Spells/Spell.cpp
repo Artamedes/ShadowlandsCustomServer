@@ -5479,7 +5479,43 @@ void Spell::TakePower()
             }
         }
 
+        bool tookPowerEarly = false;
+
+        if (powerType == POWER_COMBO_POINTS)
+        {
+            auto CanTakeEchoingReprimand([&]() -> bool
+            {
+                switch (m_spellInfo->Id)
+                {
+                    case 315496: ///< Slice and Dice
+                        return false;
+                    default:
+                        return true;
+                }
+            });
+
+            if (CanTakeEchoingReprimand())
+            {
+                auto cpAura = unitCaster->GetAuraApplication([&](AuraApplication const* aurApp)
+                {
+                    return aurApp->GetBase()->HasEffectType(SPELL_AURA_SET_POWER_POINT_CHARGE) && aurApp->GetBase()->GetEffect(EFFECT_0)->GetMiscValue() == cost.Amount;
+                });
+
+                if (cpAura)
+                {
+                    tookPowerEarly = true;
+                    unitCaster->ModifyPower(powerType, -cost.Amount);
+                    unitCaster->RemoveAura(cpAura);
+                    unitCaster->Variables.Set("RogueComboPoints", 7);
+                    cost.Amount = 7;
+                }
+            }
+        }
+
         CallScriptOnTakePowerHandlers(cost);
+
+        if (tookPowerEarly)
+            continue;
 
         if (powerType == POWER_RUNES)
         {
@@ -9583,4 +9619,12 @@ SpellPowerCost const* Spell::GetPowerCost(Powers power) const
         return &(*c);
 
     return nullptr;
+}
+
+int32 Spell::GetUsedComboPoints() const
+{
+    auto cost = GetPowerCost(POWER_COMBO_POINTS);
+    if (!cost)
+        return 0;
+    return cost->Amount;
 }

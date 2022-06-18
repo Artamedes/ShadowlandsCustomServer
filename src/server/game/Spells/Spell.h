@@ -625,6 +625,7 @@ class TC_GAME_API Spell
         Difficulty GetCastDifficulty() const;
         std::vector<SpellPowerCost> const& GetPowerCost() const { return m_powerCost; }
         SpellPowerCost const* GetPowerCost(Powers power) const;
+        int32 GetUsedComboPoints() const;
         bool HasPowerTypeCost(Powers power) const;
         Optional<int32> GetPowerTypeCostAmount(Powers power) const;
 
