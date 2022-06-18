@@ -1988,21 +1988,21 @@ void Spell::SelectImplicitLineTargets(SpellEffectInfo const& spellEffectInfo, Sp
             orientation = m_caster->GetAngle(target);
     }
 
-    if (m_caster)
-    {
-        if (auto player = m_caster->ToPlayer())
-        {
-            ChatHandler(player).PSendSysMessage("start %s", m_caster->GetPosition().ToString().c_str());
-            if (m_targets.HasDst())
-            {
-                ChatHandler(player).PSendSysMessage("dest %s", m_targets.GetDstPos()->ToString().c_str());
-                ChatHandler(player).PSendSysMessage("Radius %f", radius);
-                ChatHandler(player).PSendSysMessage("Width %f", width);
-                ChatHandler(player).PSendSysMessage("combatReach %f", m_caster->GetCombatReach());
-                ChatHandler(player).PSendSysMessage("dist %f", m_caster->GetDistance(*m_targets.GetDstPos()));
-            }
-        }
-    }
+    //if (m_caster)
+    //{
+    //    if (auto player = m_caster->ToPlayer())
+    //    {
+    //        ChatHandler(player).PSendSysMessage("start %s", m_caster->GetPosition().ToString().c_str());
+    //        if (m_targets.HasDst())
+    //        {
+    //            ChatHandler(player).PSendSysMessage("dest %s", m_targets.GetDstPos()->ToString().c_str());
+    //            ChatHandler(player).PSendSysMessage("Radius %f", radius);
+    //            ChatHandler(player).PSendSysMessage("Width %f", width);
+    //            ChatHandler(player).PSendSysMessage("combatReach %f", m_caster->GetCombatReach());
+    //            ChatHandler(player).PSendSysMessage("dist %f", m_caster->GetDistance(*m_targets.GetDstPos()));
+    //        }
+    //    }
+    //}
 
     if (uint32 containerTypeMask = GetSearcherTypeMask(objectType, condList))
     {
