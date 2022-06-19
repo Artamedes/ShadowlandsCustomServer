@@ -3,6 +3,7 @@
 enum eSubtlety
 {
     Eviscerate = 196819,
+    EviscerateShadowDmg = 328082,
     BlackPowder = 319175,
     SymbolsOfDeath = 212283,
     Backstab = 53,
@@ -234,6 +235,38 @@ class spell_the_rotten_proc : public AuraScript
     }
 };
 
+/// 196819 - Eviscerate
+class spell_rog_eviscerate : public SpellScript
+{
+    PrepareSpellScript(spell_rog_eviscerate);
+
+    void CalculateDamage(SpellEffIndex /*effIndex*/)
+    {
+        Unit* caster = GetCaster();
+        if (!caster)
+            return;
+        if (!GetSpell())
+            return;
+
+        int32 damage = GetHitDamage();
+        damage *= GetSpell()->GetUsedComboPoints();
+        SetHitDamage(damage);
+
+        if (auto hitUnit = GetHitUnit())
+        {
+            if (hitUnit->GetAura(FindWeakness))
+            {
+                caster->CastSpell(hitUnit, EviscerateShadowDmg, CastSpellExtraArgs(true).AddSpellBP0(CalculatePct(damage, 50)));
+            }
+        }
+    }
+
+    void Register() override
+    {
+        OnEffectHitTarget += SpellEffectFn(spell_rog_eviscerate::CalculateDamage, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
+    }
+};
+
 void AddSC_spell_rogue_subtlety()
 {
     RegisterSpellScript(spell_deeper_daggers);
@@ -243,4 +276,5 @@ void AddSC_spell_rogue_subtlety()
     RegisterSpellScript(spell_finality_black_powder);
     RegisterSpellScript(spell_the_rotten);
     RegisterSpellScript(spell_the_rotten_proc);
+    RegisterSpellScript(spell_rog_eviscerate);
 }

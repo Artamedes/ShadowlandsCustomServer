@@ -1766,47 +1766,6 @@ public:
     }
 };
 
-// 2098 - Run Through and 196819 - Eviscerate Update for 8.0.1 build 28153
-class spell_rog_eviscerate : public SpellScript
-{
-    PrepareSpellScript(spell_rog_eviscerate);
-
-	void HandleTakePower(SpellPowerCost& powerCost)
-    {
-		if (powerCost.Power == POWER_COMBO_POINTS)
-			cp = powerCost.Amount;
-    }
-
-    void CalculateDamage(SpellEffIndex /*effIndex*/)
-    {
-        Unit* caster = GetCaster();
-        if (!caster)
-            return;
-
-		int32 damage = GetHitDamage();
-
-        if (caster->Variables.Exist("DFA_ComboPoints"))
-            cp = caster->Variables.GetValue<uint8>("DFA_ComboPoints");
-
-        cp = GetSpell()->GetUsedComboPoints();
-
-        caster->Variables.Remove("DFA_ComboPoints");
-        damage *= cp;
-
-		SetHitDamage(damage);
-        caster->RemoveAurasDueToSpell(SPELL_ROGUE_NIGHTS_VENGEANCE_BUFF);
-    }
-
-    void Register() override
-    {
-		OnTakePower += SpellOnTakePowerFn(spell_rog_eviscerate::HandleTakePower);
-		OnEffectHitTarget += SpellEffectFn(spell_rog_eviscerate::CalculateDamage, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
-    }
-
-private:
-	uint8 cp = 0;
-};
-
 // 32645 - Envenom
 class spell_rog_envenom : public SpellScript
 {
@@ -4750,7 +4709,6 @@ void AddSC_rogue_spell_scripts()
     RegisterSpellScript(spell_rog_deepening_shadows);
     new spell_rog_dirty_tricks();
     RegisterSpellScript(spell_rog_envenom);
-    RegisterSpellScript(spell_rog_eviscerate);
     new spell_rog_fan_of_knives();
     RegisterSpellAndAuraScriptPair(spell_rog_garrote, aura_rog_garrote);
     RegisterSpellAndAuraScriptPair(spell_rog_kidney_shot, aura_rog_kidney_shot);
