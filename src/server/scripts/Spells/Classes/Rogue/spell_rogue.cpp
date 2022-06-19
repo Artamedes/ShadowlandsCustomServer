@@ -4695,6 +4695,33 @@ class spell_deathly_shadows : public AuraScript
     }
 };
 
+/// ID: 340079 Essence of Bloodfang
+class spell_essence_of_bloodfang : public AuraScript
+{
+    PrepareAuraScript(spell_essence_of_bloodfang);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        if (!eventInfo.GetSpellInfo())
+            return false;
+
+        switch (eventInfo.GetSpellInfo()->Id)
+        {
+            case SPELL_ROGUE_SHURIKEN_STORM:
+                return true;
+            default:
+                break;
+        }
+
+        return eventInfo.GetProcSpell() && eventInfo.GetProcSpell()->m_comboPointGain > 0;
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_essence_of_bloodfang::CheckProc);
+    }
+};
+
 void AddSC_rogue_spell_scripts()
 {
     // SpellScripts
@@ -4791,6 +4818,7 @@ void AddSC_rogue_spell_scripts()
     RegisterSpellScript(spell_crippling_poison);
     RegisterSpellScript(spell_instant_poison);
     RegisterSpellScript(spell_prepared_for_all);
+    RegisterSpellScript(spell_essence_of_bloodfang);
 
 	// Areatrigger
     RegisterAreaTriggerAI(at_rog_smoke_bomb);    // 11451

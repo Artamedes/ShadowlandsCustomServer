@@ -1,9 +1,10 @@
 #include "SpellIncludes.h"
 
-enum Assassination
+enum eAssassination
 {
     Rupture = 1943,
     Envenom = 32645,
+    Mutilate = 1329,
 };
 
 
@@ -31,8 +32,8 @@ class aura_rog_poison_bomb : public AuraScript
 
         switch (eventInfo.GetSpellInfo()->Id)
         {
-            case Assassination::Rupture:
-            case Assassination::Envenom:
+            case eAssassination::Rupture:
+            case eAssassination::Envenom:
                 if (caster->Variables.Exist("CP"))
                 {
                     auto cp = caster->Variables.GetValue<uint8>("CP", 0);
@@ -81,9 +82,44 @@ struct at_rogue_poison_bomb : AreaTriggerAI
     }
 };
 
+/// ID: 340082 Doomblade
+class spell_doomblade : public AuraScript
+{
+    PrepareAuraScript(spell_doomblade);
+
+    enum eDoomblade
+    {
+        MutilatedFlesh = 340431,
+    };
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == Mutilate && eventInfo.GetDamageInfo() && eventInfo.GetDamageInfo()->GetDamage();
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (auto caster = GetCaster())
+        {
+            if (auto target = eventInfo.GetActionTarget())
+            {
+                if (eventInfo.GetDamageInfo())
+                    caster->CastSpell(target, MutilatedFlesh, CastSpellExtraArgs(true).AddSpellBP0(CalculatePct(eventInfo.GetDamageInfo()->GetDamage(), 45)));
+            }
+        }
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_doomblade::CheckProc);
+        OnProc += AuraProcFn(spell_doomblade::HandleProc);
+    }
+};
+
 void AddSC_spell_rogue_assassination()
 {
     RegisterSpellScript(aura_rog_poison_bomb);
-
+    RegisterSpellScript(spell_doomblade);
+        
     RegisterAreaTriggerAI(at_rogue_poison_bomb); // 16552
 }

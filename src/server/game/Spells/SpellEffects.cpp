@@ -1044,6 +1044,9 @@ void Spell::EffectPowerDrain()
         gainMultiplier = effectInfo->CalcValueMultiplier(unitCaster, this);
         int32 const gain = int32(newDamage * gainMultiplier);
 
+        if (powerType == Powers::POWER_COMBO_POINTS)
+            m_comboPointGain = gain;
+
         unitCaster->EnergizeBySpell(unitCaster, m_spellInfo, gain, powerType);
     }
     ExecuteLogEffectTakeTargetPower(SpellEffectName(effectInfo->Effect), unitTarget, powerType, newDamage, gainMultiplier);
@@ -1480,6 +1483,9 @@ void Spell::EffectEnergize()
             break;
     }
 
+    if (power == Powers::POWER_COMBO_POINTS)
+        m_comboPointGain = damage;
+
     unitCaster->EnergizeBySpell(unitTarget, m_spellInfo, damage, power);
 }
 
@@ -1504,6 +1510,10 @@ void Spell::EffectEnergizePct()
         return;
 
     uint32 const gain = CalculatePct(maxPower, damage);
+
+    if (power == Powers::POWER_COMBO_POINTS)
+        m_comboPointGain = gain;
+
     unitCaster->EnergizeBySpell(unitTarget, m_spellInfo, gain, power);
 }
 
