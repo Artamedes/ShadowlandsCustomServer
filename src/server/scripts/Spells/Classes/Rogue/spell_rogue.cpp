@@ -854,6 +854,9 @@ class spell_rog_rupture : public SpellScript
                             ruptureAura->SetDuration(duration * IN_MILLISECONDS);
                             ruptureAura->SetMaxDuration(duration * IN_MILLISECONDS);
                             HandleGrudgeMatch(GetCaster(), target, ruptureAura);
+
+                            if (auto finality = caster->GetAura(FinalityRupture))
+                                finality->Remove();
                         }
                     }
                 }
