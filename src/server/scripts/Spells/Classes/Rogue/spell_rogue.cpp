@@ -1200,6 +1200,32 @@ class spell_rog_vanish_aura : public SpellScriptLoader
                 //if (target->HasAura(SPELL_ROGUE_SHADOWSTRIKE_RANK_2))
                 target->CastSpell(target, SPELL_ROGUE_SHADOWSTRIKE_BONUS, true);
                 HandleFadeToNothingConduit(target);
+
+                if (target->HasAura(InvigoratingShadowdust))
+                {
+                    target->GetSpellHistory()->ReduceCooldowns([target](SpellHistory::CooldownStorageType::iterator itr) -> bool
+                    {
+                        SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(itr->first, DIFFICULTY_NONE);
+                        Milliseconds remainingCooldown = target->GetSpellHistory()->GetRemainingCooldown(spellInfo);
+
+                        bool allow = spellInfo->SpellFamilyName == SPELLFAMILY_ROGUE;
+
+                        if (!allow)
+                        {
+                            return false;
+                            ///switch (spellInfo->Id)
+                            ///{
+                            ///        return true;
+                            ///    default:
+                            ///        return false;
+                            ///}
+                            /// 
+                        }
+
+                        return remainingCooldown > 0ms
+                            && !itr->second.OnHold;
+                    }, 20000);
+                }
             }
 
             void HandleEffectRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
@@ -4553,8 +4579,9 @@ class spell_exsanguinate : public SpellScript
                         {
                             if (eff && eff->GetAuraType() == AuraType::SPELL_AURA_PERIODIC_DAMAGE)
                             {
-                                //eff->SetAmount(eff->GetAmount() * 2);
-                                eff->SetPeriodicTimer(eff->GetPeriodicTimer() / 2);
+                                /// CUSTOM FIX
+                                eff->SetAmount(eff->GetAmount() * 2);
+                                //eff->SetPeriodicTimer(eff->GetPeriodicTimer() / 2);
                             }
                         }
                         bleed->SetNeedClientUpdateForTargets();
@@ -4674,6 +4701,35 @@ class spell_prepared_for_all : public AuraScript
     void Register() override
     {
         OnProc += AuraProcFn(spell_prepared_for_all::HandleProc);
+    }
+};
+
+/// ID: 340092 Deathly Shadows
+class spell_deathly_shadows : public AuraScript
+{
+    PrepareAuraScript(spell_deathly_shadows);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == Vanish;
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        PreventDefaultAction();
+        if (auto caster = GetCaster())
+        {
+            if (IsSpec(caster, SimpleTalentSpecs::Outlaw))
+                caster->CastSpell(caster, DeathlyShadowsOutlaw, true);
+            else
+                caster->CastSpell(caster, DeathlyShadowsOutlaw, true);
+        }
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_deathly_shadows::CheckProc);
+        OnProc += AuraProcFn(spell_deathly_shadows::HandleProc);
     }
 };
 

@@ -15,6 +15,17 @@ enum eOutlaw
     /// Conduits
     CountTheOdds = 341546,
     SleightOfHand = 341543,
+    /// Procs
+    Opportunity = 195627,
+    TornadoTriggerStack = 364234,
+    TornadoTriggerBlast = 364556,
+    /// Legendaries
+    ConcealedBlunderbuss = 340088,
+    ConcealedBlunderbussProc = 340587,
+    GreenskinWickers = 340085,
+    GreenskinWickersProc = 340573,
+
+    MainGaucheDmg = 86392, ///< Mastery Proc
 };
 
 enum RollTheBones
@@ -327,6 +338,243 @@ class spell_dreadblades_self_dmg : public SpellScript
     }
 };
 
+/// ID: 193315 Sinister Strike
+class spell_sinister_strike : public SpellScript
+{
+    PrepareSpellScript(spell_sinister_strike);
+
+    enum eSinisterStrike
+    {
+        WeaponMaster = 200733,
+    };
+
+    void HandleDummy(SpellEffIndex /*eff*/)
+    {
+        auto caster = GetCaster();
+        if (!caster)
+            return;
+        auto hitUnit = GetHitUnit();
+        if (!hitUnit)
+            return;
+
+        uint32 chance = 35.0f;
+        if (caster->HasAura(WeaponMaster))
+            chance += 10.0f;
+
+        if (roll_chance_i(chance))
+        {
+            caster->CastSpell(hitUnit, SinisterStrike, true);
+            caster->CastSpell(caster, Opportunity, true);
+
+            if (caster->HasAura(ConcealedBlunderbuss) && roll_chance_i(40))
+            {
+                caster->CastSpell(caster, ConcealedBlunderbussProc, true);
+            }
+        }
+    }
+
+    void Register() override
+    {
+        OnEffectHitTarget += SpellEffectFn(spell_sinister_strike::HandleDummy, EFFECT_3, SPELL_EFFECT_DUMMY);
+    }
+};
+
+/// ID: 195627 Opportunity
+class spell_opportunity : public AuraScript
+{
+    PrepareAuraScript(spell_opportunity);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && eventInfo.GetDamageInfo() && eventInfo.GetDamageInfo()->GetDamage() > 0 && eventInfo.GetSpellInfo()->Id == PistolShot;
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        PreventDefaultAction();
+        Remove();
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_opportunity::CheckProc);
+        OnProc += AuraProcFn(spell_opportunity::HandleProc);
+    }
+};
+
+/// ID: 76806 Mastery: Main Gauche
+class spell_mastery_main_gauche : public AuraScript
+{
+    PrepareAuraScript(spell_mastery_main_gauche);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        if (eventInfo.GetSpellInfo())
+        {
+            switch (eventInfo.GetSpellInfo()->Id)
+            {
+                case MainGaucheDmg:
+                    return false;
+                default:
+                    break;
+            }
+        }
+
+        return roll_chance_i(30);
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        PreventDefaultAction();
+        if (auto target = eventInfo.GetActionTarget())
+        {
+            if (auto caster = GetCaster())
+            {
+                auto dam = CalculatePct(caster->GetTotalAttackPowerValue(WeaponAttackType::OFF_ATTACK), 145);
+                caster->CastSpell(target, MainGaucheDmg, CastSpellExtraArgs(true).AddSpellBP0(dam));
+            }
+        }
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_mastery_main_gauche::CheckProc);
+        OnProc += AuraProcFn(spell_mastery_main_gauche::HandleProc);
+    }
+};
+
+/// ID: 364555 Tornado Trigger
+class spell_tornado_trigger : public AuraScript
+{
+    PrepareAuraScript(spell_tornado_trigger);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        if (!eventInfo.GetSpellInfo())
+            return false;
+
+        return eventInfo.GetSpellInfo()->Id == MainGaucheDmg;
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (auto caster = GetCaster())
+        {
+            if (auto target = eventInfo.GetActionTarget())
+            {
+                caster->CastSpell(target, PistolShot, true);
+            }
+        }
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_tornado_trigger::CheckProc);
+        OnProc += AuraProcFn(spell_tornado_trigger::HandleProc);
+    }
+};
+
+/// ID: 363592 Tornado Trigger
+class spell_tornado_trigger_4pc : public AuraScript
+{
+    PrepareAuraScript(spell_tornado_trigger_4pc);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == PistolShot && eventInfo.GetDamageInfo() && eventInfo.GetDamageInfo()->GetDamage();
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        PreventDefaultAction();
+        if (auto caster = GetCaster())
+        {
+            if (auto target = eventInfo.GetActionTarget())
+            {
+                caster->CastSpell(caster, TornadoTriggerStack, true);
+
+                if (auto aur = caster->GetAura(TornadoTriggerStack))
+                {
+                    if (aur->GetStackAmount() >= 6)
+                    {
+                        caster->CastSpell(caster, TornadoTriggerBlast, true);
+                        aur->Remove();
+                    }
+                }
+            }
+        }
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_tornado_trigger_4pc::CheckProc);
+        OnProc += AuraProcFn(spell_tornado_trigger_4pc::HandleProc);
+    }
+};
+
+/// ID: 185763 Pistol Shot
+class spell_pistol_shot : public SpellScript
+{
+    PrepareSpellScript(spell_pistol_shot);
+
+    void HandleDummy(SpellEffIndex /*eff*/)
+    {
+        if (auto caster = GetCaster())
+        {
+            if (auto hitUnit = GetHitUnit())
+            {
+                if (auto aur = caster->GetAura(TornadoTriggerBlast))
+                {
+                    auto prevComboPoints = caster->GetComboPoints();
+                    caster->SetPower(Powers::POWER_COMBO_POINTS, caster->GetMaxPower(Powers::POWER_COMBO_POINTS));
+                    caster->CastSpell(hitUnit, BetweenTheEyes, true);
+                    caster->SetPower(Powers::POWER_COMBO_POINTS, prevComboPoints);
+                    aur->Remove();
+                }
+                if (auto aur = caster->GetAura(ConcealedBlunderbussProc))
+                {
+                    /// Fire 2 additional times
+                    caster->CastSpell(hitUnit, PistolShot, true);
+                    caster->CastSpell(hitUnit, PistolShot, true);
+                    aur->Remove();
+                }
+                if (auto aur = caster->GetAura(GreenskinWickersProc))
+                    aur->Remove();
+            }
+        }
+    }
+
+    void Register() override
+    {
+        OnEffectHitTarget += SpellEffectFn(spell_pistol_shot::HandleDummy, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
+    }
+};
+
+/// ID: 340085 Greenskin's Wickers
+class spell_greenskins_wickers : public AuraScript
+{
+    PrepareAuraScript(spell_greenskins_wickers);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetProcSpell() && eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == BetweenTheEyes && roll_chance_i(std::min(100, eventInfo.GetProcSpell()->GetUsedComboPoints() * 20));
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (auto caster = GetCaster())
+        {
+            caster->CastSpell(caster, GreenskinWickersProc, true);
+        }
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_greenskins_wickers::CheckProc);
+        OnProc += AuraProcFn(spell_greenskins_wickers::HandleProc);
+    }
+};
+
 void AddSC_spell_rogue_outlaw()
 {
     RegisterSpellScript(spell_rog_roll_the_bones);
@@ -335,4 +583,11 @@ void AddSC_spell_rogue_outlaw()
     RegisterSpellScript(spell_grappling_hook);
     RegisterSpellScript(spell_dreadblades);
     RegisterSpellScript(spell_dreadblades_self_dmg);
+    RegisterSpellScript(spell_sinister_strike);
+    RegisterSpellScript(spell_opportunity);
+    RegisterSpellScript(spell_mastery_main_gauche);
+    RegisterSpellScript(spell_tornado_trigger);
+    RegisterSpellScript(spell_tornado_trigger_4pc);
+    RegisterSpellScript(spell_pistol_shot);
+    RegisterSpellScript(spell_greenskins_wickers);
 }

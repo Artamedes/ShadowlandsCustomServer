@@ -4,6 +4,7 @@
 
 enum eRogue : uint32
 {
+    Vanish = 1856,
     /// Covenant
     Flagellation      = 323654,
     Sepsis            = 328305,
@@ -12,4 +13,8 @@ enum eRogue : uint32
     /// Conduits
 
     /// Legendaries
+    InvigoratingShadowdust  = 340080,
+    DeathlyShadows          = 340092,
+    DeathlyShadowsOutlaw    = 341202,
+    DeathlyShadowsAssa      = 350964,
 };
