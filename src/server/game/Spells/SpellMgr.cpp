@@ -3299,6 +3299,12 @@ void SpellMgr::LoadSpellInfoCorrections()
         ApplySpellFix({ 21992 }, [](SpellInfo* info)
         {
             info->ProcChance = 20.0f;
+            info->RecoveryTime = 5000;
+            info->RangeEntry = sSpellRangeStore.LookupEntry(5); // 40yd
+            ApplySpellEffectFix(info, EFFECT_1, [](SpellEffectInfo* spellEffectInfo)
+            {
+                spellEffectInfo->Scaling.Coefficient = 1.66f;
+            });
         });
         /// Icicle DMG
         ApplySpellFix({ 148022 }, [](SpellInfo* info)
@@ -3312,11 +3318,6 @@ void SpellMgr::LoadSpellInfoCorrections()
         {
             spellInfo->AttributesEx9 |= SPELL_ATTR9_ALLOW_CAST_WHILE_CHANNELING;
         });
-        ApplySpellFix({ 21992 }, [](SpellInfo* spellInfo)
-        {
-            spellInfo->RecoveryTime = 5000;
-        });
-
         /// Niya's Poison
         ApplySpellFix({ 321519 }, [](SpellInfo* spellInfo)
         {

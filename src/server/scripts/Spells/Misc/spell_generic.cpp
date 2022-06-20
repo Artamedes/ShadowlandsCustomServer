@@ -5268,7 +5268,7 @@ class spell_thunderfury : public SpellScript
 
     void HandleDmg(SpellEffIndex /*eff*/)
     {
-        SetHitDamage(GetHitDamage() * 0.55f);
+        //SetHitDamage(GetHitDamage() * 0.55f);
     }
 
     void Register() override
