@@ -3766,6 +3766,72 @@ void ObjectMgr::LoadVehicleSeatAddon()
     TC_LOG_INFO("server.loading", ">> Loaded %u Vehicle Seat Addon entries in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
 }
 
+void ObjectMgr::LoadPetOwnerBenefit()
+{
+    uint32 oldMSTime = getMSTime();
+
+    _petScalingStore.clear();
+
+    //                                                  0           1              2              3                    4                  5                             6                 7
+    QueryResult result = WorldDatabase.Query("SELECT entry, owner_spec, ap_multiplier, sp_multiplier, sp_to_ap_multiplier, CONVERT(ap_source, UNSIGNED), health_multiplier, armor_multiplier FROM pet_owner_benefit");
+
+    if (!result)
+    {
+        TC_LOG_INFO("server.loading", ">> Loaded 0 entries from pet_owner_benefit. DB table `pet_owner_benefit` is empty!");
+        return;
+    }
+
+    uint32 count = 0;
+    do
+    {
+        Field* fields = result->Fetch();
+
+        uint32 creatureID = fields[0].GetUInt32();
+
+        if (!sObjectMgr->GetCreatureTemplate(creatureID))
+        {
+            TC_LOG_ERROR("sql.sql", "Creature template (CreatureID: %u) does not exist but has a record in `pet_owner_benefit`", creatureID);
+            continue;
+        }
+
+        PetScalingInfo petScalingInfo;
+        uint32 specId = fields[1].GetUInt32();
+        petScalingInfo.APMultiplier = fields[2].GetFloat();
+        petScalingInfo.SPMultiplier = fields[3].GetFloat();
+        petScalingInfo.SPtoAPMultiplier = fields[4].GetFloat();
+        petScalingInfo.APSource = static_cast<PetAttackPowerSource>(fields[5].GetUInt32());
+        petScalingInfo.HealthMultiplier = fields[6].GetFloat();
+        petScalingInfo.ArmorMultiplier = fields[7].GetFloat();
+
+        _petScalingStore[creatureID][specId] = petScalingInfo;
+
+        ++count;
+    } while (result->NextRow());
+
+    TC_LOG_INFO("server.loading", ">> Loaded %u pet_owner_benefit entries in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
+}
+
+PetScalingInfo const* ObjectMgr::GetPetScalingInfo(uint32 creature_id, uint32 onwer_spec, bool defaultifnonspec) const
+{
+    PetScalingInfoContainer::const_iterator itr = _petScalingStore.find(creature_id);
+    if (itr != _petScalingStore.end())
+    {
+        PetScalingInfos::const_iterator _spec = itr->second.find(onwer_spec);
+        // Get the stat for a spec
+        if (_spec != itr->second.end())
+            return &(_spec->second);
+
+        if (defaultifnonspec)
+        {
+            PetScalingInfos::const_iterator _defaultSpec = itr->second.find(0);
+            if (_defaultSpec != itr->second.end())
+                return &(_defaultSpec->second);
+        }
+    }
+
+    return nullptr;
+}
+
 void ObjectMgr::LoadPetLevelInfo()
 {
     uint32 oldMSTime = getMSTime();

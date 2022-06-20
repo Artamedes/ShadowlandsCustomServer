@@ -94,6 +94,15 @@ enum PetEntries
 	ENTRY_MINDBENDER			  = 62982,
 };
 
+enum StatsIncreaseType
+{
+    INCREASE_HEALTH_PERCENT         = 1,
+    INCREASE_MELEE_DAMAGE_PERCENT   = 2,
+    INCREASE_RANGED_DAMAGE_PERCENT  = 3,
+    INCREASE_ARMOR_PERCENT          = 13,
+    INCREASE_MAGIC_DAMAGE_PERCENT   = 24
+};
+
 class TC_GAME_API TempSummon : public Creature
 {
     public:
@@ -181,10 +190,12 @@ class TC_GAME_API Guardian : public Minion
         void UpdateMaxPower(Powers power) override;
         void UpdateAttackPowerAndDamage(bool ranged = false) override;
         void UpdateDamagePhysical(WeaponAttackType attType) override;
+        void UpdateSpellPower();
 
         int32 GetBonusDamage() const { return m_bonusSpellDamage; }
         float GetBonusStatFromOwner(Stats stat) const { return m_statFromOwner[stat]; }
         void SetBonusDamage(int32 damage);
+        void UpdatePlayerFieldModPetHaste();
         std::string GetDebugInfo() const override;
     protected:
         int32   m_bonusSpellDamage;

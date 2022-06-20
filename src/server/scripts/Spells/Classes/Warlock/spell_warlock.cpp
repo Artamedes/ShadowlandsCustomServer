@@ -3424,6 +3424,10 @@ public:
             slot = owner->Variables.GetValue<uint8>("SLOT");
         else
             slot = 255;
+
+        me->SetPowerType(Powers::POWER_ENERGY);
+        me->SetMaxPower(Powers::POWER_ENERGY, 100);
+        me->SetPower(Powers::POWER_ENERGY, 100);
     }
 
     void MovementInform(uint32 type, uint32 pointId) override
@@ -3536,12 +3540,12 @@ public:
         }
 
         if (Unit* newTarget = ObjectAccessor::GetUnit(*me, newtargetGUID))
-		{
-			if (target != newTarget && me->IsValidAttackTarget(newTarget) && owner->IsInCombat())
+        {
+            if (target != newTarget && me->IsValidAttackTarget(newTarget) && owner->IsInCombat())
                 target = newTarget;
-        CastSpellOnTarget(owner, target);
-			return;
-    }
+            CastSpellOnTarget(owner, target);
+            return;
+        }
 
         EnterEvadeMode(EVADE_REASON_NO_HOSTILES);
     }

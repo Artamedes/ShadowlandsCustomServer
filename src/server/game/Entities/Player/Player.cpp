@@ -5780,16 +5780,30 @@ void Player::UpdateRating(CombatRating cr)
                         UpdateAllRunesRegen();
                     UpdateAttackTimeField(BASE_ATTACK, 100);
                     UpdateAttackTimeField(OFF_ATTACK, 100);
+                    if (Pet* pet = GetPet())
+                    {
+                        pet->UpdateAttackTimeField(BASE_ATTACK, 100);
+                        pet->UpdateAttackTimeField(OFF_ATTACK, 100);
+                    }
                     break;
                 case CR_HASTE_RANGED:
                     //ApplyAttackTimePercentMod(RANGED_ATTACK, oldVal, false);
                     //ApplyAttackTimePercentMod(RANGED_ATTACK, newVal, true);
                     UpdateAttackTimeField(RANGED_ATTACK, 100);
+                    if (Pet* pet = GetPet())
+                    {
+                        pet->UpdateAttackTimeField(RANGED_ATTACK, 100);
+                        pet->UpdatePlayerFieldModPetHaste();
+                    }
                     break;
                 case CR_HASTE_SPELL:
                     //ApplyCastTimePercentMod(oldVal, false);
                     //ApplyCastTimePercentMod(newVal, true);
                     SetModCastingSpeed(0.0f);
+                    if (Pet* pet = GetPet())
+                    {
+                        pet->SetModCastingSpeed(0.0f);
+                    }
                     break;
                 default:
                     break;
@@ -30537,4 +30551,11 @@ void Player::AddTrackingQuestIfNeeded(ObjectGuid sourceGuid)
 
     if (CanTakeQuest(quest, false))
         CompleteQuest(trackingQuest);
+}
+
+void Player::SendPetTameFailure(PetTameFailureReason reason)
+{
+    WorldPackets::Pet::PetTameFailure packet;
+    packet.Result = static_cast<uint8>(reason);
+    GetSession()->SendPacket(packet.Write());
 }

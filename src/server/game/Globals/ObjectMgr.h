@@ -685,6 +685,24 @@ struct PetLevelInfo
     uint16 armor = 0;
 };
 
+enum PetAttackPowerSource
+{
+    AP_SOURCE_SCHOOL_MASK_MAGIC = 1,
+    AP_SOURCE_BASE_ATTACK       = 2,
+};
+
+struct PetScalingInfo
+{
+    PetScalingInfo() : APMultiplier(0.f), SPMultiplier(0.f), SPtoAPMultiplier(0.f), HealthMultiplier(0.f), ArmorMultiplier(0.f), APSource(AP_SOURCE_SCHOOL_MASK_MAGIC) { }
+
+    float APMultiplier;
+    float SPMultiplier;
+    float SPtoAPMultiplier;
+    float HealthMultiplier;
+    float ArmorMultiplier;
+    PetAttackPowerSource APSource;
+};
+
 struct MailLevelReward
 {
     MailLevelReward() : raceMask({ 0 }), mailTemplateId(0), senderEntry(0) { }
@@ -1156,6 +1174,8 @@ class TC_GAME_API ObjectMgr
         InstanceTemplateContainer const& GetInstanceTemplates() const { return _instanceTemplateStore; }
         InstanceTemplate const* GetInstanceTemplate(uint32 mapId) const;
 
+        PetScalingInfo const* GetPetScalingInfo(uint32 creature_id, uint32 onwer_spec, bool defaultifnonspec = true) const;
+
         PetLevelInfo const* GetPetLevelInfo(uint32 creature_id, uint8 level) const;
 
         void GetPlayerClassLevelInfo(uint32 class_, uint8 level, uint32& baseMana) const;
@@ -1385,6 +1405,7 @@ class TC_GAME_API ObjectMgr
         PageText const* GetPageText(uint32 pageEntry);
 
         void LoadPlayerInfo();
+        void LoadPetOwnerBenefit();
         void LoadPetLevelInfo();
         void LoadExplorationBaseXP();
         void LoadPetNames();
@@ -1906,6 +1927,11 @@ class TC_GAME_API ObjectMgr
         MailLevelRewardContainer _mailLevelRewardStore;
 
         CreatureBaseStatsContainer _creatureBaseStatsStore;
+
+        typedef std::unordered_map<uint32, PetScalingInfo> PetScalingInfos;
+        typedef std::unordered_map<uint32, PetScalingInfos> PetScalingInfoContainer;
+        // PetLevelInfoContainer[creature_id][level]
+        PetScalingInfoContainer _petScalingStore;                            // [creature_id]
 
         typedef std::unordered_map<uint32 /*creatureId*/, std::unique_ptr<PetLevelInfo[] /*level*/>> PetLevelInfoContainer;
         PetLevelInfoContainer _petInfoStore;

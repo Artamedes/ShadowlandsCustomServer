@@ -2124,6 +2124,9 @@ void World::SetInitialWorldSettings()
     TC_LOG_INFO("server.loading", "Loading Player Create Data...");
     sObjectMgr->LoadPlayerInfo();
 
+    TC_LOG_INFO("server.loading", "Loading Pet OwnerBenefit Data...");
+    sObjectMgr->LoadPetOwnerBenefit();
+
     TC_LOG_INFO("server.loading", "Loading Exploration BaseXP Data...");
     sObjectMgr->LoadExplorationBaseXP();
 

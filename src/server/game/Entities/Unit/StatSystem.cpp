@@ -187,6 +187,12 @@ void Player::UpdateSpellDamageAndHealingBonus()
         UpdateAttackPowerAndDamage();
         UpdateAttackPowerAndDamage(true);
     }
+
+    if (Pet* pet = GetPet())
+        pet->UpdateSpellPower();
+
+    if (Guardian* guardian = GetGuardianPet())
+        guardian->UpdateSpellPower();
 }
 
 bool Player::UpdateAllStats()
@@ -1161,21 +1167,60 @@ void Guardian::UpdateResistances(uint32 school)
 void Guardian::UpdateArmor()
 {
     float baseValue = 0.0f;
-    float value = 0.0f;
-    float bonus_armor = 0.0f;
     UnitMods unitMod = UNIT_MOD_ARMOR;
 
-    // hunter pets gain 35% of owner's armor value, warlock pets gain 100% of owner's armor
-    if (IsHunterPet())
-        bonus_armor = float(CalculatePct(m_owner->GetArmor(), 70));
-    else if (IsPet())
-        bonus_armor = m_owner->GetArmor();
+    float armor = GetArmor();
+    float value = 0.0f;
+    float pctFromOwnerArmor = 0.0f;
 
-    value  = GetFlatModifierValue(unitMod, BASE_VALUE);
-    baseValue = value;
+    PetType petType = IsHunterPet() ? HUNTER_PET : SUMMON_PET;
+
+    // Get the owner's specialization id
+    uint32 specializationId = 0;
+    if (m_owner && m_owner->ToPlayer() && m_owner->ToPlayer()->GetSpecializationId())
+        specializationId = m_owner->ToPlayer()->GetSpecializationId();
+
+    PetScalingInfo const* petScalingInfo = sObjectMgr->GetPetScalingInfo(GetEntry(), specializationId);
+
+    switch (petType)
+    {
+        case SUMMON_PET:
+            if (petScalingInfo)
+            {
+                float multiplier = petScalingInfo->ArmorMultiplier;
+                if (multiplier == 0.f)
+                    TC_LOG_ERROR("entities.pet", "Unit (entry %d) has pet_scaling.ArmorMultiplier = 0. Used creature baseArmor instead", GetEntry());
+                else
+                    armor = m_owner->GetArmor() * multiplier;
+            }
+            break;
+        case HUNTER_PET:
+            armor = CalculatePct(m_owner->GetArmor(), 170.f);
+            break;
+        default:
+            break;
+    }
+
+    // Pets do not have static base values
+    if (!(GetFlatModifierValue(unitMod, BASE_VALUE) == armor))
+        SetStatFlatModifier(unitMod, BASE_VALUE, armor);
+
+    value += GetFlatModifierValue(unitMod, BASE_VALUE);
     value *= GetPctModifierValue(unitMod, BASE_PCT);
-    value += GetFlatModifierValue(unitMod, TOTAL_VALUE) + bonus_armor;
+    value += GetFlatModifierValue(unitMod, TOTAL_VALUE);
     value *= GetPctModifierValue(unitMod, TOTAL_PCT);
+
+    float amount = 0;
+    AuraEffectList const& modPetStats = m_owner->GetAuraEffectsByType(SPELL_AURA_MOD_PET_STAT_PCT);
+    for (AuraEffectList::const_iterator iterator = modPetStats.begin(); iterator != modPetStats.end(); ++iterator)
+    {
+        if ((*iterator)->GetMiscValue() == INCREASE_ARMOR_PERCENT && (*iterator)->GetMiscValueB() && (int32)GetEntry() == (*iterator)->GetMiscValueB())
+            amount += float((*iterator)->GetAmount());
+    }
+
+    AddPct(value, amount);
+
+    baseValue = value;
 
     SetArmor(int32(baseValue), int32(value - baseValue));
 }
@@ -1183,26 +1228,63 @@ void Guardian::UpdateArmor()
 void Guardian::UpdateMaxHealth()
 {
     UnitMods unitMod = UNIT_MOD_HEALTH;
-    float stamina = GetStat(STAT_STAMINA) - GetCreateStat(STAT_STAMINA);
 
-    float multiplicator;
-    switch (GetEntry())
+    uint64 health = GetMaxHealth();
+    float value = 0.0f;
+
+    PetType petType = IsHunterPet() ? HUNTER_PET : SUMMON_PET;
+
+    // Get the owner's specialization id
+    uint32 specializationId = 0;
+    if (m_owner && m_owner->ToPlayer() && m_owner->ToPlayer()->GetSpecializationId())
+        specializationId = m_owner->ToPlayer()->GetSpecializationId();
+
+    PetScalingInfo const* petScalingInfo = sObjectMgr->GetPetScalingInfo(GetEntry(), specializationId);
+
+    switch (petType)
     {
-        case ENTRY_IMP:         multiplicator = 8.4f;   break;
-        case ENTRY_VOIDWALKER:  multiplicator = 11.0f;  break;
-        case ENTRY_SUCCUBUS:    multiplicator = 9.1f;   break;
-        case ENTRY_FELHUNTER:   multiplicator = 9.5f;   break;
-        case ENTRY_FELGUARD:    multiplicator = 11.0f;  break;
-        case ENTRY_BLOODWORM:   multiplicator = 1.0f;   break;
-        default:                multiplicator = 10.0f;  break;
+        case SUMMON_PET:
+        {
+            if (petScalingInfo)
+            {
+                float multiplier = petScalingInfo->HealthMultiplier;
+                if (multiplier == 0.f)
+                    TC_LOG_ERROR("entities.pet", "Unit (entry %d) has pet_scaling.HealthMultiplier = 0. Used creature baseHealth instead", GetEntry());
+                else
+                    health = m_owner->GetMaxHealth() * multiplier;
+            }
+            break;
+        }
+        case HUNTER_PET:
+            health = CalculatePct(m_owner->GetMaxHealth(), 70.f);
+            break;
+        default:
+            break;
     }
 
-    float value = GetFlatModifierValue(unitMod, BASE_VALUE) + GetCreateHealth();
+    // Pets do not have static base values
+    if (!(GetFlatModifierValue(unitMod, BASE_VALUE) == health))
+        SetStatFlatModifier(unitMod, BASE_VALUE, health);
+
+    value += GetFlatModifierValue(unitMod, BASE_VALUE);
     value *= GetPctModifierValue(unitMod, BASE_PCT);
-    value += GetFlatModifierValue(unitMod, TOTAL_VALUE) + stamina * multiplicator;
+    value += GetFlatModifierValue(unitMod, TOTAL_VALUE);
     value *= GetPctModifierValue(unitMod, TOTAL_PCT);
 
-    SetMaxHealth((uint32)value);
+    float amount = 0;
+    AuraEffectList const& modPetStats = m_owner->GetAuraEffectsByType(SPELL_AURA_MOD_PET_STAT_PCT);
+    for (AuraEffectList::const_iterator iterator = modPetStats.begin(); iterator != modPetStats.end(); ++iterator)
+    {
+        if ((*iterator)->GetMiscValueB() && (int32)GetEntry() != (*iterator)->GetMiscValueB())
+            continue;
+        if ((*iterator)->GetMiscValue() == INCREASE_HEALTH_PERCENT)
+            amount += float((*iterator)->GetAmount());
+    }
+
+    AddPct(value, amount);
+
+    SetCreateHealth((uint32)value); // Blizz is doing it... dont ask why
+    SetMaxHealth((uint64)value);
 }
 
 void Guardian::UpdateMaxPower(Powers power)
@@ -1222,70 +1304,90 @@ void Guardian::UpdateMaxPower(Powers power)
 
 void Guardian::UpdateAttackPowerAndDamage(bool ranged)
 {
-    if (ranged)
-        return;
+    float value = 0.0f;
 
-    float val = 0.0f;
-    float bonusAP = 0.0f;
-    UnitMods unitMod = UNIT_MOD_ATTACK_POWER;
+    UnitMods unitMod = ranged ? UNIT_MOD_ATTACK_POWER_RANGED : UNIT_MOD_ATTACK_POWER;
 
-    if (GetEntry() == ENTRY_IMP)                                   // imp's attack power
-        val = GetStat(STAT_STRENGTH) - 10.0f;
-    else
-        val = 2 * GetStat(STAT_STRENGTH) - 20.0f;
+    // Get the owner's specialization id
+    uint32 specializationId = 0;
+    if (m_owner && m_owner->ToPlayer() && m_owner->ToPlayer()->GetSpecializationId())
+        specializationId = m_owner->ToPlayer()->GetSpecializationId();
 
-    Player* owner = GetOwner() ? GetOwner()->ToPlayer() : nullptr;
-    if (owner)
+    PetType petType = IsHunterPet() ? HUNTER_PET : SUMMON_PET;
+    PetScalingInfo const* petScalingInfo = sObjectMgr->GetPetScalingInfo(GetEntry(), specializationId);
+
+    switch (petType)
     {
-        if (IsHunterPet())                      //hunter pets benefit from owner's attack power
+        case SUMMON_PET:
         {
-            float mod = 1.0f;                                                 //Hunter contribution modifier
-            bonusAP = owner->GetTotalAttackPowerValue(RANGED_ATTACK) * 0.22f * mod;
-            SetBonusDamage(int32(owner->GetTotalAttackPowerValue(RANGED_ATTACK) * 0.1287f * mod));
+            if (petScalingInfo)
+            {
+                float APmultiplier = petScalingInfo->APMultiplier;
+                float SPtoAPmultiplier = petScalingInfo->SPtoAPMultiplier;
+
+                // Handle the conversion type
+                switch (petScalingInfo->APSource)
+                {
+                    case AP_SOURCE_SCHOOL_MASK_MAGIC:
+                    {
+                        if (APmultiplier != 0.f)
+                            TC_LOG_ERROR("entities.pet", "Unit (entry %d) has pet_scaling.ap_multiplier set, but use AP_SOURCE_SCHOOL_MASK_MAGIC (won't benefit from ap_multiplier).", GetEntry());
+                        if (SPtoAPmultiplier == 0.f)
+                            TC_LOG_ERROR("entities.pet", "Unit (entry %d) has pet_scaling.sp_to_ap_multiplier = 0.", GetEntry());
+
+                        value = m_owner->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_MAGIC) * SPtoAPmultiplier;
+
+                        break;
+                    }
+                    case AP_SOURCE_BASE_ATTACK:
+                    {
+                        if (SPtoAPmultiplier != 0.f)
+                            TC_LOG_ERROR("entities.pet", "Unit (entry %d) has pet_scaling.sp_to_ap_multiplier set, but use AP_SOURCE_BASE_ATTACK (won't benefit from sp_to_ap_multiplier!).", GetEntry());
+
+                        if (APmultiplier == 0.f)
+                            TC_LOG_ERROR("entities.pet", "Unit (entry %d) has pet_scaling.ap_multiplier = 0.", GetEntry());
+
+                        value = m_owner->GetTotalAttackPowerValue(BASE_ATTACK) * APmultiplier;
+
+                        break;
+                    }
+                    default:
+                        break;
+                }
+            }
+            break;
         }
-        else if (IsPetGhoul()) //ghouls benefit from deathknight's attack power (may be summon pet or not)
-        {
-            bonusAP = owner->GetTotalAttackPowerValue(BASE_ATTACK) * 0.22f;
-            SetBonusDamage(int32(owner->GetTotalAttackPowerValue(BASE_ATTACK) * 0.1287f));
-        }
-        else if (IsSpiritWolf()) //wolf benefit from shaman's attack power
-        {
-            float dmg_multiplier = 0.31f;
-            bonusAP = owner->GetTotalAttackPowerValue(BASE_ATTACK) * dmg_multiplier;
-            SetBonusDamage(int32(owner->GetTotalAttackPowerValue(BASE_ATTACK) * dmg_multiplier));
-        }
-        //demons benefit from warlocks shadow or fire damage
-        else if (IsPet())
-        {
-            int32 fire = owner->m_activePlayerData->ModDamageDonePos[SPELL_SCHOOL_FIRE] - owner->m_activePlayerData->ModDamageDoneNeg[SPELL_SCHOOL_FIRE];
-            int32 shadow = owner->m_activePlayerData->ModDamageDonePos[SPELL_SCHOOL_SHADOW] - owner->m_activePlayerData->ModDamageDoneNeg[SPELL_SCHOOL_SHADOW];
-            int32 maximum  = (fire > shadow) ? fire : shadow;
-            if (maximum < 0)
-                maximum = 0;
-            SetBonusDamage(int32(maximum * 0.15f));
-            bonusAP = maximum * 0.57f;
-        }
-        //water elementals benefit from mage's frost damage
-        else if (GetEntry() == ENTRY_WATER_ELEMENTAL)
-        {
-            int32 frost = owner->m_activePlayerData->ModDamageDonePos[SPELL_SCHOOL_FROST] - owner->m_activePlayerData->ModDamageDoneNeg[SPELL_SCHOOL_FROST];
-            if (frost < 0)
-                frost = 0;
-            SetBonusDamage(int32(frost * 0.4f));
-        }
+        case HUNTER_PET:
+            value = CalculatePct(m_owner->GetTotalAttackPowerValue(ranged ? RANGED_ATTACK : BASE_ATTACK), 60.f);
+            break;
+        default:
+            break;
     }
 
-    SetStatFlatModifier(UNIT_MOD_ATTACK_POWER, BASE_VALUE, val + bonusAP);
+    if (!value)
+        TC_LOG_ERROR("entities.pet", "Pet (%s, entry %d) has no pctFromOwnerAP defined. AttackPower set to 0.",
+            GetGUID().ToString().c_str(), GetEntry());
 
-    //in BASE_VALUE of UNIT_MOD_ATTACK_POWER for creatures we store data of meleeattackpower field in DB
-    float base_attPower  = GetFlatModifierValue(unitMod, BASE_VALUE) * GetPctModifierValue(unitMod, BASE_PCT);
+    SetStatFlatModifier(unitMod, BASE_VALUE, value);
+
+    float base_attPower = GetFlatModifierValue(unitMod, BASE_VALUE) * GetPctModifierValue(unitMod, BASE_PCT);
     float attPowerMultiplier = GetPctModifierValue(unitMod, TOTAL_PCT) - 1.0f;
 
-    SetAttackPower(int32(base_attPower));
-    SetAttackPowerMultiplier(attPowerMultiplier);
+    if (ranged)
+    {
+        SetRangedAttackPower(int32(base_attPower));
+        SetRangedAttackPowerMultiplier(attPowerMultiplier);
+    }
+    else
+    {
+        SetAttackPower(int32(base_attPower));
+        SetAttackPowerMultiplier(attPowerMultiplier);
+    }
 
-    //automatically update weapon damage after attack power modification
     UpdateDamagePhysical(BASE_ATTACK);
+    UpdateDamagePhysical(OFF_ATTACK);
+    if (IsHunterPet())
+        UpdateDamagePhysical(RANGED_ATTACK);
 }
 
 void Guardian::UpdateDamagePhysical(WeaponAttackType attType)
@@ -1302,13 +1404,6 @@ void Guardian::UpdateDamagePhysical(WeaponAttackType attType)
             int32 spellDmg = playerOwner->m_activePlayerData->ModDamageDonePos[SPELL_SCHOOL_NATURE] - playerOwner->m_activePlayerData->ModDamageDoneNeg[SPELL_SCHOOL_NATURE];
             if (spellDmg > 0)
                 bonusDamage = spellDmg * 0.09f;
-        }
-        //greater fire elemental
-        else if (GetEntry() == ENTRY_FIRE_ELEMENTAL)
-        {
-            int32 spellDmg = playerOwner->m_activePlayerData->ModDamageDonePos[SPELL_SCHOOL_FIRE] - playerOwner->m_activePlayerData->ModDamageDoneNeg[SPELL_SCHOOL_FIRE];
-            if (spellDmg > 0)
-                bonusDamage = spellDmg * 0.4f;
         }
     }
 
@@ -1336,4 +1431,30 @@ void Guardian::SetBonusDamage(int32 damage)
     m_bonusSpellDamage = damage;
     if (Player* playerOwner = GetOwner()->ToPlayer())
         playerOwner->SetPetSpellPower(damage);
+}
+
+void Guardian::UpdateSpellPower()
+{
+    // Get the owner's specialization id
+    uint32 specializationId = 0;
+    if (m_owner && m_owner->ToPlayer() && m_owner->ToPlayer()->GetSpecializationId())
+        specializationId = m_owner->ToPlayer()->GetSpecializationId();
+
+    if (!m_owner)
+        return;
+
+    PetScalingInfo const* petScalingInfo = sObjectMgr->GetPetScalingInfo(GetEntry(), specializationId);
+    if (petScalingInfo)
+    {
+        if (petScalingInfo->SPMultiplier != 0.f)
+        {
+            SetBonusDamage((int32)(m_owner->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_MAGIC) * petScalingInfo->SPMultiplier));
+        }
+    }
+}
+
+void Guardian::UpdatePlayerFieldModPetHaste()
+{
+    if (GetOwner()->IsPlayer())
+        GetOwner()->ToPlayer()->SetModPetHaste(m_unitData->ModRangedHaste);
 }
