@@ -149,6 +149,7 @@ ConditionMgr::ConditionTypeInfo const ConditionMgr::StaticConditionTypeData[COND
     { "Object TypeMask",           true, false, false },
     { "BattlePet Species Learned", true, true,  true  },
     { "On Scenario Step",          true, false, false },
+    { "Scene In Progress",         true, false, false },
 };
 
 // Checks if object meets the condition
@@ -584,6 +585,12 @@ bool Condition::Meets(ConditionSourceInfo& sourceInfo) const
                     condMeets = step->ID == ConditionValue1;
             break;
         }
+        case CONDITION_SCENE_IN_PROGRESS:
+        {
+            if (Player* player = object->ToPlayer())
+                condMeets = player->GetSceneMgr().GetActiveSceneCount(ConditionValue1) > 0;
+            break;
+        }
         case CONDITION_ACCOUNT_LEVEL:
         {
             if (Player* player = object->ToPlayer())
@@ -797,6 +804,9 @@ uint32 Condition::GetSearcherTypeMaskForCondition() const
             break;
         case CONDITION_SCENARIO_STEP:
             mask |= GRID_MAP_TYPE_MASK_ALL;
+            break;
+        case CONDITION_SCENE_IN_PROGRESS:
+            mask |= GRID_MAP_TYPE_MASK_PLAYER;
             break;
         case CONDITION_ACCOUNT_LEVEL:
             mask |= GRID_MAP_TYPE_MASK_PLAYER;
@@ -2634,6 +2644,15 @@ bool ConditionMgr::isConditionTypeValid(Condition* cond) const
             if (!sScenarioStepStore.LookupEntry(cond->ConditionValue1))
             {
                 TC_LOG_ERROR("sql.sql", "%s has non existing ScenarioStep in value1 (%u), skipped.", cond->ToString(true).c_str(), cond->ConditionValue1);
+                return false;
+            }
+            break;
+        }
+        case CONDITION_SCENE_IN_PROGRESS:
+        {
+            if (!sSceneScriptPackageStore.LookupEntry(cond->ConditionValue1))
+            {
+                TC_LOG_ERROR("sql.sql", "%s has non existing SceneScriptPackageId in value1 (%u), skipped.", cond->ToString(true).c_str(), cond->ConditionValue1);
                 return false;
             }
             break;
