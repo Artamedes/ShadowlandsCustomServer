@@ -770,6 +770,12 @@ void AuraEffect::CalculatePeriodic(Unit* caster, bool resetPeriodicTimer /*= tru
         if (modOwner)
             modOwner->ApplySpellMod(GetSpellInfo(), SpellModOp::Period, _period);
 
+        if (!modOwner)
+            if (caster)
+                if (caster->GetOwner())
+                    if (caster->GetOwner()->ToPlayer())
+                        modOwner = caster->GetOwner()->ToPlayer();
+
         if (caster)
         {
             // Haste modifies periodic time of channeled spells
@@ -1059,7 +1065,10 @@ void AuraEffect::Update(uint32 diff, Unit* caster)
     _periodicTimer += diff;
     while (_periodicTimer >= _period)
     {
-        _periodicTimer -= _period;
+        if (_period == 0)
+            _periodicTimer = -1;
+        else
+            _periodicTimer -= _period;
 
         if (!GetBase()->IsPermanent() && (_ticksDone + 1) > totalTicks)
             break;
