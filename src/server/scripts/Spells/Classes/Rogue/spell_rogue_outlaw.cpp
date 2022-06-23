@@ -25,6 +25,7 @@ enum eOutlaw
     GreenskinWickers = 340085,
     GreenskinWickersProc = 340573,
 
+    BladeFlurryDmg = 22482,
     MainGaucheDmg = 86392, ///< Mastery Proc
 };
 
@@ -414,13 +415,14 @@ class spell_mastery_main_gauche : public AuraScript
             switch (eventInfo.GetSpellInfo()->Id)
             {
                 case MainGaucheDmg:
+                case BladeFlurryDmg:
                     return false;
                 default:
                     break;
             }
         }
 
-        return roll_chance_i(30);
+        return roll_chance_i(30) && eventInfo.GetDamageInfo() && eventInfo.GetDamageInfo()->GetDamage();
     }
 
     void HandleProc(ProcEventInfo& eventInfo)
