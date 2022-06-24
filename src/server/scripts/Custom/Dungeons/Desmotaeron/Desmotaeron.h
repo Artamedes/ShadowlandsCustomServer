@@ -95,3 +95,5 @@ enum DesmotareonActions
     ActionShirgantaiChildrenEngaged = 1,
     ActionSetGuidShirgantai,
 };
+
+void DoDelayedMawPortalSpawn(Creature* who, float dist = 5.0f);

@@ -65,6 +65,9 @@ void AddSC_Desmotaeron_Spells();
 void AddSC_boss_shirgantai();
 void AddSC_instance_desmotareon();
 void AddSC_boss_xarvius();
+void AddSC_boss_maleakos();
+void AddSC_boss_general_nephmir();
+void AddSC_boss_ecidus();
 // Items
 void AddSC_item_currency_exchange();
 void AddSC_npc_1v1arena();
@@ -119,6 +122,9 @@ void AddCustomScripts()
     AddSC_boss_shirgantai();
     AddSC_instance_desmotareon();
     AddSC_boss_xarvius();
+    AddSC_boss_maleakos();
+    AddSC_boss_general_nephmir();
+    AddSC_boss_ecidus();
     // Items
     AddSC_item_currency_exchange();
     AddSC_npc_1v1arena();

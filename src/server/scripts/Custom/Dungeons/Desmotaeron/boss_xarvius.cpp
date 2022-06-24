@@ -2,8 +2,18 @@
 
 enum eXarvius
 {
-    ChargerSummonText = 0,
-    EngageText = 1,
+    ChargerSummonText   = 0,
+    EngageText          = 1,
+    AddsSummoned        = 2,
+    DeathText           = 3,
+};
+
+
+enum eAdds
+{
+    Axeguard      = 707024,
+    SoulHarvester = 707025,
+    SpiritShepard = 707022,
 };
 
 // 707009
@@ -27,10 +37,21 @@ public:
 
         DoCastSelf(RainOfDespair);
 
-        scheduler.Schedule(10s, 20s, [this](TaskContext context)
+        /// Summons 3 adds
+        scheduler.Schedule(5s, [this](TaskContext context)
         {
+            DoSummon(RAND(Axeguard, SoulHarvester, SpiritShepard), me, 10.0f);
+            DoSummon(RAND(Axeguard, SoulHarvester, SpiritShepard), me, 10.0f);
+            DoSummon(RAND(Axeguard, SoulHarvester, SpiritShepard), me, 10.0f);
 
+            context.Repeat(30s);
         });
+    }
+
+    void JustDied(Unit* who) override
+    {
+        _JustDied();
+        Talk(DeathText);
     }
 
     void UpdateAI(uint32 diff)
@@ -75,6 +96,28 @@ public:
         BossAI::EnterEvadeMode(why);
         _DespawnAtEvade(3s);
     }
+
+    void DamageDealt(Unit* victim, uint32& damage, DamageEffectType type, SpellInfo const* spellInfo /*= nullptr*/) override
+    {
+        if (spellInfo && victim)
+        {
+            switch (spellInfo->Id)
+            {
+                case 362394: ///< Rain of Despair
+                    damage += 150000;
+                    ApplyChallengeDMGIncrease(me, damage, 5);
+                    break;
+            }
+        }
+    }
+
+    void JustSummoned(Creature* creature) override
+    {
+        BossAI::JustSummoned(creature);
+
+        if (me->IsEngaged() && me->GetVictim())
+            creature->SetFacingToObject(me->GetVictim());
+    }
 };
 
 struct npc_charger_of_the_damned : public ScriptedAI
@@ -116,6 +159,11 @@ struct npc_spirit_harvester_707025 : public BaseCustomCasterAI
 public:
     npc_spirit_harvester_707025(Creature* creature) : BaseCustomCasterAI(creature, GloomBolt) { }
 
+    void InitializeAI() override
+    {
+        DoDelayedMawPortalSpawn(me);
+    }
+
     void JustEngagedWith(Unit* who) override
     {
         scheduler.Schedule(1s, 10s, [this](TaskContext context)
@@ -133,9 +181,11 @@ public:
             {
                 case 360259: ///< Gloom bolt
                     damage += 70000;
+                    ApplyChallengeDMGIncrease(me, damage, 5);
                     break;
                 case HarvestSoul:
                     damage += 150000;
+                    ApplyChallengeDMGIncrease(me, damage, 5);
                     break;
             }
         }
@@ -147,6 +197,11 @@ struct npc_mawsworn_axeguard_707024 : public BaseCustomScriptedAI
 {
 public:
     npc_mawsworn_axeguard_707024(Creature* creature) : BaseCustomScriptedAI(creature) { }
+
+    void InitializeAI() override
+    {
+        DoDelayedMawPortalSpawn(me);
+    }
 
     void JustEngagedWith(Unit* who) override
     {
@@ -170,6 +225,7 @@ public:
             {
                 case MassiveStrike:
                     damage += 700000;
+                    ApplyChallengeDMGIncrease(me, damage, 5);
                     break;
             }
         }
@@ -181,6 +237,11 @@ struct npc_spirit_shepherd_707022 : public BaseCustomCasterAI
 public:
     npc_spirit_shepherd_707022(Creature* creature) : BaseCustomCasterAI(creature, DominationBolt) { }
 
+    void InitializeAI() override
+    {
+        DoDelayedMawPortalSpawn(me);
+    }
+
     void DamageDealt(Unit* victim, uint32& damage, DamageEffectType type, SpellInfo const* spellInfo /*= nullptr*/) override
     {
         if (spellInfo && victim)
@@ -189,6 +250,7 @@ public:
             {
                 case DominationBolt:
                     damage += 75000;
+                    ApplyChallengeDMGIncrease(me, damage, 5);
                     break;
             }
         }

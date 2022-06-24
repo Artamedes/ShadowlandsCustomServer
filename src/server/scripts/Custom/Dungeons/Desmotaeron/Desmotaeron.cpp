@@ -471,210 +471,6 @@ class spell_soulflame_torrent : public SpellScript
     }
 };
 
-// 707000 - npc_general_nephmir_707000
-struct npc_general_nephmir_707000 : public BossAI
-{
-public:
-    npc_general_nephmir_707000(Creature* creature) : BossAI(creature, BossGeneralNephmir) { ApplyAllImmunities(true); }
-
-    enum Talks
-    {
-        TalkEngingHostileEntities = 0,   ///< Used
-        TalkSecurityMeasuresActivated,   ///< Used
-        TalkIntruderDetected,            ///< Used
-        TalkArmingWeapons,               ///< Used
-        TalkAggressionProtocolInitiated, ///< Used
-        TalkDeath,                       ///< Used
-        TalkKilled,                      ///< Used
-        TalkIdle,                        ///< Used
-    };
-
-    void JustEngagedWith(Unit* who) override
-    {
-        _JustEngagedWith(who);
-        scheduler.CancelAll();
-
-        Talk(TalkEngingHostileEntities);
-
-        scheduler.Schedule(15s, [this](TaskContext context)
-        {
-            NextIntruderDetectTime = 0;
-            Talk(TalkSecurityMeasuresActivated);
-            DoCast(SoulflameTorrent);
-            scheduler.Schedule(3s, [this](TaskContext context)
-            {
-                Talk(TalkIdle);
-            });
-            context.Repeat(30s, 40s);
-        });
-
-        scheduler.Schedule(4s, [this](TaskContext context)
-        {
-            DoCast(GiantSlam);
-            context.Repeat(15s, 20s);
-        });
-
-        scheduler.Schedule(30s, [this](TaskContext context)
-        {
-            Talk(TalkArmingWeapons);
-            DoCast(ChargedWeapons);
-        });
-
-        scheduler.Schedule(30s, [this](TaskContext context)
-        {
-            DoCast(Thunderclap);
-            context.Repeat(15s, 20s);
-        });
-    }
-
-    void JustDied(Unit* /*who*/) override
-    {
-        _JustDied();
-        Talk(TalkDeath);
-    }
-
-    void DamageDealt(Unit* victim, uint32& damage, DamageEffectType type, SpellInfo const* spellInfo /*= nullptr*/) override
-    {
-        if (spellInfo && spellInfo->Id == 357333 && type != DamageEffectType::DOT)
-        {
-            auto now = GameTime::GetGameTime();
-            if (now >= NextIntruderDetectTime)
-            {
-                NextIntruderDetectTime = now + 60;
-                Talk(TalkIntruderDetected);
-            }
-        }
-
-        if (spellInfo && victim)
-        {
-            switch (spellInfo->Id)
-            {
-                case 357333: ///< Soulflame Torrent
-                    if (type != DamageEffectType::DOT)
-                        damage += victim->CountPctFromMaxHealth(50);
-
-                    if (instance)
-                        if (auto challenge = instance->GetChallenge())
-                            damage += 5 * challenge->GetChallengeLevel();
-                    break;
-                case GiantSlam:
-                    damage += victim->CountPctFromMaxHealth(50);
-
-                    if (instance)
-                        if (auto challenge = instance->GetChallenge())
-                            damage += 5 * challenge->GetChallengeLevel();
-                    break;
-                case 308864: ///< Charged Weapons
-                    damage += victim->CountPctFromMaxHealth(30);
-
-                    if (instance)
-                        if (auto challenge = instance->GetChallenge())
-                            damage += 5 * challenge->GetChallengeLevel();
-                    break;
-            }
-        }
-    }
-
-    time_t NextKillTime;
-    time_t NextIntruderDetectTime;
-
-    void KilledUnit(Unit* who) override
-    {
-        BossAI::KilledUnit(who);
-        if (who->IsPlayer())
-        {
-            auto now = GameTime::GetGameTime();
-            if (now >= NextKillTime)
-            {
-                NextKillTime = now + 10;
-                Talk(TalkKilled);
-            }
-        }
-    }
-
-    void UpdateAI(uint32 diff)
-    {
-        if (!UpdateVictim())
-            return;
-
-        scheduler.Update(diff);
-        events.Update(diff);
-
-        if (me->HasUnitState(UNIT_STATE_CASTING))
-            return;
-
-        while (uint32 eventId = events.ExecuteEvent())
-        {
-            ExecuteEvent(eventId);
-            if (me->HasUnitState(UNIT_STATE_CASTING))
-                return;
-        }
-
-        DoMeleeAttackIfReady();
-    }
-
-    void EnterEvadeMode(EvadeReason why) override
-    {
-        BossAI::EnterEvadeMode(why);
-        _DespawnAtEvade(3s);
-    }
-
-    void DamageTaken(Unit* attacker, uint32& damage, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
-    {
-        if (!phased && me->HealthBelowPctDamaged(51, damage))
-        {
-            phased = true;
-            scheduler.DelayAll(5s);
-            scheduler.Schedule(1s, [this](TaskContext /*context*/)
-            {
-                me->CastSpell(me, OptimalCoreTemperature, CastSpellExtraArgs(true).AddSpellBP0(50));
-                Talk(TalkAggressionProtocolInitiated);
-            });
-        }
-    }
-
-    bool phased = false;
-};
-
-/// ID: 310835 Charged Weapons
-class spell_charged_weapons : public AuraScript
-{
-    PrepareAuraScript(spell_charged_weapons);
-
-    enum ChargedWeapon
-    {
-        ChargedWeaponStun = 306875,
-        ChargedWeaponDmg = 308864,
-        ChargedWeaponStacks = 308864,
-    };
-
-    void HandleProc(ProcEventInfo& eventInfo)
-    {
-        PreventDefaultAction();
-
-        if (auto caster = GetCaster())
-        {
-            if (auto target = eventInfo.GetActionTarget())
-            {
-                if (auto aur = target->GetAura(ChargedWeaponStacks))
-                {
-                    if (aur->GetStackAmount() >= 9)
-                    {
-                        aur->Remove();
-                        caster->CastSpell(target, ChargedWeaponStun, true);
-                        caster->CastSpell(target, ChargedWeaponDmg, true);
-                    }
-                }
-            }
-        }
-    }
-
-    void Register() override
-    {
-        OnProc += AuraProcFn(spell_charged_weapons::HandleProc);
-    }
-};
-
 // 708019 - npc_vicious_souleater_708019
 struct npc_vicious_souleater_708019 : public ScriptedAI
 {
@@ -694,157 +490,6 @@ public:
             DoPath();
         };
     }
-};
-
-// 707004 - npc_ecidus_707004
-struct npc_ecidus_707004 : public BossAI
-{
-public:
-    npc_ecidus_707004(Creature* creature) : BossAI(creature, BossEcidus) { ApplyAllImmunities(true); }
-
-    enum eEcidus
-    {
-        /// Ecidus
-        DeathWave = 357871,
-        SoulEcho = 297024,
-        SpellRitualOfSlaughter = 354240,
-
-    };
-
-    enum Talks
-    {
-        TalkAggro = 0,
-        TalkDied,
-        TalkKilled,
-        TalkAwayWithYou,
-    };
-
-    void JustEngagedWith(Unit* who) override
-    {
-        _JustEngagedWith(who);
-        scheduler.CancelAll();
-
-        Talk(TalkAggro);
-
-        scheduler.Schedule(15s, [this](TaskContext context)
-        {
-            NextIntruderDetectTime = 0;
-            Talk(TalkAwayWithYou);
-            DoCast(DeathWave);
-            context.Repeat(30s, 40s);
-        });
-
-        scheduler.Schedule(1s, [this](TaskContext context)
-        {
-            DoCast(SoulEcho);
-            context.Repeat(15s, 20s);
-        });
-
-        scheduler.Schedule(30s, [this](TaskContext context)
-        {
-            DoCast(ChargedWeapons);
-        });
-    }
-
-    void JustDied(Unit* /*who*/) override
-    {
-        _JustDied();
-        Talk(TalkDied);
-    }
-
-    void DamageDealt(Unit* victim, uint32& damage, DamageEffectType type, SpellInfo const* spellInfo /*= nullptr*/) override
-    {
-        if (spellInfo && victim)
-        {
-            switch (spellInfo->Id)
-            {
-                case DeathWave:
-                case 297028: ///< Soul Echo Missle DMG
-                    if (type != DamageEffectType::DOT)
-                        damage += victim->CountPctFromMaxHealth(80);
-
-                    if (instance)
-                        if (auto challenge = instance->GetChallenge())
-                            damage += 5 * challenge->GetChallengeLevel();
-                    break;
-                case 308864: ///< Charged Weapons
-                    damage += victim->CountPctFromMaxHealth(30);
-
-                    if (instance)
-                        if (auto challenge = instance->GetChallenge())
-                            damage += 5 * challenge->GetChallengeLevel();
-                    break;
-                default:
-                    break;
-            }
-        }
-    }
-
-    bool CanCastSpellWhileMoving(SpellInfo const* info) const
-    {
-        return info->Id == SoulEcho;
-    }
-
-    time_t NextKillTime;
-    time_t NextIntruderDetectTime;
-
-    void KilledUnit(Unit* who) override
-    {
-        BossAI::KilledUnit(who);
-        if (who->IsPlayer())
-        {
-            auto now = GameTime::GetGameTime();
-            if (now >= NextKillTime)
-            {
-                NextKillTime = now + 10;
-                Talk(TalkKilled);
-            }
-        }
-    }
-
-    void UpdateAI(uint32 diff)
-    {
-        if (!UpdateVictim())
-            return;
-
-        scheduler.Update(diff);
-        events.Update(diff);
-
-        if (me->HasUnitState(UNIT_STATE_CASTING))
-            return;
-
-        while (uint32 eventId = events.ExecuteEvent())
-        {
-            ExecuteEvent(eventId);
-            if (me->HasUnitState(UNIT_STATE_CASTING))
-                return;
-        }
-
-        DoMeleeAttackIfReady();
-    }
-
-
-    void EnterEvadeMode(EvadeReason why) override
-    {
-        BossAI::EnterEvadeMode(why);
-        _DespawnAtEvade(3s);
-    }
-
-    void DamageTaken(Unit* attacker, uint32& damage, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
-    {
-        if (!phased && me->HealthBelowPctDamaged(51, damage))
-        {
-            phased = true;
-            scheduler.DelayAll(5s);
-            scheduler.Schedule(1s, [this](TaskContext /*context*/)
-            {
-                me->CastStop();
-                me->CastSpell(me, PowerUp);
-            });
-        }
-    }
-
-    bool phased = false;
 };
 
 const Position UnboundShadeMongrelPathOne[] =
@@ -1127,10 +772,12 @@ public:
             switch (spellInfo->Id)
             {
                 case ColossalSmash: ///< Collosal Smash
+                    damage += 50000;
                     damage += victim->CountPctFromMaxHealth(70);
                     ApplyChallengeDMGIncrease(me, damage, 5);
                     break;
                 case DreadslamDefile:
+                    damage += 50000;
                     damage += victim->CountPctFromMaxHealth(30);
                     ApplyChallengeDMGIncrease(me, damage, 5);
                     break;
@@ -1195,18 +842,89 @@ public:
     }
 };
 
+const Position EyeOfTheMawPath[] =
+{
+    { 4602.16f, 5988.48f, 4866.89f, 5.45865f },
+    { 4614.94f, 5864.77f, 4971.97f, 4.84538f },
+    { 4658.12f, 5653.61f, 5078.09f, 4.80061f },
+};
+
+struct npc_eye_of_the_maw_707018 : public ScriptedAI
+{
+public:
+    npc_eye_of_the_maw_707018(Creature* creature) : ScriptedAI(creature) { }
+
+    enum eTalks
+    {
+        TalkAnnoyance = 0,
+        TalkSpace,
+    };
+
+    void InitializeAI()
+    {
+        scheduler.Schedule(1s, [this](TaskContext context)
+        {
+            Talk(TalkAnnoyance);
+            context.Repeat(10s, 20s);
+        });
+    }
+
+    bool phased = false;
+    TaskScheduler scheduler;
+
+    void UpdateAI(uint32 diff) override
+    {
+        scheduler.Update(diff);
+        if (!UpdateVictim() || phased)
+            return;
+
+        if (me->HasUnitState(UNIT_STATE_CASTING))
+            return;
+
+        DoMeleeAttackIfReady();
+    }
+
+    void DamageTaken(Unit* /*attacker*/, uint32& damage, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
+    {
+        if (phased)
+        {
+            damage = 0;
+            return;
+        }
+
+        if (damage >= me->GetHealth())
+        {
+            scheduler.CancelAll();
+            Talk(TalkSpace);
+            damage = 0;
+            phased = true;
+            me->SetReactState(REACT_PASSIVE);
+            me->SetUnitFlag(UnitFlags::UNIT_FLAG_IMMUNE_TO_PC);
+            me->GetMotionMaster()->MoveSmoothPath(1, EyeOfTheMawPath, 3, false, true, 25.0f)->callbackFunc = [this]
+            {
+                me->DespawnOrUnsummon();
+            };
+        }
+    }
+
+    void EnterEvadeMode(EvadeReason why) override
+    {
+        if (!phased)
+            ScriptedAI::EnterEvadeMode(why);
+    }
+};
+
 void AddSC_Desmotareon()
 {
     RegisterCreatureAI(npc_portal_707027);
     RegisterCreatureAI(npc_soul_portal_708018);
     RegisterCreatureAI(npc_soul_harvester_trigger_708010);
-    RegisterCreatureAI(npc_general_nephmir_707000);
     RegisterCreatureAI(npc_vicious_souleater_708019);
-    RegisterCreatureAI(npc_ecidus_707004);
     RegisterCreatureAI(npc_unbound_shademongrel_708016);
     RegisterCreatureAI(npc_bagnok_the_infernal_707019);
     RegisterCreatureAI(npc_prison_guard_707012);
     RegisterCreatureAI(npc_liceth_dovarax_707008);
+    RegisterCreatureAI(npc_eye_of_the_maw_707018);
 
     FieryPlegm::Register();
     DarkDischarge::Register();
@@ -1217,8 +935,43 @@ void AddSC_Desmotareon()
     RegisterSpellScript(spell_ritual_of_slaughter);
     RegisterSpellScript(spell_death_orb);
     RegisterSpellScript(spell_soulflame_torrent);
-    RegisterSpellScript(spell_charged_weapons);
 
     RegisterAreaTriggerAI(at_death_orb);
     RegisterAreaTriggerAI(at_defiling_dreadslam);
+}
+
+void DoDelayedMawPortalSpawn(Creature* who, float dist)
+{
+    who->SetUnitFlag(UnitFlags::UNIT_FLAG_NON_ATTACKABLE);
+    who->SetUnitFlag(UnitFlags::UNIT_FLAG_IMMUNE_TO_PC);
+    who->GetScheduler().Schedule(100ms, [](TaskContext context)
+    {
+        auto unit = context.GetUnit();
+        unit->CastSpell(unit, MawPortalIn, true);
+        unit->CastSpell(unit, HideSpell, true);
+    });
+
+    who->GetScheduler().Schedule(300ms, [](TaskContext context)
+    {
+        auto unit = context.GetUnit();
+        unit->RemoveAurasDueToSpell(HideSpell);
+        unit->CastSpell(unit, AppearEffect, true);
+    });
+
+    who->GetScheduler().Schedule(900ms, [dist](TaskContext context)
+    {
+        auto unit = context.GetUnit();
+        unit->GetMotionMaster()->Move(0, MoveTypes::Forward, MOVE_PATHFINDING, dist);
+    });
+
+    who->GetScheduler().Schedule(2s, [](TaskContext context)
+    {
+        auto unit = context.GetUnit()->ToCreature();
+
+        unit->RemoveUnitFlag(UnitFlags::UNIT_FLAG_NON_ATTACKABLE);
+        unit->RemoveUnitFlag(UnitFlags::UNIT_FLAG_IMMUNE_TO_PC);
+
+        if (unit->AI())
+            unit->AI()->DoZoneInCombat();
+    });
 }
