@@ -2480,7 +2480,12 @@ public:
                 // we don't sent the packets like that.. SMSG_AURA_UPDATE is sent after spel go so maybe that fixes it. but would require system updates.
                 if (caster->HasAura(SPELL_DH_DEMONIC))
                 {
-                    caster->CastSpell(caster, SPELL_DH_METAMORPHOSIS_HAVOC, CastSpellExtraArgs(true).AddSpellMod(SpellValueMod::SPELLVALUE_DURATION, 6000));
+                    uint32 currDuration = 0;
+
+                    if (auto meta = caster->GetAura(SPELL_DH_METAMORPHOSIS_HAVOC))
+                        currDuration += meta->GetDuration();
+
+                    caster->CastSpell(caster, SPELL_DH_METAMORPHOSIS_HAVOC, CastSpellExtraArgs(true).AddSpellMod(SpellValueMod::SPELLVALUE_DURATION, 6000 + currDuration));
                 }
             }
         }
