@@ -3605,6 +3605,11 @@ static int32(* const WorldStateExpressionFunctions[WSE_FUNCTION_MAX])(Player con
         return 0;
     },
 
+    // WSE_FUNCTION_UNK38
+    [](Player const* /*player*/, uint32 /*arg1*/, uint32 /*arg2*/) -> int32
+    {
+        return 0;
+    },
 };
 
 int32 EvalSingleValue(ByteBuffer& buffer, Player const* player)
