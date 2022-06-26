@@ -1257,28 +1257,25 @@ class spell_dh_shattered_souls : public AuraScript
 {
     PrepareAuraScript(spell_dh_shattered_souls);
 
-    void HandleProc(AuraEffect const* /*aurEff*/, ProcEventInfo& eventInfo)
+    void HandleProc(AuraEffect* /*aurEff*/, ProcEventInfo& eventInfo)
     {
         Unit* caster = GetCaster();
         Unit* target = eventInfo.GetActionTarget();
         if (!caster || !target)
             return;
 
-        if (roll_chance_i(GetSpellInfo()->GetEffect(EFFECT_0).BasePoints))
-        {
-            uint32 triggerSpellId = GetSpellInfo()->Id == SPELL_DH_VENGEANCE_SHATTERED_SOUL ? SPELL_DH_SS_VENGEANCE_SOUL_NORMAL : SPELL_DH_SS_HAVOC_SOUL_NORMAL;
-            if (Creature* creature = target->ToCreature())
-                if (CreatureTemplate const* creTemplate = creature->GetCreatureTemplate())
-                    if (creTemplate->type == CREATURE_TYPE_DEMON)
-                        triggerSpellId = GetSpellInfo()->Id == SPELL_DH_VENGEANCE_SHATTERED_SOUL ? SPELL_DH_SS_VENGEANCE_SOUL_DEMON : SPELL_DH_SS_HAVOC_SOUL_DEMON;
+        uint32 triggerSpellId = GetSpellInfo()->Id == SPELL_DH_VENGEANCE_SHATTERED_SOUL ? SPELL_DH_SS_VENGEANCE_SOUL_NORMAL : SPELL_DH_SS_HAVOC_SOUL_NORMAL;
+        if (Creature* creature = target->ToCreature())
+            if (CreatureTemplate const* creTemplate = creature->GetCreatureTemplate())
+                if (creTemplate->type == CREATURE_TYPE_DEMON)
+                    triggerSpellId = GetSpellInfo()->Id == SPELL_DH_VENGEANCE_SHATTERED_SOUL ? SPELL_DH_SS_VENGEANCE_SOUL_DEMON : SPELL_DH_SS_HAVOC_SOUL_DEMON;
 
-           // caster->CastSpell(RAND(SPELL_DH_SHATTER_SOUL, SPELL_DH_SHATTER_SOUL_1, SPELL_DH_SHATTER_SOUL_2, SPELL_DH_SHATTER_SOUL_3), SpellValueMod(SPELLVALUE_TRIGGER_SPELL + EFFECT_1), triggerSpellId, caster);
-        }
+        caster->CastSpell(target->GetRandomNearPosition(5.0f), triggerSpellId, true);
     }
 
     void Register() override
     {
-       // OnEffectProc += AuraEffectProcFn(spell_dh_shattered_souls::HandleProc, EFFECT_0, SPELL_AURA_DUMMY);
+        OnEffectProc += AuraEffectProcFn(spell_dh_shattered_souls::HandleProc, EFFECT_0, SPELL_AURA_DUMMY);
     }
 };
 
