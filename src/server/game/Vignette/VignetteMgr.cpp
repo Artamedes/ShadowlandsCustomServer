@@ -328,6 +328,9 @@ namespace Vignette
                 trackingQuest = creatureSource->GetTrackingQuestID();
                 if (trackingQuest && m_Owner->IsQuestRewarded(trackingQuest))
                     return false;
+
+                if (creatureSource->isDead())
+                    return false;
             }
 
         if (guid.IsGameObject())
