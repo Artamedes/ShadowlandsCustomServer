@@ -208,6 +208,7 @@ public:
     int32 GetChargeCount(uint32 chargeCategoryId) const;
     int32 GetMaxCharges(uint32 chargeCategoryId) const;
     int32 GetChargeRecoveryTime(uint32 chargeCategoryId, SpellInfo const* spellinfo = nullptr);
+    void RecalculateSpellCategoryCharges(uint32 category);
 
     //Recovery Rates
     void AddSpellAffectedByRecoveryRate(uint32 spellCastedID, uint32 spellAffectedID) { SpellAffectedByRecoveryRates[spellCastedID].push_back(spellAffectedID); }

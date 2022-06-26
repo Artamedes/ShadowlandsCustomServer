@@ -3290,6 +3290,15 @@ void SpellMgr::LoadSpellInfoCorrections()
 
     // Some spells have no amplitude set
     {
+        /// ID - 343216 Berserk
+        //ApplySpellFix({ 343216 }, [](SpellInfo* info)
+        //{
+        //    ApplySpellEffectFix(info, EFFECT_0, [](SpellEffectInfo* spellEffectInfo)
+        //    {
+        //        spellEffectInfo->MiscValue = 2;
+        //    });
+        //});
+
         ///  Ashen Hallow
         ApplySpellFix({ 317223, 317221 }, [](SpellInfo* info)
         {

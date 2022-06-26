@@ -356,6 +356,7 @@ class TC_GAME_API AuraEffect
         void HandleAuraLeech(AuraApplication const* auraApp, uint8 mode, bool apply) const;
         void HandleProfilCamera(AuraApplication const* aurApp, uint8 mode, bool apply) const;
         void HandleCreateVignette(AuraApplication const* aurApp, uint8 mode, bool apply) const;
+        void HandleAuraModCharges(AuraApplication const* aurApp, uint8 mode, bool apply) const;
 
         // aura effect periodic tick handlers
         void HandlePeriodicTriggerSpellAuraTick(Unit* target, Unit* caster) const;

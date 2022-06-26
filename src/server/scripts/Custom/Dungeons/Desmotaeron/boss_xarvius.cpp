@@ -134,7 +134,7 @@ public:
             if (auto xarvius = me->FindNearestCreature(707009, 10.0f))
             {
                 xarvius->CastSpell(me, 46598, true);
-                xarvius->GetScheduler().Schedule(1100ms, [this, xarvius](TaskContext context)
+                xarvius->GetScheduler().Schedule(1000ms, [this, xarvius](TaskContext context)
                 {
                     xarvius->RemoveAurasDueToSpell(46598);
                     me->DespawnOrUnsummon();

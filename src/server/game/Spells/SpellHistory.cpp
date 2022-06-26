@@ -1390,6 +1390,28 @@ int32 SpellHistory::GetChargeRecoveryTime(uint32 chargeCategoryId, SpellInfo con
     return int32(std::floor(recoveryTimeF));
 }
 
+/// FIXME
+void SpellHistory::RecalculateSpellCategoryCharges(uint32 category)
+{
+    if (!GetPlayerOwner())
+        return;
+
+    ForceSendSpellCharges();
+
+    if (_categoryCharges.find(category) == _categoryCharges.end())
+    {
+        WorldPackets::Spells::SendSpellCharges sendSpellCharges;
+
+        WorldPackets::Spells::SpellChargeEntry chargeEntry;
+        chargeEntry.Category = category;
+        chargeEntry.NextRecoveryTime = 0;
+        chargeEntry.ConsumedCharges = GetMaxCharges(category) - GetChargeCount(category);
+        sendSpellCharges.Entries.push_back(chargeEntry);
+
+        GetPlayerOwner()->SendDirectMessage(sendSpellCharges.Write());
+    }
+}
+
 bool SpellHistory::HasGlobalCooldown(SpellInfo const* spellInfo) const
 {
     auto itr = _globalCooldowns.find(spellInfo->StartRecoveryCategory);

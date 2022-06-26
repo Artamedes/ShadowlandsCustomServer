@@ -477,7 +477,7 @@ NonDefaultConstructible<pAuraEffectHandler> AuraEffectHandler[TOTAL_AURAS]=
     &AuraEffect::HandleUnused,                                    //408 SPELL_AURA_SET_ACTION_BUTTON_SPELL_COUNT clientside
     &AuraEffect::HandleAuraCanTurnWhileFalling,                   //409 SPELL_AURA_CAN_TURN_WHILE_FALLING
     &AuraEffect::HandleNULL,                                      //410
-    &AuraEffect::HandleNoImmediateEffect,                         //411 SPELL_AURA_MOD_MAX_CHARGES implemented in SpellHistory::GetMaxCharges
+    &AuraEffect::HandleAuraModCharges,                            //411 SPELL_AURA_MOD_MAX_CHARGES implemented in SpellHistory::GetMaxCharges
     &AuraEffect::HandleNULL,                                      //412
     &AuraEffect::HandleNULL,                                      //413 SPELL_AURA_MOD_RANGED_ATTACK_DEFLECT_CHANCE
     &AuraEffect::HandleNULL,                                      //414 SPELL_AURA_MOD_RANGED_ATTACK_BLOCK_CHANCE_IN_FRONT
@@ -6623,3 +6623,14 @@ void AuraEffect::HandleCreateVignette(AuraApplication const* auraApp, uint8 mode
     }
 }
 
+void AuraEffect::HandleAuraModCharges(AuraApplication const* aurApp, uint8 mode, bool /*apply*/) const
+{
+    if (!(mode & AURA_EFFECT_HANDLE_REAL))
+        return;
+
+    auto target = aurApp->GetTarget();
+    if (!target)
+        return;
+
+    //target->GetSpellHistory()->RecalculateSpellCategoryCharges(GetMiscValue());
+}
