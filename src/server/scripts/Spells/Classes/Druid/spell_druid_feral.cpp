@@ -156,9 +156,55 @@ class spell_bloodtalons_proc : public AuraScript
     }
 };
 
+/// ID: 364416 Heart of the Lion
+class spell_heart_of_the_lion : public AuraScript
+{
+    PrepareAuraScript(spell_heart_of_the_lion);
+
+    enum eHeartOfTheLion
+    {
+        Berserk               = 106951,
+        IncarnKingOfTheJungle = 102543,
+    };
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        if (!eventInfo.GetProcSpell())
+            return false;
+
+        if (eventInfo.GetProcSpell()->GetUsedComboPoints() > 0)
+            return true;
+
+        return false;
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (auto caster = GetCaster())
+        {
+            if (auto spell = eventInfo.GetProcSpell())
+            {
+                if (auto comboPoints = spell->GetUsedComboPoints())
+                {
+                    int32 cdr = 700 * comboPoints;
+                    caster->GetSpellHistory()->ModifyCooldown(Berserk, -cdr);
+                    caster->GetSpellHistory()->ModifyCooldown(IncarnKingOfTheJungle, -cdr);
+                }
+            }
+        }
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_heart_of_the_lion::CheckProc);
+        OnProc += AuraProcFn(spell_heart_of_the_lion::HandleProc);
+    }
+};
+
 void AddSC_spell_druid_feral()
 {
     RegisterSpellScript(spell_primal_wrath);
     RegisterSpellScript(spell_bloodtalons);
     RegisterSpellScript(spell_bloodtalons_proc);
+    RegisterSpellScript(spell_heart_of_the_lion);
 }
