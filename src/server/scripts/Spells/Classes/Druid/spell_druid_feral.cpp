@@ -201,10 +201,33 @@ class spell_heart_of_the_lion : public AuraScript
     }
 };
 
+/// ID: 106951 Berserk
+class spell_berserk : public AuraScript
+{
+    PrepareAuraScript(spell_berserk);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        if (!eventInfo.GetProcSpell())
+            return false;
+
+        if (int32 comboPoints = eventInfo.GetProcSpell()->GetUsedComboPoints())
+            return roll_chance_i(comboPoints * 20);
+
+        return false;
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_berserk::CheckProc);
+    }
+};
+
 void AddSC_spell_druid_feral()
 {
     RegisterSpellScript(spell_primal_wrath);
     RegisterSpellScript(spell_bloodtalons);
     RegisterSpellScript(spell_bloodtalons_proc);
     RegisterSpellScript(spell_heart_of_the_lion);
+    RegisterSpellScript(spell_berserk);
 }
