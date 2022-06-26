@@ -1,0 +1,133 @@
+#include "SpellIncludes.h"
+
+enum eShamanCovenant
+{
+    FaeTransfusion         = 328923,
+    FaeTransfusionDmg      = 328928,
+    FaeTransfusionHeal     = 328930,
+    FaeTransfusionBuffHeal = 328933,
+};
+
+/// ID: 328923 Fae Transfusion
+class spell_fae_transfusion_spellscript : public SpellScript
+{
+    PrepareSpellScript(spell_fae_transfusion_spellscript);
+
+    void HandleDummy(SpellEffIndex /*eff*/)
+    {
+        if (auto caster = GetCaster())
+        {
+            if (auto hitDest = GetHitDest())
+            {
+                if (caster->Variables.Exist("FaeTransfusionDmg"))
+                    caster->Variables.Remove("FaeTransfusionDmg");
+                caster->Variables.Set("HitDestFaeTransfusion", Position(*hitDest));
+            }
+        }
+    }
+
+    void Register() override
+    {
+        OnEffectLaunch += SpellEffectFn(spell_fae_transfusion_spellscript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
+    }
+};
+
+/// ID: 328923 Fae Transfusion
+class spell_fae_transfusion : public AuraScript
+{
+    PrepareAuraScript(spell_fae_transfusion);
+
+    void HandlePeriodic(AuraEffect const* aurEff)
+    {
+        if (auto caster = GetCaster())
+        {
+            if (caster->Variables.Exist("HitDestFaeTransfusion"))
+            {
+                Position pos = caster->Variables.GetValue("HitDestFaeTransfusion", caster->GetPosition());
+                caster->CastSpell(pos, FaeTransfusionDmg, true);
+
+                if (caster->Variables.Exist("FaeTransfusionDmg"))
+                {
+                    int32 dam = caster->Variables.GetValue("FaeTransfusionDmg", 0);
+
+                    if (auto aur = caster->GetAura(FaeTransfusionBuffHeal))
+                    {
+                        if (dam)
+                        {
+                            aur->GetEffect(EFFECT_0)->SetAmount(CalculatePct(dam, 60));
+                            aur->SetNeedClientUpdateForTargets();
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    void Register() override
+    {
+        OnEffectPeriodic += AuraEffectPeriodicFn(spell_fae_transfusion::HandlePeriodic, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY);
+    }
+};
+
+/// ID: 328930  Fae Transfusion
+class spell_fae_transfusion_heal : public SpellScript
+{
+    PrepareSpellScript(spell_fae_transfusion_heal);
+
+    void HandleHeal(SpellEffIndex /*eff*/)
+    {
+        if (auto caster = GetCaster())
+        {
+            if (caster->Variables.Exist("FaeTransfusionDmg"))
+            {
+                int32 dam = caster->Variables.GetValue("FaeTransfusionDmg", 0);
+
+                if (dam)
+                    SetHitHeal(CalculatePct(dam, 60));
+            }
+        }
+    }
+
+    void HandleDummy(SpellEffIndex /*eff*/)
+    {
+        if (auto caster = GetCaster())
+        {
+            caster->RemoveAurasDueToSpell(FaeTransfusionBuffHeal);
+            if (caster->Variables.Exist("HitDestFaeTransfusion"))
+                caster->Variables.Remove("HitDestFaeTransfusion");
+        }
+    }
+
+    void Register() override
+    {
+        OnEffectHitTarget += SpellEffectFn(spell_fae_transfusion_heal::HandleHeal, EFFECT_0, SPELL_EFFECT_HEAL);
+        OnEffectLaunch += SpellEffectFn(spell_fae_transfusion_heal::HandleDummy, EFFECT_1, SPELL_EFFECT_DUMMY);
+    }
+};
+
+/// ID: 328928 Fae Transfusion
+class spell_fae_transfusion_dmg : public SpellScript
+{
+    PrepareSpellScript(spell_fae_transfusion_dmg);
+
+    void HandleDmg(SpellEffIndex /*eff*/)
+    {
+        if (auto caster = GetCaster())
+        {
+            int32 prevDmg = caster->Variables.GetValue("FaeTransfusionDmg", 0);
+            caster->Variables.Set("FaeTransfusionDmg", prevDmg + GetHitDamage());
+        }
+    }
+
+    void Register() override
+    {
+        OnEffectHitTarget += SpellEffectFn(spell_fae_transfusion_dmg::HandleDmg, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
+    }
+};
+
+void AddSC_spell_shaman_covenant()
+{
+    RegisterSpellAndAuraScriptPairWithArgs(spell_fae_transfusion_spellscript, spell_fae_transfusion, "spell_fae_transfusion");
+    RegisterSpellScript(spell_fae_transfusion_heal);
+    RegisterSpellScript(spell_fae_transfusion_dmg);
+}

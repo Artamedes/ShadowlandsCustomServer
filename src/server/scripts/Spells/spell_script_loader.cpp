@@ -40,6 +40,7 @@ void AddSC_spell_rogue_outlaw();
 void AddSC_spell_rogue_covenant();
 void AddSC_spell_rogue_subtlety();
 void AddSC_shaman_spell_scripts();
+void AddSC_spell_shaman_covenant();
 void AddSC_warlock_spell_scripts();
 void AddSC_warrior_spell_scripts();
 void AddSC_spell_warrior_covenant();
@@ -79,6 +80,7 @@ void AddSpellsScripts()
     AddSC_spell_rogue_covenant();
     AddSC_spell_rogue_subtlety();
     AddSC_shaman_spell_scripts();
+    AddSC_spell_shaman_covenant();
     AddSC_warlock_spell_scripts();
     AddSC_warrior_spell_scripts();
     AddSC_spell_warrior_covenant();
