@@ -4181,6 +4181,14 @@ class spell_frost_strike_main_hand : public SpellScript
             SetHitDamage(damage + aura->GetEffect(0)->GetAmount());
         }
 
+        /// EradicatingBlowBuff (Conduit)
+        if (Aura* aura = caster->GetAura(337936))
+        {
+            int32 damage = GetHitDamage();
+            SetHitDamage(damage + CalculatePct(damage, aura->GetEffect(EFFECT_0)->GetAmount()));
+            aura->Remove();
+        }
+
         // Thundra Stalker
         uint32 const MechanicList =
             (1 << MECHANIC_ROOT)
