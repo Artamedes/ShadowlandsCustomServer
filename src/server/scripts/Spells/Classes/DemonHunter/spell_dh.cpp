@@ -2551,7 +2551,7 @@ public:
 
         bool CheckProc(ProcEventInfo& eventInfo)
         {
-            if (eventInfo.GetSpellInfo()->Id == SPELL_DH_THROW_GLAIVE)
+            if (eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == SPELL_DH_THROW_GLAIVE)
                 return true;
             return false;
         }
