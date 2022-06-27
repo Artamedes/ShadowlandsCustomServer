@@ -79,11 +79,22 @@ WorldSocket::~WorldSocket()
 
 void WorldSocket::Start()
 {
-    std::string ip_address = GetRemoteIpAddress().to_string();
-    LoginDatabasePreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_SEL_IP_INFO);
-    stmt->setString(0, ip_address);
+    _packetBuffer.Resize(ClientConnectionInitialize.length() + 1);
 
-    _queryProcessor.AddCallback(LoginDatabase.AsyncQuery(stmt).WithPreparedCallback(std::bind(&WorldSocket::CheckIpCallback, this, std::placeholders::_1)));
+    AsyncReadWithCallback(&WorldSocket::InitializeHandler);
+
+    MessageBuffer initializer;
+    initializer.Write(ServerConnectionInitialize.c_str(), ServerConnectionInitialize.length());
+    initializer.Write("\n", 1);
+
+    // - IoContext.run thread, safe.
+    QueuePacket(std::move(initializer));
+
+    //std::string ip_address = GetRemoteIpAddress().to_string();
+    //LoginDatabasePreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_SEL_IP_INFO);
+    //stmt->setString(0, ip_address);
+    //
+    //_queryProcessor.AddCallback(LoginDatabase.AsyncQuery(stmt).WithPreparedCallback(std::bind(&WorldSocket::CheckIpCallback, this, std::placeholders::_1)));
 }
 
 void WorldSocket::CheckIpCallback(PreparedQueryResult result)

@@ -53,6 +53,7 @@
 #include "WardenWin.h"
 #include "World.h"
 #include "WorldSocket.h"
+#include "BattlePayPackets.h"
 
 namespace {
 
@@ -1208,6 +1209,13 @@ void WorldSession::InitializeSessionCallback(LoginDatabaseQueryHolder const& hol
     SendFeatureSystemStatusGlueScreen();
     SendClientCacheVersion(sWorld->getIntConfig(CONFIG_CLIENTCACHE_VERSION));
     SendAvailableHotfixes();
+
+    // send battlepay here
+    WorldPacket data(SMSG_BATTLE_PAY_GET_DISTRIBUTION_LIST_RESPONSE);
+    data << uint32(0);
+    data.WriteBits(0, 11);
+    SendPacket(&data);
+
     SendAccountDataTimes(ObjectGuid::Empty, GLOBAL_CACHE_MASK);
     SendTutorialsData();
 
@@ -1224,12 +1232,6 @@ void WorldSession::InitializeSessionCallback(LoginDatabaseQueryHolder const& hol
     WorldPackets::Battlenet::ConnectionStatus bnetConnected;
     bnetConnected.State = 1;
     SendPacket(bnetConnected.Write());
-
-    // send battlepay here
-    WorldPacket data(SMSG_BATTLE_PAY_GET_DISTRIBUTION_LIST_RESPONSE);
-    data << uint32(0);
-    data.WriteBits(0, 11);
-    SendPacket(&data);
 
     _battlePetMgr->LoadFromDB(holder.GetPreparedResult(AccountInfoQueryHolder::BATTLE_PETS),
                               holder.GetPreparedResult(AccountInfoQueryHolder::BATTLE_PET_SLOTS));

@@ -65,6 +65,7 @@
 #include <sstream>
 #include "SpellAuras.h"
 #include "SpellAuraEffects.h"
+#include "BattlePayPackets.h"
 
 LoginQueryHolder::LoginQueryHolder(uint32 accountId, ObjectGuid guid)
     : m_accountId(accountId), m_guid(guid) { }
@@ -496,6 +497,11 @@ void WorldSession::HandleCharEnum(CharacterDatabaseQueryHolder const& holder)
     }
 
     SendPacket(charEnum.Write());
+
+    WorldPackets::BattlePay::BattlePayPurchaseListResponse packet;
+    SendPacket(packet.Write());
+
+    SendProductList();
 }
 
 void WorldSession::HandleCharEnumOpcode(WorldPackets::Character::EnumCharacters& /*enumCharacters*/)
