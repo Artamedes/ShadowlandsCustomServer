@@ -38,16 +38,6 @@ enum DesmotareonSpells
 {
     VolatileFelBurst = 209019,
 
-    // Dragons cast -
-    FieryPhlegmCast = 357640,
-    DarkDischargeCast = 357643,
-    SaltySpittleCast = 357644,
-    DeadlyHunger = 336838, ///< Cast every 10s, they have to walk out of melee
-    CrushingBite = 343722,
-    CripplingBlow = 166766, ///< Cast every 15s
-    WingBlast     = 335853,
-    SoulShift     = 357516,
-
     /// Maw Eye
     FocusedAnnihilation = 348757,
 
@@ -92,7 +82,7 @@ enum DesmotareonSpells
 
 enum DesmotareonActions
 {
-    ActionShirgantaiChildrenEngaged = 1,
+    ActionShirgantaiOrbClicked = 1,
     ActionSetGuidShirgantai,
 };
 

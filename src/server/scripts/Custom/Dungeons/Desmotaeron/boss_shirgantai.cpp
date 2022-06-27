@@ -79,11 +79,109 @@ const Position ShirgantaiPathFour[] =
 
 using ShirPathFourSize = std::extent<decltype(ShirgantaiPathFour)>;
 
+const Position AnimaOrbPosition(4546.86f, 5900.87f, 4843.98f, 5.5123f);
+const Position IsynthPosition(4468.4f, 5838.84f, 4947.85f, 0.458272f);
+const Position GiebiPosition(4569.18f, 5989.06f, 4944.93f, 4.6341f);
+
+enum eShirgantai
+{
+    NpcAnimaOrb   = 707035,
+    NpcShirgantai = 707003,
+    NpcIsynth     = 707020,
+    NpcGielbi     = 707021,
+};
+
+enum eShirgantaiSpells
+{
+    // Dragons cast -
+    FieryPhlegmCast     = 357640,
+    DarkDischargeCast   = 357643,
+    SaltySpittleCast    = 357644,
+    DeadlyHunger        = 336838, ///< Cast every 10s, they have to walk out of melee
+    CrushingBite        = 343722,
+    CripplingBlow       = 166766, ///< Cast every 15s
+    WingBlast           = 335853,
+    SoulShift           = 357516,
+};
+
+void SetupDragonSpells(TaskScheduler& scheduler, Creature* me, CreatureAI* ai)
+{
+    scheduler.Schedule(10s, [me, ai](TaskContext context)
+    {
+        if (me->IsWithinMeleeRange(me->GetVictim()))
+        {
+            ai->DoCastVictim(DeadlyHunger);
+            context.Repeat(10s);
+        }
+        else
+            context.Repeat(1s);
+    });
+
+    scheduler.Schedule(15s, [me, ai](TaskContext context)
+    {
+        if (me->IsWithinMeleeRange(me->GetVictim()))
+        {
+            ai->DoCastVictim(CripplingBlow);
+            context.Repeat(15s);
+        }
+        else
+            context.Repeat(1s);
+    });
+
+    scheduler.Schedule(25s, [me, ai](TaskContext context)
+    {
+        ai->DoCastVictim(WingBlast);
+        context.Repeat(25s);
+    });
+
+    scheduler.Schedule(15s, [me, ai](TaskContext context)
+    {
+        ai->DoCastVictim(SoulShift);
+        context.Repeat(15s);
+    });
+
+    scheduler.Schedule(20s, [me, ai](TaskContext context)
+    {
+        ai->DoCastVictim(CrushingBite);
+        context.Repeat(35s);
+    });
+
+    switch (me->GetEntry())
+    {
+        case NpcShirgantai:
+            scheduler.Schedule(5s, [me, ai](TaskContext context)
+            {
+                ai->DoCastVictim(DarkDischargeCast);
+                context.Repeat(25s);
+            });
+            break;
+        case NpcIsynth:
+            scheduler.Schedule(5s, [me, ai](TaskContext context)
+            {
+                ai->DoCastVictim(SaltySpittleCast);
+                context.Repeat(25s);
+            });
+            break;
+        case NpcGielbi:
+            scheduler.Schedule(5s, [me, ai](TaskContext context)
+            {
+                ai->DoCastVictim(FieryPhlegmCast);
+                context.Repeat(25s);
+            });
+            break;
+        default:
+            break;
+    }
+}
+
 /// 707003
 struct boss_shirgantai : public BossAI
 {
 public:
-    boss_shirgantai(Creature* creature) : BossAI(creature, BossShirgantai) { }
+    boss_shirgantai(Creature* creature) : BossAI(creature, BossShirgantai)
+    {
+        ApplyAllImmunities(true);
+    }
 
     enum Points
     {
@@ -118,6 +216,10 @@ public:
                 {
                     me->SetFacingTo(5.139766f);
                     updateScheduler.CancelAll();
+
+                    if (auto orb = DoSummon(NpcAnimaOrb, AnimaOrbPosition, 0s, TEMPSUMMON_MANUAL_DESPAWN))
+                        if (orb->AI())
+                            orb->AI()->SetGUID(me->GetGUID(), ActionSetGuidShirgantai);
                 });
             };
         };
@@ -147,14 +249,14 @@ public:
 
     void DoAction(int32 actionId) override
     {
-        if (actionId == ActionShirgantaiChildrenEngaged)
+        if (actionId == ActionShirgantaiOrbClicked)
         {
             DoCastSelf(DisappearSpell);
             updateScheduler.Schedule(1s, [this](TaskContext /*context*/)
             {
                 Talk(TalkChildrenEngaged);
                 DoCast(MawPortalIn);
-                me->NearTeleportTo({ 4549.72f, 5899.95f, 4843.96f, 5.49674f }, true, true);
+                me->NearTeleportTo({ 4534.21f, 5912.86f, 4844.5f, 5.46151f }, true, true);
 
                 updateScheduler.Schedule(1s, [this](TaskContext /*context*/)
                 {
@@ -188,6 +290,15 @@ public:
     {
         _JustEngagedWith(who);
         scheduler.CancelAll();
+
+        DoSummon(NpcIsynth, IsynthPosition, 0s, TEMPSUMMON_MANUAL_DESPAWN);
+        DoSummon(NpcGielbi, GiebiPosition, 0s, TEMPSUMMON_MANUAL_DESPAWN);
+        SetupDragonSpells(scheduler, me, this);
+    }
+
+    void JustSummoned(Creature* summon) override
+    {
+        summons.Summon(summon);
     }
 
     void UpdateAI(uint32 diff) override
@@ -235,13 +346,15 @@ public:
             scheduler.Schedule(1s, [this](TaskContext /*context*/)
             {
                 if (auto shirgantai = me->GetMap()->GetCreature(ShirgantaiGuid))
+                {
                     if (shirgantai->IsEngaged())
                     {
                         me->SetReactState(REACT_AGGRESSIVE);
                         me->RemoveUnitFlag(UnitFlags::UNIT_FLAG_NON_ATTACKABLE);
+                        DoZoneInCombat();
                     }
+                }
                 me->RemoveUnitFlag(UnitFlags::UNIT_FLAG_UNINTERACTIBLE);
-                //
             });
         });
     }
@@ -314,8 +427,189 @@ public:
     ObjectGuid ShirgantaiGuid;
 };
 
+// 707035 - npc_anima_orb_707035
+struct npc_anima_orb_707035 : public ScriptedAI
+{
+public:
+    npc_anima_orb_707035(Creature* creature) : ScriptedAI(creature) { }
+
+    bool wasUsed = false;
+
+    void OnSpellClick(Unit* clicker, bool /*spellclickHandled*/) override
+    {
+        if (!wasUsed)
+        {
+            wasUsed = true;
+
+            if (auto shirgantai = ObjectAccessor::GetCreature(*me, ShirgantaiGuid))
+                if (shirgantai->AI())
+                    shirgantai->AI()->DoAction(ActionShirgantaiOrbClicked);
+            me->DespawnOrUnsummon();
+        }
+    }
+
+    void SetGUID(ObjectGuid const& guid, int32 actionId) override
+    {
+        if (actionId == ActionSetGuidShirgantai)
+        {
+            ShirgantaiGuid = guid;
+        }
+    }
+
+    ObjectGuid ShirgantaiGuid;
+};
+
+const Position GielbiPath[] =
+{
+    { 4569.18f, 5989.06f, 4944.93f, 4.6341f },
+    { 4542.3f, 5931.87f, 4861.75f, 4.85416f },
+};
+
+using GielbiPathSize = std::extent<decltype(GielbiPath)>;
+
+// 707021 - npc_gielbi_707021
+struct npc_gielbi_707021 : public ScriptedAI
+{
+public:
+    npc_gielbi_707021(Creature* creature) : ScriptedAI(creature)
+    {
+        scheduler.SetValidator([this]
+        {
+            return !me->HasUnitState(UNIT_STATE_CASTING);
+        });
+
+        ApplyAllImmunities(true);
+    }
+
+    void InitializeAI()
+    { 
+        DoCastSelf(HideSpell);
+        DoCastSelf(MawPortalIn);
+        me->SetReactState(REACT_PASSIVE);
+        me->SetUnitFlag(UnitFlags::UNIT_FLAG_UNINTERACTIBLE);
+        me->SetUnitFlag(UnitFlags::UNIT_FLAG_NON_ATTACKABLE);
+        oocScheduler.Schedule(1s, [this](TaskContext /*context*/)
+        {
+            me->RemoveAurasDueToSpell(HideSpell);
+            me->GetMotionMaster()->MoveSmoothPath(1, GielbiPath, GielbiPathSize::value, false, true)->callbackFunc = [this]
+            {
+                me->GetMotionMaster()->MoveLand(1, { 4542.28f, 5931.82f, 4845.31f, 4.83007f })->callbackFunc = [this]
+                {
+                    oocScheduler.Schedule(500ms, [this](TaskContext /*context*/)
+                    {
+                        me->SetReactState(REACT_AGGRESSIVE);
+                        me->RemoveUnitFlag(UnitFlags::UNIT_FLAG_UNINTERACTIBLE);
+                        me->RemoveUnitFlag(UnitFlags::UNIT_FLAG_NON_ATTACKABLE);
+                        DoZoneInCombat();
+                    });
+                };
+            };
+        });
+    }
+
+    void JustEngagedWith(Unit* /*who*/) override
+    {
+        scheduler.CancelAll();
+        SetupDragonSpells(scheduler, me, this);
+    }
+
+    void UpdateAI(uint32 diff) override
+    {
+        oocScheduler.Update(diff);
+
+        if (!UpdateVictim())
+            return;
+
+        scheduler.Update(diff);
+
+        if (me->HasUnitState(UNIT_STATE_CASTING))
+            return;
+
+        DoMeleeAttackIfReady();
+    }
+
+    TaskScheduler scheduler;
+    TaskScheduler oocScheduler;
+};
+
+const Position IsynthPath[] =
+{
+    { 4468.4f, 5838.84f, 4947.85f, 0.458272f },
+    { 4525.2f, 5885.7f, 4865.38f, 0.556324f },
+};
+
+using IsynthPathSize = std::extent<decltype(IsynthPath)>;
+
+// 707020 - npc_isynth_707020
+struct npc_isynth_707020 : public ScriptedAI
+{
+public:
+    npc_isynth_707020(Creature* creature) : ScriptedAI(creature)
+    {
+        scheduler.SetValidator([this]
+        {
+            return !me->HasUnitState(UNIT_STATE_CASTING);
+        });
+
+        ApplyAllImmunities(true);
+    }
+
+    void InitializeAI()
+    { 
+        DoCastSelf(HideSpell);
+        DoCastSelf(MawPortalIn);
+        me->SetReactState(REACT_PASSIVE);
+        me->SetUnitFlag(UnitFlags::UNIT_FLAG_UNINTERACTIBLE);
+        me->SetUnitFlag(UnitFlags::UNIT_FLAG_NON_ATTACKABLE);
+        oocScheduler.Schedule(1s, [this](TaskContext /*context*/)
+        {
+            me->RemoveAurasDueToSpell(HideSpell);
+            me->GetMotionMaster()->MoveSmoothPath(1, IsynthPath, IsynthPathSize::value, false, true)->callbackFunc = [this]
+            {
+                me->GetMotionMaster()->MoveLand(1, { 4525.15f, 5885.67f, 4842.89f, 0.163625f })->callbackFunc = [this]
+                {
+                    oocScheduler.Schedule(500ms, [this](TaskContext /*context*/)
+                    {
+                        me->SetReactState(REACT_AGGRESSIVE);
+                        me->RemoveUnitFlag(UnitFlags::UNIT_FLAG_UNINTERACTIBLE);
+                        me->RemoveUnitFlag(UnitFlags::UNIT_FLAG_NON_ATTACKABLE);
+                        DoZoneInCombat();
+                    });
+                };
+            };
+        });
+    }
+
+    void JustEngagedWith(Unit* /*who*/) override
+    {
+        scheduler.CancelAll();
+        SetupDragonSpells(scheduler, me, this);
+    }
+
+    void UpdateAI(uint32 diff) override
+    {
+        oocScheduler.Update(diff);
+
+        if (!UpdateVictim())
+            return;
+
+        scheduler.Update(diff);
+
+        if (me->HasUnitState(UNIT_STATE_CASTING))
+            return;
+
+        DoMeleeAttackIfReady();
+    }
+
+    TaskScheduler scheduler;
+    TaskScheduler oocScheduler;
+};
+
 void AddSC_boss_shirgantai()
 {
     RegisterCreatureAI(boss_shirgantai);
     RegisterCreatureAI(npc_spawn_of_shirgantai);
+    RegisterCreatureAI(npc_anima_orb_707035);
+    RegisterCreatureAI(npc_gielbi_707021);
+    RegisterCreatureAI(npc_isynth_707020);
 }

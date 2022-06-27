@@ -716,7 +716,7 @@ void MotionMaster::MoveCloserAndStop(uint32 id, Unit* target, float distance)
     }
 }
 
-void MotionMaster::MoveLand(uint32 id, Position const& pos, Optional<float> velocity /*= {}*/)
+GenericMovementGenerator* MotionMaster::MoveLand(uint32 id, Position const& pos, Optional<float> velocity /*= {}*/)
 {
     TC_LOG_DEBUG("movement.motionmaster", "MotionMaster::MoveLand: '%s', landing point Id: %u (X: %f, Y: %f, Z: %f)", _owner->GetGUID().ToString().c_str(), id, pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ());
 
@@ -727,7 +727,7 @@ void MotionMaster::MoveLand(uint32 id, Position const& pos, Optional<float> velo
         if (velocity)
             init.SetVelocity(*velocity);
     };
-    Add(new GenericMovementGenerator(std::move(initializer), EFFECT_MOTION_TYPE, id));
+    return Add(new GenericMovementGenerator(std::move(initializer), EFFECT_MOTION_TYPE, id));
 }
 
 void MotionMaster::MoveTakeoff(uint32 id, Position const& pos, Optional<float> velocity /*= {}*/)
