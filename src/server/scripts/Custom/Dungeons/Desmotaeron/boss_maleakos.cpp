@@ -244,8 +244,22 @@ public:
             return;
     }
 
+    void JustDied(Unit* /*killer*/) override
+    {
+        events.Reset();
+        summons.DoOnSummons([](Creature* creature)
+        {
+            if (creature && creature->GetEntry() != NpcPortal)
+                creature->DespawnOrUnsummon();
+        });
+        scheduler.CancelAll();
+    }
+
     void EnterEvadeMode(EvadeReason /*why*/) override
     {
+        if (instance && instance->GetBossState(MalekosPart1) == EncounterState::DONE)
+            return;
+
         summons.DespawnAll();
         _DespawnAtEvade(5s);
     }
