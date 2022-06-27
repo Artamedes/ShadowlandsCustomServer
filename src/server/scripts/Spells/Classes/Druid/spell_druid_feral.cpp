@@ -223,6 +223,30 @@ class spell_berserk : public AuraScript
     }
 };
 
+/// ID: 340686 Incessant Hunter
+class spell_incessant_hunter : public AuraScript
+{
+    PrepareAuraScript(spell_incessant_hunter);
+
+    enum eIncessantHunter
+    {
+        Rip = 1079,
+    };
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        if (!eventInfo.GetSpellInfo())
+            return false;
+
+        return eventInfo.GetSpellInfo()->Id == Rip;
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_incessant_hunter::CheckProc);
+    }
+};
+
 void AddSC_spell_druid_feral()
 {
     RegisterSpellScript(spell_primal_wrath);
@@ -230,4 +254,5 @@ void AddSC_spell_druid_feral()
     RegisterSpellScript(spell_bloodtalons_proc);
     RegisterSpellScript(spell_heart_of_the_lion);
     RegisterSpellScript(spell_berserk);
+    RegisterSpellScript(spell_incessant_hunter);
 }
