@@ -6,6 +6,8 @@ enum eInstanceDesmotaeron
 {
     JainaConversation = 700313,
     NpcPortalToJaina = 707037,
+
+    GoBonemawDoor = 233989,
 };
 
 struct instance_desmotaeron : public CustomInstanceScript
@@ -24,7 +26,11 @@ public:
         switch (go->GetEntry())
         {
             case 353816:
+            case 367939:
                 go->SetFlag(GameObjectFlags::GO_FLAG_NOT_SELECTABLE);
+                break;
+            case GoBonemawDoor:
+                BonemawDoorGuid = go->GetGUID();
                 break;
         }
     }
@@ -88,6 +94,9 @@ public:
                     {
                         portal->SetTempSummonType(TempSummonType::TEMPSUMMON_MANUAL_DESPAWN);
                     }
+
+                    if (auto door = instance->GetGameObject(BonemawDoorGuid))
+                        door->Delete();
                 }
             }
         }
@@ -96,6 +105,7 @@ public:
     }
 
     uint32 RequiredBossesKilled = 0;
+    ObjectGuid BonemawDoorGuid;
 };
 
 void AddSC_instance_desmotareon()
