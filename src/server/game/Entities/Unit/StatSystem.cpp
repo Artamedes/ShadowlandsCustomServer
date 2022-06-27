@@ -161,7 +161,7 @@ void Player::ApplySpellPowerBonus(int32 amount, bool apply)
     }
 }
 
-void Player::UpdateSpellDamageAndHealingBonus()
+void Player::UpdateSpellDamageAndHealingBonus(bool checkAuras /*= true*/)
 {
     // Magic damage modifiers implemented in Unit::SpellDamageBonusDone
     // This information for client side use only
@@ -182,10 +182,13 @@ void Player::UpdateSpellDamageAndHealingBonus()
             SpellBaseDamageBonusDone(SpellSchoolMask(1 << i)) - m_activePlayerData->ModDamageDoneNeg[i]);
     }
 
-    if (HasAuraType(SPELL_AURA_OVERRIDE_ATTACK_POWER_BY_SP_PCT))
+    if (checkAuras)
     {
-        UpdateAttackPowerAndDamage();
-        UpdateAttackPowerAndDamage(true);
+        if (HasAuraType(SPELL_AURA_OVERRIDE_ATTACK_POWER_BY_SP_PCT))
+        {
+            UpdateAttackPowerAndDamage();
+            UpdateAttackPowerAndDamage(true);
+        }
     }
 
     if (Pet* pet = GetPet())
@@ -410,7 +413,7 @@ void Player::UpdateAttackPowerAndDamage(bool ranged)
                 UpdateDamagePhysical(OFF_ATTACK);
 
         if (HasAuraType(SPELL_AURA_OVERRIDE_SPELL_POWER_BY_AP_PCT))
-            UpdateSpellDamageAndHealingBonus();
+            UpdateSpellDamageAndHealingBonus(false);
 
         if (pet && pet->IsPetGhoul()) // At melee attack power change for DK pet
             pet->UpdateAttackPowerAndDamage();

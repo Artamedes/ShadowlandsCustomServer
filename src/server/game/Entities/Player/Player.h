@@ -2074,7 +2074,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         uint32 GetPowerIndex(Powers power) const override;
         void UpdateAttackPowerAndDamage(bool ranged = false) override;
         void ApplySpellPowerBonus(int32 amount, bool apply);
-        void UpdateSpellDamageAndHealingBonus();
+        void UpdateSpellDamageAndHealingBonus(bool checkAuras = true);
         void ApplyModDamageDonePos(SpellSchools school, int32 mod, bool apply) { ApplyModUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::ModDamageDonePos, school), mod, apply); }
         void ApplyModDamageDoneNeg(SpellSchools school, int32 mod, bool apply) { ApplyModUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::ModDamageDoneNeg, school), mod, apply); }
         void ApplyModDamageDonePercent(SpellSchools school, float pct, bool apply) { ApplyPercentModUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::ModDamageDonePercent, school), pct, apply); }
