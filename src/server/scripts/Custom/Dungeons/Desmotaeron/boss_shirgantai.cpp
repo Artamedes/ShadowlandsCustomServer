@@ -104,6 +104,46 @@ enum eShirgantaiSpells
     SoulShift           = 357516,
 };
 
+void ApplySpellDamageIfNeed(Creature* me, Unit* who, SpellInfo const* spellInfo, DamageEffectType type,  uint32& damage)
+{
+    if (spellInfo && who)
+    {
+        switch (spellInfo->Id)
+        {
+            case 357620: ///< Salty Spittle
+            case 357643: ///< Dark Discharge
+            case 357619: ///< Fiery Plegm
+                damage += 500000 + who->CountPctFromMaxHealth(50);
+                ApplyChallengeDMGIncrease(me, damage, 5);
+                break;
+
+
+            case 357634: ///< Fiery Plegm
+            case 357635: ///< Dark Discharge
+            case 357636: ///< Salty Spittle
+                damage += 150000 + who->CountPctFromMaxHealth(5);
+                ApplyChallengeDMGIncrease(me, damage, 5);
+                break;
+
+            case CrushingBite: ///< Crushing Bite
+
+                if (type == DamageEffectType::DOT)
+                    damage += 100000 + who->CountPctFromMaxHealth(5);
+                else
+                    damage += 300000;
+
+                ApplyChallengeDMGIncrease(me, damage, 5);
+
+                break;
+
+            case CripplingBlow:
+                damage += 75000;
+                ApplyChallengeDMGIncrease(me, damage, 5);
+                break;
+        }
+    }
+}
+
 void SetupDragonSpells(TaskScheduler& scheduler, Creature* me, CreatureAI* ai)
 {
     scheduler.Schedule(10s, [me, ai](TaskContext context)
@@ -205,46 +245,63 @@ public:
         DoCastSelf(MawCosmetic);
         me->SetReactState(REACT_PASSIVE);
         me->SetUnitFlag(UnitFlags::UNIT_FLAG_NON_ATTACKABLE);
-        me->GetMotionMaster()->MoveSmoothPath(PointFirst, ShirgantaiPathOne, ShirPathOneSize::value, false, true)->callbackFunc = [this]
-        {
-            Talk(TalkIntro);
 
-            me->GetMotionMaster()->MoveSmoothPath(PointTwo, ShirgantaiPathTwo, ShirPathTwoSize::value, false, true)->callbackFunc = [this]
+        if (instance && instance->GetBossState(BossShirgantai) != NOT_STARTED)
+        {
+            me->SetVisible(false);
+            updateScheduler.Schedule(1s, [this](TaskContext context)
             {
-                me->GetMotionMaster()->MoveLand(PointLand, { 4503.01f, 6039.34f, 4908.97f, 5.01563f });
-                updateScheduler.Schedule(1s, [this](TaskContext /*context*/)
+                me->NearTeleportTo({ 4503.97f, 6036.34f, 4908.97f, 4.99994f }, true, true);
+                me->SetVisible(true);
+
+                if (auto orb = DoSummon(NpcAnimaOrb, AnimaOrbPosition, 0s, TEMPSUMMON_MANUAL_DESPAWN))
+                    if (orb->AI())
+                        orb->AI()->SetGUID(me->GetGUID(), ActionSetGuidShirgantai);
+            });
+        }
+        else
+        {
+            me->GetMotionMaster()->MoveSmoothPath(PointFirst, ShirgantaiPathOne, ShirPathOneSize::value, false, true)->callbackFunc = [this]
+            {
+                Talk(TalkIntro);
+
+                me->GetMotionMaster()->MoveSmoothPath(PointTwo, ShirgantaiPathTwo, ShirPathTwoSize::value, false, true)->callbackFunc = [this]
                 {
-                    me->SetFacingTo(5.139766f);
-                    updateScheduler.CancelAll();
+                    me->GetMotionMaster()->MoveLand(PointLand, { 4503.01f, 6039.34f, 4908.97f, 5.01563f });
+                    updateScheduler.Schedule(1s, [this](TaskContext /*context*/)
+                    {
+                        me->SetFacingTo(5.139766f);
+                        updateScheduler.CancelAll();
 
-                    if (auto orb = DoSummon(NpcAnimaOrb, AnimaOrbPosition, 0s, TEMPSUMMON_MANUAL_DESPAWN))
-                        if (orb->AI())
-                            orb->AI()->SetGUID(me->GetGUID(), ActionSetGuidShirgantai);
-                });
+                        if (auto orb = DoSummon(NpcAnimaOrb, AnimaOrbPosition, 0s, TEMPSUMMON_MANUAL_DESPAWN))
+                            if (orb->AI())
+                                orb->AI()->SetGUID(me->GetGUID(), ActionSetGuidShirgantai);
+                    });
+                };
             };
-        };
 
-        updateScheduler.Schedule(1s, [this](TaskContext context)
-        {
-            uint32 chance = 100;
-
-            float diff = 0.0f;
-
-            while (roll_chance_i(chance))
+            updateScheduler.Schedule(1s, [this](TaskContext context)
             {
-                float x = me->GetPositionX() + frand(diff - 10.0f, 10.0f);
-                float y = me->GetPositionY() + frand(diff - 10.0f, 10.0f);
-                float z = me->GetPositionZ();
+                uint32 chance = 100;
 
-                if (auto spawn = me->SummonCreature(NpcSpawnOfShirgantai, { x, y, z }, TEMPSUMMON_MANUAL_DESPAWN))
-                    if (spawn->AI())
-                        spawn->AI()->SetGUID(me->GetGUID(), ActionSetGuidShirgantai);
+                float diff = 0.0f;
 
-                chance -= 25;
-                diff += 5.0f;
-            }
-            context.Repeat(5s, 10s);
-        });
+                while (roll_chance_i(chance))
+                {
+                    float x = me->GetPositionX() + frand(diff - 10.0f, 10.0f);
+                    float y = me->GetPositionY() + frand(diff - 10.0f, 10.0f);
+                    float z = me->GetPositionZ();
+
+                    if (auto spawn = me->SummonCreature(NpcSpawnOfShirgantai, { x, y, z }, TEMPSUMMON_MANUAL_DESPAWN))
+                        if (spawn->AI())
+                            spawn->AI()->SetGUID(me->GetGUID(), ActionSetGuidShirgantai);
+
+                    chance -= 25;
+                    diff += 5.0f;
+                }
+                context.Repeat(5s, 10s);
+            });
+        }
     }
 
     void DoAction(int32 actionId) override
@@ -255,8 +312,8 @@ public:
             updateScheduler.Schedule(1s, [this](TaskContext /*context*/)
             {
                 Talk(TalkChildrenEngaged);
-                DoCast(MawPortalIn);
                 me->NearTeleportTo({ 4534.21f, 5912.86f, 4844.5f, 5.46151f }, true, true);
+                DoCast(MawPortalIn);
 
                 updateScheduler.Schedule(1s, [this](TaskContext /*context*/)
                 {
@@ -319,7 +376,13 @@ public:
     void EnterEvadeMode(EvadeReason why) override
     {
         summons.DespawnAll(1s);
+        _DespawnAtEvade(5s);
         BossAI::EnterEvadeMode(why);
+    }
+
+    void DamageDealt(Unit* victim, uint32& damage, DamageEffectType type, SpellInfo const* spellInfo /*= nullptr*/) override
+    {
+        ApplySpellDamageIfNeed(me, victim, spellInfo, type, damage);
     }
 
     TaskScheduler updateScheduler;
@@ -528,6 +591,11 @@ public:
         DoMeleeAttackIfReady();
     }
 
+    void DamageDealt(Unit* victim, uint32& damage, DamageEffectType type, SpellInfo const* spellInfo /*= nullptr*/) override
+    {
+        ApplySpellDamageIfNeed(me, victim, spellInfo, type, damage);
+    }
+
     TaskScheduler scheduler;
     TaskScheduler oocScheduler;
 };
@@ -599,6 +667,11 @@ public:
             return;
 
         DoMeleeAttackIfReady();
+    }
+
+    void DamageDealt(Unit* victim, uint32& damage, DamageEffectType type, SpellInfo const* spellInfo /*= nullptr*/) override
+    {
+        ApplySpellDamageIfNeed(me, victim, spellInfo, type, damage);
     }
 
     TaskScheduler scheduler;

@@ -8,7 +8,9 @@ enum Desmoteraon
     BossShirgantai,
     BossGeneralNephmir,
     BossEcidus,
+    MalekosPart1,
     BossMaleakos,
+    MaxBosses,
 
     NpcSpawnOfShirgantai = 707033,
 };
@@ -62,11 +64,6 @@ enum DesmotareonSpells
     GiantSlam = 218077,
     ChargedWeapons = 310835,
     Thunderclap = 277743,
-
-    ///< End Boss
-    EphemeralBody  = 339006,
-    ResonatingBody = 339010,
-    Deathorb = 297047,
 
     SpectralWingsGuard = 346495,
 

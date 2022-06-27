@@ -82,12 +82,15 @@ public:
                 case 357333: ///< Soulflame Torrent
                     if (type != DamageEffectType::DOT)
                         damage += victim->CountPctFromMaxHealth(50);
+                    else
+                        damage += 100000 + victim->CountPctFromMaxHealth(5);
 
                     if (instance)
                         if (auto challenge = instance->GetChallenge())
                             damage += 5 * challenge->GetChallengeLevel();
                     break;
                 case GiantSlam:
+                    damage += 500000;
                     damage += victim->CountPctFromMaxHealth(50);
 
                     if (instance)
@@ -95,6 +98,7 @@ public:
                             damage += 5 * challenge->GetChallengeLevel();
                     break;
                 case 308864: ///< Charged Weapons
+                    damage += 100000;
                     damage += victim->CountPctFromMaxHealth(30);
 
                     if (instance)

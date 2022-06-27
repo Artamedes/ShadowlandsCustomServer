@@ -223,7 +223,7 @@ public:
         return 0;
     }
 
-    void OnCreatureCreate(Creature* creature) override
+    virtual void OnCreatureCreate(Creature* creature) override
     {
         InstanceScript::OnCreatureCreate(creature);
 

@@ -66,7 +66,10 @@ public:
                 case DeathWave:
                 case 297028: ///< Soul Echo Missle DMG
                     if (type != DamageEffectType::DOT)
+                    {
+                        damage += 300000;
                         damage += victim->CountPctFromMaxHealth(80);
+                    }
 
                     if (instance)
                         if (auto challenge = instance->GetChallenge())
