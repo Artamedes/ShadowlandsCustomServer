@@ -1,5 +1,6 @@
 #include "ScriptMgr.h"
 #include "ScriptedCreature.h"
+#include "WorldSession.h"
 
 enum DreadscarRift
 {
@@ -35,8 +36,6 @@ public:
         me->GetMotionMaster()->MoveTargetedHome();
         me->SetHealth(me->CountPctFromMaxHealth(100));
     }
-
-
 };
 
 struct npc_test_conduit : public ScriptedAI
