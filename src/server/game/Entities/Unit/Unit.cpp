@@ -523,6 +523,7 @@ void Unit::Update(uint32 p_time)
         {
             if (m_NextLeech >= GetMaxHealth())
                 m_NextLeech = GetMaxHealth();
+
             CastSpell(this, 143924, CastSpellExtraArgs(true).AddSpellBP0(m_NextLeech));
         }
         m_NextLeech = 0;
@@ -2093,53 +2094,60 @@ void Unit::HandleEmoteCommand(Emote emoteId, Player* target /*=nullptr*/, Trinit
     bool existExpired = false;
 
     // absorb without mana cost
-    AuraEffectList const& vHealAbsorb = healInfo.GetTarget()->GetAuraEffectsByType(SPELL_AURA_SCHOOL_HEAL_ABSORB);
-    for (AuraEffectList::const_iterator i = vHealAbsorb.begin(); i != vHealAbsorb.end() && healInfo.GetHeal() > 0; ++i)
+    // copy on purpose
+    AuraEffectList vHealAbsorb = healInfo.GetTarget()->GetAuraEffectsByType(SPELL_AURA_SCHOOL_HEAL_ABSORB);
+    if (!vHealAbsorb.empty())
     {
-        if (!((*i)->GetMiscValue() & healInfo.GetSpellInfo()->SchoolMask))
-            continue;
-
-        auto aura = (*i);
-
-        AuraApplication const* aurApp = aura->GetBase()->GetApplicationOfTarget(healInfo.GetTarget()->GetGUID());
-        if (!aurApp)
-            continue;
-
-        // Max Amount can be absorbed by this aura
-        int32 currentAbsorb = aura->GetAmount();
-
-        // aura with infinite absorb amount - let the scripts handle absorbtion amount, set here to 0 for safety
-        if (currentAbsorb < 0)
-            currentAbsorb = 0;
-
-        uint32 tempAbsorb = uint32(currentAbsorb);
-
-        bool defaultPrevented = false;
-
-        aura->GetBase()->CallScriptEffectHealAbsorbHandlers(aura, aurApp, healInfo, tempAbsorb, defaultPrevented);
-        currentAbsorb = tempAbsorb;
-
-        if (defaultPrevented)
-            continue;
-
-        // Found empty aura (impossible but..)
-        if (currentAbsorb <= 0)
+        for (AuraEffectList::const_iterator i = vHealAbsorb.begin(); i != vHealAbsorb.end() && healInfo.GetHeal() > 0; ++i)
         {
-            existExpired = true;
-            continue;
+            auto aura = *i;
+            if (!aura)
+                continue;
+
+            if (!aura->GetBase())
+                continue;
+
+            // Check if aura was removed during iteration - we don't need to work on such auras
+            AuraApplication const* aurApp = aura->GetBase()->GetApplicationOfTarget(healInfo.GetTarget()->GetGUID());
+            if (!aurApp)
+                continue;
+
+            if (!(aura->GetMiscValue() & healInfo.GetSpellInfo()->SchoolMask))
+                continue;
+
+            // Max Amount can be absorbed by this aura
+            int32 currentAbsorb = aura->GetAmount();
+
+            // aura with infinite absorb amount - let the scripts handle absorbtion amount, set here to 0 for safety
+            if (currentAbsorb < 0)
+                currentAbsorb = 0;
+
+            uint32 tempAbsorb = uint32(currentAbsorb);
+
+            bool defaultPrevented = false;
+
+            aura->GetBase()->CallScriptEffectHealAbsorbHandlers(aura, aurApp, healInfo, tempAbsorb, defaultPrevented);
+            currentAbsorb = tempAbsorb;
+
+            if (defaultPrevented)
+                continue;
+
+            // currentAbsorb - damage can be absorbed by shield
+            // If need absorb less damage
+            currentAbsorb = std::min<int32>(healInfo.GetHeal(), currentAbsorb);
+
+            healInfo.AbsorbHeal(currentAbsorb);
+
+            // Check if our aura is using amount to count damage
+            if (aura->GetAmount() >= 0)
+            {
+                // Reduce shield amount
+                (*i)->ChangeAmount((*i)->GetAmount() - currentAbsorb);
+                // Need remove it later
+                if ((*i)->GetAmount() <= 0)
+                    existExpired = true;
+            }
         }
-
-        // currentAbsorb - damage can be absorbed by shield
-        // If need absorb less damage
-        currentAbsorb = std::min<int32>(healInfo.GetHeal(), currentAbsorb);
-
-        healInfo.AbsorbHeal(currentAbsorb);
-
-        // Reduce shield amount
-        (*i)->ChangeAmount((*i)->GetAmount() - currentAbsorb);
-        // Need remove it later
-        if ((*i)->GetAmount() <= 0)
-            existExpired = true;
     }
 
     // Remove all expired absorb auras
