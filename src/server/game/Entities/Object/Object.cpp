@@ -1248,6 +1248,48 @@ bool WorldObject::IsInBetween(Position const& pos1, Position const& pos2, float 
     return (size * size) >= GetExactDist2dSq(pos1.GetPositionX() + std::cos(angle) * dist, pos1.GetPositionY() + std::sin(angle) * dist);
 }
 
+bool WorldObject::IsInBetween(const Position* obj1, const Position* obj2, float size) const
+{
+    if (!obj1 || !obj2)
+        return false;
+
+    float dist = GetExactDist2d(obj1->GetPositionX(), obj1->GetPositionY());
+
+    // not using sqrt() for performance
+    if ((dist * dist) >= obj1->GetExactDist2dSq(obj2->GetPositionX(), obj2->GetPositionY()))
+        return false;
+
+    if (!size)
+        size = GetObjectSize() / 2.f;
+
+    float angle = obj1->GetAngle(obj2);
+
+    // not using sqrt() for performance
+    return (size * size) >= GetExactDist2dSq(obj1->GetPositionX() + cos(angle) * dist, obj1->GetPositionY() + sin(angle) * dist);
+}
+
+#pragma optimize("", off)
+bool WorldObject::IsInBetween(const WorldObject* obj1, float x2, float y2, float size) const
+{
+    if (!obj1)
+        return false;
+
+    float dist = GetExactDist2d(obj1->GetPositionX(), obj1->GetPositionY());
+
+    // not using sqrt() for performance
+    if ((dist * dist) >= obj1->GetExactDist2dSq(x2, y2))
+        return false;
+
+    if (!size)
+        size = GetObjectSize() / 2.f;
+
+    float angle = obj1->GetAngle(x2, y2);
+
+    // not using sqrt() for performance
+    return (size * size) >= GetExactDist2dSq(obj1->GetPositionX() + std::cos(angle) * dist, obj1->GetPositionY() + std::sin(angle) * dist);
+}
+#pragma optimize("", on)
+
 bool WorldObject::isInFront(WorldObject const* target, float arc) const
 {
     return HasInArc(arc, target);

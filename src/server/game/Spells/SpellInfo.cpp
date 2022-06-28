@@ -1492,7 +1492,11 @@ bool SpellInfo::CasterCanTurnDuringCast() const
     //    return false;
 
     // Todo : Find more generic way ?
-    if (HasTargetType(TARGET_UNIT_CONE_CASTER_TO_DEST_ENEMY))
+    if (HasTargetType(TARGET_UNIT_CONE_CASTER_TO_DEST_ENEMY)
+        || HasTargetType(TARGET_UNIT_CONE_ENEMY_24)
+        || HasTargetType(TARGET_UNIT_CONE_180_DEG_ENEMY)
+        || HasTargetType(TARGET_UNIT_RECT_CASTER_ENEMY)
+        )
         return false;
 
     return true;

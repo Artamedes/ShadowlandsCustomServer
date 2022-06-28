@@ -1267,14 +1267,15 @@ void Spell::SelectImplicitConeTargets(SpellEffectInfo const& spellEffectInfo, Sp
     SpellTargetObjectTypes objectType = targetType.GetObjectType();
     SpellTargetCheckTypes selectionType = targetType.GetCheckType();
     ConditionContainer* condList = spellEffectInfo.ImplicitTargetConditions;
-    float radius = spellEffectInfo.CalcRadius(m_caster) * m_spellValue->RadiusMod;
+    WorldObject* caster = m_originalCaster ? m_originalCaster : m_caster;
+
+    float radius = spellEffectInfo.CalcRadius(caster) * m_spellValue->RadiusMod;
 
     if (uint32 containerTypeMask = GetSearcherTypeMask(objectType, condList))
     {
-        float extraSearchRadius = radius > 0.0f ? EXTRA_CELL_SEARCH_RADIUS : 0.0f;
-        Trinity::WorldObjectSpellConeTargetCheck check(coneSrc, DegToRad(coneAngle), m_spellInfo->Width ? m_spellInfo->Width : m_caster->GetCombatReach(), radius, m_caster, m_spellInfo, selectionType, condList, objectType);
-        Trinity::WorldObjectListSearcher<Trinity::WorldObjectSpellConeTargetCheck> searcher(m_caster, targets, check, containerTypeMask);
-        SearchTargets<Trinity::WorldObjectListSearcher<Trinity::WorldObjectSpellConeTargetCheck> >(searcher, containerTypeMask, m_caster, m_caster, radius + extraSearchRadius);
+        Trinity::WorldObjectSpellConeTargetCheck check(DegToRad(coneAngle), radius, caster, m_spellInfo, selectionType, condList, objectType);
+        Trinity::WorldObjectListSearcher<Trinity::WorldObjectSpellConeTargetCheck> searcher(caster, targets, check, containerTypeMask);
+        SearchTargets<Trinity::WorldObjectListSearcher<Trinity::WorldObjectSpellConeTargetCheck> >(searcher, containerTypeMask, caster, caster, radius);
 
         CallScriptObjectAreaTargetSelectHandlers(targets, spellEffectInfo.EffectIndex, targetType);
 
@@ -3801,6 +3802,13 @@ void Spell::_cast(bool skipCheck)
         modOwner->SetSpellModTakingSpell(this, true);
     }
 
+    // The spell focusing is making sure that we have a valid cast target guid when we need it so only check for a guid value here.
+    if (m_spellInfo->CasterCanTurnDuringCast())
+        if (Creature* creatureCaster = m_caster->ToCreature())
+            if (!creatureCaster->GetTarget().IsEmpty() && !creatureCaster->HasUnitFlag(UNIT_FLAG_POSSESSED))
+                if (WorldObject const* target = ObjectAccessor::GetUnit(*creatureCaster, creatureCaster->GetTarget()))
+                    creatureCaster->SetInFront(target);
+
     CallScriptBeforeCastHandlers();
 
     // skip check if done already (for instant cast spells for example)
@@ -3873,12 +3881,6 @@ void Spell::_cast(bool skipCheck)
             }
         }
     }
-    // The spell focusing is making sure that we have a valid cast target guid when we need it so only check for a guid value here.
-    if (m_spellInfo->CasterCanTurnDuringCast())
-        if (Creature* creatureCaster = m_caster->ToCreature())
-            if (!creatureCaster->GetTarget().IsEmpty() && !creatureCaster->HasUnitFlag(UNIT_FLAG_POSSESSED))
-                if (WorldObject const* target = ObjectAccessor::GetUnit(*creatureCaster, creatureCaster->GetTarget()))
-                    creatureCaster->SetInFront(target);
 
     SelectSpellTargets();
 
@@ -9418,37 +9420,43 @@ bool WorldObjectSpellAreaTargetCheck::operator()(WorldObject* target) const
     }
     else
     {
-        bool isInsideCylinder = target->IsWithinDist2d(_position, _range) && std::abs(target->GetPositionZ() - _position->GetPositionZ()) <= _range;
-        if (!isInsideCylinder)
+        if (!target->IsWithinDist3d(_position, _range))
+            return false;
+
+        if (!_spellInfo->HasAttribute(SPELL_ATTR2_IGNORE_LINE_OF_SIGHT) && !target->IsWithinLOS(_position->m_positionX, _position->m_positionY, _position->m_positionZ))
             return false;
     }
 
     return WorldObjectSpellTargetCheck::operator ()(target);
 }
 
-WorldObjectSpellConeTargetCheck::WorldObjectSpellConeTargetCheck(Position const& coneSrc, float coneAngle, float lineWidth, float range, WorldObject* caster,
+WorldObjectSpellConeTargetCheck::WorldObjectSpellConeTargetCheck(float coneAngle, float range, WorldObject* caster,
     SpellInfo const* spellInfo, SpellTargetCheckTypes selectionType, ConditionContainer const* condList, SpellTargetObjectTypes objectType)
-    : WorldObjectSpellAreaTargetCheck(range, caster, caster, caster, spellInfo, selectionType, condList, objectType), _coneSrc(coneSrc), _coneAngle(coneAngle), _lineWidth(lineWidth) { }
+    : WorldObjectSpellAreaTargetCheck(range, caster, caster, caster, spellInfo, selectionType, condList, objectType), _coneAngle(coneAngle)
+{
+}
 
-bool WorldObjectSpellConeTargetCheck::operator()(WorldObject* target) const
+bool WorldObjectSpellConeTargetCheck::operator()(WorldObject* target)
 {
     if (_spellInfo->HasAttribute(SPELL_ATTR0_CU_CONE_BACK))
     {
-        if (_coneSrc.HasInArc(-std::abs(_coneAngle), target))
+        if (!_caster->isInBack(target, _coneAngle))
             return false;
     }
     else if (_spellInfo->HasAttribute(SPELL_ATTR0_CU_CONE_LINE))
     {
-        if (!_coneSrc.HasInLine(target, target->GetCombatReach(), _lineWidth))
+        if (!_caster->HasInLine(target, target->GetObjectSize(), _caster->GetObjectSize()))
             return false;
     }
     else
     {
-        if (!_caster->IsUnit() || !_caster->ToUnit()->IsWithinBoundaryRadius(target->ToUnit()))
-            // ConeAngle > 0 -> select targets in front
-            // ConeAngle < 0 -> select targets in back
-            if (_coneSrc.HasInArc(_coneAngle, target) != G3D::fuzzyGe(_coneAngle, 0.f))
+        if (_coneAngle < 0.0f)
+        {
+            if (!_caster->isInBack(target, fabs(_coneAngle)))
                 return false;
+        }
+        else if (!_caster->isInFront(target, _coneAngle))
+            return false;
     }
     return WorldObjectSpellAreaTargetCheck::operator ()(target);
 }

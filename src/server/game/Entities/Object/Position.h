@@ -121,9 +121,9 @@ public:
 
     float GetExactDist2dSq(const float x, const float y) const
     {
-        float dx = x - m_positionX;
-        float dy = y - m_positionY;
-        return dx*dx + dy*dy;
+        float dx = m_positionX - x;
+        float dy = m_positionY - y;
+        return dx * dx + dy * dy;
     }
     float GetExactDist2dSq(Position const& pos) const { return GetExactDist2dSq(pos.m_positionX, pos.m_positionY); }
     float GetExactDist2dSq(Position const* pos) const { return GetExactDist2dSq(*pos); }

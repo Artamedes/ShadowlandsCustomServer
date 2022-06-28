@@ -1271,7 +1271,7 @@ Unit* Creature::SelectVictim()
 
     if (target && _IsTargetAcceptable(target) && CanCreatureAttack(target))
     {
-        if (!HasSpellFocus())
+        if (!HasSpellFocus() && !HasUnitState(UNIT_STATE_CASTING))
             SetInFront(target);
         return target;
     }
