@@ -887,7 +887,7 @@ std::string Condition::ToString(bool ext /*= false*/) const
     if (ext)
     {
         ss << ", ConditionType: " << ConditionType;
-        if (ConditionType < CONDITION_MAX)
+        if (ConditionType <= CONDITION_SCENE_IN_PROGRESS)
             ss << " (" << ConditionMgr::StaticConditionTypeData[ConditionType].Name << ")";
         else
             ss << " (Unknown)";

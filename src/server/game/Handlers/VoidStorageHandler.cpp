@@ -47,6 +47,7 @@ void WorldSession::HandleVoidStorageUnlock(WorldPackets::VoidStorage::UnlockVoid
 
     _player->ModifyMoney(-int64(VOID_STORAGE_UNLOCK_COST));
     _player->UnlockVoidStorage();
+    _player->_needSaveVoidStorage = true;
 }
 
 void WorldSession::HandleVoidStorageQuery(WorldPackets::VoidStorage::QueryVoidStorage& queryVoidStorage)
@@ -205,6 +206,7 @@ void WorldSession::HandleVoidStorageTransfer(WorldPackets::VoidStorage::VoidStor
     SendPacket(voidStorageTransferChanges.Write());
 
     SendVoidStorageTransferResult(VOID_TRANSFER_ERROR_NO_ERROR);
+    _player->_needSaveVoidStorage = true;
 }
 
 void WorldSession::HandleVoidSwapItem(WorldPackets::VoidStorage::SwapVoidItem& swapVoidItem)
@@ -250,4 +252,5 @@ void WorldSession::HandleVoidSwapItem(WorldPackets::VoidStorage::SwapVoidItem& s
     }
 
     SendPacket(voidItemSwapResponse.Write());
+    _player->_needSaveVoidStorage = true;
 }

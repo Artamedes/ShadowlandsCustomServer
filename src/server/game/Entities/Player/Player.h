@@ -3103,6 +3103,8 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
 
         PlayerCurrenciesMap _currencyStorage;
 
+        bool _needSaveVoidStorage = false;
+
         /**
           * @name   GetCurrencyWeekCap
           * @brief  return week cap for selected currency

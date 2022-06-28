@@ -85,7 +85,8 @@ namespace
     }
 }
 
-CollectionMgr::CollectionMgr(WorldSession* owner) : _owner(owner), _appearances(std::make_unique<boost::dynamic_bitset<uint32>>()), _transmogIllusions(std::make_unique<boost::dynamic_bitset<uint32>>()), _runeforgingMemories(std::make_unique<boost::dynamic_bitset<uint32>>())
+CollectionMgr::CollectionMgr(WorldSession* owner) : _owner(owner), _appearances(std::make_unique<boost::dynamic_bitset<uint32>>()), _transmogIllusions(std::make_unique<boost::dynamic_bitset<uint32>>()), _runeforgingMemories(std::make_unique<boost::dynamic_bitset<uint32>>()),
+_needSave(false)
 {
 }
 
@@ -126,6 +127,8 @@ void CollectionMgr::LoadAccountToys(PreparedQueryResult result)
 
 void CollectionMgr::SaveAccountToys(LoginDatabaseTransaction trans)
 {
+    if (!_needSave)
+        return;
     LoginDatabasePreparedStatement* stmt = nullptr;
     for (auto const& toy : _toys)
     {
@@ -136,10 +139,12 @@ void CollectionMgr::SaveAccountToys(LoginDatabaseTransaction trans)
         stmt->setBool(3, toy.second.HasFlag(ToyFlags::HasFanfare));
         trans->Append(stmt);
     }
+    _needSave = false;
 }
 
 bool CollectionMgr::UpdateAccountToys(uint32 itemId, bool isFavourite, bool hasFanfare)
 {
+    _needSave = true;
     return _toys.insert(ToyBoxContainer::value_type(itemId, GetToyFlags(isFavourite, hasFanfare))).second;
 }
 
@@ -153,6 +158,7 @@ void CollectionMgr::ToySetFavorite(uint32 itemId, bool favorite)
         itr->second |= ToyFlags::Favorite;
     else
         itr->second &= ~ToyFlags::Favorite;
+    _needSave = true;
 }
 
 void CollectionMgr::ToyClearFanfare(uint32 itemId)
@@ -162,6 +168,7 @@ void CollectionMgr::ToyClearFanfare(uint32 itemId)
         return;
 
     itr->second &= ~ ToyFlags::HasFanfare;
+    _needSave = true;
 }
 
 void CollectionMgr::OnItemAdded(Item* item)
@@ -204,6 +211,9 @@ void CollectionMgr::LoadAccountHeirlooms(PreparedQueryResult result)
 
 void CollectionMgr::SaveAccountHeirlooms(LoginDatabaseTransaction trans)
 {
+    if (!_needSave)
+        return;
+
     LoginDatabasePreparedStatement* stmt = nullptr;
     for (auto const& heirloom : _heirlooms)
     {
@@ -213,11 +223,16 @@ void CollectionMgr::SaveAccountHeirlooms(LoginDatabaseTransaction trans)
         stmt->setUInt32(2, heirloom.second.flags);
         trans->Append(stmt);
     }
+
+    _needSave = false;
 }
 
 bool CollectionMgr::UpdateAccountHeirlooms(uint32 itemId, uint32 flags)
 {
-    return _heirlooms.insert(HeirloomContainer::value_type(itemId, HeirloomData(flags, 0))).second;
+    bool res = _heirlooms.insert(HeirloomContainer::value_type(itemId, HeirloomData(flags, 0))).second;
+    if (res)
+        _needSave = true;
+    return res;
 }
 
 uint32 CollectionMgr::GetHeirloomBonus(uint32 itemId) const
@@ -277,6 +292,7 @@ void CollectionMgr::UpgradeHeirloom(uint32 itemId, int32 castItem)
     player->SetHeirloomFlags(offset, flags);
     itr->second.flags = flags;
     itr->second.bonusId = bonusId;
+    _needSave = true;
 }
 
 void CollectionMgr::CheckHeirloomUpgrades(Item* item)
@@ -365,6 +381,9 @@ void CollectionMgr::LoadAccountMounts(PreparedQueryResult result)
 
 void CollectionMgr::SaveAccountMounts(LoginDatabaseTransaction trans)
 {
+    if (!_needSave)
+        return;
+
     for (auto const& mount : _mounts)
     {
         LoginDatabasePreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_REP_ACCOUNT_MOUNTS);
@@ -373,6 +392,8 @@ void CollectionMgr::SaveAccountMounts(LoginDatabaseTransaction trans)
         stmt->setUInt8(2, mount.second);
         trans->Append(stmt);
     }
+
+    _needSave = false;
 }
 
 bool CollectionMgr::AddMount(uint32 spellId, MountStatusFlags flags, bool factionMount /*= false*/, bool learned /*= false*/)
@@ -387,6 +408,7 @@ bool CollectionMgr::AddMount(uint32 spellId, MountStatusFlags flags, bool factio
     if (itr != FactionSpecificMounts.end() && !factionMount)
         AddMount(itr->second, flags, true, learned);
 
+    _needSave = true;
     _mounts.insert(MountContainer::value_type(spellId, flags));
 
     // Mount condition only applies to using it, should still learn it.
@@ -419,6 +441,7 @@ void CollectionMgr::MountSetFavorite(uint32 spellId, bool favorite)
     else
         itr->second = MountStatusFlags(itr->second & ~MOUNT_IS_FAVORITE);
 
+    _needSave = true;
     SendSingleMountUpdate(*itr);
 }
 
@@ -531,6 +554,11 @@ void CollectionMgr::LoadAccountItemAppearances(PreparedQueryResult knownAppearan
 
 void CollectionMgr::SaveAccountItemAppearances(LoginDatabaseTransaction trans)
 {
+    if (!_needSave)
+        return;
+
+    _needSave = false;
+
     uint16 blockIndex = 0;
     boost::to_block_range(*_appearances, DynamicBitsetBlockOutputIterator([this, &blockIndex, trans](uint32 blockValue)
     {
@@ -783,6 +811,8 @@ void CollectionMgr::AddItemAppearance(ItemModifiedAppearanceEntry const* itemMod
             if (IsSetCompleted(set->ID))
                 if (owner)
                     _owner->GetPlayer()->UpdateCriteria(CriteriaType::CollectTransmogSetFromGroup, set->TransmogSetGroupID);
+
+    _needSave = true;
 }
 
 void CollectionMgr::AddTemporaryAppearance(ObjectGuid const& itemGuid, ItemModifiedAppearanceEntry const* itemModifiedAppearance)
@@ -873,6 +903,8 @@ void CollectionMgr::SetAppearanceIsFavorite(uint32 itemModifiedAppearanceId, boo
     accountTransmogUpdate.FavoriteAppearances.push_back(itemModifiedAppearanceId);
 
     _owner->SendPacket(accountTransmogUpdate.Write());
+
+    _needSave = true;
 }
 
 void CollectionMgr::SendFavoriteAppearances() const
@@ -938,6 +970,9 @@ void CollectionMgr::LoadAccountTransmogIllusions(PreparedQueryResult knownTransm
 
 void CollectionMgr::SaveAccountTransmogIllusions(LoginDatabaseTransaction trans)
 {
+    if (!_needSave)
+        return;
+
     uint16 blockIndex = 0;
 
     boost::to_block_range(*_transmogIllusions, DynamicBitsetBlockOutputIterator([this, &blockIndex, trans](uint32 blockValue)
@@ -952,6 +987,8 @@ void CollectionMgr::SaveAccountTransmogIllusions(LoginDatabaseTransaction trans)
         }
         ++blockIndex;
     }));
+
+    _needSave = false;
 }
 
 void CollectionMgr::AddTransmogIllusion(uint32 transmogIllusionId)
@@ -971,6 +1008,7 @@ void CollectionMgr::AddTransmogIllusion(uint32 transmogIllusionId)
     uint32 bitIndex = transmogIllusionId % 32;
 
     owner->AddIllusionFlag(blockIndex, 1 << bitIndex);
+    _needSave = true;
 }
 
 bool CollectionMgr::HasTransmogIllusion(uint32 transmogIllusionId) const
@@ -1009,6 +1047,9 @@ void CollectionMgr::LoadAccountRuneforgeMemorys(PreparedQueryResult result)
 
 void CollectionMgr::SaveAccountRuneforgeMemorys(LoginDatabaseTransaction trans)
 {
+    if (!_needSave)
+        return;
+
     uint16 blockIndex = 0;
 
     boost::to_block_range(*_runeforgingMemories, DynamicBitsetBlockOutputIterator([this, &blockIndex, trans](uint32 blockValue)
@@ -1023,6 +1064,8 @@ void CollectionMgr::SaveAccountRuneforgeMemorys(LoginDatabaseTransaction trans)
         }
         ++blockIndex;
     }));
+
+    _needSave = false;
 }
 
 void CollectionMgr::AddRuneforgeMemory(uint32 id)
@@ -1042,6 +1085,7 @@ void CollectionMgr::AddRuneforgeMemory(uint32 id)
     uint32 bitIndex = id % 32;
 
     owner->AddRuneforgeFlag(blockIndex, 1 << bitIndex);
+    _needSave = true;
 }
 
 bool CollectionMgr::HasRuneforgeMemory(uint32 id) const

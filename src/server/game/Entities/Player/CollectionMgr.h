@@ -177,6 +177,7 @@ private:
     std::unordered_map<uint32, FavoriteAppearanceState> _favoriteAppearances;
     std::unique_ptr<boost::dynamic_bitset<uint32>> _transmogIllusions;
     std::unique_ptr<boost::dynamic_bitset<uint32>> _runeforgingMemories;
+    bool _needSave; ///< Used for saving account appearences to prevent spamming DB. There is no need to spam queries.
 };
 
 #endif // CollectionMgr_h__

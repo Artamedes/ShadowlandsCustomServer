@@ -21775,6 +21775,9 @@ void Player::_SaveInventory(CharacterDatabaseTransaction trans)
 
 void Player::_SaveVoidStorage(CharacterDatabaseTransaction trans)
 {
+    if (!_needSaveVoidStorage)
+        return;
+
     CharacterDatabasePreparedStatement* stmt = nullptr;
 
     for (uint8 i = 0; i < VOID_STORAGE_MAX_SLOT; ++i)
@@ -21807,6 +21810,8 @@ void Player::_SaveVoidStorage(CharacterDatabaseTransaction trans)
 
         trans->Append(stmt);
     }
+
+    _needSaveVoidStorage = false;
 }
 
 void Player::_SaveCUFProfiles(CharacterDatabaseTransaction trans)
@@ -29322,6 +29327,7 @@ uint8 Player::AddVoidStorageItem(VoidStorageItem&& item)
     }
 
     _voidStorageItems[slot] = new VoidStorageItem(std::move(item));
+    _needSaveVoidStorage = true;
     return slot;
 }
 
@@ -29333,6 +29339,7 @@ void Player::DeleteVoidStorageItem(uint8 slot)
         return;
     }
 
+    _needSaveVoidStorage = true;
     delete _voidStorageItems[slot];
     _voidStorageItems[slot] = nullptr;
 }
@@ -29342,6 +29349,7 @@ bool Player::SwapVoidStorageItem(uint8 oldSlot, uint8 newSlot)
     if (oldSlot >= VOID_STORAGE_MAX_SLOT || newSlot >= VOID_STORAGE_MAX_SLOT || oldSlot == newSlot)
         return false;
 
+    _needSaveVoidStorage = true;
     std::swap(_voidStorageItems[newSlot], _voidStorageItems[oldSlot]);
     return true;
 }

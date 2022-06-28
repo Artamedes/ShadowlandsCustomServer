@@ -385,7 +385,7 @@ void MySQLConnection::CommitTransaction()
 {
     Execute("COMMIT");
 }
-
+#pragma optimize("", off)
 int MySQLConnection::ExecuteTransaction(std::shared_ptr<TransactionBase> transaction)
 {
     std::vector<SQLElementData> const& queries = transaction->m_queries;
@@ -436,7 +436,7 @@ int MySQLConnection::ExecuteTransaction(std::shared_ptr<TransactionBase> transac
     CommitTransaction();
     return 0;
 }
-
+#pragma optimize("", on)
 size_t MySQLConnection::EscapeString(char* to, const char* from, size_t length)
 {
     return mysql_real_escape_string(m_Mysql, to, from, length);
