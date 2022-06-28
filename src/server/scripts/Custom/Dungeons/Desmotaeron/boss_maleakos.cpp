@@ -390,6 +390,23 @@ public:
         });
     }
 
+    void DamageDealt(Unit* victim, uint32& damage, DamageEffectType type, SpellInfo const* spellInfo /*= nullptr*/) override
+    {
+        if (spellInfo && victim)
+        {
+            switch (spellInfo->Id)
+            {
+                case 297111: ///< Death Orb
+                {
+                    damage += 600000;
+                    damage += victim->CountPctFromMaxHealth(20);
+                    ApplyChallengeDMGIncrease(me, damage, 5);
+                    break;
+                }
+            }
+        }
+    }
+
     void UpdateAI(uint32 diff) override
     {
         if (!UpdateVictim())
