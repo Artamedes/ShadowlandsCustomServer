@@ -194,6 +194,9 @@ void Conduit::FlagsUpdated(bool forceRemove /*= false*/)
 
     if (Socket.has_value())
     {
+        /// pig or not?
+        Socket->SoulbindConduitRank = _player->GetCovenantMgr()->GetConduitRank(Socket->SoulbindConduitID);
+
         auto entries = sDB2Manager.GetSoulbindConduitRankBySoulbindConduitID(Socket->SoulbindConduitID);
         if (entries)
         {
@@ -862,6 +865,7 @@ void CovenantMgr::LearnSoulbindConduit(Item* item)
         CollectionEntries[conduitId] = rank;
     }
 
+    GetCovenant()->UpdateAllConduitsForSoulbind();
     m_SaveFlags.AddFlag(eCovenantMgrSaveFlags::SaveCollections);
 }
 
