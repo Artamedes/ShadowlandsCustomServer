@@ -3298,6 +3298,15 @@ void SpellMgr::LoadSpellInfoCorrections()
         //        spellEffectInfo->MiscValue = 2;
         //    });
         //});
+        /// Wild spirits
+        ApplySpellFix({ 328757 }, [](SpellInfo* info)
+        {
+            ApplySpellEffectFix(info, EFFECT_0, [](SpellEffectInfo* spellEffectInfo)
+            {
+                spellEffectInfo->TargetA = SpellImplicitTargetInfo(TARGET_UNIT_TARGET_ENEMY);
+                spellEffectInfo->TargetB = SpellImplicitTargetInfo();
+            });
+        });
 
         ///  Ashen Hallow
         ApplySpellFix({ 317223, 317221 }, [](SpellInfo* info)
@@ -3312,6 +3321,7 @@ void SpellMgr::LoadSpellInfoCorrections()
             info->RangeEntry = sSpellRangeStore.LookupEntry(5); // 40yd
             ApplySpellEffectFix(info, EFFECT_1, [](SpellEffectInfo* spellEffectInfo)
             {
+                spellEffectInfo->BasePoints /= 2;
                 spellEffectInfo->Scaling.Coefficient = 1.66f;
             });
         });

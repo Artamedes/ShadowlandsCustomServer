@@ -282,7 +282,7 @@ class spell_hunter_wildspirits : public AuraScript
             }
         }
 
-        return true;
+        return eventInfo.GetDamageInfo() && eventInfo.GetDamageInfo()->GetDamage() > 0;
     }
 
     void HandleProc(ProcEventInfo& eventInfo)
