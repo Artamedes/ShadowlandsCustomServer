@@ -98,6 +98,11 @@ public:
         return static_cast<T>(~static_cast<std::underlying_type_t<T>>(_value));
     }
 
+    constexpr void AddFlag(EnumFlag flag)
+    {
+        _value |= flag._value;
+    }
+
     constexpr void RemoveFlag(EnumFlag flag)
     {
         _value &= ~flag._value;

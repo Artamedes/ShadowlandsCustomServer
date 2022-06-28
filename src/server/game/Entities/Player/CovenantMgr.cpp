@@ -28,6 +28,7 @@ bool Covenant::IsActiveCovenant() const
 
 void Covenant::SetSoulbind(SoulbindID soulbind, bool sendPacket /*= false*/)
 {
+    m_SaveFlags.AddFlag(eCovenantSaveFlags::SaveSoulbind);
     DisableAllConduitsForSoulbind();
     _soulbindId = soulbind;
 
@@ -51,6 +52,7 @@ void Covenant::SetSoulbind(SoulbindID soulbind, bool sendPacket /*= false*/)
 
 void Covenant::SetRenown(int32 renown, bool /*modCurr = true*/)
 {
+    m_SaveFlags.AddFlag(eCovenantSaveFlags::SaveCovenant);
     _renownLevel = renown;
 
     if (!IsActiveCovenant())
@@ -62,6 +64,7 @@ void Covenant::SetRenown(int32 renown, bool /*modCurr = true*/)
 
 void Covenant::SetAnima(uint32 anima, bool modCurr /*= true*/, bool inital)
 {
+    m_SaveFlags.AddFlag(eCovenantSaveFlags::SaveCovenant);
     _anima = anima;
     if (IsActiveCovenant() && modCurr)
         _player->ModifyCurrency(1813, anima, !inital, false, true);
@@ -69,6 +72,7 @@ void Covenant::SetAnima(uint32 anima, bool modCurr /*= true*/, bool inital)
 
 void Covenant::SetSouls(uint32 souls, bool modCurr /*= true*/, bool inital)
 {
+    m_SaveFlags.AddFlag(eCovenantSaveFlags::SaveCovenant);
     _souls = souls;
     if (IsActiveCovenant() && modCurr)
         _player->ModifyCurrency(1810, souls, !inital, false, true);
@@ -76,6 +80,7 @@ void Covenant::SetSouls(uint32 souls, bool modCurr /*= true*/, bool inital)
 
 void Covenant::AddAnima(uint32 anima)
 {
+    m_SaveFlags.AddFlag(eCovenantSaveFlags::SaveCovenant);
     SetAnima(_anima + anima);
 }
 
@@ -141,6 +146,7 @@ void Covenant::UpdateRenownRewards()
             if (auto runeforgeLegendary = sDB2Manager.GetRuneforgeLegendaryAbilityEntryByItemID(reward->ItemID))
                 if (_player->GetSession()->GetCollectionMgr()->HasRuneforgeMemory(runeforgeLegendary->ID))
                 {
+                    m_SaveFlags.AddFlag(eCovenantSaveFlags::SaveRenownRewards);
                     _claimedRenownRewards.insert(reward->ID);
                     continue;
                 }
@@ -156,9 +162,14 @@ void Covenant::UpdateRenownRewards()
         }
 
         // what other rewards to add?
+        m_SaveFlags.AddFlag(eCovenantSaveFlags::SaveRenownRewards);
         _claimedRenownRewards.insert(reward->ID);
     }
 }
+
+//////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////
 
 void Conduit::FlagsUpdated(bool forceRemove /*= false*/)
 {
@@ -259,6 +270,10 @@ int32 Conduit::GetSoulbindID() const
     return requiredSoulbindId;
 }
 
+//////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////
+
 void Covenant::SocketTalent(WorldPackets::Garrison::GarrisonSocketTalent& packet)
 {
     // SMSG_GARRISON_APPLY_TALENT_SOCKET_DATA_CHANGES
@@ -300,6 +315,74 @@ void Covenant::SocketTalent(WorldPackets::Garrison::GarrisonSocketTalent& packet
 
     // just incase to remove auras for whatever reason, maybe it bug, but it's ok it will remove/apply
     _player->GetCovenant()->UpdateAllConduitsForSoulbind();
+    m_SaveFlags.AddFlag(eCovenantSaveFlags::SaveConduits);
+}
+
+void Covenant::SaveToDB(CharacterDatabaseTransaction trans)
+{
+    if (m_SaveFlags.HasFlag(eCovenantSaveFlags::SaveCovenant))
+    {
+        auto stmt = CharacterDatabase.GetPreparedStatement(CHAR_REP_COVENANT);
+        stmt->setUInt64(0, _player->GetGUID().GetCounter());
+        stmt->setUInt32(1, static_cast<uint32>(GetCovenantID()));
+        stmt->setUInt32(2, GetRenownLevel());
+        stmt->setUInt32(3, GetAnima());
+        stmt->setUInt32(4, GetSouls());
+        trans->Append(stmt);
+
+        m_SaveFlags.RemoveFlag(eCovenantSaveFlags::SaveCovenant);
+    }
+
+    if (m_SaveFlags.HasFlag(eCovenantSaveFlags::SaveRenownRewards))
+    {
+        if (!_claimedRenownRewards.empty())
+        {
+            auto stmt = CharacterDatabase.GetPreparedStatement(CHAR_REP_COVENANT_CLAIMED_RENOWN_REWARDS);
+            stmt->setUInt64(0, _player->GetGUID().GetCounter());
+            stmt->setUInt32(1, static_cast<uint32>(GetCovenantID()));
+
+            std::stringstream ss;
+            for (auto rewardId : _claimedRenownRewards)
+                ss << rewardId << ",";
+            stmt->setString(2, ss.str());
+            trans->Append(stmt);
+        }
+        m_SaveFlags.RemoveFlag(eCovenantSaveFlags::SaveRenownRewards);
+    }
+
+    if (m_SaveFlags.HasFlag(eCovenantSaveFlags::SaveConduits))
+    {
+        for (auto const& itr : GetConduits())
+        {
+            auto covenantid = static_cast<uint32>(GetCovenantID());
+            auto const& conduit = itr.second;
+
+            auto index = 0;
+
+            auto stmt = CharacterDatabase.GetPreparedStatement(CHAR_REP_COVENANT_CONDUITS);
+            stmt->setUInt64(index++, _player->GetGUID().GetCounter());
+            stmt->setUInt32(index++, covenantid);
+            stmt->setUInt32(index++, conduit.TalentEntryId);
+            stmt->setUInt32(index++, conduit.TreeEntryId);
+            stmt->setUInt32(index++, conduit.Rank);
+            stmt->setUInt32(index++, conduit.Flags);
+            stmt->setUInt64(index++, conduit.ResearchStartTime);
+
+            uint32 SoulbindConduitID = 0;
+            uint32 SoulbindConduitRank = 0;
+
+            if (conduit.Socket.has_value())
+            {
+                SoulbindConduitID = conduit.Socket->SoulbindConduitID;
+                SoulbindConduitRank = conduit.Socket->SoulbindConduitRank;
+            }
+
+            stmt->setUInt32(index++, SoulbindConduitID);
+            stmt->setUInt32(index++, SoulbindConduitRank);
+            trans->Append(stmt);
+        }
+        m_SaveFlags.RemoveFlag(eCovenantSaveFlags::SaveConduits);
+    }
 }
 
 void Covenant::DisableAllConduits()
@@ -312,6 +395,7 @@ void Covenant::DisableAllConduits()
     {
         itr.second.FlagsUpdated(true);
     }
+    m_SaveFlags.AddFlag(eCovenantSaveFlags::SaveConduits);
 }
 
 void Covenant::DisableAllConduitsForSoulbind()
@@ -325,6 +409,7 @@ void Covenant::DisableAllConduitsForSoulbind()
         if (itr.first == _player->m_playerData->SoulbindID)
             itr.second.FlagsUpdated(true);
     }
+    m_SaveFlags.AddFlag(eCovenantSaveFlags::SaveConduits);
 }
 
 void Covenant::UpdateAllConduits()
@@ -348,6 +433,7 @@ void Covenant::UpdateAllConduits()
 
         itr.second.FlagsUpdated(remove);
     }
+    m_SaveFlags.AddFlag(eCovenantSaveFlags::SaveConduits);
 }
 
 void Covenant::UpdateAllConduitsForSoulbind()
@@ -360,11 +446,18 @@ void Covenant::UpdateAllConduitsForSoulbind()
         if (itr.first == _player->m_playerData->SoulbindID)
             itr.second.FlagsUpdated();
     }
+    m_SaveFlags.AddFlag(eCovenantSaveFlags::SaveConduits);
 }
 
 void Covenant::AddConduit(Conduit& conduit)
 {
     _conduits.insert({ conduit.GetSoulbindID(), conduit});
+    m_SaveFlags.AddFlag(eCovenantSaveFlags::SaveConduits);
+}
+
+void Covenant::SetSaveConduits()
+{
+    m_SaveFlags.AddFlag(eCovenantSaveFlags::SaveConduits);
 }
 
 CovenantMgr::CovenantMgr(Player* player) : _player(player), _currCovenantIndex(0), _loaded(false)
@@ -509,83 +602,36 @@ void CovenantMgr::SaveToDB(CharacterDatabaseTransaction trans)
         if (itr->GetCovenantID() == CovenantID::None)
             continue;
 
-        auto stmt = CharacterDatabase.GetPreparedStatement(CHAR_REP_COVENANT);
-        stmt->setUInt64(0, _player->GetGUID().GetCounter());
-        stmt->setUInt32(1, static_cast<uint32>(itr->GetCovenantID()));
-        stmt->setUInt32(2, itr->GetRenownLevel());
-        stmt->setUInt32(3, itr->GetAnima());
-        stmt->setUInt32(4, itr->GetSouls());
-        trans->Append(stmt);
+        itr->SaveToDB(trans);
+    }
 
-        if (!itr->_claimedRenownRewards.empty())
+    if (m_SaveFlags.HasFlag(eCovenantMgrSaveFlags::SaveSoulbindSpecs))
+    {
+        for (auto const& itr : _covenantSoulbinds)
         {
-            stmt = CharacterDatabase.GetPreparedStatement(CHAR_REP_COVENANT_CLAIMED_RENOWN_REWARDS);
+            auto stmt = CharacterDatabase.GetPreparedStatement(CHAR_REP_COVENANT_SOULBIND);
             stmt->setUInt64(0, _player->GetGUID().GetCounter());
-            stmt->setUInt32(1, static_cast<uint32>(itr->GetCovenantID()));
-            for (auto rewardId : itr->_claimedRenownRewards)
-                ss << rewardId << ",";
-            stmt->setString(2, ss.str());
-            ss.clear();
-            ss.str("");
+            stmt->setUInt32(1, itr.first);
+            stmt->setUInt32(2, itr.second.SpecId);
+            stmt->setUInt32(3, itr.second.Soulbind);
             trans->Append(stmt);
         }
+        m_SaveFlags.RemoveFlag(eCovenantMgrSaveFlags::SaveSoulbindSpecs);
     }
 
-    for (auto const& itr : _covenantSoulbinds)
+    if (m_SaveFlags.HasFlag(eCovenantMgrSaveFlags::SaveCollections))
     {
-        auto stmt = CharacterDatabase.GetPreparedStatement(CHAR_REP_COVENANT_SOULBIND);
-        stmt->setUInt64(0, _player->GetGUID().GetCounter());
-        stmt->setUInt32(1, itr.first);
-        stmt->setUInt32(2, itr.second.SpecId);
-        stmt->setUInt32(3, itr.second.Soulbind);
-        trans->Append(stmt);
-    }
-
-    for (auto const& itr : CollectionEntries)
-    {
-        auto stmt = CharacterDatabase.GetPreparedStatement(CHAR_REP_COVENANT_COLLECTIONS);
-        stmt->setUInt64(0, _player->GetGUID().GetCounter());
-        stmt->setInt32(1, itr.first);
-        stmt->setInt32(2, itr.second);
-        trans->Append(stmt);
-    }
-
-    for (auto const& itrCov : _playerCovenants)
-    {
-        if (itrCov->GetCovenantID() == CovenantID::None)
-            continue;
-        
-        for (auto const& itr : itrCov->GetConduits())
+        for (auto const& itr : CollectionEntries)
         {
-            auto covenantid = static_cast<uint32>(itrCov->GetCovenantID());
-            auto const& conduit = itr.second;
-
-            auto index = 0;
-
-            auto stmt = CharacterDatabase.GetPreparedStatement(CHAR_REP_COVENANT_CONDUITS);
-            stmt->setUInt64(index++, _player->GetGUID().GetCounter());
-            stmt->setUInt32(index++, covenantid);
-            stmt->setUInt32(index++, conduit.TalentEntryId);
-            stmt->setUInt32(index++, conduit.TreeEntryId);
-            stmt->setUInt32(index++, conduit.Rank);
-            stmt->setUInt32(index++, conduit.Flags);
-            stmt->setUInt64(index++, conduit.ResearchStartTime);
-
-            uint32 SoulbindConduitID = 0;
-            uint32 SoulbindConduitRank = 0;
-
-            if (conduit.Socket.has_value())
-            {
-                SoulbindConduitID = conduit.Socket->SoulbindConduitID;
-                SoulbindConduitRank = conduit.Socket->SoulbindConduitRank;
-            }
-
-            stmt->setUInt32(index++, SoulbindConduitID);
-            stmt->setUInt32(index++, SoulbindConduitRank);
+            auto stmt = CharacterDatabase.GetPreparedStatement(CHAR_REP_COVENANT_COLLECTIONS);
+            stmt->setUInt64(0, _player->GetGUID().GetCounter());
+            stmt->setInt32(1, itr.first);
+            stmt->setInt32(2, itr.second);
             trans->Append(stmt);
         }
-    }
 
+        m_SaveFlags.RemoveFlag(eCovenantMgrSaveFlags::SaveCollections);
+    }
 }
 
 void CovenantMgr::InitializeFields()
@@ -815,6 +861,8 @@ void CovenantMgr::LearnSoulbindConduit(Item* item)
     {
         CollectionEntries[conduitId] = rank;
     }
+
+    m_SaveFlags.AddFlag(eCovenantMgrSaveFlags::SaveCollections);
 }
 
 void CovenantMgr::AddGarrisonInfo(WorldPackets::Garrison::GetGarrisonInfoResult& garrisonInfo)
@@ -906,6 +954,7 @@ void CovenantMgr::LearnConduit(GarrTalentEntry const* talent, GarrTalentTreeEntr
     result2.GarrTypeID = 111;
     result2.GarrTalentID = talent->ID;
     _player->SendDirectMessage(result2.Write());
+    covenant->SetSaveConduits();
 }
 
 void CovenantMgr::BuildGarrisonPacket(WorldPackets::Garrison::GarrisonInfo& result)
@@ -957,12 +1006,12 @@ void CovenantMgr::LearnTalent(WorldPackets::Garrison::GarrisonLearnTalent& resea
 
             covenant->AddConduit(conduit);
 
-            // TODO: Verify this. - seems fine
+            //// TODO: Verify this. - seems fine
             WorldPackets::Garrison::GarrisonResearchTalentResult result;
             result.GarrTypeID = 111;
             conduit.BuildGarrisonTalent(result.talent);
             _player->SendDirectMessage(result.Write());
-
+            
             WorldPackets::Garrison::GarrisonTalentCompleted result2;
             result2.GarrTypeID = 111;
             result2.GarrTalentID = pTalent->ID;
@@ -1022,6 +1071,7 @@ void CovenantMgr::LearnTalent(WorldPackets::Garrison::GarrisonLearnTalent& resea
         }
     }
 
+    covenant->SetSaveConduits();
     _player->SendDirectMessage(packet.Write());
 }
 
@@ -1051,6 +1101,7 @@ void CovenantMgr::SetSoulbind(SoulbindID soulbind, bool sendPacket /*= false*/)
         return;
 
     covenant->SetSoulbind(soulbind, sendPacket);
+    m_SaveFlags.AddFlag(eCovenantMgrSaveFlags::SaveSoulbindSpecs);
 
     auto range = _covenantSoulbinds.equal_range(_player->m_playerData->CovenantID);
     for (auto i = range.first; i != range.second; ++i)
@@ -1074,9 +1125,12 @@ void CovenantMgr::OnSpecChange()
 {
     if (!_loaded)
         return;
+
     auto covenant = GetCovenant();
     if (covenant->GetCovenantID() == CovenantID::None)
         return;
+
+    m_SaveFlags.AddFlag(eCovenantMgrSaveFlags::SaveSoulbindSpecs);
 
     auto range = _covenantSoulbinds.equal_range(_player->m_playerData->CovenantID);
     for (auto i = range.first; i != range.second; ++i)

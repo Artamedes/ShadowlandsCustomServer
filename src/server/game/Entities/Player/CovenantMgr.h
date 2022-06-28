@@ -4,6 +4,7 @@
 #include "SharedDefines.h"
 #include "DatabaseEnvFwd.h"
 #include "DB2Structure.h"
+#include "EnumFlag.h"
 #include "GarrisonPackets.h"
 
 class Player;
@@ -69,6 +70,26 @@ enum GarrTalentTreeIds : uint32
     Nadjia2       = 368, // hmm
     Theotar       = 392,
 };
+
+enum class eCovenantSaveFlags : uint32
+{
+    None              = 0x0,
+    SaveConduits      = 0x1,
+    SaveSoulbind      = 0x2,
+    SaveCovenant      = 0x4,
+    SaveRenownRewards = 0x8,
+};
+
+DEFINE_ENUM_FLAG(eCovenantSaveFlags);
+
+enum class eCovenantMgrSaveFlags : uint32
+{
+    None              = 0x0,
+    SaveCollections   = 0x1,
+    SaveSoulbindSpecs = 0x2,
+};
+
+DEFINE_ENUM_FLAG(eCovenantMgrSaveFlags);
 
 enum GarrisonTalentFlags
 {
@@ -148,6 +169,8 @@ class TC_GAME_API Covenant
         void UpdateRenownRewards();
         void SocketTalent(WorldPackets::Garrison::GarrisonSocketTalent& packet);
 
+        void SaveToDB(CharacterDatabaseTransaction trans);
+
         std::set<uint32> _claimedRenownRewards;
 
         /// <summary>
@@ -179,6 +202,11 @@ class TC_GAME_API Covenant
         /// <param name="conduit">reference to the conduit passed</param>
         void AddConduit(Conduit& conduit);
 
+        /// <summary>
+        /// Sets m_SaveFlags to include eCovenantSaveFlags::SaveConduits
+        /// </summary>
+        void SetSaveConduits();
+
     private:
         Player* _player;
         CovenantID _covenantId;
@@ -187,6 +215,7 @@ class TC_GAME_API Covenant
         uint32 _anima;
         uint32 _souls;
         std::multimap<uint32, Conduit> _conduits; ///< SoulbindID, Conduit
+        EnumFlag<eCovenantSaveFlags> m_SaveFlags = eCovenantSaveFlags::None;
 };
 
 struct TC_GAME_API CovenantSoulbind
@@ -256,4 +285,5 @@ class TC_GAME_API CovenantMgr
         std::array<std::unique_ptr<Covenant>, 5> _playerCovenants = { };
         std::unordered_map<int32, int32> CollectionEntries;
         std::unordered_multimap <int32, CovenantSoulbind> _covenantSoulbinds;
+        EnumFlag<eCovenantMgrSaveFlags> m_SaveFlags = eCovenantMgrSaveFlags::None;
 };
