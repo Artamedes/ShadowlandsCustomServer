@@ -5638,6 +5638,38 @@ class spell_explosive_shot : public AuraScript
         OnEffectRemove += AuraEffectApplyFn(spell_explosive_shot::HandleRemove, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY, AURA_EFFECT_HANDLE_REAL);
     }
 };
+/// ID: 339399 Rejuvenating Wind
+class spell_rejuvenating_wind : public AuraScript
+{
+    PrepareAuraScript(spell_rejuvenating_wind);
+
+    enum eRejuvenatingWind
+    {
+        ProcSpell = 339400,
+    };
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == SPELL_HUNTER_EXHILARATION;
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        PreventDefaultAction();
+        if (auto caster = GetCaster())
+        {
+            if (auto eff = GetEffect(EFFECT_0))
+                if (eff->ConduitRankEntry)
+                    caster->CastSpell(caster, ProcSpell, CastSpellExtraArgs(true).AddSpellBP0(eff->ConduitRankEntry->AuraPointsOverride));
+        }
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_rejuvenating_wind::CheckProc);
+        OnProc += AuraProcFn(spell_rejuvenating_wind::HandleProc);
+    }
+};
 
 void AddSC_hunter_spell_scripts()
 {
@@ -5739,6 +5771,7 @@ void AddSC_hunter_spell_scripts()
     RegisterSpellScript(spell_volley);
     RegisterSpellScript(spell_volley_ss);
     RegisterSpellScript(spell_explosive_shot);
+    RegisterSpellScript(spell_rejuvenating_wind);
 
     // Spell Pet scripts
     new spell_hun_pet_heart_of_the_phoenix();
