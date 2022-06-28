@@ -1066,12 +1066,10 @@ void CovenantMgr::LearnTalent(WorldPackets::Garrison::GarrisonLearnTalent& resea
             if (i->second.TalentEntryId == talent->ID || entry->PrerequesiteTalentID == talent->ID)
             {
                 i->second.Flags = GarrisonTalentFlags::TalentFlagEnabled;
-                printf("Enabled conduit %u\n", talent->ID);
             }
             else
             {
                 i->second.Flags = GarrisonTalentFlags::TalentFlagDisabled;
-                printf("Disabled conduit %u\n", talent->ID);
             }
 
             if (researchResult.SoulbindID == _player->m_playerData->SoulbindID)
