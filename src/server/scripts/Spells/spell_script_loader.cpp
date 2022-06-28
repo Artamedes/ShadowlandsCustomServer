@@ -53,6 +53,7 @@ void AddSC_spell_kyrian();
 void AddSC_spell_necrolord();
 void AddSC_spell_venthyr();
 void AddSC_spell_corruption();
+void AddSC_spell_covenant();
 
 // The name of this function should match:
 // void Add${NameOfDirectory}Scripts()
@@ -95,4 +96,5 @@ void AddSpellsScripts()
     AddSC_spell_necrolord();
     AddSC_spell_venthyr();
     AddSC_spell_corruption();
+    AddSC_spell_covenant();
 }

@@ -300,7 +300,7 @@ void Covenant::SocketTalent(WorldPackets::Garrison::GarrisonSocketTalent& packet
         {
             WorldPackets::Garrison::GarrisonTalentSocketData data;
             data.SoulbindConduitID = packet.Sockets[i].SoulbindConduitRank;
-            data.SoulbindConduitRank = 0; // probably the rank
+            data.SoulbindConduitRank = _player->GetCovenantMgr()->GetConduitRank(data.SoulbindConduitID); // probably the rank
             socketChange.Socket = data;
             conduit->Socket = data;
             // we apply here
@@ -314,7 +314,7 @@ void Covenant::SocketTalent(WorldPackets::Garrison::GarrisonSocketTalent& packet
     _player->SendDirectMessage(response.Write());
 
     // just incase to remove auras for whatever reason, maybe it bug, but it's ok it will remove/apply
-    _player->GetCovenant()->UpdateAllConduitsForSoulbind();
+    UpdateAllConduitsForSoulbind();
     m_SaveFlags.AddFlag(eCovenantSaveFlags::SaveConduits);
 }
 

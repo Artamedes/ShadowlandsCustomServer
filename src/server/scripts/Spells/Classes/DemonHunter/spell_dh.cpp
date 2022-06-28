@@ -4173,24 +4173,6 @@ class spell_dh_chaos_strike : public SpellScript
     }
 };
 
-// ID - 339230 Serrated Glaive
-class spell_dh_serrated_glaive : public AuraScript
-{
-    PrepareAuraScript(spell_dh_serrated_glaive);
-
-    bool CheckProc(ProcEventInfo& eventInfo)
-    {
-        if (eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == SPELL_DH_THROW_GLAIVE)
-            return true;
-        return false;
-    }
-
-    void Register() override
-    {
-        DoCheckProc += AuraCheckProcFn(spell_dh_serrated_glaive::CheckProc);
-    }
-};
-
 // ID - 258860 Essence Break
 class spell_dh_essence_break : public SpellScript
 {
@@ -4418,7 +4400,6 @@ void AddSC_demon_hunter_spell_scripts()
     RegisterSpellScript(aura_dh_vengeance_sigil_of_flame);
     RegisterSpellScript(spell_dh_the_hunt);
     RegisterSpellScript(spell_dh_chaos_strike);
-    RegisterSpellScript(spell_dh_serrated_glaive);
     RegisterSpellScript(spell_dh_essence_break);
     RegisterSpellScript(spell_dh_fel_rush_dmg);
     RegisterSpellScript(spell_dh_disrupt);

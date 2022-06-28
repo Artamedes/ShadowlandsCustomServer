@@ -279,6 +279,14 @@ class TC_GAME_API CovenantMgr
 
         bool _loaded = false;
 
+        int32 GetConduitRank(int32 id) const
+        {
+            auto it = CollectionEntries.find(id);
+            if (it != CollectionEntries.end())
+                return it->second;
+            return 0;
+        }
+
     private:
         Player* _player;
         size_t _currCovenantIndex;

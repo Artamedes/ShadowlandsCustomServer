@@ -3,6 +3,8 @@
 enum eHavoc
 {
     Metamorphosis = 162264,
+
+    ThrowGlaive = 185123,
 };
 
 /// 21832
@@ -65,8 +67,48 @@ class spell_deadly_dance : public AuraScript
     }
 };
 
+// ID - 339230 Serrated Glaive
+class spell_dh_serrated_glaive : public AuraScript
+{
+    PrepareAuraScript(spell_dh_serrated_glaive);
+
+    enum eSerratedGlaive
+    {
+        ExposedWound = 339229,
+    };
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        if (eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == ThrowGlaive)
+            return true;
+        return false;
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        PreventDefaultAction();
+
+        if (auto caster = GetCaster())
+        {
+            if (auto target = eventInfo.GetActionTarget())
+            {
+                if (auto eff = GetEffect(EFFECT_0))
+                    if (eff->ConduitRankEntry)
+                        caster->CastSpell(target, ExposedWound, CastSpellExtraArgs(true).AddSpellBP0(eff->ConduitRankEntry->AuraPointsOverride));
+            }
+        }
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_dh_serrated_glaive::CheckProc);
+        OnProc += AuraProcFn(spell_dh_serrated_glaive::HandleProc);
+    }
+};
+
 void AddSC_spell_dh_havoc()
 {
     RegisterAreaTriggerAI(at_glaive_tempest);
     RegisterSpellScript(spell_deadly_dance);
+    RegisterSpellScript(spell_dh_serrated_glaive);
 }
