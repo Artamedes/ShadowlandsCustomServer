@@ -932,7 +932,8 @@ class spell_bearers_pursuit : public AuraScript
         {
             if (auto target = eventInfo.GetActionTarget())
             {
-                actor->CastSpell(target, SlowAura, true);
+                if (eventInfo.GetDamageInfo() && eventInfo.GetDamageInfo()->GetDamage())
+                    actor->CastSpell(target, SlowAura, true);
             }
         }
     }
