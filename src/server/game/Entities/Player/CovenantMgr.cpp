@@ -919,7 +919,8 @@ void CovenantMgr::LearnConduit(GarrTalentEntry const* talent, GarrTalentTreeEntr
 
     uint32 covId = (uint32)_currCovenantIndex;
     auto covenant = GetCovenant();
-    auto range = covenant->GetConduits().equal_range(covId);
+    auto soulbindID = GetSoulbindIDFromTalentTreeId(talent->GarrTalentTreeID);
+    auto range = covenant->GetConduits().equal_range(static_cast<uint32>(soulbindID));
     bool found = false;
     for (auto i = range.first; i != range.second; ++i)
     {
@@ -976,19 +977,20 @@ void CovenantMgr::LearnTalent(WorldPackets::Garrison::GarrisonLearnTalent& resea
     if (!talent)
         return;
 
+    // don't trust client
+    uint32 SoulbindID = static_cast<uint32>(GetSoulbindIDFromTalentTreeId(talent->GarrTalentTreeID));//researchResult.SoulbindID;
+
     // SMSG_UNLEARNED_SPELLS
     // Sent down below.
 
-    WorldPackets::Garrison::GarrisonSwitchTalentTreeBranch packet;
-    packet.GarrTypeID = 111;
     uint32 covId = (uint32)_currCovenantIndex;
     auto covenant = GetCovenant();
-    auto range = covenant->GetConduits().equal_range(covId);
+    auto range = covenant->GetConduits().equal_range(SoulbindID);
 
-    auto AddConduitToListIfNeed([covenant, covId, this](GarrTalentEntry const* pTalent)
+    auto AddConduitToListIfNeed([covenant, covId, SoulbindID, this](GarrTalentEntry const* pTalent)
     {
         bool found = false;
-        auto rangeCopie = covenant->GetConduits().equal_range(covId);
+        auto rangeCopie = covenant->GetConduits().equal_range(SoulbindID);
         for (auto i = rangeCopie.first; i != rangeCopie.second; ++i)
         {
             if (i->second.TalentEntryId == pTalent->ID)
@@ -1046,6 +1048,8 @@ void CovenantMgr::LearnTalent(WorldPackets::Garrison::GarrisonLearnTalent& resea
         garrTalentResult = newResult;
     }
 
+    WorldPackets::Garrison::GarrisonSwitchTalentTreeBranch packet;
+    packet.GarrTypeID = 111;
     for (auto i = range.first; i != range.second; ++i)
     {
         auto entry = sGarrTalentStore.LookupEntry(i->second.TalentEntryId);
@@ -1056,9 +1060,15 @@ void CovenantMgr::LearnTalent(WorldPackets::Garrison::GarrisonLearnTalent& resea
                 continue;
 
             if (i->second.TalentEntryId == talent->ID || entry->PrerequesiteTalentID == talent->ID)
+            {
                 i->second.Flags = GarrisonTalentFlags::TalentFlagEnabled;
+                printf("Enabled conduit %u\n", talent->ID);
+            }
             else
+            {
                 i->second.Flags = GarrisonTalentFlags::TalentFlagDisabled;
+                printf("Disabled conduit %u\n", talent->ID);
+            }
 
             if (researchResult.SoulbindID == _player->m_playerData->SoulbindID)
             {
