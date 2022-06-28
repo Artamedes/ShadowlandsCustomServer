@@ -5184,7 +5184,7 @@ class spell_mastery_icicles_glacial_spike : public SpellScript
             return;
 
         int32 damage = GetHitDamage();
-        damage += IcicleDamage;
+        damage += caster->GetTotalSpellPowerValue(SpellSchoolMask::SPELL_SCHOOL_MASK_FROST, false) * 2.97f;
 
         caster->CastCustomSpell(target, SPELL_MAGE_GLACIAL_SPIKE_DAMAGE, &damage, NULL, NULL, true);
 
