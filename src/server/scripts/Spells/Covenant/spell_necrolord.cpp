@@ -930,7 +930,7 @@ class spell_serrated_spaulders : public AuraScript
         auto AP = caster->GetTotalAttackPowerValue(WeaponAttackType::BASE_ATTACK);
         auto SP = static_cast<float>(caster->GetTotalSpellPowerValue(SpellSchoolMask::SPELL_SCHOOL_MASK_ALL, false));
         float points = std::max<float>(AP, SP) * 0.03;
-        AddPct(points, player->m_activePlayerData->Versatility + player->m_activePlayerData->VersatilityBonus);
+        AddPct(points, player->m_activePlayerData->VersatilityBonus);
         caster->CastSpell(target, SerratedSpaulders::ProcSpell, CastSpellExtraArgs(true).AddSpellBP0(static_cast<int32>(points)));
     }
 
