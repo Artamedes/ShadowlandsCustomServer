@@ -47,10 +47,6 @@ enum class CriteriaStartEvent : uint8;
 enum EncounterCreditType : uint8;
 namespace WorldPackets
 {
-    namespace WorldState
-    {
-        class InitWorldStates;
-    }
     namespace Instance
     {
         class EncounterStart;
@@ -277,7 +273,7 @@ class TC_GAME_API InstanceScript : public ZoneScript
         void DoRespawnGameObject(ObjectGuid guid, Seconds timeToDespawn = 1min);
 
         // Sends world state update to all players in instance
-        void DoUpdateWorldState(uint32 worldstateId, uint32 worldstateValue);
+        void DoUpdateWorldState(int32 worldStateId, int32 value);
 
         // Send Notify to all players in instance
         void DoSendNotifyToInstance(char const* format, ...);
@@ -346,8 +342,6 @@ class TC_GAME_API InstanceScript : public ZoneScript
 
         std::vector<std::pair<int32, std::function<void()>>>    timedDelayedOperations;   ///< Delayed operations
         bool                                                    emptyWarned;              ///< Warning when there are no more delayed operations
-
-        virtual void FillInitialWorldStates(WorldPackets::WorldState::InitWorldStates& /*packet*/) { }
 
         uint32 GetEncounterCount() const { return uint32(bosses.size()); }
 
