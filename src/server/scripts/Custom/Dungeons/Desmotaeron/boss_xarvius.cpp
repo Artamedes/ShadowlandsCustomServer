@@ -184,7 +184,7 @@ public:
                     ApplyChallengeDMGIncrease(me, damage, 5);
                     break;
                 case HarvestSoul:
-                    damage += 150000;
+                    damage += 50000;
                     ApplyChallengeDMGIncrease(me, damage, 5);
                     break;
             }
@@ -224,7 +224,7 @@ public:
             switch (spellInfo->Id)
             {
                 case MassiveStrike:
-                    damage += 700000;
+                    damage += 200000;
                     ApplyChallengeDMGIncrease(me, damage, 5);
                     break;
             }

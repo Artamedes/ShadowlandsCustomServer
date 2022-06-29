@@ -112,7 +112,7 @@ public:
         me->SetVisible(false);
         me->SetUnitFlag(UnitFlags::UNIT_FLAG_NON_ATTACKABLE);
 
-        remainingAdds = 36;
+        remainingAdds = 18;
     }
 
     void InitializeAI()
@@ -129,8 +129,8 @@ public:
             DoZoneInCombat();
             scheduler.Schedule(5s, [this](TaskContext /*context*/)
             {
-                DoSummon(eAdds::Axeguard, SpawnPos1, 3s, TempSummonType::TEMPSUMMON_DEAD_DESPAWN);
-                DoSummon(eAdds::Axeguard, SpawnPos2, 3s, TempSummonType::TEMPSUMMON_DEAD_DESPAWN);
+                //DoSummon(eAdds::Axeguard, SpawnPos1, 3s, TempSummonType::TEMPSUMMON_DEAD_DESPAWN);
+                //DoSummon(eAdds::Axeguard, SpawnPos2, 3s, TempSummonType::TEMPSUMMON_DEAD_DESPAWN);
                 DoSummon(eAdds::SpiritShepard, SpawnPos3, 3s, TempSummonType::TEMPSUMMON_DEAD_DESPAWN);
                 DoSummon(eAdds::SoulHarvester, SpawnPos4, 3s, TempSummonType::TEMPSUMMON_DEAD_DESPAWN);
             });
@@ -138,56 +138,56 @@ public:
             {
                 DoSummon(eAdds::Axeguard, SpawnPos1, 3s, TempSummonType::TEMPSUMMON_DEAD_DESPAWN);
                 DoSummon(eAdds::Axeguard, SpawnPos2, 3s, TempSummonType::TEMPSUMMON_DEAD_DESPAWN);
-                DoSummon(eAdds::SpiritShepard, SpawnPos3, 3s, TempSummonType::TEMPSUMMON_DEAD_DESPAWN);
-                DoSummon(eAdds::SoulHarvester, SpawnPos4, 3s, TempSummonType::TEMPSUMMON_DEAD_DESPAWN);
+                //DoSummon(eAdds::SpiritShepard, SpawnPos3, 3s, TempSummonType::TEMPSUMMON_DEAD_DESPAWN);
+                //DoSummon(eAdds::SoulHarvester, SpawnPos4, 3s, TempSummonType::TEMPSUMMON_DEAD_DESPAWN);
             });
             scheduler.Schedule(7s, [this](TaskContext /*context*/)
             {
-                DoSummon(eAdds::Axeguard, SpawnPos1, 3s, TempSummonType::TEMPSUMMON_DEAD_DESPAWN);
+                //DoSummon(eAdds::Axeguard, SpawnPos1, 3s, TempSummonType::TEMPSUMMON_DEAD_DESPAWN);
                 DoSummon(eAdds::Axeguard, SpawnPos2, 3s, TempSummonType::TEMPSUMMON_DEAD_DESPAWN);
-                DoSummon(eAdds::SpiritShepard, SpawnPos3, 3s, TempSummonType::TEMPSUMMON_DEAD_DESPAWN);
+                //DoSummon(eAdds::SpiritShepard, SpawnPos3, 3s, TempSummonType::TEMPSUMMON_DEAD_DESPAWN);
                 DoSummon(eAdds::SoulHarvester, SpawnPos4, 3s, TempSummonType::TEMPSUMMON_DEAD_DESPAWN);
             });
             scheduler.Schedule(20s, [this](TaskContext /*context*/)
             {
                 DoSummon(eAdds::Axeguard, SpawnPos1, 3s, TempSummonType::TEMPSUMMON_DEAD_DESPAWN);
-                DoSummon(eAdds::Axeguard, SpawnPos2, 3s, TempSummonType::TEMPSUMMON_DEAD_DESPAWN);
+                //DoSummon(eAdds::Axeguard, SpawnPos2, 3s, TempSummonType::TEMPSUMMON_DEAD_DESPAWN);
                 DoSummon(eAdds::SpiritShepard, SpawnPos3, 3s, TempSummonType::TEMPSUMMON_DEAD_DESPAWN);
-                DoSummon(eAdds::SoulHarvester, SpawnPos4, 3s, TempSummonType::TEMPSUMMON_DEAD_DESPAWN);
+                //DoSummon(eAdds::SoulHarvester, SpawnPos4, 3s, TempSummonType::TEMPSUMMON_DEAD_DESPAWN);
             });
             scheduler.Schedule(21s, [this](TaskContext /*context*/)
             {
-                DoSummon(eAdds::Axeguard, SpawnPos1, 3s, TempSummonType::TEMPSUMMON_DEAD_DESPAWN);
+                //DoSummon(eAdds::Axeguard, SpawnPos1, 3s, TempSummonType::TEMPSUMMON_DEAD_DESPAWN);
                 DoSummon(eAdds::Axeguard, SpawnPos2, 3s, TempSummonType::TEMPSUMMON_DEAD_DESPAWN);
-                DoSummon(eAdds::SpiritShepard, SpawnPos3, 3s, TempSummonType::TEMPSUMMON_DEAD_DESPAWN);
+                //DoSummon(eAdds::SpiritShepard, SpawnPos3, 3s, TempSummonType::TEMPSUMMON_DEAD_DESPAWN);
                 DoSummon(eAdds::SoulHarvester, SpawnPos4, 3s, TempSummonType::TEMPSUMMON_DEAD_DESPAWN);
             });
             scheduler.Schedule(22s, [this](TaskContext /*context*/)
             {
-                DoSummon(eAdds::Axeguard, SpawnPos1, 3s, TempSummonType::TEMPSUMMON_DEAD_DESPAWN);
+                //DoSummon(eAdds::Axeguard, SpawnPos1, 3s, TempSummonType::TEMPSUMMON_DEAD_DESPAWN);
                 DoSummon(eAdds::Axeguard, SpawnPos2, 3s, TempSummonType::TEMPSUMMON_DEAD_DESPAWN);
-                DoSummon(eAdds::SpiritShepard, SpawnPos3, 3s, TempSummonType::TEMPSUMMON_DEAD_DESPAWN);
+                //DoSummon(eAdds::SpiritShepard, SpawnPos3, 3s, TempSummonType::TEMPSUMMON_DEAD_DESPAWN);
                 DoSummon(eAdds::SoulHarvester, SpawnPos4, 3s, TempSummonType::TEMPSUMMON_DEAD_DESPAWN);
             });
             scheduler.Schedule(42s, [this](TaskContext /*context*/)
             {
-                DoSummon(eAdds::SpiritShepard, SpawnPos1, 3s, TempSummonType::TEMPSUMMON_DEAD_DESPAWN);
+                //DoSummon(eAdds::SpiritShepard, SpawnPos1, 3s, TempSummonType::TEMPSUMMON_DEAD_DESPAWN);
                 DoSummon(eAdds::SpiritShepard, SpawnPos2, 3s, TempSummonType::TEMPSUMMON_DEAD_DESPAWN);
-                DoSummon(eAdds::SpiritShepard, SpawnPos3, 3s, TempSummonType::TEMPSUMMON_DEAD_DESPAWN);
+                //DoSummon(eAdds::SpiritShepard, SpawnPos3, 3s, TempSummonType::TEMPSUMMON_DEAD_DESPAWN);
                 DoSummon(eAdds::SpiritShepard, SpawnPos4, 3s, TempSummonType::TEMPSUMMON_DEAD_DESPAWN);
             });
             scheduler.Schedule(43s, [this](TaskContext /*context*/)
             {
-                DoSummon(eAdds::SoulHarvester, SpawnPos1, 3s, TempSummonType::TEMPSUMMON_DEAD_DESPAWN);
+                //DoSummon(eAdds::SoulHarvester, SpawnPos1, 3s, TempSummonType::TEMPSUMMON_DEAD_DESPAWN);
                 DoSummon(eAdds::SoulHarvester, SpawnPos2, 3s, TempSummonType::TEMPSUMMON_DEAD_DESPAWN);
-                DoSummon(eAdds::SoulHarvester, SpawnPos3, 3s, TempSummonType::TEMPSUMMON_DEAD_DESPAWN);
+                //DoSummon(eAdds::SoulHarvester, SpawnPos3, 3s, TempSummonType::TEMPSUMMON_DEAD_DESPAWN);
                 DoSummon(eAdds::SoulHarvester, SpawnPos4, 3s, TempSummonType::TEMPSUMMON_DEAD_DESPAWN);
             });
             scheduler.Schedule(44s, [this](TaskContext /*context*/)
             {
-                DoSummon(eAdds::Axeguard, SpawnPos1, 3s, TempSummonType::TEMPSUMMON_DEAD_DESPAWN);
+                //DoSummon(eAdds::Axeguard, SpawnPos1, 3s, TempSummonType::TEMPSUMMON_DEAD_DESPAWN);
                 DoSummon(eAdds::Axeguard, SpawnPos2, 3s, TempSummonType::TEMPSUMMON_DEAD_DESPAWN);
-                DoSummon(eAdds::Axeguard, SpawnPos3, 3s, TempSummonType::TEMPSUMMON_DEAD_DESPAWN);
+                //DoSummon(eAdds::Axeguard, SpawnPos3, 3s, TempSummonType::TEMPSUMMON_DEAD_DESPAWN);
                 DoSummon(eAdds::Axeguard, SpawnPos4, 3s, TempSummonType::TEMPSUMMON_DEAD_DESPAWN);
             });
         }
