@@ -1006,6 +1006,14 @@ void Map::Update(uint32 t_diff)
         i_scriptLock = false;
     }
 
+    uint32 l_MaxTask = 1;
+    while (!m_Tasks.empty() && l_MaxTask != 0)
+    {
+        m_Tasks.front()();
+        m_Tasks.pop();
+        l_MaxTask--;
+    }
+
     _weatherUpdateTimer.Update(t_diff);
     if (_weatherUpdateTimer.Passed())
     {

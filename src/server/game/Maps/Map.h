@@ -648,6 +648,13 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
 
         time_t m_respawnChallenge = 0;
 
+        void AddTask(std::function<void()> p_Task)
+        {
+            m_Tasks.push(p_Task);
+        }
+
+        bool HasTasks() const { return !m_Tasks.empty(); }
+
     private:
         void LoadMapAndVMap(int gx, int gy);
         void LoadVMap(int gx, int gy);
@@ -691,6 +698,8 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
 
         bool _areaTriggersToMoveLock;
         std::vector<AreaTrigger*> _areaTriggersToMove;
+
+        std::queue<std::function<void()>> m_Tasks;
 
         bool IsGridLoaded(GridCoord const&) const;
         void EnsureGridCreated(GridCoord const&);

@@ -41,6 +41,7 @@
 #include <boost/accumulators/statistics/variance.hpp>
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/accumulators/statistics.hpp>
+#include "ObjectAccessor.h"
 
 void WorldSession::HandleMoveWorldportAckOpcode(WorldPackets::Movement::WorldPortResponse& /*packet*/)
 {
@@ -124,6 +125,10 @@ void WorldSession::HandleMoveWorldportAck()
     //    player->Relocate(destX, destY, destZ, destO);
     //}
 
+    ObjectGuid l_PlayerGUID = _player->GetGUID();
+    uint32 l_OldMapId = oldMap->GetId();
+    uint32 l_OldZoneId = _player->GetZoneId();
+
     WorldPackets::Movement::ResumeToken resumeToken;
     resumeToken.SequenceIndex = player->m_movementCounter;
     resumeToken.Reason = seamlessTeleport ? 2 : 1;
@@ -137,126 +142,136 @@ void WorldSession::HandleMoveWorldportAck()
         TC_LOG_ERROR("network", "WORLD: failed to teleport player %s %s to map %d (%s) because of unknown reason!",
             player->GetName().c_str(), player->GetGUID().ToString().c_str(), loc.GetMapId(), newMap ? newMap->GetMapName() : "Unknown");
         player->ResetMap();
-        player->SetMap(oldMap);
+        Map* l_OldMap = sMapMgr->CreateMap(l_OldMapId, GetPlayer());
+        if (l_OldMap)
+            GetPlayer()->SetMap(l_OldMap);
         player->TeleportTo(player->m_homebind);
         return;
     }
 
-    // battleground state prepare (in case join to BG), at relogin/tele player not invited
-    // only add to bg group and object, if the player was invited (else he entered through command)
-    if (player->InBattleground())
+    /// Process spawn on the new map into maps threads instead worldsession update, the operation is cpu consuming - better to handle it in parrallel
+    newMap->AddTask([=]() -> void
     {
-        // cleanup setting if outdated
-        if (!mEntry->IsBattlegroundOrArena())
-        {
-            // We're not in BG
-            player->SetBattlegroundId(0, BATTLEGROUND_TYPE_NONE);
-            // reset destination bg team
-            player->SetBGTeam(0);
-        }
-        // join to bg case
-        else if (Battleground* bg = player->GetBattleground())
-        {
-            if (player->IsInvitedForBattlegroundInstance(player->GetBattlegroundId()))
-                bg->AddPlayer(player);
-        }
-    }
-
-    if (!seamlessTeleport)
-        player->SendInitialPacketsAfterAddToMap();
-    else
-    {
-        player->UpdateVisibilityForPlayer();
-        if (Garrison* garrison = player->GetGarrison())
-            garrison->SendRemoteInfo();
-    }
-
-    if (oldMap->IsDungeon() && !newMap->IsDungeon() && !player->HasAura(SPELL_ENLISTED) && player->HasPlayerFlag(PLAYER_FLAGS_WAR_MODE_DESIRED))
-        player->CastSpell(player, SPELL_ENLISTED, true);
-
-    // flight fast teleport case
-    if (player->IsInFlight())
-    {
-        if (!player->InBattleground())
-        {
-            if (!seamlessTeleport)
-            {
-                // short preparations to continue flight
-                MovementGenerator* movementGenerator = player->GetMotionMaster()->GetCurrentMovementGenerator();
-                movementGenerator->Initialize(player);
-            }
+        Player* player = ObjectAccessor::FindConnectedPlayer(l_PlayerGUID);
+        if (!player)
             return;
-        }
 
-        // battleground state prepare, stop flight
-        player->FinishTaxiFlight();
-    }
-
-    if (!player->IsAlive() && player->GetTeleportOptions() & TELE_REVIVE_AT_TELEPORT)
-        player->ResurrectPlayer(0.5f);
-
-    // resurrect character at enter into instance where his corpse exist after add to map
-    if (mEntry->IsDungeon() && !player->IsAlive())
-    {
-        if (player->GetCorpseLocation().GetMapId() == mEntry->ID)
+        // battleground state prepare (in case join to BG), at relogin/tele player not invited
+        // only add to bg group and object, if the player was invited (else he entered through command)
+        if (player->InBattleground())
         {
-            player->ResurrectPlayer(0.5f);
-            player->SpawnCorpseBones();
-        }
-    }
-
-    if (mInstance)
-    {
-        // check if this instance has a reset time and send it to player if so
-        Difficulty diff = newMap->GetDifficultyID();
-        if (MapDifficultyEntry const* mapDiff = sDB2Manager.GetMapDifficultyData(mEntry->ID, diff))
-        {
-            if (mapDiff->GetRaidDuration())
+            // cleanup setting if outdated
+            if (!mEntry->IsBattlegroundOrArena())
             {
-                if (time_t timeReset = sInstanceSaveMgr->GetResetTimeFor(mEntry->ID, diff))
+                // We're not in BG
+                player->SetBattlegroundId(0, BATTLEGROUND_TYPE_NONE);
+                // reset destination bg team
+                player->SetBGTeam(0);
+            }
+            // join to bg case
+            else if (Battleground* bg = player->GetBattleground())
+            {
+                if (player->IsInvitedForBattlegroundInstance(player->GetBattlegroundId()))
+                    bg->AddPlayer(player);
+            }
+        }
+
+        if (!seamlessTeleport)
+            player->SendInitialPacketsAfterAddToMap();
+        else
+        {
+            player->UpdateVisibilityForPlayer();
+            if (Garrison* garrison = player->GetGarrison())
+                garrison->SendRemoteInfo();
+        }
+
+        if (oldMap->IsDungeon() && !newMap->IsDungeon() && !player->HasAura(SPELL_ENLISTED) && player->HasPlayerFlag(PLAYER_FLAGS_WAR_MODE_DESIRED))
+            player->CastSpell(player, SPELL_ENLISTED, true);
+
+        // flight fast teleport case
+        if (player->IsInFlight())
+        {
+            if (!player->InBattleground())
+            {
+                if (!seamlessTeleport)
                 {
-                    uint32 timeleft = uint32(timeReset - GameTime::GetGameTime());
-                    player->SendInstanceResetWarning(mEntry->ID, diff, timeleft, true);
+                    // short preparations to continue flight
+                    MovementGenerator* movementGenerator = player->GetMotionMaster()->GetCurrentMovementGenerator();
+                    movementGenerator->Initialize(player);
+                }
+                return;
+            }
+
+            // battleground state prepare, stop flight
+            player->FinishTaxiFlight();
+        }
+
+        if (!player->IsAlive() && player->GetTeleportOptions() & TELE_REVIVE_AT_TELEPORT)
+            player->ResurrectPlayer(0.5f);
+
+        // resurrect character at enter into instance where his corpse exist after add to map
+        if (mEntry->IsDungeon() && !player->IsAlive())
+        {
+            if (player->GetCorpseLocation().GetMapId() == mEntry->ID)
+            {
+                player->ResurrectPlayer(0.5f);
+                player->SpawnCorpseBones();
+            }
+        }
+
+        if (mInstance)
+        {
+            // check if this instance has a reset time and send it to player if so
+            Difficulty diff = newMap->GetDifficultyID();
+            if (MapDifficultyEntry const* mapDiff = sDB2Manager.GetMapDifficultyData(mEntry->ID, diff))
+            {
+                if (mapDiff->GetRaidDuration())
+                {
+                    if (time_t timeReset = sInstanceSaveMgr->GetResetTimeFor(mEntry->ID, diff))
+                    {
+                        uint32 timeleft = uint32(timeReset - GameTime::GetGameTime());
+                        player->SendInstanceResetWarning(mEntry->ID, diff, timeleft, true);
+                    }
                 }
             }
+
+            // check if instance is valid
+            if (!player->CheckInstanceValidity(false))
+                player->m_InstanceValid = false;
         }
 
-        // check if instance is valid
-        if (!player->CheckInstanceValidity(false))
-            player->m_InstanceValid = false;
-    }
+        // update zone immediately, otherwise leave channel will cause crash in mtmap
+        uint32 newzone, newarea;
+        player->GetZoneAndAreaId(newzone, newarea);
+        player->UpdateZone(newzone, newarea);
 
-    // update zone immediately, otherwise leave channel will cause crash in mtmap
-    uint32 newzone, newarea;
-    player->GetZoneAndAreaId(newzone, newarea);
-    player->UpdateZone(newzone, newarea);
+        // honorless target
+        if (player->pvpInfo.IsHostile)
+            player->CastSpell(player, 2479, true);
 
-    // honorless target
-    if (player->pvpInfo.IsHostile)
-        player->CastSpell(player, 2479, true);
+        // in friendly area
+        else if (player->IsPvP() && !player->HasPlayerFlag(PLAYER_FLAGS_IN_PVP))
+            player->UpdatePvP(false, false);
 
-    // in friendly area
-    else if (player->IsPvP() && !player->HasPlayerFlag(PLAYER_FLAGS_IN_PVP))
-        player->UpdatePvP(false, false);
+        // resummon pet
+        player->ResummonPetTemporaryUnSummonedIfAny();
 
-    // resummon pet
-    player->ResummonPetTemporaryUnSummonedIfAny();
+        // now that the player has been relocated, it's time to cast the arrival spell (if any)
+        if (castOnArrivalSpellId != 0)
+        {
+            player->CastSpell(player, castOnArrivalSpellId, true);
+            player->ResetOnArrivalCastSpellTeleport();
+        }
 
-    // now that the player has been relocated, it's time to cast the arrival spell (if any)
-    if (castOnArrivalSpellId != 0)
-    {
-        player->CastSpell(player, castOnArrivalSpellId, true);
-        player->ResetOnArrivalCastSpellTeleport();
-    }
+        //lets process all delayed operations on successful teleport
+        player->ProcessDelayedOperations();
 
-    //lets process all delayed operations on successful teleport
-    player->ProcessDelayedOperations();
-
-    if (player->TeleportCallback)
-    {
-        player->TeleportCallback();
-        player->TeleportCallback = nullptr;
-    }
+        if (player->TeleportCallback)
+        {
+            player->TeleportCallback();
+            player->TeleportCallback = nullptr;
+        }
+    });
 }
 
 void WorldSession::HandleSuspendTokenResponse(WorldPackets::Movement::SuspendTokenResponse& /*suspendTokenResponse*/)
