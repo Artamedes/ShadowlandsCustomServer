@@ -29,9 +29,23 @@ class spell_keg_of_the_heavens : public AuraScript
 
         if (auto caster = GetCaster())
         {
+            auto health = caster->GetMaxHealth();
+
+            if (auto aur = caster->GetAuraEffect(KegHealth, EFFECT_0))
+                health -= aur->GetAmount();
+
+
             auto amount = CalculatePct(eventInfo.GetDamageInfo()->GetDamage(), 66);
             caster->CastSpell(caster, KegHeal, CastSpellExtraArgs(true).AddSpellBP0(amount));
             caster->CastSpell(caster, KegHealth, CastSpellExtraArgs(true).AddSpellBP0(amount));
+
+            if (auto aur = caster->GetAuraEffect(KegHealth, EFFECT_0))
+            {
+                if (aur->GetAmount() >= health)
+                {
+                    aur->ChangeAmount(health);
+                }
+            }
         }
     }
 

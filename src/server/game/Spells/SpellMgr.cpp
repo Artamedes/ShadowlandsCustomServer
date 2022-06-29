@@ -3290,6 +3290,13 @@ void SpellMgr::LoadSpellInfoCorrections()
 
     // Some spells have no amplitude set
     {
+        ApplySpellFix({ 366794 }, [](SpellInfo* info)
+        {
+            ApplySpellEffectFix(info, EFFECT_0, [](SpellEffectInfo* spellEffectInfo)
+            {
+                spellEffectInfo->ApplyAuraName = SPELL_AURA_MOD_INCREASE_HEALTH;
+            });
+        });
         ApplySpellFix({ 305422 }, [](SpellInfo* info)
         {
             info->AttributesEx3 |= SPELL_ATTR3_ALLOW_AURA_WHILE_DEAD;
