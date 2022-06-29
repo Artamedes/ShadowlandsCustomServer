@@ -3290,6 +3290,10 @@ void SpellMgr::LoadSpellInfoCorrections()
 
     // Some spells have no amplitude set
     {
+        ApplySpellFix({ 305422 }, [](SpellInfo* info)
+        {
+            info->AttributesEx3 |= SPELL_ATTR3_ALLOW_AURA_WHILE_DEAD;
+        });
         /// ID - 343216 Berserk
         //ApplySpellFix({ 343216 }, [](SpellInfo* info)
         //{
