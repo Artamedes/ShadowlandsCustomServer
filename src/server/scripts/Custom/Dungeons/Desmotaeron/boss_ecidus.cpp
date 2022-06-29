@@ -83,7 +83,7 @@ public:
                             damage += 5 * challenge->GetChallengeLevel();
                     break;
                 case 330462:
-                    damage = 50000;
+                    damage = 150000;
 
                     if (instance)
                         if (auto challenge = instance->GetChallenge())
