@@ -581,7 +581,7 @@ enum AuraType : uint32
     SPELL_AURA_COSMETIC_MOUNTED                             = 487,
     SPELL_AURA_DISABLE_GRAVITY                              = 488,
     SPELL_AURA_MOD_ALTERNATIVE_DEFAULT_LANGUAGE             = 489,
-    SPELL_AURA_490                                          = 490,
+    SPELL_AURA_SWITCH_TEAM                                  = 490,
     SPELL_AURA_491                                          = 491,
     SPELL_AURA_492                                          = 492,
     SPELL_AURA_ANIMAL_COMPANION                             = 493, // 1 spell, 267116 - Animal Companion (modifies Call Pet)

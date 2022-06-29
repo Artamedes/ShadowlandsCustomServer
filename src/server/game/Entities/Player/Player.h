@@ -1916,6 +1916,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         bool HasPvpRulesEnabled() const;
         bool IsInAreaThatActivatesPvpTalents() const;
         bool IsAreaThatActivatesPvpTalents(uint32 areaID) const;
+        bool IsInWarMode() const { return HasPlayerLocalFlag(PLAYER_LOCAL_FLAG_WAR_MODE); }
 
         // Dual Spec
         void ActivateTalentGroup(ChrSpecializationEntry const* spec);
@@ -2280,6 +2281,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         static uint32 TeamForRace(uint8 race);
         static TeamId TeamIdForRace(uint8 race);
         uint32 GetTeam() const { return m_team; }
+        void SwitchToOppositeTeam(bool apply);
         TeamId GetTeamId() const { return m_team == ALLIANCE ? TEAM_ALLIANCE : TEAM_HORDE; }
         bool IsInAlliance() const { return m_team == ALLIANCE; }
         bool IsInHorde() const { return m_team == HORDE; }
@@ -2287,6 +2289,9 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
 
         Team GetEffectiveTeam() const { return HasPlayerFlagEx(PLAYER_FLAGS_EX_MERCENARY_MODE) ? (GetTeam() == ALLIANCE ? HORDE : ALLIANCE) : Team(GetTeam()); }
         TeamId GetEffectiveTeamId() const { return GetEffectiveTeam() == ALLIANCE ? TEAM_ALLIANCE : TEAM_HORDE; }
+
+        uint32 GetNativeTeam() const { return TeamForRace(GetRace()); }
+        TeamId GetNativeTeamId() const { return TeamIdForRace(GetRace()); }
 
         void InitDisplayIds();
 

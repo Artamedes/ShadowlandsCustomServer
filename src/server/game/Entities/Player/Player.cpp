@@ -6713,10 +6713,18 @@ uint32 Player::TeamForRace(uint8 race)
 TeamId Player::TeamIdForRace(uint8 race)
 {
     if (ChrRacesEntry const* rEntry = sChrRacesStore.LookupEntry(race))
-        return TeamId(rEntry->Alliance);
+        return (TeamId)(rEntry->Alliance > TEAM_NONE ? rEntry->Alliance : TEAM_ALLIANCE);
 
     TC_LOG_ERROR("entities.player", "Race (%u) not found in DBC: wrong DBC files?", race);
     return TEAM_NEUTRAL;
+}
+
+void Player::SwitchToOppositeTeam(bool apply)
+{
+    m_team = GetNativeTeam();
+
+    if (apply)
+        m_team = (m_team == ALLIANCE) ? HORDE : ALLIANCE;
 }
 
 void Player::SetFactionForRace(uint8 race)
@@ -28095,22 +28103,10 @@ void Player::EnablePvpRules(bool dueToCombat /*= false*/)
 {
     if (!HasPvpRulesEnabled())
     {
-        if (!HasSpell(195710)) // Honorable Medallion
-            CastSpell(this, 208682, true); // Learn Gladiator's Medallion
+        if (HasAura(SPELL_ENLISTED))
+            RemoveAurasDueToSpell(SPELL_ENLISTED);
 
         CastSpell(this, SPELL_PVP_RULES_ENABLED, true);
-    }
-
-    if (!dueToCombat)
-    {
-        if (Aura* aura = GetAura(SPELL_PVP_RULES_ENABLED))
-        {
-            if (!aura->IsPermanent())
-            {
-                aura->SetMaxDuration(-1);
-                aura->SetDuration(-1);
-            }
-        }
     }
 
     UpdateItemLevelAreaBasedScaling();
@@ -28118,17 +28114,27 @@ void Player::EnablePvpRules(bool dueToCombat /*= false*/)
 
 void Player::DisablePvpRules()
 {
-    // Don't disable pvp rules when in pvp zone.
-    if (IsInAreaThatActivatesPvpTalents())
+    bool deserter = false;
+
+    // Don't disable pvp rules when in pvp zone or when in warmode
+    if ((IsInAreaThatActivatesPvpTalents() || IsInWarMode()) && !GetMap()->IsDungeon())
         return;
+
+    // Check Deserter. For some reason this aura is removed when the PLAYER_FIELD is applied.
+    if (HasAura(SPELL_BG_DESERTER))
+        deserter = true;
 
     if (!GetCombatManager().HasPvPCombat())
     {
         RemoveAurasDueToSpell(SPELL_PVP_RULES_ENABLED);
+        RemoveAurasDueToSpell(SPELL_ENLISTED);
+
         UpdateItemLevelAreaBasedScaling();
     }
-    else if (Aura* aura = GetAura(SPELL_PVP_RULES_ENABLED))
-        aura->SetDuration(aura->GetSpellInfo()->GetMaxDuration());
+
+    // Reapply Deserter is so
+    if (deserter && !HasAura(SPELL_BG_DESERTER))
+        CastSpell(this, SPELL_BG_DESERTER, true);
 }
 
 bool Player::HasPvpRulesEnabled() const
@@ -28143,6 +28149,9 @@ bool Player::IsInAreaThatActivatesPvpTalents() const
 
 bool Player::IsAreaThatActivatesPvpTalents(uint32 areaID) const
 {
+    if (GetMap()->IsDungeon())
+        return false;
+
     if (InBattleground())
         return true;
 
@@ -30343,7 +30352,7 @@ void Player::UpdateWarModeAuras()
     uint32 auraInside = 282559;
     uint32 auraOutside = WARMODE_ENLISTED_SPELL_OUTSIDE;
 
-    if (IsWarModeDesired())
+    if (IsWarModeDesired() && !GetMap()->IsDungeon() && !GetMap()->IsRaid())
     {
         if (CanEnableWarModeInArea())
         {

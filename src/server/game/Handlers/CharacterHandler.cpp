@@ -1436,6 +1436,16 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder const& holder)
 
     m_playerLoading.Clear();
 
+    //Remove Mercenary aura if player enter to the world and the map not is a battleground
+    if (!pCurrChar->InBattleground() && pCurrChar->HasAuraType(SPELL_AURA_SWITCH_TEAM))
+        pCurrChar->RemoveAurasByType(SPELL_AURA_SWITCH_TEAM);
+
+    if (!pCurrChar->InBattleground() && !pCurrChar->GetMap()->IsDungeon())
+        if (pCurrChar->HasPlayerFlag(PLAYER_FLAGS_WAR_MODE_DESIRED) && !pCurrChar->HasAura(SPELL_ENLISTED))
+            pCurrChar->CastSpell(pCurrChar, SPELL_ENLISTED, true);
+
+    // RESET CHALLENGE INSTANCEID
+
     // Handle Login-Achievements (should be handled after loading)
     _player->UpdateCriteria(CriteriaType::Login, 1);
 

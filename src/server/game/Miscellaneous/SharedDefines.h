@@ -1151,9 +1151,12 @@ enum Language
 
 enum TeamId
 {
+    TEAM_NONE     = -1,
     TEAM_ALLIANCE = 0,
     TEAM_HORDE,
-    TEAM_NEUTRAL
+    TEAM_NEUTRAL,
+
+    TEAM_MAX = TEAM_NEUTRAL,
 };
 
 enum Team

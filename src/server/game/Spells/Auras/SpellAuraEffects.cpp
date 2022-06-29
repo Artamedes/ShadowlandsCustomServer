@@ -556,7 +556,7 @@ NonDefaultConstructible<pAuraEffectHandler> AuraEffectHandler[TOTAL_AURAS]=
     &AuraEffect::HandleCosmeticMounted,                           //487 SPELL_AURA_COSMETIC_MOUNTED
     &AuraEffect::HandleDisableGravity,                            //488
     &AuraEffect::HandleNULL,                                      //489 SPELL_AURA_MOD_ALTERNATIVE_DEFAULT_LANGUAGE
-    &AuraEffect::HandleNULL,                                      //490
+    &AuraEffect::HandleSwitchTeam,                                //490 SPELL_AURA_SWITCH_TEAM
     &AuraEffect::HandleNULL,                                      //491
     &AuraEffect::HandleNULL,                                      //492
     &AuraEffect::HandleAuraAnimalCompanion,                       //493 SPELL_AURA_ANIMAL_COMPANION
@@ -6634,3 +6634,15 @@ void AuraEffect::HandleAuraModCharges(AuraApplication const* aurApp, uint8 mode,
 
     //target->GetSpellHistory()->RecalculateSpellCategoryCharges(GetMiscValue());
 }
+
+void AuraEffect::HandleSwitchTeam(AuraApplication const* aurApp, uint8 mode, bool apply) const
+{
+    if (!(mode & AURA_EFFECT_HANDLE_REAL))
+        return;
+
+    Unit* target = aurApp->GetTarget();
+
+    if (Player* player = target->ToPlayer())
+        player->SwitchToOppositeTeam(apply);
+}
+
