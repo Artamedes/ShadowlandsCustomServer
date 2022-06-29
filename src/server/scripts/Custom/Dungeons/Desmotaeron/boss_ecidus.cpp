@@ -68,7 +68,7 @@ public:
                     if (type != DamageEffectType::DOT)
                     {
                         damage += 300000;
-                        damage += victim->CountPctFromMaxHealth(80);
+                        damage += victim->CountPctFromMaxHealth(20);
                     }
 
                     if (instance)
@@ -77,6 +77,13 @@ public:
                     break;
                 case 308864: ///< Charged Weapons
                     damage += victim->CountPctFromMaxHealth(30);
+
+                    if (instance)
+                        if (auto challenge = instance->GetChallenge())
+                            damage += 5 * challenge->GetChallengeLevel();
+                    break;
+                case 330462:
+                    damage = 50000;
 
                     if (instance)
                         if (auto challenge = instance->GetChallenge())

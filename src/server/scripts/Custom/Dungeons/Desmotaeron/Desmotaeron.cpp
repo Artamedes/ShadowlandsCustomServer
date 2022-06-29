@@ -479,6 +479,8 @@ public:
 
     void InitializeAI() override
     {
+        me->SetReactState(REACT_PASSIVE);
+        me->SetUnitFlag(UnitFlags::UNIT_FLAG_NON_ATTACKABLE);
         DoCastSelf(SpectralWingsGuard);
         DoPath();
     }
