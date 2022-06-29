@@ -13,7 +13,7 @@ enum eMaleakos
     ShadowTeleportEffect = 333617,
 
     /// Jaina spells
-    ChannelDomination = 362464,
+    ChannelDomination = 365837,
 
     ///< End Boss
     EphemeralBody  = 339006,
@@ -80,8 +80,7 @@ public:
                     portal->RemoveNpcFlag(NPCFlags::UNIT_NPC_FLAG_SPELLCLICK);
                     scheduler.Schedule(1s, [this](TaskContext /*context*/)
                     {
-                        if (auto portal = me->FindNearestCreature(NpcPortal, 15.0f))
-                            DoCast(portal, ChannelDomination);
+                        DoCastSelf(ChannelDomination);
                     });
                 }
             }
