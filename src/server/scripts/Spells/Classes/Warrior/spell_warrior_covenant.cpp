@@ -5,6 +5,8 @@ enum WarriorCovenant
     VeteransReputeAura = 339265,
     VeteransReputeStr = 339267,
 
+    ExecuteDmg = 260798,
+    CondemmnDmg = 317483,
 };
 
 /// ID: 324143 Conqueror's Banner
@@ -31,7 +33,35 @@ class spell_conquerors_banner : public AuraScript
     }
 };
 
+/// ID: 335232 Ashen Juggernaut
+class spell_ashen_juggernaut : public AuraScript
+{
+    PrepareAuraScript(spell_ashen_juggernaut);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        if (!eventInfo.GetSpellInfo())
+            return false;
+
+        switch (eventInfo.GetSpellInfo()->Id)
+        {
+            case ExecuteDmg:
+            case CondemmnDmg:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_ashen_juggernaut::CheckProc);
+    }
+};
+
+
 void AddSC_spell_warrior_covenant()
 {
-    RegisterSpellScript(spell_conquerors_banner);   
+    RegisterSpellScript(spell_conquerors_banner);
+    RegisterSpellScript(spell_ashen_juggernaut);
 }
