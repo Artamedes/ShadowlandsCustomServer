@@ -1467,6 +1467,11 @@ public:
             if (!caster)
                 return;
 
+            if (auto corruptingLeer = caster->GetAuraEffect(339455, EFFECT_0))
+                if (corruptingLeer->ConduitRankEntry)
+                    if (roll_chance_i(corruptingLeer->ConduitRankEntry->AuraPointsOverride))
+                        caster->GetSpellHistory()->ModifyCooldown(205180, -5000);
+
             // Blizz: When you have no Agonies out, the accumulator is cleared. When you next cast one, it's reset to a random value from 0 to 0.99.
             float soulShardAgonyTick = caster->Variables.GetValue<float>("SoulShardAgonyTick", frand(0.0f, 99.0f));
             // Blizz: The added value per tick is currently 0.16 on average, with some variance (we'll try to remember to update this since there's no way to see it in-game).
@@ -5585,12 +5590,12 @@ public:
         }
 
         if (Unit* newTarget = ObjectAccessor::GetUnit(*me, newtargetGUID))
-		{
-			if (target != newTarget && me->IsValidAttackTarget(newTarget) && owner->IsInCombat())
+        {
+            if (target != newTarget && me->IsValidAttackTarget(newTarget) && owner->IsInCombat())
                 target = newTarget;
-        CastSpellOnTarget(owner, target);
-			return;
-    }
+            CastSpellOnTarget(owner, target);
+            return;
+        }
 
         EnterEvadeMode(EVADE_REASON_NO_HOSTILES);
     }
@@ -5601,13 +5606,12 @@ public:
         if (!owner)
             return;
 
-        uint32 baseDamageMultiplier = 0;
-        if (Aura* darkGlareSummonAura = owner->GetAura(SPELL_WARLOCK_DARKGLARE_SUMMON))
-            baseDamageMultiplier = darkGlareSummonAura->GetEffect(EFFECT_2)->GetBaseAmount();
+        uint32 baseDamageMultiplier = 10;
 
         auto ownedAuras = owner->GetOwnedAurasByTypes({ SPELL_AURA_PERIODIC_DAMAGE, SPELL_AURA_PERIODIC_DAMAGE_PERCENT });
 
-        AddPct(damage, ownedAuras.size() * baseDamageMultiplier);
+        if (!ownedAuras.empty())
+            AddPct(damage, ownedAuras.size() * baseDamageMultiplier);
     }
 
     void EnterEvadeMode(EvadeReason /*reason*/) override
@@ -5638,12 +5642,16 @@ private:
         {
             _targetGUID = target->GetGUID();
 			me->SetTarget(_targetGUID);
-			if (me->GetDistance(target->GetPosition()) > 40.f)
-			{
-				me->GetMotionMaster()->MoveChase(target);
-				return;
-			}
-            me->CastSpell(target, SPELL_WARLOCK_DARKGLARE_EYE_BEAM, false);
+            if (me->GetDistance(target->GetPosition()) > 40.f)
+            {
+                me->GetMotionMaster()->MoveChase(target);
+                return;
+            }
+            if (!me->GetSpellHistory()->HasCooldown(SPELL_WARLOCK_DARKGLARE_EYE_BEAM))
+            {
+                me->CastSpell(target, SPELL_WARLOCK_DARKGLARE_EYE_BEAM);
+                me->GetSpellHistory()->AddCooldown(SPELL_WARLOCK_DARKGLARE_EYE_BEAM, 0, 20ms);
+            }
         }
     }
 
@@ -7454,53 +7462,9 @@ public:
         }
     };
 
-    class spell_warl_drain_life_AuraScript : public AuraScript
-    {
-        PrepareAuraScript(spell_warl_drain_life_AuraScript);
-
-
-        bool Validate(SpellInfo const* /*spellInfo*/) override
-        {
-            return ValidateSpellInfo({ SPELL_WARLOCK_ROT_AND_DECAY });
-        }
-
-        void HandlePeriodic(AuraEffect const* /*aurEff*/)
-        {
-            Unit* caster = GetCaster();
-            Unit* owner = GetUnitOwner();
-            if (!caster || !owner)
-                return;
-
-            if (Aura* aura = owner->GetAura(SPELL_WARLOCK_UNSTABLE_AFFLICTION_DAMAGE_1, caster->GetGUID()))
-                aura->ModDuration(sSpellMgr->GetSpellInfo(SPELL_WARLOCK_ROT_AND_DECAY)->GetEffect(EFFECT_0).BasePoints);
-            if (Aura* aura = owner->GetAura(SPELL_WARLOCK_UNSTABLE_AFFLICTION_DAMAGE_2, caster->GetGUID()))
-                aura->ModDuration(sSpellMgr->GetSpellInfo(SPELL_WARLOCK_ROT_AND_DECAY)->GetEffect(EFFECT_0).BasePoints);
-            if (Aura* aura = owner->GetAura(SPELL_WARLOCK_UNSTABLE_AFFLICTION_DAMAGE_3, caster->GetGUID()))
-                aura->ModDuration(sSpellMgr->GetSpellInfo(SPELL_WARLOCK_ROT_AND_DECAY)->GetEffect(EFFECT_0).BasePoints);
-            if (Aura* aura = owner->GetAura(SPELL_WARLOCK_UNSTABLE_AFFLICTION_DAMAGE_4, caster->GetGUID()))
-                aura->ModDuration(sSpellMgr->GetSpellInfo(SPELL_WARLOCK_ROT_AND_DECAY)->GetEffect(EFFECT_0).BasePoints);
-            if (Aura* aura = owner->GetAura(SPELL_WARLOCK_UNSTABLE_AFFLICTION_DAMAGE_5, caster->GetGUID()))
-                aura->ModDuration(sSpellMgr->GetSpellInfo(SPELL_WARLOCK_ROT_AND_DECAY)->GetEffect(EFFECT_0).BasePoints);
-            if (Aura* aura = owner->GetAura(SPELL_WARLOCK_CORRUPTION_DAMAGE, caster->GetGUID()))
-                aura->ModDuration(sSpellMgr->GetSpellInfo(SPELL_WARLOCK_ROT_AND_DECAY)->GetEffect(EFFECT_0).BasePoints);
-            if (Aura* aura = owner->GetAura(SPELL_WARLOCK_AGONY, caster->GetGUID()))
-                aura->ModDuration(sSpellMgr->GetSpellInfo(SPELL_WARLOCK_ROT_AND_DECAY)->GetEffect(EFFECT_0).BasePoints);
-        }
-
-        void Register() override
-        {
-            OnEffectPeriodic += AuraEffectPeriodicFn(spell_warl_drain_life_AuraScript::HandlePeriodic, EFFECT_0, SPELL_AURA_PERIODIC_LEECH);
-        }
-    };
-
     SpellScript* GetSpellScript() const override
     {
         return new spell_warl_drain_life_SpellScript();
-    }
-
-    AuraScript* GetAuraScript() const override
-    {
-        return new spell_warl_drain_life_AuraScript();
     }
 };
 
@@ -7955,7 +7919,9 @@ class spell_warl_malefic_rapture : public SpellScript
     {
         if (Unit* caster = GetCaster())
         {
-            int32 baseDamage = caster->GetTotalSpellPowerValue(SPELL_SCHOOL_MASK_SHADOW, false) * 0.275f;
+            caster->RemoveAurasDueToSpell(364322); ///< Calamitous Crescendo
+
+            int32 baseDamage = caster->GetTotalSpellPowerValue(SPELL_SCHOOL_MASK_SHADOW, false) * 3.275f;
 
             std::list<Unit*> enemies;
             caster->GetAttackableUnitListInRange(enemies, 100.0f);

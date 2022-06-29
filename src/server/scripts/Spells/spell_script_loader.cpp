@@ -44,6 +44,7 @@ void AddSC_spell_rogue_subtlety();
 void AddSC_shaman_spell_scripts();
 void AddSC_spell_shaman_covenant();
 void AddSC_warlock_spell_scripts();
+void AddSC_spell_warlock_affliction();
 void AddSC_warrior_spell_scripts();
 void AddSC_spell_warrior_covenant();
 void AddSC_quest_spell_scripts();
@@ -87,6 +88,7 @@ void AddSpellsScripts()
     AddSC_shaman_spell_scripts();
     AddSC_spell_shaman_covenant();
     AddSC_warlock_spell_scripts();
+    AddSC_spell_warlock_affliction();
     AddSC_warrior_spell_scripts();
     AddSC_spell_warrior_covenant();
     AddSC_quest_spell_scripts();

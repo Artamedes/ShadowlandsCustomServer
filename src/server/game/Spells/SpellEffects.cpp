@@ -523,6 +523,17 @@ void Spell::EffectSchoolDMG()
             damage = unitTarget->SpellDamageBonusTaken(unitCaster, m_spellInfo, (uint32)damage, SPELL_DIRECT_DAMAGE);
         }
 
+        if (m_spellInfo->Id == 205231) ///< Darkglare Eye beam - TODO convert to scipt
+        {
+            if (auto owner = unitCaster->GetOwner())
+            {
+                damage = owner->GetTotalSpellPowerValue(SpellSchoolMask::SPELL_SCHOOL_MASK_SHADOW, false) * 0.32f;
+                uint32 bonus = unitCaster->SpellDamageBonusDone(unitTarget, m_spellInfo, (uint32)damage, SPELL_DIRECT_DAMAGE, *effectInfo);
+                damage = bonus + uint32(bonus * variance);
+                damage = unitTarget->SpellDamageBonusTaken(unitCaster, m_spellInfo, (uint32)damage, SPELL_DIRECT_DAMAGE);
+            }
+        }
+
         m_damage += damage;
     }
 }
