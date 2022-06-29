@@ -3084,7 +3084,7 @@ class spell_warr_execute : public SpellScript
                 caster->Variables.Set<float>("EXECUTE_MULTIPLIER", 2.f);
             else
             {
-                float dmgMultiplier = float(powerCost.Amount) / std::max(1.0f, float(powerCost.OptionalAmount));
+                float dmgMultiplier = float(powerCost.Amount) / 20.0f;
                 caster->Variables.Set<float>("EXECUTE_MULTIPLIER", dmgMultiplier);
                 caster->Variables.Set<int32>("POWER_TAKEN", powerCost.Amount);
             }
