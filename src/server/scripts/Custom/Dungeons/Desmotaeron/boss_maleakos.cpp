@@ -284,6 +284,7 @@ struct boss_maleakos : public BossAI
 public:
     boss_maleakos(Creature* creature) : BossAI(creature, BossMaleakos)
     {
+        ApplyAllImmunities(true);
     }
 
     void JustEngagedWith(Unit* who) override
@@ -425,6 +426,12 @@ public:
             return;
 
         DoMeleeAttackIfReady();
+    }
+
+    void EnterEvadeMode(EvadeReason why) override
+    {
+        _EnterEvadeMode(why);
+        _DespawnAtEvade(5s);
     }
 };
 
