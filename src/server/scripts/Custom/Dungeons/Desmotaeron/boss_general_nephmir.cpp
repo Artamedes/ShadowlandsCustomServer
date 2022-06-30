@@ -40,6 +40,8 @@ public:
 
         scheduler.Schedule(4s, [this](TaskContext context)
         {
+            if (auto victim = me->GetVictim())
+                me->SetFacingToObject(victim);
             DoCast(GiantSlam);
             context.Repeat(15s, 20s);
         });
