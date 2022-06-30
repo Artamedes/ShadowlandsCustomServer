@@ -7921,7 +7921,7 @@ class spell_warl_malefic_rapture : public SpellScript
         {
             caster->RemoveAurasDueToSpell(364322); ///< Calamitous Crescendo
 
-            int32 baseDamage = caster->GetTotalSpellPowerValue(SPELL_SCHOOL_MASK_SHADOW, false) * 3.275f;
+            int32 baseDamage = caster->GetTotalSpellPowerValue(SPELL_SCHOOL_MASK_SHADOW, false) * 1.275f;
 
             std::list<Unit*> enemies;
             caster->GetAttackableUnitListInRange(enemies, 100.0f);
