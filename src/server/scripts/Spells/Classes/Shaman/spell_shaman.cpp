@@ -812,8 +812,13 @@ public:
         void HandleAfterCast()
         {
             if (Unit* caster = GetCaster())
+            {
                 if (caster->HasAura(SPELL_SHAMAN_FLASH_FLOOD_BUFF))
                     caster->RemoveAurasDueToSpell(SPELL_SHAMAN_FLASH_FLOOD_BUFF);
+
+                if (caster->HasAura(366779)) ///< Heal the soul
+                    caster->RemoveAurasDueToSpell(366779);
+            }
         }
 
         WorldObject* _primaryTarget = nullptr;

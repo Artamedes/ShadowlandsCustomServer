@@ -8,6 +8,22 @@ enum eRestoration
     ChainHeal    = 1064,
 };
 
+/// ID: 364470 Heal the Soul
+class spell_heal_the_soul_proc : public AuraScript
+{
+    PrepareAuraScript(spell_heal_the_soul_proc);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetHitMask() & ProcFlagsHit::PROC_HIT_CRITICAL;
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_heal_the_soul_proc::CheckProc);
+    }
+};
+
 /// ID: 366779 Heal the Soul
 class spell_heal_the_soul : public AuraScript
 {
@@ -59,6 +75,7 @@ class spell_ancestral_vigor : public AuraScript
 
 void AddSC_spell_shaman_restoration()
 {
+    RegisterSpellScript(spell_heal_the_soul_proc);
     RegisterSpellScript(spell_heal_the_soul);
     RegisterSpellScript(spell_ancestral_vigor);
 }
