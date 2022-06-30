@@ -4,6 +4,7 @@ enum eArms
 {
     MercilessBonegrinderConduit = 335260,
     MercilessBonegrinderProc    = 346574,
+    MortalStrike                = 12294,
 };
 
 void ProcMercilessBonegrinder(Unit* caster)
@@ -37,7 +38,49 @@ class spell_bladestorm : public AuraScript
     }
 };
 
+/// ID: 339386 Mortal Combo
+class spell_mortal_combo : public AuraScript
+{
+    PrepareAuraScript(spell_mortal_combo);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == MortalStrike;
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (auto caster = GetCaster())
+        {
+            if (auto target = eventInfo.GetActionTarget())
+            {
+                caster->CastSpell(target, MortalStrike, true);
+            }
+        }
+    }
+
+    void HandleCalcProc(ProcEventInfo& eventInfo, float& chance)
+    {
+        chance = 0.0f;
+        if (auto eff = GetEffect(EFFECT_0))
+        {
+            if (eff->ConduitRankEntry)
+            {
+                chance = eff->ConduitRankEntry->AuraPointsOverride;
+            }
+        }
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_mortal_combo::CheckProc);
+        OnProc += AuraProcFn(spell_mortal_combo::HandleProc);
+        OnCalcProcChance += AuraCalcProcChanceFn(spell_mortal_combo::HandleCalcProc);
+    }
+};
+
 void AddSC_spell_warrior_arms()
 {
     RegisterSpellScript(spell_bladestorm);
+    RegisterSpellScript(spell_mortal_combo);
 }
