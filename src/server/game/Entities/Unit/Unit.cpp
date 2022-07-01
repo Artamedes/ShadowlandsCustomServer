@@ -13146,10 +13146,22 @@ uint32 Unit::GetModelForForm(ShapeshiftForm form, uint32 spellId) const
 
                     }
                 }
-                else if (Player::TeamForRace(GetRace()) == ALLIANCE)
-                    return 892;
                 else
-                    return 8571;
+                {
+                    switch (GetRace())
+                    {
+                        case RACE_HUMAN: ///< tiger
+                            return 918;
+                        case RACE_BLOODELF: ///< tiger
+                            return 15506;
+                        default:
+                            if (Player::TeamForRace(GetRace()) == ALLIANCE)
+                                return 892;
+                            else
+                                return 8571;
+                            break;
+                    }
+                }
             }
             case FORM_BEAR_FORM:
             {
@@ -13332,10 +13344,22 @@ uint32 Unit::GetModelForForm(ShapeshiftForm form, uint32 spellId) const
                             return 80594; // white
                     }
                 }
-                else if (Player::TeamForRace(GetRace()) == ALLIANCE)
-                    return 29415;
                 else
-                    return 2289;
+                {
+                    switch (GetRace())
+                    {
+                        case RACE_HUMAN:
+                            return 74272;
+                        case RACE_DWARF:
+                            return 865;
+                        default:
+                            if (Player::TeamForRace(GetRace()) == ALLIANCE)
+                                return 29415;
+                            else
+                                return 2289;
+                            break;
+                    }
+                }
             }
             case FORM_FLIGHT_FORM:
                 if (Player::TeamForRace(GetRace()) == ALLIANCE)
@@ -13413,6 +13437,11 @@ uint32 Unit::GetModelForForm(ShapeshiftForm form, uint32 spellId) const
                         else
                             return 81440;
                     default:
+                        if (Player::TeamForRace(GetRace()) == ALLIANCE)
+                            return 40816;
+                        else
+                            return 87426;
+
                         break;
                 }
                 break;
