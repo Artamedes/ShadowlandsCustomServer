@@ -68,6 +68,16 @@ void AddSC_boss_xarvius();
 void AddSC_boss_maleakos();
 void AddSC_boss_general_nephmir();
 void AddSC_boss_ecidus();
+// nazjatar
+void AddSC_instance_nazjatar();
+void AddSC_boss_khada();
+void AddSC_boss_aartoszu();
+void AddSC_boss_blackwater_behemoth();
+void AddSC_boss_tarco();
+void AddSC_boss_shassera();
+void AddSC_boss_dhrana();
+void AddSC_nazjatar();
+
 // Items
 void AddSC_item_currency_exchange();
 void AddSC_npc_1v1arena();
@@ -125,6 +135,15 @@ void AddCustomScripts()
     AddSC_boss_maleakos();
     AddSC_boss_general_nephmir();
     AddSC_boss_ecidus();
+    // nazjatar
+    AddSC_instance_nazjatar();
+    AddSC_boss_khada();
+    AddSC_boss_aartoszu();
+    AddSC_boss_blackwater_behemoth();
+    AddSC_boss_tarco();
+    AddSC_boss_shassera();
+    AddSC_boss_dhrana();
+    AddSC_nazjatar();
     // Items
     AddSC_item_currency_exchange();
     AddSC_npc_1v1arena();

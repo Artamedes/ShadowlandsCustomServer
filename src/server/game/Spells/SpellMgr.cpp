@@ -3290,6 +3290,14 @@ void SpellMgr::LoadSpellInfoCorrections()
 
     // Some spells have no amplitude set
     {
+        // Void Power
+        ApplySpellFix({ 301643 }, [](SpellInfo* info)
+        {
+            ApplySpellEffectFix(info, EFFECT_0, [](SpellEffectInfo* spellEffectInfo)
+            {
+                spellEffectInfo->TargetA = SpellImplicitTargetInfo(TARGET_DEST_DEST_GROUND);
+            });
+        });
         ApplySpellFix({ 366794 }, [](SpellInfo* info)
         {
             ApplySpellEffectFix(info, EFFECT_0, [](SpellEffectInfo* spellEffectInfo)
