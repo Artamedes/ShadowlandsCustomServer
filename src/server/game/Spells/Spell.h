@@ -581,6 +581,7 @@ class TC_GAME_API Spell
         SpellCastVisual m_SpellVisual;
         SpellCastTargets m_targets;
         int8 m_comboPointGain;
+        int8 m_comboPointsEnergized = 0; ///< PIG
         SpellCustomErrors m_customError;
 
         UsedSpellMods m_appliedMods;

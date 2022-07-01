@@ -75,7 +75,7 @@ class spell_bloodtalons : public AuraScript
         if (!eventInfo.GetProcSpell())
             return false;
 
-        return eventInfo.GetProcSpell()->m_comboPointGain > 0;
+        return eventInfo.GetProcSpell()->m_comboPointsEnergized > 0;
     }
 
     void HandleProc(ProcEventInfo& eventInfo)
@@ -211,8 +211,20 @@ class spell_berserk : public AuraScript
         if (!eventInfo.GetProcSpell())
             return false;
 
+        if (!eventInfo.GetDamageInfo())
+            return false;
+
+        if (!eventInfo.GetDamageInfo()->GetDamage())
+            return false;
+
         if (int32 comboPoints = eventInfo.GetProcSpell()->GetUsedComboPoints())
+        {
+            if (eventInfo.GetProcSpell()->Variables.Exist("BerserkProcced"))
+                return false;
+
+            const_cast<Spell*>(eventInfo.GetProcSpell())->Variables.Set("BerserkProcced", true); ///< PIGPIGPIG
             return roll_chance_i(comboPoints * 20);
+        }
 
         return false;
     }

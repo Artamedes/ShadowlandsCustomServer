@@ -583,9 +583,10 @@ public:
 
         bool CheckProc(ProcEventInfo& eventInfo)
         {
-            bool _spellCanProc = (eventInfo.GetSpellInfo()->Id == SPELL_DRUID_SHRED || eventInfo.GetSpellInfo()->Id == SPELL_DRUID_RAKE || eventInfo.GetSpellInfo()->Id == SPELL_DRUID_SWIPE_CAT || eventInfo.GetSpellInfo()->Id == SPELL_DRUID_MOONFIRE_CAT);
+            if (!eventInfo.GetProcSpell())
+                return false;
 
-            if ((eventInfo.GetHitMask() & PROC_HIT_CRITICAL) && _spellCanProc)
+            if ((eventInfo.GetHitMask() & PROC_HIT_CRITICAL) && eventInfo.GetProcSpell()->m_comboPointsEnergized)
                 return true;
 
             return false;
@@ -2678,7 +2679,7 @@ class spell_dru_shred : public SpellScript
         if (caster->HasAuraType(SPELL_AURA_MOD_STEALTH))
             stealthed = true;
 
-        if (caster->HasAura(SPELL_DRUID_INCARNATION_KING_OF_JUNGLE))
+        if (caster->HasAura(SPELL_DRUID_INCARNATION_KING_OF_JUNGLE) || caster->HasAura(106951)) ///< Berserk
             incarnation = true;
 
         return true;
@@ -2705,9 +2706,7 @@ class spell_dru_shred : public SpellScript
         if (!caster || !target)
             return;
 
-        // $mult = $min($pl - 1,19) * 18 + 353) / 695
-        float multi = (float)(std::min(caster->GetLevel() - 1, 19) * 18 + 353) / 695;
-        int32 damage = 1 + GetHitDamage() * multi;
+        int32 damage = GetHitDamage();
 
         // Shred Rank 2
         // Shred deals increased damage against bleeding targets.
@@ -3250,17 +3249,20 @@ class aura_dru_feral_affinity_resto : public AuraScript
 };
 
 // 16974 - Predatory Swiftness
+/// Updated 9.2.0
 class aura_dru_predatory_swiftness : public AuraScript
 {
     PrepareAuraScript(aura_dru_predatory_swiftness);
 
     bool CheckProc(ProcEventInfo& eventInfo)
     {
-        if (eventInfo.GetSpellInfo() && (eventInfo.GetSpellInfo()->Id == SPELL_DRUID_RIP || eventInfo.GetSpellInfo()->Id == SPELL_DRUID_MAIM || eventInfo.GetSpellInfo()->Id == SPELL_DRUID_FEROCIOUS_BITE ||
-            eventInfo.GetSpellInfo()->Id == SPELL_DRUID_SAVAGE_ROAR) && roll_chance_i(GetAura()->GetEffect(EFFECT_2)->GetBaseAmount() * ComboPoints))
-            return true;
+        if (!eventInfo.GetProcSpell())
+            return false;
 
-        return false;
+        if (!eventInfo.GetProcSpell()->GetUsedComboPoints())
+            return false;
+
+        return roll_chance_i(eventInfo.GetProcSpell()->GetUsedComboPoints() * 20);
     }
 
     void HandleProc(ProcEventInfo& eventInfo)
@@ -3268,7 +3270,7 @@ class aura_dru_predatory_swiftness : public AuraScript
         PreventDefaultAction();
 
         if (Unit* caster = GetCaster())
-            caster->AddAura(SPELL_DRUID_PREDATORY_SWIFTNESS_AURA);
+            caster->AddAura(SPELL_DRUID_PREDATORY_SWIFTNESS_AURA, caster);
     }
 
     void Register() override

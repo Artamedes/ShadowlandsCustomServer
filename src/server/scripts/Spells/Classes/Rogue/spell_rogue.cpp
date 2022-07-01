@@ -4713,7 +4713,7 @@ class spell_essence_of_bloodfang : public AuraScript
                 break;
         }
 
-        return eventInfo.GetProcSpell() && eventInfo.GetProcSpell()->m_comboPointGain > 0;
+        return eventInfo.GetProcSpell() && eventInfo.GetProcSpell()->m_comboPointsEnergized > 0;
     }
 
     void Register() override

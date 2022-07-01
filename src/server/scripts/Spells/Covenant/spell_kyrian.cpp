@@ -571,9 +571,9 @@ class spell_newfound_resolve : public AuraScript
                 currChance = 0;
                 caster->CastSpell(caster, ProcMissle, true);
             }
-            else
-                currChance += 3;
         }
+        else
+            currChance = 0;
 
     }
 

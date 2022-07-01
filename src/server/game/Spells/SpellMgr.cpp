@@ -3290,6 +3290,14 @@ void SpellMgr::LoadSpellInfoCorrections()
 
     // Some spells have no amplitude set
     {
+        /// Convoke
+        ApplySpellFix({ 323764 }, [](SpellInfo* info)
+        {
+            ApplySpellEffectFix(info, EFFECT_0, [](SpellEffectInfo* spellEffectInfo)
+            {
+                spellEffectInfo->ApplyAuraPeriod = 50;
+            });
+        });
         // Void Power
         ApplySpellFix({ 301643 }, [](SpellInfo* info)
         {

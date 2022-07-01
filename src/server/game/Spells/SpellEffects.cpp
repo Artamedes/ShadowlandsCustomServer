@@ -1056,7 +1056,7 @@ void Spell::EffectPowerDrain()
         int32 const gain = int32(newDamage * gainMultiplier);
 
         if (powerType == Powers::POWER_COMBO_POINTS)
-            m_comboPointGain = gain;
+            m_comboPointsEnergized = gain;
 
         unitCaster->EnergizeBySpell(unitCaster, m_spellInfo, gain, powerType);
     }
@@ -1495,7 +1495,7 @@ void Spell::EffectEnergize()
     }
 
     if (power == Powers::POWER_COMBO_POINTS)
-        m_comboPointGain = damage;
+        m_comboPointsEnergized = damage;
 
     unitCaster->EnergizeBySpell(unitTarget, m_spellInfo, damage, power);
 }
@@ -1523,7 +1523,7 @@ void Spell::EffectEnergizePct()
     uint32 const gain = CalculatePct(maxPower, damage);
 
     if (power == Powers::POWER_COMBO_POINTS)
-        m_comboPointGain = gain;
+        m_comboPointsEnergized = gain;
 
     unitCaster->EnergizeBySpell(unitTarget, m_spellInfo, gain, power);
 }
