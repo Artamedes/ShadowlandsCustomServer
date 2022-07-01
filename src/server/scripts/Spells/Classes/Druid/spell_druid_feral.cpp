@@ -72,10 +72,10 @@ class spell_bloodtalons : public AuraScript
 
     bool CheckProc(ProcEventInfo& eventInfo)
     {
-        if (!eventInfo.GetSpellInfo())
+        if (!eventInfo.GetProcSpell())
             return false;
 
-        return IsFinisher(eventInfo.GetSpellInfo()->Id);
+        return eventInfo.GetProcSpell()->m_comboPointGain > 0;
     }
 
     void HandleProc(ProcEventInfo& eventInfo)
@@ -89,8 +89,8 @@ class spell_bloodtalons : public AuraScript
         if (!caster)
             return;
 
-        if (!UniqueFinishers.count(eventInfo.GetSpellInfo()->Id))
-            UniqueFinishers.insert(eventInfo.GetSpellInfo()->Id);
+        if (!UniqueBuilders.count(eventInfo.GetSpellInfo()->Id))
+            UniqueBuilders.insert(eventInfo.GetSpellInfo()->Id);
 
         switch (eventInfo.GetSpellInfo()->Id)
         {
@@ -105,15 +105,15 @@ class spell_bloodtalons : public AuraScript
                 break;
         }
 
-        if (UniqueFinishers.size() >= 3)
+        if (UniqueBuilders.size() >= 3)
         {
-            UniqueFinishers.clear();
+            UniqueBuilders.clear();
             if (auto caster = GetCaster())
                 caster->CastSpell(caster, BloodTalonsProc, true);
         }
     }
 
-    std::unordered_set<uint32> UniqueFinishers;
+    std::unordered_set<uint32> UniqueBuilders;
 
     void Register() override
     {
