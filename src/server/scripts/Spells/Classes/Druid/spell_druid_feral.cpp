@@ -259,6 +259,38 @@ class spell_incessant_hunter : public AuraScript
     }
 };
 
+/// ID: 340694 Sudden Ambush
+class spell_sudden_ambush : public AuraScript
+{
+    PrepareAuraScript(spell_sudden_ambush);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        if (!eventInfo.GetProcSpell())
+            return false;
+
+        if (!eventInfo.GetDamageInfo())
+            return false;
+
+        if (!eventInfo.GetDamageInfo()->GetDamage())
+            return false;
+
+        if (int32 comboPoints = eventInfo.GetProcSpell()->GetUsedComboPoints())
+        {
+            if (auto eff = GetEffect(EFFECT_0))
+                if (eff->ConduitRankEntry)
+                    return roll_chance_f((float)comboPoints * eff->ConduitRankEntry->AuraPointsOverride);
+        }
+
+        return false;
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_sudden_ambush::CheckProc);
+    }
+};
+
 void AddSC_spell_druid_feral()
 {
     RegisterSpellScript(spell_primal_wrath);
@@ -267,4 +299,5 @@ void AddSC_spell_druid_feral()
     RegisterSpellScript(spell_heart_of_the_lion);
     RegisterSpellScript(spell_berserk);
     RegisterSpellScript(spell_incessant_hunter);
+    RegisterSpellScript(spell_sudden_ambush);
 }

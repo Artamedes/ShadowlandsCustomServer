@@ -23,6 +23,7 @@ void AddSC_demon_hunter_spell_scripts();
 void AddSC_spell_dh_havoc();
 void AddSC_druid_spell_scripts();
 void AddSC_spell_druid_feral();
+void AddSC_spell_druid_covenant();
 void AddSC_generic_spell_scripts();
 void AddSC_hunter_spell_scripts();
 void AddSC_spell_hunter_marksman();
@@ -70,6 +71,7 @@ void AddSpellsScripts()
     AddSC_spell_dh_havoc();
     AddSC_druid_spell_scripts();
     AddSC_spell_druid_feral();
+    AddSC_spell_druid_covenant();
     AddSC_generic_spell_scripts();
     AddSC_hunter_spell_scripts();
     AddSC_spell_hunter_marksman();

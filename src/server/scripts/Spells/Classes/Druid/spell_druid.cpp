@@ -1618,7 +1618,7 @@ class spell_dru_rake : public SpellScript
     bool Load() override
     {
         Unit* caster = GetCaster();
-        if (caster->HasAuraType(SPELL_AURA_MOD_STEALTH))
+        if (caster->HasAuraType(SPELL_AURA_MOD_STEALTH) || caster->HasAura(340698)) ///< Sudden Ambush
             stealthed = true;
 
         return true;
@@ -2676,7 +2676,7 @@ class spell_dru_shred : public SpellScript
     {
         Unit* caster = GetCaster();
 
-        if (caster->HasAuraType(SPELL_AURA_MOD_STEALTH))
+        if (caster->HasAuraType(SPELL_AURA_MOD_STEALTH) || caster->HasAura(340698)) ///< Sudden Ambush
             stealthed = true;
 
         if (caster->HasAura(SPELL_DRUID_INCARNATION_KING_OF_JUNGLE) || caster->HasAura(106951)) ///< Berserk
@@ -3408,8 +3408,19 @@ class spell_dru_regrowth : public SpellScript
     void HandleEffectHit(SpellEffIndex /*effIndex*/)
     {
         if (Unit* caster = GetCaster())
+        {
             if (caster->Variables.Exist("OVERGROWTH") && caster->Variables.GetValue<bool>("OVERGROWTH"))
                 PreventHitHeal();
+
+            auto heal = GetHitHeal();
+
+            if (auto innateResolve = caster->GetAuraEffect(340543, EFFECT_0))
+                if (innateResolve)
+                    if (innateResolve->ConduitRankEntry)
+                        AddPct(heal, innateResolve->ConduitRankEntry->AuraPointsOverride);
+
+            SetHitHeal(heal);
+        }
     }
 
     void Register() override

@@ -1,9 +1,12 @@
 #pragma once
 
+#include "SpellIncludes.h"
+
 namespace Druid
 {
     enum DruidSpells
     {
+        BearForm = 5487,
         /// Finishers
         SavageRoar = 52610,
         Rip = 1079,
