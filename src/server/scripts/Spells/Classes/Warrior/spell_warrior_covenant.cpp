@@ -59,9 +59,52 @@ class spell_ashen_juggernaut : public AuraScript
     }
 };
 
+/// ID: 336191 Indelible Victory
+class spell_indelible_victory : public AuraScript
+{
+    PrepareAuraScript(spell_indelible_victory);
+
+    enum eIndelibleVictory
+    {
+        VictoryRush         = 34428,
+        ImpendingVictory    = 202168,
+        ProcSpell           = 336642,
+    };
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        if (!eventInfo.GetSpellInfo())
+            return false;
+
+        switch (eventInfo.GetSpellInfo()->Id)
+        {
+            case VictoryRush:
+            case ImpendingVictory:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (auto caster = GetCaster())
+            if (auto eff = GetEffect(EFFECT_0))
+                if (eff->ConduitRankEntry)
+                    caster->CastSpell(caster, ProcSpell, CastSpellExtraArgs(true).AddSpellBP0(eff->ConduitRankEntry->AuraPointsOverride));
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_indelible_victory::CheckProc);
+        OnProc += AuraProcFn(spell_indelible_victory::HandleProc);
+    }
+};
+
 
 void AddSC_spell_warrior_covenant()
 {
     RegisterSpellScript(spell_conquerors_banner);
     RegisterSpellScript(spell_ashen_juggernaut);
+    RegisterSpellScript(spell_indelible_victory);
 }
