@@ -17,8 +17,9 @@ namespace Paladin
         ExecutionSentence = 343527,
 
         /// Holy
-        LightOfDawn = 85222
+        LightOfDawn = 85222,
 
         /// Protection
+        JudgementProt = 275779,
     };
 }

@@ -1175,7 +1175,7 @@ class spell_pal_judgment : public SpellScript
     void HandleAfterCaster()
     {
         if (Unit* caster = GetCaster())
-            if (GetSpellInfo()->Id == SPELL_PALADIN_JUDGMENT)
+            if (GetSpellInfo()->Id == SPELL_PALADIN_JUDGMENT || caster->HasAura(315867)) ///< Judgement rank 3
                 caster->CastSpell(caster, SPELL_PALADIN_JUDGMENT_ENERGIZE, true);
     }
 
