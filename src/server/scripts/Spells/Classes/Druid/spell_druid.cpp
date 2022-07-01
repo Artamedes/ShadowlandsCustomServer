@@ -1653,35 +1653,18 @@ class spell_dru_rake : public SpellScript
 
         // Only stun if the caster was in stealth
         if (stealthed && caster->HasAura(SPELL_DRUID_RAKE_RANK_2))
-            caster->CastSpell(target, SPELL_DRUID_RAKE_STUN, true);
-
-		SetHitDamage(damage);
-    }
-
-    void HandleAfterEffectHit(SpellEffIndex /*effIndex*/)
-    {
-        Unit* caster = GetCaster();
-        Unit* target = GetExplTargetUnit();
-        if (!caster || !target)
-            return;
-
-        if (Aura* aura = target->GetAura(SPELL_DRUID_RAKE_AURA, caster->GetGUID()))
         {
-            bool increased = caster->HasAura(SPELL_DRUID_RAKE_RANK_2) && (stealthed || caster->HasAura(SPELL_DRUID_INCARNATION_KING_OF_JUNGLE));
-            if (increased)
-            {
-                uint32 damage = aura->GetEffect(EFFECT_0)->GetDamage();
-                aura->GetEffect(EFFECT_0)->SetDamage(damage + CalculatePct(damage, sSpellMgr->GetSpellInfo(SPELL_DRUID_RAKE)->GetEffect(EFFECT_3).BasePoints));
-            }
+            caster->CastSpell(target, SPELL_DRUID_RAKE_STUN, true);
+            caster->Variables.Set("IncreassedRakeDmg", true);
         }
 
+		SetHitDamage(damage);
     }
 
     void Register() override
     {
         OnCalcCritChance += SpellOnCalcCritChanceFn(spell_dru_rake::CalcCrit);
         OnEffectHitTarget += SpellEffectFn(spell_dru_rake::HandleOnHit, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
-        OnEffectHitTarget += SpellEffectFn(spell_dru_rake::HandleAfterEffectHit, EFFECT_2, SPELL_EFFECT_TRIGGER_SPELL);
     }
 
 private:
@@ -3593,6 +3576,20 @@ class aura_dru_rake : public AuraScript
 {
 	PrepareAuraScript(aura_dru_rake);
 
+    void HandleApply(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
+    {
+        Unit* caster = GetCaster();
+        if (!caster)
+            return;
+
+        if (caster->Variables.Exist("IncreassedRakeDmg"))
+        {
+            caster->Variables.Remove("IncreassedRakeDmg");
+            const_cast<AuraEffect*>(aurEff)->SetDamage(aurEff->GetDamage() + CalculatePct(aurEff->GetDamage(), 60));
+            const_cast<AuraEffect*>(aurEff)->ChangeAmount(aurEff->GetDamage());
+        }
+    }
+
     void HandleRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
 	{
 		Unit* caster = GetCaster();
@@ -3610,7 +3607,8 @@ class aura_dru_rake : public AuraScript
 
 	void Register() override
 	{
-		OnEffectRemove += AuraEffectRemoveFn(aura_dru_rake::HandleRemove, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE, AURA_EFFECT_HANDLE_REAL);
+        OnEffectApply += AuraEffectApplyFn(aura_dru_rake::HandleApply, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE, AURA_EFFECT_HANDLE_REAL);
+        OnEffectRemove += AuraEffectRemoveFn(aura_dru_rake::HandleRemove, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE, AURA_EFFECT_HANDLE_REAL);
 	}
 
 private:
