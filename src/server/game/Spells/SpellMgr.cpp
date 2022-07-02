@@ -3290,6 +3290,18 @@ void SpellMgr::LoadSpellInfoCorrections()
 
     // Some spells have no amplitude set
     {
+        // FelDev Eye beam legendary
+        ApplySpellFix({ 346503, 346505 }, [](SpellInfo* info)
+        {
+            ApplySpellEffectFix(info, EFFECT_0, [](SpellEffectInfo* spellEffectInfo)
+            {
+                spellEffectInfo->BonusCoefficientFromAP = 0.35f;
+            });
+        });
+        ApplySpellFix({ 346502, 346504 }, [](SpellInfo* info)
+        {
+            info->AttributesEx5 |= SPELL_ATTR5_SPELL_HASTE_AFFECTS_PERIODIC;
+        });
         /// Rake, Moonfire
         ApplySpellFix({ 155722, 155625 }, [](SpellInfo* info)
         {

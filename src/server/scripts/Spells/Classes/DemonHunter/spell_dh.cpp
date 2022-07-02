@@ -4155,12 +4155,20 @@ class spell_dh_chaos_strike : public SpellScript
             if (roll_chance_i(chance))
                 GetCaster()->CastSpell(target, GetSpellInfo()->Id, true);
 
+            chance = 40;
+
+            if (GetCaster()->HasAura(337567)) ///< chatoic blades
+                chance = 100;
+
+            auto caster = GetCaster();
+            if (!caster)
+                return;
+
+            if (roll_chance_i(chance))
+                caster->CastSpell(caster, SPELL_DH_CHAOS_STRIKE_PROC, true);
+
             if (roll_chance_i(40))
             {
-                auto caster = GetCaster();
-                if (!caster)
-                    return;
-                caster->CastSpell(caster, SPELL_DH_CHAOS_STRIKE_PROC, true);
                 if (caster->HasAura(SPELL_DH_CYCLE_OF_HATRED))
                     caster->GetSpellHistory()->ModifyCooldown(SPELL_DH_EYE_BEAM, -1s);
             }
