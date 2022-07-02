@@ -5,6 +5,7 @@ enum eDeathKnightSpells
     Lichborne       = 49039,
     BloodTap        = 194679,
     DancingRuneWep  = 49028,
+    DeathsAdvance   = 48265,
 };
 
 /// ID: 337972 Hardened Bones
@@ -109,9 +110,29 @@ class spell_meat_shield : public AuraScript
     }
 };
 
+/// ID: 338089 Fleeting Wind
+class spell_fleeting_wind : public AuraScript
+{
+    PrepareAuraScript(spell_fleeting_wind);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        if (!eventInfo.GetSpellInfo())
+            return false;
+
+        return eventInfo.GetSpellInfo()->Id == DeathsAdvance;
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_fleeting_wind::CheckProc);
+    }
+};
+
 void AddSC_spell_dk_covenant()
 {
     RegisterSpellScript(spell_hardened_bones);
     RegisterSpellScript(spell_blood_bond);
     RegisterSpellScript(spell_meat_shield);
+    RegisterSpellScript(spell_fleeting_wind);
 }
