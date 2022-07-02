@@ -919,6 +919,12 @@ void Aura::RefreshDuration(bool withMods)
         if (m_spellInfo->HasAttribute(SPELL_ATTR8_HASTE_AFFECTS_DURATION))
             duration = int32(duration * caster->m_unitData->ModCastingSpeed);
 
+        if (m_spellInfo->HasAttribute(SPELL_ATTR13_PERIODIC_REFRESH_EXTENDS_DURATION) && duration != -1)
+        {
+            int32 addedDuration = CalculatePct(m_spellInfo->GetMaxDuration(), 33);
+            duration += addedDuration;
+        }
+
         SetMaxDuration(duration);
         SetDuration(duration);
     }
@@ -940,10 +946,9 @@ void Aura::RefreshTimers(bool resetPeriodicTimer)
     if (m_spellInfo->HasAttribute(SPELL_ATTR8_DONT_RESET_PERIODIC_TIMER))
     {
         int32 minPeriod = m_maxDuration;
-        for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
-            if (AuraEffect const* eff = GetEffect(i))
-                if (int32 period = eff->GetPeriod())
-                    minPeriod = std::min(period, minPeriod);
+        for (auto eff : GetAuraEffects())
+            if (int32 period = eff->GetPeriod())
+                minPeriod = std::min(period, minPeriod);
 
         // If only one tick remaining, roll it over into new duration
         if (GetDuration() <= minPeriod)
@@ -951,6 +956,12 @@ void Aura::RefreshTimers(bool resetPeriodicTimer)
             m_maxDuration += GetDuration();
             resetPeriodicTimer = false;
         }
+    }
+
+    if (m_spellInfo->HasAttribute(SPELL_ATTR13_PERIODIC_REFRESH_EXTENDS_DURATION) && m_spellInfo->GetMaxDuration() != -1)
+    {
+        int32 addedDuration = CalculatePct(m_spellInfo->GetMaxDuration(), 33);
+        m_maxDuration += addedDuration;
     }
 
     RefreshDuration();

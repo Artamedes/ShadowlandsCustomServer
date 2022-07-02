@@ -3327,6 +3327,12 @@ void Spell::DoSpellEffectHit(Unit* unit, SpellEffectInfo const& spellEffectInfo,
                     else
                         hitInfo.AuraDuration = *m_spellValue->Duration;
 
+                    if (m_spellInfo->HasAttribute(SPELL_ATTR13_PERIODIC_REFRESH_EXTENDS_DURATION) && hitInfo.AuraDuration != -1)
+                    {
+                        int32 addedDuration = CalculatePct(m_spellInfo->GetMaxDuration(), 33);
+                        hitInfo.AuraDuration += addedDuration;
+                    }
+
                     if (hitInfo.AuraDuration != hitInfo.HitAura->GetMaxDuration())
                     {
                         hitInfo.HitAura->SetMaxDuration(hitInfo.AuraDuration);
@@ -3646,10 +3652,14 @@ SpellCastResult Spell::prepare(SpellCastTargets const& targets, AuraEffect const
                 }
             }
 
+            if (!willCastDirectly)
+                willCastDirectly = m_spellInfo->HasAttribute(SPELL_ATTR12_ALLOW_DURING_SPELL_OVERRIDE);
+
             // Do not register as current spell when requested to ignore cast in progress
             // We don't want to interrupt that other spell with cast time
             if (!willCastDirectly || !(_triggeredCastFlags & TRIGGERED_IGNORE_CAST_IN_PROGRESS))
-                unitCaster->SetCurrentCastSpell(this);
+                if (!m_spellInfo->HasAttribute(SPELL_ATTR12_ALLOW_DURING_SPELL_OVERRIDE))
+                    unitCaster->SetCurrentCastSpell(this);
         }
         SendSpellStart();
 

@@ -3923,7 +3923,12 @@ int32 SpellInfo::GetMaxDuration() const
 {
     if (!DurationEntry)
         return IsPassive() ? -1 : 0;
-    return (DurationEntry->MaxDuration == -1) ? -1 : abs(DurationEntry->MaxDuration);
+
+    int32 maxDuration = DurationEntry->MaxDuration;
+    if (maxDuration == -1)
+        return -1;
+
+    return abs(DurationEntry->MaxDuration);
 }
 
 uint32 SpellInfo::CalcCastTime(Spell* spell /*= nullptr*/) const

@@ -1815,7 +1815,7 @@ TC_API_EXPORT EnumText EnumUtils<SpellAttr12>::ToString(SpellAttr12 value)
         case SPELL_ATTR12_UNK17: return { "SPELL_ATTR12_UNK17", "Unknown attribute 17@Attr12", "" };
         case SPELL_ATTR12_UNK18: return { "SPELL_ATTR12_UNK18", "Unknown attribute 18@Attr12", "" };
         case SPELL_ATTR12_UNK19: return { "SPELL_ATTR12_UNK19", "Unknown attribute 19@Attr12", "" };
-        case SPELL_ATTR12_UNK20: return { "SPELL_ATTR12_UNK20", "Unknown attribute 20@Attr12", "" };
+        case SPELL_ATTR12_ALLOW_DURING_SPELL_OVERRIDE: return { "SPELL_ATTR12_ALLOW_DURING_SPELL_OVERRIDE", "Allows during spell override", "" };
         case SPELL_ATTR12_UNK21: return { "SPELL_ATTR12_UNK21", "Unknown attribute 21@Attr12", "" };
         case SPELL_ATTR12_UNK22: return { "SPELL_ATTR12_UNK22", "Unknown attribute 22@Attr12", "" };
         case SPELL_ATTR12_START_COOLDOWN_ON_CAST_START: return { "SPELL_ATTR12_START_COOLDOWN_ON_CAST_START", "Trigger Cooldown On Spell Start", "" };
@@ -1859,7 +1859,7 @@ TC_API_EXPORT SpellAttr12 EnumUtils<SpellAttr12>::FromIndex(size_t index)
         case 17: return SPELL_ATTR12_UNK17;
         case 18: return SPELL_ATTR12_UNK18;
         case 19: return SPELL_ATTR12_UNK19;
-        case 20: return SPELL_ATTR12_UNK20;
+        case 20: return SPELL_ATTR12_ALLOW_DURING_SPELL_OVERRIDE;
         case 21: return SPELL_ATTR12_UNK21;
         case 22: return SPELL_ATTR12_UNK22;
         case 23: return SPELL_ATTR12_START_COOLDOWN_ON_CAST_START;
@@ -1900,7 +1900,7 @@ TC_API_EXPORT size_t EnumUtils<SpellAttr12>::ToIndex(SpellAttr12 value)
         case SPELL_ATTR12_UNK17: return 17;
         case SPELL_ATTR12_UNK18: return 18;
         case SPELL_ATTR12_UNK19: return 19;
-        case SPELL_ATTR12_UNK20: return 20;
+        case SPELL_ATTR12_ALLOW_DURING_SPELL_OVERRIDE: return 20;
         case SPELL_ATTR12_UNK21: return 21;
         case SPELL_ATTR12_UNK22: return 22;
         case SPELL_ATTR12_START_COOLDOWN_ON_CAST_START: return 23;
@@ -1944,7 +1944,7 @@ TC_API_EXPORT EnumText EnumUtils<SpellAttr13>::ToString(SpellAttr13 value)
         case SPELL_ATTR13_UNK17: return { "SPELL_ATTR13_UNK17", "Unknown attribute 17@Attr13", "" };
         case SPELL_ATTR13_ACTIVATES_REQUIRED_SHAPESHIFT: return { "SPELL_ATTR13_ACTIVATES_REQUIRED_SHAPESHIFT", "Do Not Enforce Shapeshift Requirements", "" };
         case SPELL_ATTR13_UNK19: return { "SPELL_ATTR13_UNK19", "Unknown attribute 19@Attr13", "" };
-        case SPELL_ATTR13_UNK20: return { "SPELL_ATTR13_UNK20", "Unknown attribute 20@Attr13", "" };
+        case SPELL_ATTR13_PERIODIC_REFRESH_EXTENDS_DURATION: return { "SPELL_ATTR13_PERIODIC_REFRESH_EXTENDS_DURATION", "Unknown attribute 20@Attr13", "" };
         case SPELL_ATTR13_UNK21: return { "SPELL_ATTR13_UNK21", "Unknown attribute 21@Attr13", "" };
         case SPELL_ATTR13_UNK22: return { "SPELL_ATTR13_UNK22", "Unknown attribute 22@Attr13", "" };
         case SPELL_ATTR13_UNK23: return { "SPELL_ATTR13_UNK23", "Unknown attribute 23@Attr13", "" };
@@ -1988,7 +1988,7 @@ TC_API_EXPORT SpellAttr13 EnumUtils<SpellAttr13>::FromIndex(size_t index)
         case 17: return SPELL_ATTR13_UNK17;
         case 18: return SPELL_ATTR13_ACTIVATES_REQUIRED_SHAPESHIFT;
         case 19: return SPELL_ATTR13_UNK19;
-        case 20: return SPELL_ATTR13_UNK20;
+        case 20: return SPELL_ATTR13_PERIODIC_REFRESH_EXTENDS_DURATION;
         case 21: return SPELL_ATTR13_UNK21;
         case 22: return SPELL_ATTR13_UNK22;
         case 23: return SPELL_ATTR13_UNK23;
@@ -2029,7 +2029,7 @@ TC_API_EXPORT size_t EnumUtils<SpellAttr13>::ToIndex(SpellAttr13 value)
         case SPELL_ATTR13_UNK17: return 17;
         case SPELL_ATTR13_ACTIVATES_REQUIRED_SHAPESHIFT: return 18;
         case SPELL_ATTR13_UNK19: return 19;
-        case SPELL_ATTR13_UNK20: return 20;
+        case SPELL_ATTR13_PERIODIC_REFRESH_EXTENDS_DURATION: return 20;
         case SPELL_ATTR13_UNK21: return 21;
         case SPELL_ATTR13_UNK22: return 22;
         case SPELL_ATTR13_UNK23: return 23;
