@@ -6,6 +6,7 @@ enum eDeathKnightSpells
     BloodTap        = 194679,
     DancingRuneWep  = 49028,
     DeathsAdvance   = 48265,
+    MindFreeze      = 47528,
 };
 
 /// ID: 337972 Hardened Bones
@@ -129,10 +130,44 @@ class spell_fleeting_wind : public AuraScript
     }
 };
 
+/// ID: 337705 Spirit Drain
+class spell_spirit_drain : public AuraScript
+{
+    PrepareAuraScript(spell_spirit_drain);
+
+    enum eSpiritDrain
+    {
+        SpellProc = 337709,
+    };
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        if (!eventInfo.GetSpellInfo())
+            return false;
+
+        return eventInfo.GetHitMask() & ProcFlagsHit::PROC_HIT_INTERRUPT && eventInfo.GetSpellInfo()->Id == MindFreeze;
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (auto caster = GetCaster())
+            if (auto effect = GetEffect(EFFECT_0))
+                if (effect->ConduitRankEntry)
+                    caster->CastSpell(caster, SpellProc, CastSpellExtraArgs(true).AddSpellBP0(effect->ConduitRankEntry->AuraPointsOverride));
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_spirit_drain::CheckProc);
+        OnProc += AuraProcFn(spell_spirit_drain::HandleProc);
+    }
+};
+
 void AddSC_spell_dk_covenant()
 {
     RegisterSpellScript(spell_hardened_bones);
     RegisterSpellScript(spell_blood_bond);
     RegisterSpellScript(spell_meat_shield);
     RegisterSpellScript(spell_fleeting_wind);
+    RegisterSpellScript(spell_spirit_drain);
 }
