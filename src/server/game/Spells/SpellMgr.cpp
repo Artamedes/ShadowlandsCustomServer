@@ -3290,6 +3290,11 @@ void SpellMgr::LoadSpellInfoCorrections()
 
     // Some spells have no amplitude set
     {
+        // Generic Spell Cast
+        ApplySpellFix({ 62388 }, [](SpellInfo* spellInfo)
+        {
+            spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(21);
+        });
         // FelDev Eye beam legendary
         ApplySpellFix({ 346503, 346505 }, [](SpellInfo* info)
         {

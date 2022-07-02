@@ -1061,35 +1061,6 @@ public:
     }
 };
 
-// Energizing Brew - 115288
-class spell_monk_energizing_brew : public SpellScriptLoader
-{
-public:
-    spell_monk_energizing_brew() : SpellScriptLoader("spell_monk_energizing_brew") { }
-
-    class spell_monk_energizing_brew_SpellScript : public SpellScript
-    {
-        PrepareSpellScript(spell_monk_energizing_brew_SpellScript);
-
-        SpellCastResult CheckFight()
-        {
-            if (!GetCaster()->IsInCombat())
-                return SPELL_FAILED_CASTER_AURASTATE;
-            return SPELL_CAST_OK;
-        }
-
-        void Register() override
-        {
-            OnCheckCast += SpellCheckCastFn(spell_monk_energizing_brew_SpellScript::CheckFight);
-        }
-    };
-
-    SpellScript* GetSpellScript() const override
-    {
-        return new spell_monk_energizing_brew_SpellScript();
-    }
-};
-
 // Flying Serpent Kick - 115057
 class spell_monk_flying_serpent_kick : public SpellScriptLoader
 {
@@ -2208,9 +2179,10 @@ public:
 		{
 			DespawnSpirit(caster);
 			caster->CastSpell(creature, SPELL_MONK_TRANSCENDENCE_CLONE_TARGET, true);
-        creature->CastSpell(creature, SPELL_MONK_MEDITATE_VISUAL, true);
+            creature->CastSpell(creature, SPELL_MONK_MEDITATE_VISUAL, true);
 			caster->Variables.Set(MONK_TRANSCENDENCE_GUID, creature->GetGUID());
-    }
+            caster->CastSpell(caster, SPELL_MONK_TRASCENDENCE_ALLOW_CAST, true);
+        }
     }
 
     static Creature* GetSpirit(Unit* caster)
@@ -2249,8 +2221,7 @@ class aura_monk_transcendence : public AuraScript
 		{
 			caster->RemoveAura(SPELL_MONK_TRASCENDENCE_ALLOW_CAST);
 			spell_monk_transcendence::DespawnSpirit(caster);
-    }
-
+        }
     }
 
     void Register() override
@@ -4120,9 +4091,9 @@ class aura_dru_inner_strength : public AuraScript
 };
 
 // 8647 - Mystic Touch
-class aura_dru_mystic_touch : public AuraScript
+class aura_monk_mystic_touch : public AuraScript
 {
-	PrepareAuraScript(aura_dru_mystic_touch);
+	PrepareAuraScript(aura_monk_mystic_touch);
 
 	bool CheckProc(ProcEventInfo& eventInfo)
 	{
@@ -4144,8 +4115,8 @@ class aura_dru_mystic_touch : public AuraScript
 
 	void Register() override
 	{
-		DoCheckProc += AuraCheckProcFn(aura_dru_mystic_touch::CheckProc);
-		OnProc += AuraProcFn(aura_dru_mystic_touch::HandleProc);
+		DoCheckProc += AuraCheckProcFn(aura_monk_mystic_touch::CheckProc);
+		OnProc += AuraProcFn(aura_monk_mystic_touch::HandleProc);
 	}
 };
 
@@ -4423,14 +4394,10 @@ struct at_monk_heal_sphere : AreaTriggerAI
 
 	void OnUnitEnter(Unit* unit) override
 	{
-		Player* player = unit->ToPlayer();
-		if (!player)
-			return;
-
-		if (player && at->GetCasterGuid() != ObjectGuid::Empty && at->GetCasterGuid().GetEntry() == player->GetGUID().GetEntry())
+		if (unit == at->GetCaster())
 		{
-			player->CastSpell(player, SPELL_MONK_HEALING_SPHERE_PROC, true);
-			at->SetDuration(0);
+            unit->CastSpell(unit, SPELL_MONK_HEALING_SPHERE_PROC, true);
+            at->Remove();
 		}
 	}
 };
@@ -4443,14 +4410,10 @@ struct at_monk_chi_sphere : AreaTriggerAI
 
 	void OnUnitEnter(Unit* unit) override
 	{
-		Player* player = unit->ToPlayer();
-		if (!player)
-			return;
-
-		if (player && at->GetCasterGuid() != ObjectGuid::Empty && at->GetCasterGuid().GetEntry() == player->GetGUID().GetEntry())
+        if (unit == at->GetCaster())
 		{
-			player->CastSpell(player, SPELL_MONK_HEALING_CHI_PROC, true);
-			at->SetDuration(0);
+            unit->CastSpell(unit, SPELL_MONK_HEALING_CHI_PROC, true);
+            at->Remove();
 		}
 	}
 };
@@ -5335,7 +5298,6 @@ void AddSC_monk_spell_scripts()
     RegisterSpellScript(aura_heavy_handed_strikes);    
     RegisterSpellScript(spell_monk_elusive_brawler_mastery);
     RegisterSpellScript(spell_monk_elusive_brawler_stacks);
-    new spell_monk_energizing_brew();
     new spell_monk_enveloping_mist();
     new spell_monk_essence_font_heal();
 	RegisterSpellScript(spell_monk_expel_harm);
@@ -5383,7 +5345,7 @@ void AddSC_monk_spell_scripts()
     RegisterSpellScript(spell_monk_whirling_dragon_punch);
     RegisterSpellScript(spell_monk_tiger_palm);
     RegisterSpellScript(aura_dru_inner_strength);
-    RegisterSpellScript(aura_dru_mystic_touch);
+    RegisterSpellScript(aura_monk_mystic_touch);
     RegisterSpellScript(aura_monk_spitfire);
     RegisterSpellScript(aura_monk_spitfire_aura);
     RegisterSpellScript(spell_monk_ironskin_brew);
