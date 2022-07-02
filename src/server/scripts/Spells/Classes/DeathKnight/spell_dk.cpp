@@ -1141,6 +1141,11 @@ class spell_dk_death_grip_initial : public SpellScript
 
 		if (caster->HasAura(SPELL_DK_WALKING_DEATH))
 			caster->CastSpell(target, SPELL_DK_WALKING_DEATH_DEBUFF, true);
+
+        /// Unending Grip
+        if (auto eff = caster->GetAuraEffect(338311, EFFECT_0))
+            if (eff->ConduitRankEntry)
+                caster->CastSpell(target, 338312, CastSpellExtraArgs(true).AddSpellBP0(eff->ConduitRankEntry->AuraPointsOverride));
 	}
 
     void Register() override
