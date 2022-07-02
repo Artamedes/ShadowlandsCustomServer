@@ -3290,6 +3290,38 @@ void SpellMgr::LoadSpellInfoCorrections()
 
     // Some spells have no amplitude set
     {
+        /// Rake, Moonfire
+        ApplySpellFix({ 155722, 155625 }, [](SpellInfo* info)
+        {
+            ApplySpellEffectFix(info, EFFECT_0, [](SpellEffectInfo* spellEffectInfo)
+            {
+                spellEffectInfo->BonusCoefficientFromAP = 0.4f;
+            });
+        });
+        /// Thrash
+        ApplySpellFix({ 106830 }, [](SpellInfo* info)
+        {
+            ApplySpellEffectFix(info, EFFECT_1, [](SpellEffectInfo* spellEffectInfo)
+            {
+                spellEffectInfo->BonusCoefficientFromAP = 0.15f;
+            });
+        });
+        /// Ferocious Bite
+        ApplySpellFix({ 22568 }, [](SpellInfo* info)
+        {
+            ApplySpellEffectFix(info, EFFECT_0, [](SpellEffectInfo* spellEffectInfo)
+            {
+                spellEffectInfo->BonusCoefficientFromAP = 2.0f;
+            });
+        });
+        /// Rake
+        ApplySpellFix({ 5221 }, [](SpellInfo* info)
+        {
+            ApplySpellEffectFix(info, EFFECT_0, [](SpellEffectInfo* spellEffectInfo)
+            {
+                spellEffectInfo->BonusCoefficientFromAP = 0.6f;
+            });
+        });
         /// Convoke
         ApplySpellFix({ 323764 }, [](SpellInfo* info)
         {

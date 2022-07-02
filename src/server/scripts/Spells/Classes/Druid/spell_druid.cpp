@@ -777,11 +777,31 @@ class spell_dru_ferocious_bite : public SpellScript
         int32 damage = GetHitDamage();
 
         // Calculate damage per Combo Points
-        damage = CalculatePct(damage, 20 * comboPoints);
+        AddPct(damage, 20 * comboPoints);
+
+        //damage += caster->m_unitData->AttackPower * 6.8f;
 
         // Calculate additional consumed Energy. The spell cost is 25 Energy, so the damage is incremented by additional 25.
         float proportion = float(energy / sSpellMgr->GetSpellInfo(SPELL_DRUID_FEROCIOUS_BITE)->GetEffect(EFFECT_1).BasePoints);
         damage += CalculatePct(damage, proportion * 100);
+
+        if (auto tasteForBlood = caster->GetAuraEffect(340682, EFFECT_0))
+        {
+            if (tasteForBlood->ConduitRankEntry)
+            {
+                auto AddPctIfHasDot([&](uint32 bleed) -> void
+                {
+                    if (target->HasAura(bleed, caster->GetGUID()))
+                    {
+                        AddPct(damage, tasteForBlood->ConduitRankEntry->AuraPointsOverride);
+                    }
+                });
+
+                AddPctIfHasDot(SPELL_DRUID_RIP);
+                AddPctIfHasDot(SPELL_DRUID_TRASH_CAT);
+                AddPctIfHasDot(SPELL_DRUID_RAKE_AURA);
+            }
+        }
 
         SetHitDamage(damage);
 
