@@ -2,8 +2,9 @@
 
 enum eDeathKnightSpells
 {
-    Lichborne   = 49039,
-    BloodTap    = 194679,
+    Lichborne       = 49039,
+    BloodTap        = 194679,
+    DancingRuneWep  = 49028,
 };
 
 /// ID: 337972 Hardened Bones
@@ -72,8 +73,45 @@ class spell_blood_bond : public AuraScript
     }
 };
 
+/// ID: 338435 Meat Shield
+class spell_meat_shield : public AuraScript
+{
+    PrepareAuraScript(spell_meat_shield);
+
+    enum eMeatShield
+    {
+        SpellProc       = 338438,
+        DancingRuneAura = 81256,
+    };
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        auto caster = GetCaster();
+
+        if (!caster)
+            return false;
+
+        return eventInfo.GetHitMask() & ProcFlagsHit::PROC_HIT_PARRY && caster->HasAura(DancingRuneAura);
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (auto caster = GetCaster())
+            if (auto effect = GetEffect(EFFECT_0))
+                if (effect->ConduitRankEntry)
+                    caster->CastSpell(caster, SpellProc, CastSpellExtraArgs(true).AddSpellBP0(effect->ConduitRankEntry->AuraPointsOverride));
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_meat_shield::CheckProc);
+        OnProc += AuraProcFn(spell_meat_shield::HandleProc);
+    }
+};
+
 void AddSC_spell_dk_covenant()
 {
     RegisterSpellScript(spell_hardened_bones);
     RegisterSpellScript(spell_blood_bond);
+    RegisterSpellScript(spell_meat_shield);
 }
