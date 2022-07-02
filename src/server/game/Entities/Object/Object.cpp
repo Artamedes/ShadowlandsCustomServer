@@ -2430,7 +2430,7 @@ int32 WorldObject::CalcSpellDuration(SpellInfo const* spellInfo, bool refresh, S
     if (comboPoints && minduration != -1 && minduration != maxduration)
         duration = minduration + int32((maxduration - minduration) * comboPoints / maxComboPoints);
     else
-        duration = minduration;
+        duration = maxduration;
 
     return duration;
 }
