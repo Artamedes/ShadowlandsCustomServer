@@ -101,10 +101,56 @@ class spell_indelible_victory : public AuraScript
     }
 };
 
+/// ID: 337214 Hack and Slash
+class spell_hack_and_slash : public AuraScript
+{
+    PrepareAuraScript(spell_hack_and_slash);
+
+    enum eHackAndSlash
+    {
+        RagingBlowCharge    = 1672,
+        RampageDamage       = 184367,
+    };
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        if (!eventInfo.GetSpellInfo())
+            return false;
+
+        return eventInfo.GetSpellInfo()->Id == RampageDamage;
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (auto caster = GetCaster())
+            caster->GetSpellHistory()->RestoreCharge(RagingBlowCharge);
+    }
+
+    void HandleCalcProc(ProcEventInfo& eventInfo, float& chance)
+    {
+        chance = 0.0f;
+        if (auto eff = GetEffect(EFFECT_0))
+        {
+            if (eff->ConduitRankEntry)
+            {
+                chance = eff->ConduitRankEntry->AuraPointsOverride / 10;
+            }
+        }
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_hack_and_slash::CheckProc);
+        OnProc += AuraProcFn(spell_hack_and_slash::HandleProc);
+        OnCalcProcChance += AuraCalcProcChanceFn(spell_hack_and_slash::HandleCalcProc);
+    }
+};
+
 
 void AddSC_spell_warrior_covenant()
 {
     RegisterSpellScript(spell_conquerors_banner);
     RegisterSpellScript(spell_ashen_juggernaut);
     RegisterSpellScript(spell_indelible_victory);
+    RegisterSpellScript(spell_hack_and_slash);
 }

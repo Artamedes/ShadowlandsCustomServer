@@ -19,6 +19,7 @@
 void AddSC_deathknight_spell_scripts();
 void AddSC_spell_dk_frost();
 void AddSC_spell_dk_blood();
+void AddSC_spell_dk_covenant();
 void AddSC_demon_hunter_spell_scripts();
 void AddSC_spell_dh_havoc();
 void AddSC_druid_spell_scripts();
@@ -68,6 +69,7 @@ void AddSpellsScripts()
     AddSC_deathknight_spell_scripts();
     AddSC_spell_dk_frost();
     AddSC_spell_dk_blood();
+    AddSC_spell_dk_covenant();
     AddSC_demon_hunter_spell_scripts();
     AddSC_spell_dh_havoc();
     AddSC_druid_spell_scripts();
