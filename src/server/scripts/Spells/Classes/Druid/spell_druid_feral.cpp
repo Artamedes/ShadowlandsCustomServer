@@ -75,6 +75,10 @@ class spell_bloodtalons : public AuraScript
         if (!eventInfo.GetProcSpell())
             return false;
 
+        // trash
+        if (eventInfo.GetSpellInfo()->Id == 106830)
+            return true;
+
         return eventInfo.GetProcSpell()->m_comboPointsEnergized > 0;
     }
 
@@ -92,18 +96,18 @@ class spell_bloodtalons : public AuraScript
         if (!UniqueBuilders.count(eventInfo.GetSpellInfo()->Id))
             UniqueBuilders.insert(eventInfo.GetSpellInfo()->Id);
 
-        switch (eventInfo.GetSpellInfo()->Id)
-        {
-            case Rip:
-            case FerociousBite:
-                /// Updated 9.2.5.44061
-                /// Proc script isn't working, drop it here. Dmg shd be handled by ApplySpellMod
-                if (auto bloodTalons = caster->GetAura(BloodTalonsProc))
-                    bloodTalons->DropCharge();
-                break;
-            default:
-                break;
-        }
+        ///switch (eventInfo.GetSpellInfo()->Id)
+        ///{
+        ///    case Rip:
+        ///    case FerociousBite:
+        ///        /// Updated 9.2.5.44061
+        ///        /// Proc script isn't working, drop it here. Dmg shd be handled by ApplySpellMod
+        ///        if (auto bloodTalons = caster->GetAura(BloodTalonsProc))
+        ///            bloodTalons->DropCharge();
+        ///        break;
+        ///    default:
+        ///        break;
+        ///}
 
         if (UniqueBuilders.size() >= 3)
         {
@@ -146,7 +150,7 @@ class spell_bloodtalons_proc : public AuraScript
     {
         PreventDefaultAction();
         if (auto aur = GetAura())
-            aur->DropStack();
+            aur->DropCharge();
     }
 
     void Register() override
