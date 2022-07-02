@@ -636,7 +636,7 @@ void WorldSession::SendListInventory(ObjectGuid vendorGuid, uint32 vendorEntry)
         WorldPackets::NPC::VendorItem& item = packet.Items[count];
 
         if (PlayerConditionEntry const* playerCondition = sPlayerConditionStore.LookupEntry(vendorItem->PlayerConditionId))
-            if (!ConditionMgr::IsPlayerMeetingCondition(_player, playerCondition))
+                if (!ConditionMgr::IsPlayerMeetingCondition(_player, playerCondition))
                 item.PlayerConditionFailed = playerCondition->ID;
 
         if (vendorItem->Type == ITEM_VENDOR_TYPE_ITEM)

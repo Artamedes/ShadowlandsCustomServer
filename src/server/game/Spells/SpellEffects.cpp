@@ -345,7 +345,7 @@ NonDefaultConstructible<SpellEffectHandlerFn> SpellEffectHandlers[TOTAL_SPELL_EF
     &Spell::EffectNULL,                                     //258 SPELL_EFFECT_MODIFY_KEYSTONE
     &Spell::EffectRespecAzeriteEmpoweredItem,               //259 SPELL_EFFECT_RESPEC_AZERITE_EMPOWERED_ITEM
     &Spell::EffectSummonStabledPet,                         //260 SPELL_EFFECT_SUMMON_STABLED_PET
-    &Spell::EffectNULL,                                     //261 SPELL_EFFECT_SCRAP_ITEM
+    &Spell::EffectScrapItem,                                //261 SPELL_EFFECT_SCRAP_ITEM
     &Spell::EffectUnused,                                   //262 SPELL_EFFECT_262
     &Spell::EffectNULL,                                     //263 SPELL_EFFECT_REPAIR_ITEM
     &Spell::EffectNULL,                                     //264 SPELL_EFFECT_REMOVE_GEM
@@ -6248,4 +6248,50 @@ void Spell::EffectLearnTransmogIllusion()
         return;
 
     player->GetSession()->GetCollectionMgr()->AddTransmogIllusion(illusionId);
+}
+#include "Chat.h"
+void Spell::EffectScrapItem()
+{
+    if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET)
+        return;
+
+    if (!itemTarget)
+        return;
+
+    if (!(itemTarget->GetTemplate()->GetFlags4() & ITEM_FLAG4_SCRAPABLE))
+        return;
+
+    static std::unordered_map<uint32, std::pair<uint32, uint32>> BonusIdsToDiamonds =
+    {
+        { 6807, { 10176, 1 } },
+        { 6808, { 10176, 2 } },
+        { 6809, { 10176, 3 } },
+        { 7203, { 10176, 4 } },
+        { 7204, { 10176, 5 } },
+        { 7205, { 10176, 6 } },
+        { 7206, { 10176, 7 } },
+        { 7207, { 10176, 8 } },
+        { 7208, { 10176, 9 } },
+        { 7209, { 10176, 10 } },
+        { 7210, { 10176, 11 } },
+        { 7211, { 10176, 12 } },
+        { 7212, { 10176, 13 } },
+        { 7213, { 10176, 14 } },
+        { 7214, { 10176, 15 } },
+    };
+
+    if (Player* player = GetCaster()->ToPlayer())
+    {
+        for (auto itr = BonusIdsToDiamonds.begin(); itr != BonusIdsToDiamonds.end(); ++itr)
+        {
+            if (itemTarget->HasBonusId(itr->first))
+            {
+                player->ModifyCurrency(itr->second.first, itr->second.second);
+                player->DestroyItem(itemTarget->GetBagSlot(), itemTarget->GetSlot(), true);
+                return;
+            }
+        }
+
+        ChatHandler(player).PSendSysMessage("|cffFF0000Couldn't scrap %s|cffFF0000, no loot found.", Item::GetItemLink(itemTarget, player).c_str());
+    }
 }

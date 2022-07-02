@@ -405,6 +405,7 @@ class TC_GAME_API Spell
         void EffectSendChatMessage();
         void EffectGrantBattlePetExperience();
         void EffectLearnTransmogIllusion();
+        void EffectScrapItem();
         void EffectSetCovenant();
         void EffectCraftRuneforgeLegendary();
         void EffectLearnSoulbindConduit();
