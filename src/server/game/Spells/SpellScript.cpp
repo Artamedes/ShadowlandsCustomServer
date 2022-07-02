@@ -1524,7 +1524,7 @@ void AuraScript::SetMaxDuration(int32 duration)
 
 int32 AuraScript::CalcMaxDuration() const
 {
-    return m_aura->CalcMaxDuration();
+    return m_aura->CalcMaxDuration(false);
 }
 
 bool AuraScript::IsExpired() const

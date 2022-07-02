@@ -3228,7 +3228,9 @@ SpellMissInfo Spell::PreprocessSpellHit(Unit* unit, TargetInfo& hitInfo)
             }
         }
 
-        hitInfo.AuraDuration = Aura::CalcMaxDuration(m_spellInfo, origCaster);
+        bool refresh = origCaster && unit->HasAura(m_spellInfo->Id, origCaster->GetGUID());
+
+        hitInfo.AuraDuration = Aura::CalcMaxDuration(m_spellInfo, origCaster, refresh, this);
 
         // unit is immune to aura if it was diminished to 0 duration
         if (!hitInfo.Positive && !unit->ApplyDiminishingToDuration(m_spellInfo, hitInfo.AuraDuration, origCaster, diminishLevel))
@@ -3275,7 +3277,7 @@ void Spell::DoSpellEffectHit(Unit* unit, SpellEffectInfo const& spellEffectInfo,
                         if (!refresh)
                             hitInfo.HitAura->SetStackAmount(m_spellValue->AuraStackAmount);
                         else
-                            hitInfo.HitAura->ModStackAmount(m_spellValue->AuraStackAmount);
+                            hitInfo.HitAura->ModStackAmount(m_spellValue->AuraStackAmount, AURA_REMOVE_BY_DEFAULT, true, true, this);
                     }
 
                     hitInfo.HitAura->SetDiminishGroup(hitInfo.DRGroup);
@@ -3327,17 +3329,9 @@ void Spell::DoSpellEffectHit(Unit* unit, SpellEffectInfo const& spellEffectInfo,
                     else
                         hitInfo.AuraDuration = *m_spellValue->Duration;
 
-                    if (m_spellInfo->HasAttribute(SPELL_ATTR13_PERIODIC_REFRESH_EXTENDS_DURATION) && hitInfo.AuraDuration != -1)
-                    {
-                        int32 addedDuration = CalculatePct(m_spellInfo->GetMaxDuration(), 33);
-                        hitInfo.AuraDuration += addedDuration;
-                    }
-
-                    if (hitInfo.AuraDuration != hitInfo.HitAura->GetMaxDuration())
-                    {
-                        hitInfo.HitAura->SetMaxDuration(hitInfo.AuraDuration);
-                        hitInfo.HitAura->SetDuration(hitInfo.AuraDuration);
-                    }
+                    // removed the if check here. WorldObject::CalcSpellDuration should have already ran, so we should always get the correct new duration.
+                    hitInfo.HitAura->SetMaxDuration(hitInfo.AuraDuration);
+                    hitInfo.HitAura->SetDuration(hitInfo.AuraDuration);
 
                     if (GetSpellInfo()->Id == 319728)
                         hitInfo.AuraDuration = -1;
@@ -5964,6 +5958,18 @@ SpellCastResult Spell::CheckCast(bool strict, int32* param1 /*= nullptr*/, int32
         SpellCastResult castResult = m_spellInfo->CheckExplicitTarget(caster, m_targets.GetObjectTarget(), m_targets.GetItemTarget());
         if (castResult != SPELL_CAST_OK)
             return castResult;
+
+        if (auto unitCaster = m_caster->ToUnit())
+        {
+            if (strict && m_spellInfo->HasAttribute(SPELL_ATTR13_PERIODIC_REFRESH_EXTENDS_DURATION))
+            {
+                if (auto aura = unitCaster->GetAura(m_spellInfo->Id, unitCaster->GetGUID()))
+                {
+                    if (aura->GetDuration() > unitCaster->CalcSpellDuration(m_spellInfo, true, this))
+                        return IsTriggered() ? SPELL_FAILED_DONT_REPORT : SPELL_FAILED_AURA_BOUNCED;
+                }
+            }
+        }
     }
 
     if (Unit* target = m_targets.GetUnitTarget())
@@ -5971,6 +5977,16 @@ SpellCastResult Spell::CheckCast(bool strict, int32* param1 /*= nullptr*/, int32
         SpellCastResult castResult = m_spellInfo->CheckTarget(m_caster, target, m_caster->GetTypeId() == TYPEID_GAMEOBJECT); // skip stealth checks for GO casts
         if (castResult != SPELL_CAST_OK)
             return castResult;
+
+        /// TODO: Check this
+        if (strict && m_spellInfo->HasAttribute(SPELL_ATTR13_PERIODIC_REFRESH_EXTENDS_DURATION) && m_spellInfo->HasAttribute(SPELL_ATTR4_AURA_NEVER_BOUNCES))
+        {
+            if (auto aura = target->GetAura(m_spellInfo->Id, m_caster->GetGUID()))
+            {
+                if (aura->GetDuration() > m_caster->CalcSpellDuration(m_spellInfo, true, this))
+                    return IsTriggered() ? SPELL_FAILED_DONT_REPORT : SPELL_FAILED_AURA_BOUNCED;
+            }
+        }
 
         // If it's not a melee spell, check if vision is obscured by SPELL_AURA_INTERFERE_TARGETTING
         if (m_spellInfo->DmgClass != SPELL_DAMAGE_CLASS_MELEE)

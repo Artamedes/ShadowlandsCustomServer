@@ -490,8 +490,9 @@ m_lastProcAttemptTime(GameTime::Now() - Seconds(10)), m_lastProcSuccessTime(Game
     if (!m_periodicCosts.empty())
         m_timeCla = 1 * IN_MILLISECONDS;
 
-    m_maxDuration = CalcMaxDuration(createInfo.Caster);
-    m_duration = m_maxDuration;
+    // initalize duration for now, need to calculate later
+    m_maxDuration = m_spellInfo->GetMaxDuration();
+    m_duration = m_spellInfo->GetDuration();
     m_procCharges = CalcMaxCharges(createInfo.Caster);
     m_isUsingCharges = m_procCharges != 0;
     // m_casterLevel = cast item level/caster level, caster level should be saved to db, confirmed with sniffs
@@ -870,12 +871,12 @@ void Aura::Update(uint32 diff, Unit* caster)
     CallScriptAuraUpdateHandlers(diff);
 }
 
-int32 Aura::CalcMaxDuration(Unit* caster) const
+int32 Aura::CalcMaxDuration(Unit* caster, bool refresh, Spell* spell) const
 {
-    return Aura::CalcMaxDuration(GetSpellInfo(), caster);
+    return Aura::CalcMaxDuration(GetSpellInfo(), caster, refresh, spell);
 }
 
-/*static*/ int32 Aura::CalcMaxDuration(SpellInfo const* spellInfo, WorldObject* caster)
+/*static*/ int32 Aura::CalcMaxDuration(SpellInfo const* spellInfo, WorldObject* caster, bool refresh, Spell* spell)
 {
     Player* modOwner = nullptr;
     int32 maxDuration;
@@ -883,7 +884,7 @@ int32 Aura::CalcMaxDuration(Unit* caster) const
     if (caster)
     {
         modOwner = caster->GetSpellModOwner();
-        maxDuration = caster->CalcSpellDuration(spellInfo);
+        maxDuration = caster->CalcSpellDuration(spellInfo, refresh, spell);
     }
     else
         maxDuration = spellInfo->GetDuration();
@@ -909,21 +910,15 @@ void Aura::SetDuration(int32 duration, bool withMods)
     SetNeedClientUpdateForTargets();
 }
 
-void Aura::RefreshDuration(bool withMods)
+void Aura::RefreshDuration(bool withMods, Spell* spell)
 {
     Unit* caster = GetCaster();
     if (withMods && caster)
     {
-        int32 duration = m_spellInfo->GetMaxDuration();
+        int32 duration = caster->CalcSpellDuration(m_spellInfo, true, spell);
         // Calculate duration of periodics affected by haste.
         if (m_spellInfo->HasAttribute(SPELL_ATTR8_HASTE_AFFECTS_DURATION))
             duration = int32(duration * caster->m_unitData->ModCastingSpeed);
-
-        if (m_spellInfo->HasAttribute(SPELL_ATTR13_PERIODIC_REFRESH_EXTENDS_DURATION) && duration != -1)
-        {
-            int32 addedDuration = CalculatePct(m_spellInfo->GetMaxDuration(), 33);
-            duration += addedDuration;
-        }
 
         SetMaxDuration(duration);
         SetDuration(duration);
@@ -940,15 +935,20 @@ void Aura::RefreshDuration(bool withMods)
             aurEff->ResetTicks();
 }
 
-void Aura::RefreshTimers(bool resetPeriodicTimer)
+void Aura::RefreshTimers(bool resetPeriodicTimer, Spell* spell)
 {
-    m_maxDuration = CalcMaxDuration();
+    m_maxDuration = CalcMaxDuration(true, spell);
     if (m_spellInfo->HasAttribute(SPELL_ATTR8_DONT_RESET_PERIODIC_TIMER))
     {
         int32 minPeriod = m_maxDuration;
         for (auto eff : GetAuraEffects())
-            if (int32 period = eff->GetPeriod())
-                minPeriod = std::min(period, minPeriod);
+        {
+            if (eff)
+            {
+                if (int32 period = eff->GetPeriod())
+                    minPeriod = std::min(period, minPeriod);
+            }
+        }
 
         // If only one tick remaining, roll it over into new duration
         if (GetDuration() <= minPeriod)
@@ -956,12 +956,6 @@ void Aura::RefreshTimers(bool resetPeriodicTimer)
             m_maxDuration += GetDuration();
             resetPeriodicTimer = false;
         }
-    }
-
-    if (m_spellInfo->HasAttribute(SPELL_ATTR13_PERIODIC_REFRESH_EXTENDS_DURATION) && m_spellInfo->GetMaxDuration() != -1)
-    {
-        int32 addedDuration = CalculatePct(m_spellInfo->GetMaxDuration(), 33);
-        m_maxDuration += addedDuration;
     }
 
     RefreshDuration();
@@ -1107,7 +1101,7 @@ uint32 Aura::CalcMaxStackAmount() const
     return maxStackAmount;
 }
 
-bool Aura::ModStackAmount(int32 num, AuraRemoveMode removeMode /*= AURA_REMOVE_BY_DEFAULT*/, bool resetPeriodicTimer /*= true*/, bool refresh /*= true*/)
+bool Aura::ModStackAmount(int32 num, AuraRemoveMode removeMode /*= AURA_REMOVE_BY_DEFAULT*/, bool resetPeriodicTimer /*= true*/, bool refresh /*= true*/, Spell* spell)
 {
     int32 stackAmount = m_stackAmount + num;
     int32 maxStackAmount = int32(CalcMaxStackAmount());
@@ -1135,7 +1129,7 @@ bool Aura::ModStackAmount(int32 num, AuraRemoveMode removeMode /*= AURA_REMOVE_B
 
     if (refresh)
     {
-        RefreshTimers(resetPeriodicTimer);
+        RefreshTimers(resetPeriodicTimer, spell);
 
         // reset charges
         SetCharges(CalcMaxCharges());

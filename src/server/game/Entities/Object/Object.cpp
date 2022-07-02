@@ -2398,18 +2398,33 @@ float WorldObject::ApplyEffectModifiers(SpellInfo const* spellInfo, uint8 effInd
     return value;
 }
 
-int32 WorldObject::CalcSpellDuration(SpellInfo const* spellInfo) const
+int32 WorldObject::CalcSpellDuration(SpellInfo const* spellInfo, bool refresh, Spell* spell) const
 {
     int32 comboPoints = 0;
     int32 maxComboPoints = 5;
     if (Unit const* unit = ToUnit())
     {
         comboPoints = unit->GetPower(POWER_COMBO_POINTS);
-        maxComboPoints = unit->GetMaxPower(POWER_COMBO_POINTS);
+        // I believe max combopoitns should always return 5 to get the right formulas here.
+        //maxComboPoints = unit->GetMaxPower(POWER_COMBO_POINTS);
+    }
+
+    if (spell)
+    {
+        if (auto power = spell->GetPowerCost(POWER_COMBO_POINTS))
+        {
+            comboPoints = power->Amount;
+        }
     }
 
     int32 minduration = spellInfo->GetDuration();
     int32 maxduration = spellInfo->GetMaxDuration();
+
+    if (spellInfo->HasAttribute(SPELL_ATTR13_PERIODIC_REFRESH_EXTENDS_DURATION) && maxduration != -1 && refresh)
+    {
+        int32 addedDuration = CalculatePct(maxduration, 33);
+        maxduration += addedDuration;
+    }
 
     int32 duration;
     if (comboPoints && minduration != -1 && minduration != maxduration)

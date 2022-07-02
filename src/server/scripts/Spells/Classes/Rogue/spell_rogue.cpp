@@ -850,9 +850,9 @@ class spell_rog_rupture : public SpellScript
                             uint32 cp = powerCost->Amount;
 
                             caster->Variables.Set<uint8>("CP", cp);
-                            int32 duration = 4 + (4 * cp);
-                            ruptureAura->SetDuration(duration * IN_MILLISECONDS);
-                            ruptureAura->SetMaxDuration(duration * IN_MILLISECONDS);
+                            //int32 duration = 4 + (4 * cp);
+                            //ruptureAura->SetDuration(duration * IN_MILLISECONDS);
+                            //ruptureAura->SetMaxDuration(duration * IN_MILLISECONDS);
                             HandleGrudgeMatch(GetCaster(), target, ruptureAura);
 
                             if (auto finality = caster->GetAura(FinalityRupture))
@@ -1616,47 +1616,6 @@ public:
     SpellScript* GetSpellScript() const override
     {
         return new spell_rog_cloak_and_dagger_SpellScript();
-    }
-};
-
-// static uint32 spell_rog_restless_blades_reducedCooldownsSpells[5] = { SPELL_ROGUE_ADRENALINE_RUSH, SPELL_ROGUE_KILLING_SPREE, SPELL_ROGUE_REDIRECT, SPELL_ROGUE_SHADOW_BLADES, SPELL_ROGUE_SPRINT };
-
-
-// 5171
-// 315496
-class spell_rog_slice_and_dice : public SpellScript
-{
-    PrepareSpellScript(spell_rog_slice_and_dice);
-
-    int32 _cp;
-
-    void Combo()
-    {
-        _cp = GetCaster()->GetPower(POWER_COMBO_POINTS);
-    }
-
-    void HandleOnHit()
-    {
-        if (Player* _player = GetCaster()->ToPlayer())
-        {
-            auto sliceAndDice = _player->GetAura(SPELL_ROGUE_SLICE_AND_DICE);
-            if (!sliceAndDice)
-                sliceAndDice = _player->GetAura(315496); // slice and dice
-
-            if (sliceAndDice)
-            {
-                int32 duration = sliceAndDice->GetDuration();
-                int32 maxDuration = sliceAndDice->GetMaxDuration();
-                sliceAndDice->SetDuration(duration + _cp * 6000);
-                sliceAndDice->SetMaxDuration(maxDuration + _cp * 6000);
-            }
-        }
-    }
-
-    void Register() override
-    {
-        BeforeCast += SpellCastFn(spell_rog_slice_and_dice::Combo);
-        AfterCast += SpellCastFn(spell_rog_slice_and_dice::HandleOnHit);
     }
 };
 
@@ -4752,7 +4711,6 @@ void AddSC_rogue_spell_scripts()
     RegisterSpellAndAuraScriptPair(spell_rog_shadow_dance, aura_rog_shadow_dance_effect);
     new spell_rog_shadow_techniques();
     new spell_rog_shuriken_storm();
-    RegisterSpellScript(spell_rog_slice_and_dice);
     RegisterSpellScript(spell_slice_and_dice_sl);
     new spell_rog_stealth();
     new spell_rog_subterfuge();

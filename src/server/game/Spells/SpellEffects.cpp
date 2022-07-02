@@ -5892,7 +5892,7 @@ void Spell::EffectSummonStabledPet()
     {
         float x, y, z;
         player->GetClosePoint(x, y, z, player->GetObjectSize());
-        player->SummonPet(playerPetData->CreatureId, PetSaveMode::PET_SAVE_NOT_IN_SLOT, x, y, z, player->GetOrientation(), player->CalcSpellDuration(spellInfo), nullptr, true, true,
+        player->SummonPet(playerPetData->CreatureId, PetSaveMode::PET_SAVE_NOT_IN_SLOT, x, y, z, player->GetOrientation(), player->CalcSpellDuration(spellInfo, false), nullptr, true, true,
             [spellInfo](Pet* pet, bool result) -> void
         {
             if (!result || !pet)

@@ -1792,44 +1792,6 @@ class spell_dru_rip : public SpellScript
         }
 	}
 
-    void HandleAfterHit()
-    {
-        if (Unit* caster = GetCaster())
-        {
-            if (Unit* target = GetHitUnit())
-            {
-                if (auto rip = target->GetAura(SPELL_DRUID_RIP, caster->GetGUID()))
-                {
-                    int32 duration = std::min(9000, rip->GetDuration());
-
-                    switch (comboPoints)
-                    {
-                        case 1:
-                            duration += 8000;
-                            break;
-                        case 2:
-                            duration += 12000;
-                            break;
-                        case 3:
-                            duration += 16000;
-                            break;
-                        case 4:
-                            duration += 20000;
-                            break;
-                        case 5:
-                            duration += 24000;
-                            break;
-                        default:
-                            break;
-                    }
-
-                    rip->SetMaxDuration(duration);
-                    rip->RefreshDuration();
-                }
-            }
-        }
-    }
-
     SpellCastResult CheckCast()
     {
         if (Unit* caster = GetCaster())
@@ -1873,7 +1835,6 @@ class spell_dru_rip : public SpellScript
         OnCalcCritChance += SpellOnCalcCritChanceFn(spell_dru_rip::CalcCrit);
         OnTakePower += SpellOnTakePowerFn(spell_dru_rip::HandleTakePower);
 		OnEffectHitTarget += SpellEffectFn(spell_dru_rip::HandleEffectHit, EFFECT_0, SPELL_EFFECT_APPLY_AURA);
-        AfterHit += SpellHitFn(spell_dru_rip::HandleAfterHit);
         OnCheckCast += SpellCheckCastFn(spell_dru_rip::CheckCast);
     }
 
