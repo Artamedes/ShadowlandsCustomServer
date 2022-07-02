@@ -5,6 +5,9 @@ enum eAssassination
     Rupture = 1943,
     Envenom = 32645,
     Mutilate = 1329,
+
+    Garrote = 703,
+    InternalBleedingDot = 154953,
 };
 
 
@@ -116,10 +119,61 @@ class spell_doomblade : public AuraScript
     }
 };
 
+// 79134 - Venomous Wounds
+class aura_rog_venomous_wounds : public AuraScript
+{
+    PrepareAuraScript(aura_rog_venomous_wounds);
+
+    enum eVenomousWounds
+    {
+        VenomousVin = 51637,
+    };
+
+	bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        Unit* caster = GetCaster();
+        Unit* target = eventInfo.GetActionTarget();
+        if (!caster || !target)
+            return false;
+
+        if (!eventInfo.GetSpellInfo())
+            return false;
+
+        switch (eventInfo.GetSpellInfo()->Id)
+        {
+            case Garrote:
+            case Rupture:
+            case InternalBleedingDot:
+                if (target->HasAuraWithDispelFlagsFromCaster(caster, DISPEL_POISON, false))
+                    return true;
+            default:
+                return false;
+        }
+
+		return false;
+	}
+
+    void HandleProc(ProcEventInfo& /*procInfo*/)
+    {
+        Unit* caster = GetCaster();
+        if (!caster)
+            return;
+
+        caster->CastSpell(caster, VenomousVin, true);
+    }
+
+    void Register() override
+    {
+		DoCheckProc += AuraCheckProcFn(aura_rog_venomous_wounds::CheckProc);
+        OnProc += AuraProcFn(aura_rog_venomous_wounds::HandleProc);
+    }
+};
+
 void AddSC_spell_rogue_assassination()
 {
     RegisterSpellScript(aura_rog_poison_bomb);
     RegisterSpellScript(spell_doomblade);
+    RegisterSpellScript(aura_rog_venomous_wounds);
         
     RegisterAreaTriggerAI(at_rogue_poison_bomb); // 16552
 }

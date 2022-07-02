@@ -1659,42 +1659,6 @@ class spell_slice_and_dice_sl : public AuraScript
     }
 };
 
-// 79134 - Venomous Wounds
-class aura_rog_venomous_wounds : public AuraScript
-{
-    PrepareAuraScript(aura_rog_venomous_wounds);
-
-	bool CheckProc(ProcEventInfo& eventInfo)
-    {
-        Unit* caster = GetCaster();
-        Unit* target = eventInfo.GetActionTarget();
-        if (!caster || !target)
-            return false;
-
-        if (eventInfo.GetSpellInfo() && (eventInfo.GetSpellInfo()->Id == SPELL_ROGUE_GARROTE_DOT || eventInfo.GetSpellInfo()->Id == SPELL_ROGUE_RUPTURE_DOT
-            || eventInfo.GetSpellInfo()->Id == SPELL_ROGUE_INTERNAL_BLEEDING_DOT) && target->HasAuraWithDispelFlagsFromCaster(caster, DISPEL_POISON, false))
-            return true;
-
-		return false;
-	}
-
-    void HandleProc(ProcEventInfo& /*procInfo*/)
-    {
-        Unit* caster = GetCaster();
-        if (!caster)
-            return;
-
-        int32 energyGain = GetSpellInfo()->GetEffect(EFFECT_1).BasePoints;
-        caster->ModifyPower(POWER_ENERGY, energyGain);
-    }
-
-    void Register() override
-    {
-		DoCheckProc += AuraCheckProcFn(aura_rog_venomous_wounds::CheckProc);
-        OnProc += AuraProcFn(aura_rog_venomous_wounds::HandleProc);
-    }
-};
-
 // 51701 - Honor Among Thieves
 class spell_rog_honor_among_thieves : public SpellScriptLoader
 {
@@ -3058,32 +3022,6 @@ class spell_rog_cimson_tempest :public SpellScript
         {
 			if (Aura* aura = target->GetAura(SPELL_ROGUE_CRIMSON_TEMPEST, GetCaster()->GetGUID()))
             {
-                if (GetSpell()->GetUsedComboPoints() > 0)
-                {
-                    uint32 extraDur = 0;
-                    switch (GetSpell()->GetUsedComboPoints())
-                    {
-                        case 1:
-                            extraDur = 4000;
-                            break;
-                        case 2:
-                            extraDur = 6000;
-                            break;
-                        case 3:
-                            extraDur = 8000;
-                            break;
-                        case 4:
-                            extraDur = 10000;
-                            break;
-                        case 5:
-                            extraDur = 12000;
-                            break;
-                        default:
-                            break;
-                    }
-                    aura->SetMaxDuration(extraDur + aura->GetDuration());
-                    aura->RefreshDuration();
-                }
                 HandleGrudgeMatch(GetCaster(), target, aura);
             }
         }
@@ -4717,7 +4655,6 @@ void AddSC_rogue_spell_scripts()
     new spell_rog_true_bearing();
     new spell_rog_vanish();
     new spell_rog_vanish_aura();
-    RegisterSpellScript(aura_rog_venomous_wounds);
     new spell_rogue_combat_potency();
     new spell_rog_weaponmaster();
 	RegisterSpellScript(aura_rog_marked_for_death);
