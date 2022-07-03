@@ -3740,7 +3740,7 @@ class spell_pal_divine_steed_mount : public AuraScript
         if (!player)
             return;
 
-        player->SetUnitFlag3(UnitFlags3::UNIT_FLAG3_CAN_FIGHT_WITHOUT_DISMOUNT);
+        player->SetUnitFlag3(UnitFlags3::UNIT_FLAG3_ALLOW_MOUNTED_COMBAT);
 
         if (player->HasAura(SPELL_PALADIN_GALLANT_STEED_POWER))
             player->CastSpell(player, SPELL_PALADIN_GALLANT_STEED_AT, true);
@@ -3756,7 +3756,7 @@ class spell_pal_divine_steed_mount : public AuraScript
         if (!player)
             return;
 
-        player->RemoveUnitFlag3(UnitFlags3::UNIT_FLAG3_CAN_FIGHT_WITHOUT_DISMOUNT);
+        player->RemoveUnitFlag3(UnitFlags3::UNIT_FLAG3_ALLOW_MOUNTED_COMBAT);
     }
 
     void Register() override

@@ -326,6 +326,8 @@ enum NPCFlags2 : uint32
     UNIT_NPC_FLAG_2_CONTRIBUTION_COLLECTOR  = 0x00000400,   // TITLE is contribution collector
     UNIT_NPC_FLAG_2_AZERITE_RESPEC          = 0x00004000,   // TITLE is azerite respec
     UNIT_NPC_FLAG_2_ISLANDS_QUEUE           = 0x00008000,   // TITLE is islands queue
+    UNIT_NPC_FLAG_2_UNK_10000               = 0x00010000,   // TITLE unk
+    UNIT_NPC_FLAG_2_RUNECARVER              = 0x00020000,   // TITLE is runecarver
     UNIT_NPC_FLAG_2_SUPPRESS_NPC_SOUNDS_EXCEPT_END_OF_INTERACTION   = 0x00010000,
 };
 
