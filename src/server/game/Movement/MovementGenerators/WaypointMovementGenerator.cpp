@@ -116,6 +116,8 @@ void WaypointMovementGenerator<Creature>::DoInitialize(Creature* owner)
         return;
     }
 
+    isSmoothWp = !owner->Variables.Exist("NoSmoothWP");
+
     owner->StopMoving();
 
     _nextMoveTime.Reset(1000);
@@ -177,7 +179,7 @@ bool WaypointMovementGenerator<Creature>::DoUpdate(Creature* owner, uint32 diff)
         // relaunch movement if its speed has changed
         if (HasFlag(MOVEMENTGENERATOR_FLAG_SPEED_UPDATE_PENDING))
             StartMove(owner, true);
-        else
+        else if (isSmoothWp)
         {
             uint32 pointId = uint32(owner->movespline->currentPathIdx());
             if (pointId > _currentNode)
@@ -354,16 +356,22 @@ void WaypointMovementGenerator<Creature>::StartMove(Creature* owner, bool relaun
     //! but formationDest contains global coordinates
     //init.MoveTo(waypoint.x, waypoint.y, waypoint.z);
     Movement::PointsArray path;
-    path.reserve(1 + _path->nodes.size() - _currentNode);
-    path.emplace_back(G3D::Vector3(owner->GetPositionX(), owner->GetPositionY(), owner->GetPositionZ()));
-    int i = _currentNode;
-    for (i = _currentNode; i < _path->nodes.size(); ++i)
-    {
-        auto wp = _path->nodes[i];
-        path.emplace_back(G3D::Vector3(wp.x, wp.y, wp.z));
-    }
 
-    init.MovebyPath(path);
+    if (isSmoothWp)
+    {
+        path.reserve(1 + _path->nodes.size() - _currentNode);
+        path.emplace_back(G3D::Vector3(owner->GetPositionX(), owner->GetPositionY(), owner->GetPositionZ()));
+        int i = _currentNode;
+        for (i = _currentNode; i < _path->nodes.size(); ++i)
+        {
+            auto wp = _path->nodes[i];
+            path.emplace_back(G3D::Vector3(wp.x, wp.y, wp.z));
+        }
+
+        init.MovebyPath(path);
+    }
+    else
+        init.MoveTo(waypoint.x, waypoint.y, waypoint.z);
     
     if (waypoint.orientation.has_value() && waypoint.delay > 0)
         init.SetFacing(*waypoint.orientation);

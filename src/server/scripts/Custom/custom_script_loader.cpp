@@ -84,6 +84,10 @@ void AddSC_npc_1v1arena();
 void AddSC_GMTavern();
 void AddSC_QuelTest();
 
+// hoa
+void AddSC_instance_halls_of_attonement();
+void AddSC_halls_of_attonement();
+
 void AddCustomScripts()
 {
     AddSC_LoginScript();
@@ -149,4 +153,8 @@ void AddCustomScripts()
     AddSC_npc_1v1arena();
     AddSC_GMTavern();
     AddSC_QuelTest();
+
+    // hoa
+    AddSC_instance_halls_of_attonement();
+    AddSC_halls_of_attonement();
 }

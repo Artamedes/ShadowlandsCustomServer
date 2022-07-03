@@ -72,6 +72,7 @@ class WaypointMovementGenerator<Creature> : public MovementGeneratorMedium<Creat
         uint32 _pathId;
         bool _repeating;
         bool _loadedFromDB;
+        bool isSmoothWp = true;
 };
 
 #endif
