@@ -169,10 +169,11 @@ class spell_fueled_by_violence : public AuraScript
     void HandleProc(ProcEventInfo& eventInfo)
     {
         if (auto caster = GetCaster())
-            if (auto effect = GetEffect(EFFECT_0))
-                if (effect->ConduitRankEntry)
-                    if (eventInfo.GetDamageInfo())
-                        caster->CastSpell(caster, SpellProc, CastSpellExtraArgs(true).AddSpellBP0(CalculatePct(eventInfo.GetDamageInfo()->GetDamage(), effect->ConduitRankEntry->AuraPointsOverride)));
+            if (IsSpec(caster, SimpleTalentSpecs::ProtWarrior))
+                if (auto effect = GetEffect(EFFECT_0))
+                    if (effect->ConduitRankEntry)
+                        if (eventInfo.GetDamageInfo())
+                            caster->CastSpell(caster, SpellProc, CastSpellExtraArgs(true).AddSpellBP0(CalculatePct(eventInfo.GetDamageInfo()->GetDamage(), effect->ConduitRankEntry->AuraPointsOverride)));
     }
 
     void Register() override
