@@ -147,6 +147,20 @@ bool AreaTrigger::Create(uint32 areaTriggerCreatePropertiesId, Unit* caster, Uni
         }
     }
 
+    if (areaTriggerCreatePropertiesId == 1193 && caster)
+    {
+        if (auto player = caster->ToPlayer())
+        {
+            auto newRadius = OverrideRadius;
+
+            if (player->GetAuraEffect(337764, EFFECT_0)) ///< Reinforced Shell conduit
+                AddPct(newRadius, 15);
+
+            OverrideRadius = newRadius;
+            OverrideRadiusTarget = newRadius;
+        }
+    }
+
     _areaTriggerTemplate = _areaTriggerCreateProperties->Template;
 
     Object::_Create(ObjectGuid::Create<HighGuid::AreaTrigger>(GetMapId(), GetTemplate() ? GetTemplate()->Id.Id : 0, caster->GetMap()->GenerateLowGuid<HighGuid::AreaTrigger>()));
