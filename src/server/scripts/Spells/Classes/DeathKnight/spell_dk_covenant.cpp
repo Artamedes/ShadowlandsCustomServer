@@ -7,6 +7,7 @@ enum eDeathKnightSpells
     DancingRuneWep  = 49028,
     DeathsAdvance   = 48265,
     MindFreeze      = 47528,
+    Apocalypse      = 275699,
 };
 
 /// ID: 337972 Hardened Bones
@@ -163,6 +164,39 @@ class spell_spirit_drain : public AuraScript
     }
 };
 
+/// ID: 338553 Convocation of the Dead
+class spell_convocation_of_the_dead : public AuraScript
+{
+    PrepareAuraScript(spell_convocation_of_the_dead);
+
+    enum eConvoDead
+    {
+        FesteringWound = 194311,
+    };
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        if (!eventInfo.GetSpellInfo())
+            return false;
+
+        return eventInfo.GetSpellInfo()->Id == FesteringWound;
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (auto caster = GetCaster())
+        {
+            caster->GetSpellHistory()->ModifyCooldown(Apocalypse, -1000);
+        }
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_convocation_of_the_dead::CheckProc);
+        OnProc += AuraProcFn(spell_convocation_of_the_dead::HandleProc);
+    }
+};
+
 void AddSC_spell_dk_covenant()
 {
     RegisterSpellScript(spell_hardened_bones);
@@ -170,4 +204,5 @@ void AddSC_spell_dk_covenant()
     RegisterSpellScript(spell_meat_shield);
     RegisterSpellScript(spell_fleeting_wind);
     RegisterSpellScript(spell_spirit_drain);
+    RegisterSpellScript(spell_convocation_of_the_dead);
 }
