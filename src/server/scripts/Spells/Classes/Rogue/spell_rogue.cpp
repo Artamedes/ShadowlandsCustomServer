@@ -971,7 +971,7 @@ class spell_rog_stealth : public SpellScriptLoader
                         target->CastSpell(target, SPELL_ROGUE_SHADOWSTRIKE_BONUS, true);
 
                     target->RemoveAurasDueToSpell(SPELL_ROGUE_VANISH);
-                    target->RemoveAurasDueToSpell(SPELL_ROGUE_VANISH_AURA);
+                    //target->RemoveAurasDueToSpell(SPELL_ROGUE_VANISH_AURA); - crashes server :)
                     target->RemoveAurasDueToSpell(SPELL_ROGUE_STEALTH_STEALTH_AURA);
                     target->RemoveAurasDueToSpell(SPELL_ROGUE_STEALTH_SHAPESHIFT_AURA);
                     target->RemoveAurasDueToSpell(SPELL_ROGUE_SUBTERFUGE_AURA);
