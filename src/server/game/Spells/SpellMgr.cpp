@@ -3295,6 +3295,14 @@ void SpellMgr::LoadSpellInfoCorrections()
         {
             spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(21);
         });
+        // envenom
+        ApplySpellFix({ 32645 }, [](SpellInfo* info)
+        {
+            ApplySpellEffectFix(info, EFFECT_0, [](SpellEffectInfo* spellEffectInfo)
+            {
+                spellEffectInfo->BonusCoefficientFromAP = 0.75f;
+            });
+        });
         // FelDev Eye beam legendary
         ApplySpellFix({ 346503, 346505 }, [](SpellInfo* info)
         {
