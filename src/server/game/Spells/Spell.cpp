@@ -3228,9 +3228,10 @@ SpellMissInfo Spell::PreprocessSpellHit(Unit* unit, TargetInfo& hitInfo)
             }
         }
 
-        bool refresh = origCaster && unit->HasAura(m_spellInfo->Id, origCaster->GetGUID());
+        auto oldAura = unit->GetAura(m_spellInfo->Id, origCaster->GetGUID());
+        bool refresh = origCaster && oldAura;
 
-        hitInfo.AuraDuration = Aura::CalcMaxDuration(m_spellInfo, origCaster, refresh, this);
+        hitInfo.AuraDuration = Aura::CalcMaxDuration(m_spellInfo, origCaster, refresh, this, oldAura ? oldAura->GetDuration() : 0);
 
         // unit is immune to aura if it was diminished to 0 duration
         if (!hitInfo.Positive && !unit->ApplyDiminishingToDuration(m_spellInfo, hitInfo.AuraDuration, origCaster, diminishLevel))
@@ -5965,7 +5966,7 @@ SpellCastResult Spell::CheckCast(bool strict, int32* param1 /*= nullptr*/, int32
             {
                 if (auto aura = unitCaster->GetAura(m_spellInfo->Id, unitCaster->GetGUID()))
                 {
-                    if (aura->GetDuration() > unitCaster->CalcSpellDuration(m_spellInfo, true, this))
+                    if (aura->GetDuration() > unitCaster->CalcSpellDuration(m_spellInfo, true, this, aura->GetDuration()))
                         return IsTriggered() ? SPELL_FAILED_DONT_REPORT : SPELL_FAILED_AURA_BOUNCED;
                 }
             }
@@ -5983,7 +5984,7 @@ SpellCastResult Spell::CheckCast(bool strict, int32* param1 /*= nullptr*/, int32
         {
             if (auto aura = target->GetAura(m_spellInfo->Id, m_caster->GetGUID()))
             {
-                if (aura->GetDuration() > m_caster->CalcSpellDuration(m_spellInfo, true, this))
+                if (aura->GetDuration() > m_caster->CalcSpellDuration(m_spellInfo, true, this, aura->GetDuration()))
                     return IsTriggered() ? SPELL_FAILED_DONT_REPORT : SPELL_FAILED_AURA_BOUNCED;
             }
         }

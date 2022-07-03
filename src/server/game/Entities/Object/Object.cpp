@@ -2398,7 +2398,7 @@ float WorldObject::ApplyEffectModifiers(SpellInfo const* spellInfo, uint8 effInd
     return value;
 }
 
-int32 WorldObject::CalcSpellDuration(SpellInfo const* spellInfo, bool refresh, Spell* spell) const
+int32 WorldObject::CalcSpellDuration(SpellInfo const* spellInfo, bool refresh, Spell* spell, int32 oldDuration) const
 {
     int32 comboPoints = 0;
     int32 maxComboPoints = 5;
@@ -2423,7 +2423,7 @@ int32 WorldObject::CalcSpellDuration(SpellInfo const* spellInfo, bool refresh, S
     if (spellInfo->HasAttribute(SPELL_ATTR13_PERIODIC_REFRESH_EXTENDS_DURATION) && maxduration != -1 && refresh)
     {
         int32 addedDuration = CalculatePct(maxduration, 33);
-        maxduration += addedDuration;
+        maxduration += std::min(oldDuration, addedDuration);
     }
 
     int32 duration;

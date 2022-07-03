@@ -873,10 +873,10 @@ void Aura::Update(uint32 diff, Unit* caster)
 
 int32 Aura::CalcMaxDuration(Unit* caster, bool refresh, Spell* spell) const
 {
-    return Aura::CalcMaxDuration(GetSpellInfo(), caster, refresh, spell);
+    return Aura::CalcMaxDuration(GetSpellInfo(), caster, refresh, spell, GetDuration());
 }
 
-/*static*/ int32 Aura::CalcMaxDuration(SpellInfo const* spellInfo, WorldObject* caster, bool refresh, Spell* spell)
+/*static*/ int32 Aura::CalcMaxDuration(SpellInfo const* spellInfo, WorldObject* caster, bool refresh, Spell* spell, int32 oldDuration)
 {
     Player* modOwner = nullptr;
     int32 maxDuration;
@@ -884,7 +884,7 @@ int32 Aura::CalcMaxDuration(Unit* caster, bool refresh, Spell* spell) const
     if (caster)
     {
         modOwner = caster->GetSpellModOwner();
-        maxDuration = caster->CalcSpellDuration(spellInfo, refresh, spell);
+        maxDuration = caster->CalcSpellDuration(spellInfo, refresh, spell, oldDuration);
     }
     else
         maxDuration = spellInfo->GetDuration();
@@ -915,7 +915,7 @@ void Aura::RefreshDuration(bool withMods, Spell* spell)
     Unit* caster = GetCaster();
     if (withMods && caster)
     {
-        int32 duration = caster->CalcSpellDuration(m_spellInfo, true, spell);
+        int32 duration = caster->CalcSpellDuration(m_spellInfo, true, spell, GetDuration());
         // Calculate duration of periodics affected by haste.
         if (m_spellInfo->HasAttribute(SPELL_ATTR8_HASTE_AFFECTS_DURATION))
             duration = int32(duration * caster->m_unitData->ModCastingSpeed);
