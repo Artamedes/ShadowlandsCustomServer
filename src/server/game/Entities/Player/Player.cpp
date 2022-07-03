@@ -6325,8 +6325,12 @@ uint16 Player::GetSkillValue(uint32 skill) const
         return 0;
 
     SkillStatusMap::const_iterator itr = mSkillStatus.find(skill);
-    if (itr == mSkillStatus.end() || itr->second.uState == SKILL_DELETED || !m_activePlayerData->Skill->SkillRank[itr->second.pos])
+    if (itr == mSkillStatus.end() || itr->second.uState == SKILL_DELETED)
         return 0;
+
+    if (!m_activePlayerData->Skill->SkillRank[itr->second.pos])
+        // PIGPGI temp fix
+        return 1;
 
     int32 result = int32(m_activePlayerData->Skill->SkillRank[itr->second.pos]);
     result += int32(m_activePlayerData->Skill->SkillTempBonus[itr->second.pos]);
