@@ -2397,19 +2397,20 @@ struct at_dru_fury_of_elune : AreaTriggerAI
 						lastTargetPosition = target->GetPosition();
 	}
 
-	void OnUpdate(uint32 /*diff*/) override
+	void OnPeriodicProc() override
 	{
         if (Unit* caster = at->GetCaster())
+        {
             if (caster->Variables.Exist("FURY_TARGET") && caster->Variables.GetValue<ObjectGuid>("FURY_TARGET") != ObjectGuid::Empty)
                 if (Unit* target = ObjectAccessor::GetUnit(*caster, caster->Variables.GetValue<ObjectGuid>("FURY_TARGET")))
                     if (caster->IsValidAttackTarget(target) && lastTargetPosition != target->GetPosition())
-				        at->SetDestination(target->GetPosition(), 500);
-	}
+                    {
+                        lastTargetPosition = target->GetPosition();
+                        at->SetDestination(target->GetPosition(), 500);
+                    }
 
-	void OnPeriodicProc() override
-	{
-		if (Unit* caster = at->GetCaster())
-			caster->CastSpell(at->GetPosition(), SPELL_DRUID_FURY_OF_ELUNE_DAMAGE, true);
+            caster->CastSpell(at->GetPosition(), SPELL_DRUID_FURY_OF_ELUNE_DAMAGE, true);
+        }
 	}
 
 private:

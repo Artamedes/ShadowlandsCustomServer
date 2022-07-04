@@ -56,8 +56,58 @@ class spell_well_honed_instincts : public SpellScript
     }
 };
 
+/// ID: 323546 Ravenous Frenzy
+class spell_ravenous_frenzy : public AuraScript
+{
+    PrepareAuraScript(spell_ravenous_frenzy);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetProcSpell() && !eventInfo.GetProcSpell()->IsTriggered() && eventInfo.GetSpellInfo()->SpellFamilyName == SPELLFAMILY_DRUID;
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        _nextStunTime = GameTime::GetGameTime() + 2;
+        if (auto aur = GetAura())
+            aur->ModStackAmount(1);
+    }
+
+    void HandlePeriodic(AuraEffect const* /*aurEff*/)
+    {
+        auto now = GameTime::GetGameTime();
+
+        if (now >= _nextStunTime)
+        {
+            auto caster = GetCaster();
+            if (caster)
+            {
+                caster->CastSpell(caster, 323557, CastSpellExtraArgs(true).AddSpellBP0(GetStackAmount()));
+                Remove();
+            }
+        }
+    }
+
+    void OnCalcProc(ProcEventInfo& eventInfo, float& chance)
+    {
+        chance = 100.0f;
+    }
+
+    time_t _nextStunTime;
+
+    void Register() override
+    {
+        _nextStunTime = GameTime::GetGameTime() + 2;
+        DoCheckProc += AuraCheckProcFn(spell_ravenous_frenzy::CheckProc);
+        OnProc += AuraProcFn(spell_ravenous_frenzy::HandleProc);
+        OnEffectPeriodic += AuraEffectPeriodicFn(spell_ravenous_frenzy::HandlePeriodic, EFFECT_2, SPELL_AURA_PERIODIC_DUMMY);
+        OnCalcProcChance += AuraCalcProcChanceFn(spell_ravenous_frenzy::OnCalcProc);
+    }
+};
+
 void AddSC_spell_druid_covenant()
 {
     RegisterSpellScript(spell_ursine_vigor);
     RegisterSpellScript(spell_well_honed_instincts);
+    RegisterSpellScript(spell_ravenous_frenzy);
 }
