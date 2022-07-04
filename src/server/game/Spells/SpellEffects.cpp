@@ -4026,7 +4026,7 @@ void Spell::EffectKnockBack()
         return;
 
     Position origin;
-    if (effectInfo->Effect == SPELL_EFFECT_KNOCK_BACK_DEST && m_spellInfo->Id != 198793 && m_spellInfo->Id != 330393) ///< vengeful retreat - hack so it knocks you back, not always at 3.14 && 330393 - headbutt (Iron Docks)
+    if (effectInfo->Effect == SPELL_EFFECT_KNOCK_BACK_DEST && m_spellInfo->Id != 198793 && m_spellInfo->Id != 330393 && m_spellInfo->Id != 323126) ///< vengeful retreat - hack so it knocks you back, not always at 3.14 && 330393 - headbutt (Iron Docks)
     {
         if (m_targets.HasDst())
             origin = destTarget->GetPosition();

@@ -3290,6 +3290,24 @@ void SpellMgr::LoadSpellInfoCorrections()
 
     // Some spells have no amplitude set
     {
+        /// HoA Fixes
+        ApplySpellFix({ 329340 }, [](SpellInfo* info)
+        {
+            ApplySpellEffectFix(info, EFFECT_0, [](SpellEffectInfo* spellEffectInfo)
+            {
+                spellEffectInfo->ApplyAuraName = AuraType::SPELL_AURA_PERIODIC_DUMMY;
+                spellEffectInfo->ApplyAuraPeriod = 1000;
+            });
+        });
+
+        ApplySpellFix({ 323597 }, [](SpellInfo* info)
+        {
+            ApplySpellEffectFix(info, EFFECT_0, [](SpellEffectInfo* spellEffectInfo)
+            {
+                spellEffectInfo->TargetA = SpellImplicitTargetInfo(TARGET_DEST_TARGET_ANY);
+            });
+        });
+
         // Generic Spell Cast
         ApplySpellFix({ 62388 }, [](SpellInfo* spellInfo)
         {

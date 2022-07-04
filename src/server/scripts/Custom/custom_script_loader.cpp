@@ -87,6 +87,10 @@ void AddSC_QuelTest();
 // hoa
 void AddSC_instance_halls_of_attonement();
 void AddSC_halls_of_attonement();
+void AddSC_boss_lord_chamberlain();
+void AddSC_boss_echelon();
+void AddSC_boss_halkias();
+void AddSC_boss_high_adjudicator_aleez();
 
 void AddCustomScripts()
 {
@@ -157,4 +161,8 @@ void AddCustomScripts()
     // hoa
     AddSC_instance_halls_of_attonement();
     AddSC_halls_of_attonement();
+    AddSC_boss_lord_chamberlain();
+    AddSC_boss_echelon();
+    AddSC_boss_halkias();
+    AddSC_boss_high_adjudicator_aleez();
 }

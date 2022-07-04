@@ -67,8 +67,69 @@ public:
     }
 };
 
+// 165414 - npc_depraved_obliterator_165414
+struct npc_depraved_obliterator_165414 : public BaseCustomCasterAI
+{
+public:
+    npc_depraved_obliterator_165414(Creature* creature) : BaseCustomCasterAI(creature, 338003) { }
+
+    void JustEngagedWith(Unit* /*who*/) override
+    {
+        scheduler.Schedule(5s, [this](TaskContext context)
+        {
+            if (auto randTarget = SelectTarget(SelectTargetMethod::Random, 0, 20.0f, true))
+                DoCast(randTarget, 325876);
+            context.Repeat(20s);
+        });
+    }
+};
+
+// 165529 - npc_depraved_collector_165529
+struct npc_depraved_collector_165529 : public BaseCustomScriptedAI
+{
+public:
+    npc_depraved_collector_165529(Creature* creature) : BaseCustomScriptedAI(creature) { }
+
+    void UpdateAI(uint32 diff) override
+    {
+        BaseCustomScriptedAI::UpdateAI(diff);
+
+        if (!me->IsEngaged() && !me->isDead() && !me->GetCurrentSpell(CurrentSpellTypes::CURRENT_CHANNELED_SPELL))
+        {
+            switch (me->GetSpawnId())
+            {
+                case 459059:
+                case 459122:
+                case 459114:
+                    if (auto halkias = me->FindNearestCreature(164557, 5.0f))
+                        DoCast(halkias, 322476);
+                    break;
+            }
+        }
+    }
+
+    void JustEngagedWith(Unit* /*who*/) override
+    {
+        scheduler.Schedule(5s, [this](TaskContext context)
+        {
+            if (auto randTarget = SelectTarget(SelectTargetMethod::Random, 0, 20.0f, true))
+                DoCast(randTarget, 325700);
+            context.Repeat(20s);
+        });
+
+        scheduler.Schedule(10s, [this](TaskContext context)
+        {
+            if (auto randTarget = SelectTarget(SelectTargetMethod::Random, 0, 20.0f, true))
+                DoCast(randTarget, 325701);
+            context.Repeat(20s);
+        });
+    }
+};
+
+
 void AddSC_halls_of_attonement()
 {
     RegisterCreatureAI(npc_depraved_darkblade_165515);
     RegisterCreatureAI(npc_depraved_houndmaster_164562);
+    RegisterCreatureAI(npc_depraved_obliterator_165414);
 }
