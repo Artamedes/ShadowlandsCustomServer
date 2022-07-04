@@ -19,7 +19,7 @@
  * Darker Nature - Not Implemented
  * Chaos Theory - Implemented
  * Erratic Fel Core - Should be handled by SPELL_AURA_CHARGE_RECOVERY_MULTIPLIER
- * Burning Wound - Not Implemented
+ * Burning Wound - Done
  * ========================================
  * Vengeance ==============================
  * ========================================
@@ -162,10 +162,68 @@ class spell_burning_wound : public AuraScript
     }
 };
 
+/// ID: 337541 Spirit of the Darkness Flame
+class spell_spirit_of_the_darkness_flame : public AuraScript
+{
+    PrepareAuraScript(spell_spirit_of_the_darkness_flame);
+
+    enum eSpiritOfTheDarknessFlame
+    {
+        HealPeriodic = 337543,
+    };
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == FieryBrand && eventInfo.GetDamageInfo();
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        auto caster = GetCaster();
+        if (!caster)
+            return;
+
+        if (!eventInfo.GetDamageInfo())
+            return;
+
+        caster->CastSpell(caster, HealPeriodic, CastSpellExtraArgs(true).AddSpellBP0(eventInfo.GetDamageInfo()->GetDamage()));
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_spirit_of_the_darkness_flame::CheckProc);
+        OnProc += AuraProcFn(spell_spirit_of_the_darkness_flame::HandleProc);
+    }
+};
+
+/// ID: 337542 Spirit of the Darkness Flame
+class spell_spirit_of_the_darkness_flame_proc : public AuraScript
+{
+    PrepareAuraScript(spell_spirit_of_the_darkness_flame_proc);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == FieryBrand;
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        Remove();
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_spirit_of_the_darkness_flame_proc::CheckProc);
+        OnProc += AuraProcFn(spell_spirit_of_the_darkness_flame_proc::HandleProc);
+    }
+};
+
 void AddSC_spell_dh_legendary()
 {
     RegisterSpellScript(spell_collective_anguish);
     RegisterSpellScript(spell_eye_beam_collective_anguish);
     RegisterSpellScript(spell_chaos_theory);
     RegisterSpellScript(spell_burning_wound);
+    RegisterSpellScript(spell_spirit_of_the_darkness_flame);
+    RegisterSpellScript(spell_spirit_of_the_darkness_flame_proc);
 }

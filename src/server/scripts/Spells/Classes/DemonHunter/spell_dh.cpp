@@ -1133,6 +1133,10 @@ class spell_dh_fiery_brand : public SpellScript
 
         if (caster->HasAura(SPELL_DH_REVEAL_IN_PAIN_POWER))
             caster->CastSpell(target, SPELL_DH_REVEAL_IN_PAIN_PROC, true);
+
+        // Spirit of Darkness Flame
+        if (caster->HasAura(337542))
+            caster->RemoveAurasDueToSpell(337542);
     }
 
     void Register() override
@@ -3071,6 +3075,10 @@ class aura_dh_vengeance_sigil_of_flame : public AuraScript
         const_cast<AuraEffect*>(aurEff)->SetCritChance(caster->GetUnitSpellCriticalChance(GetTarget(), nullptr, aurEff, GetSpellInfo()->GetSchoolMask()));
         const_cast<AuraEffect*>(aurEff)->SetAmount(aurEff->GetDamage());
         GetAura()->SetNeedClientUpdateForTargets();
+
+        /// Spirit of the Darkness Flame Legendary
+        if (caster->HasAura(337541))
+            caster->CastSpell(caster, 337542, true);
     }
 
     void Register() override
