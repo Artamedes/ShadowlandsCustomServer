@@ -61,6 +61,11 @@ class spell_ravenous_frenzy : public AuraScript
 {
     PrepareAuraScript(spell_ravenous_frenzy);
 
+    enum eRavenousFrenzy
+    {
+        SinfulHysteriaLegendary = 354109,
+    };
+
     bool CheckProc(ProcEventInfo& eventInfo)
     {
         return eventInfo.GetProcSpell() && !eventInfo.GetProcSpell()->IsTriggered() && eventInfo.GetSpellInfo()->SpellFamilyName == SPELLFAMILY_DRUID;
@@ -68,14 +73,28 @@ class spell_ravenous_frenzy : public AuraScript
 
     void HandleProc(ProcEventInfo& eventInfo)
     {
-        _nextStunTime = GameTime::GetGameTime() + 2;
+        auto caster = GetCaster();
+        if (!caster)
+            return;
+
+        bool hasLegendary = caster->HasAura(SinfulHysteriaLegendary);
+
+        if (hasLegendary)
+            _nextStunTime = GameTime::Now() + 3s;
+        else
+            _nextStunTime = GameTime::Now() + 2s;
+
         if (auto aur = GetAura())
-            aur->ModStackAmount(1);
+        {
+            aur->ModStackAmount(1, AURA_REMOVE_BY_DEFAULT, false, false);
+            if (hasLegendary)
+                aur->SetDuration(aur->GetDuration() + 100);
+        }
     }
 
     void HandlePeriodic(AuraEffect const* /*aurEff*/)
     {
-        auto now = GameTime::GetGameTime();
+        auto now = GameTime::Now();
 
         if (now >= _nextStunTime)
         {
@@ -93,11 +112,11 @@ class spell_ravenous_frenzy : public AuraScript
         chance = 100.0f;
     }
 
-    time_t _nextStunTime;
+    TimePoint _nextStunTime;
 
     void Register() override
     {
-        _nextStunTime = GameTime::GetGameTime() + 2;
+        _nextStunTime = GameTime::Now() + 3s;
         DoCheckProc += AuraCheckProcFn(spell_ravenous_frenzy::CheckProc);
         OnProc += AuraProcFn(spell_ravenous_frenzy::HandleProc);
         OnEffectPeriodic += AuraEffectPeriodicFn(spell_ravenous_frenzy::HandlePeriodic, EFFECT_2, SPELL_AURA_PERIODIC_DUMMY);

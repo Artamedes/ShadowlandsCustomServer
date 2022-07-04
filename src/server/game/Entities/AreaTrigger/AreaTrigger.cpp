@@ -973,7 +973,11 @@ void AreaTrigger::InitSplines(std::vector<G3D::Vector3> splinePoints, uint32 tim
     _spline->initLengths();
 
     // should be sent in object create packets only
-    SetUpdateFieldValue(m_values.ModifyValue(&AreaTrigger::m_areaTriggerData).ModifyValue(&UF::AreaTriggerData::TimeToTarget), timeToTarget);
+    DoWithSuppressingObjectUpdates([&]()
+    {
+        SetUpdateFieldValue(m_values.ModifyValue(&AreaTrigger::m_areaTriggerData).ModifyValue(&UF::AreaTriggerData::TimeToTarget), timeToTarget);
+        const_cast<UF::AreaTriggerData&>(*m_areaTriggerData).ClearChanged(&UF::AreaTriggerData::TimeToTarget);
+    });
 
     if (IsInWorld())
     {
