@@ -1422,6 +1422,12 @@ public:
 
         caster->CastSpell(who, Dmg, true);
     }
+
+    void OnRemove() override
+    {
+        if (auto caster = at->GetCaster())
+            caster->CastSpell(*at, RepeatDecreeDmg, true);
+    }
 };
 
 /// ID: 339894 Elysian Decree
@@ -1467,8 +1473,8 @@ class spell_elysian_decree_dmg : public SpellScript
 
     void HandleDummy(SpellEffIndex eff)
     {
-        if (auto caster = GetCaster())
-            if (!caster->HasAura(RepeatDecree))
+        //if (auto caster = GetCaster())
+        //    if (!caster->HasAura(RepeatDecree))
                 PreventHitEffect(eff);
     }
 
