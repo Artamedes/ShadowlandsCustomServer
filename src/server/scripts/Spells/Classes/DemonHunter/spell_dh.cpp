@@ -22,6 +22,7 @@
  * Scriptnames of files in this file should be prefixed with "spell_dh_".
  */
 
+#include "spell_dh.h"
 #include <chrono>
 #include "AreaTrigger.h"
 #include "AreaTriggerAI.h"
@@ -3202,6 +3203,9 @@ struct at_dh_shattered_souls : AreaTriggerAI
                 if (player->HasAura(SPELL_DH_DEMONIC_APPETITE))
                     player->CastSpell(player, SPELL_DH_DEMONIC_APPETITE_FURY, true);
             }
+
+            if (IsSpec(player, SimpleTalentSpecs::Vengeance) && player->HasAura(337547)) ///< Legendary: Fiery Soul
+                player->GetSpellHistory()->ModifyCooldown(DH::FieryBrand, -2000);
 
             //if (AuraEffect* auraEff = player->GetAuraEffect(SPELL_DH_SOULMONGER_POWER, EFFECT_0))
             //    player->CastSpell(SPELL_DH_SOULMONGER_SHIELD, SPELLVALUE_BASE_POINT0, auraEff->GetAmount(), player);
