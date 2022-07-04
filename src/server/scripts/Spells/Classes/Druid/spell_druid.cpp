@@ -2388,14 +2388,14 @@ struct at_dru_fury_of_elune : AreaTriggerAI
 		areatrigger->SetPeriodicProcTimer(500);
 
         // Can't do it on OnCreate need to send before packet
-        if (Unit* caster = at->GetCaster())
-            if (caster->Variables.Exist("FURY_TARGET") && caster->Variables.GetValue<ObjectGuid>("FURY_TARGET") != ObjectGuid::Empty)
-                if (Unit* target = ObjectAccessor::GetUnit(*caster, caster->Variables.GetValue<ObjectGuid>("FURY_TARGET")))
-                    if (caster->IsValidAttackTarget(target))
-                    {
-                        lastTargetPosition = target->GetPosition();
-                        areatrigger->SetDestination(lastTargetPosition, 500);
-                    }
+      //if (Unit* caster = at->GetCaster())
+      //    if (caster->Variables.Exist("FURY_TARGET") && caster->Variables.GetValue<ObjectGuid>("FURY_TARGET") != ObjectGuid::Empty)
+      //        if (Unit* target = ObjectAccessor::GetUnit(*caster, caster->Variables.GetValue<ObjectGuid>("FURY_TARGET")))
+      //            if (caster->IsValidAttackTarget(target))
+      //            {
+      //                lastTargetPosition = target->GetPosition();
+      //                areatrigger->SetDestination(lastTargetPosition, 500);
+      //            }
 	}
 
 	void OnPeriodicProc() override
@@ -2407,7 +2407,7 @@ struct at_dru_fury_of_elune : AreaTriggerAI
                     if (caster->IsValidAttackTarget(target) && lastTargetPosition != target->GetPosition())
                     {
                         lastTargetPosition = target->GetPosition();
-                        at->SetDestination(target->GetPosition(), 500);
+                        at->SetDestinationPig(target);
                     }
 
             caster->CastSpell(at->GetPosition(), SPELL_DRUID_FURY_OF_ELUNE_DAMAGE, true);

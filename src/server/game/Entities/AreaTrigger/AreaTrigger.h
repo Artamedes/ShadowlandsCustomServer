@@ -128,6 +128,7 @@ class TC_GAME_API AreaTrigger : public WorldObject, public GridObject<AreaTrigge
         void InitOrbit(AreaTriggerOrbitInfo const& orbit, uint32 timeToTarget);
         bool HasOrbit() const;
         bool SetDestination(Position const& pos, uint32 timeToTarget, bool followTerrain = false);
+        bool SetDestinationPig(WorldObject* target);
         Optional<AreaTriggerOrbitInfo> const& GetCircularMovementInfo() const { return _orbitInfo; }
         void SetMaxSearchRadius(float radius);
 

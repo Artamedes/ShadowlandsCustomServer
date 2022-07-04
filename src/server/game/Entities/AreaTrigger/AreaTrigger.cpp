@@ -253,7 +253,8 @@ bool AreaTrigger::Create(uint32 areaTriggerCreatePropertiesId, Unit* caster, Uni
     }
     else if (GetCreateProperties()->HasSplines())
     {
-        InitSplineOffsets(GetCreateProperties()->SplinePoints, timeToTarget);
+        if (areaTriggerCreatePropertiesId != 6887)
+            InitSplineOffsets(GetCreateProperties()->SplinePoints, timeToTarget);
     }
 
     AI_Initialize();
@@ -780,6 +781,68 @@ bool AreaTrigger::SetDestination(Position const& pos, uint32 timeToTarget, bool 
     }
 
     InitSplines(path.GetPath(), timeToTarget);
+    return true;
+}
+
+bool AreaTrigger::SetDestinationPig(WorldObject* target)
+{
+
+    // ServerToClient: SMSG_AREA_TRIGGER_RE_PATH(0x28FD) Length : 74 ConnIdx : 1 Time : 07 / 04 / 2022 03 : 22 : 08.426 Number : 6432
+    // TriggerGUID : Full : 0x3441E115C00B20400063E40000429520 AreaTrigger / 0 R4216 / S25572 Map : 2222 (The Shadowlands) Entry : 11393 Low : 4363552
+    // HasAreaTriggerSpline : True
+    // HasAreaTriggerOrbit : False
+    // HasAreaTriggerMovementScript : False
+    // (Spline) TimeToTarget: 86
+    // (Spline)ElapsedTimeForMovement: 93
+    // (Spline)PointsCount: 4
+    // (Spline)[0] Points : X : -1887.3502 Y : 1325.8179 Z : 5266.6494
+    // (Spline)[1] Points : X : -1887.3502 Y : 1325.8179 Z : 5266.6494
+    // (Spline)[2] Points : X : -1887.5316 Y : 1325.2454 Z : 5266.6494
+    // (Spline)[3] Points : X : -1887.5316 Y : 1325.2454 Z : 5266.6494
+
+
+    _movementTime = 0;
+    uint32 timeToTarget = 86;
+
+    std::vector<G3D::Vector3> splinePoints;
+    splinePoints.push_back(G3D::Vector3(target->GetPositionX(), target->GetPositionY(), target->GetPositionZ()));
+    splinePoints.push_back(G3D::Vector3(target->GetPositionX(), target->GetPositionY(), target->GetPositionZ()));
+    splinePoints.push_back(G3D::Vector3(target->GetPositionX() + 0.2f, target->GetPositionY() + 0.2f, target->GetPositionZ()));
+    splinePoints.push_back(G3D::Vector3(target->GetPositionX() + 0.2f, target->GetPositionY() + 0.2f, target->GetPositionZ()));
+
+    _spline = std::make_unique<::Movement::Spline<int32>>();
+    _spline->init_spline(&splinePoints[0], splinePoints.size(), ::Movement::SplineBase::ModeLinear);
+    _spline->initLengths();
+
+    // should be sent in object create packets only
+    DoWithSuppressingObjectUpdates([&]()
+    {
+        SetUpdateFieldValue(m_values.ModifyValue(&AreaTrigger::m_areaTriggerData).ModifyValue(&UF::AreaTriggerData::TimeToTarget), timeToTarget);
+        const_cast<UF::AreaTriggerData&>(*m_areaTriggerData).ClearChanged(&UF::AreaTriggerData::TimeToTarget);
+    });
+
+    if (IsInWorld())
+    {
+        if (_reachedDestination)
+        {
+            WorldPackets::AreaTrigger::AreaTriggerRePath reshape;
+            reshape.TriggerGUID = GetGUID();
+            SendMessageToSet(reshape.Write(), true);
+        }
+
+        WorldPackets::AreaTrigger::AreaTriggerRePath reshape;
+        reshape.TriggerGUID = GetGUID();
+        reshape.AreaTriggerSpline.emplace();
+        reshape.AreaTriggerSpline->ElapsedTimeForMovement = 93;
+        reshape.AreaTriggerSpline->TimeToTarget = timeToTarget;
+        for (G3D::Vector3 const& vec : splinePoints)
+            reshape.AreaTriggerSpline->Points.emplace_back(vec.x, vec.y, vec.z);
+
+        SendMessageToSet(reshape.Write(), true);
+    }
+
+    _reachedDestination = false;
+
     return true;
 }
 
