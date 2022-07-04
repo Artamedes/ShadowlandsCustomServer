@@ -197,6 +197,30 @@ class spell_convocation_of_the_dead : public AuraScript
     }
 };
 
+/// ID: 323710 Abomination Limb
+class spell_abomination_limb : public AuraScript
+{
+    PrepareAuraScript(spell_abomination_limb);
+
+    void HandleApply(const AuraEffect* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+    {
+        auto caster = GetCaster();
+        if (!caster)
+            return;
+        auto target = GetTarget();
+        if (!target)
+            return;
+
+        target->CastSpell(caster, 335486, true);
+    }
+
+    void Register() override
+    {
+        OnEffectApply += AuraEffectApplyFn(spell_abomination_limb::HandleApply, EFFECT_2, SPELL_AURA_PERIODIC_DUMMY, AURA_EFFECT_HANDLE_REAL);
+    }
+};
+
+
 void AddSC_spell_dk_covenant()
 {
     RegisterSpellScript(spell_hardened_bones);
@@ -205,4 +229,5 @@ void AddSC_spell_dk_covenant()
     RegisterSpellScript(spell_fleeting_wind);
     RegisterSpellScript(spell_spirit_drain);
     RegisterSpellScript(spell_convocation_of_the_dead);
+    RegisterSpellScript(spell_abomination_limb);
 }

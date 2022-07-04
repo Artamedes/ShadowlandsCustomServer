@@ -28,3 +28,6 @@ UPDATE `areatrigger_create_properties` SET `ScriptName`='at_dru_starfall' WHERE 
 
 DELETE FROM spell_script_names WHERE spell_id = 325727;
 INSERT INTO spell_script_names (spell_id, scriptname) VALUE (325727, 'spell_adaptive_swarm');
+
+DELETE FROM spell_script_names WHERE spell_id = 323710;
+INSERT INTO spell_script_names (spell_id, scriptname) VALUE (323710, 'spell_abomination_limb');
