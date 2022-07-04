@@ -124,9 +124,44 @@ class spell_ravenous_frenzy : public AuraScript
     }
 };
 
+/// ID: 325727 Adaptive Swarm
+class spell_adaptive_swarm : public SpellScript
+{
+    PrepareSpellScript(spell_adaptive_swarm);
+
+    void HandleDummy1(SpellEffIndex /*eff*/)
+    {
+        auto unit = GetHitUnit();
+        auto caster = GetCaster();
+        if (!unit || !caster)
+            return;
+
+        if (caster->IsValidAttackTarget(unit))
+        {
+            caster->CastSpell(unit, 325733, true);
+        }
+        else
+        {
+            caster->CastSpell(unit, 325748, true);
+        }
+    }
+
+    void HandleDummy2(SpellEffIndex /*eff*/)
+    {
+    }
+
+    void Register() override
+    {
+        OnEffectHitTarget += SpellEffectFn(spell_adaptive_swarm::HandleDummy1, EFFECT_0, SPELL_EFFECT_DUMMY);
+        OnEffectHitTarget += SpellEffectFn(spell_adaptive_swarm::HandleDummy2, EFFECT_1, SPELL_EFFECT_DUMMY);
+    }
+};
+
+
 void AddSC_spell_druid_covenant()
 {
     RegisterSpellScript(spell_ursine_vigor);
     RegisterSpellScript(spell_well_honed_instincts);
     RegisterSpellScript(spell_ravenous_frenzy);
+    RegisterSpellScript(spell_adaptive_swarm);
 }

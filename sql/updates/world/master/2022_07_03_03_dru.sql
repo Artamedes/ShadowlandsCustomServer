@@ -24,3 +24,7 @@ INSERT INTO `areatrigger_create_properties_spline_point` (`AreaTriggerCreateProp
 (6887, 0, -0, -0, 0, 44325); -- SpellId : 202770
 
 UPDATE `areatrigger_create_properties` SET `ScriptName`='at_dru_fury_of_elune' WHERE  `Id`=6887;
+UPDATE `areatrigger_create_properties` SET `ScriptName`='at_dru_starfall' WHERE  `Id`=4756;
+
+DELETE FROM spell_script_names WHERE spell_id = 325727;
+INSERT INTO spell_script_names (spell_id, scriptname) VALUE (325727, 'spell_adaptive_swarm');
