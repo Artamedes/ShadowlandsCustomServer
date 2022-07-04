@@ -3207,6 +3207,12 @@ struct at_dh_shattered_souls : AreaTriggerAI
             if (IsSpec(player, SimpleTalentSpecs::Vengeance) && player->HasAura(337547)) ///< Legendary: Fiery Soul
                 player->GetSpellHistory()->ModifyCooldown(DH::FieryBrand, -2000);
 
+            if (auto blindFaith = player->GetAura(355894)) ///< Legendary: Blind Faith
+            {
+                player->CastSpell(player, 356070, true); ///< Fury Energize
+                blindFaith->ModStackAmount(1, AURA_REMOVE_BY_DEFAULT, false, false);
+            }
+
             //if (AuraEffect* auraEff = player->GetAuraEffect(SPELL_DH_SOULMONGER_POWER, EFFECT_0))
             //    player->CastSpell(SPELL_DH_SOULMONGER_SHIELD, SPELLVALUE_BASE_POINT0, auraEff->GetAmount(), player);
 

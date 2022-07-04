@@ -1406,7 +1406,16 @@ public:
     {
         Dmg = 307046,
         RepeatDecreeDmg = 339893,
+        BlindFaith = 355893,
+        BlindFaithVersa = 355894,
     };
+
+    void OnCreate() override
+    {
+        if (auto caster = at->GetCaster())
+            if (caster->HasAura(BlindFaith))
+                caster->CastSpell(caster, BlindFaithVersa, true);
+    }
 
     void OnUnitExit(Unit* who) override
     {
