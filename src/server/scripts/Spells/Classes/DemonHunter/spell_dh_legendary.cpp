@@ -218,6 +218,55 @@ class spell_spirit_of_the_darkness_flame_proc : public AuraScript
     }
 };
 
+/// ID: 337544 Razelikh's Defilement
+class spell_razelikhs_defilement : public AuraScript
+{
+    PrepareAuraScript(spell_razelikhs_defilement);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == SoulCleave;
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        auto caster = GetCaster();
+        if (!caster)
+            return;
+
+        std::vector<uint32> spells;
+
+        spells.emplace_back(SigilOfFlame);
+        spells.emplace_back(SigilOfMisery);
+        spells.emplace_back(SigilOfSilence);
+        spells.emplace_back(ElysianDecree);
+        spells.emplace_back(SigilOfChains);
+
+        Trinity::Containers::RandomShuffle(spells);
+
+        size_t spellsToCheck = spells.size();
+
+        while (spellsToCheck > 0)
+        {
+            uint32 spellId = spells[spellsToCheck];
+
+            if (caster->GetSpellHistory()->HasCooldown(spellId))
+            {
+                caster->GetSpellHistory()->ModifyCooldown(spellId, spellId == ElysianDecree ? -2000 : -8000);
+                break;
+            }
+
+            --spellsToCheck;
+        }
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_razelikhs_defilement::CheckProc);
+        OnProc += AuraProcFn(spell_razelikhs_defilement::HandleProc);
+    }
+};
+
 void AddSC_spell_dh_legendary()
 {
     RegisterSpellScript(spell_collective_anguish);
@@ -226,4 +275,5 @@ void AddSC_spell_dh_legendary()
     RegisterSpellScript(spell_burning_wound);
     RegisterSpellScript(spell_spirit_of_the_darkness_flame);
     RegisterSpellScript(spell_spirit_of_the_darkness_flame_proc);
+    RegisterSpellScript(spell_razelikhs_defilement);
 }

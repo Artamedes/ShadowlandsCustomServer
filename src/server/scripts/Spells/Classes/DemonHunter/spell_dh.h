@@ -27,6 +27,7 @@ namespace DH
         SigilOfFlame       = 204596,
         SigilOfMisery      = 207684,
         SigilOfSilence     = 202137,
+        SigilOfChains      = 202138,
         SoulCleave         = 228477,
         LastResort         = 209258,
         ShatteredSouls     = 204254,
@@ -54,5 +55,8 @@ namespace DH
         DemonicWards       = 278386,
         BladeDanceDmg      = 199552,
         DeathSweepDmg      = 210153,
+
+        // Covenant
+        ElysianDecree      = 306830,
     };
 }

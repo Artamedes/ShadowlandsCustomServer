@@ -2,6 +2,7 @@
 
 #include "AreaTrigger.h"
 #include "AreaTriggerAI.h"
+#include "CovenantMgr.h"
 #include "Containers.h"
 #include "Player.h"
 #include "ScriptMgr.h"
@@ -76,4 +77,12 @@ inline SimpleTalentSpecs GetSpecializationId(Unit* caster)
 inline bool IsSpec(Unit* who, SimpleTalentSpecs spec)
 {
     return GetSpecializationId(who) == spec;
+}
+
+inline bool IsCovenant(Unit* who, CovenantID covenant)
+{
+    if (who && who->IsPlayer())
+        return who->ToPlayer()->GetCovenant()->GetCovenantID() == covenant;
+
+    return false;
 }
