@@ -1783,6 +1783,9 @@ public:
         {
             UnboundChaos = 347461,
             UnboundChaosProc = 347462,
+
+            FelFlameFortification   = 337545,
+            FelFlameFortificationDR = 337546,
         };
 
         PrepareAuraScript(spell_dh_immolation_aura_AuraScript);
@@ -1803,6 +1806,9 @@ public:
             if (caster->HasAura(UnboundChaos))
                 caster->CastSpell(caster, UnboundChaosProc, true);
 
+            if (caster->HasAura(FelFlameFortification))
+                caster->CastSpell(caster, FelFlameFortificationDR, true);
+
             caster->CastSpell(caster, 258921, true); ///< DH Immo aura inital DMG
             caster->CastSpell(caster, SPELL_DH_IMMOLATION_AURA_VISUAL, true);
 
@@ -1816,7 +1822,10 @@ public:
         void HandleRemove(const AuraEffect* /*aurEff*/, AuraEffectHandleModes /* mode */)
         {
             if (Unit* caster = GetCaster())
+            {
                 caster->Variables.Remove("ImmolationAuraTicks");
+                caster->RemoveAurasDueToSpell(FelFlameFortificationDR);
+            }
         }
         void Register() override
         {

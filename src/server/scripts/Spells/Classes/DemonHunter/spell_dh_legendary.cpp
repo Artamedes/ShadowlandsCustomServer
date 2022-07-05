@@ -23,10 +23,10 @@
  * ========================================
  * Vengeance ==============================
  * ========================================
- * Spirit of Darkness Flame - Not Implemented
- * Razelikh's Defilement - Not Implemented
- * Fel Flame Fortification - Not Implemented
- * Fiery Soul - Not Implemented
+ * Spirit of Darkness Flame - Implemented
+ * Razelikh's Defilement - Implemented
+ * Fel Flame Fortification - Implemented
+ * Fiery Soul - Implemented
  **********************************************************/
 
 using namespace DH;
