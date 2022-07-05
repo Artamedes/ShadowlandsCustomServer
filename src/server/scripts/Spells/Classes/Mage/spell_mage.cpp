@@ -644,22 +644,10 @@ class spell_mage_arcane_blast : public SpellScript
             caster->RemoveAura(SPELL_MAGE_RULE_OF_THREES_BUFF);
     }
 
-    void HandleDmg(SpellEffIndex /*eff*/)
-    {
-        if (Unit* caster = GetCaster())
-            if (auto target = GetHitUnit())
-            {
-                if (caster->HasAura(Mage::eLegendary::ArcaneBombardment))
-                    if (target->HealthBelowPct(35))
-                        SetHitDamage(CalculatePct(GetHitDamage(), 135));
-            }
-    }
-
     void Register() override
     {
         AfterCast += SpellCastFn(spell_mage_arcane_blast::HandleAfterCast);
         OnCast += SpellCastFn(spell_mage_arcane_blast::HandleOnCast);
-        OnEffectHitTarget += SpellEffectFn(spell_mage_arcane_blast::HandleDmg, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
     }
 };
 
@@ -795,6 +783,14 @@ class spell_mage_arcane_barrage : public SpellScript
             {
                 uint8 charges = caster->GetPower(POWER_ARCANE_CHARGES);
                 SetHitDamage(damage + aura->GetEffect(0)->GetAmount() * charges);
+            }
+
+        if (Unit* caster = GetCaster())
+            if (auto target = GetHitUnit())
+            {
+                if (caster->HasAura(Mage::eLegendary::ArcaneBombardment))
+                    if (target->HealthBelowPct(35))
+                        SetHitDamage(CalculatePct(GetHitDamage(), 135));
             }
     }
 
