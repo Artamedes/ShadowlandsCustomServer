@@ -28,7 +28,6 @@ namespace Mage
 
     enum eFire
     {
-        AlterTime = 108978,
         BlazingBarrier = 235313,
         Combustion = 190319,
         DragonsBreath = 331661,
