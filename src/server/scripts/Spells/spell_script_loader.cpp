@@ -31,6 +31,7 @@ void AddSC_generic_spell_scripts();
 void AddSC_hunter_spell_scripts();
 void AddSC_spell_hunter_marksman();
 void AddSC_mage_spell_scripts();
+void AddSC_spell_mage_covenant();
 void AddSC_monk_spell_scripts();
 void AddSC_spell_monk_windwalker();
 void AddSC_spell_monk_brewmaster();
@@ -84,6 +85,7 @@ void AddSpellsScripts()
     AddSC_hunter_spell_scripts();
     AddSC_spell_hunter_marksman();
     AddSC_mage_spell_scripts();
+    AddSC_spell_mage_covenant();
     AddSC_monk_spell_scripts();
     AddSC_spell_monk_windwalker();
     AddSC_spell_monk_brewmaster();

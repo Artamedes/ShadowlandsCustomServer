@@ -9,6 +9,8 @@ enum WarriorCovenant
     CondemmnDmg = 317483,
 
     DeepWounds = 115767,
+
+    MortalStrike = 12294,
 };
 
 /// ID: 324143 Conqueror's Banner
