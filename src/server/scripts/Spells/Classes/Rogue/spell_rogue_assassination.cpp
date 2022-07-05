@@ -1,8 +1,9 @@
-#include "SpellIncludes.h"
+#include "spell_rogue.h"
+
+using namespace Rogue;
 
 enum eAssassination
 {
-    Rupture = 1943,
     Envenom = 32645,
     Mutilate = 1329,
 
@@ -35,8 +36,8 @@ class aura_rog_poison_bomb : public AuraScript
 
         switch (eventInfo.GetSpellInfo()->Id)
         {
-            case eAssassination::Rupture:
-            case eAssassination::Envenom:
+            case Rupture:
+            case Envenom:
                 if (caster->Variables.Exist("CP"))
                 {
                     auto cp = caster->Variables.GetValue<uint8>("CP", 0);

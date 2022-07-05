@@ -12,3 +12,6 @@ INSERT INTO `spell_proc` (`SpellId`,`SchoolMask`,`SpellFamilyName`,`SpellFamilyM
 DELETE FROM spell_script_names WHERE spell_id = 337544;
 INSERT INTO spell_script_names (spell_id, scriptname) VALUE (337544, 'spell_razelikhs_defilement');
 
+
+DELETE FROM spell_script_names WHERE spell_id = 357888;
+INSERT INTO spell_script_names (spell_id, scriptname) VALUE (357888, 'spell_condensed_anima_sphere');

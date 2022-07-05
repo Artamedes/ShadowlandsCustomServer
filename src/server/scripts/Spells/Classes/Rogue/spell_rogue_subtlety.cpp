@@ -1,5 +1,7 @@
 #include "spell_rogue.h"
 
+using namespace Rogue;
+
 enum eSubtlety
 {
     Eviscerate = 196819,

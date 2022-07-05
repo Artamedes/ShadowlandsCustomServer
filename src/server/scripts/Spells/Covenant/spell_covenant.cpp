@@ -52,7 +52,49 @@ class spell_incense_of_infinity : public SpellScript
     }
 };
 
+/// ID: 357888 Condensed Anima Sphere
+class spell_condensed_anima_sphere : public AuraScript
+{
+    PrepareAuraScript(spell_condensed_anima_sphere);
+
+    enum eCondensedAnimaSphere
+    {
+        SphereCD = 357946,
+        HealSpell = 357945,
+    };
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        // Check if we have the aura of the cooldown of this
+        if (auto caster = GetCaster())
+            return !caster->HasAura(SphereCD);
+
+        return false;
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (auto caster = GetCaster())
+        {
+            // Cast the CD spell
+            caster->CastSpell(caster, SphereCD, true);
+
+            // Heal us
+            if (auto eff = GetEffect(EFFECT_0))
+                if (eff->ConduitRankEntry)
+                    caster->CastSpell(caster, HealSpell, CastSpellExtraArgs(true).AddSpellBP0(CalculatePct(eff->ConduitRankEntry->AuraPointsOverride, 10)));
+        }
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_condensed_anima_sphere::CheckProc);
+        OnProc += AuraProcFn(spell_condensed_anima_sphere::HandleProc);
+    }
+};
+
 void AddSC_spell_covenant()
 {
     RegisterSpellScript(spell_incense_of_infinity);
+    RegisterSpellScript(spell_condensed_anima_sphere);
 }

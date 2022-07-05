@@ -2,6 +2,8 @@
 #include "spell_rogue.h"
 #include "PathGenerator.h"
 
+using namespace Rogue;
+
 enum eOutlaw
 {
     /// Generators

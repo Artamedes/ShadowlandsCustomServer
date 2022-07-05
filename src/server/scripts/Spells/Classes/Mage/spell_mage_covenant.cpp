@@ -6,31 +6,6 @@ enum eMage
     Invisibility = 66,
 };
 
-/// ID: 357888 Condensed Anima Sphere
-class spell_condensed_anima_sphere : public AuraScript
-{
-    PrepareAuraScript(spell_condensed_anima_sphere);
-
-    bool CheckProc(ProcEventInfo& eventInfo)
-    {
-        if (!eventInfo.GetSpellInfo())
-            return false;
-
-        if (auto caster = GetCaster())
-            return caster->GetAura(43234);
-    }
-
-    void HandleProc(ProcEventInfo& eventInfo)
-    {
-    }
-
-    void Register() override
-    {
-        DoCheckProc += AuraCheckProcFn(spell_condensed_anima_sphere::CheckProc);
-        OnProc += AuraProcFn(spell_condensed_anima_sphere::HandleProc);
-    }
-};
-
 /// ID: 336777 Grounding Surge
 class spell_grounding_surge : public AuraScript
 {
@@ -99,7 +74,6 @@ void AddSC_spell_mage_covenant()
 {
     // Needs to be fixed before registering these spells
     // 
-    // RegisterSpellScript(spell_condensed_anima_sphere);
     // RegisterSpellScript(spell_grounding_surge);
     RegisterSpellScript(spell_incantation_of_swiftness);
 }

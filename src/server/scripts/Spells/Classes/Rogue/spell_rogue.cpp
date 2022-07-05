@@ -24,6 +24,8 @@
 
 #include "spell_rogue.h"
 
+using namespace Rogue;
+
 enum RogueSpells
 {
     SPELL_ROGUE_ADRENALINE_RUSH                     = 13750,

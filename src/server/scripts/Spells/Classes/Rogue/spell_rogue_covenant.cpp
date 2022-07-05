@@ -1,5 +1,7 @@
 #include "spell_rogue.h"
 
+using namespace Rogue;
+
 enum eFlagellation
 {
     FlagellationDmg       = 345316,
