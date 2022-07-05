@@ -1218,7 +1218,30 @@ class spell_mage_pyroblast : public SpellScript
                 caster->RemoveAurasDueToSpell(Mage::eLegendary::ExpandedPotential);
             }
             else
-                caster->RemoveAurasDueToSpell(SPELL_MAGE_HOT_STREAK);
+            {
+                bool hasHotStreak = caster->HasAura(SPELL_MAGE_HOT_STREAK);
+
+                if (hasHotStreak)
+                    caster->RemoveAurasDueToSpell(SPELL_MAGE_HOT_STREAK);
+
+                if (caster->HasAura(Mage::eLegendary::SunKingsBlessing))
+                {
+                    caster->CastSpell(caster, Mage::eLegendary::SunKingsBlessingStacks, true);
+
+                    if (auto aur = caster->GetAura(Mage::eLegendary::SunKingsBlessingStacks))
+                        if (aur->GetStackAmount() >= 8)
+                            caster->CastSpell(caster, Mage::eLegendary::SunKingsBlessingProc, true);
+
+                    uint32 combustDuration = 0;
+
+                    if (auto combust = caster->GetAura(Mage::eFire::Combustion))
+                        combustDuration += combust->GetDuration();
+
+                    if (caster->HasAura(Mage::eLegendary::SunKingsBlessingProc))
+                        caster->CastSpell(caster, Mage::eFire::Combustion, CastSpellExtraArgs(TRIGGERED_FULL_MASK | TRIGGERED_DONT_CREATE_COOLDOWN).AddSpellMod(SpellValueMod::SPELLVALUE_DURATION, 5000 + combustDuration));
+                }
+
+            }
 
             if (caster->HasAura(SPELL_MAGE_PYROCLASM) && roll_chance_i(15))
                 caster->CastSpell(caster, SPELL_MAGE_PYROCLASM_PROC, true);

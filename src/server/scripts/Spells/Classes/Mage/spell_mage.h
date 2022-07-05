@@ -61,5 +61,8 @@ namespace Mage
     {
         ExpandedPotential = 327495, /// Prevent Hot Streak, Brain Freeze or Clearcasting from being consumed.
         ArcaneBombardment = 332892,
+        SunKingsBlessing = 333313,
+        SunKingsBlessingStacks = 333314,
+        SunKingsBlessingProc = 333315,
     };
 }
