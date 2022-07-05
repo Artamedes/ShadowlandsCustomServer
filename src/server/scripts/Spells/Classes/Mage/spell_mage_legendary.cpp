@@ -115,8 +115,49 @@ class spell_triune_ward : public AuraScript
     }
 };
 
+/// ID: 332769 Arcane Harmony
+class spell_arcane_harmony : public AuraScript
+{
+    PrepareAuraScript(spell_arcane_harmony);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == ArcaneMisslesDmg;
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_arcane_harmony::CheckProc);
+    }
+};
+
+/// ID: 333030 Fevered Incantation
+class spell_fevered_incantation : public AuraScript
+{
+    PrepareAuraScript(spell_fevered_incantation);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetHitMask() & ProcFlagsHit::PROC_HIT_CRITICAL;
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (auto caster = GetCaster())
+            caster->CastSpell(caster, 333049, true);
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_fevered_incantation::CheckProc);
+        OnProc += AuraProcFn(spell_fevered_incantation::HandleProc);
+    }
+};
+
 void AddSC_spell_mage_legendary()
 {
     RegisterSpellScript(spell_disciplinary_command);
     RegisterSpellScript(spell_expanded_potential);
+    RegisterSpellScript(spell_arcane_harmony);
+    RegisterSpellScript(spell_fevered_incantation);
 }

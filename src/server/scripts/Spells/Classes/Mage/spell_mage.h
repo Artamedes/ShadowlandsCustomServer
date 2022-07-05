@@ -23,6 +23,7 @@ namespace Mage
         TimeWarp           = 80353,
         AlterTime          = 108978,
         Shimmer            = 212653,
+        ArcaneMisslesDmg   = 7268,
     };
 
     enum eFire

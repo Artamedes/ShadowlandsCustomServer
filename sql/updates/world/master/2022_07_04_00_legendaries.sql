@@ -24,3 +24,11 @@ INSERT INTO spell_script_names (spell_id, scriptname) VALUE (327489, 'spell_expa
 
 DELETE FROM spell_script_names WHERE spell_id = 333373;
 INSERT INTO spell_script_names (spell_id, scriptname) VALUE (333373, 'spell_triune_ward');
+
+
+DELETE FROM spell_script_names WHERE spell_id = 332769;
+INSERT INTO spell_script_names (spell_id, scriptname) VALUE (332769, 'spell_arcane_harmony');
+
+
+DELETE FROM spell_script_names WHERE spell_id = 333030;
+INSERT INTO spell_script_names (spell_id, scriptname) VALUE (333030, 'spell_fevered_incantation');
