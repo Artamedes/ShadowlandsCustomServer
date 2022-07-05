@@ -57,5 +57,6 @@ namespace Mage
     enum eLegendary
     {
         ExpandedPotential = 327495, /// Prevent Hot Streak, Brain Freeze or Clearcasting from being consumed.
+        ArcaneBombardment = 332892,
     };
 }
