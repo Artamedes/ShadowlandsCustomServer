@@ -29,6 +29,7 @@ void AddSC_spell_druid_feral();
 void AddSC_spell_druid_covenant();
 void AddSC_generic_spell_scripts();
 void AddSC_hunter_spell_scripts();
+void AddSC_spell_hunter_covenant();
 void AddSC_spell_hunter_marksman();
 void AddSC_mage_spell_scripts();
 void AddSC_spell_mage_covenant();
@@ -83,6 +84,7 @@ void AddSpellsScripts()
     AddSC_spell_druid_covenant();
     AddSC_generic_spell_scripts();
     AddSC_hunter_spell_scripts();
+    AddSC_spell_hunter_covenant();
     AddSC_spell_hunter_marksman();
     AddSC_mage_spell_scripts();
     AddSC_spell_mage_covenant();
