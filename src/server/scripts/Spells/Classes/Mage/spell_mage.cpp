@@ -40,6 +40,7 @@
 #include "SpellScript.h"
 #include "CellImpl.h"
 #include "TemporarySummon.h"
+#include "spell_mage.h"
 
 enum MageSpells
 {
@@ -322,7 +323,14 @@ public:
 
         if (spell->GetSpellInfo()->Id == SPELL_MAGE_ARCANE_MISSILES)
             if (!player->HasAura(SPELL_MAGE_CLEARCASTING_PVP_STACK_EFFECT))
-                player->RemoveAura(SPELL_MAGE_CLEARCASTING_BUFF);
+            {
+                if (player->HasAura(Mage::eLegendary::ExpandedPotential))
+                {
+                    player->RemoveAurasDueToSpell(Mage::eLegendary::ExpandedPotential);
+                }
+                else
+                    player->RemoveAura(SPELL_MAGE_CLEARCASTING_BUFF);
+            }
 	}
 
     void OnInterruptedSpellCast(Player* player, Spell* spell) override
@@ -335,7 +343,14 @@ public:
 
         if (spell->GetSpellInfo()->Id == SPELL_MAGE_ARCANE_MISSILES)
             if (!player->HasAura(SPELL_MAGE_CLEARCASTING_PVP_STACK_EFFECT))
-                player->RemoveAura(SPELL_MAGE_CLEARCASTING_BUFF);
+            {
+                if (player->HasAura(Mage::eLegendary::ExpandedPotential))
+                {
+                    player->RemoveAurasDueToSpell(Mage::eLegendary::ExpandedPotential);
+                }
+                else
+                    player->RemoveAura(SPELL_MAGE_CLEARCASTING_BUFF);
+            }
 	}
 
 private:
@@ -505,7 +520,12 @@ class spell_mage_arcane_missiles : public SpellScript
     {
 		if (Unit* caster = GetCaster())
 		{
-			caster->RemoveAura(SPELL_MAGE_CLEARCASTING_EFFECT);
+            if (caster->HasAura(Mage::eLegendary::ExpandedPotential))
+            {
+                caster->RemoveAurasDueToSpell(Mage::eLegendary::ExpandedPotential);
+            }
+            else
+			    caster->RemoveAura(SPELL_MAGE_CLEARCASTING_EFFECT);
             if (!caster->HasAura(SPELL_MAGE_SLIPSTREAM))
                 caster->RemoveAura(SPELL_MAGE_CLEARCASTING_BUFF);
 			if (Aura* pvpClearcast = caster->GetAura(SPELL_MAGE_CLEARCASTING_PVP_STACK_EFFECT))
@@ -1185,7 +1205,13 @@ class spell_mage_pyroblast : public SpellScript
 
         if (caster->HasAura(SPELL_MAGE_HOT_STREAK))
         {
-            caster->RemoveAurasDueToSpell(SPELL_MAGE_HOT_STREAK);
+            if (caster->HasAura(Mage::eLegendary::ExpandedPotential))
+            {
+                caster->RemoveAurasDueToSpell(Mage::eLegendary::ExpandedPotential);
+            }
+            else
+                caster->RemoveAurasDueToSpell(SPELL_MAGE_HOT_STREAK);
+
             if (caster->HasAura(SPELL_MAGE_PYROCLASM) && roll_chance_i(15))
                 caster->CastSpell(caster, SPELL_MAGE_PYROCLASM_PROC, true);
 
@@ -1747,7 +1773,12 @@ class spell_mage_flurry : public SpellScript
         caster->Variables.Remove("BRAIN_FREEZE");
         if (caster->HasAura(SPELL_MAGE_BRAIN_FREEZE_AURA) && caster->GetCurrentSpellCastTime(SPELL_MAGE_FLURRY) == 0)
         {
-            caster->RemoveAura(SPELL_MAGE_BRAIN_FREEZE_AURA);
+            if (caster->HasAura(Mage::eLegendary::ExpandedPotential))
+            {
+                caster->RemoveAurasDueToSpell(Mage::eLegendary::ExpandedPotential);
+            }
+            else
+                caster->RemoveAura(SPELL_MAGE_BRAIN_FREEZE_AURA);
             if (caster->HasSpell(SPELL_MAGE_BRAIN_FREEZE_IMPROVED))
                 caster->Variables.Set<bool>("BRAIN_FREEZE", true);
         }
