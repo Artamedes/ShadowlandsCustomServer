@@ -3137,6 +3137,9 @@ struct at_mage_frozen_orb : AreaTriggerAI
             at->MovePositionToFirstCollision(pos, 40.0f, 0.0f);
             at->SetDestination(pos, 4000);
         }
+
+        if (caster->HasAura(Mage::eLegendary::FreezingWinds))
+            caster->CastSpell(caster, Mage::eLegendary::FreezingWindsProc, true);
     }
 
     void OnCreate() override

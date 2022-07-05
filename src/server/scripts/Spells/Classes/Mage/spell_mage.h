@@ -49,6 +49,11 @@ namespace Mage
     enum eFrost
     {
         IceBarrier = 11426,
+        IcyVeins = 12472,
+        Flurry = 44614,
+        FrozenOrb = 84714,
+        IceLance = 30455,
+        Blizzard = 190356,
     };
 
     enum eArcane
@@ -64,5 +69,7 @@ namespace Mage
         SunKingsBlessing = 333313,
         SunKingsBlessingStacks = 333314,
         SunKingsBlessingProc = 333315,
+        FreezingWinds = 327364,
+        FreezingWindsProc = 327478,
     };
 }

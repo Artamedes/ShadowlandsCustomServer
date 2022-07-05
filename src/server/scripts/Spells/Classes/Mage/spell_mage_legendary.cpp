@@ -235,6 +235,145 @@ class spell_molten_skyfall_proc : public AuraScript
     }
 };
 
+/// ID: 327511 Slick Ice
+class spell_slick_ice : public AuraScript
+{
+    PrepareAuraScript(spell_slick_ice);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        if (auto caster = GetCaster())
+            if (caster->HasAura(IcyVeins))
+                return eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == FrostBolt;
+
+        return false;
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_slick_ice::CheckProc);
+    }
+};
+/// ID: 327284 Cold Front
+class spell_cold_front : public AuraScript
+{
+    PrepareAuraScript(spell_cold_front);
+
+    enum eColdfront
+    {
+        ColdfrontStacks = 327327,
+        ColdfrontProc = 327330,
+    };
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && (eventInfo.GetSpellInfo()->Id == FrostBolt || eventInfo.GetSpellInfo()->Id == Flurry);
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (auto caster = GetCaster())
+        {
+            caster->CastSpell(caster, ColdfrontStacks, true);
+            if (auto aur = caster->GetAura(ColdfrontStacks))
+                if (aur->GetStackAmount() >= 30)
+                {
+                    aur->Remove();
+                    caster->CastSpell(caster, ColdfrontProc, true);
+                }
+        }
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_cold_front::CheckProc);
+        OnProc += AuraProcFn(spell_cold_front::HandleProc);
+    }
+};
+
+/// ID: 327330 Cold Front
+class spell_cold_front_proc : public AuraScript
+{
+    PrepareAuraScript(spell_cold_front_proc);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && (eventInfo.GetSpellInfo()->Id == FrostBolt || eventInfo.GetSpellInfo()->Id == Flurry);
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (auto caster = GetCaster())
+            if (auto target = eventInfo.GetActionTarget())
+            {
+                caster->CastSpell(target, FrozenOrb, true);
+                Remove();
+            }
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_cold_front_proc::CheckProc);
+        OnProc += AuraProcFn(spell_cold_front_proc::HandleProc);
+    }
+};
+
+/// ID: 327492 Glacial Fragments
+class spell_glacial_fragments : public AuraScript
+{
+    PrepareAuraScript(spell_glacial_fragments);
+
+    enum eGlacialFragments
+    {
+        ProcSpell = 327498,
+    };
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == IceLance;
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        auto caster = GetCaster();
+        if (!caster)
+            return;
+        auto target = eventInfo.GetActionTarget();
+        if (!target)
+            return;
+
+        caster->CastSpell(target, ProcSpell, true);
+    }
+
+    void HandleCalcProcChance(ProcEventInfo& eventInfo, float& chance)
+    {
+        if (!eventInfo.GetSpellInfo() || eventInfo.GetSpellInfo()->Id != IceLance)
+            return;
+
+        chance = 20;
+
+        auto caster = GetCaster();
+        if (!caster)
+            return;
+        auto target = eventInfo.GetActionTarget();
+        if (!target)
+            return;
+
+        if (auto blizzardAT = caster->GetAreaTrigger(Blizzard))
+        {
+            if (blizzardAT->GetInsideUnits().count(target->GetGUID()))
+                chance = 100;
+        }
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_glacial_fragments::CheckProc);
+        OnProc += AuraProcFn(spell_glacial_fragments::HandleProc);
+        OnCalcProcChance += AuraCalcProcChanceFn(spell_glacial_fragments::HandleCalcProcChance);
+    }
+};
+
 void AddSC_spell_mage_legendary()
 {
     RegisterSpellScript(spell_disciplinary_command);
@@ -244,4 +383,8 @@ void AddSC_spell_mage_legendary()
     RegisterSpellScript(spell_firestorm);
     RegisterSpellScript(spell_molten_skyfall);
     RegisterSpellScript(spell_molten_skyfall_proc);
+    RegisterSpellScript(spell_slick_ice);
+    RegisterSpellScript(spell_cold_front);
+    RegisterSpellScript(spell_cold_front_proc);
+    RegisterSpellScript(spell_glacial_fragments);
 }

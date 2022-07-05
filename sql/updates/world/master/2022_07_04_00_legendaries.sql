@@ -42,3 +42,17 @@ INSERT INTO spell_script_names (spell_id, scriptname) VALUE (333182, 'spell_molt
 
 DELETE FROM spell_script_names WHERE spell_id = 333167;
 INSERT INTO spell_script_names (spell_id, scriptname) VALUE (333167, 'spell_molten_skyfall');
+
+
+DELETE FROM spell_script_names WHERE spell_id = 327511;
+INSERT INTO spell_script_names (spell_id, scriptname) VALUE (327511, 'spell_slick_ice');
+
+DELETE FROM spell_script_names WHERE spell_id = 327330;
+INSERT INTO spell_script_names (spell_id, scriptname) VALUE (327330, 'spell_cold_front_proc');
+
+DELETE FROM spell_script_names WHERE spell_id = 327284;
+INSERT INTO spell_script_names (spell_id, scriptname) VALUE (327284, 'spell_cold_front');
+
+
+DELETE FROM spell_script_names WHERE spell_id = 327492;
+INSERT INTO spell_script_names (spell_id, scriptname) VALUE (327492, 'spell_glacial_fragments');
