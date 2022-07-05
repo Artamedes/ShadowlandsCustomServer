@@ -154,10 +154,94 @@ class spell_fevered_incantation : public AuraScript
     }
 };
 
+/// ID: 333097 Firestorm
+class spell_firestorm : public AuraScript
+{
+    PrepareAuraScript(spell_firestorm);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == HotStreakBuff;
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_firestorm::CheckProc);
+    }
+};
+/// ID: 333167 Molten Skyfall
+class spell_molten_skyfall : public AuraScript
+{
+    PrepareAuraScript(spell_molten_skyfall);
+
+    enum eMoltenSkyfall
+    {
+        SkyfallProcCount = 333170,
+        SkyfallProc = 333182,
+    };
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && (eventInfo.GetSpellInfo()->Id == Fireball || eventInfo.GetSpellInfo()->Id == PyroBlast);
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        auto caster = GetCaster();
+        if (!caster)
+            return;
+
+        caster->CastSpell(caster, SkyfallProcCount, true);
+
+        if (auto aur = caster->GetAura(SkyfallProcCount))
+            if (aur->GetStackAmount() >= aur->GetMaxStackAmount())
+            {
+                aur->Remove();
+                caster->CastSpell(caster, SkyfallProc, true);
+            }
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_molten_skyfall::CheckProc);
+        OnProc += AuraProcFn(spell_molten_skyfall::HandleProc);
+    }
+};
+
+/// ID: 333182 Molten Skyfall
+class spell_molten_skyfall_proc : public AuraScript
+{
+    PrepareAuraScript(spell_molten_skyfall_proc);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == Fireball;
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        auto caster = GetCaster();
+        auto target = eventInfo.GetActionTarget();
+        if (!caster || !target)
+            return;
+
+        caster->CastSpell(target, Meteor, true);
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_molten_skyfall_proc::CheckProc);
+        OnProc += AuraProcFn(spell_molten_skyfall_proc::HandleProc);
+    }
+};
+
 void AddSC_spell_mage_legendary()
 {
     RegisterSpellScript(spell_disciplinary_command);
     RegisterSpellScript(spell_expanded_potential);
     RegisterSpellScript(spell_arcane_harmony);
     RegisterSpellScript(spell_fevered_incantation);
+    RegisterSpellScript(spell_firestorm);
+    RegisterSpellScript(spell_molten_skyfall);
+    RegisterSpellScript(spell_molten_skyfall_proc);
 }

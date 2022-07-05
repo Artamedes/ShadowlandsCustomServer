@@ -42,6 +42,8 @@ namespace Mage
         CriticalMass = 117216,
         HotStreak = 195283,
         Ignite = 12846,
+        HotStreakBuff = 195283,
+        Meteor = 153561,
     };
 
     enum eFrost

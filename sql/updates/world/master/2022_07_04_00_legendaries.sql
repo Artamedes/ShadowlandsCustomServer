@@ -32,3 +32,13 @@ INSERT INTO spell_script_names (spell_id, scriptname) VALUE (332769, 'spell_arca
 
 DELETE FROM spell_script_names WHERE spell_id = 333030;
 INSERT INTO spell_script_names (spell_id, scriptname) VALUE (333030, 'spell_fevered_incantation');
+
+
+DELETE FROM spell_script_names WHERE spell_id = 333097;
+INSERT INTO spell_script_names (spell_id, scriptname) VALUE (333097, 'spell_firestorm');
+
+DELETE FROM spell_script_names WHERE spell_id = 333182;
+INSERT INTO spell_script_names (spell_id, scriptname) VALUE (333182, 'spell_molten_skyfall_proc');
+
+DELETE FROM spell_script_names WHERE spell_id = 333167;
+INSERT INTO spell_script_names (spell_id, scriptname) VALUE (333167, 'spell_molten_skyfall');
