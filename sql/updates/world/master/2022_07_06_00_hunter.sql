@@ -4,3 +4,6 @@ INSERT INTO spell_script_names (spell_id, scriptname) VALUE (336747, 'spell_crav
 DELETE FROM spell_script_names WHERE spell_id = 356262;
 INSERT INTO spell_script_names (spell_id, scriptname) VALUE (356262, 'spell_pact_of_the_soulstalkers');
 
+DELETE FROM spell_script_names WHERE spell_id = 115768;
+INSERT INTO spell_script_names (spell_id, scriptname) VALUE (115768, 'spell_deep_wounds_115768');
+

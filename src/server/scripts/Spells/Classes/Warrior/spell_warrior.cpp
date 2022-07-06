@@ -4286,6 +4286,27 @@ class spell_intervene : public SpellScript
         OnEffectHitTarget += SpellEffectFn(spell_intervene::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
     }
 };
+/// ID: 115768 Deep Wounds
+class spell_deep_wounds_115768 : public AuraScript
+{
+    PrepareAuraScript(spell_deep_wounds_115768);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        if (auto spellInfo = eventInfo.GetSpellInfo())
+        {
+            if (spellInfo->Id == 262115 || spellInfo->Id == 115767)
+                return false;
+        }
+
+        return true;
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_deep_wounds_115768::CheckProc);
+    }
+};
 
 void AddSC_warrior_spell_scripts()
 {
@@ -4396,6 +4417,7 @@ void AddSC_warrior_spell_scripts()
     RegisterSpellScript(aura_warr_second_wind);
     RegisterSpellScript(aura_warr_second_wind_damaged);
     RegisterSpellScript(spell_intervene);
+    RegisterSpellScript(spell_deep_wounds_115768);
 
     // Area Trigger scripts
     RegisterAreaTriggerAI(at_warr_into_the_fray);
