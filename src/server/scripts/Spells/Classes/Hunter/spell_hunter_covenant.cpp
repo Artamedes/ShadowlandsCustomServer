@@ -17,6 +17,13 @@ class spell_ambuscade : public AuraScript
         FreezingTrapAura    = 3355,
         TarTrapAura         = 135299,
         SteelTrapAura       = 162480,
+
+        // FreezingTrap    = 187650,
+        FreezingTrap = 3355,
+        // TarTrap         = 187698,
+        TarTrap = 135299,
+        // SteelTrap       = 162488,
+        SteelTrap = 162496,
     };
 
     bool CheckProc(ProcEventInfo& eventInfo)
@@ -24,15 +31,17 @@ class spell_ambuscade : public AuraScript
         if (!eventInfo.GetSpellInfo())
             return false;
 
-        auto target = GetTarget();
+        if (auto spell = eventInfo.GetSpellInfo()->Id)
+        {
+            if (spell == FreezingTrap || spell == TarTrap || spell == SteelTrap)
+                return true;
+            //if (spell == TarTrap)
+            //    return true;
+            //if (spell == SteelTrap)
+            //    return true;
+        }
 
-        if (!target)
-            return false;
-
-        if (target->HasAura(FreezingTrapAura) || target->HasAura(TarTrapAura) || target->HasAura(SteelTrapAura))
-            return true;
-        else
-            return false;
+        return false;
     }
 
     void HandleProc(ProcEventInfo& eventInfo)
@@ -41,8 +50,9 @@ class spell_ambuscade : public AuraScript
             if (auto eff = GetEffect(EFFECT_0))
                 if (eff->ConduitRankEntry)
                 {
-                    float cdr = eff->ConduitRankEntry->AuraPointsOverride * 1000;
-                    caster->GetSpellHistory()->ModifyCooldown(Disengage, -int32(cdr));
+                    // float cdr = eff->ConduitRankEntry->AuraPointsOverride;
+                    // caster->GetSpellHistory()->ModifyCooldown(Disengage, - int32(cdr));
+                    caster->GetSpellHistory()->ModifyCooldown(Disengage, - eff->ConduitRankEntry->AuraPointsOverride);
                 }
     }
 
@@ -158,7 +168,7 @@ class spell_flame_infusion : public AuraScript
 void AddSC_spell_hunter_covenant()
 {
     // Needs fixing
-    // RegisterSpellScript(spell_ambuscade);
+    RegisterSpellScript(spell_ambuscade);
 
     RegisterSpellScript(spell_reversal_of_fortune);
     RegisterSpellScript(spell_brutal_projectiles);

@@ -9,6 +9,12 @@ enum eFlagellation
     Obedience             = 354703,
 };
 
+enum eRogue
+{
+    Evasion = 5277,
+    Kick = 1766,
+};
+
 // 323654
 class spell_rog_flagellation : public AuraScript
 {
@@ -154,4 +160,6 @@ void AddSC_spell_rogue_covenant()
     RegisterSpellScript(spell_flagellation_after);
     RegisterSpellScript(spell_obedience);
     RegisterSpellScript(spell_rog_echoing_reprimand);
+
+
 }

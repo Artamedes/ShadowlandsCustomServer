@@ -124,8 +124,6 @@ class spell_artifice_of_the_archmage : public AuraScript
 
 void AddSC_spell_mage_covenant()
 {
-    // Needs to be fixed before registering these spells
-    // 
     RegisterSpellScript(spell_grounding_surge);
     RegisterSpellScript(spell_incantation_of_swiftness);
     RegisterSpellScript(spell_artifice_of_the_archmage);
