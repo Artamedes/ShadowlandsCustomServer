@@ -44,6 +44,7 @@
 #include "ThreatManager.h"
 #include "Unit.h"
 #include "Log.h"
+#include "spell_hunter.h"
 
 enum HunterSpells
 {
@@ -3008,6 +3009,8 @@ public:
                         tempSumm->SetFaction(caster->GetFaction());
                         tempSumm->SetOwnerGUID(caster->GetGUID());
                         PhasingHandler::InheritPhaseShift(tempSumm, caster);
+                        if (caster->HasAura(Hunter::eLegendary::NesingwarysTrappingApparatus))
+                            caster->CastSpell(caster, Hunter::eLegendary::NesingwarysTrappingApparatusProc, true);
                         caster->CastSpell(tempSumm, SPELL_HUNTER_EXPLOSIVE_TRAP_DAMAGE, true);
                         at->Remove();
                     }
@@ -3032,6 +3035,8 @@ public:
                     tempSumm->SetFaction(caster->GetFaction());
                     tempSumm->SetOwnerGUID(caster->GetGUID());
                     PhasingHandler::InheritPhaseShift(tempSumm, caster);
+                    if (caster->HasAura(Hunter::eLegendary::NesingwarysTrappingApparatus))
+                        caster->CastSpell(caster, Hunter::eLegendary::NesingwarysTrappingApparatusProc, true);
                     caster->CastSpell(tempSumm, SPELL_HUNTER_EXPLOSIVE_TRAP_DAMAGE, true);
                     at->Remove();
                 }
@@ -3082,6 +3087,9 @@ public:
                 Unit* target = ObjectAccessor::GetUnit(*caster, itr);
                 if (!caster->IsFriendlyTo(target))
                 {
+                    if (caster->HasAura(Hunter::eLegendary::NesingwarysTrappingApparatus))
+                        caster->CastSpell(caster, Hunter::eLegendary::NesingwarysTrappingApparatusProc, true);
+
                     if (caster->HasAura(SPELL_HUNTER_DIAMOND_ICE))
                         caster->CastSpell(target, SPELL_HUNTER_DIAMOND_ICE_AURA, true);
                     else
@@ -3105,6 +3113,9 @@ public:
 
             if (!caster->IsFriendlyTo(unit))
             {
+                if (caster->HasAura(Hunter::eLegendary::NesingwarysTrappingApparatus))
+                    caster->CastSpell(caster, Hunter::eLegendary::NesingwarysTrappingApparatusProc, true);
+
                 if (caster->HasAura(SPELL_HUNTER_DIAMOND_ICE))
                     caster->CastSpell(unit, SPELL_HUNTER_DIAMOND_ICE_AURA, true);
                 else
@@ -3193,6 +3204,10 @@ public:
                         tempSumm->SetFaction(caster->GetFaction());
                         tempSumm->SetOwnerGUID(caster->GetGUID());
                         PhasingHandler::InheritPhaseShift(tempSumm, caster);
+
+                        if (caster->HasAura(Hunter::eLegendary::NesingwarysTrappingApparatus))
+                            caster->CastSpell(caster, Hunter::eLegendary::NesingwarysTrappingApparatusProc, true);
+
                         caster->CastSpell(tempSumm, SPELL_HUNTER_ACTIVATE_TAR_TRAP, true);
                         at->Remove();
                     }
@@ -3216,6 +3231,10 @@ public:
                     tempSumm->SetFaction(caster->GetFaction());
                     tempSumm->SetOwnerGUID(caster->GetGUID());
                     PhasingHandler::InheritPhaseShift(tempSumm, caster);
+
+                    if (caster->HasAura(Hunter::eLegendary::NesingwarysTrappingApparatus))
+                        caster->CastSpell(caster, Hunter::eLegendary::NesingwarysTrappingApparatusProc, true);
+
                     caster->CastSpell(tempSumm, SPELL_HUNTER_ACTIVATE_TAR_TRAP, true);
                     at->Remove();
                 }
@@ -3750,6 +3769,9 @@ struct at_hunter_explosive_trap : AreaTriggerAI
 		if (Unit* caster = at->GetCaster())
 			if (unit && caster->IsValidAttackTarget(unit))
 			{
+                if (caster->HasAura(Hunter::eLegendary::NesingwarysTrappingApparatus))
+                    caster->CastSpell(caster, Hunter::eLegendary::NesingwarysTrappingApparatusProc, true);
+
 				caster->CastSpell(at->GetPosition(), SPELL_HUNTER_EXPLOSIVE_TRAP, true);
 				at->SetDuration(0);
 			}
@@ -4633,6 +4655,9 @@ struct at_hunter_steeltrap : AreaTriggerAI
         if (Unit* caster = at->GetCaster())
             if (caster->IsValidAttackTarget(unit))
             {
+                if (caster->HasAura(Hunter::eLegendary::NesingwarysTrappingApparatus))
+                    caster->CastSpell(caster, Hunter::eLegendary::NesingwarysTrappingApparatusProc, true);
+
                 caster->CastSpell(unit, SPELL_HUNTER_STEELTRAP_STUN, true);
                 caster->CastSpell(unit, SPELL_HUNTER_STEELTRAP_BLEED, true);
                 at->SetDuration(0);
