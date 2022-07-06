@@ -94,5 +94,13 @@ namespace Hunter
     {
         ResonatingArrow = 308491,
         ResonatingArrowMissle = 308495,
+
+        AmbuscadeConduit = 346747,
     };
+
+    /// <summary>
+    /// Applies the Ambuscade conduit after a trap is triggered if they have the conduit
+    /// </summary>
+    /// <param name="caster"></param>
+    void ApplyAmbuscadeIfNeed(Unit* caster);
 }

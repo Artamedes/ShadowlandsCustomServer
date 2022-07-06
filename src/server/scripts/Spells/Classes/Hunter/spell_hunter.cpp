@@ -3095,6 +3095,7 @@ public:
                     else
                         caster->CastSpell(target, SPELL_HUNTER_FREEZING_TRAP_STUN, true);
 
+                    Hunter::ApplyAmbuscadeIfNeed(caster);
                     at->Remove();
                     return;
                 }
@@ -3121,6 +3122,7 @@ public:
                 else
                     caster->CastSpell(unit, SPELL_HUNTER_FREEZING_TRAP_STUN, true);
 
+                Hunter::ApplyAmbuscadeIfNeed(caster);
                 at->Remove();
                 return;
             }
@@ -3208,6 +3210,8 @@ public:
                         if (caster->HasAura(Hunter::eLegendary::NesingwarysTrappingApparatus))
                             caster->CastSpell(caster, Hunter::eLegendary::NesingwarysTrappingApparatusProc, true);
 
+                        Hunter::ApplyAmbuscadeIfNeed(caster);
+
                         caster->CastSpell(tempSumm, SPELL_HUNTER_ACTIVATE_TAR_TRAP, true);
                         at->Remove();
                     }
@@ -3234,6 +3238,8 @@ public:
 
                     if (caster->HasAura(Hunter::eLegendary::NesingwarysTrappingApparatus))
                         caster->CastSpell(caster, Hunter::eLegendary::NesingwarysTrappingApparatusProc, true);
+
+                    Hunter::ApplyAmbuscadeIfNeed(caster);
 
                     caster->CastSpell(tempSumm, SPELL_HUNTER_ACTIVATE_TAR_TRAP, true);
                     at->Remove();
@@ -3777,6 +3783,8 @@ struct at_hunter_explosive_trap : AreaTriggerAI
 			{
                 if (caster->HasAura(Hunter::eLegendary::NesingwarysTrappingApparatus))
                     caster->CastSpell(caster, Hunter::eLegendary::NesingwarysTrappingApparatusProc, true);
+
+                Hunter::ApplyAmbuscadeIfNeed(caster);
 
 				caster->CastSpell(at->GetPosition(), SPELL_HUNTER_EXPLOSIVE_TRAP, true);
 				at->SetDuration(0);
@@ -4663,6 +4671,8 @@ struct at_hunter_steeltrap : AreaTriggerAI
             {
                 if (caster->HasAura(Hunter::eLegendary::NesingwarysTrappingApparatus))
                     caster->CastSpell(caster, Hunter::eLegendary::NesingwarysTrappingApparatusProc, true);
+
+                Hunter::ApplyAmbuscadeIfNeed(caster);
 
                 caster->CastSpell(unit, SPELL_HUNTER_STEELTRAP_STUN, true);
                 caster->CastSpell(unit, SPELL_HUNTER_STEELTRAP_BLEED, true);
@@ -5832,4 +5842,16 @@ void AddSC_hunter_spell_scripts()
     new PlayerScript_black_arrow();
     new PlayerScript_hunter_natural_mending();
     new Playerscript_hunter_lone_wolf();
+}
+
+void Hunter::ApplyAmbuscadeIfNeed(Unit* caster)
+{
+    if (caster)
+    {
+        if (auto conduit = caster->GetAuraEffect(AmbuscadeConduit, EFFECT_0))
+        {
+            if (conduit->ConduitRankEntry)
+                caster->GetSpellHistory()->ReduceChargeCooldown(1449, uint32(conduit->ConduitRankEntry->AuraPointsOverride));
+        }
+    }
 }

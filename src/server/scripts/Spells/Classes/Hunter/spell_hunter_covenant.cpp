@@ -1,67 +1,6 @@
-#include "SpellIncludes.h"
+#include "spell_hunter.h"
 
-enum eHunter
-{
-    Disengage   = 781,
-    CounterShot = 147362,
-    Carve       = 187708,
-};
-
-/// ID: 346747 Ambuscade
-class spell_ambuscade : public AuraScript
-{
-    PrepareAuraScript(spell_ambuscade);
-
-    enum eTrapAuras
-    {
-        FreezingTrapAura    = 3355,
-        TarTrapAura         = 135299,
-        SteelTrapAura       = 162480,
-
-        // FreezingTrap    = 187650,
-        FreezingTrap = 3355,
-        // TarTrap         = 187698,
-        TarTrap = 135299,
-        // SteelTrap       = 162488,
-        SteelTrap = 162496,
-    };
-
-    bool CheckProc(ProcEventInfo& eventInfo)
-    {
-        if (!eventInfo.GetSpellInfo())
-            return false;
-
-        if (auto spell = eventInfo.GetSpellInfo()->Id)
-        {
-            if (spell == FreezingTrap || spell == TarTrap || spell == SteelTrap)
-                return true;
-            //if (spell == TarTrap)
-            //    return true;
-            //if (spell == SteelTrap)
-            //    return true;
-        }
-
-        return false;
-    }
-
-    void HandleProc(ProcEventInfo& eventInfo)
-    {
-        if (auto caster = GetCaster())
-            if (auto eff = GetEffect(EFFECT_0))
-                if (eff->ConduitRankEntry)
-                {
-                    // float cdr = eff->ConduitRankEntry->AuraPointsOverride;
-                    // caster->GetSpellHistory()->ModifyCooldown(Disengage, - int32(cdr));
-                    caster->GetSpellHistory()->ModifyCooldown(Disengage, - eff->ConduitRankEntry->AuraPointsOverride);
-                }
-    }
-
-    void Register() override
-    {
-        DoCheckProc += AuraCheckProcFn(spell_ambuscade::CheckProc);
-        OnProc += AuraProcFn(spell_ambuscade::HandleProc);
-    }
-};
+using namespace Hunter;
 
 /// ID: 339495 Reversal of Fortune
 class spell_reversal_of_fortune : public AuraScript
@@ -167,9 +106,6 @@ class spell_flame_infusion : public AuraScript
 
 void AddSC_spell_hunter_covenant()
 {
-    // Needs fixing
-    RegisterSpellScript(spell_ambuscade);
-
     RegisterSpellScript(spell_reversal_of_fortune);
     RegisterSpellScript(spell_brutal_projectiles);
     RegisterSpellScript(spell_flame_infusion);
