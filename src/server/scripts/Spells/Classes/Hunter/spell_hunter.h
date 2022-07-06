@@ -86,5 +86,7 @@ namespace Hunter
     {
         NesingwarysTrappingApparatus = 336743,
         NesingwarysTrappingApparatusProc = 336744,
+        SoulforgeEmbers = 336745,
+        SoulforgeEmbersProc = 336746,
     };
 }

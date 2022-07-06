@@ -3285,6 +3285,9 @@ public:
                 if (!caster->IsFriendlyTo(target))
                 {
                     caster->CastSpell(target, SPELL_HUNTER_TAR_TRAP_SLOW, true);
+
+                    if (caster->HasAura(Hunter::eLegendary::SoulforgeEmbers))
+                        caster->CastSpell(target, Hunter::eLegendary::SoulforgeEmbersProc, true);
                 }
             }
         }
@@ -3302,6 +3305,9 @@ public:
             if (!caster->IsFriendlyTo(unit))
             {
                 caster->CastSpell(unit, SPELL_HUNTER_TAR_TRAP_SLOW, true);
+
+                if (caster->HasAura(Hunter::eLegendary::SoulforgeEmbers))
+                    caster->CastSpell(unit, Hunter::eLegendary::SoulforgeEmbersProc, true);
             }
         }
 
@@ -3315,8 +3321,8 @@ public:
             if (!caster->ToPlayer())
                 return;
 
-            if (unit->HasAura(SPELL_HUNTER_TAR_TRAP_SLOW) && unit->GetAura(SPELL_HUNTER_TAR_TRAP_SLOW)->GetCaster() == caster)
-                unit->RemoveAura(SPELL_HUNTER_TAR_TRAP_SLOW);
+            unit->RemoveAura(SPELL_HUNTER_TAR_TRAP_SLOW, caster->GetGUID());
+            unit->RemoveAura(Hunter::eLegendary::SoulforgeEmbersProc, caster->GetGUID());
         }
 
         void OnRemove() override
