@@ -89,4 +89,10 @@ namespace Hunter
         SoulforgeEmbers = 336745,
         SoulforgeEmbersProc = 336746,
     };
+
+    enum eCovenant
+    {
+        ResonatingArrow = 308491,
+        ResonatingArrowMissle = 308495,
+    };
 }

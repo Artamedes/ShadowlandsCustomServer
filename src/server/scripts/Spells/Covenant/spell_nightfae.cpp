@@ -297,6 +297,9 @@ class spell_hunter_wildspirits : public AuraScript
                 {
                     if (areaTrigger->GetInsideUnits().count(victim->GetGUID()))
                         attacker->CastSpell(victim, WildSpiritsDmg, true);
+
+                    if (areaTrigger->GetInsideUnits().size() <= 5 && attacker->HasAura(356375)) ///< Fragments of the Elder Antlers
+                        attacker->CastSpell(victim, WildSpiritsDmg, true); ///< Double Dmg
                 }
             }
         }
