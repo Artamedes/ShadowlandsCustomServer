@@ -327,6 +327,44 @@ class spell_resplendent_light : public AuraScript
     }
 };
 
+/// ID: 357902 Adaptive Armor Fragment
+class spell_adaptive_armor_fragment : public AuraScript
+{
+    PrepareAuraScript(spell_adaptive_armor_fragment);
+
+    enum eAdapArmorFrag
+    {
+        ProcSpell = 357972,
+    };
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        //auto friendly = eventInfo.GetActor();
+
+        //if (!friendly)
+        //    return false;
+
+        if (eventInfo.GetHealInfo())
+            return true;
+
+        return false;
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (auto caster = GetCaster())
+            if (auto eff = GetEffect(EFFECT_0))
+                if (eff->ConduitRankEntry)
+                    caster->CastSpell(caster, ProcSpell, CastSpellExtraArgs(true).AddSpellBP0(eff->ConduitRankEntry->AuraPointsOverride));
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_adaptive_armor_fragment::CheckProc);
+        OnProc += AuraProcFn(spell_adaptive_armor_fragment::HandleProc);
+    }
+};
+
 
 void AddSC_spell_paladin_covenant()
 {
@@ -339,4 +377,7 @@ void AddSC_spell_paladin_covenant()
 
     RegisterSpellScript(spell_shielding_words);
     RegisterSpellScript(spell_resplendent_light);
+
+    // Needs fixing
+    // RegisterSpellScript(spell_adaptive_armor_fragment);
 }
