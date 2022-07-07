@@ -335,14 +335,18 @@ class spell_adaptive_armor_fragment : public AuraScript
     enum eAdapArmorFrag
     {
         ProcSpell = 357972,
+        CDSpell = 357973,
     };
 
     bool CheckProc(ProcEventInfo& eventInfo)
     {
-        //auto friendly = eventInfo.GetActor();
+        auto caster = GetCaster();
+        if (!caster || caster->HasAura(CDSpell))
+            return false;
+        auto friendly = eventInfo.GetActor();
 
-        //if (!friendly)
-        //    return false;
+        if (!friendly || !friendly->IsPlayer())
+            return false;
 
         if (eventInfo.GetHealInfo())
             return true;
@@ -355,7 +359,10 @@ class spell_adaptive_armor_fragment : public AuraScript
         if (auto caster = GetCaster())
             if (auto eff = GetEffect(EFFECT_0))
                 if (eff->ConduitRankEntry)
+                {
                     caster->CastSpell(caster, ProcSpell, CastSpellExtraArgs(true).AddSpellBP0(eff->ConduitRankEntry->AuraPointsOverride));
+                    caster->CastSpell(caster, CDSpell, true);
+                }
     }
 
     void Register() override
@@ -378,6 +385,5 @@ void AddSC_spell_paladin_covenant()
     RegisterSpellScript(spell_shielding_words);
     RegisterSpellScript(spell_resplendent_light);
 
-    // Needs fixing
-    // RegisterSpellScript(spell_adaptive_armor_fragment);
+    RegisterSpellScript(spell_adaptive_armor_fragment);
 }
