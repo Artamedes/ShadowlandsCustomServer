@@ -3207,7 +3207,7 @@ public:
     {
         npc_mirror_imageAI(Creature* creature) : CasterAI(creature) { }
 
-        EventMap events;
+        uint32 m_SpellId = eSpells::SPELL_MAGE_FROSTBOLT;
 
         void IsSummonedBy(WorldObject* o) override
         {
@@ -3244,6 +3244,23 @@ public:
             }
 
             me->UpdateAttackPowerAndDamage();
+
+            Player* ownerPlayer = owner->ToPlayer();
+            if (!ownerPlayer)
+                return;
+
+            // logs are saying that it only casts frostbolt
+            //switch (ownerPlayer->GetSpecializationId())
+            //{
+            //    case TALENT_SPEC_MAGE_ARCANE:
+            //        m_SpellId = eSpells::SPELL_MAGE_ARCANE_BLAST;
+            //        break;
+            //    case TALENT_SPEC_MAGE_FIRE:
+            //        m_SpellId = eSpells::SPELL_MAGE_FIREBALL;
+            //        break;
+            //    default:
+            //        break;
+            //}
         }
 
         void JustEngagedWith(Unit* /*who*/) override
@@ -3252,24 +3269,9 @@ public:
             if (!owner)
                 return;
 
-            Player* ownerPlayer = owner->ToPlayer();
-            if (!ownerPlayer)
-                return;
-
-            eSpells spellId = eSpells::SPELL_MAGE_FROSTBOLT;
-            switch (ownerPlayer->GetSpecializationId())
-            {
-                case TALENT_SPEC_MAGE_ARCANE:
-                    spellId = eSpells::SPELL_MAGE_ARCANE_BLAST;
-                    break;
-                case TALENT_SPEC_MAGE_FIRE:
-                    spellId = eSpells::SPELL_MAGE_FIREBALL;
-                    break;
-                default:
-                    break;
-            }
-
-            events.ScheduleEvent(spellId, 10ms); ///< Schedule cast
+            me->SetModCastingSpeed(0.5f);
+            me->SetModHaste(0.5f);
+            me->SetModSpellHaste(0.5f);
             me->GetMotionMaster()->Clear();
         }
 
@@ -3305,8 +3307,6 @@ public:
 
         void UpdateAI(uint32 diff) override
         {
-            events.Update(diff);
-
             Unit* l_Victim = me->GetVictim();
             if (l_Victim)
             {
@@ -3315,12 +3315,9 @@ public:
                     /// If not already casting, cast! ("I'm a cast machine")
                     if (!me->HasUnitState(UNIT_STATE_CASTING))
                     {
-                        if (uint32 spellId = events.ExecuteEvent())
-                        {
-                            DoCast(spellId);
-                            Milliseconds castTime = Milliseconds(me->GetCurrentSpellCastTime(spellId));
-                            events.ScheduleEvent(spellId, (castTime > 0ms ? castTime : 500ms) + Milliseconds(sSpellMgr->GetSpellInfo(spellId)->ProcCooldown));
-                        }
+                        auto result = DoCastVictim(m_SpellId);
+                        //if (result == SPELL_CAST_OK || result == SpellCastResult::SPELL_FAILED_SUCCESS)
+                        //    me->GetMotionMaster()->Clear();
                     }
                 }
                 else
@@ -3329,7 +3326,7 @@ public:
                     if (me->HasUnitState(UNIT_STATE_CASTING))
                         me->CastStop();
 
-                    me->AI()->EnterEvadeMode();
+                    EnterEvadeMode(EvadeReason::EVADE_REASON_OTHER);
                 }
             }
             else
@@ -3341,7 +3338,7 @@ public:
                     /// No target? Let's see if our owner has a better target for us
                     if (Unit* owner = me->GetOwner())
                     {
-                        Unit* ownerVictim = owner->GetVictim();
+                        Unit* ownerVictim = ObjectAccessor::GetUnit(*owner, owner->GetTarget());
                         if (ownerVictim && me->CanCreatureAttack(ownerVictim))
                             target = ownerVictim;
                     }
