@@ -1208,6 +1208,9 @@ public:
                             }
                         }                        
                     }
+
+                    if (player->HasAura(Hunter::eLegendary::DireCommand) && roll_chance_i(20))
+                        player->CastSpell(GetHitUnit(), SPELL_HUNTER_DIRE_BEAST_GENERIC, CastSpellExtraArgs(TRIGGERED_FULL_MASK | TRIGGERED_DONT_CREATE_COOLDOWN));
                 }
         }
 

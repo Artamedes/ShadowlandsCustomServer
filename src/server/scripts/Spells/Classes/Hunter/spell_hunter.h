@@ -88,6 +88,7 @@ namespace Hunter
         NesingwarysTrappingApparatusProc = 336744,
         SoulforgeEmbers = 336745,
         SoulforgeEmbersProc = 336746,
+        DireCommand = 336819,
     };
 
     enum eCovenant
