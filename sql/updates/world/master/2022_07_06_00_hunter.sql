@@ -14,3 +14,11 @@ DELETE FROM spell_script_names WHERE spell_id = 336826;
 INSERT INTO spell_script_names (spell_id, scriptname) VALUE (336826, 'spell_flamewakers_cobra_sting_proc');
 
 
+DELETE FROM spell_script_names WHERE spell_id = 336830;
+INSERT INTO spell_script_names (spell_id, scriptname) VALUE (336830, 'spell_qapla_eredun_war_order');
+
+REPLACE INTO spell_script_names (spell_id, scriptname) VALUE (19574, 'aura_hun_bestial_wrath');
+
+DELETE FROM spell_script_names WHERE spell_id = 336849;
+INSERT INTO spell_script_names (spell_id, scriptname) VALUE (336849, 'spell_eagletalons_true_focus');
+

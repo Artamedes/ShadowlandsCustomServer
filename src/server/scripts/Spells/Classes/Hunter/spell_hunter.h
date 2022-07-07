@@ -46,6 +46,7 @@ namespace Hunter
         SniperTraining = 193468,
         PreciseShots = 260240,
         TrickShots = 257621,
+        TrickShotsProc = 257622,
     };
 
     enum eSurvival
@@ -89,6 +90,8 @@ namespace Hunter
         SoulforgeEmbers = 336745,
         SoulforgeEmbersProc = 336746,
         DireCommand = 336819,
+        RylakstalkersPiercingFangs = 336844,
+        RylakstalkersPiercingFangsProc = 336845,
     };
 
     enum eCovenant

@@ -4695,7 +4695,12 @@ class aura_hun_bestial_wrath : public AuraScript
         {
             if (Player* player = GetCaster()->ToPlayer())
                 if (Pet* pet = player->GetPet())
+                {
                     pet->AddAura(SPELL_HUNTER_BESTIAL_WRATH, pet);
+
+                    if (player->HasAura(Hunter::eLegendary::RylakstalkersPiercingFangs))
+                        player->CastSpell(pet, Hunter::eLegendary::RylakstalkersPiercingFangsProc, true);
+                }
 
             if (caster->HasAura(SPELL_HUNTER_THE_BEAST_WITHIN))
                 caster->CastSpell(caster, SPELL_HUNTER_THE_BEAST_WITHIN_BUFF, true);
