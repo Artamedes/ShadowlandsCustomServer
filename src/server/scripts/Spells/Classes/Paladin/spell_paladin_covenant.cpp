@@ -256,6 +256,41 @@ class spell_ashen_hallow : public AuraScript
     }
 };
 
+/// ID: 338787 Shielding Words
+class spell_shielding_words : public AuraScript
+{
+    PrepareAuraScript(spell_shielding_words);
+
+    enum eShieldingWords
+    {
+        ProcSpell = 338788,
+    };
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        if (!eventInfo.GetSpellInfo())
+            return false;
+
+        return eventInfo.GetSpellInfo()->Id == PaladinSpells::WordOfGlory;
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (auto caster = GetCaster())
+            if (auto eff = GetEffect(EFFECT_0))
+                if (eff->ConduitRankEntry)
+                {
+                    caster->CastSpell(caster, ProcSpell, CastSpellExtraArgs(true).AddSpellBP0(CalculatePct(eventInfo.GetHealInfo()->GetHeal(), eff->ConduitRankEntry->AuraPointsOverride)));
+                }
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_shielding_words::CheckProc);
+        OnProc += AuraProcFn(spell_shielding_words::HandleProc);
+    }
+};
+
 void AddSC_spell_paladin_covenant()
 {
     RegisterSpellScript(spell_vanquishers_hammer);
@@ -264,4 +299,6 @@ void AddSC_spell_paladin_covenant()
     RegisterSpellScript(spell_ashen_hallow);
 
     RegisterAreaTriggerAI(areatrigger_pal_ashen_hallow);
+
+    RegisterSpellScript(spell_shielding_words);
 }
