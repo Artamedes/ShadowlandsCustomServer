@@ -5759,6 +5759,14 @@ void AuraEffect::HandlePeriodicHealthLeechAuraTick(Unit* target, Unit* caster) c
     Unit::ProcSkillsAndAuras(caster, caster, PROC_FLAG_DEAL_HELPFUL_PERIODIC, PROC_FLAG_TAKE_HELPFUL_PERIODIC, PROC_SPELL_TYPE_HEAL, PROC_SPELL_PHASE_HIT, hitMask, nullptr, nullptr, &healInfo);
 
     caster->SendSpellNonMeleeDamageLog(&log);
+
+    /// PIGPIGPIG for handle drain life
+    if (m_spellInfo->Id == 234153)
+    {
+        uint32 prevDamage = caster->Variables.GetValue("DrainLifeDmg", 0u);
+        prevDamage += damage;
+        caster->Variables.Set("DrainLifeDmg", prevDamage);
+    }
 }
 
 void AuraEffect::HandlePeriodicHealthFunnelAuraTick(Unit* target, Unit* caster) const

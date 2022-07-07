@@ -3290,6 +3290,11 @@ void SpellMgr::LoadSpellInfoCorrections()
 
     // Some spells have no amplitude set
     {
+        /// Accrued Vitality
+        ApplySpellFix({ 339298 }, [](SpellInfo* info)
+        {
+            info->AttributesEx5 &= ~SPELL_ATTR5_SPELL_HASTE_AFFECTS_PERIODIC;
+        });
         /// HoA Fixes
         ApplySpellFix({ 329340 }, [](SpellInfo* info)
         {

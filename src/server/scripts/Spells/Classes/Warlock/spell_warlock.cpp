@@ -7453,6 +7453,8 @@ public:
                     if (unit->HasAura(SoulRotDebuff, caster->GetGUID()) && !unit->HasAura(GetSpellInfo()->Id, caster->GetGUID()))
                         caster->AddChannelObject(unit->GetGUID());
                 }
+
+                caster->Variables.Remove("DrainLifeDmg");
             }
         }
 
@@ -7461,6 +7463,44 @@ public:
             BeforeCast += SpellCastFn(spell_warl_drain_life_SpellScript::HandleBeforeCast);
         }
     };
+    /// ID: 234153 Drain Life
+    class spell_drain_life_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_drain_life_AuraScript);
+
+        void HandleRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+        {
+            Unit* caster = GetCaster();
+            if (!caster)
+                return;
+
+            // Handle Accrued Vitality conduit
+            if (caster->Variables.Exist("DrainLifeDmg"))
+            {
+                uint32 dmg = caster->Variables.GetValue("DrainLifeDmg", 0u);
+                caster->Variables.Remove("DrainLifeDmg");
+
+                if (auto eff = caster->GetAuraEffect(339282, EFFECT_0))
+                {
+                    if (eff->ConduitRankEntry)
+                    {
+                        auto amount = CalculatePct(dmg, eff->ConduitRankEntry->AuraPointsOverride);
+                        caster->CastSpell(caster, 339298, CastSpellExtraArgs(true).AddSpellBP0(amount));
+                    }
+                }
+            }
+        }
+
+        void Register() override
+        {
+            OnEffectRemove += AuraEffectApplyFn(spell_drain_life_AuraScript::HandleRemove, EFFECT_0, SPELL_AURA_PERIODIC_LEECH, AURA_EFFECT_HANDLE_REAL);
+        }
+    };
+
+    AuraScript* GetAuraScript() const override
+    {
+        return new spell_drain_life_AuraScript();
+    }
 
     SpellScript* GetSpellScript() const override
     {
