@@ -417,7 +417,7 @@ void WorldSession::HandleCancelAuraOpcode(WorldPackets::Spells::CancelAura& canc
     // don't allow cancelling passive auras (some of them are visible)
     switch (spellInfo->Id)
     {
-        case 111400:
+        case 111400: ///< ID - 111400 Burning Rush
             break;
         default:
             if (!spellInfo->IsPositive() || spellInfo->IsPassive())
