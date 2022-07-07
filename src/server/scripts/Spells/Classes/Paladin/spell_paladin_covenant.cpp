@@ -3,6 +3,11 @@
 
 using namespace Paladin;
 
+enum ePaladin
+{
+    HolyLight = 82326,
+};
+
 /// ID: 328204 Vanquisher's Hammer
 class spell_vanquishers_hammer : public AuraScript
 {
@@ -279,9 +284,7 @@ class spell_shielding_words : public AuraScript
         if (auto caster = GetCaster())
             if (auto eff = GetEffect(EFFECT_0))
                 if (eff->ConduitRankEntry)
-                {
                     caster->CastSpell(caster, ProcSpell, CastSpellExtraArgs(true).AddSpellBP0(CalculatePct(eventInfo.GetHealInfo()->GetHeal(), eff->ConduitRankEntry->AuraPointsOverride)));
-                }
     }
 
     void Register() override
@@ -290,6 +293,40 @@ class spell_shielding_words : public AuraScript
         OnProc += AuraProcFn(spell_shielding_words::HandleProc);
     }
 };
+
+/// ID: 339712 Resplendent Light
+class spell_resplendent_light : public AuraScript
+{
+    PrepareAuraScript(spell_resplendent_light);
+
+    enum eRespLight
+    {
+        ProcSpell = 339744,
+    };
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        if (!eventInfo.GetSpellInfo())
+            return false;
+
+        return eventInfo.GetSpellInfo()->Id == HolyLight;
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (auto caster = GetCaster())
+            if (auto eff = GetEffect(EFFECT_0))
+                if (eff->ConduitRankEntry)
+                    caster->CastSpell(caster, ProcSpell, CastSpellExtraArgs(true).AddSpellBP0(eff->ConduitRankEntry->AuraPointsOverride));
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_resplendent_light::CheckProc);
+        OnProc += AuraProcFn(spell_resplendent_light::HandleProc);
+    }
+};
+
 
 void AddSC_spell_paladin_covenant()
 {
@@ -301,4 +338,5 @@ void AddSC_spell_paladin_covenant()
     RegisterAreaTriggerAI(areatrigger_pal_ashen_hallow);
 
     RegisterSpellScript(spell_shielding_words);
+    RegisterSpellScript(spell_resplendent_light);
 }
