@@ -148,6 +148,84 @@ class spell_secrets_of_the_unblinking_vigil_proc : public AuraScript
     }
 };
 
+/// ID: 336867 Surging Shots
+class spell_surging_shots : public AuraScript
+{
+    PrepareAuraScript(spell_surging_shots);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == AimedShot;
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (auto caster = GetCaster())
+            caster->GetSpellHistory()->ResetCooldown(RapidFire);
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_surging_shots::CheckProc);
+        OnProc += AuraProcFn(spell_surging_shots::HandleProc);
+    }
+};
+
+/// ID: 336907 Butcher's Bone Fragments
+class spell_butchers_bone_fragments : public AuraScript
+{
+    PrepareAuraScript(spell_butchers_bone_fragments);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && (eventInfo.GetSpellInfo()->Id == RaptorStrike || eventInfo.GetSpellInfo()->Id == MongooseBite);
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_butchers_bone_fragments::CheckProc);
+    }
+};
+
+/// ID: 336902 Latent Poison Injectors
+class spell_latent_poison_injectors : public AuraScript
+{
+    PrepareAuraScript(spell_latent_poison_injectors);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == SerpentSting;
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_latent_poison_injectors::CheckProc);
+    }
+};
+
+/// ID: 336901 Rylakstalker's Confounding Strikes
+class spell_rylakstalkers_confounding_strikes : public AuraScript
+{
+    PrepareAuraScript(spell_rylakstalkers_confounding_strikes);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && (eventInfo.GetSpellInfo()->Id == MongooseBite || eventInfo.GetSpellInfo()->Id == RaptorStrike);
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (auto caster = GetCaster())
+            caster->GetSpellHistory()->ResetCooldown(WildfireBomb);
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_rylakstalkers_confounding_strikes::CheckProc);
+        OnProc += AuraProcFn(spell_rylakstalkers_confounding_strikes::HandleProc);
+    }
+};
+
 void AddSC_spell_hunter_legendary()
 {
     RegisterSpellScript(spell_craven_strategem);
@@ -157,4 +235,7 @@ void AddSC_spell_hunter_legendary()
     RegisterSpellScript(spell_qapla_eredun_war_order);
     RegisterSpellScript(spell_eagletalons_true_focus);
     RegisterSpellScript(spell_secrets_of_the_unblinking_vigil_proc);
+    RegisterSpellScript(spell_surging_shots);
+    RegisterSpellScript(spell_butchers_bone_fragments);
+    RegisterSpellScript(spell_rylakstalkers_confounding_strikes);
 }

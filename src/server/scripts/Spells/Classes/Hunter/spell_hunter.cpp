@@ -448,6 +448,12 @@ public:
                             target->RemoveAura(SPELL_HUNTER_LATENT_POISON_DEBUFF, caster->GetGUID());
                         }
                     }
+
+                    if (auto aur = target->GetAura(Hunter::eLegendary::LatentPoisonInjectorsStacks, caster->GetGUID()))
+                    {
+                        caster->CastSpell(target, Hunter::eLegendary::LatentPoisonInjectorsDmg, CastSpellExtraArgs(true).AddSpellBP0(aur->GetStackAmount()));
+                        aur->Remove();
+                    }
                 }
             }                
         }
@@ -2421,6 +2427,12 @@ public:
                     caster->CastCustomSpell(SPELL_HUNTER_LATENT_POISON_DAMAGE, SPELLVALUE_BASE_POINT0, aurEff->GetAmount() * aura->GetStackAmount(), target, true);
                     target->RemoveAura(SPELL_HUNTER_LATENT_POISON_DEBUFF, caster->GetGUID());
                 }
+            }
+
+            if (auto aur = target->GetAura(Hunter::eLegendary::LatentPoisonInjectorsStacks, caster->GetGUID()))
+            {
+                caster->CastSpell(target, Hunter::eLegendary::LatentPoisonInjectorsDmg, CastSpellExtraArgs(true).AddSpellBP0(aur->GetStackAmount()));
+                aur->Remove();
             }
         }
 

@@ -24,3 +24,12 @@ INSERT INTO spell_script_names (spell_id, scriptname) VALUE (336849, 'spell_eagl
 DELETE FROM spell_script_names WHERE spell_id = 336892;
 INSERT INTO spell_script_names (spell_id, scriptname) VALUE (336892, 'spell_secrets_of_the_unblinking_vigil_proc');
 
+
+DELETE FROM spell_script_names WHERE spell_id = 336867;
+INSERT INTO spell_script_names (spell_id, scriptname) VALUE (336867, 'spell_surging_shots');
+
+DELETE FROM spell_script_names WHERE spell_id = 336907;
+INSERT INTO spell_script_names (spell_id, scriptname) VALUE (336907, 'spell_butchers_bone_fragments');
+
+DELETE FROM spell_script_names WHERE spell_id = 336901;
+INSERT INTO spell_script_names (spell_id, scriptname) VALUE (336901, 'spell_rylakstalkers_confounding_strikes');

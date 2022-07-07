@@ -62,6 +62,7 @@ namespace Hunter
         SerpentSting = 259491,
         WildfireBomb = 259495,
         SpiritBond = 263135,
+        MongooseBite = 259387,
     };
 
     enum eBeastMastery
@@ -92,6 +93,8 @@ namespace Hunter
         DireCommand = 336819,
         RylakstalkersPiercingFangs = 336844,
         RylakstalkersPiercingFangsProc = 336845,
+        LatentPoisonInjectorsStacks = 336903,
+        LatentPoisonInjectorsDmg = 336904,
     };
 
     enum eCovenant
