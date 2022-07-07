@@ -33,3 +33,10 @@ INSERT INTO spell_script_names (spell_id, scriptname) VALUE (336907, 'spell_butc
 
 DELETE FROM spell_script_names WHERE spell_id = 336901;
 INSERT INTO spell_script_names (spell_id, scriptname) VALUE (336901, 'spell_rylakstalkers_confounding_strikes');
+
+DELETE FROM spell_script_names WHERE spell_id = 338743;
+INSERT INTO spell_script_names (spell_id, scriptname) VALUE (338743, 'spell_vitality_sacrifice');
+
+
+DELETE FROM spell_script_names WHERE spell_id = 339058;
+INSERT INTO spell_script_names (spell_id, scriptname) VALUE (339058, 'spell_third_eye_of_the_jailer');
