@@ -126,6 +126,27 @@ class spell_secrets_of_the_unblinking_vigil : public AuraScript
         DoCheckProc += AuraCheckProcFn(spell_secrets_of_the_unblinking_vigil::CheckProc);
     }
 };
+/// ID: 336892 Secrets of the Unblinking Vigil
+class spell_secrets_of_the_unblinking_vigil_proc : public AuraScript
+{
+    PrepareAuraScript(spell_secrets_of_the_unblinking_vigil_proc);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == AimedShot;
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        Remove();
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_secrets_of_the_unblinking_vigil_proc::CheckProc);
+        OnProc += AuraProcFn(spell_secrets_of_the_unblinking_vigil_proc::HandleProc);
+    }
+};
 
 void AddSC_spell_hunter_legendary()
 {
@@ -135,4 +156,5 @@ void AddSC_spell_hunter_legendary()
     RegisterSpellScript(spell_flamewakers_cobra_sting_proc);
     RegisterSpellScript(spell_qapla_eredun_war_order);
     RegisterSpellScript(spell_eagletalons_true_focus);
+    RegisterSpellScript(spell_secrets_of_the_unblinking_vigil_proc);
 }

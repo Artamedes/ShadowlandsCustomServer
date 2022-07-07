@@ -21,4 +21,6 @@ REPLACE INTO spell_script_names (spell_id, scriptname) VALUE (19574, 'aura_hun_b
 
 DELETE FROM spell_script_names WHERE spell_id = 336849;
 INSERT INTO spell_script_names (spell_id, scriptname) VALUE (336849, 'spell_eagletalons_true_focus');
+DELETE FROM spell_script_names WHERE spell_id = 336892;
+INSERT INTO spell_script_names (spell_id, scriptname) VALUE (336892, 'spell_secrets_of_the_unblinking_vigil_proc');
 
