@@ -8,6 +8,12 @@ enum eShamanCovenant
     FaeTransfusionBuffHeal = 328933,
 };
 
+enum eShaman
+{
+    SpiritWalk          = 58875,
+    SpiritWalkersGrace  = 79206,
+};
+
 /// ID: 328923 Fae Transfusion
 class spell_fae_transfusion_spellscript : public SpellScript
 {
@@ -125,9 +131,42 @@ class spell_fae_transfusion_dmg : public SpellScript
     }
 };
 
+/// ID: 338048 Spiritual Resonance
+class spell_spiritual_resonance : public AuraScript
+{
+    PrepareAuraScript(spell_spiritual_resonance);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        if (!eventInfo.GetSpellInfo())
+            return false;
+
+        return eventInfo.GetSpellInfo()->Id == Heroism || eventInfo.GetSpellInfo()->Id == Bloodlust;
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (auto caster = GetCaster())
+            if (auto eff = GetEffect(EFFECT_0))
+                if (eff->ConduitRankEntry)
+                    if (IsSpec(caster, SimpleTalentSpecs::Enhancement))
+                        caster->CastSpell(caster, SpiritWalk, CastSpellExtraArgs(true).AddSpellMod(SpellValueMod::SPELLVALUE_DURATION, eff->ConduitRankEntry->AuraPointsOverride));
+                    else
+                        caster->CastSpell(caster, SpiritWalkersGrace, CastSpellExtraArgs(true).AddSpellMod(SpellValueMod::SPELLVALUE_DURATION, eff->ConduitRankEntry->AuraPointsOverride));
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_spiritual_resonance::CheckProc);
+        OnProc += AuraProcFn(spell_spiritual_resonance::HandleProc);
+    }
+};
+
 void AddSC_spell_shaman_covenant()
 {
     RegisterSpellAndAuraScriptPairWithArgs(spell_fae_transfusion_spellscript, spell_fae_transfusion, "spell_fae_transfusion");
     RegisterSpellScript(spell_fae_transfusion_heal);
     RegisterSpellScript(spell_fae_transfusion_dmg);
+
+    RegisterSpellScript(spell_spiritual_resonance);
 }
