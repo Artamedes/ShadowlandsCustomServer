@@ -679,9 +679,22 @@ void Player::UpdateParryPercentage()
         // apply diminishing formula to diminishing parry chance
         value = CalculateDiminishingReturns(parry_cap, GetClass(), nondiminishing, diminishing);
 
+        float parryFromCrit = 0.f;
+        if (int32 critToParryMod = GetTotalAuraModifier(SPELL_AURA_CONVERT_CRIT_RATING_PCT_TO_PARRY_RATING))
+        {
+            float critRat = float(m_activePlayerData->CombatRatings[CR_CRIT_MELEE] * GetRatingMultiplier(CR_PARRY));
+            parryFromCrit += critRat * ((float)critToParryMod / 100.f);
+        }
+
+        value += parryFromCrit;
+
         if (sWorld->getBoolConfig(CONFIG_STATS_LIMITS_ENABLE))
              value = value > sWorld->getFloatConfig(CONFIG_STATS_LIMITS_PARRY) ? sWorld->getFloatConfig(CONFIG_STATS_LIMITS_PARRY) : value;
 
+        if (value > parry_cap[pclass])
+            value = parry_cap[pclass];
+
+        value = value < 0.0f ? 0.0f : value;
     }
     SetUpdateFieldStatValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::ParryPercentage), value);
 }
