@@ -12,6 +12,8 @@ enum eShaman
 {
     SpiritWalk          = 58875,
     SpiritWalkersGrace  = 79206,
+    FrostShock          = 196840,
+    MaelstromWepAura    = 344179,
 };
 
 /// ID: 328923 Fae Transfusion
@@ -162,6 +164,46 @@ class spell_spiritual_resonance : public AuraScript
     }
 };
 
+// 344179 malestrom wep
+
+/// ID: 338325 Chilled to the Core
+class spell_chilled_to_the_core : public AuraScript
+{
+    PrepareAuraScript(spell_chilled_to_the_core);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        if (!eventInfo.GetSpellInfo())
+            return false;
+
+        return eventInfo.GetSpellInfo()->Id == FrostShock;
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (auto caster = GetCaster())
+            if (auto eff = GetEffect(EFFECT_0))
+                if (eff->ConduitRankEntry)
+                    caster->CastSpell(caster, MaelstromWepAura, CastSpellExtraArgs(true).AddSpellMod(SPELLVALUE_AURA_STACK, 2));
+    }
+
+    void OnCalcProc(ProcEventInfo& eventInfo, float& chance)
+    {
+        chance = 0.0f;
+        if (auto eff = GetEffect(EFFECT_0))
+            if (eff->ConduitRankEntry)
+                chance = eff->ConduitRankEntry->AuraPointsOverride;
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_chilled_to_the_core::CheckProc);
+        OnProc += AuraProcFn(spell_chilled_to_the_core::HandleProc);
+        OnCalcProcChance += AuraCalcProcChanceFn(spell_chilled_to_the_core::OnCalcProc);
+    }
+};
+
+
 void AddSC_spell_shaman_covenant()
 {
     RegisterSpellAndAuraScriptPairWithArgs(spell_fae_transfusion_spellscript, spell_fae_transfusion, "spell_fae_transfusion");
@@ -169,4 +211,5 @@ void AddSC_spell_shaman_covenant()
     RegisterSpellScript(spell_fae_transfusion_dmg);
 
     RegisterSpellScript(spell_spiritual_resonance);
+    RegisterSpellScript(spell_chilled_to_the_core);
 }
