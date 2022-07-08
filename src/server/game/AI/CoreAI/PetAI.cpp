@@ -640,7 +640,7 @@ void PetAI::UpdateAllies()
 void PetAI::OnCharmed(bool isNew)
 {
     if (!me->isPossessedByPlayer() && me->IsCharmed())
-        me->GetMotionMaster()->MoveFollow(me->GetCharmer(), PET_FOLLOW_DIST, me->GetFollowAngle());
+        me->FollowTarget(me->GetCharmer());
 
     CreatureAI::OnCharmed(isNew);
 }

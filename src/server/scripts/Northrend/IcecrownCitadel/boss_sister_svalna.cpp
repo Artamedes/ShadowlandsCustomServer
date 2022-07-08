@@ -802,8 +802,6 @@ struct npc_argent_captainAI : public ScriptedAI
 public:
     npc_argent_captainAI(Creature* creature) : ScriptedAI(creature), instance(creature->GetInstanceScript()), _firstDeath(true)
     {
-        FollowAngle = PET_FOLLOW_ANGLE;
-        FollowDist = PET_FOLLOW_DIST;
         IsUndead = false;
     }
 
@@ -831,9 +829,7 @@ public:
             if (Creature* crok = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_CROK_SCOURGEBANE)))
             {
                 me->SetReactState(REACT_DEFENSIVE);
-                FollowAngle = me->GetAbsoluteAngle(crok) + me->GetOrientation();
-                FollowDist = me->GetDistance2d(crok);
-                me->GetMotionMaster()->MoveFollow(crok, FollowDist, FollowAngle, MOTION_SLOT_DEFAULT);
+                me->FollowTarget(crok);
             }
 
             me->setActive(true);
@@ -874,7 +870,7 @@ public:
         {
             me->GetMotionMaster()->Clear();
             if (Creature* crok = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_CROK_SCOURGEBANE)))
-                me->GetMotionMaster()->MoveFollow(crok, FollowDist, FollowAngle, MOTION_SLOT_DEFAULT);
+                me->FollowTarget(crok);
         }
 
         Reset();
@@ -914,8 +910,6 @@ public:
 protected:
     EventMap Events;
     InstanceScript* instance;
-    float FollowAngle;
-    float FollowDist;
     bool IsUndead;
 
 private:

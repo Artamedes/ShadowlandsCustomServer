@@ -3492,7 +3492,7 @@ struct npc_monk_sef_spirit : public ScriptedAI
 
         if (!follow)
         {            
-            me->GetMotionMaster()->MoveFollow(owner, PET_FOLLOW_DIST, me->GetEntry() == NPC_FIRE_SPIRIT ? me->GetFollowAngle() + (float)M_PI : me->GetFollowAngle(), MovementSlot::MOTION_SLOT_ACTIVE);
+            me->FollowTarget(owner);
         }
     }
 
@@ -3590,7 +3590,7 @@ private:
         if (owner && !me->HasUnitState(UNIT_STATE_FOLLOW) && !follow)
         {
             me->GetMotionMaster()->Clear();
-            me->GetMotionMaster()->MoveFollow(owner, PET_FOLLOW_DIST, me->GetEntry() == NPC_FIRE_SPIRIT ? me->GetFollowAngle() + (float)M_PI : me->GetFollowAngle(), MovementSlot::MOTION_SLOT_ACTIVE);
+            me->FollowTarget(owner);
         }
     }
 

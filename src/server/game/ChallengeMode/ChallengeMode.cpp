@@ -322,7 +322,7 @@ void Challenge::CreatureDiesForScript(Creature* creature, Unit* killer)
                             if (!spawn || !creatureSelected)
                                 return;
 
-                            spawn->GetMotionMaster()->MoveFollow(creatureSelected, 1.0f, spawn->GetFollowAngle());
+                            spawn->FollowTarget(creatureSelected);
                             spawn->GetAI()->SetGUID(creatureSelected->GetGUID());
 
                         }, m_Functions.CalculateTime(3.5f * IN_MILLISECONDS));

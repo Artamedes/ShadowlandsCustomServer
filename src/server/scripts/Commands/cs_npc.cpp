@@ -1767,7 +1767,7 @@ public:
         {
             if (a->GetMovementGeneratorType() == FOLLOW_MOTION_TYPE)
             {
-                FollowMovementGenerator const* followMovement = dynamic_cast<FollowMovementGenerator const*>(a);
+                FollowMovementGenerator* followMovement = dynamic_cast<FollowMovementGenerator*>(const_cast<MovementGenerator*>(a));
                 return followMovement && followMovement->GetTarget() == player;
             }
             return false;

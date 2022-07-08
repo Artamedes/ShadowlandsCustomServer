@@ -3932,13 +3932,13 @@ int32 GetUnitConditionVariable(Unit const* unit, Unit const* otherUnit, UnitCond
         case UnitConditionVariable::HasCritter:
             return !unit->GetCritterGUID().IsEmpty();
         case UnitConditionVariable::HasTotemInSlot1:
-            return !unit->m_SummonSlot[SUMMON_SLOT_TOTEM].IsEmpty();
+            return !unit->m_SummonSlot[SUMMON_SLOT_TOTEM_FIRE].IsEmpty();
         case UnitConditionVariable::HasTotemInSlot2:
-            return !unit->m_SummonSlot[SUMMON_SLOT_TOTEM_2].IsEmpty();
+            return !unit->m_SummonSlot[SUMMON_SLOT_TOTEM_EARTH].IsEmpty();
         case UnitConditionVariable::HasTotemInSlot3:
-            return !unit->m_SummonSlot[SUMMON_SLOT_TOTEM_3].IsEmpty();
+            return !unit->m_SummonSlot[SUMMON_SLOT_TOTEM_WATER].IsEmpty();
         case UnitConditionVariable::HasTotemInSlot4:
-            return !unit->m_SummonSlot[SUMMON_SLOT_TOTEM_4].IsEmpty();
+            return !unit->m_SummonSlot[SUMMON_SLOT_TOTEM_AIR].IsEmpty();
         case UnitConditionVariable::HasTotemInSlot5:
             break;
         case UnitConditionVariable::Creature:

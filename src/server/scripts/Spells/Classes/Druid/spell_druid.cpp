@@ -2500,7 +2500,7 @@ class aura_dru_charm_woodland_creature : public AuraScript
         // Make targeted creature follow the player - Using pet's default dist and angle
         if (Unit* caster = GetCaster())
             if (Unit* target = GetTarget())
-                target->GetMotionMaster()->MoveFollow(caster, PET_FOLLOW_DIST, PET_FOLLOW_ANGLE);
+                target->FollowTarget(caster);
     }
 
     void OnRemove(const AuraEffect* /*aurEff*/, AuraEffectHandleModes /*mode*/)

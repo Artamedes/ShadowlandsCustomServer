@@ -65,7 +65,7 @@ static void DoMovementInform(Unit* owner, Unit* target)
         AI->MovementInform(CHASE_MOTION_TYPE, target->GetGUID().GetCounter());
 }
 
-ChaseMovementGenerator::ChaseMovementGenerator(Unit *target, Optional<ChaseRange> range, Optional<ChaseAngle> angle) : AbstractFollower(ASSERT_NOTNULL(target)), _range(range),
+ChaseMovementGenerator::ChaseMovementGenerator(Unit *target, Optional<ChaseRange> range, Optional<ChaseAngle> angle) : _target(target), _range(range),
     _angle(angle), _rangeCheckTimer(RANGE_CHECK_INTERVAL)
 {
     Mode = MOTION_MODE_DEFAULT;
@@ -98,7 +98,7 @@ bool ChaseMovementGenerator::Update(Unit* owner, uint32 diff)
         return false;
 
     // our target might have gone away
-    Unit* const target = GetTarget();
+    Unit* target = _target;
     if (!target || !target->IsInWorld())
         return false;
 

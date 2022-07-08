@@ -1328,7 +1328,7 @@ void SimpleCharmedPlayerAI::UpdateAI(uint32 diff)
         if (me->HasUnitState(UNIT_STATE_CHASE))
             me->GetMotionMaster()->Remove(CHASE_MOTION_TYPE);
 
-        me->GetMotionMaster()->MoveFollow(charmer, PET_FOLLOW_DIST, PET_FOLLOW_ANGLE);
+        me->FollowTarget(charmer);
     }
 }
 

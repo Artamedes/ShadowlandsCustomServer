@@ -146,7 +146,7 @@ struct  npc_challenger_spawn_of_ghuun : ScriptedAI
         {
             if (Creature* target = ObjectAccessor::GetCreature(*me, targetGuid))
             {
-                me->GetMotionMaster()->MoveFollow(target, 1.0f, me->GetFollowAngle());
+                me->FollowTarget(target);
                 events.RescheduleEvent(1, 500ms);
             }
         }

@@ -9193,24 +9193,6 @@ void Unit::UpdateSpeed(UnitMoveType mtype)
             break;
     }
 
-    if (Creature* creature = ToCreature())
-    {
-        if (creature->HasUnitTypeMask(UNIT_MASK_MINION) && !creature->IsInCombat())
-        {
-            if (GetMotionMaster()->GetCurrentMovementGeneratorType() == FOLLOW_MOTION_TYPE)
-            {
-                Unit* followed = ASSERT_NOTNULL(dynamic_cast<AbstractFollower*>(GetMotionMaster()->GetCurrentMovementGenerator()))->GetTarget();
-                if (followed && followed->GetGUID() == GetOwnerGUID() && !followed->IsInCombat())
-                {
-                    float ownerSpeed = followed->GetSpeedRate(mtype);
-                    if (speed < ownerSpeed || creature->IsWithinDist3d(followed, 10.0f))
-                        speed = ownerSpeed;
-                    speed *= std::min(std::max(1.0f, 0.75f + (GetDistance(followed) - PET_FOLLOW_DIST) * 0.05f), 1.3f);
-                }
-            }
-        }
-    }
-
     // Apply strongest slow aura mod to speed
     int32 slow = GetMaxNegativeAuraModifier(SPELL_AURA_MOD_DECREASE_SPEED);
     if (slow)
@@ -10382,7 +10364,7 @@ void Unit::RemoveFromWorld()
 
         RemoveAreaAurasDueToLeaveWorld();
 
-        GetMotionMaster()->Clear(MOTION_SLOT_IDLE); // clear idle movement slot to finalize follow movement to unregister formation targets
+        GetMotionMaster()->Clear(MOTION_SLOT_DEFAULT); // clear idle movement slot to finalize follow movement to unregister formation targets
 
         if (IsCharmed())
             RemoveCharmedBy(nullptr);

@@ -2525,8 +2525,7 @@ class spell_mage_mirror_image_summon : public SpellScript
     {
         if (Unit* caster = GetCaster())
         {
-            float angle = 90.0f;
-            caster->DoOnSummons([caster, &angle](Creature* creature)
+            caster->DoOnSummons([caster](Creature* creature)
             {
                 if (creature->GetEntry() == MirrorImageSummonNpc)
                 {
@@ -2538,9 +2537,7 @@ class spell_mage_mirror_image_summon : public SpellScript
                     if (auto minion = creature->ToMinion())
                     {
                         minion->Variables.Set("DontUseCombatReach", true);
-                        minion->SetFollowAngle(angle);
-                        angle += 90.0f;
-                        minion->GetMotionMaster()->MoveFollow(caster, PET_FOLLOW_DIST, minion->GetFollowAngle(), MovementSlot::MOTION_SLOT_ACTIVE);
+                        minion->FollowTarget(caster);
                     }
                 }
             });
@@ -3286,7 +3283,7 @@ public:
             if (owner && !me->HasUnitState(UNIT_STATE_FOLLOW))
             {
                 me->GetMotionMaster()->Clear();
-                me->GetMotionMaster()->MoveFollow(owner, PET_FOLLOW_DIST, me->GetFollowAngle(), MovementSlot::MOTION_SLOT_ACTIVE);
+                me->FollowTarget(owner);
             }
         }
 

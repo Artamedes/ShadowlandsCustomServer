@@ -61,7 +61,7 @@ void Totem::InitStats(uint32 duration)
         {
             WorldPackets::Totem::TotemCreated data;
             data.Totem = GetGUID();
-            data.Slot = m_Properties->Slot - SUMMON_SLOT_TOTEM;
+            data.Slot = m_Properties->Slot - SUMMON_SLOT_TOTEM_FIRE;
             data.Duration = duration;
             data.SpellID = m_unitData->CreatedBySpell;
             owner->SendDirectMessage(data.Write());

@@ -4423,7 +4423,7 @@ struct npc_feral_spirit : public ScriptedAI
         if (owner && !me->HasUnitState(UNIT_STATE_FOLLOW))
         {
             me->GetMotionMaster()->Clear();
-            me->GetMotionMaster()->MoveFollow(owner, PET_FOLLOW_DIST, me->GetFollowAngle(), MovementSlot::MOTION_SLOT_ACTIVE);
+            me->FollowTarget(owner);
         }
     }
 
@@ -4593,7 +4593,7 @@ public:
         if (owner && !me->HasUnitState(UNIT_STATE_FOLLOW))
         {
             me->GetMotionMaster()->Clear();
-            me->GetMotionMaster()->MoveFollow(owner, PET_FOLLOW_DIST, me->GetFollowAngle(), MovementSlot::MOTION_SLOT_ACTIVE);
+            me->FollowTarget(owner);
         }
     }
 

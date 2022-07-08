@@ -293,7 +293,7 @@ struct npc_jungle_punch_target : public ScriptedAI
                     timer = 5000;
                     break;
                 case 6:
-                    orphan->GetMotionMaster()->MoveFollow(player, PET_FOLLOW_DIST, PET_FOLLOW_ANGLE);
+                    orphan->FollowTarget(player);
                     player->GroupEventHappens(QUEST_THE_MIGHTY_HEMET_NESINGWARY, me);
                     Reset();
                     return;

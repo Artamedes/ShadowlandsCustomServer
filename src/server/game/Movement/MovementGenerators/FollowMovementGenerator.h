@@ -18,44 +18,57 @@
 #ifndef TRINITY_FOLLOWMOVEMENTGENERATOR_H
 #define TRINITY_FOLLOWMOVEMENTGENERATOR_H
 
-#include "AbstractFollower.h"
-#include "MovementDefines.h"
 #include "MovementGenerator.h"
+#include "EventMap.h"
 #include "Optional.h"
-#include "Position.h"
 #include "Timer.h"
 
 class PathGenerator;
 class Unit;
 
-#define FOLLOW_RANGE_TOLERANCE 1.0f
-
-class FollowMovementGenerator : public MovementGenerator, public AbstractFollower
+enum Events
 {
-    public:
-        explicit FollowMovementGenerator(Unit* target, float range, ChaseAngle angle);
-        ~FollowMovementGenerator();
+    EVENT_ALLIGN_TO_TARGET = 1,
+    EVENT_ALLIGN_TO_FACING_DIRECTION,
+};
 
-        void Initialize(Unit*) override;
-        void Reset(Unit*) override;
-        bool Update(Unit*, uint32) override;
-        void Deactivate(Unit*) override;
-        void Finalize(Unit*, bool, bool) override;
-        MovementGeneratorType GetMovementGeneratorType() const override { return FOLLOW_MOTION_TYPE; }
+constexpr uint8 MAX_FOLLOWERS_PER_ROW = 6;
+constexpr uint8 DEFAULT_ROW_FOLLOWERS = 2;
+constexpr float STRAIGHT_FOLLOW_DISTANCE = 3.f;
+constexpr float SIDE_FOLLOW_DISTANCE = 3.3541f;
 
-        void UnitSpeedChanged() override { _lastTargetPosition.reset(); }
+class FollowMovementGenerator : public MovementGenerator
+{
+public:
+    MovementGeneratorType GetMovementGeneratorType() const override { return FOLLOW_MOTION_TYPE; }
 
-    private:
-        static constexpr uint32 CHECK_INTERVAL = 100;
+    FollowMovementGenerator(Unit* target, Optional<float> distance, Optional<float> angle, bool joinFormation = false, bool catchUpToTarget = false);
+    ~FollowMovementGenerator();
 
-        void UpdatePetSpeed(Unit* owner);
+    void Initialize(Unit* owner) override;
+    void Deactivate(Unit*) override;
+    void Finalize(Unit* owner, bool, bool) override;
+    void Reset(Unit* /*owner*/) override;
+    bool Update(Unit* owner, uint32 diff) override;
 
-        float const _range;
-        ChaseAngle const _angle;
+    Unit const* GetTarget() { return _target; }
 
-        TimeTracker _checkTimer;
-        std::unique_ptr<PathGenerator> _path;
-        Optional<Position> _lastTargetPosition;
+private:
+    void UpdateFollowFormation();
+    void UpdateFormationFollowOffsets(uint32 slot);
+    void LaunchMovement(Unit* owner);
+
+    static constexpr uint32 FOLLOW_MOVEMENT_INTERVAL = 400; // sniffed (1 batch update cycle)
+    static constexpr uint32 ALLIGN_MOVEMENT_INTERVAL = 2000; // sniffed (5 batch update cycles)
+
+    Unit* _target;
+    float _distance;
+    float _angle;
+    bool _joinFormation;
+    bool _catchUpToTarget;
+
+    TimeTracker _followMovementTimer;
+    EventMap _events;
 };
 
 #endif

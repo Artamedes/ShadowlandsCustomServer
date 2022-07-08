@@ -94,7 +94,7 @@ public:
 
                     EngagementOver();
 
-                    me->GetMotionMaster()->MoveFollow(unitCaster, PET_FOLLOW_DIST, me->GetFollowAngle());
+                    me->FollowTarget(unitCaster);
                     me->setActive(true);
                     me->RemoveNpcFlag(UNIT_NPC_FLAG_GOSSIP);
                 }

@@ -55,7 +55,7 @@ struct npc_kyrian_steward : public ScriptedAI
                 return;
 
             me->SetCreatorGUID(owner->GetGUID());
-            me->GetMotionMaster()->MoveFollow(owner, PET_FOLLOW_DIST, me->GetFollowAngle());
+            me->FollowTarget(owner);
             DoCastSelf(326346); // (Steward Name Override [DNT])
             DoCastSelf(326506); // (Steward Spawn VFX [DNT])
             DoCastSelf(324749); // (Carry Tray [DNT])

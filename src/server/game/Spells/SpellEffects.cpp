@@ -4985,9 +4985,6 @@ void Spell::SummonGuardian(SpellEffectInfo const* effect, uint32 entry, SummonPr
             ((Guardian*)summon)->InitStatsForLevel(level);
         }
 
-        if (summon->HasUnitTypeMask(UNIT_MASK_MINION) && m_targets.HasDst())
-            ((Minion*)summon)->SetFollowAngle(unitCaster->GetAbsoluteAngle(summon));
-
         if (summon->GetEntry() == 27893)
         {
             UF::VisibleItem const& weapon = m_caster->ToPlayer()->m_playerData->VisibleItems[EQUIPMENT_SLOT_MAINHAND];
@@ -5910,7 +5907,6 @@ void Spell::EffectSummonStabledPet()
             pet->SetHealth(pet->GetMaxHealth());
             pet->SetReactState(REACT_ASSIST);
             owner->SetAnimalCompanion(pet->GetGUID());
-            pet->SetFollowAngle(owner->GetAngle(pet) + (float)M_PI);
 
             std::list<uint32> spellsToRemove;
             for (auto iter : pet->m_spells)
