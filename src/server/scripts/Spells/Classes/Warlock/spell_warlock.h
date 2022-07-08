@@ -82,6 +82,8 @@ namespace Warlock
     {
         DecayingSoulSatchel = 356362,
         DecayingSoulSatchelProc = 356369,
+        PerpetualAgonyOfAzjAqir = 337106, ///< Agony 20% chance to gain SoulShard
+        ForcesOfTheHornedNightmare = 337146,
     };
 
     enum eCovenant

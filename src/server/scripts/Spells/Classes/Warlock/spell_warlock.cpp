@@ -22,28 +22,7 @@
 * Scriptnames of files in this file should be prefixed with "spell_warl_".
 */
 
-#include "AreaTrigger.h"
-#include "AreaTriggerAI.h"
-#include "GridNotifiers.h"
-#include "MotionMaster.h"
-#include "ObjectAccessor.h"
-#include "Pet.h"
-#include "PetAI.h"
-#include "CombatAI.h"
-#include "Player.h"
-#include "ScriptMgr.h"
-#include "SpellAuras.h"
-#include "SpellAuraEffects.h"
-#include "SpellHistory.h"
-#include "SpellPackets.h"
-#include "SpellMgr.h"
-#include "SpellScript.h"
-#include "WorldPacket.h"
-#include "World.h"
-#include "Log.h"
-#include "WorldSession.h"
-#include "ScriptedCreature.h"
-#include "PathGenerator.h"
+#include "spell_warlock.h"
 
 enum WarlockSpells
 {
@@ -1473,7 +1452,7 @@ public:
                         caster->GetSpellHistory()->ModifyCooldown(205180, -5000);
 
             // Blizz: When you have no Agonies out, the accumulator is cleared. When you next cast one, it's reset to a random value from 0 to 0.99.
-            float soulShardAgonyTick = caster->Variables.GetValue<float>("SoulShardAgonyTick", frand(0.0f, 99.0f));
+            float soulShardAgonyTick = caster->Variables.GetValue<float>("SoulShardAgonyTick", frand(0.0f, 99.0f) + (caster->HasAura(Warlock::eLegendary::PerpetualAgonyOfAzjAqir) ? 20.0f : 0.0f));
             // Blizz: The added value per tick is currently 0.16 on average, with some variance (we'll try to remember to update this since there's no way to see it in-game).
             int32 amountAgonies = caster->GetTargetAuraApplications(SPELL_WARLOCK_AGONY).size();
             // Blizz: Each added amount is divided by the square root of the number of Agonies you currently have active.
@@ -2167,8 +2146,13 @@ class spell_warl_call_dreadstalkers : public SpellScript
     void HandleAfterCast()
     {
         if (Unit* caster = GetCaster())
+        {
+
             if (caster->HasAura(SPELL_WARLOCK_DEMONIC_CALLING_TRIGGER))
                 caster->RemoveAurasDueToSpell(SPELL_WARLOCK_DEMONIC_CALLING_TRIGGER);
+
+            caster->RemoveAurasDueToSpell(342997); ///< Grim Inquisitor's Dread Calling
+        }
     }
 
     void Register() override
@@ -3638,6 +3622,10 @@ public:
             return;
 
         targetGUID = owner->Variables.GetValue("ExplicitTarget", ObjectGuid::Empty);
+
+        /// Grim Inquisitor's Dread Calling
+        if (owner->HasAura(342997))
+            owner->CastSpell(owner, 337142, true);
 
         me->CastSpell(me, SPELL_SHARPENED_DREADFANGS, true);
         me->GetScheduler().Schedule(100ms, [this, owner](TaskContext context)
@@ -5694,6 +5682,9 @@ public:
             {
                 if (Unit* target = GetHitUnit())
                 {
+                    if (roll_chance_i(15) && caster->HasAura(Warlock::eLegendary::ForcesOfTheHornedNightmare))
+                        caster->CastSpell(target, Warlock::eDemonology::HandOfGuldan, true);
+
                     // Check if the Warlock has change position since last Hand of Guldan.
                     if ((std::abs(caster->GetPositionX() - GetVariables(caster)->LastPosition.GetPositionX()) >= 1 || std::abs(caster->GetPositionY() - GetVariables(caster)->LastPosition.GetPositionY()) >= 1) ||
                         abs(GetVariables(caster)->LastOrientation - caster->GetOrientation()) >= M_PI / 6)

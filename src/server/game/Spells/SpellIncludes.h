@@ -4,6 +4,8 @@
 #include "AreaTriggerAI.h"
 #include "CovenantMgr.h"
 #include "Containers.h"
+#include "Pet.h"
+#include "PetAI.h"
 #include "Player.h"
 #include "ScriptMgr.h"
 #include "Spell.h"
@@ -14,6 +16,7 @@
 #include "SpellAuraEffects.h"
 #include "SpellAuras.h"
 #include "SpellHistory.h"
+#include "TemporarySummon.h"
 
 ///< Last Update 9.2.5.44061
 enum class SimpleTalentSpecs : uint32
