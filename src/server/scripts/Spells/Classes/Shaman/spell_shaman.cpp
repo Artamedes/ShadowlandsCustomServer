@@ -2184,10 +2184,19 @@ public:
             if (!caster || !target)
                 return;
 
+            uint32 extraBP = 0;
+
+            if (auto conduit = caster->GetAuraEffect(338131, EFFECT_0)) ///< High voltage
+                if (conduit->ConduitRankEntry)
+                    if (roll_chance_f(conduit->ConduitRankEntry->AuraPointsOverride))
+                        extraBP += 6;
+
             if (caster->HasAura(SPELL_SHAMAN_FULMINATION_ENERGIZE))
-                caster->CastCustomSpell(SPELL_SHAMAN_LIGHTNING_BOLT_ELEM_POWER, SPELLVALUE_BASE_POINT0, sSpellMgr->GetSpellInfo(SPELL_SHAMAN_FULMINATION_ENERGIZE)->GetEffect(EFFECT_0).BasePoints, caster, true);
+                caster->CastCustomSpell(SPELL_SHAMAN_LIGHTNING_BOLT_ELEM_POWER, SPELLVALUE_BASE_POINT0, sSpellMgr->GetSpellInfo(SPELL_SHAMAN_FULMINATION_ENERGIZE)->GetEffect(EFFECT_0).BasePoints + extraBP, caster, true);
             else
-                caster->CastSpell(caster, SPELL_SHAMAN_LIGHTNING_BOLT_ELEM_POWER, true);
+            {
+                caster->CastSpell(caster, SPELL_SHAMAN_LIGHTNING_BOLT_ELEM_POWER, CastSpellExtraArgs(true).AddSpellBP0(extraBP));
+            }
 
             if (Aura* aura = caster->GetAura(SPELL_SHAMAN_MASTER_OF_THE_ELEMENTS))
             {
