@@ -1949,6 +1949,8 @@ class TC_GAME_API Unit : public WorldObject
 
         void RewardRage(uint32 baseRage);
 
+        virtual float GetFollowAngle() const;
+
         void OutDebugInfo() const;
         virtual bool IsLoading() const { return false; }
         bool IsDuringRemoveFromWorld() const {return m_duringRemoveFromWorld;}

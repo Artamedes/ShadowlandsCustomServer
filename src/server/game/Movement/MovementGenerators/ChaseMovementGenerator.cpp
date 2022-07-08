@@ -81,7 +81,7 @@ void ChaseMovementGenerator::Initialize(Unit* /*owner*/)
     RemoveFlag(MOVEMENTGENERATOR_FLAG_INITIALIZATION_PENDING | MOVEMENTGENERATOR_FLAG_DEACTIVATED);
     AddFlag(MOVEMENTGENERATOR_FLAG_INITIALIZED | MOVEMENTGENERATOR_FLAG_INFORM_ENABLED);
 
-    _path = nullptr;
+    _path.reset();
     _lastTargetPosition.reset();
 }
 
@@ -129,7 +129,7 @@ bool ChaseMovementGenerator::Update(Unit* owner, uint32 diff)
         if (HasFlag(MOVEMENTGENERATOR_FLAG_INFORM_ENABLED) && PositionOkay(owner, target, _movingTowards ? Optional<float>() : minTarget, _movingTowards ? maxTarget : Optional<float>(), angle))
         {
             RemoveFlag(MOVEMENTGENERATOR_FLAG_INFORM_ENABLED);
-            _path = nullptr;
+            _path.reset();
             if (Creature* cOwner = owner->ToCreature())
                 cOwner->SetCannotReachTarget(false);
             owner->StopMoving();
@@ -143,7 +143,7 @@ bool ChaseMovementGenerator::Update(Unit* owner, uint32 diff)
     if (owner->HasUnitState(UNIT_STATE_CHASE_MOVE) && owner->movespline->Finalized())
     {
         RemoveFlag(MOVEMENTGENERATOR_FLAG_INFORM_ENABLED);
-        _path = nullptr;
+        _path.reset();
         if (Creature* cOwner = owner->ToCreature())
             cOwner->SetCannotReachTarget(false);
         owner->ClearUnitState(UNIT_STATE_CHASE_MOVE);
@@ -164,7 +164,7 @@ bool ChaseMovementGenerator::Update(Unit* owner, uint32 diff)
             {
                 cOwner->SetCannotReachTarget(true);
                 cOwner->StopMoving();
-                _path = nullptr;
+                _path.reset();
                 return true;
             }
 

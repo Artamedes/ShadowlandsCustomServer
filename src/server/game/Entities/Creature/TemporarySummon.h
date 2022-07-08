@@ -148,6 +148,8 @@ class TC_GAME_API Minion : public TempSummon
         void RemoveFromWorld() override;
         void setDeathState(DeathState s) override;
         Unit* GetOwner() const { return m_owner; }
+        float GetFollowAngle() const override { return m_followAngle; }
+        void SetFollowAngle(float angle) { m_followAngle = angle; }
 
         // Warlock pets
         bool IsPetImp() const { return GetEntry() == PET_IMP; }
@@ -169,6 +171,7 @@ class TC_GAME_API Minion : public TempSummon
         std::string GetDebugInfo() const override;
     protected:
         Unit* const m_owner;
+        float m_followAngle;
 };
 
 class TC_GAME_API Guardian : public Minion

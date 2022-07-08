@@ -408,6 +408,7 @@ Minion::Minion(SummonPropertiesEntry const* properties, Unit* owner, bool isWorl
 {
     ASSERT(m_owner);
     m_unitTypeMask |= UNIT_MASK_MINION;
+    m_followAngle = DEFAULT_FOLLOW_ANGLE / 2.0f;
     /// @todo: Find correct way
     InitCharmInfo();
 }

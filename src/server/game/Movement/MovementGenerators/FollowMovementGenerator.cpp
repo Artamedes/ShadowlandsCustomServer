@@ -295,6 +295,7 @@ bool FollowMovementGenerator::Update(Unit* owner, uint32 diff)
 void FollowMovementGenerator::UpdateFollowFormation()
 {
     uint8 followSlot = 0;
+    Unit* target = GetTarget();
     for (ObjectGuid guid : target->GetFormationFollowers())
     {
         if (Unit* follower = ObjectAccessor::GetUnit(*target, guid))

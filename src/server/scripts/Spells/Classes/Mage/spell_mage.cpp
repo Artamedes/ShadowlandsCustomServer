@@ -2525,7 +2525,8 @@ class spell_mage_mirror_image_summon : public SpellScript
     {
         if (Unit* caster = GetCaster())
         {
-            caster->DoOnSummons([caster](Creature* creature)
+            float angle = 90.0f;
+            caster->DoOnSummons([caster, &angle](Creature* creature)
             {
                 if (creature->GetEntry() == MirrorImageSummonNpc)
                 {
@@ -2537,6 +2538,8 @@ class spell_mage_mirror_image_summon : public SpellScript
                     if (auto minion = creature->ToMinion())
                     {
                         minion->Variables.Set("DontUseCombatReach", true);
+                        minion->SetFollowAngle(angle);
+                        angle += 90.0f;
                         minion->FollowTarget(caster);
                     }
                 }

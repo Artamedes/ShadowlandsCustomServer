@@ -9321,12 +9321,14 @@ void Unit::FollowTarget(Unit* target)
         if (summon->IsPet())
             joinFormation = true;
     }
+    else if (IsCharmed())
+        joinFormation = true;
 
     // Unit is already following its target
     if (joinFormation && target->HasFormationFollower(this))
         return;
 
-    GetMotionMaster()->MoveFollow(target, distance, DEFAULT_FOLLOW_ANGLE, joinFormation, catchUpToTarget, faceTarget);
+    GetMotionMaster()->MoveFollow(target, distance, GetFollowAngle(), joinFormation, catchUpToTarget, faceTarget);
 }
 
 void Unit::RemoveFormationFollower(Unit* follower)
@@ -14016,6 +14018,11 @@ void Unit::RewardRage(uint32 baseRage)
     addRage *= sWorld->getRate(RATE_POWER_RAGE_INCOME);
 
     ModifyPower(POWER_RAGE, uint32(addRage * 10));
+}
+
+float Unit::GetFollowAngle() const
+{
+    return DEFAULT_FOLLOW_ANGLE;
 }
 
 void Unit::StopAttackFaction(uint32 faction_id)

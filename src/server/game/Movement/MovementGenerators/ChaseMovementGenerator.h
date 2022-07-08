@@ -25,6 +25,7 @@
 #include "Position.h"
 #include "Timer.h"
 
+class PathGenerator;
 class Unit;
 
 class ChaseMovementGenerator : public MovementGenerator, public AbstractPursuer
