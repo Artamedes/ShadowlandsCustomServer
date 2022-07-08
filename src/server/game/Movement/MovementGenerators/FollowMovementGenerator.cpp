@@ -239,7 +239,9 @@ bool FollowMovementGenerator::Update(Unit* owner, uint32 diff)
     if (_followMovementTimer.Passed())
     {
 
-        _followMovementTimer.Reset(FOLLOW_MOVEMENT_INTERVAL);
+       // _followMovementTimer.Reset(FOLLOW_MOVEMENT_INTERVAL);
+        _followMovementTimer.Reset(100);
+
         if (IsTargetMoving(target))
         {
             _events.Reset();
