@@ -5501,6 +5501,9 @@ class spell_warl_incinerate : public SpellScript
         caster->CastSpell(GetCaster(), SPELL_WARLOCK_INCINERATE_ENERGIZE, true);
         if (IsHitCrit())
             caster->CastCustomSpell(SPELL_WARLOCK_INCINERATE_ENERGIZE, SPELLVALUE_BASE_POINT0, 1, caster, TRIGGERED_FULL_MASK);
+
+        if (caster->HasAura(Warlock::eLegendary::EmbersOfTheDiaboticRaiment))
+            caster->CastSpell(GetCaster(), SPELL_WARLOCK_INCINERATE_ENERGIZE, true);
     }
 
     void FilterTargets(std::list<WorldObject*>& targets)
