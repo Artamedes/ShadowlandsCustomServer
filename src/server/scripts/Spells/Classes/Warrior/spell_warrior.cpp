@@ -21,27 +21,7 @@
  * Scriptnames of files in this file should be prefixed with "spell_warr_".
  */
 
-#include "Creature.h"
-#include "Item.h"
-#include "Map.h"
-#include "MotionMaster.h"
-#include "MoveSpline.h"
-#include "ObjectAccessor.h"
-#include "ObjectMgr.h"
-#include "PathGenerator.h"
-#include "Player.h"
-#include "ScriptMgr.h"
-#include "SpellAuraEffects.h"
-#include "SpellHistory.h"
-#include "SpellMgr.h"
-#include "SpellPackets.h"
-#include "SpellScript.h"
-#include "Unit.h"
-#include "AreaTrigger.h"
-#include "AreaTriggerAI.h"
-#include "Spell.h"
-#include "PhasingHandler.h"
-#include "TemporarySummon.h"
+#include "spell_warrior.h"
 
 enum WarriorSpells
 {
@@ -682,17 +662,27 @@ struct at_warr_kyrian_spear : AreaTriggerAI
     void OnUnitEnter(Unit* unit) override
     {
         if (auto caster = at->GetOwner())
+        {
+            if (caster == unit)
+                if (caster->HasAura(Warrior::eLegendary::ElysianMight))
+                    caster->CastSpell(caster, Warrior::eLegendary::ElsyianMightCritBuff, CastSpellExtraArgs(true).AddSpellMod(SpellValueMod::SPELLVALUE_DURATION, at->GetDuration()));
+
             if (caster->IsValidAttackTarget(unit))
                 if (auto trigger = ObjectAccessor::GetCreature(*at, triggerGuid))
                     unit->CastSpell(*trigger, Visual, true);
+        }
     }
 
     void OnUnitExit(Unit* unit) override
     {
         if (auto caster = at->GetOwner())
+        {
             if (caster->IsValidAttackTarget(unit))
                 if (auto trigger = ObjectAccessor::GetCreature(*at, triggerGuid))
                     unit->CastSpell(trigger, Tether, true);
+
+            caster->RemoveAurasDueToSpell(Warrior::eLegendary::ElsyianMightCritBuff);
+        }
     }
 
     void OnRemove() override
@@ -720,7 +710,7 @@ struct at_warr_ancient_aftershock : public AreaTriggerAI
     {
         if (ticks <= 0)
         {
-            ticks = 3000;
+            ticks = 100; ///< CUSTOM
             if (auto caster = at->GetOwner())
             {
                 uint32 targetCount = 5;

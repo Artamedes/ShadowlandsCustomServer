@@ -61,6 +61,7 @@ void AddSC_spell_warlock_legendary();
 void AddSC_warrior_spell_scripts();
 void AddSC_spell_warrior_covenant();
 void AddSC_spell_warrior_arms();
+void AddSC_spell_warrior_legendary();
 void AddSC_quest_spell_scripts();
 void AddSC_item_spell_scripts();
 void AddSC_spell_nightfae();
@@ -120,6 +121,7 @@ void AddSpellsScripts()
     AddSC_warrior_spell_scripts();
     AddSC_spell_warrior_covenant();
     AddSC_spell_warrior_arms();
+    AddSC_spell_warrior_legendary();
     AddSC_quest_spell_scripts();
     AddSC_item_spell_scripts();
     AddSC_spell_nightfae();
