@@ -901,6 +901,12 @@ bool Unit::HasBreakableByDamageCrowdControlAura(Unit* excludeCasterChannel) cons
         uint32 rage = uint32(attacker->GetBaseAttackTime(cleanDamage->attackType) / 1000.f * 1.75f);
         if (cleanDamage->attackType == OFF_ATTACK)
             rage /= 2;
+
+        // from bfa
+        // Hackfix, find how to move to script ?
+        if (Aura* aura = attacker->GetAura(279423)/*Seasoned Soldier*/)
+            AddPct(rage, aura->GetEffect(EFFECT_0)->GetAmount());
+
         attacker->RewardRage(rage);
     }
 
