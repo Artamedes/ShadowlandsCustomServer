@@ -156,13 +156,20 @@ class spell_spiritual_resonance : public AuraScript
                 if (eff->ConduitRankEntry)
                 {
                     uint32 currDuration = 0;
-                    if (auto flame = caster->GetAura(FlameShock))
-                        currDuration += flame->GetDuration();
 
                     if (IsSpec(caster, SimpleTalentSpecs::Enhancement))
-                        caster->CastSpell(caster, SpiritWalk, CastSpellExtraArgs(true).AddSpellMod(SpellValueMod::SPELLVALUE_DURATION, eff->ConduitRankEntry->AuraPointsOverride));
+                    {
+                        if (auto spiritWalk = caster->GetAura(SpiritWalk))
+                            currDuration += spiritWalk->GetDuration();
+
+                        caster->CastSpell(caster, SpiritWalk, CastSpellExtraArgs(true).AddSpellMod(SpellValueMod::SPELLVALUE_DURATION, eff->ConduitRankEntry->AuraPointsOverride + currDuration));
+                    }
                     else
-                        caster->CastSpell(caster, SpiritWalkersGrace, CastSpellExtraArgs(true).AddSpellMod(SpellValueMod::SPELLVALUE_DURATION, eff->ConduitRankEntry->AuraPointsOverride));
+                    {
+                        if (auto spiritWalkGrace = caster->GetAura(SpiritWalkersGrace))
+                            currDuration += spiritWalkGrace->GetDuration();
+                        caster->CastSpell(caster, SpiritWalkersGrace, CastSpellExtraArgs(true).AddSpellMod(SpellValueMod::SPELLVALUE_DURATION, eff->ConduitRankEntry->AuraPointsOverride + currDuration));
+                    }
                 }
     }
 
