@@ -726,6 +726,9 @@ struct at_warr_ancient_aftershock : public AreaTriggerAI
 
                         caster->CastSpell(unit, Stun, true);
                         caster->CastSpell(caster, Energize, true);
+
+                        if (caster->HasAura(Warrior::eLegendary::NaturesFury))
+                            caster->CastSpell(unit, Warrior::eLegendary::NaturesFuryDmg, true);
                     }
                 }
             }

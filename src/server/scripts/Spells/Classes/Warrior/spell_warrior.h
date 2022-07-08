@@ -78,6 +78,8 @@ namespace Warrior
     {
         ElysianMight = 357996,
         ElsyianMightCritBuff = 311193,
+        NaturesFury = 354161,
+        NaturesFuryDmg = 354163,
     };
 
     enum eCovenant
