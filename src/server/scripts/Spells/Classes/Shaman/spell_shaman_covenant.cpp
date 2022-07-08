@@ -15,6 +15,8 @@ enum eShaman
     FrostShock          = 196840,
     MaelstromWepAura    = 344179,
     LightningBolt       = 188196,
+    EarthShock          = 8042,
+    FlameShock          = 188389,
 };
 
 /// ID: 328923 Fae Transfusion
@@ -152,10 +154,16 @@ class spell_spiritual_resonance : public AuraScript
         if (auto caster = GetCaster())
             if (auto eff = GetEffect(EFFECT_0))
                 if (eff->ConduitRankEntry)
+                {
+                    uint32 currDuration = 0;
+                    if (auto flame = caster->GetAura(FlameShock))
+                        currDuration += flame->GetDuration();
+
                     if (IsSpec(caster, SimpleTalentSpecs::Enhancement))
                         caster->CastSpell(caster, SpiritWalk, CastSpellExtraArgs(true).AddSpellMod(SpellValueMod::SPELLVALUE_DURATION, eff->ConduitRankEntry->AuraPointsOverride));
                     else
                         caster->CastSpell(caster, SpiritWalkersGrace, CastSpellExtraArgs(true).AddSpellMod(SpellValueMod::SPELLVALUE_DURATION, eff->ConduitRankEntry->AuraPointsOverride));
+                }
     }
 
     void Register() override
@@ -204,17 +212,17 @@ class spell_chilled_to_the_core : public AuraScript
     }
 };
 
-/// ID: 338131 High Voltage
-class spell_high_voltage : public AuraScript
+/// ID: 345594 Pyroclastic Shock
+class spell_pyroclastic_shock : public AuraScript
 {
-    PrepareAuraScript(spell_high_voltage);
+    PrepareAuraScript(spell_pyroclastic_shock);
 
     bool CheckProc(ProcEventInfo& eventInfo)
     {
         if (!eventInfo.GetSpellInfo())
             return false;
 
-        return eventInfo.GetSpellInfo()->Id == LightningBolt;
+        return eventInfo.GetSpellInfo()->Id == EarthShock;
     }
 
     void HandleProc(ProcEventInfo& eventInfo)
@@ -222,7 +230,16 @@ class spell_high_voltage : public AuraScript
         if (auto caster = GetCaster())
             if (auto eff = GetEffect(EFFECT_0))
                 if (eff->ConduitRankEntry)
-                    caster->CastSpell(caster, MaelstromWepAura, CastSpellExtraArgs(true).AddSpellMod(SPELLVALUE_AURA_STACK, 2));
+                    if (auto target = eventInfo.GetActionTarget())
+                        if (target->HasAura(FlameShock))
+                        {
+                            uint32 currDuration = 0;
+
+                            if (auto flame = target->GetAura(FlameShock))
+                                currDuration += flame->GetDuration();
+
+                            caster->CastSpell(target, FlameShock, CastSpellExtraArgs(true).AddSpellMod(SPELLVALUE_DURATION, 12000 + currDuration));
+                        }
     }
 
     void OnCalcProc(ProcEventInfo& eventInfo, float& chance)
@@ -235,9 +252,9 @@ class spell_high_voltage : public AuraScript
 
     void Register() override
     {
-        DoCheckProc += AuraCheckProcFn(spell_high_voltage::CheckProc);
-        OnProc += AuraProcFn(spell_high_voltage::HandleProc);
-        OnCalcProcChance += AuraCalcProcChanceFn(spell_high_voltage::OnCalcProc);
+        DoCheckProc += AuraCheckProcFn(spell_pyroclastic_shock::CheckProc);
+        OnProc += AuraProcFn(spell_pyroclastic_shock::HandleProc);
+        OnCalcProcChance += AuraCalcProcChanceFn(spell_pyroclastic_shock::OnCalcProc);
     }
 };
 
@@ -249,5 +266,5 @@ void AddSC_spell_shaman_covenant()
 
     RegisterSpellScript(spell_spiritual_resonance);
     RegisterSpellScript(spell_chilled_to_the_core);
-    RegisterSpellScript(spell_high_voltage);
+    RegisterSpellScript(spell_pyroclastic_shock);
 }
