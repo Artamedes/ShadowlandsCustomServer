@@ -159,6 +159,10 @@ static void GetFollowOffsets(uint8 followerIndex, float& distance, float& relati
 FollowMovementGenerator::FollowMovementGenerator(Unit* target, Optional<float> distance, Optional<float> angle, bool joinFormation /*= true*/, bool catchUpToTarget /*= false*/, bool faceTarget /*= false*/) :
     AbstractPursuer(PursuingType::Follow, ASSERT_NOTNULL(target)), _joinFormation(joinFormation), _catchUpToTarget(catchUpToTarget), _faceTarget(faceTarget)
 {
+    Mode = MOTION_MODE_DEFAULT;
+    Priority = MOTION_PRIORITY_NORMAL;
+    Flags = MOVEMENTGENERATOR_FLAG_INITIALIZATION_PENDING;
+    BaseUnitState = UNIT_STATE_FOLLOW;
     _distance = distance ? *distance : 0.f;
     _angle = angle ? *angle : 0.f;
 }
@@ -207,11 +211,13 @@ void FollowMovementGenerator::Finalize(Unit* owner, bool active, bool /*movement
     }
 }
 
-void FollowMovementGenerator::Reset(Unit* /*owner*/)
+void FollowMovementGenerator::Reset(Unit* owner)
 {
     RemoveFlag(MOVEMENTGENERATOR_FLAG_DEACTIVATED);
     _followMovementTimer.Reset(0);
     _events.ScheduleEvent(EVENT_ALLIGN_TO_TARGET, 1ms);
+
+   // Initialize(owner);
 }
 
 bool FollowMovementGenerator::Update(Unit* owner, uint32 diff)

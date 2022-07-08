@@ -9278,6 +9278,7 @@ void Unit::SetSpeedRate(UnitMoveType mtype, float rate)
     }
 }
 
+#pragma optimize( "", off )
 void Unit::FollowTarget(Unit* target)
 {
     if (!target)
@@ -9330,6 +9331,7 @@ void Unit::FollowTarget(Unit* target)
 
     GetMotionMaster()->MoveFollow(target, distance, GetFollowAngle(), joinFormation, catchUpToTarget, faceTarget);
 }
+#pragma optimize( "", on )
 
 void Unit::RemoveFormationFollower(Unit* follower)
 {
