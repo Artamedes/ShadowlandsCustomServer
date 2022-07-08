@@ -256,7 +256,7 @@ class TC_GAME_API Aura
         bool CanStackWith(Aura const* existingAura) const;
 
         bool IsProcOnCooldown(TimePoint now, ObjectGuid procTarget = ObjectGuid::Empty) const;
-        void AddProcCooldown(SpellProcEntry const* procEntry, TimePoint now, ObjectGuid procTarget = ObjectGuid::Empty));
+        void AddProcCooldown(SpellProcEntry const* procEntry, TimePoint now, ObjectGuid procTarget = ObjectGuid::Empty);
         void ResetProcCooldown();
         bool IsUsingCharges() const { return m_isUsingCharges; }
         void SetUsingCharges(bool val) { m_isUsingCharges = val; }
