@@ -14,6 +14,7 @@ enum eShaman
     SpiritWalkersGrace  = 79206,
     FrostShock          = 196840,
     MaelstromWepAura    = 344179,
+    LightningBolt       = 188196,
 };
 
 /// ID: 328923 Fae Transfusion
@@ -203,6 +204,42 @@ class spell_chilled_to_the_core : public AuraScript
     }
 };
 
+/// ID: 338131 High Voltage
+class spell_high_voltage : public AuraScript
+{
+    PrepareAuraScript(spell_high_voltage);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        if (!eventInfo.GetSpellInfo())
+            return false;
+
+        return eventInfo.GetSpellInfo()->Id == LightningBolt;
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (auto caster = GetCaster())
+            if (auto eff = GetEffect(EFFECT_0))
+                if (eff->ConduitRankEntry)
+                    caster->CastSpell(caster, MaelstromWepAura, CastSpellExtraArgs(true).AddSpellMod(SPELLVALUE_AURA_STACK, 2));
+    }
+
+    void OnCalcProc(ProcEventInfo& eventInfo, float& chance)
+    {
+        chance = 0.0f;
+        if (auto eff = GetEffect(EFFECT_0))
+            if (eff->ConduitRankEntry)
+                chance = eff->ConduitRankEntry->AuraPointsOverride;
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_high_voltage::CheckProc);
+        OnProc += AuraProcFn(spell_high_voltage::HandleProc);
+        OnCalcProcChance += AuraCalcProcChanceFn(spell_high_voltage::OnCalcProc);
+    }
+};
 
 void AddSC_spell_shaman_covenant()
 {
@@ -212,4 +249,5 @@ void AddSC_spell_shaman_covenant()
 
     RegisterSpellScript(spell_spiritual_resonance);
     RegisterSpellScript(spell_chilled_to_the_core);
+    RegisterSpellScript(spell_high_voltage);
 }
