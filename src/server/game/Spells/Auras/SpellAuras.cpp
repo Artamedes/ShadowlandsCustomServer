@@ -148,6 +148,15 @@ void AuraApplication::_InitFlags(Unit* caster, uint32 effMask)
     if (GetBase()->GetSpellInfo()->HasAttribute(SPELL_ATTR8_AURA_SEND_AMOUNT)
         || std::find_if(GetBase()->GetAuraEffects().begin(), GetBase()->GetAuraEffects().end(), std::cref(effectNeedsAmount)) != GetBase()->GetAuraEffects().end())
         _flags |= AFLAG_SCALABLE;
+
+    if (GetBase()->GetSpellInfo()->HasAttribute(SPELL_ATTR8_AURA_SEND_AMOUNT) ||
+        GetBase()->HasEffectType(SPELL_AURA_MOD_SPELL_CATEGORY_COOLDOWN) ||
+        GetBase()->HasEffectType(SPELL_AURA_MOD_MAX_CHARGES) ||
+        GetBase()->HasEffectType(SPELL_AURA_CHARGE_RECOVERY_MOD) ||
+        GetBase()->HasEffectType(SPELL_AURA_CHARGE_RECOVERY_MULTIPLIER) ||
+        GetBase()->GetSpellInfo()->HasAura(SPELL_AURA_OVERRIDE_ACTIONBAR_SPELLS) ||
+        GetBase()->HasEffectType(SPELL_AURA_MOD_VISIBILITY_RANGE))
+        _flags |= AFLAG_SCALABLE;
 }
 
 void AuraApplication::_HandleEffect(uint8 effIndex, bool apply)
@@ -239,6 +248,11 @@ void AuraApplication::BuildUpdatePacket(WorldPackets::Spells::AuraInfo& auraInfo
         auraData.Flags |= AFLAG_DURATION;
 
     auraData.ActiveFlags = GetEffectMask();
+
+    /// PIG but that's what i saw in sniff
+    if (auraData.SpellID == 325013)
+        auraData.ActiveFlags = 215;
+
     if (!aura->GetSpellInfo()->HasAttribute(SPELL_ATTR11_SCALES_WITH_ITEM_LEVEL))
         auraData.CastLevel = aura->GetCasterLevel();
     else
@@ -271,6 +285,20 @@ void AuraApplication::BuildUpdatePacket(WorldPackets::Spells::AuraInfo& auraInfo
                     hasEstimatedAmounts = true;
             }
         }
+
+        /// PIG but that's what i saw in sniff. can be changed later.
+        if (auraData.SpellID == 325013)
+        {
+            auraData.Points[0] = 0;
+            auraData.Points[1] = 325020;
+            auraData.Points[2] = 50;
+            auraData.Points[3] = 0;
+            auraData.Points[4] = 3;
+            auraData.Points[5] = 0;
+            auraData.Points[6] = 325283;
+            auraData.Points[7] = 0;
+        }
+
         if (hasEstimatedAmounts)
         {
             // When sending EstimatedPoints all effects (at least up to the last one that uses GetEstimatedAmount) must have proper value in packet

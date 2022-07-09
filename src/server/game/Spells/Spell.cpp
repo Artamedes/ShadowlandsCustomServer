@@ -4963,6 +4963,11 @@ void Spell::SendSpellGo()
         castFlags = 800;
     }
 
+    if (GetSpellInfo()->Id == 325013)
+    {
+        castFlags = 0x40300;
+    }
+
     WorldPackets::Spells::SpellGo packet;
     WorldPackets::Spells::SpellCastData& castData = packet.Cast;
     if (m_CastItem)
