@@ -3822,8 +3822,9 @@ struct npc_monk_xuen : public ScriptedAI
         me->CastSpell(me, SPELL_MONK_XUEN_AURA, true);
         me->SetReactState(REACT_ASSIST);
         if (Unit* victim = ObjectAccessor::GetUnit(*me, owner->GetTarget()))
-            if (me->IsValidAssistTarget(victim))
-                AttackStart(victim);
+            if (victim != o)
+                if (me->IsValidAssistTarget(victim))
+                    AttackStart(victim);
     }
 
     void UpdateAI(uint32 diff) override
