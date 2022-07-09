@@ -76,19 +76,6 @@ enum RotateDirection : uint8
     ROTATE_DIRECTION_RIGHT
 };
 
-struct TC_GAME_API ChaseRange
-{
-    ChaseRange(float range);
-    ChaseRange(float _minRange, float _maxRange);
-    ChaseRange(float _minRange, float _minTolerance, float _maxTolerance, float _maxRange);
-
-    // this contains info that informs how we should path!
-    float MinRange;     // we have to move if we are within this range...    (min. attack range)
-    float MinTolerance; // ...and if we are, we will move this far away
-    float MaxRange;     // we have to move if we are outside this range...   (max. attack range)
-    float MaxTolerance; // ...and if we are, we will move into this range
-};
-
 struct TC_GAME_API ChaseAngle
 {
     ChaseAngle(float angle, float _tolerance = M_PI_4);

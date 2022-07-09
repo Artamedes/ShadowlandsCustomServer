@@ -632,7 +632,7 @@ void MotionMaster::MoveFollow(Unit* target, float dist, float angle, bool joinFo
     Add(new FollowMovementGenerator(target, dist, angle, joinFormation, catchUpToTarget, faceTarget), slot);
 }
 
-void MotionMaster::MoveChase(Unit* target, Optional<ChaseRange> dist, Optional<ChaseAngle> angle)
+void MotionMaster::MoveChase(Unit* target, float dist, Optional<ChaseAngle> angle)
 {
     // Ignore movement request if target not exist
     if (!target || target == _owner)
