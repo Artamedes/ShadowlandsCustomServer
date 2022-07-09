@@ -3,6 +3,8 @@
 enum eMonk
 {
     Vivify = 116670,
+    RisingSunKick = 107428,
+    Revival = 115310,
 };
 
 /// ID: 336632 Grounding Breath
@@ -73,7 +75,51 @@ class spell_grounding_breath : public AuraScript
     }
 };
 
+/// ID: 337099 Rising Sun Revival
+class spell_rising_sun_revival : public AuraScript
+{
+    PrepareAuraScript(spell_rising_sun_revival);
+
+    enum eRisingRevival
+    {
+        ProcSpell = 337101,
+    };
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        if (!eventInfo.GetSpellInfo())
+            return false;
+
+        return eventInfo.GetSpellInfo()->Id == RisingSunKick || eventInfo.GetSpellInfo()->Id == Revival;
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (auto caster = GetCaster())
+            if (auto eff = GetEffect(EFFECT_0))
+                if (eff->ConduitRankEntry)
+                {
+                    if (eventInfo.GetSpellInfo()->Id == RisingSunKick)
+                        caster->GetSpellHistory()->ModifyCooldown(Revival, -1000);
+                    else if (eventInfo.GetSpellInfo()->Id == Revival)
+                    {
+                        if (auto healInfo = eventInfo.GetHealInfo())
+                            if (auto effectiveHeal = healInfo->GetEffectiveHeal())
+                                caster->CastSpell(caster, ProcSpell, CastSpellExtraArgs(true).AddSpellBP0(CalculatePct(effectiveHeal, eff->ConduitRankEntry->AuraPointsOverride)));
+                    }
+                }
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_rising_sun_revival::CheckProc);
+        OnProc += AuraProcFn(spell_rising_sun_revival::HandleProc);
+    }
+};
+
+
 void AddSC_spell_monk_covenant()
 {
     RegisterSpellScript(spell_grounding_breath);
+    RegisterSpellScript(spell_rising_sun_revival);
 }
