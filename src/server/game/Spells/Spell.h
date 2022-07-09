@@ -654,6 +654,10 @@ class TC_GAME_API Spell
 
         uint32 GetDispellCount() const { return dispellCount; }
 
+        SpellCastResult GetCastResult() const { return m_CastResult; }
+
+        SpellCastResult m_CastResult;
+
     protected:
         bool HasGlobalCooldown() const;
         void TriggerGlobalCooldown();
@@ -783,8 +787,10 @@ class TC_GAME_API Spell
             Unit* _spellHitTarget = nullptr; // changed for example by reflect
             bool _enablePVP = false;         // need to enable PVP at DoDamageAndTriggers?
         };
+    public:
         std::vector<TargetInfo> m_UniqueTargetInfo;
         TargetInfo* m_currentTargetInfo = nullptr;
+    protected:
         uint32 m_channelTargetEffectMask;                       // Mask req. alive targets
 
         struct GOTargetInfo : public TargetInfoBase

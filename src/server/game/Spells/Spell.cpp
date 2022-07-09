@@ -637,6 +637,8 @@ m_spellValue(new SpellValue(m_spellInfo, caster)), _spellEvent(nullptr)
 
     dispellSuccess = false;
     dispellCount = 0;
+
+    m_CastResult = SPELL_FAILED_SUCCESS;
 }
 
 Spell::~Spell()
@@ -3670,7 +3672,7 @@ SpellCastResult Spell::prepare(SpellCastTargets const& targets, AuraEffect const
             cast(true);
     }
 
-    return SPELL_CAST_OK;
+    return m_CastResult = SPELL_CAST_OK;
 }
 
 bool Spell::CheckInterrupt()
@@ -4732,6 +4734,9 @@ inline void FillSpellCastFailedArgs(T& packet, ObjectGuid castId, SpellInfo cons
 
 void Spell::SendCastResult(SpellCastResult result, int32* param1 /*= nullptr*/, int32* param2 /*= nullptr*/) const
 {
+    /// TODO
+    const_cast<Spell*>(this)->m_CastResult = result;
+
     if (result == SPELL_CAST_OK)
         return;
 
