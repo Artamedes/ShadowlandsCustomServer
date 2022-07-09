@@ -2970,6 +2970,8 @@ void Spell::TargetInfo::DoDamageAndTriggers(Spell* spell)
             }
         }
 
+        procAttacker |= PROC_FLAG_2_CAST_SUCCESSFUL;
+
         // Do triggers for unit
         if (canEffectTrigger)
         {
@@ -4056,8 +4058,9 @@ void Spell::_cast(bool skipCheck)
         m_originalCaster->RemoveAurasWithInterruptFlags(SpellAuraInterruptFlags::ActionDelayed, m_spellInfo);
 
     if (!m_spellInfo->HasAttribute(SPELL_ATTR3_SUPPRESS_CASTER_PROCS))
+    {
         Unit::ProcSkillsAndAuras(m_originalCaster, nullptr, procAttacker, PROC_FLAG_NONE, PROC_SPELL_TYPE_MASK_ALL, PROC_SPELL_PHASE_CAST, hitMask, this, nullptr, nullptr); ///< PROC_SPELL_PHASE_HIT removed
-
+    }
     // Call CreatureAI hook OnSpellCast
     if (Creature* caster = m_originalCaster->ToCreature())
         if (caster->IsAIEnabled())
@@ -4324,6 +4327,8 @@ void Spell::_handle_finish_phase()
                 procAttacker |= PROC_FLAG_DEAL_HARMFUL_SPELL;
         }
     }
+
+    procAttacker |= PROC_FLAG_2_CAST_SUCCESSFUL;
 
     if (!m_spellInfo->HasAttribute(SPELL_ATTR3_SUPPRESS_CASTER_PROCS))
         Unit::ProcSkillsAndAuras(m_originalCaster, nullptr, procAttacker, PROC_FLAG_NONE, PROC_SPELL_TYPE_MASK_ALL, PROC_SPELL_PHASE_FINISH, m_hitMask, this, nullptr, nullptr);
