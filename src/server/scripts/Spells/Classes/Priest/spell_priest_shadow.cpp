@@ -1,14 +1,6 @@
-#include "SpellIncludes.h"
+#include "spell_priest.h"
 
-enum eShadow
-{
-    MindFlay = 15407,
-    MindSear = 48045,
-    MindBlast = 8092,
-    DevouringPlague = 335467,
-
-    DarkThoughtProc = 341207,
-};
+using namespace Priest;
 
 /// ID: 341205 Dark Thoughts
 class spell_dark_thoughts : public AuraScript
@@ -59,7 +51,7 @@ class spell_dark_thought : public AuraScript
 
         switch (eventInfo.GetSpellInfo()->Id)
         {
-            case eShadow::MindBlast:
+            case MindBlast:
                 return true;
             default:
                 return false;
@@ -193,6 +185,27 @@ class spell_torment_mind : public AuraScript
         OnEffectPeriodic += AuraEffectPeriodicFn(spell_torment_mind::HandlePeriodic, EFFECT_0, SPELL_AURA_PERIODIC_TRIGGER_SPELL);
     }
 };
+/// ID: 589 Shadow Word: Pain
+class spell_shadow_word_pain : public AuraScript
+{
+    PrepareAuraScript(spell_shadow_word_pain);
+
+    void HandleRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+    {
+        auto caster = GetCaster();
+        auto target = GetTarget();
+        if (!caster || !target)
+            return;
+
+        if (caster->HasAura(CauterizingShadows))
+            caster->CastSpell(*target, CauterizingShadowsHeal, true);
+    }
+
+    void Register() override
+    {
+        OnEffectRemove += AuraEffectApplyFn(spell_shadow_word_pain::HandleRemove, EFFECT_1, SPELL_AURA_PERIODIC_DAMAGE, AURA_EFFECT_HANDLE_REAL);
+    }
+};
 
 void AddSC_spell_priest_shadow()
 {
@@ -201,4 +214,5 @@ void AddSC_spell_priest_shadow()
     RegisterSpellScript(spell_darkened_mind);
     RegisterSpellScript(spell_living_shadow);
     RegisterSpellScript(spell_torment_mind);
+    RegisterSpellScript(spell_shadow_word_pain);
 }
