@@ -223,7 +223,7 @@ class spell_kyrian_effusive_anima_accelerator_aura : public AuraScript
 
             if (eventInfo.GetProcSpell())
             {
-                if (eventInfo.GetProcSpell()->m_targets.GetDstPos())
+                if (eventInfo.GetProcSpell()->m_targets.HasDst())
                     pos = *eventInfo.GetProcSpell()->m_targets.GetDstPos();
                 else if (auto targ = eventInfo.GetProcSpell()->m_targets.GetUnitTarget())
                     pos = *targ;
