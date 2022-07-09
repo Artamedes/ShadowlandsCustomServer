@@ -49,7 +49,6 @@ class spell_signet_of_tormented_kings : public AuraScript
         if (!eventInfo.GetSpellInfo())
             return;
 
-
         std::list<uint32> randSpells;
         if (caster->HasSpell(Ravager))
             randSpells.emplace_back(Ravager);
@@ -78,8 +77,78 @@ class spell_signet_of_tormented_kings : public AuraScript
     }
 };
 
+/// ID: 335274 Battlelord
+class spell_battlelord : public AuraScript
+{
+    PrepareAuraScript(spell_battlelord);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == Overpower;
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (auto caster = GetCaster())
+            caster->GetSpellHistory()->ResetCooldown(MortalStrike);
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_battlelord::CheckProc);
+        OnProc += AuraProcFn(spell_battlelord::HandleProc);
+    }
+};
+
+/// ID: 335458 Enduring Blow
+class spell_enduring_blow : public AuraScript
+{
+    PrepareAuraScript(spell_enduring_blow);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == MortalStrike;
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (auto caster = GetCaster())
+        {
+            if (auto target = eventInfo.GetActionTarget())
+            {
+                caster->CastSpell(target, ColossusSmash, CastSpellExtraArgs(TRIGGERED_FULL_MASK | TRIGGERED_DONT_CREATE_COOLDOWN).AddSpellMod(SpellValueMod::SPELLVALUE_DURATION, 6000));
+            }
+        }
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_enduring_blow::CheckProc);
+        OnProc += AuraProcFn(spell_enduring_blow::HandleProc);
+    }
+};
+
+/// ID: 335451 Exploiter
+class spell_exploiter : public AuraScript
+{
+    PrepareAuraScript(spell_exploiter);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && (eventInfo.GetSpellInfo()->Id == Execute || eventInfo.GetSpellInfo()->Id == Condemn);
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_exploiter::CheckProc);
+    }
+};
+
 void AddSC_spell_warrior_legendary()
 {
     RegisterSpellScript(spell_misshapen_mirror);
     RegisterSpellScript(spell_signet_of_tormented_kings);
+    RegisterSpellScript(spell_battlelord);
+    RegisterSpellScript(spell_enduring_blow);
+    RegisterSpellScript(spell_exploiter);
 }

@@ -4,7 +4,7 @@
 
 namespace Warrior
 {
-    enum eWarrior
+    enum eWarrior : uint32
     {
         BattleShout = 6673,
         BerserkerRage = 18499,
@@ -30,7 +30,7 @@ namespace Warrior
         PiercingHowl = 12323,
     };
 
-    enum eArms
+    enum eArms : uint32
     {
         Bladestorm = 227847,
         DieByTheSword = 118038,
@@ -43,9 +43,10 @@ namespace Warrior
         SeasonedSoldier = 279423,
         Tactician = 184783,
         Ravager = 152277,
+        ColossusSmash = 167105,
     };
 
-    enum eFury
+    enum eFury : uint32
     {
         BladestormFury = 46924,
         Bloodthirst = 23881,
@@ -59,7 +60,7 @@ namespace Warrior
         TitansGrip = 46917,
     };
 
-    enum eProtection
+    enum eProtection : uint32
     {
         DemoralizingShout = 1160,
         Devastate =20243,
@@ -74,16 +75,19 @@ namespace Warrior
         Vanguard = 71,
     };
 
-    enum eLegendary
+    enum eLegendary : uint32
     {
         ElysianMight = 357996,
         ElsyianMightCritBuff = 311193,
         NaturesFury = 354161,
         NaturesFuryDmg = 354163,
+
+        BattleLordProc = 346369,
+        Unhinged = 335282, ///< Cast random MS
     };
 
     enum eCovenant
     {
-
+        Condemn = 330334,
     };
 }

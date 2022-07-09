@@ -1696,12 +1696,15 @@ public:
 
         void HandleAfterHit()
         {
+            Unit* caster = GetCaster();
             Unit* target = GetHitUnit();
-            if (!target)
+            if (!caster || !target)
                 return;
 
             if (Aura* aura = target->GetAura(SPELL_WARRIOR_EXECUTIONER_PRECISION_PROC))
                 aura->DropStack();
+
+            caster->RemoveAurasDueToSpell(Warrior::eLegendary::BattleLordProc);
         }
 
         void Register() override

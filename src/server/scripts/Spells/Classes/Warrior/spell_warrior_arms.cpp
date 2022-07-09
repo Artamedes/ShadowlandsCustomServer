@@ -1,10 +1,11 @@
-#include "SpellIncludes.h"
+#include "spell_warrior.h"
+
+using namespace Warrior;
 
 enum eArms
 {
     MercilessBonegrinderConduit = 335260,
     MercilessBonegrinderProc    = 346574,
-    MortalStrike                = 12294,
 };
 
 void ProcMercilessBonegrinder(Unit* caster)
@@ -29,12 +30,43 @@ class spell_bladestorm : public AuraScript
             ProcMercilessBonegrinder(caster);
     }
 
+    void HandlePeriodic(AuraEffect const* aurEff)
+    {
+        auto caster = GetCaster();
+        if (!caster)
+            return;
+
+        if (caster->HasAura(Unhinged))
+        {
+            if (_unhingedProcs > 0)
+            {
+                std::list<Unit*> randTargetsInMelee;
+                caster->GetAttackableUnitListInRange(randTargetsInMelee, MELEE_RANGE);
+                randTargetsInMelee.remove_if([](Unit* unit) -> bool { return !unit->IsEngaged(); });
+                if (!randTargetsInMelee.empty())
+                {
+                    --_unhingedProcs;
+
+                    caster->CastSpell(Trinity::Containers::SelectRandomContainerElement(randTargetsInMelee), MortalStrike, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_DONT_CREATE_COOLDOWN));
+                }
+            }
+        }
+    }
+
+    uint32 _unhingedProcs = 2;
+
     void Register() override
     {
-        if (m_scriptSpellId == 152277)
+        if (m_scriptSpellId == Ravager)
+        {
             OnEffectRemove += AuraEffectApplyFn(spell_bladestorm::HandleRemove, EFFECT_2, SPELL_AURA_PERIODIC_DUMMY, AURA_EFFECT_HANDLE_REAL);
+            OnEffectPeriodic += AuraEffectPeriodicFn(spell_bladestorm::HandlePeriodic, EFFECT_2, SPELL_AURA_PERIODIC_DUMMY);
+        }
         else
+        {
             OnEffectRemove += AuraEffectApplyFn(spell_bladestorm::HandleRemove, EFFECT_0, SPELL_AURA_PERIODIC_TRIGGER_SPELL, AURA_EFFECT_HANDLE_REAL);
+            OnEffectPeriodic += AuraEffectPeriodicFn(spell_bladestorm::HandlePeriodic, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
+        }
     }
 };
 
