@@ -963,8 +963,51 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
         SetPowerType(POWER_ENERGY);
         SetFullPower(POWER_ENERGY);
     }
-    else if (IsPetImp() || IsPetFelhunter() || IsPetVoidwalker() || IsPetSuccubus() || IsPetDoomguard() || IsPetFelguard()) // Warlock pets have energy (since 5.x)
+    else if (IsPetImp() || IsPetFelhunter() || IsPetVoidwalker() || IsPetSuccubus() || IsPetDoomguard() || IsPetFelguard() || IsMinionWildImp() || IsMinionDoomguard()) // Warlock pets have energy (since 5.x)
+    {
         SetPowerType(POWER_ENERGY);
+        if (!IsMinionWildImp())
+        {
+            UnitMods unitMod = UnitMods(UNIT_MOD_POWER_START + POWER_ENERGY);
+            SetStatFlatModifier(unitMod, TOTAL_VALUE, 100);
+            SetMaxPower(POWER_ENERGY, 200);
+            SetPower(POWER_ENERGY, 200);
+
+            // Set Command Demon Spell
+            // 119898 - Warlock Command Demon
+            // 119904 - Override Command Demon (Cast by OWNER)
+            if (m_owner && m_owner->HasSpell(119898))
+            {
+                // Always removes: 196099 - Grimoire of Sacrifice
+                m_owner->RemoveAurasDueToSpell(196099);
+                switch (GetEntry())
+                {
+                    // Imp
+                    case 416:
+                        m_owner->CastCustomSpell(119904, SPELLVALUE_BASE_POINT0, 119905, m_owner, true);
+                        break;
+                        // Felhunter
+                    case 417:
+                        m_owner->CastCustomSpell(119904, SPELLVALUE_BASE_POINT0, 119910, m_owner, true);
+                        break;
+                        // Voidwalker
+                    case 1860:
+                        m_owner->CastCustomSpell(119904, SPELLVALUE_BASE_POINT0, 119907, m_owner, true);
+                        break;
+                        // Succubus
+                    case 1863:
+                        m_owner->CastCustomSpell(119904, SPELLVALUE_BASE_POINT0, 119909, m_owner, true);
+                        break;
+                        // Felguard
+                    case 17252:
+                        m_owner->CastCustomSpell(119904, SPELLVALUE_BASE_POINT0, 119914, m_owner, true);
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+    }
     else
         SetPowerType(POWER_MANA);
 

@@ -523,7 +523,7 @@ void Spell::EffectSchoolDMG()
             damage = unitTarget->SpellDamageBonusTaken(unitCaster, m_spellInfo, (uint32)damage, SPELL_DIRECT_DAMAGE);
         }
 
-        if (m_spellInfo->Id == 205231) ///< Darkglare Eye beam - TODO convert to scipt
+        if (m_spellInfo->Id == 205231 || m_spellInfo->Id == 104318) ///< Darkglare Eye beam - TODO convert to scipt, wildfire imp Fel Firebolt (Basic Attack)
         {
             if (auto owner = unitCaster->GetOwner())
             {

@@ -3413,10 +3413,13 @@ public:
             slot = owner->Variables.GetValue<uint8>("SLOT");
         else
             slot = 255;
+    }
 
-        me->SetPowerType(Powers::POWER_ENERGY);
-        me->SetMaxPower(Powers::POWER_ENERGY, 100);
-        me->SetPower(Powers::POWER_ENERGY, 100);
+    void JustEngagedWith(Unit* who) override
+    {
+        me->SetModCastingSpeed(0.5f);
+        me->SetModHaste(0.5f);
+        me->SetModSpellHaste(0.5f);
     }
 
     void MovementInform(uint32 type, uint32 pointId) override
@@ -3510,7 +3513,7 @@ public:
 				if (summon)
 					me->GetOwner()->CastSpell(summon, SPELL_WARLOCK_DEMONIC_CORE_PET, true);
 			}
-			me->DespawnOrUnsummon(500ms);
+			me->DespawnOrUnsummon(1500ms);
 		}
 
         // Don't update if we're are on our way to implode.
@@ -5688,6 +5691,7 @@ public:
                     if (roll_chance_i(15) && caster->HasAura(Warlock::eLegendary::ForcesOfTheHornedNightmare))
                         caster->CastSpell(target, Warlock::eDemonology::HandOfGuldan, true);
 
+                    // PIGPIGPIGPIGPIGPIGPIGPIGPIGPIGPIGPIGPIGPIGPIGPIGPIGPIGPIG
                     // Check if the Warlock has change position since last Hand of Guldan.
                     if ((std::abs(caster->GetPositionX() - GetVariables(caster)->LastPosition.GetPositionX()) >= 1 || std::abs(caster->GetPositionY() - GetVariables(caster)->LastPosition.GetPositionY()) >= 1) ||
                         abs(GetVariables(caster)->LastOrientation - caster->GetOrientation()) >= M_PI / 6)

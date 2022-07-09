@@ -5561,6 +5561,9 @@ void Spell::TakePower()
             continue;
         }
 
+        if (m_spellInfo->Id == 104318) ///< Wildfire imp custom change
+            cost.Amount = 1;
+
         unitCaster->ModifyPower(powerType, -cost.Amount);
     }
 }

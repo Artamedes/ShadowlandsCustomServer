@@ -3290,6 +3290,14 @@ void SpellMgr::LoadSpellInfoCorrections()
 
     // Some spells have no amplitude set
     {
+        // Hand of Guldan Summon
+        ApplySpellFix({ 279910 }, [](SpellInfo* spellInfo)
+        {
+            ApplySpellEffectFix(spellInfo, EFFECT_0, [](SpellEffectInfo* spellEffectInfo)
+            {
+                spellEffectInfo->TargetA = SpellImplicitTargetInfo(TARGET_DEST_DEST);
+            });
+        });
         /// Accrued Vitality
         ApplySpellFix({ 339298 }, [](SpellInfo* info)
         {

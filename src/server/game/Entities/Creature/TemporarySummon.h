@@ -158,6 +158,8 @@ class TC_GAME_API Minion : public TempSummon
         bool IsPetSuccubus() const { return GetEntry() == PET_SUCCUBUS; }
         bool IsPetDoomguard() const { return GetEntry() == PET_DOOMGUARD; }
         bool IsPetFelguard() const { return GetEntry() == PET_FELGUARD; }
+        bool IsMinionWildImp() const { return GetEntry() == ENTRY_WILD_IMP; }
+        bool IsMinionDoomguard() const { return GetEntry() == ENTRY_DOOMGUARD; }
 
         // Death Knight pets
         bool IsPetGhoul() const { return GetEntry() == PET_GHOUL; } // Ghoul may be guardian or pet
