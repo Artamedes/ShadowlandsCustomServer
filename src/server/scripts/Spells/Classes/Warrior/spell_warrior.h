@@ -84,6 +84,7 @@ namespace Warrior
         NaturesFury = 354161,
         NaturesFuryDmg = 354163,
         Glory = 353577,
+        SinfulSurge = 354131,
 
         // Arms
         BattleLordProc = 346369,

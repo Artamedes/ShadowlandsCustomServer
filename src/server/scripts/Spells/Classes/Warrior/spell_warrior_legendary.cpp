@@ -353,6 +353,49 @@ class spell_warr_glory : public AuraScript
     }
 };
 
+/// ID: 354131 Sinful Surge
+class spell_sinful_surge : public AuraScript
+{
+    PrepareAuraScript(spell_sinful_surge);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetProcSpell() && eventInfo.GetSpellInfo()->Id == Condemn;
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        auto caster = GetCaster();
+        if (!caster)
+            return;
+        auto target = eventInfo.GetActionTarget();
+        if (!target)
+            return;
+
+        if (IsSpec(caster, SimpleTalentSpecs::ProtWarrior))
+        {
+            if (auto aur = caster->GetAura(LastStand))
+                aur->ModDuration(3000);
+        }
+        else if (IsSpec(caster, SimpleTalentSpecs::Arms))
+        {
+            if (auto aur = target->GetAura(ColossusSmash))
+                aur->ModDuration(1500);
+        }
+        else if (IsSpec(caster, SimpleTalentSpecs::Fury))
+        {
+            if (auto aur = caster->GetAura(Recklessness))
+                aur->ModDuration(2000);
+        }
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_sinful_surge::CheckProc);
+        OnProc += AuraProcFn(spell_sinful_surge::HandleProc);
+    }
+};
+
 void AddSC_spell_warrior_legendary()
 {
     RegisterSpellScript(spell_misshapen_mirror);
@@ -367,4 +410,5 @@ void AddSC_spell_warrior_legendary()
     RegisterSpellScript(spell_reprisal);
     RegisterSpellScript(spell_the_wall_prot);
     RegisterSpellScript(spell_warr_glory);
+    RegisterSpellScript(spell_sinful_surge);
 }

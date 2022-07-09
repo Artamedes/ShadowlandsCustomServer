@@ -3079,6 +3079,7 @@ private:
 // 163201  - Execute
 // 217955  - Execute
 // 281000  - Execute
+// 330334 - Condemn
 class spell_warr_execute : public SpellScript
 {
     PrepareSpellScript(spell_warr_execute);

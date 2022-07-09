@@ -35,3 +35,10 @@ INSERT INTO spell_script_names (spell_id, scriptname) VALUE (871, 'spell_shield_
 DELETE FROM spell_script_names WHERE spell_id = 353577;
 INSERT INTO spell_script_names (spell_id, scriptname) VALUE (353577, 'spell_warr_glory');
 
+-- condemn
+REPLACE INTO spell_script_names (spell_id, scriptname) VALUE (330334, 'spell_warr_execute');
+REPLACE INTO spell_script_names (spell_id, scriptname) VALUE (317483, 'spell_warr_execute');
+
+DELETE FROM spell_script_names WHERE spell_id = 354131;
+INSERT INTO spell_script_names (spell_id, scriptname) VALUE (354131, 'spell_sinful_surge');
+
