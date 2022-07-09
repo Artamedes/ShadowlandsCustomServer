@@ -15203,25 +15203,30 @@ void Unit::Whisper(uint32 textId, Player* target, bool isBossWhisper /*= false*/
     target->SendDirectMessage(packet.Write());
 }
 
+SpellInfo const* FindMatchingAuraEffectIn(Unit const * me, SpellInfo const* spellInfo, AuraType type)
+{
+    for (AuraEffect const* auraEffect : me->GetAuraEffectsByType(type))
+    {
+        bool matches = auraEffect->GetMiscValue() ? uint32(auraEffect->GetMiscValue()) == spellInfo->Id : auraEffect->IsAffectingSpell(spellInfo);
+        if (matches)
+            if (SpellInfo const* newInfo = sSpellMgr->GetSpellInfo(auraEffect->GetAmount(), me->GetMap()->GetDifficultyID()))
+            {
+                if (auto moreNewInfo = FindMatchingAuraEffectIn(me, newInfo, type))
+                    return moreNewInfo;
+
+                return newInfo;
+            }
+    }
+
+    return nullptr;
+}
+
 SpellInfo const* Unit::GetCastSpellInfo(SpellInfo const* spellInfo) const
 {
-    auto findMatchingAuraEffectIn = [this, spellInfo](AuraType type) -> SpellInfo const*
-    {
-        for (AuraEffect const* auraEffect : GetAuraEffectsByType(type))
-        {
-            bool matches = auraEffect->GetMiscValue() ? uint32(auraEffect->GetMiscValue()) == spellInfo->Id : auraEffect->IsAffectingSpell(spellInfo);
-            if (matches)
-                if (SpellInfo const* newInfo = sSpellMgr->GetSpellInfo(auraEffect->GetAmount(), GetMap()->GetDifficultyID()))
-                    return newInfo;
-        }
-
-        return nullptr;
-    };
-
-    if (SpellInfo const* newInfo = findMatchingAuraEffectIn(SPELL_AURA_OVERRIDE_ACTIONBAR_SPELLS))
+    if (SpellInfo const* newInfo = FindMatchingAuraEffectIn(this, spellInfo, SPELL_AURA_OVERRIDE_ACTIONBAR_SPELLS))
         return newInfo;
 
-    if (SpellInfo const* newInfo = findMatchingAuraEffectIn(SPELL_AURA_OVERRIDE_ACTIONBAR_SPELLS_TRIGGERED))
+    if (SpellInfo const* newInfo = FindMatchingAuraEffectIn(this, spellInfo, SPELL_AURA_OVERRIDE_ACTIONBAR_SPELLS_TRIGGERED))
         return newInfo;
 
     return spellInfo;
