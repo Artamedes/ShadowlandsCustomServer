@@ -15212,7 +15212,8 @@ SpellInfo const* FindMatchingAuraEffectIn(Unit const * me, SpellInfo const* spel
             if (SpellInfo const* newInfo = sSpellMgr->GetSpellInfo(auraEffect->GetAmount(), me->GetMap()->GetDifficultyID()))
             {
                 if (auto moreNewInfo = FindMatchingAuraEffectIn(me, newInfo, type))
-                    return moreNewInfo;
+                    if (moreNewInfo != newInfo)
+                        return moreNewInfo;
 
                 return newInfo;
             }
