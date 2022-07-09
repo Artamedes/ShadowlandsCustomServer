@@ -355,28 +355,31 @@ class spell_warr_heroic_leap_jump : public SpellScript
 {
     PrepareSpellScript(spell_warr_heroic_leap_jump);
 
-    bool Validate(SpellInfo const* /*spellInfo*/) override
+    void HandleJumpCharge(Optional<JumpArrivalCastArgs>& arrivalCast)
     {
-        return ValidateSpellInfo(
+        auto caster = GetCaster();
+        if (!caster)
+            return;
+        if (!arrivalCast.has_value())
         {
-            SPELL_WARRIOR_GLYPH_OF_HEROIC_LEAP,
-            SPELL_WARRIOR_GLYPH_OF_HEROIC_LEAP_BUFF,
-            SPELL_WARRIOR_IMPROVED_HEROIC_LEAP,
-            SPELL_WARRIOR_TAUNT
-        });
-    }
+            arrivalCast.emplace();
+            arrivalCast->Callback = [caster]
+            {
+                caster->CastSpell(*caster, SPELL_WARRIOR_HEROIC_LEAP_DAMAGE, true);
+                if (caster->HasAura(SPELL_WARRIOR_GLYPH_OF_HEROIC_LEAP))
+                    caster->CastSpell(caster, SPELL_WARRIOR_GLYPH_OF_HEROIC_LEAP_BUFF, true);
+                if (caster->HasAura(SPELL_WARRIOR_IMPROVED_HEROIC_LEAP))
+                    caster->GetSpellHistory()->ResetCooldown(SPELL_WARRIOR_TAUNT, true);
 
-    void AfterJump(SpellEffIndex /*effIndex*/)
-    {
-        if (GetCaster()->HasAura(SPELL_WARRIOR_GLYPH_OF_HEROIC_LEAP))
-            GetCaster()->CastSpell(GetCaster(), SPELL_WARRIOR_GLYPH_OF_HEROIC_LEAP_BUFF, true);
-        if (GetCaster()->HasAura(SPELL_WARRIOR_IMPROVED_HEROIC_LEAP))
-            GetCaster()->GetSpellHistory()->ResetCooldown(SPELL_WARRIOR_TAUNT, true);
+                if (caster->HasAura(SPELL_WARRIOR_BOUNDING_STRIDE))
+                    caster->CastSpell(caster, SPELL_WARRIOR_BOUNDING_STRIDE_SPEED, true);
+            };
+        }
     }
 
     void Register() override
     {
-        OnEffectHit += SpellEffectFn(spell_warr_heroic_leap_jump::AfterJump, EFFECT_1, SPELL_EFFECT_JUMP_DEST);
+        OnJumpCharge += SpellJumpChargeFn(spell_warr_heroic_leap_jump::HandleJumpCharge);
     }
 };
 
@@ -2267,9 +2270,6 @@ public:
 
             if (Unit* caster = GetCaster())
             {
-                if (caster->HasAura(SPELL_WARRIOR_BOUNDING_STRIDE))
-                    caster->CastSpell(caster, SPELL_WARRIOR_BOUNDING_STRIDE_SPEED, true);
-
                 if (caster->ToPlayer()->GetSpecializationId() == TALENT_SPEC_WARRIOR_PROTECTION)
                     caster->GetSpellHistory()->ResetCooldown(355, true);
 

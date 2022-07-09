@@ -5817,13 +5817,6 @@ void Spell::EffectJumpCharge()
         arrivalCast->SpellId = effectInfo->TriggerSpell;
     }
 
-    /// @TODO: Move to db or spellscripts
-    if (GetSpellInfo()->Id == 178368)
-    {
-        arrivalCast.emplace();
-        arrivalCast->SpellId = 52174;
-        arrivalCast->Target = m_caster->GetGUID();
-    }
     if (GetSpellInfo()->Id == 227180)
     {
         arrivalCast.emplace();
