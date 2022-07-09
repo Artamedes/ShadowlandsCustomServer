@@ -48,7 +48,7 @@ class spell_bladestorm : public AuraScript
                     --_unhingedProcs;
 
                     caster->CastAndGetSpell(*caster, UnhingedTargetFinder, true); ///< just casting here to maintain blizzlike packets
-                    caster->CastSpell(Trinity::Containers::SelectRandomContainerElement(randTargetsInMelee), MortalStrike, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_DONT_CREATE_COOLDOWN));
+                    caster->CastSpell(Trinity::Containers::SelectRandomContainerElement(randTargetsInMelee), MortalStrike, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_DONT_CREATE_COOLDOWN | TRIGGERED_IGNORE_SPELL_AND_CATEGORY_CD));
                 }
 
                 //if (auto spell = caster->CastAndGetSpell(*caster, UnhingedTargetFinder, true))

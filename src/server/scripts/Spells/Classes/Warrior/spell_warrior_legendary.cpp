@@ -67,7 +67,7 @@ class spell_signet_of_tormented_kings : public AuraScript
             return eventInfo.GetSpellInfo()->Id == spellId;
         });
 
-        caster->CastSpell(caster, Trinity::Containers::SelectRandomContainerElement(randSpells), CastSpellExtraArgs(true).AddSpellBP0(TRIGGERED_FULL_MASK | TRIGGERED_DONT_CREATE_COOLDOWN));
+        caster->CastSpell(caster, Trinity::Containers::SelectRandomContainerElement(randSpells), CastSpellExtraArgs(true).AddSpellBP0(TRIGGERED_FULL_MASK | TRIGGERED_DONT_CREATE_COOLDOWN | TRIGGERED_IGNORE_SPELL_AND_CATEGORY_CD));
     }
 
     void Register() override
