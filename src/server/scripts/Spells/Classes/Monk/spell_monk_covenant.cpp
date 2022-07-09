@@ -12,7 +12,6 @@ class spell_grounding_breath : public AuraScript
 
     enum eGroundBreath
     {
-        ProcSpell           = 342330,
         ManaRefundSpell     = 336637,
         EnergyRefundSpell   = 336638,
     };
@@ -28,25 +27,42 @@ class spell_grounding_breath : public AuraScript
     void HandleProc(ProcEventInfo& eventInfo)
     {
         if (auto caster = GetCaster())
+        {
             if (auto eff = GetEffect(EFFECT_0))
+            {
                 if (eff->ConduitRankEntry)
+                {
                     if (eventInfo.GetActionTarget() == caster)
                     {
-                        caster->CastSpell(caster, ProcSpell, CastSpellExtraArgs(true).AddSpellBP0(eff->ConduitRankEntry->AuraPointsOverride));
-
-                        int chance = 0;
-                        chance = eff->ConduitRankEntry->AuraPointsOverride;
-                        
-                        if (roll_chance_i(100))
+                        if (auto spell = eventInfo.GetProcSpell())
                         {
-                            if (IsSpec(caster, SimpleTalentSpecs::Mistweaver))
+                            if (auto healInfo = eventInfo.GetHealInfo())
                             {
-                                caster->CastSpell(caster, ManaRefundSpell, CastSpellExtraArgs(true).AddSpellBP0(eff->ConduitRankEntry->AuraPointsOverride));
+                                /// Add extra heal
+                                auto heal = healInfo->GetEffectiveHeal();
+                                AddPct(heal, eff->ConduitRankEntry->AuraPointsOverride);
+                                healInfo->SetEffectiveHeal(heal);
+
+                                /// 30% chance to give power back
+                                if (roll_chance_i(30))
+                                {
+                                    if (IsSpec(caster, SimpleTalentSpecs::Mistweaver))
+                                    {
+                                        if (auto cost = spell->GetPowerCost(POWER_MANA))
+                                            caster->CastSpell(caster, ManaRefundSpell, CastSpellExtraArgs(true).AddSpellBP0(cost->Amount));
+                                    }
+                                    else
+                                    {
+                                        if (auto cost = spell->GetPowerCost(POWER_ENERGY))
+                                            caster->CastSpell(caster, EnergyRefundSpell, CastSpellExtraArgs(true).AddSpellBP0(cost->Amount));
+                                    }
+                                }
                             }
-                            else
-                                caster->CastSpell(caster, EnergyRefundSpell, CastSpellExtraArgs(true).AddSpellBP0(eff->ConduitRankEntry->AuraPointsOverride));
                         }
                     }
+                }
+            }
+        }
 
     }
 
