@@ -104,9 +104,27 @@ class spell_boon_of_the_ascended : public AuraScript
         PreventDefaultAction();
     }
 
+    void HandleRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes)
+    {
+        if (auto caster = GetCaster())
+        {
+            caster->CastSpell(caster, AscendedEruption, CastSpellExtraArgs(true).AddSpellBP0(GetStackAmount()).AddSpellBP1(GetStackAmount()));
+
+            if (caster->HasAura(SpheresHarmony))
+            {
+                int32 cdr = 3000 * GetStackAmount();
+                if (cdr > 60000)
+                    cdr = 60000;
+
+                caster->GetSpellHistory()->ModifyCooldown(GetId(), -cdr);
+            }
+        }
+    }
+
     void Register() override
     {
         OnEffectApply += AuraEffectApplyFn(spell_boon_of_the_ascended::OnApplyRoot, EFFECT_5, SPELL_AURA_MOD_ROOT, AURA_EFFECT_HANDLE_REAL);
+        OnEffectRemove += AuraEffectRemoveFn(spell_boon_of_the_ascended::HandleRemove, EFFECT_0, SPELL_AURA_MOD_HOVER_NO_HEIGHT_OFFSET, AURA_EFFECT_HANDLE_REAL);
         DoCheckProc += AuraCheckProcFn(spell_boon_of_the_ascended::CheckProc);
         OnProc += AuraProcFn(spell_boon_of_the_ascended::HandleProc);
     }

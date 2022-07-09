@@ -37,10 +37,11 @@ namespace Priest
         BoonOfTheAscended = 325013,
         AscendedNova = 325020,
         AscendedBlast = 325283,
+        AscendedEruption = 325326,
     };
 
     enum eLegendary : uint32
     {
-
+        SpheresHarmony = 356395,
     };
 }
