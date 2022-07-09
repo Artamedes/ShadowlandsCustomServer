@@ -89,6 +89,10 @@ namespace Warrior
 
         WillOfTheBerserker = 335594,
         WillOfTheBerserkerProc = 335597,
+
+        ThunderLord = 335229,
+        UnbreakableWill = 335629,
+        UnbreakableWillProc = 335635,
     };
 
     enum eCovenant

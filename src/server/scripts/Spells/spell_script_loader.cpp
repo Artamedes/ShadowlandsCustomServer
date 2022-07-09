@@ -63,6 +63,8 @@ void AddSC_warrior_spell_scripts();
 void AddSC_spell_warrior_covenant();
 void AddSC_spell_warrior_arms();
 void AddSC_spell_warrior_legendary();
+void AddSC_spell_warrior_protection();
+void AddSC_spell_warrior_fury();
 void AddSC_quest_spell_scripts();
 void AddSC_item_spell_scripts();
 void AddSC_spell_nightfae();
@@ -124,6 +126,8 @@ void AddSpellsScripts()
     AddSC_spell_warrior_covenant();
     AddSC_spell_warrior_arms();
     AddSC_spell_warrior_legendary();
+    AddSC_spell_warrior_protection();
+    AddSC_spell_warrior_fury();
     AddSC_quest_spell_scripts();
     AddSC_item_spell_scripts();
     AddSC_spell_nightfae();

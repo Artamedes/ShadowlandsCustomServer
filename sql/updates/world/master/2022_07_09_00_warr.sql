@@ -22,3 +22,13 @@ INSERT INTO spell_script_names (spell_id, scriptname) VALUE (335597, 'spell_will
 DELETE FROM spell_script_names WHERE spell_id = 1719;
 INSERT INTO spell_script_names (spell_id, scriptname) VALUE (1719, 'spell_recklessness');
 INSERT INTO spell_script_names (spell_id, scriptname) VALUE (1719, 'aura_warr_recklessness');
+
+DELETE FROM spell_script_names WHERE spell_id = 335718;
+INSERT INTO spell_script_names (spell_id, scriptname) VALUE (335718, 'spell_reprisal');
+
+DELETE FROM spell_script_names WHERE spell_id = 335239;
+INSERT INTO spell_script_names (spell_id, scriptname) VALUE (335239, 'spell_the_wall_prot');
+
+DELETE FROM spell_script_names WHERE spell_id = 871;
+INSERT INTO spell_script_names (spell_id, scriptname) VALUE (871, 'spell_shield_wall');
+

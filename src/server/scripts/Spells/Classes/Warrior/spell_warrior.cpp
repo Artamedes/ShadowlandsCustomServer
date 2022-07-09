@@ -1901,6 +1901,8 @@ public:
     {
         PrepareSpellScript(spell_warr_thunder_clap_SpellScript);
 
+        uint32 m_ThunderlordLeft = 3;
+
         void HandleOnHit()
         {
             if (Player* _player = GetCaster()->ToPlayer())
@@ -1911,6 +1913,15 @@ public:
 
                     if (_player->HasAura(SPELL_WARRIOR_THUNDERSTRUCK))
                         _player->CastSpell(target, SPELL_WARRIOR_THUNDERSTRUCK_STUN, true);
+
+                    if (_player->HasAura(Warrior::eLegendary::ThunderLord))
+                    {
+                        if (m_ThunderlordLeft > 0)
+                        {
+                            --m_ThunderlordLeft;
+                            _player->GetSpellHistory()->ModifyCooldown(Warrior::eProtection::DemoralizingShout, -1500);
+                        }
+                    }
                 }
             }
         }

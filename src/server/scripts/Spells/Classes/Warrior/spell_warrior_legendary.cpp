@@ -236,6 +236,52 @@ class spell_will_of_the_berserker : public AuraScript
     }
 };
 
+/// ID: 335718 Reprisal
+class spell_reprisal : public AuraScript
+{
+    PrepareAuraScript(spell_reprisal);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && (eventInfo.GetSpellInfo()->Id == Charge || eventInfo.GetSpellInfo()->Id == Intervene);
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (auto caster = GetCaster())
+            caster->CastSpell(caster, ShieldBlock, CastSpellExtraArgs(TRIGGERED_FULL_MASK_NO_CD));
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_reprisal::CheckProc);
+        OnProc += AuraProcFn(spell_reprisal::HandleProc);
+    }
+};
+
+/// ID: 335239 The Wall
+class spell_the_wall_prot : public AuraScript
+{
+    PrepareAuraScript(spell_the_wall_prot);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == ShieldSlam;
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (auto caster = GetCaster())
+            caster->GetSpellHistory()->ModifyCooldown(ShieldWall, -5000);
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_the_wall_prot::CheckProc);
+        OnProc += AuraProcFn(spell_the_wall_prot::HandleProc);
+    }
+};
+
 void AddSC_spell_warrior_legendary()
 {
     RegisterSpellScript(spell_misshapen_mirror);
@@ -247,4 +293,6 @@ void AddSC_spell_warrior_legendary()
     RegisterSpellScript(spell_deathmaker);
     RegisterSpellScript(spell_reckless_defense);
     RegisterSpellScript(spell_will_of_the_berserker);
+    RegisterSpellScript(spell_reprisal);
+    RegisterSpellScript(spell_the_wall_prot);
 }
