@@ -1,4 +1,4 @@
-#include "SpellIncludes.h"
+#include "spell_warrior.h"
 
 enum WarriorCovenant
 {
@@ -18,6 +18,11 @@ class spell_conquerors_banner : public AuraScript
 {
     PrepareAuraScript(spell_conquerors_banner);
 
+    enum eConquerorsBanner
+    {
+        ConquerorsBannerLegendaryProc = 325862,
+    };
+
     void HandleApply(const AuraEffect* /*aurEff*/, AuraEffectHandleModes /*mode*/)
     {
         auto caster = GetCaster();
@@ -28,6 +33,11 @@ class spell_conquerors_banner : public AuraScript
         {
             if (auto aurEff = caster->GetAuraEffect(VeteransReputeAura, EFFECT_0))
                 caster->CastSpell(caster, VeteransReputeStr, CastSpellExtraArgs(true).AddSpellBP0(aurEff->GetAmount()));
+        }
+
+        if (caster->HasAura(Warrior::eLegendary::Glory))
+        {
+            caster->CastSpell(caster, ConquerorsBannerLegendaryProc, true);
         }
     }
 

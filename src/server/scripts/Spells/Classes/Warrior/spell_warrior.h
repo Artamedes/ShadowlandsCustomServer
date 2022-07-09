@@ -78,25 +78,34 @@ namespace Warrior
 
     enum eLegendary : uint32
     {
+        // Covenant
         ElysianMight = 357996,
         ElsyianMightCritBuff = 311193,
         NaturesFury = 354161,
         NaturesFuryDmg = 354163,
+        Glory = 353577,
 
+        // Arms
         BattleLordProc = 346369,
         Unhinged = 335282, ///< Cast random MS
         UnhingedTargetFinder = 335285,
 
+        // Fury
         WillOfTheBerserker = 335594,
         WillOfTheBerserkerProc = 335597,
 
+        // Prot
         ThunderLord = 335229,
         UnbreakableWill = 335629,
         UnbreakableWillProc = 335635,
+
     };
 
     enum eCovenant
     {
+        SpearOfBastion = 307865,
         Condemn = 330334,
+        ConquerorsBanner = 324143,
+        AncientAftershock = 325886,
     };
 }

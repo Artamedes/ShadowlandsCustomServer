@@ -282,6 +282,77 @@ class spell_the_wall_prot : public AuraScript
     }
 };
 
+/// ID: 353577 Glory
+class spell_warr_glory : public AuraScript
+{
+    PrepareAuraScript(spell_warr_glory);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        if (!eventInfo.GetProcSpell())
+            return false;
+
+        auto caster = GetCaster();
+        if (!caster)
+            return false;
+
+        if (!caster->HasAura(ConquerorsBanner))
+            return false;
+
+        if (eventInfo.GetProcSpell()->GetPowerCost(POWER_RAGE))
+            return true;
+
+        return false;
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (!eventInfo.GetProcSpell())
+            return;
+
+        auto caster = GetCaster();
+        if (!caster)
+            return;
+
+        if (!caster->HasAura(ConquerorsBanner))
+            return;
+
+        auto rageCost = eventInfo.GetProcSpell()->GetPowerCost(POWER_RAGE);
+        if (!rageCost)
+            return;
+
+        _rageSpent += rageCost->Amount / 10;
+
+        uint32 requiredRage = [&]()
+        {
+            if (IsSpec(caster, SimpleTalentSpecs::Arms))
+                return 20;
+            else if (IsSpec(caster, SimpleTalentSpecs::ProtWarrior))
+                return 10;
+            return 25;
+        }();
+
+        uint32 durationToAdd = 0;
+        while (_rageSpent >= requiredRage)
+        {
+            _rageSpent -= requiredRage;
+            durationToAdd += 500;
+        }
+
+        if (durationToAdd)
+            if (auto conqBanner = caster->GetAura(ConquerorsBanner))
+                conqBanner->ModDuration(durationToAdd);
+    }
+
+    uint32 _rageSpent = 0;
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_warr_glory::CheckProc);
+        OnProc += AuraProcFn(spell_warr_glory::HandleProc);
+    }
+};
+
 void AddSC_spell_warrior_legendary()
 {
     RegisterSpellScript(spell_misshapen_mirror);
@@ -295,4 +366,5 @@ void AddSC_spell_warrior_legendary()
     RegisterSpellScript(spell_will_of_the_berserker);
     RegisterSpellScript(spell_reprisal);
     RegisterSpellScript(spell_the_wall_prot);
+    RegisterSpellScript(spell_warr_glory);
 }
