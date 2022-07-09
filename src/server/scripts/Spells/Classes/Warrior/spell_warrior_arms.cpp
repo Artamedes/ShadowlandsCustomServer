@@ -42,13 +42,24 @@ class spell_bladestorm : public AuraScript
             {
                 std::list<Unit*> randTargetsInMelee;
                 caster->GetAttackableUnitListInRange(randTargetsInMelee, MELEE_RANGE);
-                randTargetsInMelee.remove_if([](Unit* unit) -> bool { return !unit->IsEngaged(); });
+                //randTargetsInMelee.remove_if([](Unit* unit) -> bool { return !unit->IsEngaged(); });
                 if (!randTargetsInMelee.empty())
                 {
                     --_unhingedProcs;
 
+                    caster->CastAndGetSpell(*caster, UnhingedTargetFinder, true); ///< just casting here to maintain blizzlike packets
                     caster->CastSpell(Trinity::Containers::SelectRandomContainerElement(randTargetsInMelee), MortalStrike, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_DONT_CREATE_COOLDOWN));
                 }
+
+                //if (auto spell = caster->CastAndGetSpell(*caster, UnhingedTargetFinder, true))
+                //{
+                //    if (!spell->m_UniqueTargetInfo.empty())
+                //    {
+                //        auto randTargInfo = Trinity::Containers::SelectRandomContainerElement(spell->m_UniqueTargetInfo);
+                //        if (caster->CastSpell(ObjectAccessor::GetUnit(*caster, randTargInfo.TargetGUID), MortalStrike, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_DONT_CREATE_COOLDOWN) == SPELL_FAILED_SUCCESS))
+                //            --_unhingedProcs;
+                //    }
+                //}
             }
         }
     }
@@ -65,7 +76,7 @@ class spell_bladestorm : public AuraScript
         else
         {
             OnEffectRemove += AuraEffectApplyFn(spell_bladestorm::HandleRemove, EFFECT_0, SPELL_AURA_PERIODIC_TRIGGER_SPELL, AURA_EFFECT_HANDLE_REAL);
-            OnEffectPeriodic += AuraEffectPeriodicFn(spell_bladestorm::HandlePeriodic, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
+            OnEffectPeriodic += AuraEffectPeriodicFn(spell_bladestorm::HandlePeriodic, EFFECT_0, SPELL_AURA_PERIODIC_TRIGGER_SPELL);
         }
     }
 };

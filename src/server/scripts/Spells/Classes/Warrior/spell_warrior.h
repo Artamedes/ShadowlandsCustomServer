@@ -84,6 +84,7 @@ namespace Warrior
 
         BattleLordProc = 346369,
         Unhinged = 335282, ///< Cast random MS
+        UnhingedTargetFinder = 335285,
     };
 
     enum eCovenant
