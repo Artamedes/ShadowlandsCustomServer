@@ -69,6 +69,8 @@ class TC_GAME_API PathGenerator
         bool CalculatePath(float destX, float destY, float destZ, bool forceDest = false, bool straightLine = false);
         bool CalculatePath(Position startPos, Position destPos, bool forceDest = false, bool straightLine = false);
         bool CalculatePath(G3D::Vector3 start, G3D::Vector3 dest, bool forceDest = false, bool straightLine = false);
+        // Calculates the path from start point to given destination
+        bool CalculatePathPig(G3D::Vector3 const& startPoint, G3D::Vector3 const& endPoint, bool forceDest = false);
         bool IsInvalidDestinationZ(Unit const* target) const;
 
         // option setters - use optional

@@ -1089,6 +1089,37 @@ void PathGenerator::ShortenPathUntilDist(G3D::Vector3 const& target, float dist)
     _pathPoints.resize(i+1);
 }
 
+bool PathGenerator::CalculatePathPig(G3D::Vector3 const& startPoint, G3D::Vector3 const& endPoint, bool forceDest)
+{
+    if (!Trinity::IsValidMapCoord(startPoint.x, startPoint.y, startPoint.z) || !Trinity::IsValidMapCoord(endPoint.x, endPoint.y, endPoint.z))
+        return false;
+
+    TC_METRIC_EVENT("mmap_events", "CalculatePath", "");
+
+    SetEndPosition(endPoint);
+    SetStartPosition(startPoint);
+
+    _forceDestination = forceDest;
+
+    TC_LOG_DEBUG("maps.mmaps", "++ PathGenerator::CalculatePath() for %u", _sourceUnit->GetGUID().GetCounter());
+
+    // make sure navMesh works - we can run on map w/o mmap
+    // check if the start and end point have a .mmtile loaded (can we pass via not loaded tile on the way?)
+    const Unit* _sourceUnit = _sourceUnit;
+    if (!_navMesh || !_navMeshQuery || (_sourceUnit && _sourceUnit->HasUnitState(UNIT_STATE_IGNORE_PATHFINDING)) ||
+        !HaveTile(startPoint) || !HaveTile(endPoint))
+    {
+        BuildShortcut();
+        _type = PathType(PATHFIND_NORMAL | PATHFIND_NOT_USING_PATH);
+        return true;
+    }
+
+    UpdateFilter();
+
+    BuildPolyPath(startPoint, endPoint);
+    return true;
+}
+
 bool PathGenerator::IsInvalidDestinationZ(Unit const* target) const
 {
     return (target->GetPositionZ() - GetActualEndPosition().z) > 5.0f;

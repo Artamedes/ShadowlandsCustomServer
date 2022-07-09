@@ -253,6 +253,25 @@ namespace Movement
         MoveTo(G3D::Vector3(x, y, z), generatePath, forceDestination);
     }
 
+    void MoveSplineInit::MoveTo(Vector3 const& start, Vector3 const& dest, bool generatePath, bool forceDestination)
+    {
+        if (generatePath)
+        {
+            PathGenerator path(unit);
+            bool result = path.CalculatePathPig(start, dest, forceDestination);
+            if (result && !(path.GetPathType() & PATHFIND_NOPATH))
+            {
+                MovebyPath(path.GetPath());
+                return;
+            }
+        }
+
+        args.path_Idx_offset = 0;
+        args.path.resize(2);
+        TransportPathTransform transform(unit, args.TransformForTransport);
+        args.path[1] = transform(dest);
+    }
+
     void MoveSplineInit::MoveTo(Vector3 const& dest, bool generatePath, bool forceDestination)
     {
         if (generatePath)

@@ -23,7 +23,7 @@
 #include "Timer.h"
 
 class Creature;
-class Unit;
+struct WaypointNode;
 struct WaypointPath;
 
 template<class T>
@@ -39,7 +39,7 @@ class WaypointMovementGenerator<Creature> : public MovementGeneratorMedium<Creat
 
         MovementGeneratorType GetMovementGeneratorType() const override;
 
-        void UnitSpeedChanged() override { AddFlag(MOVEMENTGENERATOR_FLAG_SPEED_UPDATE_PENDING); }
+        void UnitSpeedChanged() override { AddFlag(MOVEMENTGENERATOR_FLAG_SPEED_UPDATE_PENDING); _recalculateSpeed = true; }
         void Pause(uint32 timer = 0) override;
         void Resume(uint32 overrideTimer = 0) override;
         bool GetResetPosition(Unit*, float& x, float& y, float& z) override;
@@ -53,26 +53,21 @@ class WaypointMovementGenerator<Creature> : public MovementGeneratorMedium<Creat
         std::string GetDebugInfo() const override;
 
     private:
-        void MovementInform(Creature*);
-        void OnArrived(Creature*);
+        void ProcessWaypointArrival(Creature*, WaypointNode const&);
         void StartMove(Creature*, bool relaunch = false);
-        bool ComputeNextNode();
-        bool UpdateTimer(uint32 diff)
-        {
-            _nextMoveTime.Update(diff);
-            if (_nextMoveTime.Passed())
-            {
-                _nextMoveTime.Reset(0);
-                return true;
-            }
-            return false;
-        }
+        bool IsAllowedToMove(Creature*);
 
-        TimeTracker _nextMoveTime;
+        uint32 _lastSplineId;
         uint32 _pathId;
+        int32 _waypointDelay;
+        int32 _pauseTime;
+        bool _waypointReached;
+        bool _recalculateSpeed;
         bool _repeating;
         bool _loadedFromDB;
-        bool isSmoothWp = true;
+        bool _stalled;
+        bool _hasBeenStalled;
+        bool _done;
 };
 
 #endif

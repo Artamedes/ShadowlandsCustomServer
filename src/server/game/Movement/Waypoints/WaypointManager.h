@@ -20,26 +20,30 @@
 
 #include "Define.h"
 #include "WaypointDefines.h"
+#include <vector>
 #include <unordered_map>
 
 class TC_GAME_API WaypointMgr
 {
-    public:
-        static WaypointMgr* instance();
+public:
+    static WaypointMgr* instance();
 
-        // Attempts to reload a single path from database
-        void ReloadPath(uint32 id);
+    // Attempts to reload a single path from database
+    void ReloadPath(uint32 id);
 
-        // Loads all paths from database, should only run on startup
-        void Load();
+    // Loads all base waypoint data from database. Should only be called on startup.
+    void Load();
 
-        // Returns the path from a given id
-        WaypointPath const* GetPath(uint32 id) const;
+    // Loads additional path data for waypoints from database. Should only be called on startup.
+    void LoadWaypointAddons();
 
-    private:
-        WaypointMgr() { }
+    // Returns the path from a given id
+    WaypointPath const* GetPath(uint32 id) const;
 
-        std::unordered_map<uint32, WaypointPath> _waypointStore;
+private:
+    WaypointMgr() { }
+
+    std::unordered_map<uint32, WaypointPath> _waypointStore;
 };
 
 #define sWaypointMgr WaypointMgr::instance()
