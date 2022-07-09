@@ -37,6 +37,7 @@ void AddSC_spell_mage_covenant();
 void AddSC_monk_spell_scripts();
 void AddSC_spell_monk_windwalker();
 void AddSC_spell_monk_brewmaster();
+void AddSC_spell_monk_covenant();
 void AddSC_spell_mage_arcane();
 void AddSC_paladin_spell_scripts();
 void AddSC_spell_paladin_covenant();
@@ -97,6 +98,7 @@ void AddSpellsScripts()
     AddSC_monk_spell_scripts();
     AddSC_spell_monk_windwalker();
     AddSC_spell_monk_brewmaster();
+    AddSC_spell_monk_covenant();
     AddSC_spell_mage_arcane();
     AddSC_paladin_spell_scripts();
     AddSC_spell_paladin_covenant();
