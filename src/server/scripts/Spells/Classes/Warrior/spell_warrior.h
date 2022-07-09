@@ -58,6 +58,7 @@ namespace Warrior
         MasteryUnshackledFury = 76856,
         SingleMindedFury = 81099,
         TitansGrip = 46917,
+        Siegebreaker = 280772,
     };
 
     enum eProtection : uint32
@@ -85,6 +86,9 @@ namespace Warrior
         BattleLordProc = 346369,
         Unhinged = 335282, ///< Cast random MS
         UnhingedTargetFinder = 335285,
+
+        WillOfTheBerserker = 335594,
+        WillOfTheBerserkerProc = 335597,
     };
 
     enum eCovenant

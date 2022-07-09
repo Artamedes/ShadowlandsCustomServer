@@ -116,7 +116,7 @@ class spell_enduring_blow : public AuraScript
         {
             if (auto target = eventInfo.GetActionTarget())
             {
-                caster->CastSpell(target, ColossusSmash, CastSpellExtraArgs(TRIGGERED_FULL_MASK | TRIGGERED_DONT_CREATE_COOLDOWN).AddSpellMod(SpellValueMod::SPELLVALUE_DURATION, 6000));
+                caster->CastSpell(target, ColossusSmash, CastSpellExtraArgs(TRIGGERED_FULL_MASK | TRIGGERED_DONT_CREATE_COOLDOWN | TRIGGERED_IGNORE_SPELL_AND_CATEGORY_CD).AddSpellMod(SpellValueMod::SPELLVALUE_DURATION, 6000));
             }
         }
     }
@@ -144,6 +144,98 @@ class spell_exploiter : public AuraScript
     }
 };
 
+/// ID: 335555 Cadence of Fujieda
+class spell_cadence_of_fujieda : public AuraScript
+{
+    PrepareAuraScript(spell_cadence_of_fujieda);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == Bloodthirst;
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_cadence_of_fujieda::CheckProc);
+    }
+};
+
+/// ID: 335567 Deathmaker
+class spell_deathmaker : public AuraScript
+{
+    PrepareAuraScript(spell_deathmaker);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == Rampage;
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (auto caster = GetCaster())
+        {
+            if (auto target = eventInfo.GetActionTarget())
+            {
+                caster->CastSpell(target, Siegebreaker, CastSpellExtraArgs(TRIGGERED_FULL_MASK_NO_CD).AddSpellMod(SpellValueMod::SPELLVALUE_DURATION, 6000));
+            }
+        }
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_deathmaker::CheckProc);
+        OnProc += AuraProcFn(spell_deathmaker::HandleProc);
+    }
+};
+
+/// ID: 335582 Reckless Defense
+class spell_reckless_defense : public AuraScript
+{
+    PrepareAuraScript(spell_reckless_defense);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == Rampage;
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (auto caster = GetCaster())
+        {
+            caster->GetSpellHistory()->ModifyCooldown(Recklessness, -1000);
+            caster->GetSpellHistory()->ModifyCooldown(EnragedRegeneration, -1000);
+        }
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_reckless_defense::CheckProc);
+        OnProc += AuraProcFn(spell_reckless_defense::HandleProc);
+    }
+};
+
+/// ID: 335597 Will of the Berserker
+class spell_will_of_the_berserker : public AuraScript
+{
+    PrepareAuraScript(spell_will_of_the_berserker);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == RagingBlow;
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        RefreshDuration();
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_will_of_the_berserker::CheckProc);
+        OnProc += AuraProcFn(spell_will_of_the_berserker::HandleProc);
+    }
+};
+
 void AddSC_spell_warrior_legendary()
 {
     RegisterSpellScript(spell_misshapen_mirror);
@@ -151,4 +243,8 @@ void AddSC_spell_warrior_legendary()
     RegisterSpellScript(spell_battlelord);
     RegisterSpellScript(spell_enduring_blow);
     RegisterSpellScript(spell_exploiter);
+    RegisterSpellScript(spell_cadence_of_fujieda);
+    RegisterSpellScript(spell_deathmaker);
+    RegisterSpellScript(spell_reckless_defense);
+    RegisterSpellScript(spell_will_of_the_berserker);
 }
