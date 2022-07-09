@@ -140,7 +140,7 @@ void Covenant::UpdateRenownRewards()
             }
         }
 
-        if (reward->ItemID > 0)
+        if (reward->ItemID > 0 && !_player->GetSession()->GetCollectionMgr()->HasToy(reward->ItemID))
         {
             /// Check if they already have runeforge memory
             if (auto runeforgeLegendary = sDB2Manager.GetRuneforgeLegendaryAbilityEntryByItemID(reward->ItemID))
