@@ -1083,3 +1083,23 @@ WorldPacket const* WorldPackets::Spells::UpdateCooldown::Write()
     _worldPacket << ModRate2;
     return &_worldPacket;
 }
+
+WorldPacket const* WorldPackets::Spells::ModifyCooldownRecoverySpeed::Write()
+{
+    _worldPacket << int32(SpellId);
+    _worldPacket << float(SpeedRate);
+    _worldPacket << float(SpeedRate2);
+
+    return &_worldPacket;
+}
+
+WorldPacket const* WorldPackets::Spells::ModifyChargeRecoverySpeed::Write()
+{
+    _worldPacket << int32(ChargeCategoryId);
+    _worldPacket << float(SpeedRate);
+    _worldPacket << float(UnkFloat);
+    _worldPacket.WriteBit(UnkBool);
+    _worldPacket.FlushBits();
+
+    return &_worldPacket;
+}

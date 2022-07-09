@@ -209,7 +209,7 @@ NonDefaultConstructible<pAuraEffectHandler> AuraEffectHandler[TOTAL_AURAS]=
     &AuraEffect::HandleAuraModRangedHaste,                        //140 SPELL_AURA_MOD_RANGED_HASTE
     &AuraEffect::HandleUnused,                                    //141 SPELL_AURA_141
     &AuraEffect::HandleAuraModBaseResistancePCT,                  //142 SPELL_AURA_MOD_BASE_RESISTANCE_PCT
-    &AuraEffect::HandleNULL,                                      //143 SPELL_AURA_MOD_RECOVERY_RATE_BY_SPELL_LABEL
+    &AuraEffect::HandleModCooldownRecoveryRate,                   //143 SPELL_AURA_MOD_COOLDOWN_RECOVERY_RATE
     &AuraEffect::HandleNoImmediateEffect,                         //144 SPELL_AURA_SAFE_FALL                         implemented in WorldSession::HandleMovementOpcodes
     &AuraEffect::HandleAuraModIncreaseHealthPercent,              //145 SPELL_AURA_MOD_INCREASE_HEALTH_PERCENT2
     &AuraEffect::HandleNoImmediateEffect,                         //146 SPELL_AURA_ALLOW_TAME_PET_TYPE
@@ -352,7 +352,7 @@ NonDefaultConstructible<pAuraEffectHandler> AuraEffectHandler[TOTAL_AURAS]=
     &AuraEffect::HandleNoImmediateEffect,                         //283 SPELL_AURA_MOD_HEALING_RECEIVED       implemented in Unit::SpellHealingBonus
     &AuraEffect::HandleAuraLinked,                                //284 SPELL_AURA_LINKED
     &AuraEffect::HandleAuraLinked,                                //285 SPELL_AURA_LINKED_2
-    &AuraEffect::HandleNULL,                                      //286 SPELL_AURA_MOD_RECOVERY_RATE
+    &AuraEffect::HandleModCooldownRecoveryRate,                   //286 SPELL_AURA_MOD_RECOVERY_RATE
     &AuraEffect::HandleNoImmediateEffect,                         //287 SPELL_AURA_DEFLECT_SPELLS             implemented in Unit::MagicSpellHitResult and Unit::MeleeSpellHitResult
     &AuraEffect::HandleNoImmediateEffect,                         //288 SPELL_AURA_IGNORE_HIT_DIRECTION  implemented in Unit::MagicSpellHitResult and Unit::MeleeSpellHitResult Unit::RollMeleeOutcomeAgainst
     &AuraEffect::HandleNoImmediateEffect,                         //289 SPELL_AURA_PREVENT_DURABILITY_LOSS implemented in Player::DurabilityPointsLoss
@@ -6640,6 +6640,8 @@ void AuraEffect::HandleAuraModCharges(AuraApplication const* aurApp, uint8 mode,
     if (!target)
         return;
 
+    target->GetSpellHistory()->ForceSendSpellCharges();
+
     //target->GetSpellHistory()->RecalculateSpellCategoryCharges(GetMiscValue());
 }
 
@@ -6669,5 +6671,51 @@ void AuraEffect::HandleModAlternativeDefaultLanguage(AuraApplication const* aurA
             return;
 
         target->RemoveUnitFlag3(UNIT_FLAG3_ALTERNATIVE_DEFAULT_LANGUAGE);
+    }
+}
+
+void AuraEffect::HandleModCooldownRecoveryRate(AuraApplication const* aurApp, uint8 mode, bool apply) const
+{
+    if (!(mode & (AURA_EFFECT_HANDLE_CHANGE_AMOUNT_MASK | AURA_EFFECT_HANDLE_REAL)))
+        return;
+
+    if (true)
+        return;
+
+    Player* player = nullptr;
+
+    if (aurApp->GetTarget())
+        player = aurApp->GetTarget()->ToPlayer();
+
+    if (!player)
+        return;
+
+    float addVal = 1.0f;
+    float modVal = CalculatePct(1.00f, GetAmount());
+    // Client Side the effects/opcodes stacks! We should only send the new value to add instead of all known aura values!
+    if (apply)
+        addVal = 1.00f - modVal;
+    else
+    {
+        addVal = 1.00f + modVal;
+        player->GetSpellHistory()->RemoveSpellAffectedByRecoveryRate(this->GetId());
+    }
+
+    if (m_spellInfo->Id == 215785)
+    {
+        uint32 spellId = 60103;
+        player->GetSpellHistory()->ChangeRecoveryRate(spellId, addVal);
+        return;
+    }
+
+    if (aurApp->GetBase()->GetType() == SPELL_AURA_MOD_RECOVERY_RATE)
+    {
+        // todo: fix this later
+    }
+    else
+    {
+        for (uint32 spellId : sDB2Manager.GetSpellLabelSpellsByCategoryId(GetMiscValue()))
+            if (player->HasSpell(spellId) && player->GetSpellHistory() && (player->GetSpellHistory()->HasCooldown(spellId) || player->GetSpellHistory()->HasChargeInCooldown(spellId)))
+                player->GetSpellHistory()->ChangeRecoveryRate(spellId, addVal);
     }
 }

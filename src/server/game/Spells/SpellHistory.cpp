@@ -1642,25 +1642,25 @@ void SpellHistory::ChangeRecoveryRate(uint32 spellId, float rate)
                 }
             }
 
-           //WorldPackets::Spells::ModifyChargeRecoverySpeed packet;
-           //packet.ChargeCategoryId = spellInfo->ChargeCategoryId;
-           //packet.SpeedRate = rate;
-           //player->SendDirectMessage(packet.Write());
+            WorldPackets::Spells::ModifyChargeRecoverySpeed packet;
+            packet.ChargeCategoryId = spellInfo->ChargeCategoryId;
+            packet.SpeedRate = rate;
+            player->SendDirectMessage(packet.Write());
         }
         else
         {
             //We need only check the reduction cooldown, when this end server side the restriction is in client side
-            //if (rate < 1.0f)
-            //{
-            //    uint32 cooldown = GetRemainingCooldown(spellInfo) * rate;
-            //    if (cooldown > 0)
-            //        AddSpellCooldown(spellId, 0, cooldown);
-            //}
-            //
-            //WorldPackets::Spells::ModifyCooldownRecoverySpeed packet;
-            //packet.SpellId = spellId;
-            //packet.SpeedRate = rate;
-            //player->SendDirectMessage(packet.Write());
+            if (rate < 1.0f)
+            {
+                uint32 cooldown = GetRemainingCooldown(spellInfo).count() * rate;
+                if (cooldown > 0)
+                    AddSpellCooldown(spellId, 0, cooldown);
+            }
+
+            WorldPackets::Spells::ModifyCooldownRecoverySpeed packet;
+            packet.SpellId = spellId;
+            packet.SpeedRate = rate;
+            player->SendDirectMessage(packet.Write());
         }
     }
 }
