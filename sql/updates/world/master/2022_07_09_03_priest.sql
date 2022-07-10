@@ -24,3 +24,11 @@ DELETE FROM spell_script_names WHERE spell_id = 336011;
 INSERT INTO spell_script_names (spell_id, scriptname) VALUE (336011, 'spell_the_penitent_one');
 DELETE FROM spell_script_names WHERE spell_id = 336009;
 INSERT INTO spell_script_names (spell_id, scriptname) VALUE (336009, 'spell_the_penitent_one_proc');
+
+DELETE FROM spell_script_names WHERE spell_id = 336400;
+INSERT INTO spell_script_names (spell_id, scriptname) VALUE (336400, 'spell_divine_image');
+
+UPDATE creature_template SET scriptname = 'npc_invoke_the_naaru' WHERE entry = 172309;
+
+DELETE FROM spell_script_names WHERE spell_id = 196705;
+INSERT INTO spell_script_names (spell_id, scriptname) VALUE (196705, 'spell_divine_image_proc');

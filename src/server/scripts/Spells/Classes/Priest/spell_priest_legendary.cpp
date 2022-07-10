@@ -1,4 +1,5 @@
 #include "spell_priest.h"
+#include "ScriptedCreature.h"
 
 using namespace Priest;
 
@@ -141,6 +142,147 @@ class spell_the_penitent_one_proc : public AuraScript
         OnProc += AuraProcFn(spell_the_penitent_one_proc::HandleProc);
     }
 };
+/// ID: 336400 Divine Image
+class spell_divine_image : public AuraScript
+{
+    PrepareAuraScript(spell_divine_image);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        if (!eventInfo.GetSpellInfo())
+            return false;
+
+        if (auto spell = eventInfo.GetSpellInfo()->Id)
+            if (spell == Salvation || spell == Chastise || spell == Sanctify || spell == Serenity)
+                return true;
+
+        return false;
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_divine_image::CheckProc);
+    }
+};
+
+struct npc_invoke_the_naaru : public ScriptedAI
+{
+    npc_invoke_the_naaru(Creature* p_Creature) : ScriptedAI(p_Creature) { }
+
+    void JustEngagedWith(Unit* /*p_Target*/) override
+    {
+    }
+
+    void Reset() override
+    {
+        me->SetReactState(REACT_PASSIVE);
+    }
+};
+
+namespace Legion
+{
+    enum eSpells
+    {
+        HWChastise          = 88625,
+        HWSanctify          = 34861,
+        HWSerenity          = 2050,
+        Renew               = 139,
+        Heal                = 2060,
+        FlashHeal           = 2061,
+        PrayerOfHealing     = 596,
+        PrayerOfMending     = 33076,
+        DivineHymn          = 64843,
+        Smite               = 585,
+        HolyFire            = 14914,
+        HolyNova            = 132157,
+
+        ChastiseProcAura    = 196684,
+        DamageHealProcAura  = 196705,
+
+        SummonTuure         = 196685
+    };
+
+    /*
+        @ http://www.wowhead.com/item=128825/tuure-beacon-of-the-naaru&bonus=0&spec=71#comments:id=2359192
+        Your spell                                  T'uure's version
+        Renew                                       Tranquil Light
+        Heal & Flash Heal & Holy Word: Serenity     Healing Light
+        Prayer of Healing & Holy Word: Sanctify     Dazzling Lights
+        Prayer of Mending & Divine Hymn             Blessed Light
+        Smite & Holy Fire & Holy Word: Chastise     Searing Light
+        Holy Nova                                   Light Eruption
+    */
+    enum eDupeSpells
+    {
+        /// dupes
+        TranquilLight   = 196816,
+        HealingLight    = 196809,
+        DazzlingLights  = 196810,
+        BlessedLight    = 196813,
+        SearingLight    = 196811,
+        LightEruption   = 196812
+    };
+}
+
+/// ID: 196705 Divine Image
+class spell_divine_image_proc : public AuraScript
+{
+    PrepareAuraScript(spell_divine_image_proc);
+
+    enum eNpcs
+    {
+        TuureId = 172309
+    };
+
+    std::map<uint32, uint32> l_TuureSpellIds =
+    {
+        { Legion::eSpells::Renew,           Legion::eDupeSpells::TranquilLight },
+        { Legion::eSpells::Heal,            Legion::eDupeSpells::HealingLight },
+        { Legion::eSpells::FlashHeal,       Legion::eDupeSpells::HealingLight },
+        { Legion::eSpells::HWSerenity,      Legion::eDupeSpells::HealingLight },
+        { Legion::eSpells::PrayerOfHealing, Legion::eDupeSpells::DazzlingLights },
+        { Legion::eSpells::HWSanctify,      Legion::eDupeSpells::DazzlingLights },
+        { Legion::eSpells::PrayerOfMending, Legion::eDupeSpells::BlessedLight },
+        { Legion::eSpells::DivineHymn,      Legion::eDupeSpells::BlessedLight },
+        { Legion::eSpells::Smite,           Legion::eDupeSpells::SearingLight },
+        { Legion::eSpells::HolyFire,        Legion::eDupeSpells::SearingLight },
+        { Legion::eSpells::HWChastise,      Legion::eDupeSpells::SearingLight },
+        { Legion::eSpells::HolyNova,        Legion::eDupeSpells::LightEruption }
+    };
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetProcSpell() && l_TuureSpellIds.find(eventInfo.GetSpellInfo()->Id) != l_TuureSpellIds.end();
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        auto l_Caster = GetCaster();
+        if (!l_Caster)
+            return;
+
+        if (!eventInfo.GetProcSpell())
+            return;
+
+        if (!eventInfo.GetProcTarget())
+            return;
+
+        auto itr = l_TuureSpellIds.find(eventInfo.GetSpellInfo()->Id);
+        if (itr == l_TuureSpellIds.end())
+            return;
+
+        std::list<TempSummon*> l_Tuures;
+        l_Caster->GetAllMinionsByEntry(l_Tuures, eNpcs::TuureId);
+        for (auto l_Itr : l_Tuures)
+            l_Itr->CastSpell(eventInfo.GetProcTarget(), itr->second, true);
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_divine_image_proc::CheckProc);
+        OnProc += AuraProcFn(spell_divine_image_proc::HandleProc);
+    }
+};
 
 void AddSC_spell_priest_legendary()
 {
@@ -149,4 +291,7 @@ void AddSC_spell_priest_legendary()
     RegisterSpellScript(spell_clarity_of_mind);
     RegisterSpellScript(spell_the_penitent_one);
     RegisterSpellScript(spell_the_penitent_one_proc);
+    RegisterSpellScript(spell_divine_image);
+    RegisterSpellScript(spell_divine_image_proc);
+    RegisterCreatureAI(npc_invoke_the_naaru);
 }
