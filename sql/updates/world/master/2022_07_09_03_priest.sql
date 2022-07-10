@@ -16,3 +16,11 @@ INSERT INTO spell_script_names (spell_id, scriptname) VALUE (341824, 'spell_meas
 
 DELETE FROM spell_script_names WHERE spell_id = 10060;
 INSERT INTO spell_script_names (spell_id, scriptname) VALUE (10060, 'spell_power_infusion');
+
+DELETE FROM spell_script_names WHERE spell_id = 336067;
+INSERT INTO spell_script_names (spell_id, scriptname) VALUE (336067, 'spell_clarity_of_mind');
+
+DELETE FROM spell_script_names WHERE spell_id = 336011;
+INSERT INTO spell_script_names (spell_id, scriptname) VALUE (336011, 'spell_the_penitent_one');
+DELETE FROM spell_script_names WHERE spell_id = 336009;
+INSERT INTO spell_script_names (spell_id, scriptname) VALUE (336009, 'spell_the_penitent_one_proc');

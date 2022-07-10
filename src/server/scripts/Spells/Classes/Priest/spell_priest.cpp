@@ -501,6 +501,9 @@ class spell_pri_power_word_shield : public SpellScript
         if (!caster || !target)
             return;
 
+        if (caster->HasAura(Priest::eLegendary::CrystallineReflection))
+            caster->CastSpell(target, Priest::eLegendary::CrystallineReflectionHeal, true);
+
         if (caster->HasAura(SPELL_PRIEST_ATONEMENT))
         {
             if (!caster->HasAura(SPELL_PRIEST_TRINITY))
@@ -514,6 +517,10 @@ class spell_pri_power_word_shield : public SpellScript
                         aura->ModDuration(sSpellMgr->GetSpellInfo(SPELL_PRIEST_TRINITY)->GetEffect(EFFECT_2).BasePoints * IN_MILLISECONDS);
                 }
             }
+
+            if (caster->HasAura(Priest::eLegendary::ClarityOfMind) && (caster->HasAura(SPELL_PRIEST_SPIRIT_SHELL_AURA) || caster->HasAura(SPELL_PRIEST_RAPTURE)))
+                if (auto atonement = target->GetAura(SPELL_PRIEST_ATONEMENT_AURA, caster->GetGUID()))
+                    atonement->ModDuration(6000);
         }
     }
 
@@ -586,9 +593,22 @@ class aura_pri_power_word_shield : public AuraScript
     void Absorb(AuraEffect* /*aurEff*/, DamageInfo & dmgInfo, uint32 & absorbAmount)
     {
         if (Unit* caster = GetCaster())
+        {
+
             if (dmgInfo.GetDamage() >= absorbAmount)
                 if (caster->HasAura(SPELL_PRIEST_SHIELD_DISCIPLINE))
                     caster->CastSpell(caster, SPELL_PRIEST_RAPTURE_ENERGIZE, true);
+
+
+            if (caster->HasAura(Priest::eLegendary::CrystallineReflection))
+            {
+                if (auto target = dmgInfo.GetAttacker())
+                {
+                    auto dmg = CalculatePct(absorbAmount, 20);
+                    caster->CastSpell(target, Priest::eLegendary::ReflectiveShieldDmg, CastSpellExtraArgs(true).AddSpellBP0(dmg));
+                }
+            }
+        }
     }
 
     void AfterAbsorb(AuraEffect* aurEff, DamageInfo& /*dmgInfo*/, uint32& absorbAmount)
@@ -2650,6 +2670,16 @@ class spell_pri_atonement : public AuraScript
 
     bool CheckProc(ProcEventInfo& eventInfo)
     {
+        if (eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == Priest::ePriest::ShadowWordDeath)
+        {
+            if (auto target = eventInfo.GetProcTarget())
+            {
+                if (target->HealthBelowPct(21) && eventInfo.GetDamageInfo() && GetCaster() && GetCaster()->HasAura(Priest::eLegendary::KissOfDeath))
+                    return true;
+            }
+            return false;
+        }
+
         if (eventInfo.GetDamageInfo() && (eventInfo.GetDamageInfo()->GetDamageType() != HEAL && eventInfo.GetDamageInfo()->GetDamageType() != NODAMAGE))
             return true;
 

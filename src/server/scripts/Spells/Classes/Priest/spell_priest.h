@@ -95,6 +95,8 @@ namespace Priest
         MasteryGrace = 271534,
         PowerOfTheDarkSide = 198068,
         PurgeTheWicked = 204213,
+        SpiritShell = 109964,
+        AtonementAura = 194384,
     };
 
     enum eCovenant : uint32
@@ -111,5 +113,11 @@ namespace Priest
         CauterizingShadows = 336370,
         CauterizingShadowsHeal = 336373,
         TwinsOfTheSunPriestess = 336897,
+        ClarityOfMind = 336067,
+        CrystallineReflection = 336507,
+        CrystallineReflectionHeal = 336509,
+        ReflectiveShieldDmg = 345122,
+        KissOfDeath = 336133,
+        ThePenitentOneProc = 336009,
     };
 }
