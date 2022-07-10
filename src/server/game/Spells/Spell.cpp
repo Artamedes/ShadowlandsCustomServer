@@ -5980,7 +5980,7 @@ SpellCastResult Spell::CheckCast(bool strict, int32* param1 /*= nullptr*/, int32
 
         if (auto unitCaster = m_caster->ToUnit())
         {
-            if (strict && m_spellInfo->HasAttribute(SPELL_ATTR13_PERIODIC_REFRESH_EXTENDS_DURATION))
+            if (strict && m_spellInfo->HasAttribute(SPELL_ATTR13_PERIODIC_REFRESH_EXTENDS_DURATION) && GetPowerCost(Powers::POWER_COMBO_POINTS))
             {
                 if (auto aura = unitCaster->GetAura(m_spellInfo->Id, unitCaster->GetGUID()))
                 {
@@ -5998,7 +5998,7 @@ SpellCastResult Spell::CheckCast(bool strict, int32* param1 /*= nullptr*/, int32
             return castResult;
 
         /// TODO: Check this
-        if (strict && m_spellInfo->HasAttribute(SPELL_ATTR13_PERIODIC_REFRESH_EXTENDS_DURATION) && m_spellInfo->HasAttribute(SPELL_ATTR4_AURA_NEVER_BOUNCES))
+        if (strict && m_spellInfo->HasAttribute(SPELL_ATTR13_PERIODIC_REFRESH_EXTENDS_DURATION) && m_spellInfo->HasAttribute(SPELL_ATTR4_AURA_NEVER_BOUNCES) && GetPowerCost(Powers::POWER_COMBO_POINTS))
         {
             if (auto aura = target->GetAura(m_spellInfo->Id, m_caster->GetGUID()))
             {
