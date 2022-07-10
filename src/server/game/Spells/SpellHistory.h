@@ -118,6 +118,7 @@ public:
     void ModifyCooldown(uint32 spellId, Duration cooldownMod, bool withoutCategoryCooldown = false);
     void ModifyCooldown(SpellInfo const* spellInfo, Duration cooldownMod, bool withoutCategoryCooldown = false);
     void ResetCooldown(uint32 spellId, bool update = false);
+    void ResetCategoryCooldown(uint32 category, bool update = false);
     void ResetCooldown(CooldownStorageType::iterator& itr, bool update = false);
     template<typename Predicate>
     void ResetCooldowns(Predicate predicate, bool update = false)

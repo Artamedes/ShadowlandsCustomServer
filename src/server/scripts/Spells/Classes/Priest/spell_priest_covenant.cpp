@@ -2,11 +2,6 @@
 
 using namespace Priest;
 
-enum ePriest
-{
-    VoidFormAura    = 194249,
-};
-
 /// ID: 337748 Light's Inspiration
 class spell_lights_inspiration : public AuraScript
 {
@@ -169,15 +164,16 @@ class spell_ascended_blast : public SpellScript
     }
 };
 
+enum eDissonantEchoesConduit
+{
+    DissonantEchoesConduitProcSpell = 343144,
+};
+
 /// ID: 338342 Dissonant Echoes
 class spell_dissonant_echoes : public AuraScript
 {
     PrepareAuraScript(spell_dissonant_echoes);
 
-    enum eDissEchoes
-    {
-        ProcSpell = 343144,
-    };
 
     bool CheckProc(ProcEventInfo& eventInfo)
     {
@@ -196,7 +192,7 @@ class spell_dissonant_echoes : public AuraScript
         if (auto caster = GetCaster())
             if (auto eff = GetEffect(EFFECT_0))
                 if (eff->ConduitRankEntry)
-                    caster->CastSpell(caster, ProcSpell, CastSpellExtraArgs(true));
+                    caster->CastSpell(caster, DissonantEchoesConduitProcSpell, CastSpellExtraArgs(true));
     }
 
     void OnCalcProc(ProcEventInfo& eventInfo, float& chance)
@@ -215,6 +211,23 @@ class spell_dissonant_echoes : public AuraScript
     }
 };
 
+/// ID: 343355 Void Bolt
+class spell_void_bolt_conduit_proc : public SpellScript
+{
+    PrepareSpellScript(spell_void_bolt_conduit_proc);
+
+    void HandleAfterCast()
+    {
+        if (auto caster = GetCaster())
+            caster->RemoveAurasDueToSpell(DissonantEchoesConduitProcSpell);
+    }
+
+    void Register() override
+    {
+        AfterCast += SpellCastFn(spell_void_bolt_conduit_proc::HandleAfterCast);
+    }
+};
+
 void AddSC_spell_priest_covenant()
 {
     RegisterSpellScript(spell_lights_inspiration);
@@ -222,4 +235,5 @@ void AddSC_spell_priest_covenant()
     RegisterSpellScript(spell_boon_of_the_ascended);
     RegisterSpellScript(spell_ascended_blast);
     RegisterSpellScript(spell_dissonant_echoes);
+    RegisterSpellScript(spell_void_bolt_conduit_proc);
 }

@@ -52,7 +52,7 @@ namespace Priest
         ViodBolt = 228266,
         Voidform = 228264,
         Purify = 527,
-
+        VoidFormAura = 194249,
         DarkThoughtProc = 341207,
     };
 
