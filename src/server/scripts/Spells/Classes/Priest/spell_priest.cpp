@@ -37,6 +37,7 @@
 #include "Battleground.h"
 #include "AreaTrigger.h"
 #include "Containers.h"
+#include "spell_priest.h"
 
 enum PriestSpells
 {
@@ -4925,6 +4926,33 @@ class spell_priest_shadowy_apparations : public AuraScript
     {
         DoCheckProc += AuraCheckProcFn(spell_priest_shadowy_apparations::CheckProc);
         OnProc += AuraProcFn(spell_priest_shadowy_apparations::HandleProc);
+    }
+};
+
+/// ID: 10060 Power Infusion
+class spell_power_infusion : public AuraScript
+{
+    PrepareAuraScript(spell_power_infusion);
+
+    void HandleApply(const AuraEffect* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+    {
+        auto caster = GetCaster();
+        auto target = GetTarget();
+        if (!caster || !target)
+            return;
+
+        if (caster != target)
+        {
+            if (caster->HasAura(Priest::eLegendary::TwinsOfTheSunPriestess))
+            {
+                caster->CastSpell(caster, Priest::ePriest::PowerInfusion, CastSpellExtraArgs(TriggerCastFlags::TRIGGERED_FULL_MASK_NO_CD));
+            }
+        }
+    }
+
+    void Register() override
+    {
+        OnEffectApply += AuraEffectApplyFn(spell_power_infusion::HandleApply, EFFECT_0, SPELL_AURA_MELEE_SLOW, AURA_EFFECT_HANDLE_REAL);
     }
 };
 

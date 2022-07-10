@@ -27,6 +27,8 @@ namespace Priest
         FocusedWill = 45243,
         HolyNova = 132157,
         MassRessurection = 212036,
+        Shadowfiend = 34433,
+        MindSear = 48045,
     };
 
     enum eShadow : uint32
@@ -35,11 +37,9 @@ namespace Priest
         DevouringPlague = 335467,
         Dispersion = 47585,
         MindFlay = 15407,
-        MindSear = 48045,
         PsychicHorror = 64044,
         PurifyDisease = 213634,
         Shadowmend = 186263,
-        Shadowfiend = 34433,
         Shadowform = 232698,
         Silence = 15487,
         VampiricEmbrace = 15286,
@@ -51,6 +51,7 @@ namespace Priest
         ShadowyApparitions = 341491,
         ViodBolt = 228266,
         Voidform = 228264,
+        Purify = 527,
 
         DarkThoughtProc = 341207,
     };
@@ -67,7 +68,6 @@ namespace Priest
         HolyWordSerenity = 2050,
         PrayerOfHealing = 596,
         PrayerOfMending = 33076,
-        Purify = 527,
         Renew = 139,
         SymbolOfHope = 64901,
         MasteryEchoOfLight = 77485,
@@ -85,15 +85,12 @@ namespace Priest
 
     enum eDiscipline : uint32
     {
-        MindSear = 48045,
         PainSuppression = 33206,
         Penance = 47540,
         PowerWordBarrier = 62618,
         PowerWordRadiance = 194509,
-        Purify = 527,
         Rapture = 47536,
         ShadowMend = 186263,
-        Shadowfiend = 34433,
         Atonement = 81749,
         MasteryGrace = 271534,
         PowerOfTheDarkSide = 198068,
@@ -113,5 +110,6 @@ namespace Priest
         SpheresHarmony = 356395,
         CauterizingShadows = 336370,
         CauterizingShadowsHeal = 336373,
+        TwinsOfTheSunPriestess = 336897,
     };
 }

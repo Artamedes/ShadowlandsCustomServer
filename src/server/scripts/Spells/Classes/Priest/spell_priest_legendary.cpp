@@ -75,4 +75,5 @@ class spell_measured_contemplation_proc : public AuraScript
 void AddSC_spell_priest_legendary()
 {
     RegisterSpellScript(spell_measured_contemplation);
+    RegisterSpellScript(spell_measured_contemplation_proc);
 }

@@ -15,7 +15,7 @@ class spell_dark_thoughts : public AuraScript
         switch (eventInfo.GetSpellInfo()->Id)
         {
             case eShadow::MindFlay:
-            case eShadow::MindSear:
+            case MindSear:
                 return true;
             default:
                 return false;
