@@ -1974,21 +1974,12 @@ public:
         return true;
     }
 
-    static bool HandleTest6Command(ChatHandler* handler, std::string Name)
+    static bool HandleTest6Command(ChatHandler* handler)
     {
-        auto selectedCreature = handler->getSelectedCreature();
-        if (!selectedCreature)
-            return true;
+        WorldPacket data(SMSG_MYTHIC_PLUS_SEASON_DATA);
+        data.WriteBit(1);
 
-        selectedCreature->SetPetNameTimestamp(uint32(GameTime::GetGameTime()));
-        WorldPackets::Query::QueryPetNameResponse packet;
-
-        packet.UnitGUID = selectedCreature->GetGUID();
-        packet.Name = Name;
-        packet.Timestamp = GameTime::GetGameTime();
-        packet.Allow = true;
-
-        handler->GetSession()->SendPacket(packet.Write());
+        handler->GetSession()->SendPacket(&data);
 
         return true;
     }

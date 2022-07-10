@@ -429,3 +429,11 @@ void WorldSession::HandleResetChallengeModeCheat(WorldPackets::ChallengeMode::Re
 {
 
 }
+
+void WorldSession::HandleRequestMythicPlusSeasonData(WorldPackets::ChallengeMode::RequestMythicPlusSeasonData& packet)
+{
+    WorldPacket data(SMSG_MYTHIC_PLUS_SEASON_DATA, 1);
+    data.WriteBit(1);
+    data.FlushBits();
+    SendPacket(&data);
+}

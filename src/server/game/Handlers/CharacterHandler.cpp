@@ -1144,10 +1144,10 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder const& holder)
     // Send PVPSeason
     {
         WorldPackets::Battleground::SeasonInfo seasonInfo;
-        seasonInfo.PreviousArenaSeason = sWorld->getIntConfig(CONFIG_ARENA_SEASON_ID) - sWorld->getBoolConfig(CONFIG_ARENA_SEASON_IN_PROGRESS);
-
-        if (sWorld->getBoolConfig(CONFIG_ARENA_SEASON_IN_PROGRESS))
-            seasonInfo.CurrentArenaSeason = sWorld->getIntConfig(CONFIG_ARENA_SEASON_ID);
+        //seasonInfo.PreviousArenaSeason = sWorld->getIntConfig(CONFIG_ARENA_SEASON_ID) - sWorld->getBoolConfig(CONFIG_ARENA_SEASON_IN_PROGRESS);
+        //
+        //if (sWorld->getBoolConfig(CONFIG_ARENA_SEASON_IN_PROGRESS))
+        //    seasonInfo.CurrentArenaSeason = sWorld->getIntConfig(CONFIG_ARENA_SEASON_ID);
 
         SendPacket(seasonInfo.Write());
     }

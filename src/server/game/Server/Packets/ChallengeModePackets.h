@@ -242,6 +242,14 @@ namespace WorldPackets
 
             void Read() override { }
         };
+
+        class RequestMythicPlusSeasonData final : public ClientPacket
+        {
+        public:
+            RequestMythicPlusSeasonData(WorldPacket&& packet) : ClientPacket(CMSG_REQUEST_MYTHIC_PLUS_SEASON_DATA, std::move(packet)) { }
+
+            void Read() override { }
+        };
     }
 }
 

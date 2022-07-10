@@ -260,6 +260,7 @@ namespace WorldPackets
         class GlobalGetChallengeModeRewards;
         class RequestChallengeModeAffixes;
         class ResetChallengeModeCheat;
+        class RequestMythicPlusSeasonData;
     }
 
     namespace Character
@@ -1917,6 +1918,7 @@ class TC_GAME_API WorldSession
         void HandleResetChallengeMode(WorldPackets::ChallengeMode::ResetChallengeMode& reset);
         void HandleRequestChallengeModeAffixes(WorldPackets::ChallengeMode::RequestChallengeModeAffixes& modeAffixes);
         void HandleResetChallengeModeCheat(WorldPackets::ChallengeMode::ResetChallengeModeCheat& resetModeCheat);
+        void HandleRequestMythicPlusSeasonData(WorldPackets::ChallengeMode::RequestMythicPlusSeasonData& packet);
 
         // BattlePay
         void HandleBattlePayGetProductList(WorldPackets::BattlePay::BattlePayGetProductList& recvPacket);
