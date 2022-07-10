@@ -32,3 +32,14 @@ UPDATE creature_template SET scriptname = 'npc_invoke_the_naaru' WHERE entry = 1
 
 DELETE FROM spell_script_names WHERE spell_id = 196705;
 INSERT INTO spell_script_names (spell_id, scriptname) VALUE (196705, 'spell_divine_image_proc');
+
+DELETE FROM spell_script_names WHERE spell_id = 336266;
+INSERT INTO spell_script_names (spell_id, scriptname) VALUE (336266, 'spell_flash_concentration');
+
+DELETE FROM spell_script_names WHERE spell_id = 204883;
+INSERT INTO spell_script_names (spell_id, scriptname) VALUE (204883, 'spell_circle_of_healing');
+
+
+
+DELETE FROM spell_script_names WHERE spell_id = 27795;
+INSERT INTO spell_script_names (spell_id, scriptname) VALUE (27795, 'spell_spirit_of_redemption_spirit');

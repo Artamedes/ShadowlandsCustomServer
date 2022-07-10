@@ -284,6 +284,22 @@ class spell_divine_image_proc : public AuraScript
     }
 };
 
+/// ID: 336266 Flash Concentration
+class spell_flash_concentration : public AuraScript
+{
+    PrepareAuraScript(spell_flash_concentration);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == FlashHeal;
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_flash_concentration::CheckProc);
+    }
+};
+
 void AddSC_spell_priest_legendary()
 {
     RegisterSpellScript(spell_measured_contemplation);
@@ -293,5 +309,6 @@ void AddSC_spell_priest_legendary()
     RegisterSpellScript(spell_the_penitent_one_proc);
     RegisterSpellScript(spell_divine_image);
     RegisterSpellScript(spell_divine_image_proc);
+    RegisterSpellScript(spell_flash_concentration);
     RegisterCreatureAI(npc_invoke_the_naaru);
 }

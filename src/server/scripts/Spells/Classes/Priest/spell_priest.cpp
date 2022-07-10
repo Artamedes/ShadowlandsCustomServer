@@ -922,6 +922,9 @@ class spell_pri_smite : public SpellScript
 
         // Woe
         caster->RemoveAurasDueToSpell(SPELL_PRIEST_WOE);
+
+        if (caster->HasAura(Priest::eLegendary::HarmoniousApparatus))
+            caster->GetSpellHistory()->ModifyCooldown(Priest::eHoly::HolyWordChastise, -4000);
     }
 
 	void HandleAfterHit()
@@ -2622,7 +2625,7 @@ class spell_pri_spirit_of_redemption : public AuraScript
         amount = -1;
     }
 
-    void Absorb(AuraEffect* /*auraEffect*/, DamageInfo& dmgInfo, uint32& absorbAmount)
+    void OnAbsorb(AuraEffect* /*aurEff*/, DamageInfo& dmgInfo, uint32& absorbAmount)
     {
         Unit* caster = GetCaster();
         if (!caster || !caster->IsPlayer())
@@ -2640,7 +2643,10 @@ class spell_pri_spirit_of_redemption : public AuraScript
             return;
         }
 
-        absorbAmount = dmgInfo.GetDamage();
+        if (caster->HasAura(Priest::eLegendary::ArchbishopBenedictusRestitution))
+            return;
+
+        dmgInfo.AbsorbDamage(dmgInfo.GetDamage());
         //All spell are handle in Shapeshift Spell Aura Effect, incluse the remove stuff
         caster->CastSpell(caster, SPELL_PRIEST_SPIRIT_OF_REDEMPTION_UNTRANS_HERO, true);
         caster->CastSpell(caster, SPELL_PRIEST_SPIRIT_OF_REDEMPTION_SHAPESHIFT, true);
@@ -2653,8 +2659,7 @@ class spell_pri_spirit_of_redemption : public AuraScript
 
     void Register() override
     {
-        DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_pri_spirit_of_redemption::CalculateAmount, EFFECT_0, SPELL_AURA_SCHOOL_ABSORB);
-        OnEffectAbsorb += AuraEffectAbsorbFn(spell_pri_spirit_of_redemption::Absorb, EFFECT_0);
+        OnEffectAbsorb += AuraEffectAbsorbOverkillFn(spell_pri_spirit_of_redemption::OnAbsorb, EFFECT_0);
     }
 };
 
@@ -3252,6 +3257,9 @@ class spell_pri_prayer_of_mending : public SpellScript
             return;
 
         caster->SendPlaySpellVisual(target->GetGUID(), 38945, 0, 0, 40);
+
+        if (caster->HasAura(Priest::eLegendary::HarmoniousApparatus))
+            caster->GetSpellHistory()->ModifyCooldown(Priest::eHoly::HolyWordSerenity, -4000);
     }
 
     void HandleEffectHit(SpellEffIndex effIndex)

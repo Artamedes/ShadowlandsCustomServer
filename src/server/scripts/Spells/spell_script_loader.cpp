@@ -50,6 +50,7 @@ void AddSC_spell_priest_shadow();
 void AddSC_spell_priest_covenant();
 void AddSC_spell_priest_legendary();
 void AddSC_spell_priest_discipline();
+void AddSC_spell_priest_holy();
 void AddSC_rogue_spell_scripts();
 void AddSC_spell_rogue_assassination();
 void AddSC_spell_rogue_outlaw();
@@ -116,6 +117,7 @@ void AddSpellsScripts()
     AddSC_spell_priest_covenant();
     AddSC_spell_priest_legendary();
     AddSC_spell_priest_discipline();
+    AddSC_spell_priest_holy();
     AddSC_rogue_spell_scripts();
     AddSC_spell_rogue_assassination();
     AddSC_spell_rogue_outlaw();

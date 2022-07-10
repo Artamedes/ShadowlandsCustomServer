@@ -109,15 +109,23 @@ namespace Priest
 
     enum eLegendary : uint32
     {
+        // General
         SpheresHarmony = 356395,
         CauterizingShadows = 336370,
         CauterizingShadowsHeal = 336373,
         TwinsOfTheSunPriestess = 336897,
+
+        // Disc
         ClarityOfMind = 336067,
         CrystallineReflection = 336507,
         CrystallineReflectionHeal = 336509,
         ReflectiveShieldDmg = 345122,
         KissOfDeath = 336133,
         ThePenitentOneProc = 336009,
+
+        // Holy
+        HarmoniousApparatus = 336314,
+        XanashiReturnOfArchbishopBenedictus = 337477,
+        ArchbishopBenedictusRestitution = 211319,
     };
 }
