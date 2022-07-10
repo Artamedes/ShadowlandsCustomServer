@@ -17,8 +17,9 @@ class spell_sigil_of_silence : public AuraScript
     {
         if (auto caster = GetCaster())
             if (auto eff = caster->GetAuraEffect(DemonicMuzzle, EFFECT_0))
-                if (auto target = GetTarget())
-                    caster->CastSpell(target, ProcSpell, CastSpellExtraArgs(true).AddSpellBP0(eff->ConduitRankEntry->AuraPointsOverride));
+                if (eff->ConduitRankEntry)
+                    if (auto target = GetTarget())
+                        caster->CastSpell(target, ProcSpell, CastSpellExtraArgs(true).AddSpellBP0(eff->ConduitRankEntry->AuraPointsOverride));
     }
 
     void Register() override
