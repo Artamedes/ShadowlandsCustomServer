@@ -1963,6 +1963,33 @@ class spell_pri_shadow_word_death : public SpellScript
 
         uint8 energize = (target->GetHealth() < uint64(GetHitDamage())) ? GetSpellInfo()->GetEffect(EFFECT_2).BasePoints : GetSpellInfo()->GetEffect(EFFECT_1).BasePoints;
         caster->ModifyPower(POWER_INSANITY, caster->GetPower(POWER_INSANITY) + energize);
+
+        if (caster->HasAura(Priest::eLegendary::PainbreakerPsalm))
+        {
+            uint32 totalDmg = 0;
+            if (auto pain = target->GetAura(Priest::ePriest::ShadowWordPain, caster->GetGUID()))
+            {
+                int32 durationToRemove = std::min(pain->GetDuration(), 8000);
+                auto eff = pain->GetEffect(EFFECT_1);
+                if (eff && eff->GetPeriodicTimer())
+                    totalDmg += eff->GetAmount() * (durationToRemove / eff->GetPeriodicTimer());
+                pain->ModDuration(-durationToRemove);
+            }
+            if (auto vamp = target->GetAura(Priest::eShadow::VampiricTouch, caster->GetGUID()))
+            {
+                int32 durationToRemove = std::min(vamp->GetDuration(), 8000);
+                auto eff = vamp->GetEffect(EFFECT_1);
+                if (eff && eff->GetPeriodicTimer())
+                    totalDmg += eff->GetAmount() * (durationToRemove / eff->GetPeriodicTimer());
+                vamp->ModDuration(-durationToRemove);
+            }
+
+            if (totalDmg)
+            {
+                caster->CastSpell(target, Priest::eLegendary::PainbreakerPsalmDmg, CastSpellExtraArgs(true).AddSpellBP0(totalDmg));
+                caster->CastSpell(target, Priest::eLegendary::PainbreakerPsalmEnergize, true);
+            }
+        }
     }
 
     void Register() override
@@ -3574,6 +3601,18 @@ class spell_pri_mind_blast : public SpellScript
         {
             int32 damage = GetHitDamage();
             caster->CastCustomSpell(SPELL_PRIEST_PSYCHIC_LINK_DAMAGE, SPELLVALUE_BASE_POINT0, CalculatePct(damage, sSpellMgr->GetSpellInfo(SPELL_PRIEST_PSYCHIC_LINK)->GetEffect(EFFECT_0).BasePoints), target, true);
+        }
+
+        if (caster->HasAura(Priest::eLegendary::ShadowFlamePrism))
+        {
+            std::list<TempSummon*> summs;
+            caster->GetAllMinionsByEntry(summs, ENTRY_SHADOWFIEND);
+            caster->GetAllMinionsByEntry(summs, ENTRY_MINDBENDER);
+
+            for (auto summ : summs)
+            {
+                summ->CastSpell(target, Priest::eLegendary::ShadowFlameRift, true);
+            }
         }
     }
 

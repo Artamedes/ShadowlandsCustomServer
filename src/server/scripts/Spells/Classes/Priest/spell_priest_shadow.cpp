@@ -206,6 +206,36 @@ class spell_shadow_word_pain : public AuraScript
         OnEffectRemove += AuraEffectApplyFn(spell_shadow_word_pain::HandleRemove, EFFECT_1, SPELL_AURA_PERIODIC_DAMAGE, AURA_EFFECT_HANDLE_REAL);
     }
 };
+/// ID: 335467 Devouring Plague
+class spell_devouring_plague : public SpellScript
+{
+    PrepareSpellScript(spell_devouring_plague);
+
+    void HandleDummy(SpellEffIndex /*eff*/)
+    {
+        auto caster = GetCaster();
+        auto target = GetHitUnit();
+        if (!caster || !target)
+            return;
+
+        if (caster->HasAura(Priest::eLegendary::ShadowFlamePrism))
+        {
+            std::list<TempSummon*> summs;
+            caster->GetAllMinionsByEntry(summs, ENTRY_SHADOWFIEND);
+            caster->GetAllMinionsByEntry(summs, ENTRY_MINDBENDER);
+
+            for (auto summ : summs)
+            {
+                summ->CastSpell(target, Priest::eLegendary::ShadowFlameRift, true);
+            }
+        }
+    }
+
+    void Register() override
+    {
+        OnEffectHitTarget += SpellEffectFn(spell_devouring_plague::HandleDummy, EFFECT_0, SPELL_EFFECT_HEALTH_LEECH);
+    }
+};
 
 void AddSC_spell_priest_shadow()
 {
@@ -215,4 +245,5 @@ void AddSC_spell_priest_shadow()
     RegisterSpellScript(spell_living_shadow);
     RegisterSpellScript(spell_torment_mind);
     RegisterSpellScript(spell_shadow_word_pain);
+    RegisterSpellScript(spell_devouring_plague);
 }

@@ -1,5 +1,6 @@
 #include "spell_priest.h"
 #include "ScriptedCreature.h"
+#include "ObjectAccessor.h"
 
 using namespace Priest;
 
@@ -300,6 +301,112 @@ class spell_flash_concentration : public AuraScript
     }
 };
 
+/// ID: 336214 Eternal Call to the Void
+class spell_eternal_call_to_the_void : public AuraScript
+{
+    PrepareAuraScript(spell_eternal_call_to_the_void);
+
+    enum eCallToTheVoid
+    {
+        CallToTheVoidSumm = 344753,
+    };
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && (eventInfo.GetSpellInfo()->Id == MindFlay || eventInfo.GetSpellInfo()->Id == MindSear);
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        auto caster = GetCaster();
+        if (!caster)
+            return;
+
+        caster->CastSpell(caster, CallToTheVoidSumm, true);
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_eternal_call_to_the_void::CheckProc);
+        OnProc += AuraProcFn(spell_eternal_call_to_the_void::HandleProc);
+    }
+};
+
+// 175198
+// 175198 - npc_void_lasher_175198
+struct npc_void_lasher_175198 : public ScriptedAI
+{
+public:
+    npc_void_lasher_175198(Creature* creature) : ScriptedAI(creature) { SetCombatMovement(false); }
+
+    void UpdateAI(uint32 diff) override
+    {
+        if (me->HasUnitState(UNIT_STATE_CASTING))
+            return;
+
+        if (me->isDead())
+            return;
+
+        timer.Update(diff);
+
+        auto owner = me->GetOwner();
+        if (owner)
+        {
+            auto ownerTarget = ObjectAccessor::GetUnit(*me, owner->GetTarget());
+            if (!ownerTarget)
+                return;
+
+            if (me->IsValidAttackTarget(ownerTarget))
+                DoCast(ownerTarget, 193473);
+
+            if (timer.Passed())
+            {
+                timer.Reset(1000);
+                owner->EnergizeBySpell(owner, sSpellMgr->GetSpellInfo(193473), 3, Powers::POWER_INSANITY);
+            }
+        }
+    }
+
+    TimeTracker timer;
+};
+/// ID: 342415 Talbadar's Stratagem
+class spell_talbadars_stratagem : public AuraScript
+{
+    PrepareAuraScript(spell_talbadars_stratagem);
+
+    enum eTalbadars
+    {
+        MindBlastDmgBuff = 342416,
+    };
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo()
+            && (eventInfo.GetSpellInfo()->Id == ShadowWordPain || eventInfo.GetSpellInfo()->Id == DevouringPlague || eventInfo.GetSpellInfo()->Id == VampiricTouch)
+            && eventInfo.GetDamageInfo() && eventInfo.GetDamageInfo()->GetDamageType() != DamageEffectType::DOT;
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        auto target = eventInfo.GetProcTarget();
+        auto caster = GetCaster();
+
+        if (!target || !caster)
+            return;
+
+        if (target->HasAura(ShadowWordPain, caster->GetGUID()) && target->HasAura(DevouringPlague, caster->GetGUID()) && target->HasAura(VampiricTouch, caster->GetGUID()))
+        {
+            caster->CastSpell(caster, MindBlastDmgBuff, true);
+        }
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_talbadars_stratagem::CheckProc);
+        OnProc += AuraProcFn(spell_talbadars_stratagem::HandleProc);
+    }
+};
+
 void AddSC_spell_priest_legendary()
 {
     RegisterSpellScript(spell_measured_contemplation);
@@ -310,5 +417,8 @@ void AddSC_spell_priest_legendary()
     RegisterSpellScript(spell_divine_image);
     RegisterSpellScript(spell_divine_image_proc);
     RegisterSpellScript(spell_flash_concentration);
+    RegisterSpellScript(spell_eternal_call_to_the_void);
+    RegisterSpellScript(spell_talbadars_stratagem);
     RegisterCreatureAI(npc_invoke_the_naaru);
+    RegisterCreatureAI(npc_void_lasher_175198);
 }

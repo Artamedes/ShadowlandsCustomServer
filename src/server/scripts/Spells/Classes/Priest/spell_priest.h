@@ -127,5 +127,13 @@ namespace Priest
         HarmoniousApparatus = 336314,
         XanashiReturnOfArchbishopBenedictus = 337477,
         ArchbishopBenedictusRestitution = 211319,
+
+        // Shadow
+        PainbreakerPsalm = 336165,
+        PainbreakerPsalmDmg = 336165,
+        PainbreakerPsalmEnergize = 351631,
+        ShadowFlamePrism = 336143,
+        ShadowFlamePrismDmg = 336142,
+        ShadowFlameRift = 344658,
     };
 }
