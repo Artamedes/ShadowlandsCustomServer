@@ -13,3 +13,6 @@ INSERT INTO spell_script_names (spell_id, scriptname) VALUE (341804, 'spell_meas
 DELETE FROM spell_script_names WHERE spell_id = 341824;
 INSERT INTO spell_script_names (spell_id, scriptname) VALUE (341824, 'spell_measured_contemplation_proc');
 
+
+DELETE FROM spell_script_names WHERE spell_id = 10060;
+INSERT INTO spell_script_names (spell_id, scriptname) VALUE (10060, 'spell_power_infusion');

@@ -5071,6 +5071,7 @@ void AddSC_priest_spell_scripts()
     RegisterSpellScript(spell_pri_premonition_damage);
     RegisterSpellScript(spell_priest_damnation);
     RegisterSpellScript(spell_priest_shadowy_apparations);
+    RegisterSpellScript(spell_power_infusion);
 
     // PlayerScripts
     new priest_playerscript();
