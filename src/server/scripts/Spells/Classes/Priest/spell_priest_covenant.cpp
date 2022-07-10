@@ -2,6 +2,11 @@
 
 using namespace Priest;
 
+enum ePriest
+{
+    VoidFormAura    = 194249,
+};
+
 /// ID: 337748 Light's Inspiration
 class spell_lights_inspiration : public AuraScript
 {
@@ -164,10 +169,57 @@ class spell_ascended_blast : public SpellScript
     }
 };
 
+/// ID: 338342 Dissonant Echoes
+class spell_dissonant_echoes : public AuraScript
+{
+    PrepareAuraScript(spell_dissonant_echoes);
+
+    enum eDissEchoes
+    {
+        ProcSpell = 343144,
+    };
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        if (!eventInfo.GetSpellInfo())
+            return false;
+
+        if (auto caster = GetCaster())
+            if (!caster->HasAura(VoidFormAura))
+                return eventInfo.GetSpellInfo()->Id == MindFlay;
+
+        return false;
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (auto caster = GetCaster())
+            if (auto eff = GetEffect(EFFECT_0))
+                if (eff->ConduitRankEntry)
+                    caster->CastSpell(caster, ProcSpell, CastSpellExtraArgs(true));
+    }
+
+    void OnCalcProc(ProcEventInfo& eventInfo, float& chance)
+    {
+        chance = 0.0f;
+        if (auto eff = GetEffect(EFFECT_0))
+            if (eff->ConduitRankEntry)
+                chance = eff->ConduitRankEntry->AuraPointsOverride;
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_dissonant_echoes::CheckProc);
+        OnProc += AuraProcFn(spell_dissonant_echoes::HandleProc);
+        OnCalcProcChance += AuraCalcProcChanceFn(spell_dissonant_echoes::OnCalcProc);
+    }
+};
+
 void AddSC_spell_priest_covenant()
 {
     RegisterSpellScript(spell_lights_inspiration);
     RegisterSpellScript(spell_resonant_words);
     RegisterSpellScript(spell_boon_of_the_ascended);
     RegisterSpellScript(spell_ascended_blast);
+    RegisterSpellScript(spell_dissonant_echoes);
 }

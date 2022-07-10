@@ -2927,6 +2927,13 @@ class spell_pri_void_bolt : public SpellScript
 {
     PrepareSpellScript(spell_pri_void_bolt);
 
+    enum eDissonantEchos
+    {
+        DissEchoConduit = 338342,
+        VoidForm        = 194249,
+        VoidBolt        = 205448,
+    };
+
     void HandleEffectScriptEffect(SpellEffIndex /*effIndex*/)
     {
         if (Aura* voidBoltDurationBuffAura = GetCaster()->GetAura(SPELL_PRIEST_VOID_BOLT_DURATION))
@@ -2942,6 +2949,16 @@ class spell_pri_void_bolt : public SpellScript
                     vampiricTouch->ModDuration(durationIncreaseMs);
             }
         }
+
+        if (auto caster = GetCaster())
+            if (caster->HasAura(VoidForm))
+                if (auto conduit = caster->GetAuraEffect(DissEchoConduit, EFFECT_0))
+                //if (Aura* dissecho = caster->GetAura(DissEchoConduit))
+                //    if (auto eff = dissecho->GetEffect(EFFECT_0))
+                        if (conduit->ConduitRankEntry)
+                            // if (roll_chance_f(conduit->ConduitRankEntry->AuraPointsOverride))
+                            if (roll_chance_f(100.0))
+                                caster->GetSpellHistory()->ResetCooldown(VoidBolt);
     }
 
     void Register() override
