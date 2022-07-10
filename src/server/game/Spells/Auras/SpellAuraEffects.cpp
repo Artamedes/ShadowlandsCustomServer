@@ -1070,8 +1070,9 @@ void AuraEffect::Update(uint32 diff, Unit* caster)
         else
             _periodicTimer -= _period;
 
-        if (!GetBase()->IsPermanent() && (_ticksDone + 1) > totalTicks)
-            break;
+        // not agree with this line for Shadowlands.
+        //if (!GetBase()->IsPermanent() && (_ticksDone + 1) > totalTicks)
+        //    break;
 
         ++_ticksDone;
 
