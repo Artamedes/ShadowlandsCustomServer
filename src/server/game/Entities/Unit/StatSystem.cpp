@@ -582,6 +582,25 @@ void Player::UpdateMastery()
             }
         }
     }
+
+    if (GetClass() == CLASS_DEMON_HUNTER)
+    {
+        /// Hackfix for ID - 320654 Mastery: Demonic Presence (Rank 2)
+        if (auto aura = GetAura(320654))
+        {
+            for (AuraEffect* auraEff : aura->GetAuraEffects())
+            {
+                if (!auraEff)
+                    continue;
+
+                float mult = auraEff->GetSpellEffectInfo().BonusCoefficient;
+                if (G3D::fuzzyEq(mult, 0.0f))
+                    continue;
+
+                auraEff->ChangeAmount(int32(value * mult));
+            }
+        }
+    }
 }
 
 void Player::UpdateVersatilityDamageDone()
