@@ -24,6 +24,7 @@ void AddSC_demon_hunter_spell_scripts();
 void AddSC_spell_dh_havoc();
 void AddSC_spell_dh_legendary();
 void AddSC_spell_dh_vengeance();
+void AddSC_spell_dh_covenant();
 void AddSC_druid_spell_scripts();
 void AddSC_spell_druid_feral();
 void AddSC_spell_druid_covenant();
@@ -89,6 +90,7 @@ void AddSpellsScripts()
     AddSC_spell_dh_havoc();
     AddSC_spell_dh_legendary();
     AddSC_spell_dh_vengeance();
+    AddSC_spell_dh_covenant();
     AddSC_druid_spell_scripts();
     AddSC_spell_druid_feral();
     AddSC_spell_druid_covenant();
