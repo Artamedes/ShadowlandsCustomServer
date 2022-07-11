@@ -3294,6 +3294,11 @@ void SpellMgr::LoadSpellInfoCorrections()
 
     // Some spells have no amplitude set
     {
+        /// Ebosoul Vise 
+        ApplySpellFix({ 339298 }, [](SpellInfo* info)
+        {
+            info->AttributesEx5 &= ~SPELL_ATTR5_SPELL_HASTE_AFFECTS_PERIODIC;
+        });
         // Hand of Guldan Summon
         ApplySpellFix({ 279910 }, [](SpellInfo* spellInfo)
         {
