@@ -1682,7 +1682,7 @@ TC_API_EXPORT EnumText EnumUtils<SpellAttr11>::ToString(SpellAttr11 value)
         case SPELL_ATTR11_UNK13: return { "SPELL_ATTR11_UNK13", "Unknown attribute 13@Attr11", "" };
         case SPELL_ATTR11_UNK14: return { "SPELL_ATTR11_UNK14", "Unknown attribute 14@Attr11", "" };
         case SPELL_ATTR11_UNK15: return { "SPELL_ATTR11_UNK15", "Unknown attribute 15@Attr11", "" };
-        case SPELL_ATTR11_NOT_USABLE_IN_CHALLENGE_MODE: return { "SPELL_ATTR11_NOT_USABLE_IN_CHALLENGE_MODE", "Not in Mythic+ Mode (Challenge Mode)", "" };
+        case SPELL_ATTR11_NOT_IN_MYTHIC_MODE_CHALLENGE_MODE: return { "SPELL_ATTR11_NOT_IN_MYTHIC_MODE_CHALLENGE_MODE", "Not in Mythic+ Mode (Challenge Mode)", "" };
         case SPELL_ATTR11_UNK17: return { "SPELL_ATTR11_UNK17", "Unknown attribute 17@Attr11", "" };
         case SPELL_ATTR11_UNK18: return { "SPELL_ATTR11_UNK18", "Unknown attribute 18@Attr11", "" };
         case SPELL_ATTR11_UNK19: return { "SPELL_ATTR11_UNK19", "Unknown attribute 19@Attr11", "" };
@@ -1726,7 +1726,7 @@ TC_API_EXPORT SpellAttr11 EnumUtils<SpellAttr11>::FromIndex(size_t index)
         case 13: return SPELL_ATTR11_UNK13;
         case 14: return SPELL_ATTR11_UNK14;
         case 15: return SPELL_ATTR11_UNK15;
-        case 16: return SPELL_ATTR11_NOT_USABLE_IN_CHALLENGE_MODE;
+        case 16: return SPELL_ATTR11_NOT_IN_MYTHIC_MODE_CHALLENGE_MODE;
         case 17: return SPELL_ATTR11_UNK17;
         case 18: return SPELL_ATTR11_UNK18;
         case 19: return SPELL_ATTR11_UNK19;
@@ -1767,7 +1767,7 @@ TC_API_EXPORT size_t EnumUtils<SpellAttr11>::ToIndex(SpellAttr11 value)
         case SPELL_ATTR11_UNK13: return 13;
         case SPELL_ATTR11_UNK14: return 14;
         case SPELL_ATTR11_UNK15: return 15;
-        case SPELL_ATTR11_NOT_USABLE_IN_CHALLENGE_MODE: return 16;
+        case SPELL_ATTR11_NOT_IN_MYTHIC_MODE_CHALLENGE_MODE: return 16;
         case SPELL_ATTR11_UNK17: return 17;
         case SPELL_ATTR11_UNK18: return 18;
         case SPELL_ATTR11_UNK19: return 19;

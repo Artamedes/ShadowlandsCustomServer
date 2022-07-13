@@ -852,7 +852,7 @@ enum SpellAttr11 : uint32
     SPELL_ATTR11_UNK13                           = 0x00002000, // TITLE Unknown attribute 13@Attr11
     SPELL_ATTR11_UNK14                           = 0x00004000, // TITLE Unknown attribute 14@Attr11
     SPELL_ATTR11_UNK15                           = 0x00008000, // TITLE Unknown attribute 15@Attr11
-    SPELL_ATTR11_NOT_USABLE_IN_CHALLENGE_MODE    = 0x00010000, // TITLE Not in Mythic+ Mode (Challenge Mode)
+    SPELL_ATTR11_NOT_IN_MYTHIC_MODE_CHALLENGE_MODE = 0x00010000, // TITLE Not in Mythic+ Mode (Challenge Mode)
     SPELL_ATTR11_UNK17                           = 0x00020000, // TITLE Unknown attribute 17@Attr11
     SPELL_ATTR11_UNK18                           = 0x00040000, // TITLE Unknown attribute 18@Attr11
     SPELL_ATTR11_UNK19                           = 0x00080000, // TITLE Unknown attribute 19@Attr11

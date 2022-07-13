@@ -5785,6 +5785,12 @@ SpellCastResult Spell::CheckCast(bool strict, int32* param1 /*= nullptr*/, int32
             return SPELL_FAILED_DONT_REPORT;
     }
 
+    if (m_spellInfo->HasAttribute(SPELL_ATTR11_NOT_IN_MYTHIC_MODE_CHALLENGE_MODE) && m_caster->GetMap() && m_caster->GetMap()->IsChallengeMode())
+    {
+        m_customError = SPELL_CUSTOM_ERROR_CANT_DO_THAT_WHILE_MYTHIC_KEYSTONE_IS_ACTIVE;
+        return SPELL_FAILED_CUSTOM_ERROR;
+    }
+
     // check cooldowns to prevent cheating
     if (!m_spellInfo->IsPassive())
     {
