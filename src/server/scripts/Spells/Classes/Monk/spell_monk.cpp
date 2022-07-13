@@ -3659,9 +3659,20 @@ class aura_monk_fists_of_fury : public AuraScript
         }
     }
 
+    void HandleRemove(const AuraEffect* /*aurEff*/, AuraEffectHandleModes /* mode */)
+    {
+        auto caster = GetCaster();
+        if (!caster)
+            return;
+
+        if (caster->HasAura(Monk::eLegendary::XuensBattlegear))
+            caster->CastSpell(caster, Monk::eLegendary::PressurePoint, true);
+    }
+
     void Register() override
     {
         OnEffectPeriodic += AuraEffectPeriodicFn(aura_monk_fists_of_fury::HandlePeriodic, EFFECT_2, SPELL_AURA_PERIODIC_DUMMY);
+        OnEffectRemove += AuraEffectRemoveFn(aura_monk_fists_of_fury::HandleRemove, EFFECT_2, SPELL_AURA_PERIODIC_DUMMY, AuraEffectHandleModes::AURA_EFFECT_HANDLE_REAL_OR_REAPPLY_MASK);
     }
 };
 

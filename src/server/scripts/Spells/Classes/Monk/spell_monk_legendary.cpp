@@ -194,6 +194,45 @@ class spell_jade_ignition : public AuraScript
     }
 };
 
+/// ID: 337292 Last Emperor's Capacitor
+class spell_last_emperors_capacitor : public AuraScript
+{
+    PrepareAuraScript(spell_last_emperors_capacitor);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetProcSpell() && eventInfo.GetProcSpell()->GetPowerCost(Powers::POWER_CHI);
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_last_emperors_capacitor::CheckProc);
+    }
+};
+
+/// ID: 337481 Xuen's Battlegear
+class spell_xuens_battlegear : public AuraScript
+{
+    PrepareAuraScript(spell_xuens_battlegear);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == RisingSunKick && eventInfo.GetHitMask() & ProcFlagsHit::PROC_HIT_CRITICAL;
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (auto caster = GetCaster())
+            caster->GetSpellHistory()->ModifyCooldown(FistsOfFury, -5000);
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_xuens_battlegear::CheckProc);
+        OnProc += AuraProcFn(spell_xuens_battlegear::HandleProc);
+    }
+};
+
 void AddSC_spell_monk_legendary()
 {
     RegisterSpellScript(spell_invokers_delight);
@@ -201,4 +240,6 @@ void AddSC_spell_monk_legendary()
     RegisterSpellScript(spell_charred_passions_proc);
     RegisterSpellScript(spell_yulons_whisper);
     RegisterSpellScript(spell_jade_ignition);
+    RegisterSpellScript(spell_last_emperors_capacitor);
+    RegisterSpellScript(spell_xuens_battlegear); 
 }

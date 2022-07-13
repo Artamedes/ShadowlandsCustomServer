@@ -94,5 +94,7 @@ namespace Monk
         KeefersSkyreach       = 337334,
         KeefersSkyreachDebuff = 344021,
         TigerPalmCharge       = 337332,
+        XuensBattlegear       = 337481,
+        PressurePoint         = 337482,
     };
 }
