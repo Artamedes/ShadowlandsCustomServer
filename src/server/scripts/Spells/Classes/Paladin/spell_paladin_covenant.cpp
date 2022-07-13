@@ -284,7 +284,8 @@ class spell_shielding_words : public AuraScript
         if (auto caster = GetCaster())
             if (auto eff = GetEffect(EFFECT_0))
                 if (eff->ConduitRankEntry)
-                    caster->CastSpell(caster, ProcSpell, CastSpellExtraArgs(true).AddSpellBP0(CalculatePct(eventInfo.GetHealInfo()->GetHeal(), eff->ConduitRankEntry->AuraPointsOverride)));
+                    if (eventInfo.GetHealInfo())
+                        caster->CastSpell(caster, ProcSpell, CastSpellExtraArgs(true).AddSpellBP0(CalculatePct(eventInfo.GetHealInfo()->GetHeal(), eff->ConduitRankEntry->AuraPointsOverride)));
     }
 
     void Register() override
