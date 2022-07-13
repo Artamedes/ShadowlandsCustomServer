@@ -29,6 +29,7 @@
 #include "SpellScript.h"
 #include "TemporarySummon.h"
 #include "Util.h"
+#include "spell_monk.h"
 
 enum MonkSpells
 {
@@ -4001,6 +4002,22 @@ class spell_monk_tiger_palm : public SpellScript
 {
     PrepareSpellScript(spell_monk_tiger_palm);
 
+    void HandleDmg(SpellEffIndex /*eff*/)
+    {
+        if (Unit* caster = GetCaster())
+        {
+            if (caster->HasAura(Monk::eLegendary::ShaoHaosMight))
+            {
+                if (roll_chance_i(40))
+                {
+                    auto dmg = GetHitDamage();
+                    AddPct(dmg, 250);
+                    SetHitDamage(dmg);
+                }
+            }
+        }
+    }
+
     void HandleHit(SpellEffIndex /*effIndex*/)
     {
         if (Unit* caster = GetCaster())
@@ -4017,12 +4034,20 @@ class spell_monk_tiger_palm : public SpellScript
                 caster->GetSpellHistory()->ModifyCooldown(SPELL_MONK_FORTIFYING_BREW, -1s);
                 caster->GetSpellHistory()->ReduceChargeCooldown(sSpellMgr->GetSpellInfo(SPELL_MONK_PURIFYING_BREW)->ChargeCategoryId, IN_MILLISECONDS);
                 caster->GetSpellHistory()->ReduceChargeCooldown(sSpellMgr->GetSpellInfo(SPELL_MONK_IROSKIN_BREW)->ChargeCategoryId, IN_MILLISECONDS);
+
+                if (caster->HasAura(Monk::eLegendary::ShaoHaosMight))
+                {
+                    caster->GetSpellHistory()->ModifyCooldown(SPELL_MONK_FORTIFYING_BREW, -1s);
+                    caster->GetSpellHistory()->ReduceChargeCooldown(sSpellMgr->GetSpellInfo(SPELL_MONK_PURIFYING_BREW)->ChargeCategoryId, IN_MILLISECONDS);
+                    caster->GetSpellHistory()->ReduceChargeCooldown(sSpellMgr->GetSpellInfo(SPELL_MONK_IROSKIN_BREW)->ChargeCategoryId, IN_MILLISECONDS);
+                }
             }
         }
     }
 
     void Register() override
     {
+        OnEffectHitTarget += SpellEffectFn(spell_monk_tiger_palm::HandleDmg, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
         OnEffectHitTarget += SpellEffectFn(spell_monk_tiger_palm::HandleHit, EFFECT_1, SPELL_EFFECT_ENERGIZE);
     }
 };

@@ -1,6 +1,147 @@
 #include "spell_monk.h"
 
+using namespace Monk;
+
+/// ID: 337298 Invoker's Delight
+class spell_invokers_delight : public AuraScript
+{
+    PrepareAuraScript(spell_invokers_delight);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        if (!eventInfo.GetSpellInfo())
+            return false;
+
+        switch (eventInfo.GetSpellInfo()->Id)
+        {
+            case InvokeNiuzaoTheBlackOx:
+            case InvokeXuenThewhiteTiger:
+            case InvokeYulonTheJadeSerpent:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_invokers_delight::CheckProc);
+    }
+};
+
+/// ID: 356592 Bountiful Brew
+class spell_bountiful_brew : public AuraScript
+{
+    PrepareAuraScript(spell_bountiful_brew);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        if (!eventInfo.GetSpellInfo())
+            return false;
+
+        switch (eventInfo.GetSpellInfo()->Id)
+        {
+            case InvokeNiuzaoTheBlackOx:
+            case InvokeXuenThewhiteTiger:
+            case InvokeYulonTheJadeSerpent:
+                return false;
+            default:
+                return true;
+        }
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (auto target = eventInfo.GetProcTarget())
+        {
+            if (auto caster = GetCaster())
+            {
+                caster->CastSpell(*target, BonedustBrew, true);
+            }
+        }
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_bountiful_brew::CheckProc);
+        OnProc += AuraProcFn(spell_bountiful_brew::HandleProc);
+    }
+};
+
+/// ID: 338138 Charred Passions
+class spell_charred_passions : public AuraScript
+{
+    PrepareAuraScript(spell_charred_passions);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == BreathOfFire;
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_charred_passions::CheckProc);
+    }
+};
+
+/// ID: 338140 Charred Passions
+class spell_charred_passions_proc : public AuraScript
+{
+    PrepareAuraScript(spell_charred_passions_proc);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && (eventInfo.GetSpellInfo()->Id == BlackoutKick || eventInfo.GetSpellInfo()->Id == SpinningCraneKick);
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (auto target = eventInfo.GetProcTarget())
+        {
+            if (auto caster = GetCaster())
+            {
+                if (auto breathOfFire = target->GetAura(BreathOfFire, caster->GetGUID()))
+                    breathOfFire->RefreshDuration();
+
+                if (auto dmgInfo = eventInfo.GetDamageInfo())
+                {
+                    dmgInfo->ModifyDamage(CalculatePct(eventInfo.GetDamageInfo()->GetDamage(), 100));
+                }
+            }
+        }
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_charred_passions_proc::CheckProc);
+        OnProc += AuraProcFn(spell_charred_passions_proc::HandleProc);
+    }
+};
+
+/// ID: 337290 Mighty Pour
+class spell_mighty_pour : public AuraScript
+{
+    PrepareAuraScript(spell_mighty_pour);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id ==PurifyingBrew;
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_mighty_pour::CheckProc);
+        OnProc += AuraProcFn(spell_mighty_pour::HandleProc);
+    }
+};
+
 void AddSC_spell_monk_legendary()
 {
-
+    RegisterSpellScript(spell_invokers_delight);
+    RegisterSpellScript(spell_charred_passions);
+    RegisterSpellScript(spell_charred_passions_proc);
 }

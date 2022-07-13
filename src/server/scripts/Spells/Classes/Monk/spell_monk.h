@@ -78,4 +78,14 @@ namespace Monk
         MasteryGustOfMsits = 117907,
         TeachingOfTheMonastery = 116645,
     };
+
+    enum eCovenant
+    {
+        BonedustBrew = 325216,
+    };
+
+    enum eLegendary
+    {
+        ShaoHaosMight = 337570,
+    };
 }

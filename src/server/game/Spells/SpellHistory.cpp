@@ -1024,6 +1024,11 @@ bool SpellHistory::ConsumeCharge(uint32 chargeCategoryId, bool withPacket /*= fa
     int32 chargeRecovery = GetChargeRecoveryTime(chargeCategoryId, spellinfo);
     if (chargeRecovery > 0 && GetMaxCharges(chargeCategoryId) > 0)
     {
+        if (chargeRecovery == 1562) ///< Hackfix for Purifying Brew LEgendary
+            if (_owner->HasAura(337290))
+                if (roll_chance_i(35))
+                    return true;
+
         Clock::time_point recoveryStart;
         std::deque<ChargeEntry>& charges = _categoryCharges[chargeCategoryId];
         if (charges.empty())
