@@ -162,10 +162,26 @@ class spell_ancient_teachings_of_the_monastery : public AuraScript
     }
 };
 
+/// ID: 337225 Yu'lon's Whisper
+class spell_yulons_whisper : public AuraScript
+{
+    PrepareAuraScript(spell_yulons_whisper);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == ThunderFocusTea;
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_yulons_whisper::CheckProc);
+    }
+};
 
 void AddSC_spell_monk_legendary()
 {
     RegisterSpellScript(spell_invokers_delight);
     RegisterSpellScript(spell_charred_passions);
     RegisterSpellScript(spell_charred_passions_proc);
+    RegisterSpellScript(spell_yulons_whisper);
 }

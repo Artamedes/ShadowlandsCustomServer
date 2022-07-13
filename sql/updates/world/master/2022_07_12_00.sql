@@ -10,3 +10,6 @@ INSERT INTO spell_script_names (spell_id, scriptname) VALUE (338140, 'spell_char
 
 DELETE FROM spell_script_names WHERE spell_id = 338138;
 INSERT INTO spell_script_names (spell_id, scriptname) VALUE (338138, 'spell_charred_passions');
+
+DELETE FROM spell_script_names WHERE spell_id = 337225;
+INSERT INTO spell_script_names (spell_id, scriptname) VALUE (337225, 'spell_yulons_whisper');
