@@ -1936,7 +1936,7 @@ TC_API_EXPORT EnumText EnumUtils<SpellAttr13>::ToString(SpellAttr13 value)
         case SPELL_ATTR13_UNK9: return { "SPELL_ATTR13_UNK9", "Unknown attribute 9@Attr13", "" };
         case SPELL_ATTR13_UNK10: return { "SPELL_ATTR13_UNK10", "Unknown attribute 10@Attr13", "" };
         case SPELL_ATTR13_UNK11: return { "SPELL_ATTR13_UNK11", "Unknown attribute 11@Attr13", "" };
-        case SPELL_ATTR13_UNK12: return { "SPELL_ATTR13_UNK12", "Unknown attribute 12@Attr13", "" };
+        case SPELL_ATTR13_DO_NOT_CONSUME_AURA_STACK_ON_PROC: return { "SPELL_ATTR13_DO_NOT_CONSUME_AURA_STACK_ON_PROC", "Unknown attribute 12@Attr13", "" };
         case SPELL_ATTR13_UNK13: return { "SPELL_ATTR13_UNK13", "Unknown attribute 13@Attr13", "" };
         case SPELL_ATTR13_UNK14: return { "SPELL_ATTR13_UNK14", "Unknown attribute 14@Attr13", "" };
         case SPELL_ATTR13_UNK15: return { "SPELL_ATTR13_UNK15", "Unknown attribute 15@Attr13", "" };
@@ -1980,7 +1980,7 @@ TC_API_EXPORT SpellAttr13 EnumUtils<SpellAttr13>::FromIndex(size_t index)
         case 9: return SPELL_ATTR13_UNK9;
         case 10: return SPELL_ATTR13_UNK10;
         case 11: return SPELL_ATTR13_UNK11;
-        case 12: return SPELL_ATTR13_UNK12;
+        case 12: return SPELL_ATTR13_DO_NOT_CONSUME_AURA_STACK_ON_PROC;
         case 13: return SPELL_ATTR13_UNK13;
         case 14: return SPELL_ATTR13_UNK14;
         case 15: return SPELL_ATTR13_UNK15;
@@ -2021,7 +2021,7 @@ TC_API_EXPORT size_t EnumUtils<SpellAttr13>::ToIndex(SpellAttr13 value)
         case SPELL_ATTR13_UNK9: return 9;
         case SPELL_ATTR13_UNK10: return 10;
         case SPELL_ATTR13_UNK11: return 11;
-        case SPELL_ATTR13_UNK12: return 12;
+        case SPELL_ATTR13_DO_NOT_CONSUME_AURA_STACK_ON_PROC: return 12;
         case SPELL_ATTR13_UNK13: return 13;
         case SPELL_ATTR13_UNK14: return 14;
         case SPELL_ATTR13_UNK15: return 15;

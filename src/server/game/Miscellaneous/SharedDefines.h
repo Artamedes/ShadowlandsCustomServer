@@ -922,7 +922,7 @@ enum SpellAttr13 : uint32
     SPELL_ATTR13_UNK9                            = 0x00000200, // TITLE Unknown attribute 9@Attr13
     SPELL_ATTR13_UNK10                           = 0x00000400, // TITLE Unknown attribute 10@Attr13
     SPELL_ATTR13_UNK11                           = 0x00000800, // TITLE Unknown attribute 11@Attr13
-    SPELL_ATTR13_UNK12                           = 0x00001000, // TITLE Unknown attribute 12@Attr13
+    SPELL_ATTR13_DO_NOT_CONSUME_AURA_STACK_ON_PROC = 0x00001000, // TITLE Unknown attribute 12@Attr13
     SPELL_ATTR13_UNK13                           = 0x00002000, // TITLE Unknown attribute 13@Attr13
     SPELL_ATTR13_UNK14                           = 0x00004000, // TITLE Unknown attribute 14@Attr13
     SPELL_ATTR13_UNK15                           = 0x00008000, // TITLE Unknown attribute 15@Attr13
