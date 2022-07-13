@@ -139,6 +139,30 @@ class spell_mighty_pour : public AuraScript
     }
 };
 
+/// ID: 337172 Ancient Teachings of the Monastery
+class spell_ancient_teachings_of_the_monastery : public AuraScript
+{
+    PrepareAuraScript(spell_ancient_teachings_of_the_monastery);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == EssenceFont;
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (auto caster = GetCaster())
+            caster->CastSpell(caster, eLegendary::AncientTeachesOfTheMonastary, true);
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_ancient_teachings_of_the_monastery::CheckProc);
+        OnProc += AuraProcFn(spell_ancient_teachings_of_the_monastery::HandleProc);
+    }
+};
+
+
 void AddSC_spell_monk_legendary()
 {
     RegisterSpellScript(spell_invokers_delight);

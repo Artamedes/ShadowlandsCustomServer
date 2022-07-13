@@ -87,5 +87,7 @@ namespace Monk
     enum eLegendary
     {
         ShaoHaosMight = 337570,
+        AncientTeachesOfTheMonastary = 347553,
+        AncientTeachesOfTheMonastaryProc = 347572,
     };
 }

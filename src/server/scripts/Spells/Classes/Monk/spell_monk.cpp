@@ -2728,6 +2728,12 @@ public:
                 if (Aura* aura = caster->GetAura(SPELL_MONK_CYCLONE_STRIKES))
                     aura->SetDuration(currentDuration);
             }
+
+            if (caster->HasAura(Monk::eLegendary::AncientTeachesOfTheMonastary))
+            {
+                auto dmg = GetHitDamage();
+                caster->CastSpell(caster, Monk::eLegendary::AncientTeachesOfTheMonastaryProc, CastSpellExtraArgs(true).AddSpellBP0(CalculatePct(dmg, 250)));
+            }
         }
 
         void Register() override
@@ -2805,6 +2811,12 @@ public:
                     int32 amount = int32(0.65f * aura->GetStackAmount());
                     caster->CastCustomSpell(caster, SPELL_MONK_SPIRIT_OF_THE_CRANE_MANA, &amount, NULL, NULL, true); //Spirit of the Crane refunds mana
                 }
+            }
+
+            if (caster->HasAura(Monk::eLegendary::AncientTeachesOfTheMonastary))
+            {
+                auto dmg = GetHitDamage();
+                caster->CastSpell(caster, Monk::eLegendary::AncientTeachesOfTheMonastaryProc, CastSpellExtraArgs(true).AddSpellBP0(CalculatePct(dmg, 250)));
             }
         }
 
@@ -4014,6 +4026,12 @@ class spell_monk_tiger_palm : public SpellScript
                     AddPct(dmg, 250);
                     SetHitDamage(dmg);
                 }
+            }
+
+            if (caster->HasAura(Monk::eLegendary::AncientTeachesOfTheMonastary))
+            {
+                auto dmg = GetHitDamage();
+                caster->CastSpell(caster, Monk::eLegendary::AncientTeachesOfTheMonastaryProc, CastSpellExtraArgs(true).AddSpellBP0(CalculatePct(dmg, 250)));
             }
         }
     }
