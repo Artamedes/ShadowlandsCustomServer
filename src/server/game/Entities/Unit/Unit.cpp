@@ -790,7 +790,7 @@ bool Unit::HasBreakableByDamageCrowdControlAura(Unit* excludeCasterChannel) cons
 /*static*/ uint32 Unit::DealDamage(Unit* attacker, Unit* victim, uint32& damage, CleanDamage const* cleanDamage, DamageEffectType damagetype, SpellSchoolMask damageSchoolMask, SpellInfo const* spellProto, bool durabilityLoss)
 {
     // Handle Leech.
-    if (attacker && attacker->IsPlayer() && damage > 0 && (!spellProto || spellProto->Id != 143924)) ///< 143924 - Leech
+    if (attacker && attacker->IsPlayer() && damage > 0 && (!spellProto || (spellProto->Id != 143924 && !spellProto->HasAttribute(SPELL_ATTR13_CANNOT_LIFESTEALLEECH)))) ///< 143924 - Leech
     {
         if (float percent = attacker->m_unitData->Lifesteal)
         {

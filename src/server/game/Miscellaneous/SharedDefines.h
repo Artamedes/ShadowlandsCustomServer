@@ -863,7 +863,7 @@ enum SpellAttr11 : uint32
     SPELL_ATTR11_UNK24                           = 0x01000000, // TITLE Unknown attribute 24@Attr11
     SPELL_ATTR11_UNK25                           = 0x02000000, // TITLE Unknown attribute 25@Attr11
     SPELL_ATTR11_UNK26                           = 0x04000000, // TITLE Unknown attribute 26@Attr11
-    SPELL_ATTR11_UNK27                           = 0x08000000, // TITLE Unknown attribute 27@Attr11
+    SPELL_ATTR11_DONT_CLOSE_LOOT_WINDOW          = 0x08000000, // TITLE Don't close the loot window, seems to be handled by client
     SPELL_ATTR11_UNK28                           = 0x10000000, // TITLE Unknown attribute 28@Attr11
     SPELL_ATTR11_UNK29                           = 0x20000000, // TITLE Unknown attribute 29@Attr11
     SPELL_ATTR11_UNK30                           = 0x40000000, // TITLE Unknown attribute 30@Attr11
@@ -916,9 +916,9 @@ enum SpellAttr13 : uint32
     SPELL_ATTR13_UNK3                            = 0x00000008, // TITLE Unknown attribute 3@Attr13
     SPELL_ATTR13_UNK4                            = 0x00000010, // TITLE Unknown attribute 4@Attr13
     SPELL_ATTR13_UNK5                            = 0x00000020, // TITLE Unknown attribute 5@Attr13
-    SPELL_ATTR13_UNK6                            = 0x00000040, // TITLE Unknown attribute 6@Attr13
+    SPELL_ATTR13_CAN_PROC_FROM_LIFESTEAL         = 0x00000040, // TITLE can proc from lifesteal
     SPELL_ATTR13_UNK7                            = 0x00000080, // TITLE Unknown attribute 7@Attr13
-    SPELL_ATTR13_UNK8                            = 0x00000100, // TITLE Unknown attribute 8@Attr13
+    SPELL_ATTR13_CANNOT_LIFESTEALLEECH           = 0x00000100, // TITLE cannot proc lifesteal or leech
     SPELL_ATTR13_UNK9                            = 0x00000200, // TITLE Unknown attribute 9@Attr13
     SPELL_ATTR13_UNK10                           = 0x00000400, // TITLE Unknown attribute 10@Attr13
     SPELL_ATTR13_UNK11                           = 0x00000800, // TITLE Unknown attribute 11@Attr13

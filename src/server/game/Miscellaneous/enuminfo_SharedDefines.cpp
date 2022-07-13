@@ -1693,7 +1693,7 @@ TC_API_EXPORT EnumText EnumUtils<SpellAttr11>::ToString(SpellAttr11 value)
         case SPELL_ATTR11_UNK24: return { "SPELL_ATTR11_UNK24", "Unknown attribute 24@Attr11", "" };
         case SPELL_ATTR11_UNK25: return { "SPELL_ATTR11_UNK25", "Unknown attribute 25@Attr11", "" };
         case SPELL_ATTR11_UNK26: return { "SPELL_ATTR11_UNK26", "Unknown attribute 26@Attr11", "" };
-        case SPELL_ATTR11_UNK27: return { "SPELL_ATTR11_UNK27", "Unknown attribute 27@Attr11", "" };
+        case SPELL_ATTR11_DONT_CLOSE_LOOT_WINDOW: return { "SPELL_ATTR11_DONT_CLOSE_LOOT_WINDOW", "Don't close loot window", "" };
         case SPELL_ATTR11_UNK28: return { "SPELL_ATTR11_UNK28", "Unknown attribute 28@Attr11", "" };
         case SPELL_ATTR11_UNK29: return { "SPELL_ATTR11_UNK29", "Unknown attribute 29@Attr11", "" };
         case SPELL_ATTR11_UNK30: return { "SPELL_ATTR11_UNK30", "Unknown attribute 30@Attr11", "" };
@@ -1737,7 +1737,7 @@ TC_API_EXPORT SpellAttr11 EnumUtils<SpellAttr11>::FromIndex(size_t index)
         case 24: return SPELL_ATTR11_UNK24;
         case 25: return SPELL_ATTR11_UNK25;
         case 26: return SPELL_ATTR11_UNK26;
-        case 27: return SPELL_ATTR11_UNK27;
+        case 27: return SPELL_ATTR11_DONT_CLOSE_LOOT_WINDOW;
         case 28: return SPELL_ATTR11_UNK28;
         case 29: return SPELL_ATTR11_UNK29;
         case 30: return SPELL_ATTR11_UNK30;
@@ -1778,7 +1778,7 @@ TC_API_EXPORT size_t EnumUtils<SpellAttr11>::ToIndex(SpellAttr11 value)
         case SPELL_ATTR11_UNK24: return 24;
         case SPELL_ATTR11_UNK25: return 25;
         case SPELL_ATTR11_UNK26: return 26;
-        case SPELL_ATTR11_UNK27: return 27;
+        case SPELL_ATTR11_DONT_CLOSE_LOOT_WINDOW: return 27;
         case SPELL_ATTR11_UNK28: return 28;
         case SPELL_ATTR11_UNK29: return 29;
         case SPELL_ATTR11_UNK30: return 30;
@@ -1930,9 +1930,9 @@ TC_API_EXPORT EnumText EnumUtils<SpellAttr13>::ToString(SpellAttr13 value)
         case SPELL_ATTR13_UNK3: return { "SPELL_ATTR13_UNK3", "Unknown attribute 3@Attr13", "" };
         case SPELL_ATTR13_UNK4: return { "SPELL_ATTR13_UNK4", "Unknown attribute 4@Attr13", "" };
         case SPELL_ATTR13_UNK5: return { "SPELL_ATTR13_UNK5", "Unknown attribute 5@Attr13", "" };
-        case SPELL_ATTR13_UNK6: return { "SPELL_ATTR13_UNK6", "Unknown attribute 6@Attr13", "" };
+        case SPELL_ATTR13_CAN_PROC_FROM_LIFESTEAL: return { "SPELL_ATTR13_CAN_PROC_FROM_LIFESTEAL", "can proc from lifesteal 6@Attr13", "" };
         case SPELL_ATTR13_UNK7: return { "SPELL_ATTR13_UNK7", "Unknown attribute 7@Attr13", "" };
-        case SPELL_ATTR13_UNK8: return { "SPELL_ATTR13_UNK8", "Unknown attribute 8@Attr13", "" };
+        case SPELL_ATTR13_CANNOT_LIFESTEALLEECH: return { "SPELL_ATTR13_CANNOT_LIFESTEALLEECH", "cannot lifesteal or leech 8@Attr13", "" };
         case SPELL_ATTR13_UNK9: return { "SPELL_ATTR13_UNK9", "Unknown attribute 9@Attr13", "" };
         case SPELL_ATTR13_UNK10: return { "SPELL_ATTR13_UNK10", "Unknown attribute 10@Attr13", "" };
         case SPELL_ATTR13_UNK11: return { "SPELL_ATTR13_UNK11", "Unknown attribute 11@Attr13", "" };
@@ -1974,9 +1974,9 @@ TC_API_EXPORT SpellAttr13 EnumUtils<SpellAttr13>::FromIndex(size_t index)
         case 3: return SPELL_ATTR13_UNK3;
         case 4: return SPELL_ATTR13_UNK4;
         case 5: return SPELL_ATTR13_UNK5;
-        case 6: return SPELL_ATTR13_UNK6;
+        case 6: return SPELL_ATTR13_CAN_PROC_FROM_LIFESTEAL;
         case 7: return SPELL_ATTR13_UNK7;
-        case 8: return SPELL_ATTR13_UNK8;
+        case 8: return SPELL_ATTR13_CANNOT_LIFESTEALLEECH;
         case 9: return SPELL_ATTR13_UNK9;
         case 10: return SPELL_ATTR13_UNK10;
         case 11: return SPELL_ATTR13_UNK11;
@@ -2015,9 +2015,9 @@ TC_API_EXPORT size_t EnumUtils<SpellAttr13>::ToIndex(SpellAttr13 value)
         case SPELL_ATTR13_UNK3: return 3;
         case SPELL_ATTR13_UNK4: return 4;
         case SPELL_ATTR13_UNK5: return 5;
-        case SPELL_ATTR13_UNK6: return 6;
+        case SPELL_ATTR13_CAN_PROC_FROM_LIFESTEAL: return 6;
         case SPELL_ATTR13_UNK7: return 7;
-        case SPELL_ATTR13_UNK8: return 8;
+        case SPELL_ATTR13_CANNOT_LIFESTEALLEECH: return 8;
         case SPELL_ATTR13_UNK9: return 9;
         case SPELL_ATTR13_UNK10: return 10;
         case SPELL_ATTR13_UNK11: return 11;
