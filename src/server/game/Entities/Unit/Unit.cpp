@@ -15209,14 +15209,20 @@ SpellInfo const* FindMatchingAuraEffectIn(Unit const * me, SpellInfo const* spel
     {
         bool matches = auraEffect->GetMiscValue() ? uint32(auraEffect->GetMiscValue()) == spellInfo->Id : auraEffect->IsAffectingSpell(spellInfo);
         if (matches)
-            if (SpellInfo const* newInfo = sSpellMgr->GetSpellInfo(auraEffect->GetAmount(), me->GetMap()->GetDifficultyID()))
+        {
+            if (auraEffect->GetAmount() != spellInfo->Id)
             {
-                if (auto moreNewInfo = FindMatchingAuraEffectIn(me, newInfo, type))
-                    if (moreNewInfo != newInfo)
-                        return moreNewInfo;
+                //printf("found %d\n", auraEffect->GetAmount());
+                if (SpellInfo const* newInfo = sSpellMgr->GetSpellInfo(auraEffect->GetAmount(), me->GetMap()->GetDifficultyID()))
+                {
+                    if (auto moreNewInfo = FindMatchingAuraEffectIn(me, newInfo, type))
+                        if (moreNewInfo != newInfo)
+                            return moreNewInfo;
 
-                return newInfo;
+                    return newInfo;
+                }
             }
+        }
     }
 
     return nullptr;
