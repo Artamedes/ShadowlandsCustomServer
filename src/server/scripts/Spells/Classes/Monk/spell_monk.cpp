@@ -4033,6 +4033,15 @@ class spell_monk_tiger_palm : public SpellScript
                 auto dmg = GetHitDamage();
                 caster->CastSpell(caster, Monk::eLegendary::AncientTeachesOfTheMonastaryProc, CastSpellExtraArgs(true).AddSpellBP0(CalculatePct(dmg, 250)));
             }
+
+            if (caster->HasAura(Monk::eLegendary::KeefersSkyreach))
+            {
+                if (auto target = GetHitUnit())
+                {
+                    caster->CastSpell(target, Monk::eLegendary::KeefersSkyreachDebuff, true);
+                    caster->CastSpell(target, Monk::eLegendary::TigerPalmCharge, true);
+                }
+            }
         }
     }
 

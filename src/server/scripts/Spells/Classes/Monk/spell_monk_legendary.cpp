@@ -178,10 +178,27 @@ class spell_yulons_whisper : public AuraScript
     }
 };
 
+/// ID: 337483 Jade Ignition
+class spell_jade_ignition : public AuraScript
+{
+    PrepareAuraScript(spell_jade_ignition);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == FistsOfFury;
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_jade_ignition::CheckProc);
+    }
+};
+
 void AddSC_spell_monk_legendary()
 {
     RegisterSpellScript(spell_invokers_delight);
     RegisterSpellScript(spell_charred_passions);
     RegisterSpellScript(spell_charred_passions_proc);
     RegisterSpellScript(spell_yulons_whisper);
+    RegisterSpellScript(spell_jade_ignition);
 }

@@ -89,5 +89,10 @@ namespace Monk
         ShaoHaosMight = 337570,
         AncientTeachesOfTheMonastary = 347553,
         AncientTeachesOfTheMonastaryProc = 347572,
+
+        // WW
+        KeefersSkyreach       = 337334,
+        KeefersSkyreachDebuff = 344021,
+        TigerPalmCharge       = 337332,
     };
 }
