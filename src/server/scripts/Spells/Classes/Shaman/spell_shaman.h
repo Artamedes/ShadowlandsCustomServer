@@ -79,4 +79,14 @@ namespace Shaman
         Resurgence = 16196,
         TidalWaves = 51564,
     };
+
+    enum eLegendary
+    {
+        ChainsOfDevastation               = 336735,
+        ChainsOfDevastationChainLightning = 336736,
+        ChainsOfDevastationChainHeal      = 336737,
+
+        DeeptremorStone                   = 336739,
+        EarthquakeAura                    = 336740,
+    };
 }

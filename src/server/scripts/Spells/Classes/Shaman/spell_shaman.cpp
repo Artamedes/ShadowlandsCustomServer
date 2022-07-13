@@ -41,6 +41,7 @@
 #include "TotemAI.h"
 #include "Group.h"
 #include "SpellPackets.h"
+#include "spell_shaman.h"
 
 enum ShamanSpells
 {
@@ -3581,23 +3582,14 @@ public:
             if (!caster)
                 return;
 
-            if (!caster->ToPlayer())
-                return;
-
             // Check if we can handle actions
             timeInterval += p_Time;
-            if (timeInterval < 1000)
+            if (timeInterval < 50)
                 return;
 
-            if (Creature* tempSumm = caster->SummonCreature(WORLD_TRIGGER, at->GetPosition(), TEMPSUMMON_TIMED_DESPAWN, 200ms))
-            {
-                tempSumm->SetFaction(caster->GetFaction());
-                tempSumm->SetOwnerGUID(caster->GetGUID());
-                PhasingHandler::InheritPhaseShift(tempSumm, caster);
-                tempSumm->CastCustomSpell(SPELL_SHAMAN_EARTHQUAKE_DAMAGE, SPELLVALUE_BASE_POINT0, caster->GetTotalSpellPowerValue(SPELL_SCHOOL_MASK_NORMAL, false) * 0.3, caster, TRIGGERED_FULL_MASK);
-            }
+            caster->CastSpell(*at, SPELL_SHAMAN_EARTHQUAKE_DAMAGE, CastSpellExtraArgs(true).AddSpellBP0(caster->Variables.GetValue("EarthquakeSP", 0) * 0.3));
 
-            timeInterval -= 1000;
+            timeInterval -= 50;
         }
     };
 
@@ -6883,6 +6875,32 @@ class spell_sha_fire_nova_enhance : public SpellScript
     }
 };
 
+// 95072
+struct npc_greater_earth_elemental : public ScriptedAI
+{
+public:
+    npc_greater_earth_elemental(Creature* creature) : ScriptedAI(creature) { }
+
+    void IsSummonedBy(WorldObject* o) override
+    {
+        if (!o)
+            return;
+        auto owner = o->ToUnit();
+        if (!owner)
+            return;
+
+        if (owner->HasAura(Shaman::eLegendary::DeeptremorStone))
+        {
+            auto bonus = owner->GetTotalSpellPowerValue(SPELL_SCHOOL_MASK_NORMAL, false);
+            if (!bonus)
+                bonus = owner->GetTotalAttackPowerValue(WeaponAttackType::BASE_ATTACK);
+
+            me->Variables.Set("EarthquakeSP", bonus);
+            me->CastSpell(me, Shaman::eLegendary::EarthquakeAura, true);
+        }
+    }
+};
+
 void AddSC_shaman_spell_scripts()
 {
     new shaman_playerscript();
@@ -7048,4 +7066,5 @@ void AddSC_shaman_spell_scripts()
     RegisterCreatureAI(npc_earthbind_totem);
     RegisterCreatureAI(npc_greater_storm_elemental);
     RegisterCreatureAI(npc_shaman_windfury_totem);
+    RegisterCreatureAI(npc_greater_earth_elemental);
 }
