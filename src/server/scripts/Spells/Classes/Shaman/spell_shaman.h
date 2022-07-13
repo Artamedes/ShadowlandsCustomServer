@@ -34,12 +34,12 @@ namespace Shaman
         LavaBurst = 51505,
         SpiritwalkersGrace = 79206,
         LavaSurge = 77756,
+        CleanseSpirit = 51886,
     };
 
     enum eEnhancement
     {
         Ascendance = 114051,
-        CleanseSpirit = 51886,
         CrashLightning = 187874,
         FeralSpirit = 51533,
         LavaLash = 60103,
@@ -55,7 +55,6 @@ namespace Shaman
 
     enum eElemental
     {
-        CleanseSpirit = 51886,
         EarthShock = 8042,
         Earthquake = 61882,
         FireElemental = 198067,
