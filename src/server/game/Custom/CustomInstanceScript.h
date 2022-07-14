@@ -59,7 +59,7 @@ enum SharedCustomInstanceData
     InfernalCore  = 10185,
 };
 
-class CustomInstanceRespawn
+class TC_GAME_API CustomInstanceRespawn
 {
 public:
     static CustomInstanceRespawn* instance()
@@ -124,7 +124,7 @@ static void ApplyChallengeDMGIncrease(WorldObject* obj, uint32& damage, uint32 a
     }
 }
 
-struct CustomInstanceScript : public InstanceScript
+struct TC_GAME_API CustomInstanceScript : public InstanceScript
 {
 public:
     CustomInstanceScript(InstanceMap* map) : InstanceScript(map)
@@ -353,7 +353,7 @@ public:
     ObjectGuid ChestGuid;
 };
 
-struct BaseCustomScriptedAI : public ScriptedAI
+struct TC_GAME_API BaseCustomScriptedAI : public ScriptedAI
 {
     BaseCustomScriptedAI(Creature* creature) : ScriptedAI(creature)
     {
@@ -384,7 +384,7 @@ struct BaseCustomScriptedAI : public ScriptedAI
     TaskScheduler scheduler;
 };
 
-struct BaseCustomCasterAI : public BaseCustomScriptedAI
+struct TC_GAME_API BaseCustomCasterAI : public BaseCustomScriptedAI
 {
     BaseCustomCasterAI(Creature* creature, uint32 SpellToSpam) : BaseCustomScriptedAI(creature), m_SpellToSpam(SpellToSpam) { }
 

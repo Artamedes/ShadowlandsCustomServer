@@ -532,7 +532,7 @@ namespace WorldPackets
             WorldPacket const* Write() override { return &_worldPacket; }
         };
 
-        class ItemChanged final : public ServerPacket
+        class TC_GAME_API ItemChanged final : public ServerPacket
         {
         public:
             ItemChanged() : ServerPacket(SMSG_ITEM_CHANGED, 1000) { }

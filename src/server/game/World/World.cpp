@@ -105,6 +105,7 @@
 #include "BattlePayMgr.h"
 #include "CustomObjectMgr.h"
 #include "ChallengeModeMgr.h"
+#include "CustomInstanceScript.h"
 
 #include <boost/algorithm/string.hpp>
 
@@ -2506,6 +2507,7 @@ void World::SetInitialWorldSettings()
 
     sBattlePayMgr->LoadFromDB();
 
+    sCustomInstanceRespawn->LoadFromDB();
     sCustomObjectMgr->LoadFromDB();
 
     // Preload all cells, if required for the base maps

@@ -4,12 +4,6 @@
 #include "DatabaseEnv.h"
 #include "Item.h"
 
-// so we can load from the db
-void AddSC_CustomInstanceScript()
-{
-    sCustomInstanceRespawn->LoadFromDB();
-}
-
 void CustomInstanceScript::Update(uint32 ms)
 {
     InstanceScript::Update(ms);

@@ -28,7 +28,6 @@ void AddSC_MagicStone();
 void AddSC_npc_currency_exchange();
 void AddSC_Crapopolis();
 void AddSC_Skyhold();
-void AddSC_CustomInstanceScript();
 void AddSC_cs_custom();
 void AddSC_NetherlightTemple();
 void AddSC_Niskara();
@@ -103,7 +102,6 @@ void AddCustomScripts()
     AddSC_npc_currency_exchange();
     AddSC_Crapopolis();
     AddSC_Skyhold();
-    AddSC_CustomInstanceScript();
     AddSC_cs_custom();
     AddSC_NetherlightTemple();
     AddSC_Niskara();
