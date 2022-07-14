@@ -25100,7 +25100,7 @@ bool Player::ModifyMoney(int64 amount, bool sendError /*= true*/)
 
 void Player::SetMoney(uint64 value)
 {
-    bool loading = GetSession()->PlayerLoading();
+    bool loading = GetSession()->PlayerLoading() || !FindMap();
 
     if (!loading)
         MoneyChanged(value);

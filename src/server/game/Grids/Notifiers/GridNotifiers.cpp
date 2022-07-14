@@ -90,6 +90,9 @@ void VisibleNotifier::SendToSelf()
 
 void VisibleChangesNotifier::Visit(PlayerMapType &m)
 {
+    if (m.isEmpty())
+        return;
+
     for (PlayerMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
     {
         iter->GetSource()->UpdateVisibilityOf(i_objects);
@@ -103,6 +106,9 @@ void VisibleChangesNotifier::Visit(PlayerMapType &m)
 
 void VisibleChangesNotifier::Visit(CreatureMapType &m)
 {
+    if (m.isEmpty())
+        return;
+
     for (CreatureMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
         for (SharedVisionList::const_iterator i = iter->GetSource()->GetSharedVisionList().begin();
             i != iter->GetSource()->GetSharedVisionList().end(); ++i)
@@ -112,6 +118,9 @@ void VisibleChangesNotifier::Visit(CreatureMapType &m)
 
 void VisibleChangesNotifier::Visit(DynamicObjectMapType &m)
 {
+    if (m.isEmpty())
+        return;
+
     for (DynamicObjectMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
         if (Unit* caster = iter->GetSource()->GetCaster())
             if (Player* player = caster->ToPlayer())
@@ -140,6 +149,9 @@ inline void CreatureUnitRelocationWorker(Creature* c, Unit* u)
 
 void PlayerRelocationNotifier::Visit(PlayerMapType &m)
 {
+    if (m.isEmpty())
+        return;
+
     for (PlayerMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
     {
         Player* player = iter->GetSource();
@@ -157,6 +169,9 @@ void PlayerRelocationNotifier::Visit(PlayerMapType &m)
 
 void PlayerRelocationNotifier::Visit(CreatureMapType &m)
 {
+    if (m.isEmpty())
+        return;
+
     bool relocated_for_ai = (&i_player == i_player.m_seer);
 
     for (CreatureMapType::iterator iter=m.begin(); iter != m.end(); ++iter)
@@ -174,6 +189,9 @@ void PlayerRelocationNotifier::Visit(CreatureMapType &m)
 
 void CreatureRelocationNotifier::Visit(PlayerMapType &m)
 {
+    if (m.isEmpty())
+        return;
+
     for (PlayerMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
     {
         Player* player = iter->GetSource();
@@ -187,6 +205,9 @@ void CreatureRelocationNotifier::Visit(PlayerMapType &m)
 
 void CreatureRelocationNotifier::Visit(CreatureMapType &m)
 {
+    if (m.isEmpty())
+        return;
+
     if (!i_creature.IsAlive())
         return;
 
@@ -202,6 +223,9 @@ void CreatureRelocationNotifier::Visit(CreatureMapType &m)
 
 void DelayedUnitRelocation::Visit(CreatureMapType &m)
 {
+    if (m.isEmpty())
+        return;
+
     for (CreatureMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
     {
         Creature* unit = iter->GetSource();
@@ -220,6 +244,9 @@ void DelayedUnitRelocation::Visit(CreatureMapType &m)
 
 void DelayedUnitRelocation::Visit(PlayerMapType &m)
 {
+    if (m.isEmpty())
+        return;
+
     for (PlayerMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
     {
         Player* player = iter->GetSource();
@@ -239,6 +266,9 @@ void DelayedUnitRelocation::Visit(PlayerMapType &m)
 
 void AIRelocationNotifier::Visit(CreatureMapType &m)
 {
+    if (m.isEmpty())
+        return;
+
     for (CreatureMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
     {
         Creature* c = iter->GetSource();
@@ -262,6 +292,9 @@ MessageDistDeliverer::VisitObject(Player* player)
 template<class T>
 void ObjectUpdater::Visit(GridRefManager<T> &m)
 {
+    if (m.isEmpty())
+        return;
+
     for (typename GridRefManager<T>::iterator iter = m.begin(); iter != m.end(); ++iter)
         if (iter->GetSource()->IsInWorld())
             iter->GetSource()->Update(i_timeDiff);
