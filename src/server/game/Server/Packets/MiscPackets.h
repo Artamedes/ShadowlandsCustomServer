@@ -963,14 +963,19 @@ namespace WorldPackets
         {
         public:
             StartTimer() : ServerPacket(SMSG_START_TIMER, 12) { }
+            enum TimerType : int32
+            {
+                Pvp             = 0,
+                ChallengeMode   = 1,
+                PlayerCountdown = 2
+            };
 
             WorldPacket const* Write() override;
 
             int32 Type = 0;
-            uint32 TimeLeft;
-            uint32 TotalTime;
-            int32 Unk1 = 0;
-            int32 Unk2 = 0;
+            Duration<Seconds> TotalTime;
+            Duration<Seconds> TimeLeft;
+            TimerType Type = Pvp;
         };
 
         struct ElaspedTimer

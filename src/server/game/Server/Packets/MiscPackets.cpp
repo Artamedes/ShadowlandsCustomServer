@@ -771,10 +771,8 @@ void WorldPackets::Misc::CloseInteraction::Read()
 // updated 9.2
 WorldPacket const* WorldPackets::Misc::StartTimer::Write()
 {
-    _worldPacket << int32(TotalTime);
-    _worldPacket << int32(Unk1);
-    _worldPacket << int32(TimeLeft);
-    _worldPacket << int32(Unk2);
+    _worldPacket << TotalTime;
+    _worldPacket << TimeLeft;
     _worldPacket << int32(Type); // 1 - challengemode
 
     return &_worldPacket;
