@@ -2332,7 +2332,12 @@ class spell_sha_maelstrom_weapon : public AuraScript
 
         if ((eventInfo.GetDamageInfo()->GetAttackType() == BASE_ATTACK || eventInfo.GetDamageInfo()->GetAttackType() == OFF_ATTACK) ||
             eventInfo.GetSpellInfo()->Id == SPELL_SHAMAN_WINDFURY_ATTACK)
+        {
             caster->CastSpell(caster, SPELL_SHAMAN_MAELSTROM_WEAPON_POWER, true);
+
+            if (caster->HasAura(Shaman::eLegendary::WitchDoctorsWolfBones))
+                caster->GetSpellHistory()->ModifyCooldown(Shaman::eEnhancement::FeralSpirit, -2000);
+        }
 
         if ((eventInfo.GetDamageInfo()->GetAttackType() == BASE_ATTACK || eventInfo.GetDamageInfo()->GetAttackType() == OFF_ATTACK) &&
             caster->HasAura(SPELL_SHAMAN_HAILSTORM) && caster->HasAura(SPELL_SHAMAN_FROSTBRAND))
@@ -6835,6 +6840,10 @@ class spell_sha_maelstrom_weapon_proc : public AuraScript
             {
                 int32 stacks = std::min(5, (int32)aur->GetStackAmount());
                 aur->ModStackAmount(-stacks);
+
+                if (stacks > 5)
+                    if (caster->HasAura(Shaman::eLegendary::LegacyOfTheFrostWitch))
+                        caster->CastSpell(caster, Shaman::eLegendary::LegacyOfTheFrostWitchProc, true);
             }
         }
     }

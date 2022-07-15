@@ -99,5 +99,11 @@ namespace Shaman
 
         // Elemental
         EchoesOfGreatSundering            = 336217,
+        WindspeakersLavaResuregence       = 336065,
+
+        // Enhancement
+        LegacyOfTheFrostWitch             = 335899,
+        LegacyOfTheFrostWitchProc         = 335901,
+        WitchDoctorsWolfBones             = 335897,
     };
 }

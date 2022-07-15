@@ -182,6 +182,133 @@ class spell_skybreakers_fiery_demise : public AuraScript
     }
 };
 
+/// ID: 336063 Windspeaker's Lava Resurgence
+class spell_windspeakers_lava_resurgence : public AuraScript
+{
+    PrepareAuraScript(spell_windspeakers_lava_resurgence);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == EarthShock;
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_windspeakers_lava_resurgence::CheckProc);
+    }
+};
+
+/// ID: 336065 Windspeaker's Lava Resurgence
+class spell_windspeakers_lava_resurgence_proc : public AuraScript
+{
+    PrepareAuraScript(spell_windspeakers_lava_resurgence_proc);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == LavaBurst;
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        Remove();
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_windspeakers_lava_resurgence_proc::CheckProc);
+        OnProc += AuraProcFn(spell_windspeakers_lava_resurgence_proc::HandleProc);
+    }
+};
+
+/// ID: 335902 Doom Winds
+class spell_doom_winds : public AuraScript
+{
+    PrepareAuraScript(spell_doom_winds);
+
+    enum eDoomWinds
+    {
+        DoomWindsCD = 335904,
+    };
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        auto caster = GetCaster();
+        return caster && eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == WindfuryTotem && !caster->HasAura(DoomWindsCD);
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_doom_winds::CheckProc);
+    }
+};
+
+/// ID: 335901 Legacy of the Frost Witch
+class spell_legacy_of_the_frost_witch : public AuraScript
+{
+    PrepareAuraScript(spell_legacy_of_the_frost_witch);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == Stormstrike;
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        Remove();
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_legacy_of_the_frost_witch::CheckProc);
+        OnProc += AuraProcFn(spell_legacy_of_the_frost_witch::HandleProc);
+    }
+};
+
+/// ID: 335895 Primal Lava Actuators
+class spell_primal_lava_actuators : public AuraScript
+{
+    PrepareAuraScript(spell_primal_lava_actuators);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == FlameShock;
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (auto caster = GetCaster())
+            caster->CastSpell(caster, 347819, true);
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_primal_lava_actuators::CheckProc);
+        OnProc += AuraProcFn(spell_primal_lava_actuators::HandleProc);
+    }
+};
+
+/// ID: 335896 Primal Lava Actuators
+class spell_primal_lava_actuators_proc : public AuraScript
+{
+    PrepareAuraScript(spell_primal_lava_actuators_proc);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == LavaLash;
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        Remove();
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_primal_lava_actuators_proc::CheckProc);
+        OnProc += AuraProcFn(spell_primal_lava_actuators_proc::HandleProc);
+    }
+};
+
 void AddSC_spell_shaman_legendary()
 {
     RegisterSpellScript(spell_chains_of_devastation);
@@ -190,4 +317,10 @@ void AddSC_spell_shaman_legendary()
     RegisterSpellScript(spell_deeply_rooted_elements);
     RegisterSpellScript(spell_echoes_of_great_sundering);
     RegisterSpellScript(spell_skybreakers_fiery_demise);
+    RegisterSpellScript(spell_windspeakers_lava_resurgence);
+    RegisterSpellScript(spell_windspeakers_lava_resurgence_proc);
+    RegisterSpellScript(spell_doom_winds);
+    RegisterSpellScript(spell_legacy_of_the_frost_witch);
+    RegisterSpellScript(spell_primal_lava_actuators);
+    RegisterSpellScript(spell_primal_lava_actuators_proc);
 }
