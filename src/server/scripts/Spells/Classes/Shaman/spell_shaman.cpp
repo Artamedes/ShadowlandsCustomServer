@@ -6540,6 +6540,7 @@ class spell_sha_chain_harvest : public SpellScript
         int hitUnits = 0;
 
         caster->CastSpell(target, Jump, true);
+        bool hasLegendary = caster->HasAura(Shaman::eLegendary::ElementalConduit);
 
         if (caster->IsFriendlyTo(target))
         {
@@ -6557,6 +6558,10 @@ class spell_sha_chain_harvest : public SpellScript
                 if (target != unit)
                     target->CastSpell(unit, Jump, true);
                 caster->CastSpell(unit, Heal, true);
+
+                if (hasLegendary)
+                    caster->CastSpell(unit, Shaman::eRestoration::Riptide, true);
+
                 ++hitUnits;
             }
 
@@ -6573,6 +6578,10 @@ class spell_sha_chain_harvest : public SpellScript
                 if (target != unit)
                     target->CastSpell(unit, Jump, true);
                 caster->CastSpell(unit, Dmg, true);
+
+                if (hasLegendary)
+                    caster->CastSpell(unit, Shaman::eShaman::FlameShock, CastSpellExtraArgs(TRIGGERED_FULL_MASK_NO_CD));
+
                 ++hitUnits;
             }
         }
@@ -6592,6 +6601,10 @@ class spell_sha_chain_harvest : public SpellScript
                 if (target != unit)
                     target->CastSpell(unit, Jump, true);
                 caster->CastSpell(unit, Heal, true);
+
+                if (hasLegendary)
+                    caster->CastSpell(unit, Shaman::eRestoration::Riptide, true);
+
                 ++hitUnits;
             }
 
@@ -6608,6 +6621,10 @@ class spell_sha_chain_harvest : public SpellScript
                 if (target != unit)
                     target->CastSpell(unit, Jump, true);
                 caster->CastSpell(unit, Dmg, true);
+
+                if (hasLegendary)
+                    caster->CastSpell(unit, Shaman::eShaman::FlameShock, CastSpellExtraArgs(TRIGGERED_FULL_MASK_NO_CD));
+
                 ++hitUnits;
             }
         }

@@ -90,5 +90,10 @@ namespace Shaman
 
         DeeptremorStone                   = 336739,
         EarthquakeAura                    = 336740,
+
+        // Covenant legendaries
+        SeedsOfRampantGrowth              = 356218,
+        SeedsOfRampantGrowthCrit          = 358945,
+        ElementalConduit                  = 356250,
     };
 }

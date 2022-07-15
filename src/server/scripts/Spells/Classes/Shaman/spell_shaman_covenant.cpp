@@ -1,4 +1,5 @@
 #include "SpellIncludes.h"
+#include "spell_shaman.h"
 
 enum eShamanCovenant
 {
@@ -68,6 +69,26 @@ class spell_fae_transfusion : public AuraScript
                             aur->GetEffect(EFFECT_0)->SetAmount(CalculatePct(dam, 60));
                             aur->SetNeedClientUpdateForTargets();
                         }
+                    }
+                }
+
+                if (caster->HasAura(Shaman::eLegendary::SeedsOfRampantGrowth))
+                {
+                    caster->CastSpell(caster, Shaman::eLegendary::SeedsOfRampantGrowthCrit, true);
+
+                    switch (GetSpecializationId(caster))
+                    {
+                        case SimpleTalentSpecs::Enhancement:
+                            caster->GetSpellHistory()->ModifyCooldown(Shaman::eEnhancement::FeralSpirit, -9000);
+                            break;
+                        case SimpleTalentSpecs::Elemental:
+                            caster->GetSpellHistory()->ModifyCooldown(Shaman::eElemental::FireElemental, -6000);
+                            break;
+                        case SimpleTalentSpecs::RShaman:
+                            caster->GetSpellHistory()->ModifyCooldown(Shaman::eRestoration::HealingTideTotem, -5000);
+                            break;
+                        default:
+                            break;
                     }
                 }
             }
