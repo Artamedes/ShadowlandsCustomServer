@@ -156,6 +156,32 @@ class spell_echoes_of_great_sundering : public AuraScript
     }
 };
 
+/// ID: 336734 Skybreaker's Fiery Demise
+class spell_skybreakers_fiery_demise : public AuraScript
+{
+    PrepareAuraScript(spell_skybreakers_fiery_demise);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == FlameShock;
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (auto caster = GetCaster())
+        {
+            caster->GetSpellHistory()->ModifyCooldown(FireElemental, 1000);
+            caster->GetSpellHistory()->ModifyCooldown(StormElemental, 1000);
+        }
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_skybreakers_fiery_demise::CheckProc);
+        OnProc += AuraProcFn(spell_skybreakers_fiery_demise::HandleProc);
+    }
+};
+
 void AddSC_spell_shaman_legendary()
 {
     RegisterSpellScript(spell_chains_of_devastation);
@@ -163,4 +189,5 @@ void AddSC_spell_shaman_legendary()
     RegisterSpellScript(spell_chains_of_devastation_chain_heal);
     RegisterSpellScript(spell_deeply_rooted_elements);
     RegisterSpellScript(spell_echoes_of_great_sundering);
+    RegisterSpellScript(spell_skybreakers_fiery_demise);
 }

@@ -62,6 +62,7 @@ namespace Shaman
         ElementalFury = 60188,
         MasteeryElementalOverload = 168534,
         AscendenceEle = 114050,
+        StormElemental = 192249,
     };
 
     enum eRestoration
