@@ -77,10 +77,73 @@ class spell_chains_of_devastation_chain_heal : public AuraScript
     }
 };
 
+/// ID: 336738 Deeply Rooted Elements
+class spell_deeply_rooted_elements : public AuraScript
+{
+    PrepareAuraScript(spell_deeply_rooted_elements);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        if (!eventInfo.GetSpellInfo()->Id)
+            return false;
+
+        auto caster = GetCaster();
+        if (!caster)
+            return false;
+
+        if (IsSpec(caster, SimpleTalentSpecs::Enhancement))
+            return eventInfo.GetSpellInfo()->Id == Stormstrike;
+        if (IsSpec(caster, SimpleTalentSpecs::Elemental))
+            return eventInfo.GetSpellInfo()->Id == LavaBurst;
+        if (IsSpec(caster, SimpleTalentSpecs::RShaman))
+            return eventInfo.GetSpellInfo()->Id == Riptide;
+
+        return false;
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        auto caster = GetCaster();
+        if (!caster)
+            return;
+
+        uint32 ascendenceId = 0;
+
+        switch (GetSpecializationId(caster))
+        {
+            case SimpleTalentSpecs::Enhancement:
+                ascendenceId = AscendanceEnhance;
+                break;
+            case SimpleTalentSpecs::Elemental:
+                ascendenceId = AscendenceEle;
+                break;
+            case SimpleTalentSpecs::RShaman:
+                ascendenceId = AscendenceResto;
+                break;
+            default:
+                return;
+        }
+
+        uint32 duration = 6000;
+
+        auto aura = caster->GetAura(ascendenceId);
+        if (aura)
+            duration += aura->GetDuration();
+
+        caster->CastSpell(caster, ascendenceId, CastSpellExtraArgs(true).AddSpellMod(SpellValueMod::SPELLVALUE_DURATION, duration));
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_deeply_rooted_elements::CheckProc);
+        OnProc += AuraProcFn(spell_deeply_rooted_elements::HandleProc);
+    }
+};
+
 void AddSC_spell_shaman_legendary()
 {
     RegisterSpellScript(spell_chains_of_devastation);
     RegisterSpellScript(spell_chains_of_devastation_chain_lightning);
     RegisterSpellScript(spell_chains_of_devastation_chain_heal);
-
+    RegisterSpellScript(spell_deeply_rooted_elements);
 }

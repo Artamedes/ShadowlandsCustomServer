@@ -39,7 +39,7 @@ namespace Shaman
 
     enum eEnhancement
     {
-        Ascendance = 114051,
+        AscendanceEnhance = 114051,
         CrashLightning = 187874,
         FeralSpirit = 51533,
         LavaLash = 60103,
@@ -61,6 +61,7 @@ namespace Shaman
         Thunderstorm = 51490,
         ElementalFury = 60188,
         MasteeryElementalOverload = 168534,
+        AscendenceEle = 114050,
     };
 
     enum eRestoration
@@ -78,6 +79,7 @@ namespace Shaman
         MasteryDeepHealing = 77226,
         Resurgence = 16196,
         TidalWaves = 51564,
+        AscendenceResto = 114052,
     };
 
     enum eLegendary
