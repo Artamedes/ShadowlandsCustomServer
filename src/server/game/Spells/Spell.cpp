@@ -3955,6 +3955,17 @@ void Spell::_cast(bool skipCheck)
         m_launchHandled = true;
     }
 
+    /// Take spell mods if not have attr SPELL_ATTR13_DO_NOT_CONSUME_AURA_STACK_ON_PROC
+    // TODO: do more research on this. - channel spells might not consume
+    //if (!m_appliedMods.empty())
+    //{
+    //    for (auto mod : m_appliedMods)
+    //    {
+    //        if (!mod->GetSpellInfo()->HasAttribute(SPELL_ATTR13_DO_NOT_CONSUME_AURA_STACK_ON_PROC))
+    //            mod->DropCharge(AuraRemoveMode::AURA_REMOVE_BY_EXPIRE);
+    //    }
+    //}
+
     // we must send smsg_spell_go packet before m_castItem delete in TakeCastItem()...
     SendSpellGo();
 

@@ -309,6 +309,179 @@ class spell_primal_lava_actuators_proc : public AuraScript
     }
 };
 
+/// ID: 335886 Earthen Harmony
+class spell_earthen_harmony : public AuraScript
+{
+    PrepareAuraScript(spell_earthen_harmony);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        if (!eventInfo.GetSpellInfo())
+            return false;
+
+        return eventInfo.GetSpellInfo()->Id == EarthShieldHeal || eventInfo.GetSpellInfo()->Id == HealingWave;
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (!eventInfo.GetSpellInfo())
+            return;
+
+        auto caster = GetCaster();
+        if (!caster)
+            return;
+
+        if (eventInfo.GetSpellInfo()->Id == EarthShieldHeal && eventInfo.GetProcTarget() && eventInfo.GetProcTarget()->HealthBelowPct(75))
+        {
+            if (auto healInfo = eventInfo.GetHealInfo())
+            {
+                healInfo->SetEffectiveHeal(healInfo->GetHeal() * 1.5f);
+            }
+        }
+        else if (eventInfo.GetSpellInfo()->Id == HealingWave && eventInfo.GetProcTarget())
+        {
+            if (auto earthShield = eventInfo.GetProcTarget()->GetAura(EarthShield, caster->GetGUID()))
+            {
+                if (earthShield->GetStackAmount() < 9)
+                    earthShield->ModStackAmount(1);
+            }
+            else
+                caster->CastSpell(eventInfo.GetProcTarget(), EarthShield, CastSpellExtraArgs(true).AddSpellMod(SpellValueMod::SPELLVALUE_AURA_STACK, 1));
+        }
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_earthen_harmony::CheckProc);
+        OnProc += AuraProcFn(spell_earthen_harmony::HandleProc);
+    }
+};
+
+/// ID: 335893 Jonat's Natural Focus
+class spell_jonats_natural_focus : public AuraScript
+{
+    PrepareAuraScript(spell_jonats_natural_focus);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && (eventInfo.GetSpellInfo()->Id == HealingSurge || eventInfo.GetSpellInfo()->Id == HealingWave);
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (auto caster = GetCaster())
+            caster->CastSpell(caster, 347815, true); // Visual
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_jonats_natural_focus::CheckProc);
+        OnProc += AuraProcFn(spell_jonats_natural_focus::HandleProc);
+    }
+};
+
+/// ID: 335894 Jonat's Natural Focus
+class spell_jonats_natural_focus_proc : public AuraScript
+{
+    PrepareAuraScript(spell_jonats_natural_focus_proc);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == ChainHeal;
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        Remove();
+        if (auto caster = GetCaster())
+            caster->RemoveAurasDueToSpell(347815); // Visual
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_jonats_natural_focus_proc::CheckProc);
+        OnProc += AuraProcFn(spell_jonats_natural_focus_proc::HandleProc);
+    }
+};
+/// ID: 335889 Primal Tide Core
+class spell_primal_tide_core : public AuraScript
+{
+    PrepareAuraScript(spell_primal_tide_core);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == Riptide;
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        ++_riptides;
+
+        if (_riptides == 4)
+        {
+            _riptides = 0;
+
+            if (auto caster = GetCaster())
+            {
+                std::list<Unit*> friendlies;
+                caster->GetFriendlyUnitListInRange(friendlies, 40.0f);
+
+                if (!friendlies.empty())
+                {
+                    friendlies.sort(Trinity::HealthPctOrderPred());
+                    caster->CastSpell(Trinity::Containers::SelectRandomContainerElement(friendlies), Riptide, true);
+                }
+            }
+        }
+    }
+
+    uint32 _riptides = 0;
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_primal_tide_core::CheckProc);
+        OnProc += AuraProcFn(spell_primal_tide_core::HandleProc);
+    }
+};
+
+/// ID: 335891 Spiritwalker's Tidal Totem
+class spell_spiritwalkers_tidal_totem : public AuraScript
+{
+    PrepareAuraScript(spell_spiritwalkers_tidal_totem);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == ManaTideTotem;
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_spiritwalkers_tidal_totem::CheckProc);
+    }
+};
+
+/// ID: 335892 Spiritwalker's Tidal Totem
+class spell_spiritwalkers_tidal_totem_proc : public AuraScript
+{
+    PrepareAuraScript(spell_spiritwalkers_tidal_totem_proc);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && (eventInfo.GetSpellInfo()->Id == ChainHeal || eventInfo.GetSpellInfo()->Id == HealingWave);
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        Remove();
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_spiritwalkers_tidal_totem_proc::CheckProc);
+        OnProc += AuraProcFn(spell_spiritwalkers_tidal_totem_proc::HandleProc);
+    }
+};
+
 void AddSC_spell_shaman_legendary()
 {
     RegisterSpellScript(spell_chains_of_devastation);
@@ -323,4 +496,10 @@ void AddSC_spell_shaman_legendary()
     RegisterSpellScript(spell_legacy_of_the_frost_witch);
     RegisterSpellScript(spell_primal_lava_actuators);
     RegisterSpellScript(spell_primal_lava_actuators_proc);
+    RegisterSpellScript(spell_earthen_harmony);
+    RegisterSpellScript(spell_jonats_natural_focus);
+    RegisterSpellScript(spell_jonats_natural_focus_proc);
+    RegisterSpellScript(spell_primal_tide_core);
+    RegisterSpellScript(spell_spiritwalkers_tidal_totem);
+    RegisterSpellScript(spell_spiritwalkers_tidal_totem_proc);
 }

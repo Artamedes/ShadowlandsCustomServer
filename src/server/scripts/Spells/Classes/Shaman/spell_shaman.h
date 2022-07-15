@@ -81,6 +81,7 @@ namespace Shaman
         Resurgence = 16196,
         TidalWaves = 51564,
         AscendenceResto = 114052,
+        EarthShieldHeal = 379,
     };
 
     enum eLegendary
@@ -105,5 +106,8 @@ namespace Shaman
         LegacyOfTheFrostWitch             = 335899,
         LegacyOfTheFrostWitchProc         = 335901,
         WitchDoctorsWolfBones             = 335897,
+
+        // Restoration
+        EarthenHarmonmy                   = 335886,
     };
 }
