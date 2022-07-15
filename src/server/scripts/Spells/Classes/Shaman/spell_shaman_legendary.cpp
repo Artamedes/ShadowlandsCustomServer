@@ -140,10 +140,27 @@ class spell_deeply_rooted_elements : public AuraScript
     }
 };
 
+/// ID: 336215 Echoes of Great Sundering
+class spell_echoes_of_great_sundering : public AuraScript
+{
+    PrepareAuraScript(spell_echoes_of_great_sundering);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == EarthShock;
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_echoes_of_great_sundering::CheckProc);
+    }
+};
+
 void AddSC_spell_shaman_legendary()
 {
     RegisterSpellScript(spell_chains_of_devastation);
     RegisterSpellScript(spell_chains_of_devastation_chain_lightning);
     RegisterSpellScript(spell_chains_of_devastation_chain_heal);
     RegisterSpellScript(spell_deeply_rooted_elements);
+    RegisterSpellScript(spell_echoes_of_great_sundering);
 }

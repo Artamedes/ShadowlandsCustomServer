@@ -95,5 +95,8 @@ namespace Shaman
         SeedsOfRampantGrowth              = 356218,
         SeedsOfRampantGrowthCrit          = 358945,
         ElementalConduit                  = 356250,
+
+        // Elemental
+        EchoesOfGreatSundering            = 336217,
     };
 }

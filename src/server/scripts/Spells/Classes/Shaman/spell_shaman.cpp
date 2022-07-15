@@ -1843,12 +1843,30 @@ class aura_sha_earthquake : public AuraScript
                     AddPct(damage, versa);
                 }
 
+                if (EchoesOfGreatSundering)
+                    AddPct(damage, 120);
+
                 caster->CastSpell(*at, SPELL_SHAMAN_EARTHQUAKE_TICK, CastSpellExtraArgs(true).AddSpellBP0(damage));
             }
     }
 
+    void HandleApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+    {
+        if (Unit* caster = GetCaster())
+        {
+            if (auto aur = caster->GetAura(Shaman::eLegendary::EchoesOfGreatSundering))
+            {
+                aur->Remove();
+                EchoesOfGreatSundering = true;
+            }
+        }
+    }
+
+    bool EchoesOfGreatSundering = false;
+
     void Register() override
     {
+        OnEffectApply += AuraEffectApplyFn(aura_sha_earthquake::HandleApply, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY, AURA_EFFECT_HANDLE_REAL_OR_REAPPLY_MASK);
         OnEffectPeriodic += AuraEffectPeriodicFn(aura_sha_earthquake::HandlePeriodic, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY);
     }
 };
