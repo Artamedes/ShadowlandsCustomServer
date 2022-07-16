@@ -111,6 +111,10 @@ void WorldDatabaseConnection::DoPrepareStatements()
     PrepareStatement(WORLD_REP_QUEST_OBJECTIVES,      "REPLACE INTO quest_objectives (ID, QuestID, `Type`, `Order`, StorageIndex, ObjectID, Amount, Flags, Flags2, ProgressBarWeight, Description) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", CONNECTION_BOTH);
     PrepareStatement(WORLD_REP_QUEST_OFFER_REWARD,    "REPLACE INTO quest_offer_reward (ID, RewardText) VALUES (?, ?)", CONNECTION_BOTH);
 
+    PrepareStatement(WORLD_DEL_WP_PATH_NODE, "DELETE FROM waypoint_data where id = ?", CONNECTION_SYNCH);
+    PrepareStatement(WORLD_DEL_WP_ADDON_PATH_NODE, "DELETE FROM waypoint_data_addon WHERE PathID = ?", CONNECTION_SYNCH);
+    PrepareStatement(WORLD_REP_WAYPOINT_NODE, "INSERT INTO waypoint_data (id, point, position_x, position_y, position_z, orientation, velocity, delay, smoothTransition, move_type, action, action_chance, wpguid) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);", CONNECTION_SYNCH);
+    PrepareStatement(WORLD_REP_WAYPOINT_ADDON_NODE, "INSERT INTO waypoint_data_addon (PathID, PointID, SplinePointIndex, PositionX, PositionY, PositionZ) VALUES (?, ?, ?, ?, ?, ?)", CONNECTION_SYNCH);
 }
 
 WorldDatabaseConnection::WorldDatabaseConnection(MySQLConnectionInfo& connInfo) : MySQLConnection(connInfo)

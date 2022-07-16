@@ -40,10 +40,11 @@ public:
     // Returns the path from a given id
     WaypointPath const* GetPath(uint32 id) const;
 
+    WaypointPath* GetPathPig(uint32 id);
+    std::unordered_map<uint32, WaypointPath> _waypointStore;
+
 private:
     WaypointMgr() { }
-
-    std::unordered_map<uint32, WaypointPath> _waypointStore;
 };
 
 #define sWaypointMgr WaypointMgr::instance()

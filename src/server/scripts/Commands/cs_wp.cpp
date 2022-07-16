@@ -36,6 +36,7 @@ EndScriptData */
 #include "RBAC.h"
 #include "WaypointManager.h"
 #include "WorldSession.h"
+#include "ScriptedGossip.h"
 
 #if TRINITY_COMPILER == TRINITY_COMPILER_GNU
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
@@ -57,6 +58,7 @@ public:
             { "unload", rbac::RBAC_PERM_COMMAND_WP_UNLOAD, false, &HandleWpUnLoadCommand, "" },
             { "reload", rbac::RBAC_PERM_COMMAND_WP_RELOAD, false, &HandleWpReloadCommand, "" },
             { "show",   rbac::RBAC_PERM_COMMAND_WP_SHOW,   false, &HandleWpShowCommand,   "" },
+            { "create", rbac::RBAC_PERM_COMMAND_WP_MODIFY, false, &HandleWPCreateCommand,   "" },
         };
         static std::vector<ChatCommand> commandTable =
         {
@@ -64,6 +66,33 @@ public:
         };
         return commandTable;
     }
+
+    static bool HandleWPCreateCommand(ChatHandler* handler, Optional<uint32> path_id)
+    {
+        if (path_id.has_value())
+            handler->PSendSysMessage("Modifying WP for %u", *path_id);
+
+        auto player = handler->GetPlayer();
+
+        if (path_id.has_value())
+        {
+            if (auto wpPath = sWaypointMgr->GetPathPig(*path_id))
+                wpPath->CreateMenuForPlayer(player);
+        }
+        else if (auto selectedCreature = handler->getSelectedCreature())
+        {
+            if (auto wpPath = sWaypointMgr->GetPathPig(selectedCreature->GetWaypointPath() ? selectedCreature->GetWaypointPath() : selectedCreature->GetSpawnId() * 10))
+                wpPath->CreateMenuForPlayer(player);
+        }
+        else
+        {
+            handler->PSendSysMessage("Set a path id or select a wp");
+            return true;
+        }
+
+        return true;
+    }
+
     /**
     * Add a waypoint to a creature.
     *

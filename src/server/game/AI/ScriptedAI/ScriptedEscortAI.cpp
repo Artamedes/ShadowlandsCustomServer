@@ -263,7 +263,7 @@ void EscortAI::AddWaypoint(uint32 id, float x, float y, float z, float orientati
     waypoint.Y = y;
     waypoint.Z = z;
     waypoint.Orientation = orientation;
-    waypoint.MoveType = _running ? WAYPOINT_MOVE_TYPE_RUN : WAYPOINT_MOVE_TYPE_WALK;
+    waypoint.MoveType = _running ? WaypointMoveType::Run : WaypointMoveType::Walk;
     waypoint.Delay = waitTime.count();
     waypoint.EventId = 0;
     waypoint.EventChance = 100;
@@ -343,7 +343,7 @@ void EscortAI::SetRun(bool on)
         return;
 
     for (auto& node : _path.Nodes)
-        node.MoveType = on ? WAYPOINT_MOVE_TYPE_RUN : WAYPOINT_MOVE_TYPE_WALK;
+        node.MoveType = on ? WaypointMoveType::Run : WaypointMoveType::Walk;
 
     me->SetWalk(!on);
     _running = on;
@@ -445,7 +445,7 @@ void EscortAI::FillPointMovementListForCreature()
         WaypointNode node = value;
         Trinity::NormalizeMapCoord(node.X);
         Trinity::NormalizeMapCoord(node.Y);
-        node.MoveType = _running ? WAYPOINT_MOVE_TYPE_RUN : WAYPOINT_MOVE_TYPE_WALK;
+        node.MoveType = _running ? WaypointMoveType::Run : WaypointMoveType::Walk;
 
         _path.Nodes.push_back(std::move(node));
     }

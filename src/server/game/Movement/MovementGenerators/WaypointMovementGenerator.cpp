@@ -273,16 +273,16 @@ void WaypointMovementGenerator<Creature>::StartMove(Creature* creature, bool rel
 
     switch (waypoint.MoveType)
     {
-        case WAYPOINT_MOVE_TYPE_LAND:
+        case WaypointMoveType::Land:
             init.SetAnimation(AnimTier::Ground);
             break;
-        case WAYPOINT_MOVE_TYPE_TAKEOFF:
+        case WaypointMoveType::TakeOff:
             init.SetAnimation(AnimTier::Hover);
             break;
-        case WAYPOINT_MOVE_TYPE_RUN:
+        case WaypointMoveType::Run:
             init.SetWalk(false);
             break;
-        case WAYPOINT_MOVE_TYPE_WALK:
+        case WaypointMoveType::Walk:
             init.SetWalk(true);
             break;
         default:

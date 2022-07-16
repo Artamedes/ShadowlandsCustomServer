@@ -984,6 +984,13 @@ public:
     {
       this->BeforeSwapContext(initialize);
 
+      for (auto sess : sWorld->GetAllSessions())
+      {
+          if (sess.second && sess.second->GetPlayer())
+              if (sess.second->GetPlayer()->PlayerTalkClass)
+                  sess.second->GetPlayer()->PlayerTalkClass->ClearMenus();
+      }
+
       _recently_added_ids.clear();
     }
 

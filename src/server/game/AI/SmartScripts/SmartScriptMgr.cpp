@@ -99,7 +99,7 @@ void SmartWaypointMgr::LoadFromDB()
 
         WaypointPath& path = _waypointStore[entry];
         path.Id = entry;
-        path.Nodes.emplace_back(id, x, y, z, o, delay);
+        path.Nodes.emplace_back(entry, id, x, y, z, o, delay);
 
         lastEntry = entry;
         ++total;

@@ -94,7 +94,7 @@ bool SmartAI::LoadPath(uint32 entry)
     {
         Trinity::NormalizeMapCoord(waypoint.X);
         Trinity::NormalizeMapCoord(waypoint.Y);
-        waypoint.MoveType = _run ? WAYPOINT_MOVE_TYPE_RUN : WAYPOINT_MOVE_TYPE_WALK;
+        waypoint.MoveType = _run ? WaypointMoveType::Run : WaypointMoveType::Walk;
     }
 
     GetScript()->SetPathId(entry);
@@ -747,7 +747,7 @@ void SmartAI::SetRun(bool run)
     me->SetWalk(!run);
     _run = run;
     for (auto& node : _path.Nodes)
-        node.MoveType = run ? WAYPOINT_MOVE_TYPE_RUN : WAYPOINT_MOVE_TYPE_WALK;
+        node.MoveType = run ? WaypointMoveType::Run : WaypointMoveType::Walk;
 }
 
 void SmartAI::SetDisableGravity(bool fly)
