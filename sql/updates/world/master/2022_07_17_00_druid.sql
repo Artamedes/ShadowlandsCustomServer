@@ -77,3 +77,6 @@ INSERT INTO spell_script_names (spell_id, scriptname) VALUE (189877, 'spell_memo
 
 DELETE FROM spell_script_names WHERE spell_id = 339064;
 INSERT INTO spell_script_names (spell_id, scriptname) VALUE (339064, 'spell_memory_of_the_mother_tree');
+
+DELETE FROM spell_script_names WHERE spell_id = 340059;
+INSERT INTO spell_script_names (spell_id, scriptname) VALUE (340059, 'spell_lycaras_fleeting_glimpse');

@@ -33,7 +33,6 @@ namespace Druid
         /// Finishers
         SavageRoar = 52610,
         Rip = 1079,
-        PrimalWrath = 285381,
         FerociousBite = 22568,
         Main = 22570,
     };
@@ -45,7 +44,7 @@ namespace Druid
         TigersFury = 5217,
         IncarninationKindOfTheJungle = 102543,
         Berserk = 106951,
-
+        PrimalWrath = 285381,
     };
 
     enum eGuardian

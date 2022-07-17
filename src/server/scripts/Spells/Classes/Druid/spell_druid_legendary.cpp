@@ -459,6 +459,66 @@ class spell_memory_of_the_mother_tree_proc : public AuraScript
         OnProc += AuraProcFn(spell_memory_of_the_mother_tree_proc::HandleProc);
     }
 };
+/// ID: 340059 Lycara's Fleeting Glimpse
+class spell_lycaras_fleeting_glimpse : public AuraScript
+{
+    PrepareAuraScript(spell_lycaras_fleeting_glimpse);
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        _nextAllowedTime = GameTime::Now();
+    }
+
+    void HandlePeriodic(AuraEffect const* /*aurEff*/)
+    {
+        auto caster = GetCaster();
+        if (!caster)
+            return;
+
+        if (caster->IsInCombat())
+        {
+            auto now = GameTime::Now();
+            if (now >= _nextAllowedTime)
+            {
+                _nextAllowedTime = now + 45s;
+
+                switch (caster->GetShapeshiftForm())
+                {
+                    default:
+                    case ShapeshiftForm::FORM_NONE:
+                        caster->CastSpell(caster, WildGrowth, CastSpellExtraArgs(TRIGGERED_FULL_MASK_NO_CD));
+                        break;
+                    case ShapeshiftForm::FORM_CAT_FORM:
+                    {
+                        auto prevComboPoints = caster->GetComboPoints();
+                        caster->SetPower(Powers::POWER_COMBO_POINTS, 5, false);
+                        caster->CastSpell(caster, PrimalWrath, CastSpellExtraArgs(TRIGGERED_FULL_MASK_NO_CD));
+                        caster->SetPower(Powers::POWER_COMBO_POINTS, prevComboPoints, false);
+                        break;
+                    }
+                    case ShapeshiftForm::FORM_BEAR_FORM:
+                        caster->CastSpell(caster, Barskin, CastSpellExtraArgs(TRIGGERED_FULL_MASK_NO_CD));
+                        break;
+                    case ShapeshiftForm::FORM_MOONKIN_FORM:
+                        caster->CastSpell(caster, Starfall, CastSpellExtraArgs(TRIGGERED_FULL_MASK_NO_CD));
+                        break;
+                    case ShapeshiftForm::FORM_TRAVEL_FORM:
+                        caster->CastSpell(caster, StampedingRoar, CastSpellExtraArgs(TRIGGERED_FULL_MASK_NO_CD));
+                        break;
+                }
+            }
+        }
+    }
+
+    TimePoint _nextAllowedTime;
+
+    void Register() override
+    {
+        _nextAllowedTime = GameTime::Now();
+        OnProc += AuraProcFn(spell_lycaras_fleeting_glimpse::HandleProc);
+        OnEffectPeriodic += AuraEffectPeriodicFn(spell_lycaras_fleeting_glimpse::HandlePeriodic, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
+    }
+};
 
 void AddSC_spell_druid_legendary()
 {
@@ -478,4 +538,5 @@ void AddSC_spell_druid_legendary()
     RegisterSpellScript(spell_vision_of_unending_growth);
     RegisterSpellScript(spell_memory_of_the_mother_tree);
     RegisterSpellScript(spell_memory_of_the_mother_tree_proc);
+    RegisterSpellScript(spell_lycaras_fleeting_glimpse);
 }
