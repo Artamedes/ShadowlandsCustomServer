@@ -79,6 +79,14 @@ namespace Druid
 
     };
 
+    enum eLegendary
+    {
+        /// Balance
+        BalanceOfAllThings       = 339942,
+        BalanceOfAllThingsArcane = 339946,
+        BalanceOfAllThingsNature = 339943,
+    };
+
     inline bool IsFinisher(uint32 spellId)
     {
         switch (spellId)

@@ -28,6 +28,9 @@ class spell_eclipse : public AuraScript
                         if (eclipseCount->ModStackAmount(-1))
                         {
                             caster->CastSpell(caster, EclipseLunar, true);
+
+                            if (caster->HasAura(BalanceOfAllThings))
+                                caster->CastSpell(caster, BalanceOfAllThingsArcane, CastSpellExtraArgs(true).AddSpellBP0(24));
                         }
                     }
                     break;
@@ -39,6 +42,9 @@ class spell_eclipse : public AuraScript
                         if (eclipseCount->ModStackAmount(-1))
                         {
                             caster->CastSpell(caster, EclipseSolar, true);
+
+                            if (caster->HasAura(BalanceOfAllThings))
+                                caster->CastSpell(caster, BalanceOfAllThingsNature, CastSpellExtraArgs(true).AddSpellBP0(24));
                         }
                     }
                     break;
@@ -124,9 +130,29 @@ class spell_eclipse_solar : public AuraScript
     }
 };
 
+/// ID: 339943 Balance of All Things
+/// ID: 339946 Balance of All Things
+class spell_balance_of_all_things : public AuraScript
+{
+    PrepareAuraScript(spell_balance_of_all_things);
+
+    void HandlePeriodic(AuraEffect const* /*aurEff*/)
+    {
+        auto eff = GetEffect(EFFECT_0);
+        if (eff->GetAmount() > 0)
+            eff->ChangeAmount(eff->GetAmount() - 3);
+    }
+
+    void Register() override
+    {
+        OnEffectPeriodic += AuraEffectPeriodicFn(spell_balance_of_all_things::HandlePeriodic, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY);
+    }
+};
+
 void AddSC_spell_druid_balance()
 {
     RegisterSpellScript(spell_eclipse);
     RegisterSpellScript(spell_eclipse_lunar);
     RegisterSpellScript(spell_eclipse_solar);
+    RegisterSpellScript(spell_balance_of_all_things);
 }
