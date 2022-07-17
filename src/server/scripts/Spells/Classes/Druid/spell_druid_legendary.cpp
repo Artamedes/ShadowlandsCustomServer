@@ -334,6 +334,39 @@ class spell_ursocs_fury_remembered : public AuraScript
     }
 };
 
+/// ID: 338829 Verdant Infusion
+class spell_verdant_infusion : public AuraScript
+{
+    PrepareAuraScript(spell_verdant_infusion);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == Swiftmend;
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (auto caster = GetCaster())
+        {
+            if (auto target = eventInfo.GetProcTarget())
+            {
+                if (auto aur = target->GetAura(Druid::eDruid::Regrowth, caster->GetGUID()))
+                    aur->ModDuration(10000);
+                if (auto aur = target->GetAura(Druid::eRestoration::WildGrowth, caster->GetGUID()))
+                    aur->ModDuration(10000);
+                if (auto aur = target->GetAura(Druid::eRestoration::Rejuvenation, caster->GetGUID()))
+                    aur->ModDuration(10000);
+            }
+        }
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_verdant_infusion::CheckProc);
+        OnProc += AuraProcFn(spell_verdant_infusion::HandleProc);
+    }
+};
+
 void AddSC_spell_druid_legendary()
 {
     RegisterSpellScript(spell_oneths_clear_vision);
@@ -348,4 +381,5 @@ void AddSC_spell_druid_legendary()
     RegisterSpellScript(spell_eye_of_fearful_symmetry_proc);
     RegisterSpellScript(spell_frenzyband);
     RegisterSpellScript(spell_ursocs_fury_remembered);
+    RegisterSpellScript(spell_verdant_infusion);
 }

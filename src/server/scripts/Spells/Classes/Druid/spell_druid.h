@@ -84,6 +84,9 @@ namespace Druid
     enum eRestoration
     {
         Rejuvenation = 774,
+        IncarnationTreeOfLife = 33891,
+        Swiftmend = 18562,
+        WildGrowth = 48438,
     };
 
     enum eLegendary
@@ -94,6 +97,8 @@ namespace Druid
         BalanceOfAllThingsNature = 339943,
         /// Guardian
         TheNaturalOrdersWill     = 339063,
+        /// Restoration
+        VerdantInfusion          = 338829,
     };
 
     inline bool IsFinisher(uint32 spellId)

@@ -62,3 +62,9 @@ REPLACE INTO `spell_script_names` (`spell_id`, `ScriptName`) VALUES (188550, 'au
 
 DELETE FROM spell_script_names WHERE spell_id = 364365;
 INSERT INTO spell_script_names (spell_id, scriptname) VALUE (364365, 'spell_renewing_bloom');
+
+DELETE FROM spell_script_names WHERE spell_id = 363495;
+INSERT INTO spell_script_names (spell_id, scriptname) VALUE (363495, 'spell_ephemeral_incarnation');
+
+DELETE FROM spell_script_names WHERE spell_id = 338829;
+INSERT INTO spell_script_names (spell_id, scriptname) VALUE (338829, 'spell_verdant_infusion');

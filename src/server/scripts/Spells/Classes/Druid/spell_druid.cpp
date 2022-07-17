@@ -4306,8 +4306,31 @@ class spell_dru_swiftmend : public SpellScript
         }
 	}
 
+    void HandleHeal(SpellEffIndex /*eff*/)
+    {
+        if (Unit* caster = GetCaster())
+        {
+            if (auto target = GetHitUnit())
+            {
+                if (!caster->HasAura(Druid::eLegendary::VerdantInfusion))
+                {
+                    /// Wowhead Coments
+                    /// Also, it preffer to consume in ORDER: Regrowth > Wild Growth > Rejuvenation. as in if it can,
+                    /// it will ALWAYS pick regrowth, else, it picks wild growth, if nothing else, pick rejuv
+                    if (auto aur = target->GetAura(Druid::eDruid::Regrowth, caster->GetGUID()))
+                        aur->Remove();
+                    else if (auto aur = target->GetAura(Druid::eRestoration::WildGrowth, caster->GetGUID()))
+                        aur->Remove();
+                    else if (auto aur = target->GetAura(Druid::eRestoration::Rejuvenation, caster->GetGUID()))
+                        aur->Remove();
+                }
+            }
+        }
+    }
+
 	void Register() override
 	{
+        OnEffectHitTarget += SpellEffectFn(spell_dru_swiftmend::HandleHeal);
 		AfterCast += SpellCastFn(spell_dru_swiftmend::HandleAfterCast);
 	}
 };
