@@ -1195,6 +1195,12 @@ class spell_dk_dark_transformation_form : public SpellScript
                     _player->RemoveAura(SPELL_DK_DARK_INFUSION_STACKS);
                     pet->RemoveAura(SPELL_DK_DARK_INFUSION_STACKS);
                 }
+
+                if (_player->HasAura(DeathKnight::eLegendary::FrenziedMontrosity))
+                {
+                    _player->CastSpell(_player, DeathKnight::eLegendary::FrenziedMontrosity, true);
+                    pet->CastSpell(pet, DeathKnight::eLegendary::FrenziedMontrosity, true);
+                }
             }
         }
     }

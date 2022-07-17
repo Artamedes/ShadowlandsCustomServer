@@ -48,6 +48,7 @@ namespace DeathKnight
         MasteryDreadblade = 77515,
         RunicCorruption = 51462,
         SuddenDoom = 49530,
+        Defile = 152280,
     };
 
     enum eFrost
@@ -108,6 +109,10 @@ namespace DeathKnight
         BitingCold = 334678,
         RageOfTheFrozenChampion = 341724,
         RageOfTheFrozenChampionEnergize = 341725,
+
+        // Unholy
+        FrenziedMontrosity = 334888,
+        FrenziedMontrosityBuff = 334895,
     };
 
     enum eCovenant
