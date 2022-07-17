@@ -20,3 +20,15 @@ INSERT INTO spell_script_names (spell_id, scriptname) VALUE (337824, 'spell_shoc
 
 DELETE FROM spell_script_names WHERE spell_id = 356890;
 INSERT INTO spell_script_names (spell_id, scriptname) VALUE (356890, 'spell_pal_divine_toll');
+
+
+DELETE FROM spell_script_names WHERE spell_id = 355098;
+INSERT INTO spell_script_names (spell_id, scriptname) VALUE (355098, 'spell_divine_resonance');
+
+DELETE FROM spell_script_names WHERE spell_id = 337682;
+INSERT INTO spell_script_names (spell_id, scriptname) VALUE (337682, 'spell_the_magistrates_judgment_proc');
+DELETE FROM spell_script_names WHERE spell_id = 337681;
+INSERT INTO spell_script_names (spell_id, scriptname) VALUE (337681, 'spell_the_magistrates_judgment');
+
+DELETE FROM spell_script_names WHERE spell_id = 337600;
+INSERT INTO spell_script_names (spell_id, scriptname) VALUE (337600, 'spell_uthers_devotion');

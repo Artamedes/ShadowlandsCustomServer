@@ -154,6 +154,121 @@ class spell_shock_barrier_periodic : public AuraScript
     }
 };
 
+/// ID: 355098 Divine Resonance
+class spell_divine_resonance : public AuraScript
+{
+    PrepareAuraScript(spell_divine_resonance);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == DivineToll;
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_divine_resonance::CheckProc);
+    }
+};
+
+/// ID: 337681 The Magistrate's Judgment
+class spell_the_magistrates_judgment : public AuraScript
+{
+    PrepareAuraScript(spell_the_magistrates_judgment);
+
+    enum eMagistrates
+    {
+        ProcSpell = 337682,
+    };
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == Judgement;
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        auto caster = GetCaster();
+        if (!caster)
+            return;
+
+        switch (GetSpecializationId(caster))
+        {
+            case SimpleTalentSpecs::HPally:
+                if (!roll_chance_i(60))
+                    return;
+                break;
+            case SimpleTalentSpecs::ProtPally:
+                if (!roll_chance_i(45))
+                    return;
+                break;
+            case SimpleTalentSpecs::Retribution:
+                if (!roll_chance_i(75))
+                    return;
+                break;
+            default:
+                break;
+        }
+
+        caster->CastSpell(caster, ProcSpell, true);
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_the_magistrates_judgment::CheckProc);
+        OnProc += AuraProcFn(spell_the_magistrates_judgment::HandleProc);
+    }
+};
+
+/// ID: 337682 The Magistrate's Judgment
+class spell_the_magistrates_judgment_proc : public AuraScript
+{
+    PrepareAuraScript(spell_the_magistrates_judgment_proc);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetProcSpell() && eventInfo.GetProcSpell()->GetPowerCost(Powers::POWER_HOLY_POWER);
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        ModStackAmount(-1);
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_the_magistrates_judgment_proc::CheckProc);
+        OnProc += AuraProcFn(spell_the_magistrates_judgment_proc::HandleProc);
+    }
+};
+
+/// ID: 337600 Uther's Devotion
+class spell_uthers_devotion : public AuraScript
+{
+    PrepareAuraScript(spell_uthers_devotion);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetProcSpell() && eventInfo.GetProcSpell()->GetPowerCost(Powers::POWER_HOLY_POWER);
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (auto caster = GetCaster())
+        {
+            caster->GetSpellHistory()->ModifyCooldown(BlessingOfFreedom, -1000);
+            caster->GetSpellHistory()->ModifyCooldown(BlessingOfSacrifice, -1000);
+            caster->GetSpellHistory()->ModifyCooldown(BlessingOfSpellWarding, -1000);
+            caster->GetSpellHistory()->ModifyCooldown(BlessingOfProtection, -1000);
+        }
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_uthers_devotion::CheckProc);
+        OnProc += AuraProcFn(spell_uthers_devotion::HandleProc);
+    }
+};
+
 void AddSC_spell_paladin_legendary()
 {
     RegisterSpellScript(spell_relentless_inquisitor);
@@ -162,4 +277,8 @@ void AddSC_spell_paladin_legendary()
     RegisterSpellScript(spell_maraads_dying_breath_proc);
     RegisterSpellScript(spell_shock_barrier);
     RegisterSpellScript(spell_shock_barrier_periodic);
+    RegisterSpellScript(spell_divine_resonance);
+    RegisterSpellScript(spell_the_magistrates_judgment);
+    RegisterSpellScript(spell_the_magistrates_judgment_proc);
+    RegisterSpellScript(spell_uthers_devotion);
 }

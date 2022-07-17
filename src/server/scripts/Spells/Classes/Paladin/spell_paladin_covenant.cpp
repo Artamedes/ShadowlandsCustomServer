@@ -260,6 +260,20 @@ class spell_ashen_hallow : public AuraScript
     {
         if (auto caster = GetCaster())
         {
+            if (auto at = caster->GetAreaTrigger(GetId()))
+                if (caster->HasAura(RadiantEmbers))
+                {
+                    if (at->GetTotalDuration())
+                    {
+                        auto diff = 1.0f - float(at->GetDuration() / at->GetTotalDuration());
+
+                        auto cdr = std::min(0.5f, diff) * 240.0f;
+
+                        caster->GetSpellHistory()->ModifyCooldown(AshenHallow, -int32(cdr * 1000));
+                    }
+                }
+
+
             caster->RemoveAreaTrigger(GetEffect(EFFECT_1));
         }
     }
@@ -379,22 +393,6 @@ class spell_adaptive_armor_fragment : public AuraScript
     {
         DoCheckProc += AuraCheckProcFn(spell_adaptive_armor_fragment::CheckProc);
         OnProc += AuraProcFn(spell_adaptive_armor_fragment::HandleProc);
-    }
-};
-
-/// ID: 355098 Divine Resonance
-class spell_divine_resonance : public AuraScript
-{
-    PrepareAuraScript(spell_divine_resonance);
-
-    bool CheckProc(ProcEventInfo& eventInfo)
-    {
-        return eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == DivineToll;
-    }
-
-    void Register() override
-    {
-        DoCheckProc += AuraCheckProcFn(spell_divine_resonance::CheckProc);
     }
 };
 

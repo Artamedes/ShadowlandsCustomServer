@@ -6,14 +6,18 @@ namespace Paladin
 {
     enum PaladinSpells
     {
-        Judgement            = 20271,
-        VanquishersHammer    = 328204, ///< Necrolord Spell
-        WordOfGlory          = 85673,
+        Judgement = 20271,
+        VanquishersHammer = 328204, ///< Necrolord Spell
+        WordOfGlory = 85673,
         ShieldOfTheRighteous = 53600,
-        CrusaderStrike       = 35395,
-        BlindingLight        = 115750,
-        CleanseToxins        = 213644,
-        Rebuke               = 96231,
+        CrusaderStrike = 35395,
+        BlindingLight = 115750,
+        CleanseToxins = 213644,
+        Rebuke = 96231,
+        BlessingOfFreedom = 1044,
+        BlessingOfSacrifice = 6940,
+        BlessingOfSpellWarding = 204018,
+        BlessingOfProtection = 1022,
 
         /// Holy
         LightOfDawn = 85222,
@@ -53,6 +57,7 @@ namespace Paladin
     enum eCovenant
     {
         DivineToll = 304971,
+        AshenHallow = 316958,
     };
 
     enum eLegendary
@@ -67,5 +72,7 @@ namespace Paladin
         // Retr
         VanguardsMomentum = 337638,
         VanguardsMomentumProc = 345046,
+        // Covenant
+        RadiantEmbers = 355447,
     };
 }
