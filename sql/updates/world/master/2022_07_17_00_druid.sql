@@ -49,3 +49,6 @@ INSERT INTO spell_script_names (spell_id, scriptname) VALUE (339141, 'spell_eye_
 
 DELETE FROM spell_script_names WHERE spell_id = 340053;
 INSERT INTO spell_script_names (spell_id, scriptname) VALUE (340053, 'spell_frenzyband');
+
+REPLACE INTO `spell_script_names` (`spell_id`, `ScriptName`) VALUES (22812, 'aura_dru_barkskin');
+REPLACE INTO `spell_script_names` (`spell_id`, `ScriptName`) VALUES (363496, 'spell_architects_aligner');

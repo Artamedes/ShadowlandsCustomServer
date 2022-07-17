@@ -30,6 +30,7 @@
 #include "SpellPackets.h"
 #include "TemporarySummon.h"
 #include "AreaTriggerPackets.h"
+#include "spell_druid.h"
 
 enum DruidSpells
 {
@@ -3752,8 +3753,30 @@ class aura_dru_barkskin : public AuraScript
     void HandleApply(const AuraEffect* /*aurEff*/, AuraEffectHandleModes /* mode */)
     {
         if (Unit* caster = GetCaster())
+        {
             if (AuraEffect* aurEff = caster->GetAuraEffect(SPELL_DRUID_URSOC_ENDURANCE_POWER, EFFECT_0))
                 caster->CastCustomSpell(SPELL_DRUID_URSOC_ENDURANCE_BUFF, SPELLVALUE_BASE_POINT0, aurEff->GetAmount(), caster, true);
+
+            if (caster->HasAura(Druid::eLegendary::TheNaturalOrdersWill))
+                if (caster->HasAura(Druid::eDruid::BearForm))
+                {
+                    caster->CastSpell(caster, Druid::eGuardian::FrenziedRegeneration, CastSpellExtraArgs(TRIGGERED_FULL_MASK_NO_CD));
+                    caster->CastSpell(caster, Druid::eGuardian::Ironfur, CastSpellExtraArgs(TRIGGERED_FULL_MASK_NO_CD));
+                }
+        }
+    }
+
+    void HandleRemove(const AuraEffect* /*aurEff*/, AuraEffectHandleModes /* mode */)
+    {
+        if (Unit* caster = GetCaster())
+        {
+            if (caster->HasAura(Druid::eLegendary::TheNaturalOrdersWill))
+                if (caster->HasAura(Druid::eDruid::BearForm))
+                {
+                    caster->CastSpell(caster, Druid::eGuardian::FrenziedRegeneration, CastSpellExtraArgs(TRIGGERED_FULL_MASK_NO_CD));
+                    caster->CastSpell(caster, Druid::eGuardian::Ironfur, CastSpellExtraArgs(TRIGGERED_FULL_MASK_NO_CD));
+                }
+        }
     }
 
 	void OnTick(AuraEffect const* /*aurEff*/)
@@ -3765,7 +3788,8 @@ class aura_dru_barkskin : public AuraScript
 
 	void Register() override
 	{
-        OnEffectApply += AuraEffectApplyFn(aura_dru_barkskin::HandleApply, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+        OnEffectApply += AuraEffectApplyFn(aura_dru_barkskin::HandleApply, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL_OR_REAPPLY_MASK);
+        OnEffectRemove += AuraEffectRemoveFn(aura_dru_barkskin::HandleRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL_OR_REAPPLY_MASK);
 		OnEffectPeriodic += AuraEffectPeriodicFn(aura_dru_barkskin::OnTick, EFFECT_4, SPELL_AURA_PERIODIC_DUMMY);
 	}
 };
@@ -5542,8 +5566,7 @@ class spell_architects_aligner : public AuraScript
 
     bool CheckProc(ProcEventInfo& eventInfo)
     {
-        auto caster = GetCaster();
-        return caster && (caster->HasAura(50334) || caster->HasAura(102558));
+        return eventInfo.GetSpellInfo() && (eventInfo.GetSpellInfo()->Id == 50334 || eventInfo.GetSpellInfo()->Id == 102558);
     }
 
     void Register() override

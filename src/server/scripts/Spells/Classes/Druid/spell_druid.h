@@ -50,7 +50,8 @@ namespace Druid
 
     enum eGuardian
     {
-
+        Ironfur = 192081,
+        FrenziedRegeneration = 22842,
     };
 
     enum eBalance
@@ -90,6 +91,8 @@ namespace Druid
         BalanceOfAllThings       = 339942,
         BalanceOfAllThingsArcane = 339946,
         BalanceOfAllThingsNature = 339943,
+        /// Guardian
+        TheNaturalOrdersWill     = 339063,
     };
 
     inline bool IsFinisher(uint32 spellId)
