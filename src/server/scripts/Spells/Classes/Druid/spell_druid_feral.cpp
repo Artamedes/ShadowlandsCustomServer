@@ -33,14 +33,14 @@ class spell_primal_wrath : public SpellScript
         caster->GetAttackableUnitListInRange(enemies, 11.0f);
         for (auto enemy : enemies)
         {
-            if (auto rip = enemy->GetAura(DruidSpells::Rip, caster->GetGUID()))
+            if (auto rip = enemy->GetAura(Rip, caster->GetGUID()))
             {
                 if (rip->GetDuration() < ripBaseDuration)
                     rip->SetDuration(std::min(4000, rip->GetDuration()) + ripBaseDuration);
                 continue;
             }
 
-            if (auto rip = caster->AddAura(DruidSpells::Rip, enemy))
+            if (auto rip = caster->AddAura(Rip, enemy))
             {
                 rip->SetMaxDuration(ripBaseDuration);
                 rip->RefreshDuration();

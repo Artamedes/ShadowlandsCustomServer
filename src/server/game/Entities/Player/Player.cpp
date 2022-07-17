@@ -25379,6 +25379,13 @@ void Player::SendInitialPacketsAfterAddToMap()
     }
 
     GetSceneMgr().TriggerDelayedScenes();
+
+    // send eclipse stuff
+    if (HasAura(79577))
+    {
+        this->CastSpell(this, 326055, CastSpellExtraArgs(true).AddSpellMod(SpellValueMod::SPELLVALUE_AURA_STACK, 2));
+        this->CastSpell(this, 326053, CastSpellExtraArgs(true).AddSpellMod(SpellValueMod::SPELLVALUE_AURA_STACK, 2));
+    }
 }
 
 void Player::SendUpdateToOutOfRangeGroupMembers()
