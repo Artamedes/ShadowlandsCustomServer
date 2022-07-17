@@ -83,3 +83,8 @@ INSERT INTO spell_script_names (spell_id, scriptname) VALUE (340059, 'spell_lyca
 
 REPLACE INTO `spell_script_names` (`spell_id`, `ScriptName`) VALUES (135700, 'aura_dru_clearcasting');
 REPLACE INTO `spell_script_names` (`spell_id`, `ScriptName`) VALUES (1079, 'aura_dru_rip');
+
+DELETE FROM spell_script_names WHERE spell_id = 364423;
+INSERT INTO spell_script_names (spell_id, scriptname) VALUE (364423, 'spell_celestial_pillar');
+DELETE FROM `spell_proc` WHERE `SpellId` IN (364423);
+DELETE FROM `spell_proc` WHERE `SpellId` IN (79577);

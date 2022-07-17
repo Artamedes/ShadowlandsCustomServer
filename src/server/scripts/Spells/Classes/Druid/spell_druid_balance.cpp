@@ -31,6 +31,19 @@ class spell_eclipse : public AuraScript
 
                             if (caster->HasAura(BalanceOfAllThings))
                                 caster->CastSpell(caster, BalanceOfAllThingsArcane, CastSpellExtraArgs(true).AddSpellBP0(24));
+
+                            if (caster->HasAura(364423))
+                            {
+                                if (!caster->GetTarget().IsEmpty())
+                                {
+                                    auto target = ObjectAccessor::GetUnit(*caster, caster->GetTarget());
+
+                                    if (target && caster->IsValidAttackTarget(target))
+                                    {
+                                        caster->CastSpell(target, FuryOfElune, CastSpellExtraArgs(TRIGGERED_FULL_MASK_NO_CD).AddSpellBP0(20).AddSpellMod(SpellValueMod::SPELLVALUE_DURATION, 8000));
+                                    }
+                                }
+                            }
                         }
                     }
                     break;
@@ -149,10 +162,36 @@ class spell_balance_of_all_things : public AuraScript
     }
 };
 
+/// ID: 364423 Celestial Pillar
+class spell_celestial_pillar : public AuraScript
+{
+    PrepareAuraScript(spell_celestial_pillar);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == EclipseLunar;
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (auto caster = GetCaster())
+        {
+            // hackfixed in eclipse strict :(
+        }
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_celestial_pillar::CheckProc);
+        OnProc += AuraProcFn(spell_celestial_pillar::HandleProc);
+    }
+};
+
 void AddSC_spell_druid_balance()
 {
     RegisterSpellScript(spell_eclipse);
     RegisterSpellScript(spell_eclipse_lunar);
     RegisterSpellScript(spell_eclipse_solar);
     RegisterSpellScript(spell_balance_of_all_things);
+    RegisterSpellScript(spell_celestial_pillar);
 }

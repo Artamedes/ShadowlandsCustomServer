@@ -785,16 +785,16 @@ bool AreaTrigger::SetDestination(Position const& pos, uint32 timeToTarget, bool 
     _reachedDestination = false;
 
     uint32 l_NewTimeToTarget = timeToTarget;
-    if (m_areaTriggerData->SpellID == 202770)
-    {
-        float m_moveDistanceMax = 0.0f;
-        for (size_t i = 0; i < path.GetPath().size() - 1; ++i)
-            m_moveDistanceMax += (path.GetPath()[i + 1] - path.GetPath()[i]).length();
-
-
-        l_NewTimeToTarget = uint32((m_moveDistanceMax / 7.0f) * 1000.0f);
-        TC_LOG_TRACE("network.opcode", "AT::SetDestination l_NewTimeToTarget %u m_moveDistanceMax %f", l_NewTimeToTarget, m_moveDistanceMax);
-    }
+    //if (m_areaTriggerData->SpellID == 202770)
+    //{
+    //    float m_moveDistanceMax = 0.0f;
+    //    for (size_t i = 0; i < path.GetPath().size() - 1; ++i)
+    //        m_moveDistanceMax += (path.GetPath()[i + 1] - path.GetPath()[i]).length();
+    //
+    //
+    //    l_NewTimeToTarget = uint32((m_moveDistanceMax / 7.0f) * 1000.0f);
+    //    TC_LOG_TRACE("network.opcode", "AT::SetDestination l_NewTimeToTarget %u m_moveDistanceMax %f", l_NewTimeToTarget, m_moveDistanceMax);
+    //}
 
     for (auto const& point : path.GetPath())
     {
