@@ -5590,6 +5590,9 @@ void Spell::TakePower()
         if (m_spellInfo->Id == 104318) ///< Wildfire imp custom change
             cost.Amount = 1;
 
+        if (powerType == POWER_COMBO_POINTS)
+            unitCaster->Variables.Set("LastComboPointsUsed", cost.Amount);
+
         unitCaster->ModifyPower(powerType, -cost.Amount);
     }
 }

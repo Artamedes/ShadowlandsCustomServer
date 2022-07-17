@@ -80,3 +80,6 @@ INSERT INTO spell_script_names (spell_id, scriptname) VALUE (339064, 'spell_memo
 
 DELETE FROM spell_script_names WHERE spell_id = 340059;
 INSERT INTO spell_script_names (spell_id, scriptname) VALUE (340059, 'spell_lycaras_fleeting_glimpse');
+
+REPLACE INTO `spell_script_names` (`spell_id`, `ScriptName`) VALUES (135700, 'aura_dru_clearcasting');
+REPLACE INTO `spell_script_names` (`spell_id`, `ScriptName`) VALUES (1079, 'aura_dru_rip');

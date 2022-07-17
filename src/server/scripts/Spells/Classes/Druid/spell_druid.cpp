@@ -244,11 +244,6 @@ enum GuardianAffinitySpells
     SPELL_DRUID_FRENZIED_REGENERATION   = 22842
 };
 
-// Lunar Strike main target
-Unit* LunarStrikeMain;
-uint8 ComboPoints = 0;
-ObjectGuid FeralFrenzyTarget;
-
 class druid_playerscript : public PlayerScript
 {
 public:
@@ -772,7 +767,6 @@ class spell_dru_ferocious_bite : public SpellScript
         if (powerCost.Power == POWER_COMBO_POINTS)
         {
             comboPoints = powerCost.Amount;
-            ComboPoints = powerCost.Amount;
         }
         if (powerCost.Power == POWER_ENERGY)
             energy = std::min((uint32)currentEnergy - powerCost.Amount, (uint32)25);
@@ -897,7 +891,6 @@ class spell_dru_savage_roar : public SpellScript
         if (powerCost.Power == POWER_COMBO_POINTS)
         {
             comboPoints = powerCost.Amount;
-            ComboPoints = powerCost.Amount;
         }
     }
 
@@ -928,9 +921,14 @@ class aura_dru_savage_roar : public AuraScript
     {
         if (Unit* caster = GetCaster())
         {
-            GetAura()->SetMaxDuration(6 * (ComboPoints + 1) * IN_MILLISECONDS);
-            GetAura()->SetDuration(6 * (ComboPoints + 1) * IN_MILLISECONDS);
-            caster->CastSpell(caster, SPELL_DRUID_SAVAGE_ROAR_AURA, true);
+            if (caster->Variables.Exist("LastComboPointsUsed"))
+            {
+                int32 ComboPoints = caster->Variables.GetValue("LastComboPointsUsed", 0);
+
+                GetAura()->SetMaxDuration(6 * (ComboPoints + 1) * IN_MILLISECONDS);
+                GetAura()->SetDuration(6 * (ComboPoints + 1) * IN_MILLISECONDS);
+                caster->CastSpell(caster, SPELL_DRUID_SAVAGE_ROAR_AURA, true);
+            }
         }
     }
 
@@ -1726,7 +1724,6 @@ class spell_dru_maim : public SpellScript
         if (powerCost.Power == POWER_COMBO_POINTS)
         {
             comboPoints = powerCost.Amount;
-            ComboPoints = powerCost.Amount;
         }
     }
 
@@ -1790,7 +1787,6 @@ class spell_dru_rip : public SpellScript
         if (powerCost.Power == POWER_COMBO_POINTS)
         {
             comboPoints = powerCost.Amount;
-            ComboPoints = powerCost.Amount;
         }
     }
 
@@ -1890,6 +1886,7 @@ private:
                     if (AuraEffect* aurEff = caster->GetAuraEffect(SPELL_GUSHING_LACERATION, EFFECT_1))
                         damage += aurEff->GetAmount();
 
+                    int32 ComboPoints = caster->Variables.GetValue("LastComboPointsUsed", 0);
                     effect->SetDamage(damage * effect->GetDonePct() * ComboPoints);
                     _originalDamage = 0;
                 }
@@ -2809,7 +2806,7 @@ class spell_dru_lunar_strike_balance : public SpellScript
         if (!caster || !target)
             return;
 
-        LunarStrikeMain = target;
+        caster->Variables.Set("LunarStrikeMain", target->GetGUID());
 		caster->SendPlaySpellVisual(target->GetGUID(), 78356);
     }
 
@@ -2828,48 +2825,6 @@ class spell_dru_lunar_strike_balance : public SpellScript
     {
         OnEffectHitTarget += SpellEffectFn(spell_dru_lunar_strike_balance::HandleHitTarget, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
         AfterCast += SpellCastFn(spell_dru_lunar_strike_balance::HandleAfterCast);
-    }
-};
-
-// 279619 - Eclipse
-class aura_dru_eclipse : public AuraScript
-{
-    PrepareAuraScript(aura_dru_eclipse);
-
-    bool CheckProc(ProcEventInfo& eventInfo)
-    {
-        if (eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == SPELL_DRUID_LUNAR_STRIKE_BALANCE && roll_chance_i(GetAura()->GetEffect(EFFECT_0)->GetBaseAmount()) &&
-            (eventInfo.GetActionTarget() && LunarStrikeMain && eventInfo.GetActionTarget() == LunarStrikeMain))
-            return true;
-
-        if (eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == SPELL_DRUID_SOLAR_WRATH_BALANCE && roll_chance_i(GetAura()->GetEffect(EFFECT_1)->GetBaseAmount()))
-            return true;
-
-        return false;
-    }
-
-    void HandleProc(ProcEventInfo& eventInfo)
-    {
-        PreventDefaultAction();
-        if (Unit* caster = GetCaster())
-        {
-			if (eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == SPELL_DRUID_LUNAR_STRIKE_BALANCE)
-				if (Aura* aura = caster->GetAura(SPELL_DRUID_SOLAR_EMPOWERMENT))
-					aura->ModStackAmount(1);
-				else
-                    caster->CastSpell(caster, SPELL_DRUID_SOLAR_EMPOWERMENT, true);
-            else if (eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == SPELL_DRUID_SOLAR_WRATH_BALANCE)
-				if (Aura* aura = caster->GetAura(SPELL_DRUID_LUNAR_EMPOWERMENT))
-					aura->ModStackAmount(1);
-				else
-                    caster->CastSpell(caster, SPELL_DRUID_LUNAR_EMPOWERMENT, true);
-        }
-    }
-
-    void Register() override
-    {
-        DoCheckProc += AuraCheckProcFn(aura_dru_eclipse::CheckProc);
-        OnProc += AuraProcFn(aura_dru_eclipse::HandleProc);
     }
 };
 
@@ -3479,11 +3434,19 @@ class aura_dru_clearcasting : public AuraScript
 
     bool CheckProc(ProcEventInfo& eventInfo)
     {
-        if (eventInfo.GetSpellInfo() && (eventInfo.GetSpellInfo()->Id == SPELL_DRUID_SHRED || eventInfo.GetSpellInfo()->Id == SPELL_DRUID_TRASH_CAT ||
-            eventInfo.GetSpellInfo()->Id == SPELL_DRUID_SWIPE_CAT || eventInfo.GetSpellInfo()->Id == SPELL_DRUID_BRUTAL_SLASH))
-            return true;
+        if (!eventInfo.GetSpellInfo())
+            return false;
 
-        return false;
+        switch (eventInfo.GetSpellInfo()->Id)
+        {
+            case SPELL_DRUID_SHRED:
+            case SPELL_DRUID_TRASH_CAT:
+            case SPELL_DRUID_SWIPE_CAT:
+            case SPELL_DRUID_BRUTAL_SLASH:
+                return true;
+            default:
+                return false;
+        }
     }
 
     void Register() override
@@ -4166,7 +4129,6 @@ class spell_dru_enraged_maim : public SpellScript
         if (powerCost.Power == POWER_COMBO_POINTS)
         {
             comboPoints = powerCost.Amount;
-            ComboPoints = powerCost.Amount;
         }
     }
 
@@ -4499,8 +4461,9 @@ class spell_dru_feral_frenzy_periodic : public SpellScript
 
 	void HandleTargetHit(SpellEffIndex /*effIndex*/)
 	{
-		if (Unit* target = GetExplTargetUnit())
-			FeralFrenzyTarget = target->GetGUID();
+        if (Unit* target = GetExplTargetUnit())
+            if (auto caster = GetCaster())
+                caster->Variables.Set("FeralFrenzyTarget", target->GetGUID());
 	}
 
 	void Register() override
@@ -4518,9 +4481,9 @@ class aura_dru_feral_frenzy : public AuraScript
 	void HandlePeriodic(AuraEffect const* /*auraEff*/)
 	{
 		Unit* caster = GetCaster();
-		if (caster)
+		if (caster && caster->Variables.Exist("FeralFrenzyTarget"))
 		{
-			Unit* target = ObjectAccessor::GetUnit(*caster, FeralFrenzyTarget);
+			Unit* target = ObjectAccessor::GetUnit(*caster, caster->Variables.GetValue("FeralFrenzyTarget", ObjectGuid::Empty));
             if (target && caster->IsValidAttackTarget(target))            
                 caster->CastSpell(target, SPELL_DRUID_FERAL_FRENZY_DAMAGE, true);            
 		}
@@ -4529,9 +4492,9 @@ class aura_dru_feral_frenzy : public AuraScript
     void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes mode)
     {
         Unit* caster = GetCaster();
-        if (caster)
+        if (caster && caster->Variables.Exist("FeralFrenzyTarget"))
         {
-            Unit* target = ObjectAccessor::GetUnit(*caster, FeralFrenzyTarget);
+            Unit* target = ObjectAccessor::GetUnit(*caster, caster->Variables.GetValue("FeralFrenzyTarget", ObjectGuid::Empty));
             if (target && caster->IsValidAttackTarget(target))
             {
                 //Right now the feral frenzy are doing another hit because the spell cast 4 time the aura
@@ -5302,7 +5265,7 @@ class aura_dru_warrior_of_elune : public AuraScript
 	bool CheckProc(ProcEventInfo& eventInfo)
 	{
 		if (Unit* caster = GetCaster())
-			if (eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == SPELL_DRUID_LUNAR_STRIKE_BALANCE && LunarStrikeMain && eventInfo.GetActionTarget() == LunarStrikeMain)
+			if (eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == SPELL_DRUID_LUNAR_STRIKE_BALANCE && caster->Variables.Exist("LunarStrikeMain") && eventInfo.GetActionTarget() && eventInfo.GetActionTarget()->GetGUID() == caster->Variables.GetValue("LunarStrikeMain", ObjectGuid::Empty))
 				return true;
 
 		return false;
@@ -5785,7 +5748,6 @@ void AddSC_druid_spell_scripts()
     RegisterSpellScript(aura_dru_frenzied_regeneration);
     RegisterSpellScript(aura_dru_empowerments);
     RegisterSpellScript(spell_dru_lunar_strike_balance);
-    RegisterSpellScript(aura_dru_eclipse);
     RegisterSpellScript(aura_dru_predatory_swiftness);
     RegisterSpellAndAuraScriptPair(spell_dru_predatory_swiftness_aura, aura_dru_entangling_roots);
     RegisterSpellScript(aura_dru_clearcasting);
