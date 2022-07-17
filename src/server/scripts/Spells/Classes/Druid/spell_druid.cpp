@@ -3669,7 +3669,7 @@ class aura_dru_sunfire_damage : public AuraScript
 	void Register() override
 	{
 		OnEffectPeriodic += AuraEffectPeriodicFn(aura_dru_sunfire_damage::HandlePeriodic, EFFECT_1, SPELL_AURA_PERIODIC_DAMAGE);
-		OnEffectRemove += AuraEffectRemoveFn(aura_dru_sunfire_damage::HandleRemove, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE, AURA_EFFECT_HANDLE_REAL);
+		OnEffectRemove += AuraEffectRemoveFn(aura_dru_sunfire_damage::HandleRemove, EFFECT_1, SPELL_AURA_PERIODIC_DAMAGE, AURA_EFFECT_HANDLE_REAL);
 	}
 };
 
