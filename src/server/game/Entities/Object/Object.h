@@ -749,6 +749,9 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
         void RemoveVignetteSee(ObjectGuid const& guid) { if (guid.IsPlayer()) _seeingVignette.erase(guid); }
         GuidUnorderedSet GetVignetteSeeing() { return _seeingVignette; }
 
+        // hack for dk biting cold
+        GuidUnorderedSet _uniqueBitingColdTargets;
+
     protected:
         std::string m_name;
         bool m_isActive;

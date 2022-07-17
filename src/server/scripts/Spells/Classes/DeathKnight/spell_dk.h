@@ -65,6 +65,7 @@ namespace DeathKnight
         MasteryFrozenHeart = 77514,
         MightOfTheFrozenWastes = 81333,
         Rime = 59057,
+        RimeProc = 59052,
         RunicEmpowerment = 81229,
     };
 
@@ -100,6 +101,13 @@ namespace DeathKnight
         GorefiendsDominationEnergize = 350914,
         VampiricAura = 334547,
         VampiricAuraBuff = 334555,
+
+        // Frost
+        AbsoluteZero = 334692,
+        AbsoluteZeroStun = 334693,
+        BitingCold = 334678,
+        RageOfTheFrozenChampion = 341724,
+        RageOfTheFrozenChampionEnergize = 341725,
     };
 
     enum eCovenant

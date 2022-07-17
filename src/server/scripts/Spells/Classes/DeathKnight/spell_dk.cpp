@@ -1309,13 +1309,16 @@ class spell_dk_howling_blast : public SpellScript
             if (roll_chance_i(sSpellMgr->GetSpellInfo(SPELL_DK_OBLITERATION)->GetEffect(EFFECT_1).BasePoints))
                 caster->CastSpell(caster, SPELL_DK_OBLITERATION_ENERGIZE, true);
         }
+
+        if (caster->HasAura(SPELL_DK_RIME_BUFF) && caster->HasAura(DeathKnight::eLegendary::RageOfTheFrozenChampion))
+            caster->CastSpell(caster, DeathKnight::eLegendary::RageOfTheFrozenChampionEnergize, true);
     }
 
 	void HandleAfterCast()
-	{
-		if (Unit* caster = GetCaster())
-        if (caster->HasAura(SPELL_DK_RIME_BUFF))
-            caster->RemoveAura(SPELL_DK_RIME_BUFF);
+    {
+        if (Unit* caster = GetCaster())
+            if (caster->HasAura(SPELL_DK_RIME_BUFF))
+                caster->RemoveAura(SPELL_DK_RIME_BUFF);
     }
 
     void Register() override
@@ -1369,9 +1372,13 @@ class spell_dk_remorseless_winter : public SpellScript
 
 	void HandleAfterCast()
 	{
-		if (Unit* caster = GetCaster())
+        if (Unit* caster = GetCaster())
+        {
+            caster->_uniqueBitingColdTargets.clear();
+            caster->Variables.Remove("BitingCold");
 			if (caster->HasAura(SPELL_DK_FROZEN_CENTER))
 				caster->CastSpell(caster->GetPosition(), SPELL_DK_FROZEN_CENTER_ROOT, true);
+        }
 	}
 
 	void Register() override
@@ -1388,7 +1395,26 @@ class spell_dk_remorseless_winter_damage : public SpellScript
     void HandleOnHit(SpellEffIndex /*effIndex*/)
     {
         if (Unit* unit = GetHitUnit())
-            GetCaster()->CastSpell(unit, SPELL_DK_REMORSELESS_WINTER_SLOW_DOWN, true);
+        {
+            if (auto caster = GetCaster())
+            {
+                caster->CastSpell(unit, SPELL_DK_REMORSELESS_WINTER_SLOW_DOWN, true);
+
+                if (caster->HasAura(DeathKnight::eLegendary::BitingCold))
+                {
+                    if (!caster->_uniqueBitingColdTargets.count(unit->GetGUID()) && !caster->Variables.Exist("BitingCold"))
+                    {
+                        caster->_uniqueBitingColdTargets.insert(unit->GetGUID());
+
+                        if (caster->_uniqueBitingColdTargets.size() >= 3)
+                        {
+                            caster->Variables.Set("BitingCold", true);
+                            caster->CastSpell(caster, SPELL_DK_RIME_BUFF, true);
+                        }
+                    }
+                }
+            }
+        }
     }
 
     void Register() override
@@ -3391,7 +3417,11 @@ struct at_dk_frostwyrm : AreaTriggerAI
     {
         if (Unit* caster = at->GetCaster())
             if (caster->IsValidAttackTarget(unit))
+            {
                 caster->CastSpell(unit, SPELL_DK_FROSTWYRM_DAMAGE, true);
+                if (caster->HasAura(DeathKnight::eLegendary::AbsoluteZero))
+                    caster->CastSpell(unit, DeathKnight::eLegendary::AbsoluteZeroStun);
+            }
     }
 };
 

@@ -75,8 +75,48 @@ class spell_bryndaors_might : public AuraScript
     }
 };
 
+/// ID: 334583 Koltira's Favor
+class spell_koltiras_favor : public AuraScript
+{
+    PrepareAuraScript(spell_koltiras_favor);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == Obliterate;
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_koltiras_favor::CheckProc);
+    }
+};
+/// ID: 341724 Rage of the Frozen Champion
+class spell_rage_of_the_frozen_champion : public AuraScript
+{
+    PrepareAuraScript(spell_rage_of_the_frozen_champion);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == Obliterate;
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (auto caster = GetCaster())
+            caster->CastSpell(caster, Rime, true);
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_rage_of_the_frozen_champion::CheckProc);
+        OnProc += AuraProcFn(spell_rage_of_the_frozen_champion::HandleProc);
+    }
+};
+
 void AddSC_spell_dk_legendary()
 {
     RegisterSpellScript(spell_phearomones);
     RegisterSpellScript(spell_bryndaors_might);
+    RegisterSpellScript(spell_koltiras_favor);
+    RegisterSpellScript(spell_rage_of_the_frozen_champion);
 }
