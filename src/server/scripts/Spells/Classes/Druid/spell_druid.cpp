@@ -1870,26 +1870,6 @@ private:
             {
                 if (caster->HasAura(SPELL_DRUID_KING_OF_THE_JUNGLE))
                     caster->CastSpell(caster, SPELL_DRUID_KING_OF_THE_JUNGLE_BUFF, true);
-
-                /*
-                1 point : ${$floor(1 * $<rip> * 12)} damage
-                2 points: ${$floor(2 * $<rip> * 12)} damage
-                3 points: ${$floor(3 * $<rip> * 12)} damage
-                4 points: ${$floor(4 * $<rip> * 12)} damage
-                5 points: ${$floor(5 * $<rip> * 12)} damage
-                */
-                if (AuraEffect* effect = GetAura()->GetEffect(EFFECT_0))
-                {
-                    effect->SetDonePct(caster->SpellDamagePctDone(target, GetSpellInfo(), DOT, effect->GetSpellEffectInfo())); // Calculate done percentage first!
-                    int32 damage = caster->SpellDamageBonusDone(target, GetSpellInfo(), 0, DOT, effect->GetSpellEffectInfo(), GetStackAmount());
-
-                    if (AuraEffect* aurEff = caster->GetAuraEffect(SPELL_GUSHING_LACERATION, EFFECT_1))
-                        damage += aurEff->GetAmount();
-
-                    int32 ComboPoints = caster->Variables.GetValue("LastComboPointsUsed", 0);
-                    effect->SetDamage(damage * effect->GetDonePct() * ComboPoints);
-                    _originalDamage = 0;
-                }
             }
         }
     }
