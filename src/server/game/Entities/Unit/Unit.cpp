@@ -1926,7 +1926,7 @@ void Unit::HandleEmoteCommand(Emote emoteId, Player* target /*=nullptr*/, Trinit
                 // Reduce shield amount
                 absorbAurEff->ChangeAmount(absorbAurEff->GetAmount() - currentAbsorb);
                 // Aura cannot absorb anything more - remove it
-                if (absorbAurEff->GetAmount() <= 0)
+                if (absorbAurEff->GetAmount() <= 0 && absorbAurEff->GetSpellInfo()->Id != 337824) ///< Don't remove shock barrier
                     absorbAurEff->GetBase()->Remove(AURA_REMOVE_BY_ENEMY_SPELL);
             }
         }

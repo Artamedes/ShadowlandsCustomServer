@@ -83,9 +83,83 @@ public:
     }
 };
 
+/// ID: 340459 Maraad's Dying Breath
+class spell_maraads_dying_breath_proc : public AuraScript
+{
+    PrepareAuraScript(spell_maraads_dying_breath_proc);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == LightOfTheMartyr;
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        ModStackAmount(-1);
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_maraads_dying_breath_proc::CheckProc);
+        OnProc += AuraProcFn(spell_maraads_dying_breath_proc::HandleProc);
+    }
+};
+
+/// ID: 337825 Shock Barrier
+class spell_shock_barrier : public AuraScript
+{
+    PrepareAuraScript(spell_shock_barrier);
+
+    enum eShockBarrier
+    {
+        ShockBarrierShield = 337824,
+    };
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == HolyShockHeal;
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (auto healInfo = eventInfo.GetHealInfo())
+            if (auto caster = GetCaster())
+                if (auto target = eventInfo.GetProcTarget())
+                    caster->CastSpell(target, ShockBarrierShield, CastSpellExtraArgs(true).AddSpellBP0(CalculatePct(healInfo->GetHeal(), 20)).AddSpellBP1(CalculatePct(healInfo->GetHeal(), 20)));
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_shock_barrier::CheckProc);
+        OnProc += AuraProcFn(spell_shock_barrier::HandleProc);
+    }
+};
+
+/// ID: 337824 Shock Barrier
+class spell_shock_barrier_periodic : public AuraScript
+{
+    PrepareAuraScript(spell_shock_barrier_periodic);
+
+    void HandlePeriodic(AuraEffect const* aurEff)
+    {
+        if (auto eff = GetEffect(EFFECT_1))
+        {
+            eff->ChangeAmount(aurEff->GetAmount());
+        }
+    }
+
+    void Register() override
+    {
+        OnEffectPeriodic += AuraEffectPeriodicFn(spell_shock_barrier_periodic::HandlePeriodic, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
+    }
+};
+
 void AddSC_spell_paladin_legendary()
 {
     RegisterSpellScript(spell_relentless_inquisitor);
     RegisterSpellScript(spell_holy_avengers_engraved_sigil);
     RegisterCreatureAI(npc_guardian_of_the_forgotten_queen_114565);
+    RegisterSpellScript(spell_maraads_dying_breath_proc);
+    RegisterSpellScript(spell_shock_barrier);
+    RegisterSpellScript(spell_shock_barrier_periodic);
 }

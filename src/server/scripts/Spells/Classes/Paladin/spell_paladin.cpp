@@ -1523,6 +1523,9 @@ public:
 
             if (!caster->HasAura(SPELL_PALADIN_BREAKING_DAWN))
                 caster->CastSpell(target, SPELL_PALADIN_LIGHT_OF_DAWN_TRIGGER, true);
+
+            if (caster != target && caster->HasAura(Paladin::eLegendary::MaraadsDyingBreath))
+                caster->CastSpell(caster, Paladin::eLegendary::MaraadsDyingBreathProc, true);
 		}
 
         void HandleHitTargetLong(SpellEffIndex effIndex)

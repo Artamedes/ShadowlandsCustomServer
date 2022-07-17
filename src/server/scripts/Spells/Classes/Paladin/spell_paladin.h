@@ -22,6 +22,13 @@ namespace Paladin
         JudgementProt = 275779,
     };
 
+    enum eHoly
+    {
+        LightOfTheMartyr = 183998,
+        HolyShock = 20473,
+        HolyShockHeal = 25914,
+    };
+
     enum eRetribution
     {
         /// Ret
@@ -45,6 +52,9 @@ namespace Paladin
 
     enum eLegendary
     {
+        // Holy
+        MaraadsDyingBreath         = 340458,
+        MaraadsDyingBreathProc     = 340459,
         // Prot
         TheArdentProtectorsSanctum = 337838,
         BulwarkOfRighteousFury     = 337847,
