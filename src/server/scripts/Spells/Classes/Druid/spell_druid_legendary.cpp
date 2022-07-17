@@ -153,6 +153,149 @@ class spell_timeworn_dreambinder : public AuraScript
     }
 };
 
+/// ID: 339139 Apex Predator's Craving
+class spell_apex_predators_craving : public AuraScript
+{
+    PrepareAuraScript(spell_apex_predators_craving);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == Rip;
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_apex_predators_craving::CheckProc);
+    }
+};
+
+/// ID: 339140 Apex Predator's Craving
+class spell_apex_predators_craving_proc : public AuraScript
+{
+    PrepareAuraScript(spell_apex_predators_craving_proc);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == FerociousBite;
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        Remove();
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_apex_predators_craving_proc::CheckProc);
+        OnProc += AuraProcFn(spell_apex_predators_craving_proc::HandleProc);
+    }
+};
+
+/// ID: 339144 Cat-Eye Curio
+class spell_cat_eye_curio : public AuraScript
+{
+    PrepareAuraScript(spell_cat_eye_curio);
+
+    enum eCatEyeCurio
+    {
+        CatEyeCurioEnergize = 339145,
+    };
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && IsAffectedByClearcasting(eventInfo.GetSpellInfo()->Id);
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (auto caster = GetCaster())
+        {
+            if (auto spell = eventInfo.GetProcSpell())
+            {
+                if (auto energyCost = spell->GetPowerCost(Powers::POWER_ENERGY))
+                {
+                    caster->CastSpell(caster, CatEyeCurioEnergize, CastSpellExtraArgs(true).AddSpellBP0(CalculatePct(energyCost->Amount, 25)));
+                }
+            }
+        }
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_cat_eye_curio::CheckProc);
+        OnProc += AuraProcFn(spell_cat_eye_curio::HandleProc);
+    }
+};
+/// ID: 339141 Eye of Fearful Symmetry
+class spell_eye_of_fearful_symmetry : public AuraScript
+{
+    PrepareAuraScript(spell_eye_of_fearful_symmetry);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == TigersFury;
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_eye_of_fearful_symmetry::CheckProc);
+    }
+};
+/// ID: 339142 Eye of Fearful Symmetry
+class spell_eye_of_fearful_symmetry_proc : public AuraScript
+{
+    PrepareAuraScript(spell_eye_of_fearful_symmetry_proc);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetProcSpell() && eventInfo.GetProcSpell()->GetPowerCost(Powers::POWER_COMBO_POINTS);
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_eye_of_fearful_symmetry_proc::CheckProc);
+    }
+};
+
+/// ID: 340053 Frenzyband
+class spell_frenzyband : public AuraScript
+{
+    PrepareAuraScript(spell_frenzyband);
+
+    enum eFrenzyBand
+    {
+        FrenziedAssault = 340056,
+    };
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetProcSpell() && eventInfo.GetProcSpell()->m_comboPointsEnergized;
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (auto caster = GetCaster())
+        {
+            caster->GetSpellHistory()->ModifyCooldown(IncarninationKindOfTheJungle, -200);
+            caster->GetSpellHistory()->ModifyCooldown(Berserk, -200);
+
+            if (auto dmgInfo = eventInfo.GetDamageInfo())
+            {
+                if (auto target = eventInfo.GetProcTarget())
+                {
+                    caster->CastSpell(target, FrenziedAssault, CastSpellExtraArgs(true).AddSpellBP0(dmgInfo->GetDamage()));
+                }
+            }
+        }
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_frenzyband::CheckProc);
+        OnProc += AuraProcFn(spell_frenzyband::HandleProc);
+    }
+};
+
 void AddSC_spell_druid_legendary()
 {
     RegisterSpellScript(spell_oneths_clear_vision);
@@ -160,4 +303,10 @@ void AddSC_spell_druid_legendary()
     RegisterSpellScript(spell_oneths_clear_vision_proc);
     RegisterSpellScript(spell_primordial_arcanic_pulsar);
     RegisterSpellScript(spell_timeworn_dreambinder);
+    RegisterSpellScript(spell_apex_predators_craving);
+    RegisterSpellScript(spell_apex_predators_craving_proc);
+    RegisterSpellScript(spell_cat_eye_curio);
+    RegisterSpellScript(spell_eye_of_fearful_symmetry);
+    RegisterSpellScript(spell_eye_of_fearful_symmetry_proc);
+    RegisterSpellScript(spell_frenzyband);
 }

@@ -28,3 +28,24 @@ INSERT INTO spell_script_names (spell_id, scriptname) VALUE (338668, 'spell_prim
 
 DELETE FROM spell_script_names WHERE spell_id = 339949;
 INSERT INTO spell_script_names (spell_id, scriptname) VALUE (339949, 'spell_timeworn_dreambinder');
+
+DELETE FROM spell_script_names WHERE spell_id = 339139;
+INSERT INTO spell_script_names (spell_id, scriptname) VALUE (339139, 'spell_apex_predators_craving');
+
+DELETE FROM spell_script_names WHERE spell_id = 339140;
+INSERT INTO spell_script_names (spell_id, scriptname) VALUE (339140, 'spell_apex_predators_craving_proc');
+
+DELETE FROM spell_script_names WHERE spell_id = 339144;
+INSERT INTO spell_script_names (spell_id, scriptname) VALUE (339144, 'spell_cat_eye_curio');
+
+DELETE FROM creature WHERE guid = 1071506;
+DELETE FROM creature_addon where guid = 1071506;
+
+DELETE FROM spell_script_names WHERE spell_id = 339142;
+INSERT INTO spell_script_names (spell_id, scriptname) VALUE (339142, 'spell_eye_of_fearful_symmetry_proc');
+
+DELETE FROM spell_script_names WHERE spell_id = 339141;
+INSERT INTO spell_script_names (spell_id, scriptname) VALUE (339141, 'spell_eye_of_fearful_symmetry');
+
+DELETE FROM spell_script_names WHERE spell_id = 340053;
+INSERT INTO spell_script_names (spell_id, scriptname) VALUE (340053, 'spell_frenzyband');

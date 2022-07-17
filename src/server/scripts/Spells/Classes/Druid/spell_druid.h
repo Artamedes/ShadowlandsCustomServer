@@ -40,6 +40,11 @@ namespace Druid
 
     enum eFeral
     {
+        Thrash = 106832,
+        Swipe = 213764,
+        TigersFury = 5217,
+        IncarninationKindOfTheJungle = 102543,
+        Berserk = 106951,
 
     };
 
@@ -96,6 +101,19 @@ namespace Druid
             case PrimalWrath:
             case FerociousBite:
             case Main:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    inline bool IsAffectedByClearcasting(uint32 spellId)
+    {
+        switch (spellId)
+        {
+            case Shred:
+            case Thrash:
+            case Swipe:
                 return true;
             default:
                 return false;
