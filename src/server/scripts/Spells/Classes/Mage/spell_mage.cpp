@@ -1372,7 +1372,7 @@ class spell_mage_kindling : public AuraScript
         if (!caster)
             return;
 
-        caster->GetSpellHistory()->ModifyCooldown(SPELL_MAGE_COMBUSTION, -1);
+        caster->GetSpellHistory()->ModifyCooldown(SPELL_MAGE_COMBUSTION, -1000);
     }
 
     void Register() override
