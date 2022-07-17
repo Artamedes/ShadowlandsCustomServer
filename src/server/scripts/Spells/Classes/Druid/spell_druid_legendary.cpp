@@ -296,6 +296,44 @@ class spell_frenzyband : public AuraScript
     }
 };
 
+/// ID: 339056 Ursoc's Fury Remembered
+class spell_ursocs_fury_remembered : public AuraScript
+{
+    PrepareAuraScript(spell_ursocs_fury_remembered);
+
+    enum eUrsocsFury
+    {
+        UrsocFuryShield = 345048,
+    };
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == ThrashBear;
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (auto caster = GetCaster())
+        {
+            if (auto dmgInfo = eventInfo.GetDamageInfo())
+            {
+                caster->CastSpell(caster, UrsocFuryShield, CastSpellExtraArgs(true).AddSpellBP0(CalculatePct(dmgInfo->GetDamage(), 75)));
+                if (dmgInfo->GetDamageType() != DOT)
+                {
+                    if (roll_chance_i(15))
+                        caster->CastSpell(caster, ThrashBear, CastSpellExtraArgs(TRIGGERED_FULL_MASK_NO_CD));
+                }
+            }
+        }
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_ursocs_fury_remembered::CheckProc);
+        OnProc += AuraProcFn(spell_ursocs_fury_remembered::HandleProc);
+    }
+};
+
 void AddSC_spell_druid_legendary()
 {
     RegisterSpellScript(spell_oneths_clear_vision);
@@ -309,4 +347,5 @@ void AddSC_spell_druid_legendary()
     RegisterSpellScript(spell_eye_of_fearful_symmetry);
     RegisterSpellScript(spell_eye_of_fearful_symmetry_proc);
     RegisterSpellScript(spell_frenzyband);
+    RegisterSpellScript(spell_ursocs_fury_remembered);
 }

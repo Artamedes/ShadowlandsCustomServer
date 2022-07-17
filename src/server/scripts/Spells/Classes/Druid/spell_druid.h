@@ -52,6 +52,7 @@ namespace Druid
     {
         Ironfur = 192081,
         FrenziedRegeneration = 22842,
+        ThrashBear = 77758,
     };
 
     enum eBalance
