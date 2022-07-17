@@ -34,6 +34,7 @@
 #include "Containers.h"
 #include "GridNotifiers.h"
 #include "TemporarySummon.h"
+#include "spell_dk.h"
 
 enum DeathKnightSpells
 {
@@ -444,7 +445,11 @@ class spell_dk_blood_boil : public SpellScript
         Unit* caster = GetCaster();
         Unit* target = GetHitUnit();
 
+        if (!caster || !target)
+            return;
+
         caster->CastSpell(target, SPELL_DK_BLOOD_PLAGUE, true);
+        DeathKnight::ApplySuperstrain(caster, target, SPELL_DK_BLOOD_PLAGUE);
     }
 
     void Register() override
@@ -1146,6 +1151,12 @@ class spell_dk_death_grip_initial : public SpellScript
         if (auto eff = caster->GetAuraEffect(338311, EFFECT_0))
             if (eff->ConduitRankEntry)
                 caster->CastSpell(target, 338312, CastSpellExtraArgs(true).AddSpellBP0(eff->ConduitRankEntry->AuraPointsOverride));
+
+        if (caster->HasAura(DeathKnight::eLegendary::GripOfTheEverlasting))
+        {
+            caster->CastSpell(caster, DeathKnight::eLegendary::GripOfTheEverlastingBuff, true);
+            caster->GetSpellHistory()->ModifyCooldown(SPELL_DK_DEATH_GRIP, -15000);
+        }
 	}
 
     void Register() override
@@ -1286,6 +1297,7 @@ class spell_dk_howling_blast : public SpellScript
 
         caster->CastSpell(target, SPELL_DK_FROST_FEVER, true);
 		caster->CastSpell(caster, SPELL_DK_FROST_FEVER_PROC, true);
+        DeathKnight::ApplySuperstrain(caster, target, SPELL_DK_FROST_FEVER);
 
         if (!caster->HasAura(SPELL_DK_NORTHREND_WINDS))
             caster->CastSpell(target, SPELL_DK_HOWLING_BLAST_AOE, true);
@@ -1335,8 +1347,11 @@ class spell_dk_howling_blast_aoe : public SpellScript
 
 		if (target->GetGUID() == tar)
 			PreventHitDamage();
-		else
+        else
+        {
 			caster->CastSpell(target, SPELL_DK_FROST_FEVER, true);
+            DeathKnight::ApplySuperstrain(caster, target, SPELL_DK_FROST_FEVER);
+        }
 
     }
 
@@ -1654,6 +1669,7 @@ class aura_dk_outbreak_periodic : public AuraScript
 			return;
 
 		caster->CastSpell(owner, SPELL_DK_VIRULENT_PLAGUE, true);
+        DeathKnight::ApplySuperstrain(caster, owner, SPELL_DK_VIRULENT_PLAGUE);
 	}
 
     void HandleDummyTick(AuraEffect const* /*aurEff*/)
@@ -1669,7 +1685,10 @@ class aura_dk_outbreak_periodic : public AuraScript
 
                 for (Unit* unit : friendlyUnits)
                     if (caster->IsValidAttackTarget(unit))
+                    {
                         caster->CastSpell(unit, SPELL_DK_VIRULENT_PLAGUE, true);
+                        DeathKnight::ApplySuperstrain(caster, unit, SPELL_DK_VIRULENT_PLAGUE);
+                    }
             }
         }
     }
@@ -1710,6 +1729,9 @@ class spell_dk_anti_magic_shell_self : public AuraScript
             float damagePerRp = caster->CountPctFromMaxHealth(1) / 2.0f;
             int32 energizeAmount = (absorbAmount / damagePerRp) * 10.0f;
             caster->CastCustomSpell(caster, SPELL_DK_RUNIC_POWER_ENERGIZE, &energizeAmount, NULL, NULL, true, NULL, aurEff);
+
+            if (caster->HasAura(DeathKnight::eLegendary::DeathsEmbrace))
+                caster->CastSpell(caster, DeathKnight::eLegendary::DeathsEmbraceHeal, CastSpellExtraArgs(true).AddSpellBP0(absorbAmount));
         }
     }
 
@@ -3245,7 +3267,10 @@ struct at_dk_death_and_decay : AreaTriggerAI
             {
                 caster->CastSpell(unit, SPELL_DK_GRIP_OF_THE_DEAD_SLOW, true);
                 caster->CastSpell(caster, SPELL_DK_GRIP_OF_THE_DEAD_TICK, true);
-            }           
+            }
+
+            if (unit->GetOwner() == caster && caster->HasAura(DeathKnight::eLegendary::Phearomones))
+                unit->CastSpell(unit, DeathKnight::eLegendary::DeathTurf, true);
 		}
 	}
 
@@ -3255,6 +3280,9 @@ struct at_dk_death_and_decay : AreaTriggerAI
         {
             if (unit && unit->HasAura(SPELL_DK_GRIP_OF_THE_DEAD_SLOW, caster->GetGUID()))
                 unit->RemoveAura(SPELL_DK_GRIP_OF_THE_DEAD_SLOW);
+
+            if (unit->GetOwner() == caster)
+                unit->RemoveAurasDueToSpell(DeathKnight::eLegendary::DeathTurf);
         }
     }
 
@@ -3269,8 +3297,10 @@ struct at_dk_death_and_decay : AreaTriggerAI
 
 	void OnPeriodicProc() override
 	{
-		if (Unit* caster = at->GetCaster())
+        if (Unit* caster = at->GetCaster())
+        {
     	    caster->CastSpell(at->GetPosition(), SPELL_DK_DEATH_AND_DECAY_DAMAGE, true);
+        }
 	}
 };
 
