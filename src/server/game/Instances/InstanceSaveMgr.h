@@ -88,7 +88,6 @@ class TC_GAME_API InstanceSave
         uint32 GetCompletedEncounterMask() const { return m_completedEncounter; }
         void SetCompletedEncountersMask(uint32 mask) { m_completedEncounter = mask; }
 
-        InstanceTemplate const* GetTemplate();
         MapEntry const* GetMapEntry();
 
         /* online players bound to the instance (perm/solo)
