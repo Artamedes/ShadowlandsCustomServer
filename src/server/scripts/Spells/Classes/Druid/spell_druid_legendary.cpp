@@ -367,6 +367,44 @@ class spell_verdant_infusion : public AuraScript
     }
 };
 
+/// ID: 338832 Vision of Unending Growth
+class spell_vision_of_unending_growth : public AuraScript
+{
+    PrepareAuraScript(spell_vision_of_unending_growth);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == Rejuvenation;
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (auto caster = GetCaster())
+        {
+            if (auto target = eventInfo.GetProcTarget())
+            {
+                std::list<Unit*> randUnits;
+                target->GetFriendlyUnitListInRange(randUnits, 40.0f, true);
+                randUnits.remove_if([caster](Unit* who) -> bool
+                {
+                    return who->HasAura(Rejuvenation, caster->GetGUID());
+                });
+
+                if (!randUnits.empty())
+                {
+                    caster->CastSpell(Trinity::Containers::SelectRandomContainerElement(randUnits), Rejuvenation, true);
+                }
+            }
+        }
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_vision_of_unending_growth::CheckProc);
+        OnProc += AuraProcFn(spell_vision_of_unending_growth::HandleProc);
+    }
+};
+
 void AddSC_spell_druid_legendary()
 {
     RegisterSpellScript(spell_oneths_clear_vision);
@@ -382,4 +420,5 @@ void AddSC_spell_druid_legendary()
     RegisterSpellScript(spell_frenzyband);
     RegisterSpellScript(spell_ursocs_fury_remembered);
     RegisterSpellScript(spell_verdant_infusion);
+    RegisterSpellScript(spell_vision_of_unending_growth);
 }
