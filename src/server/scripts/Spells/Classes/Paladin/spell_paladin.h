@@ -50,6 +50,11 @@ namespace Paladin
         AvengersShield = 31935,
     };
 
+    enum eCovenant
+    {
+        DivineToll = 304971,
+    };
+
     enum eLegendary
     {
         // Holy

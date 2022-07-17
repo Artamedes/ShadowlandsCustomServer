@@ -16,3 +16,7 @@ INSERT INTO spell_script_names (spell_id, scriptname) VALUE (337825, 'spell_shoc
 
 DELETE FROM spell_script_names WHERE spell_id = 337824;
 INSERT INTO spell_script_names (spell_id, scriptname) VALUE (337824, 'spell_shock_barrier_periodic');
+
+
+DELETE FROM spell_script_names WHERE spell_id = 356890;
+INSERT INTO spell_script_names (spell_id, scriptname) VALUE (356890, 'spell_pal_divine_toll');

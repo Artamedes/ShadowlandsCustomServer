@@ -104,6 +104,7 @@ class spell_righteous_might : public AuraScript
 };
 
 // 304971
+// 356890  Divine Resonance
 class spell_pal_divine_toll : public SpellScript
 {
     PrepareSpellScript(spell_pal_divine_toll);
@@ -159,8 +160,16 @@ class spell_pal_divine_toll : public SpellScript
 
     void Register() override
     {
-        OnEffectHitTarget += SpellEffectFn(spell_pal_divine_toll::HandleDummy, EFFECT_1, SPELL_EFFECT_DUMMY);
-        OnEffectHitTarget += SpellEffectFn(spell_pal_divine_toll::HandleHeal, EFFECT_2, SPELL_EFFECT_DUMMY);
+        if (m_scriptSpellId == 356890)
+        {
+            OnEffectHitTarget += SpellEffectFn(spell_pal_divine_toll::HandleHeal, EFFECT_0, SPELL_EFFECT_DUMMY);
+            OnEffectHitTarget += SpellEffectFn(spell_pal_divine_toll::HandleDummy, EFFECT_2, SPELL_EFFECT_DUMMY);
+        }
+        else
+        {
+            OnEffectHitTarget += SpellEffectFn(spell_pal_divine_toll::HandleDummy, EFFECT_1, SPELL_EFFECT_DUMMY);
+            OnEffectHitTarget += SpellEffectFn(spell_pal_divine_toll::HandleHeal, EFFECT_2, SPELL_EFFECT_DUMMY);
+        }
     }
 };
 
@@ -373,6 +382,21 @@ class spell_adaptive_armor_fragment : public AuraScript
     }
 };
 
+/// ID: 355098 Divine Resonance
+class spell_divine_resonance : public AuraScript
+{
+    PrepareAuraScript(spell_divine_resonance);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == DivineToll;
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_divine_resonance::CheckProc);
+    }
+};
 
 void AddSC_spell_paladin_covenant()
 {
