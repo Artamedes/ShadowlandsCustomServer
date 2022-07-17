@@ -1,5 +1,7 @@
 #pragma once
 
+#include "SpellIncludes.h"
+
 namespace Paladin
 {
     enum PaladinSpells
@@ -36,10 +38,17 @@ namespace Paladin
 
     };
 
+    enum eProtection
+    {
+        AvengersShield = 31935,
+    };
+
     enum eLegendary
     {
         // Prot
         TheArdentProtectorsSanctum = 337838,
+        BulwarkOfRighteousFury     = 337847,
+        BulwarkOfRighteousFuryProc = 337848,
         // Retr
         VanguardsMomentum = 337638,
         VanguardsMomentumProc = 345046,

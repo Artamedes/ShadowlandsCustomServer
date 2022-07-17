@@ -4159,6 +4159,17 @@ void AuraEffect::HandleTriggerSpellOnHealthPercent(AuraApplication const* aurApp
             break;
     }
 
+    // TODO FIGURE OUT HOW TO MOVE TO SPELLSCRIPT
+    // Hack for Reign of Endless Kings
+    // Prevent proc over and over.
+    if (m_spellInfo->Id == 337850)
+    {
+        if (target->HasAura(337852))
+            return;
+
+        target->CastSpell(target, 228048, true); ///< Summon
+    }
+
     target->CastSpell(target, triggerSpell, this);
 }
 

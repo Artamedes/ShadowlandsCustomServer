@@ -8999,6 +8999,17 @@ void Unit::TriggerOnHealthChangeAuras(uint64 oldVal, uint64 newVal)
                 break;
         }
 
+        // TODO FIGURE OUT HOW TO MOVE TO SPELLSCRIPT
+        // Hack for Reign of Endless Kings
+        // Prevent proc over and over.
+        if (effect->GetSpellInfo()->Id == 337850)
+        {
+            if (HasAura(337852))
+                continue;
+
+            CastSpell(this, 228048, true); ///< Summon
+        }
+
         CastSpell(this, triggerSpell, effect);
     }
 }

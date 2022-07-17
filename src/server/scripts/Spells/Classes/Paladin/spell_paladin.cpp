@@ -686,6 +686,9 @@ class spell_pal_avengers_shield : public SpellScript
             AddPct(damage, 50);
 
         SetHitDamage(damage);
+
+        if (caster->HasAura(Paladin::eLegendary::BulwarkOfRighteousFury))
+            caster->CastSpell(caster, Paladin::eLegendary::BulwarkOfRighteousFuryProc, true);
     }
 
 	void HandleOnHitEffects(SpellEffIndex effIndex)
