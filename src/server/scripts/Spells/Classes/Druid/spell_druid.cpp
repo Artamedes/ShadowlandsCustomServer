@@ -304,6 +304,22 @@ public:
             }
         }
     }
+
+    void OnSetShapeshiftForm(Player* player, ShapeshiftForm form) override
+    {
+        if (player->HasAura(Druid::eLegendary::OathOfTheElderDruid) && !player->HasAura(Druid::eLegendary::OathOfTheElderDruidCD) && Druid::GetAffinityShapeshiftForm(player) == form)
+        {
+            uint32 duration = 10000;
+
+            auto replacementHeartOfTheWildSpell = player->GetCastSpellInfo(sSpellMgr->GetSpellInfo(Druid::eDruid::HeartOfTheWild));
+
+            if (auto aura = player->GetAura(replacementHeartOfTheWildSpell->Id))
+                duration += aura->GetDuration();
+
+            player->CastSpell(player, replacementHeartOfTheWildSpell->Id, CastSpellExtraArgs(TRIGGERED_FULL_MASK_NO_CD).AddSpellMod(SpellValueMod::SPELLVALUE_DURATION, duration));
+            player->CastSpell(player, Druid::eLegendary::OathOfTheElderDruidCD, true);
+        }
+    }
 };
 
 // 210706 - Gore 7.3.5
@@ -4330,7 +4346,7 @@ class spell_dru_swiftmend : public SpellScript
 
 	void Register() override
 	{
-        OnEffectHitTarget += SpellEffectFn(spell_dru_swiftmend::HandleHeal);
+        OnEffectHitTarget += SpellEffectFn(spell_dru_swiftmend::HandleHeal, EFFECT_0, SPELL_EFFECT_HEAL);
 		AfterCast += SpellCastFn(spell_dru_swiftmend::HandleAfterCast);
 	}
 };
@@ -5582,6 +5598,7 @@ class spell_sickle_of_the_lion : public AuraScript
         DoCheckProc += AuraCheckProcFn(spell_sickle_of_the_lion::CheckProc);
     }
 };
+
 /// ID: 363496 Architect's Aligner
 class spell_architects_aligner : public AuraScript
 {

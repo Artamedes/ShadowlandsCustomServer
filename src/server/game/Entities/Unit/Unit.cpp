@@ -9656,6 +9656,9 @@ uint32 Unit::GetCreatureTypeMask() const
 void Unit::SetShapeshiftForm(ShapeshiftForm form)
 {
     SetUpdateFieldValue(m_values.ModifyValue(&Unit::m_unitData).ModifyValue(&UF::UnitData::ShapeshiftForm), form);
+
+    if (auto player = ToPlayer())
+        sScriptMgr->OnSetShapeshiftForm(player, form);
 }
 
 bool Unit::IsInFeralForm() const

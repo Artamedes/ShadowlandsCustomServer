@@ -612,7 +612,7 @@ enum AuraObjectType
 };
 
 // high byte (3 from 0..3) of UNIT_FIELD_BYTES_2
-enum ShapeshiftForm
+enum ShapeshiftForm : uint8
 {
     FORM_NONE                       = 0,
     FORM_CAT_FORM                   = 1,

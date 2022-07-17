@@ -28,6 +28,7 @@ namespace Druid
         Wrath = 190984,
         AquaticForm = 276012,
         FlightForm = 276029,
+        HeartOfTheWild = 319454,
 
         BearForm = 5487,
         /// Finishers
@@ -90,6 +91,10 @@ namespace Druid
 
     enum eLegendary
     {
+        // All Specs
+        OathOfTheElderDruid      = 338608,
+        OathOfTheElderDruidCD    = 338643,
+
         /// Balance
         BalanceOfAllThings       = 339942,
         BalanceOfAllThingsArcane = 339946,
@@ -99,6 +104,68 @@ namespace Druid
         /// Restoration
         VerdantInfusion          = 338829,
     };
+
+    enum eAffinities
+    {
+        RestoBalanceAffinity      = 197632,
+        RestoFeralAfffinity       = 197490,
+        RestoGuardianAffinity     = 197491,
+        GuardianBalanceAffinity   = 197488,
+        GuardianFeralAffinity     = 202155,
+        GuardianRestoAffinity     = 197492,
+        FeralBalanceAffinity      = 197488,
+        FeralGuardianAffinity     = 217615,
+        FeralRestorationAfffinity = 197492,
+        BalanceFeralAffinity      = 202157,
+        BalanceGuardianAfffinity  = 197491,
+        BalanceRestoAffinity      = 197492,
+    };
+
+    inline ShapeshiftForm GetAffinityShapeshiftForm(Unit* caster)
+    {
+        if (!caster)
+            return ShapeshiftForm::FORM_NONE;
+
+        auto spec = GetSpecializationId(caster);
+
+        switch (spec)
+        {
+            case SimpleTalentSpecs::RDruid:
+                if (caster->HasAura(RestoBalanceAffinity))
+                    return ShapeshiftForm::FORM_MOONKIN_FORM;
+                if (caster->HasAura(RestoGuardianAffinity))
+                    return ShapeshiftForm::FORM_BEAR_FORM;
+                if (caster->HasAura(RestoFeralAfffinity))
+                    return ShapeshiftForm::FORM_NONE;
+                break;
+            case SimpleTalentSpecs::Guardian:
+                if (caster->HasAura(GuardianBalanceAffinity))
+                    return ShapeshiftForm::FORM_MOONKIN_FORM;
+                if (caster->HasAura(GuardianFeralAffinity))
+                    return ShapeshiftForm::FORM_CAT_FORM;
+                if (caster->HasAura(GuardianRestoAffinity))
+                    return ShapeshiftForm::FORM_NONE;
+                break;
+            case SimpleTalentSpecs::Feral:
+                if (caster->HasAura(FeralBalanceAffinity))
+                    return ShapeshiftForm::FORM_MOONKIN_FORM;
+                if (caster->HasAura(FeralGuardianAffinity))
+                    return ShapeshiftForm::FORM_BEAR_FORM;
+                if (caster->HasAura(FeralRestorationAfffinity))
+                    return ShapeshiftForm::FORM_NONE;
+                break;
+            case SimpleTalentSpecs::Balance:
+                if (caster->HasAura(BalanceFeralAffinity))
+                    return ShapeshiftForm::FORM_CAT_FORM;
+                if (caster->HasAura(BalanceGuardianAfffinity))
+                    return ShapeshiftForm::FORM_BEAR_FORM;
+                if (caster->HasAura(BalanceRestoAffinity))
+                    return ShapeshiftForm::FORM_NONE;
+                break;
+        }
+
+        return ShapeshiftForm::FORM_NONE;
+    }
 
     inline bool IsFinisher(uint32 spellId)
     {

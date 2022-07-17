@@ -88,6 +88,7 @@ enum DuelCompleteType : uint8;
 enum Emote : uint32;
 enum QuestStatus : uint8;
 enum RemoveMethod : uint8;
+enum ShapeshiftForm : uint8;
 enum ShutdownExitCode : uint32;
 enum ShutdownMask : uint32;
 enum SpellEffIndex : uint8;
@@ -889,6 +890,8 @@ class TC_GAME_API PlayerScript : public ScriptObject
         virtual void OnPlayerModifyCurrency(Player* /*player*/, uint32 /*id*/, uint32 /*oldCount*/, int32 /*newCount*/) { }
 
         virtual void OnPlayerAbandonQuest(Player* /*player*/, Quest const* /*quest*/) { }
+
+        virtual void OnSetShapeshiftForm(Player* /*player*/, ShapeshiftForm /*form*/) { }
 };
 
 class TC_GAME_API AccountScript : public ScriptObject
@@ -1354,6 +1357,7 @@ class TC_GAME_API ScriptMgr
         void OnPlayerDailyReset(Player* player);
         void OnPlayerModifyCurrency(Player* player, uint32 id, uint32 oldCount, int32 newCount);
         void OnPlayerAbandonQuest(Player* player, Quest const* quest);
+        void OnSetShapeshiftForm(Player* player, ShapeshiftForm form);
 
     public: /* AccountScript */
 
