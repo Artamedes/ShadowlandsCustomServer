@@ -359,7 +359,7 @@ void WorldPackets::Movement::CommonMovement::WriteCreateObjectSplineDataBlock(::
 
     data << dest.x << dest.y << dest.z;
 
-    bool hasSplineMove = data.WriteBit(!moveSpline.Finalized() && !moveSpline.splineIsFacingOnly);
+    bool hasSplineMove = data.WriteBit(!moveSpline.Finalized());
     data.FlushBits();
 
     if (hasSplineMove)                                                          // MovementSplineMove

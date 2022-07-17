@@ -489,7 +489,7 @@ void Object::BuildMovementUpdate(ByteBuffer* data, CreateObjectBits flags, Playe
         if (hasAreaTriggerSpline)
         {
             *data << uint32(areaTrigger->GetTimeToTarget());
-            *data << uint32(areaTrigger->GetElapsedTimeForMovement());
+            *data << uint32(GetMSTimeDiffToNow(areaTrigger->CreateTimeMS));
 
             WorldPackets::Movement::CommonMovement::WriteCreateObjectAreaTriggerSpline(areaTrigger->GetSpline(), *data);
         }

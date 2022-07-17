@@ -25,8 +25,9 @@
 #include "MoveSplineInitArgs.h"
 #include <G3D/Vector3.h>
 
-class Unit;
+class WorldObject;
 class Transport;
+class Unit;
 
 // 100*4.0f=400y  number_of_points*interval = max_path_len
 // this is way more than actual evade range
@@ -61,7 +62,7 @@ typedef std::set<int32> PointId;
 class TC_GAME_API PathGenerator
 {
     public:
-        explicit PathGenerator(Unit const* owner, bool transformTransportPath = false, bool isAreaTrigger = false);
+        explicit PathGenerator(WorldObject const* owner, bool transformTransportPath = false, bool isAreaTrigger = false);
         ~PathGenerator();
 
         // Calculate the path from owner to given destination
@@ -71,7 +72,7 @@ class TC_GAME_API PathGenerator
         bool CalculatePath(G3D::Vector3 start, G3D::Vector3 dest, bool forceDest = false, bool straightLine = false);
         // Calculates the path from start point to given destination
         bool CalculatePathPig(G3D::Vector3 const& startPoint, G3D::Vector3 const& endPoint, bool forceDest = false);
-        bool IsInvalidDestinationZ(Unit const* target) const;
+        bool IsInvalidDestinationZ(WorldObject const* target) const;
 
         // option setters - use optional
         void SetUseStraightPath(bool useStraightPath) { _useStraightPath = useStraightPath; }
@@ -95,7 +96,7 @@ class TC_GAME_API PathGenerator
         void ExcludeSteepSlopes() { _filter.setExcludeFlags(NAV_STEEP_SLOPES); }
         static dtPolyRef FindWalkPoly(dtNavMeshQuery const* query, float const* pointYZX, dtQueryFilter const& filter, float* closestPointYZX, float zSearchDist = 10.0f);
 
-        bool UpdateForMelee(Unit* pTarget, float meleeReach);
+        bool UpdateForMelee(WorldObject* pTarget, float meleeReach);
 
         void CutPathWithDynamicLoS();
 
@@ -119,7 +120,8 @@ class TC_GAME_API PathGenerator
         G3D::Vector3 _endPosition;          // {x, y, z} of the destination
         G3D::Vector3 _actualEndPosition;    // {x, y, z} of the closest possible point to given destination
 
-        Unit const* const _sourceUnit;          // the unit that is moving
+        WorldObject const* const _sourceObj;    // the obj that is moving
+        Unit        const* const _sourceUnit;   // the unit that is moving
         dtNavMesh const* _navMesh;              // the nav mesh
         dtNavMeshQuery const* _navMeshQuery;    // the nav mesh query used to find the path
 

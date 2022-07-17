@@ -5927,6 +5927,9 @@ void Unit::RemoveAllAreaTriggers()
 
 void Unit::SendSpellNonMeleeDamageLog(SpellNonMeleeDamage const* log)
 {
+    if (log->Spell && log->Spell->Id == 202770)
+        return;
+
     WorldPackets::CombatLog::SpellNonMeleeDamageLog packet;
     packet.Me = log->target->GetGUID();
     packet.CasterGUID = log->attacker->GetGUID();
@@ -5972,6 +5975,13 @@ void Unit::SendSpellNonMeleeDamageLog(SpellNonMeleeDamage const* log)
 void Unit::SendPeriodicAuraLog(SpellPeriodicAuraLogInfo* info)
 {
     AuraEffect const* aura = info->auraEff;
+
+    // TODO: Find a generic way, this crashes client.
+    if (aura->GetId() == 202770)
+    {
+        return;
+    }
+
     WorldPackets::CombatLog::SpellPeriodicAuraLog data;
     data.TargetGUID = GetGUID();
     data.CasterGUID = aura->GetCasterGUID();

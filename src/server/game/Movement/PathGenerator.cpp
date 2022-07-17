@@ -31,18 +31,18 @@
 #include "Transport.h"
 
 ////////////////// PathGenerator //////////////////
-PathGenerator::PathGenerator(const Unit* owner, bool transformTransportPath /*=false*/, bool isAreaTrigger /*=false*/) :
+PathGenerator::PathGenerator(const WorldObject* owner, bool transformTransportPath /*=false*/, bool isAreaTrigger /*=false*/) :
     _polyLength(0), _type(PATHFIND_BLANK), _useStraightPath(false),
     _forceDestination(false), _pointPathLimit(MAX_POINT_PATH_LENGTH), _straightLine(false),
-    _endPosition(G3D::Vector3::zero()), _sourceUnit(owner), _navMesh(nullptr),
+    _endPosition(G3D::Vector3::zero()), _sourceObj(owner), _sourceUnit(owner->ToUnit()), _navMesh(nullptr),
     _navMeshQuery(nullptr), _transport(nullptr), _transformTransportPath(transformTransportPath), _isAreaTrigger(isAreaTrigger)
 {
     memset(_pathPolyRefs, 0, sizeof(_pathPolyRefs));
 
-    TC_LOG_DEBUG("maps", "++ PathGenerator::PathGenerator for %u \n", _sourceUnit->GetGUID().GetCounter());
+    TC_LOG_DEBUG("maps", "++ PathGenerator::PathGenerator for %u \n", _sourceObj->GetGUID().GetCounter());
 
-    if (_sourceUnit->GetTransport())
-        _transport = dynamic_cast<Transport*>(_sourceUnit->GetTransport());
+    if (_sourceObj->GetTransport())
+        _transport = dynamic_cast<Transport*>(_sourceObj->GetTransport());
 
     if (_transport)
     {
@@ -55,12 +55,12 @@ PathGenerator::PathGenerator(const Unit* owner, bool transformTransportPath /*=f
     }
     else
     {
-        uint32 mapId = _sourceUnit->GetMapId();
+        uint32 mapId = _sourceObj->GetMapId();
         if (DisableMgr::IsPathfindingEnabled(mapId))
         {
             MMAP::MMapManager* mmap = MMAP::MMapFactory::createOrGetMMapManager();
             _navMesh = mmap->GetNavMesh(mapId);
-            _navMeshQuery = mmap->GetNavMeshQuery(mapId, _sourceUnit->GetInstanceId());
+            _navMeshQuery = mmap->GetNavMeshQuery(mapId, _sourceObj->GetInstanceId());
         }
     }
 
@@ -69,14 +69,14 @@ PathGenerator::PathGenerator(const Unit* owner, bool transformTransportPath /*=f
 
 PathGenerator::~PathGenerator()
 {
-    TC_LOG_DEBUG("maps", "++ PathGenerator::~PathGenerator() for %s", _sourceUnit->GetGUID().ToString().c_str());
+    TC_LOG_DEBUG("maps", "++ PathGenerator::~PathGenerator() for %s", _sourceObj->GetGUID().ToString().c_str());
 }
 
 bool PathGenerator::CalculatePath(float destX, float destY, float destZ, bool forceDest, bool straightLine)
 {
     G3D::Vector3 start; // temporary test
     if (start.isZero())
-        start = G3D::Vector3(_sourceUnit->GetPositionX(), _sourceUnit->GetPositionY(), _sourceUnit->GetPositionZ());
+        start = G3D::Vector3(_sourceObj->GetPositionX(), _sourceObj->GetPositionY(), _sourceObj->GetPositionZ());
 
     if (_transport)
     {
@@ -117,11 +117,11 @@ bool PathGenerator::CalculatePath(G3D::Vector3 start, G3D::Vector3 dest, bool fo
     _forceDestination = forceDest;
     _straightLine = straightLine;
 
-    TC_LOG_DEBUG("maps", "++ PathGenerator::CalculatePath() for %s", _sourceUnit->GetGUID().ToString().c_str());
+    TC_LOG_DEBUG("maps", "++ PathGenerator::CalculatePath() for %s", _sourceObj->GetGUID().ToString().c_str());
 
     // make sure navMesh works - we can run on map w/o mmap
     // check if the start and end point have a .mmtile loaded (can we pass via not loaded tile on the way?)
-    if (!_navMesh || !_navMeshQuery || _sourceUnit->HasUnitState(UNIT_STATE_IGNORE_PATHFINDING) ||
+    if (!_navMesh || !_navMeshQuery || (_sourceObj->IsUnit() && _sourceObj->ToUnit()->HasUnitState(UNIT_STATE_IGNORE_PATHFINDING)) ||
         !HaveTile(start) || !HaveTile(dest))
     {
         BuildShortcut();
@@ -133,7 +133,7 @@ bool PathGenerator::CalculatePath(G3D::Vector3 start, G3D::Vector3 dest, bool fo
 
     // check if destination moved - if not we can optimize something here
     // we are following old, precalculated path?
-    float dist = _sourceUnit->GetCombatReach();
+    float dist = _sourceObj->GetCombatReach();
     if (InRange(oldDest, dest, dist, dist) && _pathPoints.size() > 2)
     {
         // our target is not moving - we just coming closer
@@ -249,15 +249,15 @@ void PathGenerator::BuildPolyPath(G3D::Vector3 const& startPos, G3D::Vector3 con
     {
         TC_LOG_DEBUG("maps", "++ BuildPolyPath :: (startPoly == 0 || endPoly == 0)\n");
         BuildShortcut();
-        bool path = _sourceUnit->GetTypeId() == TYPEID_UNIT && _sourceUnit->ToCreature()->CanFly();
+        bool path = _sourceObj->GetTypeId() == TYPEID_UNIT && _sourceObj->ToCreature()->CanFly();
 
-        bool waterPath = _sourceUnit->GetTypeId() == TYPEID_UNIT && _sourceUnit->ToCreature()->CanSwim();
+        bool waterPath = _sourceObj->GetTypeId() == TYPEID_UNIT && _sourceObj->ToCreature()->CanSwim();
         if (waterPath)
         {
             // Check both start and end points, if they're both in water, then we can *safely* let the creature move
             for (uint32 i = 0; i < _pathPoints.size(); ++i)
             {
-                ZLiquidStatus status = _sourceUnit->GetMap()->GetLiquidStatus(_sourceUnit->GetPhaseShift(), _pathPoints[i].x, _pathPoints[i].y, _pathPoints[i].z, map_liquidHeaderTypeFlags::AllLiquids, nullptr, _sourceUnit->GetCollisionHeight());
+                ZLiquidStatus status = _sourceObj->GetMap()->GetLiquidStatus(_sourceObj->GetPhaseShift(), _pathPoints[i].x, _pathPoints[i].y, _pathPoints[i].z, map_liquidHeaderTypeFlags::AllLiquids, nullptr, _sourceObj->GetCollisionHeight());
                 // One of the points is not in the water, cancel movement.
                 if (status == LIQUID_MAP_NO_WATER)
                 {
@@ -278,12 +278,12 @@ void PathGenerator::BuildPolyPath(G3D::Vector3 const& startPos, G3D::Vector3 con
         TC_LOG_DEBUG("maps", "++ BuildPolyPath :: farFromPoly distToStartPoly=%.3f distToEndPoly=%.3f\n", distToStartPoly, distToEndPoly);
 
         bool buildShotrcut = false;
-        if (_sourceUnit->GetTypeId() == TYPEID_UNIT)
+        if (_sourceObj->GetTypeId() == TYPEID_UNIT)
         {
-            Creature* owner = (Creature*)_sourceUnit;
+            Creature* owner = (Creature*)_sourceObj;
 
             G3D::Vector3 const& p = (distToStartPoly > 7.0f) ? startPos : endPos;
-            if (_sourceUnit->GetMap()->IsUnderWater(_sourceUnit->GetPhaseShift(), p.x, p.y, p.z))
+            if (_sourceObj->GetMap()->IsUnderWater(_sourceObj->GetPhaseShift(), p.x, p.y, p.z))
             {
                 TC_LOG_DEBUG("maps", "++ BuildPolyPath :: underWater case\n");
                 if (owner->CanSwim())
@@ -352,7 +352,7 @@ void PathGenerator::BuildPolyPath(G3D::Vector3 const& startPos, G3D::Vector3 con
                 TC_LOG_ERROR("maps", "Invalid poly ref in BuildPolyPath. _polyLength: %u, pathStartIndex: %u,"
                                      " startPos: %s, endPos: %s, mapid: %u",
                                      _polyLength, pathStartIndex, startPos.toString().c_str(), endPos.toString().c_str(),
-                                     _sourceUnit->GetMapId());
+                                     _sourceObj->GetMapId());
 
                 break;
             }
@@ -468,7 +468,7 @@ void PathGenerator::BuildPolyPath(G3D::Vector3 const& startPos, G3D::Vector3 con
             // this is probably an error state, but we'll leave it
             // and hopefully recover on the next Update
             // we still need to copy our preffix
-            TC_LOG_ERROR("maps", "%s's Path Build failed: 0 length path", _sourceUnit->GetGUID().ToString().c_str());
+            TC_LOG_ERROR("maps", "%s's Path Build failed: 0 length path", _sourceObj->GetGUID().ToString().c_str());
         }
 
         TC_LOG_DEBUG("maps", "++  m_polyLength=%u prefixPolyLength=%u suffixPolyLength=%u \n", _polyLength, prefixPolyLength, suffixPolyLength);
@@ -529,7 +529,7 @@ void PathGenerator::BuildPolyPath(G3D::Vector3 const& startPos, G3D::Vector3 con
         if (!_polyLength || dtStatusFailed(dtResult))
         {
             // only happens if we passed bad data to findPath(), or navmesh is messed up
-            TC_LOG_ERROR("maps", "%s's Path Build failed: 0 length path", _sourceUnit->GetGUID().ToString().c_str());
+            TC_LOG_ERROR("maps", "%s's Path Build failed: 0 length path", _sourceObj->GetGUID().ToString().c_str());
             BuildShortcut();
             _type = PATHFIND_NOPATH;
             return;
@@ -664,7 +664,7 @@ void PathGenerator::NormalizePath()
     }
 
     for (uint32 i = 0; i < _pathPoints.size(); ++i)
-        _sourceUnit->UpdateAllowedPositionZ(_pathPoints[i].x, _pathPoints[i].y, _pathPoints[i].z);
+        _sourceObj->UpdateAllowedPositionZ(_pathPoints[i].x, _pathPoints[i].y, _pathPoints[i].z);
 }
 
 void PathGenerator::BuildShortcut()
@@ -690,9 +690,9 @@ void PathGenerator::CreateFilter()
     uint16 includeFlags = 0;
     uint16 excludeFlags = 0;
 
-    if (_sourceUnit->GetTypeId() == TYPEID_UNIT)
+    if (_sourceObj->GetTypeId() == TYPEID_UNIT)
     {
-        Creature* creature = (Creature*)_sourceUnit;
+        Creature* creature = (Creature*)_sourceObj;
         if (creature->CanWalk())
             includeFlags |= NAV_GROUND;          // walk
 
@@ -716,19 +716,22 @@ void PathGenerator::UpdateFilter()
 {
     // allow creatures to cheat and use different movement types if they are moved
     // forcefully into terrain they can't normally move in
+    if (!_sourceObj->IsUnit())
+        return;
+
     if (_sourceUnit->IsInWater() || _sourceUnit->IsUnderWater())
     {
         if (_sourceUnit->IsInWater() || _sourceUnit->IsUnderWater())
         {
             uint16 includedFlags = _filter.getIncludeFlags();
-            includedFlags |= GetNavTerrain(_sourceUnit->GetPositionX(),
-                _sourceUnit->GetPositionY(),
-                _sourceUnit->GetPositionZ());
+            includedFlags |= GetNavTerrain(_sourceObj->GetPositionX(),
+                _sourceObj->GetPositionY(),
+                _sourceObj->GetPositionZ());
 
             _filter.setIncludeFlags(includedFlags);
         }
 
-        if (Creature const* _sourceCreature = _sourceUnit->ToCreature())
+        if (Creature const* _sourceCreature = _sourceObj->ToCreature())
             if (_sourceCreature->IsInCombat() || _sourceCreature->IsInEvadeMode())
                 _filter.setIncludeFlags(_filter.getIncludeFlags() | NAV_GROUND_STEEP);
     }
@@ -737,7 +740,7 @@ void PathGenerator::UpdateFilter()
 NavTerrainFlag PathGenerator::GetNavTerrain(float x, float y, float z)
 {
     LiquidData data;
-    ZLiquidStatus liquidStatus = _sourceUnit->GetMap()->GetLiquidStatus(_sourceUnit->GetPhaseShift(), x, y, z, map_liquidHeaderTypeFlags::AllLiquids, &data, _sourceUnit->GetCollisionHeight());
+    ZLiquidStatus liquidStatus = _sourceObj->GetMap()->GetLiquidStatus(_sourceObj->GetPhaseShift(), x, y, z, map_liquidHeaderTypeFlags::AllLiquids, &data, _sourceObj->GetCollisionHeight());
     if (liquidStatus == LIQUID_MAP_NO_WATER)
         return NAV_GROUND;
 
@@ -1017,7 +1020,7 @@ void PathGenerator::ReducePathLenghtByDist(float dist)
             float step = dist / len;
             // same as nextVec
             _pathPoints[i + 1] -= diffVec * step;
-            _sourceUnit->UpdateAllowedPositionZ(_pathPoints[i + 1].x, _pathPoints[i + 1].y, _pathPoints[i + 1].z);
+            _sourceObj->UpdateAllowedPositionZ(_pathPoints[i + 1].x, _pathPoints[i + 1].y, _pathPoints[i + 1].z);
             _pathPoints.resize(i + 2);
             break;
         }
@@ -1053,7 +1056,7 @@ void PathGenerator::ShortenPathUntilDist(G3D::Vector3 const& target, float dist)
         return;
 
     size_t i = _pathPoints.size()-1;
-    float x, y, z, collisionHeight = _sourceUnit->GetCollisionHeight();
+    float x, y, z, collisionHeight = _sourceObj->GetCollisionHeight();
     // find the first i s.t.:
     //  - _pathPoints[i] is still too close
     //  - _pathPoints[i-1] is too far away
@@ -1065,8 +1068,8 @@ void PathGenerator::ShortenPathUntilDist(G3D::Vector3 const& target, float dist)
             break; // bingo!
 
         // check if the shortened path is still in LoS with the target
-        _sourceUnit->GetHitSpherePointFor({ _pathPoints[i - 1].x, _pathPoints[i - 1].y, _pathPoints[i - 1].z + collisionHeight }, x, y, z);
-        if (!_sourceUnit->GetMap()->isInLineOfSight(_sourceUnit->GetPhaseShift(), x, y, z, _pathPoints[i - 1].x, _pathPoints[i - 1].y, _pathPoints[i - 1].z + collisionHeight, LINEOFSIGHT_ALL_CHECKS, VMAP::ModelIgnoreFlags::Nothing))
+        _sourceObj->GetHitSpherePointFor({ _pathPoints[i - 1].x, _pathPoints[i - 1].y, _pathPoints[i - 1].z + collisionHeight }, x, y, z);
+        if (!_sourceObj->GetMap()->isInLineOfSight(_sourceObj->GetPhaseShift(), x, y, z, _pathPoints[i - 1].x, _pathPoints[i - 1].y, _pathPoints[i - 1].z + collisionHeight, LINEOFSIGHT_ALL_CHECKS, VMAP::ModelIgnoreFlags::Nothing))
         {
             // whenver we find a point that is not in LoS anymore, simply use last valid path
             _pathPoints.resize(i + 1);
@@ -1101,11 +1104,10 @@ bool PathGenerator::CalculatePathPig(G3D::Vector3 const& startPoint, G3D::Vector
 
     _forceDestination = forceDest;
 
-    TC_LOG_DEBUG("maps.mmaps", "++ PathGenerator::CalculatePath() for %u", _sourceUnit->GetGUID().GetCounter());
+    TC_LOG_DEBUG("maps.mmaps", "++ PathGenerator::CalculatePath() for %u", _sourceObj->GetGUID().GetCounter());
 
     // make sure navMesh works - we can run on map w/o mmap
     // check if the start and end point have a .mmtile loaded (can we pass via not loaded tile on the way?)
-    const Unit* _sourceUnit = _sourceUnit;
     if (!_navMesh || !_navMeshQuery || (_sourceUnit && _sourceUnit->HasUnitState(UNIT_STATE_IGNORE_PATHFINDING)) ||
         !HaveTile(startPoint) || !HaveTile(endPoint))
     {
@@ -1120,7 +1122,7 @@ bool PathGenerator::CalculatePathPig(G3D::Vector3 const& startPoint, G3D::Vector
     return true;
 }
 
-bool PathGenerator::IsInvalidDestinationZ(Unit const* target) const
+bool PathGenerator::IsInvalidDestinationZ(WorldObject const* target) const
 {
     return (target->GetPositionZ() - GetActualEndPosition().z) > 5.0f;
 }
@@ -1134,10 +1136,10 @@ void PathGenerator::AddFarFromPolyFlags(bool startFarFromPoly, bool endFarFromPo
 }
 
 
-bool PathGenerator::UpdateForMelee(Unit* pTarget, float meleeReach)
+bool PathGenerator::UpdateForMelee(WorldObject* pTarget, float meleeReach)
 {
     // Si deja en ligne de vision, et a distance, c'est bon.
-    if (pTarget->IsWithinDist3d(_sourceUnit->GetPositionX(), _sourceUnit->GetPositionY(), _sourceUnit->GetPositionZ(), meleeReach))
+    if (pTarget->IsWithinDist3d(_sourceObj->GetPositionX(), _sourceObj->GetPositionY(), _sourceObj->GetPositionZ(), meleeReach))
     {
         Clear();
         _type = PathType(PATHFIND_SHORTCUT | PATHFIND_NORMAL | PATHFIND_CASTER);
@@ -1173,7 +1175,7 @@ void PathGenerator::CutPathWithDynamicLoS()
     // We have always keep at least 2 points (else, there is no mvt !)
     for (uint32 i = 1; i <= maxIndex; ++i)
     {
-        if (_sourceUnit->GetMap()->GetDynamicObjectHitPos(_sourceUnit->GetPhaseShift(), _pathPoints[i - 1], _pathPoints[i], out, -0.1f))
+        if (_sourceObj->GetMap()->GetDynamicObjectHitPos(_sourceObj->GetPhaseShift(), _pathPoints[i - 1], _pathPoints[i], out, -0.1f))
         {
             _pathPoints[i] = out;
             _pathPoints.resize(i + 1);

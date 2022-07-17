@@ -86,6 +86,7 @@ namespace Movement
 
     private:
         bool _checkPathLengths() const;
+        bool _checkPathBounds() const;
     };
 }
 

@@ -97,13 +97,20 @@ void AreaTrigger::RemoveFromWorld()
     }
 }
 
-bool AreaTrigger::Create(uint32 areaTriggerCreatePropertiesId, Unit* caster, Unit* target, SpellInfo const* spell, Position const& pos, int32 duration, SpellCastVisual spellVisual, ObjectGuid const& castId, AuraEffect const* aurEff)
+bool AreaTrigger::Create(uint32 areaTriggerCreatePropertiesId, Unit* caster, Unit* target, SpellInfo const* spell, Position const& pos, int32 duration, SpellCastVisual spellVisual, ObjectGuid const& castId, AuraEffect const* aurEff, ObjectGuid TargetGUID)
 {
     _targetGuid = target ? target->GetGUID() : ObjectGuid::Empty;
     _aurEff = aurEff;
 
     SetMap(caster->GetMap());
     Relocate(pos);
+
+    if (spell->Id == 202770)
+        if (auto target = ObjectAccessor::GetUnit(*this, TargetGUID))
+            Relocate(*target);
+
+    CreateTimeMS = getMSTime();
+
     if (!IsPositionValid())
     {
         TC_LOG_ERROR("entities.areatrigger", "AreaTrigger (areaTriggerCreatePropertiesId %u) not created. Invalid coordinates (X: %f Y: %f)", areaTriggerCreatePropertiesId, GetPositionX(), GetPositionY());
@@ -178,6 +185,7 @@ bool AreaTrigger::Create(uint32 areaTriggerCreatePropertiesId, Unit* caster, Uni
     auto areaTriggerData = m_values.ModifyValue(&AreaTrigger::m_areaTriggerData);
     m_Caster = caster;
     SetUpdateFieldValue(areaTriggerData.ModifyValue(&UF::AreaTriggerData::Caster), caster->GetGUID());
+    SetUpdateFieldValue(areaTriggerData.ModifyValue(&UF::AreaTriggerData::TargetGUID), TargetGUID);
     SetUpdateFieldValue(areaTriggerData.ModifyValue(&UF::AreaTriggerData::CreatingEffectGUID), castId);
 
     SetUpdateFieldValue(areaTriggerData.ModifyValue(&UF::AreaTriggerData::SpellID), spell->Id);
@@ -213,6 +221,7 @@ bool AreaTrigger::Create(uint32 areaTriggerCreatePropertiesId, Unit* caster, Uni
     SetUpdateFieldValue(areaTriggerData.ModifyValue(&UF::AreaTriggerData::VisualAnim).ModifyValue(&UF::VisualAnim::AnimKitID), GetCreateProperties()->AnimKitId);
     if (GetTemplate() && GetTemplate()->HasFlag(AREATRIGGER_FLAG_UNK3))
         SetUpdateFieldValue(areaTriggerData.ModifyValue(&UF::AreaTriggerData::VisualAnim).ModifyValue(&UF::VisualAnim::Field_C), true);
+
 
     PhasingHandler::InheritPhaseShift(this, caster);
 
@@ -253,8 +262,15 @@ bool AreaTrigger::Create(uint32 areaTriggerCreatePropertiesId, Unit* caster, Uni
     }
     else if (GetCreateProperties()->HasSplines())
     {
-        if (areaTriggerCreatePropertiesId != 6887)
-            InitSplineOffsets(GetCreateProperties()->SplinePoints, timeToTarget);
+        InitSplineOffsets(GetCreateProperties()->SplinePoints, timeToTarget);
+    }
+    else if (m_areaTriggerData->SpellID == 202770)
+    {
+        if (auto target = ObjectAccessor::GetUnit(*this, m_areaTriggerData->TargetGUID))
+        {
+            Relocate(*target);
+            SetDestination(*target, timeToTarget, true);
+        }
     }
 
     AI_Initialize();
@@ -278,10 +294,10 @@ bool AreaTrigger::Create(uint32 areaTriggerCreatePropertiesId, Unit* caster, Uni
     return true;
 }
 
-AreaTrigger* AreaTrigger::CreateAreaTrigger(uint32 areaTriggerCreatePropertiesId, Unit* caster, Unit* target, SpellInfo const* spell, Position const& pos, int32 duration, SpellCastVisual spellVisual, ObjectGuid const& castId /*= ObjectGuid::Empty*/, AuraEffect const* aurEff /*= nullptr*/)
+AreaTrigger* AreaTrigger::CreateAreaTrigger(uint32 areaTriggerCreatePropertiesId, Unit* caster, Unit* target, SpellInfo const* spell, Position const& pos, int32 duration, SpellCastVisual spellVisual, ObjectGuid const& castId /*= ObjectGuid::Empty*/, AuraEffect const* aurEff /*= nullptr*/, ObjectGuid TargetGUID /*= ObjectGuid::Empty*/)
 {
     AreaTrigger* at = new AreaTrigger();
-    if (!at->Create(areaTriggerCreatePropertiesId, caster, target, spell, pos, duration, spellVisual, castId, aurEff))
+    if (!at->Create(areaTriggerCreatePropertiesId, caster, target, spell, pos, duration, spellVisual, castId, aurEff, TargetGUID))
     {
         delete at;
         return nullptr;
@@ -410,6 +426,12 @@ void AreaTrigger::SetDuration(int32 newDuration)
 
     // negative duration (permanent areatrigger) sent as 0
     SetUpdateFieldValue(m_values.ModifyValue(&AreaTrigger::m_areaTriggerData).ModifyValue(&UF::AreaTriggerData::Duration), std::max(newDuration, 0));
+}
+
+void AreaTrigger::SetTargetGUID(ObjectGuid const& guid)
+{
+    SetUpdateFieldValue(m_values.ModifyValue(&AreaTrigger::m_areaTriggerData).ModifyValue(&UF::AreaTriggerData::TargetGUID), guid);
+    const_cast<UF::AreaTriggerData&>(*m_areaTriggerData).MarkChanged(&UF::AreaTriggerData::TargetGUID);
 }
 
 void AreaTrigger::_UpdateDuration(int32 newDuration)
@@ -750,10 +772,7 @@ bool AreaTrigger::CheckIsInPolygon2D(Position const* pos) const
 
 bool AreaTrigger::SetDestination(Position const& pos, uint32 timeToTarget, bool followTerrain /*= false*/)
 {
-    if (!GetCaster())
-        return false;
-
-    PathGenerator path(GetCaster(), GetTransport(), true);
+    PathGenerator path(this, GetTransport(), true);
     bool result = path.CalculatePath(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ());
 
     if (!result || path.GetPathType() & PATHFIND_NOPATH)
@@ -764,6 +783,18 @@ bool AreaTrigger::SetDestination(Position const& pos, uint32 timeToTarget, bool 
 
     //We Have a new destination
     _reachedDestination = false;
+
+    uint32 l_NewTimeToTarget = timeToTarget;
+    if (m_areaTriggerData->SpellID == 202770)
+    {
+        float m_moveDistanceMax = 0.0f;
+        for (size_t i = 0; i < path.GetPath().size() - 1; ++i)
+            m_moveDistanceMax += (path.GetPath()[i + 1] - path.GetPath()[i]).length();
+
+
+        l_NewTimeToTarget = uint32((m_moveDistanceMax / 7.0f) * 1000.0f);
+        TC_LOG_TRACE("network.opcode", "AT::SetDestination l_NewTimeToTarget %u m_moveDistanceMax %f", l_NewTimeToTarget, m_moveDistanceMax);
+    }
 
     for (auto const& point : path.GetPath())
     {
@@ -780,7 +811,7 @@ bool AreaTrigger::SetDestination(Position const& pos, uint32 timeToTarget, bool 
                     }
     }
 
-    InitSplines(path.GetPath(), timeToTarget);
+    InitSplines(path.GetPath(), l_NewTimeToTarget);
     return true;
 }
 
@@ -799,36 +830,31 @@ bool AreaTrigger::SetDestinationPig(WorldObject* target)
     // (Spline)[1] Points : X : -1887.3502 Y : 1325.8179 Z : 5266.6494
     // (Spline)[2] Points : X : -1887.5316 Y : 1325.2454 Z : 5266.6494
     // (Spline)[3] Points : X : -1887.5316 Y : 1325.2454 Z : 5266.6494
-
-
     _movementTime = 0;
     uint32 timeToTarget = 86;
 
     std::vector<G3D::Vector3> splinePoints;
     splinePoints.push_back(G3D::Vector3(target->GetPositionX(), target->GetPositionY(), target->GetPositionZ()));
     splinePoints.push_back(G3D::Vector3(target->GetPositionX(), target->GetPositionY(), target->GetPositionZ()));
-    splinePoints.push_back(G3D::Vector3(target->GetPositionX() + 0.2f, target->GetPositionY() + 0.2f, target->GetPositionZ()));
-    splinePoints.push_back(G3D::Vector3(target->GetPositionX() + 0.2f, target->GetPositionY() + 0.2f, target->GetPositionZ()));
+    splinePoints.push_back(G3D::Vector3(target->GetPositionX() + 0.2f, target->GetPositionY() - 0.6f, target->GetPositionZ()));
+    splinePoints.push_back(G3D::Vector3(target->GetPositionX() + 0.2f, target->GetPositionY() - 0.6f, target->GetPositionZ()));
 
     _spline = std::make_unique<::Movement::Spline<int32>>();
     _spline->init_spline(&splinePoints[0], splinePoints.size(), ::Movement::SplineBase::ModeLinear);
     _spline->initLengths();
 
     // should be sent in object create packets only
-    DoWithSuppressingObjectUpdates([&]()
-    {
-        SetUpdateFieldValue(m_values.ModifyValue(&AreaTrigger::m_areaTriggerData).ModifyValue(&UF::AreaTriggerData::TimeToTarget), timeToTarget);
-        const_cast<UF::AreaTriggerData&>(*m_areaTriggerData).ClearChanged(&UF::AreaTriggerData::TimeToTarget);
-    });
+    SetUpdateFieldValue(m_values.ModifyValue(&AreaTrigger::m_areaTriggerData).ModifyValue(&UF::AreaTriggerData::TimeToTarget), timeToTarget);
 
+    // should be false during init
     if (IsInWorld())
     {
-        if (_reachedDestination)
-        {
-            WorldPackets::AreaTrigger::AreaTriggerRePath reshape;
-            reshape.TriggerGUID = GetGUID();
-            SendMessageToSet(reshape.Write(), true);
-        }
+       // if (_reachedDestination)
+       // {
+       //     WorldPackets::AreaTrigger::AreaTriggerRePath reshape;
+       //     reshape.TriggerGUID = GetGUID();
+       //     SendMessageToSet(reshape.Write(), true);
+       // }
 
         WorldPackets::AreaTrigger::AreaTriggerRePath reshape;
         reshape.TriggerGUID = GetGUID();
@@ -943,6 +969,14 @@ void AreaTrigger::InitSplineOffsets(std::vector<Position> const& offsets, uint32
 
     if (GetTemplate()->HasFlag(AREATRIGGER_FLAG_HAS_FOLLOWS_TERRAIN))
     {
+        // Hack for Fury of Elune
+        if (m_areaTriggerData->SpellID == 202770)
+        {
+            if (auto target = ObjectAccessor::GetUnit(*this, m_areaTriggerData->TargetGUID))
+                SetDestination(*target, timeToTarget, true);
+            return;
+        }
+
         float srcX = x;
         float srcY = y;
         float srcZ = z;
@@ -1029,28 +1063,20 @@ void AreaTrigger::InitSplines(std::vector<G3D::Vector3> splinePoints, uint32 tim
     if (splinePoints.size() < 2)
         return;
 
+   //if (true)
+   //    return;
+
     _movementTime = 0;
 
     _spline = std::make_unique<::Movement::Spline<int32>>();
     _spline->init_spline(&splinePoints[0], splinePoints.size(), ::Movement::SplineBase::ModeLinear);
     _spline->initLengths();
 
-    // should be sent in object create packets only
-    DoWithSuppressingObjectUpdates([&]()
-    {
-        SetUpdateFieldValue(m_values.ModifyValue(&AreaTrigger::m_areaTriggerData).ModifyValue(&UF::AreaTriggerData::TimeToTarget), timeToTarget);
-        const_cast<UF::AreaTriggerData&>(*m_areaTriggerData).ClearChanged(&UF::AreaTriggerData::TimeToTarget);
-    });
+    // should be sent in object create packets only - but sniffs say otherwise
+    SetUpdateFieldValue(m_values.ModifyValue(&AreaTrigger::m_areaTriggerData).ModifyValue(&UF::AreaTriggerData::TimeToTarget), timeToTarget);
 
     if (IsInWorld())
     {
-        if (_reachedDestination)
-        {
-            WorldPackets::AreaTrigger::AreaTriggerRePath reshape;
-            reshape.TriggerGUID = GetGUID();
-            SendMessageToSet(reshape.Write(), true);
-        }
-
         WorldPackets::AreaTrigger::AreaTriggerRePath reshape;
         reshape.TriggerGUID = GetGUID();
         reshape.AreaTriggerSpline.emplace();
@@ -1060,6 +1086,8 @@ void AreaTrigger::InitSplines(std::vector<G3D::Vector3> splinePoints, uint32 tim
             reshape.AreaTriggerSpline->Points.emplace_back(vec.x, vec.y, vec.z);
 
         SendMessageToSet(reshape.Write(), true);
+
+        TC_LOG_TRACE("network.opcode", "AreaTriggerRePath %u %u", timeToTarget, GetElapsedTimeForMovement());
     }
 
     _reachedDestination = false;
@@ -1081,6 +1109,10 @@ void AreaTrigger::UpdateTimeToTarget(uint32 timeToTarget)
 
     _spline->computeIndex(currentTimePercent, lastPositionIndex, percentFromLastPoint);
 
+    // hack for fury of elune - new position is set by script
+    if (_areaTriggerCreateProperties && _areaTriggerCreateProperties->Id == 6887)
+        return;
+
     std::vector<G3D::Vector3> newPoints;
     float x, y, z;
     GetPosition(x, y, z);
@@ -1101,11 +1133,7 @@ void AreaTrigger::InitOrbit(AreaTriggerOrbitInfo const& orbit, uint32 timeToTarg
     ASSERT(orbit.Center.has_value() || orbit.PathTarget.has_value());
 
     // should be sent in object create packets only
-    DoWithSuppressingObjectUpdates([&]()
-    {
-        SetUpdateFieldValue(m_values.ModifyValue(&AreaTrigger::m_areaTriggerData).ModifyValue(&UF::AreaTriggerData::TimeToTarget), timeToTarget);
-        const_cast<UF::AreaTriggerData&>(*m_areaTriggerData).ClearChanged(&UF::AreaTriggerData::TimeToTarget);
-    });
+    SetUpdateFieldValue(m_values.ModifyValue(&AreaTrigger::m_areaTriggerData).ModifyValue(&UF::AreaTriggerData::TimeToTarget), timeToTarget);
 
     _orbitInfo = orbit;
 

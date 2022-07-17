@@ -4748,7 +4748,7 @@ void AreaTriggerData::WriteCreate(ByteBuffer& data, EnumFlag<UpdateFieldFlag> fi
     data << CreatingEffectGUID;
     data << uint32(Field_80);
     data << uint32(Field_84);
-    data << Field_88;
+    data << TargetGUID;
     ExtraScaleCurve->WriteCreate(data, owner, receiver);
     VisualAnim->WriteCreate(data, owner, receiver);
 }
@@ -4823,7 +4823,7 @@ void AreaTriggerData::WriteUpdate(ByteBuffer& data, Mask const& changesMask, boo
         }
         if (changesMask[16])
         {
-            data << Field_88;
+            data << TargetGUID;
         }
         if (changesMask[2])
         {
@@ -4853,7 +4853,7 @@ void AreaTriggerData::ClearChangesMask()
     Base::ClearChangesMask(CreatingEffectGUID);
     Base::ClearChangesMask(Field_80);
     Base::ClearChangesMask(Field_84);
-    Base::ClearChangesMask(Field_88);
+    Base::ClearChangesMask(TargetGUID);
     Base::ClearChangesMask(VisualAnim);
     _changesMask.ResetAll();
 }

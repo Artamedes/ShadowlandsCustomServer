@@ -145,7 +145,6 @@ namespace Movement
         Optional<AnimTier> GetAnimation() const { return anim_tier ? anim_tier->AnimTier : Optional<AnimTier>{}; }
 
         bool onTransport;
-        bool splineIsFacingOnly;
         std::string ToString() const;
         bool HasStarted() const
         {

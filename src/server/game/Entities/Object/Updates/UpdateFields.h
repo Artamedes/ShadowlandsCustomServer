@@ -896,7 +896,7 @@ struct AreaTriggerData : public IsUpdateFieldStructureTag, public HasChangesMask
     UpdateField<ObjectGuid, 0, 13> CreatingEffectGUID;
     UpdateField<uint32, 0, 14> Field_80;
     UpdateField<uint32, 0, 15> Field_84;
-    UpdateField<ObjectGuid, 0, 16> Field_88;
+    UpdateField<ObjectGuid, 0, 16> TargetGUID;
     UpdateField<UF::VisualAnim, 0, 17> VisualAnim;
 
     void WriteCreate(ByteBuffer& data, EnumFlag<UpdateFieldFlag> fieldVisibilityFlags, AreaTrigger const* owner, Player const* receiver) const;

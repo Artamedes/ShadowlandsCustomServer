@@ -191,7 +191,6 @@ void MoveSpline::Initialize(MoveSplineInitArgs const& args)
     effect_start_time = 0;
     spell_effect_extra = args.spellEffectExtra;
     anim_tier = args.animTier;
-    splineIsFacingOnly = args.path.size() == 2 && args.facing.type != MONSTER_MOVE_NORMAL && ((args.path[1] - args.path[0]).length() < 0.1f);
 
     velocity = args.velocity;
 
@@ -226,7 +225,7 @@ void MoveSpline::Initialize(MoveSplineInitArgs const& args)
 
 MoveSpline::MoveSpline() : m_Id(0), time_passed(0),
     vertical_acceleration(0.f), initialOrientation(0.f), effect_start_time(0), point_Idx(0), point_Idx_offset(0), velocity(0.f),
-    onTransport(false), splineIsFacingOnly(false)
+    onTransport(false)
 {
     splineflags.done = true;
 }
@@ -255,6 +254,30 @@ bool MoveSplineInitArgs::Validate(Unit* unit) const
     }
     return true;
 #undef CHECK
+}
+
+// MONSTER_MOVE packet format limitation for not CatmullRom movement:
+// each vertex offset packed into 11 bytes
+bool MoveSplineInitArgs::_checkPathBounds() const
+{
+    if (!(flags & MoveSplineFlag::Catmullrom) && path.size() > 2)
+    {
+        enum {
+            MAX_OFFSET = (1 << 11) / 2
+        };
+        Vector3 middle = (path.front() + path.back()) / 2;
+        Vector3 offset;
+        for (uint32 i = 1; i < path.size() - 1; ++i)
+        {
+            offset = path[i] - middle;
+            if (std::fabs(offset.x) >= MAX_OFFSET || std::fabs(offset.y) >= MAX_OFFSET || std::fabs(offset.z) >= MAX_OFFSET)
+            {
+                TC_LOG_ERROR("misc", "MoveSplineInitArgs::_checkPathBounds check failed");
+                return false;
+            }
+        }
+    }
+    return true;
 }
 
 // check path lengths - why are we even starting such short movement?

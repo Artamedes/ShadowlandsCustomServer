@@ -29,6 +29,7 @@
 #include "Containers.h"
 #include "SpellPackets.h"
 #include "TemporarySummon.h"
+#include "AreaTriggerPackets.h"
 
 enum DruidSpells
 {
@@ -2385,30 +2386,28 @@ struct at_dru_fury_of_elune : AreaTriggerAI
 {
 	at_dru_fury_of_elune(AreaTrigger* areatrigger) : AreaTriggerAI(areatrigger)
 	{
-		areatrigger->SetPeriodicProcTimer(500);
-
-        // Can't do it on OnCreate need to send before packet
-      //if (Unit* caster = at->GetCaster())
-      //    if (caster->Variables.Exist("FURY_TARGET") && caster->Variables.GetValue<ObjectGuid>("FURY_TARGET") != ObjectGuid::Empty)
-      //        if (Unit* target = ObjectAccessor::GetUnit(*caster, caster->Variables.GetValue<ObjectGuid>("FURY_TARGET")))
-      //            if (caster->IsValidAttackTarget(target))
-      //            {
-      //                lastTargetPosition = target->GetPosition();
-      //                areatrigger->SetDestination(lastTargetPosition, 500);
-      //            }
+		areatrigger->SetPeriodicProcTimer(50);
 	}
 
 	void OnPeriodicProc() override
 	{
+        //if (at->_reachedDestination && sendStopPacket)
+        //{
+        //    WorldPackets::AreaTrigger::AreaTriggerRePath reshape;
+        //    reshape.TriggerGUID = at->GetGUID();
+        //    at->SendMessageToSet(reshape.Write(), true);
+        //    sendStopPacket = false;
+        //}
+
         if (Unit* caster = at->GetCaster())
         {
-            if (caster->Variables.Exist("FURY_TARGET") && caster->Variables.GetValue<ObjectGuid>("FURY_TARGET") != ObjectGuid::Empty)
-                if (Unit* target = ObjectAccessor::GetUnit(*caster, caster->Variables.GetValue<ObjectGuid>("FURY_TARGET")))
-                    if (caster->IsValidAttackTarget(target) && lastTargetPosition != target->GetPosition())
-                    {
-                        lastTargetPosition = target->GetPosition();
-                        at->SetDestinationPig(target);
-                    }
+            if (auto target = ObjectAccessor::GetUnit(*caster, at->m_areaTriggerData->TargetGUID))
+                if (lastTargetPosition != target->GetPosition())
+                {
+                    lastTargetPosition = target->GetPosition();
+                    at->SetDestination(*target, 200, true);
+                    at->SetTargetGUID(target->GetGUID());
+                }
 
             caster->CastSpell(at->GetPosition(), SPELL_DRUID_FURY_OF_ELUNE_DAMAGE, true);
         }
@@ -4854,8 +4853,6 @@ class spell_dru_fury_of_elune : public SpellScript
 		Unit* target = GetHitUnit();
 		if (!caster || !target)
 			return;
-
-		caster->Variables.Set<ObjectGuid>("FURY_TARGET", target->GetGUID());
 	}
 
 	void Register() override

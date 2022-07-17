@@ -71,7 +71,7 @@ namespace WorldPackets
             WorldPacket const* Write() override { return &_worldPacket; }
         };
 
-        class AreaTriggerRePath final : public ServerPacket
+        class TC_GAME_API AreaTriggerRePath final : public ServerPacket
         {
         public:
             AreaTriggerRePath() : ServerPacket(SMSG_AREA_TRIGGER_RE_PATH, 17) { }
