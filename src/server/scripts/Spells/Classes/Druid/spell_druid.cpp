@@ -1891,6 +1891,7 @@ private:
                         damage += aurEff->GetAmount();
 
                     effect->SetDamage(damage * effect->GetDonePct() * ComboPoints);
+                    _originalDamage = 0;
                 }
             }
         }
@@ -1913,10 +1914,43 @@ private:
         }
 	}
 
+    void HandlePeriodic(AuraEffect const* aurEff)
+    {
+        auto caster = GetCaster();
+        if (!caster)
+            return;
+        auto target = GetTarget();
+        if (!target)
+            return;
+
+        if (_originalDamage > 0)
+        {
+            if (!Druid::CanDraughtOfDeepFocus(caster, target, GetId()))
+            {
+                const_cast<AuraEffect*>(aurEff)->ChangeAmount(_originalDamage);
+                const_cast<AuraEffect*>(aurEff)->SetDamage(_originalDamage);
+                _originalDamage = 0;
+            }
+        }
+        else
+        {
+            if (Druid::CanDraughtOfDeepFocus(caster, target, GetId()))
+            {
+                _originalDamage = aurEff->GetDamage();
+                uint32 newDmg = CalculatePct(aurEff->GetDamage(), 140);;
+                const_cast<AuraEffect*>(aurEff)->SetDamage(newDmg);
+                const_cast<AuraEffect*>(aurEff)->ChangeAmount(newDmg);
+            }
+        }
+    }
+
+    uint32 _originalDamage = 0;
+
     void Register() override
     {
         OnEffectApply += AuraEffectApplyFn(aura_dru_rip::HandleApply, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE, AURA_EFFECT_HANDLE_REAL);
 		OnEffectRemove += AuraEffectRemoveFn(aura_dru_rip::HandleRemove, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE, AURA_EFFECT_HANDLE_REAL);
+        OnEffectPeriodic += AuraEffectPeriodicFn(aura_dru_rip::HandlePeriodic, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE);
     }
 };
 
@@ -3587,6 +3621,7 @@ class aura_dru_rake : public AuraScript
             const_cast<AuraEffect*>(aurEff)->SetDamage(aurEff->GetDamage() + CalculatePct(aurEff->GetDamage(), 60));
             const_cast<AuraEffect*>(aurEff)->ChangeAmount(aurEff->GetDamage());
         }
+        _originalDamage = 0;
     }
 
     void HandleRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
@@ -3604,10 +3639,43 @@ class aura_dru_rake : public AuraScript
 		}
 	}
 
+    void HandlePeriodic(AuraEffect const* aurEff)
+    {
+        auto caster = GetCaster();
+        if (!caster)
+            return;
+        auto target = GetTarget();
+        if (!target)
+            return;
+
+        if (_originalDamage > 0)
+        {
+            if (!Druid::CanDraughtOfDeepFocus(caster, target, GetId()))
+            {
+                const_cast<AuraEffect*>(aurEff)->ChangeAmount(_originalDamage);
+                const_cast<AuraEffect*>(aurEff)->SetDamage(_originalDamage);
+                _originalDamage = 0;
+            }
+        }
+        else
+        {
+            if (Druid::CanDraughtOfDeepFocus(caster, target, GetId()))
+            {
+                _originalDamage = aurEff->GetDamage();
+                uint32 newDmg = CalculatePct(aurEff->GetDamage(), 140);;
+                const_cast<AuraEffect*>(aurEff)->SetDamage(newDmg);
+                const_cast<AuraEffect*>(aurEff)->ChangeAmount(newDmg);
+            }
+        }
+    }
+
+    uint32 _originalDamage = 0;
+
 	void Register() override
 	{
         OnEffectApply += AuraEffectApplyFn(aura_dru_rake::HandleApply, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE, AURA_EFFECT_HANDLE_REAL);
         OnEffectRemove += AuraEffectRemoveFn(aura_dru_rake::HandleRemove, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE, AURA_EFFECT_HANDLE_REAL);
+        OnEffectPeriodic += AuraEffectPeriodicFn(aura_dru_rake::HandlePeriodic, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE);
 	}
 
 private:
@@ -3695,7 +3763,7 @@ class aura_dru_moonfire_damage : public AuraScript
 {
 	PrepareAuraScript(aura_dru_moonfire_damage);
 
-	void HandlePeriodic(AuraEffect const* /*aurEff*/)
+	void HandlePeriodic(AuraEffect const* aurEff)
 	{
 		Unit* caster = GetCaster();
 		Unit* target = GetUnitOwner();
@@ -3705,6 +3773,26 @@ class aura_dru_moonfire_damage : public AuraScript
 		if (Aura* aura = caster->GetAura(SPELL_DRUID_SHOOTING_STARTS))
 			if (roll_chance_i(aura->GetEffect(EFFECT_0)->GetAmount()))			
 				caster->CastSpell(target, SPELL_DRUID_SHOOTING_START, true);
+
+        if (_originalDamage > 0)
+        {
+            if (!Druid::CanDraughtOfDeepFocus(caster, target, GetId()))
+            {
+                const_cast<AuraEffect*>(aurEff)->ChangeAmount(_originalDamage);
+                const_cast<AuraEffect*>(aurEff)->SetDamage(_originalDamage);
+                _originalDamage = 0;
+            }
+        }
+        else
+        {
+            if (Druid::CanDraughtOfDeepFocus(caster, target, GetId()))
+            {
+                _originalDamage = aurEff->GetDamage();
+                uint32 newDmg = CalculatePct(aurEff->GetDamage(), 140);;
+                const_cast<AuraEffect*>(aurEff)->SetDamage(newDmg);
+                const_cast<AuraEffect*>(aurEff)->ChangeAmount(newDmg);
+            }
+        }
 	}
 
 	void HandleRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes mode)
@@ -3714,10 +3802,18 @@ class aura_dru_moonfire_damage : public AuraScript
 				caster->CastSpell(caster, SPELL_DRUID_DYING_STARS_ENERGIZE, true);
 	}
 
+    void HandleApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes mode)
+    {
+        _originalDamage = 0;
+    }
+
+    uint32 _originalDamage = 0;
+
 	void Register() override
 	{
 		OnEffectPeriodic += AuraEffectPeriodicFn(aura_dru_moonfire_damage::HandlePeriodic, EFFECT_1, SPELL_AURA_PERIODIC_DAMAGE);
-		OnEffectRemove += AuraEffectRemoveFn(aura_dru_moonfire_damage::HandleRemove, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE, AURA_EFFECT_HANDLE_REAL);
+        OnEffectApply += AuraEffectApplyFn(aura_dru_moonfire_damage::HandleApply, EFFECT_1, SPELL_AURA_PERIODIC_DAMAGE, AURA_EFFECT_HANDLE_REAL_OR_REAPPLY_MASK);
+        OnEffectRemove += AuraEffectRemoveFn(aura_dru_moonfire_damage::HandleRemove, EFFECT_1, SPELL_AURA_PERIODIC_DAMAGE, AURA_EFFECT_HANDLE_REAL);
 	}
 };
 
@@ -4139,7 +4235,7 @@ class aura_dru_rejuvenation : public AuraScript
 					abundanceBuff->ModStackAmount(-1);
 	}
 
-    void HandlePeriodic(AuraEffect const* /*aurEff*/)
+    void HandlePeriodic(AuraEffect const* aurEff)
     {
         Unit* caster = GetCaster();
         Unit* owner = GetUnitOwner();
@@ -4152,11 +4248,39 @@ class aura_dru_rejuvenation : public AuraScript
 
         if (caster->HasAura(SPELL_DRUID_CULTIVATION) && owner->GetHealthPct() <= sSpellMgr->GetSpellInfo(SPELL_DRUID_CULTIVATION)->GetEffect(EFFECT_0).BasePoints)
             caster->CastSpell(owner, SPELL_DRUID_CULTIVATION_HEAL, true);
+
+        if (_originalDamage > 0)
+        {
+            if (!Druid::CanDraughtOfDeepFocus(caster, owner, GetId()))
+            {
+                const_cast<AuraEffect*>(aurEff)->ChangeAmount(_originalDamage);
+                const_cast<AuraEffect*>(aurEff)->SetDamage(_originalDamage);
+                _originalDamage = 0;
+            }
+        }
+        else
+        {
+            if (Druid::CanDraughtOfDeepFocus(caster, owner, GetId()))
+            {
+                _originalDamage = aurEff->GetDamage();
+                uint32 newDmg = CalculatePct(aurEff->GetDamage(), 140);;
+                const_cast<AuraEffect*>(aurEff)->SetDamage(newDmg);
+                const_cast<AuraEffect*>(aurEff)->ChangeAmount(newDmg);
+            }
+        }
     }
+
+    void HandleApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+    {
+        _originalDamage = 0;
+    }
+
+    uint32 _originalDamage = 0;
 
 	void Register() override
 	{
-		AfterEffectRemove += AuraEffectRemoveFn(aura_dru_rejuvenation::AfterRemove, EFFECT_0, SPELL_AURA_PERIODIC_HEAL, AURA_EFFECT_HANDLE_REAL);
+        OnEffectApply += AuraEffectApplyFn(aura_dru_rejuvenation::HandleApply, EFFECT_0, SPELL_AURA_PERIODIC_HEAL, AURA_EFFECT_HANDLE_REAL_OR_REAPPLY_MASK);
+        AfterEffectRemove += AuraEffectRemoveFn(aura_dru_rejuvenation::AfterRemove, EFFECT_0, SPELL_AURA_PERIODIC_HEAL, AURA_EFFECT_HANDLE_REAL);
         OnEffectPeriodic += AuraEffectPeriodicFn(aura_dru_rejuvenation::HandlePeriodic, EFFECT_0, SPELL_AURA_PERIODIC_HEAL);
 	}
 };

@@ -46,6 +46,8 @@ namespace Druid
         IncarninationKindOfTheJungle = 102543,
         Berserk = 106951,
         PrimalWrath = 285381,
+        Rake = 1822,
+        RakeDot = 155722,
     };
 
     enum eGuardian
@@ -71,6 +73,7 @@ namespace Druid
         AstralInfluence = 197524,
         MasteryTotalEclipse = 326085,
         ShootingStars = 202342,
+        MoonfireDot = 164812,
 
         // Eclipse
         Eclipse      = 79577,
@@ -94,6 +97,7 @@ namespace Druid
         // All Specs
         OathOfTheElderDruid      = 338608,
         OathOfTheElderDruidCD    = 338643,
+        DraughtOfDeepFocus       = 338658,
 
         /// Balance
         BalanceOfAllThings       = 339942,
@@ -193,5 +197,29 @@ namespace Druid
             default:
                 return false;
         }
+    }
+
+
+    const uint32 DraughtOfDeepFocusSpells[] = { MoonfireDot, RakeDot, Rip, Rejuvenation };
+    inline bool CanDraughtOfDeepFocus(Unit* caster, Unit* target, uint32 spellId)
+    {
+        if (!caster || !target)
+            return false;
+
+        if (!caster->HasAura(DraughtOfDeepFocus))
+            return false;
+
+        uint32 matches = 0;
+
+        for (auto spell : DraughtOfDeepFocusSpells)
+        {
+            if (spell == spellId)
+                continue;
+
+            if (target->HasAura(spell, caster->GetGUID()))
+                ++matches;
+        }
+
+        return matches == 0;
     }
 }
