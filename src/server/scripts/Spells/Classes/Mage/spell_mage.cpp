@@ -1686,7 +1686,7 @@ class spell_mage_ice_lance : public SpellScript
         if (Unit* caster = GetCaster())
         {
             Aura* fingersOfFrost = caster->GetAura(SPELL_MAGE_FINGERS_OF_FROST_AURA);
-            if (fingersOfFrost && fingersOfFrost->GetStackAmount() < 2)
+            if (fingersOfFrost)
             {
                 caster->RemoveAura(SPELL_MAGE_FINGERS_OF_FROST_VISUAL_UI);
                 fingersOfFrost->DropStack();
@@ -1701,8 +1701,9 @@ class spell_mage_ice_lance : public SpellScript
         if (!caster && !target)
             return;
 
+        bool winterChill = target->HasAura(Mage::eFrost::WintersChill);
         // Fingers of Frost
-        if (fingers || target->HasAuraState(AURA_STATE_FROZEN, NULL, caster))
+        if (fingers || target->HasAuraState(AURA_STATE_FROZEN, NULL, caster) || winterChill)
         {
             int32 damage = caster->GetTotalSpellPowerValue(SPELL_SCHOOL_MASK_FROST, false) * 0.35f;
             caster->CastCustomSpell(SPELL_MAGE_ICE_LANCE_TRIGGER, SPELLVALUE_BASE_POINT0, damage * 2, target, true);
@@ -1726,7 +1727,7 @@ class spell_mage_ice_lance : public SpellScript
         }
 
         // Chain Reaction
-        if (caster->HasAura(SPELL_MAGE_CHAIN_REACTION) && target->HasAuraState(AURA_STATE_FROZEN, NULL, caster))
+        if (caster->HasAura(SPELL_MAGE_CHAIN_REACTION) && (target->HasAuraState(AURA_STATE_FROZEN, NULL, caster) || winterChill || fingers))
             caster->CastSpell(caster, SPELL_MAGE_CHAIN_REACTION_BUFF, true);
 
         // Whiteout
@@ -1740,6 +1741,8 @@ class spell_mage_ice_lance : public SpellScript
                 extraDamage = aura->GetEffect(EFFECT_0)->GetAmount();
 
         SetHitDamage(GetHitDamage() + extraDamage);
+
+        Mage::DropWinterChill(caster, target);
     }
 
     void HandleAfterHit()
@@ -1802,14 +1805,8 @@ class spell_mage_flurry : public SpellScript
             return;
 
         caster->Variables.Remove("BRAIN_FREEZE");
-        if (caster->HasAura(SPELL_MAGE_BRAIN_FREEZE_AURA) && caster->GetCurrentSpellCastTime(SPELL_MAGE_FLURRY) == 0)
+        if (caster->HasAura(SPELL_MAGE_BRAIN_FREEZE_AURA))
         {
-            if (caster->HasAura(Mage::eLegendary::ExpandedPotential))
-            {
-                caster->RemoveAurasDueToSpell(Mage::eLegendary::ExpandedPotential);
-            }
-            else
-                caster->RemoveAura(SPELL_MAGE_BRAIN_FREEZE_AURA);
             if (caster->HasSpell(SPELL_MAGE_BRAIN_FREEZE_IMPROVED))
                 caster->Variables.Set<bool>("BRAIN_FREEZE", true);
         }
@@ -3704,7 +3701,7 @@ class aura_mage_touch_of_the_magi : public AuraScript
         if (!caster || !owner)
             return;
 
-        damage += CalculatePct(eventInfo.GetDamageInfo()->GetDamage(), sSpellMgr->GetSpellInfo(SPELL_MAGE_TOUCH_OF_THE_MAGI)->GetEffect(EFFECT_0).BasePoints);
+        damage += CalculatePct(eventInfo.GetDamageInfo()->GetDamage(),  25);
         if (AuraApplication* app = owner->GetAuraApplication(SPELL_MAGE_TOUCH_OF_THE_MAGI_DEBUFF, caster->GetGUID()))
             app->GetBase()->GetEffect(EFFECT_0)->ChangeAmount(damage);
     }
@@ -3716,7 +3713,7 @@ class aura_mage_touch_of_the_magi : public AuraScript
         if (!caster || !target)
             return;
 
-        caster->CastCustomSpell(SPELL_MAGE_TOUCH_OF_THE_MAGI_DAMAGE, SPELLVALUE_BASE_POINT0, damage, target, true);
+        caster->CastSpell(target, SPELL_MAGE_TOUCH_OF_THE_MAGI_DAMAGE, CastSpellExtraArgs(true).AddSpellBP0(damage));
         damage = 0;
     }
 
@@ -4437,12 +4434,27 @@ class aura_mage_brain_freeze_aura : public AuraScript
 
     bool CheckProc(ProcEventInfo& eventInfo)
     {
-        return false;
+        return eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == Mage::eFrost::Flurry;
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        auto caster = GetCaster();
+        if (!caster)
+            return;
+
+        if (caster->HasAura(Mage::eLegendary::ExpandedPotential))
+        {
+            caster->RemoveAurasDueToSpell(Mage::eLegendary::ExpandedPotential);
+        }
+        else
+            Remove();
     }
 
     void Register() override
     {
         DoCheckProc += AuraCheckProcFn(aura_mage_brain_freeze_aura::CheckProc);
+        OnProc += AuraProcFn(aura_mage_brain_freeze_aura::HandleProc);
     }
 };
 

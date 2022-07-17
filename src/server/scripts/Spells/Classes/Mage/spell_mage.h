@@ -53,12 +53,17 @@ namespace Mage
         FrozenOrb = 84714,
         IceLance = 30455,
         Blizzard = 190356,
+        WintersChill = 228358,
+        CometStorm = 153595,
+        FrostStorm4pc = 364544,
+        FrostStormDebuff = 363544,
     };
 
     enum eArcane
     {
         ArcaneBlast = 30451,
         PrismaticBarrier = 235450,
+        TouchOfTheMagi = 321507,
     };
 
     enum eLegendary
@@ -71,4 +76,18 @@ namespace Mage
         FreezingWinds = 327364,
         FreezingWindsProc = 327478,
     };
+
+    inline bool DropWinterChill(Unit* caster, Unit* target)
+    {
+        if (!caster || !target)
+            return false;
+
+        if (auto aur = target->GetAura(WintersChill, caster->GetGUID()))
+        {
+            aur->DropStack();
+            return true;
+        }
+
+        return false;
+    }
 }

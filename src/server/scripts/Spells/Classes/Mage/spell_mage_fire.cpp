@@ -33,7 +33,25 @@ class spell_infernal_cascade : public AuraScript
     }
 };
 
+/// ID: 363500 Fiery Rush
+class spell_fiery_rush : public AuraScript
+{
+    PrepareAuraScript(spell_fiery_rush);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == Combustion;
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_fiery_rush::CheckProc);
+    }
+};
+
+
 void AddSC_spell_mage_fire()
 {
     RegisterSpellScript(spell_infernal_cascade);
+    RegisterSpellScript(spell_fiery_rush);
 }
