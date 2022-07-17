@@ -32,6 +32,7 @@ namespace DeathKnight
         FrostFever = 55095,
         BloodPlague =55078,
         VirulentPlague = 191587,
+        DarkSuccor = 178819,
     };
 
     enum eUnholy
@@ -44,7 +45,6 @@ namespace DeathKnight
         Outbreak = 77575,
         RaiseDead = 46584,
         ScourgeStrike = 55090,
-        DarkSuccor = 178819,
         MasteryDreadblade = 77515,
         RunicCorruption = 51462,
         SuddenDoom = 49530,
@@ -61,7 +61,6 @@ namespace DeathKnight
         Obliterate = 49020,
         PillarOfFrost = 51271,
         RemorselessWinter = 196770,
-        DarkSuccor = 178819,
         KillingMachine = 51128,
         MasteryFrozenHeart = 77514,
         MightOfTheFrozenWastes = 81333,
