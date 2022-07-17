@@ -404,6 +404,61 @@ class spell_vision_of_unending_growth : public AuraScript
         OnProc += AuraProcFn(spell_vision_of_unending_growth::HandleProc);
     }
 };
+/// ID: 339064 Memory of the Mother Tree
+class spell_memory_of_the_mother_tree : public AuraScript
+{
+    PrepareAuraScript(spell_memory_of_the_mother_tree);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == WildGrowth;
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_memory_of_the_mother_tree::CheckProc);
+    }
+};
+
+/// ID: 189877 Memory of the Mother Tree
+class spell_memory_of_the_mother_tree_proc : public AuraScript
+{
+    PrepareAuraScript(spell_memory_of_the_mother_tree_proc);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && (eventInfo.GetSpellInfo()->Id == Rejuvenation || eventInfo.GetSpellInfo()->Id == Regrowth);
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (!eventInfo.GetSpellInfo())
+            return;
+
+        if (auto caster = GetCaster())
+        {
+            if (auto target = eventInfo.GetActionTarget())
+            {
+                std::list<Unit*> randUnits;
+                target->GetFriendlyUnitListInRange(randUnits, 40.0f, true);
+
+                if (!randUnits.empty())
+                {
+                    Trinity::Containers::RandomResize(randUnits, 3);
+
+                    for (auto unit : randUnits)
+                        caster->CastSpell(unit, eventInfo.GetSpellInfo()->Id, true);
+                }
+            }
+        }
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_memory_of_the_mother_tree_proc::CheckProc);
+        OnProc += AuraProcFn(spell_memory_of_the_mother_tree_proc::HandleProc);
+    }
+};
 
 void AddSC_spell_druid_legendary()
 {
@@ -421,4 +476,6 @@ void AddSC_spell_druid_legendary()
     RegisterSpellScript(spell_ursocs_fury_remembered);
     RegisterSpellScript(spell_verdant_infusion);
     RegisterSpellScript(spell_vision_of_unending_growth);
+    RegisterSpellScript(spell_memory_of_the_mother_tree);
+    RegisterSpellScript(spell_memory_of_the_mother_tree_proc);
 }

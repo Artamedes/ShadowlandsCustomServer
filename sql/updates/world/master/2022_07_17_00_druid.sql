@@ -71,3 +71,9 @@ INSERT INTO spell_script_names (spell_id, scriptname) VALUE (338829, 'spell_verd
 
 DELETE FROM spell_script_names WHERE spell_id = 338832;
 INSERT INTO spell_script_names (spell_id, scriptname) VALUE (338832, 'spell_vision_of_unending_growth');
+
+DELETE FROM spell_script_names WHERE spell_id = 189877;
+INSERT INTO spell_script_names (spell_id, scriptname) VALUE (189877, 'spell_memory_of_the_mother_tree_proc');
+
+DELETE FROM spell_script_names WHERE spell_id = 339064;
+INSERT INTO spell_script_names (spell_id, scriptname) VALUE (339064, 'spell_memory_of_the_mother_tree');
