@@ -2176,6 +2176,11 @@ public:
                 return;
             
             amount = caster->CountPctFromMaxHealth(sSpellMgr->GetSpellInfo(SPELL_DK_VAMPIRIC_BLOOD)->GetEffect(EFFECT_3).BasePoints);
+
+            if (caster->HasAura(DeathKnight::eLegendary::GorefiendsDomination))
+                caster->CastSpell(caster, DeathKnight::eLegendary::GorefiendsDominationEnergize, true);
+            if (caster->HasAura(DeathKnight::eLegendary::VampiricAura))
+                caster->CastSpell(caster, DeathKnight::eLegendary::VampiricAuraBuff, true);
         }
 
         void Register() override
@@ -2214,6 +2219,9 @@ class spell_dk_bone_shield : public AuraScript
         Unit* caster = GetCaster();
         if (eventInfo.GetDamageInfo() && caster)
         {
+            if (caster->HasAura(DeathKnight::eLegendary::CrimsonRuneWeapon))
+                caster->GetSpellHistory()->ModifyCooldown(SPELL_DK_BLODD_DANCING_RUNE_WEAPON, -5000);
+
             ModStackAmount(-1);
             if (GetAura()->GetStackAmount() < 5)
                 caster->RemoveAura(SPELL_DK_OSSUARY_BUFF);
@@ -2747,31 +2755,14 @@ class spell_dk_heart_strike : public SpellScript
 
         if(AuraEffect * aurEff = caster->GetAuraEffect(SPELL_DK_DEEP_CUTS_POWER, EFFECT_0))
             caster->CastCustomSpell(SPELL_DK_DEEP_CUTS_DEBUFF, SPELLVALUE_BASE_POINT0, aurEff->GetAmount(), target);
+
+        if (caster->HasAura(DeathKnight::eLegendary::GorefiendsDomination))
+            caster->GetSpellHistory()->ModifyCooldown(DeathKnight::eBlood::VampricBlood, -2000);
     }
 
     void Register() override
     {
         OnEffectHitTarget += SpellEffectFn(spell_dk_heart_strike::OnHandleEffectHit, EFFECT_0, SPELL_EFFECT_DUMMY);
-    }
-};
-
-//spell dancing rune weapon  49028 
-class spell_dk_blodd_dancing_rune_weapon : public SpellScript
-{
-    PrepareSpellScript(spell_dk_blodd_dancing_rune_weapon);
-
-    void OnHandleEffectHit(SpellEffIndex /*effIndex*/)
-    {
-        Unit* caster = GetCaster();
-        if (!caster)
-            return;
-
-        caster->CastSpell(caster, SPELL_DK_BLODD_DANCING_RUNE_WEAPON_ENERGIZE, true);
-    }
-
-    void Register() override
-    {
-        OnEffectHitTarget += SpellEffectFn(spell_dk_blodd_dancing_rune_weapon::OnHandleEffectHit, EFFECT_1, SPELL_EFFECT_APPLY_AURA);
     }
 };
 
@@ -4636,8 +4627,9 @@ class spell_dk_dancing_rune_weapon : public SpellScript
         if (Unit* caster = GetCaster())
         {
             caster->CastSpell(caster, SPELL_DK_BLODD_DANCING_RUNE_WEAPON_ENERGIZE, true);
-            if (Aura* aura = caster->GetAura(SPELL_DK_BLODD_DANCING_RUNE_WEAPON_ENERGIZE))
-                aura->SetDuration(8 * IN_MILLISECONDS);
+
+            if (caster->HasAura(DeathKnight::eLegendary::CrimsonRuneWeapon))
+                caster->CastSpell(caster, SPELL_DK_BONE_SHIELD, CastSpellExtraArgs(true).AddSpellMod(SpellValueMod::SPELLVALUE_AURA_STACK, 5));
         }
     }
 
@@ -4692,10 +4684,21 @@ class aura_dk_dancing_rune_weapon : public AuraScript
         Unit::DealDamage(weapon, target, dam);
     }
 
+    void HandleRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+    {
+        auto caster = GetCaster();
+        if (!caster)
+            return;
+
+        if (caster->HasAura(DeathKnight::eLegendary::CrimsonRuneWeapon))
+            caster->CastSpell(caster, DeathKnight::eLegendary::CrimsonRuneWeaponProc, true);
+    }
+
     void Register() override
     {
         DoCheckProc += AuraCheckProcFn(aura_dk_dancing_rune_weapon::CheckProc);
         OnProc += AuraProcFn(aura_dk_dancing_rune_weapon::HandleProc);
+        AfterEffectRemove += AuraEffectApplyFn(aura_dk_dancing_rune_weapon::HandleRemove, EFFECT_1, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
     }
 };
 
@@ -4976,7 +4979,6 @@ void AddSC_deathknight_spell_scripts()
     RegisterSpellScript(spell_dk_blighted_rune_weapon);
     RegisterAreaTriggerAI(at_dk_decomposing_aura);
     RegisterSpellScript(spell_dk_heart_strike);
-    RegisterSpellScript(spell_dk_blodd_dancing_rune_weapon);
 	RegisterSpellScript(aura_dk_permafrost);
     RegisterSpellScript(aura_gathering_storm);
     RegisterSpellScript(spell_dk_frostscythe);

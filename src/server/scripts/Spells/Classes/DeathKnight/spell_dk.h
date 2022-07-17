@@ -89,10 +89,17 @@ namespace DeathKnight
         DeathsEmbraceHeal = 334729,
         GripOfTheEverlasting = 334724,
         GripOfTheEverlastingBuff = 334722,
-
         Phearomones = 335177,
         DeathTurf = 335180,
         Superstrain = 334974,
+
+        // Blood
+        CrimsonRuneWeapon = 334525,
+        CrimsonRuneWeaponProc = 334526,
+        GorefiendsDomination = 334580,
+        GorefiendsDominationEnergize = 350914,
+        VampiricAura = 334547,
+        VampiricAuraBuff = 334555,
     };
 
     enum eCovenant
