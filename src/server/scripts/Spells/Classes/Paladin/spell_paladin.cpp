@@ -1957,15 +1957,32 @@ public:
         if (dmgInfo.GetDamage() < target->GetHealth())
             return;
 
+        PreventDefaultAction();
+        dmgInfo.AbsorbDamage(dmgInfo.GetDamage());
         int32 healAmount = int32(target->CountPctFromMaxHealth(healPct));
         target->CastCustomSpell(target, SPELL_PALADIN_ARDENT_DEFENDER_HEAL, &healAmount, NULL, NULL, true, NULL, aurEff);
         aurEff->GetBase()->Remove();
     }
 
+    void HandleRemove(const AuraEffect* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+    {
+        if (GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_EXPIRE)
+        {
+            if (auto caster = GetCaster())
+            {
+                if (caster->HasAura(Paladin::eLegendary::TheArdentProtectorsSanctum))
+                {
+                    caster->GetSpellHistory()->ModifyCooldown(SPELL_PALADIN_ARDENT_DEFENDER, -48000);
+                }
+            }
+        }
+    }
+
     void Register() override
     {
         DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_pal_ardent_defender::CalculateAmount, EFFECT_0, SPELL_AURA_SCHOOL_ABSORB);
-        OnEffectAbsorb += AuraEffectAbsorbFn(spell_pal_ardent_defender::Absorb, EFFECT_0);
+        OnEffectAbsorb += AuraEffectAbsorbOverkillFn(spell_pal_ardent_defender::Absorb, EFFECT_2);
+        OnEffectRemove += AuraEffectRemoveFn(spell_pal_ardent_defender::HandleRemove, EFFECT_0, SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN, AURA_EFFECT_HANDLE_REAL);
     }
 
 private:

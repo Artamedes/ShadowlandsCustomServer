@@ -25,7 +25,7 @@ class spell_vanquishers_hammer : public AuraScript
             case SimpleTalentSpecs::HPally:
                 return eventInfo.GetSpellInfo()->Id == PaladinSpells::WordOfGlory;
             case SimpleTalentSpecs::ProtPally:
-                return eventInfo.GetSpellInfo()->Id == PaladinSpells::TemplarsVerdict || eventInfo.GetSpellInfo()->Id == 224266;
+                return eventInfo.GetSpellInfo()->Id == TemplarsVerdict || eventInfo.GetSpellInfo()->Id == 224266;
             case SimpleTalentSpecs::Retribution:
                 return eventInfo.GetSpellInfo()->Id == PaladinSpells::WordOfGlory;
             default:
@@ -54,7 +54,7 @@ class spell_vanquishers_hammer : public AuraScript
                         break;
                     case SimpleTalentSpecs::Retribution:
                         caster->Variables.Set("EmpoweredDivineStorm", true);
-                        caster->CastSpell(hitUnit, PaladinSpells::DivineStorm, CastSpellExtraArgs(TRIGGERED_FULL_MASK));
+                        caster->CastSpell(hitUnit, DivineStorm, CastSpellExtraArgs(TRIGGERED_FULL_MASK));
                         break;
                 }
                 if (auto aur = GetAura())

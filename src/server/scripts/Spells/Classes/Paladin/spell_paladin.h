@@ -38,6 +38,8 @@ namespace Paladin
 
     enum eLegendary
     {
+        // Prot
+        TheArdentProtectorsSanctum = 337838,
         // Retr
         VanguardsMomentum = 337638,
         VanguardsMomentumProc = 345046,
