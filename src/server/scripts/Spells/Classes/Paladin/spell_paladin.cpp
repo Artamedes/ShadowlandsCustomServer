@@ -38,6 +38,7 @@
 #include "SpellMgr.h"
 #include "TemporarySummon.h"
 #include "GridNotifiers.h"
+#include "spell_paladin.h"
 
 enum PaladinSpells
 {
@@ -4556,6 +4557,9 @@ class spell_hammer_of_wrath : public SpellScript
                     avengingWrath->ModDuration(1000);
                 }
             }
+
+            if (caster->HasAura(Paladin::eLegendary::VanguardsMomentum))
+                caster->CastSpell(caster, Paladin::eLegendary::VanguardsMomentumProc, true);
         }
     }
 

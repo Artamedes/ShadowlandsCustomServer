@@ -48,6 +48,7 @@ void AddSC_spell_paladin_covenant();
 void AddSC_spell_paladin_retribution();
 void AddSC_spell_paladin_holy();
 void AddSC_spell_paladin_protection();
+void AddSC_spell_paladin_legendary();
 void AddSC_priest_spell_scripts();
 void AddSC_spell_priest_shadow();
 void AddSC_spell_priest_covenant();
@@ -119,6 +120,7 @@ void AddSpellsScripts()
     AddSC_spell_paladin_retribution();
     AddSC_spell_paladin_holy();
     AddSC_spell_paladin_protection();
+    AddSC_spell_paladin_legendary();
     AddSC_priest_spell_scripts();
     AddSC_spell_priest_shadow();
     AddSC_spell_priest_covenant();
