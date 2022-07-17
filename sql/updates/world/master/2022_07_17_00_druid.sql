@@ -55,3 +55,7 @@ REPLACE INTO `spell_script_names` (`spell_id`, `ScriptName`) VALUES (363496, 'sp
 
 DELETE FROM spell_script_names WHERE spell_id = 339056;
 INSERT INTO spell_script_names (spell_id, scriptname) VALUE (339056, 'spell_ursocs_fury_remembered');
+
+
+REPLACE INTO `spell_script_names` (`spell_id`, `ScriptName`) VALUES (33763, 'aura_dru_lifebloom');
+REPLACE INTO `spell_script_names` (`spell_id`, `ScriptName`) VALUES (188550, 'aura_dru_lifebloom');
