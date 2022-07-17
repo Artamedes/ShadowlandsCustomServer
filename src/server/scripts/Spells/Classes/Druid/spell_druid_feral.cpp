@@ -149,8 +149,6 @@ class spell_bloodtalons_proc : public AuraScript
     void HandleProc(ProcEventInfo& eventInfo)
     {
         PreventDefaultAction();
-        if (auto aur = GetAura())
-            aur->DropCharge();
     }
 
     void Register() override
