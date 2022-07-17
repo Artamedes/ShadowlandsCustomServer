@@ -425,6 +425,36 @@ public:
         }
     }
 };
+/// ID: 317866 Sanctified Wrath
+class spell_sanctified_wrath : public AuraScript
+{
+    PrepareAuraScript(spell_sanctified_wrath);
+
+    enum eSanctifiedWrath
+    {
+        SanctifiedWrathDmg = 326731,
+    };
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        auto caster = GetCaster();
+        return caster && eventInfo.GetProcSpell() && eventInfo.GetProcSpell()->GetPowerCost(Powers::POWER_HOLY_POWER) && caster->HasAura(AvengingWrath);
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (auto caster = GetCaster())
+        {
+            caster->CastSpell(caster, SanctifiedWrathDmg, true);
+        }
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_sanctified_wrath::CheckProc);
+        OnProc += AuraProcFn(spell_sanctified_wrath::HandleProc);
+    }
+};
 
 void AddSC_spell_paladin_retribution()
 {
@@ -438,6 +468,7 @@ void AddSC_spell_paladin_retribution()
     RegisterSpellScript(spell_virtuous_command);
     RegisterSpellScript(spell_virtuous_command_proc);
     RegisterSpellScript(spell_templars_vindication);
+    RegisterSpellScript(spell_sanctified_wrath);
 
     RegisterAreaTriggerAI(at_divine_tempest);
 }

@@ -18,6 +18,7 @@ namespace Paladin
         BlessingOfSacrifice = 6940,
         BlessingOfSpellWarding = 204018,
         BlessingOfProtection = 1022,
+        AvengingWrath = 31884,
 
         /// Holy
         LightOfDawn = 85222,

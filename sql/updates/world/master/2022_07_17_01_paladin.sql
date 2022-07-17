@@ -32,3 +32,6 @@ INSERT INTO spell_script_names (spell_id, scriptname) VALUE (337681, 'spell_the_
 
 DELETE FROM spell_script_names WHERE spell_id = 337600;
 INSERT INTO spell_script_names (spell_id, scriptname) VALUE (337600, 'spell_uthers_devotion');
+
+DELETE FROM spell_script_names WHERE spell_id = 317866;
+INSERT INTO spell_script_names (spell_id, scriptname) VALUE (317866, 'spell_sanctified_wrath');

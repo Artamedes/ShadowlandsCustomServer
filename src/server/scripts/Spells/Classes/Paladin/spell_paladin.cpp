@@ -263,12 +263,6 @@ public:
                     aura->SetDuration(duration);
                 }
             }
-
-            ///< Sanctified Wrath
-            if (player->HasAura(317866) && power == POWER_HOLY_POWER && oldValue > newValue)
-            {
-                player->CastSpell(player, 326731, CastSpellExtraArgs(true));
-            }
         }
     }
 
