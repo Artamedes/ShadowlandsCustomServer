@@ -59,3 +59,6 @@ INSERT INTO spell_script_names (spell_id, scriptname) VALUE (339056, 'spell_urso
 
 REPLACE INTO `spell_script_names` (`spell_id`, `ScriptName`) VALUES (33763, 'aura_dru_lifebloom');
 REPLACE INTO `spell_script_names` (`spell_id`, `ScriptName`) VALUES (188550, 'aura_dru_lifebloom');
+
+DELETE FROM spell_script_names WHERE spell_id = 364365;
+INSERT INTO spell_script_names (spell_id, scriptname) VALUE (364365, 'spell_renewing_bloom');

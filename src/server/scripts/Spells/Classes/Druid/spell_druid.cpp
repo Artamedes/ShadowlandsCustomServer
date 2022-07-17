@@ -1147,7 +1147,7 @@ public:
 
             if (caster->HasAura(SPELL_DRUID_OMEN_OF_CLARITY))
             {
-                if (roll_chance_i(4))
+                if (roll_chance_i(4) && !caster->HasAura(SPELL_DRUID_CLEARCASTING))
                 {
                     caster->CastSpell(caster, SPELL_DRUID_CLEARCASTING, true);
 

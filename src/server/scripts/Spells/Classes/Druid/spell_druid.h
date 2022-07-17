@@ -83,7 +83,7 @@ namespace Druid
 
     enum eRestoration
     {
-
+        Rejuvenation = 774,
     };
 
     enum eLegendary
