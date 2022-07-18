@@ -30,6 +30,7 @@
 #include "SpellMgr.h"
 #include "World.h"
 #include "GossipDef.h"
+#include "CollectionMgr.h"
 
 void WorldSession::HandleSplitItemOpcode(WorldPackets::Item::SplitItem& splitItem)
 {
@@ -636,7 +637,7 @@ void WorldSession::SendListInventory(ObjectGuid vendorGuid, uint32 vendorEntry)
         WorldPackets::NPC::VendorItem& item = packet.Items[count];
 
         if (PlayerConditionEntry const* playerCondition = sPlayerConditionStore.LookupEntry(vendorItem->PlayerConditionId))
-                if (!ConditionMgr::IsPlayerMeetingCondition(_player, playerCondition))
+            if (!ConditionMgr::IsPlayerMeetingCondition(_player, playerCondition))
                 item.PlayerConditionFailed = playerCondition->ID;
 
         if (vendorItem->Type == ITEM_VENDOR_TYPE_ITEM)
@@ -644,6 +645,11 @@ void WorldSession::SendListInventory(ObjectGuid vendorGuid, uint32 vendorEntry)
             ItemTemplate const* itemTemplate = sObjectMgr->GetItemTemplate(vendorItem->item);
             if (!itemTemplate)
                 continue;
+
+            // Skip already obtained memories
+            if (auto runecarve = sDB2Manager.GetRuneforgeLegendaryAbilityEntryByItemID(vendorItem->item))
+                if (GetCollectionMgr()->HasRuneforgeMemory(runecarve->ID))
+                    continue;
 
             int32 leftInStock = !vendorItem->maxcount ? -1 : vendor->GetVendorItemCurrentCount(vendorItem);
             if (!_player->IsGameMaster()) // ignore conditions if GM on
