@@ -709,8 +709,7 @@ void WorldSession::SendListInventory(ObjectGuid vendorGuid, uint32 vendorEntry)
         else
             continue;
 
-        if (++count >= MAX_VENDOR_ITEMS)
-            break;
+        ++count;
     }
 
     // Resize vector to real size (some items can be skipped due to checks)
