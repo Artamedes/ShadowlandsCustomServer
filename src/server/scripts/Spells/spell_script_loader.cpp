@@ -46,6 +46,7 @@ void AddSC_spell_monk_legendary();
 void AddSC_spell_mage_arcane();
 void AddSC_spell_mage_fire();
 void AddSC_spell_mage_frost();
+void AddSC_spell_mage_legendary();
 void AddSC_paladin_spell_scripts();
 void AddSC_spell_paladin_covenant();
 void AddSC_spell_paladin_retribution();
@@ -121,6 +122,7 @@ void AddSpellsScripts()
     AddSC_spell_mage_arcane();
     AddSC_spell_mage_fire();
     AddSC_spell_mage_frost();
+    AddSC_spell_mage_legendary();
     AddSC_paladin_spell_scripts();
     AddSC_spell_paladin_covenant();
     AddSC_spell_paladin_retribution();

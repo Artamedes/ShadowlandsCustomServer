@@ -20,6 +20,10 @@ class spell_disciplinary_command : public AuraScript
         auto caster = GetCaster();
         if (!caster)
             return false;
+
+        if (caster->GetSpellHistory()->HasCooldown(DmgBuff))
+            return false;
+
         return !caster->HasAura(DmgBuff) && eventInfo.GetSpellInfo() && (eventInfo.GetSchoolMask() & SPELL_SCHOOL_MASK_ARCANE || eventInfo.GetSchoolMask() & SPELL_SCHOOL_MASK_FROST || eventInfo.GetSchoolMask() & SPELL_SCHOOL_MASK_FIRE);
     }
 
