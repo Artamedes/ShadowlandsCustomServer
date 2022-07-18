@@ -79,6 +79,19 @@ enum MountStatusFlags : uint8
 typedef std::map<uint32, MountStatusFlags> MountContainer;
 typedef std::unordered_map<uint32, uint32> MountDefinitionMap;
 
+enum class eCollectionMgrSaveFlags : uint32
+{
+    None                  = 0x0,
+    SaveToys              = 0x1,
+    SaveMounts            = 0x2,
+    SaveHeirlooms         = 0x4,
+    SaveAppearences       = 0x8,
+    SaveIllusions         = 0x10,
+    SaveRuneforgeMemories = 0x20,
+};
+
+DEFINE_ENUM_FLAG(eCollectionMgrSaveFlags);
+
 class TC_GAME_API CollectionMgr
 {
 public:
@@ -177,7 +190,7 @@ private:
     std::unordered_map<uint32, FavoriteAppearanceState> _favoriteAppearances;
     std::unique_ptr<boost::dynamic_bitset<uint32>> _transmogIllusions;
     std::unique_ptr<boost::dynamic_bitset<uint32>> _runeforgingMemories;
-    bool _needSave; ///< Used for saving account appearences to prevent spamming DB. There is no need to spam queries.
+    EnumFlag<eCollectionMgrSaveFlags> m_SaveFlags = eCollectionMgrSaveFlags::None;
 };
 
 #endif // CollectionMgr_h__
