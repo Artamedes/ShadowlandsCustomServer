@@ -5316,6 +5316,34 @@ class spell_icicle : public SpellScript
     }
 };
 
+/// ID: 321358 Focus Magic
+class spell_focus_magic : public AuraScript
+{
+    PrepareAuraScript(spell_focus_magic);
+
+    enum eFocusMagic
+    {
+        FocusMagicBuff = 321363,
+    };
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetHitMask() & PROC_HIT_CRITICAL;
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (auto caster = GetCaster())
+            caster->CastSpell(caster, FocusMagicBuff, true);
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_focus_magic::CheckProc);
+        OnProc += AuraProcFn(spell_focus_magic::HandleProc);
+    }
+};
+
 void AddSC_mage_spell_scripts()
 {
     new playerscript_mage_arcane();
@@ -5433,6 +5461,7 @@ void AddSC_mage_spell_scripts()
     new spell_mastery_ignite();
     RegisterSpellScript(spell_mage_arcane_charge_clear);
     RegisterSpellScript(spell_mastery_icicles_glacial_spike);
+    RegisterSpellScript(spell_focus_magic);
 
     // Spell Pet scripts
     RegisterSpellScript(spell_mage_pet_freeze);
