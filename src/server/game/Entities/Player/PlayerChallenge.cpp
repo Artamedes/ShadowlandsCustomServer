@@ -7,6 +7,7 @@
 #include "Item.h"
 #include "World.h"
 #include "GameTime.h"
+#include "WorldStateMgr.h"
 
 // TODO: move to db
 constexpr uint32 CustomMiniDungeonsForChallenge[] = { 30002, 30003, 30004, 30005, 30006, 30007, 30008, 30010, 30011 }; // 30009 - battle for torghast removed
@@ -43,17 +44,17 @@ bool PlayerChallenge::InitMythicKeystone(Item* item)
 
     if (keystoneInfo->Type == KeystoneType::Normal)
     {
-        keystoneInfo->Affix = sWorld->getWorldState(WS_CHALLENGE_AFFIXE1_RESET_TIME);
-        keystoneInfo->Affix1 = sWorld->getWorldState(WS_CHALLENGE_AFFIXE2_RESET_TIME);
-        keystoneInfo->Affix2 = sWorld->getWorldState(WS_CHALLENGE_AFFIXE3_RESET_TIME);
-        keystoneInfo->Affix3 = sWorld->getWorldState(WS_CHALLENGE_AFFIXE4_RESET_TIME);
+        keystoneInfo->Affix = sWorldStateMgr->GetValue(WS_CHALLENGE_AFFIXE1_RESET_TIME);
+        keystoneInfo->Affix1 = sWorldStateMgr->GetValue(WS_CHALLENGE_AFFIXE2_RESET_TIME);
+        keystoneInfo->Affix2 = sWorldStateMgr->GetValue(WS_CHALLENGE_AFFIXE3_RESET_TIME);
+        keystoneInfo->Affix3 = sWorldStateMgr->GetValue(WS_CHALLENGE_AFFIXE4_RESET_TIME);
     }
     else
     {
-        keystoneInfo->Affix  = sWorld->getWorldState(WS_CHALLENGE_MINI_AFFIXE1_RESET_TIME);
-        keystoneInfo->Affix1 = sWorld->getWorldState(WS_CHALLENGE_MINI_AFFIXE2_RESET_TIME);
-        keystoneInfo->Affix2 = sWorld->getWorldState(WS_CHALLENGE_MINI_AFFIXE3_RESET_TIME);
-        keystoneInfo->Affix3 = sWorld->getWorldState(WS_CHALLENGE_MINI_AFFIXE4_RESET_TIME);
+        keystoneInfo->Affix  = sWorldStateMgr->GetValue(WS_CHALLENGE_MINI_AFFIXE1_RESET_TIME);
+        keystoneInfo->Affix1 = sWorldStateMgr->GetValue(WS_CHALLENGE_MINI_AFFIXE2_RESET_TIME);
+        keystoneInfo->Affix2 = sWorldStateMgr->GetValue(WS_CHALLENGE_MINI_AFFIXE3_RESET_TIME);
+        keystoneInfo->Affix3 = sWorldStateMgr->GetValue(WS_CHALLENGE_MINI_AFFIXE4_RESET_TIME);
     }
 
     if (!item->GetModifier(ITEM_MODIFIER_CHALLENGE_MAP_CHALLENGE_MODE_ID))
@@ -98,17 +99,17 @@ void PlayerChallenge::CreateMythicKeystone(Item* item)
 
     if (keystoneInfo->Type == KeystoneType::Normal)
     {
-        keystoneInfo->Affix = sWorld->getWorldState(WS_CHALLENGE_AFFIXE1_RESET_TIME);
-        keystoneInfo->Affix1 = sWorld->getWorldState(WS_CHALLENGE_AFFIXE2_RESET_TIME);
-        keystoneInfo->Affix2 = sWorld->getWorldState(WS_CHALLENGE_AFFIXE3_RESET_TIME);
-        keystoneInfo->Affix3 = sWorld->getWorldState(WS_CHALLENGE_AFFIXE4_RESET_TIME);
+        keystoneInfo->Affix = sWorldStateMgr->GetValue(WS_CHALLENGE_AFFIXE1_RESET_TIME);
+        keystoneInfo->Affix1 = sWorldStateMgr->GetValue(WS_CHALLENGE_AFFIXE2_RESET_TIME);
+        keystoneInfo->Affix2 = sWorldStateMgr->GetValue(WS_CHALLENGE_AFFIXE3_RESET_TIME);
+        keystoneInfo->Affix3 = sWorldStateMgr->GetValue(WS_CHALLENGE_AFFIXE4_RESET_TIME);
     }
     else
     {
-        keystoneInfo->Affix = sWorld->getWorldState(WS_CHALLENGE_MINI_AFFIXE1_RESET_TIME);
-        keystoneInfo->Affix1 = sWorld->getWorldState(WS_CHALLENGE_MINI_AFFIXE2_RESET_TIME);
-        keystoneInfo->Affix2 = sWorld->getWorldState(WS_CHALLENGE_MINI_AFFIXE3_RESET_TIME);
-        keystoneInfo->Affix3 = sWorld->getWorldState(WS_CHALLENGE_MINI_AFFIXE4_RESET_TIME);
+        keystoneInfo->Affix = sWorldStateMgr->GetValue(WS_CHALLENGE_MINI_AFFIXE1_RESET_TIME);
+        keystoneInfo->Affix1 = sWorldStateMgr->GetValue(WS_CHALLENGE_MINI_AFFIXE2_RESET_TIME);
+        keystoneInfo->Affix2 = sWorldStateMgr->GetValue(WS_CHALLENGE_MINI_AFFIXE3_RESET_TIME);
+        keystoneInfo->Affix3 = sWorldStateMgr->GetValue(WS_CHALLENGE_MINI_AFFIXE4_RESET_TIME);
     }
 
     if (keystoneInfo->Level > MYTHIC_LEVEL_1)
@@ -137,17 +138,17 @@ void PlayerChallenge::UpdateMythicKeystone(Item* item)
 
     if (keystoneInfo->Type == KeystoneType::Normal)
     {
-        keystoneInfo->Affix = sWorld->getWorldState(WS_CHALLENGE_AFFIXE1_RESET_TIME);
-        keystoneInfo->Affix1 = sWorld->getWorldState(WS_CHALLENGE_AFFIXE2_RESET_TIME);
-        keystoneInfo->Affix2 = sWorld->getWorldState(WS_CHALLENGE_AFFIXE3_RESET_TIME);
-        keystoneInfo->Affix3 = sWorld->getWorldState(WS_CHALLENGE_AFFIXE4_RESET_TIME);
+        keystoneInfo->Affix = sWorldStateMgr->GetValue(WS_CHALLENGE_AFFIXE1_RESET_TIME);
+        keystoneInfo->Affix1 = sWorldStateMgr->GetValue(WS_CHALLENGE_AFFIXE2_RESET_TIME);
+        keystoneInfo->Affix2 = sWorldStateMgr->GetValue(WS_CHALLENGE_AFFIXE3_RESET_TIME);
+        keystoneInfo->Affix3 = sWorldStateMgr->GetValue(WS_CHALLENGE_AFFIXE4_RESET_TIME);
     }
     else
     {
-        keystoneInfo->Affix = sWorld->getWorldState(WS_CHALLENGE_MINI_AFFIXE1_RESET_TIME);
-        keystoneInfo->Affix1 = sWorld->getWorldState(WS_CHALLENGE_MINI_AFFIXE2_RESET_TIME);
-        keystoneInfo->Affix2 = sWorld->getWorldState(WS_CHALLENGE_MINI_AFFIXE3_RESET_TIME);
-        keystoneInfo->Affix3 = sWorld->getWorldState(WS_CHALLENGE_MINI_AFFIXE4_RESET_TIME);
+        keystoneInfo->Affix = sWorldStateMgr->GetValue(WS_CHALLENGE_MINI_AFFIXE1_RESET_TIME);
+        keystoneInfo->Affix1 = sWorldStateMgr->GetValue(WS_CHALLENGE_MINI_AFFIXE2_RESET_TIME);
+        keystoneInfo->Affix2 = sWorldStateMgr->GetValue(WS_CHALLENGE_MINI_AFFIXE3_RESET_TIME);
+        keystoneInfo->Affix3 = sWorldStateMgr->GetValue(WS_CHALLENGE_MINI_AFFIXE4_RESET_TIME);
     }
 
     if (keystoneInfo->Level > MYTHIC_LEVEL_1)

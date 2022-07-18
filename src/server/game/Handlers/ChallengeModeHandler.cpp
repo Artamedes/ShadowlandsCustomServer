@@ -401,10 +401,10 @@ void WorldSession::HandleRequestChallengeModeAffixes(WorldPackets::ChallengeMode
     // [5] KeystoneAffixID: 130
     // [5] RequiredSeason: 7
     WorldPackets::ChallengeMode::MythicPlusCurrentAffixes affixes;
-    /// affixes.Affixes.push_back(sWorld->getWorldState(WS_CHALLENGE_AFFIXE1_RESET_TIME));
-    /// affixes.Affixes.push_back(sWorld->getWorldState(WS_CHALLENGE_AFFIXE2_RESET_TIME));
-    /// affixes.Affixes.push_back(sWorld->getWorldState(WS_CHALLENGE_AFFIXE3_RESET_TIME));
-    /// affixes.Affixes.push_back(sWorld->getWorldState(WS_CHALLENGE_AFFIXE4_RESET_TIME));
+    /// affixes.Affixes.push_back(sWorldStateMgr->GetValue(WS_CHALLENGE_AFFIXE1_RESET_TIME));
+    /// affixes.Affixes.push_back(sWorldStateMgr->GetValue(WS_CHALLENGE_AFFIXE2_RESET_TIME));
+    /// affixes.Affixes.push_back(sWorldStateMgr->GetValue(WS_CHALLENGE_AFFIXE3_RESET_TIME));
+    /// affixes.Affixes.push_back(sWorldStateMgr->GetValue(WS_CHALLENGE_AFFIXE4_RESET_TIME));
 
 
     // TODO: Add correct affixes

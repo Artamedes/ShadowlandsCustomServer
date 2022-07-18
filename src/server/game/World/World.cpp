@@ -3546,7 +3546,7 @@ static time_t GetNextDailyResetTime(time_t t)
 
 void World::InitChallengeKeyResetTime()
 {
-    time_t insttime = sWorld->getWorldState(WS_CHALLENGE_KEY_RESET_TIME);
+    time_t insttime = sWorldStateMgr->GetValue(WS_CHALLENGE_KEY_RESET_TIME, nullptr);
 
     // generate time by config
     time_t curTime = time(nullptr);
@@ -3567,10 +3567,10 @@ void World::InitChallengeKeyResetTime()
     m_NextChallengeKeyReset = insttime ? insttime : nextResetTime;
 
     if (!insttime)
-        sWorld->setWorldState(WS_CHALLENGE_KEY_RESET_TIME, m_NextChallengeKeyReset);
+        sWorldStateMgr->SetValue(WS_CHALLENGE_KEY_RESET_TIME, m_NextChallengeKeyReset, false, nullptr);
 
-    if (!sWorld->getWorldState(WS_CHALLENGE_LAST_RESET_TIME))
-        sWorld->setWorldState(WS_CHALLENGE_LAST_RESET_TIME, m_NextChallengeKeyReset - (7 * DAY));
+    if (!sWorldStateMgr->GetValue(WS_CHALLENGE_LAST_RESET_TIME, nullptr))
+        sWorldStateMgr->SetValue(WS_CHALLENGE_LAST_RESET_TIME, m_NextChallengeKeyReset - (7 * DAY), false, nullptr);
 }
 
 void World::DailyReset()
@@ -3967,8 +3967,8 @@ void World::ChallengeKeyResetTime()
     while (curTime >= m_NextChallengeKeyReset)
         m_NextChallengeKeyReset += getIntConfig(CONFIG_CHALLENGE_KEY_RESET) * DAY;
 
-    sWorld->setWorldState(WS_CHALLENGE_KEY_RESET_TIME, m_NextChallengeKeyReset);
-    sWorld->setWorldState(WS_CHALLENGE_LAST_RESET_TIME, m_LastChallengeKeyReset);
+    sWorldStateMgr->SetValue(WS_CHALLENGE_KEY_RESET_TIME, m_NextChallengeKeyReset, false, nullptr);
+    sWorldStateMgr->SetValue(WS_CHALLENGE_LAST_RESET_TIME, m_LastChallengeKeyReset, false, nullptr);
 }
 
 void World::ReloadRBAC()

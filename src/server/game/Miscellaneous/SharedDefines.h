@@ -7806,13 +7806,6 @@ enum ChallengeMode
     CHALLENGE_TIMER_LEVEL_3 = 3
 };
 
-enum TimeType : uint8
-{
-    TIMER_TYPE_BATTLEGROUND = 0,
-    TIMER_TYPE_CHALLENGE = 1,
-    TIMER_TYPE_PROVING_GROUND
-};
-
 enum class ChangeDifficultyResult : uint8
 {
     DIFFICULTY_CHANGE_COOLDOWN_S = 0, // ERR_DIFFICULTY_CHANGE_COMBAT_COOLDOWN_S

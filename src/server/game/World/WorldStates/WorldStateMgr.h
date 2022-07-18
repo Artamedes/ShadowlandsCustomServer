@@ -37,10 +37,10 @@ public:
 
     WorldStateTemplate const* GetWorldStateTemplate(int32 worldStateId) const;
 
-    int32 GetValue(int32 worldStateId, Map const* map) const;
-    void SetValue(int32 worldStateId, int32 value, bool hidden, Map* map);
+    int32 GetValue(int32 worldStateId, Map const* map = nullptr) const;
+    void SetValue(int32 worldStateId, int32 value, bool hidden = false, Map* map = nullptr);
     void SaveValueInDb(int32 worldStateId, int32 value);
-    void SetValueAndSaveInDb(int32 worldStateId, int32 value, bool hidden, Map* map);
+    void SetValueAndSaveInDb(int32 worldStateId, int32 value, bool hidden = false, Map* map = nullptr);
 
     WorldStateValueContainer GetInitialWorldStatesForMap(Map const* map) const;
 

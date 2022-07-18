@@ -25,6 +25,7 @@
 #include "StringConvert.h"
 #include <sstream>
 #include "ObjectAccessor.h"
+#include "WorldStateMgr.h"
 
 ChallengeModeMgr* ChallengeModeMgr::instance()
 {
@@ -296,10 +297,10 @@ void ChallengeModeMgr::GenerateCurrentWeekAffixes()
 
     auto weekContainer = affixes[GetActiveAffixe()];
 
-    sWorld->setWorldState(WS_CHALLENGE_AFFIXE1_RESET_TIME, weekContainer[0]);
-    sWorld->setWorldState(WS_CHALLENGE_AFFIXE2_RESET_TIME, weekContainer[1]);
-    sWorld->setWorldState(WS_CHALLENGE_AFFIXE3_RESET_TIME, weekContainer[2]);
-    sWorld->setWorldState(WS_CHALLENGE_AFFIXE4_RESET_TIME, weekContainer[3]);
+    sWorldStateMgr->SetValue(WS_CHALLENGE_AFFIXE1_RESET_TIME, weekContainer[0]);
+    sWorldStateMgr->SetValue(WS_CHALLENGE_AFFIXE2_RESET_TIME, weekContainer[1]);
+    sWorldStateMgr->SetValue(WS_CHALLENGE_AFFIXE3_RESET_TIME, weekContainer[2]);
+    sWorldStateMgr->SetValue(WS_CHALLENGE_AFFIXE4_RESET_TIME, weekContainer[3]);
 
     static uint32 miniAffixes[12][4] =
     {
@@ -318,18 +319,18 @@ void ChallengeModeMgr::GenerateCurrentWeekAffixes()
     };
 
     weekContainer = miniAffixes[GetActiveAffixe()];
-    sWorld->setWorldState(WS_CHALLENGE_MINI_AFFIXE1_RESET_TIME, weekContainer[0]);
-    sWorld->setWorldState(WS_CHALLENGE_MINI_AFFIXE2_RESET_TIME, weekContainer[1]);
-    sWorld->setWorldState(WS_CHALLENGE_MINI_AFFIXE3_RESET_TIME, weekContainer[2]);
-    sWorld->setWorldState(WS_CHALLENGE_MINI_AFFIXE4_RESET_TIME, weekContainer[3]);
+    sWorldStateMgr->SetValue(WS_CHALLENGE_MINI_AFFIXE1_RESET_TIME, weekContainer[0]);
+    sWorldStateMgr->SetValue(WS_CHALLENGE_MINI_AFFIXE2_RESET_TIME, weekContainer[1]);
+    sWorldStateMgr->SetValue(WS_CHALLENGE_MINI_AFFIXE3_RESET_TIME, weekContainer[2]);
+    sWorldStateMgr->SetValue(WS_CHALLENGE_MINI_AFFIXE4_RESET_TIME, weekContainer[3]);
 }
 
 void ChallengeModeMgr::GenerateManualAffixes()
 {
-    sWorld->setWorldState(WS_CHALLENGE_AFFIXE1_RESET_TIME, sWorld->getIntConfig(CONFIG_CHALLENGE_MANUAL_AFFIX1));
-    sWorld->setWorldState(WS_CHALLENGE_AFFIXE2_RESET_TIME, sWorld->getIntConfig(CONFIG_CHALLENGE_MANUAL_AFFIX2));
-    sWorld->setWorldState(WS_CHALLENGE_AFFIXE3_RESET_TIME, sWorld->getIntConfig(CONFIG_CHALLENGE_MANUAL_AFFIX3));
-    sWorld->setWorldState(WS_CHALLENGE_AFFIXE4_RESET_TIME, sWorld->getIntConfig(CONFIG_CHALLENGE_MANUAL_AFFIX4));
+    sWorldStateMgr->SetValue(WS_CHALLENGE_AFFIXE1_RESET_TIME, sWorld->getIntConfig(CONFIG_CHALLENGE_MANUAL_AFFIX1));
+    sWorldStateMgr->SetValue(WS_CHALLENGE_AFFIXE2_RESET_TIME, sWorld->getIntConfig(CONFIG_CHALLENGE_MANUAL_AFFIX2));
+    sWorldStateMgr->SetValue(WS_CHALLENGE_AFFIXE3_RESET_TIME, sWorld->getIntConfig(CONFIG_CHALLENGE_MANUAL_AFFIX3));
+    sWorldStateMgr->SetValue(WS_CHALLENGE_AFFIXE4_RESET_TIME, sWorld->getIntConfig(CONFIG_CHALLENGE_MANUAL_AFFIX4));
 }
 
 uint8 ChallengeModeMgr::GetActiveAffixe()
@@ -379,7 +380,7 @@ uint32 ChallengeModeMgr::GetBestActualWeekChallengeLevel()
     {
         for (auto const& v : c.second)
         {
-            if ((v->CompleteDate > sWorld->getWorldState(WS_CHALLENGE_KEY_RESET_TIME) || v->CompleteDate < sWorld->getWorldState(WS_CHALLENGE_LAST_RESET_TIME)))
+            if ((v->CompleteDate > sWorldStateMgr->GetValue(WS_CHALLENGE_KEY_RESET_TIME) || v->CompleteDate < sWorldStateMgr->GetValue(WS_CHALLENGE_LAST_RESET_TIME)))
                 continue;
 
             if (bestChallengeLevel < v->ChallengeLevel)            
@@ -434,10 +435,10 @@ void ChallengeModeMgr::GenerateOploteLoot(bool manual)
     {
         for (auto const& v : c.second)
         {
-            if (manual && (v->CompleteDate > sWorld->getWorldState(WS_CHALLENGE_LAST_RESET_TIME) + (7 * DAY) || v->CompleteDate < (sWorld->getWorldState(WS_CHALLENGE_LAST_RESET_TIME) - (7 * DAY))))
+            if (manual && (v->CompleteDate > sWorldStateMgr->GetValue(WS_CHALLENGE_LAST_RESET_TIME) + (7 * DAY) || v->CompleteDate < (sWorldStateMgr->GetValue(WS_CHALLENGE_LAST_RESET_TIME) - (7 * DAY))))
                 continue;
 
-            if (!manual && (v->CompleteDate > sWorld->getWorldState(WS_CHALLENGE_KEY_RESET_TIME) || v->CompleteDate < sWorld->getWorldState(WS_CHALLENGE_LAST_RESET_TIME)))
+            if (!manual && (v->CompleteDate > sWorldStateMgr->GetValue(WS_CHALLENGE_KEY_RESET_TIME) || v->CompleteDate < sWorldStateMgr->GetValue(WS_CHALLENGE_LAST_RESET_TIME)))
                 continue;
 
             if (!v->ChestID)
@@ -936,10 +937,10 @@ bool ChallengeModeMgr::IsAuraAffix(uint32 auraId)
 
 bool ChallengeModeMgr::IsTeemingAffixInRotation()
 {
-    if (sWorld->getWorldState(WS_CHALLENGE_AFFIXE1_RESET_TIME) == Affixes::Teeming
-        || sWorld->getWorldState(WS_CHALLENGE_AFFIXE2_RESET_TIME) == Affixes::Teeming
-        || sWorld->getWorldState(WS_CHALLENGE_AFFIXE3_RESET_TIME) == Affixes::Teeming
-        || sWorld->getWorldState(WS_CHALLENGE_AFFIXE4_RESET_TIME) == Affixes::Teeming)
+    if (sWorldStateMgr->GetValue(WS_CHALLENGE_AFFIXE1_RESET_TIME) == Affixes::Teeming
+        || sWorldStateMgr->GetValue(WS_CHALLENGE_AFFIXE2_RESET_TIME) == Affixes::Teeming
+        || sWorldStateMgr->GetValue(WS_CHALLENGE_AFFIXE3_RESET_TIME) == Affixes::Teeming
+        || sWorldStateMgr->GetValue(WS_CHALLENGE_AFFIXE4_RESET_TIME) == Affixes::Teeming)
         return true;
 
     return false;

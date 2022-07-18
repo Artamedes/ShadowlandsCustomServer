@@ -972,7 +972,6 @@ namespace WorldPackets
 
             WorldPacket const* Write() override;
 
-            int32 Type = 0;
             Duration<Seconds> TotalTime;
             Duration<Seconds> TimeLeft;
             TimerType Type = Pvp;

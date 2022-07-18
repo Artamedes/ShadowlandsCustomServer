@@ -526,7 +526,7 @@ void Challenge::Complete()
     HitTimer();
 
     WorldPackets::Misc::StopElapsedTimer stopElapsedTimer;
-    stopElapsedTimer.TimerID = TIMER_TYPE_CHALLENGE;
+    stopElapsedTimer.TimerID = WorldPackets::Misc::StartTimer::TimerType::ChallengeMode;
     BroadcastPacket(stopElapsedTimer.Write());
 
     if (_challengeEntry)
@@ -772,9 +772,9 @@ void Challenge::ResetGo()
 void Challenge::SendStartTimer(Player* player)
 {
     WorldPackets::Misc::StartTimer startTimer;
-    startTimer.Type = TIMER_TYPE_CHALLENGE;
-    startTimer.TimeLeft = 9;
-    startTimer.TotalTime = 10;
+    startTimer.Type = WorldPackets::Misc::StartTimer::TimerType::ChallengeMode;
+    startTimer.TimeLeft = 9s;
+    startTimer.TotalTime = 10s;
     if (player)
         player->SendDirectMessage(startTimer.Write());
     else
@@ -784,7 +784,7 @@ void Challenge::SendStartTimer(Player* player)
 void Challenge::SendStartElapsedTimer(Player* player)
 {
     WorldPackets::Misc::StartElapsedTimer timer;
-    timer.Timer.TimerID = TIMER_TYPE_CHALLENGE;
+    timer.Timer.TimerID = WorldPackets::Misc::StartTimer::TimerType::ChallengeMode;
     timer.Timer.CurrentDuration = GetChallengeTimer();
 
     if (player)
