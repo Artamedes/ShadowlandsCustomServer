@@ -3891,7 +3891,7 @@ public:
             if (!player->GetSession()->GetCollectionMgr()->HasRuneforgeMemory(legendary))
                 player->GetSession()->GetCollectionMgr()->AddRuneforgeMemory(legendary);
 
-        AddGossipItemFor(player, GossipOptionIcon::None, "I'd like to craft a legendary item.", 0, 0, [this, player](std::string callback)
+        AddGossipItemFor(player, GossipOptionIcon::None, "I'd like to craft a legendary item.", 0, 0, [this, player](std::string /*callback*/)
         {
             /// MOVE TO WORLDPACKETS CLASS
             WorldPacket data(SMSG_RUNEFORGE_LEGENDARY_CRAFTING_OPEN_NPC, 17);
@@ -3900,13 +3900,21 @@ public:
             data.FlushBits();
             player->GetSession()->SendPacket(&data);
         });
-        AddGossipItemFor(player, GossipOptionIcon::None, "I'd like to upgrade my legendary item.", 0, 0, [this, player](std::string callback)
+        AddGossipItemFor(player, GossipOptionIcon::None, "I'd like to upgrade my legendary item.", 0, 0, [this, player](std::string /*callback*/ )
         {
             WorldPacket data(SMSG_RUNEFORGE_LEGENDARY_CRAFTING_OPEN_NPC, 17);
             data << me->GetGUID();
             data.WriteBit(1);
             data.FlushBits();
             player->GetSession()->SendPacket(&data);
+        });
+        AddGossipItemFor(player, GossipOptionIcon::Vendor, "I'd like to browse your items", 0, 0, [this, player](std::string /*callback*/)
+        {
+            player->GetSession()->SendListInventory(me->GetGUID());
+        });
+        AddGossipItemFor(player, GossipOptionIcon::Vendor, "I'd like to purchase a base item", 0, 0, [this, player](std::string /*callback*/)
+        {
+            player->GetSession()->SendListInventory(me->GetGUID(), 1805090);
         });
 
         SendGossipMenuFor(player, 40538, me);

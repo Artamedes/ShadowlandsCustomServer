@@ -9864,6 +9864,18 @@ void ObjectMgr::LoadVendors()
             /// PIGPIGPIG
             if (vItem.item >= 710050 && vItem.item <= 710070)
                 vItem.Context = ItemContext::Legendary_Crafting_1;
+            else
+            {
+                if (auto sparse = sItemSparseStore.LookupEntry(vItem.item))
+                {
+                    auto description = std::string(sparse->Description.Str[0]);
+
+                    if (description.find("empowered by the Runecarver.") != std::string::npos)
+                    {
+                        vItem.Context = ItemContext::Legendary_Crafting_1;
+                    }
+                }
+            }
 
             if (!IsVendorItemValid(entry, vItem, nullptr, &skip_vendors))
                 continue;

@@ -6193,6 +6193,7 @@ void Spell::EffectCraftRuneforgeLegendary()
     targetItem->AddBonuses(BonusId2);
     targetItem->AddBonuses(29980); ///< Base upgrade so we can upgrade by 20 each time.
     targetItem->AddBonuses(runeForge->ItemBonusListID);
+    targetItem->AddBonuses(30000);
 
     packet.After.Initialize(targetItem);
     playerCaster->SendDirectMessage(packet.Write());

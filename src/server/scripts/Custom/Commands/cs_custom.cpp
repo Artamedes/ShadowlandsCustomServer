@@ -1894,6 +1894,7 @@ public:
             { "testpacket4",      HandleTest4Command,          rbac::RBAC_PERM_COMMAND_RELOAD_ALL_ITEM, Console::No },
             { "testpacket5",      HandleTest5Command,          rbac::RBAC_PERM_COMMAND_RELOAD_ALL_ITEM, Console::No },
             { "testpacket6",      HandleTest6Command,          rbac::RBAC_PERM_COMMAND_RELOAD_ALL_ITEM, Console::No },
+            { "testplayercondition",      HandleTestPlayerConditionCommand,          rbac::RBAC_PERM_COMMAND_RELOAD_ALL_ITEM, Console::No },
             { "commentator",      HandleCommentatorCommand,    rbac::RBAC_PERM_COMMAND_GM, Console::No },
             { "giveloot",         HandleGiveLootCommand,       rbac::RBAC_PERM_COMMAND_RELOAD_ALL_ITEM, Console::No },
 
@@ -1903,6 +1904,20 @@ public:
 
         };
         return commandTable;
+    }
+
+    static bool HandleTestPlayerConditionCommand(ChatHandler* handler, uint32 PlayerConditionID)
+    {
+        if (auto condition = sPlayerConditionStore.LookupEntry(PlayerConditionID))
+        {
+            if (ConditionMgr::IsPlayerMeetingCondition(handler->getSelectedPlayerOrSelf(), condition))
+                handler->PSendSysMessage("Meets %u", PlayerConditionID);
+            else
+                handler->PSendSysMessage("Not Meet %u", PlayerConditionID);
+        }
+        else
+            handler->PSendSysMessage("Not Found %u", PlayerConditionID);
+        return true;
     }
 
     static bool HandleGiveLootCommand(ChatHandler* handler, uint32 ReferenceLootId)
