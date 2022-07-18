@@ -565,7 +565,7 @@ class TC_GAME_API OutdoorPvPScript : public ScriptObject
         ~OutdoorPvPScript();
 
         // Should return a fully valid OutdoorPvP object for the type ID.
-        virtual OutdoorPvP* GetOutdoorPvP() const = 0;
+        virtual OutdoorPvP* GetOutdoorPvP(Map* map) const = 0;
 };
 
 class TC_GAME_API CommandScript : public ScriptObject
@@ -1251,7 +1251,7 @@ class TC_GAME_API ScriptMgr
 
     public: /* OutdoorPvPScript */
 
-        OutdoorPvP* CreateOutdoorPvP(uint32 scriptId);
+        OutdoorPvP* CreateOutdoorPvP(uint32 scriptId, Map* map);
 
     public: /* CommandScript */
 
