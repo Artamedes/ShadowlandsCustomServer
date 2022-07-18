@@ -16,6 +16,7 @@
 #include "QueryPackets.h"
 #include "GameTime.h"
 #include "LootMgr.h"
+#include "SpellFormulaOverride.h"
 
 #ifdef WIN32
 #include "windows.h"
@@ -1897,6 +1898,7 @@ public:
             { "testplayercondition",      HandleTestPlayerConditionCommand,          rbac::RBAC_PERM_COMMAND_RELOAD_ALL_ITEM, Console::No },
             { "commentator",      HandleCommentatorCommand,    rbac::RBAC_PERM_COMMAND_GM, Console::No },
             { "giveloot",         HandleGiveLootCommand,       rbac::RBAC_PERM_COMMAND_RELOAD_ALL_ITEM, Console::No },
+            { "spellformulas",    HandleModifySpellFormulas,   rbac::RBAC_PERM_COMMAND_RELOAD_ALL_ITEM, Console::No },
 
 #ifdef WIN32
             { "gpscopy", HandleGPSCopyCommand,  rbac::RBAC_PERM_COMMAND_RELOAD_ALL_ITEM, Console::No },
@@ -1904,6 +1906,22 @@ public:
 
         };
         return commandTable;
+    }
+
+    static bool HandleModifySpellFormulas(ChatHandler* handler, Optional<uint32> SpellId)
+    {
+        if (SpellId.has_value())
+        {
+            if (auto spellInfo = sSpellMgr->GetSpellInfo(*SpellId))
+            {
+                handler->PSendSysMessage("Modifying formula for %u %s", *SpellId, spellInfo->SpellName->Str[0]);
+                sSpellFormulaOverride->CreateMenuForSpell(handler->GetPlayer(), spellInfo);
+            }
+            return true;
+        }
+
+        sSpellFormulaOverride->CreateMenu(handler->GetPlayer());
+        return true;
     }
 
     static bool HandleTestPlayerConditionCommand(ChatHandler* handler, uint32 PlayerConditionID)

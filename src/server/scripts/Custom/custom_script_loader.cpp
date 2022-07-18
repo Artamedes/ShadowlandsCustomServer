@@ -155,7 +155,6 @@ void AddCustomScripts()
     AddSC_npc_1v1arena();
     AddSC_GMTavern();
     AddSC_QuelTest();
-
     // hoa
     AddSC_instance_halls_of_attonement();
     AddSC_halls_of_attonement();

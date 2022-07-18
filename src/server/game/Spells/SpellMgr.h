@@ -38,6 +38,7 @@
 #include <unordered_set>
 
 class SpellInfo;
+class SpellEffectInfo;
 class Player;
 class Unit;
 class ProcEventInfo;
@@ -794,6 +795,9 @@ class TC_GAME_API SpellMgr
         void LoadSpellInfoDiminishing();
         void LoadSpellInfoImmunities();
         void LoadSpellTotemModel();
+
+        static void ApplySpellFix(std::initializer_list<uint32> spellIds, std::function<void(SpellInfo* info)> fix);
+        static void ApplySpellEffectFix(SpellInfo* spellInfo, SpellEffIndex effectIndex, std::function<void(SpellEffectInfo* info)> fix);
 
     private:
         SpellDifficultySearcherMap mSpellDifficultySearcherMap;

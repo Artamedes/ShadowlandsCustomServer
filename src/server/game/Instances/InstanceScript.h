@@ -420,7 +420,7 @@ class TC_GAME_API InstanceScript : public ZoneScript
 
         void SendCompleteGuildChallenge(uint32 id);
 
-        virtual void NerfLeechIfNeed(Unit* attacker, int32& heal) { }
+        virtual void NerfLeechIfNeed(Unit* /*attacker*/, int32& /*heal*/) { }
 
     protected:
         void SetHeaders(std::string const& dataHeaders);

@@ -562,13 +562,14 @@ TC_API_EXPORT EnumText EnumUtils<NPCFlags2>::ToString(NPCFlags2 value)
         case UNIT_NPC_FLAG_2_CONTRIBUTION_COLLECTOR: return { "UNIT_NPC_FLAG_2_CONTRIBUTION_COLLECTOR", "is contribution collector", "" };
         case UNIT_NPC_FLAG_2_AZERITE_RESPEC: return { "UNIT_NPC_FLAG_2_AZERITE_RESPEC", "is azerite respec", "" };
         case UNIT_NPC_FLAG_2_ISLANDS_QUEUE: return { "UNIT_NPC_FLAG_2_ISLANDS_QUEUE", "is islands queue", "" };
-        case UNIT_NPC_FLAG_2_SUPPRESS_NPC_SOUNDS_EXCEPT_END_OF_INTERACTION: return { "UNIT_NPC_FLAG_2_SUPPRESS_NPC_SOUNDS_EXCEPT_END_OF_INTERACTION", "UNIT_NPC_FLAG_2_SUPPRESS_NPC_SOUNDS_EXCEPT_END_OF_INTERACTION", "" };
+        case UNIT_NPC_FLAG_2_SUPPRESS_NPC_SOUNDS_EXCEPT_END_OF_INTERACTION: return { "UNIT_NPC_FLAG_2_SUPPRESS_NPC_SOUNDS_EXCEPT_END_OF_INTERACTION", "unk", "" };
+        case UNIT_NPC_FLAG_2_RUNECARVER: return { "UNIT_NPC_FLAG_2_RUNECARVER", "is runecarver", "" };
         default: throw std::out_of_range("value");
     }
 }
 
 template <>
-TC_API_EXPORT size_t EnumUtils<NPCFlags2>::Count() { return 13; }
+TC_API_EXPORT size_t EnumUtils<NPCFlags2>::Count() { return 14; }
 
 template <>
 TC_API_EXPORT NPCFlags2 EnumUtils<NPCFlags2>::FromIndex(size_t index)
@@ -588,6 +589,7 @@ TC_API_EXPORT NPCFlags2 EnumUtils<NPCFlags2>::FromIndex(size_t index)
         case 10: return UNIT_NPC_FLAG_2_AZERITE_RESPEC;
         case 11: return UNIT_NPC_FLAG_2_ISLANDS_QUEUE;
         case 12: return UNIT_NPC_FLAG_2_SUPPRESS_NPC_SOUNDS_EXCEPT_END_OF_INTERACTION;
+        case 13: return UNIT_NPC_FLAG_2_RUNECARVER;
         default: throw std::out_of_range("index");
     }
 }
@@ -610,6 +612,7 @@ TC_API_EXPORT size_t EnumUtils<NPCFlags2>::ToIndex(NPCFlags2 value)
         case UNIT_NPC_FLAG_2_AZERITE_RESPEC: return 10;
         case UNIT_NPC_FLAG_2_ISLANDS_QUEUE: return 11;
         case UNIT_NPC_FLAG_2_SUPPRESS_NPC_SOUNDS_EXCEPT_END_OF_INTERACTION: return 12;
+        case UNIT_NPC_FLAG_2_RUNECARVER: return 13;
         default: throw std::out_of_range("value");
     }
 }

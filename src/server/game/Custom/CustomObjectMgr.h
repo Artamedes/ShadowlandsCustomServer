@@ -49,6 +49,7 @@ class TC_GAME_API CustomObjectMgr
         void LoadCustomScalingEntries();
         void LoadCoinModels();
         void LoadCustomTransmogVendorData();
+        void LoadFiledataData();
 
         void ModifySpellDmg(Unit* unit, SpellInfo const* spellInfo, uint32& damage);
 
@@ -56,6 +57,7 @@ class TC_GAME_API CustomObjectMgr
         std::unordered_map<uint32, CustomScalingEntry> _customScalingEntries;
         std::multimap<uint32, CustomTransmogVendor> _customTransmogVendorData;
         std::vector<CoinModel> CoinModels;
+        std::unordered_map<uint32, std::string> _fileDataToPath;
 };
 
 #define sCustomObjectMgr CustomObjectMgr::instance()

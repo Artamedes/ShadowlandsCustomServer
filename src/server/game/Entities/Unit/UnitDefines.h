@@ -314,21 +314,20 @@ DEFINE_ENUM_FLAG(NPCFlags);
 // EnumUtils: DESCRIBE THIS
 enum NPCFlags2 : uint32
 {
-    UNIT_NPC_FLAG_2_NONE                    = 0x00000000,
-    UNIT_NPC_FLAG_2_ITEM_UPGRADE_MASTER     = 0x00000001,   // TITLE is item upgrade
-    UNIT_NPC_FLAG_2_GARRISON_ARCHITECT      = 0x00000002,   // TITLE is garrison architect DESCRIPTION garrison building placement UI
-    UNIT_NPC_FLAG_2_STEERING                = 0x00000004,   // TITLE is avoiding obstacles DESCRIPTION clientside pathfinding
-    UNIT_NPC_FLAG_2_SHIPMENT_CRAFTER        = 0x00000010,   // TITLE is shipment crafter DESCRIPTION garrison work orders
-    UNIT_NPC_FLAG_2_GARRISON_MISSION_NPC    = 0x00000020,   // TITLE is garrison mission
-    UNIT_NPC_FLAG_2_TRADESKILL_NPC          = 0x00000040,   // TITLE is tradeskill DESCRIPTION crafting at npc
-    UNIT_NPC_FLAG_2_BLACK_MARKET_VIEW       = 0x00000080,   // TITLE is black market view DESCRIPTION only allows viewing black market auctions, no bidding
-    UNIT_NPC_FLAG_2_GARRISON_TALENT_NPC     = 0x00000200,   // TITLE is garrrison talent
-    UNIT_NPC_FLAG_2_CONTRIBUTION_COLLECTOR  = 0x00000400,   // TITLE is contribution collector
-    UNIT_NPC_FLAG_2_AZERITE_RESPEC          = 0x00004000,   // TITLE is azerite respec
-    UNIT_NPC_FLAG_2_ISLANDS_QUEUE           = 0x00008000,   // TITLE is islands queue
-    UNIT_NPC_FLAG_2_UNK_10000               = 0x00010000,   // TITLE unk
-    UNIT_NPC_FLAG_2_RUNECARVER              = 0x00020000,   // TITLE is runecarver
-    UNIT_NPC_FLAG_2_SUPPRESS_NPC_SOUNDS_EXCEPT_END_OF_INTERACTION   = 0x00010000,
+    UNIT_NPC_FLAG_2_NONE                                          = 0x00000000,
+    UNIT_NPC_FLAG_2_ITEM_UPGRADE_MASTER                           = 0x00000001,   // TITLE is item upgrade
+    UNIT_NPC_FLAG_2_GARRISON_ARCHITECT                            = 0x00000002,   // TITLE is garrison architect DESCRIPTION garrison building placement UI
+    UNIT_NPC_FLAG_2_STEERING                                      = 0x00000004,   // TITLE is avoiding obstacles DESCRIPTION clientside pathfinding
+    UNIT_NPC_FLAG_2_SHIPMENT_CRAFTER                              = 0x00000010,   // TITLE is shipment crafter DESCRIPTION garrison work orders
+    UNIT_NPC_FLAG_2_GARRISON_MISSION_NPC                          = 0x00000020,   // TITLE is garrison mission
+    UNIT_NPC_FLAG_2_TRADESKILL_NPC                                = 0x00000040,   // TITLE is tradeskill DESCRIPTION crafting at npc
+    UNIT_NPC_FLAG_2_BLACK_MARKET_VIEW                             = 0x00000080,   // TITLE is black market view DESCRIPTION only allows viewing black market auctions, no bidding
+    UNIT_NPC_FLAG_2_GARRISON_TALENT_NPC                           = 0x00000200,   // TITLE is garrrison talent
+    UNIT_NPC_FLAG_2_CONTRIBUTION_COLLECTOR                        = 0x00000400,   // TITLE is contribution collector
+    UNIT_NPC_FLAG_2_AZERITE_RESPEC                                = 0x00004000,   // TITLE is azerite respec
+    UNIT_NPC_FLAG_2_ISLANDS_QUEUE                                 = 0x00008000,   // TITLE is islands queue
+    UNIT_NPC_FLAG_2_SUPPRESS_NPC_SOUNDS_EXCEPT_END_OF_INTERACTION = 0x00010000,   // TITLE unk
+    UNIT_NPC_FLAG_2_RUNECARVER                                    = 0x00020000,   // TITLE is runecarver
 };
 
 DEFINE_ENUM_FLAG(NPCFlags2);

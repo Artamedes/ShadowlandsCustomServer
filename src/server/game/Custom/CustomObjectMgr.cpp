@@ -2,6 +2,7 @@
 #include "DatabaseEnv.h"
 #include "Unit.h"
 #include "SpellInfo.h"
+#include "SpellFormulaOverride.h"
 
 void CustomObjectMgr::LoadFromDB()
 {
@@ -9,6 +10,8 @@ void CustomObjectMgr::LoadFromDB()
     LoadCustomScalingEntries();
     LoadCoinModels();
     LoadCustomTransmogVendorData();
+    LoadFiledataData();
+    sSpellFormulaOverride->LoadFromDB();
 }
 
 void CustomObjectMgr::LoadCustomSpellDmgs()
@@ -92,6 +95,21 @@ void CustomObjectMgr::LoadCustomTransmogVendorData()
 
         } while (result->NextRow());
     }
+}
+
+void CustomObjectMgr::LoadFiledataData()
+{
+    /// Pig or not?
+    auto result = WorldDatabase.Query("SELECT FileDataID, FileName FROM z_filedata_data WHERE FileName like '%.blp%'");
+    if (!result)
+        return;
+
+    do
+    {
+        auto fields = result->Fetch();
+
+        _fileDataToPath[fields[0].GetUInt32()] = fields[1].GetString();
+    } while (result->NextRow());
 }
 
 void CustomObjectMgr::ModifySpellDmg(Unit* unit, SpellInfo const* spellInfo, uint32& damage)

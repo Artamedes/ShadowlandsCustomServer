@@ -604,6 +604,12 @@ class TC_GAME_API SpellInfo
 
         std::vector<SpellEffectInfo> const& GetEffects() const { return _effects; }
         SpellEffectInfo const& GetEffect(SpellEffIndex index) const { ASSERT(index < _effects.size()); return _effects[index]; }
+        SpellEffectInfo const* GetEffectPtr(SpellEffIndex index) const
+        {
+            if (index >= _effects.size())
+                return nullptr;
+            return &_effects[index];
+        }
 
         // spell diminishing returns
         DiminishingGroup GetDiminishingReturnsGroupForSpell() const;

@@ -144,7 +144,7 @@ class TC_GAME_API UnitAI
         virtual bool CanForceAttack(Unit const* /*target*/) const { return false; }
         virtual void AttackStart(Unit* /*target*/);
         virtual void UpdateAI(uint32 diff) = 0;
-        virtual bool CanCastSpellWhileMoving(SpellInfo const* info) const { return false; }
+        virtual bool CanCastSpellWhileMoving(SpellInfo const* /*info*/) const { return false; }
 
         virtual void InitializeAI();
 

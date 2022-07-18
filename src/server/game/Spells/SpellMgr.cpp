@@ -3261,7 +3261,7 @@ void SpellMgr::LoadSpellInfoCustomAttributes()
     TC_LOG_INFO("server.loading", ">> Loaded SpellInfo custom attributes in %u ms", GetMSTimeDiffToNow(oldMSTime));
 }
 
-inline void ApplySpellFix(std::initializer_list<uint32> spellIds, void(*fix)(SpellInfo*))
+/*static*/ void SpellMgr::ApplySpellFix(std::initializer_list<uint32> spellIds, std::function<void(SpellInfo* info)> fix)
 {
     for (uint32 spellId : spellIds)
     {
@@ -3277,7 +3277,7 @@ inline void ApplySpellFix(std::initializer_list<uint32> spellIds, void(*fix)(Spe
     }
 }
 
-inline void ApplySpellEffectFix(SpellInfo* spellInfo, SpellEffIndex effectIndex, void(*fix)(SpellEffectInfo*))
+/*static*/ void SpellMgr::ApplySpellEffectFix(SpellInfo* spellInfo, SpellEffIndex effectIndex, std::function<void(SpellEffectInfo* info)> fix)
 {
     if (spellInfo->GetEffects().size() <= effectIndex)
     {

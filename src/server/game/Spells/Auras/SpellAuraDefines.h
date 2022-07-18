@@ -89,6 +89,7 @@ enum class AuraTriggerOnHealthChangeDirection : int32
     Below   = 1,
 };
 
+// EnumUtils: DESCRIBE THIS
 enum AuraType : uint32
 {
     SPELL_AURA_NONE                                         = 0,

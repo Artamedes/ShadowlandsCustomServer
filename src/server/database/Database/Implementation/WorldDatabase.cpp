@@ -115,6 +115,8 @@ void WorldDatabaseConnection::DoPrepareStatements()
     PrepareStatement(WORLD_DEL_WP_ADDON_PATH_NODE, "DELETE FROM waypoint_data_addon WHERE PathID = ?", CONNECTION_SYNCH);
     PrepareStatement(WORLD_REP_WAYPOINT_NODE, "INSERT INTO waypoint_data (id, point, position_x, position_y, position_z, orientation, velocity, delay, smoothTransition, move_type, action, action_chance, wpguid) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);", CONNECTION_SYNCH);
     PrepareStatement(WORLD_REP_WAYPOINT_ADDON_NODE, "INSERT INTO waypoint_data_addon (PathID, PointID, SplinePointIndex, PositionX, PositionY, PositionZ) VALUES (?, ?, ?, ?, ?, ?)", CONNECTION_SYNCH);
+
+    PrepareStatement(WORLD_REP_Z_SPELL_FIX, "REPLACE INTO z_spell_fixes (SpellID, EffectIndex, BonusCoefficient, BonusCoefficientFromAP, PvpMultiplierMod, `Comment`) VALUES (?, ?, ?, ?, ?, ?)", CONNECTION_ASYNC);
 }
 
 WorldDatabaseConnection::WorldDatabaseConnection(MySQLConnectionInfo& connInfo) : MySQLConnection(connInfo)

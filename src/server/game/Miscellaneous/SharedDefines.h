@@ -24,6 +24,7 @@
 float const GROUND_HEIGHT_TOLERANCE = 0.05f; // Extra tolerance to z position to check if it is in air or on ground.
 constexpr float Z_OFFSET_FIND_HEIGHT = 0.5f;
 
+// EnumUtils: DESCRIBE THIS
 enum SpellEffIndex : uint8
 {
     EFFECT_0 = 0,
@@ -1171,6 +1172,7 @@ enum Team
     TEAM_OTHER               = 0                            // if ReputationListId > 0 && Flags != FACTION_FLAG_TEAM_HEADER
 };
 
+// EnumUtils: DESCRIBE THIS
 enum SpellEffectName
 {
     SPELL_EFFECT_NONE                               = 0,
