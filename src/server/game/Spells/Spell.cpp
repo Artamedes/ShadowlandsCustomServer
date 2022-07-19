@@ -2342,6 +2342,7 @@ GameObject* Spell::SearchSpellFocus()
     return focus;
 }
 
+#pragma optimize( "", off )
 void Spell::prepareDataForTriggerSystem()
 {
     //==========================================================================================
@@ -2386,6 +2387,7 @@ void Spell::prepareDataForTriggerSystem()
             // Because spell positivity is dependant on target
     }
 }
+#pragma optimize( "", on )
 
 void Spell::CleanupTargetList()
 {

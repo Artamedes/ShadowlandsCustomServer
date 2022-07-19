@@ -161,7 +161,7 @@ class spell_surging_shots : public AuraScript
     void HandleProc(ProcEventInfo& eventInfo)
     {
         if (auto caster = GetCaster())
-            caster->GetSpellHistory()->ResetCooldown(RapidFire);
+            caster->GetSpellHistory()->ResetCooldown(RapidFire, true);
     }
 
     void Register() override
