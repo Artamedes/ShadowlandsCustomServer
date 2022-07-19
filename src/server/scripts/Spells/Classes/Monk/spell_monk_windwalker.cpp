@@ -1,4 +1,4 @@
-#include "SpellIncludes.h"
+#include "spell_monk.h"
 
 /// ID: 101546 Spinning Crane Kick
 class spell_spinning_crane_kick : public AuraScript
@@ -9,6 +9,19 @@ class spell_spinning_crane_kick : public AuraScript
     {
         DanceOfChiJi = 325202,
     };
+
+    void HandleApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+    {
+        auto caster = GetCaster();
+        if (!caster)
+            return;
+
+        if (auto aur = caster->GetAura(Monk::eLegendary::JadeIgnitionChiEnergy))
+        {
+            caster->CastSpell(caster, Monk::eLegendary::ChiExplosion, CastSpellExtraArgs(true).AddSpellBP0(aur->GetStackAmount()));
+            aur->Remove();
+        }
+    }
 
     void HandleRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
     {
@@ -21,7 +34,8 @@ class spell_spinning_crane_kick : public AuraScript
 
     void Register() override
     {
-        OnEffectRemove += AuraEffectApplyFn(spell_spinning_crane_kick::HandleRemove, EFFECT_0, SPELL_AURA_PERIODIC_TRIGGER_SPELL, AURA_EFFECT_HANDLE_REAL);
+        OnEffectApply += AuraEffectApplyFn(spell_spinning_crane_kick::HandleApply, EFFECT_0, SPELL_AURA_PERIODIC_TRIGGER_SPELL, AURA_EFFECT_HANDLE_REAL);
+        OnEffectRemove += AuraEffectRemoveFn(spell_spinning_crane_kick::HandleRemove, EFFECT_0, SPELL_AURA_PERIODIC_TRIGGER_SPELL, AURA_EFFECT_HANDLE_REAL);
     }
 };
 

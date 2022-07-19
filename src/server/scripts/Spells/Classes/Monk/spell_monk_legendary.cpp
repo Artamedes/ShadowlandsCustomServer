@@ -185,7 +185,7 @@ class spell_jade_ignition : public AuraScript
 
     bool CheckProc(ProcEventInfo& eventInfo)
     {
-        return eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == FistsOfFury;
+        return eventInfo.GetSpellInfo() && (eventInfo.GetSpellInfo()->Id == FistsOfFury || eventInfo.GetSpellInfo()->Id == FistsOfFuryDmg);
     }
 
     void Register() override

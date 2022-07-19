@@ -36,6 +36,7 @@ namespace Monk
         Disable = 116095,
         EnergizingElixir = 115288,
         FistsOfFury = 113656,
+        FistsOfFuryDmg = 117418,
         FlyingSerpentKick = 101545,
         InvokeXuenThewhiteTiger = 123904,
         RingOfPeace = 116844,
@@ -96,5 +97,7 @@ namespace Monk
         TigerPalmCharge       = 337332,
         XuensBattlegear       = 337481,
         PressurePoint         = 337482,
+        JadeIgnitionChiEnergy = 337571,
+        ChiExplosion          = 337342,
     };
 }
