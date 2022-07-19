@@ -1481,7 +1481,7 @@ public:
                 nearestLoc = bg->GetClosestGraveyard(player);
             else
             {
-                if (Battlefield* bf = sBattlefieldMgr->GetBattlefieldToZoneId(player->GetZoneId()))
+                if (Battlefield* bf = sBattlefieldMgr->GetBattlefieldToZoneId(player->GetMap(), player->GetZoneId()))
                     nearestLoc = bf->GetClosestGraveyard(player);
                 else
                     nearestLoc = sObjectMgr->GetClosestGraveyard(*player, player->GetTeam(), player);
