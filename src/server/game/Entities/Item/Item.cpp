@@ -3035,6 +3035,24 @@ bool BonusData::AddBonus(uint32 type, std::array<int32, 4> const& values)
             }
             break;
         }
+        case ITEM_BONUS_MODIFIED_CRAFTING_STAT:
+        {
+            uint32 statIndex = 0;
+            for (statIndex = 0; statIndex < MAX_ITEM_PROTO_STATS; ++statIndex)
+                if (ItemStatType[statIndex] == ITEM_MOD_MODIFIED_CRAFTING_STAT_1 || ItemStatType[statIndex] == ITEM_MOD_MODIFIED_CRAFTING_STAT_2)
+                    break;
+
+            // We found a result
+            if (statIndex < MAX_ITEM_PROTO_STATS)
+            {
+                // Update the new type
+                ItemStatType[statIndex] = values[0];
+
+                // Sparse should already have values here.
+                //StatPercentEditor[statIndex] += values[1];
+            }
+            break;
+        }
         case ITEM_BONUS_QUALITY:
             if (!_state.HasQualityBonus)
             {
