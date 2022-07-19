@@ -1830,43 +1830,13 @@ class aura_sha_earthquake : public AuraScript
     void HandlePeriodic(AuraEffect const* /*aurEff*/)
     {
         if (Unit* caster = GetCaster())
-            if (AreaTrigger* at = caster->GetAreaTrigger(SPELL_SHAMAN_EARTHQUAKE))
-            {
-                // damage = $SPN * 0.25 * ($137040s1 + 100) / 100
-                // $damage=${$SPN*0.391*$d/$t2*(1+$@versadmg)*(($137040s1+100)/100)*$<mawPower>}
-                auto sp = caster->GetTotalSpellPowerValue(SPELL_SCHOOL_MASK_NATURE, false);
-                int32 damage = sp * 0.391f * (sSpellMgr->GetSpellInfo(SPELL_SHAMAN_ELEMENTAL_SHAMAN)->GetEffect(EFFECT_0).BasePoints + 100) / 100;
-
-                if (auto player = caster->ToPlayer())
-                {
-                    auto versa = player->m_activePlayerData->Versatility + player->m_activePlayerData->VersatilityBonus;
-                    AddPct(damage, versa);
-                }
-
-                if (EchoesOfGreatSundering)
-                    AddPct(damage, 120);
-
-                caster->CastSpell(*at, SPELL_SHAMAN_EARTHQUAKE_TICK, CastSpellExtraArgs(true).AddSpellBP0(damage));
-            }
-    }
-
-    void HandleApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
-    {
-        if (Unit* caster = GetCaster())
         {
-            if (auto aur = caster->GetAura(Shaman::eLegendary::EchoesOfGreatSundering))
-            {
-                aur->Remove();
-                EchoesOfGreatSundering = true;
-            }
+
         }
     }
 
-    bool EchoesOfGreatSundering = false;
-
     void Register() override
     {
-        OnEffectApply += AuraEffectApplyFn(aura_sha_earthquake::HandleApply, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY, AURA_EFFECT_HANDLE_REAL_OR_REAPPLY_MASK);
         OnEffectPeriodic += AuraEffectPeriodicFn(aura_sha_earthquake::HandlePeriodic, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY);
     }
 };
@@ -3585,7 +3555,8 @@ public:
 
     struct at_sha_earthquake_totemAI : AreaTriggerAI
     {
-        int32 timeInterval;
+        int32 timeInterval = 200;
+        bool EchoesOfGreatSundering = false;
 
         enum UsedSpells
         {
@@ -3595,7 +3566,14 @@ public:
 
         at_sha_earthquake_totemAI(AreaTrigger* areatrigger) : AreaTriggerAI(areatrigger)
         {
-            timeInterval = 200;
+            if (Unit* caster = areatrigger->GetCaster())
+            {
+                if (auto aur = caster->GetAura(Shaman::eLegendary::EchoesOfGreatSundering))
+                {
+                    aur->Remove();
+                    EchoesOfGreatSundering = true;
+                }
+            }
         }
 
         void OnUpdate(uint32 p_Time) override
@@ -3610,7 +3588,48 @@ public:
             if (timeInterval < 50)
                 return;
 
-            caster->CastSpell(*at, SPELL_SHAMAN_EARTHQUAKE_DAMAGE, CastSpellExtraArgs(true).AddSpellBP0(caster->Variables.GetValue("EarthquakeSP", 0) * 0.3));
+            if (caster->Variables.Exist("EarthquakeSP"))
+            {
+                caster->CastSpell(*at, SPELL_SHAMAN_EARTHQUAKE_DAMAGE, CastSpellExtraArgs(true).AddSpellBP0(caster->Variables.GetValue("EarthquakeSP", 0) * 0.3));
+            }
+            else
+            {
+                // damage = $SPN * 0.25 * ($137040s1 + 100) / 100
+                // $damage=${$SPN*0.391*$d/$t2*(1+$@versadmg)*(($137040s1+100)/100)*$<mawPower>}
+                auto sp = caster->GetTotalSpellPowerValue(SPELL_SCHOOL_MASK_NATURE, false);
+                int32 damage = sp * 0.391f * (sSpellMgr->GetSpellInfo(SPELL_SHAMAN_ELEMENTAL_SHAMAN)->GetEffect(EFFECT_0).BasePoints + 100) / 100;
+
+                if (auto player = caster->ToPlayer())
+                {
+                    auto versa = player->m_activePlayerData->Versatility + player->m_activePlayerData->VersatilityBonus;
+                    AddPct(damage, versa);
+                }
+
+                if (EchoesOfGreatSundering)
+                    AddPct(damage, 120);
+
+                caster->CastSpell(*at, SPELL_SHAMAN_EARTHQUAKE_TICK, CastSpellExtraArgs(true).AddSpellBP0(damage));
+
+                // Handle Shake the Foundation Conduit
+                if (auto eff = caster->GetAuraEffect(338252, EFFECT_0))
+                    if (eff->ConduitRankEntry)
+                        if (roll_chance_f(eff->ConduitRankEntry->AuraPointsOverride))
+                        {
+                            caster->CastSpell(*at, 338266, true);
+
+                            for (auto guid : at->GetInsideUnits())
+                            {
+                                if (auto unit = ObjectAccessor::GetUnit(*caster, guid))
+                                {
+                                    if (caster->IsValidAssistTarget(unit))
+                                    {
+                                        caster->CastSpell(unit, Shaman::eShaman::ChainLightning, true);
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+            }
 
             timeInterval -= 50;
         }
