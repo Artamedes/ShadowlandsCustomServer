@@ -51,6 +51,8 @@ namespace Shaman
         MaelstromWeapon = 187880,
         MasteryEnhancedElements = 77223,
         Stormbringer = 201845,
+        Hailstorm = 334195,
+        HailstormBuff = 334196,
     };
 
     enum eElemental

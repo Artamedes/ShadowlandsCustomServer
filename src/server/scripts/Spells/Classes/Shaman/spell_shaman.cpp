@@ -6919,6 +6919,9 @@ class spell_sha_maelstrom_weapon_proc : public AuraScript
                 int32 stacks = std::min(5, (int32)aur->GetStackAmount());
                 aur->ModStackAmount(-stacks);
 
+                if (caster->HasAura(Shaman::eEnhancement::Hailstorm))
+                    caster->CastSpell(caster, Shaman::eEnhancement::HailstormBuff, CastSpellExtraArgs(true).AddSpellMod(SpellValueMod::SPELLVALUE_AURA_STACK, stacks));
+
                 if (stacks > 5)
                     if (caster->HasAura(Shaman::eLegendary::LegacyOfTheFrostWitch))
                         caster->CastSpell(caster, Shaman::eLegendary::LegacyOfTheFrostWitchProc, true);

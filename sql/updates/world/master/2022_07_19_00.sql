@@ -9,3 +9,7 @@ INSERT INTO `spell_proc` (`SpellId`,`SchoolMask`,`SpellFamilyName`,`SpellFamilyM
 (336867,0x00,9,0x00000000,0x00000000,0x00000000,0x00000000,0x0,0x0,0x0,0x2,0x0,0x0,0x0,0,0,0,0); -- Surging Shots
 
 REPLACE INTO `z_spell_fixes` (`SpellID`, `EffectIndex`, `BonusCoefficient`, `BonusCoefficientFromAP`, `PvpMultiplierMod`, `Comment`) VALUES (337342, 0, 0, 10, 1, 'Momomomo (1#1)');
+
+
+DELETE FROM spell_script_names WHERE spell_id = 334196;
+INSERT INTO spell_script_names (spell_id, scriptname) VALUE (334196, 'spell_hailstorm');

@@ -69,6 +69,7 @@ void AddSC_spell_shaman_restoration();
 void AddSC_spell_shaman_covenant();
 void AddSC_spell_shaman_legendary();
 void AddSC_spell_shaman_elemental();
+void AddSC_spell_shaman_enhancement();
 void AddSC_warlock_spell_scripts();
 void AddSC_spell_warlock_covenant();
 void AddSC_spell_warlock_affliction();
@@ -146,6 +147,7 @@ void AddSpellsScripts()
     AddSC_spell_shaman_covenant();
     AddSC_spell_shaman_legendary();
     AddSC_spell_shaman_elemental();
+    AddSC_spell_shaman_enhancement();
     AddSC_warlock_spell_scripts();
     AddSC_spell_warlock_covenant();
     AddSC_spell_warlock_affliction();
