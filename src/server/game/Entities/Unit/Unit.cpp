@@ -4424,8 +4424,68 @@ bool IsInterruptFlagIgnoredForSpell(SpellAuraInterruptFlags flag, Unit const* un
     return false;
 }
 #pragma optimize( "", off )
-template <typename InterruptFlags>
-void Unit::RemoveAurasWithInterruptFlags(InterruptFlags flag, SpellInfo const* source)
+void Unit::RemoveAurasWithInterruptFlags(SpellAuraInterruptFlags flag, SpellInfo const* source)
+{
+    if (!HasInterruptFlag(flag))
+        return;
+
+    // interrupt auras
+    for (AuraApplicationList::iterator iter = m_interruptableAuras.begin(); iter != m_interruptableAuras.end();)
+    {
+        Aura* aura = (*iter)->GetBase();
+        ++iter;
+        if (aura->GetSpellInfo()->HasAuraInterruptFlag(flag)
+            && (!source || aura->GetId() != source->Id)
+            && !IsInterruptFlagIgnoredForSpell(flag, this, aura->GetSpellInfo(), source))
+        {
+            // PIG ?
+            if (EnumFlag<SpellAuraInterruptFlags>(flag).HasFlag(SpellAuraInterruptFlags::Damage))
+            {
+                // Hack for spectral sight conduit, Maybe we can add SpellScript hooks here if we find more cases in the future
+                switch (aura->GetSpellInfo()->Id)
+                {
+                    case 188501:
+                    case 202688:
+                        if (auto eff = GetAuraEffect(339149, EFFECT_0))
+                        {
+                            if (aura->Variables.Exist("Delayed"))
+                                continue;
+
+                            aura->Variables.Set("Delayed", true);
+                            aura->SetDuration(eff->GetAmount());
+                            continue;
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            uint32 removedAuras = m_removedAurasCount;
+            RemoveAura(aura, AURA_REMOVE_BY_INTERRUPT);
+            if (m_removedAurasCount > removedAuras + 1)
+                iter = m_interruptableAuras.begin();
+        }
+    }
+
+    // interrupt channeled spell
+    if (source && source->HasAttribute(SPELL_ATTR9_ALLOW_CAST_WHILE_CHANNELING))
+    {
+        UpdateInterruptMask();
+        return;
+    }
+
+    if (Spell* spell = m_currentSpells[CURRENT_CHANNELED_SPELL])
+        if (spell->getState() == SPELL_STATE_CASTING
+            && spell->GetSpellInfo()->HasChannelInterruptFlag(flag)
+            && (!source || spell->GetSpellInfo()->Id != source->Id)
+            && !IsInterruptFlagIgnoredForSpell(flag, this, spell->GetSpellInfo(), source))
+            InterruptNonMeleeSpells(false);
+
+    UpdateInterruptMask();
+}
+
+void Unit::RemoveAurasWithInterruptFlags(SpellAuraInterruptFlags2 flag, SpellInfo const* source)
 {
     if (!HasInterruptFlag(flag))
         return;
@@ -4463,9 +4523,6 @@ void Unit::RemoveAurasWithInterruptFlags(InterruptFlags flag, SpellInfo const* s
     UpdateInterruptMask();
 }
 #pragma optimize( "", on ) 
-
-template TC_GAME_API void Unit::RemoveAurasWithInterruptFlags(SpellAuraInterruptFlags flag, SpellInfo const* source);
-template TC_GAME_API void Unit::RemoveAurasWithInterruptFlags(SpellAuraInterruptFlags2 flag, SpellInfo const* source);
 
 void Unit::RemoveAurasWithFamily(SpellFamilyNames family, flag128 const& familyFlag, ObjectGuid casterGUID)
 {
