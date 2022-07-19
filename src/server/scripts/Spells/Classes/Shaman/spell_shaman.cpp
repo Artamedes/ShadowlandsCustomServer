@@ -6288,7 +6288,7 @@ class spell_sha_lava_lash : public SpellScript
 
     void Register() override
     {
-        OnCalcCritChance += SpellOnCalcCritChanceFn(spell_sha_lava_lash::HandleCrit);
+        OnCalcCritChance += SpellOnCalcCritChanceFn(spell_sha_lava_lash::HandleCritChance);
         OnEffectHitTarget += SpellEffectFn(spell_sha_lava_lash::HandleDamage, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
     }
 };
@@ -6446,8 +6446,23 @@ class spell_sha_windfury_weapon_proc : public AuraScript
         if (!target)
             return;
 
-        for (uint32 i = 0; i < 2; ++i)
+        for (uint32 i = 0; i < 3; ++i)
         {
+            if (i == 2)
+            {
+                // Unruly Winds
+                if (auto eff = caster->GetAuraEffect(338318, EFFECT_0))
+                {
+                    if (eff->ConduitRankEntry)
+                    {
+                        if (!roll_chance_f(eff->ConduitRankEntry->AuraPointsOverride))
+                            continue;
+                    }
+                }
+                else
+                    continue;
+            }
+
             eventInfo.GetActor()->CastSpell(eventInfo.GetProcTarget(), SPELL_SHAMAN_WINDFURY_ATTACK, aurEff);
 
             if (caster->HasAura(SPELL_SHAMAN_FORCEFUL_WINDS) && !caster->HasAura(SPELL_SHAMAN_FORCEFUL_WINDS_BUFF) && i == 1)
