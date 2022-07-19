@@ -5550,8 +5550,27 @@ class aura_sha_hex : public AuraScript
                 owner->ToUnit()->RemoveAura(GetAura());
     }
 
+    void HandleApply(AuraEffect const* aurEff, AuraEffectHandleModes mode)
+    {
+        // Crippling Hex conduit
+        if (auto caster = GetCaster())
+        {
+            if (auto eff = caster->GetAuraEffect(338054, EFFECT_0))
+            {
+                if (eff->ConduitRankEntry)
+                {
+                    if (auto target = GetTarget())
+                    {
+                        caster->CastSpell(target, 338055, CastSpellExtraArgs(true).AddSpellBP0(eff->ConduitRankEntry->AuraPointsOverride));
+                    }
+                }
+            }
+        }
+    }
+
     void Register() override
     {
+        OnEffectRemove += AuraEffectRemoveFn(aura_sha_hex::HandleApply, EFFECT_0, SPELL_AURA_TRANSFORM, AURA_EFFECT_HANDLE_REAL_OR_REAPPLY_MASK);
         DoCheckProc += AuraCheckProcFn(aura_sha_hex::CheckProc);
         OnProc += AuraProcFn(aura_sha_hex::HandleProc);
     }
