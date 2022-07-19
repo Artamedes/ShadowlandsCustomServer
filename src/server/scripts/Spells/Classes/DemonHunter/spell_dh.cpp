@@ -837,6 +837,11 @@ class spell_dh_consume_soul_vengeance : public SpellScript
             {
                 uint32 damageTaken = caster->GetDamageOverLastSeconds(spellInfo->GetEffect(EFFECT_3).BasePoints);
                 int32 healing = (damageTaken < CalculatePct(caster->GetMaxHealth(), spellInfo->GetEffect(EFFECT_2).BasePoints) ? CalculatePct(caster->GetMaxHealth(), spellInfo->GetEffect(EFFECT_2).BasePoints) : CalculatePct(damageTaken, spellInfo->GetEffect(EFFECT_1).BasePoints));
+
+                if (auto eff = caster->GetAuraEffect(338793, EFFECT_0)) ///< Shattered Restoration Conduit
+                    if (eff->ConduitRankEntry)
+                        AddPct(healing, eff->ConduitRankEntry->AuraPointsOverride);
+
                 SetHitHeal(healing);                
             }
         }
@@ -2698,12 +2703,29 @@ public:
                 PreventHitEffect(effIndex);                     
         }
 
+        void HandleHeal(SpellEffIndex /*eff*/)
+        {
+            auto caster = GetCaster();
+            if (!caster)
+                return;
+
+            auto healing = GetHitHeal();
+
+            if (auto eff = caster->GetAuraEffect(338793, EFFECT_0)) ///< Shattered Restoration Conduit
+                if (eff->ConduitRankEntry)
+                    AddPct(healing, eff->ConduitRankEntry->AuraPointsOverride);
+
+            SetHitHeal(healing);
+        }
+
         void Register() override
         {
             OnEffectHit += SpellEffectFn(spell_dh_consume_soul_SpellScript::PreventPower, EFFECT_1, SPELL_EFFECT_TRIGGER_SPELL);
             OnEffectHitTarget += SpellEffectFn(spell_dh_consume_soul_SpellScript::PreventPower, EFFECT_1, SPELL_EFFECT_TRIGGER_SPELL);
             OnEffectLaunch += SpellEffectFn(spell_dh_consume_soul_SpellScript::PreventPower, EFFECT_1, SPELL_EFFECT_TRIGGER_SPELL);
             OnEffectLaunchTarget += SpellEffectFn(spell_dh_consume_soul_SpellScript::PreventPower, EFFECT_1, SPELL_EFFECT_TRIGGER_SPELL);
+
+            OnEffectHitTarget += SpellEffectFn(spell_dh_consume_soul_SpellScript::HandleHeal, EFFECT_0, SPELL_EFFECT_HEAL_PCT);
         }
     };
 
