@@ -4213,10 +4213,21 @@ class spell_sha_earth_elemental : public SpellScript
     void HandleSummon(SpellEffIndex /*effIndex*/)
     {
         if (Unit* caster = GetCaster())
+        {
             if (caster->HasAura(SPELL_SHAMAN_PRIMAL_ELEMENTALIST))
                 caster->CastSpell(caster, SPELL_SHAMAN_PRIMAL_EARTH_ELEMENTAL_SUMMON, true);
             else
                 caster->CastSpell(caster, SPELL_SHAMAN_EARTH_ELEMENTAL_SUMMON, true);
+
+            // Vital Accreation Conduit
+            if (auto eff = caster->GetAuraEffect(337981, EFFECT_0))
+            {
+                if (eff->ConduitRankEntry)
+                {
+                    caster->CastSpell(caster, 337984, CastSpellExtraArgs(true).AddSpellBP0(eff->ConduitRankEntry->AuraPointsOverride));
+                }
+            }
+        }
     }
 
     void Register() override
