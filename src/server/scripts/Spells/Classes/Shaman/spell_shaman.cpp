@@ -6273,8 +6273,22 @@ class spell_sha_lava_lash : public SpellScript
         }
     }
 
+    void HandleCritChance(Unit const* victim, float& chance)
+    {
+        if (victim->GetAura(SPELL_SHAMAN_FLAME_SHOCK_ELEM, GetCaster()->GetGUID()))
+        {
+            if (auto caster = GetCaster())
+                if (auto eff = caster->GetAuraEffect(338331, EFFECT_0)) ///< Magma Fist Conduit
+                {
+                    if (eff->ConduitRankEntry)
+                        chance += eff->ConduitRankEntry->AuraPointsOverride;
+                }
+        }
+    }
+
     void Register() override
     {
+        OnCalcCritChance += SpellOnCalcCritChanceFn(spell_sha_lava_lash::HandleCrit);
         OnEffectHitTarget += SpellEffectFn(spell_sha_lava_lash::HandleDamage, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
     }
 };
