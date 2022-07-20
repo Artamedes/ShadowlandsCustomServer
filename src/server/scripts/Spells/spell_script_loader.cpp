@@ -36,6 +36,7 @@ void AddSC_hunter_spell_scripts();
 void AddSC_spell_hunter_covenant();
 void AddSC_spell_hunter_marksman();
 void AddSC_spell_hunter_legendary();
+void AddSC_spell_hunter_beast_mastery();
 void AddSC_mage_spell_scripts();
 void AddSC_spell_mage_covenant();
 void AddSC_monk_spell_scripts();
@@ -114,6 +115,7 @@ void AddSpellsScripts()
     AddSC_spell_hunter_covenant();
     AddSC_spell_hunter_marksman();
     AddSC_spell_hunter_legendary();
+    AddSC_spell_hunter_beast_mastery();
     AddSC_mage_spell_scripts();
     AddSC_spell_mage_covenant();
     AddSC_monk_spell_scripts();
