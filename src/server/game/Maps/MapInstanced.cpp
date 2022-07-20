@@ -144,7 +144,7 @@ Map* MapInstanced::CreateInstanceForPlayer(const uint32 mapId, Player* player, u
             }
         }
     }
-    else if (!IsGarrison())
+    else if (IsDungeon())
     {
         InstancePlayerBind* pBind = nullptr;
         //We have priority with mythic+ bind, in this way we can return to a challenger running
@@ -253,7 +253,7 @@ Map* MapInstanced::CreateInstanceForPlayer(const uint32 mapId, Player* player, u
                 group->BindToInstance(pSave, false);
         }
     }
-    else
+    else if (IsGarrison())
     {
         newInstanceId = player->GetGUID().GetCounter();
         map = FindInstanceMap(newInstanceId);
