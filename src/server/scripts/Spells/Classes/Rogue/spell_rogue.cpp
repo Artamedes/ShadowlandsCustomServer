@@ -568,7 +568,7 @@ class spell_rog_blade_flurry : public AuraScript
         if (!eventInfo.GetDamageInfo())
             return;
 
-        int32 damage = CalculatePct(eventInfo.GetDamageInfo()->GetDamage(), 60);
+        int32 damage = CalculatePct(eventInfo.GetDamageInfo()->GetDamage(), 75);
 
         CastSpellExtraArgs args(TRIGGERED_FULL_MASK);
         args.AddSpellBP0(damage);
