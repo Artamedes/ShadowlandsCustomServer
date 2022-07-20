@@ -5023,7 +5023,7 @@ class aura_sha_hot_hand : public AuraScript
             // SpeedRate: 4
             // SpeedRate2: 1
 
-            caster->GetSpellHistory()->ModifyCooldown(60103, -8000);
+           // caster->GetSpellHistory()->ModifyCooldown(60103, -8000);
 
             //if (auto player = caster->ToPlayer())
             //{

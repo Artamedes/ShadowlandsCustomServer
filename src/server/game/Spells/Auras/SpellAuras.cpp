@@ -155,7 +155,8 @@ void AuraApplication::_InitFlags(Unit* caster, uint32 effMask)
         GetBase()->HasEffectType(SPELL_AURA_CHARGE_RECOVERY_MOD) ||
         GetBase()->HasEffectType(SPELL_AURA_CHARGE_RECOVERY_MULTIPLIER) ||
         GetBase()->GetSpellInfo()->HasAura(SPELL_AURA_OVERRIDE_ACTIONBAR_SPELLS) ||
-        GetBase()->HasEffectType(SPELL_AURA_MOD_VISIBILITY_RANGE))
+        GetBase()->HasEffectType(SPELL_AURA_MOD_VISIBILITY_RANGE) ||
+        GetBase()->HasEffectType(SPELL_AURA_MOD_RECOVERY_RATE))
         _flags |= AFLAG_SCALABLE;
 }
 

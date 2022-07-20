@@ -47,6 +47,7 @@
 #include "Weather.h"
 #include "WorldPacket.h"
 #include "WorldSession.h"
+#include "SpellPackets.h"
 #include <G3D/g3dmath.h>
 #include <numeric>
 
@@ -209,12 +210,12 @@ NonDefaultConstructible<pAuraEffectHandler> AuraEffectHandler[TOTAL_AURAS]=
     &AuraEffect::HandleAuraModRangedHaste,                        //140 SPELL_AURA_MOD_RANGED_HASTE
     &AuraEffect::HandleUnused,                                    //141 SPELL_AURA_141
     &AuraEffect::HandleAuraModBaseResistancePCT,                  //142 SPELL_AURA_MOD_BASE_RESISTANCE_PCT
-    &AuraEffect::HandleModCooldownRecoveryRate,                   //143 SPELL_AURA_MOD_COOLDOWN_RECOVERY_RATE
+    &AuraEffect::HandleModCooldownRecoveryRateByLabel,            //143 SPELL_AURA_MOD_RECOVERY_RATE_BY_SPELL_LABEL
     &AuraEffect::HandleNoImmediateEffect,                         //144 SPELL_AURA_SAFE_FALL                         implemented in WorldSession::HandleMovementOpcodes
     &AuraEffect::HandleAuraModIncreaseHealthPercent,              //145 SPELL_AURA_MOD_INCREASE_HEALTH_PERCENT2
     &AuraEffect::HandleNoImmediateEffect,                         //146 SPELL_AURA_ALLOW_TAME_PET_TYPE
     &AuraEffect::HandleModMechanicImmunityMask,                   //147 SPELL_AURA_MECHANIC_IMMUNITY_MASK
-    &AuraEffect::HandleNULL,                                      //148 SPELL_AURA_MOD_CHARGE_RECOVERY_RATE
+    &AuraEffect::HandleModChargeRecoveryRate,                     //148 SPELL_AURA_MOD_CHARGE_RECOVERY_RATE
     &AuraEffect::HandleNoImmediateEffect,                         //149 SPELL_AURA_REDUCE_PUSHBACK
     &AuraEffect::HandleShieldBlockValuePercent,                   //150 SPELL_AURA_MOD_SHIELD_BLOCKVALUE_PCT
     &AuraEffect::HandleAuraTrackStealthed,                        //151 SPELL_AURA_TRACK_STEALTHED
@@ -6691,7 +6692,47 @@ void AuraEffect::HandleModCooldownRecoveryRate(AuraApplication const* aurApp, ui
     if (!(mode & (AURA_EFFECT_HANDLE_CHANGE_AMOUNT_MASK | AURA_EFFECT_HANDLE_REAL)))
         return;
 
-    if (true)
+    Player* player = nullptr;
+
+    if (aurApp->GetTarget())
+        player = aurApp->GetTarget()->ToPlayer();
+
+    if (!player)
+        return;
+
+    float addVal = 1.0f;
+    ApplyPercentModFloatVar(addVal, GetAmount(), !apply);
+
+    std::set<uint32> const& l_Spells = sSpellMgr->GetChangeRecoveryRateSpells(GetSpellInfo()->Id);
+
+    uint32 l_Cooldown = 0;
+    for (uint32 l_AffectedSpell : l_Spells)
+    {
+        l_Cooldown = player->GetSpellHistory()->GetRemainingCooldown(sSpellMgr->GetSpellInfo(l_AffectedSpell)).count();
+
+        if (l_Cooldown)
+        {
+            // Don't send CD packets to the client, it will do all visuals itself.
+            player->GetSpellHistory()->ResetCooldown(l_AffectedSpell, false);
+            player->GetSpellHistory()->AddCooldown(l_AffectedSpell, 0, Milliseconds(uint32(l_Cooldown * (apply ? 100.0f / (GetAmount() + 100) : (GetAmount() + 100) / 100))));
+
+            if (apply)
+            {
+                WorldPackets::Spells::ModifyCooldownRecoverySpeed packet;
+                packet.SpellId = l_AffectedSpell;
+                packet.SpeedRate = addVal;
+                //if (apply)
+                //    packet.SpeedRate2 = 1.0f;
+                player->SendDirectMessage(packet.Write());
+                TC_LOG_INFO("sever.spells", "ModifyCooldownRecoverySpeed %f %f", addVal, 1.0f);
+            }
+        }
+    }
+}
+
+void AuraEffect::HandleModCooldownRecoveryRateByLabel(AuraApplication const* aurApp, uint8 mode, bool apply) const
+{
+    if (!(mode & (AURA_EFFECT_HANDLE_CHANGE_AMOUNT_MASK | AURA_EFFECT_HANDLE_REAL)))
         return;
 
     Player* player = nullptr;
@@ -6703,31 +6744,46 @@ void AuraEffect::HandleModCooldownRecoveryRate(AuraApplication const* aurApp, ui
         return;
 
     float addVal = 1.0f;
-    float modVal = CalculatePct(1.00f, GetAmount());
-    // Client Side the effects/opcodes stacks! We should only send the new value to add instead of all known aura values!
-    if (apply)
-        addVal = 1.00f - modVal;
-    else
-    {
-        addVal = 1.00f + modVal;
-        player->GetSpellHistory()->RemoveSpellAffectedByRecoveryRate(this->GetId());
-    }
+    ApplyPercentModFloatVar(addVal, GetAmount(), !apply);
 
-    if (m_spellInfo->Id == 215785)
+    for (uint32 spellId : sDB2Manager.GetSpellLabelSpellsByCategoryId(GetMiscValue()))
     {
-        uint32 spellId = 60103;
-        player->GetSpellHistory()->ChangeRecoveryRate(spellId, addVal);
+        if (player->HasSpell(spellId) && player->GetSpellHistory() && (player->GetSpellHistory()->HasCooldown(spellId) || player->GetSpellHistory()->HasChargeInCooldown(spellId)))
+        {
+            player->GetSpellHistory()->SpellRecoveryRate(spellId, addVal);
+        }
+
+        WorldPackets::Spells::ModifyCooldownRecoverySpeed packet;
+        packet.SpellId = spellId;
+        packet.SpeedRate = addVal;
+        if (apply)
+            packet.SpeedRate2 = addVal;
+        player->SendDirectMessage(packet.Write());
+    }
+}
+
+void AuraEffect::HandleModChargeRecoveryRate(AuraApplication const* aurApp, uint8 mode, bool apply) const
+{
+    if (!(mode & (AURA_EFFECT_HANDLE_CHANGE_AMOUNT_MASK | AURA_EFFECT_HANDLE_REAL)))
         return;
-    }
 
-    if (aurApp->GetBase()->GetType() == SPELL_AURA_MOD_RECOVERY_RATE)
-    {
-        // todo: fix this later
-    }
-    else
-    {
-        for (uint32 spellId : sDB2Manager.GetSpellLabelSpellsByCategoryId(GetMiscValue()))
-            if (player->HasSpell(spellId) && player->GetSpellHistory() && (player->GetSpellHistory()->HasCooldown(spellId) || player->GetSpellHistory()->HasChargeInCooldown(spellId)))
-                player->GetSpellHistory()->ChangeRecoveryRate(spellId, addVal);
-    }
+    Player* player = nullptr;
+
+    if (aurApp->GetTarget())
+        player = aurApp->GetTarget()->ToPlayer();
+
+    if (!player)
+        return;
+
+    float addVal = 1.0f;
+    ApplyPercentModFloatVar(addVal, GetAmount(), !apply);
+
+    player->GetSpellHistory()->ChangeRecoveryRate(GetMiscValue(), addVal);
+
+    WorldPackets::Spells::ModifyChargeRecoverySpeed packet;
+    packet.ChargeCategoryId = GetMiscValue();
+    packet.SpeedRate = addVal;
+    if (apply)
+        packet.UnkFloat = addVal;
+    player->SendDirectMessage(packet.Write());
 }

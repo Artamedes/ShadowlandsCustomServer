@@ -216,7 +216,8 @@ public:
     void RemoveSpellAffectedByRecoveryRate(uint32 spellCastedID);
     bool HasSpellAffectedByRecoveryRate(uint32 spellCastedID, uint32 spellAffectedID);
 
-    void ChangeRecoveryRate(uint32 spellId, float rate);
+    void SpellRecoveryRate(uint32 spellId, float rate);
+    void ChangeRecoveryRate(uint32 chargeId, float rate);
 
     // Global cooldown
     bool HasGlobalCooldown(SpellInfo const* spellInfo) const;

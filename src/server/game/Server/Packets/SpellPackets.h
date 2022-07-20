@@ -1154,8 +1154,8 @@ namespace WorldPackets
         
             uint32 ChargeCategoryId;
             float SpeedRate = 1.0f;
-            float UnkFloat = 1.0f;
-            bool UnkBool = false;
+            float UnkFloat = 1.0f; // SpeedRate2
+            bool UnkBool = false; // IsPet
         };
     }
 }

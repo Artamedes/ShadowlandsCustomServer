@@ -3258,6 +3258,8 @@ void SpellMgr::LoadSpellInfoCustomAttributes()
                 const_cast<SpellInfo&>(spellInfo).AttributesCu |= SPELL_ATTR0_CU_AURA_CANNOT_BE_SAVED;
     }
 
+    LoadChangeRecoveryRateSpells();
+
     TC_LOG_INFO("server.loading", ">> Loaded SpellInfo custom attributes in %u ms", GetMSTimeDiffToNow(oldMSTime));
 }
 
@@ -5127,4 +5129,77 @@ uint32 SpellMgr::GetModelForTotem(uint32 spellId, uint8 race) const
         return itr->second;
 
     return 0;
+}
+
+void SpellMgr::LoadChangeRecoveryRateSpells()
+{
+    TC_LOG_INFO("server.loading", "Loading Charge Recovery Rate Spells for lookup");
+
+    ///< Spiritual Journey (Feral Spirits)
+    m_ChangeRecoveryRateSpells[214170] = { 51533 };
+   
+    ///< Avenging Crusader (Honor Talent) (Crusader Strike, Judgment)
+    m_ChangeRecoveryRateSpells[216331] = { 35395, 20271 };
+   
+    ///< Forbearant Faithful (Divine Shield, Lay on Hands, Blessing of Proctection, Blessing of SpellWarning, Hand of Protection)
+    m_ChangeRecoveryRateSpells[209376] = { 642, 633, 1022, 204018, 150630 };
+   
+    ///< Derilium
+    m_ChangeRecoveryRateSpells[233397] =
+    {
+        1850, ///< Dash
+        186247, ///< Aspect of the Cheetah
+        2983, ///< Sprint
+        106898 ///< Stampending Roar
+    };
+   
+    ///< Thundercharge (Honor Talent) (All CoolDowns)
+    m_ChangeRecoveryRateSpells[204366] = {};
+   
+    ///< BlurredTime (All Cooldowns)
+    m_ChangeRecoveryRateSpells[202776] = { };
+   
+    ///< Shadow's Caress  (Honor Talent) (All Cooldowns)
+    m_ChangeRecoveryRateSpells[198665] = { };
+   
+    ///< For all other spells
+    m_ChangeRecoveryRateSpells[0] = { 0 };
+
+    ForEachSpellInfo([this](SpellInfo const* info)
+    {
+        for (auto const& eff : info->GetEffects())
+        {
+            if (eff.ApplyAuraName == AuraType::SPELL_AURA_MOD_RECOVERY_RATE_BY_SPELL_LABEL)
+            {
+                for (uint32 spellId : sDB2Manager.GetSpellLabelSpellsByCategoryId(eff.MiscValue))
+                {
+                    m_ChangeRecoveryRateSpells[info->Id].insert(spellId);
+                }
+            }
+            else if (eff.ApplyAuraName == AuraType::SPELL_AURA_MOD_RECOVERY_RATE)
+            {
+                if (eff.SpellClassMask)
+                {
+                    ForEachSpellInfo([&](SpellInfo const* info2)
+                    {
+                        if (info->SpellFamilyName == info2->SpellFamilyName)
+                        {
+                            if (info2->SpellFamilyFlags.HasFlag(eff.SpellClassMask[0], eff.SpellClassMask[1], eff.SpellClassMask[2], eff.SpellClassMask[3]))
+                                m_ChangeRecoveryRateSpells[info->Id].insert(info2->Id);
+                        }
+                    });
+                }
+            }
+        }
+    });
+
+}
+
+std::set<uint32> const& SpellMgr::GetChangeRecoveryRateSpells(uint32 spellId) const
+{
+    std::map<uint32, std::set<uint32> >::const_iterator l_Itr = m_ChangeRecoveryRateSpells.find(spellId);
+    if (l_Itr != m_ChangeRecoveryRateSpells.end())
+        return l_Itr->second;
+
+    return m_ChangeRecoveryRateSpells.at(0);
 }

@@ -2539,7 +2539,9 @@ void WorldObject::ModSpellCastTime(SpellInfo const* spellInfo, int32& castTime, 
         return;
 
     // called from caster
-    if (Player* modOwner = GetSpellModOwner())
+    Player* modOwner = GetSpellModOwner();
+
+    if (modOwner)
         modOwner->ApplySpellMod(spellInfo, SpellModOp::ChangeCastTime, castTime, spell);
 
     Unit const* unitCaster = ToUnit();
@@ -2555,7 +2557,22 @@ void WorldObject::ModSpellCastTime(SpellInfo const* spellInfo, int32& castTime, 
 
     if (!(spellInfo->HasAttribute(SPELL_ATTR0_IS_ABILITY) || spellInfo->HasAttribute(SPELL_ATTR0_IS_TRADESKILL) || spellInfo->HasAttribute(SPELL_ATTR3_IGNORE_CASTER_MODIFIERS)) &&
         ((GetTypeId() == TYPEID_PLAYER && spellInfo->SpellFamilyName) || GetTypeId() == TYPEID_UNIT))
-        castTime = unitCaster->CanInstantCast() ? 0 : int32(float(castTime) * unitCaster->m_unitData->ModCastingSpeed);
+    {
+        if (unitCaster->CanInstantCast())
+            castTime = 0;
+        else
+        {
+            if (modOwner != nullptr)
+            {
+                if (modOwner != this)
+                    castTime = int32(float(castTime) * (1.0f / (((1.0f / modOwner->m_unitData->ModCastingSpeed) - 1) + ((1.0f / unitCaster->m_unitData->ModCastingSpeed) - 1) + 1)));
+                else
+                    castTime = int32(float(castTime) * unitCaster->m_unitData->ModCastingSpeed);
+            }
+            else
+                castTime = int32(float(castTime) * unitCaster->m_unitData->ModCastingSpeed);
+        }
+    }
     else if (spellInfo->HasAttribute(SPELL_ATTR0_USES_RANGED_SLOT) && !spellInfo->HasAttribute(SPELL_ATTR2_AUTO_REPEAT))
         castTime = int32(float(castTime) * unitCaster->m_modAttackSpeedPct[RANGED_ATTACK]);
     else if (IsPartOfSkillLine(SKILL_COOKING, spellInfo->Id) && unitCaster->HasAura(67556)) // cooking with Chef Hat.

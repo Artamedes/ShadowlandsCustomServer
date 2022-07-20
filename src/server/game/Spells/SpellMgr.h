@@ -764,6 +764,9 @@ class TC_GAME_API SpellMgr
 
         uint32 GetModelForTotem(uint32 spellId, uint8 race) const;
 
+        void LoadChangeRecoveryRateSpells();
+        std::set<uint32> const& GetChangeRecoveryRateSpells(uint32 spellId) const;
+
     // Modifiers
     public:
 
@@ -824,6 +827,8 @@ class TC_GAME_API SpellMgr
         PetLevelupSpellMap         mPetLevelupSpellMap;
         PetDefaultSpellsMap        mPetDefaultSpellsMap;           // only spells not listed in related mPetLevelupSpellMap entry
         SpellTotemModelMap         mSpellTotemModel;
+
+        std::map<uint32, std::set<uint32> > m_ChangeRecoveryRateSpells;
 };
 
 #define sSpellMgr SpellMgr::instance()

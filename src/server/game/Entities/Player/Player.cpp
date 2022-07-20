@@ -5791,6 +5791,7 @@ void Player::UpdateRating(CombatRating cr)
                     //ApplyAttackTimePercentMod(RANGED_ATTACK, oldVal, false);
                     //ApplyAttackTimePercentMod(RANGED_ATTACK, newVal, true);
                     UpdateAttackTimeField(RANGED_ATTACK, 100);
+                    m_modAttackSpeedPct[RANGED_ATTACK] = 0.01f;
                     if (Pet* pet = GetPet())
                     {
                         pet->UpdateAttackTimeField(RANGED_ATTACK, 100);

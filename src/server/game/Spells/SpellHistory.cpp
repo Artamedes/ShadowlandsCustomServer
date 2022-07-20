@@ -499,6 +499,73 @@ void SpellHistory::StartCooldown(SpellInfo const* spellInfo, uint32 itemId, Spel
                 if (categoryEntry->Flags & SPELL_CATEGORY_FLAG_COOLDOWN_EXPIRES_AT_DAILY_RESET)
                     categoryCooldown = std::chrono::duration_cast<Milliseconds>(Clock::from_time_t(sWorld->GetNextDailyQuestsResetTime()) - Clock::now());
             }
+
+            Unit::AuraEffectList const& listAuraCooldownRecoveryRate = _owner->GetAuraEffectsByType(SPELL_AURA_MOD_RECOVERY_RATE_BY_SPELL_LABEL);
+            if (!listAuraCooldownRecoveryRate.empty())
+            {
+                int64 pctReduction = 0;
+                for (AuraEffect* auraEffect : listAuraCooldownRecoveryRate)
+                {
+                    for (uint32 spellId : sDB2Manager.GetSpellLabelSpellsByCategoryId(auraEffect->GetMiscValue()))
+                    {
+                        if (!_owner->HasSpell(spellId) || spellId != spellInfo->Id || spellId == auraEffect->GetId() || HasSpellAffectedByRecoveryRate(auraEffect->GetId(), spellId))
+                            continue;
+
+                        AddSpellAffectedByRecoveryRate(auraEffect->GetId(), spellId);
+                        pctReduction += auraEffect->GetAmount();
+                    }
+                }
+
+                //Don´t need syncro the client again, you only need reduce cooldown server side
+                float categoryCooldownF = float(categoryCooldown.count());
+                float cooldownF = float(cooldown.count());
+                categoryCooldownF = AddPct(categoryCooldownF, -pctReduction);
+                cooldownF = AddPct(cooldownF, -pctReduction);
+
+                categoryCooldown = Milliseconds((int32)categoryCooldownF);
+                cooldown = Milliseconds((int32)cooldownF);
+            }
+
+            Unit::AuraEffectList const& listAuraCooldownModRecoveryRate = _owner->GetAuraEffectsByType(SPELL_AURA_MOD_RECOVERY_RATE);
+            if (!listAuraCooldownModRecoveryRate.empty())
+            {
+                uint32 amount = 0;
+                for (AuraEffect* auraEffect : listAuraCooldownModRecoveryRate)
+                {
+                    std::set<uint32> const& l_Spells = sSpellMgr->GetChangeRecoveryRateSpells(auraEffect->GetId());
+
+                    if (!l_Spells.empty())
+                    {
+                        for (uint32 spellId : l_Spells)
+                        {
+                            if (spellId == spellInfo->Id)
+                            {
+                                amount += auraEffect->GetAmount();
+                            }
+                        }
+                    }
+                }
+
+                if (amount > 0)
+                {
+                    float addVal = 1.0f;
+                    ApplyPercentModFloatVar(addVal, amount, !true);
+                    float cooldownAsFloat = float(cooldown.count());
+                    cooldownAsFloat *= addVal;
+                    cooldown = Milliseconds((int32)cooldownAsFloat);
+
+                    //if (Player* playerOwner = GetPlayerOwner())
+                    //{
+                    //    addVal = 1.0f;
+                    //    ApplyPercentModFloatVar(addVal, amount, true);
+                    //
+                    //    WorldPackets::Spells::ModifyCooldownRecoverySpeed packet;
+                    //    packet.SpellId = spellInfo->Id;
+                    //    packet.SpeedRate = addVal;
+                    //    playerOwner->SendDirectMessage(packet.Write());
+                    //}
+                }
+            }
         }
         else
             needsCooldownPacket = true;
@@ -1024,7 +1091,7 @@ bool SpellHistory::ConsumeCharge(uint32 chargeCategoryId, bool withPacket /*= fa
     int32 chargeRecovery = GetChargeRecoveryTime(chargeCategoryId, spellinfo);
     if (chargeRecovery > 0 && GetMaxCharges(chargeCategoryId) > 0)
     {
-        if (chargeRecovery == 1562) ///< Hackfix for Purifying Brew LEgendary
+        if (chargeCategoryId == 1562) ///< Hackfix for Purifying Brew LEgendary
             if (_owner->HasAura(337290))
                 if (roll_chance_i(35))
                     return true;
@@ -1038,6 +1105,19 @@ bool SpellHistory::ConsumeCharge(uint32 chargeCategoryId, bool withPacket /*= fa
 
        //if (Player* player = GetPlayerOwner())
        //    sScriptMgr->OnChargeRecoveryTimeStart(player, chargeCategoryId, chargeRecovery);
+
+        auto effList = _owner->GetAuraEffectsByType(SPELL_AURA_MOD_CHARGE_RECOVERY_RATE);
+
+        for (auto eff : effList)
+        {
+            if (eff->GetMiscValue() == chargeCategoryId)
+            {
+                float addVal = 1.0f;
+                ApplyPercentModFloatVar(addVal, eff->GetAmount(), !true);
+                chargeRecovery *= addVal;
+                TC_LOG_INFO("server.spells", "SPELL_AURA_MOD_CHARGE_RECOVERY_RATE %u %u %f %d", eff->GetMiscValue(), eff->GetAmount(), addVal, chargeRecovery);
+            }
+        }
 
         charges.emplace_back(recoveryStart, std::chrono::milliseconds(chargeRecovery));
 
@@ -1644,7 +1724,7 @@ bool SpellHistory::HasSpellAffectedByRecoveryRate(uint32 spellCastedID, uint32 s
     return false;
 }
 
-void SpellHistory::ChangeRecoveryRate(uint32 spellId, float rate)
+void SpellHistory::SpellRecoveryRate(uint32 spellId, float rate)
 {
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
     if (!spellInfo)
@@ -1652,44 +1732,35 @@ void SpellHistory::ChangeRecoveryRate(uint32 spellId, float rate)
 
     if (Player* player = _owner->ToPlayer())
     {
-        if (spellInfo->ChargeCategoryId != 0)
+        //We need only check the reduction cooldown, when this end server side the restriction is in client side
+        if (rate < 1.0f)
         {
-            //We need only check the reduction cooldown, when this end server side the restriction is in client side
-            if (rate < 1.0f)
-            {
-                auto itr = _categoryCharges.find(spellInfo->ChargeCategoryId);
-                if (itr != _categoryCharges.end())
-                {
-                    if (itr->second.empty())
-                        return;
-
-                    Clock::time_point now = Clock::now();
-                    std::chrono::milliseconds cooldown = std::chrono::duration_cast<std::chrono::milliseconds>(itr->second.front().RechargeEnd - now);
-                    uint32 cooldownDuration = cooldown.count() * rate;
-                    itr->second.front().RechargeStart -= std::chrono::milliseconds(cooldownDuration);
-                    itr->second.front().RechargeEnd -= std::chrono::milliseconds(cooldownDuration);
-                }
-            }
-
-            WorldPackets::Spells::ModifyChargeRecoverySpeed packet;
-            packet.ChargeCategoryId = spellInfo->ChargeCategoryId;
-            packet.SpeedRate = rate;
-            player->SendDirectMessage(packet.Write());
+            uint32 cooldown = GetRemainingCooldown(spellInfo).count() * rate;
+            if (cooldown > 0)
+                AddSpellCooldown(spellId, 0, cooldown);
         }
-        else
-        {
-            //We need only check the reduction cooldown, when this end server side the restriction is in client side
-            if (rate < 1.0f)
-            {
-                uint32 cooldown = GetRemainingCooldown(spellInfo).count() * rate;
-                if (cooldown > 0)
-                    AddSpellCooldown(spellId, 0, cooldown);
-            }
+    }
+}
 
-            WorldPackets::Spells::ModifyCooldownRecoverySpeed packet;
-            packet.SpellId = spellId;
-            packet.SpeedRate = rate;
-            player->SendDirectMessage(packet.Write());
+void SpellHistory::ChangeRecoveryRate(uint32 chargeId, float rate)
+{
+    if (Player* player = _owner->ToPlayer())
+    {
+        //We need only check the reduction cooldown, when this end server side the restriction is in client side
+        if (rate < 1.0f)
+        {
+            auto itr = _categoryCharges.find(chargeId);
+            if (itr != _categoryCharges.end())
+            {
+                if (itr->second.empty())
+                    return;
+
+                Clock::time_point now = Clock::now();
+                std::chrono::milliseconds cooldown = std::chrono::duration_cast<std::chrono::milliseconds>(itr->second.front().RechargeEnd - now);
+                uint32 cooldownDuration = cooldown.count() * rate;
+                itr->second.front().RechargeStart -= std::chrono::milliseconds(cooldownDuration);
+                itr->second.front().RechargeEnd -= std::chrono::milliseconds(cooldownDuration);
+            }
         }
     }
 }
