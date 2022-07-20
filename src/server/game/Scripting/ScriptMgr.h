@@ -891,7 +891,7 @@ class TC_GAME_API PlayerScript : public ScriptObject
 
         virtual void OnPlayerAbandonQuest(Player* /*player*/, Quest const* /*quest*/) { }
 
-        virtual void OnSetShapeshiftForm(Player* /*player*/, ShapeshiftForm /*form*/) { }
+        virtual void OnSetShapeshiftForm(Player* /*player*/, ShapeshiftForm /*form*/, ShapeshiftForm /*prevForm*/) { }
 };
 
 class TC_GAME_API AccountScript : public ScriptObject
@@ -1357,7 +1357,7 @@ class TC_GAME_API ScriptMgr
         void OnPlayerDailyReset(Player* player);
         void OnPlayerModifyCurrency(Player* player, uint32 id, uint32 oldCount, int32 newCount);
         void OnPlayerAbandonQuest(Player* player, Quest const* quest);
-        void OnSetShapeshiftForm(Player* player, ShapeshiftForm form);
+        void OnSetShapeshiftForm(Player* player, ShapeshiftForm form, ShapeshiftForm prevForm);
 
     public: /* AccountScript */
 

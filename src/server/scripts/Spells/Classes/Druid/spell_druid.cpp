@@ -298,7 +298,7 @@ public:
         }
     }
 
-    void OnSetShapeshiftForm(Player* player, ShapeshiftForm form) override
+    void OnSetShapeshiftForm(Player* player, ShapeshiftForm form, ShapeshiftForm oldForm) override
     {
         if (player->HasAura(Druid::eLegendary::OathOfTheElderDruid) && !player->HasAura(Druid::eLegendary::OathOfTheElderDruidCD) && Druid::GetAffinityShapeshiftForm(player) == form)
         {
@@ -311,6 +311,14 @@ public:
 
             player->CastSpell(player, replacementHeartOfTheWildSpell->Id, CastSpellExtraArgs(TRIGGERED_FULL_MASK_NO_CD).AddSpellMod(SpellValueMod::SPELLVALUE_DURATION, duration));
             player->CastSpell(player, Druid::eLegendary::OathOfTheElderDruidCD, true);
+        }
+
+        if (oldForm == ShapeshiftForm::FORM_TRAVEL_FORM || oldForm == ShapeshiftForm::FORM_CAT_FORM)
+        {
+            if (auto tirelessPursuit = player->GetAuraEffect(340545, EFFECT_0))
+            {
+                player->CastSpell(player, 340546, CastSpellExtraArgs(true).AddSpellMod(SpellValueMod::SPELLVALUE_DURATION, tirelessPursuit->GetAmount()));
+            }
         }
     }
 };

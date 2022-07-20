@@ -2330,9 +2330,9 @@ void ScriptMgr::OnPlayerAbandonQuest(Player* player, Quest const* quest)
     FOREACH_SCRIPT(PlayerScript)->OnPlayerAbandonQuest(player, quest);
 }
 
-void ScriptMgr::OnSetShapeshiftForm(Player* player, ShapeshiftForm form)
+void ScriptMgr::OnSetShapeshiftForm(Player* player, ShapeshiftForm form, ShapeshiftForm prevForm)
 {
-    FOREACH_SCRIPT(PlayerScript)->OnSetShapeshiftForm(player, form);
+    FOREACH_SCRIPT(PlayerScript)->OnSetShapeshiftForm(player, form, prevForm);
 }
 
 // Account
