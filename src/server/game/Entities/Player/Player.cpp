@@ -23916,7 +23916,7 @@ void Player::UpdateReviveBattlePetCooldown()
     }
 }
 
-void Player::SetResurrectRequestData(WorldObject const* caster, uint32 health, uint32 mana, uint32 appliedAura)
+void Player::SetResurrectRequestData(WorldObject const* caster, uint32 health, uint32 mana, uint32 appliedAura, uint32 spellId)
 {
     ASSERT(!IsResurrectRequested());
     _resurrectionData.reset(new ResurrectionData());
@@ -23925,6 +23925,7 @@ void Player::SetResurrectRequestData(WorldObject const* caster, uint32 health, u
     _resurrectionData->Health = health;
     _resurrectionData->Mana = mana;
     _resurrectionData->Aura = appliedAura;
+    _resurrectionData->SpellId = spellId;
 }
 
                                                            //slot to be excluded while counting
@@ -26131,6 +26132,23 @@ void Player::ResurrectUsingRequestDataImpl()
     if (uint32 aura = resurrectAura)
         CastSpell(this, aura, CastSpellExtraArgs(TRIGGERED_FULL_MASK)
             .SetOriginalCaster(resurrectGUID));
+
+    // Handle born anew conduit
+    if (auto caster = ObjectAccessor::GetUnit(*this, resurrectGUID))
+    {
+        if (_resurrectionData->SpellId == 20484) ///< Rebirth
+        {
+            // Born anew
+            if (auto eff = caster->GetAuraEffect(341280, EFFECT_0))
+            {
+                if (eff->ConduitRankEntry)
+                {
+                    caster->CastSpell(this, 341448, true);
+                    caster->CastSpell(this, 341449, CastSpellExtraArgs(true).AddSpellBP0(eff->ConduitRankEntry->AuraPointsOverride));
+                }
+            }
+        }
+    }
 
     SpawnCorpseBones();
 }

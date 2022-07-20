@@ -1088,6 +1088,7 @@ struct ResurrectionData
     uint32 Health;
     uint32 Mana;
     uint32 Aura;
+    uint32 SpellId;
 };
 
 struct GroupUpdateCounter
@@ -1943,7 +1944,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void UpdatePotionCooldown(Spell* spell = nullptr);
         void UpdateReviveBattlePetCooldown();
 
-        void SetResurrectRequestData(WorldObject const* caster, uint32 health, uint32 mana, uint32 appliedAura);
+        void SetResurrectRequestData(WorldObject const* caster, uint32 health, uint32 mana, uint32 appliedAura, uint32 spellId = 0);
         void ClearResurrectRequestData()
         {
             _resurrectionData.reset();

@@ -3681,7 +3681,7 @@ void Spell::EffectResurrect()
 
     ExecuteLogEffectResurrect(SpellEffectName(effectInfo->Effect), player);
 
-    player->SetResurrectRequestData(m_caster, health, mana, 0);
+    player->SetResurrectRequestData(m_caster, health, mana, 0, m_spellInfo->Id);
     SendResurrectRequest(player);
 }
 
