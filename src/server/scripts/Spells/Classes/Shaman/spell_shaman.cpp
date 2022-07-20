@@ -783,10 +783,14 @@ public:
             if (!containerTypeMask)
                 return;
 
+            auto primaryTarget = ObjectAccessor::GetUnit(*caster, _primaryTarget);
+            if (!primaryTarget)
+                return;
+
             std::list<WorldObject*> chainTargets;
-            Trinity::WorldObjectSpellAreaTargetCheck check(25.0f, _primaryTarget, caster, caster, GetSpellInfo(), targetInfo.GetCheckType(), conditions, TARGET_OBJECT_TYPE_UNIT);
+            Trinity::WorldObjectSpellAreaTargetCheck check(25.0f, primaryTarget, caster, caster, GetSpellInfo(), targetInfo.GetCheckType(), conditions, TARGET_OBJECT_TYPE_UNIT);
             Trinity::WorldObjectListSearcher<Trinity::WorldObjectSpellAreaTargetCheck> searcher(caster, chainTargets, check, containerTypeMask);
-            Cell::VisitAllObjects(_primaryTarget, searcher, range);
+            Cell::VisitAllObjects(primaryTarget, searcher, range);
 
             chainTargets.remove_if(Trinity::UnitAuraCheck(false, SPELL_SHAMAN_RIPTIDE, caster->GetGUID()));
             if (chainTargets.empty())
@@ -808,9 +812,19 @@ public:
             if (!caster || !target)
                 return;
 
-
             if (caster->HasAura(SPELL_SHAMAN_DELUGE) && target->HasAura(SPELL_SHAMAN_HEALING_RAIN))
                 SetHitHeal(GetHitHeal() + CalculatePct(GetHitHeal(), sSpellMgr->GetSpellInfo(SPELL_SHAMAN_DELUGE)->GetEffect(EFFECT_0).BasePoints));
+
+            if (target->GetGUID() == _primaryTarget)
+            {
+                if (auto eff = caster->GetAuraEffect(338346, EFFECT_0))
+                    if (eff->ConduitRankEntry)
+                    {
+                        auto heal = GetHitHeal();
+                        AddPct(heal, eff->ConduitRankEntry->AuraPointsOverride);
+                        SetHitHeal(heal);
+                    }
+            }
         }
 
         void HandleAfterCast()
@@ -825,7 +839,7 @@ public:
             }
         }
 
-        WorldObject* _primaryTarget = nullptr;
+        ObjectGuid _primaryTarget ;
 
         void Register() override
         {
