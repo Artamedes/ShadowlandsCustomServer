@@ -765,7 +765,7 @@ public:
 
         void CatchInitialTarget(WorldObject*& target)
         {
-            _primaryTarget = target;
+            _primaryTarget = target->GetGUID();
         }
 
         void SelectAdditionalTargets(std::list<WorldObject*>& targets)

@@ -4400,18 +4400,44 @@ class spell_dru_swiftmend : public SpellScript
         {
             if (auto target = GetHitUnit())
             {
-                if (!caster->HasAura(Druid::eLegendary::VerdantInfusion))
+                bool hasVerdantInfusion = caster->HasAura(Druid::eLegendary::VerdantInfusion);
+
+                auto RemoveAuraAndApplyFloralRecycling([&](Aura* aura) -> void
                 {
-                    /// Wowhead Coments
-                    /// Also, it preffer to consume in ORDER: Regrowth > Wild Growth > Rejuvenation. as in if it can,
-                    /// it will ALWAYS pick regrowth, else, it picks wild growth, if nothing else, pick rejuv
-                    if (auto aur = target->GetAura(Druid::eDruid::Regrowth, caster->GetGUID()))
-                        aur->Remove();
-                    else if (auto aur = target->GetAura(Druid::eRestoration::WildGrowth, caster->GetGUID()))
-                        aur->Remove();
-                    else if (auto aur = target->GetAura(Druid::eRestoration::Rejuvenation, caster->GetGUID()))
-                        aur->Remove();
-                }
+                    auto heal = GetHitHeal();
+
+                    // Floral Recycling
+                    if (auto eff = caster->GetAuraEffect(340621, EFFECT_0))
+                    {
+                        if (eff->ConduitRankEntry)
+                        {
+                            for (auto eff : aura->GetAuraEffects())
+                            {
+                                if (eff->GetAuraType() == AuraType::SPELL_AURA_PERIODIC_HEAL)
+                                {
+                                    auto aurHeal = eff->GetAmount();
+                                    aurHeal = CalculatePct(aurHeal, eff->ConduitRankEntry->AuraPointsOverride);
+                                    heal += aurHeal;
+                                }
+                            }
+                        }
+                    }
+
+                    SetHitHeal(heal);
+
+                    if (!hasVerdantInfusion)
+                        aura->Remove();
+                });
+
+                /// Wowhead Coments
+                /// Also, it preffer to consume in ORDER: Regrowth > Wild Growth > Rejuvenation. as in if it can,
+                /// it will ALWAYS pick regrowth, else, it picks wild growth, if nothing else, pick rejuv
+                if (auto aur = target->GetAura(Druid::eDruid::Regrowth, caster->GetGUID()))
+                    RemoveAuraAndApplyFloralRecycling(aur);
+                else if (auto aur = target->GetAura(Druid::eRestoration::WildGrowth, caster->GetGUID()))
+                    RemoveAuraAndApplyFloralRecycling(aur);
+                else if (auto aur = target->GetAura(Druid::eRestoration::Rejuvenation, caster->GetGUID()))
+                    RemoveAuraAndApplyFloralRecycling(aur);
             }
         }
     }
