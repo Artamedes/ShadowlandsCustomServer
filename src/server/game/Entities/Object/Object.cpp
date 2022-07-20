@@ -2546,6 +2546,13 @@ void WorldObject::ModSpellCastTime(SpellInfo const* spellInfo, int32& castTime, 
     if (!unitCaster)
         return;
 
+    float l_TotalMod = 0.0f;
+    auto const& l_AuraModCastSpeed = unitCaster->GetAuraEffectsByType(SPELL_AURA_MOD_CASTING_SPEED);
+    for (auto l_Itr = l_AuraModCastSpeed.begin(); l_Itr != l_AuraModCastSpeed.end(); ++l_Itr)
+        l_TotalMod -= (*l_Itr)->GetAmount();
+
+    AddPct(castTime, l_TotalMod);
+
     if (!(spellInfo->HasAttribute(SPELL_ATTR0_IS_ABILITY) || spellInfo->HasAttribute(SPELL_ATTR0_IS_TRADESKILL) || spellInfo->HasAttribute(SPELL_ATTR3_IGNORE_CASTER_MODIFIERS)) &&
         ((GetTypeId() == TYPEID_PLAYER && spellInfo->SpellFamilyName) || GetTypeId() == TYPEID_UNIT))
         castTime = unitCaster->CanInstantCast() ? 0 : int32(float(castTime) * unitCaster->m_unitData->ModCastingSpeed);
