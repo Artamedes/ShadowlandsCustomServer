@@ -286,6 +286,152 @@ class spell_pyroclastic_shock : public AuraScript
     }
 };
 
+/// ID: 327161 Primordial Wave
+class spell_primordial_wave : public SpellScript
+{
+    PrepareSpellScript(spell_primordial_wave);
+
+    void HandleDummy(SpellEffIndex /*eff*/)
+    {
+        if (auto caster = GetCaster())
+        {
+            if (auto target = GetHitUnit())
+            {
+                if (caster->IsValidAttackTarget(target))
+                {
+                    caster->CastSpell(target, Shaman::eCovenant::PrimordialWaveDmg, true);
+                }
+                else
+                {
+                    caster->CastSpell(target, Shaman::eCovenant::PrimordialWaveHeal, true);
+                }
+            }
+
+            caster->CastSpell(caster, Shaman::eCovenant::PrimordialWaveBuff, true);
+        }
+    }
+
+    void Register() override
+    {
+        OnEffectHitTarget += SpellEffectFn(spell_primordial_wave::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
+    }
+};
+
+/// ID: 327162 Primordial Wave
+class spell_primordial_wave_327162 : public SpellScript
+{
+    PrepareSpellScript(spell_primordial_wave_327162);
+
+    void HandleDmg(SpellEffIndex /*eff*/)
+    {
+        if (auto caster = GetCaster())
+        {
+            if (auto target = GetHitUnit())
+            {
+                caster->CastSpell(target, FlameShock, CastSpellExtraArgs(TRIGGERED_FULL_MASK_NO_CD));
+            }
+        }
+    }
+
+    void Register() override
+    {
+        OnEffectHitTarget += SpellEffectFn(spell_primordial_wave_327162::HandleDmg, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
+    }
+};
+
+/// ID: 327163 Primordial Wave
+class spell_primordial_wave_327163 : public SpellScript
+{
+    PrepareSpellScript(spell_primordial_wave_327163);
+
+    void HandleHeal(SpellEffIndex /*eff*/)
+    {
+        if (auto caster = GetCaster())
+        {
+            if (auto target = GetHitUnit())
+            {
+                if (IsSpec(caster, SimpleTalentSpecs::RShaman))
+                    caster->CastSpell(target, Shaman::eRestoration::Riptide, CastSpellExtraArgs(TRIGGERED_FULL_MASK_NO_CD));
+            }
+        }
+    }
+
+    void Register() override
+    {
+        OnEffectHitTarget += SpellEffectFn(spell_primordial_wave_327163::HandleHeal, EFFECT_0, SPELL_EFFECT_HEAL);
+    }
+};
+
+/// ID: 327164 Primordial Wave
+class spell_primordial_wave_327164 : public AuraScript
+{
+    PrepareAuraScript(spell_primordial_wave_327164);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        if (!eventInfo.GetSpellInfo())
+            return false;
+
+        switch (eventInfo.GetSpellInfo()->Id)
+        {
+            case Shaman::eRestoration::HealingWave:
+            case Shaman::eShaman::LightningBolt:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (auto caster = GetCaster())
+        {
+            if (auto target = eventInfo.GetProcTarget())
+            {
+                if (eventInfo.GetSpellInfo())
+                {
+                    if (eventInfo.GetSpellInfo()->Id == Shaman::eShaman::LightningBolt)
+                    {
+                        std::list<Unit*> targets;
+                        caster->GetAttackableUnitListInRange(targets, 40.0f);
+                        targets.remove_if([&](Unit* who) -> bool
+                        {
+                            return !who->HasAura(Shaman::eShaman::FlameShock, caster->GetGUID());
+                        });
+
+                        for (auto target : targets)
+                        {
+                            caster->CastSpell(target, Shaman::eShaman::LightningBolt, true);
+                        }
+                    }
+                    else
+                    {
+                        std::list<Unit*> targets;
+                        caster->GetFriendlyUnitListInRange(targets, 40.0f);
+                        targets.remove_if([&](Unit* who) -> bool
+                        {
+                            return !who->HasAura(Shaman::eRestoration::Riptide, caster->GetGUID());
+                        });
+
+                        for (auto target : targets)
+                        {
+                            caster->CastSpell(target, Shaman::eRestoration::Riptide, true);
+                        }
+                    }
+                }
+
+                Remove();
+            }
+        }
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_primordial_wave_327164::CheckProc);
+        OnProc += AuraProcFn(spell_primordial_wave_327164::HandleProc);
+    }
+};
+
 void AddSC_spell_shaman_covenant()
 {
     RegisterSpellAndAuraScriptPairWithArgs(spell_fae_transfusion_spellscript, spell_fae_transfusion, "spell_fae_transfusion");
@@ -295,4 +441,8 @@ void AddSC_spell_shaman_covenant()
     RegisterSpellScript(spell_spiritual_resonance);
     RegisterSpellScript(spell_chilled_to_the_core);
     RegisterSpellScript(spell_pyroclastic_shock);
+    RegisterSpellScript(spell_primordial_wave);
+    RegisterSpellScript(spell_primordial_wave_327162);
+    RegisterSpellScript(spell_primordial_wave_327163);
+    RegisterSpellScript(spell_primordial_wave_327164);
 }

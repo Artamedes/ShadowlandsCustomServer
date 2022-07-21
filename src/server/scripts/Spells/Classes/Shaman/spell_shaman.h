@@ -112,4 +112,11 @@ namespace Shaman
         // Restoration
         EarthenHarmonmy                   = 335886,
     };
+
+    enum eCovenant
+    {
+        PrimordialWaveDmg = 327162,
+        PrimordialWaveHeal = 327163,
+        PrimordialWaveBuff = 327164,
+    };
 }
