@@ -2413,6 +2413,12 @@ public:
     {
         PrepareAuraScript(spell_dh_eye_beam_AuraScript);
 
+        enum eEyeBeam
+        {
+            EyeBeamHaste = 343311,
+            FuriousGaze  = 343312,
+        };
+
         bool firstTick = true;
 
         bool Validate(SpellInfo const* /*spellInfo*/) override
@@ -2443,6 +2449,12 @@ public:
             if (Unit* caster = GetCaster())
             {
                 caster->RemoveAurasDueToSpell(SPELL_DH_EYE_BEAM_VISUAL);
+
+                if (GetTargetApplication()->GetRemoveMode() == AuraRemoveMode::AURA_REMOVE_BY_EXPIRE)
+                {
+                    if (caster->HasAura(EyeBeamHaste))
+                        caster->CastSpell(caster, FuriousGaze, true);
+                }
             }
         }
 
