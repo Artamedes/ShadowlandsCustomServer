@@ -5645,7 +5645,7 @@ void Player::UpdateRating(CombatRating cr)
     {
         if (aurEff->GetMiscValueB() & (1 << cr))
         {
-            Optional<int16> highestRating;
+            Optional<int32> highestRating;
             for (uint8 dependentRating = 0; dependentRating < MAX_COMBAT_RATING; ++dependentRating)
                 if (aurEff->GetMiscValue() & (1 << dependentRating))
                     highestRating = std::max(highestRating.value_or(m_baseRatingValue[dependentRating]), m_baseRatingValue[dependentRating]);

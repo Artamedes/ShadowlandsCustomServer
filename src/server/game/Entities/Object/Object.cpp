@@ -2587,8 +2587,9 @@ void WorldObject::ModSpellDurationTime(SpellInfo const* spellInfo, int32& durati
     if (!spellInfo->HasAttribute(SPELL_ATTR5_SPELL_HASTE_AFFECTS_PERIODIC))
         return;
 
+    Player* modOwner = GetSpellModOwner();
     // called from caster
-    if (Player* modOwner = GetSpellModOwner())
+    if (modOwner)
         modOwner->ApplySpellMod(spellInfo, SpellModOp::ChangeCastTime, duration, spell);
 
     Unit const* unitCaster = ToUnit();
@@ -2596,8 +2597,54 @@ void WorldObject::ModSpellDurationTime(SpellInfo const* spellInfo, int32& durati
         return;
 
     // don't affect for players if it's a channe;
-    if (GetSpellModOwner() && spellInfo->IsChanneled())
+   // if (GetSpellModOwner() && spellInfo->IsChanneled())
+   //     return;
+
+    if (modOwner && spellInfo->IsChanneled())
+    {
+        //int32 amount = 0;
+        //
+        //amount += unitCaster->GetTotalAuraModifier(AuraType::SPELL_AURA_MOD_CASTING_SPEED);
+        //amount += unitCaster->GetTotalAuraModifier(AuraType::SPELL_AURA_MOD_CASTING_SPEED_NOT_STACK);
+        //amount += unitCaster->GetTotalAuraModifier(AuraType::SPELL_AURA_MOD_MELEE_HASTE);
+        //amount += unitCaster->GetTotalAuraModifier(AuraType::SPELL_AURA_MOD_RANGED_HASTE);
+        //amount += unitCaster->GetTotalAuraModifier(AuraType::SPELL_AURA_MOD_MELEE_RANGED_HASTE);
+        //amount += unitCaster->GetTotalAuraModifier(AuraType::SPELL_AURA_MOD_MELEE_HASTE_3);
+        //amount += unitCaster->GetTotalAuraModifier(AuraType::SPELL_AURA_MOD_MELEE_RANGED_HASTE_2);
+        //
+        //AddPct(duration, amount);
+
+        float hastePct = modOwner->m_baseRatingValue[CR_HASTE_SPELL] * modOwner->GetRatingMultiplier(CR_HASTE_SPELL);
+
+        auto const& hasteAuras = modOwner->GetAuraEffectsByType(SPELL_AURA_MOD_CASTING_SPEED_NOT_STACK);
+        for (auto iter = hasteAuras.begin(); iter != hasteAuras.end(); ++iter)
+        {
+            hastePct *= (1.0f + (*iter)->GetAmount() / 100.0f);
+            hastePct += (*iter)->GetAmount();
+        }
+
+        std::map<SpellGroup, int32> SameEffectSpellGroup;
+        auto const& meleeSlowAuras = modOwner->GetAuraEffectsByType(SPELL_AURA_MELEE_SLOW);
+        for (auto iter = meleeSlowAuras.begin(); iter != meleeSlowAuras.end(); ++iter)
+        {
+            if (!sSpellMgr->AddSameEffectStackRuleSpellGroups((*iter)->GetSpellInfo(), SPELL_AURA_MELEE_SLOW, (*iter)->GetAmount(), SameEffectSpellGroup))
+            {
+                hastePct *= (1.0f + (*iter)->GetAmount() / 100.0f);
+                hastePct += (*iter)->GetAmount();
+            }
+        }
+
+        for (std::map<SpellGroup, int32>::const_iterator itr = SameEffectSpellGroup.begin(); itr != SameEffectSpellGroup.end(); ++itr)
+        {
+            hastePct *= (1.0f + itr->second / 100.0f);
+            hastePct += itr->second;
+        }
+
+        float haste = 1.0f / (1.0f + hastePct / 100.0f);
+
+        duration = int32(float(duration) * haste);
         return;
+    }
 
     if (!(spellInfo->HasAttribute(SPELL_ATTR0_IS_ABILITY) || spellInfo->HasAttribute(SPELL_ATTR0_IS_TRADESKILL) || spellInfo->HasAttribute(SPELL_ATTR3_IGNORE_CASTER_MODIFIERS)) &&
         ((GetTypeId() == TYPEID_PLAYER && spellInfo->SpellFamilyName) || GetTypeId() == TYPEID_UNIT))

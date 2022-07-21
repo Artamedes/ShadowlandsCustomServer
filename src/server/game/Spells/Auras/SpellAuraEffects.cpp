@@ -815,7 +815,7 @@ void AuraEffect::CalculatePeriodic(Unit* caster, bool resetPeriodicTimer /*= tru
                     GetBase()->SetDuration(_duration);
                 }
 
-                if (m_spellInfo->HasAttribute(SPELL_ATTR8_HASTE_AFFECT_DURATION))
+                if (m_spellInfo->HasAttribute(SPELL_ATTR8_HASTE_AFFECT_DURATION)) // SPELL_ATTR8_MELEE_HASTE_AFFECTS_PERIODIC
                     _period = int32(_period * ModCastingSpeed);
 
                 if (IsDoublProcced)

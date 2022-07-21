@@ -2086,6 +2086,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         float GetRatingMultiplier(CombatRating cr) const;
         float GetRatingBonusValue(CombatRating cr) const;
         float ApplyRatingDiminishing(CombatRating cr, float bonusValue) const;
+        int32 m_baseRatingValue[MAX_COMBAT_RATING];
 
         /// Returns base spellpower bonus from spellpower stat on items, without spellpower from intellect stat
         uint32 GetBaseSpellPowerBonus() const { return m_baseSpellPower; }
@@ -3146,7 +3147,6 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
 
         float m_auraBaseFlatMod[BASEMOD_END];
         float m_auraBasePctMod[BASEMOD_END];
-        int16 m_baseRatingValue[MAX_COMBAT_RATING];
         uint32 m_baseSpellPower;
         uint32 m_baseManaRegen;
         uint32 m_baseHealthRegen;
