@@ -3902,9 +3902,24 @@ class spell_dh_metamorphosis_stun : public SpellScript
         if (!caster)
             return;
 
+        bool isVenth = IsCovenant(caster, CovenantID::Venthyr);
+
         for (auto target : targets)
+        {
             if (target->ToPlayer())
                 caster->CastSpell(target->ToPlayer(), SPELL_DH_METAMORPHOSIS_DAZZLE, true);
+
+            if (isVenth && target->IsUnit())
+            {
+                if (auto aur = target->ToUnit()->GetAura(DH::eCovenant::SinfulBrand, caster->GetGUID()))
+                {
+                    if (aur->GetDuration() >= 8000)
+                        continue;
+                }
+
+                caster->CastSpell(target, DH::eCovenant::SinfulBrand, CastSpellExtraArgs(TRIGGERED_FULL_MASK_NO_CD));
+            }
+        }
 
         targets.remove_if([](WorldObject* unit)
         {

@@ -9,7 +9,7 @@
  * Darkest Hour - Not Implemented
  * Darkglare Medallion - Not Implemented
  * Blazing Slaughter - Not Implemented
- * Agony Gaze - Not Implemented
+ * Agony Gaze - Implemented
  * Blind Faith - Not Implemented
  * Demonic Oath - Not Implemented
  * Fel Bombardment - Not Implemented
@@ -264,6 +264,38 @@ class spell_razelikhs_defilement : public AuraScript
     {
         DoCheckProc += AuraCheckProcFn(spell_razelikhs_defilement::CheckProc);
         OnProc += AuraProcFn(spell_razelikhs_defilement::HandleProc);
+    }
+};
+
+/// ID: 355886 Agony Gaze
+class spell_agony_gaze : public AuraScript
+{
+    PrepareAuraScript(spell_agony_gaze);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && (eventInfo.GetSpellInfo()->Id == EyeBeamDmg || eventInfo.GetSpellInfo()->Id == FelDevstationDmg || eventInfo.GetSpellInfo()->Id == 346505 || eventInfo.GetSpellInfo()->Id == 346503);
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (auto procTarget = eventInfo.GetProcTarget())
+        {
+            if (auto caster = GetCaster())
+            {
+                if (auto sinfulBrand = procTarget->GetAura(SinfulBrand, caster->GetGUID()))
+                {
+                    if (sinfulBrand->GetDuration() <= 16000)
+                        sinfulBrand->ModDuration(750);
+                }
+            }
+        }
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_agony_gaze::CheckProc);
+        OnProc += AuraProcFn(spell_agony_gaze::HandleProc);
     }
 };
 

@@ -1,9 +1,6 @@
-#include "SpellIncludes.h"
+#include "spell_dh.h"
 
-enum eDH
-{
-    ConsumeMagic = 278326,
-};
+using namespace DH;
 
 /// ID: 338835 Ravenous Consumption
 class spell_ravenous_consumption : public AuraScript
@@ -24,7 +21,7 @@ class spell_ravenous_consumption : public AuraScript
             if (auto eff = GetEffect(EFFECT_0))
                 if (eff->ConduitRankEntry)
                     if (auto target = eventInfo.GetActionTarget())
-                        caster->CastSpell(target, ConsumeMagic, CastSpellExtraArgs(true));
+                        caster->CastSpell(target, ConsumeMagic, true);
     }
 
     void OnCalcProc(ProcEventInfo& eventInfo, float& chance)

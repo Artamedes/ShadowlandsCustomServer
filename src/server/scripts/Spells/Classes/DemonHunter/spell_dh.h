@@ -56,7 +56,15 @@ namespace DH
         BladeDanceDmg      = 199552,
         DeathSweepDmg      = 210153,
 
+        FelDevstationDmg = 212105,
+        EyeBeamDmg       = 198030,
+
         // Covenant
         ElysianDecree      = 306830,
+    };
+
+    enum eCovenant
+    {
+        SinfulBrand = 317009,
     };
 }
