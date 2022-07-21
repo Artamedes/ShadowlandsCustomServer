@@ -586,6 +586,18 @@ class aura_pri_power_word_shield : public AuraScript
                     amount += aura->GetEffect(EFFECT_0)->GetAmount();
                     caster->RemoveAurasDueToSpell(SPELL_PRIEST_WEAL);
                 }
+
+                /// Charitable Soul
+                if (auto eff = caster->GetAuraEffect(337715, EFFECT_0))
+                {
+                    if (eff->ConduitRankEntry)
+                    {
+                        if (caster != GetTarget())
+                        {
+                            caster->CastSpell(caster, 337716, CastSpellExtraArgs(true).AddSpellBP0(CalculatePct(amount, eff->ConduitRankEntry->AuraPointsOverride)));
+                        }
+                    }
+                }
             }
         }
     }
