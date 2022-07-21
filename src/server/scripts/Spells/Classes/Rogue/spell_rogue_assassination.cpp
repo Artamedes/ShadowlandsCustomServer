@@ -170,11 +170,81 @@ class aura_rog_venomous_wounds : public AuraScript
     }
 };
 
+constexpr uint32 MaimMangleConduit = 341538;
+
+/// ID: 5374 Mutilate
+class spell_mutilate_5374 : public SpellScript
+{
+    PrepareSpellScript(spell_mutilate_5374);
+
+    void HandleDmg(SpellEffIndex /*eff*/)
+    {
+        if (auto caster = GetCaster())
+        {
+            if (auto hitUnit = GetHitUnit())
+            {
+                if (auto eff = caster->GetAuraEffect(MaimMangleConduit, EFFECT_0))
+                {
+                    if (hitUnit->HasAura(Garrote, caster->GetGUID()))
+                    {
+                        if (eff->ConduitRankEntry)
+                        {
+                            auto dmg = GetHitDamage();
+                            AddPct(dmg, eff->ConduitRankEntry->AuraPointsOverride);
+                            SetHitDamage(dmg);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    void Register() override
+    {
+        OnEffectHitTarget += SpellEffectFn(spell_mutilate_5374::HandleDmg, EFFECT_1, SPELL_EFFECT_SCHOOL_DAMAGE);
+    }
+};
+
+/// ID: 27576 Mutilate
+class spell_mutilate_27576 : public SpellScript
+{
+    PrepareSpellScript(spell_mutilate_27576);
+
+    void HandleDmg(SpellEffIndex /*eff*/)
+    {
+        if (auto caster = GetCaster())
+        {
+            if (auto hitUnit = GetHitUnit())
+            {
+                if (auto eff = caster->GetAuraEffect(MaimMangleConduit, EFFECT_0))
+                {
+                    if (hitUnit->HasAura(Garrote, caster->GetGUID()))
+                    {
+                        if (eff->ConduitRankEntry)
+                        {
+                            auto dmg = GetHitDamage();
+                            AddPct(dmg, eff->ConduitRankEntry->AuraPointsOverride);
+                            SetHitDamage(dmg);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    void Register() override
+    {
+        OnEffectHitTarget += SpellEffectFn(spell_mutilate_27576::HandleDmg, EFFECT_1, SPELL_EFFECT_SCHOOL_DAMAGE);
+    }
+};
+
 void AddSC_spell_rogue_assassination()
 {
     RegisterSpellScript(aura_rog_poison_bomb);
     RegisterSpellScript(spell_doomblade);
     RegisterSpellScript(aura_rog_venomous_wounds);
+    RegisterSpellScript(spell_mutilate_5374);
+    RegisterSpellScript(spell_mutilate_27576);
         
     RegisterAreaTriggerAI(at_rogue_poison_bomb); // 16552
 }
