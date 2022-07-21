@@ -4142,8 +4142,7 @@ class aura_rog_hidden_blades_aura : public AuraScript
 
     void HandleProc(ProcEventInfo& eventInfo)
     {
-        if (Unit* caster = GetCaster())
-            caster->RemoveAura(GetAura());
+        Remove();
     }
 
     void Register() override

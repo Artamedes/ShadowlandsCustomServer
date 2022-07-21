@@ -823,6 +823,8 @@ public:
     {
         SetCombatMovement(false);
         me->SetReactState(REACT_PASSIVE);
+        me->SetMaxHealth(1);
+        me->SetFullHealth();
     }
 
     void JustDied(Unit* who) override
@@ -834,27 +836,6 @@ public:
                 player->ModifyCurrency(1813, urand(20, 30));
             });
     }
-
-    void UpdateAI(uint32 diff) override
-    {
-        scheduler.Update(diff);
-
-        if (!UpdateVictim())
-            return;
-
-        events.Update(diff);
-
-        if (uint32 eventId = events.ExecuteEvent())
-        {
-            switch (eventId)
-            {
-            }
-        }
-        DoMeleeAttackIfReady();
-    }
-
-    TaskScheduler scheduler;
-    EventMap events;
 };
 
 const Position elephantPath[] = {
