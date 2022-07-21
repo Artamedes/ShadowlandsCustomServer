@@ -2567,6 +2567,11 @@ public:
     {
         PrepareAuraScript(spell_rog_shadow_techniques_AuraScript);
 
+        enum eShadowTechniques
+        {
+            StilettoStaccato = 341559,
+        };
+
         bool CheckProc(ProcEventInfo& eventInfo)
         {
             if (eventInfo.GetDamageInfo() && eventInfo.GetDamageInfo()->GetDamageType() == DIRECT_DAMAGE)
@@ -2594,12 +2599,20 @@ public:
             {
                 if (roll_chance_i(50))
                 {
+                    if (auto eff = caster->GetAuraEffect(StilettoStaccato, EFFECT_0))
+                        if (eff->ConduitRankEntry)
+                            caster->GetSpellHistory()->ModifyCooldown(SPELL_ROGUE_SHADOW_BLADES, -(eff->ConduitRankEntry->AuraPointsOverride * 1000.0f));
+
                     caster->CastSpell(caster, SPELL_ROGUE_SHADOW_TENCHNIQUES_POWER, true);
                     caster->Variables.Remove("ShadowTechniques");
                 }
             }
             else if (count > 4)
             {
+                if (auto eff = caster->GetAuraEffect(StilettoStaccato, EFFECT_0))
+                    if (eff->ConduitRankEntry)
+                        caster->GetSpellHistory()->ModifyCooldown(SPELL_ROGUE_SHADOW_BLADES, -(eff->ConduitRankEntry->AuraPointsOverride * 1000.0f));
+
                 caster->CastSpell(caster, SPELL_ROGUE_SHADOW_TENCHNIQUES_POWER, true);
                 caster->Variables.Remove("ShadowTechniques");
             }
