@@ -2449,8 +2449,20 @@ public:
         void HandleOnHit()
         {
             if (Unit* caster = GetCaster())
+            {
                 if (AuraEffect* auraEff = caster->GetAuraEffect(SPELL_PRIEST_SANCTUM_POWER, EFFECT_0))
                     caster->CastSpell(caster, SPELL_PRIEST_SANCTUM_SHIELD, CastSpellExtraArgs(true).AddSpellBP0(auraEff->GetAmount()));
+
+                // Translucent Image
+                if (auto eff = caster->GetAuraEffect(337662, EFFECT_0))
+                {
+                    if (eff->ConduitRankEntry)
+                    {
+                        caster->CastSpell(caster, 337661, CastSpellExtraArgs(true).AddSpellBP0(eff->ConduitRankEntry->AuraPointsOverride));
+                    }
+                }
+
+            }
         }
 
         void Register() override
