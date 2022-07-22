@@ -273,7 +273,7 @@ uint32 RogueComboPoints(WorldObject* Caster)
     return Caster->Variables.GetValue("RogueComboPoints", 0);
 }
 
-void HandleGrudgeMatch(Unit* caster, Unit* target, uint32 auraId)
+void Rogue::HandleGrudgeMatch(Unit* caster, Unit* target, uint32 auraId)
 {
     if (target->HasAura(SPELL_ROGUE_VENDETTA, caster->GetGUID()))
     {
@@ -296,7 +296,7 @@ void HandleGrudgeMatch(Unit* caster, Unit* target, uint32 auraId)
     }
 }
 
-void HandleGrudgeMatch(Unit* caster, Unit* target, Aura* dot)
+void Rogue::HandleGrudgeMatch(Unit* caster, Unit* target, Aura* dot)
 {
     if (target->HasAura(SPELL_ROGUE_VENDETTA, caster->GetGUID()))
     {
@@ -855,7 +855,7 @@ class spell_rog_rupture : public SpellScript
                             //int32 duration = 4 + (4 * cp);
                             //ruptureAura->SetDuration(duration * IN_MILLISECONDS);
                             //ruptureAura->SetMaxDuration(duration * IN_MILLISECONDS);
-                            HandleGrudgeMatch(GetCaster(), target, ruptureAura);
+                            Rogue::HandleGrudgeMatch(GetCaster(), target, ruptureAura);
 
                             if (auto finality = caster->GetAura(FinalityRupture))
                                 finality->Remove();
@@ -2132,7 +2132,7 @@ class aura_rog_garrote : public AuraScript
 
                     effect->SetDamage(damage * effect->GetDonePct());
 
-                    HandleGrudgeMatch(caster, target, GetAura());
+                    Rogue::HandleGrudgeMatch(caster, target, GetAura());
                 }
             }
         }
@@ -2974,7 +2974,7 @@ class aura_rog_deadly_poison : public AuraScript
 			if (caster->HasAura(SPELL_ROGUE_LEECH_POISON_TALENT))
                 caster->CastSpell(caster, LeechingPoisonAura, true);
             if (auto target = GetUnitOwner())
-                HandleGrudgeMatch(caster, target, SPELL_ROGUE_DEADLY_POISON_DOT);
+                Rogue::HandleGrudgeMatch(caster, target, SPELL_ROGUE_DEADLY_POISON_DOT);
 		}
 	}
 
@@ -3037,7 +3037,7 @@ class spell_rog_cimson_tempest :public SpellScript
         {
 			if (Aura* aura = target->GetAura(SPELL_ROGUE_CRIMSON_TEMPEST, GetCaster()->GetGUID()))
             {
-                HandleGrudgeMatch(GetCaster(), target, aura);
+                Rogue::HandleGrudgeMatch(GetCaster(), target, aura);
             }
         }
 	}
@@ -4291,57 +4291,6 @@ class spell_rog_blade_rush : public SpellScript
     }
 };
 
-// 328305 sepsis
-class spell_rog_sepsis : public AuraScript
-{
-    PrepareAuraScript(spell_rog_sepsis);
-
-    void HandleApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
-    {
-        if (auto caster = GetCaster())
-            if (auto target = GetUnitOwner())
-                HandleGrudgeMatch(caster, target, 328305);
-    }
-
-    void HandleRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
-    {
-        auto caster = GetCaster();
-        if (!caster)
-            return;
-
-        caster->CastSpell(caster, SPELL_ROGUE_SEPSIS_AURA, true);
-    }
-
-    void Register() override
-    {
-        AfterEffectApply += AuraEffectApplyFn(spell_rog_sepsis::HandleApply, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE, AURA_EFFECT_HANDLE_REAL);
-        AfterEffectRemove += AuraEffectRemoveFn(spell_rog_sepsis::HandleRemove, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE, AURA_EFFECT_HANDLE_REAL);
-    }
-};
-
-/// PIGPIGPIG
-// Ambush, Shadowstrike, Cheapshot, Sap, Pickpocket
-class spell_rog_sepsis_attack : public SpellScript
-{
-    PrepareSpellScript(spell_rog_sepsis_attack);
-
-    void After()
-    {
-        if (GetCaster()->HasAura(SPELL_ROGUE_SUBTERFUGE) || GetCaster()->HasAura(SPELL_ROGUE_SUBTERFUGE_AURA)
-            || GetCaster()->HasAura(SPELL_ROGUE_STEALTH) || GetCaster()->HasAura(SPELL_ROGUE_VANISH)
-            || GetCaster()->HasAura(SPELL_ROGUE_VANISH_AURA) || GetCaster()->HasAura(SPELL_ROGUE_SHADOW_DANCE)
-            || GetCaster()->HasAura(SPELL_ROGUE_SHADOW_DANCE_AURA))
-            return;
-
-        GetCaster()->RemoveAurasDueToSpell(SPELL_ROGUE_SEPSIS_AURA);
-    }
-
-    void Register() override
-    {
-        AfterHit += SpellHitFn(spell_rog_sepsis_attack::After);
-    }
-};
-
 // 324073 
 class spell_rog_serrated_bone_spike : public AuraScript
 {
@@ -4718,8 +4667,6 @@ void AddSC_rogue_spell_scripts()
     RegisterSpellScript(aura_rog_sprint_trigger);
     RegisterSpellScript(spell_rog_sap);
     RegisterSpellScript(spell_rog_blade_rush);
-    RegisterSpellScript(spell_rog_sepsis_attack);
-    RegisterSpellScript(spell_rog_sepsis);
     RegisterSpellScript(spell_rog_serrated_bone_spike);
     RegisterSpellScript(spell_rog_vendetta);
     RegisterSpellScript(spell_exsanguinate);

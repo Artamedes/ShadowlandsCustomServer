@@ -154,12 +154,116 @@ class spell_rog_echoing_reprimand : public SpellScript
     }
 };
 
+// 328305 sepsis
+class spell_rog_sepsis : public AuraScript
+{
+    PrepareAuraScript(spell_rog_sepsis);
+
+    void HandleApply(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
+    {
+        if (auto caster = GetCaster())
+            if (auto target = GetUnitOwner())
+            {
+                HandleGrudgeMatch(caster, target, GetId());
+
+                if (auto eff = caster->GetAuraEffect(SepticShock, EFFECT_0))
+                    if (eff->ConduitRankEntry)
+                    {
+                        conduitAmount = eff->ConduitRankEntry->AuraPointsOverride;
+                        originalDamage = aurEff->GetAmount();
+                        int32 newAmount = originalDamage;
+                        AddPct(newAmount, conduitAmount);
+                        const_cast<AuraEffect*>(aurEff)->ChangeAmount(newAmount);
+                    }
+            }
+    }
+
+    void HandleRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+    {
+        auto caster = GetCaster();
+        if (!caster)
+            return;
+
+        caster->CastSpell(caster, SepsisAura, true);
+
+        if (GetTargetApplication()->GetRemoveMode() == AuraRemoveMode::AURA_REMOVE_BY_EXPIRE)
+        {
+            if (GetTarget())
+                caster->CastSpell(GetTarget(), SepsisDmg, true);
+        }
+    }
+
+    void HandlePeriodic(AuraEffect const* eff)
+    {
+        if (conduitAmount == 0.0f)
+            return;
+
+        conduitAmount -= 10.0f;
+
+        int32 newAmount = originalDamage;
+        AddPct(newAmount, conduitAmount);
+        const_cast<AuraEffect*>(eff)->ChangeAmount(newAmount);
+    }
+
+    int32 originalDamage = 0;
+    float conduitAmount = 0.0f;
+
+    void Register() override
+    {
+        OnEffectApply += AuraEffectApplyFn(spell_rog_sepsis::HandleApply, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE, AURA_EFFECT_HANDLE_REAL);
+        OnEffectRemove += AuraEffectRemoveFn(spell_rog_sepsis::HandleRemove, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE, AURA_EFFECT_HANDLE_REAL);
+        OnEffectPeriodic += AuraEffectPeriodicFn(spell_rog_sepsis::HandlePeriodic, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE);
+    }
+};
+
+/// ID: 347037 Sepsis
+class spell_sepsis_proc : public AuraScript
+{
+    PrepareAuraScript(spell_sepsis_proc);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        if (!eventInfo.GetSpellInfo())
+            return false;
+
+        switch (eventInfo.GetSpellInfo()->Id)
+        {
+            case 921:    ///< - Pick Pocket
+            case 1833:   ///< - Cheap Shot
+            case 6770:   ///< - Sap
+            case 8676:   ///< - Ambush
+            case 30998:  ///< - Cheap Shot(SERVERSIDE)
+            case 34242:  ///< - Cheap Shot(SERVERSIDE)
+            case 168819: ///< - Pick Pocket
+            case 185438: ///< - Shadowstrike
+            case 194429: ///< - Ambush
+            case 219692: ///< - Sap
+            case 311706: ///< - Pick Pocket
+            case 345121: ///< - Shadowstrike
+                return true;
+        }
+
+        return false;
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        Remove();
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_sepsis_proc::CheckProc);
+        OnProc += AuraProcFn(spell_sepsis_proc::HandleProc);
+    }
+};
+
 void AddSC_spell_rogue_covenant()
 {
     RegisterSpellScript(spell_rog_flagellation);
     RegisterSpellScript(spell_flagellation_after);
     RegisterSpellScript(spell_obedience);
     RegisterSpellScript(spell_rog_echoing_reprimand);
-
-
+    RegisterSpellScript(spell_rog_sepsis);
+    RegisterSpellScript(spell_sepsis_proc);
 }

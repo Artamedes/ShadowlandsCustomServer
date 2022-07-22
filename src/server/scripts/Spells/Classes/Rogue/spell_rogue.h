@@ -24,4 +24,13 @@ namespace Rogue
         FinalityRupture         = 340601,
     };
 
+    enum eCovenant
+    {
+        SepticShock = 341309,
+        SepsisAura = 347037,
+        SepsisDmg = 328306,
+    };
+
+    void HandleGrudgeMatch(Unit* caster, Unit* target, uint32 auraId);
+    void HandleGrudgeMatch(Unit* caster, Unit* target, Aura* dot);
 }
