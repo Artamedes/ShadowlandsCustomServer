@@ -1341,6 +1341,8 @@ void Spell::DoCreateItem(uint32 itemId, ItemContext context /*= ItemContext::NON
         // set the "Crafted by ..." property of the item
         if (pItem->GetTemplate()->HasSignature())
             pItem->SetCreator(player->GetGUID());
+        //else if (pItem->GetTemplate()->IsConjuredConsumable())
+        //    pItem->Variables.Set("ConjuredBy", GetOriginalCasterGUID());
 
         // send info to the client
         player->SendNewItem(pItem, num_to_add, true, true);

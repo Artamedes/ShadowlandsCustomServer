@@ -913,6 +913,15 @@ class spell_warl_demonic_circle_teleport : public AuraScript
             {
                 player->NearTeleportTo(circle->GetPositionX(), circle->GetPositionY(), circle->GetPositionZ(), circle->GetOrientation());
                 player->RemoveMovementImpairingAuras(true);
+
+                // Demonic Momentum 
+                if (auto eff = player->GetAuraEffect(339411, EFFECT_0))
+                {
+                    if (eff->ConduitRankEntry)
+                    {
+                        player->CastSpell(player, 339412, CastSpellExtraArgs(true).AddSpellBP0(eff->ConduitRankEntry->AuraPointsOverride));
+                    }
+                }
             }
         }
     }
@@ -1007,6 +1016,7 @@ class spell_warl_health_funnel : public AuraScript
     }
 };
 
+#include "Chat.h"
 // 6262 - Healthstone
 class spell_warl_healthstone_heal : public SpellScript
 {
@@ -1016,6 +1026,11 @@ class spell_warl_healthstone_heal : public SpellScript
     {
         /*if (GetCaster()->HasAura(SPELL_HUNTER_EXHILARATION_PET_AURA))
             GetCaster()->CastSpell(nullptr, SPELL_HUNTER_EXHILARATION_PET, true);*/
+
+        if (auto item = GetCastItem())
+        {
+            ChatHandler(GetCaster()->ToPlayer()->GetSession()).PSendSysMessage("%u %u", item->GetOwnerGUID().GetCounter(), item->GetCreator().GetCounter());
+        }
     }
 
     void Register() override
@@ -2106,7 +2121,12 @@ class spell_warl_create_healthstone_soulwell : public SpellScript
 
     void HandleScriptEffect(SpellEffIndex /*effIndex*/)
     {
-        GetCaster()->CastSpell(GetCaster(), 23517, true);
+        ObjectGuid originalCaster;
+
+        if (GetSpell())
+            originalCaster = GetSpell()->GetOriginalCasterGUID();
+
+        GetCaster()->CastSpell(GetCaster(), 23517, CastSpellExtraArgs(true).SetOriginalCaster(originalCaster));
     }
 
     void Register() override
