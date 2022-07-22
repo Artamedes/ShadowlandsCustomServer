@@ -15,7 +15,8 @@ namespace Monk
         Paralysis = 115078,
         Provoke = 115546,
         Resucitate = 115178,
-        SpinningCraneKick = 115178,
+        SpinningCraneKick = 322729,
+        SpinningCraneKickDmg = 107270,
         TigerPalm = 100780,
         TouchOfDeath = 322109,
         Transcendence = 101643,
@@ -45,6 +46,7 @@ namespace Monk
         Afterlife =116092,
         MasteryComboStrikes = 115636,
         Windwalking = 157411,
+        SpinningCraneKickWW = 101546,
     };
 
     enum eBrewmaster
@@ -78,6 +80,7 @@ namespace Monk
         EnvelopingBreath = 343655,
         MasteryGustOfMsits = 117907,
         TeachingOfTheMonastery = 116645,
+        GustOfMists = 191894,
     };
 
     enum eCovenant

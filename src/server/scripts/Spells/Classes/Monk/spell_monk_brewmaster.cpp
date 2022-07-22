@@ -73,7 +73,7 @@ class spell_fortifying_brew : public SpellScript
         if (auto caster = GetCaster())
         {
             caster->CastSpell(caster, FortifyingBrewBuff, true);
-
+                
             if (auto eff = caster->GetAuraEffect(FortifyingIngredients, EFFECT_0))
             {
                 if (eff->ConduitRankEntry)

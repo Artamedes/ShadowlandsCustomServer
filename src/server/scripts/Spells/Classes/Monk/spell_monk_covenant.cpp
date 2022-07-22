@@ -1,11 +1,6 @@
-#include "SpellIncludes.h"
+#include "spell_monk.h"
 
-enum eMonk
-{
-    Vivify = 116670,
-    RisingSunKick = 107428,
-    Revival = 115310,
-};
+using namespace Monk;
 
 /// ID: 336632 Grounding Breath
 class spell_grounding_breath : public AuraScript
@@ -117,9 +112,99 @@ class spell_rising_sun_revival : public AuraScript
     }
 };
 
+// 325216
+class spell_monk_bonedust_brew : public AuraScript
+{
+    PrepareAuraScript(spell_monk_bonedust_brew);
+
+    enum eBonedustBrew
+    {
+        BonedustDmg = 325217,
+        BonedustHeal = 325218,
+        BonedustEnergize = 328296,
+        GustsOfMistsBonedust = 328748,
+        BoneMarrowHops = 337295,
+    };
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        auto ApplyBoneMarrowHops([](Unit* caster, uint32& damage) -> void
+        {
+            if (auto eff = caster->GetAuraEffect(BoneMarrowHops, EFFECT_0))
+            {
+                if (eff->ConduitRankEntry)
+                {
+                    AddPct(damage, eff->ConduitRankEntry->AuraPointsOverride);
+                    caster->GetSpellHistory()->ModifyCooldown(BonedustBrew, -500);
+                }
+            }
+        });
+
+        if (Unit* target = eventInfo.GetActionTarget())
+            if (GetCaster() == eventInfo.GetProcTarget())
+        {
+            if (DamageInfo* damageInfo = eventInfo.GetDamageInfo())
+            {
+                if (auto caster = GetCaster())
+                {
+                    uint32 damage = CalculatePct(damageInfo->GetDamage(), 40);
+                    ApplyBoneMarrowHops(caster, damage);
+                    caster->CastSpell(target, BonedustDmg, CastSpellExtraArgs(true).AddSpellBP0(damage));
+
+                    if (eventInfo.GetSpellInfo())
+                    {
+                        switch (eventInfo.GetSpellInfo()->Id)
+                        {
+                            case Monk::eMonk::SpinningCraneKickDmg:
+                                if (IsSpec(caster, SimpleTalentSpecs::Windwalker))
+                                    caster->CastSpell(caster, BonedustEnergize, true);
+                                break;
+                            case Monk::eMonk::TigerPalm:
+                            case Monk::eBrewmaster::KegSmash:
+                                // Reduce brews
+                                caster->GetSpellHistory()->ModifyCooldown(Monk::eMonk::FortifyingBrew, -1000);
+                                caster->GetSpellHistory()->ModifyCooldown(Monk::eBrewmaster::CelestialBrew, -1000);
+                                caster->GetSpellHistory()->ModifyCooldown(Monk::eBrewmaster::PurifyingBrew, -1000);
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                }
+            }
+            if (HealInfo* healInfo = eventInfo.GetHealInfo())
+            {
+                if (auto caster = GetCaster())
+                {
+                    uint32 damage = CalculatePct(healInfo->GetHeal(), 40);
+                    ApplyBoneMarrowHops(caster, damage);
+                    caster->CastSpell(target, BonedustHeal, CastSpellExtraArgs(true).AddSpellBP0(damage));
+
+                    if (eventInfo.GetSpellInfo())
+                    {
+                        switch (eventInfo.GetSpellInfo()->Id)
+                        {
+                            case Monk::eMistweaver::GustOfMists:
+                                caster->CastSpell(target, GustsOfMistsBonedust, true);
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    void Register() override
+    {
+        OnProc += AuraProcFn(spell_monk_bonedust_brew::HandleProc);
+    }
+};
 
 void AddSC_spell_monk_covenant()
 {
     RegisterSpellScript(spell_grounding_breath);
     RegisterSpellScript(spell_rising_sun_revival);
+    RegisterSpellScript(spell_monk_bonedust_brew);
 }
