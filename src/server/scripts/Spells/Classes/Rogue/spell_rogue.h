@@ -24,11 +24,31 @@ namespace Rogue
         FinalityRupture         = 340601,
     };
 
+    enum eAssassination
+    {
+        Vendetta = 79140,
+    };
+
+    enum eOutlaw
+    {
+        AdrenalineRush = 13750
+    };
+
+    enum eSubtlety
+    {
+        ShadowBlades = 121471,
+    };
+
     enum eCovenant
     {
         SepticShock = 341309,
         SepsisAura = 347037,
         SepsisDmg = 328306,
+    };
+
+    enum eLegendary
+    {
+        ToxicOnslaught = 354473,
     };
 
     void HandleGrudgeMatch(Unit* caster, Unit* target, uint32 auraId);

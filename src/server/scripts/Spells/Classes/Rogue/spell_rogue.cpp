@@ -3061,22 +3061,10 @@ class aura_rog_shadow_blades : public AuraScript
 
     bool CheckProc(ProcEventInfo& eventInfo)
     {
-        if (!eventInfo.GetSpellInfo())
+        if (!eventInfo.GetProcSpell())
             return false;
 
-        switch (eventInfo.GetSpellInfo()->Id)
-        {
-            case SPELL_ROGUE_BACKSTAB:
-            case SPELL_ROGUE_SHADOWSTRIKE:
-            case SPELL_ROGUE_SHURIKEN_STORM:
-            case SPELL_ROGUE_GLOOMBLADE:
-            case eRogue::EchoingReprimand:
-            case eRogue::Sepsis:
-            case eRogue::SerratedBoneSpike:
-                return true;
-            default:
-                return false;
-        }
+        return eventInfo.GetProcSpell()->m_comboPointsEnergized;
     }
 
     void HandleProc(ProcEventInfo& eventInfo)
@@ -3086,12 +3074,13 @@ class aura_rog_shadow_blades : public AuraScript
         if (!caster || !target)
             return;
 
-        if (eventInfo.GetDamageInfo() && eventInfo.GetDamageInfo()->GetDamage() > 0)
-        {
-            int32 damageAmount = CalculatePct(eventInfo.GetDamageInfo()->GetDamage(), sSpellMgr->GetSpellInfo(SPELL_ROGUE_SHADOW_BLADES)->GetEffect(EFFECT_0).BasePoints);
+        auto damage = 500;
 
-            caster->CastSpell(target, SPELL_ROGUE_SHADOW_BLADE, CastSpellExtraArgs(true).AddSpellBP0(damageAmount));
-        }
+        if (eventInfo.GetDamageInfo() && eventInfo.GetDamageInfo()->GetDamage() > 0)
+            damage = eventInfo.GetDamageInfo()->GetDamage();
+
+        int32 damageAmount = CalculatePct(damage, sSpellMgr->GetSpellInfo(SPELL_ROGUE_SHADOW_BLADES)->GetEffect(EFFECT_0).BasePoints);
+        caster->CastSpell(target, SPELL_ROGUE_SHADOW_BLADE, CastSpellExtraArgs(true).AddSpellBP0(damageAmount));
     }
 
     void Register() override

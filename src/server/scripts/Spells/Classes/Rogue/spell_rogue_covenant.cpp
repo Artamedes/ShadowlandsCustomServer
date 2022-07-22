@@ -186,10 +186,35 @@ class spell_rog_sepsis : public AuraScript
 
         caster->CastSpell(caster, SepsisAura, true);
 
+        auto target = GetTarget();
+
         if (GetTargetApplication()->GetRemoveMode() == AuraRemoveMode::AURA_REMOVE_BY_EXPIRE)
         {
-            if (GetTarget())
+            if (target)
                 caster->CastSpell(GetTarget(), SepsisDmg, true);
+        }
+
+        if (caster->HasAura(eLegendary::ToxicOnslaught))
+        {
+            switch (GetSpecializationId(caster))
+            {
+                case SimpleTalentSpecs::Assassination:
+                    caster->CastSpell(caster, AdrenalineRush, CastSpellExtraArgs(true).AddSpellMod(SpellValueMod::SPELLVALUE_DURATION, 10000));
+                    caster->CastSpell(caster, ShadowBlades, CastSpellExtraArgs(true).AddSpellMod(SpellValueMod::SPELLVALUE_DURATION, 10000));
+                    break;
+                case SimpleTalentSpecs::Outlaw:
+                    if (target)
+                        caster->CastSpell(target, Vendetta, CastSpellExtraArgs(true).AddSpellMod(SpellValueMod::SPELLVALUE_DURATION, 10000));
+                    caster->CastSpell(caster, ShadowBlades, CastSpellExtraArgs(true).AddSpellMod(SpellValueMod::SPELLVALUE_DURATION, 10000));
+                    break;
+                case SimpleTalentSpecs::Subtlety:
+                    if (target)
+                        caster->CastSpell(target, Vendetta, CastSpellExtraArgs(true).AddSpellMod(SpellValueMod::SPELLVALUE_DURATION, 10000));
+                    caster->CastSpell(caster, AdrenalineRush, CastSpellExtraArgs(true).AddSpellMod(SpellValueMod::SPELLVALUE_DURATION, 10000));
+                    break;
+                default:
+                    break;
+            }
         }
     }
 
