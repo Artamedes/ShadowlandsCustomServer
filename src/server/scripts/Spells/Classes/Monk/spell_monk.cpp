@@ -3814,6 +3814,16 @@ struct npc_monk_xuen : public ScriptedAI
         auto owner = o->ToPlayer(); 
 
         me->CastSpell(me, SPELL_MONK_XUEN_AURA, true);
+
+        // Xuen's Bond
+        if (auto eff = owner->GetAuraEffect(336616, EFFECT_0))
+        {
+            if (eff->ConduitRankEntry)
+            {
+                me->CastSpell(me, 345690, CastSpellExtraArgs(true).AddSpellBP0(eff->ConduitRankEntry->AuraPointsOverride));
+            }
+        }
+
         me->SetReactState(REACT_ASSIST);
         if (Unit* victim = ObjectAccessor::GetUnit(*me, owner->GetTarget()))
             if (victim != o)

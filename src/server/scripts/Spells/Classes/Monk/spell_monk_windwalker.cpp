@@ -76,6 +76,15 @@ public:
                 attacker->Variables.Set("monk_mastery_combo_strike", spellInfo->Id);
                 if (attacker->HasAura(SPELL_MONK_HIT_COMBO))
                     attacker->CastSpell(attacker, SPELL_MONK_HIT_COMBO_AURA, true);
+
+                // Xuen's Bond
+                if (auto eff = attacker->GetAuraEffect(336616, EFFECT_0))
+                {
+                    if (eff->ConduitRankEntry)
+                    {
+                        attacker->GetSpellHistory()->ModifyCooldown(Monk::eWindwalker::InvokeXuenThewhiteTiger, -100);
+                    }
+                }
             }
         }
     }
