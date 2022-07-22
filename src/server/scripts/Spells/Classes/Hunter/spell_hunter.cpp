@@ -1813,7 +1813,20 @@ public:
                 if (caster->HasAura(SPELL_HUNTER_BESTIAL_WRATH))
                 {
                     if (caster->GetSpellHistory()->HasCooldown(SPELL_HUNTER_KILL_COMMAND))
+                    {
                         caster->GetSpellHistory()->ResetCooldown(SPELL_HUNTER_KILL_COMMAND, true);
+
+                        // Strength of the Pack
+                        if (auto eff = caster->GetAuraEffect(341222, EFFECT_0))
+                        {
+                            if (eff->ConduitRankEntry)
+                            {
+                                caster->CastSpell(caster, 341223, CastSpellExtraArgs(true)
+                                    .AddSpellBP0(eff->ConduitRankEntry->AuraPointsOverride)
+                                    .AddSpellBP1(eff->ConduitRankEntry->AuraPointsOverride));
+                            }
+                        }
+                    }
                 }
             }
         }
