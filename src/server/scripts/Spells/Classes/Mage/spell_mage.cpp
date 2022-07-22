@@ -1755,6 +1755,16 @@ class spell_mage_ice_lance : public SpellScript
 
         SetHitDamage(GetHitDamage() + extraDamage);
 
+        // ice bite conduit
+        if (caster->HasAura(SPELL_MAGE_CHAIN_REACTION) && (target->HasAuraState(AURA_STATE_FROZEN, NULL, caster) || winterChill || fingers))
+        {
+            extraDamage = GetHitDamage();
+            if (auto aura = caster->GetAuraEffect(336569, EFFECT_0))
+                if (aura->ConduitRankEntry)
+                    AddPct(extraDamage, aura->ConduitRankEntry->AuraPointsOverride);
+            SetHitDamage(extraDamage);
+        }
+
         Mage::DropWinterChill(caster, target);
     }
 
