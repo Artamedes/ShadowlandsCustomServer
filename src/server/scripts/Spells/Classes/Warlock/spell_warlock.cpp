@@ -7609,7 +7609,6 @@ class aura_warl_fear : public AuraScript
 	{
         if (eventInfo.GetDamageInfo() && (eventInfo.GetDamageInfo()->GetDamageType() != HEAL && eventInfo.GetDamageInfo()->GetDamageType() != NODAMAGE))
         {
-
             Unit* caster = GetCaster();
             Unit* target = GetTarget();
             if (!caster || !target)
@@ -7619,10 +7618,17 @@ class aura_warl_fear : public AuraScript
 
             // Fear will be removed if the damage if greater or equal to 10% of the target maximun health.
             uint32 ten = CalculatePct(target->GetMaxHealth(), 10);
+
+            // Shade of Terror
+            if (auto eff = caster->GetAuraEffect(339379, EFFECT_0))
+                if (eff->ConduitRankEntry)
+                    AddPct(ten, eff->ConduitRankEntry->AuraPointsOverride);
+
             if (eventInfo.GetDamageInfo()->GetDamage() >= ten)
                 return true;
 
             // We need to "save" the amount of damage.
+            // TODO: this is un-needed, we can make a local variable here.
             if (aura->Variables.Exist("DAMAGE"))
             {
                 uint32 currentDamage = aura->Variables.GetValue<uint32>("DAMAGE");
@@ -7640,9 +7646,7 @@ class aura_warl_fear : public AuraScript
 
 	void HandleProc(ProcEventInfo& eventInfo)
 	{
-		if (WorldObject* owner = GetOwner())
-			if (owner->ToUnit())
-				owner->ToUnit()->RemoveAura(GetAura());
+        Remove();
 	}
 
 	void Register() override
