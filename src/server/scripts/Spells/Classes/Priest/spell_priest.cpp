@@ -3382,9 +3382,9 @@ class spell_pri_prayer_of_mending : public SpellScript
         if (!caster || !target)
             return;
 
-        caster->CastSpell(target, SPELL_PRIEST_PRAYER_OF_MENDING_BUFF, true);
-        if (Aura* aura = target->GetAura(SPELL_PRIEST_PRAYER_OF_MENDING_BUFF))
-            aura->SetStackAmount(5);
+        caster->CastSpell(target, SPELL_PRIEST_PRAYER_OF_MENDING_BUFF, CastSpellExtraArgs(true).AddSpellMod(SpellValueMod::SPELLVALUE_AURA_STACK, 5);
+        //if (Aura* aura = target->GetAura(SPELL_PRIEST_PRAYER_OF_MENDING_BUFF))
+        //    aura->SetStackAmount(5);
     }
 
     void Register() override
@@ -3437,9 +3437,9 @@ class spell_pri_prayer_of_mending_target_selector : public SpellScript
             return;
 
         caster->SendPlaySpellVisual(target->GetGUID(), 38945, 0, 0, 40);
-        caster->CastSpell(target, SPELL_PRIEST_PRAYER_OF_MENDING_BUFF, true);
-        if (Aura* aura = target->GetAura(SPELL_PRIEST_PRAYER_OF_MENDING_BUFF))
-            aura->SetStackAmount(GetSpellValue()->EffectBasePoints[0]);
+        caster->CastSpell(target, SPELL_PRIEST_PRAYER_OF_MENDING_BUFF, CastSpellExtraArgs(true).AddSpellMod(SpellValueMod::SPELLVALUE_AURA_STACK, 5));
+        //if (Aura* aura = target->GetAura(SPELL_PRIEST_PRAYER_OF_MENDING_BUFF))
+        //    aura->SetStackAmount(GetSpellValue()->EffectBasePoints[0]);
     }
 
     void Register() override
@@ -3454,10 +3454,34 @@ class aura_pri_prayer_of_mending_aura : public AuraScript
 {
     PrepareAuraScript(aura_pri_prayer_of_mending_aura);
 
+    enum ePrayerOfMending
+    {
+        FocusedMending = 337914,
+    };
+
     void HandleApply(AuraEffect const* aurEff, AuraEffectHandleModes mode)
     {
         if (Unit* caster = GetCaster())
-            GetAura()->GetEffect(EFFECT_0)->SetAmount(caster->GetTotalSpellPowerValue(SPELL_SCHOOL_MASK_HOLY, true) * 0.616f);
+        {
+            auto target = GetTarget();
+            if (_initialTargetGuid.IsEmpty())
+            {
+                if (target)
+                    _initialTargetGuid = target->GetGUID();
+            }
+
+            /// Not sure exact formula, saw this in DB2 however
+            auto amount = caster->GetTotalSpellPowerValue(SPELL_SCHOOL_MASK_HOLY, true) * 0.66f;
+
+            if (target && target->GetGUID() == _initialTargetGuid)
+            {
+                if (auto eff = caster->GetAuraEffect(FocusedMending, EFFECT_0))
+                    if (eff->ConduitRankEntry)
+                        AddPct(amount, eff->ConduitRankEntry->AuraPointsOverride);
+            }
+
+            GetAura()->GetEffect(EFFECT_0)->SetAmount(amount);
+        }
     }
 
     bool CheckProc(ProcEventInfo& eventInfo)
@@ -3487,10 +3511,10 @@ class aura_pri_prayer_of_mending_aura : public AuraScript
             // Find another raid or group member to jump.
             if (target->HasAura(SPELL_PRIEST_PRAYER_OF_MENDING_BUFF, caster->GetGUID()))
             {
-                uint8 stacks = target->GetAura(SPELL_PRIEST_PRAYER_OF_MENDING_BUFF)->GetStackAmount() - 1;
+                uint8 stacks = target->GetAura(SPELL_PRIEST_PRAYER_OF_MENDING_BUFF, caster->GetGUID())->GetStackAmount() - 1;
                 if (stacks > 0)
-                    target->CastCustomSpell(SPELL_PRIEST_PRAYER_OF_MENDING_TARGET_SELECTOR, SPELLVALUE_BASE_POINT0, stacks, target, true, NULL, NULL, caster->GetGUID());
-                target->RemoveAura(SPELL_PRIEST_PRAYER_OF_MENDING_BUFF);
+                    target->CastSpell(target, SPELL_PRIEST_PRAYER_OF_MENDING_TARGET_SELECTOR, CastSpellExtraArgs(true).AddSpellMod(SpellValueMod::SPELLVALUE_AURA_STACK, stacks).SetOriginalCaster(caster->GetGUID()));
+                target->RemoveAura(SPELL_PRIEST_PRAYER_OF_MENDING_BUFF, caster->GetGUID());
             }
         }
     }
@@ -3501,6 +3525,9 @@ class aura_pri_prayer_of_mending_aura : public AuraScript
         DoCheckProc += AuraCheckProcFn(aura_pri_prayer_of_mending_aura::CheckProc);
         OnProc += AuraProcFn(aura_pri_prayer_of_mending_aura::HandleProc);
     }
+
+private:
+    ObjectGuid _initialTargetGuid;
 };
 
 // 200128 - Trail of Light
