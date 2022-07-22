@@ -64,6 +64,7 @@ namespace Mage
         ArcaneBlast = 30451,
         PrismaticBarrier = 235450,
         TouchOfTheMagi = 321507,
+        ArcanePower = 12042,
     };
 
     enum eLegendary
@@ -81,6 +82,9 @@ namespace Mage
     {
         DivertedEnergy = 337136,
         DivertedEnergyHeal = 337137,
+        ArcaneProdigy = 336873,
+        NetherPrecision = 336886,
+        NetherPrecisionBuff = 336889,
     };
 
     inline bool DropWinterChill(Unit* caster, Unit* target)

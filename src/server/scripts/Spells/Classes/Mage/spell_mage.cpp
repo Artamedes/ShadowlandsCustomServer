@@ -500,6 +500,30 @@ class spell_mage_arcane_explosion : public SpellScript
         PreventHitEffect(effIndex);
     }
 
+    void HandleAfterHit()
+    {
+        if (auto caster = GetCaster())
+        {
+            if (caster->HasAura(SPELL_MAGE_CLEARCASTING_EFFECT) || caster->HasAura(SPELL_MAGE_CLEARCASTING_BUFF) || caster->HasAura(SPELL_MAGE_CLEARCASTING_PVP_STACK_EFFECT))
+            {
+                if (caster->HasAura(Mage::eLegendary::ExpandedPotential))
+                {
+                    caster->RemoveAurasDueToSpell(Mage::eLegendary::ExpandedPotential);
+                }
+                else
+                    caster->RemoveAura(SPELL_MAGE_CLEARCASTING_EFFECT);
+                if (!caster->HasAura(SPELL_MAGE_SLIPSTREAM))
+                    caster->RemoveAura(SPELL_MAGE_CLEARCASTING_BUFF);
+                if (Aura* pvpClearcast = caster->GetAura(SPELL_MAGE_CLEARCASTING_PVP_STACK_EFFECT))
+                    pvpClearcast->ModStackAmount(-1);
+
+                if (auto netherPrecision = caster->GetAuraEffect(Mage::eConduits::NetherPrecision, EFFECT_0))
+                    if (netherPrecision->ConduitRankEntry)
+                        caster->CastSpell(caster, Mage::eConduits::NetherPrecisionBuff, CastSpellExtraArgs(true).AddSpellBP0(netherPrecision->ConduitRankEntry->AuraPointsOverride));
+            }
+        }
+    }
+
     void Register() override
     {
         OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_mage_arcane_explosion::CheckTargets, EFFECT_1, TARGET_UNIT_SRC_AREA_ENEMY);
@@ -508,36 +532,64 @@ class spell_mage_arcane_explosion : public SpellScript
 
         OnEffectHit += SpellEffectFn(spell_mage_arcane_explosion::PreventTalent, EFFECT_2, SPELL_EFFECT_ENERGIZE);
         OnEffectHitTarget += SpellEffectFn(spell_mage_arcane_explosion::PreventTalent, EFFECT_2, SPELL_EFFECT_ENERGIZE);
+
+        AfterHit += SpellHitFn(spell_mage_arcane_explosion::HandleAfterHit);
     }
 };
 
 // 5143 - Arcane Missiles
-class spell_mage_arcane_missiles : public SpellScript
+class spell_mage_arcane_missiles : public AuraScript
 {
-    PrepareSpellScript(spell_mage_arcane_missiles);
+    PrepareAuraScript(spell_mage_arcane_missiles);
 
-    void HandleCast()
+    void HandleEffectApply(AuraEffect const* /*eff*/, AuraEffectHandleModes /*mode*/)
     {
-		if (Unit* caster = GetCaster())
-		{
+        if (Unit* caster = GetCaster())
+        {
+            if (caster->HasAura(SPELL_MAGE_CLEARCASTING_EFFECT) || caster->HasAura(SPELL_MAGE_CLEARCASTING_BUFF) || caster->HasAura(SPELL_MAGE_CLEARCASTING_PVP_STACK_EFFECT))
+            {
+                clearcasting = true;
+                GetAura()->Variables.Set("ArcaneMisslesClearcasting", true);
+
+                if (auto netherPrecision = caster->GetAuraEffect(Mage::eConduits::NetherPrecision, EFFECT_0))
+                    if (netherPrecision->ConduitRankEntry)
+                        caster->CastSpell(caster, Mage::eConduits::NetherPrecisionBuff, CastSpellExtraArgs(true).AddSpellBP0(netherPrecision->ConduitRankEntry->AuraPointsOverride));
+            }
+
+            rulesOfThrees = caster->HasAura(SPELL_MAGE_RULE_OF_THREES_BUFF);
+        }
+    }
+
+    void HandleEffectRemove(AuraEffect const* /*eff*/, AuraEffectHandleModes /*mode*/)
+    {
+        if (Unit* caster = GetCaster())
+        {
+            if (rulesOfThrees)
+                caster->RemoveAura(SPELL_MAGE_RULE_OF_THREES_BUFF);
+
+            if (!clearcasting)
+                return;
+
             if (caster->HasAura(Mage::eLegendary::ExpandedPotential))
             {
                 caster->RemoveAurasDueToSpell(Mage::eLegendary::ExpandedPotential);
             }
             else
-			    caster->RemoveAura(SPELL_MAGE_CLEARCASTING_EFFECT);
+                caster->RemoveAura(SPELL_MAGE_CLEARCASTING_EFFECT);
             if (!caster->HasAura(SPELL_MAGE_SLIPSTREAM))
                 caster->RemoveAura(SPELL_MAGE_CLEARCASTING_BUFF);
-			if (Aura* pvpClearcast = caster->GetAura(SPELL_MAGE_CLEARCASTING_PVP_STACK_EFFECT))
-				pvpClearcast->ModStackAmount(-1);
-
-            caster->RemoveAura(SPELL_MAGE_RULE_OF_THREES_BUFF);
-		}
+            if (Aura* pvpClearcast = caster->GetAura(SPELL_MAGE_CLEARCASTING_PVP_STACK_EFFECT))
+                pvpClearcast->ModStackAmount(-1);
+        }
     }
+
+    bool rulesOfThrees = false;
+    bool clearcasting = false;
 
     void Register() override
     {
-        OnCast += SpellCastFn(spell_mage_arcane_missiles::HandleCast);
+        OnEffectApply += AuraEffectApplyFn(spell_mage_arcane_missiles::HandleEffectApply, EFFECT_2, SPELL_AURA_ADD_PCT_MODIFIER, AURA_EFFECT_HANDLE_REAL_OR_REAPPLY_MASK);
+        OnEffectRemove += AuraEffectRemoveFn(spell_mage_arcane_missiles::HandleEffectRemove, EFFECT_2, SPELL_AURA_ADD_PCT_MODIFIER, AURA_EFFECT_HANDLE_REAL_OR_REAPPLY_MASK);
     }
 };
 
@@ -552,8 +604,29 @@ class spell_mage_arcane_missiles_damage :public SpellScript
             target = nullptr;
     }
 
+    void HandleDmg(SpellEffIndex /*eff*/)
+    {
+        if (auto caster = GetCaster())
+        {
+            if (auto aura = caster->GetAura(SPELL_MAGE_ARCANE_MISSILES))
+            {
+                if (aura->Variables.Exist("ArcaneMisslesClearcasting"))
+                {
+                    if (auto eff = caster->GetAuraEffect(Mage::eConduits::ArcaneProdigy, EFFECT_0))
+                    {
+                        if (eff->ConduitRankEntry)
+                        {
+                            caster->GetSpellHistory()->ModifyCooldown(Mage::eArcane::ArcanePower, -int32(eff->ConduitRankEntry->AuraPointsOverride * 100));
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
     void Register() override
     {
+        OnEffectHitTarget += SpellEffectFn(spell_mage_arcane_missiles_damage::HandleDmg, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
         OnObjectTargetSelect += SpellObjectTargetSelectFn(spell_mage_arcane_missiles_damage::CheckTarget, EFFECT_0, TARGET_UNIT_CHANNEL_TARGET);
     }
 };
@@ -565,33 +638,20 @@ class spell_mage_clearcasting : public AuraScript
 
     bool CheckProc(ProcEventInfo& eventInfo)
     {
-        if (true)
+        if (auto spell = eventInfo.GetProcSpell())
         {
-            auto eff0 = GetSpellInfo()->GetEffect(EFFECT_0);
-            int32 reqManaToSpent = 0;
-            int32 manaUsed = 0;
+            if (auto powerCost = spell->GetPowerCost(Powers::POWER_MANA))
+            {
+                manaUsed += powerCost->Amount;
 
-            // For each ${$c*100/$s1} mana you spend, you have a 1% chance
-            // Means: I cast a spell which costs 1000 Mana, for every 500 mana used I have 1% chance =  2% chance to proc
-            for (SpellPowerCost powerCost : GetSpellInfo()->CalcPowerCost(GetCaster(), GetSpellInfo()->GetSchoolMask()))
-                if (powerCost.Power == POWER_MANA)
-                    reqManaToSpent = powerCost.Amount * 100 / eff0.CalcValue();
+                float chance = manaUsed / 250.0f;
 
-            // Something changed in DBC, Clearcasting should cost 1% of base mana 8.0.1
-            if (reqManaToSpent == 0)
-                return false;
-
-            for (SpellPowerCost powerCost : eventInfo.GetSpellInfo()->CalcPowerCost(GetCaster(), eventInfo.GetSpellInfo()->GetSchoolMask()))
-                if (powerCost.Power == POWER_MANA)
-                    manaUsed = powerCost.Amount;
-
-            int32 chance = std::floor(manaUsed / reqManaToSpent) * 1;
-            if (roll_chance_i(chance))
-                if (Unit* caster = GetCaster())
+                if (roll_chance_f(chance))
                 {
-                    caster->Variables.Set<bool>("CLEARCASTING", true);
+                    manaUsed = 0;
                     return true;
                 }
+            }
         }
 
         return false;
@@ -611,6 +671,8 @@ class spell_mage_clearcasting : public AuraScript
 		}
     }
 
+    int32 manaUsed = 0;
+
     void Register() override
     {
         DoCheckProc += AuraCheckProcFn(spell_mage_clearcasting::CheckProc);
@@ -623,21 +685,6 @@ class spell_mage_arcane_blast : public SpellScript
 {
     PrepareSpellScript(spell_mage_arcane_blast);
 
-    void HandleAfterCast()
-    {
-        if (Unit* caster = GetCaster())
-            if (!caster->HasAura(SPELL_MAGE_ARCANE_EMPOWERMENT))
-            {
-                if (!caster->Variables.Exist("CLEARCASTING"))
-                {
-                    caster->RemoveAurasDueToSpell(SPELL_MAGE_CLEARCASTING_BUFF);
-                    caster->RemoveAurasDueToSpell(SPELL_MAGE_CLEARCASTING_EFFECT);
-                }
-                else
-                    caster->Variables.Remove("CLEARCASTING");
-            }
-    }
-
     void HandleOnCast()
     {
         if (Unit* caster = GetCaster())
@@ -646,7 +693,6 @@ class spell_mage_arcane_blast : public SpellScript
 
     void Register() override
     {
-        AfterCast += SpellCastFn(spell_mage_arcane_blast::HandleAfterCast);
         OnCast += SpellCastFn(spell_mage_arcane_blast::HandleOnCast);
     }
 };

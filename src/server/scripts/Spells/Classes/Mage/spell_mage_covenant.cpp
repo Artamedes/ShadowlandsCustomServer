@@ -109,7 +109,7 @@ class spell_artifice_of_the_archmage : public AuraScript
         {
             if (eff->ConduitRankEntry)
             {
-                chance = eff->ConduitRankEntry->AuraPointsOverride / 10;
+                chance = eff->ConduitRankEntry->AuraPointsOverride / 10.0f;
             }
         }
     }

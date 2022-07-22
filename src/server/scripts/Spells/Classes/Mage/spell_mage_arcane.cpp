@@ -38,8 +38,31 @@ class spell_arcane_lucidity : public AuraScript
     }
 };
 
+/// ID: 336889 Nether Precision
+class spell_nether_precision : public AuraScript
+{
+    PrepareAuraScript(spell_nether_precision);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == ArcaneBlast;
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+       // ModStackAmount(-1);
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_nether_precision::CheckProc);
+        OnProc += AuraProcFn(spell_nether_precision::HandleProc);
+    }
+};
+
 void AddSC_spell_mage_arcane()
 {
     RegisterAreaTriggerAI(at_mage_arcane_orb);
     RegisterSpellScript(spell_arcane_lucidity);
+    RegisterSpellScript(spell_nether_precision);
 }
