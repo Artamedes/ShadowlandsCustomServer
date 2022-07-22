@@ -3230,10 +3230,10 @@ class aura_pri_holy_words : public AuraScript
 {
 	PrepareAuraScript(aura_pri_holy_words);
 
-    bool Validate(SpellInfo const* /*spellInfo*/) override
+    enum eHolyWords
     {
-        return ValidateSpellInfo({ SPELL_PRIEST_HOLY_WORD_SERENITY, SPELL_PRIEST_HOLY_WORD_CHASTISE });
-    }
+        HolyOration = 338345,
+    };
 
 	bool CheckProc(ProcEventInfo& eventInfo)
 	{
@@ -3241,10 +3241,21 @@ class aura_pri_holy_words : public AuraScript
 		if (!caster)
 			return false;
 
-		if (eventInfo.GetSpellInfo() && (eventInfo.GetSpellInfo()->Id == SPELL_PRIEST_FLASH_HEAL || eventInfo.GetSpellInfo()->Id == SPELL_PRIEST_HEAL || eventInfo.GetSpellInfo()->Id == SPELL_PRIEST_SMITE))
-			return true;
+        auto spellInfo = eventInfo.GetSpellInfo();
+        if (!spellInfo)
+            return false;
 
-		return false;
+        switch (spellInfo->Id)
+        {
+            case SPELL_PRIEST_FLASH_HEAL:
+            case SPELL_PRIEST_HEAL:
+            case SPELL_PRIEST_SMITE:
+            case Priest::eHoly::Renew:
+            case Priest::eHoly::PrayerOfHealing:
+                return true;
+            default:
+                return false;
+        }
 	}
 
 	void HandleProc(ProcEventInfo& eventInfo)
@@ -3252,6 +3263,8 @@ class aura_pri_holy_words : public AuraScript
 		Unit* caster = GetCaster();
 		if (!caster)
 			return;
+
+        uint32 eventSpellId = eventInfo.GetSpellInfo() ? eventInfo.GetSpellInfo()->Id : 0;
 
         uint32 reduction = 0;
         if (Aura* aura = caster->GetAura(SPELL_PRIEST_LIGHT_OF_THE_NAARU))
@@ -3265,11 +3278,46 @@ class aura_pri_holy_words : public AuraScript
         uint32 serenity = serenity_base + CalculatePct(serenity_base, reduction);
         uint32 chastice = chastice_base + CalculatePct(chastice_base, reduction);
 
-		if (eventInfo.GetSpellInfo() && (eventInfo.GetSpellInfo()->Id == SPELL_PRIEST_FLASH_HEAL || eventInfo.GetSpellInfo()->Id == SPELL_PRIEST_HEAL))
-			caster->GetSpellHistory()->ReduceChargeCooldown(sSpellMgr->GetSpellInfo(SPELL_PRIEST_HOLY_WORD_SERENITY)->ChargeCategoryId, serenity * IN_MILLISECONDS);
+        // When you cast Prayer of Healing, the remaining cooldown on Holy Word: Sanctify is reduced by $34861s3 sec and by $34861s4 sec when you cast Renew.
+        // 6 / 2 seconds
+        uint32 sanctifyBasePrayerOfHealing = sSpellMgr->GetSpellInfo(SPELL_PRIEST_HOLY_WORD_SANCTIFY)->GetEffect(EFFECT_2).BasePoints;
+        uint32 sanctifyBaseRenew = sSpellMgr->GetSpellInfo(SPELL_PRIEST_HOLY_WORD_SANCTIFY)->GetEffect(EFFECT_3).BasePoints;
 
-		if (eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == SPELL_PRIEST_SMITE)
-			caster->GetSpellHistory()->ModifyCooldown(SPELL_PRIEST_HOLY_WORD_CHASTISE, chastice * -1s);
+        uint32 sanctifyPrayerOfHealing = sanctifyBasePrayerOfHealing + CalculatePct(sanctifyBasePrayerOfHealing, reduction);
+        uint32 sanctifyRenew = sanctifyBaseRenew + CalculatePct(sanctifyBaseRenew, reduction);
+
+        serenity *= IN_MILLISECONDS;
+        chastice *= IN_MILLISECONDS;
+        sanctifyPrayerOfHealing *= IN_MILLISECONDS;
+        sanctifyRenew *= IN_MILLISECONDS;
+
+        if (auto eff = caster->GetAuraEffect(HolyOration, EFFECT_0))
+            if (eff->ConduitRankEntry)
+            {
+                AddPct(serenity, eff->ConduitRankEntry->AuraPointsOverride);
+                AddPct(chastice, eff->ConduitRankEntry->AuraPointsOverride);
+                AddPct(sanctifyPrayerOfHealing, eff->ConduitRankEntry->AuraPointsOverride);
+                AddPct(sanctifyRenew, eff->ConduitRankEntry->AuraPointsOverride);
+            }
+
+        switch (eventSpellId)
+        {
+            case SPELL_PRIEST_FLASH_HEAL:
+            case SPELL_PRIEST_HEAL:
+                caster->GetSpellHistory()->ReduceChargeCooldown(sSpellMgr->GetSpellInfo(SPELL_PRIEST_HOLY_WORD_SERENITY)->ChargeCategoryId, serenity);
+                break;
+            case SPELL_PRIEST_SMITE:
+                caster->GetSpellHistory()->ModifyCooldown(SPELL_PRIEST_HOLY_WORD_CHASTISE, -int32(chastice));
+                break;
+            case Priest::eHoly::Renew:
+                caster->GetSpellHistory()->ModifyCooldown(SPELL_PRIEST_HOLY_WORD_SANCTIFY, -int32(sanctifyRenew));
+                break;
+            case Priest::eHoly::PrayerOfHealing:
+                caster->GetSpellHistory()->ModifyCooldown(SPELL_PRIEST_HOLY_WORD_SANCTIFY, -int32(sanctifyPrayerOfHealing));
+                break;
+            default:
+                break;
+        }
 	}
 
 	void Register() override
@@ -3278,7 +3326,6 @@ class aura_pri_holy_words : public AuraScript
 		OnProc += AuraProcFn(aura_pri_holy_words::HandleProc);
 	}
 };
-
 
 // 132157 - Holy Nova
 class spell_pri_holy_nova : public SpellScript
