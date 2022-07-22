@@ -18765,6 +18765,7 @@ bool Player::LoadFromDB(ObjectGuid guid, CharacterDatabaseQueryHolder const& hol
     m_achievementMgr->CheckAllAchievementCriteria(this);
     m_questObjectiveCriteriaMgr->CheckAllQuestObjectiveCriteria(this);
     _covenantMgr->LoadFromDB(holder);
+    _covenantMgr->UnlearnCovenantSpells(); // Cleanup before initial load to remove duplicate spells
     _covenantMgr->SetCovenant(static_cast<CovenantID>(fields.covenant));
     _covenantMgr->OnSpecChange();
 

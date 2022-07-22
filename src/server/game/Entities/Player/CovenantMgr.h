@@ -190,7 +190,7 @@ class TC_GAME_API Covenant
         /// </summary>
         void UpdateAllConduitsForSoulbind();
 
-        std::multimap<uint32, Conduit>& GetConduits()
+        std::multimap<int32, Conduit>& GetConduits()
         {
             return _conduits;
         }
@@ -214,7 +214,7 @@ class TC_GAME_API Covenant
         int32 _renownLevel;
         uint32 _anima;
         uint32 _souls;
-        std::multimap<uint32, Conduit> _conduits; ///< SoulbindID, Conduit
+        std::multimap<int32, Conduit> _conduits; ///< SoulbindID, Conduit
         EnumFlag<eCovenantSaveFlags> m_SaveFlags = eCovenantSaveFlags::None;
 };
 
@@ -235,7 +235,7 @@ class TC_GAME_API CovenantMgr
         void SetCovenant(CovenantID covenant);
         void LearnCovenantSpells();
         void UnlearnCovenantSpells();
-        std::list<uint32> GetCovenantSpells();
+        std::list<uint32> GetCovenantSpells(CovenantID covenantId = CovenantID::None);
 
         Covenant* GetCovenant();
         Covenant* GetCovenant(CovenantID covenant)

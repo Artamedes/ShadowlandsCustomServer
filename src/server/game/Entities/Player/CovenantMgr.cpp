@@ -593,8 +593,6 @@ void CovenantMgr::LoadFromDB(CharacterDatabaseQueryHolder const& holder)
         } while (result->NextRow());
     }
     _loaded = true;
-    GetCovenant()->UpdateRenownRewards();
-    OnSpecChange();
 }
 
 void CovenantMgr::SaveToDB(CharacterDatabaseTransaction trans)
@@ -726,7 +724,7 @@ void CovenantMgr::SetCovenant(CovenantID covenant)
 
 void CovenantMgr::LearnCovenantSpells()
 {
-    auto spells = GetCovenantSpells();
+    auto spells = GetCovenantSpells(GetCovenant()->GetCovenantID());
     for (auto spell : spells)
         if (!_player->HasSpell(spell))
             _player->LearnSpell(spell, false);
@@ -739,31 +737,31 @@ void CovenantMgr::UnlearnCovenantSpells()
         _player->RemoveSpell(spell);
 }
 
-std::list<uint32> CovenantMgr::GetCovenantSpells()
+std::list<uint32> CovenantMgr::GetCovenantSpells(CovenantID covenantId)
 {
     std::list<uint32> SpellsToLearn;
-    auto covenant = GetCovenant();
 
     uint32 RequiredCovenantPreviewID = 0;
 
-    switch (covenant->GetCovenantID())
+    switch (covenantId)
     {
         case CovenantID::Kyrian: RequiredCovenantPreviewID = 2; break;
         case CovenantID::Venthyr: RequiredCovenantPreviewID = 7; break;
         case CovenantID::Necrolord: RequiredCovenantPreviewID = 6; break;
         case CovenantID::NightFae: RequiredCovenantPreviewID = 5; break;
         default:
+            RequiredCovenantPreviewID = 99999;
             break;
     }
 
-    auto soulbind = static_cast<uint32>(GetSoulbindUIDisplayInfoIdFromSoulbindID(covenant->GetSoulbindID()));
+    //auto soulbind = static_cast<uint32>(GetSoulbindUIDisplayInfoIdFromSoulbindID(GetCovenant()->GetSoulbindID()));
 
     ChrClassesEntry const* clsEntry = sChrClassesStore.LookupEntry(_player->GetClass());
     auto family = clsEntry->SpellClassSet;
 
     for (auto entry : sUiCovenantAbilityEntry)
     {
-        if (entry->CovenantPreviewID != RequiredCovenantPreviewID)
+        if (RequiredCovenantPreviewID != 99999 && entry->CovenantPreviewID != RequiredCovenantPreviewID)
             continue;
 
         if (entry->AbilityType == 1)
@@ -777,16 +775,17 @@ std::list<uint32> CovenantMgr::GetCovenantSpells()
             if (spellInfo->SpellFamilyName == family)
                 SpellsToLearn.push_back(entry->SpellID);
         }
-        else if (entry->AbilityType == 2)
-        {
-            // Soulbind
-            if (entry->SoulbindDisplayInfoID == soulbind)
-                SpellsToLearn.push_back(entry->SpellID);
-        }
+        // Should be handled by conduit system
+        // else if (entry->AbilityType == 2)
+        // {
+        //     // Soulbind
+        //     if (entry->SoulbindDisplayInfoID == soulbind)
+        //         SpellsToLearn.push_back(entry->SpellID);
+        // }
     }
 
     // We can use UICovenantAbility.db2 here.
-    switch (covenant->GetCovenantID())
+    switch (covenantId)
     {
         case CovenantID::Kyrian:
             // [0] SpellID: 321076 (Kyrian)
@@ -809,17 +808,21 @@ std::list<uint32> CovenantMgr::GetCovenantSpells()
             SpellsToLearn.push_back(321077);
             break;
         default:
+            SpellsToLearn.push_back(321076);
+            SpellsToLearn.push_back(321079);
+            SpellsToLearn.push_back(321078);
+            SpellsToLearn.push_back(321077);
             break;
     }
 
     // Check Renown
-    auto covIdInt = static_cast<int32>(covenant->GetCovenantID());
+    auto covIdInt = static_cast<int32>(covenantId);
     for (auto reward : sRenownRewardsStore)
     {
-        if (reward->CovenantID != covIdInt)
+        if (RequiredCovenantPreviewID != 99999 && reward->CovenantID != covIdInt)
             continue;
 
-        if (reward->Level > covenant->GetRenownLevel())
+        if (RequiredCovenantPreviewID != 99999 && reward->Level > GetCovenant()->GetRenownLevel())
             continue;
 
         if (reward->SpellID > 0)
@@ -921,7 +924,6 @@ void CovenantMgr::LearnConduit(GarrTalentEntry const* talent, GarrTalentTreeEntr
     conduit.TreeEntryId = tree->ID;
     conduit.Flags = GarrisonTalentFlags::TalentFlagEnabled;
 
-    uint32 covId = (uint32)_currCovenantIndex;
     auto covenant = GetCovenant();
     auto soulbindID = GetSoulbindIDFromTalentTreeId(talent->GarrTalentTreeID);
     auto range = covenant->GetConduits().equal_range(static_cast<uint32>(soulbindID));
@@ -964,7 +966,6 @@ void CovenantMgr::LearnConduit(GarrTalentEntry const* talent, GarrTalentTreeEntr
 
 void CovenantMgr::BuildGarrisonPacket(WorldPackets::Garrison::GarrisonInfo& result)
 {
-    uint32 covId = (uint32)_currCovenantIndex;
     auto covenant = GetCovenant();
 
     for (auto& itr : covenant->GetConduits())
