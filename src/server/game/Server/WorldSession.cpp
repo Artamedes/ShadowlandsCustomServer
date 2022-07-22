@@ -1414,6 +1414,7 @@ uint32 WorldSession::DosProtection::GetMaxPacketCounterAllowed(uint16 opcode) co
         case CMSG_MOVE_FORCE_TURN_RATE_CHANGE_ACK:      // not profiled
         case CMSG_MOVE_FORCE_PITCH_RATE_CHANGE_ACK:     // not profiled
         case CMSG_MOVE_SET_PITCH: // disabled
+        case CMSG_REQUEST_MYTHIC_PLUS_AFFIXES:
         {
             // "0" is a magic number meaning there's no limit for the opcode.
             // All the opcodes above must cause little CPU usage and no sync/async database queries at all

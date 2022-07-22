@@ -757,7 +757,7 @@ void OpcodeTable::Initialize()
     DEFINE_HANDLER(CMSG_REQUEST_GUILD_REWARDS_LIST,                         STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleRequestGuildRewardsList);
     DEFINE_HANDLER(CMSG_REQUEST_LATEST_SPLASH_SCREEN,                       STATUS_LOGGEDIN,  PROCESS_INPLACE,      &WorldSession::HandleRequestLatestSplashScreen);
     DEFINE_HANDLER(CMSG_REQUEST_LFG_LIST_BLACKLIST,                         STATUS_UNHANDLED, PROCESS_INPLACE,      &WorldSession::Handle_NULL);
-    DEFINE_HANDLER(CMSG_REQUEST_MYTHIC_PLUS_AFFIXES,                        STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleRequestChallengeModeAffixes);
+    DEFINE_HANDLER(CMSG_REQUEST_MYTHIC_PLUS_AFFIXES,                        STATUS_AUTHED,    PROCESS_THREADUNSAFE, &WorldSession::HandleRequestChallengeModeAffixes);
     DEFINE_HANDLER(CMSG_REQUEST_MYTHIC_PLUS_SEASON_DATA,                    STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleRequestMythicPlusSeasonData);
     DEFINE_HANDLER(CMSG_REQUEST_PARTY_JOIN_UPDATES,                         STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleRequestPartyJoinUpdates);
     DEFINE_HANDLER(CMSG_REQUEST_PARTY_MEMBER_STATS,                         STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleRequestPartyMemberStatsOpcode);
@@ -765,7 +765,7 @@ void OpcodeTable::Initialize()
     DEFINE_HANDLER(CMSG_REQUEST_PLAYED_TIME,                                STATUS_LOGGEDIN,  PROCESS_INPLACE,      &WorldSession::HandlePlayedTime);
     DEFINE_HANDLER(CMSG_REQUEST_PVP_REWARDS,                                STATUS_LOGGEDIN,  PROCESS_INPLACE,      &WorldSession::HandleRequestPvpReward);
     DEFINE_HANDLER(CMSG_REQUEST_RAID_INFO,                                  STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleRequestRaidInfoOpcode);
-    DEFINE_HANDLER(CMSG_REQUEST_RATED_PVP_INFO,                             STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleRequestRatedPvpInfo);
+    DEFINE_HANDLER(CMSG_REQUEST_RATED_PVP_INFO,                             STATUS_AUTHED,    PROCESS_THREADUNSAFE, &WorldSession::HandleRequestRatedPvpInfo);
     DEFINE_HANDLER(CMSG_REQUEST_REALM_GUILD_MASTER_INFO,                    STATUS_UNHANDLED, PROCESS_THREADUNSAFE, &WorldSession::Handle_NULL);
     DEFINE_HANDLER(CMSG_REQUEST_RESEARCH_HISTORY,                           STATUS_UNHANDLED, PROCESS_INPLACE,      &WorldSession::Handle_NULL);
     DEFINE_HANDLER(CMSG_REQUEST_SCHEDULED_PVP_INFO,                         STATUS_UNHANDLED, PROCESS_THREADUNSAFE, &WorldSession::Handle_NULL);
