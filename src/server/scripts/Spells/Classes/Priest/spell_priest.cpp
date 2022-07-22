@@ -1820,6 +1820,11 @@ class spell_pri_penance_heal_damage : public SpellScript
 {
     PrepareSpellScript(spell_pri_penance_heal_damage);
 
+    enum ePenance
+    {
+        SwiftPenitence = 337891,
+    };
+
     bool Validate(SpellInfo const* /*spellInfo*/) override
     {
         return ValidateSpellInfo(
@@ -1835,16 +1840,32 @@ class spell_pri_penance_heal_damage : public SpellScript
         {
             if (AuraEffect* powerOfTheDarkSide = caster->GetAuraEffect(SPELL_PRIEST_POWER_OF_THE_DARK_SIDE_MARKER, EFFECT_0))
             {
+                auto ApplyConduitIfNeed([&](int32& dmg, int32 auraId)
+                {
+                    if (auto aura = caster->GetAura(auraId))
+                    {
+                        if (!aura->Variables.Exist("SwiftPenitence"))
+                        {
+                            aura->Variables.Set("SwiftPenitence", true);
+                            if (auto eff = caster->GetAuraEffect(ePenance::SwiftPenitence, EFFECT_0))
+                                if (eff->ConduitRankEntry)
+                                    AddPct(dmg, eff->ConduitRankEntry->AuraPointsOverride);
+                        }
+                    }
+                });
+
                 if (GetSpellInfo()->Id == SPELL_PRIEST_PENANCE_HEAL)
                 {
                     int32 heal = GetHitHeal();
                     AddPct(heal, powerOfTheDarkSide->GetAmount());
+                    ApplyConduitIfNeed(heal, SPELL_PRIEST_PENANCE_TARGET_ALLY);
                     SetHitHeal(heal);
                 }
                 else
                 {
                     int32 damage = GetHitDamage();
                     AddPct(damage, powerOfTheDarkSide->GetAmount());
+                    ApplyConduitIfNeed(damage, SPELL_PRIEST_PENANCE_TARGET_ENEMY);
                     SetHitDamage(damage);
                 }
             }
@@ -3382,7 +3403,7 @@ class spell_pri_prayer_of_mending : public SpellScript
         if (!caster || !target)
             return;
 
-        caster->CastSpell(target, SPELL_PRIEST_PRAYER_OF_MENDING_BUFF, CastSpellExtraArgs(true).AddSpellMod(SpellValueMod::SPELLVALUE_AURA_STACK, 5);
+        caster->CastSpell(target, SPELL_PRIEST_PRAYER_OF_MENDING_BUFF, CastSpellExtraArgs(true).AddSpellMod(SpellValueMod::SPELLVALUE_AURA_STACK, 5));
         //if (Aura* aura = target->GetAura(SPELL_PRIEST_PRAYER_OF_MENDING_BUFF))
         //    aura->SetStackAmount(5);
     }
