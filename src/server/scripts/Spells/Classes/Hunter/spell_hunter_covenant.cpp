@@ -104,9 +104,43 @@ class spell_flame_infusion : public AuraScript
     }
 };
 
+/// ID: 339264 Marksman's Advantage
+class spell_marksmans_advantage : public AuraScript
+{
+    PrepareAuraScript(spell_marksmans_advantage);
+
+    enum eMarksmansAdvantage
+    {
+        ProcSpell = 339284,
+    };
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        if (!eventInfo.GetSpellInfo())
+            return false;
+
+        return eventInfo.GetSpellInfo()->Id == HuntersMark;
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (auto caster = GetCaster())
+            if (auto effect = GetEffect(EFFECT_0))
+                if (effect->ConduitRankEntry)
+                    caster->CastSpell(caster, ProcSpell, CastSpellExtraArgs(true).AddSpellBP0(effect->ConduitRankEntry->AuraPointsOverride));
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_marksmans_advantage::CheckProc);
+        OnProc += AuraProcFn(spell_marksmans_advantage::HandleProc);
+    }
+};
+
 void AddSC_spell_hunter_covenant()
 {
     RegisterSpellScript(spell_reversal_of_fortune);
     RegisterSpellScript(spell_brutal_projectiles);
     RegisterSpellScript(spell_flame_infusion);
+    RegisterSpellScript(spell_marksmans_advantage);
 }
