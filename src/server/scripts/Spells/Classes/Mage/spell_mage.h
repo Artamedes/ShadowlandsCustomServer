@@ -77,6 +77,12 @@ namespace Mage
         FreezingWindsProc = 327478,
     };
 
+    enum eConduits
+    {
+        DivertedEnergy = 337136,
+        DivertedEnergyHeal = 337137,
+    };
+
     inline bool DropWinterChill(Unit* caster, Unit* target)
     {
         if (!caster || !target)
@@ -89,5 +95,20 @@ namespace Mage
         }
 
         return false;
+    }
+
+    inline void ApplyDivertedEnergyConduit(Unit* caster, uint32 absorbAmount)
+    {
+        if (!caster)
+            return;
+
+        if (auto eff = caster->GetAuraEffect(DivertedEnergy, EFFECT_0))
+        {
+            if (eff->ConduitRankEntry)
+            {
+                auto heal = CalculatePct(absorbAmount, eff->ConduitRankEntry->AuraPointsOverride);
+                caster->CastSpell(caster, DivertedEnergyHeal, CastSpellExtraArgs(true).AddSpellBP0(heal));
+            }
+        }
     }
 }

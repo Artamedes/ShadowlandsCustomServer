@@ -834,6 +834,8 @@ class spell_mage_arcane_barrier : public AuraScript
                 int32 manaBurned = CalculatePct(dmgInfo.GetDamage(), eff0->GetAmount());
                 GetCaster()->CastCustomSpell(SPELL_MAGE_MANA_SHIELD_BURN, SPELLVALUE_BASE_POINT0, manaBurned, GetCaster(), TRIGGERED_FULL_MASK);
             }
+
+            Mage::ApplyDivertedEnergyConduit(GetCaster(), absorbAmount);
         }
     }
 
@@ -1194,8 +1196,17 @@ class spell_mage_blazing_barrier : public AuraScript
             amount = int32(CalculatePct(caster->GetMaxHealth(), GetSpellInfo()->GetEffect(EFFECT_1).CalcValue()));
     }
 
+    void CalcAbsorb(AuraEffect* aurEff, DamageInfo& dmgInfo, uint32& absorbAmount)
+    {
+        if (GetCaster())
+        {
+            Mage::ApplyDivertedEnergyConduit(GetCaster(), absorbAmount);
+        }
+    }
+
     void Register() override
     {
+        OnEffectAbsorb += AuraEffectAbsorbFn(spell_mage_blazing_barrier::CalcAbsorb, EFFECT_0);
         DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_mage_blazing_barrier::CalculateAmount, EFFECT_0, SPELL_AURA_SCHOOL_ABSORB);
     }
 };
@@ -1549,7 +1560,7 @@ class spell_mage_ice_barrier : public AuraScript
             amount = int32(CalculatePct(caster->GetMaxHealth(), GetSpellInfo()->GetEffect(EFFECT_1).CalcValue()));
     }
 
-    void Absorb(AuraEffect* auraEffect, DamageInfo& dmgInfo, uint32& /*absorbAmount*/)
+    void Absorb(AuraEffect* auraEffect, DamageInfo& dmgInfo, uint32& absorbAmount)
     {
         Unit* caster = auraEffect->GetCaster();
         Unit* target = dmgInfo.GetAttacker();
@@ -1559,6 +1570,8 @@ class spell_mage_ice_barrier : public AuraScript
         bool isHunter = (target->ToPlayer() && (target->ToPlayer()->GetSpecializationId() == TALENT_SPEC_HUNTER_MARKSMAN || target->ToPlayer()->GetSpecializationId() == TALENT_SPEC_HUNTER_BEASTMASTER));
         if ((dmgInfo.GetSpellInfo() && dmgInfo.GetSpellInfo()->RangeIndex == 2) || (!dmgInfo.GetSpellInfo() && !isHunter && (dmgInfo.GetAttackType() == BASE_ATTACK || dmgInfo.GetAttackType() == OFF_ATTACK)))
             caster->CastSpell(target, SPELL_MAGE_CHILLED, true);
+
+        Mage::ApplyDivertedEnergyConduit(GetCaster(), absorbAmount);
     }
 
     void Register() override
