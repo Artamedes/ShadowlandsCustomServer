@@ -7965,7 +7965,16 @@ class spell_warl_soul_rot : public SpellScript
     }
 };
 
-const uint32 dotAuras[] = {325640, SPELL_WARLOCK_AGONY, SPELL_WARLOCK_UNSTABLE_AFFLICTION, SPELL_WARLOCK_CORRUPTION, 278350, 205179, 316099 };
+const uint32 dotAuras[] =
+{
+    325640,
+    SPELL_WARLOCK_AGONY,
+    SPELL_WARLOCK_UNSTABLE_AFFLICTION,
+    SPELL_WARLOCK_CORRUPTION,
+    278350,
+    205179,
+    Warlock::eAffliction::UnstableAffliction
+};
 
 // 324536 
 class spell_warl_malefic_rapture : public SpellScript
@@ -7989,14 +7998,23 @@ class spell_warl_malefic_rapture : public SpellScript
             caster->GetAttackableUnitListInRange(enemies, 100.0f);
             for (auto enemy : enemies)
             {
+                uint32 extraDmg = 0;
                 uint32 totalAuras = 0;
                 for (auto dot : dotAuras)
                     if (enemy->HasAura(dot, caster->GetGUID()))
+                    {
+                        // Focused Malignancy Conduit
+                        if (dot == Warlock::eAffliction::UnstableAffliction)
+                            if (auto eff = caster->GetAuraEffect(339500, EFFECT_0))
+                                if (eff->ConduitRankEntry)
+                                    extraDmg = CalculatePct(baseDamage, eff->ConduitRankEntry->AuraPointsOverride);
+
                         ++totalAuras;
+                    }
 
                 if (totalAuras > 0)
                 {
-                    caster->CastSpell(enemy, Dmg, CastSpellExtraArgs(true).AddSpellBP0(baseDamage * totalAuras));
+                    caster->CastSpell(enemy, Dmg, CastSpellExtraArgs(true).AddSpellBP0(baseDamage * totalAuras + extraDmg));
                 }
             }
         }
