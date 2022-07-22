@@ -7111,40 +7111,40 @@ class spell_war_summon : public SpellScript
 
 	void HandlePrepare()
 	{
-		if (Unit* caster = GetCaster())
-		{
-			uint32 visual = 0;
-			float x, y;
-			GetPositionWithDistInOrientation(caster, 3.f, (float)(M_PI / 2) + caster->GetOrientation(), x, y);
-			Position pos = Position(x, y, caster->GetPositionZ());
-			switch (GetSpellInfo()->Id)
-			{
-				// Felguard
-				case 30146:
-					visual = 81019;
-					break;
-				// Imp
-				case 688:
-					visual = 81024;
-					break;
-				// Voidwalker
-				case 697:
-					visual = 81022;
-					break;
-				// Succubus
-				case 712:
-					visual = 81023;
-					break;
-				// Felhunter
-				case 691:
-					visual = 81021;
-					break;
-			default:
-				break;
+        if (Unit* caster = GetCaster())
+        {
+            uint32 visual = 0;
+            float x, y;
+            GetPositionWithDistInOrientation(caster, 3.f, (float)(M_PI / 2) + caster->GetOrientation(), x, y);
+            Position pos = Position(x, y, caster->GetPositionZ());
+            switch (GetSpellInfo()->Id)
+            {
+                // Felguard
+                case 30146:
+                    visual = 81019;
+                    break;
+                    // Imp
+                case 688:
+                    visual = 81024;
+                    break;
+                    // Voidwalker
+                case 697:
+                    visual = 81022;
+                    break;
+                    // Succubus
+                case 712:
+                    visual = 81023;
+                    break;
+                    // Felhunter
+                case 691:
+                    visual = 81021;
+                    break;
+                default:
+                    break;
+            }
+            caster->SendPlayOrphanSpellVisual(pos, visual, 100);
+        }
     }
-			caster->SendPlayOrphanSpellVisual(pos, visual, 100);
-		}
-	}
 
 	void Register() override
 	{
