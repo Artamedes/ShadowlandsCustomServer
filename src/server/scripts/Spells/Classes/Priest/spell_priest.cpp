@@ -4898,6 +4898,12 @@ class aura_pri_pain_suppression : public AuraScript
 {
     PrepareAuraScript(aura_pri_pain_suppression);
 
+    enum ePainSuppression
+    {
+        PainTransformation = 337786,
+        PainTransformationHeal = 337787,
+    };
+
     void HandleApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
     {
         Unit* caster = GetCaster();
@@ -4910,6 +4916,10 @@ class aura_pri_pain_suppression : public AuraScript
             caster->CastSpell(target, SPELL_PRIEST_ATONEMENT_AURA, true);
             caster->CastCustomSpell(SPELL_PRIEST_MOMENT_OF_REPOSE_HEAL, SPELLVALUE_BASE_POINT0, aura->GetEffect(EFFECT_0)->GetAmount(), target, true);
         }
+
+        if (auto painTransformation = caster->GetAuraEffect(PainTransformation, EFFECT_0))
+            if (painTransformation->ConduitRankEntry)
+                caster->CastSpell(target, PainTransformationHeal, CastSpellExtraArgs(true).AddSpellBP0(painTransformation->ConduitRankEntry->AuraPointsOverride));
     }
 
     void Register() override
