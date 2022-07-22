@@ -30,7 +30,29 @@ class spell_carnivorous_stalkers : public AuraScript
     }
 };
 
+struct npc_warlock_pet_felguard : public PetAI
+{
+    npc_warlock_pet_felguard(Creature* pCreature) : PetAI(pCreature) { }
+
+    void IsSummonedBy(WorldObject* summoner) override
+    {
+        Player* player = summoner ? summoner->ToPlayer() : nullptr;
+        if (!player)
+            return;
+
+        // Fel Commando
+        if (auto eff = player->GetAuraEffect(339845, EFFECT_0))
+        {
+            if (eff->ConduitRankEntry)
+            {
+                me->CastSpell(me, 339848, CastSpellExtraArgs(true).AddSpellBP0(eff->ConduitRankEntry->AuraPointsOverride).AddSpellBP1(eff->ConduitRankEntry->AuraPointsOverride));
+            }
+        }
+    }
+};
+
 void AddSC_spell_warlock_demonology()
 {
     RegisterSpellScript(spell_carnivorous_stalkers);
+    RegisterCreatureAI(npc_warlock_pet_felguard);
 }
