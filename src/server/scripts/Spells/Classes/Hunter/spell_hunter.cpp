@@ -1835,13 +1835,18 @@ public:
         {
             if (Player* player = GetCaster()->ToPlayer())
             {
-                uint32 spec = player->GetSpecializationId();
-
                 if (player->HasSpell(SPELL_HUNTER_POSTHAST))
                 {
                     player->RemoveMovementImpairingAuras(true);
                     player->CastSpell(player, SPELL_HUNTER_POSTHAST_SPEED, true);
                 }
+
+                // Tactical Retreat conduit
+                if (auto eff = player->GetAuraEffect(339651, EFFECT_0))
+                    if (eff->ConduitRankEntry)
+                    {
+                        player->CastSpell(player, 339654, CastSpellExtraArgs(true).AddSpellBP0(eff->ConduitRankEntry->AuraPointsOverride));
+                    }
             }
         }
 
