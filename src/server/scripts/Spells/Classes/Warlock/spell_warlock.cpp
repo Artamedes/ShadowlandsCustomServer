@@ -5849,6 +5849,18 @@ public:
                     // Make AOE damage.
                     caster->CastSpell(target, SPELL_WARLOCK_HAND_OF_GULDAN_DAMAGE, true);
                 }
+
+                // Borne of Blood
+                if (auto eff = caster->GetAuraEffect(339578, EFFECT_0))
+                {
+                    if (eff->ConduitRankEntry)
+                    {
+                        if (roll_chance_f(eff->ConduitRankEntry->AuraPointsOverride))
+                        {
+                            caster->CastSpell(caster, SPELL_WARLOCK_DEMONIC_CORE_BUFF, true);
+                        }
+                    }
+                }
             }
         }
 
