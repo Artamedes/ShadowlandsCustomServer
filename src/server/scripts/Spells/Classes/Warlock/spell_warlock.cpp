@@ -724,6 +724,19 @@ class spell_warl_conflagrate : public SpellScript
             return;
 
         caster->CastSpell(caster, SPELL_WARLOCK_CONFLAGRATE_ENERGIZE, true);
+
+        auto target = GetHitUnit();
+        if (!target)
+            return;
+
+        // Combusting Engine
+        if (auto eff = caster->GetAuraEffect(339896, EFFECT_0))
+        {
+            if (eff->ConduitRankEntry)
+            {
+                caster->CastSpell(target, 339986, CastSpellExtraArgs(true).AddSpellBP0(eff->ConduitRankEntry->AuraPointsOverride));
+            }
+        }
     }
 
     void Register() override
@@ -2124,6 +2137,15 @@ public:
         {
             GetCaster()->CastSpell(GetHitUnit(), SPELL_WARLOCK_IMMOLATE_DOT, true);
             GetCaster()->CastSpell(GetCaster(), SPELL_WARLOCK_CHANNEL_DEMONFIRE_ACTIVATOR, true);
+
+            if (auto caster = GetCaster())
+            {
+                if (auto hitUnit = GetHitUnit())
+                {
+                    // Remove Combusting Engine
+                    hitUnit->RemoveAurasDueToSpell(339986, caster->GetGUID());
+                }
+            }
         }
 
         void Register() override
