@@ -5732,6 +5732,32 @@ class spell_rejuvenating_wind : public AuraScript
     }
 };
 
+class spell_hun_feign_death : public AuraScript
+{
+    PrepareAuraScript(spell_hun_feign_death);
+
+    void HandleEffectApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+    {
+    }
+
+    void HandleEffectRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+    {
+        // Resilience of the Hunter conduit
+        if (auto caster = GetCaster())
+            if (auto eff = caster->GetAuraEffect(339459, EFFECT_0))
+                if (eff->ConduitRankEntry)
+                {
+                    caster->CastSpell(caster, 339461, CastSpellExtraArgs(true).AddSpellBP0(eff->ConduitRankEntry->AuraPointsOverride));
+                }
+    }
+
+    void Register()
+    {
+        AfterEffectApply += AuraEffectApplyFn(spell_hun_feign_death::HandleEffectApply, EFFECT_0, SPELL_AURA_FEIGN_DEATH, AURA_EFFECT_HANDLE_REAL);
+        AfterEffectRemove += AuraEffectRemoveFn(spell_hun_feign_death::HandleEffectRemove, EFFECT_0, SPELL_AURA_FEIGN_DEATH, AURA_EFFECT_HANDLE_REAL);
+    }
+};
+
 void AddSC_hunter_spell_scripts()
 {
     new spell_hun_harpoon();
@@ -5833,6 +5859,7 @@ void AddSC_hunter_spell_scripts()
     RegisterSpellScript(spell_volley_ss);
     RegisterSpellScript(spell_explosive_shot);
     RegisterSpellScript(spell_rejuvenating_wind);
+    RegisterSpellScript(spell_hun_feign_death);
 
     // Spell Pet scripts
     new spell_hun_pet_heart_of_the_phoenix();
