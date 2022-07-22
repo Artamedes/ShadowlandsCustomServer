@@ -656,10 +656,30 @@ class spell_warl_shadow_bolt : public SpellScript
 		}
 	}
 
+    void HandleDmg(SpellEffIndex /*eff*/)
+    {
+        Unit* caster = GetCaster();
+        Unit* target = GetHitUnit();
+        if (!caster || !target)
+            return;
+
+        if (auto witheringBolt = caster->GetAuraEffect(339576, EFFECT_0))
+        {
+            if (witheringBolt->ConduitRankEntry)
+            {
+                auto baseDamage = GetHitDamage();
+                float increase = witheringBolt->ConduitRankEntry->AuraPointsOverride * Warlock::GetDotCount(caster, target);
+                AddPct(baseDamage, increase);
+                SetHitDamage(baseDamage);
+            }
+        }
+    }
+
     void Register() override
     {
         OnHit += SpellHitFn(spell_warl_shadow_bolt::DoEffectHitTarget);
 		AfterCast += SpellCastFn(spell_warl_shadow_bolt::HandleAfterCast);
+        OnEffectHitTarget += SpellEffectFn(spell_warl_shadow_bolt::HandleDmg, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
     }
 };
 
@@ -1822,10 +1842,21 @@ class spell_warl_drain_soul : public AuraScript
     void HandleApply(const AuraEffect* /*aurEff*/, AuraEffectHandleModes /* mode */)
     {
         if (Unit* caster = GetCaster())
+        {
             if (caster && caster->HasAura(SPELL_WARLOCK_SHADOW_EMBRACE))
                 caster->CastSpell(GetTarget(), SPELL_WARLOCK_SHADOW_EMBRACE_BUFF, true);
 
-		baseDamage = GetAura()->GetEffect(EFFECT_0)->GetDamage();
+            baseDamage = GetAura()->GetEffect(EFFECT_0)->GetDamage();
+
+            if (auto witheringBolt = caster->GetAuraEffect(339576, EFFECT_0))
+            {
+                if (witheringBolt->ConduitRankEntry)
+                {
+                    float increase = witheringBolt->ConduitRankEntry->AuraPointsOverride * Warlock::GetDotCount(caster, GetTarget());
+                    AddPct(baseDamage, increase);
+                }
+            }
+        }
     }
 
     void HandleRemove(const AuraEffect* /*aurEff*/, AuraEffectHandleModes /* mode */)
@@ -7965,17 +7996,6 @@ class spell_warl_soul_rot : public SpellScript
     }
 };
 
-const uint32 dotAuras[] =
-{
-    325640,
-    SPELL_WARLOCK_AGONY,
-    SPELL_WARLOCK_UNSTABLE_AFFLICTION,
-    SPELL_WARLOCK_CORRUPTION,
-    278350,
-    205179,
-    Warlock::eAffliction::UnstableAffliction
-};
-
 // 324536 
 class spell_warl_malefic_rapture : public SpellScript
 {
@@ -8000,7 +8020,7 @@ class spell_warl_malefic_rapture : public SpellScript
             {
                 uint32 extraDmg = 0;
                 uint32 totalAuras = 0;
-                for (auto dot : dotAuras)
+                for (auto dot : Warlock::dotAuras)
                     if (enemy->HasAura(dot, caster->GetGUID()))
                     {
                         // Focused Malignancy Conduit

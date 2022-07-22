@@ -51,6 +51,8 @@ namespace Warlock
         SummonDarkglare = 205180,
         UnstableAffliction = 316099,
         MasteryPotentAfflictions = 77215,
+        VileTaint = 278350,
+        PhantomSingularity = 205179,
     };
 
     enum eDemonology
@@ -91,4 +93,28 @@ namespace Warlock
     {
         SoulRot = 325640,
     };
+
+    const uint32 dotAuras[] =
+    {
+        eCovenant::SoulRot,
+        eAffliction::Agony,
+        eWarlock::Corruption,
+        eAffliction::VileTaint,
+        eAffliction::PhantomSingularity,
+        eAffliction::UnstableAffliction
+    };
+
+    inline uint32 GetDotCount(Unit* caster, Unit* target)
+    {
+        uint32 count = 0;
+
+        if (caster && target)
+        {
+            for (auto dot : dotAuras)
+                if (target->GetAura(dot, caster->GetGUID()))
+                    ++count;
+        }
+
+        return count;
+    }
 }
