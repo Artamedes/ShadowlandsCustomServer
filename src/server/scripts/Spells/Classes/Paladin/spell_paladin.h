@@ -61,6 +61,11 @@ namespace Paladin
         AshenHallow = 316958,
     };
 
+    enum eConduits
+    {
+        RingingClarity = 340218,
+    };
+
     enum eLegendary
     {
         // Holy

@@ -124,17 +124,32 @@ class spell_pal_divine_toll : public SpellScript
             {
                 auto castFlags = TriggerCastFlags(TRIGGERED_DONT_CREATE_COOLDOWN | TRIGGERED_FULL_MASK | TRIGGERED_IGNORE_GCD | TRIGGERED_IGNORE_SPELL_AND_CATEGORY_CD | TRIGGERED_IGNORE_POWER_AND_REAGENT_COST);
 
-                switch (GetSpecializationId(caster))
+                uint32 times = 1;
+
+                if (target == GetExplTargetUnit())
+                    if (auto eff = caster->GetAuraEffect(eConduits::RingingClarity, EFFECT_0))
+                        if (eff->ConduitRankEntry)
+                            if (roll_chance_f(eff->ConduitRankEntry->AuraPointsOverride))
+                                times += 3;
+
+                auto spec = GetSpecializationId(caster);
+
+                for (uint32 i = 0u; i < times; ++i)
                 {
-                    case SimpleTalentSpecs::HPally:
-                        caster->CastSpell(target, DivineToll::HolyShock, castFlags);
-                        break;
-                    case SimpleTalentSpecs::ProtPally:
-                        caster->CastSpell(target, DivineToll::AvengersShield, castFlags);
-                        break;
-                    case SimpleTalentSpecs::Retribution:
-                        caster->CastSpell(target, DivineToll::Judgement, castFlags);
-                        break;
+                    switch (spec)
+                    {
+                        case SimpleTalentSpecs::HPally:
+                            caster->CastSpell(target, DivineToll::HolyShock, castFlags);
+                            break;
+                        case SimpleTalentSpecs::ProtPally:
+                            caster->CastSpell(target, DivineToll::AvengersShield, castFlags);
+                            break;
+                        case SimpleTalentSpecs::Retribution:
+                            caster->CastSpell(target, DivineToll::Judgement, castFlags);
+                            break;
+                        default:
+                            break;
+                    }
                 }
             }
         }
@@ -148,11 +163,26 @@ class spell_pal_divine_toll : public SpellScript
             {
                 auto castFlags = TriggerCastFlags(TRIGGERED_DONT_CREATE_COOLDOWN | TRIGGERED_FULL_MASK | TRIGGERED_IGNORE_GCD | TRIGGERED_IGNORE_SPELL_AND_CATEGORY_CD | TRIGGERED_IGNORE_POWER_AND_REAGENT_COST);
 
-                switch (GetSpecializationId(caster))
+                uint32 times = 1;
+
+                if (target == GetExplTargetUnit())
+                    if (auto eff = caster->GetAuraEffect(eConduits::RingingClarity, EFFECT_0))
+                        if (eff->ConduitRankEntry)
+                            if (roll_chance_f(eff->ConduitRankEntry->AuraPointsOverride))
+                                times += 3;
+
+                auto spec = GetSpecializationId(caster);
+
+                for (uint32 i = 0u; i < times; ++i)
                 {
-                    case SimpleTalentSpecs::HPally:
-                        caster->CastSpell(target, DivineToll::HolyShock, castFlags);
-                        break;
+                    switch (spec)
+                    {
+                        case SimpleTalentSpecs::HPally:
+                            caster->CastSpell(target, DivineToll::HolyShock, castFlags);
+                            break;
+                        default:
+                            break;
+                    }
                 }
             }
         }
@@ -402,11 +432,9 @@ void AddSC_spell_paladin_covenant()
     RegisterSpellScript(spell_righteous_might);
     RegisterSpellScript(spell_pal_divine_toll);
     RegisterSpellScript(spell_ashen_hallow);
-
-    RegisterAreaTriggerAI(areatrigger_pal_ashen_hallow);
-
     RegisterSpellScript(spell_shielding_words);
     RegisterSpellScript(spell_resplendent_light);
-
     RegisterSpellScript(spell_adaptive_armor_fragment);
+
+    RegisterAreaTriggerAI(areatrigger_pal_ashen_hallow);
 }
