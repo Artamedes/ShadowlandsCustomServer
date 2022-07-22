@@ -65,6 +65,7 @@ namespace Warlock
         DemonicCore = 267102,
         MasteryMasterDemonologist = 77219,
         SoulLink = 108415,
+        Dreadbite = 205196,
     };
 
     enum eDestruction
@@ -92,6 +93,12 @@ namespace Warlock
     enum eCovenant
     {
         SoulRot = 325640,
+    };
+
+    enum eConduits
+    {
+        CarnivorousStalkers     = 339656,
+        CarnivorousStalkersProc = 339673,
     };
 
     const uint32 dotAuras[] =

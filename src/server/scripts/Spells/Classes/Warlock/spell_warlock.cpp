@@ -3681,6 +3681,18 @@ public:
         if (owner->HasAura(342997))
             owner->CastSpell(owner, 337142, true);
 
+        if (auto eff = owner->GetAuraEffect(Warlock::eConduits::CarnivorousStalkers, EFFECT_0))
+        {
+            if (eff->ConduitRankEntry)
+            {
+                if (auto aura = me->AddAura(Warlock::eConduits::CarnivorousStalkersProc, me))
+                {
+                    if (auto eff2 = aura->GetEffect(EFFECT_0))
+                        eff2->ConduitRankEntry = eff->ConduitRankEntry;
+                }
+            }
+        }
+
         me->CastSpell(me, SPELL_SHARPENED_DREADFANGS, true);
         me->GetScheduler().Schedule(100ms, [this, owner](TaskContext context)
         {
