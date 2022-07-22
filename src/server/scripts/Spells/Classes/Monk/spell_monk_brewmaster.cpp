@@ -56,7 +56,42 @@ class spell_keg_of_the_heavens : public AuraScript
     }
 };
 
+/// ID: 115203 Fortifying Brew
+class spell_fortifying_brew : public SpellScript
+{
+    PrepareSpellScript(spell_fortifying_brew);
+
+    enum eFortifyingBrew
+    {
+        FortifyingBrewBuff = 120954,
+        FortifyingIngredients = 336853,
+        FortifyingIngredientsProc = 336874,
+    };
+
+    void HandleDummy(SpellEffIndex /*eff*/)
+    {
+        if (auto caster = GetCaster())
+        {
+            caster->CastSpell(caster, FortifyingBrewBuff, true);
+
+            if (auto eff = caster->GetAuraEffect(FortifyingIngredients, EFFECT_0))
+            {
+                if (eff->ConduitRankEntry)
+                {
+                    caster->CastSpell(caster, FortifyingIngredientsProc, CastSpellExtraArgs(true).AddSpellBP0(caster->CountPctFromMaxHealth((eff->ConduitRankEntry->AuraPointsOverride))));
+                }
+            }
+        }
+    }
+
+    void Register() override
+    {
+        OnEffectHitTarget += SpellEffectFn(spell_fortifying_brew::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
+    }
+};
+
 void AddSC_spell_monk_brewmaster()
 {
     RegisterSpellScript(spell_keg_of_the_heavens);
+    RegisterSpellScript(spell_fortifying_brew);
 }

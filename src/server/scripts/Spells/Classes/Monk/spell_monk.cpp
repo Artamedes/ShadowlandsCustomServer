@@ -1519,36 +1519,6 @@ class aura_monk_touch_of_death_amplifer : public AuraScript
 	}
 };
 
-// Fortifying brew - 115203
-/// DISABLED, why is this casting itself?
-class spell_monk_fortifying_brew : public SpellScriptLoader
-{
-public:
-    spell_monk_fortifying_brew() : SpellScriptLoader("spell_monk_fortifying_brew") { }
-
-    class spell_monk_fortifying_brew_SpellScript : public SpellScript
-    {
-        PrepareSpellScript(spell_monk_fortifying_brew_SpellScript);
-
-        void HandleDummy(SpellEffIndex /*effIndex*/)
-        {
-            Unit* caster = GetCaster();
-            if (caster && caster->GetTypeId() == TYPEID_PLAYER)
-                caster->CastSpell(caster, SPELL_MONK_FORTIFYING_BREW, true);
-        }
-
-        void Register() override
-        {
-            OnEffectHitTarget += SpellEffectFn(spell_monk_fortifying_brew_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
-        }
-    };
-
-    SpellScript* GetSpellScript() const override
-    {
-        return new spell_monk_fortifying_brew_SpellScript();
-    }
-};
-
 // Legacy of the Emperor - 115921
 class spell_monk_legacy_of_the_emperor : public SpellScriptLoader
 {
@@ -5372,7 +5342,6 @@ void AddSC_monk_spell_scripts()
     new spell_monk_fists_of_fury_visual();
     new spell_monk_fists_of_fury_visual_filter();
     new spell_monk_flying_serpent_kick();
-    new spell_monk_fortifying_brew();
     new spell_monk_healing_elixirs_aura();
     new spell_monk_jab();
     new spell_monk_jade_serpent_statue();
