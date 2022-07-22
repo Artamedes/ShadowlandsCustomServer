@@ -47,8 +47,36 @@ class spell_comet_storm_dmg : public SpellScript
     }
 };
 
+/// ID: 336522 Icy Propulsion
+class spell_icy_propulsion : public AuraScript
+{
+    PrepareAuraScript(spell_icy_propulsion);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetHitMask() & ProcFlagsHit::PROC_HIT_CRITICAL;
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (auto caster = GetCaster())
+        {
+            if (auto eff = GetEffect(EFFECT_0))
+                if (eff->ConduitRankEntry)
+                    caster->GetSpellHistory()->ModifyCooldown(IcyVeins, -int32(eff->ConduitRankEntry->AuraPointsOverride * 100));
+        }
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_icy_propulsion::CheckProc);
+        OnProc += AuraProcFn(spell_icy_propulsion::HandleProc);
+    }
+};
+
 void AddSC_spell_mage_frost()
 {
     RegisterSpellScript(spell_frost_storm);
     RegisterSpellScript(spell_comet_storm_dmg);
+    RegisterSpellScript(spell_icy_propulsion);
 }
