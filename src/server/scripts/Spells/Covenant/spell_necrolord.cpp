@@ -672,7 +672,20 @@ public:
     enum KevinaOoze
     {
         KevinsWrath = 352528,
+        KevinsWrathCast = 352520,
+        CosmeticSlimeLab = 317574,
+        OozelingOutfit = 352870,
+
+        // TODO
+        KevinsAid = 352536,
+        KevinsWrathAbsorb = 352532, // triggered by 352520 Kevin's Wrath
     };
+
+    void InitializeAI() override
+    {
+        DoCastSelf(CosmeticSlimeLab);
+        DoCastSelf(OozelingOutfit);
+    }
 
     void UpdateAI(uint32 diff) override
     {
@@ -680,9 +693,12 @@ public:
             return;
 
         if (me->IsWithinMeleeRange(me->GetVictim()))
+        {
             if (!me->GetVictim()->HasAura(KevinsWrath))
                 if (me->GetOwner())
                     me->GetOwner()->CastSpell(me->GetVictim(), KevinsWrath, true);
+            DoCastVictim(KevinsWrathCast);
+        }
 
         DoMeleeAttackIfReady();
     }
