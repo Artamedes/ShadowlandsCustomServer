@@ -303,6 +303,12 @@ class spell_warr_bloodthirst : public SpellScript
             caster->GetSpellHistory()->ModifyCooldown(SPELL_WARRIOR_BLOODTHIRST_DAMAGE, int32(sSpellMgr->GetSpellInfo(SPELL_WARRIOR_SLAUGHTERHOUSE)->GetEffect(EFFECT_0).BasePoints) * -1s);
         }
 
+        // Vicious Contempt conduit
+        if (target->HealthBelowPct(36))
+            if (auto eff = caster->GetAuraEffect(337302, EFFECT_0))
+                if (eff->ConduitRankEntry)
+                    AddPct(damage, eff->ConduitRankEntry->AuraPointsOverride);
+
         SetHitDamage(damage);
 
         CastSpellExtraArgs args(TRIGGERED_FULL_MASK);
