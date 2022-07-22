@@ -81,11 +81,42 @@ namespace FactorySelector
         return nullptr;
     }
 
+    bool CanUseDbAIInsteadOfPetAI(uint32 creatureEntry)
+    {
+        // Warlock pets use custom scripts to enable 'green fire' questline
+        switch (creatureEntry)
+        {
+            //case 416:       // Imp
+            //case 58959:     // Fel Imp
+            //case 1860:      // Voidwalker
+            //case 417:       // Felhunter
+            //case 1863:      // Succubus
+            //case 17252:     // Felguard
+            //case 58965:     // Wrathguard
+            //case 58960:     // Voidlord
+            //case 58964:     // Observer
+            //case 58963:     // Shivarra
+
+            // For now only felguard is scripted. for SL conduit
+            case 17252:     // Felguard
+                return true;
+            default:
+                return false;
+        }
+    }
+
     CreatureAI* SelectAI(Creature* creature)
     {
         // special pet case, if a tamed creature uses AIName (example SmartAI) we need to override it
         if (creature->IsPet())
+        {
+            //scriptname in db
+            if (CanUseDbAIInsteadOfPetAI(creature->GetEntry()))
+                if (CreatureAI* scriptedAI = sScriptMgr->GetCreatureAI(creature))
+                    return scriptedAI;
+
             return ASSERT_NOTNULL(sCreatureAIRegistry->GetRegistryItem("PetAI"))->Create(creature);
+        }
 
         // scriptname in db
         try

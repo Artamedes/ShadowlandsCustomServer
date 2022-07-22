@@ -34,9 +34,9 @@ struct npc_warlock_pet_felguard : public PetAI
 {
     npc_warlock_pet_felguard(Creature* pCreature) : PetAI(pCreature) { }
 
-    void IsSummonedBy(WorldObject* summoner) override
+    void Reset() override
     {
-        Player* player = summoner ? summoner->ToPlayer() : nullptr;
+        Player* player = me->GetOwner() ? me->GetOwner()->ToPlayer() : nullptr;
         if (!player)
             return;
 
