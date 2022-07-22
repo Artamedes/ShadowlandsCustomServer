@@ -3064,7 +3064,46 @@ class aura_rog_shadow_blades : public AuraScript
         if (!eventInfo.GetProcSpell())
             return false;
 
-        return eventInfo.GetProcSpell()->m_comboPointsEnergized;
+        switch (eventInfo.GetSpellInfo()->Id)
+        {
+            case 1329  : ///< - Mutilate
+            case 5374  : ///< - Mutilate
+            case 1776  : ///< - Gouge
+            case 1833  : ///< - Cheap Shot
+            case 8676  : ///< - Ambush
+            case 30998 : ///< - Cheap Shot(SERVERSIDE)
+            case 34242 : ///< - Cheap Shot(SERVERSIDE)
+            case 107079: ///< - Quaking Palm(Racial)
+            case 114014: ///< - Shuriken Toss
+            case 131511: ///< - Prey on the Weak
+            case 185438: ///< - Shadowstrike
+            case 185565: ///< - Poisoned Knife
+            case 185763: ///< - Pistol Shot
+            case 193315: ///< - Sinister Strike
+            case 194429: ///< - Ambush
+            case 197834: ///< - Sinister Strike
+            case 200758: ///< - Gloomblade
+            case 255909: ///< - Prey on the Weak
+            case 291354: ///< - Mutilate
+            case 323654: ///< - Flagellation(Venthyr)
+            case 341541: ///< - Sinister Strike
+            case 345121: ///< - Shadowstrike
+            case 53:     ///< - Backstab
+            case 703:    ///< - Garrote
+            case 5938:   ///< - Shiv
+            case 291356: ///< - Backstab
+            case 323547: ///< - Echoing Reprimand(Kyrian)
+            case 323558: ///< - Echoing Reprimand(Kyrian)
+            case 323559: ///< - Echoing Reprimand(Kyrian)
+            case 323560: ///< - Echoing Reprimand(Kyrian)
+            case 354835: ///< - Echoing Reprimand(Kyrian)
+            case 354838: ///< - Echoing Reprimand(Kyrian)
+            case 234278: ///< - Fan of Knives
+            case 51723:  ///< - Fan of Knives
+                return true;
+            default:
+                return eventInfo.GetProcSpell()->m_comboPointsEnergized;
+        }
     }
 
     void HandleProc(ProcEventInfo& eventInfo)
