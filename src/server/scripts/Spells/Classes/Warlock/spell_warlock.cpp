@@ -5244,125 +5244,134 @@ public:
 // Infernal - 89
 class npc_pet_warlock_infernal : public ScriptedAI
 {
-	enum Spells
-	{
-		SPELL_INMOLATION		= 19483,
-		SPELL_EMBERS			= 264364
-	};
-
-public:
-	npc_pet_warlock_infernal(Creature* creature) : ScriptedAI(creature)
+    enum Spells
     {
-        m_Timer = 250;
-    }
+        SPELL_INMOLATION = 19483,
+        SPELL_EMBERS = 264364
+    };
 
-    void IsSummonedBy(WorldObject* o) override
-    {
-        if (!o)
-            return;
-
-        auto owner = o->ToUnit();
-        if (!owner)
-            return;
-
-        if (Aura* aura = owner->GetAura(SPELL_WARLOCK_CRASHING_CHAOS))
-            owner->CastCustomSpell(SPELL_WARLOCK_CRASHING_CHAOS_BUFF, SPELLVALUE_BASE_POINT0, aura->GetEffect(EFFECT_0)->GetAmount(), owner, true);
-
-		        targetGUID = owner->Variables.GetValue("ExplicitTarget", ObjectGuid::Empty);
-		owner->AddAura(SPELL_INMOLATION, me);
-		owner->AddAura(SPELL_EMBERS, me);
-		owner->CastSpell(owner, SPELL_EMBERS, true);
-	}
-
-	void UpdateAI(uint32 diff) override
-	{
-        if (m_Timer <= diff)
+    public:
+        npc_pet_warlock_infernal(Creature* creature) : ScriptedAI(creature)
         {
-            DoActions();
             m_Timer = 250;
         }
-        else
+
+        void IsSummonedBy(WorldObject* o) override
         {
-            m_Timer -= diff;
-        }
-	}
+            if (!o)
+                return;
 
-	void JustDied(Unit* /*killer*/) override
-	{
-		if (Unit* owner = me->GetOwner())
-		{
-			owner->RemoveAura(SPELL_EMBERS);
-			owner->RemoveAura(SPELL_WARLOCK_GRIMOIRE_OF_SUPREMACY_BUFF);
-            if (owner->Variables.Exist("GRIMOIRE_OF_SUPREMACY_STACK"))
-                owner->Variables.Remove("GRIMOIRE_OF_SUPREMACY_STACK");
-		}
-	}
+            auto owner = o->ToUnit();
+            if (!owner)
+                return;
 
-	void JustUnsummoned() override
-	{
-		if (Unit* owner = me->GetOwner())
-		{
-			owner->RemoveAura(SPELL_EMBERS);
-			owner->RemoveAura(SPELL_WARLOCK_GRIMOIRE_OF_SUPREMACY_BUFF);
-            if (owner->Variables.Exist("GRIMOIRE_OF_SUPREMACY_STACK"))
-                owner->Variables.Remove("GRIMOIRE_OF_SUPREMACY_STACK");
-		}
-	}
+            if (Aura* aura = owner->GetAura(SPELL_WARLOCK_CRASHING_CHAOS))
+                owner->CastCustomSpell(SPELL_WARLOCK_CRASHING_CHAOS_BUFF, SPELLVALUE_BASE_POINT0, aura->GetEffect(EFFECT_0)->GetAmount(), owner, true);
 
-	void EnterEvadeMode(EvadeReason /*reason*/) override
-	{
-		if (me->IsInEvadeMode() || !me->IsAlive())
-			return;
+            targetGUID = owner->Variables.GetValue("ExplicitTarget", ObjectGuid::Empty);
+            owner->AddAura(SPELL_INMOLATION, me);
+            owner->AddAura(SPELL_EMBERS, me);
+            owner->CastSpell(owner, SPELL_EMBERS, true);
 
-		Unit* owner = me->GetOwner();
-
-		me->SetReactState(REACT_ASSIST);
-		me->CombatStop(true);
-		if (owner && !me->HasUnitState(UNIT_STATE_FOLLOW))
-		{
-			me->GetMotionMaster()->Clear();
-			me->FollowTarget(owner);
-		}
-	}
-
-    void DoActions()
-    {
-        Unit* owner = me->GetOwner();
-        if (!owner)
-            return;
-
-        if (me->IsInEvadeMode() && !owner->IsInCombat())
-            return;
-
-        Unit* target = GetTarget();
-        ObjectGuid newtargetGUID = owner->GetTarget();
-        if ((newtargetGUID.IsEmpty() || newtargetGUID == targetGUID) && (target && me->IsValidAttackTarget(target)))
-        {
-            me->GetAI()->AttackStart(target);
-            DoMeleeAttackIfReady();
-            return;
+            // Infernal Brand Conduit
+            if (auto eff = owner->GetAuraEffect(340041, EFFECT_0))
+            {
+                if (eff->ConduitRankEntry)
+                {
+                    me->CastSpell(me, 340048, CastSpellExtraArgs(true).AddSpellBP0(eff->ConduitRankEntry->AuraPointsOverride));
+                }
+            }
         }
 
-        if (Unit* newTarget = ObjectAccessor::GetUnit(*me, newtargetGUID))
+        void UpdateAI(uint32 diff) override
         {
-            if (target != newTarget && me->IsValidAttackTarget(newTarget) && owner->IsInCombat())
-                target = newTarget;
-            me->GetAI()->AttackStart(target);
-            DoMeleeAttackIfReady();
-            return;
+            if (m_Timer <= diff)
+            {
+                DoActions();
+                m_Timer = 250;
+            }
+            else
+            {
+                m_Timer -= diff;
+            }
         }
 
-        EnterEvadeMode(EVADE_REASON_NO_HOSTILES);
-    }
+        void JustDied(Unit* /*killer*/) override
+        {
+            if (Unit* owner = me->GetOwner())
+            {
+                owner->RemoveAura(SPELL_EMBERS);
+                owner->RemoveAura(SPELL_WARLOCK_GRIMOIRE_OF_SUPREMACY_BUFF);
+                if (owner->Variables.Exist("GRIMOIRE_OF_SUPREMACY_STACK"))
+                    owner->Variables.Remove("GRIMOIRE_OF_SUPREMACY_STACK");
+            }
+        }
 
-private:
-	Unit * GetTarget() const
-	{
-		return ObjectAccessor::GetUnit(*me, targetGUID);
-	}
+        void JustUnsummoned() override
+        {
+            if (Unit* owner = me->GetOwner())
+            {
+                owner->RemoveAura(SPELL_EMBERS);
+                owner->RemoveAura(SPELL_WARLOCK_GRIMOIRE_OF_SUPREMACY_BUFF);
+                if (owner->Variables.Exist("GRIMOIRE_OF_SUPREMACY_STACK"))
+                    owner->Variables.Remove("GRIMOIRE_OF_SUPREMACY_STACK");
+            }
+        }
 
-	ObjectGuid targetGUID;
-    uint32 m_Timer;
+        void EnterEvadeMode(EvadeReason /*reason*/) override
+        {
+            if (me->IsInEvadeMode() || !me->IsAlive())
+                return;
+
+            Unit* owner = me->GetOwner();
+
+            me->SetReactState(REACT_ASSIST);
+            me->CombatStop(true);
+            if (owner && !me->HasUnitState(UNIT_STATE_FOLLOW))
+            {
+                me->GetMotionMaster()->Clear();
+                me->FollowTarget(owner);
+            }
+        }
+
+        void DoActions()
+        {
+            Unit* owner = me->GetOwner();
+            if (!owner)
+                return;
+
+            if (me->IsInEvadeMode() && !owner->IsInCombat())
+                return;
+
+            Unit* target = GetTarget();
+            ObjectGuid newtargetGUID = owner->GetTarget();
+            if ((newtargetGUID.IsEmpty() || newtargetGUID == targetGUID) && (target && me->IsValidAttackTarget(target)))
+            {
+                me->GetAI()->AttackStart(target);
+                DoMeleeAttackIfReady();
+                return;
+            }
+
+            if (Unit* newTarget = ObjectAccessor::GetUnit(*me, newtargetGUID))
+            {
+                if (target != newTarget && me->IsValidAttackTarget(newTarget) && owner->IsInCombat())
+                    target = newTarget;
+                me->GetAI()->AttackStart(target);
+                DoMeleeAttackIfReady();
+                return;
+            }
+
+            EnterEvadeMode(EVADE_REASON_NO_HOSTILES);
+        }
+
+    private:
+        Unit* GetTarget() const
+        {
+            return ObjectAccessor::GetUnit(*me, targetGUID);
+        }
+
+        ObjectGuid targetGUID;
+        uint32 m_Timer;
 };
 
 // Observer - 107100
