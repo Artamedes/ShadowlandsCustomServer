@@ -3889,6 +3889,7 @@ public:
     void JustUnsummoned() override
     {
         if (Unit* owner = me->GetOwner())
+        {
             if (Aura* aura = owner->GetAura(SPELL_WARLOCK_SUPREME_COMMANDER))
             {
                 // Create a dummy to cast the spell.
@@ -3899,6 +3900,17 @@ public:
                     me->GetOwner()->CastSpell(summon, SPELL_WARLOCK_DEMONIC_CORE_PET, true);
                 owner->CastCustomSpell(SPELL_WARLOCK_SUPREME_COMMANDER_BUFF, SPELLVALUE_BASE_POINT0, aura->GetEffect(EFFECT_0)->GetAmount(), owner, true);
             }
+
+            // Tyrant's Soul
+            if (auto eff = owner->GetAuraEffect(339766, EFFECT_0))
+            {
+                if (eff->ConduitRankEntry)
+                {
+                    owner->CastSpell(owner, SPELL_WARLOCK_DEMONIC_CORE_BUFF, true);
+                    owner->CastSpell(owner, 339784, CastSpellExtraArgs(true).AddSpellBP0(eff->ConduitRankEntry->AuraPointsOverride));
+                }
+            }
+        }
     }
 
 	void EnterEvadeMode(EvadeReason /*reason*/) override
