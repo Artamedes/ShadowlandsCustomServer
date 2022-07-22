@@ -2068,6 +2068,14 @@ void Spell::EffectSummonType()
 
     if (summon)
     {
+        if (summon->AI())
+        {
+            if (properties->GetFlags().HasFlag(SummonPropertiesFlags::AttackSummoner) && unitCaster)
+            {
+               // summon->AI()->AttackStart(unitCaster);
+            }
+        }
+
         summon->SetCreatorGUID(caster->GetGUID());
         ExecuteLogEffectSummonObject(SpellEffectName(effectInfo->Effect), summon);
         CallScriptOnSummonHandlers(summon);

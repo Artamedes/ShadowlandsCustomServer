@@ -308,4 +308,5 @@ void AddSC_spell_dh_legendary()
     RegisterSpellScript(spell_spirit_of_the_darkness_flame);
     RegisterSpellScript(spell_spirit_of_the_darkness_flame_proc);
     RegisterSpellScript(spell_razelikhs_defilement);
+    RegisterSpellScript(spell_agony_gaze);
 }

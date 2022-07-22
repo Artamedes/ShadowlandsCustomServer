@@ -1652,10 +1652,10 @@ enum SummonPropType
 enum class SummonPropertiesFlags : uint32
 {
     None                              = 0x00000000,
-    AttackSummoner                    = 0x00000001, // NYI
+    AttackSummoner                    = 0x00000001,
     HelpWhenSummonedInCombat          = 0x00000002, // NYI
     UseLevelOffset                    = 0x00000004, // NYI
-    DespawnOnSummonerDeath            = 0x00000008, // NYI
+    DespawnOnSummonerDeath            = 0x00000008,
     OnlyVisibleToSummoner             = 0x00000010,
     CannotDismissPet                  = 0x00000020, // NYI
     UseDemonTimeout                   = 0x00000040, // NYI
@@ -1669,7 +1669,7 @@ enum class SummonPropertiesFlags : uint32
     SavePetAutocast                   = 0x00004000, // NYI
     IgnoreSummonerPhase               = 0x00008000, // Wild Only
     OnlyVisibleToSummonerGroup        = 0x00010000,
-    DespawnOnSummonerLogout           = 0x00020000, // NYI
+    DespawnOnSummonerLogout           = 0x00020000,
     CastRideVehicleSpellOnSummoner    = 0x00040000, // NYI
     GuardianActsLikePet               = 0x00080000, // NYI
     DontSnapSessileToGround           = 0x00100000, // NYI

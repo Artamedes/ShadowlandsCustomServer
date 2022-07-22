@@ -66,5 +66,6 @@ namespace DH
     enum eCovenant
     {
         SinfulBrand = 317009,
+        ShatteredSoulsNecrolord = 328951,
     };
 }

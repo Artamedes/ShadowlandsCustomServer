@@ -3240,6 +3240,12 @@ struct at_dh_shattered_souls : AreaTriggerAI
         {
             if (spellId == SPELL_DH_SS_HAVOC_NORMAL_AT || spellId == SPELL_DH_SS_VENGEANCE_NORMAL_AT)
                 player->CastSpell(at->GetPosition(), (player->GetSpecializationId() == TALENT_SPEC_DEMON_HUNTER_HAVOC) ? SPELL_DH_CONSUME_SOUL_HAVOC_SHATTERED : SPELL_DH_CONSUME_SOUL_VENGEANCE_SHATTERED, true);
+            else if (spellId == DH::eCovenant::ShatteredSoulsNecrolord)
+            {
+                // there is many different missle spells, probably have to sniff to find them all.
+                // Need to also support Necrolord conduit here.
+                player->CastSpell(at->GetPosition(), 328952);
+            }
             else
             {
                 player->CastSpell(at->GetPosition(), SPELL_DH_SS_DEMON_SOUL_BUFF);
