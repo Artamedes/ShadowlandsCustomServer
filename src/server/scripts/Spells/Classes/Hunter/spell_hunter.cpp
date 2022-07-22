@@ -1413,6 +1413,16 @@ public:
                 }
             }
 
+            if (IsHitCrit())
+            {
+                // Ferocious Appetite Conduit
+                if (auto eff = caster->GetAuraEffect(339704, EFFECT_0))
+                    if (eff->ConduitRankEntry)
+                    {
+                        caster->GetSpellHistory()->ModifyCooldown(SPELL_HUNTER_ASPECT_OF_THE_WILD, -int32(eff->ConduitRankEntry->AuraPointsOverride * 100.0f));
+                    }
+            }
+
             SetHitDamage(damage);
         }
 
