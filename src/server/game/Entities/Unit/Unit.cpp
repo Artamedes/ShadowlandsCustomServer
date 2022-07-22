@@ -15293,9 +15293,17 @@ void Unit::Whisper(uint32 textId, Player* target, bool isBossWhisper /*= false*/
     target->SendDirectMessage(packet.Write());
 }
 
-SpellInfo const* FindMatchingAuraEffectIn(Unit const * me, SpellInfo const* spellInfo, AuraType type)
+SpellInfo const* Unit::FindMatchingAuraEffectIn(SpellInfo const* spellInfo, AuraType type)
 {
-    for (AuraEffect const* auraEffect : me->GetAuraEffectsByType(type))
+    ++m_spellInfoTries;
+
+    if (m_spellInfoTries > 50)
+    {
+        TC_LOG_FATAL("entities.unit", "Unit::FindMatchingAuraEffectIn: %u spellid is CRASH SERVER!!.", spellInfo->Id);
+        return spellInfo;
+    }
+
+    for (AuraEffect const* auraEffect : GetAuraEffectsByType(type))
     {
         bool matches = auraEffect->GetMiscValue() ? uint32(auraEffect->GetMiscValue()) == spellInfo->Id : auraEffect->IsAffectingSpell(spellInfo);
         if (matches)
@@ -15303,11 +15311,14 @@ SpellInfo const* FindMatchingAuraEffectIn(Unit const * me, SpellInfo const* spel
             if (auraEffect->GetAmount() != spellInfo->Id)
             {
                 //printf("found %d\n", auraEffect->GetAmount());
-                if (SpellInfo const* newInfo = sSpellMgr->GetSpellInfo(auraEffect->GetAmount(), me->GetMap()->GetDifficultyID()))
+                if (SpellInfo const* newInfo = sSpellMgr->GetSpellInfo(auraEffect->GetAmount(), GetMap()->GetDifficultyID()))
                 {
-                    if (auto moreNewInfo = FindMatchingAuraEffectIn(me, newInfo, type))
-                        if (moreNewInfo != newInfo)
+                    if (auto moreNewInfo = FindMatchingAuraEffectIn(newInfo, type))
+                        if (moreNewInfo != newInfo || m_spellInfoTries > 50)
+                        {
+                            TC_LOG_FATAL("entities.unit", "Unit::FindMatchingAuraEffectIn: moreNewInfo %u spellid is CRASH SERVER!!.", spellInfo->Id);
                             return moreNewInfo;
+                        }
 
                     return newInfo;
                 }
@@ -15318,12 +15329,16 @@ SpellInfo const* FindMatchingAuraEffectIn(Unit const * me, SpellInfo const* spel
     return nullptr;
 }
 
-SpellInfo const* Unit::GetCastSpellInfo(SpellInfo const* spellInfo) const
+SpellInfo const* Unit::GetCastSpellInfo(SpellInfo const* spellInfo)
 {
-    if (SpellInfo const* newInfo = FindMatchingAuraEffectIn(this, spellInfo, SPELL_AURA_OVERRIDE_ACTIONBAR_SPELLS))
+    m_spellInfoTries = 0;
+
+    if (SpellInfo const* newInfo = FindMatchingAuraEffectIn(spellInfo, SPELL_AURA_OVERRIDE_ACTIONBAR_SPELLS))
         return newInfo;
 
-    if (SpellInfo const* newInfo = FindMatchingAuraEffectIn(this, spellInfo, SPELL_AURA_OVERRIDE_ACTIONBAR_SPELLS_TRIGGERED))
+    m_spellInfoTries = 0;
+
+    if (SpellInfo const* newInfo = FindMatchingAuraEffectIn(spellInfo, SPELL_AURA_OVERRIDE_ACTIONBAR_SPELLS_TRIGGERED))
         return newInfo;
 
     return spellInfo;
