@@ -3661,6 +3661,13 @@ SpellCastResult Spell::prepare(SpellCastTargets const& targets, AuraEffect const
             if (!willCastDirectly || !(_triggeredCastFlags & TRIGGERED_IGNORE_CAST_IN_PROGRESS))
                 if (!m_spellInfo->HasAttribute(SPELL_ATTR12_ALLOW_DURING_SPELL_OVERRIDE))
                     unitCaster->SetCurrentCastSpell(this);
+
+            if (m_spellInfo->HasAttribute(SPELL_ATTR7_RESET_SWING_TIMER_AT_SPELL_START))
+            {
+                unitCaster->resetAttackTimer(WeaponAttackType::BASE_ATTACK);
+                unitCaster->resetAttackTimer(WeaponAttackType::OFF_ATTACK);
+                unitCaster->resetAttackTimer(WeaponAttackType::RANGED_ATTACK);
+            }
         }
         SendSpellStart();
 
