@@ -81,6 +81,7 @@ class TC_GAME_API MovementGenerator
         uint16 Flags;
         uint32 BaseUnitState;
         std::function<void()> callbackFunc;
+        std::queue<std::function<void()>> _callbacks;
 };
 
 template<class T, class D>

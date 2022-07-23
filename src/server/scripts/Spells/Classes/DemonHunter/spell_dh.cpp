@@ -2945,12 +2945,12 @@ class spell_infernal_strike_jump : public SpellScript
         if (!arrivalCast.has_value())
         {
             arrivalCast.emplace();
-            arrivalCast->Callback = [caster]
+            arrivalCast->Callbacks.push([caster]()
             {
                 caster->CastSpell(caster, SPELL_DH_INFERNAL_STRIKE_DAMAGE, true);
                 if (caster->HasAura(207550)) ///< Abyssal Strike
                     caster->CastSpell(caster, SPELL_DH_SIGIL_OF_FLAME_NO_DEST, true);
-            };
+            });
         }
     }
 

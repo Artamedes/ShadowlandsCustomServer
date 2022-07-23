@@ -105,4 +105,10 @@ void GenericMovementGenerator::MovementInform(Unit* owner)
 
     if (callbackFunc)
         callbackFunc();
+
+    while (!_callbacks.empty())
+    {
+        _callbacks.front();
+        _callbacks.pop();
+    }
 }

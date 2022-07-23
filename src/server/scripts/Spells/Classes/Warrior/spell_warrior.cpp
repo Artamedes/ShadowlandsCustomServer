@@ -369,7 +369,7 @@ class spell_warr_heroic_leap_jump : public SpellScript
         if (!arrivalCast.has_value())
         {
             arrivalCast.emplace();
-            arrivalCast->Callback = [caster]
+            arrivalCast->Callbacks.push([caster]()
             {
                 caster->CastSpell(*caster, SPELL_WARRIOR_HEROIC_LEAP_DAMAGE, true);
                 if (caster->HasAura(SPELL_WARRIOR_GLYPH_OF_HEROIC_LEAP))
@@ -379,7 +379,7 @@ class spell_warr_heroic_leap_jump : public SpellScript
 
                 if (caster->HasAura(SPELL_WARRIOR_BOUNDING_STRIDE))
                     caster->CastSpell(caster, SPELL_WARRIOR_BOUNDING_STRIDE_SPEED, true);
-            };
+            });
         }
     }
 

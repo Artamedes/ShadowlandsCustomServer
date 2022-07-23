@@ -92,7 +92,7 @@ struct JumpArrivalCastArgs
 {
     uint32 SpellId = 0;
     ObjectGuid Target;
-    std::function<void()> Callback;
+    std::queue<std::function<void()>> Callbacks;
 };
 
 struct JumpChargeParams

@@ -230,6 +230,12 @@ void PointMovementGenerator<Creature>::MovementInform(Creature* owner)
 
     if (callbackFunc != nullptr)
         callbackFunc();
+
+    while (!_callbacks.empty())
+    {
+        _callbacks.front();
+        _callbacks.pop();
+    }
 }
 
 template PointMovementGenerator<Player>::PointMovementGenerator(uint32, float, float, float, uint32, float, Optional<float>, Unit const*, Movement::SpellEffectExtraData const*);

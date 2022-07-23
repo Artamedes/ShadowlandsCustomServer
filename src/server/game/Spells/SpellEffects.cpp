@@ -893,6 +893,16 @@ void Spell::EffectJumpDest()
     CalculateJumpSpeeds(effectInfo, unitCaster->GetExactDist2d(destTarget), speedXY, speedZ);
     JumpArrivalCastArgs arrivalCast;
     arrivalCast.SpellId = effectInfo->TriggerSpell;
+
+    if (m_spellInfo->HasAttribute(SPELL_ATTR9_FACE_UNIT_TARGET_UPON_COMPLETION_OF_JUMP_CHARGE))
+    {
+        Position endPos = Position(*destTarget);
+        arrivalCast.Callbacks.push([unitCaster, endPos]()
+        {
+            unitCaster->SetFacingTo(unitCaster->GetAbsoluteAngle(endPos));
+        });
+    }
+
     unitCaster->GetMotionMaster()->MoveJump(*destTarget, speedXY, speedZ, EVENT_JUMP, !m_targets.GetObjectTargetGUID().IsEmpty(), &arrivalCast);
 }
 
