@@ -190,7 +190,7 @@ enum UnitFlags2 : uint32
     UNIT_FLAG2_CANNOT_TURN                                      = 0x00008000,   // TITLE Cannot Turn
     UNIT_FLAG2_UNK2                                             = 0x00010000,
     UNIT_FLAG2_PLAY_DEATH_ANIM                                  = 0x00020000,   // Plays special death animation upon death
-    UNIT_FLAG2_ALLOW_CHEAT_SPELLS                               = 0x00040000,   // Allows casting spells with AttributesEx7 & SPELL_ATTR7_IS_CHEAT_SPELL
+    UNIT_FLAG2_ALLOW_CHEAT_SPELLS                               = 0x00040000,   // Allows casting spells with AttributesEx7 & SPELL_ATTR7_DEBUG_SPELL
     UNIT_FLAG2_SUPPRESS_HIGHLIGHT_WHEN_TARGETED_OR_MOUSED_OVER  = 0x00080000,   // TITLE Suppress highlight when targeted or moused over
     UNIT_FLAG2_TREAT_AS_RAID_UNIT_FOR_HELPFUL_SPELLS            = 0x00100000,   // TITLE Treat as Raid Unit For Helpful Spells (Instances ONLY)
     UNIT_FLAG2_LARGE_AOI                                        = 0x00200000,   // TITLE Large (AOI)

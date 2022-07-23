@@ -815,7 +815,7 @@ void AuraEffect::CalculatePeriodic(Unit* caster, bool resetPeriodicTimer /*= tru
                     GetBase()->SetDuration(_duration);
                 }
 
-                if (m_spellInfo->HasAttribute(SPELL_ATTR8_HASTE_AFFECT_DURATION)) // SPELL_ATTR8_MELEE_HASTE_AFFECTS_PERIODIC
+                if (m_spellInfo->HasAttribute(SPELL_ATTR8_MELEE_HASTE_AFFECTS_PERIODIC)) // SPELL_ATTR8_MELEE_HASTE_AFFECTS_PERIODIC
                     _period = int32(_period * ModCastingSpeed);
 
                 if (IsDoublProcced)
@@ -937,7 +937,7 @@ void AuraEffect::ChangeAmount(int32 newAmount, bool mark, bool onStackOrReapply,
         HandleEffect(aurApp, handleMask, true, triggeredBy);
     }
 
-    if (GetSpellInfo()->HasAttribute(SPELL_ATTR8_AURA_SEND_AMOUNT) || Aura::EffectTypeNeedsSendingAmount(GetAuraType()))
+    if (GetSpellInfo()->HasAttribute(SPELL_ATTR8_AURA_POINTS_ON_CLIENT) || Aura::EffectTypeNeedsSendingAmount(GetAuraType()))
         GetBase()->SetNeedClientUpdateForTargets();
 }
 
@@ -1456,7 +1456,8 @@ bool AuraEffect::CanPeriodicTickCrit(Unit const* caster) const
     if (m_spellInfo->HasAttribute(SPELL_ATTR8_PERIODIC_CAN_CRIT))
         return true;
 
-    return caster->HasAuraTypeWithAffectMask(SPELL_AURA_ABILITY_PERIODIC_CRIT, m_spellInfo);
+    return false;
+    //return caster->HasAuraTypeWithAffectMask(SPELL_AURA_ABILITY_PERIODIC_CRIT, m_spellInfo);
 }
 
 /*********************************************************/

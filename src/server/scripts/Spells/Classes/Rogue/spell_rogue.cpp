@@ -349,7 +349,7 @@ public:
             if(Player* player = target->ToPlayer())
                 if (player->GetClass() == CLASS_ROGUE)
                     if (player->HasAura(SPELL_ROGUE_CLOAK_OF_SHADOWS))
-                        if (!spellInfo->IsPositive() && spellInfo->GetSchoolMask() & SPELL_SCHOOL_MASK_MAGIC && !spellInfo->HasAttribute(SPELL_ATTR8_CANT_MISS))
+                        if (!spellInfo->IsPositive() && spellInfo->GetSchoolMask() & SPELL_SCHOOL_MASK_MAGIC && !spellInfo->HasAttribute(SPELL_ATTR8_NO_ATTACK_BLOCK))
                             spellMissInfo = SPELL_MISS_MISS;
     }
 };
