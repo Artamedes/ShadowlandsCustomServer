@@ -3801,56 +3801,6 @@ class aura_rog_relentless_strikes : public AuraScript
     }
 };
 
-// 79096 - Restless Blades
-class aura_rog_restless_blades : public AuraScript
-{
-    PrepareAuraScript(aura_rog_restless_blades);
-
-    bool CheckProc(ProcEventInfo& eventInfo)
-    {
-        if (!eventInfo.GetSpellInfo())
-            return false;
-
-        switch (eventInfo.GetSpellInfo()->Id)
-        {
-            case SPELL_ROGUE_BETWEEN_THE_EYES:
-            case SPELL_ROGUE_SLICE_AND_DICE:
-            case 2098: ///< DIspatch
-                return true;
-            default:
-                return false;
-        }
-    }
-
-    void HandleProc(ProcEventInfo& eventInfo)
-    {
-        if (Unit* caster = GetCaster())
-        {
-            // Reset remaining cooldown of a lot of spells.
-            caster->GetSpellHistory()->ModifyCooldown(SPELL_ROGUE_ADRENALINE_RUSH, (1000 * RogueComboPoints(caster)) * -1);
-            caster->GetSpellHistory()->ModifyCooldown(SPELL_ROGUE_BETWEEN_THE_EYES, (1000 * RogueComboPoints(caster)) * -1);
-            caster->GetSpellHistory()->ModifyCooldown(SPELL_ROGUE_GRAPPLING_HOOK, (1000 * RogueComboPoints(caster)) * -1);
-            caster->GetSpellHistory()->ModifyCooldown(SPELL_ROGUE_SPRINT, (1000 * RogueComboPoints(caster)) * -1);
-            caster->GetSpellHistory()->ModifyCooldown(SPELL_ROGUE_VANISH, (1000 * RogueComboPoints(caster)) * -1);
-            caster->GetSpellHistory()->ModifyCooldown(SPELL_ROGUE_BLADE_FLURRY, (1000 * RogueComboPoints(caster)) * -1);
-            if (caster->HasSpell(SPELL_ROGUE_GHOSTLY_STRIKE))
-                caster->GetSpellHistory()->ModifyCooldown(SPELL_ROGUE_GHOSTLY_STRIKE, (1000 * RogueComboPoints(caster)) * -1);
-            if (caster->HasSpell(SPELL_ROGUE_MARKED_FOR_DEATH))
-                caster->GetSpellHistory()->ModifyCooldown(SPELL_ROGUE_MARKED_FOR_DEATH, (1000 * RogueComboPoints(caster)) * -1);
-            if (caster->HasSpell(SPELL_ROGUE_BLADE_RUSH))
-                caster->GetSpellHistory()->ModifyCooldown(SPELL_ROGUE_BLADE_RUSH, (1000 * RogueComboPoints(caster)) * -1);
-            if (caster->HasSpell(SPELL_ROGUE_KILLING_SPREE))
-                caster->GetSpellHistory()->ModifyCooldown(SPELL_ROGUE_KILLING_SPREE, (1000 * RogueComboPoints(caster)) * -1);
-        }
-    }
-
-    void Register() override
-    {
-        DoCheckProc += AuraCheckProcFn(aura_rog_restless_blades::CheckProc);
-        OnProc += AuraProcFn(aura_rog_restless_blades::HandleProc);
-    }
-};
-
 // 91023 - Find Weakness
 class aura_rog_find_weakness : public AuraScript
 {
@@ -4683,7 +4633,6 @@ void AddSC_rogue_spell_scripts()
     RegisterSpellScript(aura_rog_blind);
     RegisterSpellScript(aura_rog_cheap_tricks);
     RegisterSpellScript(aura_rog_relentless_strikes);
-    RegisterSpellScript(aura_rog_restless_blades);
     RegisterSpellScript(aura_rog_find_weakness);
     RegisterSpellScript(aura_rog_control_is_king_effect);
     RegisterSpellScript(spell_rog_shadowy_duel);  

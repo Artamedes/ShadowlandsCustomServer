@@ -4,34 +4,7 @@
 
 using namespace Rogue;
 
-enum eOutlaw
-{
-    /// Generators
-    SinisterStrike = 193315,
-    PistolShot     = 185763,
-    GhostlyStrike  = 196937,
-    /// Finishers
-    Dispatch       = 2098,
-    BetweenTheEyes = 315341,
-    SliceAndDice   = 315496,
-    /// Conduits
-    CountTheOdds = 341546,
-    SleightOfHand = 341543,
-    /// Procs
-    Opportunity = 195627,
-    TornadoTriggerStack = 364234,
-    TornadoTriggerBlast = 364556,
-    /// Legendaries
-    ConcealedBlunderbuss = 340088,
-    ConcealedBlunderbussProc = 340587,
-    GreenskinWickers = 340085,
-    GreenskinWickersProc = 340573,
-
-    BladeFlurryDmg = 22482,
-    MainGaucheDmg = 86392, ///< Mastery Proc
-};
-
-enum RollTheBones
+enum eRollTheBones
 {
     SPELL_ROGUE_SKULL_AND_CROSSBONES = 199603,
     SPELL_ROGUE_GRAND_MELEE          = 193358,
@@ -102,12 +75,13 @@ class spell_rog_roll_the_bones : public SpellScript
         {
             if (Aura* aura = GetCaster()->GetAura(spellId))
             {
-                currentDuration = aura->GetDuration();
+                if (aura->GetDuration() > currentDuration)
+                    currentDuration = aura->GetDuration();
                 GetCaster()->RemoveAura(aura);
             }
         }
 
-        currentDuration = std::min(5000, currentDuration);
+        currentDuration = std::min(10000, currentDuration);
 
         std::vector<uint32> possibleBuffs(std::begin(RTBSpells), std::end(RTBSpells));
         Trinity::Containers::RandomShuffle(possibleBuffs);
@@ -579,6 +553,88 @@ class spell_greenskins_wickers : public AuraScript
     }
 };
 
+
+// 79096 - Restless Blades
+class aura_rog_restless_blades : public AuraScript
+{
+    PrepareAuraScript(aura_rog_restless_blades);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        if (!eventInfo.GetProcSpell())
+            return false;
+
+        return eventInfo.GetProcSpell()->GetPowerCost(Powers::POWER_COMBO_POINTS);
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (!eventInfo.GetProcSpell())
+            return;
+
+        if (Unit* caster = GetCaster())
+        {
+            auto powerCost = eventInfo.GetProcSpell()->GetPowerCost(Powers::POWER_COMBO_POINTS);
+            auto comboPoints = powerCost ? powerCost->Amount : 0;
+
+            if (!comboPoints)
+                return;
+
+            int32 cdr = (comboPoints * (GetEffect(EFFECT_0)->GetAmount()) * 100);
+
+            // Reset remaining cooldown of a lot of spells.
+            caster->GetSpellHistory()->ReduceCooldowns([caster](SpellHistory::CooldownStorageType::iterator itr) -> bool
+            {
+                SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(itr->first, DIFFICULTY_NONE);
+
+                switch (spellInfo->Id)
+                {
+                    case AdrenalineRush:
+                    case BetweenTheEyes:
+                    case GrapplingHook:
+                    case Sprint:
+                    case Vanish:
+                    case BladeFlurry:
+                    case GhostlyStrike:
+                    case MarkedForDeath:
+                    case BladeRush:
+                    case KillingSpree:
+                    case RollTheBones:
+                        return !itr->second.OnHold;
+                    default:
+                        return false;
+                }
+            }, cdr);
+
+            /// 9.2.5 Hotfix, only affects for 0.5 per combopoint, so divide in half CDR
+            if (caster->HasAura(ePvPTalents::FloatLikeAButterfly))
+            {
+                cdr /= 2;
+
+                caster->GetSpellHistory()->ReduceCooldowns([caster](SpellHistory::CooldownStorageType::iterator itr) -> bool
+                {
+                    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(itr->first, DIFFICULTY_NONE);
+
+                    switch (spellInfo->Id)
+                    {
+                        case Feint:
+                        case Evasion:
+                            return !itr->second.OnHold;
+                        default:
+                            return false;
+                    }
+                }, cdr);
+            }
+        }
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(aura_rog_restless_blades::CheckProc);
+        OnProc += AuraProcFn(aura_rog_restless_blades::HandleProc);
+    }
+};
+
 void AddSC_spell_rogue_outlaw()
 {
     RegisterSpellScript(spell_rog_roll_the_bones);
@@ -594,4 +650,5 @@ void AddSC_spell_rogue_outlaw()
     RegisterSpellScript(spell_tornado_trigger_4pc);
     RegisterSpellScript(spell_pistol_shot);
     RegisterSpellScript(spell_greenskins_wickers);
+    RegisterSpellScript(aura_rog_restless_blades);
 }
