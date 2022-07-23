@@ -55,7 +55,7 @@ PathGenerator::PathGenerator(const WorldObject* owner, bool transformTransportPa
     }
     else
     {
-        uint32 mapId = _sourceObj->GetMapId();
+        uint32 mapId = PhasingHandler::GetTerrainMapId(_sourceObj->GetPhaseShift(), _sourceObj->GetMap()->GetTerrain(), _sourceObj->GetPositionX(), _sourceObj->GetPositionY());
         if (DisableMgr::IsPathfindingEnabled(mapId))
         {
             MMAP::MMapManager* mmap = MMAP::MMapFactory::createOrGetMMapManager();

@@ -42,7 +42,6 @@ namespace MMAP
 
     void MMapManager::InitializeThreadUnsafe(std::unordered_map<uint32, std::vector<uint32>> const& mapData)
     {
-        childMapData = mapData;
         // the caller must pass the list of all mapIds that will be used in the VMapManager2 lifetime
         for (std::pair<uint32 const, std::vector<uint32>> const& mapId : mapData)
         {
@@ -133,84 +132,6 @@ namespace MMAP
     }
 
     bool MMapManager::loadMap(std::string const& basePath, uint32 mapId, int32 x, int32 y)
-    {
-        if (!loadMapImpl(basePath, mapId, x, y))
-            return false;
-
-        bool success = true;
-        auto childMaps = childMapData.find(mapId);
-        if (childMaps != childMapData.end())
-            for (uint32 childMapId : childMaps->second)
-                if (!loadMapImpl(basePath, childMapId, x, y))
-                    success = false;
-
-        return success;
-    }
-
-
-    bool MMapManager::loadGameObject(uint32 displayId, std::string const& basePath)
-    {
-        // we already have this map loaded?
-        if (loadedModels.find(displayId) != loadedModels.end())
-            return true;
-
-        // load and init dtNavMesh - read parameters from file
-        std::string fileName = Trinity::StringFormat(MAP_FILE_NAME_FORMAT, basePath.c_str(), displayId);
-        FILE* file = fopen(fileName.c_str(), "rb");
-        if (!file)
-        {
-            TC_LOG_DEBUG("mmap", "MMAP:loadGameObject: Error: Could not open mmap file %s", fileName.c_str());
-            return false;
-        }
-
-        MmapTileHeader fileHeader;
-        fread(&fileHeader, sizeof(MmapTileHeader), 1, file);
-
-        if (fileHeader.mmapMagic != MMAP_MAGIC)
-        {
-            TC_LOG_ERROR("mmap", "MMAP:loadGameObject: Bad header in mmap %s", fileName.c_str());
-            fclose(file);
-            return false;
-        }
-
-        if (fileHeader.mmapVersion != MMAP_VERSION)
-        {
-            TC_LOG_ERROR("mmap", "MMAP:loadGameObject: %s was built with generator v%i, expected v%i",
-                fileName.c_str(), fileHeader.mmapVersion, MMAP_VERSION);
-            fclose(file);
-            return false;
-        }
-        unsigned char* data = (unsigned char*)dtAlloc(fileHeader.size, DT_ALLOC_PERM);
-        ASSERT(data);
-
-        size_t result = fread(data, fileHeader.size, 1, file);
-        if (!result)
-        {
-            TC_LOG_ERROR("mmap", "MMAP:loadGameObject: Bad header or data in mmap %s", fileName.c_str());
-            fclose(file);
-            return false;
-        }
-
-        fclose(file);
-
-        dtNavMesh* mesh = dtAllocNavMesh();
-        ASSERT(mesh);
-        dtStatus r = mesh->init(data, fileHeader.size, DT_TILE_FREE_DATA);
-        if (dtStatusFailed(r))
-        {
-            dtFreeNavMesh(mesh);
-            TC_LOG_ERROR("mmap", "MMAP:loadGameObject: Failed to initialize dtNavMesh from file %s. Result 0x%x.", fileName.c_str(), r);
-            return false;
-        }
-        TC_LOG_INFO("mmap", "MMAP:loadGameObject: Loaded file %s [size=%u]", fileName.c_str(), fileHeader.size);
-
-        MMapData* mmap_data = new MMapData(mesh);
-        loadedModels.insert(std::pair<uint32, MMapData*>(displayId, mmap_data));
-        return true;
-
-    }
-
-    bool MMapManager::loadMapImpl(std::string const& basePath, uint32 mapId, int32 x, int32 y)
     {
         // make sure the mmap is loaded and ready to load tiles
         if (!loadMapData(basePath, mapId))
@@ -304,22 +225,70 @@ namespace MMAP
         }
     }
 
-    bool MMapManager::loadMapInstance(std::string const& basePath, uint32 mapId, uint32 instanceId)
+
+    bool MMapManager::loadGameObject(uint32 displayId, std::string const& basePath)
     {
-        if (!loadMapInstanceImpl(basePath, mapId, instanceId))
+        // we already have this map loaded?
+        if (loadedModels.find(displayId) != loadedModels.end())
+            return true;
+
+        // load and init dtNavMesh - read parameters from file
+        std::string fileName = Trinity::StringFormat(MAP_FILE_NAME_FORMAT, basePath.c_str(), displayId);
+        FILE* file = fopen(fileName.c_str(), "rb");
+        if (!file)
+        {
+            TC_LOG_DEBUG("mmap", "MMAP:loadGameObject: Error: Could not open mmap file %s", fileName.c_str());
             return false;
+        }
 
-        bool success = true;
-        auto childMaps = childMapData.find(mapId);
-        if (childMaps != childMapData.end())
-            for (uint32 childMapId : childMaps->second)
-                if (!loadMapInstanceImpl(basePath, childMapId, instanceId))
-                    success = false;
+        MmapTileHeader fileHeader;
+        fread(&fileHeader, sizeof(MmapTileHeader), 1, file);
 
-        return success;
+        if (fileHeader.mmapMagic != MMAP_MAGIC)
+        {
+            TC_LOG_ERROR("mmap", "MMAP:loadGameObject: Bad header in mmap %s", fileName.c_str());
+            fclose(file);
+            return false;
+        }
+
+        if (fileHeader.mmapVersion != MMAP_VERSION)
+        {
+            TC_LOG_ERROR("mmap", "MMAP:loadGameObject: %s was built with generator v%i, expected v%i",
+                fileName.c_str(), fileHeader.mmapVersion, MMAP_VERSION);
+            fclose(file);
+            return false;
+        }
+        unsigned char* data = (unsigned char*)dtAlloc(fileHeader.size, DT_ALLOC_PERM);
+        ASSERT(data);
+
+        size_t result = fread(data, fileHeader.size, 1, file);
+        if (!result)
+        {
+            TC_LOG_ERROR("mmap", "MMAP:loadGameObject: Bad header or data in mmap %s", fileName.c_str());
+            fclose(file);
+            return false;
+        }
+
+        fclose(file);
+
+        dtNavMesh* mesh = dtAllocNavMesh();
+        ASSERT(mesh);
+        dtStatus r = mesh->init(data, fileHeader.size, DT_TILE_FREE_DATA);
+        if (dtStatusFailed(r))
+        {
+            dtFreeNavMesh(mesh);
+            TC_LOG_ERROR("mmap", "MMAP:loadGameObject: Failed to initialize dtNavMesh from file %s. Result 0x%x.", fileName.c_str(), r);
+            return false;
+        }
+        TC_LOG_INFO("mmap", "MMAP:loadGameObject: Loaded file %s [size=%u]", fileName.c_str(), fileHeader.size);
+
+        MMapData* mmap_data = new MMapData(mesh);
+        loadedModels.insert(std::pair<uint32, MMapData*>(displayId, mmap_data));
+        return true;
+
     }
 
-    bool MMapManager::loadMapInstanceImpl(std::string const& basePath, uint32 mapId, uint32 instanceId)
+    bool MMapManager::loadMapInstance(std::string const& basePath, uint32 mapId, uint32 instanceId)
     {
         if (!loadMapData(basePath, mapId))
             return false;
@@ -344,16 +313,6 @@ namespace MMAP
     }
 
     bool MMapManager::unloadMap(uint32 mapId, int32 x, int32 y)
-    {
-        auto childMaps = childMapData.find(mapId);
-        if (childMaps != childMapData.end())
-            for (uint32 childMapId : childMaps->second)
-                unloadMapImpl(childMapId, x, y);
-
-        return unloadMapImpl(mapId, x, y);
-    }
-
-    bool MMapManager::unloadMapImpl(uint32 mapId, int32 x, int32 y)
     {
         // check if we have this map loaded
         MMapDataSet::const_iterator itr = GetMMapData(mapId);
@@ -397,16 +356,6 @@ namespace MMAP
     }
 
     bool MMapManager::unloadMap(uint32 mapId)
-    {
-        auto childMaps = childMapData.find(mapId);
-        if (childMaps != childMapData.end())
-            for (uint32 childMapId : childMaps->second)
-                unloadMapImpl(childMapId);
-
-        return unloadMapImpl(mapId);
-    }
-
-    bool MMapManager::unloadMapImpl(uint32 mapId)
     {
         MMapDataSet::iterator itr = loadedMMaps.find(mapId);
         if (itr == loadedMMaps.end() || !itr->second)
