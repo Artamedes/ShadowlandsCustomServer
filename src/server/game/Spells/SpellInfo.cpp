@@ -547,7 +547,7 @@ int32 SpellEffectInfo::CalcBaseValue(WorldObject const* caster, Unit const* targ
         else if (caster && caster->IsUnit())
             level = caster->ToUnit()->GetLevel();
 
-        if (_spellInfo->BaseLevel && !_spellInfo->HasAttribute(SPELL_ATTR11_SCALES_WITH_ITEM_LEVEL) && _spellInfo->HasAttribute(SPELL_ATTR10_USE_SPELL_BASE_LEVEL_FOR_SCALING))
+        if (_spellInfo->BaseLevel && !_spellInfo->HasAttribute(SPELL_ATTR11_SCALES_WITH_CASTING_ITEMS_LEVEL) && _spellInfo->HasAttribute(SPELL_ATTR10_USE_SPELL_BASE_LEVEL_FOR_SCALING))
             level = _spellInfo->BaseLevel;
 
         if (_spellInfo->Scaling.MinScalingLevel && _spellInfo->Scaling.MinScalingLevel > level)
@@ -563,7 +563,7 @@ int32 SpellEffectInfo::CalcBaseValue(WorldObject const* caster, Unit const* targ
                 return 0;
 
             uint32 effectiveItemLevel = itemLevel != -1 ? uint32(itemLevel) : 1u;
-            if (_spellInfo->Scaling.ScalesFromItemLevel || _spellInfo->HasAttribute(SPELL_ATTR11_SCALES_WITH_ITEM_LEVEL))
+            if (_spellInfo->Scaling.ScalesFromItemLevel || _spellInfo->HasAttribute(SPELL_ATTR11_SCALES_WITH_CASTING_ITEMS_LEVEL))
             {
                 if (_spellInfo->Scaling.ScalesFromItemLevel)
                     effectiveItemLevel = _spellInfo->Scaling.ScalesFromItemLevel;
@@ -2028,7 +2028,7 @@ SpellCastResult SpellInfo::CheckShapeshift(uint32 form) const
     if (GetTalentSpellCost(Id) > 0 && HasEffect(SPELL_EFFECT_LEARN_SPELL))
         return SPELL_CAST_OK;*/
 
-    //if (HasAttribute(SPELL_ATTR13_ACTIVATES_REQUIRED_SHAPESHIFT))
+    //if (HasAttribute(SPELL_ATTR13_DO_NOT_ENFORCE_SHAPESHIFT_REQUIREMENTS))
     //    return SPELL_CAST_OK;
 
     uint64 stanceMask = (form ? UI64LIT(1) << (form - 1) : 0);
@@ -3950,7 +3950,7 @@ uint32 SpellInfo::CalcCastTime(Spell* spell /*= nullptr*/) const
     if (spell)
         spell->GetCaster()->ModSpellCastTime(this, castTime, spell);
 
-    if (HasAttribute(SPELL_ATTR0_USES_RANGED_SLOT) && !IsAutoRepeatRangedSpell() && !HasAttribute(SPELL_ATTR9_AIMED_SHOT))
+    if (HasAttribute(SPELL_ATTR0_USES_RANGED_SLOT) && !IsAutoRepeatRangedSpell() && !HasAttribute(SPELL_ATTR9_COOLDOWN_IGNORES_RANGED_WEAPON))
         castTime += 500;
 
     return (castTime > 0) ? uint32(castTime) : 0;

@@ -879,7 +879,7 @@ uint64 Spell::CalculateDelayMomentForDst(float launchDelay) const
             if (speed > 0.0f)
                 return uint64(std::floor((m_targets.GetDist2d() / speed + launchDelay) * 1000.0f));
         }
-        else if (m_spellInfo->HasAttribute(SPELL_ATTR9_SPECIAL_DELAY_CALCULATION))
+        else if (m_spellInfo->HasAttribute(SPELL_ATTR9_MISSILE_SPEED_IS_DELAY_IN_SEC))
             return uint64(std::floor((m_spellInfo->Speed + launchDelay) * 1000.0f));
         else if (m_spellInfo->Speed > 0.0f)
         {
@@ -2491,7 +2491,7 @@ void Spell::AddUnitTarget(Unit* target, uint32 effectMask, bool checkIfValid /*=
             }
         }
 
-        if (m_spellInfo->HasAttribute(SPELL_ATTR9_SPECIAL_DELAY_CALCULATION))
+        if (m_spellInfo->HasAttribute(SPELL_ATTR9_MISSILE_SPEED_IS_DELAY_IN_SEC))
             hitDelay += m_spellInfo->Speed;
         else if (m_spellInfo->Speed > 0.0f)
         {
@@ -2561,7 +2561,7 @@ void Spell::AddGOTarget(GameObject* go, uint32 effectMask)
     if (static_cast<WorldObject*>(m_caster) != go)
     {
         float hitDelay = m_spellInfo->LaunchDelay;
-        if (m_spellInfo->HasAttribute(SPELL_ATTR9_SPECIAL_DELAY_CALCULATION))
+        if (m_spellInfo->HasAttribute(SPELL_ATTR9_MISSILE_SPEED_IS_DELAY_IN_SEC))
             hitDelay += m_spellInfo->Speed;
         else if (m_spellInfo->Speed > 0.0f)
         {
@@ -2641,7 +2641,7 @@ void Spell::AddCorpseTarget(Corpse* corpse, uint32 effectMask)
     if (m_caster != corpse)
     {
         float hitDelay = m_spellInfo->LaunchDelay;
-        if (m_spellInfo->HasAttribute(SPELL_ATTR9_SPECIAL_DELAY_CALCULATION))
+        if (m_spellInfo->HasAttribute(SPELL_ATTR9_MISSILE_SPEED_IS_DELAY_IN_SEC))
             hitDelay += m_spellInfo->Speed;
         else if (m_spellInfo->Speed > 0.0f)
         {
@@ -3620,7 +3620,7 @@ SpellCastResult Spell::prepare(SpellCastTargets const& targets, AuraEffect const
 
     TC_LOG_DEBUG("spells", "Spell::prepare: spell id %u source %u caster %d customCastFlags %u mask %u", m_spellInfo->Id, m_caster->GetEntry(), m_originalCaster ? m_originalCaster->GetEntry() : -1, _triggeredCastFlags, m_targets.GetTargetMask());
 
-    if (m_spellInfo->HasAttribute(SPELL_ATTR12_START_COOLDOWN_ON_CAST_START))
+    if (m_spellInfo->HasAttribute(SPELL_ATTR12_TRIGGER_COOLDOWN_ON_SPELL_START))
         SendSpellCooldown();
 
     //Containers for channeled spells have to be set
@@ -3948,7 +3948,7 @@ void Spell::_cast(bool skipCheck)
     }
 
     // CAST SPELL
-    if (!m_spellInfo->HasAttribute(SPELL_ATTR12_START_COOLDOWN_ON_CAST_START))
+    if (!m_spellInfo->HasAttribute(SPELL_ATTR12_TRIGGER_COOLDOWN_ON_SPELL_START))
         SendSpellCooldown();
 
     if (!m_spellInfo->LaunchDelay)
@@ -5819,7 +5819,7 @@ SpellCastResult Spell::CheckCast(bool strict, int32* param1 /*= nullptr*/, int32
                 if (playerCaster->HasAuraType(SPELL_AURA_DISABLE_CASTING_EXCEPT_ABILITIES)
                     && !m_spellInfo->HasAttribute(SPELL_ATTR0_USES_RANGED_SLOT)
                     && !m_spellInfo->HasEffect(SPELL_EFFECT_ATTACK)
-                    && !m_spellInfo->HasAttribute(SPELL_ATTR12_IGNORE_CASTING_DISABLED)
+                    && !m_spellInfo->HasAttribute(SPELL_ATTR12_ACTIVE_PASSIVE)
                     && !playerCaster->HasAuraTypeWithFamilyFlags(SPELL_AURA_DISABLE_CASTING_EXCEPT_ABILITIES, sChrClassesStore.AssertEntry(playerCaster->GetClass())->SpellClassSet, m_spellInfo->SpellFamilyFlags))
                         return SPELL_FAILED_CANT_DO_THAT_RIGHT_NOW;
 
@@ -7233,7 +7233,7 @@ SpellCastResult Spell::CheckArenaAndRatedBattlegroundCastRules()
 
     // check USABLE attributes
     // USABLE takes precedence over NOT_USABLE
-    if (isRatedBattleground && m_spellInfo->HasAttribute(SPELL_ATTR9_USABLE_IN_RATED_BATTLEGROUNDS))
+    if (isRatedBattleground && m_spellInfo->HasAttribute(SPELL_ATTR9_IGNORE_DEFAULT_RATED_BATTLEGROUND_RESTRICTIONS))
         return SPELL_CAST_OK;
 
     if (isArena && m_spellInfo->HasAttribute(SPELL_ATTR4_IGNORE_DEFAULT_ARENA_RESTRICTIONS))
@@ -7243,7 +7243,7 @@ SpellCastResult Spell::CheckArenaAndRatedBattlegroundCastRules()
     if (m_spellInfo->HasAttribute(SPELL_ATTR4_NOT_IN_ARENA_OR_RATED_BATTLEGROUND))
         return isArena ? SPELL_FAILED_NOT_IN_ARENA : SPELL_FAILED_NOT_IN_RATED_BATTLEGROUND;
 
-    if (isArena && m_spellInfo->HasAttribute(SPELL_ATTR9_NOT_USABLE_IN_ARENA))
+    if (isArena && m_spellInfo->HasAttribute(SPELL_ATTR9_NOT_IN_ARENA))
             return SPELL_FAILED_NOT_IN_ARENA;
 
     // check cooldowns

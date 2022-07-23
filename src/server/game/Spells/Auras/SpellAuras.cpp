@@ -254,7 +254,7 @@ void AuraApplication::BuildUpdatePacket(WorldPackets::Spells::AuraInfo& auraInfo
     if (auraData.SpellID == 325013)
         auraData.ActiveFlags = 215;
 
-    if (!aura->GetSpellInfo()->HasAttribute(SPELL_ATTR11_SCALES_WITH_ITEM_LEVEL))
+    if (!aura->GetSpellInfo()->HasAttribute(SPELL_ATTR11_SCALES_WITH_CASTING_ITEMS_LEVEL))
         auraData.CastLevel = aura->GetCasterLevel();
     else
         auraData.CastLevel = uint16(aura->GetCastItemLevel());

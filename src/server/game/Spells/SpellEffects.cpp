@@ -3947,14 +3947,14 @@ void Spell::EffectCharge()
         {
             //unitTarget->GetContactPoint(m_caster, pos.m_positionX, pos.m_positionY, pos.m_positionZ);
             Position pos = unitTarget->GetFirstCollisionPosition(unitTarget->GetCombatReach(), unitTarget->GetRelativeAngle(m_caster));
-            if (G3D::fuzzyGt(m_spellInfo->Speed, 0.0f) && m_spellInfo->HasAttribute(SPELL_ATTR9_SPECIAL_DELAY_CALCULATION))
+            if (G3D::fuzzyGt(m_spellInfo->Speed, 0.0f) && m_spellInfo->HasAttribute(SPELL_ATTR9_MISSILE_SPEED_IS_DELAY_IN_SEC))
                 speed = pos.GetExactDist(m_caster) / speed;
 
             unitCaster->GetMotionMaster()->MoveCharge(pos.m_positionX, pos.m_positionY, pos.m_positionZ, speed, EVENT_CHARGE, false, unitTarget, spellEffectExtraData ? &*spellEffectExtraData : nullptr);
         }
         else
         {
-            if (G3D::fuzzyGt(m_spellInfo->Speed, 0.0f) && m_spellInfo->HasAttribute(SPELL_ATTR9_SPECIAL_DELAY_CALCULATION))
+            if (G3D::fuzzyGt(m_spellInfo->Speed, 0.0f) && m_spellInfo->HasAttribute(SPELL_ATTR9_MISSILE_SPEED_IS_DELAY_IN_SEC))
             {
                 G3D::Vector3 pos = m_preGeneratedPath->GetActualEndPosition();
                 speed = Position(pos.x, pos.y, pos.z).GetExactDist(m_caster) / speed;
@@ -5162,7 +5162,7 @@ void Spell::EffectCastButtons()
         if (!player->HasSpell(spell_id) || player->GetSpellHistory()->HasCooldown(spell_id))
             continue;
 
-        if (!spellInfo->HasAttribute(SPELL_ATTR9_SUMMON_PLAYER_TOTEM))
+        if (!spellInfo->HasAttribute(SPELL_ATTR9_IGNORE_TOTEM_REQUIREMENTS_FOR_CASTING))
             continue;
 
         CastSpellExtraArgs args;
