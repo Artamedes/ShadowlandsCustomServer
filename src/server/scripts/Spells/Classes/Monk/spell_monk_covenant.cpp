@@ -202,9 +202,57 @@ class spell_monk_bonedust_brew : public AuraScript
     }
 };
 
+// Faeline Stomp
+// Client Cast 327104  (Aura)
+// Server Casts 327264 (DMG)
+// Server Casts 327195 (AT1) (DstLocation) Location: X: -1971.5248 Y: 1282.691 Z: 5271.3545
+// Server Casts 327257 (AT2) (DstLocation) Location: X: -1980.753 Y: 1275.0203 Z: 5271.354
+// Server Casts 345727 (Heal)
+
+/// ID: 327104 Faeline Stomp
+class spell_faeline_stomp : public AuraScript
+{
+    PrepareAuraScript(spell_faeline_stomp);
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+    }
+
+    void Register() override
+    {
+        OnProc += AuraProcFn(spell_faeline_stomp::HandleProc);
+    }
+};
+/// ID: 327104 Faeline Stomp
+class spell_faeline_stomp_spellscript : public SpellScript
+{
+    PrepareSpellScript(spell_faeline_stomp_spellscript);
+
+    void HandleDummy(SpellEffIndex /*eff*/)
+    {
+        if (auto caster = GetCaster())
+        {
+            if (auto dest = GetHitDest())
+            {
+                caster->CastSpell(Position(-1971.5248f, 1282.691f, 5271.3545f), 327195, true);
+
+                //caster->MovePositionToFirstCollision(pos2, 10.0f, caster->GetOrientation());
+
+                caster->CastSpell(Position(-1980.753f, 1275.0203f, 5271.3545f), 327257, true);
+            }
+        }
+    }
+
+    void Register() override
+    {
+        OnEffectLaunch += SpellEffectFn(spell_faeline_stomp_spellscript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
+    }
+};
+
 void AddSC_spell_monk_covenant()
 {
     RegisterSpellScript(spell_grounding_breath);
     RegisterSpellScript(spell_rising_sun_revival);
     RegisterSpellScript(spell_monk_bonedust_brew);
+    RegisterSpellAndAuraScriptPairWithArgs(spell_faeline_stomp, spell_faeline_stomp_spellscript, "spell_faeline_stomp");
 }
