@@ -61,18 +61,19 @@ class spell_black_powder : public SpellScript
     {
         if (auto caster = GetCaster())
         {
-            auto dam = CalculatePct(caster->GetTotalAttackPowerValue(BASE_ATTACK), 8);
             if (auto spell = GetSpell())
             {
-                dam *= spell->GetUsedComboPoints();
-                if (dam)
+                int32 damage = GetHitDamage();
+                damage *= GetSpell()->GetUsedComboPoints();
+                SetHitDamage(damage);
+
+                if (damage)
                 {
-                    SetHitDamage(dam);
                     if (auto hitUnit = GetHitUnit())
                     {
                         if (hitUnit->HasAura(FindWeakness, caster->GetGUID()))
                         {
-                            caster->CastSpell(hitUnit, BlackPowderFindWeaknessDmg, CastSpellExtraArgs(true).AddSpellBP0(CalculatePct(dam, 40)));
+                            caster->CastSpell(hitUnit, BlackPowderFindWeaknessDmg, CastSpellExtraArgs(true).AddSpellBP0(CalculatePct(damage, 40)));
                         }
                     }
                 }
