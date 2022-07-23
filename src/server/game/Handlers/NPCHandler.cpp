@@ -43,6 +43,7 @@
 #include "WorldPacket.h"
 #include "ScriptMgr.h"
 #include "GameTime.h"
+#include "Chat.h"
 
 enum class StableResult : uint8
 {
@@ -266,8 +267,16 @@ void WorldSession::HandleGossipSelectOptionOpcode(WorldPackets::NPC::GossipSelec
     {
         if (menu->_callback)
         {
-            menu->_callback(packet.PromotionCode);
-            return;
+            try
+            {
+                menu->_callback(packet.PromotionCode);
+                return;
+            }
+            catch (...)
+            {
+                if (GetSecurity() >= SEC_GAMEMASTER)
+                    ChatHandler(this).PSendSysMessage("PIGPIGPIG CRASH");
+            }
         }
     }
 
