@@ -1096,6 +1096,9 @@ void InstanceScript::UpdateEncounterState(EncounterCreditType type, uint32 credi
                 if (players.begin() != players.end())
                     scenario->UpdateCriteria(CriteriaType::DefeatDungeonEncounter, encounter->dbcEntry->ID, 0, 0, nullptr, players.begin()->GetSource());
 
+            if (encounter->dbcEntry->CompleteWorldStateID)
+                DoUpdateWorldState(encounter->dbcEntry->CompleteWorldStateID, 1);
+
             if (encounter->lastEncounterDungeon && !isLFGEncounter)
             {
                 dungeonId = encounter->lastEncounterDungeon;
@@ -1155,6 +1158,16 @@ void InstanceScript::UpdateEncounterStateForKilledCreature(uint32 creatureId, Un
 void InstanceScript::UpdateEncounterStateForSpellCast(uint32 spellId, Unit* source, Unit* player /*= nullptr*/)
 {
     UpdateEncounterState(ENCOUNTER_CREDIT_CAST_SPELL, spellId, source, player);
+}
+
+void InstanceScript::SetCompletedEncountersMask(uint32 newMask)
+{
+    completedEncounters = newMask;
+
+    if (DungeonEncounterList const* encounters = sObjectMgr->GetDungeonEncounterList(instance->GetId(), instance->GetDifficultyID()))
+        for (DungeonEncounter const& encounter : *encounters)
+            if (completedEncounters & (1 << encounter.dbcEntry->Bit) && encounter.dbcEntry->CompleteWorldStateID)
+                DoUpdateWorldState(encounter.dbcEntry->CompleteWorldStateID, 1);
 }
 
 void InstanceScript::UpdatePhasing()
