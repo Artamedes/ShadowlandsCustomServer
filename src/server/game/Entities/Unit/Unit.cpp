@@ -1076,7 +1076,7 @@ bool Unit::HasBreakableByDamageCrowdControlAura(Unit* excludeCasterChannel) cons
             if (damagetype != DOT && damage > 0 && !victim->GetOwnerGUID().IsPlayer() && (!spellProto || !spellProto->HasAura(SPELL_AURA_DAMAGE_SHIELD)))
                 victim->ToCreature()->SetLastDamagedTime(GameTime::GetGameTime() + MAX_AGGRO_RESET_TIME);
 
-            if (attacker && (!spellProto || !spellProto->HasAttribute(SPELL_ATTR4_NO_HARMFUL_THREAT)) && damagetype != DOT)
+            if (attacker && (!spellProto || !spellProto->HasAttribute(SPELL_ATTR4_NO_HARMFUL_THREAT)) && (damagetype != DOT || (!spellProto || spellProto->IsChanneled())))
                 victim->GetThreatManager().AddThreat(attacker, float(damage), spellProto);
         }
         else                                                // victim is a player
@@ -3092,7 +3092,7 @@ void Unit::SetCurrentCastSpell(Spell* pSpell)
             if (!pSpell->GetSpellInfo()->HasAttribute(SPELL_ATTR9_ALLOW_CAST_WHILE_CHANNELING) && !pSpell->GetSpellInfo()->HasAttribute(SPELL_ATTR12_ALLOW_DURING_SPELL_OVERRIDE))
             {
                 InterruptSpell(CURRENT_GENERIC_SPELL, false);
-                InterruptSpell(CURRENT_CHANNELED_SPELL);
+                InterruptSpell(CURRENT_CHANNELED_SPELL, true, true, pSpell);
             }
 
             // it also does break autorepeat if not Auto Shot
@@ -3150,8 +3150,15 @@ void Unit::InterruptSpell(CurrentSpellTypes spellType, bool withDelayed, bool wi
             if (GetTypeId() == TYPEID_PLAYER)
                 ToPlayer()->SendAutoRepeatCancel(this);
 
+        bool sendInterrupted = true;
+
+        /// Don't send interrupted for same spell recast
+        if (spellType == CURRENT_CHANNELED_SPELL)
+            if (interruptingSpell && interruptingSpell->GetSpellInfo() == spell->GetSpellInfo())
+                sendInterrupted = false;
+
         if (spell->getState() != SPELL_STATE_FINISHED)
-            spell->cancel();
+            spell->cancel(sendInterrupted);
         else
         {
             m_currentSpells[spellType] = nullptr;
@@ -11981,7 +11988,7 @@ void Unit::SetMeleeAnimKitId(uint16 animKitId)
                 if (auto groupMember = itr->GetSource())
                 {
                     if (groupMember->IsInMap(plrVictim) && groupMember->GetDistance2d(plrVictim) <= 40.0f && groupMember->HasAura(183435))
-                        groupMember->CastSpell(groupMember, 31884, CastSpellExtraArgs(TRIGGERED_FULL_MASK | TRIGGERED_DONT_CREATE_COOLDOWN));
+                        groupMember->CastSpell(groupMember, 31884, CastSpellExtraArgs(TRIGGERED_FULL_MASK_NO_CD));
                 }
             }
         }

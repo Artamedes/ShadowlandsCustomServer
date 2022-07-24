@@ -446,7 +446,7 @@ class TC_GAME_API Spell
 
         SpellCastResult prepare(SpellCastTargets const& targets, AuraEffect const* triggeredByAura = nullptr);
         bool CheckInterrupt();
-        void cancel();
+        void cancel(bool sendInterrupted = true);
         void update(uint32 difftime);
         void cast(bool skipCheck = false);
         void finish(bool ok = true);

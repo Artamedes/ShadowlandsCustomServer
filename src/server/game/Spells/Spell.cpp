@@ -3700,7 +3700,7 @@ bool Spell::CheckInterrupt()
     return false;
 }
 
-void Spell::cancel()
+void Spell::cancel(bool sendInterrupted /*= true*/)
 {
     if (m_spellState == SPELL_STATE_FINISHED)
         return;
@@ -3715,7 +3715,8 @@ void Spell::cancel()
             CancelGlobalCooldown();
             [[fallthrough]];
         case SPELL_STATE_DELAYED:
-            SendInterrupted(0);
+            if (sendInterrupted)
+                SendInterrupted(0);
             SendCastResult(SPELL_FAILED_INTERRUPTED);
             break;
 
@@ -3725,9 +3726,12 @@ void Spell::cancel()
                     if (Unit* unit = m_caster->GetGUID() == targetInfo.TargetGUID ? m_caster->ToUnit() : ObjectAccessor::GetUnit(*m_caster, targetInfo.TargetGUID))
                         unit->RemoveOwnedAura(m_spellInfo->Id, m_originalCasterGUID, 0, AURA_REMOVE_BY_CANCEL);
 
-            SendChannelUpdate(0);
-            SendInterrupted(0);
-            SendCastResult(SPELL_FAILED_INTERRUPTED);
+            if (sendInterrupted)
+            {
+                SendChannelUpdate(0);
+                SendInterrupted(0);
+                SendCastResult(SPELL_FAILED_INTERRUPTED);
+            }
 
             m_appliedMods.clear();
             break;
