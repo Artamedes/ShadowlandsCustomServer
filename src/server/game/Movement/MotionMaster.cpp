@@ -909,6 +909,7 @@ void MotionMaster::MoveJumpWithGravity(Position const& pos, float speedXY, float
         init.SetParabolicVerticalAcceleration(gravity, 0);
         init.SetUncompressed();
         init.SetVelocity(speedXY);
+        init.SetUnlimitedSpeed(true);
         if (hasOrientation)
             init.SetFacing(pos.GetOrientation());
         if (effect)
