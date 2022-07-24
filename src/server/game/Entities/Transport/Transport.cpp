@@ -24,7 +24,6 @@
 #include "GameObjectAI.h"
 #include "GameObjectModel.h"
 #include "Log.h"
-#include "MapManager.h"
 #include "ObjectMgr.h"
 #include "PhasingHandler.h"
 #include "Player.h"

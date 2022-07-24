@@ -67,6 +67,7 @@
 #include "LootItemStorage.h"
 #include "LootMgr.h"
 #include "M2Stores.h"
+#include "Map.h"
 #include "MapManager.h"
 #include "Metric.h"
 #include "MiscPackets.h"
@@ -2532,19 +2533,6 @@ void World::SetInitialWorldSettings()
 
     sCustomInstanceRespawn->LoadFromDB();
     sCustomObjectMgr->LoadFromDB();
-
-    // Preload all cells, if required for the base maps
-    if (sWorld->getBoolConfig(CONFIG_BASEMAP_LOAD_GRIDS))
-    {
-        sMapMgr->DoForAllMaps([](Map* map)
-        {
-            if (!map->Instanceable())
-            {
-                TC_LOG_INFO("server.loading", "Pre-loading base map data for map %u", map->GetId());
-                map->LoadAllCells();
-            }
-        });
-    }
 
     uint32 startupDuration = GetMSTimeDiffToNow(startupBegin);
 
