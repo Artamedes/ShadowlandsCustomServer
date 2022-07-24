@@ -606,7 +606,7 @@ class spell_warl_immolate_aura : public AuraScript
     void OnProc(AuraEffect* aurEff, ProcEventInfo& procInfo)
     {
         procInfo.GetActor()->CastSpell(procInfo.GetActor(), SPELL_WARLOCK_IMMOLATE_ENERGIZE, true);
-        if (procInfo.GetHitMask() & PROC_HIT_CRITICAL && roll_chance_i(aurEff->GetAmount()))
+        if (procInfo.GetHitMask() & PROC_HIT_CRITICAL && roll_chance_i(50))
             procInfo.GetActor()->CastSpell(procInfo.GetActor(), SPELL_WARLOCK_IMMOLATE_ENERGIZE, true);
     }
 
@@ -2519,7 +2519,8 @@ struct at_warl_rain_of_fire : AreaTriggerAI
                 if (caster->IsValidAttackTarget(unit))
                     caster->CastSpell(unit, SPELL_WARLOCK_RAIN_OF_FIRE_DAMAGE, true);
 
-        timeInterval -= 1000;
+        // was 1000
+        timeInterval -= 100;
     }
 };
 
@@ -3888,25 +3889,25 @@ public:
         if (me->IsInEvadeMode() && !owner->IsInCombat())
 			return;
 
-		Unit* target = GetTarget();
-		ObjectGuid newtargetGUID = owner->GetTarget();
-		if ((newtargetGUID.IsEmpty() || newtargetGUID == _targetGUID) && (target && me->IsValidAttackTarget(target)))
-		{
-			CastSpellOnTarget(owner, target);
-			return;
-		}
+        Unit* target = GetTarget();
+        ObjectGuid newtargetGUID = owner->GetTarget();
+        if ((newtargetGUID.IsEmpty() || newtargetGUID == _targetGUID) && (target && me->IsValidAttackTarget(target)))
+        {
+            CastSpellOnTarget(owner, target);
+            return;
+        }
 
-		if (Unit* newTarget = ObjectAccessor::GetUnit(*me, newtargetGUID))
-		{
-			if (target != newTarget && me->IsValidAttackTarget(newTarget) && owner->IsInCombat())
+        if (Unit* newTarget = ObjectAccessor::GetUnit(*me, newtargetGUID))
+        {
+            if (target != newTarget && me->IsValidAttackTarget(newTarget) && owner->IsInCombat())
 
-				target = newTarget;
-		CastSpellOnTarget(owner, target);
-			return;
-	}
+                target = newTarget;
+            CastSpellOnTarget(owner, target);
+            return;
+        }
 
         EnterEvadeMode(EVADE_REASON_NO_HOSTILES);
-	}
+    }
 
     void JustUnsummoned() override
     {
@@ -8079,7 +8080,9 @@ class spell_warl_malefic_rapture : public SpellScript
         {
             caster->RemoveAurasDueToSpell(364322); ///< Calamitous Crescendo
 
-            int32 baseDamage = caster->GetTotalSpellPowerValue(SPELL_SCHOOL_MASK_SHADOW, false) * GetEffectInfo(EFFECT_0).BonusCoefficient;
+            //int32 baseDamage = caster->GetTotalSpellPowerValue(SPELL_SCHOOL_MASK_SHADOW, false) * GetEffectInfo(EFFECT_0).BonusCoefficient;
+
+            int32 baseDamage = 0;
 
             std::list<Unit*> enemies;
             caster->GetAttackableUnitListInRange(enemies, 100.0f);
@@ -8087,21 +8090,33 @@ class spell_warl_malefic_rapture : public SpellScript
             {
                 uint32 extraDmg = 0;
                 uint32 totalAuras = 0;
+                bool hasUA = false;
                 for (auto dot : Warlock::dotAuras)
-                    if (enemy->HasAura(dot, caster->GetGUID()))
+                    if (auto aura = enemy->GetAura(dot, caster->GetGUID()))
                     {
                         // Focused Malignancy Conduit
                         if (dot == Warlock::eAffliction::UnstableAffliction)
-                            if (auto eff = caster->GetAuraEffect(339500, EFFECT_0))
-                                if (eff->ConduitRankEntry)
-                                    extraDmg = CalculatePct(baseDamage, eff->ConduitRankEntry->AuraPointsOverride);
+                            hasUA = true;
+
+                        for (auto eff : aura->GetAuraEffects())
+                            if (eff && eff->GetAuraType() == AuraType::SPELL_AURA_PERIODIC_DAMAGE)
+                            {
+                                extraDmg += eff->GetDamage() * 3;
+                            }
 
                         ++totalAuras;
                     }
 
+                if (hasUA)
+                {
+                    if (auto eff = caster->GetAuraEffect(339500, EFFECT_0))
+                        if (eff->ConduitRankEntry)
+                            extraDmg = CalculatePct(baseDamage, eff->ConduitRankEntry->AuraPointsOverride);
+                }
+
                 if (totalAuras > 0)
                 {
-                    caster->CastSpell(enemy, Dmg, CastSpellExtraArgs(true).AddSpellBP0(baseDamage * totalAuras + extraDmg));
+                    caster->CastSpell(enemy, Dmg, CastSpellExtraArgs(true).AddSpellBP0(baseDamage + extraDmg));
                 }
             }
         }

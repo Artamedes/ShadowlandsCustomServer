@@ -523,11 +523,12 @@ void Spell::EffectSchoolDMG()
             damage = unitTarget->SpellDamageBonusTaken(unitCaster, m_spellInfo, (uint32)damage, SPELL_DIRECT_DAMAGE);
         }
 
-        if (m_spellInfo->Id == 205231 || m_spellInfo->Id == 104318) ///< Darkglare Eye beam - TODO convert to scipt, wildfire imp Fel Firebolt (Basic Attack)
+        bool Demonfire = m_spellInfo->Id == 270481;
+        if (m_spellInfo->Id == 205231 || m_spellInfo->Id == 104318 || Demonfire) ///< Darkglare Eye beam - TODO convert to scipt, wildfire imp Fel Firebolt (Basic Attack)
         {
             if (auto owner = unitCaster->GetOwner())
             {
-                damage = owner->GetTotalSpellPowerValue(SpellSchoolMask::SPELL_SCHOOL_MASK_SHADOW, false) * 0.32f;
+                damage = owner->GetTotalSpellPowerValue(SpellSchoolMask::SPELL_SCHOOL_MASK_SHADOW, false) * (Demonfire ? 0.2f : 0.32f);
                 uint32 bonus = unitCaster->SpellDamageBonusDone(unitTarget, m_spellInfo, (uint32)damage, SPELL_DIRECT_DAMAGE, *effectInfo);
                 damage = bonus + uint32(bonus * variance);
                 damage = unitTarget->SpellDamageBonusTaken(unitCaster, m_spellInfo, (uint32)damage, SPELL_DIRECT_DAMAGE);

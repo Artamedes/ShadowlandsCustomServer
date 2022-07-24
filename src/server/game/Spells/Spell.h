@@ -769,6 +769,7 @@ class TC_GAME_API Spell
             uint64 TimeDelay = 0ULL;
             int32 Damage = 0;
             int32 Healing = 0;
+            float DamagePct = 1.0f;
 
             SpellMissInfo MissCondition = SPELL_MISS_NONE;
             SpellMissInfo ReflectResult = SPELL_MISS_NONE;

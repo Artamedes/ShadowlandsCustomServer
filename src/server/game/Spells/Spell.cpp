@@ -1816,15 +1816,57 @@ void Spell::SelectImplicitChainTargets(SpellEffectInfo const& spellEffectInfo, S
     // Warlock - Havoc / Bane of Havoc
     if (auto l_UnitCaster = m_caster->ToUnit())
     {
-        if (l_UnitCaster->HasSpell(80240) && target->ToUnit() && !target->ToUnit()->HasAura(80240))
-            if (GetSpellInfo()->HasEffect(SPELL_EFFECT_SCHOOL_DAMAGE) && (GetSpellInfo()->HasAttribute(SPELL_ATTR5_LIMIT_N)))
-                if ((GetSpellInfo()->Id == 29722 && !l_UnitCaster->HasAura(196408)) || (GetSpellInfo()->Id == 116858 && !l_UnitCaster->HasAura(233577)) ||
-                    (GetSpellInfo()->Id != 29722 && GetSpellInfo()->Id != 116858))
-                    if (l_UnitCaster->HasAura(137046))
-                        if (l_UnitCaster->Variables.Exist("HAVOC_LIST"))
-                            for (ObjectGuid guid : m_caster->Variables.GetValue<std::list<ObjectGuid>>("HAVOC_LIST"))
-                                if (Unit* havocTarget = ObjectAccessor::GetUnit(*l_UnitCaster, guid))
-                                    AddUnitTarget(havocTarget, effMask, false);
+        auto targetAsUnit = target->ToUnit();
+
+        if (targetAsUnit)
+        {
+            auto ApplyHavocUnitsAsNeed([&]() -> void
+            {
+                static constexpr uint32 Havoc = 80240;
+
+                // Check if caster owns havoc spell.
+                if (!l_UnitCaster->HasSpell(Havoc))
+                    return;
+
+                // Make sure HAVOC_LIST exists
+                if (!l_UnitCaster->Variables.Exist("HAVOC_LIST"))
+                    return;
+
+                // Check if this is a single target spell
+                if (!m_spellInfo->HasEffect(SPELL_EFFECT_SCHOOL_DAMAGE))
+                    return;
+
+                // Only allow warlock spells to tigger havoc
+                if (m_spellInfo->SpellFamilyName != SPELLFAMILY_WARLOCK)
+                    return;
+
+                // Get our havoc list as a copy
+                std::list<ObjectGuid> havocList = m_caster->Variables.GetValue<std::list<ObjectGuid>>("HAVOC_LIST");
+
+                // Iterate our havoc list
+                for (auto targetGUID : havocList)
+                {
+                    // If the havoc target is found. Add to the list
+                    if (Unit* havocTarget = ObjectAccessor::GetUnit(*l_UnitCaster, targetGUID))
+                    {
+                        if (auto havoc = havocTarget->GetAura(Havoc, l_UnitCaster->GetGUID()))
+                        {
+                            AddUnitTarget(havocTarget, effMask, false);
+
+                            auto targetInfo = std::find_if(std::begin(m_UniqueTargetInfo), std::end(m_UniqueTargetInfo), [targetGUID](TargetInfo const& target) { return target.TargetGUID == targetGUID; });
+                            if (targetInfo != std::end(m_UniqueTargetInfo)) // Found in list
+                            {
+                                // Immune effects removed from mask
+                                targetInfo->DamagePct = CalculatePct(1.0f, havoc->GetEffect(EFFECT_0)->GetAmount());
+                                return;
+                            }
+                        }
+                    }
+                }
+            });
+
+            ApplyHavocUnitsAsNeed();
+        }
     }
 
     if (maxTargets > 1)
@@ -2745,7 +2787,9 @@ void Spell::TargetInfo::PreprocessTarget(Spell* spell)
     spell->CallScriptOnHitHandlers();
 
     // scripts can modify damage/healing for current target, save them
-    Damage = spell->m_damage;
+    if (DamagePct != 1.0f)
+        TC_LOG_INFO("server.loading", "DamagePct: %f", DamagePct);
+    Damage = spell->m_damage * DamagePct;
     Healing = spell->m_healing;
 }
 
