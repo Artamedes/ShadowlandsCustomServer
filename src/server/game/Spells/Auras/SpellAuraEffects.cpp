@@ -1451,8 +1451,6 @@ void AuraEffect::HandleShapeshiftBoosts(Unit* target, bool apply) const
 
 bool AuraEffect::CanPeriodicTickCrit(Unit const* caster) const
 {
-    ASSERT(caster);
-
     if (m_spellInfo->HasAttribute(SPELL_ATTR8_PERIODIC_CAN_CRIT))
         return true;
 
