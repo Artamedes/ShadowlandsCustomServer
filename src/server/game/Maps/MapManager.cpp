@@ -151,7 +151,7 @@ Map* MapManager::CreateMap(uint32 id, Player* player, uint32 loginInstanceId /*=
         if (!newInstanceId)
             return nullptr;
 
-        map = FindMap(mapId, newInstanceId);
+        map = FindMap_i(mapId, newInstanceId);
         if (!map)
         {
             if (Battleground* bg = player->GetBattleground())
