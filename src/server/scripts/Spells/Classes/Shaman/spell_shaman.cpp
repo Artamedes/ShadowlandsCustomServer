@@ -3775,8 +3775,17 @@ public:
             }
         }
 
+        void HandleCritChance(Unit const* victim, float& chance)
+        {
+            if (victim->GetAura(SPELL_SHAMAN_FLAME_SHOCK_ELEM, GetCaster()->GetGUID()))
+            {
+                chance = 100.0f;
+            }
+        }
+
         void Register() override
         {
+            OnCalcCritChance += SpellOnCalcCritChanceFn(spell_sha_lava_burst_SpellScript::HandleCritChance);
             OnPrepare += SpellOnPrepareFn(spell_sha_lava_burst_SpellScript::HandlePrepare);
             OnEffectHitTarget += SpellEffectFn(spell_sha_lava_burst_SpellScript::HandleScript, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
             AfterCast += SpellCastFn(spell_sha_lava_burst_SpellScript::HandleAfterCast);
