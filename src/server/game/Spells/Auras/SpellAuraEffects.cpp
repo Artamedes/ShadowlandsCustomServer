@@ -6341,10 +6341,40 @@ void AuraEffect::HandlePlayScene(AuraApplication const* aurApp, uint8 mode, bool
 
 void AuraEffect::HandleCreateAreaTrigger(AuraApplication const* aurApp, uint8 mode, bool apply) const
 {
-    if (!(mode & AURA_EFFECT_HANDLE_REAL))
+    if (!(mode & AURA_EFFECT_HANDLE_REAL_OR_REAPPLY_MASK))
         return;
 
     Unit* target = aurApp->GetTarget();
+
+    // Hack for starfall, TODO move to spellscript
+    if (m_spellInfo->Id == 191034)
+    {
+        if (apply)
+        {
+            if ((mode & AURA_EFFECT_HANDLE_REAL))
+                AreaTrigger::CreateAreaTrigger(GetMiscValue(), GetCaster(), target, GetSpellInfo(), *target, GetBase()->GetDuration(), GetBase()->GetSpellVisual(), ObjectGuid::Empty, this);
+            else
+            {
+                if (auto at = target->GetAreaTrigger(m_spellInfo->Id))
+                {
+                    at->SetDuration(GetBase()->GetDuration());
+                }
+                else
+                {
+                    AreaTrigger::CreateAreaTrigger(GetMiscValue(), GetCaster(), target, GetSpellInfo(), *target, GetBase()->GetDuration(), GetBase()->GetSpellVisual(), ObjectGuid::Empty, this);
+                }
+            }
+        }
+        else
+        {
+            if (Unit* caster = GetCaster())
+                caster->RemoveAreaTrigger(this);
+        }
+        return;
+    }
+
+    if (!(mode & AURA_EFFECT_HANDLE_REAL))
+        return;
 
     if (apply)
     {
