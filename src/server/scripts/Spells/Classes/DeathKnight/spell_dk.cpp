@@ -3279,7 +3279,7 @@ struct at_dk_death_and_decay : AreaTriggerAI
 {
 	at_dk_death_and_decay(AreaTrigger* areatrigger) : AreaTriggerAI(areatrigger)
 	{
-		at->SetPeriodicProcTimer(1000);
+		at->SetPeriodicProcTimer(100);
 	}
 
 	void OnUnitEnter(Unit* unit) override
@@ -4525,7 +4525,7 @@ class spell_dk_frostwyrm_fury : public SpellScript
             destx = caster->GetPositionX() + 10 * std::cos(angle);
             desty = caster->GetPositionY() + 10 * std::sin(angle);
             Position summonPos = Position(destx, desty, caster->GetPositionZ() + 8, caster->GetOrientation());
-            TempSummon* summon = caster->SummonCreature(117591, summonPos, TEMPSUMMON_TIMED_DESPAWN, 5s);
+            TempSummon* summon = caster->SummonCreature(117591, summonPos, TEMPSUMMON_TIMED_DESPAWN, 1900ms);
             if (summon)
             {
                 // Avoid any interaction with the Wyrm.
