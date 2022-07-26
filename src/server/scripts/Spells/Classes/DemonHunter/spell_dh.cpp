@@ -1341,10 +1341,6 @@ class spell_dh_blade_dance : public SpellScript
                 AddPct(dmg, aurEff->GetAmount());
 
         SetHitDamage(dmg);
-
-        // Trail of ruin
-        if (caster->HasAura(SPELL_DH_TRAIL_OF_RUIN) && GetSpellInfo()->Id == SPELL_DH_BLADE_DANCE_LAST_HIT)
-            caster->CastSpell(target, SPELL_DH_TRAIL_OF_RUIN_DAMAGE, true);
     }
 
     void Register() override
@@ -1680,10 +1676,6 @@ public:
                 return;
 
             caster->CastSpell(target, SPELL_DH_ANNIHILATION_MAINHAIND, true);
-
-            // Trail of ruin
-            if (caster->HasAura(SPELL_DH_TRAIL_OF_RUIN))
-                caster->CastSpell(target, SPELL_DH_TRAIL_OF_RUIN_DAMAGE, true);
         }
 
         void PreventOffhandEffect(SpellEffIndex /*effIndex*/)
@@ -3352,7 +3344,17 @@ class spell_talent_dh_trail_of_ruin_aura : public AuraScript
 
     bool OnCheckProc(ProcEventInfo& eventInfo)
     {
-        return false;
+        if (!eventInfo.GetSpellInfo())
+            return false;
+
+        switch (eventInfo.GetSpellInfo()->Id)
+        {
+            case SPELL_DH_BLADE_DANCE_LAST_HIT:
+            case 210155: ///< Death Sweep last hit
+                return true;
+            default:
+                return false;
+        }
     }
 
     void Register() override
