@@ -11,6 +11,8 @@
 #include "ObjectMgr.h"
 #include "MoveSpline.h"
 #include "MoveSplineInit.h"
+#include "CovenantMgr.h"
+#include "CovenantPackets.h"
 
 void MagicStoneMgr::LoadFromDB()
 {
@@ -202,6 +204,24 @@ class MagicStone : public ItemScript
                         }
 
                         player->SetHomebind(WorldLocation(tele->mapId, tele->position_x, tele->position_y, tele->position_z, tele->orientation), 6719);
+                        break;
+                    }
+                    case ActionTypes::OpenForge:
+                    {
+                        CloseGossipMenuFor(player);
+                        if (auto covenant = player->GetCovenant())
+                            if (covenant->GetCovenantID() != CovenantID::None)
+                            {
+                                auto guid = ObjectGuid::Create<HighGuid::GameObject>(player->GetMap()->GetId(), 375677, 9999999999);
+                                player->SendDirectMessage(WorldPackets::Covenant::OpenItemForge(guid).Write());
+                            }
+                        break;
+                    }
+                    case ActionTypes::SetCovenant:
+                    {
+                        CloseGossipMenuFor(player);
+                        l_ShouldClose = false;
+                        player->SendPlayerChoice(player->GetGUID(), 644);
                         break;
                     }
                 }

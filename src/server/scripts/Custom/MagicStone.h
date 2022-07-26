@@ -20,6 +20,8 @@ enum class ActionTypes
     CloseMenu = 4,
     MonsterCredit = 5,
     SetHomebind = 6,
+    OpenForge = 7,
+    SetCovenant = 8,
 };
 
 struct MagicStoneAction
