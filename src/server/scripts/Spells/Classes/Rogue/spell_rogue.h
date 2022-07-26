@@ -33,6 +33,12 @@ namespace Rogue
     enum eAssassination
     {
         Vendetta = 79140,
+        Envenom = 32645,
+        Mutilate = 1329,
+        MutilateDmg = 5374,
+
+        Garrote = 703,
+        InternalBleedingDot = 154953,
     };
 
     enum eOutlaw

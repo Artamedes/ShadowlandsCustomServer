@@ -2,16 +2,6 @@
 
 using namespace Rogue;
 
-enum eAssassination
-{
-    Envenom = 32645,
-    Mutilate = 1329,
-
-    Garrote = 703,
-    InternalBleedingDot = 154953,
-};
-
-
 enum PoisonBomb
 {
     PoisonBombAura = 255544,
@@ -98,7 +88,7 @@ class spell_doomblade : public AuraScript
 
     bool CheckProc(ProcEventInfo& eventInfo)
     {
-        return eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == Mutilate && eventInfo.GetDamageInfo() && eventInfo.GetDamageInfo()->GetDamage();
+        return eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == MutilateDmg && eventInfo.GetDamageInfo() && eventInfo.GetDamageInfo()->GetDamage();
     }
 
     void HandleProc(ProcEventInfo& eventInfo)
