@@ -1323,6 +1323,7 @@ public:
 
     bool OnGossipSelect(Player* player, uint32 menuId, uint32 gossipListId) override
     {
+        player->SetEmoteState(Emote::EMOTE_STATE_SPELL_CHANNEL_OMNI);
         player->CastSpell(me, 313352); // activating
         CloseGossipMenuFor(player);
         return true;
@@ -1357,6 +1358,18 @@ class spell_activating_313352 : public SpellScript
 {
     PrepareSpellScript(spell_activating_313352);
 
+    void HandleBeforeCast()
+    {
+        if (auto caster = GetCaster())
+            caster->SetEmoteState(Emote::EMOTE_STATE_SPELL_CHANNEL_OMNI);
+    }
+
+    void HandleAfterCast()
+    {
+        if (auto caster = GetCaster())
+            caster->SetEmoteState(Emote::EMOTE_ONESHOT_NONE);
+    }
+
     void DoEffect(SpellEffIndex /*eff*/)
     {
         if (auto caster = GetCaster())
@@ -1369,18 +1382,22 @@ class spell_activating_313352 : public SpellScript
 
     void Register() override
     {
+        BeforeCast += SpellCastFn(spell_activating_313352::HandleBeforeCast);
+        AfterCast += SpellCastFn(spell_activating_313352::HandleAfterCast);
         OnEffectHitTarget += SpellEffectFn(spell_activating_313352::DoEffect, EFFECT_0, SPELL_EFFECT_SCRIPT_EFFECT);
     }
 };
 
 // make spell script for nyalotha incursion to periodically summon mobs
 // spell_nyalotha_incursion
+// 313445
 class spell_nyalotha_incursion : public AuraScript
 {
     PrepareAuraScript(spell_nyalotha_incursion);
 
     bool spawnedBoss = false;
 
+    // Move to SPELL_AURA_PERIODIC_DUMMY on EFFECT_3
     void HandleUpdate(uint32 diff)
     {
         if (Unit* caster = GetCaster())
