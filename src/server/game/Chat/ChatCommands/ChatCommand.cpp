@@ -144,6 +144,9 @@ static void LogCommandUsage(WorldSession const& session, uint32 permission, std:
         return;
 
     Player* player = session.GetPlayer();
+    // player can null here!
+    if (!player)
+        return;
     ObjectGuid targetGuid = player->GetTarget();
     uint32 areaId = player->GetAreaId();
     std::string areaName = "Unknown";

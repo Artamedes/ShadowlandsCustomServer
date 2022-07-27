@@ -814,6 +814,17 @@ void Map::Update(uint32 t_diff)
     TC_METRIC_VALUE("map_gameobjects", uint64(GetObjectsStore().Size<GameObject>()),
         TC_METRIC_TAG("map_id", std::to_string(GetId())),
         TC_METRIC_TAG("map_instanceid", std::to_string(GetInstanceId())));
+
+    LastMapDiffTime = t_diff;
+    CurrMapDiffAverage += t_diff;
+    ++TicksDone;
+
+    if (TicksDone >= 20)
+    {
+        MapDiffAverage = CurrMapDiffAverage / TicksDone;
+        CurrMapDiffAverage = 0;
+        TicksDone = 0;
+    }
 }
 
 struct ResetNotifier

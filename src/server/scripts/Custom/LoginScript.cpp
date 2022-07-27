@@ -7,6 +7,7 @@
 #include "Chat.h"
 #include "GitRevision.h"
 #include "World.h"
+#include "UpdateTime.h"
 
 class LoginScript : public PlayerScript
 {
@@ -369,9 +370,10 @@ class LoginScript : public PlayerScript
                     p_Player->CompletedAchievement(achievEntry);
             }
 
-            ChatHandler(p_Player).PSendSysMessage("|cff62CBF5Shadowlands v.%s-%s", GitRevision::GetCommitCount(), GitRevision::GetHash());
+            ChatHandler(p_Player).PSendSysMessage("|cff62CBF5Shadowlands v.%s-%s (%s branch) (%s)", GitRevision::GetCommitCount(), GitRevision::GetHash(), GitRevision::GetBranch(), GitRevision::GetPlatformStr());
             ChatHandler(p_Player).PSendSysMessage("|cff62CBF5Last update: %s", GitRevision::GetDate());
             ChatHandler(p_Player).PSendSysMessage("|cff62CBF5Uptime: %s", secsToTimeString(GameTime::GetUptime()).c_str());
+            ChatHandler(p_Player).PSendSysMessage("|cff62CBF5World Diff: %ums Map Diff: %ums Average: %ums", sWorldUpdateTime.GetLastUpdateTime(), p_Player->GetMap()->LastMapDiffTime, p_Player->GetMap()->MapDiffAverage);
 
             // Add chisel
             if (!p_Player->HasItemCount(699998, 1))

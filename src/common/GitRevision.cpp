@@ -126,5 +126,10 @@ char const* GitRevision::GetCommitCount()
 
 char const* GitRevision::GetPlatformStr()
 {
-    return " (" TRINITY_PLATFORM_STR ", " _BUILD_DIRECTIVE ", " TRINITY_LINKAGE_TYPE_STR ")";
+    return TRINITY_PLATFORM_STR ", " _BUILD_DIRECTIVE;
+}
+
+char const* GitRevision::GetPlatformStrPig()
+{
+    return TRINITY_PLATFORM_STR;
 }

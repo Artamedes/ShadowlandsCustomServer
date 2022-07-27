@@ -1899,6 +1899,7 @@ public:
             { "commentator",      HandleCommentatorCommand,    rbac::RBAC_PERM_COMMAND_GM, Console::No },
             { "giveloot",         HandleGiveLootCommand,       rbac::RBAC_PERM_COMMAND_RELOAD_ALL_ITEM, Console::No },
             { "spellformulas",    HandleModifySpellFormulas,   rbac::RBAC_PERM_COMMAND_RELOAD_ALL_ITEM, Console::No },
+            { "logout",           HandleLogoutCommand,   rbac::RBAC_PERM_COMMAND_RELOAD_ALL_ITEM, Console::No },
 
 #ifdef WIN32
             { "gpscopy", HandleGPSCopyCommand,  rbac::RBAC_PERM_COMMAND_RELOAD_ALL_ITEM, Console::No },
@@ -1906,6 +1907,12 @@ public:
 
         };
         return commandTable;
+    }
+
+    static bool HandleLogoutCommand(ChatHandler* handler)
+    {
+        handler->GetSession()->LogoutPlayer(true);
+        return true;
     }
 
     static bool HandleModifySpellFormulas(ChatHandler* handler, Optional<uint32> SpellId)

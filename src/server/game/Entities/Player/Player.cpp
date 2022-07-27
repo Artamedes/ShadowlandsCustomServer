@@ -467,6 +467,7 @@ bool Player::Create(ObjectGuid::LowType guidlow, WorldPackets::Character::Charac
 
     Relocate(position.Loc);
 
+    // TODO: Move to map thread
     SetMap(sMapMgr->CreateMap(position.Loc.GetMapId(), this));
 
     if (position.TransportGuid)

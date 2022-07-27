@@ -175,6 +175,10 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
 
         void VisitNearbyCellsOf(WorldObject* obj, TypeContainerVisitor<Trinity::ObjectUpdater, GridTypeMapContainer> &gridVisitor, TypeContainerVisitor<Trinity::ObjectUpdater, WorldTypeMapContainer> &worldVisitor);
         virtual void Update(uint32);
+        uint32 LastMapDiffTime = 0;
+        uint32 CurrMapDiffAverage = 0;
+        uint32 TicksDone = 0;
+        uint32 MapDiffAverage = 0;
 
         float GetVisibilityRange() const { return m_VisibleDistance; }
         //function for setting up visibility distance for maps on per-type/per-Id basis
