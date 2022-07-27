@@ -2742,23 +2742,23 @@ bool Research::operator==(Research const& right) const
 
 void MawPower::WriteCreate(ByteBuffer& data, Player const* owner, Player const* receiver) const
 {
-    data << int32(Field_0);
-    data << int32(Field_4);
-    data << int32(Field_8);
+    data << int32(SpellID);
+    data << int32(MawPowerID);
+    data << int32(Amount);
 }
 
 void MawPower::WriteUpdate(ByteBuffer& data, bool ignoreChangesMask, Player const* owner, Player const* receiver) const
 {
-    data << int32(Field_0);
-    data << int32(Field_4);
-    data << int32(Field_8);
+    data << int32(SpellID);
+    data << int32(MawPowerID);
+    data << int32(Amount);
 }
 
 bool MawPower::operator==(MawPower const& right) const
 {
-    return Field_0 == right.Field_0
-        && Field_4 == right.Field_4
-        && Field_8 == right.Field_8;
+    return SpellID == right.SpellID
+        && MawPowerID == right.MawPowerID
+        && Amount == right.Amount;
 }
 
 void MultiFloorExplore::WriteCreate(ByteBuffer& data, Player const* owner, Player const* receiver) const

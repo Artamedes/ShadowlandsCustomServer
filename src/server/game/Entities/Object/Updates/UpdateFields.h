@@ -593,9 +593,9 @@ struct Research : public IsUpdateFieldStructureTag
 
 struct MawPower : public IsUpdateFieldStructureTag
 {
-    int32 Field_0;
-    int32 Field_4;
-    int32 Field_8;
+    int32 SpellID;
+    int32 MawPowerID;
+    int32 Amount;
 
     void WriteCreate(ByteBuffer& data, Player const* owner, Player const* receiver) const;
     void WriteUpdate(ByteBuffer& data, bool ignoreChangesMask, Player const* owner, Player const* receiver) const;
