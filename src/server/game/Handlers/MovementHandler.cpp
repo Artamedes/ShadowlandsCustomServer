@@ -184,7 +184,7 @@ void WorldSession::HandleMoveWorldportAck()
                 garrison->SendRemoteInfo();
         }
 
-        if (oldMap->IsDungeon() && !newMap->IsDungeon() && !player->HasAura(SPELL_ENLISTED) && player->HasPlayerFlag(PLAYER_FLAGS_WAR_MODE_DESIRED))
+        if (!newMap->IsDungeon() && !player->HasAura(SPELL_ENLISTED) && player->HasPlayerFlag(PLAYER_FLAGS_WAR_MODE_DESIRED))
             player->CastSpell(player, SPELL_ENLISTED, true);
 
         // flight fast teleport case
