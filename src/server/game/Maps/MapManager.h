@@ -49,7 +49,7 @@ class TC_GAME_API MapManager
 
         static MapManager* instance();
 
-        Map* CreateMap(uint32 mapId, Player* player, uint32 loginInstanceId = 0);
+        Map* CreateMap(uint32 mapId, Player* player, uint32 loginInstanceId = 0, bool createChallenge = false);
         Map* FindMap(uint32 mapId, uint32 instanceId) const;
 
         void Initialize();

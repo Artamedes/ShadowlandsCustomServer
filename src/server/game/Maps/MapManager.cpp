@@ -104,7 +104,7 @@ InstanceMap* MapManager::CreateInstance(uint32 mapId, uint32 instanceId, Instanc
 
     bool load_data = save != nullptr;
     map->CreateInstanceData(load_data);
-    if (InstanceScenario* instanceScenario = sScenarioMgr->CreateInstanceScenario(map, team))
+    if (InstanceScenario* instanceScenario = sScenarioMgr->CreateInstanceScenario(map, team, nullptr))
         map->SetInstanceScenario(instanceScenario);
 
     if (sWorld->getBoolConfig(CONFIG_INSTANCEMAP_LOAD_GRIDS))
@@ -131,7 +131,7 @@ GarrisonMap* MapManager::CreateGarrison(uint32 mapId, uint32 instanceId, Player*
     return map;
 }
 
-Map* MapManager::CreateMap(uint32 id, Player* player, uint32 loginInstanceId /*= 0*/, bool createChallenge /*= false*/)
+Map* MapManager::CreateMap(uint32 mapId, Player* player, uint32 loginInstanceId /*= 0*/, bool createChallenge /*= false*/)
 {
     if (!player)
         return nullptr;
@@ -182,6 +182,10 @@ Map* MapManager::CreateMap(uint32 id, Player* player, uint32 loginInstanceId /*=
                 map = FindMap_i(mapId, loginInstanceId);
                 if (!map && pSave && pSave->GetInstanceId() == loginInstanceId)
                     map = CreateInstance(mapId, loginInstanceId, pSave, pSave->GetDifficultyID(), player->GetTeamId());
+
+                // add this here to make sure it's in the map list
+                i_maps[{ map->GetId(), map->GetInstanceId() }] = map;
+
                 return map;
             }
 
@@ -199,7 +203,7 @@ Map* MapManager::CreateMap(uint32 id, Player* player, uint32 loginInstanceId /*=
                 }
             }
         }
-        if (pSave)
+        if (pSave && !createChallenge)
         {
             // solo/perm/group
             newInstanceId = pSave->GetInstanceId();
@@ -215,6 +219,26 @@ Map* MapManager::CreateMap(uint32 id, Player* player, uint32 loginInstanceId /*=
             // if no instanceId via group members or instance saves is found
             // the instance will be created for the first time
             newInstanceId = GenerateInstanceId();
+
+            Group* group = player->GetGroup();
+            if (group)
+            {
+                if (group->isLFGGroup() && group->isRaidGroup())
+                    diff = group->GetRaidDifficultyID();
+                else
+                    diff = group->GetDifficultyID(entry);
+
+                if (createChallenge)
+                    group->UnbindInstance(mapId, DIFFICULTY_MYTHIC_KEYSTONE);
+            }
+
+            if (createChallenge)
+            {
+                diff = DIFFICULTY_MYTHIC_KEYSTONE;
+                player->UnbindInstance(mapId, diff);
+            }
+            else
+                sDB2Manager.GetDownscaledMapDifficultyData(mapId, diff); // try to downscale because if not creating challenge, dont set as keystone
 
             //Seems it is now possible, but I do not know if it should be allowed
             //ASSERT(!FindInstanceMap(NewInstanceId));
@@ -233,6 +257,7 @@ Map* MapManager::CreateMap(uint32 id, Player* player, uint32 loginInstanceId /*=
     else
     {
         newInstanceId = 0;
+        // When we need to implement map phasing, we would do it here.
         if (entry->IsSplitByFaction())
             newInstanceId = player->GetTeamId();
 
@@ -247,7 +272,7 @@ Map* MapManager::CreateMap(uint32 id, Player* player, uint32 loginInstanceId /*=
     return map;
 }
 
-Map* MapManager::FindMap(uint32 mapid, uint32 instanceId) const
+Map* MapManager::FindMap(uint32 mapId, uint32 instanceId) const
 {
     std::shared_lock<std::shared_mutex> lock(_mapsLock);
     return FindMap_i(mapId, instanceId);

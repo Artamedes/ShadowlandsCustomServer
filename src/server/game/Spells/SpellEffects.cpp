@@ -6181,40 +6181,35 @@ void Spell::EffectCraftRuneforgeLegendary()
     packet.PlayerGUID = playerCaster->GetGUID();
     packet.Before.Initialize(targetItem);
 
+    /// Custom - Don't import
     switch (targetItem->GetEntry())
     {
         case 710050:
             targetItem->SetEntry(710056);
-            targetItem->AddBonuses(30000);
             break;
         case 710051:
             targetItem->SetEntry(710057);
-            targetItem->AddBonuses(30000);
             break;
         case 710052:
             targetItem->SetEntry(710058);
-            targetItem->AddBonuses(30000);
             break;
         case 710053:
             targetItem->SetEntry(710059);
-            targetItem->AddBonuses(30000);
             break;
         case 710054:
             targetItem->SetEntry(710060);
-            targetItem->AddBonuses(30000);
             break;
         case 710055:
             targetItem->SetEntry(710061);
-            targetItem->AddBonuses(30000);
             break;
     }
 
     /// Add bonuses
     targetItem->AddBonuses(BonusId1);
     targetItem->AddBonuses(BonusId2);
-    targetItem->AddBonuses(29980); ///< Base upgrade so we can upgrade by 20 each time.
+    targetItem->AddBonuses(29980); ///< Custom ///< Base upgrade so we can upgrade by 20 each time.
     targetItem->AddBonuses(runeForge->ItemBonusListID);
-    targetItem->AddBonuses(30000);
+    targetItem->AddBonuses(30000); ///< Custom
 
     packet.After.Initialize(targetItem);
     playerCaster->SendDirectMessage(packet.Write());
@@ -6228,7 +6223,7 @@ void Spell::EffectCraftRuneforgeLegendary()
 
     playerCaster->DestroyItemCount(Missive1, 1, true);
     playerCaster->DestroyItemCount(Missive2, 1, true);
-    playerCaster->ModifyCurrency(1813, -2000);
+    playerCaster->ModifyCurrency(1813, -2000); ///< Custom 
 }
 
 void Spell::EffectLearnSoulbindConduit()

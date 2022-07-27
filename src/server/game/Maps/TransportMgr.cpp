@@ -417,7 +417,7 @@ MapTransport* TransportMgr::CreateTransport(uint32 entry, ObjectGuid::LowType gu
             return NULL;
         }
     }
-    trans->SetMap(map ? map : sMapMgr->CreateMap(mapId, NULL));
+    trans->SetMap(map);
 
     if (!trans->CreateMapTransport(guidLow, entry, mapId, x, y, z, o, 255))
     {

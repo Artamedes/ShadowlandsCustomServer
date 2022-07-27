@@ -1167,9 +1167,9 @@ void MapTransport::DelayedTeleportTransport()
         return;
 
     _delayedTeleport = false;
-    Map* newMap = sMapMgr->CreateBaseMap(_nextFrame->Node->ContinentID);
-    GetMap()->RemoveFromMap<MapTransport>(this, false);
-    SetMap(newMap);
+    //Map* newMap = sMapMgr->CreateBaseMap(_nextFrame->Node->ContinentID);
+    //GetMap()->RemoveFromMap<MapTransport>(this, false);
+    //SetMap(newMap);
 
     float x = _nextFrame->Node->Loc.X,
           y = _nextFrame->Node->Loc.Y,

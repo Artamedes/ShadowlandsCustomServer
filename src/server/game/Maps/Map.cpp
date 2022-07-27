@@ -3065,10 +3065,11 @@ void InstanceMap::InitVisibilityDistance()
 */
 Map::EnterState InstanceMap::CannotEnter(Player* player)
 {
+    /// This can happen for M+
     if (player->GetMapRef().getTarget() == this)
     {
         TC_LOG_ERROR("maps", "InstanceMap::CannotEnter - player %s %s already in map %d, %d, %d!", player->GetName().c_str(), player->GetGUID().ToString().c_str(), GetId(), GetInstanceId(), GetDifficultyID());
-        ABORT();
+//        ABORT();
         return CANNOT_ENTER_ALREADY_IN_MAP;
     }
 
@@ -3113,7 +3114,7 @@ bool InstanceMap::AddPlayerToMap(Player* player, bool initPlayer /*= true*/)
     if (!mapSave)
     {
         TC_LOG_DEBUG("maps", "InstanceMap::Add: creating instance save for map %d spawnmode %d with instance id %d", GetId(), GetDifficultyID(), GetInstanceId());
-        mapSave = sInstanceSaveMgr->AddInstanceSave(GetId(), GetInstanceId(), GetDifficultyID(), 0, 0, true);
+        mapSave = sInstanceSaveMgr->AddInstanceSave(GetId(), GetInstanceId(), GetDifficultyID(), 0, 0, 0, true);
     }
 
     ASSERT(mapSave);

@@ -160,9 +160,9 @@ void WorldSession::HandleChallengeModeStart(WorldPackets::ChallengeMode::StartRe
 
             if (player->GetScheduler().HasGroup(700000) || player->IsBeingTeleported())
             {
+            }
                 ChatHandler(_player->GetSession()).PSendSysMessage("Error: player is teleporting");
                 return;
-            }
         }
     }
     else
