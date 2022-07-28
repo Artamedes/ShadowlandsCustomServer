@@ -1323,7 +1323,7 @@ void InstanceScript::BuildPlayerDatas(WorldPackets::Instance::EncounterStart& pa
             PlayerTalentMap const* talents = player->GetTalentMap(player->GetActiveTalentGroup());
             for (PlayerTalentMap::value_type const& v : *talents)
             {
-                if (v.second != PLAYERSPELL_REMOVED)
+                if (v.second.state != PLAYERSPELL_REMOVED)
                     packet.PlayerDatas[count].Talents.push_back(v.first);
             }
 

@@ -3029,7 +3029,7 @@ void DeleteSpellFromAllPlayers(uint32 spellId)
     CharacterDatabase.Execute(stmt);
 }
 
-bool Player::AddTalent(TalentEntry const* talent, uint8 spec, bool learning)
+bool Player::AddTalent(TalentEntry const* talent, uint8 spec, bool learning, bool auraTalent /*= false*/, bool wasLearnedBefore /*= false*/)
 {
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(talent->SpellID, DIFFICULTY_NONE);
     if (!spellInfo)
@@ -3048,18 +3048,31 @@ bool Player::AddTalent(TalentEntry const* talent, uint8 spec, bool learning)
         AddOverrideSpell(talent->OverridesSpellID, talent->SpellID);
 
     PlayerTalentMap::iterator itr = GetTalentMap(spec)->find(talent->ID);
+    // talent exists ok check auraTalent things
     if (itr != GetTalentMap(spec)->end())
-        itr->second = PLAYERSPELL_UNCHANGED;
+    {
+        itr->second.oldState = itr->second.state;
+        itr->second.state = auraTalent ? PLAYERSPELL_TEMPORARY : PLAYERSPELL_UNCHANGED;
+        itr->second.IsAddedByAura = true;
+        itr->second.IsLearned = wasLearnedBefore;
+    }
     else
-        (*GetTalentMap(spec))[talent->ID] = learning ? PLAYERSPELL_NEW : PLAYERSPELL_UNCHANGED;
+    {
+        auto& talentData = (*GetTalentMap(spec))[talent->ID];
 
-    if (learning)
+        talentData.state = learning ? (auraTalent ? PLAYERSPELL_TEMPORARY : PLAYERSPELL_NEW) : PLAYERSPELL_UNCHANGED;
+        talentData.oldState = talentData.state;
+        itr->second.IsLearned = wasLearnedBefore;
+        itr->second.IsAddedByAura = auraTalent;
+    }
+
+    if (learning && !auraTalent)
         RemoveAurasWithInterruptFlags(SpellAuraInterruptFlags2::ChangeTalent);
 
     return true;
 }
 
-void Player::RemoveTalent(TalentEntry const* talent)
+void Player::RemoveTalent(TalentEntry const* talent, bool auraTalent /*= false*/)
 {
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(talent->SpellID, DIFFICULTY_NONE);
     if (!spellInfo)
@@ -3078,7 +3091,9 @@ void Player::RemoveTalent(TalentEntry const* talent)
     // if this talent rank can be found in the PlayerTalentMap, mark the talent as removed so it gets deleted
     PlayerTalentMap::iterator plrTalent = GetTalentMap(GetActiveTalentGroup())->find(talent->ID);
     if (plrTalent != GetTalentMap(GetActiveTalentGroup())->end())
-        plrTalent->second = PLAYERSPELL_REMOVED;
+    {
+        plrTalent->second.state = PLAYERSPELL_REMOVED;
+    }
 }
 
 void Player::AddStoredAuraTeleportLocation(uint32 spellId)
@@ -4038,7 +4053,7 @@ bool Player::HasSpell(uint32 spell) const
 bool Player::HasTalent(uint32 talentId, uint8 group) const
 {
     PlayerTalentMap::const_iterator itr = GetTalentMap(group)->find(talentId);
-    return (itr != GetTalentMap(group)->end() && itr->second != PLAYERSPELL_REMOVED);
+    return (itr != GetTalentMap(group)->end() && itr->second.state != PLAYERSPELL_REMOVED);
 }
 
 bool Player::HasActiveSpell(uint32 spell) const
@@ -27319,12 +27334,12 @@ bool Player::ModifierTreeSatisfied(uint32 modifierTreeId) const
     return m_achievementMgr->ModifierTreeSatisfied(modifierTreeId);
 }
 
-TalentLearnResult Player::LearnTalent(uint32 talentId, int32* spellOnCooldown)
+TalentLearnResult Player::LearnTalent(uint32 talentId, int32* spellOnCooldown, bool auraTalent /*= false*/, bool wasLearnedBefore /*= false*/)
 {
-    if (IsInCombat())
+    if (IsInCombat() && !auraTalent)
         return TALENT_FAILED_AFFECTING_COMBAT;
 
-    if (isDead())
+    if (isDead() && !auraTalent)
         return TALENT_FAILED_CANT_DO_THAT_RIGHT_NOW;
 
     if (!GetPrimarySpecialization())
@@ -27334,6 +27349,7 @@ TalentLearnResult Player::LearnTalent(uint32 talentId, int32* spellOnCooldown)
     if (!talentInfo)
         return TALENT_FAILED_UNKNOWN;
 
+    // for aura talents - can happen but we just ignore it
     if (talentInfo->SpecID && talentInfo->SpecID != GetPrimarySpecialization())
         return TALENT_FAILED_UNKNOWN;
 
@@ -27342,7 +27358,7 @@ TalentLearnResult Player::LearnTalent(uint32 talentId, int32* spellOnCooldown)
         return TALENT_FAILED_UNKNOWN;
 
     // check if we have enough talent points
-    if (talentInfo->TierID >= m_activePlayerData->MaxTalentTiers)
+    if (talentInfo->TierID >= m_activePlayerData->MaxTalentTiers && !auraTalent)
         return TALENT_FAILED_UNKNOWN;
 
     // TODO: prevent changing talents that are on cooldown
@@ -27368,25 +27384,28 @@ TalentLearnResult Player::LearnTalent(uint32 talentId, int32* spellOnCooldown)
     if (talentInfo != bestSlotMatch)
         return TALENT_FAILED_UNKNOWN;
 
-    // Check if player doesn't have any talent in current tier
-    for (uint32 c = 0; c < MAX_TALENT_COLUMNS; ++c)
+    // Check if player doesn't have any talent in current tier - but not care for aura talent
+    if (!auraTalent)
     {
-        for (TalentEntry const* talent : sDB2Manager.GetTalentsByPosition(GetClass(), talentInfo->TierID, c))
+        for (uint32 c = 0; c < MAX_TALENT_COLUMNS; ++c)
         {
-            if (!HasTalent(talent->ID, GetActiveTalentGroup()))
-                continue;
-
-            if (!HasPlayerFlag(PLAYER_FLAGS_RESTING) && !HasUnitFlag2(UNIT_FLAG2_ALLOW_CHANGING_TALENTS))
-                return TALENT_FAILED_REST_AREA;
-
-            if (GetSpellHistory()->HasCooldown(talent->SpellID))
+            for (TalentEntry const* talent : sDB2Manager.GetTalentsByPosition(GetClass(), talentInfo->TierID, c))
             {
-                if (spellOnCooldown)
-                    *spellOnCooldown = talent->SpellID;
-                return TALENT_FAILED_CANT_REMOVE_TALENT;
-            }
+                if (!HasTalent(talent->ID, GetActiveTalentGroup()))
+                    continue;
 
-            RemoveTalent(talent);
+                if (!HasPlayerFlag(PLAYER_FLAGS_RESTING) && !HasUnitFlag2(UNIT_FLAG2_ALLOW_CHANGING_TALENTS))
+                    return TALENT_FAILED_REST_AREA;
+
+                if (GetSpellHistory()->HasCooldown(talent->SpellID))
+                {
+                    if (spellOnCooldown)
+                        *spellOnCooldown = talent->SpellID;
+                    return TALENT_FAILED_CANT_REMOVE_TALENT;
+                }
+
+                RemoveTalent(talent);
+            }
         }
     }
 
@@ -27400,9 +27419,13 @@ TalentLearnResult Player::LearnTalent(uint32 talentId, int32* spellOnCooldown)
 
     // already known
     if (HasTalent(talentId, GetActiveTalentGroup()) || HasSpell(spellid))
-        return TALENT_FAILED_UNKNOWN;
+    {
+        // but not for aura talent, aura talent should take the spot forced
+        if (!auraTalent)
+            return TALENT_FAILED_UNKNOWN;
+    }
 
-    if (!AddTalent(talentInfo, GetActiveTalentGroup(), true))
+    if (!AddTalent(talentInfo, GetActiveTalentGroup(), true, auraTalent, wasLearnedBefore))
         return TALENT_FAILED_UNKNOWN;
 
     LearnSpell(spellid, false);
@@ -27748,7 +27771,7 @@ void Player::SendTalentsInfoData()
 
         for (PlayerTalentMap::const_iterator itr = talents->begin(); itr != talents->end(); ++itr)
         {
-            if (itr->second == PLAYERSPELL_REMOVED)
+            if (itr->second.state == PLAYERSPELL_REMOVED)
                 continue;
 
             TalentEntry const* talentInfo = sTalentStore.LookupEntry(itr->first);
@@ -28099,7 +28122,7 @@ void Player::_SaveTalents(CharacterDatabaseTransaction trans)
         PlayerTalentMap* talents = GetTalentMap(group);
         for (auto itr = talents->begin(); itr != talents->end();)
         {
-            if (itr->second == PLAYERSPELL_REMOVED)
+            if (itr->second.state == PLAYERSPELL_REMOVED || (itr->second.IsAddedByAura && !itr->second.IsLearned))
             {
                 itr = talents->erase(itr);
                 continue;
@@ -30004,10 +30027,22 @@ void Player::SendPetTameFailure(PetTameFailureReason reason)
 /// TORGHAST
 ////////////////////////////////////////////////////////////////////////////////////////
 
-void Player::GenerateAnimaPowerChoice(GameObject* go)
+AnimaPowerChoice* Player::GenerateAnimaPowerChoice(GameObject* go)
 {
     _animaPowerChoice = std::make_unique<AnimaPowerChoice>(this, go);
     RerollAnimaPowers();
+    return _animaPowerChoice.get();
+}
+
+void Player::SetAnimaPowerChoice(AnimaPowerChoice* choice)
+{
+    _animaPowerChoice.reset(choice);
+
+    WorldPackets::Quest::DisplayPlayerChoice packet;
+    choice->BuildPacket(packet);
+    PlayerTalkClass->GetInteractionData().Reset();
+    PlayerTalkClass->GetInteractionData().PlayerChoiceId = 573;
+    SendDirectMessage(packet.Write());
 }
 
 void Player::RerollAnimaPowers()
@@ -30034,6 +30069,7 @@ void Player::ResetAndGainAnimaPowerChoice(AnimaPower* power)
     if (auto go = ObjectAccessor::GetGameObject(*this, _animaPowerChoice->GetGameObjectGUID()))
     {
         go->UpdateDynamicFlagsForNearbyPlayers();
+        go->AI()->SetGUID(GetGUID(), 1);
     }
 
     mawPower.Amount = power->MaxStacks;
@@ -30065,7 +30101,22 @@ void Player::ResetAndGainAnimaPowerChoice(AnimaPower* power)
     data << power->MawPowerID;
     SendMessageToSet(&data, true);
 
+    SendPlaySpellVisual(GetGUID(), 85010, 0, 0, 0, false);
+
+    data.Initialize(SMSG_PLAYER_CHOICE_CLEAR, 4);
+    data << uint32(0);
+    SendDirectMessage(&data);
+
     _animaPowerChoice.reset();
+}
+
+void Player::ResetAnimaPowerChoice()
+{
+    _animaPowerChoice.reset();
+
+    WorldPacket data(SMSG_PLAYER_CHOICE_CLEAR, 4);
+    data << uint32(0);
+    SendDirectMessage(&data);
 }
 
 AnimaPowerChoice* Player::GetAnimaPowerChoice()

@@ -291,7 +291,7 @@ NonDefaultConstructible<pAuraEffectHandler> AuraEffectHandler[TOTAL_AURAS]=
     &AuraEffect::HandleModDetaunt,                                //221 SPELL_AURA_MOD_DETAUNT
     &AuraEffect::HandleNoImmediateEffect,                         //222 SPELL_AURA_REMOVE_TRANSMOG_COST implemented in WorldSession::HandleTransmogrifyItems
     &AuraEffect::HandleNoImmediateEffect,                         //223 SPELL_AURA_REMOVE_BARBER_SHOP_COST implemented in Player::GetBarberShopCost
-    &AuraEffect::HandleNULL,                                      //224 SPELL_AURA_LEARN_TALENT
+    &AuraEffect::HandleLearnTalent,                               //224 SPELL_AURA_LEARN_TALENT
     &AuraEffect::HandleNULL,                                      //225 SPELL_AURA_MOD_VISIBILITY_RANGE
     &AuraEffect::HandleNoImmediateEffect,                         //226 SPELL_AURA_PERIODIC_DUMMY implemented in AuraEffect::PeriodicTick
     &AuraEffect::HandleNoImmediateEffect,                         //227 SPELL_AURA_PERIODIC_TRIGGER_SPELL_WITH_VALUE implemented in AuraEffect::PeriodicTick
@@ -6837,4 +6837,58 @@ void AuraEffect::HandleModChargeRecoveryRate(AuraApplication const* aurApp, uint
     if (apply)
         packet.UnkFloat = addVal;
     player->SendDirectMessage(packet.Write());
+}
+
+void AuraEffect::HandleLearnTalent(AuraApplication const* aurApp, uint8 mode, bool apply) const
+{
+    if (!(mode & AURA_EFFECT_HANDLE_REAL))
+        return;
+
+    Player* player = nullptr;
+
+    if (aurApp->GetTarget())
+        player = aurApp->GetTarget()->ToPlayer();
+
+    if (!player)
+        return;
+
+    auto talentEntry = sTalentStore.LookupEntry(GetMiscValue());
+
+    if (apply)
+    {
+        bool wasLearned = false;
+        /// SMSG_UNLEARNED_SPELLS
+        if (player->HasTalent(talentEntry->ID, player->GetActiveTalentGroup()))
+        {
+            wasLearned = true;
+            player->RemoveTalent(talentEntry, true);
+            player->SetCharacterPoints(player->m_activePlayerData->CharacterPoints + 1);
+            player->AddToObjectUpdate();
+        }
+        /// SMSG_LEARNED_SPELLS
+        player->LearnTalent(GetMiscValue(), nullptr, true, wasLearned);
+        /// SMSG_UPDATE_TALENT_DATA
+        player->SendTalentsInfoData();
+    }
+    else
+    {
+        auto it = player->GetTalentMap(player->GetActiveTalentGroup())->find(talentEntry->ID);
+        bool wasLearned = false;
+        if (it != player->GetTalentMap(player->GetActiveTalentGroup())->end())
+        {
+            if (it->second.IsLearned)
+            {
+                if (player->m_activePlayerData->CharacterPoints)
+                    player->SetCharacterPoints(player->m_activePlayerData->CharacterPoints - 1);
+                wasLearned = true;
+            }
+        }
+
+        player->RemoveTalent(talentEntry, true);
+
+        if (wasLearned)
+            player->LearnTalent(GetMiscValue(), nullptr, false, wasLearned);
+
+        player->SendTalentsInfoData();
+    }
 }

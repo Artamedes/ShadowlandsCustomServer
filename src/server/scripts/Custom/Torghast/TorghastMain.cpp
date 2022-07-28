@@ -1,3 +1,4 @@
+#include "Torghast/AnimaPower.h"
 #include "TorghastDefines.h"
 #include "QuestPackets.h"
 #include "Player.h"
@@ -27,26 +28,49 @@ public:
         me->SetAnimKitId(2664, false);
     }
 
+    void SetGUID(ObjectGuid const& guid, int32 action) override
+    {
+        if (action == 1)
+        {
+            PlayerGuidSet.insert(guid);
+            //m_PowersPerPlayer.erase(guid);
+        }
+    }
+
     bool OnPlayerChoice(Player* player) override
     {
         if (auto choice = player->GetAnimaPowerChoice())
         {
             // send error
-            //WorldPackets::Quest::DisplayPlayerChoice packet;
-            //choice->BuildPacket(packet);
-            //player->PlayerTalkClass->GetInteractionData().Reset();
-            //player->PlayerTalkClass->GetInteractionData().PlayerChoiceId = 573;
-            //player->SendDirectMessage(packet.Write());
+            if (choice->GetGameObjectGUID() == me->GetGUID())
+            {
+                WorldPackets::Quest::DisplayPlayerChoice packet;
+                choice->BuildPacket(packet);
+                player->PlayerTalkClass->GetInteractionData().Reset();
+                player->PlayerTalkClass->GetInteractionData().PlayerChoiceId = 573;
+                player->SendDirectMessage(packet.Write());
+            }
             return true;
         }
 
         if (PlayerGuidSet.count(player->GetGUID()))
         {
             player->ConsumedAnimaPowers.insert(player->GetGUID());
+            me->UpdateDynamicFlagsForNearbyPlayers();
             return true;
         }
 
-        PlayerGuidSet.insert(player->GetGUID());
+        /// TODO: reimplement this better, we have to get rid of unique ptr or make a constructor for anima powers
+        // player already viewed this anima before. lets set their choice
+        //auto it = m_PowersPerPlayer.find(player->GetGUID());
+        //if (it != m_PowersPerPlayer.end())
+        //{
+        //    player->SetAnimaPowerChoice(it->second);
+        //    return true;
+        //}
+        //else
+        //    m_PowersPerPlayer[player->GetGUID()] =
+
         player->GenerateAnimaPowerChoice(me);
 
         // dynflags set to 0xFFFF0010
@@ -61,6 +85,7 @@ public:
     }
 
     GuidUnorderedSet PlayerGuidSet;
+    //std::unordered_map<ObjectGuid, AnimaPowerChoice*> m_PowersPerPlayer;
 };
 
 void AddSC_TorghastMain()

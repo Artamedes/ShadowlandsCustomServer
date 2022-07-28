@@ -28,6 +28,7 @@ public:
     int32 Unused901_2 = 0; // seen values 11553, 11554, 11545
     int32 SpellID = 0;
     int32 MaxStacks = 0;
+    std::string Name;
 };
 
 class TC_GAME_API AnimaPowerChoice
@@ -38,7 +39,7 @@ public:
 
     void BuildPacket(WorldPackets::Quest::DisplayPlayerChoice& packet);
 
-    bool GeneratePowers(Player* player);
+    bool GeneratePowers(Player* player, uint32 mawPowerId = 0);
 
     void AddPower(AnimaPower* power)
     {

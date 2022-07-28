@@ -757,8 +757,13 @@ void TerrainMgr::InitializeParentMapData(std::unordered_map<uint32, std::vector<
     _parentMapData = mapData;
 }
 
-std::shared_ptr<TerrainInfo> TerrainMgr::LoadTerrain(uint32 mapId)
+std::shared_ptr<TerrainInfo> TerrainMgr::LoadTerrain(uint32 p_MapId)
 {
+    // Hack for torghast custom map so terrain works as intended.
+    uint32 mapId = p_MapId;
+    if (mapId == 10001)
+        mapId = 2162;
+
     MapEntry const* entry = sMapStore.LookupEntry(mapId);
     if (!entry)
         return nullptr;

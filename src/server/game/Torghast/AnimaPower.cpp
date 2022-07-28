@@ -6,6 +6,7 @@
 #include "QuestPackets.h"
 #include "SpellInfo.h"
 #include "SpellMgr.h"
+#include "Chat.h"
 #include <sstream>
 
 AnimaPowerChoice::AnimaPowerChoice(Player* player, GameObject* go) : _playerGuid(player->GetGUID()), _goGuid(go->GetGUID())
@@ -42,10 +43,10 @@ void AnimaPowerChoice::BuildPacket(WorldPackets::Quest::DisplayPlayerChoice& pac
 
         ss << "$" << power->SpellID << "s";
 
-        power->ResponseID = i;
-        packet.Responses[i].ResponseIdentifier = i; ///< BLizz increments by 1 every time so this is wrong
+        power->ResponseID = i + 1;
+        packet.Responses[i].ResponseIdentifier = i + 1; ///< BLizz increments by 1 every time so this is wrong
         packet.Responses[i].ChoiceArtFileID = spellInfo->IconFileDataId;
-        packet.Responses[i].Header = spellInfo->SpellName->Str[0]; ///< TODO:Implement locales
+        packet.Responses[i].Header = power->Name; ///< TODO:Implement locales
         packet.Responses[i].Description = ss.str();
 
         packet.Responses[i].MawPower = WorldPackets::Quest::PlayerChoiceResponseMawPower();
@@ -63,45 +64,54 @@ void AnimaPowerChoice::BuildPacket(WorldPackets::Quest::DisplayPlayerChoice& pac
     }
 }
 
-bool AnimaPowerChoice::GeneratePowers(Player* player)
+bool AnimaPowerChoice::GeneratePowers(Player* player, uint32 mawPowerId /*= 0*/)
 {
-    if (Rerolls == 0)
+    if (Rerolls == 0 && !mawPowerId)
         return false;
 
-    --Rerolls;
+    if (!mawPowerId)
+        --Rerolls;
 
+    /// Remove old powers
+    for (AnimaPower* power : Powers)
+        delete power;
+
+    Powers.clear();
+
+    // TODO: CLEANUP PIG
     uint32 totalPowers = urand(2, 3);
 
     ChrClassesEntry const* clsEntry = sChrClassesStore.LookupEntry(player->GetClass());
     auto family = clsEntry->SpellClassSet;
 
-    for (int i = 0; i < totalPowers; ++i)
+    static int index = 0;
+
+    for (int i = 0; i < 8; ++i)
     {
         MawPowerEntry const* mawPower = nullptr;
-        SpellInfo const* spellInfo = nullptr;
-        while (true)
+
+        QueryResult result = WorldDatabase.PQuery("SELECT MawPowerID FROM maw_power_list WHERE MawPowerID = %u", mawPowerId ? mawPowerId : index);
+        if (result)
+            ++index;
+
+        while (!result)
         {
-            uint32 pig = urand(0, sMawPowerStore.GetNumRows());
+            result = WorldDatabase.PQuery("SELECT MawPowerID FROM maw_power_list WHERE MawPowerID = %u", index);
+            ++index;
 
-            mawPower = sMawPowerStore.LookupEntry(pig);
-            if (!mawPower)
-                continue;
-
-            if (mawPower->MawPowerRarityID == 0)
-                continue;
-
-            spellInfo = sSpellMgr->GetSpellInfo(mawPower->SpellID);
-            if (!spellInfo)
-                continue;
-
-            if (spellInfo->RequiredAreasID != 6432)
-                continue;
-
-            if (spellInfo->SpellFamilyName == 0 || spellInfo->SpellFamilyName == family)
+            if (index > 2000)
                 break;
+        }
+        if (result)
+        {
+            mawPower = sMawPowerStore.LookupEntry(result->Fetch()[0].GetUInt32());
         }
 
         if (!mawPower)
+            continue;
+
+        auto spellInfo = sSpellMgr->GetSpellInfo(mawPower->SpellID);
+        if (!spellInfo)
             continue;
 
         auto rarityEntry = sMawPowerRarityStore.LookupEntry(mawPower->MawPowerRarityID);
@@ -109,8 +119,8 @@ bool AnimaPowerChoice::GeneratePowers(Player* player)
         AnimaPower* power = new AnimaPower();
 
         power->MawPowerID = mawPower->ID;
-        power->MaxStacks = spellInfo->StackAmount;
-        power->Rarity = mawPower->MawPowerRarityID;
+        power->MaxStacks = spellInfo->StackAmount ? spellInfo->StackAmount : 1;
+        power->Rarity = mawPower->MawPowerRarityID - 1;
         power->RarityColor = rarityEntry ? rarityEntry->Color : -1;
         power->SpellID = spellInfo->Id;
         power->Unused901_2 = rarityEntry ? rarityEntry->Border : 0;
@@ -120,6 +130,10 @@ bool AnimaPowerChoice::GeneratePowers(Player* player)
         power->TypeArtFileID = 3446881;
 
         AddPower(power);
+
+        power->Name = spellInfo->SpellName->Str[player->GetSession()->GetSessionDbcLocale()];
+
+        ChatHandler(player).PSendSysMessage("%s %u %u", spellInfo->SpellName->Str[0], power->SpellID, power->MawPowerID);
     }
 
     return true;

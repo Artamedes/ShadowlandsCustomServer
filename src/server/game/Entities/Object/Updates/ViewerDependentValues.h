@@ -135,11 +135,8 @@ public:
                         dynFlags &= ~GO_DYNFLAG_LO_NO_INTERACT;
                     break;
                 case GAMEOBJECT_TYPE_PLAYER_CHOICE_CHEST:
-                    if (auto animaPowerChoice = const_cast<Player*>(receiver)->GetAnimaPowerChoice())
-                    {
-                        if (animaPowerChoice->GetGameObjectGUID() == gameObject->GetGUID())
-                            dynFlags |= GO_DYNFLAG_LO_DEPLETED;
-                    }
+                    if (const_cast<Player*>(receiver)->ConsumedAnimaPowers.count(gameObject->GetGUID()))
+                        dynFlags |= GO_DYNFLAG_LO_DEPLETED;
                     break;
                 default:
                     break;
