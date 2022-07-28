@@ -90,13 +90,13 @@ bool AnimaPowerChoice::GeneratePowers(Player* player, uint32 mawPowerId /*= 0*/)
     {
         MawPowerEntry const* mawPower = nullptr;
 
-        QueryResult result = WorldDatabase.PQuery("SELECT MawPowerID FROM maw_power_list WHERE MawPowerID = %u", mawPowerId ? mawPowerId : index);
+        QueryResult result = WorldDatabase.PQuery("SELECT MawPowerID FROM maw_power_list WHERE MawPowerID = %u AND ClassID = 0", mawPowerId ? mawPowerId : index);
         if (result)
             ++index;
 
         while (!result)
         {
-            result = WorldDatabase.PQuery("SELECT MawPowerID FROM maw_power_list WHERE MawPowerID = %u", index);
+            result = WorldDatabase.PQuery("SELECT MawPowerID FROM maw_power_list WHERE MawPowerID = %u AND ClassID = 0", index);
             ++index;
 
             if (index > 2000)
