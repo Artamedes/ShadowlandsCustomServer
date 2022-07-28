@@ -3297,7 +3297,7 @@ void SpellMgr::LoadSpellInfoCorrections()
     // Some spells have no amplitude set
     {
         /// Ebosoul Vise 
-        ApplySpellFix({ 339298 }, [](SpellInfo* info)
+        ApplySpellFix({ 339298, 355327 }, [](SpellInfo* info)
         {
             info->AttributesEx5 &= ~SPELL_ATTR5_SPELL_HASTE_AFFECTS_PERIODIC;
         });
