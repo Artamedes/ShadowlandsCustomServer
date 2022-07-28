@@ -224,6 +224,7 @@ DB2Storage<MapChallengeModeEntry>               sMapChallengeModeStore("MapChall
 DB2Storage<MapDifficultyEntry>                  sMapDifficultyStore("MapDifficulty.db2", MapDifficultyLoadInfo::Instance());
 DB2Storage<MapDifficultyXConditionEntry>        sMapDifficultyXConditionStore("MapDifficultyXCondition.db2", MapDifficultyXConditionLoadInfo::Instance());
 DB2Storage<MawPowerEntry>                       sMawPowerStore("MawPower.db2", MawPowerLoadInfo::Instance());
+DB2Storage<MawPowerRarityEntry>                 sMawPowerRarityStore("MawPowerRarity.db2", MawPowerRarityLoadInfo::Instance());
 DB2Storage<ModifierTreeEntry>                   sModifierTreeStore("ModifierTree.db2", ModifierTreeLoadInfo::Instance());
 DB2Storage<MountCapabilityEntry>                sMountCapabilityStore("MountCapability.db2", MountCapabilityLoadInfo::Instance());
 DB2Storage<MountEntry>                          sMountStore("Mount.db2", MountLoadInfo::Instance());
@@ -824,6 +825,7 @@ uint32 DB2Manager::LoadStores(std::string const& dataPath, LocaleConstant defaul
     LOAD_DB2(sMapDifficultyStore);
     LOAD_DB2(sMapDifficultyXConditionStore);
     LOAD_DB2(sMawPowerStore);
+    LOAD_DB2(sMawPowerRarityStore);
     LOAD_DB2(sModifierTreeStore);
     LOAD_DB2(sMountCapabilityStore);
     LOAD_DB2(sMountStore);

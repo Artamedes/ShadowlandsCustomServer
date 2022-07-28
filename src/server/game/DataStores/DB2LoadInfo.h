@@ -4166,6 +4166,21 @@ struct MawPowerLoadInfo
     }
 };
 
+struct MawPowerRarityLoadInfo
+{
+    static DB2LoadInfo const* Instance()
+    {
+        static DB2FieldMeta const fields[] =
+        {
+            { false, FT_INT, "ID" },
+            { true, FT_INT, "Color" },
+            { true, FT_INT, "Border" },
+        };
+        static DB2LoadInfo const loadInfo(&fields[0], std::extent<decltype(fields)>::value, MawPowerRarityMeta::Instance(), HOTFIX_SEL_MAW_POWER_RARITY);
+        return &loadInfo;
+    }
+};
+
 struct ModifierTreeLoadInfo
 {
     static DB2LoadInfo const* Instance()

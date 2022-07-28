@@ -2681,6 +2681,13 @@ struct MawPowerEntry
     int32 MawPowerRarityID;
 };
 
+struct MawPowerRarityEntry
+{
+    uint32 ID;
+    int32 Color;
+    int32 Border;
+};
+
 struct ModifierTreeEntry
 {
     uint32 ID;

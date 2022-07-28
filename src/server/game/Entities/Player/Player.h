@@ -66,6 +66,8 @@ struct TalentEntry;
 struct TrainerSpell;
 struct VendorItem;
 
+class AnimaPower;
+class AnimaPowerChoice;
 class AELootResult;
 class Bag;
 class Battleground;
@@ -2938,6 +2940,13 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         bool CanEnableWarModeInArea() const;
         void UpdateWarModeAuras();
 
+        /// Torghast
+        void GenerateAnimaPowerChoice(GameObject* go);
+        void RerollAnimaPowers();
+        void ResetAndGainAnimaPowerChoice(AnimaPower* power);
+        AnimaPowerChoice* GetAnimaPowerChoice();
+        GuidUnorderedSet ConsumedAnimaPowers;
+
         void LoadCustom(CharacterDatabaseQueryHolder const& holder);
         void SaveCustom(CharacterDatabaseTransaction trans);
         uint32 _daysLoggedIn = 0;
@@ -3329,6 +3338,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         std::unique_ptr<RestMgr> _restMgr;
         std::unique_ptr<CovenantMgr> _covenantMgr;
         std::unique_ptr<PlayerChallenge> m_playerChallenge;
+        std::unique_ptr<AnimaPowerChoice> _animaPowerChoice;
 
         bool _usePvpItemLevels;
 

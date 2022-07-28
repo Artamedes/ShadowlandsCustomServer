@@ -40,6 +40,7 @@
 #include "CovenantMgr.h"
 #include "CovenantPackets.h"
 #include "GameTime.h"
+#include "AnimaPower.h"
 
 void WorldSession::HandleQuestgiverStatusQueryOpcode(WorldPackets::Quest::QuestGiverStatusQuery& packet)
 {
@@ -849,17 +850,43 @@ void WorldSession::HandlePlayerChoiceResponse(WorldPackets::Quest::ChoiceRespons
         return;
     }
 
-    // custom script
-    if (choiceResponse.ChoiceID == 682925852)
+    switch (choiceResponse.ChoiceID)
     {
-        if (auto item = _player->GetItemByEntry(700000))
-            if (sScriptMgr->OnItemPlayerChoiceResponse(_player, item))
-                return;
-    }
+        case 573: ///< Anima Power
+        {
+            if (auto animaPowerChoice = _player->GetAnimaPowerChoice())
+            {
+                if (choiceResponse.IsReroll)
+                {
+                    _player->RerollAnimaPowers();
+                    return;
+                }
 
-    if (choiceResponse.ChoiceID == 682925853 || choiceResponse.ChoiceID == 682925854)
-    {
-        sScriptMgr->OnPlayerChoiceResponse(GetPlayer(), choiceResponse.ChoiceID, choiceResponse.ResponseIdentifier);
+                for (auto animaPower : animaPowerChoice->GetPowers())
+                {
+                    if (animaPower->ResponseID == choiceResponse.ResponseIdentifier)
+                    {
+                        _player->ResetAndGainAnimaPowerChoice(animaPower);
+                        break;
+                    }
+                }
+            }
+
+            return;
+        }
+        case 682925852:
+        {
+            if (auto item = _player->GetItemByEntry(700000))
+                if (sScriptMgr->OnItemPlayerChoiceResponse(_player, item))
+                    return;
+            break;
+        }
+        case 682925853:
+        case 682925854:
+            sScriptMgr->OnPlayerChoiceResponse(GetPlayer(), choiceResponse.ChoiceID, choiceResponse.ResponseIdentifier);
+            break;
+        default:
+            break;
     }
 
     PlayerChoice const* playerChoice = sObjectMgr->GetPlayerChoice(choiceResponse.ChoiceID);

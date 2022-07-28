@@ -91,6 +91,9 @@ void AddSC_boss_echelon();
 void AddSC_boss_halkias();
 void AddSC_boss_high_adjudicator_aleez();
 
+/// Torghast
+void AddSC_TorghastMain();
+
 void AddCustomScripts()
 {
     AddSC_LoginScript();
@@ -162,4 +165,7 @@ void AddCustomScripts()
     AddSC_boss_echelon();
     AddSC_boss_halkias();
     AddSC_boss_high_adjudicator_aleez();
+
+    /// Torghast
+    AddSC_TorghastMain();
 }

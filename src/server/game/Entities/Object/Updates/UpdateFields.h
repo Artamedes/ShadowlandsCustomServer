@@ -792,6 +792,7 @@ struct GameObjectData : public IsUpdateFieldStructureTag, public HasChangesMask<
 {
     UpdateField<std::vector<uint32>, 0, 1> StateWorldEffectIDs;
     DynamicUpdateField<int32, 0, 2> EnableDoodadSets;
+    struct DisplayIDTag : ViewerDependentValueTag<int32> {};
     UpdateField<int32, 0, 3> DisplayID;
     UpdateField<uint32, 0, 4> SpellVisualID;
     UpdateField<uint32, 0, 5> StateSpellVisualID;

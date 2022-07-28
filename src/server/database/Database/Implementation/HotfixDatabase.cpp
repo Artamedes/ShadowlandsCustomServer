@@ -1100,6 +1100,10 @@ void HotfixDatabaseConnection::DoPrepareStatements()
     PrepareStatement(HOTFIX_SEL_MAW_POWER, "SELECT ID, SpellID, MawPowerRarityID FROM maw_power WHERE (`VerifiedBuild` > 0) = ?", CONNECTION_SYNCH);
     PREPARE_MAX_ID_STMT(HOTFIX_SEL_MAW_POWER, "SELECT MAX(ID) + 1 FROM maw_power", CONNECTION_SYNCH);
 
+    // MawPowerRarity.db2
+    PrepareStatement(HOTFIX_SEL_MAW_POWER_RARITY, "SELECT ID, Color, Border FROM maw_power_rarity WHERE (`VerifiedBuild` > 0) = ?", CONNECTION_SYNCH);
+    PREPARE_MAX_ID_STMT(HOTFIX_SEL_MAW_POWER_RARITY, "SELECT MAX(ID) + 1 FROM maw_power_rarity", CONNECTION_SYNCH);
+
     // ModifierTree.db2
     PrepareStatement(HOTFIX_SEL_MODIFIER_TREE, "SELECT ID, Parent, Operator, Amount, Type, Asset, SecondaryAsset, TertiaryAsset FROM modifier_tree"
         " WHERE (`VerifiedBuild` > 0) = ?", CONNECTION_SYNCH);

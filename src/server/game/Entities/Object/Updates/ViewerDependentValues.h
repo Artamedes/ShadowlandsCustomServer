@@ -18,6 +18,7 @@
 #ifndef ViewerDependentValues_h__
 #define ViewerDependentValues_h__
 
+#include "AnimaPower.h"
 #include "Conversation.h"
 #include "Creature.h"
 #include "GameObject.h"
@@ -132,6 +133,13 @@ public:
                         dynFlags |= GO_DYNFLAG_LO_NO_INTERACT;
                     else
                         dynFlags &= ~GO_DYNFLAG_LO_NO_INTERACT;
+                    break;
+                case GAMEOBJECT_TYPE_PLAYER_CHOICE_CHEST:
+                    if (auto animaPowerChoice = const_cast<Player*>(receiver)->GetAnimaPowerChoice())
+                    {
+                        if (animaPowerChoice->GetGameObjectGUID() == gameObject->GetGUID())
+                            dynFlags |= GO_DYNFLAG_LO_DEPLETED;
+                    }
                     break;
                 default:
                     break;
@@ -294,10 +302,36 @@ public:
     {
         value_type flags = gameObjectData->Flags;
         if (gameObject->GetGoType() == GAMEOBJECT_TYPE_CHEST)
+        {
             if (gameObject->GetGOInfo()->chest.usegrouplootrules && !gameObject->IsLootAllowedFor(receiver))
                 flags |= GO_FLAG_LOCKED | GO_FLAG_NOT_SELECTABLE;
+        }
+        else if (gameObject->GetGoType() == GAMEOBJECT_TYPE_PLAYER_CHOICE_CHEST)
+        {
+            if (const_cast<Player*>(receiver)->ConsumedAnimaPowers.count(gameObject->GetGUID()))
+                flags |= GO_FLAG_NOT_SELECTABLE;
+        }
 
         return flags;
+    }
+};
+
+template<>
+class ViewerDependentValue<UF::GameObjectData::DisplayIDTag>
+{
+public:
+    using value_type = UF::GameObjectData::DisplayIDTag::value_type;
+
+    static value_type GetValue(UF::GameObjectData const* gameObjectData, GameObject const* gameObject, Player const* receiver)
+    {
+        value_type displayId = gameObjectData->DisplayID;
+        if (gameObject->GetGoType() == GAMEOBJECT_TYPE_PLAYER_CHOICE_CHEST)
+        {
+            if (!const_cast<Player*>(receiver)->ConsumedAnimaPowers.count(gameObject->GetGUID()))
+                displayId = 61847;
+        }
+
+        return displayId;
     }
 };
 

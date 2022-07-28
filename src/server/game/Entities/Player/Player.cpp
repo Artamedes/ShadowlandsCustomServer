@@ -135,6 +135,7 @@
 #include "QuestAI.h"
 #include "CreatureAISelector.h"
 #include "PlayerChallenge.h"
+#include "Torghast/AnimaPower.h"
 
 #define ZONE_UPDATE_INTERVAL (1*IN_MILLISECONDS)
 
@@ -29998,3 +29999,78 @@ void Player::SendPetTameFailure(PetTameFailureReason reason)
     packet.Result = static_cast<uint8>(reason);
     GetSession()->SendPacket(packet.Write());
 }
+
+////////////////////////////////////////////////////////////////////////////////////////
+/// TORGHAST
+////////////////////////////////////////////////////////////////////////////////////////
+
+void Player::GenerateAnimaPowerChoice(GameObject* go)
+{
+    _animaPowerChoice = std::make_unique<AnimaPowerChoice>(this, go);
+    RerollAnimaPowers();
+}
+
+void Player::RerollAnimaPowers()
+{
+    if (auto choice = GetAnimaPowerChoice())
+    {
+        choice->GeneratePowers(this);
+
+        WorldPackets::Quest::DisplayPlayerChoice packet;
+        choice->BuildPacket(packet);
+        PlayerTalkClass->GetInteractionData().Reset();
+        PlayerTalkClass->GetInteractionData().PlayerChoiceId = 573;
+        SendDirectMessage(packet.Write());
+    }
+}
+
+void Player::ResetAndGainAnimaPowerChoice(AnimaPower* power)
+{
+    bool apply = true;
+    UF::MawPower mawPower;
+
+    ConsumedAnimaPowers.insert(_animaPowerChoice->GetGameObjectGUID());
+
+    if (auto go = ObjectAccessor::GetGameObject(*this, _animaPowerChoice->GetGameObjectGUID()))
+    {
+        go->UpdateDynamicFlagsForNearbyPlayers();
+    }
+
+    mawPower.Amount = power->MaxStacks;
+    mawPower.MawPowerID = power->MawPowerID;
+    mawPower.SpellID = power->SpellID;
+
+    if (apply)
+    {
+        AddDynamicUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData)
+            .ModifyValue(&UF::ActivePlayerData::MawPowers)) = mawPower;
+    }
+    else
+    {
+        int32 firstIndex = m_activePlayerData->MawPowers.FindIndex(mawPower);
+        if (firstIndex >= 0)
+            RemoveDynamicUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData)
+                .ModifyValue(&UF::ActivePlayerData::MawPowers), firstIndex);
+    }
+
+    CastSpell(this, power->SpellID, true);
+
+    WorldPacket data(SMSG_GAME_OBJECT_SET_STATE_LOCAL, 16 + 1);
+    data << _animaPowerChoice->GetGameObjectGUID();
+    data << uint8(1);
+    SendDirectMessage(&data);
+
+    data.Initialize(SMSG_GAIN_MAW_POWER, 16 + 4);
+    data << GetGUID();
+    data << power->MawPowerID;
+    SendMessageToSet(&data, true);
+
+    _animaPowerChoice.reset();
+}
+
+AnimaPowerChoice* Player::GetAnimaPowerChoice()
+{
+    return _animaPowerChoice.get();
+}
+
+////////////////////////////////////////////////////////////////////////////////////////

@@ -191,6 +191,11 @@ void Object::BuildCreateUpdateBlockForPlayer(UpdateData* data, Player* target) c
 
     //if (GetTypeId() == TYPEID_ITEM)
     //    target->SendNewItem((Item*)this, 0, false, false);
+
+    if (GameObject const* go = ToGameObject())
+    {
+        const_cast<GameObject*>(go)->IsSentToClient = true;
+    }
 }
 
 void Object::SendUpdateToPlayer(Player* player)
