@@ -659,7 +659,7 @@ class spell_move_as_one : public AuraScript
         {
             for (auto eff : aur->GetAuraEffects())
             {
-                if (eff->GetAuraType() == SPELL_AURA_MOD_INCREASE_SPEED)
+                if (eff && eff->GetAuraType() == SPELL_AURA_MOD_INCREASE_SPEED)
                 {
                     auto speed = std::min(30, eff->GetAmount());
                     caster->CastSpell(caster, MoveAsOneSpeedAura, CastSpellExtraArgs(true).AddSpellBP0(speed));
