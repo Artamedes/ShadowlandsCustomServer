@@ -7,6 +7,7 @@
 #include "SpellInfo.h"
 #include "SpellMgr.h"
 #include "Chat.h"
+#include "TorghastMgr.h"
 #include <sstream>
 
 AnimaPowerChoice::AnimaPowerChoice(Player* player, GameObject* go) : _playerGuid(player->GetGUID()), _goGuid(go->GetGUID())
@@ -78,41 +79,11 @@ bool AnimaPowerChoice::GeneratePowers(Player* player, uint32 mawPowerId /*= 0*/)
 
     Powers.clear();
 
-    // TODO: CLEANUP PIG
-    uint32 totalPowers = urand(2, 3);
-
-    ChrClassesEntry const* clsEntry = sChrClassesStore.LookupEntry(player->GetClass());
-    auto family = clsEntry->SpellClassSet;
-
-    static int index = 0;
-
-    for (int i = 0; i < 8; ++i)
+    auto AppendMawPowerEntry([&](MawPowerEntry const* mawPower)
     {
-        MawPowerEntry const* mawPower = nullptr;
-
-        QueryResult result = WorldDatabase.PQuery("SELECT MawPowerID FROM maw_power_list WHERE MawPowerID = %u AND ClassID = 0", mawPowerId ? mawPowerId : index);
-        if (result)
-            ++index;
-
-        while (!result)
-        {
-            result = WorldDatabase.PQuery("SELECT MawPowerID FROM maw_power_list WHERE MawPowerID = %u AND ClassID = 0", index);
-            ++index;
-
-            if (index > 2000)
-                break;
-        }
-        if (result)
-        {
-            mawPower = sMawPowerStore.LookupEntry(result->Fetch()[0].GetUInt32());
-        }
-
-        if (!mawPower)
-            continue;
-
         auto spellInfo = sSpellMgr->GetSpellInfo(mawPower->SpellID);
         if (!spellInfo)
-            continue;
+            return;
 
         auto rarityEntry = sMawPowerRarityStore.LookupEntry(mawPower->MawPowerRarityID);
 
@@ -132,8 +103,28 @@ bool AnimaPowerChoice::GeneratePowers(Player* player, uint32 mawPowerId /*= 0*/)
         AddPower(power);
 
         power->Name = spellInfo->SpellName->Str[player->GetSession()->GetSessionDbcLocale()];
+    });
 
-        ChatHandler(player).PSendSysMessage("%s %u %u", spellInfo->SpellName->Str[0], power->SpellID, power->MawPowerID);
+    if (mawPowerId)
+    {
+        auto mawPower = sMawPowerStore.LookupEntry(mawPowerId);
+        if (!mawPower)
+            return false;
+
+        AppendMawPowerEntry(mawPower);
+    }
+    else
+    {
+        std::vector<MawPowerDB*> selectedMawPowers;
+        sTorghastMgr->ChooseMawPower(player, selectedMawPowers);
+        for (auto mawPowerDB : selectedMawPowers)
+        {
+            auto mawPower = sMawPowerStore.LookupEntry(mawPowerDB->MawPowerID);
+            if (!mawPower)
+                continue;
+
+            AppendMawPowerEntry(mawPower);
+        }
     }
 
     return true;

@@ -1968,7 +1968,7 @@ public:
     }
 };
 
-void AddSC_Torghast()
+void AddSC_OldTorghast()
 {
    RegisterCreatureAI(npc_thrall_700800);
    RegisterCreatureAI(npc_sir_duke_iro_700812);

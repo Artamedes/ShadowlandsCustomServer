@@ -33,16 +33,17 @@ public:
         return &instance;
     }
 
-    void LoadFromDB();
+    ~TorghastMgr();
 
-    void ChooseMawPower(Player* player, std::vector<MawPowerDB>& powers, uint32 amount = 3, eMawPowerRarity rarity = eMawPowerRarity::Any, uint32 RequiredNpc = 0, bool classOnly = false);
+    void LoadFromDB();
+    void ChooseMawPower(Player* player, std::vector<MawPowerDB*>& powers, uint32 amount = 3, eMawPowerRarity rarity = eMawPowerRarity::Any, uint32 RequiredNpc = 0, bool classOnly = false);
 
 private:
-    std::unordered_map<uint32, MawPowerDB> _mawPowersDB;
-    std::unordered_multimap<uint32, MawPowerDB> _mawPowersByNpcEntry;
-    std::unordered_multimap<uint32, MawPowerDB> _mawPowersByCovenant;
-    std::unordered_multimap<uint32, MawPowerDB> _mawPowersByClass;
-    std::unordered_multimap<eMawPowerRarity, MawPowerDB> _mawPowersByRarity;
+    std::vector<MawPowerDB*> _mawPowersDB;
+    std::unordered_multimap<uint32, MawPowerDB*> _mawPowersByNpcEntry;
+    std::unordered_multimap<uint32, MawPowerDB*> _mawPowersByCovenant;
+    std::unordered_multimap<uint32, MawPowerDB*> _mawPowersByClass;
+    std::unordered_multimap<eMawPowerRarity, MawPowerDB*> _mawPowersByRarity;
 };
 
 #define sTorghastMgr TorghastMgr::instance()

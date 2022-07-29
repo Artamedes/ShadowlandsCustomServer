@@ -41,7 +41,7 @@ void AddSC_ElarianSanctuary();
 void AddSC_ShadoPanMonastary();
 void AddSC_LightDungeon3();
 void AddSC_DailyRewardsSystem();
-void AddSC_Torghast();
+void AddSC_OldTorghast();
 void AddSC_StabilityTest();
 void AddSC_MawFinale();
 void AddSC_TheUnderrot();
@@ -118,7 +118,7 @@ void AddCustomScripts()
     AddSC_ShadoPanMonastary();
     AddSC_LightDungeon3();
     AddSC_DailyRewardsSystem();
-    AddSC_Torghast();
+    AddSC_OldTorghast();
     AddSC_StabilityTest();
     AddSC_MawFinale();
     AddSC_TheUnderrot();
