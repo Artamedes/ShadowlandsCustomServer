@@ -53,6 +53,7 @@ class TC_GAME_API AuraEffect
         SpellEffIndex GetEffIndex() const { return m_effectInfo.EffectIndex; }
         int32 GetBaseAmount() const { return m_baseAmount; }
         int32 GetPeriod() const { return _period; }
+        void SetAmplitude(int32 amplitude) { _period = amplitude; }
 
         int32 GetMiscValueB() const { return GetSpellEffectInfo().MiscValueB; }
         int32 GetMiscValue() const { return GetSpellEffectInfo().MiscValue; }
@@ -94,6 +95,8 @@ class TC_GAME_API AuraEffect
         uint32 GetRemainingTicks() const { return GetTotalTicks() - _ticksDone; }
         uint32 GetTotalTicks() const;
         void ResetPeriodic(bool resetPeriodicTimer = false);
+        float GetPeriodMod();
+        void SetPeriodMod(float mod);
         void ResetTicks() { _ticksDone = 0; }
 
         bool IsPeriodic() const { return m_isPeriodic; }
@@ -144,6 +147,7 @@ class TC_GAME_API AuraEffect
         int32 _periodicTimer;
         int32 _period;          // time between consecutive ticks
         uint32 _ticksDone;      // ticks counter
+        float m_period_mod;
 
         bool m_canBeRecalculated;
         bool m_isPeriodic;
@@ -365,6 +369,7 @@ class TC_GAME_API AuraEffect
         void HandleModCooldownRecoveryRateByLabel(AuraApplication const* aurApp, uint8 mode, bool apply) const;
         void HandleModChargeRecoveryRate(AuraApplication const* aurApp, uint8 mode, bool apply) const;
         void HandleLearnTalent(AuraApplication const* aurApp, uint8 mode, bool apply) const;
+        void HandleModTimeRate(AuraApplication const* aurApp, uint8 mode, bool apply) const;
 
         // aura effect periodic tick handlers
         void HandlePeriodicTriggerSpellAuraTick(Unit* target, Unit* caster) const;

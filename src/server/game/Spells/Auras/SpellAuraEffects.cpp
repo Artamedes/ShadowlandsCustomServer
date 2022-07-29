@@ -466,7 +466,7 @@ NonDefaultConstructible<pAuraEffectHandler> AuraEffectHandler[TOTAL_AURAS]=
     &AuraEffect::HandleTriggerSpellOnPowerAmount,                 //396 SPELL_AURA_TRIGGER_SPELL_ON_POWER_AMOUNT
     &AuraEffect::HandleBattlegroundPlayerPosition,                //397 SPELL_AURA_BATTLEGROUND_PLAYER_POSITION_FACTIONAL
     &AuraEffect::HandleBattlegroundPlayerPosition,                //398 SPELL_AURA_BATTLEGROUND_PLAYER_POSITION
-    &AuraEffect::HandleNULL,                                      //399 SPELL_AURA_MOD_TIME_RATE
+    &AuraEffect::HandleModTimeRate,                               //399 SPELL_AURA_MOD_TIME_RATE
     &AuraEffect::HandleAuraModSkill,                              //400 SPELL_AURA_MOD_SKILL_2
     &AuraEffect::HandleNULL,                                      //401
     &AuraEffect::HandleAuraModOverridePowerDisplay,               //402 SPELL_AURA_MOD_OVERRIDE_POWER_DISPLAY
@@ -583,7 +583,7 @@ NonDefaultConstructible<pAuraEffectHandler> AuraEffectHandler[TOTAL_AURAS]=
 AuraEffect::AuraEffect(Aura* base, SpellEffectInfo const& spellEfffectInfo, int32 const* baseAmount, Unit* caster) :
 m_base(base), m_spellInfo(base->GetSpellInfo()), m_effectInfo(spellEfffectInfo), m_spellmod(nullptr),
 m_baseAmount(baseAmount ? *baseAmount : spellEfffectInfo.CalcBaseValue(caster, base->GetType() == UNIT_AURA_TYPE ? base->GetOwner()->ToUnit() : nullptr, base->GetCastItemId(), base->GetCastItemLevel())),
-m_damage(0), m_critChance(0.0f), m_donePct(1.0f),
+m_damage(0), m_critChance(0.0f), m_donePct(1.0f), m_period_mod(0.0f),
 _amount(), _periodicTimer(0), _period(0), _ticksDone(0),
 m_canBeRecalculated(true), m_isPeriodic(false), ConduitRankEntry(nullptr)
 {
@@ -719,6 +719,16 @@ uint32 AuraEffect::GetTotalTicks() const
     return totalTicks;
 }
 
+float AuraEffect::GetPeriodMod()
+{
+    return m_period_mod;
+}
+
+void AuraEffect::SetPeriodMod(float mod)
+{
+    m_period_mod = mod;
+}
+
 void AuraEffect::ResetPeriodic(bool resetPeriodicTimer /*= false*/)
 {
     _ticksDone = 0;
@@ -734,6 +744,7 @@ void AuraEffect::ResetPeriodic(bool resetPeriodicTimer /*= false*/)
 void AuraEffect::CalculatePeriodic(Unit* caster, bool resetPeriodicTimer /*= true*/, bool load /*= false*/)
 {
     _period = GetSpellEffectInfo().ApplyAuraPeriod;
+    m_period_mod = 0.0f;
 
     // prepare periodics
     switch (GetAuraType())
@@ -822,6 +833,8 @@ void AuraEffect::CalculatePeriodic(Unit* caster, bool resetPeriodicTimer /*= tru
                     _period /= 2.0f;
             }
         }
+
+        _period += m_period_mod;
     }
     else // prevent infinite loop on Update
         m_isPeriodic = false;
@@ -6890,5 +6903,119 @@ void AuraEffect::HandleLearnTalent(AuraApplication const* aurApp, uint8 mode, bo
             player->LearnTalent(GetMiscValue(), nullptr, false, wasLearned);
 
         player->SendTalentsInfoData();
+    }
+}
+
+using Clock = std::chrono::system_clock;
+
+void AuraEffect::HandleModTimeRate(AuraApplication const* aurApp, uint8 mode, bool apply) const
+{
+    if (!(mode & (AURA_EFFECT_HANDLE_CHANGE_AMOUNT_MASK | AURA_EFFECT_HANDLE_STAT)))
+        return;
+
+    Unit* target = aurApp->GetTarget();
+    if (!target)
+        return;
+
+    float l_TimeRate = target->m_unitData->ModTimeRate;
+    ApplyPercentModFloatVar(l_TimeRate, GetAmount(), !apply);
+    target->SetModTimeRate(l_TimeRate);
+
+    target->UpdateSpeed(MOVE_RUN);
+    target->UpdateSpeed(MOVE_WALK);
+    target->UpdateSpeed(MOVE_SWIM);
+    target->UpdateSpeed(MOVE_FLIGHT);
+    target->UpdateSpeed(MOVE_RUN_BACK);
+    target->UpdateSpeed(MOVE_SWIM_BACK);
+    target->UpdateSpeed(MOVE_FLIGHT_BACK);
+
+    if (target->IsCreature() && target->IsSplineEnabled())
+    {
+        target->SendAdjustSplineDuration(l_TimeRate);
+        target->UpdateSplineSpeed();
+    }
+
+    auto player = target->ToPlayer();
+    if (!player)
+        return;
+
+    float Multiplier = 1.0f;
+    ApplyPercentModFloatVar(Multiplier, GetAmount(), !apply);
+
+    auto cd_list = player->GetSpellHistory()->GetCooldowns();
+    for (auto& itr : cd_list)
+    {
+        SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(itr.first);
+        if (!spellInfo)
+            continue;
+
+        //Example: 210339
+        if (spellInfo->Id == GetId())
+            continue;
+
+        player->GetSpellHistory()->SpellRecoveryRate(spellInfo->Id, Multiplier);
+
+        WorldPackets::Spells::ModifyCooldownRecoverySpeed package;
+        package.SpellId = spellInfo->Id;
+        package.SpeedRate = Multiplier;
+        package.SpeedRate2 = apply ? Multiplier : 1.0f;
+        player->SendDirectMessage(package.Write());
+    }
+
+    auto charge_list = player->GetSpellHistory()->GetCharges();
+    for (auto& itr : charge_list)
+    {
+        if (itr.second.empty())
+            return;
+
+        Clock::time_point now = Clock::now();
+        std::chrono::milliseconds cooldown = std::chrono::duration_cast<std::chrono::milliseconds>
+            (itr.second.front().RechargeEnd - now);
+        uint32 cooldownDuration = cooldown.count() * Multiplier;
+        itr.second.front().RechargeStart -= std::chrono::milliseconds(cooldownDuration);
+        itr.second.front().RechargeEnd -= std::chrono::milliseconds(cooldownDuration);
+
+        WorldPackets::Spells::ModifyChargeRecoverySpeed package;
+        package.ChargeCategoryId = itr.first;
+        package.SpeedRate = Multiplier;
+        package.UnkFloat = apply ? Multiplier : 1.0f;
+        player->SendDirectMessage(package.Write());
+    }
+
+    Unit::AuraApplicationMap appliedAuras = target->GetAppliedAuras();
+    for (Unit::AuraApplicationMap::iterator iter = appliedAuras.begin(); iter != appliedAuras.end(); ++iter)
+    {
+        if (auto aura = iter->second->GetBase())
+        {
+            if (aura->IsPassive() || aura->GetDuration() == -1 || aura->GetSpellInfo()->HasAttribute(SPELL_ATTR5_DO_NOT_DISPLAY_DURATION))
+                continue;
+
+            for (auto aurEff : aura->GetAuraEffects())
+            {
+                if (aurEff)
+                {
+                    if (!aurEff->GetPeriod())
+                        continue;
+
+                    if (apply)
+                    {
+                        int32 period = aurEff->GetPeriod() * Multiplier;
+                        aurEff->SetPeriodMod(aurEff->GetPeriodMod() - (aurEff->GetPeriod() - period));
+                        aurEff->SetAmplitude(period);
+                        aurEff->SetPeriodicTimer(aurEff->GetPeriodicTimer() * Multiplier);
+                    }
+                    else
+                    {
+                        aurEff->SetPeriodMod(0.0f);
+                        aurEff->CalculatePeriodic(aura->GetCaster());
+                    }
+                }
+            }
+
+            aura->SetMaxDuration(aura->GetMaxDuration() * Multiplier);
+            aura->SetDuration(aura->GetDuration() * Multiplier);
+            aura->TimeMod = apply ? Multiplier : 1.0f;
+            aura->SetNeedClientUpdateForTargets();
+        }
     }
 }

@@ -9361,6 +9361,14 @@ void Unit::SetSpeedRate(UnitMoveType mtype, float rate)
     }
 }
 
+void Unit::SendAdjustSplineDuration(float scale)
+{
+    WorldPackets::Movement::AdjustSplineDuration packet;
+    packet.Unit = GetGUID();
+    packet.Scale = scale;
+    SendMessageToSetInRange(packet.Write(), GetMap()->GetVisibilityRange(), false);
+}
+
 #pragma optimize( "", off )
 void Unit::FollowTarget(Unit* target)
 {
@@ -15587,4 +15595,16 @@ bool Unit::isAnySummons() const
         return false;
 
     return (m_unitTypeMask & (UNIT_MASK_GUARDIAN | UNIT_MASK_PET | UNIT_MASK_HUNTER_PET | UNIT_MASK_TOTEM | UNIT_MASK_VEHICLE | UNIT_MASK_SUMMON)) != 0;
+}
+
+void Unit::UpdateSplineSpeed()
+{
+    if (movespline->Finalized())
+        return;
+
+    // Prevent crash on empty spline
+    if (!movespline->Initialized())
+        return;
+
+    movespline->UpdateVelocity(this);
 }

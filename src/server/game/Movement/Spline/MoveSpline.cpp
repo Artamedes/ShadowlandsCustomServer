@@ -24,6 +24,35 @@
 
 namespace Movement{
 
+UnitMoveType SelectSpeedType(uint32 moveFlags)
+{
+    if (moveFlags & MOVEMENTFLAG_FLYING)
+    {
+        if (moveFlags & MOVEMENTFLAG_BACKWARD /*&& speed_obj.flight >= speed_obj.flight_back*/)
+            return MOVE_FLIGHT_BACK;
+        else
+            return MOVE_FLIGHT;
+    }
+    else if (moveFlags & MOVEMENTFLAG_SWIMMING)
+    {
+        if (moveFlags & MOVEMENTFLAG_BACKWARD /*&& speed_obj.swim >= speed_obj.swim_back*/)
+            return MOVE_SWIM_BACK;
+        else
+            return MOVE_SWIM;
+    }
+    else if (moveFlags & MOVEMENTFLAG_WALKING)
+    {
+        //if (speed_obj.run > speed_obj.walk)
+        return MOVE_WALK;
+    }
+    else if (moveFlags & MOVEMENTFLAG_BACKWARD /*&& speed_obj.run >= speed_obj.run_back*/)
+        return MOVE_RUN_BACK;
+
+    // Flying creatures use MOVEMENTFLAG_CAN_FLY or MOVEMENTFLAG_DISABLE_GRAVITY
+    // Run speed is their default flight speed.
+    return MOVE_RUN;
+}
+
 Location MoveSpline::computePosition(int32 time_point, int32 point_index) const
 {
     ASSERT(Initialized());
@@ -157,6 +186,8 @@ void MoveSpline::init_spline(MoveSplineInitArgs const& args)
     else
         spline.init_spline(&args.path[0], args.path.size(), modes[args.flags.isSmooth()], args.initialOrientation);
 
+    _velocity = args.velocity;
+
     // init spline timestamps
     if (splineflags.falling)
     {
@@ -176,6 +207,31 @@ void MoveSpline::init_spline(MoveSplineInitArgs const& args)
         spline.set_length(spline.last(), spline.isCyclic() ? 1000 : 1);
     }
     point_Idx = spline.first();
+    walk = args.walk;
+}
+
+void MoveSpline::UpdateVelocity(Unit* owner)
+{
+    if (splineflags.falling)
+        return;
+
+    uint32 moveFlags = owner->m_movementInfo.GetMovementFlags();
+    if (walk)
+        moveFlags |= MOVEMENTFLAG_WALKING;
+    else
+        moveFlags &= ~MOVEMENTFLAG_WALKING;
+
+    if (!splineflags.backward)
+        moveFlags = (moveFlags & ~MOVEMENTFLAG_BACKWARD) | MOVEMENTFLAG_FORWARD;
+    else
+        moveFlags = (moveFlags & ~MOVEMENTFLAG_FORWARD) | MOVEMENTFLAG_BACKWARD;
+
+    float velocity = owner->GetSpeed(UnitMoveType(SelectSpeedType(moveFlags)));
+    time_passed *= (_velocity / velocity);
+    _velocity = velocity;
+    CommonInitializer init(velocity);
+    spline.initLengths(init);
+    // spline.updateLengths(velocity, point_Idx, time_passed);
 }
 
 void MoveSpline::Initialize(MoveSplineInitArgs const& args)
@@ -228,6 +284,8 @@ MoveSpline::MoveSpline() : m_Id(0), time_passed(0),
     onTransport(false)
 {
     splineflags.done = true;
+    walk = false;
+    _velocity = 0.0f;
 }
 
 /// ============================================================================================
