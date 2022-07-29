@@ -25,5 +25,11 @@ namespace Torghast
         Epic     = 0xFFA335EE,
     };
 
+    enum eWorldStates
+    {
+        NextFloor    = 19143,
+        CurrentFloor = 19812,
+    };
+
     void SendAnimaPowerChoiceToPlayer(Player* player);
 }

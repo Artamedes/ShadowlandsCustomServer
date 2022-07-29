@@ -93,6 +93,7 @@ void AddSC_boss_high_adjudicator_aleez();
 
 /// Torghast
 void AddSC_TorghastMain();
+void AddSC_instance_torghast();
 
 void AddCustomScripts()
 {
@@ -168,4 +169,5 @@ void AddCustomScripts()
 
     /// Torghast
     AddSC_TorghastMain();
+    AddSC_instance_torghast();
 }

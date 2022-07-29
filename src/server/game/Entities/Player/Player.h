@@ -2959,6 +2959,18 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         AnimaPowerChoice* GetAnimaPowerChoice();
         GuidUnorderedSet ConsumedAnimaPowers;
 
+        void SetJailerTowerLevel(int8 level)
+        {
+            SetUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData)
+                .ModifyValue(&UF::ActivePlayerData::JailersTowerLevel), level);
+        }
+
+        void SetJailerTowerLevelMax(int8 level)
+        {
+            SetUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData)
+                .ModifyValue(&UF::ActivePlayerData::JailersTowerLevelMax), level);
+        }
+
         void LoadCustom(CharacterDatabaseQueryHolder const& holder);
         void SaveCustom(CharacterDatabaseTransaction trans);
         uint32 _daysLoggedIn = 0;

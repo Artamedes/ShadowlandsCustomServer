@@ -1936,11 +1936,11 @@ public:
 };
 
 // 2162
-// UPDATE instance_template SET script = 'instance_torghast' WHERE map = 2162
-struct instance_torghast : public CustomInstanceScript
+// UPDATE instance_template SET script = 'instance_old_torghast' WHERE map = 2162
+struct instance_old_torghast : public CustomInstanceScript
 {
 public:
-    instance_torghast(InstanceMap* map) : CustomInstanceScript(map)
+    instance_old_torghast(InstanceMap* map) : CustomInstanceScript(map)
     {
         ChestSpawn = { 10677.3f, -4763.18f, -0.00701382f, 2.24102f };
         Quad = { -0.0f, -0.0f, -0.900322f, -0.435225f };
@@ -2000,7 +2000,7 @@ void AddSC_OldTorghast()
    RegisterCreatureAI(npc_ashen_phylactery_700831);
    RegisterCreatureAI(npc_maw_guardian_battery_700832);
    RegisterCreatureAI(npc_mawsworn_portal_700835);
-   RegisterInstanceScript(instance_torghast, 2162);
+   RegisterInstanceScript(instance_old_torghast, 10001);
 }
 // UPDATE creature_template set scriptname = 'npc_thrall_700800' where entry = 700800;
 // UPDATE creature_template set scriptname = 'npc_sir_duke_iro_700812' where entry = 700812;
