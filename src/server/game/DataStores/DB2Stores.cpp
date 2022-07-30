@@ -1866,6 +1866,11 @@ GarrTalentRankEntry const* DB2Manager::GetTalentRankEntryByGarrTalentID(uint32 g
             return it->second;
     }
 
+    for (auto it = itr.first; it != itr.second; ++it)
+    {
+        return it->second;
+    }
+
     return nullptr;
 }
 
