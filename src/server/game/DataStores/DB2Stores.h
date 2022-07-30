@@ -491,7 +491,7 @@ public:
     std::vector<uint32> GetSpellLabelSpellsByCategoryId(uint32 categoryId) const;
     uint32 GetConduitIDFromItemID(uint32 itemId) const;
     void InsertNewHotfix(uint32 tableHash, uint32 recordId);
-    GarrTalentRankEntry const* GetTalentRankEntryByGarrTalentID(uint32 garrTalentId);
+    GarrTalentRankEntry const* GetTalentRankEntryByGarrTalentID(uint32 garrTalentId, uint32 rank = 0);
     std::vector<GarrTalentEntry const*> const* GetTalentEntriesByGarrTalentId(uint32 garrTalentId);
     std::vector < SoulbindConduitRankEntry const*> const* GetSoulbindConduitRankBySoulbindConduitID(uint32 soulbindConduitID);
     int32 GetChallengeLevelReward(uint32 challengeLevel, int8 seasonID, bool isOploteChest) const;

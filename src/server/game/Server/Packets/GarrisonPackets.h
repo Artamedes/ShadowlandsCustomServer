@@ -73,7 +73,7 @@ namespace WorldPackets
 
             ObjectGuid UnkGuid;
             int32 GarrTalentID = 0;
-            int32 UnkInt2 = 0;
+            int32 Rank = 0;
             bool UnkBool;
         };
 

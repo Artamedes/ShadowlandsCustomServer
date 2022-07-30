@@ -1,21 +1,35 @@
 #pragma once
 
-#include "AnimaPower.h"
+#include "Torghast/AnimaPower.h"
 #include "CustomInstanceScript.h"
 #include "GameObjectAI.h"
 
 namespace Torghast
 {
-    enum eGameObjects : uint32
-    {
-        PlunderedAnima = 325740,
-    };
-
     enum eSpells : uint32
     {
         CarryingChest = 295730,
         CreateChest = 295729,
+
+        CarryingChestHoard = 326785,
+        CreateChestHoard   = 326785,
+
+        NextFloorBlackout = 295040,
     };
+
+    /// Per Floor Lights
+    enum eLightParams
+    {
+        SkoldusHall = 325755,
+        FractureChambers = 325759,
+        Soulforges = 325760,
+        ColdheartInterstia = 325761,
+        Mortregar = 325762,
+        UpperReaches = 325766,
+        Lobby = 333183,
+        AdamantVaults = 357642,
+    };
+
 
     enum eRarityColors : uint32
     {

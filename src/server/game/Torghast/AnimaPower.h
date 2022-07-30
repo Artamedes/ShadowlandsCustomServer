@@ -1,7 +1,9 @@
 #pragma once
 
 #include "Common.h"
+#include "EnumFlag.h"
 #include "Optional.h"
+#include "TorghastMgr.h"
 
 #include <vector>
 
@@ -31,6 +33,17 @@ public:
     std::string Name;
 };
 
+namespace Torghast
+{
+    enum eGameObjects : uint32
+    {
+        PlunderedAnima = 325740,
+        AnimaHoard = 323351,
+        AnimaHoard2 = 324031,
+        AnimaCell = 324030,
+    };
+}
+
 class TC_GAME_API AnimaPowerChoice
 {
 public:
@@ -59,6 +72,8 @@ public:
 private:
     ObjectGuid _playerGuid;
     ObjectGuid _goGuid;
-    uint32 Rerolls = 1;
+    uint32 Rerolls = 3;
     std::vector<AnimaPower*> Powers;
+    uint32 _amount = 0;
+    EnumFlag<MawPowerFlags> _rarity = MawPowerFlags::None;
 };

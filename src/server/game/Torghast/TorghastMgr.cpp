@@ -42,7 +42,7 @@ void TorghastMgr::LoadFromDB()
     } while (result->NextRow());
 }
 
-void TorghastMgr::ChooseMawPower(Player* player, std::vector<MawPowerDB*>& powers, uint32 amount, eMawPowerRarity rarity, uint32 RequiredNpc, bool classOnly /*= false*/)
+void TorghastMgr::ChooseMawPower(Player* player, std::vector<MawPowerDB*>& powers, uint32 amount, EnumFlag<MawPowerFlags> rarity /*= MawPowerFlags::None*/, uint32 RequiredNpc, bool classOnly /*= false*/)
 {
     auto classId = player->GetClass();
 
@@ -54,13 +54,26 @@ void TorghastMgr::ChooseMawPower(Player* player, std::vector<MawPowerDB*>& power
         if (classOnly && !power->ClassID)
             return false;
 
-        if (rarity != eMawPowerRarity::Any && rarity != power->RarityID)
-            return false;
-
         if (power->CovenantID && player->m_playerData->CovenantID != power->CovenantID)
             return false;
 
-        return true;
+
+        if (rarity == MawPowerFlags::None)
+            return true;
+
+        switch (power->RarityID)
+        {
+            case eMawPowerRarity::Common:
+                return rarity.HasFlag(MawPowerFlags::Common);
+            case eMawPowerRarity::Uncommon:
+                return rarity.HasFlag(MawPowerFlags::Uncommon);
+            case eMawPowerRarity::Rare:
+                return rarity.HasFlag(MawPowerFlags::Rare);
+            case eMawPowerRarity::Epic:
+                return rarity.HasFlag(MawPowerFlags::Epic);
+            default:
+                return false;
+        }
     });
 
     if (RequiredNpc != 0)

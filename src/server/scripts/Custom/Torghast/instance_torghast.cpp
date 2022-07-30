@@ -1,4 +1,6 @@
-#include "CustomInstanceScript.h"
+#include "TorghastDefines.h"
+
+using namespace Torghast;
 
 struct instance_torghast : public InstanceScript
 {
@@ -9,6 +11,8 @@ public:
     {
         player->SetJailerTowerLevel(5);
         player->SetJailerTowerLevelMax(5);
+
+        player->CastSpell(player, eLightParams::UpperReaches, true);
     }
 
     void OnPlayerLeave(Player* player) override

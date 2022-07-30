@@ -7,11 +7,34 @@
 #include "SpellInfo.h"
 #include "SpellMgr.h"
 #include "Chat.h"
-#include "TorghastMgr.h"
 #include <sstream>
+
+using namespace Torghast;
 
 AnimaPowerChoice::AnimaPowerChoice(Player* player, GameObject* go) : _playerGuid(player->GetGUID()), _goGuid(go->GetGUID())
 {
+    switch (go->GetEntry())
+    {
+        case PlunderedAnima:
+            _amount = urand(2, 3);
+            _rarity.AddFlag(MawPowerFlags::Uncommon);
+            _rarity.AddFlag(MawPowerFlags::Common);
+            break;
+        case AnimaHoard:
+        case AnimaHoard2:
+            _amount = 3;
+            _rarity.AddFlag(MawPowerFlags::Rare);
+            _rarity.AddFlag(MawPowerFlags::Epic);
+            break;
+        case AnimaCell:
+            _amount = 3;
+            _rarity.AddFlag(MawPowerFlags::Uncommon);
+            _rarity.AddFlag(MawPowerFlags::Rare);
+            break;
+        default:
+            _amount = 3;
+            break;
+    }
 }
 
 AnimaPowerChoice::~AnimaPowerChoice()
@@ -116,7 +139,7 @@ bool AnimaPowerChoice::GeneratePowers(Player* player, uint32 mawPowerId /*= 0*/)
     else
     {
         std::vector<MawPowerDB*> selectedMawPowers;
-        sTorghastMgr->ChooseMawPower(player, selectedMawPowers);
+        sTorghastMgr->ChooseMawPower(player, selectedMawPowers, _amount, _rarity);
         for (auto mawPowerDB : selectedMawPowers)
         {
             auto mawPower = sMawPowerStore.LookupEntry(mawPowerDB->MawPowerID);

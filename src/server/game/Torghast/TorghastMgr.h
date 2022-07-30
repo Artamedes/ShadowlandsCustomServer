@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Common.h"
+#include "EnumFlag.h"
 #include <map>
 
 class Player;
@@ -13,6 +14,17 @@ enum class eMawPowerRarity
     Rare     = 3,
     Epic     = 4,
 };
+
+enum class MawPowerFlags : uint32
+{
+    None     = 0x0,
+    Common   = 0x1,
+    Uncommon = 0x2,
+    Rare     = 0x4,
+    Epic     = 0x8,
+};
+
+DEFINE_ENUM_FLAG(MawPowerFlags);
 
 struct MawPowerDB
 {
@@ -36,7 +48,7 @@ public:
     ~TorghastMgr();
 
     void LoadFromDB();
-    void ChooseMawPower(Player* player, std::vector<MawPowerDB*>& powers, uint32 amount = 3, eMawPowerRarity rarity = eMawPowerRarity::Any, uint32 RequiredNpc = 0, bool classOnly = false);
+    void ChooseMawPower(Player* player, std::vector<MawPowerDB*>& powers, uint32 amount = 3, EnumFlag<MawPowerFlags> rarity = MawPowerFlags::None, uint32 RequiredNpc = 0, bool classOnly = false);
 
 private:
     std::vector<MawPowerDB*> _mawPowersDB;

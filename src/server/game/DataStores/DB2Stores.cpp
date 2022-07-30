@@ -514,7 +514,7 @@ namespace
     std::unordered_multimap<int32, UiMapAssignmentEntry const*> _uiMapAssignmentByWmoDoodadPlacement[MAX_UI_MAP_SYSTEM];
     std::unordered_multimap<int32, UiMapAssignmentEntry const*> _uiMapAssignmentByWmoGroup[MAX_UI_MAP_SYSTEM];
     std::unordered_set<int32> _uiMapPhases;
-    std::unordered_map<uint32, GarrTalentRankEntry const*> _talentRankEntriesByTalentId;
+    std::unordered_multimap<uint32, GarrTalentRankEntry const*> _talentRankEntriesByTalentId;
     std::unordered_map<uint32, std::vector<GarrTalentEntry const*>> _garrTalentEntriesByPrerequisiteTalentID;
     std::unordered_map<uint32, std::vector<SoulbindConduitRankEntry const*>> _soulbindConduitRankBySoulbindConduitIDs;
     std::unordered_map<uint32, RuneforgeLegendaryAbilityEntry const*> _legendaryAbilityEntriesByItemId;
@@ -1602,7 +1602,7 @@ uint32 DB2Manager::LoadStores(std::string const& dataPath, LocaleConstant defaul
         ItemIDToConduitID[entry->ItemID] = entry->ConduitID;
 
     for (auto entry : sGarrTalentRankStore)
-        _talentRankEntriesByTalentId[entry->GarrTalentID] = entry;
+        _talentRankEntriesByTalentId.insert(std::make_pair(entry->GarrTalentID, entry));
 
     for (auto entry : sGarrTalentStore)
     {
@@ -1856,11 +1856,16 @@ void DB2Manager::InsertNewHotfix(uint32 tableHash, uint32 recordId)
     _hotfixData[hotfixRecord.ID.PushID].push_back(hotfixRecord);
 }
 
-GarrTalentRankEntry const* DB2Manager::GetTalentRankEntryByGarrTalentID(uint32 garrTalentId)
+GarrTalentRankEntry const* DB2Manager::GetTalentRankEntryByGarrTalentID(uint32 garrTalentId, uint32 rank /*= 0*/)
 {
-    auto itr = _talentRankEntriesByTalentId.find(garrTalentId);
-    if (itr != _talentRankEntriesByTalentId.end())
-        return itr->second;
+    auto itr = _talentRankEntriesByTalentId.equal_range(garrTalentId);
+
+    for (auto it = itr.first; it != itr.second; ++it)
+    {
+        if (it->second->Rank == rank)
+            return it->second;
+    }
+
     return nullptr;
 }
 

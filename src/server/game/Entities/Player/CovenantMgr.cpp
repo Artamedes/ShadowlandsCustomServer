@@ -917,12 +917,13 @@ void CovenantMgr::AddGarrisonInfo(WorldPackets::Garrison::GetGarrisonInfoResult&
 }
 
 
-void CovenantMgr::LearnConduit(GarrTalentEntry const* talent, GarrTalentTreeEntry const* tree)
+void CovenantMgr::LearnConduit(GarrTalentEntry const* talent, GarrTalentTreeEntry const* tree, uint32 Rank /*= 1*/)
 {
     Conduit conduit(_player);
     conduit.TalentEntryId = talent->ID;
     conduit.TreeEntryId = tree->ID;
     conduit.Flags = GarrisonTalentFlags::TalentFlagEnabled;
+    conduit.Rank = Rank;
 
     auto covenant = GetCovenant();
     auto soulbindID = GetSoulbindIDFromTalentTreeId(talent->GarrTalentTreeID);
@@ -932,12 +933,17 @@ void CovenantMgr::LearnConduit(GarrTalentEntry const* talent, GarrTalentTreeEntr
     {
         if (i->second.TalentEntryId == talent->ID)
         {
+            // Update rank
+            i->second.Rank = Rank;
             found = true;
             break;
         }
     }
     if (!found)
         covenant->AddConduit(conduit);
+
+    // unapply
+    conduit.FlagsUpdated(true);
 
     // SMSG_GARRISON_RESEARCH_TALENT_RESULT send instead
     //_player->SendGarrisonInfoResult();
@@ -960,6 +966,7 @@ void CovenantMgr::LearnConduit(GarrTalentEntry const* talent, GarrTalentTreeEntr
     WorldPackets::Garrison::GarrisonTalentCompleted result2;
     result2.GarrTypeID = 111;
     result2.GarrTalentID = talent->ID;
+    result2.UnkInt1 = Rank;
     _player->SendDirectMessage(result2.Write());
     covenant->SetSaveConduits();
 }

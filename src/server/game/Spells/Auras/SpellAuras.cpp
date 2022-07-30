@@ -158,6 +158,12 @@ void AuraApplication::_InitFlags(Unit* caster, uint32 effMask)
         GetBase()->HasEffectType(SPELL_AURA_MOD_VISIBILITY_RANGE) ||
         GetBase()->HasEffectType(SPELL_AURA_MOD_RECOVERY_RATE))
         _flags |= AFLAG_SCALABLE;
+
+    // PIGPIGPIGPIGPIGPIGPIG
+    // TODO make a map in DB2Stores order by SpellId of maw power
+    for (auto mawPower : sMawPowerStore)
+        if (mawPower->SpellID == GetBase()->GetId())
+            _flags |= AFLAG_MAW_POWER;
 }
 
 void AuraApplication::_HandleEffect(uint8 effIndex, bool apply)

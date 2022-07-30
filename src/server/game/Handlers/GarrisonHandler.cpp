@@ -61,14 +61,14 @@ void WorldSession::HandleGarrisonGetMapData(WorldPackets::Garrison::GarrisonGetM
 void WorldSession::HandleGarrisonResearchTalent(WorldPackets::Garrison::GarrisonResearchTalent& researchResult)
 {
     TC_LOG_TRACE("network.opcode", "HandleGarrisonResearchTalent GarrTalentID: %u %u %s",
-        researchResult.GarrTalentID, researchResult.UnkInt2, researchResult.UnkGuid.ToString().c_str());
+        researchResult.GarrTalentID, researchResult.Rank, researchResult.UnkGuid.ToString().c_str());
     if (auto talent = sGarrTalentStore.LookupEntry(researchResult.GarrTalentID))
     {
         if (auto tree = sGarrTalentTreeStore.LookupEntry(talent->GarrTalentTreeID))
         {
             if (tree->GarrTypeID == 111)
             {
-                _player->GetCovenantMgr()->LearnConduit(talent, tree);
+                _player->GetCovenantMgr()->LearnConduit(talent, tree, researchResult.Rank);
                 _player->KilledMonsterCredit(7000002);
             }
         }

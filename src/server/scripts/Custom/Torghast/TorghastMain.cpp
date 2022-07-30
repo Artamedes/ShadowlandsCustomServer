@@ -6,6 +6,7 @@
 
 using namespace Torghast;
 
+// Used by all anima powers
 struct go_plundered_anima : public GameObjectAI
 {
 public:
@@ -88,7 +89,23 @@ public:
     //std::unordered_map<ObjectGuid, AnimaPowerChoice*> m_PowersPerPlayer;
 };
 
+struct npc_box_of_many_things : public ScriptedAI
+{
+public:
+    npc_box_of_many_things(Creature* creature) : ScriptedAI(creature) { }
+
+    bool OnGossipHello(Player* player) override
+    {
+        WorldPacket data(SMSG_GARRISON_OPEN_TALENT_NPC, 23);
+        data << me->GetGUID();
+        data << uint32(461);
+        data << uint32(0);
+        player->SendDirectMessage(&data);
+    }
+};
+
 void AddSC_TorghastMain()
 {
     RegisterGameObjectAI(go_plundered_anima);
+    RegisterCreatureAI(npc_box_of_many_things);
 }

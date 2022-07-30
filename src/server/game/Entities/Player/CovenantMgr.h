@@ -245,7 +245,7 @@ class TC_GAME_API CovenantMgr
 
         void AddGarrisonInfo(WorldPackets::Garrison::GetGarrisonInfoResult & garrisonInfo);
         void LearnSoulbindConduit(Item* item);
-        void LearnConduit(GarrTalentEntry const* talent, GarrTalentTreeEntry const* tree);
+        void LearnConduit(GarrTalentEntry const* talent, GarrTalentTreeEntry const* tree, uint32 Rank = 1);
         void BuildGarrisonPacket(WorldPackets::Garrison::GarrisonInfo& result);
         void LearnTalent(WorldPackets::Garrison::GarrisonLearnTalent& researchResult);
         Conduit* GetConduitByGarrTalentId(uint32 garrTalentId);
