@@ -2,6 +2,7 @@
 #include "TorghastDefines.h"
 #include "QuestPackets.h"
 #include "Player.h"
+#include "MoveSpline.h"
 #include "GossipDef.h"
 
 using namespace Torghast;
@@ -104,8 +105,32 @@ public:
     }
 };
 
+struct npc_next_floor : public ScriptedAI
+{
+public:
+    npc_next_floor(Creature* creature) : ScriptedAI(creature) { }
+
+    void MoveInLineOfSight(Unit* who) override
+    {
+        if (who->IsPlayer() && who->GetDistance(me) <= 3.7f && (!who->movespline || who->movespline->Finalized()))
+        {
+            who->CastSpell(who, Torghast::eSpells::NextFloorBlackout, true);
+            who->SetOrientation(me->GetOrientation());
+            Position l_CurrentPos = *who;
+
+            l_CurrentPos.m_positionX -= 10.0f * std::cos(l_CurrentPos.GetOrientation());
+            l_CurrentPos.m_positionY -= 10.0f * std::sin(l_CurrentPos.GetOrientation());
+            l_CurrentPos.SetOrientation(l_CurrentPos.GetAngle(l_CurrentPos.m_positionX, l_CurrentPos.m_positionY));
+            l_CurrentPos.m_positionZ += 10.0f;
+
+            who->GetMotionMaster()->MovePoint(0, l_CurrentPos, MOVE_PATHFINDING | MOVE_WALK_MODE);
+        }
+    }
+};
+
 void AddSC_TorghastMain()
 {
     RegisterGameObjectAI(go_plundered_anima);
     RegisterCreatureAI(npc_box_of_many_things);
+    RegisterCreatureAI(npc_next_floor);
 }

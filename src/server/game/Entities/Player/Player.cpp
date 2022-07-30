@@ -9777,7 +9777,7 @@ void Player::SendNotifyLootItemRemoved(ObjectGuid lootObj, uint8 lootSlot) const
     SendDirectMessage(packet.Write());
 }
 
-void Player::SendUpdateWorldState(uint32 variable, uint32 value, bool hidden /*= false*/) const
+void Player::SendUpdateWorldState(uint32 variable, int32 value, bool hidden /*= false*/) const
 {
     WorldPackets::WorldState::UpdateWorldState worldstate;
     worldstate.VariableID = variable;

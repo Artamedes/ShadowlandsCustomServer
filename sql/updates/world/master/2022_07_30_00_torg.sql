@@ -1,0 +1,1 @@
+UPDATE creature_template SET scriptname = 'npc_next_floor' WHERE entry = 156480;

@@ -309,7 +309,16 @@ class TC_GAME_API CovenantMgr
         /// </summary>
         void SetSaveConduits();
 
-    private:
+        /// <summary>
+        /// Returns a reference of our _conduits
+        /// </summary>
+        /// <returns></returns>
+        std::unordered_map<uint32, Conduit*>& GetConduits()
+        {
+            return _conduits;
+        }
+
+private:
         Player* _player;
         size_t _currCovenantIndex;
         std::array<std::unique_ptr<Covenant>, 5> _playerCovenants = { };

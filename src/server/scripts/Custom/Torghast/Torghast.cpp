@@ -1,7 +1,7 @@
 #include "TorghastDefines.h"
 #include "QuestPackets.h"
 #include "Player.h"
-#include "AnimaPower.h"
+#include "Torghast/AnimaPower.h"
 #include "GossipDef.h"
 
 void Torghast::SendAnimaPowerChoiceToPlayer(Player* player)

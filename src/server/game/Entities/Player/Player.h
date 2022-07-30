@@ -2428,7 +2428,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void DeleteEquipmentSet(uint64 id);
 
         void SendInitWorldStates(uint32 zoneId, uint32 areaId);
-        void SendUpdateWorldState(uint32 variable, uint32 value, bool hidden = false) const;
+        void SendUpdateWorldState(uint32 variable, int32 value, bool hidden = false) const;
         void SendDirectMessage(WorldPacket const* data) const;
 
         void SendAurasForTarget(Unit* target) const;
