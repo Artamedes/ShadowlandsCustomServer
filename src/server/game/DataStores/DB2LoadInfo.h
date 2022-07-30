@@ -2278,6 +2278,28 @@ struct GarrTalentLoadInfo
     }
 };
 
+struct GarrTalentCostLoadInfo
+{
+    static DB2LoadInfo const* Instance()
+    {
+        static DB2FieldMeta const fields[] =
+        {
+            { false, FT_LONG, "MoneyQuantity" },
+            { false, FT_INT, "ID" },
+            { false, FT_INT, "GarrTalentTreeID" },
+            { false, FT_INT, "GarrTalentID" },
+            { false, FT_INT, "RankIndex" },
+            { false, FT_INT, "GarrTalentRankID" },
+            { false, FT_INT, "CostType" },
+            { false, FT_INT, "CurrencyTypesID" },
+            { false, FT_INT, "CurrencyQuantity" },
+
+        };
+        static DB2LoadInfo const loadInfo(&fields[0], std::extent<decltype(fields)>::value, GarrTalentCostMeta::Instance(), HOTFIX_SEL_GARR_TALENT_COST);
+        return &loadInfo;
+    }
+};
+
 struct GarrTalentRankLoadInfo
 {
     static DB2LoadInfo const* Instance()

@@ -1785,6 +1785,19 @@ struct GarrTalentEntry
     uint32 GarrTalentSocketPropertiesID;
 };
 
+struct GarrTalentCostEntry
+{
+    uint64 MoneyQuantity;
+    uint32 ID;
+    uint32 GarrTalentTreeID;
+    uint32 GarrTalentID;
+    uint32 RankIndex;
+    uint32 GarrTalentRankID;
+    uint32 CostType;
+    uint32 CurrencyTypesID;
+    uint32 CurrencyQuantity;
+};
+
 struct GarrTalentRankEntry
 {
     uint32 ID;

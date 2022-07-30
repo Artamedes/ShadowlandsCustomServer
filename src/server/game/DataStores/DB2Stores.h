@@ -119,6 +119,7 @@ TC_GAME_API extern DB2Storage<GarrPlotInstanceEntry>                sGarrPlotIns
 TC_GAME_API extern DB2Storage<GarrSiteLevelEntry>                   sGarrSiteLevelStore;
 TC_GAME_API extern DB2Storage<GarrSiteLevelPlotInstEntry>           sGarrSiteLevelPlotInstStore;
 TC_GAME_API extern DB2Storage<GarrTalentEntry>                      sGarrTalentStore;
+TC_GAME_API extern DB2Storage<GarrTalentCostEntry>                  sGarrTalentCostStore;
 TC_GAME_API extern DB2Storage<GarrTalentRankEntry>                  sGarrTalentRankStore;
 TC_GAME_API extern DB2Storage<GarrTalentTreeEntry>                  sGarrTalentTreeStore;
 TC_GAME_API extern DB2Storage<GemPropertiesEntry>                   sGemPropertiesStore;
@@ -497,7 +498,7 @@ public:
     int32 GetChallengeLevelReward(uint32 challengeLevel, int8 seasonID, bool isOploteChest) const;
     RuneforgeLegendaryAbilityEntry const* GetRuneforgeLegendaryAbilityEntryByItemID(uint32 itemId);
     RuneforgeLegendaryAbilityEntry const* GetRuneforgeLegendaryAbilityEntryBySpellID(uint32 spellId);
-
+    std::vector<GarrTalentCostEntry const*> const* GetGarrTalentCostEntriesByGarrTalentId(uint32 garrTalentId) const;
 private:
     friend class DB2HotfixGeneratorBase;
     int32 _maxHotfixId = 0;

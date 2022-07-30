@@ -151,6 +151,7 @@ DB2Storage<GarrPlotInstanceEntry>               sGarrPlotInstanceStore("GarrPlot
 DB2Storage<GarrSiteLevelEntry>                  sGarrSiteLevelStore("GarrSiteLevel.db2", GarrSiteLevelLoadInfo::Instance());
 DB2Storage<GarrSiteLevelPlotInstEntry>          sGarrSiteLevelPlotInstStore("GarrSiteLevelPlotInst.db2", GarrSiteLevelPlotInstLoadInfo::Instance());
 DB2Storage<GarrTalentEntry>                     sGarrTalentStore("GarrTalent.db2", GarrTalentLoadInfo::Instance());
+DB2Storage<GarrTalentCostEntry>                 sGarrTalentCostStore("GarrTalentCost.db2", GarrTalentCostLoadInfo::Instance());
 DB2Storage<GarrTalentRankEntry>                 sGarrTalentRankStore("GarrTalentRank.db2", GarrTalentRankLoadInfo::Instance());
 DB2Storage<GarrTalentTreeEntry>                 sGarrTalentTreeStore("GarrTalentTree.db2", GarrTalentTreeLoadInfo::Instance());
 DB2Storage<GemPropertiesEntry>                  sGemPropertiesStore("GemProperties.db2", GemPropertiesLoadInfo::Instance());
@@ -519,6 +520,7 @@ namespace
     std::unordered_map<uint32, std::vector<SoulbindConduitRankEntry const*>> _soulbindConduitRankBySoulbindConduitIDs;
     std::unordered_map<uint32, RuneforgeLegendaryAbilityEntry const*> _legendaryAbilityEntriesByItemId;
     std::unordered_map<uint32, RuneforgeLegendaryAbilityEntry const*> _legendaryAbilityEntriesBySpellId;
+    std::unordered_map<uint32, std::vector<GarrTalentCostEntry const*>> _garrTalentCostEntriesByTalentID;
     WMOAreaTableLookupContainer _wmoAreaTableLookup;
 }
 
@@ -752,6 +754,7 @@ uint32 DB2Manager::LoadStores(std::string const& dataPath, LocaleConstant defaul
     LOAD_DB2(sGarrSiteLevelStore);
     LOAD_DB2(sGarrSiteLevelPlotInstStore);
     LOAD_DB2(sGarrTalentStore);
+    LOAD_DB2(sGarrTalentCostStore);
     LOAD_DB2(sGarrTalentRankStore);
     LOAD_DB2(sGarrTalentTreeStore);
     LOAD_DB2(sGemPropertiesStore);
@@ -1608,6 +1611,12 @@ uint32 DB2Manager::LoadStores(std::string const& dataPath, LocaleConstant defaul
     {
         if (entry->PrerequesiteTalentID > 0)
             _garrTalentEntriesByPrerequisiteTalentID[entry->PrerequesiteTalentID].push_back(entry);
+    }
+
+    for (auto entry : sGarrTalentCostStore)
+    {
+        if (entry->GarrTalentID)
+            _garrTalentCostEntriesByTalentID[entry->GarrTalentID].push_back(entry);
     }
 
     for (auto entry : sSoulbindConduitRankStore)
@@ -3597,6 +3606,15 @@ RuneforgeLegendaryAbilityEntry const* DB2Manager::GetRuneforgeLegendaryAbilityEn
     auto it = _legendaryAbilityEntriesBySpellId.find(spellId);
     if (it != _legendaryAbilityEntriesBySpellId.end())
         return it->second;
+
+    return nullptr;
+}
+
+std::vector<GarrTalentCostEntry const*> const* DB2Manager::GetGarrTalentCostEntriesByGarrTalentId(uint32 garrTalentId) const
+{
+    auto it = _garrTalentCostEntriesByTalentID.find(garrTalentId);
+    if (it != _garrTalentCostEntriesByTalentID.end())
+        return &it->second;
 
     return nullptr;
 }

@@ -2012,4 +2012,11 @@ enum WorldStateExpressionFunctions
     WSE_FUNCTION_MAX,
 };
 
+enum GarrTalentCostType : uint32
+{
+    GARR_TALENT_COST_TYPE_INITAL         = 0,
+    GARR_TALENT_COST_TYPE_RESPEC         = 1,
+    GARR_TALENT_COST_TYPE_MAKE_PERMANENT = 2,
+};
+
 #endif

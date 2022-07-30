@@ -220,6 +220,7 @@ class TC_GAME_API CovenantMgr
     public:
         CovenantMgr(Player* player);
         ~CovenantMgr();
+        static constexpr uint32 TheShadowlands = 111;
 
         void LoadFromDB(CharacterDatabaseQueryHolder const& holder);
         void SaveToDB(CharacterDatabaseTransaction trans);

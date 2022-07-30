@@ -40,7 +40,7 @@ void Covenant::SetSoulbind(SoulbindID soulbind, bool sendPacket /*= false*/)
         if (sendPacket)
         {
             WorldPackets::Garrison::AddSpecGroups packet;
-            packet.GarrTypeID = 111;
+            packet.GarrTypeID = CovenantMgr::TheShadowlands;
             packet.SpecGroups.resize(1);
             packet.SpecGroups[0].ChrSpecializationID = _player->GetSpecializationId();
             packet.SpecGroups[0].SoulbindID = static_cast<int32>(GetSoulbindID());
@@ -281,7 +281,7 @@ void Covenant::SocketTalent(WorldPackets::Garrison::GarrisonSocketTalent& packet
 {
     // SMSG_GARRISON_APPLY_TALENT_SOCKET_DATA_CHANGES
     WorldPackets::Garrison::GarrisonApplyTalentSocketDataChanges response;
-    response.GarrTypeID = 111;
+    response.GarrTypeID = CovenantMgr::TheShadowlands;
     //response.Sockets.resize(packet.Sockets.size());
     for (int i = 0; i < packet.Sockets.size(); ++i)
     {
@@ -857,7 +857,7 @@ void CovenantMgr::LearnSoulbindConduit(Item* item)
     // SMSG_GARRISON_COLLECTION_UPDATE_ENTRY
     WorldPackets::Garrison::GarrisonCollectionUpdateEntry packet;
 
-    packet.GarrTypeID = 111;
+    packet.GarrTypeID = CovenantMgr::TheShadowlands;
     packet.UnkInt2 = 1; // Type.
     packet.Socket.SoulbindConduitID = conduitId;
     packet.Socket.SoulbindConduitRank = rank;
@@ -882,7 +882,7 @@ void CovenantMgr::AddGarrisonInfo(WorldPackets::Garrison::GetGarrisonInfoResult&
 {
     WorldPackets::Garrison::GarrisonInfo cov;
 
-    cov.GarrTypeID = 111; // GarrType.db2
+    cov.GarrTypeID = CovenantMgr::TheShadowlands; // GarrType.db2
     cov.GarrSiteID = 299; // don't know
     cov.GarrSiteLevelID = 864; // GarrSiteLevel.db2
 
@@ -953,7 +953,7 @@ void CovenantMgr::LearnConduit(GarrTalentEntry const* talent, GarrTalentTreeEntr
     // unkbit: True
 
     WorldPackets::Garrison::GarrisonResearchTalentResult result;
-    result.GarrTypeID = 111;
+    result.GarrTypeID = CovenantMgr::TheShadowlands;
     conduit->BuildGarrisonTalent(result.talent);
     _player->SendDirectMessage(result.Write());
 
@@ -963,7 +963,7 @@ void CovenantMgr::LearnConduit(GarrTalentEntry const* talent, GarrTalentTreeEntr
     // SMSG_CRITERIA_UPDATE Criteria ID, 30952, 3x Quantity
     // SMSG_GARRISON_TALENT_COMPLETED
     WorldPackets::Garrison::GarrisonTalentCompleted result2;
-    result2.GarrTypeID = 111;
+    result2.GarrTypeID = CovenantMgr::TheShadowlands;
     result2.GarrTalentID = talent->ID;
     result2.UnkInt1 = Rank;
     _player->SendDirectMessage(result2.Write());
@@ -1011,12 +1011,12 @@ void CovenantMgr::LearnTalent(WorldPackets::Garrison::GarrisonLearnTalent& resea
 
             //// TODO: Verify this. - seems fine
             WorldPackets::Garrison::GarrisonResearchTalentResult result;
-            result.GarrTypeID = 111;
+            result.GarrTypeID = CovenantMgr::TheShadowlands;
             conduit->BuildGarrisonTalent(result.talent);
             _player->SendDirectMessage(result.Write());
 
             WorldPackets::Garrison::GarrisonTalentCompleted result2;
-            result2.GarrTypeID = 111;
+            result2.GarrTypeID = CovenantMgr::TheShadowlands;
             result2.GarrTalentID = pTalent->ID;
             _player->SendDirectMessage(result2.Write());
         }
@@ -1050,7 +1050,7 @@ void CovenantMgr::LearnTalent(WorldPackets::Garrison::GarrisonLearnTalent& resea
     }
 
     WorldPackets::Garrison::GarrisonSwitchTalentTreeBranch packet;
-    packet.GarrTypeID = 111;
+    packet.GarrTypeID = CovenantMgr::TheShadowlands;
 
     for (auto itr : _conduits)
     {
