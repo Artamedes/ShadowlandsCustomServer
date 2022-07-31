@@ -163,6 +163,7 @@ bool Group::Create(Player* leader)
 
     m_guid = ObjectGuid::Create<HighGuid::Party>(sGroupMgr->GenerateGroupId());
     m_leaderGuid = leaderGuid;
+    m_leaderFactionGroup = Player::GetFactionGroupForRace(leader->GetRace());
     m_leaderName = leader->GetName();
     leader->SetPlayerFlag(PLAYER_FLAGS_GROUP_LEADER);
 
@@ -239,9 +240,12 @@ void Group::LoadGroupFromDB(Field* fields)
     m_leaderGuid = ObjectGuid::Create<HighGuid::Player>(fields[0].GetUInt64());
 
     // group leader not exist
-    if (!sCharacterCache->GetCharacterNameByGuid(m_leaderGuid, m_leaderName))
+    CharacterCacheEntry const* leader = sCharacterCache->GetCharacterCacheByGuid(m_leaderGuid);
+    if (!leader)
         return;
 
+    m_leaderFactionGroup = Player::GetFactionGroupForRace(leader->Race);
+    m_leaderName = leader->Name;
     m_lootMethod = LootMethod(fields[1].GetUInt8());
     m_looterGuid = ObjectGuid::Create<HighGuid::Player>(fields[2].GetUInt64());
     m_lootThreshold = ItemQualities(fields[3].GetUInt8());
@@ -393,6 +397,7 @@ bool Group::AddLeaderInvite(Player* player)
         return false;
 
     m_leaderGuid = player->GetGUID();
+    m_leaderFactionGroup = Player::GetFactionGroupForRace(player->GetRace());
     m_leaderName = player->GetName();
     return true;
 }
@@ -795,6 +800,7 @@ void Group::ChangeLeader(ObjectGuid newLeaderGuid, int8 partyIndex)
 
     newLeader->SetPlayerFlag(PLAYER_FLAGS_GROUP_LEADER);
     m_leaderGuid = newLeader->GetGUID();
+    m_leaderFactionGroup = Player::GetFactionGroupForRace(newLeader->GetRace());
     m_leaderName = newLeader->GetName();
     ToggleGroupMemberFlag(slot, MEMBER_FLAG_ASSISTANT, false);
 
@@ -1762,6 +1768,7 @@ void Group::SendUpdateToPlayer(ObjectGuid playerGUID, MemberSlot* slot)
 
     partyUpdate.PartyGUID = m_guid;
     partyUpdate.LeaderGUID = m_leaderGuid;
+    partyUpdate.LeaderFactionGroup = m_leaderFactionGroup;
 
     partyUpdate.SequenceNum = player->NextGroupUpdateSequenceNumber(m_groupCategory);
 
@@ -1780,12 +1787,7 @@ void Group::SendUpdateToPlayer(ObjectGuid playerGUID, MemberSlot* slot)
         playerInfos.Name = citr->name;
         playerInfos.Class = citr->_class;
 
-        ChrRacesEntry const* race = sChrRacesStore.LookupEntry(citr->race);
-        if (race)
-        {
-            FactionTemplateEntry const* raceFaction = sFactionTemplateStore.AssertEntry(race->FactionID);
-            playerInfos.FactionGroup = raceFaction->FactionGroup;
-        }
+        playerInfos.FactionGroup = Player::GetFactionGroupForRace(citr->race);
 
         playerInfos.Status = MEMBER_STATUS_OFFLINE;
         if (member && member->GetSession() && !member->GetSession()->PlayerLogout())

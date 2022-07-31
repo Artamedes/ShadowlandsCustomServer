@@ -2462,6 +2462,7 @@ void World::SetInitialWorldSettings()
     TC_LOG_INFO("server.loading", "Initializing Opcodes...");
     opcodeTable.Initialize();
     WorldPackets::Auth::ConnectTo::InitializeEncryption();
+    WorldPackets::Auth::EnterEncryptedMode::InitializeEncryption();
 
     TC_LOG_INFO("server.loading", "Starting Arena Season...");
     sGameEventMgr->StartArenaSeason();
