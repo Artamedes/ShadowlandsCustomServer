@@ -50,6 +50,8 @@ public:
         player->SetJailerTowerLevel(0);
         player->SetJailerTowerLevelMax(0);
     }
+
+
 };
 
 // TODO: Reset phantasma on exit torghast map.

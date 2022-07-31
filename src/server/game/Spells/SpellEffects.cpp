@@ -3426,6 +3426,10 @@ void Spell::EffectActivateObject()
 
     GameObjectActions action = GameObjectActions(effectInfo->MiscValue);
 
+    // Check 305309  Warden's Authority, should only open certain objects. (Condition/SpellScript needed)?
+    if (m_spellInfo->Id == 305309)
+        return;
+
     gameObjTarget->ActivateObject(action, effectInfo->MiscValueB, m_caster, m_spellInfo->Id, int32(effectInfo->EffectIndex));
 }
 

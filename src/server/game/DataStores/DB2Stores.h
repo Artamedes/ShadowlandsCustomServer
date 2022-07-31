@@ -499,6 +499,7 @@ public:
     RuneforgeLegendaryAbilityEntry const* GetRuneforgeLegendaryAbilityEntryByItemID(uint32 itemId);
     RuneforgeLegendaryAbilityEntry const* GetRuneforgeLegendaryAbilityEntryBySpellID(uint32 spellId);
     std::vector<GarrTalentCostEntry const*> const* GetGarrTalentCostEntriesByGarrTalentId(uint32 garrTalentId) const;
+    std::vector<MawPowerEntry const*>* GetMawPowerEntriesBySpellId(uint32 spellId) const;
 private:
     friend class DB2HotfixGeneratorBase;
     int32 _maxHotfixId = 0;

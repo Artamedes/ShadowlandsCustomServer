@@ -521,6 +521,7 @@ namespace
     std::unordered_map<uint32, RuneforgeLegendaryAbilityEntry const*> _legendaryAbilityEntriesByItemId;
     std::unordered_map<uint32, RuneforgeLegendaryAbilityEntry const*> _legendaryAbilityEntriesBySpellId;
     std::unordered_map<uint32, std::vector<GarrTalentCostEntry const*>> _garrTalentCostEntriesByTalentID;
+    std::unordered_map<uint32, std::vector<MawPowerEntry const*>> _mawPowerEntriesBySpellID;
     WMOAreaTableLookupContainer _wmoAreaTableLookup;
 }
 
@@ -3614,6 +3615,15 @@ std::vector<GarrTalentCostEntry const*> const* DB2Manager::GetGarrTalentCostEntr
 {
     auto it = _garrTalentCostEntriesByTalentID.find(garrTalentId);
     if (it != _garrTalentCostEntriesByTalentID.end())
+        return &it->second;
+
+    return nullptr;
+}
+
+std::vector<MawPowerEntry const*>* DB2Manager::GetMawPowerEntriesBySpellId(uint32 spellId) const
+{
+    auto it = _mawPowerEntriesBySpellID.find(spellId);
+    if (it != _mawPowerEntriesBySpellID.end())
         return &it->second;
 
     return nullptr;

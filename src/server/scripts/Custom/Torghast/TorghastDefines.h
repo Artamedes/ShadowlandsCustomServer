@@ -85,5 +85,18 @@ namespace Torghast
         };
     }
 
+    namespace NpcEntries
+    {
+        enum : uint32
+        {
+
+        };
+    }
+
+    enum eDatas : uint32
+    {
+        GotoNextFloor = 1,
+    };
+
     void SendAnimaPowerChoiceToPlayer(Player* player);
 }

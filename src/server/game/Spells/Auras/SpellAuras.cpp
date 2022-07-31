@@ -161,9 +161,8 @@ void AuraApplication::_InitFlags(Unit* caster, uint32 effMask)
 
     // PIGPIGPIGPIGPIGPIGPIG
     // TODO make a map in DB2Stores order by SpellId of maw power
-    for (auto mawPower : sMawPowerStore)
-        if (mawPower->SpellID == GetBase()->GetId())
-            _flags |= AFLAG_MAW_POWER;
+    if (sDB2Manager.GetMawPowerEntriesBySpellId(GetBase()->GetId()))
+        _flags |= AFLAG_MAW_POWER;
 }
 
 void AuraApplication::_HandleEffect(uint8 effIndex, bool apply)
