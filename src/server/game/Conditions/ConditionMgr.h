@@ -113,6 +113,7 @@ enum ConditionTypes
     CONDITION_BATTLE_PET_COUNT         = 53,                   // SpecieId         count          ComparisonType     true if player has `count` of battle pet species
     CONDITION_SCENARIO_STEP            = 54,                   // ScenarioStepId   0              0                  true if player is at scenario with current step equal to ScenarioStepID
     CONDITION_SCENE_IN_PROGRESS        = 55,                   // SceneScriptPackageId   0        0                  true if player is playing a scene with ScriptPackageId equal to given value
+    CONDITION_PLAYER_CONDITION         = 56,                   // PlayerConditionId      0              0                  true if player satisfies PlayerCondition
     CONDITION_ACCOUNT_LEVEL            = 100,                  // SecLevel         0              0                  true if account sec level
     CONDITION_MAX
 };
