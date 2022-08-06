@@ -18440,6 +18440,11 @@ bool Player::LoadFromDB(ObjectGuid guid, CharacterDatabaseQueryHolder const& hol
             areaTrigger = sObjectMgr->GetMapEntranceTrigger(mapId);
             check = true;
         }
+
+        // relocate player on login
+        if (auto instanceMap = map->ToInstanceMap())
+            if (auto script = instanceMap->GetInstanceScript())
+                script->HandleRelocatePlayer(this);
     }
 
     if (check) // in case of special event when creating map...

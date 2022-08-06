@@ -1629,6 +1629,11 @@ uint32 DB2Manager::LoadStores(std::string const& dataPath, LocaleConstant defaul
         _legendaryAbilityEntriesBySpellId[entry->SpellID] = entry;
     }
 
+    for (auto entry : sMawPowerStore)
+    {
+        _mawPowerEntriesBySpellID[entry->SpellID].push_back(entry);
+    }
+
     TC_LOG_INFO("server.loading", ">> Initialized " SZFMTD " DB2 data stores in %u ms", _stores.size(), GetMSTimeDiffToNow(oldMSTime));
 
     return availableDb2Locales.to_ulong();

@@ -3788,6 +3788,7 @@ void Spell::EffectQuestComplete()
         return;
     Player* player = unitTarget->ToPlayer();
 
+    /// TODO: Store empty quests
     uint32 questId = effectInfo->MiscValue;
     if (questId)
     {

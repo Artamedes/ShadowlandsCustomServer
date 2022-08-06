@@ -159,8 +159,7 @@ void AuraApplication::_InitFlags(Unit* caster, uint32 effMask)
         GetBase()->HasEffectType(SPELL_AURA_MOD_RECOVERY_RATE))
         _flags |= AFLAG_SCALABLE;
 
-    // PIGPIGPIGPIGPIGPIGPIG
-    // TODO make a map in DB2Stores order by SpellId of maw power
+    /// Torghast
     if (sDB2Manager.GetMawPowerEntriesBySpellId(GetBase()->GetId()))
         _flags |= AFLAG_MAW_POWER;
 }

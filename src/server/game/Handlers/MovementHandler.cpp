@@ -106,7 +106,17 @@ void WorldSession::HandleMoveWorldportAck()
     }
 
     float z = loc.GetPositionZ() + player->GetHoverOffset();
-    player->Relocate(loc.GetPositionX(), loc.GetPositionY(), z, loc.GetOrientation());
+
+    bool skipRelocate = false;
+
+    if (auto instanceMap = newMap->ToInstanceMap())
+        if (auto script = instanceMap->GetInstanceScript())
+            if (script->HandleRelocatePlayer(player))
+                skipRelocate = true;
+
+    if (!skipRelocate)
+        player->Relocate(loc.GetPositionX(), loc.GetPositionY(), z, loc.GetOrientation());
+
     player->SetFallInformation(0, player->GetPositionZ());
 
     player->ResetMap();

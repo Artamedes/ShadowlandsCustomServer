@@ -2196,6 +2196,7 @@ public:
         p_Handler->PSendSysMessage("|cffFFBD00Guid: %s", l_Creature->GetGUID().ToString().c_str());
         p_Handler->PSendSysMessage("|cffFFBD00SpawnId: %u", l_Creature->GetSpawnId());
         p_Handler->PSendSysMessage("|cffFFBD00Displayid: %u", l_Creature->GetDisplayId());
+        p_Handler->PSendSysMessage("|cffFFBD00FactionID: %u", l_Creature->GetFaction());
         PhasingHandler::PrintToChat(p_Handler, l_Creature);
 
         return true;

@@ -38,9 +38,10 @@ namespace Torghast
     enum eGameObjects : uint32
     {
         PlunderedAnima = 325740,
-        AnimaHoard = 323351,
-        AnimaHoard2 = 324031,
-        AnimaCell = 324030,
+        AnimaHoard     = 323351,
+        AnimaHoard2    = 324031,
+        AnimaCell      = 324030,
+        PrisonersAnima = 325758,
     };
 }
 
