@@ -6,6 +6,23 @@
 
 class Player;
 
+namespace Torghast
+{
+    namespace VenariUpgradesQuests
+    {
+        enum : uint32
+        {
+            VesselOfUnfortunateSpirits = 63202, ///< NYI Makes it so your first death in Torghast is not applied to your death counter.
+            ExtradimensionalPockets    = 63183, ///< NYI Gain extra storage space while in Torghast, allowing Obleron Armaments to be found in higher amounts.
+            BangleofSeniority          = 63193, ///< NYI While in Torghast, Broker vendors will have a chance to offer you Uncommon options.
+            RitualPrismofFortune       = 63204, ///< While in Torghast, your chance of receiving Epic Anima Powers is permanently increased.
+            LoupeofUnusualCharm        = 63201, ///< NYI While in Torghast, a Broker vendor may offer you discounted Anima Hoards.
+            RankInsigniaAcquisitionist = 63200, ///< NYI While in Torghast, Broker vendors will have a chance to offer you one Rare option.
+            PossibilityMatrix          = 61144, ///< Come to a better understanding of the infinite possibilities of Anima, expanding your selection of powers within Torghast. You will always see at least two choices when using an Anima Hoard.
+        };
+    }
+}
+
 enum class eMawPowerRarity
 {
     Any      = 0,
@@ -34,6 +51,8 @@ struct MawPowerDB
     uint32 CovenantID;
     uint32 RequiredFloor;
     uint32 RequiredNpc;
+    uint32 RequiredAura;
+    uint32 RequiredQuest;
 };
 
 class TC_GAME_API TorghastMgr

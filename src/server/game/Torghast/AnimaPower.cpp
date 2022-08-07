@@ -16,7 +16,11 @@ AnimaPowerChoice::AnimaPowerChoice(Player* player, GameObject* go) : _playerGuid
     switch (go->GetEntry())
     {
         case PlunderedAnima:
-            _amount = urand(2, 3);
+            _amount = urand(1, 2);
+
+            if (player->IsQuestRewarded(VenariUpgradesQuests::PossibilityMatrix))
+                _amount++;
+
             _rarity.AddFlag(MawPowerFlags::Uncommon);
             _rarity.AddFlag(MawPowerFlags::Common);
             break;

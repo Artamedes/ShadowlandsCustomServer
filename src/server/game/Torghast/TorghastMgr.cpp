@@ -3,6 +3,8 @@
 #include "DatabaseEnv.h"
 #include "Player.h"
 
+using namespace Torghast;
+
 TorghastMgr::~TorghastMgr()
 {
     for (auto power : _mawPowersDB)
@@ -17,7 +19,7 @@ TorghastMgr::~TorghastMgr()
 
 void TorghastMgr::LoadFromDB()
 {
-    auto result = WorldDatabase.Query("SELECT MawPowerId, ClassId, RarityID, CovenantID, RequiredFloor, RequiredNpc FROM maw_power_list");
+    auto result = WorldDatabase.Query("SELECT MawPowerId, ClassId, RarityID, CovenantID, RequiredFloor, RequiredNpc, RequiredAura, RequiredQuest FROM maw_power_list");
     if (!result)
         return;
     _mawPowersDB.reserve(result->GetRowCount());
@@ -27,12 +29,14 @@ void TorghastMgr::LoadFromDB()
 
         MawPowerDB* mawPower = new MawPowerDB();
 
-        mawPower->MawPowerID    = fields[0].GetUInt32();
-        mawPower->ClassID       = fields[1].GetUInt32();
-        mawPower->RarityID      = static_cast<eMawPowerRarity>(fields[2].GetUInt32());
-        mawPower->CovenantID    = fields[3].GetUInt32();
-        mawPower->RequiredFloor = fields[4].GetUInt32();
-        mawPower->RequiredNpc   = fields[5].GetUInt32();
+        mawPower->MawPowerID     = fields[0].GetUInt32();
+        mawPower->ClassID        = fields[1].GetUInt32();
+        mawPower->RarityID       = static_cast<eMawPowerRarity>(fields[2].GetUInt32());
+        mawPower->CovenantID     = fields[3].GetUInt32();
+        mawPower->RequiredFloor  = fields[4].GetUInt32();
+        mawPower->RequiredNpc    = fields[5].GetUInt32();
+        mawPower->RequiredAura   = fields[6].GetUInt32();
+        mawPower->RequiredQuest  = fields[7].GetUInt32();
 
         _mawPowersDB.emplace_back(mawPower);
         _mawPowersByNpcEntry.insert(std::make_pair(mawPower->RequiredNpc, mawPower));
@@ -46,6 +50,15 @@ void TorghastMgr::ChooseMawPower(Player* player, std::vector<MawPowerDB*>& power
 {
     auto classId = player->GetClass();
 
+    float RareChance = irand(0, 100);
+    float EpicChance = irand(0, 100);
+
+    float RequiredRareChance = 75.0f;
+    float RequiredEpicChance = 90.0f;
+
+    if (player->IsQuestRewarded(VenariUpgradesQuests::RitualPrismofFortune))
+        RequiredEpicChance -= 10.0f;
+
     auto IsValidMawPower([&](MawPowerDB const* power) -> bool
     {
         if (power->ClassID && power->ClassID != classId)
@@ -57,9 +70,34 @@ void TorghastMgr::ChooseMawPower(Player* player, std::vector<MawPowerDB*>& power
         if (power->CovenantID && player->m_playerData->CovenantID != power->CovenantID)
             return false;
 
+        if (power->RequiredAura && !player->HasAura(power->RequiredAura))
+            return false;
+
+        if (power->RequiredQuest && !player->IsQuestRewarded(power->RequiredQuest))
+            return false;
 
         if (rarity == MawPowerFlags::None)
+        {
+            switch (power->RarityID)
+            {
+                case eMawPowerRarity::Common:
+                    break;
+                case eMawPowerRarity::Uncommon:
+                    break;
+                case eMawPowerRarity::Rare:
+                    if (RareChance < RequiredRareChance)
+                        return false;
+                    break;
+                case eMawPowerRarity::Epic:
+                    if (RareChance < RequiredEpicChance)
+                        return false;
+                    break;
+                default:
+                    break;
+            }
+
             return true;
+        }
 
         switch (power->RarityID)
         {
