@@ -23,6 +23,7 @@
 #include <G3D/Vector3.h>
 
 enum class AnimTier : uint8;
+enum UnitMoveType : uint32;
 
 namespace WorldPackets
 {
@@ -35,6 +36,8 @@ namespace WorldPackets
 
 namespace Movement
 {
+    UnitMoveType SelectSpeedType(uint32 moveFlags);
+
     struct Location : public Vector3
     {
         Location() : orientation(0) { }
@@ -99,6 +102,9 @@ namespace Movement
         int32 segment_time_elapsed() const { return next_timestamp() - time_passed; }
         int32 timeElapsed() const { return Duration() - time_passed; }
 
+        bool walk;
+        float _velocity;
+
     public:
         int32 timePassed() const { return time_passed; }
         int32 Duration() const { return spline.length(); }
@@ -111,6 +117,8 @@ namespace Movement
     public:
         void Initialize(MoveSplineInitArgs const&);
         bool Initialized() const { return !spline.empty(); }
+
+        void UpdateVelocity(Unit* owner);
 
         MoveSpline();
 

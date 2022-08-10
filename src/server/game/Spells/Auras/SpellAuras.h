@@ -329,6 +329,8 @@ class TC_GAME_API Aura
         Aura& operator=(Aura const&) = delete;
         Aura& operator=(Aura&&) = delete;
 
+        float TimeMod;
+
     private:
         AuraScript* GetScriptByType(std::type_info const& type) const;
         void _DeleteRemovedApplications();

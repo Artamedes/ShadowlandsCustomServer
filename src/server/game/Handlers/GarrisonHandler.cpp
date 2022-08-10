@@ -15,6 +15,7 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "Chat.h"
 #include "WorldSession.h"
 #include "Garrison.h"
 #include "GarrisonPackets.h"
@@ -61,14 +62,49 @@ void WorldSession::HandleGarrisonGetMapData(WorldPackets::Garrison::GarrisonGetM
 void WorldSession::HandleGarrisonResearchTalent(WorldPackets::Garrison::GarrisonResearchTalent& researchResult)
 {
     TC_LOG_TRACE("network.opcode", "HandleGarrisonResearchTalent GarrTalentID: %u %u %s",
-        researchResult.GarrTalentID, researchResult.UnkInt2, researchResult.UnkGuid.ToString().c_str());
+        researchResult.GarrTalentID, researchResult.Rank, researchResult.UnkGuid.ToString().c_str());
     if (auto talent = sGarrTalentStore.LookupEntry(researchResult.GarrTalentID))
     {
         if (auto tree = sGarrTalentTreeStore.LookupEntry(talent->GarrTalentTreeID))
         {
-            if (tree->GarrTypeID == 111)
+            if (tree->GarrTypeID == CovenantMgr::TheShadowlands)
             {
-                _player->GetCovenantMgr()->LearnConduit(talent, tree);
+                uint32 Rank = 1;
+
+                if (auto conduit = _player->GetCovenantMgr()->GetConduitByGarrTalentId(talent->ID))
+                    Rank = conduit->Rank + 1;
+
+                if (Rank != researchResult.Rank)
+                    TC_LOG_ERROR("network.opcode", "%s sent invalid rank %u in HandleGarrisonResearchTalent", GetPlayerInfo().c_str(), researchResult.Rank);
+
+                /// Handle cost for currency types
+                if (auto costEntries = sDB2Manager.GetGarrTalentCostEntriesByGarrTalentId(talent->ID))
+                {
+                    for (auto costEntry : *costEntries)
+                    {
+                        if (costEntry->CostType == GarrTalentCostType::GARR_TALENT_COST_TYPE_INITAL)
+                        {
+                            if (costEntry->CurrencyTypesID > 0)
+                            {
+                                if (auto rankEntry = sGarrTalentRankStore.LookupEntry(costEntry->GarrTalentRankID))
+                                {
+                                    if (rankEntry->Rank == Rank - 1)
+                                    {
+                                        if (_player->GetCurrency(costEntry->CurrencyTypesID) < costEntry->CurrencyQuantity)
+                                        {
+                                            ChatHandler(this).SendSysMessage("Not enough tower knowledge to research this!");
+                                            return;
+                                        }
+
+                                        _player->ModifyCurrency(costEntry->CurrencyTypesID, -int32(costEntry->CurrencyQuantity));
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                _player->GetCovenantMgr()->LearnConduit(talent, tree, Rank);
                 _player->KilledMonsterCredit(7000002);
             }
         }

@@ -530,7 +530,7 @@ public:
         return true;
     }
 
-    static bool HandleDebugUpdateWorldStateCommand(ChatHandler* handler, uint32 variable, uint32 value)
+    static bool HandleDebugUpdateWorldStateCommand(ChatHandler* handler, uint32 variable, int32 value)
     {
         handler->GetPlayer()->SendUpdateWorldState(variable, value);
         return true;

@@ -2278,6 +2278,28 @@ struct GarrTalentLoadInfo
     }
 };
 
+struct GarrTalentCostLoadInfo
+{
+    static DB2LoadInfo const* Instance()
+    {
+        static DB2FieldMeta const fields[] =
+        {
+            { false, FT_LONG, "MoneyQuantity" },
+            { false, FT_INT, "ID" },
+            { false, FT_INT, "GarrTalentTreeID" },
+            { false, FT_INT, "GarrTalentID" },
+            { false, FT_INT, "RankIndex" },
+            { false, FT_INT, "GarrTalentRankID" },
+            { false, FT_INT, "CostType" },
+            { false, FT_INT, "CurrencyTypesID" },
+            { false, FT_INT, "CurrencyQuantity" },
+
+        };
+        static DB2LoadInfo const loadInfo(&fields[0], std::extent<decltype(fields)>::value, GarrTalentCostMeta::Instance(), HOTFIX_SEL_GARR_TALENT_COST);
+        return &loadInfo;
+    }
+};
+
 struct GarrTalentRankLoadInfo
 {
     static DB2LoadInfo const* Instance()
@@ -4162,6 +4184,21 @@ struct MawPowerLoadInfo
             { true, FT_INT, "MawPowerRarityID" },
         };
         static DB2LoadInfo const loadInfo(&fields[0], std::extent<decltype(fields)>::value, MawPowerMeta::Instance(), HOTFIX_SEL_MAW_POWER);
+        return &loadInfo;
+    }
+};
+
+struct MawPowerRarityLoadInfo
+{
+    static DB2LoadInfo const* Instance()
+    {
+        static DB2FieldMeta const fields[] =
+        {
+            { false, FT_INT, "ID" },
+            { true, FT_INT, "Color" },
+            { true, FT_INT, "Border" },
+        };
+        static DB2LoadInfo const loadInfo(&fields[0], std::extent<decltype(fields)>::value, MawPowerRarityMeta::Instance(), HOTFIX_SEL_MAW_POWER_RARITY);
         return &loadInfo;
     }
 };

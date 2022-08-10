@@ -108,6 +108,7 @@
 #include "CustomObjectMgr.h"
 #include "ChallengeModeMgr.h"
 #include "CustomInstanceScript.h"
+#include "Torghast/TorghastMgr.h"
 
 #include <boost/algorithm/string.hpp>
 
@@ -2347,6 +2348,8 @@ void World::SetInitialWorldSettings()
 
     TC_LOG_INFO("server.loading", "Loading challenge save...");
     sChallengeModeMgr->LoadFromDB();
+
+    sTorghastMgr->LoadFromDB();
 
     ///- Load and initialize scripts
     sObjectMgr->LoadSpellScripts();                              // must be after load Creature/Gameobject(Template/Data)

@@ -260,9 +260,10 @@ bool InstanceSave::UnloadIfEmpty()
     if (m_playerList.empty() && m_groupList.empty())
     {
         // don't remove the save if there are still players inside the map
-        if (Map* map = sMapMgr->FindMap(GetMapId(), GetInstanceId()))
-            if (map->HavePlayers())
-                return true;
+        // disabled - instances can still reset with players inside in SL
+        //if (Map* map = sMapMgr->FindMap(GetMapId(), GetInstanceId()))
+        //    if (map->HavePlayers())
+        //        return true;
 
         if (!sInstanceSaveMgr->lock_instLists)
             sInstanceSaveMgr->RemoveInstanceSave(GetInstanceId());

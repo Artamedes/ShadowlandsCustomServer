@@ -920,6 +920,13 @@ void GameObject::Update(uint32 diff)
         }
     }
 
+    if (IsSentToClient && !DidOnAddToWorld)
+    {
+        DidOnAddToWorld = true;
+        if (AI())
+            AI()->OnAddToWorld();
+    }
+
     if (m_goTypeImpl)
         m_goTypeImpl->Update(diff);
 
@@ -2822,6 +2829,9 @@ void GameObject::Use(Unit* user)
             if (!info->playerChoiceChest.PlayerChoice)
                 return;
 
+            if (AI()->OnPlayerChoice(player))
+                break;
+
             player->SendPlayerChoice(GetGUID(), info->playerChoiceChest.PlayerChoice);
             break;
         }
@@ -3692,6 +3702,8 @@ void GameObject::UpdateDynamicFlagsForNearbyPlayers() const
 {
     ValuesUpdateForPlayerWithMaskSender sender(this);
     sender.ObjectMask.MarkChanged(&UF::ObjectData::DynamicFlags);
+    if (GetGoType() == GAMEOBJECT_TYPE_PLAYER_CHOICE_CHEST)
+        sender.GameObjectMask.MarkChanged(&UF::GameObjectData::DisplayID); ///< For anima power
     Trinity::MessageDistDeliverer<ValuesUpdateForPlayerWithMaskSender> deliverer(this, sender, GetVisibilityRange());
     Cell::VisitWorldObjects(this, deliverer, GetVisibilityRange());
 }

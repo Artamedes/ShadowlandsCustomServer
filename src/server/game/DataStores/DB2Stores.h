@@ -119,6 +119,7 @@ TC_GAME_API extern DB2Storage<GarrPlotInstanceEntry>                sGarrPlotIns
 TC_GAME_API extern DB2Storage<GarrSiteLevelEntry>                   sGarrSiteLevelStore;
 TC_GAME_API extern DB2Storage<GarrSiteLevelPlotInstEntry>           sGarrSiteLevelPlotInstStore;
 TC_GAME_API extern DB2Storage<GarrTalentEntry>                      sGarrTalentStore;
+TC_GAME_API extern DB2Storage<GarrTalentCostEntry>                  sGarrTalentCostStore;
 TC_GAME_API extern DB2Storage<GarrTalentRankEntry>                  sGarrTalentRankStore;
 TC_GAME_API extern DB2Storage<GarrTalentTreeEntry>                  sGarrTalentTreeStore;
 TC_GAME_API extern DB2Storage<GemPropertiesEntry>                   sGemPropertiesStore;
@@ -173,6 +174,7 @@ TC_GAME_API extern DB2Storage<MailTemplateEntry>                    sMailTemplat
 TC_GAME_API extern DB2Storage<MapEntry>                             sMapStore;
 TC_GAME_API extern DB2Storage<MapChallengeModeEntry>                sMapChallengeModeStore;
 TC_GAME_API extern DB2Storage<MawPowerEntry>                        sMawPowerStore;
+TC_GAME_API extern DB2Storage<MawPowerRarityEntry>                  sMawPowerRarityStore;
 TC_GAME_API extern DB2Storage<ModifierTreeEntry>                    sModifierTreeStore;
 TC_GAME_API extern DB2Storage<MountCapabilityEntry>                 sMountCapabilityStore;
 TC_GAME_API extern DB2Storage<MountEntry>                           sMountStore;
@@ -490,13 +492,14 @@ public:
     std::vector<uint32> GetSpellLabelSpellsByCategoryId(uint32 categoryId) const;
     uint32 GetConduitIDFromItemID(uint32 itemId) const;
     void InsertNewHotfix(uint32 tableHash, uint32 recordId);
-    GarrTalentRankEntry const* GetTalentRankEntryByGarrTalentID(uint32 garrTalentId);
+    GarrTalentRankEntry const* GetTalentRankEntryByGarrTalentID(uint32 garrTalentId, uint32 rank = 0);
     std::vector<GarrTalentEntry const*> const* GetTalentEntriesByGarrTalentId(uint32 garrTalentId);
     std::vector < SoulbindConduitRankEntry const*> const* GetSoulbindConduitRankBySoulbindConduitID(uint32 soulbindConduitID);
     int32 GetChallengeLevelReward(uint32 challengeLevel, int8 seasonID, bool isOploteChest) const;
     RuneforgeLegendaryAbilityEntry const* GetRuneforgeLegendaryAbilityEntryByItemID(uint32 itemId);
     RuneforgeLegendaryAbilityEntry const* GetRuneforgeLegendaryAbilityEntryBySpellID(uint32 spellId);
-
+    std::vector<GarrTalentCostEntry const*> const* GetGarrTalentCostEntriesByGarrTalentId(uint32 garrTalentId) const;
+    std::vector<MawPowerEntry const*>* GetMawPowerEntriesBySpellId(uint32 spellId) const;
 private:
     friend class DB2HotfixGeneratorBase;
     int32 _maxHotfixId = 0;

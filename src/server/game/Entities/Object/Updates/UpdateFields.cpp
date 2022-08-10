@@ -4245,7 +4245,7 @@ void ActivePlayerData::ClearChangesMask()
 
 void GameObjectData::WriteCreate(ByteBuffer& data, EnumFlag<UpdateFieldFlag> fieldVisibilityFlags, GameObject const* owner, Player const* receiver) const
 {
-    data << int32(DisplayID);
+    data << int32(ViewerDependentValue<DisplayIDTag>::GetValue(this, owner, receiver));
     data << uint32(SpellVisualID);
     data << uint32(StateSpellVisualID);
     data << uint32(SpawnTrackingStateAnimID);
@@ -4324,7 +4324,7 @@ void GameObjectData::WriteUpdate(ByteBuffer& data, Mask const& changesMask, bool
         }
         if (changesMask[3])
         {
-            data << int32(DisplayID);
+            data << int32(ViewerDependentValue<DisplayIDTag>::GetValue(this, owner, receiver));
         }
         if (changesMask[4])
         {

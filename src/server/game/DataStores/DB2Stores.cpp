@@ -151,6 +151,7 @@ DB2Storage<GarrPlotInstanceEntry>               sGarrPlotInstanceStore("GarrPlot
 DB2Storage<GarrSiteLevelEntry>                  sGarrSiteLevelStore("GarrSiteLevel.db2", GarrSiteLevelLoadInfo::Instance());
 DB2Storage<GarrSiteLevelPlotInstEntry>          sGarrSiteLevelPlotInstStore("GarrSiteLevelPlotInst.db2", GarrSiteLevelPlotInstLoadInfo::Instance());
 DB2Storage<GarrTalentEntry>                     sGarrTalentStore("GarrTalent.db2", GarrTalentLoadInfo::Instance());
+DB2Storage<GarrTalentCostEntry>                 sGarrTalentCostStore("GarrTalentCost.db2", GarrTalentCostLoadInfo::Instance());
 DB2Storage<GarrTalentRankEntry>                 sGarrTalentRankStore("GarrTalentRank.db2", GarrTalentRankLoadInfo::Instance());
 DB2Storage<GarrTalentTreeEntry>                 sGarrTalentTreeStore("GarrTalentTree.db2", GarrTalentTreeLoadInfo::Instance());
 DB2Storage<GemPropertiesEntry>                  sGemPropertiesStore("GemProperties.db2", GemPropertiesLoadInfo::Instance());
@@ -224,6 +225,7 @@ DB2Storage<MapChallengeModeEntry>               sMapChallengeModeStore("MapChall
 DB2Storage<MapDifficultyEntry>                  sMapDifficultyStore("MapDifficulty.db2", MapDifficultyLoadInfo::Instance());
 DB2Storage<MapDifficultyXConditionEntry>        sMapDifficultyXConditionStore("MapDifficultyXCondition.db2", MapDifficultyXConditionLoadInfo::Instance());
 DB2Storage<MawPowerEntry>                       sMawPowerStore("MawPower.db2", MawPowerLoadInfo::Instance());
+DB2Storage<MawPowerRarityEntry>                 sMawPowerRarityStore("MawPowerRarity.db2", MawPowerRarityLoadInfo::Instance());
 DB2Storage<ModifierTreeEntry>                   sModifierTreeStore("ModifierTree.db2", ModifierTreeLoadInfo::Instance());
 DB2Storage<MountCapabilityEntry>                sMountCapabilityStore("MountCapability.db2", MountCapabilityLoadInfo::Instance());
 DB2Storage<MountEntry>                          sMountStore("Mount.db2", MountLoadInfo::Instance());
@@ -513,11 +515,13 @@ namespace
     std::unordered_multimap<int32, UiMapAssignmentEntry const*> _uiMapAssignmentByWmoDoodadPlacement[MAX_UI_MAP_SYSTEM];
     std::unordered_multimap<int32, UiMapAssignmentEntry const*> _uiMapAssignmentByWmoGroup[MAX_UI_MAP_SYSTEM];
     std::unordered_set<int32> _uiMapPhases;
-    std::unordered_map<uint32, GarrTalentRankEntry const*> _talentRankEntriesByTalentId;
+    std::unordered_multimap<uint32, GarrTalentRankEntry const*> _talentRankEntriesByTalentId;
     std::unordered_map<uint32, std::vector<GarrTalentEntry const*>> _garrTalentEntriesByPrerequisiteTalentID;
     std::unordered_map<uint32, std::vector<SoulbindConduitRankEntry const*>> _soulbindConduitRankBySoulbindConduitIDs;
     std::unordered_map<uint32, RuneforgeLegendaryAbilityEntry const*> _legendaryAbilityEntriesByItemId;
     std::unordered_map<uint32, RuneforgeLegendaryAbilityEntry const*> _legendaryAbilityEntriesBySpellId;
+    std::unordered_map<uint32, std::vector<GarrTalentCostEntry const*>> _garrTalentCostEntriesByTalentID;
+    std::unordered_map<uint32, std::vector<MawPowerEntry const*>> _mawPowerEntriesBySpellID;
     WMOAreaTableLookupContainer _wmoAreaTableLookup;
 }
 
@@ -751,6 +755,7 @@ uint32 DB2Manager::LoadStores(std::string const& dataPath, LocaleConstant defaul
     LOAD_DB2(sGarrSiteLevelStore);
     LOAD_DB2(sGarrSiteLevelPlotInstStore);
     LOAD_DB2(sGarrTalentStore);
+    LOAD_DB2(sGarrTalentCostStore);
     LOAD_DB2(sGarrTalentRankStore);
     LOAD_DB2(sGarrTalentTreeStore);
     LOAD_DB2(sGemPropertiesStore);
@@ -824,6 +829,7 @@ uint32 DB2Manager::LoadStores(std::string const& dataPath, LocaleConstant defaul
     LOAD_DB2(sMapDifficultyStore);
     LOAD_DB2(sMapDifficultyXConditionStore);
     LOAD_DB2(sMawPowerStore);
+    LOAD_DB2(sMawPowerRarityStore);
     LOAD_DB2(sModifierTreeStore);
     LOAD_DB2(sMountCapabilityStore);
     LOAD_DB2(sMountStore);
@@ -1600,12 +1606,18 @@ uint32 DB2Manager::LoadStores(std::string const& dataPath, LocaleConstant defaul
         ItemIDToConduitID[entry->ItemID] = entry->ConduitID;
 
     for (auto entry : sGarrTalentRankStore)
-        _talentRankEntriesByTalentId[entry->GarrTalentID] = entry;
+        _talentRankEntriesByTalentId.insert(std::make_pair(entry->GarrTalentID, entry));
 
     for (auto entry : sGarrTalentStore)
     {
         if (entry->PrerequesiteTalentID > 0)
             _garrTalentEntriesByPrerequisiteTalentID[entry->PrerequesiteTalentID].push_back(entry);
+    }
+
+    for (auto entry : sGarrTalentCostStore)
+    {
+        if (entry->GarrTalentID)
+            _garrTalentCostEntriesByTalentID[entry->GarrTalentID].push_back(entry);
     }
 
     for (auto entry : sSoulbindConduitRankStore)
@@ -1615,6 +1627,11 @@ uint32 DB2Manager::LoadStores(std::string const& dataPath, LocaleConstant defaul
     {
         _legendaryAbilityEntriesByItemId[entry->UnlockItemID] = entry;
         _legendaryAbilityEntriesBySpellId[entry->SpellID] = entry;
+    }
+
+    for (auto entry : sMawPowerStore)
+    {
+        _mawPowerEntriesBySpellID[entry->SpellID].push_back(entry);
     }
 
     TC_LOG_INFO("server.loading", ">> Initialized " SZFMTD " DB2 data stores in %u ms", _stores.size(), GetMSTimeDiffToNow(oldMSTime));
@@ -1854,11 +1871,21 @@ void DB2Manager::InsertNewHotfix(uint32 tableHash, uint32 recordId)
     _hotfixData[hotfixRecord.ID.PushID].push_back(hotfixRecord);
 }
 
-GarrTalentRankEntry const* DB2Manager::GetTalentRankEntryByGarrTalentID(uint32 garrTalentId)
+GarrTalentRankEntry const* DB2Manager::GetTalentRankEntryByGarrTalentID(uint32 garrTalentId, uint32 rank /*= 0*/)
 {
-    auto itr = _talentRankEntriesByTalentId.find(garrTalentId);
-    if (itr != _talentRankEntriesByTalentId.end())
-        return itr->second;
+    auto itr = _talentRankEntriesByTalentId.equal_range(garrTalentId);
+
+    for (auto it = itr.first; it != itr.second; ++it)
+    {
+        if (it->second->Rank == rank)
+            return it->second;
+    }
+
+    for (auto it = itr.first; it != itr.second; ++it)
+    {
+        return it->second;
+    }
+
     return nullptr;
 }
 
@@ -3585,6 +3612,24 @@ RuneforgeLegendaryAbilityEntry const* DB2Manager::GetRuneforgeLegendaryAbilityEn
     auto it = _legendaryAbilityEntriesBySpellId.find(spellId);
     if (it != _legendaryAbilityEntriesBySpellId.end())
         return it->second;
+
+    return nullptr;
+}
+
+std::vector<GarrTalentCostEntry const*> const* DB2Manager::GetGarrTalentCostEntriesByGarrTalentId(uint32 garrTalentId) const
+{
+    auto it = _garrTalentCostEntriesByTalentID.find(garrTalentId);
+    if (it != _garrTalentCostEntriesByTalentID.end())
+        return &it->second;
+
+    return nullptr;
+}
+
+std::vector<MawPowerEntry const*>* DB2Manager::GetMawPowerEntriesBySpellId(uint32 spellId) const
+{
+    auto it = _mawPowerEntriesBySpellID.find(spellId);
+    if (it != _mawPowerEntriesBySpellID.end())
+        return &it->second;
 
     return nullptr;
 }

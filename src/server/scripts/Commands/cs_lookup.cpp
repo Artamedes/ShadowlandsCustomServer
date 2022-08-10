@@ -79,6 +79,7 @@ public:
             { "title",    rbac::RBAC_PERM_COMMAND_LOOKUP_TITLE,    true, &HandleLookupTitleCommand,    "" },
             { "map",      rbac::RBAC_PERM_COMMAND_LOOKUP_MAP,      true, &HandleLookupMapCommand,      "" },
             { "map id",   rbac::RBAC_PERM_COMMAND_LOOKUP_MAP_ID,   true, &HandleLookupMapIdCommand,    "" },
+            { "mawpower", rbac::RBAC_PERM_COMMAND_LOOKUP_MAP_ID,   true, &HandleLookupMawPowerCommand, "" },
         };
 
         static ChatCommandTable commandTable =
@@ -86,6 +87,81 @@ public:
             { "lookup", lookupCommandTable },
         };
         return commandTable;
+    }
+
+    static bool HandleLookupMawPowerCommand(ChatHandler* handler, char const* args)
+    {
+        if (!*args)
+            return false;
+
+        std::string namePart = args;
+        std::wstring wNamePart;
+
+        if (!Utf8toWStr(namePart, wNamePart))
+            return false;
+
+        bool found = false;
+        uint32 count = 0;
+        uint32 maxResults = sWorld->getIntConfig(CONFIG_MAX_RESULTS_LOOKUP_COMMANDS);
+
+        // converting string that we try to find to lower case
+        wstrToLower(wNamePart);
+
+        // Search in AreaTable.dbc
+        for (uint32 i = 0; i < sMawPowerStore.GetNumRows(); ++i)
+        {
+            if (auto mawPower = sMawPowerStore.LookupEntry(i))
+                if (auto spellInfo = sSpellMgr->GetSpellInfo(mawPower->SpellID))
+            {
+                LocaleConstant locale = handler->GetSessionDbcLocale();
+                std::string name = spellInfo->SpellName->Str[locale];
+                if (name.empty())
+                    continue;
+
+                if (!Utf8FitTo(name, wNamePart))
+                {
+                    locale = LOCALE_enUS;
+                    for (; locale < TOTAL_LOCALES; locale = LocaleConstant(locale + 1))
+                    {
+                        if (locale == handler->GetSessionDbcLocale())
+                            continue;
+
+                        name = spellInfo->SpellName->Str[locale];
+                        if (name.empty())
+                            continue;
+
+                        if (Utf8FitTo(name, wNamePart))
+                            break;
+                    }
+                }
+
+                if (locale < TOTAL_LOCALES)
+                {
+                    if (maxResults && count++ == maxResults)
+                    {
+                        handler->PSendSysMessage(LANG_COMMAND_LOOKUP_MAX_RESULTS, maxResults);
+                        return true;
+                    }
+
+                    // send area in "id - [name]" format
+                    std::ostringstream ss;
+
+                    ss << "|cffFFBD00[" << i << "] ";
+                    ss << spellInfo->Id << " |cffffffff|Hspell:" << spellInfo->Id << "|h[" << name;
+                    ss << "]|h|r";
+
+                    handler->SendSysMessage(ss.str().c_str());
+
+                    if (!found)
+                        found = true;
+                }
+            }
+        }
+
+        if (!found)
+            handler->SendSysMessage(LANG_COMMAND_NOSPELLFOUND);
+
+        return true;
     }
 
     static bool HandleLookupAreaCommand(ChatHandler* handler, char const* args)
