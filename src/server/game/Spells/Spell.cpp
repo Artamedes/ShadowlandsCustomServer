@@ -3642,6 +3642,7 @@ SpellCastResult Spell::prepare(SpellCastTargets const& targets, AuraEffect const
         if (result != SPELL_CAST_OK)
         {
             SendCastResult(result);
+            finish(false); ///< Needed so door of shadow isnt instant
             return result;
         }
     }
