@@ -95,6 +95,7 @@ class ReputationMgr;
 class RestMgr;
 class SpellCastTargets;
 class TradeData;
+struct MythicKeystoneInfo;
 class PlayerChallenge;
 
 enum GroupCategory : uint8;
@@ -1181,7 +1182,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         bool TeleportTo(uint32 mapid, Position const& pos, uint32 options = 0, uint32 optionParam = 0, Transport* transport = nullptr, Optional<uint32> instanceId = {});
         bool TeleportTo(WorldLocation const& loc, uint32 options = 0, uint32 optionParam = 0, Transport* transport = nullptr, Optional<uint32> instanceId = {});
         bool TeleportToBGEntryPoint();
-        void TeleportToChallenge(Map* map, float x, float y, float z, float orientation, Player* keyOwner = nullptr);
+        void TeleportToChallenge(Map* map, float x, float y, float z, float orientation, Player* keyOwner, MythicKeystoneInfo* mythicKeystone);
         std::function<void()> TeleportCallback = nullptr;
 
         bool HasSummonPending() const;

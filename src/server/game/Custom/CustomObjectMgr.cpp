@@ -4,6 +4,14 @@
 #include "SpellInfo.h"
 #include "SpellFormulaOverride.h"
 
+CustomObjectMgr::~CustomObjectMgr()
+{
+    for (auto& itr : _groupChallengeLevelInfo)
+        delete itr.second;
+    for (auto& itr : _soloChallengeLevelInfo)
+        delete itr.second;
+}
+
 void CustomObjectMgr::LoadFromDB()
 {
     LoadCustomSpellDmgs();
@@ -11,6 +19,7 @@ void CustomObjectMgr::LoadFromDB()
     LoadCoinModels();
     LoadCustomTransmogVendorData();
     LoadFiledataData();
+    LoadCustomChallengeInfo();
     sSpellFormulaOverride->LoadFromDB();
 }
 
@@ -110,6 +119,45 @@ void CustomObjectMgr::LoadFiledataData()
 
         _fileDataToPath[fields[0].GetUInt32()] = fields[1].GetString();
     } while (result->NextRow());
+}
+
+void CustomObjectMgr::LoadCustomChallengeInfo()
+{
+    for (auto& itr : _groupChallengeLevelInfo)
+        delete itr.second;
+    for (auto& itr : _soloChallengeLevelInfo)
+        delete itr.second;
+
+    _groupChallengeLevelInfo.clear();
+    _soloChallengeLevelInfo.clear();
+
+    if (auto result = WorldDatabase.Query("SELECT ChallengeLevel, HPScalingPerPlayer, DMGScalingPerPlayer FROM z_group_challenge_level_info"))
+    {
+        auto fields = result->Fetch();
+
+        ChallengeLevelInfo* levelInfo = new ChallengeLevelInfo();
+        
+        levelInfo->BaseHPScaling       = fields[1].GetFloat();
+        levelInfo->BaseDmgScaling      = fields[2].GetFloat();
+        levelInfo->HPScalingPerPlayer  = fields[3].GetFloat();
+        levelInfo->DMGScalingPerPlayer = fields[4].GetFloat();
+
+        _groupChallengeLevelInfo[fields[0].GetUInt32()] = levelInfo;
+    }
+
+    if (auto result = WorldDatabase.Query("SELECT ChallengeLevel, HPScalingPerPlayer, DMGScalingPerPlayer FROM z_solo_challenge_level_info"))
+    {
+        auto fields = result->Fetch();
+
+        ChallengeLevelInfo* levelInfo = new ChallengeLevelInfo();
+        
+        levelInfo->BaseHPScaling       = fields[1].GetFloat();
+        levelInfo->BaseDmgScaling      = fields[2].GetFloat();
+        levelInfo->HPScalingPerPlayer  = fields[3].GetFloat();
+        levelInfo->DMGScalingPerPlayer = fields[4].GetFloat();
+
+        _soloChallengeLevelInfo[fields[0].GetUInt32()] = levelInfo;
+    }
 }
 
 void CustomObjectMgr::ModifySpellDmg(Unit* unit, SpellInfo const* spellInfo, uint32& damage)

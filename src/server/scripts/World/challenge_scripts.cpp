@@ -505,16 +505,16 @@ class aura_challengers_burden : public AuraScript
 
         switch (aurEff->GetEffIndex())
         {
-        case EFFECT_1:
-        case EFFECT_3:
-            amount = challenge->HasAffix(Grievous);
-            break;
-        case EFFECT_2:
-            if (!challenge->HasAffix(Skittish) || !player->IsActiveSpecTankSpec())
-                amount = 0;
-            break;
-        default:
-            break;
+            case EFFECT_1:
+            case EFFECT_3:
+                amount = challenge->HasAffix(Grievous);
+                break;
+            case EFFECT_2:
+                if (!challenge->HasAffix(Skittish) || !player->IsActiveSpecTankSpec())
+                    amount = 0;
+                break;
+            default:
+                break;
         }
     }
 
@@ -531,7 +531,7 @@ class aura_challengers_burden : public AuraScript
                 if (SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(SPELL_CHALLENGER_GRIEVOUS_WOUND))
                 {
                     int32 bp = round(spellInfo->GetEffect(EFFECT_0).BasePoints / 10);
-                    if(bp)
+                    if (bp)
                         GetUnitOwner()->CastCustomSpell(SPELL_CHALLENGER_GRIEVOUS_WOUND, SPELLVALUE_BASE_POINT0, bp, GetUnitOwner(), true);
                 }                    
             }

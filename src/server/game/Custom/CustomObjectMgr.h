@@ -34,6 +34,14 @@ struct CustomTransmogVendor
     std::string Icon;
 };
 
+struct ChallengeLevelInfo
+{
+    float BaseHPScaling;
+    float BaseDmgScaling;
+    float HPScalingPerPlayer;
+    float DMGScalingPerPlayer;
+};
+
 class TC_GAME_API CustomObjectMgr
 {
     public:
@@ -43,6 +51,8 @@ class TC_GAME_API CustomObjectMgr
             return &instance;
         }
 
+        ~CustomObjectMgr();
+
         void LoadFromDB();
 
         void LoadCustomSpellDmgs();
@@ -50,6 +60,7 @@ class TC_GAME_API CustomObjectMgr
         void LoadCoinModels();
         void LoadCustomTransmogVendorData();
         void LoadFiledataData();
+        void LoadCustomChallengeInfo();
 
         void ModifySpellDmg(Unit* unit, SpellInfo const* spellInfo, uint32& damage);
 
@@ -58,6 +69,8 @@ class TC_GAME_API CustomObjectMgr
         std::multimap<uint32, CustomTransmogVendor> _customTransmogVendorData;
         std::vector<CoinModel> CoinModels;
         std::unordered_map<uint32, std::string> _fileDataToPath;
+        std::unordered_map<uint32, ChallengeLevelInfo*> _groupChallengeLevelInfo;
+        std::unordered_map<uint32, ChallengeLevelInfo*> _soloChallengeLevelInfo;
 };
 
 #define sCustomObjectMgr CustomObjectMgr::instance()

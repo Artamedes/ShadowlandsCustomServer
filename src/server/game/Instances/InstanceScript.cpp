@@ -80,7 +80,7 @@ InstanceScript::~InstanceScript()
 {
     if (_challenge)
     {
-        _challenge->SetInstanceScript(nullptr);
+        /// InstanceScript will be set to nullptr in challenge's deconstructor
         delete _challenge;
         _challenge = nullptr;
     }
@@ -1489,7 +1489,7 @@ void InstanceScript::ResetChallengeMode(Player* player)
 
     instance->m_respawnChallenge = time(nullptr); // For respawn all mobs  
     RepopPlayersAtGraveyard();    
-    CreateChallenge(player);
+    //CreateChallenge(player);
 }
 
 void InstanceScript::AddChallengeModeChest(ObjectGuid chestGuid)
@@ -1617,21 +1617,15 @@ void InstanceScript::BroadcastPacket(WorldPacket const* data) const
     });
 }
 
-void InstanceScript::CreateChallenge(Player* player)
+void InstanceScript::CreateChallenge(Player* player, MythicKeystoneInfo* keystoneInfo)
 {
-    if (!player)
-        return;
-
     InstanceMap* instanceMap = instance->ToInstanceMap();
     uint32 instanceID = instanceMap->GetInstanceId();
 
     if (!instanceMap || !instanceID)
         return;
 
-    auto playerChallenge = player->GetPlayerChallenge();
-    auto keystoneInfo = playerChallenge->GetKeystoneInfo(playerChallenge->GetKeystoneEntryFromMap(instanceMap));
-
-    MapChallengeModeEntry const* m_challengeEntry = player->GetGroup() ? player->GetGroup()->m_challengeEntry : (keystoneInfo ? keystoneInfo->challengeEntry : nullptr);
+    MapChallengeModeEntry const* m_challengeEntry = keystoneInfo ? keystoneInfo->challengeEntry : nullptr;
     if (!m_challengeEntry)
         return;
 
@@ -1654,7 +1648,7 @@ void InstanceScript::CreateChallenge(Player* player)
     if (!scenario)
         return;
 
-    _challenge = new Challenge(instanceMap, player, instanceID, scenario);
+    _challenge = new Challenge(instanceMap, player, scenario, keystoneInfo);
 
     if (!_challenge->CanRun())
     {
@@ -1665,5 +1659,4 @@ void InstanceScript::CreateChallenge(Player* player)
     // Remove all cooldowns with a recovery time equal or superior than 2 minutes
     DoRemoveSpellCooldownWithTimeOnPlayers(2 * TimeConstants::IN_MILLISECONDS * TimeConstants::MINUTE);
     SetChallenge(_challenge);
-    _challenge->SetInstanceScript(this);
 }

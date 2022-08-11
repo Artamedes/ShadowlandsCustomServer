@@ -46,6 +46,7 @@
 #include "World.h"
 #include "WorldSession.h"
 #include <sstream>
+#include "PlayerChallenge.h"
 
 Item* NewItemOrBag(ItemTemplate const* proto)
 {
@@ -3209,25 +3210,52 @@ bool BonusData::AddBonus(uint32 type, std::array<int32, 4> const& values)
         specializationId = player->GetSpecializationId();
     }
 
-    l_SS << "|c" << std::hex << ItemQualityColors[l_Proto->GetQuality()] << std::dec << "|Hitem:";
+    l_SS << "|c" << std::hex << ItemQualityColors[l_Proto->GetQuality()] << std::dec;
 
-    l_SS << l_Proto->GetId() << ":"; // ItemId -  Item ID that can be used for GetItemInfo calls.
-    l_SS << item->GetEnchantmentId(PERM_ENCHANTMENT_SLOT) << ":"; // EnchantId - Permament enchants applied to an item. See list of EnchantIds.
-    l_SS << item->GetEnchantmentId(SOCK_ENCHANTMENT_SLOT) << ":"; // gemId1 - Embedded gems re-use EnchantId indices, though gem icons show only for specific values
-    l_SS << item->GetEnchantmentId(SOCK_ENCHANTMENT_SLOT_2) << ":"; // gemId2
-    l_SS << item->GetEnchantmentId(SOCK_ENCHANTMENT_SLOT_3) << ":"; // gemId3
-    l_SS << item->GetEnchantmentId(BONUS_ENCHANTMENT_SLOT) << ":"; // gemId4
-    l_SS << item->GetBonus()->Suffix << ":"; // suffixId
-    l_SS << 0 << ":"; // uniqueId -  Data pertaining to a specific instance of the item.
-    l_SS << linkLevel << ":"; // linkLevel - Level of the character supplying the link. This is used to render scaling heirloom item tooltips at the proper level.
-    l_SS << specializationId << ":"; // specializationId
-    l_SS << 0 << ":"; // upgradeId
-    l_SS << 0 << ":"; // instanceDifficultyId
-    l_SS << item->m_itemData->BonusListIDs->size() << ":"; // num bonusIds
-    for (auto bonusId : *item->m_itemData->BonusListIDs)
-        l_SS << bonusId << ":"; // bonusId
-    l_SS << 0; // UpgradeValue
-    l_SS << "|h[" << l_Proto->GetName(LocaleConstant::LOCALE_enUS) << "]|h|r";
+    // Text = "|cffa335ee|Hkeystone:180653:30013:2:10:0:0:0|h[Keystone: Iron Docks (2)]|h|r"
+    switch (l_Proto->GetId())
+    {
+        case SoloMythicKeystone:
+        case MythicKeystone:
+        {
+            l_SS << "|Hkeystone:";
+            l_SS << l_Proto->GetId() << ":";
+            l_SS << item->GetModifier(ItemModifier::ITEM_MODIFIER_CHALLENGE_MAP_CHALLENGE_MODE_ID) << ":";
+            l_SS << item->GetModifier(ItemModifier::ITEM_MODIFIER_CHALLENGE_KEYSTONE_LEVEL) << ":";
+            l_SS << item->GetModifier(ItemModifier::ITEM_MODIFIER_CHALLENGE_KEYSTONE_AFFIX_ID_1) << ":";
+            l_SS << item->GetModifier(ItemModifier::ITEM_MODIFIER_CHALLENGE_KEYSTONE_AFFIX_ID_2) << ":";
+            l_SS << item->GetModifier(ItemModifier::ITEM_MODIFIER_CHALLENGE_KEYSTONE_AFFIX_ID_3) << ":";
+            l_SS << item->GetModifier(ItemModifier::ITEM_MODIFIER_CHALLENGE_KEYSTONE_AFFIX_ID_4);
+
+            std::string keyName = "Unk";
+
+            if (auto mapChallenge = sMapChallengeModeStore.LookupEntry(item->GetModifier(ItemModifier::ITEM_MODIFIER_CHALLENGE_MAP_CHALLENGE_MODE_ID)))
+                keyName = mapChallenge->Name.Str[LocaleConstant::LOCALE_enUS];
+
+            l_SS << "|h[Keystone: " << keyName << " (" << item->GetModifier(ItemModifier::ITEM_MODIFIER_CHALLENGE_KEYSTONE_LEVEL) << ")]|h|r";
+            break;
+        }
+        default:
+            l_SS << "|Hitem:";
+            l_SS << l_Proto->GetId() << ":"; // ItemId -  Item ID that can be used for GetItemInfo calls.
+            l_SS << item->GetEnchantmentId(PERM_ENCHANTMENT_SLOT) << ":"; // EnchantId - Permament enchants applied to an item. See list of EnchantIds.
+            l_SS << item->GetEnchantmentId(SOCK_ENCHANTMENT_SLOT) << ":"; // gemId1 - Embedded gems re-use EnchantId indices, though gem icons show only for specific values
+            l_SS << item->GetEnchantmentId(SOCK_ENCHANTMENT_SLOT_2) << ":"; // gemId2
+            l_SS << item->GetEnchantmentId(SOCK_ENCHANTMENT_SLOT_3) << ":"; // gemId3
+            l_SS << item->GetEnchantmentId(BONUS_ENCHANTMENT_SLOT) << ":"; // gemId4
+            l_SS << item->GetBonus()->Suffix << ":"; // suffixId
+            l_SS << 0 << ":"; // uniqueId -  Data pertaining to a specific instance of the item.
+            l_SS << linkLevel << ":"; // linkLevel - Level of the character supplying the link. This is used to render scaling heirloom item tooltips at the proper level.
+            l_SS << specializationId << ":"; // specializationId
+            l_SS << 0 << ":"; // upgradeId
+            l_SS << 0 << ":"; // instanceDifficultyId
+            l_SS << item->m_itemData->BonusListIDs->size() << ":"; // num bonusIds
+            for (auto bonusId : *item->m_itemData->BonusListIDs)
+                l_SS << bonusId << ":"; // bonusId
+            l_SS << 0; // UpgradeValue
+            l_SS << "|h[" << l_Proto->GetName(LocaleConstant::LOCALE_enUS) << "]|h|r";
+            break;
+    }
 
     return l_SS.str();
 }

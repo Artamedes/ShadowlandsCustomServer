@@ -35,6 +35,7 @@ class AreaBoundary;
 class Creature;
 class GameObject;
 class InstanceMap;
+class Item;
 class ModuleReference;
 class Player;
 class Unit;
@@ -42,6 +43,7 @@ class TempSummon;
 class Challenge;
 struct InstanceSpawnGroupInfo;
 struct CriteriaTree;
+struct MythicKeystoneInfo;
 enum class CriteriaType : uint8;
 enum class CriteriaStartEvent : uint8;
 enum EncounterCreditType : uint8;
@@ -414,7 +416,7 @@ class TC_GAME_API InstanceScript : public ZoneScript
         void AddChallengeModeChest(ObjectGuid chestGuid);
         void AddChallengeModeDoor(ObjectGuid doorGuid);
         void AddChallengeModeOrb(ObjectGuid orbGuid);
-        void CreateChallenge(Player* player);
+        void CreateChallenge(Player* player, MythicKeystoneInfo* keystoneInfo);
 
         ObjectGuid _challengeDoorGuid;
         ObjectGuid _challengeOrbGuid;

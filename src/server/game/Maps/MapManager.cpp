@@ -167,7 +167,14 @@ Map* MapManager::CreateMap(uint32 mapId, Player* player, uint32 loginInstanceId 
     }
     else if (entry->IsDungeon())
     {
-        InstancePlayerBind* pBind = player->GetBoundInstance(mapId, player->GetDifficultyID(entry));
+        InstancePlayerBind* pBind = nullptr;
+        /// see if we can find challengeDungeon
+        auto difficultyId = player->GetDifficultyID(entry);
+        if (difficultyId == Difficulty::DIFFICULTY_MYTHIC)
+            pBind = player->GetBoundInstance(mapId, Difficulty::DIFFICULTY_MYTHIC_KEYSTONE);
+        if (!pBind)
+            pBind = player->GetBoundInstance(mapId, difficultyId);
+
         InstanceSave* pSave = pBind ? pBind->save : nullptr;
 
         // priority:

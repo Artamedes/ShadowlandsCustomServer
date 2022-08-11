@@ -1677,7 +1677,7 @@ bool Player::TeleportToBGEntryPoint()
     return TeleportTo(m_bgData.joinPos);
 }
 
-void Player::TeleportToChallenge(Map* map, float x, float y, float z, float orientation, Player* keyOwner /*= nullptr*/)
+void Player::TeleportToChallenge(Map* map, float x, float y, float z, float orientation, Player* keyOwner, MythicKeystoneInfo* mythicKeystone)
 {
     MapEntry const* mEntry = map->GetEntry();
     if (!GetSession() || !mEntry)
@@ -1718,20 +1718,25 @@ void Player::TeleportToChallenge(Map* map, float x, float y, float z, float orie
     RemoveAurasByType(SPELL_AURA_OVERRIDE_SPELLS);
     RemoveAurasByType(SPELL_AURA_MOD_NEXT_SPELL);
 
-    UpdateDataMapType update_players;
-    BuildUpdate(update_players);
-    WorldPacket packet;
-    for (UpdateDataMapType::iterator iter = update_players.begin(); iter != update_players.end(); ++iter)
-    {
-        if (iter->second.BuildPacket(&packet))
-            iter->first->SendDirectMessage(&packet);
-        packet.clear();
-    }
+    //UpdateDataMapType update_players;
+    //BuildUpdate(update_players);
+    //WorldPacket packet;
+    //for (UpdateDataMapType::iterator iter = update_players.begin(); iter != update_players.end(); ++iter)
+    //{
+    //    if (iter->second.BuildPacket(&packet))
+    //        iter->first->SendDirectMessage(&packet);
+    //    packet.clear();
+    //}
 
     m_teleport_dest = WorldLocation(map->GetId(), x, y, z, orientation);
     m_teleport_options = 0;
 
     SetSemaphoreTeleportFar(true);
+
+    WorldPackets::Movement::TransferPending transferPending;
+    transferPending.MapID          = map->GetId();
+    transferPending.OldMapPosition = GetPosition();
+    SendDirectMessage(transferPending.Write());
 
     // remove from old map now
     if (oldmap)
@@ -1742,7 +1747,7 @@ void Player::TeleportToChallenge(Map* map, float x, float y, float z, float orie
         if (keyOwner)
             if (InstanceMap* instance = map->ToInstanceMap())
                 if (!instance->GetInstanceScript()->IsChallenge())
-                    instance->GetInstanceScript()->CreateChallenge(keyOwner);
+                    instance->GetInstanceScript()->CreateChallenge(keyOwner, mythicKeystone);
 
         m_teleport_target_map = map;
 
@@ -2514,32 +2519,6 @@ void Player::RemoveFromGroup(Group* group, ObjectGuid guid, RemoveMethod method 
 {
     if (!group)
         return;
-
-    if (Map* map = sMapMgr->FindMap(group->m_challengeMapID, group->m_challengeInstanceID))
-    {
-        if (InstanceMap* instance = map->ToInstanceMap())
-        {
-            if (InstanceScript* instanceScript = instance->GetInstanceScript())
-            {
-                if (Challenge* _challenge = instanceScript->GetChallenge())
-                {
-                    if (guid == group->m_challengeOwner && !_challenge->IsComplete() && _challenge->IsRunning())
-                    {
-                        if (Player* keyOwner = ObjectAccessor::FindPlayer(guid))
-                        {
-                            auto playerChallenge = keyOwner->GetPlayerChallenge();
-                            auto keystoneInfo = playerChallenge->GetKeystoneInfo(playerChallenge->GetKeystoneEntryFromMap(instance));
-
-                            if (keystoneInfo)
-                                keyOwner->ChallengeKeyCharded(keyOwner->GetItemByEntry(keystoneInfo->KeystoneEntry), keystoneInfo->Level, false);
-                        }
-                        else
-                            CharacterDatabase.PExecute("UPDATE challenge_key SET KeyIsCharded = 0, InstanceID = 0 WHERE guid = %u", guid.GetCounter());
-                    }
-                }
-            }
-        }
-    }
 
     group->RemoveMember(guid, method, kicker, reason);
 }
@@ -14547,10 +14526,10 @@ void Player::SendNewItem(Item* item, uint32 quantity, bool pushed, bool created,
     packet.Quantity = quantity;
     packet.QuantityInInventory = GetItemCount(item->GetEntry());
     //packet.DungeonEncounterID;
-    packet.BattlePetSpeciesID = item->GetModifier(ITEM_MODIFIER_BATTLE_PET_SPECIES_ID);
-    packet.BattlePetBreedID = item->GetModifier(ITEM_MODIFIER_BATTLE_PET_BREED_DATA) & 0xFFFFFF;
+    packet.BattlePetSpeciesID    = item->GetModifier(ITEM_MODIFIER_BATTLE_PET_SPECIES_ID);
+    packet.BattlePetBreedID      = item->GetModifier(ITEM_MODIFIER_BATTLE_PET_BREED_DATA) & 0xFFFFFF;
     packet.BattlePetBreedQuality = (item->GetModifier(ITEM_MODIFIER_BATTLE_PET_BREED_DATA) >> 24) & 0xFF;
-    packet.BattlePetLevel = item->GetModifier(ITEM_MODIFIER_BATTLE_PET_LEVEL);
+    packet.BattlePetLevel        = item->GetModifier(ITEM_MODIFIER_BATTLE_PET_LEVEL);
 
     packet.ItemGUID = item->GetGUID();
 
@@ -21898,7 +21877,53 @@ void Player::ResetInstances(uint8 method, bool isRaid, bool isLegacy)
             diff = GetLegacyRaidDifficultyID();
     }
 
-    auto difficultyItr = m_boundInstances.find(diff);
+    /// RESET MYTHIC KEYSTONE
+    auto difficultyItr = m_boundInstances.find(DIFFICULTY_MYTHIC_KEYSTONE);
+    if (difficultyItr != m_boundInstances.end())
+    {
+        for (auto itr = difficultyItr->second.begin(); itr != difficultyItr->second.end();)
+        {
+            InstanceSave* p = itr->second.save;
+            MapEntry const* entry = sMapStore.LookupEntry(itr->first);
+            if (!entry || entry->IsRaid() != isRaid || !p->CanReset())
+            {
+                ++itr;
+                continue;
+            }
+
+            if (method == INSTANCE_RESET_ALL)
+            {
+                // the "reset all instances" method can only reset normal maps
+                if (entry->IsRaid() || diff == DIFFICULTY_HEROIC)
+                {
+                    ++itr;
+                    continue;
+                }
+            }
+
+            // if the map is loaded, reset it
+            Map* map = sMapMgr->FindMap(p->GetMapId(), p->GetInstanceId());
+            if (map && map->IsDungeon())
+                if (!map->ToInstanceMap()->Reset(method))
+                {
+                    ++itr;
+                    continue;
+                }
+
+            // since this is a solo instance there should not be any players inside
+            if (method == INSTANCE_RESET_ALL || method == INSTANCE_RESET_CHANGE_DIFFICULTY)
+                SendResetInstanceSuccess(p->GetMapId());
+
+            p->DeleteFromDB();
+            difficultyItr->second.erase(itr++);
+
+            // the following should remove the instance save from the manager and delete it as well
+            p->RemovePlayer(this);
+        }
+    }
+
+
+    difficultyItr = m_boundInstances.find(diff);
     if (difficultyItr == m_boundInstances.end())
         return;
 

@@ -4,22 +4,21 @@
 #include "DatabaseEnvFwd.h"
 
 class Player;
-class InstanceMap;
 class Item;
 struct MapChallengeModeEntry;
 
 constexpr uint32 MythicKeystone = 158923;
-constexpr uint32 MiniMythicKeystone = 180653;
+constexpr uint32 SoloMythicKeystone = 180653;
 
 enum class KeystoneType
 {
     Normal,
-    Mini,
+    Solo,
 };
 
 struct MythicKeystoneInfo
 {
-    MythicKeystoneInfo(KeystoneType type, uint32 keystoneEntry) : Type(type), KeystoneEntry(keystoneEntry) { }
+    MythicKeystoneInfo(KeystoneType type, Item* keystone);
     bool IsActive() { return ID != 0; }
 
     MapChallengeModeEntry const* challengeEntry = nullptr;
@@ -35,7 +34,8 @@ struct MythicKeystoneInfo
     bool needSave = false;
     bool needUpdate = false;
     KeystoneType Type;
-    uint32 KeystoneEntry;
+    uint32 KeystoneItemID;
+    ObjectGuid KeystoneGUID;
 
     void GenerateNewDungeon();
 };
@@ -62,12 +62,10 @@ public:
     void _SaveMythicKeystones(CharacterDatabaseTransaction& trans);
 
     MythicKeystoneInfo* GetKeystoneInfo(Item* item, bool createIfNeed = false);
-    MythicKeystoneInfo* GetKeystoneInfo(uint32 itemEntry, bool createIfNeed = false);
-
-    uint32 GetKeystoneEntryFromMap(InstanceMap* map) const;
+    MythicKeystoneInfo* GetKeystoneInfo(ObjectGuid const& itemGuid, bool createIfNeed = false);
 
 private:
     Player* _player;
     std::unique_ptr<MythicKeystoneInfo> MainKeystone;
-    std::unique_ptr<MythicKeystoneInfo> MiniKeystone;
+    std::unique_ptr<MythicKeystoneInfo> SoloKeystone;
 };
