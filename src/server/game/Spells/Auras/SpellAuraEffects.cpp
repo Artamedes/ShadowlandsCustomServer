@@ -1300,6 +1300,7 @@ void AuraEffect::HandleProc(AuraApplication* aurApp, ProcEventInfo& eventInfo)
         case SPELL_AURA_MOD_ROOT:
         case SPELL_AURA_TRANSFORM:
         case SPELL_AURA_MOD_ROOT_2:
+            if (m_spellInfo->Id != 324220)///< Hack for deathborne, i'm not sure why it wants to remove this here. maybe check if we have SPELL_ATTR0_HEARTBEAT_RESIST ?
             HandleBreakableCCAuraProc(aurApp, eventInfo);
             break;
         case SPELL_AURA_DUMMY:
