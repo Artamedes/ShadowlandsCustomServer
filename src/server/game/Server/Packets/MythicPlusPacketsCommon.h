@@ -58,15 +58,15 @@ namespace WorldPackets
 
         struct MythicPlusRun
         {
-            int32 MapChallengeModeID = 0;
-            bool Completed = false;
-            uint32 Level = 0;
-            int32 DurationMs = 0;
+            int32  MapChallengeModeID         = 0;
+            bool   Completed                  = false;
+            uint32 Level                      = 0;
+            int32  DurationMs                 = 0;
+            int32  Season                     = 0;
+            float  RunScore                   = 0.0f;
             Timestamp<> StartDate;
             Timestamp<> CompletionDate;
-            int32 Season = 0;
             std::vector<MythicPlusMember> Members;
-            float RunScore = 0.0f;
             std::array<int32, 4> KeystoneAffixIDs;
         };
 

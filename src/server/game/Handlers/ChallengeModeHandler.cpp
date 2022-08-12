@@ -345,7 +345,7 @@ void WorldSession::HandleRequestLeaders(WorldPackets::ChallengeMode::RequestLead
 void WorldSession::HandleChallengeModeRequestMapStats(WorldPackets::ChallengeMode::RequestMapStats& /*mapStats*/)
 {
     WorldPackets::ChallengeMode::AllMapStats stats;
-    int8 seasonID = 12;
+    int8 seasonID = 17;
     stats.Season = seasonID; // 7
     stats.SubSeason = seasonID; // 71
     if (ChallengeByMap* last = sChallengeModeMgr->LastForMember(_player->GetGUID()))

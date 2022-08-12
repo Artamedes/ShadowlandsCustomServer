@@ -45,23 +45,48 @@ void WorldSession::HandleAdventureJournalOpenQuest(WorldPackets::AdventureJourna
 
 void WorldSession::HandleAdventureJournalUpdateSuggestions(WorldPackets::AdventureJournal::AdventureJournalUpdateSuggestions& updateSuggestions)
 {
-    if (ChrClassUIDisplayEntry const* uiDisplay = sDB2Manager.GetUiDisplayForClass(Classes(_player->GetClass())))
-        if (!_player->MeetPlayerCondition(uiDisplay->AdvGuidePlayerConditionID))
-            return;
+  //  if (ChrClassUIDisplayEntry const* uiDisplay = sDB2Manager.GetUiDisplayForClass(Classes(_player->GetClass())))
+  //      if (!_player->MeetPlayerCondition(uiDisplay->AdvGuidePlayerConditionID))
+  //          return;
 
     WorldPackets::AdventureJournal::AdventureJournalDataResponse response;
     response.OnLevelUp = updateSuggestions.OnLevelUp;
 
-    for (AdventureJournalEntry const* adventureJournal : sAdventureJournalStore)
-    {
-        if (_player->MeetPlayerCondition(adventureJournal->PlayerConditionID))
-        {
-            WorldPackets::AdventureJournal::AdventureJournalEntry adventureJournalData;
-            adventureJournalData.AdventureJournalID = int32(adventureJournal->ID);
-            adventureJournalData.Priority = int32(adventureJournal->PriorityMax);
-            response.Entries.push_back(adventureJournalData);
-        }
-    }
+    //for (AdventureJournalEntry const* adventureJournal : sAdventureJournalStore)
+    //{
+    //    if (_player->MeetPlayerCondition(adventureJournal->PlayerConditionID))
+    //    {
+    //        WorldPackets::AdventureJournal::AdventureJournalEntry adventureJournalData;
+    //        adventureJournalData.AdventureJournalID = int32(adventureJournal->ID);
+    //        adventureJournalData.Priority = int32(adventureJournal->PriorityMax);
+    //        response.Entries.push_back(adventureJournalData);
+    //    }
+    //}
+    // pig for now - just filling out stupid trinity entries
+
+    response.Entries.resize(11);
+    response.Entries[0].AdventureJournalID = 27;
+    response.Entries[0].Priority = 7;
+    response.Entries[1].AdventureJournalID = 118;
+    response.Entries[1].Priority = 3;
+    response.Entries[2].AdventureJournalID = 196;
+    response.Entries[2].Priority = 2;
+    response.Entries[3].AdventureJournalID = 197;
+    response.Entries[3].Priority = 6;
+    response.Entries[4].AdventureJournalID = 208;
+    response.Entries[4].Priority = 0;
+    response.Entries[5].AdventureJournalID = 219;
+    response.Entries[5].Priority = 1;
+    response.Entries[6].AdventureJournalID = 540;
+    response.Entries[6].Priority = 9;
+    response.Entries[7].AdventureJournalID = 560;
+    response.Entries[7].Priority = 7;
+    response.Entries[8].AdventureJournalID = 567;
+    response.Entries[8].Priority = 10;
+    response.Entries[9].AdventureJournalID = 568;
+    response.Entries[9].Priority = 14;
+    response.Entries[10].AdventureJournalID = 365;
+    response.Entries[10].Priority = 9;
 
     SendPacket(response.Write());
 }
