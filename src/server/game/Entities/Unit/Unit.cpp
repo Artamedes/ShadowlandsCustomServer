@@ -517,7 +517,7 @@ void Unit::Update(uint32 p_time)
     // All position info based actions have been executed, reset info
     _positionUpdateInfo.Reset();
 
-    if (m_NextLeechTimer >= 5000)
+    if (m_NextLeechTimer >= 500)
     {
         if (m_NextLeech)
         {
