@@ -64,10 +64,31 @@ void Covenant::SetRenown(int32 renown, bool /*modCurr = true*/)
 
 void Covenant::SetAnima(uint32 anima, bool modCurr /*= true*/, bool inital)
 {
+    uint32 beforeAnima = _anima;
     m_SaveFlags.AddFlag(eCovenantSaveFlags::SaveCovenant);
     _anima = anima;
-    if (IsActiveCovenant() && modCurr)
-        _player->ModifyCurrency(1813, anima, !inital, false, true);
+    if (IsActiveCovenant())
+    {
+        if (modCurr)
+        {
+            _player->ModifyCurrency(1813, anima, false, false, true);
+
+            if (!inital)
+            {
+                _player->GetScheduler().Schedule(3s, 1000, [this, beforeAnima](TaskContext /*context*/)
+                {
+                    /// Only sends a yellow message...pretty boring.
+                    if (beforeAnima < _anima)
+                    {
+                        WorldPacket data(SMSG_CONVERT_ITEMS_TO_CURRENCY_VALUE, 4 + 4);
+                        data << uint32(1813);
+                        data << _anima - beforeAnima;
+                        _player->SendDirectMessage(&data);
+                    }
+                });
+            }
+        }
+    }
 }
 
 void Covenant::SetSouls(uint32 souls, bool modCurr /*= true*/, bool inital)
