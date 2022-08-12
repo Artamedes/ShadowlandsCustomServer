@@ -1,4 +1,5 @@
 #include "ChallengeMode.h"
+#include "CustomObjectMgr.h"
 #include "Containers.h"
 #include "DatabaseEnv.h"
 #include "PlayerChallenge.h"
@@ -9,46 +10,63 @@
 #include "GameTime.h"
 #include "WorldStateMgr.h"
 
-// TODO: move to db
-constexpr uint32 CustomDungeons[] =
+static KeystoneType KeystoneTypeFromItem(Item* item)
 {
-    30012,
-    30013,
-    30001,
-    251
-};
+    switch (item->GetEntry())
+    {
+        case Keystones::Group:
+            return KeystoneType::Group;
+        case Keystones::Solo:
+            return KeystoneType::Solo;
+        case Keystones::Timewalking:
+            return KeystoneType::Timewalking;
+        default:
+            return KeystoneType::Unk;
+    }
+}
 
-/// Should we keep MiniKeystones as part of content?
-//constexpr uint32 CustomMiniDungeonsForChallenge[] = { 30002, 30003, 30004, 30005, 30006, 30007, 30008, 30010, 30011 }; // 30009 - battle for torghast removed
-
-MythicKeystoneInfo::MythicKeystoneInfo(KeystoneType type, Item* keystone)
-    : Type(type), KeystoneGUID(keystone->GetGUID()), KeystoneItemID(keystone->GetEntry())
+MythicKeystoneInfo::MythicKeystoneInfo(Item* keystone)
+    : Type(KeystoneTypeFromItem(keystone)), KeystoneGUID(keystone->GetGUID()), KeystoneItemID(keystone->GetEntry())
 {
 }
 
 void MythicKeystoneInfo::GenerateNewDungeon()
 {
-    uint16 oldID = ID;
-    while (oldID == ID)
-    {
-        ID = Trinity::Containers::SelectRandomContainerElement(CustomDungeons);
-    }
+    sCustomObjectMgr->GenerateCustomDungeonForKeystone(this);
 }
 
 PlayerChallenge::PlayerChallenge(Player* player) : _player(player)
 {
 }
 
+PlayerChallenge::~PlayerChallenge()
+{
+    for (auto itr = Keystones.begin(); itr != Keystones.end(); itr++)
+        delete itr->second;
+}
+
 bool PlayerChallenge::InitMythicKeystone(Item* item)
 {
+    switch (item->GetEntry())
+    {
+        case Keystones::Group:
+        case Keystones::Solo:
+        case Keystones::Timewalking:
+            break;
+        default:
+            /// We want to return true here because this can be called from player
+            return true;
+    }
+
     auto keystoneInfo = GetKeystoneInfo(item);
+
     if (!keystoneInfo)
-        return true;
+        return false;
 
     if (!keystoneInfo->IsActive())
         return false;
 
-    if (keystoneInfo->Type == KeystoneType::Normal)
+    if (keystoneInfo->Type != KeystoneType::Timewalking)
     {
         keystoneInfo->Affix  = sWorldStateMgr->GetValue(WS_CHALLENGE_AFFIXE1_RESET_TIME);
         keystoneInfo->Affix1 = sWorldStateMgr->GetValue(WS_CHALLENGE_AFFIXE2_RESET_TIME);
@@ -103,7 +121,7 @@ void PlayerChallenge::CreateMythicKeystone(Item* item)
         item->SetModifier(ITEM_MODIFIER_CHALLENGE_MAP_CHALLENGE_MODE_ID, keystoneInfo->ID);
     }
 
-    if (keystoneInfo->Type == KeystoneType::Normal)
+    if (keystoneInfo->Type != KeystoneType::Timewalking)
     {
         keystoneInfo->Affix  = sWorldStateMgr->GetValue(WS_CHALLENGE_AFFIXE1_RESET_TIME);
         keystoneInfo->Affix1 = sWorldStateMgr->GetValue(WS_CHALLENGE_AFFIXE2_RESET_TIME);
@@ -142,7 +160,7 @@ void PlayerChallenge::UpdateMythicKeystone(Item* item)
     keystoneInfo->ID = item->GetModifier(ITEM_MODIFIER_CHALLENGE_MAP_CHALLENGE_MODE_ID);
     keystoneInfo->Level = item->GetModifier(ITEM_MODIFIER_CHALLENGE_KEYSTONE_LEVEL);
 
-    if (keystoneInfo->Type == KeystoneType::Normal)
+    if (keystoneInfo->Type != KeystoneType::Timewalking)
     {
         keystoneInfo->Affix = sWorldStateMgr->GetValue(WS_CHALLENGE_AFFIXE1_RESET_TIME);
         keystoneInfo->Affix1 = sWorldStateMgr->GetValue(WS_CHALLENGE_AFFIXE2_RESET_TIME);
@@ -172,12 +190,15 @@ void PlayerChallenge::UpdateMythicKeystone(Item* item)
 
 void PlayerChallenge::ResetMythicKeystone()
 {
-    _player->DestroyItemCount(MythicKeystone, 100, true, false);
-    _player->DestroyItemCount(SoloMythicKeystone, 100, true, false);
-    if (MainKeystone)
-        MainKeystone.reset();
-    if (SoloKeystone)
-        SoloKeystone.reset();
+    /// Delete the old keystones
+    for (auto& itr : Keystones)
+    {
+        if (auto item = _player->GetItemByGuid(itr.second->KeystoneGUID))
+            _player->DestroyItem(item->GetBagSlot(), item->GetSlot(), true);
+        delete itr.second;
+    }
+
+    Keystones.clear();
 }
 
 void PlayerChallenge::ResetMythicKeystoneTo(Item* item, uint32 challengeLevel, bool runRand)
@@ -227,8 +248,10 @@ void PlayerChallenge::_LoadMythicKeystones(PreparedQueryResult result)
 {
     if (!result)
     {
-        _player->DestroyItemCount(MythicKeystone, 1, true);
-        _player->DestroyItemCount(SoloMythicKeystone, 1, true);
+        /// No result? Delete all keystone items.
+        _player->DestroyItemCount(Keystones::Group, 1, true);
+        _player->DestroyItemCount(Keystones::Solo, 1, true);
+        _player->DestroyItemCount(Keystones::Timewalking, 1, true);
         return;
     }
 
@@ -285,53 +308,28 @@ void PlayerChallenge::_LoadMythicKeystones(PreparedQueryResult result)
 
 void PlayerChallenge::_SaveMythicKeystones(CharacterDatabaseTransaction& trans)
 {
-    /// Save Group Keystone
-    if (MainKeystone)
+    for (auto& itr : Keystones)
     {
-        if (MainKeystone->needSave || MainKeystone->needUpdate)
+        auto keystone = itr.second;
+        
+        if (keystone->needSave || keystone->needUpdate)
         {
-            if (MainKeystone->Level < 2)
-                MainKeystone->Level = 2;
+            if (keystone->Level < 2)
+                keystone->Level = 2;
 
             uint8 index = 0;
             CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_REP_CHALLENGE_KEY);
 
-            stmt->setUInt32(index++, MainKeystone->KeystoneItemID);
-            stmt->setUInt16(index++, MainKeystone->ID);
-            stmt->setUInt8(index++,  MainKeystone->Level);
-            stmt->setUInt8(index++,  MainKeystone->Affix);
-            stmt->setUInt8(index++,  MainKeystone->Affix1);
-            stmt->setUInt8(index++,  MainKeystone->Affix2);
-            stmt->setUInt8(index++,  MainKeystone->Affix3);
-            stmt->setUInt8(index++,  MainKeystone->KeyIsCharded);
-            stmt->setUInt32(index++, MainKeystone->timeReset);
-            stmt->setUInt32(index++, MainKeystone->InstanceID);
-            stmt->setUInt64(index++, _player->GetGUID().GetCounter());
-            trans->Append(stmt);
-        }
-    }
-
-    /// Save Solo Keystone
-    if (SoloKeystone)
-    {
-        if (SoloKeystone->needSave || SoloKeystone->needUpdate)
-        {
-            if (SoloKeystone->Level < 2)
-                SoloKeystone->Level = 2;
-
-            uint8 index = 0;
-            CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_REP_CHALLENGE_KEY);
-
-            stmt->setUInt32(index++, SoloKeystone->KeystoneItemID);
-            stmt->setUInt16(index++, SoloKeystone->ID);
-            stmt->setUInt8(index++,  SoloKeystone->Level);
-            stmt->setUInt8(index++,  SoloKeystone->Affix);
-            stmt->setUInt8(index++,  SoloKeystone->Affix1);
-            stmt->setUInt8(index++,  SoloKeystone->Affix2);
-            stmt->setUInt8(index++,  SoloKeystone->Affix3);
-            stmt->setUInt8(index++,  SoloKeystone->KeyIsCharded);
-            stmt->setUInt32(index++, SoloKeystone->timeReset);
-            stmt->setUInt32(index++, SoloKeystone->InstanceID);
+            stmt->setUInt32(index++, keystone->KeystoneItemID);
+            stmt->setUInt16(index++, keystone->ID);
+            stmt->setUInt8(index++,  keystone->Level);
+            stmt->setUInt8(index++,  keystone->Affix);
+            stmt->setUInt8(index++,  keystone->Affix1);
+            stmt->setUInt8(index++,  keystone->Affix2);
+            stmt->setUInt8(index++,  keystone->Affix3);
+            stmt->setUInt8(index++,  keystone->KeyIsCharded);
+            stmt->setUInt32(index++, keystone->timeReset);
+            stmt->setUInt32(index++, keystone->InstanceID);
             stmt->setUInt64(index++, _player->GetGUID().GetCounter());
             trans->Append(stmt);
         }
@@ -343,30 +341,20 @@ MythicKeystoneInfo* PlayerChallenge::GetKeystoneInfo(Item* item, bool createIfNe
     if (!item)
         return nullptr;
 
-    switch (item->GetEntry())
-    {
-        case MythicKeystone:
-        {
-            if (!MainKeystone)
-            {
-                if (createIfNeed)
-                    return (MainKeystone = std::make_unique<MythicKeystoneInfo>(KeystoneType::Normal, item)).get();
-            }
-            return MainKeystone ? MainKeystone.get() : nullptr;
-        }
-        case SoloMythicKeystone:
-        {
-            if (!SoloKeystone)
-            {
-                if (createIfNeed)
-                    return (SoloKeystone = std::make_unique<MythicKeystoneInfo>(KeystoneType::Solo, item)).get();
-            }
+    MythicKeystoneInfo* currentKeyInfo = nullptr;
 
-            return SoloKeystone ? SoloKeystone.get() : nullptr;
-        }
-        default:
-            return nullptr;
+    auto it = Keystones.find(item->GetEntry());
+    if (it != Keystones.end())
+        return it->second;
+
+    if (createIfNeed)
+    {
+        MythicKeystoneInfo* keystoneInfo = new MythicKeystoneInfo(item);
+        Keystones[item->GetEntry()] = keystoneInfo;
+        return keystoneInfo;
     }
+
+    return nullptr;
 }
 
 MythicKeystoneInfo* PlayerChallenge::GetKeystoneInfo(ObjectGuid const& guid, bool createIfNeed)

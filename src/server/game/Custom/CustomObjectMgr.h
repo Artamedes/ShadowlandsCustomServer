@@ -4,6 +4,7 @@
 
 class Unit;
 class SpellInfo;
+struct MythicKeystoneInfo;
 
 struct CustomDamage
 {
@@ -63,6 +64,8 @@ class TC_GAME_API CustomObjectMgr
         void LoadCustomChallengeInfo();
 
         void ModifySpellDmg(Unit* unit, SpellInfo const* spellInfo, uint32& damage);
+        void GenerateCustomDungeonForKeystone(MythicKeystoneInfo* keystoneInfo);
+        void SetChallengeLevelInfoIfNeed(MythicKeystoneInfo* keystoneInfo, ChallengeLevelInfo* levelInfo);
 
         std::unordered_map<uint32, std::unordered_map<uint32, CustomDamage>> _customSpellDmgs;
         std::unordered_map<uint32, CustomScalingEntry> _customScalingEntries;
@@ -71,6 +74,7 @@ class TC_GAME_API CustomObjectMgr
         std::unordered_map<uint32, std::string> _fileDataToPath;
         std::unordered_map<uint32, ChallengeLevelInfo*> _groupChallengeLevelInfo;
         std::unordered_map<uint32, ChallengeLevelInfo*> _soloChallengeLevelInfo;
+        std::unordered_map<uint32, std::vector<uint32>> _customChallengeDungeonsByKeystone;
 };
 
 #define sCustomObjectMgr CustomObjectMgr::instance()

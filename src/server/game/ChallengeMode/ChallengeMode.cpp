@@ -95,6 +95,8 @@ Challenge::Challenge(InstanceMap* map, Player* player, Scenario* scenario, Mythi
 
     for (uint8 i = 0; i < CHALLENGE_TIMER_LEVEL_3; i++)
         _chestTimers[i] = _challengeEntry->CriteriaCount[i];
+
+    sCustomObjectMgr->SetChallengeLevelInfoIfNeed(mythicKeystone, _challengeLevelInfo);
 }
 
 Challenge::~Challenge()

@@ -3215,8 +3215,9 @@ bool BonusData::AddBonus(uint32 type, std::array<int32, 4> const& values)
     // Text = "|cffa335ee|Hkeystone:180653:30013:2:10:0:0:0|h[Keystone: Iron Docks (2)]|h|r"
     switch (l_Proto->GetId())
     {
-        case SoloMythicKeystone:
-        case MythicKeystone:
+        case Keystones::Solo:
+        case Keystones::Group:
+        case Keystones::Timewalking:
         {
             l_SS << "|Hkeystone:";
             l_SS << l_Proto->GetId() << ":";

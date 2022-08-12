@@ -7,24 +7,38 @@ class Player;
 class Item;
 struct MapChallengeModeEntry;
 
-constexpr uint32 MythicKeystone = 158923;
-constexpr uint32 SoloMythicKeystone = 180653;
+namespace Keystones
+{
+    /// <summary>
+    /// ItemIds
+    /// </summary>
+    enum : uint32
+    {
+        Group       = 158923,
+        Solo        = 180653,
+        Timewalking = 700019,
+    };
+}
 
 enum class KeystoneType
 {
-    Normal,
+    Group,
     Solo,
+    Timewalking,
+    Unk,
 };
+
+static KeystoneType KeystoneTypeFromItem(Item* item);
 
 struct MythicKeystoneInfo
 {
-    MythicKeystoneInfo(KeystoneType type, Item* keystone);
+    MythicKeystoneInfo(Item* keystone);
     bool IsActive() { return ID != 0; }
 
     MapChallengeModeEntry const* challengeEntry = nullptr;
     uint32 InstanceID = 0;
     uint32 timeReset = 0;
-    uint16 ID = 0;
+    uint32 ID = 0;
     uint8 Level = 0;
     uint8 Affix = 0;
     uint8 Affix1 = 0;
@@ -44,6 +58,7 @@ class TC_GAME_API PlayerChallenge
 {
 public:
     PlayerChallenge(Player* player);
+    ~PlayerChallenge();
 
     /// <summary>
     /// Initializes the fields of a mythic keystone
@@ -66,6 +81,5 @@ public:
 
 private:
     Player* _player;
-    std::unique_ptr<MythicKeystoneInfo> MainKeystone;
-    std::unique_ptr<MythicKeystoneInfo> SoloKeystone;
+    std::unordered_map<uint32, MythicKeystoneInfo*> Keystones;
 };

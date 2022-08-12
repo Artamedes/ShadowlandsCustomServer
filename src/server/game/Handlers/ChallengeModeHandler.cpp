@@ -91,7 +91,7 @@ void WorldSession::HandleChallengeModeStart(WorldPackets::ChallengeMode::StartRe
 
     if (_player->GetGroup())
     {
-        if (key->GetEntry() == SoloMythicKeystone)
+        if (challengeKeyInfo->Type == KeystoneType::Solo)
         {
             ChatHandler(_player).PSendSysMessage("You can only run that key in solo");
             return;
@@ -201,6 +201,11 @@ void WorldSession::HandleChallengeModeStart(WorldPackets::ChallengeMode::StartRe
         ChatHandler(player).PSendSysMessage("|cff35B3EEGroup Keystone %s|cff35B3EE started by %s|cff35B3EE!", Item::GetItemLink(key), _player->GetName().c_str());
     });
 
+    auto SendTimewalkKeystoneInfo([&](Player* player)
+    {
+        ChatHandler(player).PSendSysMessage("|cff35B3EETimewalking Keystone %s|cff35B3EE started by %s|cff35B3EE!", Item::GetItemLink(key), _player->GetName().c_str());
+    });
+
     if (Group* group = _player->GetGroup())
     {
         //WorldPackets::Instance::ChangePlayerDifficultyResult result;
@@ -220,7 +225,20 @@ void WorldSession::HandleChallengeModeStart(WorldPackets::ChallengeMode::StartRe
         {
             if (Player* player = itr->GetSource())
             {
-                SendGroupKeystoneInfo(player);
+                switch (challengeKeyInfo->Type)
+                {
+                    case KeystoneType::Solo:
+                        ChatHandler(player).PSendSysMessage("PIGPIG! |cff35B3EESolo Keystone %s |cff35B3EEstarted!", Item::GetItemLink(key), _player->GetName().c_str());
+                        break;
+                    case KeystoneType::Group:
+                        SendGroupKeystoneInfo(_player);
+                        break;
+                    case KeystoneType::Timewalking:
+                        SendTimewalkKeystoneInfo(_player);
+                        break;
+                    default:
+                        break;
+                }
                 if (player == _player)
                     continue;
                 
@@ -246,13 +264,16 @@ void WorldSession::HandleChallengeModeStart(WorldPackets::ChallengeMode::StartRe
         _player->TeleportToChallenge(newMap, x, y, z, o, _player, challengeKeyInfo);
         _player->CastSpell(_player, SPELL_CHALLENGER_BURDEN, true);
 
-        switch (key->GetEntry())
+        switch (challengeKeyInfo->Type)
         {
-            case SoloMythicKeystone:
+            case KeystoneType::Solo:
                 ChatHandler(_player).PSendSysMessage("|cff35B3EESolo Keystone %s |cff35B3EEstarted!", Item::GetItemLink(key), _player->GetName().c_str());
                 break;
-            case MythicKeystone:
+            case KeystoneType::Group:
                 SendGroupKeystoneInfo(_player);
+                break;
+            case KeystoneType::Timewalking:
+                SendTimewalkKeystoneInfo(_player);
                 break;
             default:
                 break;
