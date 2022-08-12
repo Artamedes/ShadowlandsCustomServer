@@ -1900,7 +1900,7 @@ public:
             { "commentator",      HandleCommentatorCommand,    rbac::RBAC_PERM_COMMAND_GM, Console::No },
             { "giveloot",         HandleGiveLootCommand,       rbac::RBAC_PERM_COMMAND_RELOAD_ALL_ITEM, Console::No },
             { "spellformulas",    HandleModifySpellFormulas,   rbac::RBAC_PERM_COMMAND_RELOAD_ALL_ITEM, Console::No },
-            { "logout",           HandleLogoutCommand,   rbac::RBAC_PERM_COMMAND_RELOAD_ALL_ITEM, Console::No },
+            { "ilogout",           HandleLogoutCommand,   rbac::RBAC_PERM_COMMAND_RELOAD_ALL_ITEM, Console::No },
             { "animareset",     HandleResetAnima,   rbac::RBAC_PERM_COMMAND_RELOAD_ALL_ITEM, Console::No },
             { "SetAnimaPowerChoice",     HandleSetAnimaPowerChoice,   rbac::RBAC_PERM_COMMAND_RELOAD_ALL_ITEM, Console::No },
 
