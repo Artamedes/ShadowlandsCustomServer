@@ -1,6 +1,7 @@
 #include "ChallengeMode.h"
-#include "CustomObjectMgr.h"
+#include "Chat.h"
 #include "Containers.h"
+#include "CustomObjectMgr.h"
 #include "DatabaseEnv.h"
 #include "PlayerChallenge.h"
 #include "Player.h"
@@ -54,14 +55,15 @@ bool PlayerChallenge::InitMythicKeystone(Item* item)
         case Keystones::Timewalking:
             break;
         default:
-            /// We want to return true here because this can be called from player
+            /// We want to return true here because this can be called from player and its'not key item
             return true;
     }
 
     auto keystoneInfo = GetKeystoneInfo(item);
 
+    /// Keys can be loaded before we load below.. Return true
     if (!keystoneInfo)
-        return false;
+        return true;
 
     if (!keystoneInfo->IsActive())
         return false;
@@ -115,10 +117,13 @@ void PlayerChallenge::CreateMythicKeystone(Item* item)
     item->SetModifier(ITEM_MODIFIER_CHALLENGE_KEYSTONE_LEVEL, keystoneInfo->Level);
     item->SetExpiration(sWorld->getNextChallengeKeyReset() - time(nullptr));
 
+    bool sendMsg = false;
+
     if (!item->GetModifier(ITEM_MODIFIER_CHALLENGE_MAP_CHALLENGE_MODE_ID))
     {
         keystoneInfo->GenerateNewDungeon();
         item->SetModifier(ITEM_MODIFIER_CHALLENGE_MAP_CHALLENGE_MODE_ID, keystoneInfo->ID);
+        sendMsg = true;
     }
 
     if (keystoneInfo->Type != KeystoneType::Timewalking)
@@ -147,6 +152,9 @@ void PlayerChallenge::CreateMythicKeystone(Item* item)
 
     keystoneInfo->ID = item->GetModifier(ITEM_MODIFIER_CHALLENGE_MAP_CHALLENGE_MODE_ID);
     keystoneInfo->timeReset = sWorld->getNextChallengeKeyReset();
+
+    if (sendMsg && _player->IsInWorld())
+        ChatHandler(_player).PSendSysMessage("|cff35B3EENew Keystone: %s", Item::GetItemLink(item, _player).c_str());
 
     item->SetState(ITEM_CHANGED, _player);
 }
@@ -226,6 +234,9 @@ void PlayerChallenge::ResetMythicKeystoneTo(Item* item, uint32 challengeLevel, b
             item->SetModifier(ITEM_MODIFIER_CHALLENGE_MAP_CHALLENGE_MODE_ID, keystoneInfo->ID);
             UpdateMythicKeystone(item);
             item->SetState(ITEM_CHANGED, _player);
+
+            if (runRand && _player->IsInWorld())
+                ChatHandler(_player).PSendSysMessage("|cff35B3EENew Keystone: %s", Item::GetItemLink(item, _player).c_str());
         }
         return;
     }
@@ -293,14 +304,12 @@ void PlayerChallenge::_LoadMythicKeystones(PreparedQueryResult result)
         // reset key
         if (sWorld->getNextChallengeKeyReset() > keystoneInfo->timeReset)
         {
-            if (auto item = _player->GetItemByEntry(itemId))
-                ResetMythicKeystoneTo(item, keystoneInfo->Level, true);
+            ResetMythicKeystoneTo(item, keystoneInfo->Level, true);
         }
         else
         {
             // initialize key
-            if (auto item = _player->GetItemByEntry(itemId))
-                InitMythicKeystone(item);
+            InitMythicKeystone(item);
         }
 
     } while (result->NextRow());

@@ -14534,7 +14534,18 @@ void Player::SendNewItem(Item* item, uint32 quantity, bool pushed, bool created,
     packet.ItemGUID = item->GetGUID();
 
     packet.Pushed = pushed;
-    packet.DisplayText = WorldPackets::Item::ItemPushResult::DISPLAY_TYPE_NORMAL;
+    packet.DisplayText = [&]() -> WorldPackets::Item::ItemPushResult::DisplayType
+    {
+        switch (item->GetEntry())
+        {
+            case Keystones::Group:
+            case Keystones::Solo:
+            case Keystones::Timewalking:
+                return WorldPackets::Item::ItemPushResult::DisplayType::DISPLAY_TYPE_HIDDEN;
+            default:
+                return WorldPackets::Item::ItemPushResult::DisplayType::DISPLAY_TYPE_NORMAL;
+        }
+    }();
     packet.Created = created;
     //packet.IsBonusRoll;
     //packet.IsEncounterLoot;
