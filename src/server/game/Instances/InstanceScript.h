@@ -293,6 +293,12 @@ class TC_GAME_API InstanceScript : public ZoneScript
         void DoCastSpellOnPlayers(uint32 spell, bool includePets = false, bool includeControlled = false);
         void DoCastSpellOnPlayer(Player* player, uint32 spell, bool includePets = false, bool includeControlled = false);
 
+        // Play scene by packageId on all players in instance
+        void DoPlayScenePackageIdOnPlayers(uint32 scenePackageId);
+
+        // Play scene by Id on all players in instance
+        void DoPlaySceneOnPlayers(uint32 sceneId);
+
         // Return wether server allow two side groups or not
         static bool ServerAllowsTwoSideGroups();
 
@@ -313,6 +319,9 @@ class TC_GAME_API InstanceScript : public ZoneScript
 
         // Remove cooldowns equal or less than specified time to all players in instance
         void DoRemoveSpellCooldownWithTimeOnPlayers(uint32 minRecoveryTime);
+
+        // Complete Achievement for all players in instance
+        void DoCompleteAchievement(uint32 achievement);
 
         // Achievement criteria additional requirements check
         // NOTE: not use this if same can be checked existed requirement types from AchievementCriteriaRequirementType

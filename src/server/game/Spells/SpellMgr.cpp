@@ -3296,6 +3296,10 @@ void SpellMgr::LoadSpellInfoCorrections()
 
     // Some spells have no amplitude set
     {
+        ApplySpellFix({ 46598 }, [](SpellInfo* info)
+        {
+            info->AttributesEx6 |= SPELL_ATTR6_IGNORE_PHASE_SHIFT;
+        });
         /// Ebosoul Vise 
         ApplySpellFix({ 339298, 355327 }, [](SpellInfo* info)
         {
@@ -4515,7 +4519,8 @@ void SpellMgr::LoadSpellInfoCorrections()
     });
 
     // Sindragosa's Fury
-    ApplySpellFix({ 70598 }, [](SpellInfo* spellInfo)
+    /// 163828 Jump to Jump Point
+    ApplySpellFix({ 70598, 163828 }, [](SpellInfo* spellInfo)
     {
         ApplySpellEffectFix(spellInfo, EFFECT_0, [](SpellEffectInfo* spellEffectInfo)
         {

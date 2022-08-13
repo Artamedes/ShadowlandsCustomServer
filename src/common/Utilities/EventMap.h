@@ -135,6 +135,16 @@ public:
     void ScheduleEvent(uint32 eventId, Milliseconds minTime, Milliseconds maxTime, uint32 group = 0, uint8 phase = 0);
 
     /**
+    * @name ScheduleEvent
+    * @brief Creates new event entry in map.
+    * @param eventId The id of the new event.
+    * @param time The time in milliseconds until the event occurs.
+    * @param group The group which the event is associated to. Has to be between 1 and 16. 0 means it has no group.
+    * @param phase The phase in which the event can occur. Has to be between 1 and 16. 0 means it can occur in all phases.
+    */
+    void ScheduleEvent(uint32 eventId, uint32 time, uint32 group = 0, uint32 phase = 0);
+
+    /**
     * @name RescheduleEvent
     * @brief Cancels the given event and reschedules it.
     * @param eventId The id of the event.

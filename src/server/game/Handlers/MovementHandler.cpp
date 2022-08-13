@@ -800,6 +800,14 @@ void WorldSession::HandleMoveSplineDoneOpcode(WorldPackets::Movement::MoveSpline
     MovementInfo movementInfo = moveSplineDone.Status;
     _player->ValidateMovementInfo(&movementInfo);
 
+    if (auto vehicle = _player->GetVehicleBase())
+    {
+        // seen SMSG_MOVE_UPDATE in sniff -  even sent to self
+        WorldPackets::Movement::MoveUpdate moveUpdate;
+        moveUpdate.Status = &vehicle->m_movementInfo;
+        SendPacket(moveUpdate.Write());
+    }
+
     // in taxi flight packet received in 2 case:
     // 1) end taxi path in far (multi-node) flight
     // 2) switch from one map to other in case multim-map taxi path

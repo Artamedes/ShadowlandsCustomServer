@@ -49,6 +49,11 @@ void EventMap::ScheduleEvent(uint32 eventId, Milliseconds minTime, Milliseconds 
     ScheduleEvent(eventId, randtime(minTime, maxTime), group, phase);
 }
 
+void EventMap::ScheduleEvent(uint32 eventId, uint32 time, uint32 group /*= 0*/, uint32 phase /*= 0*/)
+{
+    ScheduleEvent(eventId, Milliseconds(time), group, phase);
+}
+
 void EventMap::RescheduleEvent(uint32 eventId, Milliseconds time, uint32 group /*= 0*/, uint8 phase /*= 0*/)
 {
     CancelEvent(eventId);

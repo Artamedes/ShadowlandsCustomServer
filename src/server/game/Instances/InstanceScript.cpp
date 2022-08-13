@@ -859,6 +859,27 @@ void InstanceScript::DoCastSpellOnPlayer(Player* player, uint32 spell, bool incl
     }
 }
 
+// Cast spell on all players in instance
+void InstanceScript::DoPlayScenePackageIdOnPlayers(uint32 scenePackageId)
+{
+    Map::PlayerList const& PlayerList = instance->GetPlayers();
+
+    if (!PlayerList.isEmpty())
+        for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+            if (Player* player = i->GetSource())
+                player->GetSceneMgr().PlaySceneByPackageId(scenePackageId, SceneFlag::None);
+}
+
+void InstanceScript::DoPlaySceneOnPlayers(uint32 sceneId)
+{
+    Map::PlayerList const& PlayerList = instance->GetPlayers();
+
+    if (!PlayerList.isEmpty())
+        for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+            if (Player* player = i->GetSource())
+                player->GetSceneMgr().PlayScene(sceneId);
+}
+
 //Pop all player to the graveyard more near in the instance
 void InstanceScript::RepopPlayersAtGraveyard()
 {
@@ -963,6 +984,22 @@ void InstanceScript::DoRemoveSpellCooldownWithTimeOnPlayers(uint32 minRecoveryTi
         if (Player* player = iter->GetSource())
             player->GetSpellHistory()->RemoveSpellCooldownsWithTime(minRecoveryTime);
     }
+}
+
+void InstanceScript::DoCompleteAchievement(uint32 achievement)
+{
+    AchievementEntry const* achievementEntry = sAchievementStore.LookupEntry(achievement);
+    if (!achievementEntry)
+    {
+        TC_LOG_ERROR("scripts", "DoCompleteAchievement called for not existing achievement %u", achievement);
+        return;
+    }
+
+    Map::PlayerList const& playerList = instance->GetPlayers();
+    if (!playerList.isEmpty())
+        for (Map::PlayerList::const_iterator i = playerList.begin(); i != playerList.end(); ++i)
+            if (Player* player = i->GetSource())
+                player->CompletedAchievement(achievementEntry);
 }
 
 void InstanceScript::SetEntranceLocation(uint32 worldSafeLocationId)

@@ -183,6 +183,15 @@ public:
         return false;
     }
 
+    bool HasMovementForce(ObjectGuid id)
+    {
+        auto itr = FindMovementForce(id);
+        if (itr != _forces.end())
+            return true;
+
+        return false;
+    }
+
     float GetModMagnitude() const { return _modMagnitude; }
     void SetModMagnitude(float modMagnitude) { _modMagnitude = modMagnitude; }
 

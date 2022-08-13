@@ -231,6 +231,33 @@ public:
     std::string GetDebugInfo() const;
 };
 
+static float dotProductXY(Position const& pos1, Position const& pos2)
+{
+    return pos1.m_positionX * pos2.m_positionX + pos1.m_positionY * pos2.m_positionY;
+}
+
+inline Position& normalizeXY(Position& pos)
+{
+    float norme = std::sqrt(dotProductXY(pos, pos));
+    pos.m_positionX /= norme;
+    pos.m_positionY /= norme;
+
+    return pos;
+}
+
+inline float DistanceFromLine(Position const& pointLine1, Position const& pointLine2, Position const& point3)
+{
+    float X1 = pointLine1.GetPositionX();
+    float X2 = pointLine2.GetPositionX();
+    float Y1 = pointLine1.GetPositionY();
+    float Y2 = pointLine2.GetPositionY();
+
+    float dx = X2 - X1;
+    float dy = Y2 - Y1;
+
+    return std::abs(dy * point3.GetPositionX() - dx * point3.GetPositionY() - X1 * Y2 + X2 * Y1) / std::sqrt(dx * dx + dy * dy);
+}
+
 TC_GAME_API ByteBuffer& operator<<(ByteBuffer& buf, Position::ConstStreamer<Position::XY> const& streamer);
 TC_GAME_API ByteBuffer& operator>>(ByteBuffer& buf, Position::Streamer<Position::XY> const& streamer);
 TC_GAME_API ByteBuffer& operator<<(ByteBuffer& buf, Position::ConstStreamer<Position::XYZ> const& streamer);

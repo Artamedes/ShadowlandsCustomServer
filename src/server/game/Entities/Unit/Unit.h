@@ -1306,6 +1306,7 @@ class TC_GAME_API Unit : public WorldObject
         bool SetDisableInertia(bool disable);
         void SendSetVehicleRecId(uint32 vehicleId);
 
+        bool HasMovementForce(ObjectGuid source);
         MovementForces const* GetMovementForces() const { return _movementForces.get(); }
         void ApplyMovementForce(ObjectGuid id, Position origin, float magnitude, MovementForceType type, Position direction = {}, ObjectGuid transportGuid = ObjectGuid::Empty);
         void RemoveMovementForce(ObjectGuid id);
@@ -1577,6 +1578,10 @@ class TC_GAME_API Unit : public WorldObject
         float GetPosStat(Stats stat) const { return m_unitData->StatPosBuff[stat]; }
         float GetNegStat(Stats stat) const { return m_unitData->StatNegBuff[stat]; }
         float GetCreateStat(Stats stat) const { return m_createStats[stat]; }
+
+        void DisableEvadeMode() { m_disableEnterEvadeMode = true; }
+        void ReenableEvadeMode() { m_disableEnterEvadeMode = false; }
+        bool EvadeModeIsDisable() const { return m_disableEnterEvadeMode; }
 
         uint32 GetChannelSpellId() const { return m_unitData->ChannelData->SpellID; }
         void SetChannelSpellId(uint32 channelSpellId)
@@ -2011,6 +2016,7 @@ class TC_GAME_API Unit : public WorldObject
         void GetAttackableUnitListInRange(std::list<Unit*>& list, float fMaxSearchRange) const;
         void GetAttackableUnitListInRangeFromCenterObj(WorldObject* centerObj, std::list<Unit*>& list, float fMaxSearchRange) const;
         void GetFriendlyUnitListInRange(std::list<Unit*>& list, float fMaxSearchRange, bool exceptSelf = false) const;
+        void GetAreaTriggerListWithSpellIDInRange(std::list<AreaTrigger*>& list, uint32 spellid, float fMaxSearchRange) const;
 
         // Control Alert
         void SendLossOfControlAuraUpdate(AuraApplication const* aurApp, Mechanics mechanic, SpellEffIndex effIndex, LossOfControlType type);
@@ -2130,6 +2136,8 @@ class TC_GAME_API Unit : public WorldObject
 
         uint32 m_unitTypeMask;
         LiquidTypeEntry const* _lastLiquid;
+
+        bool m_disableEnterEvadeMode;
 
         bool IsAlwaysVisibleFor(WorldObject const* seer) const override;
         bool IsAlwaysDetectableFor(WorldObject const* seer) const override;

@@ -42,7 +42,7 @@ AISpellInfoType* GetAISpellInfo(uint32 spellId, Difficulty difficulty)
 
 CreatureAI::CreatureAI(Creature* creature, uint32 scriptId)
     : UnitAI(creature), me(creature), _boundary(nullptr),
-      _negateBoundary(false), _scriptId(scriptId ? scriptId : creature->GetScriptId()), _isEngaged(false), _moveInLOSLocked(false)
+      _negateBoundary(false), _scriptId(scriptId ? scriptId : creature->GetScriptId()), _isEngaged(false), _moveInLOSLocked(false), summons(creature)
 {
     ASSERT(_scriptId, "A CreatureAI was initialized with an invalid scriptId!");
 }
@@ -317,6 +317,9 @@ void CreatureAI::EngagementOver()
 bool CreatureAI::_EnterEvadeMode(EvadeReason /*why*/)
 {
     if (me->IsInEvadeMode())
+        return false;
+
+    if (me->EvadeModeIsDisable())
         return false;
 
     if (!me->IsAlive())

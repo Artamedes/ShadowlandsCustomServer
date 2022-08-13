@@ -266,7 +266,12 @@ enum FactionTemplates
     FACTION_UNDEAD_SCOURGE_2            = 2068,
     FACTION_UNDEAD_SCOURGE_3            = 2084,
     FACTION_SCARLET_CRUSADE             = 2089,
-    FACTION_SCARLET_CRUSADE_2           = 2096
+    FACTION_SCARLET_CRUSADE_2           = 2096,
+    FACTION_IMPUS                       = 2102,
+    FACTION_FRIENDLY_2                  = 2580,
+    FACTION_THE_BILGE_RATS              = 2934, ///Eudora Faction
+    FACTION_BLACKTOOTH_BRAWLERS         = 2935, ///Raoul Faction
+    FACTION_CUTWATER_CORSAIRS           = 2936 ///Jolly Faction
 };
 
 #define MIN_REPUTATION_RANK (REP_HATED)
