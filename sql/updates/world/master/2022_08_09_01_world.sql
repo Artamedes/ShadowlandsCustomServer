@@ -1,4 +1,4 @@
-SET @CGUID := 1051213;
+SET @CGUID := 147292 ;
 
 SET @SPAWNGROUP_ALLIANCE := 128;
 SET @SPAWNGROUP_HORDE    := 129;
@@ -109,7 +109,7 @@ DELETE FROM `creature_template_addon` WHERE `entry` IN (154301, 167008, 151091);
 INSERT INTO `creature_template_addon` (`entry`, `path_id`, `mount`, `bytes1`, `bytes2`, `emote`, `aiAnimKit`, `movementAnimKit`, `meleeAnimKit`, `visibilityDistanceType`, `auras`) VALUES
 (154301, 0, 0, 0, 1, 0, 0, 0, 0, 4, '305513'), -- 154301 (Lindie Springstock) - -Unknown-
 (167008, 0, 0, 0, 1, 0, 0, 0, 0, 0, '305513'), -- 167008 (Cork Fizzlepop) - -Unknown-
-(151091, 0, 0, 0, 1, 474, 0, 0, 0, 0, ''); -- 151091 (Geolord Grek´gor) -
+(151091, 0, 0, 0, 1, 474, 0, 0, 0, 0, ''); -- 151091 (Geolord GrekÂ´gor) -
 
 -- Creature Template
 UPDATE `creature_template` SET `minlevel`=10, `maxlevel`=10, `faction`=35, `BaseAttackTime`=2000, `unit_flags2`=4196352 WHERE `entry`=154301; -- Lindie Springstock

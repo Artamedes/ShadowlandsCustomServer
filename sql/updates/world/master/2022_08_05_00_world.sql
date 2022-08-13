@@ -1,4 +1,4 @@
-SET @CGUID := 1051209;
+SET @CGUID := 147289 ;
 
 -- Creature Spawns
 DELETE FROM `creature` WHERE `guid` BETWEEN @CGUID+0 AND @CGUID+3;

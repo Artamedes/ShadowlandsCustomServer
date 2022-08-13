@@ -224,6 +224,8 @@ void PlayerMenu::SendGossipMenu(uint32 titleTextId, ObjectGuid objectGUID)
     packet.GossipGUID = objectGUID;
     packet.GossipID = _gossipMenu.GetMenuId();
     packet.TextID = titleTextId;
+    if (GossipMenuAddon const* addon = sObjectMgr->GetGossipMenuAddon(packet.GossipID))
+        packet.FriendshipFactionID = addon->FriendshipFactionID;
 
     packet.GossipOptions.resize(_gossipMenu.GetMenuItems().size());
     uint32 count = 0;

@@ -9010,7 +9010,7 @@ int32 Spell::CallScriptCalcCastTimeHandlers(int32 castTime)
 {
     for (auto scritr = m_loadedScripts.begin(); scritr != m_loadedScripts.end(); ++scritr)
     {
-        (*scritr)->_PrepareScriptCall(SPELL_SCRIPT_HOOK_CALC_CAST_TIME);
+        (*scritr)->_PrepareScriptCall(SPELL_SCRIPT_HOOK_CALC_CAST_TIME2);
         castTime = (*scritr)->CalcCastTime(castTime);
         (*scritr)->_FinishScriptCall();
     }
