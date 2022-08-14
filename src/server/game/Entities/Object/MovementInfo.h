@@ -150,7 +150,7 @@ struct MovementForce
     uint32 TransportID = 0;
     float Magnitude = 0.0f;
     MovementForceType Type = MovementForceType::SingleDirectional;
-    int32 Unused910 = 0;
+    int32 Unused910 = 139;
 };
 
 class MovementForces

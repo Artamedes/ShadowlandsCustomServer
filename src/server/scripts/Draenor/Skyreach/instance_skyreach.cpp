@@ -105,11 +105,8 @@ public:
             LoadDoorData(k_DoorData);
             //LoadScenariosInfos(k_ScenarioData, map->IsChallengeMode() ? ScenarioDatas::ChallengeScenarioId : ScenarioDatas::ScenarioId);
 
-            //for (uint32 i = Blocks::FirstStair; i <= Blocks::SecondStair; i++)
-            //    m_WindMazeBlockGuids.push_back(MAKE_NEW_GUID(sObjectMgr->GenerateLowGuid(HIGHGUID_AREATRIGGER), 6452, HIGHGUID_AREATRIGGER));
-
             for (uint32 i = Blocks::FirstStair; i <= Blocks::SecondStair; i++)
-                m_WindMazeBlockGuids.push_back(ObjectGuid::Empty);
+                m_WindMazeBlockGuids.push_back(ObjectGuid::Create<HighGuid::AreaTrigger>(map->GetId(), 6452, map->GenerateLowGuid<HighGuid::AreaTrigger>()));
 
             //instance->SetObjectVisibility(533.3f);
         }
@@ -604,73 +601,72 @@ public:
         void Update(uint32 diff)
         {
             UpdateOperations(diff);
-            if (true)
-                return;
-
-            // We check here if a player is in the WindMaze zone.
-            Map::PlayerList const &playerList = instance->GetPlayers();
-            if (!playerList.isEmpty())
-            {
-                for (Map::PlayerList::const_iterator i = playerList.begin(); i != playerList.end(); ++i)
-                {
-                    Player* plr = i->GetSource();
-                    if (!plr)
-                        continue;
-
-                    // Is he in WindMaze zone ?
-                    if (IsPointInBlock(Blocks::ConvexHull, *plr))
-                    {
-                        bool isInBlock = false;
-                        uint32 i = Blocks::FirstStair;
-                        for (; i <= Blocks::SecondStair; i++)
-                        {
-                            if (IsPointInBlock(i, *plr))
-                            {
-                                isInBlock = true;
-                                break;
-                            }
-                        }
-
-                        // If the player is in one of the blocks and if it doesn't have the Wind aura, add it.
-                        if (isInBlock)
-                        {
-                            float magnitude = 1;
-                            Position forceDir = CalculateForceVectorFromBlockId(i, magnitude);
-                            if (!plr->HasAura(RandomSpells::Wind))
-                            {
-                                plr->AddAura(RandomSpells::Wind, plr);
-                                // Apply force.
-                                plr->ApplyMovementForce(m_WindMazeBlockGuids[i], forceDir , -3.0f, MovementForceType::Gravity);
-                            }
-                            else if (i != m_PlayerGuidToBlockId[plr->GetGUID()])
-                            {
-                                // Remove old force.
-                                // Add new force.
-                                if (plr->HasMovementForce(m_WindMazeBlockGuids[m_PlayerGuidToBlockId[plr->GetGUID()]]))
-                                    plr->RemoveMovementForce(m_WindMazeBlockGuids[m_PlayerGuidToBlockId[plr->GetGUID()]]);
-
-                                plr->ApplyMovementForce(m_WindMazeBlockGuids[i], forceDir, -3.0f, MovementForceType::Gravity);
-                            }
-
-                            m_PlayerGuidToBlockId[plr->GetGUID()] = i;
-                        }
-                        // Otherwise remove it if it has the Wind aura.
-                        else if (plr->HasAura(RandomSpells::Wind))
-                        {
-                            if (plr->HasMovementForce(m_WindMazeBlockGuids[m_PlayerGuidToBlockId[plr->GetGUID()]]))
-                                plr->RemoveMovementForce(m_WindMazeBlockGuids[m_PlayerGuidToBlockId[plr->GetGUID()]]);
-                            plr->RemoveAura(RandomSpells::Wind);
-                        }
-                    }
-                    // If player is out of the WindMaze zone and has the aura, remove it.
-                    else if (plr->HasAura(RandomSpells::Wind))
-                    {
-                        if (plr->HasMovementForce(m_WindMazeBlockGuids[m_PlayerGuidToBlockId[plr->GetGUID()]]))
-                            plr->RemoveMovementForce(m_WindMazeBlockGuids[m_PlayerGuidToBlockId[plr->GetGUID()]]);
-                        plr->RemoveAura(RandomSpells::Wind);
-                    }
-                }
-            }
+            //if (true)
+            //    return;
+            //
+            //// TODO: NUKE THIS
+            //// We check here if a player is in the WindMaze zone.
+            //Map::PlayerList const &l_PlayerList = instance->GetPlayers();
+            //if (!l_PlayerList.isEmpty())
+            //{
+            //    for (Map::PlayerList::const_iterator i = l_PlayerList.begin(); i != l_PlayerList.end(); ++i)
+            //    {
+            //        Player* l_Plr = i->GetSource();
+            //        if (!l_Plr)
+            //            continue;
+            //
+            //        // Is he in WindMaze zone ?
+            //        if (IsPointInBlock(Blocks::ConvexHull, *l_Plr))
+            //        {
+            //            bool l_IsInBlock = false;
+            //            uint32 i = Blocks::FirstStair;
+            //            for (; i <= Blocks::SecondStair; i++)
+            //            {
+            //                if (IsPointInBlock(i, *l_Plr))
+            //                {
+            //                    l_IsInBlock = true;
+            //                    break;
+            //                }
+            //            }
+            //
+            //            // If the player is in one of the blocks and if it doesn't have the Wind aura, add it.
+            //            if (l_IsInBlock)
+            //            {
+            //                float l_Magnitude = 1;
+            //                Position l_ForceDir = CalculateForceVectorFromBlockId(i, l_Magnitude);
+            //                if (!l_Plr->HasAura(RandomSpells::Wind))
+            //                {
+            //                    l_Plr->AddAura(RandomSpells::Wind, l_Plr);
+            //                    // Apply force.
+            //                    l_Plr->ApplyMovementForce(m_WindMazeBlockGuids[i], *l_Plr, l_Magnitude, MovementForceType::SingleDirectional, l_ForceDir);
+            //                }
+            //                else if (i != m_PlayerGuidToBlockId[l_Plr->GetGUID()])
+            //                {
+            //                    // Remove old force.
+            //                    // Add new force.
+            //                    if (l_Plr->HasMovementForce(m_WindMazeBlockGuids[m_PlayerGuidToBlockId[l_Plr->GetGUID()]]))
+            //                        l_Plr->ApplyMovementForce(m_WindMazeBlockGuids[m_PlayerGuidToBlockId[l_Plr->GetGUID()]], *l_Plr, l_Magnitude, MovementForceType::SingleDirectional, l_ForceDir);
+            //                }
+            //
+            //                m_PlayerGuidToBlockId[l_Plr->GetGUID()] = i;
+            //            }
+            //            // Otherwise remove it if it has the Wind aura.
+            //            else if (l_Plr->HasAura(RandomSpells::Wind))
+            //            {
+            //                if (l_Plr->HasMovementForce(m_WindMazeBlockGuids[m_PlayerGuidToBlockId[l_Plr->GetGUID()]]))
+            //                    l_Plr->RemoveMovementForce(m_WindMazeBlockGuids[m_PlayerGuidToBlockId[l_Plr->GetGUID()]]);
+            //                l_Plr->RemoveAura(RandomSpells::Wind);
+            //            }
+            //        }
+            //        // If player is out of the WindMaze zone and has the aura, remove it.
+            //        else if (l_Plr->HasAura(RandomSpells::Wind))
+            //        {
+            //            if (l_Plr->HasMovementForce(m_WindMazeBlockGuids[m_PlayerGuidToBlockId[l_Plr->GetGUID()]]))
+            //                l_Plr->RemoveMovementForce(m_WindMazeBlockGuids[m_PlayerGuidToBlockId[l_Plr->GetGUID()]]);
+            //            l_Plr->RemoveAura(RandomSpells::Wind);
+            //        }
+            //    }
+            //}
 
             // Beam light intersection handler.
             if (!m_SelectedSolarConstructorGuid.IsEmpty())

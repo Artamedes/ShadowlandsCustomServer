@@ -17,6 +17,7 @@
 */
 
 #include "skyreach.hpp"
+#include "GenericMovementGenerator.h"
 #include "CombatAI.h"
 
 /*
@@ -169,7 +170,7 @@ public:
         {
             m_Pos = *me;
             m_Home = *me;
-            me->SetSpeed(MOVE_FLIGHT, 5.0f);
+            me->SetSpeed(MOVE_FLIGHT, 15.0f);
             m_Pos.m_positionX += 13.0f * cos(me->GetOrientation());
             m_Pos.m_positionY += 13.0f * sin(me->GetOrientation());
         }
@@ -189,14 +190,14 @@ public:
             switch (pointId)
             {
             case 0:
-                me->SetSpeed(MOVE_FLIGHT, 1.0f);
+                me->SetSpeed(MOVE_FLIGHT, 5.0f);
                 me->GetMotionMaster()->MoveBackward(1, m_Home.GetPositionX(), m_Home.GetPositionY(), m_Home.GetPositionZ(), 0.5f);
                 if (Player* plr = ObjectAccessor::GetPlayer(*me, m_TargetGuid))
                     me->CastSpell(plr, uint32(Spells::Pierce));
                 m_TargetGuid = ObjectGuid::Empty;
                 break;
             case 1:
-                me->SetSpeed(MOVE_FLIGHT, 5.0f);
+                me->SetSpeed(MOVE_FLIGHT, 15.0f);
                 me->SetOrientation(m_Home.GetOrientation());
                 m_events.ScheduleEvent(uint32(Events::Pierce), 500);
                 break;
@@ -2466,21 +2467,32 @@ public:
 };
 
 const Position DreadRavenPos[] =
-{
-    { 994.82306f, 1800.4653f, 294.93112 },
-    { 1000.9827f, 1872.9254f, 277.5583  },
-    { 1007.1424f, 1945.3855f, 260.18546 },
-    { 930.7465f, 1787.5538f, 260.03345 },
-    { 1005.809f, 1675.7396f, 242.29807 },
-    { 1059.743f, 1649.1354f, 219.11612 },
-    { 1097.4879f, 1672.4236f, 206.83957 },
-    { 1112.2639f, 1727.9115f, 189.91101 },
-    { 1130.5659f, 1751.6564f, 178.36351 },
-    { 1154.4548f, 1770.3716f, 169.0056  },
-    { 1183.3281f, 1777.6581f, 166.64786 },
-    { 1210.1788f, 1762.099f, 183.83516 },
-    { 1217.783f, 1757.342f, 189.47287 },
-    { 1217.783f, 1757.342f, 189.47287 },
+{  // sometimes blizz sends this, but this is buggy
+   // { 994.82306f, 1800.4653f, 294.93112 },
+   // { 1000.9827f, 1872.9254f, 277.5583  },
+   // { 1007.1424f, 1945.3855f, 260.18546 },
+   // { 930.7465f, 1787.5538f, 260.03345 },
+   // { 1005.809f, 1675.7396f, 242.29807 },
+   // { 1059.743f, 1649.1354f, 219.11612 },
+   // { 1097.4879f, 1672.4236f, 206.83957 },
+   // { 1112.2639f, 1727.9115f, 189.91101 },
+   // { 1130.5659f, 1751.6564f, 178.36351 },
+   // { 1154.4548f, 1770.3716f, 169.0056  },
+   // { 1183.3281f, 1777.6581f, 166.64786 },
+   // { 1210.1788f, 1762.099f, 183.83516 },
+   // { 1217.783f, 1757.342f, 189.47287 },
+   // { 1217.783f, 1757.342f, 189.47287 },
+    { 1002.0567f,  1871.5894f, 277.6579f},
+    { 1007.1424f,  1945.3855f, 265.7238f},
+    { 1043.257f,   1933.4341f, 235.55037f},
+    { 1066.356f,   1928.6545f, 233.9754f},
+    { 1085.2257f,  1914.2692f, 245.27501f},
+    { 1100.8177f,  1899.3524f, 250.52097f},
+    { 1121.3785f,  1874.6459f, 245.52116f},
+    { 1145.066f,   1839.6459f, 235.76405f},
+    { 1146.6875f,  1794.6685f, 219.75612f},
+    { 1188.8403f,  1774.0226f, 210.45837f},
+    { 1223.724f,   1750.3525f, 187.60385f},
 };
 
 const Position DreadRavenOutroPos[] =
@@ -2509,7 +2521,25 @@ public:
         me->SetDisableGravity(true);
         me->SetExtraUnitMovementFlags(MOVEMENTFLAG2_NO_STRAFE | MOVEMENTFLAG2_NO_JUMPING | MOVEMENTFLAG2_FULL_SPEED_TURNING | MOVEMENTFLAG2_FULL_SPEED_PITCHING);
         me->SetAnimTier(AnimTier::Fly, false);
-        me->GetMotionMaster()->MoveSmoothPath(0, DreadRavenPos, 14, false, true, 20.499771f);
+        me->GetMotionMaster()->MoveSmoothPath(0, DreadRavenPos, 11, false, true, 15.99684)->callbackFunc = [this]()
+        {
+            DoCast(EjectPassenger1);
+
+            if (auto tempSumm = me->ToTempSummon())
+                if (auto unitOwner = tempSumm->GetOwner())
+                    unitOwner->GetScheduler().Schedule(50ms, [this](TaskContext context)
+                {
+                    context.GetUnit()->CastSpell(JumpPos, JUMP_TO_JUMpoint, true);
+                });
+
+            scheduler.Schedule(1500ms, [this](TaskContext /*context*/)
+            {
+                me->GetMotionMaster()->MoveSmoothPath(0, DreadRavenOutroPos, 2, false, true, 7.499771f)->callbackFunc = [this]()
+                {
+
+                };
+            });
+        };
     }
 
     void UpdateAI(uint32 diff) override
@@ -2529,23 +2559,6 @@ public:
             {
                 if (unit)
                     unit->CastSpell(ReshadSpawnPos, RandomSpells::INTRO_NARRATOR, true);
-            });
-
-            scheduler.Schedule(40s, [this](TaskContext /*context*/)
-            {
-                DoCast(EjectPassenger1);
-
-                if (auto tempSumm = me->ToTempSummon())
-                    if (auto unitOwner = tempSumm->GetOwner())
-                        unitOwner->GetScheduler().Schedule(50ms, [this](TaskContext context)
-                    {
-                        context.GetUnit()->CastSpell(JumpPos, JUMP_TO_JUMpoint, true);
-                    });
-
-                scheduler.Schedule(1500ms, [this](TaskContext /*context*/)
-                {
-                    me->GetMotionMaster()->MoveSmoothPath(0, DreadRavenOutroPos, 2, false, true, 7.499771f);
-                });
             });
         }
     }
@@ -2582,15 +2595,15 @@ public:
             if (auto vehicle = unit->GetVehicleBase())
                 me->EnterVehicle(vehicle);
 
-            scheduler.Schedule(5s, [this, unit](TaskContext /*context*/)
+            scheduler.Schedule(3s, [this, unit](TaskContext /*context*/)
             {
                 Talk(TalkIntro1, unit);
 
-                scheduler.Schedule(10s, [this, unit](TaskContext /*context*/)
+                scheduler.Schedule(11s, [this, unit](TaskContext /*context*/)
                 {
                     Talk(TalkIntro2, unit);
 
-                    scheduler.Schedule(18s, [this, unit](TaskContext /*context*/)
+                    scheduler.Schedule(9s, [this, unit](TaskContext /*context*/)
                     {
                         Talk(TalkIntro3, unit);
                     });
@@ -2600,6 +2613,111 @@ public:
     }
 };
 
+const Position WindMazeSpawnPos = { 1010.704f, 1923.7721f, 227.16031f, 2.530723f };
+const QuaternionData WindMazeQ = { 0.0f, 0.0f, 0.9537163f, 0.3007079f };
+
+struct npc_wind_76152 : public ScriptedAI
+{
+public:
+    npc_wind_76152(Creature* creature) : ScriptedAI(creature) { }
+
+    enum eWind
+    {
+        SetupWindRampA = 153622,
+        WindMaze = 238852,
+    };
+
+    void InitializeAI() override
+    {
+        /// Setup all our areatriggers
+        DoCastSelf(SetupWindRampA, true);
+        me->SummonGameObject(WindMaze, WindMazeSpawnPos, WindMazeQ, 0s, GOSummonType::GO_SUMMON_TIMED_DESPAWN);
+    }
+
+    void UpdateAI(uint32 /*diff*/) override
+    {
+
+    }
+};
+
+const std::unordered_map<uint32, Position> AreaTriggerRelocatePositions =
+{
+     { 6313, { 1025.7179f,  1917.1328f, 225.0f, 2.544507f } },
+     { 6316, { 1024.7979f,  1933.9662f, 225.0f, 2.544507f } },
+     { 6444, { 1013.1467f,  1912.8689f, 225.0f, 2.544507f } },
+     { 6319, { 1009.0156f,  1940.7865f, 225.0f, 2.544507f } },
+     { 6447, { 1024.6841f,  1942.645f,  225.0f, 2.544507f } },
+     { 6450, { 1000.283f,   1945.1997f, 225.0f, 2.544507f } },
+     { 6453, { 988.05383f,  1926.5669f, 225.0f, 2.544507f } },
+     { 6712, { 995.14496f,  1931.5521f, 225.0f, 2.544507f } },
+     { 6315, { 1027.2614f,  1928.698f,  225.0f, 2.544507f } },
+     { 6443, { 998.3429f,   1936.1875f, 225.0f, 2.544507f } },
+     { 6318, { 1015.62415f, 1940.251f,  225.0f, 2.544507f } },
+     { 6446, { 1017.67535f, 1945.9548f, 225.0f, 2.544507f } },
+     { 6452, { 989.6875f,   1934.3906f, 225.0f, 2.544507f } },
+     { 6308, { 1006.0834f,  1905.5312f, 220.0f, 2.544507f } },
+     { 6449, { 1033.283f,   1925.7866f, 225.0f, 2.544507f } },
+     { 6711, { 993.5834f,   1925.8013f, 225.0f, 2.544507f } },
+     { 6314, { 996.56683f,  1913.8994f, 225.0f, 2.544507f } },
+     { 6442, { 1003.1814f,  1939.5382f, 225.0f, 2.544507f } },
+     { 6093, { 974.78125f,  1906.967f, 210.661f, 2.544507f } },
+     { 6317, { 1020.61975f, 1937.6824f, 225.0f, 2.544507f } },
+     { 6445, { 1009.0972f,  1946.7267f, 225.0f, 2.544507f } },
+     { 6448, { 1030.0243f,  1937.2675f, 225.0f, 2.544507f } },
+     { 6451, { 993.88806f,  1940.9324f, 225.0f, 2.544507f } },
+     { 6454, { 990.28564f,  1914.1598f, 225.0f, 2.544507f } },
+     { 6710, { 994.1649f,   1919.4783f, 225.0f, 2.544507f } },
+};
+
+struct at_skyreach_wind_maze : public AreaTriggerAI
+{
+public:
+    at_skyreach_wind_maze(AreaTrigger* at) : AreaTriggerAI(at)
+    {
+        auto it = AreaTriggerRelocatePositions.find(at->GetEntry());
+        if (it != AreaTriggerRelocatePositions.end())
+            at->Relocate(it->second);
+    }
+
+    void OnUnitEnter(Unit* who) override
+    {
+        if (who->IsPlayer())
+        {
+            auto l_Plr = who->ToPlayer();
+            if (IsPointInBlock(Blocks::ConvexHull, *l_Plr))
+            {
+                bool l_IsInBlock = false;
+                uint32 i = Blocks::FirstStair;
+                for (; i <= Blocks::SecondStair; i++)
+                {
+                    if (IsPointInBlock(i, *l_Plr))
+                    {
+                        l_IsInBlock = true;
+                        break;
+                    }
+                }
+
+                // If the player is in one of the blocks and if it doesn't have the Wind aura, add it.
+                if (l_IsInBlock)
+                {
+                    float l_Magnitude = 1;
+                    Position l_ForceDir = CalculateForceVectorFromBlockId(i, l_Magnitude);
+                    l_Plr->CastSpell(l_Plr, RandomSpells::Wind, true);
+                    l_Plr->ApplyMovementForce(at->GetGUID(), *at, l_Magnitude, MovementForceType::SingleDirectional, l_ForceDir);
+                }
+            }
+        }
+    }
+
+    void OnUnitExit(Unit* who) override
+    {
+        if (who->IsPlayer())
+        {
+            who->RemoveMovementForce(at->GetGUID());
+            who->RemoveAura(RandomSpells::Wind);
+        }
+    }
+};
 
 void AddSC_skyreach()
 {
@@ -2627,6 +2745,7 @@ void AddSC_skyreach()
     RegisterCreatureAI(npc_GossipIntroOutro);
     RegisterCreatureAI(npc_reshad_81273);
     RegisterCreatureAI(npc_dread_raven_81204);
+    RegisterCreatureAI(npc_wind_76152);
 
     // Spells.
     new spell_SpinningBlade();
@@ -2643,5 +2762,7 @@ void AddSC_skyreach()
     new areatrigger_solar_storm();
     new areatrigger_storm_zone();
     new areatrigger_dervish();
+
+    RegisterAreaTriggerAI(at_skyreach_wind_maze);
 }
 

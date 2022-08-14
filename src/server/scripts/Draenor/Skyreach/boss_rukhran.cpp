@@ -17,25 +17,30 @@
 */
 
 #include "skyreach.hpp"
+#include "GenericMovementGenerator.h"
 
-
-
-static const Position k_Waypoints[12] =
+static const Position RukhranIntroPath[] =
 {
-    { 929.272f, 1937.448f, 224.75f, 0.0f},
-    { 910.023f, 1921.640f, 219.96f, 0.0f},
-    { 896.675f, 1901.697f, 219.96f, 0.0f},
-    { 898.726f, 1872.698f, 224.75f, 0.0f},
-    { 876.896f, 1888.450f, 224.75f, 0.0f},
-    { 895.448f, 1928.450f, 224.75f, 0.0f},
-
-
-    { 895.448f, 1928.450f, 224.75f, 0.0f},
-    { 876.896f, 1888.450f, 224.75f, 0.0f},
-    { 898.726f, 1872.698f, 224.75f, 0.0f},
-    { 896.675f, 1901.697f, 219.96f, 0.0f},
-    { 910.023f, 1921.640f, 219.96f, 0.0f},
-    { 929.272f, 1937.448f, 224.75f, 0.0f},
+    { 967.8507, 1929.1233, 216.05872  },
+    { 964.4965, 1935.3959, 216.05872  },
+    { 948.44446, 1939.2257, 218.53493 },
+    { 933.9549, 1927.6302, 221.33571  },
+    { 918.2084, 1904.757, 229.3391    },
+    { 907.6632, 1888.0817, 229.98434  },
+    { 888.32465, 1854.3612, 217.7278  },
+    { 887.6215, 1833.1163, 214.71555  },
+    { 901.9219, 1821.165, 216.45746   },
+    { 919.3472, 1824.8334, 216.05873  },
+    { 925.17017, 1839.7744, 216.05873 },
+    { 910.8507, 1855.8021, 216.05873  },
+    { 888.6667, 1876.6372, 214.19075  },
+    { 882.57294, 1896.4011, 212.60384 },
+    { 890.69275, 1921.2119, 211.40952 },
+    { 906.94965, 1938.467, 211.71024  },
+    { 923.89935, 1939.5348, 212.70876 },
+    { 943.67365, 1926.3108, 214.96768 },
+    { 955.8403, 1921.0417, 215.64778  },
+    { 966.8056, 1925.2622, 216.05873  },
 };
 
 static const Position k_RandomSummonSolarFlare[] =
@@ -275,7 +280,6 @@ public:
     {
         boss_RukranAI(Creature* creature)
             : BossAI(creature, Data::Rukhran),
-            m_WaypointId(0),
             m_CombatStarted(false),
             m_LastTarget(0)
         {
@@ -301,6 +305,14 @@ public:
             me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_CONFUSE, true);
         }
 
+        void MoveIntroPath()
+        {
+            me->GetMotionMaster()->MoveSmoothPath(0, RukhranIntroPath, 20, false, true)->callbackFunc = [this]()
+            {
+                MoveIntroPath();
+            };
+        }
+
         void Reset()
         {
             events.Reset();
@@ -311,10 +323,9 @@ public:
             {
                 _Reset();
 
-                m_WaypointId = 0;
                 me->SetReactState(REACT_PASSIVE);
-                me->GetMotionMaster()->MovePoint(m_WaypointId, k_Waypoints[0]);
                 me->SetControlled(false, UNIT_STATE_ROOT);
+                MoveIntroPath();
             }
             else if (instance)
             {
@@ -350,11 +361,6 @@ public:
                     me->Attack(SelectRandomPlayerIncludedTank(me, 40.0f, false), true);
                     m_CombatStarted = true;
                     me->SetOrientation(5.4f);
-                }
-                else
-                {
-                    m_WaypointId = (m_WaypointId + 1) % 12;
-                    me->GetMotionMaster()->MovePoint(m_WaypointId, k_Waypoints[m_WaypointId]);
                 }
                 break;
             }
@@ -507,7 +513,6 @@ public:
             DoMeleeAttackIfReady();
         }
 
-        uint32 m_WaypointId;
         bool m_CombatStarted;
         uint32 m_LastTarget;
     };
@@ -623,48 +628,39 @@ public:
 
         // This method is used to filter the targets that are behind the big pillar, in the Rukhran event, when
         // Rukhran is casting Quills (player should go behind the big pillar at the center of the platform to hide).
-        void CheckTarget(std::list<WorldObject*>& unitList)
+        void CheckTarget(std::list<WorldObject*>& p_UnitList)
         {
-            unitList.remove_if([this](WorldObject* object)
+            p_UnitList.remove_if([this](WorldObject* p_Object)
             {
-                // ref and point should be vectors.
-                auto isToTheRightFromRef = [](Position const& ref, Position const& point) -> bool {
-                    return point.m_positionX * ref.m_positionY - point.m_positionY * ref.m_positionX > 0;
+                /// p_Ref and p_Point should be vectors.
+                auto l_IsToTheRightFromRef = [](Position const& p_Ref, Position const& p_Point) -> bool {
+                    return p_Point.m_positionX * p_Ref.m_positionY - p_Point.m_positionY * p_Ref.m_positionX > 0;
                 };
-
-                // Those both position are the extreme position of the pillar.
-                // The three position refers to those points. We want to check if the player
-                // is inside and far from the target for a certain distance.
-                // O---------------- L
-                //  \
-                                    //   \        Player
-//    \      x
-//     \
-                    //      \
-                    //       \
-                    //        R
+                
+                /// Those both position are the extreme position of the pillar.
+                /// The three position refers to those points. We want to check if the player
+                /// is inside and far from the target for a certain distance.
+                /// O---------------- L
+                ///  \
+                ///   \        Player
+                ///    \      x
+                ///     \
+                ///      \
+                ///       \
+                ///        R
                 static const Position s_OriginPosition = { 918.919f, 1913.459f, 213.0f, 0.0f };
                 static const Position s_RightPosition = { 936.999f, 1872.137f, 213.0f, 0.0f };
                 static const Position s_LeftPosition = { 951.305f, 1882.338f, 213.0f, 0.0f };
 
-                Position refLeftVect;
-                Position refRightVect;
-                Position playerVect;
-                refLeftVect.m_positionX = s_LeftPosition.m_positionX - s_OriginPosition.m_positionX;
-                refLeftVect.m_positionY = s_LeftPosition.m_positionY - s_OriginPosition.m_positionY;
-                refLeftVect.m_positionZ = s_LeftPosition.m_positionZ;
+                Position l_RefLeftVect = s_LeftPosition - s_OriginPosition;
+                Position l_RefRightVect = s_RightPosition - s_OriginPosition;
 
-                refRightVect.m_positionX = s_RightPosition.m_positionX - s_OriginPosition.m_positionX;
-                refRightVect.m_positionY = s_RightPosition.m_positionY - s_OriginPosition.m_positionY;
-                refRightVect.m_positionZ = s_RightPosition.m_positionZ;
+                Position l_PlayerVect = *p_Object - s_OriginPosition;
 
-                playerVect.m_positionX = object->GetPositionX() - s_OriginPosition.m_positionX;
-                playerVect.m_positionY = object->GetPositionY() - s_OriginPosition.m_positionY;
-
-                if (!isToTheRightFromRef(refLeftVect, playerVect) || isToTheRightFromRef(refRightVect, playerVect))
+                if (!l_IsToTheRightFromRef(l_RefLeftVect, l_PlayerVect) || l_IsToTheRightFromRef(l_RefRightVect, l_PlayerVect))
                     return false;
 
-                if (GetCaster()->GetExactDist2d(object) < 30.0f)
+                if (GetCaster()->GetExactDist2d(p_Object) < 30.0f)
                     return false;
 
                 return true;

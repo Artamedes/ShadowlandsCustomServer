@@ -413,87 +413,77 @@ static const std::vector<uint32> k_WindMazeIndices[27] =
     { 0, 46, 45, 43, 44, 1 } // 27
 };
 
-inline Position CalculateForceVectorFromBlockId(uint32 blockId, float& magnitude)
+inline Position CalculateForceVectorFromBlockId(uint32 p_BlockId, float& p_Magnitude)
 {
-    assert(blockId != Blocks::ConvexHull);
+    assert(p_BlockId != Blocks::ConvexHull);
 
-    Position forceDir;
-    magnitude = 3;
+    Position l_ForceDir;
+    p_Magnitude = 3;
     // Special case because of a lot of vertices.
-    if (Blocks::Center == blockId)
+    if (Blocks::Center == p_BlockId)
     {
-        forceDir.m_positionX = k_WindMazeVertices[26].m_positionX - k_WindMazeVertices[38].m_positionX;
-        forceDir.m_positionY = k_WindMazeVertices[26].m_positionY - k_WindMazeVertices[38].m_positionY;
-        forceDir.m_positionZ = 0;
-        normalizeXY(forceDir);
-        magnitude = 11;
-        forceDir.m_positionX *= magnitude;
-        forceDir.m_positionY *= magnitude;
-        return forceDir;
+        l_ForceDir = k_WindMazeVertices[26] - k_WindMazeVertices[38];
+        l_ForceDir.m_positionZ = 0;
+        normalizeXY(l_ForceDir);
+        p_Magnitude = 11;
+        l_ForceDir.m_positionX *= p_Magnitude;
+        l_ForceDir.m_positionY *= p_Magnitude;
+        return l_ForceDir;
     }
 
     // Special case because of a lot of vertices.
-    if (Blocks::Intermediate == blockId)
+    if (Blocks::Intermediate == p_BlockId)
     {
-        forceDir.m_positionX = k_WindMazeVertices[24].m_positionX - k_WindMazeVertices[22].m_positionX;
-        forceDir.m_positionY = k_WindMazeVertices[24].m_positionY - k_WindMazeVertices[22].m_positionY;
-        forceDir.m_positionZ = 0;
-        normalizeXY(forceDir);
-        forceDir.m_positionX *= magnitude;
-        forceDir.m_positionY *= magnitude;
-        return forceDir;
+        l_ForceDir = k_WindMazeVertices[24] - k_WindMazeVertices[22];
+        l_ForceDir.m_positionZ = 0;
+        normalizeXY(l_ForceDir);
+        l_ForceDir.m_positionX *= p_Magnitude;
+        l_ForceDir.m_positionY *= p_Magnitude;
+        return l_ForceDir;
     }
 
-    std::vector<uint32> blockIndices = k_WindMazeIndices[blockId];
-    assert(blockIndices.size() == 4);
+    std::vector<uint32> l_BlockIndices = k_WindMazeIndices[p_BlockId];
+    assert(l_BlockIndices.size() == 4);
 
-    forceDir.m_positionX = ((k_WindMazeVertices[blockIndices[3]].m_positionX - k_WindMazeVertices[blockIndices[0]].m_positionX) + (k_WindMazeVertices[blockIndices[2]].m_positionX - k_WindMazeVertices[blockIndices[1]].m_positionX)) / 2.0f;
-    forceDir.m_positionY = ((k_WindMazeVertices[blockIndices[3]].m_positionY - k_WindMazeVertices[blockIndices[0]].m_positionY) + (k_WindMazeVertices[blockIndices[2]].m_positionY - k_WindMazeVertices[blockIndices[1]].m_positionY)) / 2.0f;
-    forceDir.m_positionZ = 0;
-    normalizeXY(forceDir);
-    forceDir.m_positionX *= magnitude;
-    forceDir.m_positionY *= magnitude;
-    return forceDir;
+    l_ForceDir = ((k_WindMazeVertices[l_BlockIndices[3]] - k_WindMazeVertices[l_BlockIndices[0]]) + (k_WindMazeVertices[l_BlockIndices[2]] - k_WindMazeVertices[l_BlockIndices[1]])) / 2.0f;
+    l_ForceDir.m_positionZ = 0;
+    normalizeXY(l_ForceDir);
+    l_ForceDir.m_positionX *= p_Magnitude;
+    l_ForceDir.m_positionY *= p_Magnitude;
+    return l_ForceDir;
 }
 
-inline bool IsPointInBlock(uint32 blockId, Position const& point)
+inline bool IsPointInBlock(uint32 p_BlockId, Position const& p_Point)
 {
-    // ref and point should be vectors.
-    auto isToTheRightFromRef = [](Position const& ref, Position const& point) -> bool {
-        return point.m_positionX * ref.m_positionY - point.m_positionY * ref.m_positionX > 0;
+    /// p_Ref and p_Point should be vectors.
+    auto l_IsToTheRightFromRef = [](Position const& p_Ref, Position const& p_Point) -> bool {
+        return p_Point.m_positionX * p_Ref.m_positionY - p_Point.m_positionY * p_Ref.m_positionX > 0;
     };
 
-    assert(blockId < 27);
-    std::vector<uint32> block = k_WindMazeIndices[blockId];
-    assert(block.size() >= 3);
+    assert(p_BlockId < 27);
+    std::vector<uint32> l_Block = k_WindMazeIndices[p_BlockId];
+    assert(l_Block.size() >= 3);
 
-    uint32 firstPoint = 0;
-    uint32 lastPoint = 0;
+    uint32 l_FirstPoint = 0;
+    uint32 l_LastPoint = 0;
 
-    Position refPosition;
-    Position pointPosition;
-    for (uint32 i = 0; i < block.size(); i++)
+    for (uint32 i = 0; i < l_Block.size(); i++)
     {
-        firstPoint = block[i];
+        l_FirstPoint = l_Block[i];
 
         // Special case.
         if (i == 0)
-            lastPoint = block[block.size() - 1];
+            l_LastPoint = l_Block[l_Block.size() - 1];
 
-        // Constructing reference vector, which is part of the bounds of the block.
-        refPosition.m_positionX = k_WindMazeVertices[firstPoint].m_positionX - k_WindMazeVertices[lastPoint].m_positionX;
-        refPosition.m_positionY = k_WindMazeVertices[firstPoint].m_positionY - k_WindMazeVertices[lastPoint].m_positionY;
-        // Constructing the point vector, centered in the last point.
-        pointPosition.m_positionX = point.m_positionX - k_WindMazeVertices[lastPoint].m_positionX;
-        pointPosition.m_positionY = point.m_positionY - k_WindMazeVertices[lastPoint].m_positionY;
-        if (!isToTheRightFromRef(refPosition, pointPosition))
+        if (!l_IsToTheRightFromRef(
+            k_WindMazeVertices[l_FirstPoint] - k_WindMazeVertices[l_LastPoint], // Constructing reference vector, which is part of the bounds of the block.
+            p_Point - k_WindMazeVertices[l_LastPoint])) // Constructing the point vector, centered in the last point.
             return false;
 
-        lastPoint = firstPoint;
+        l_LastPoint = l_FirstPoint;
     }
 
     return true;
 }
-
 
 #endif // !SKYREACH_INSTANCE_H

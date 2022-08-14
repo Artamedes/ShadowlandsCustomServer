@@ -2253,7 +2253,7 @@ Player* WorldObject::FindNearestPlayer(float range, bool alive)
     Player* player = NULL;
     Trinity::AnyPlayerInObjectRangeCheck check(this, range, alive);
     Trinity::PlayerSearcher<Trinity::AnyPlayerInObjectRangeCheck> searcher(this, player, check);
-    Cell::VisitGridObjects(this, searcher, range);
+    Cell::VisitAllObjects(this, searcher, range);
     return player;
 }
 

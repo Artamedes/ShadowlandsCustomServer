@@ -63,6 +63,13 @@ public:
         VICTORY = -1603208
     };
 
+    enum eTalks : uint32
+    {
+        TalkCombat = 0,
+        TalkOutrun = 1,
+        TalkDeath = 2,
+    };
+
     enum RanjitEvents : uint32
     {
         WINDWALL_EVENT = 1,
@@ -83,9 +90,6 @@ public:
         boss_RanjitAI(Creature* creature) : BossAI(creature, Data::Ranjit),
             m_countWindwalls(0)
         {
-            m_TriggerFourWinds[0] = ObjectGuid::Empty;
-            m_TriggerFourWinds[1] = ObjectGuid::Empty;
-
             me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
             me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_GRIP, true);
             me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_STUN, true);
@@ -99,31 +103,26 @@ public:
             me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_SNARE, true);
             me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_DISORIENTED, true);
             me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_CONFUSE, true);
+            me->SetAnimTier(AnimTier::Fly, false);
+            me->SetReactState(REACT_PASSIVE);
         }
 
-        void Reset()
+        void Reset() override
         {
-            _Reset();
+            BossAI::Reset();
 
             m_countWindwalls = 0;
-            m_TriggerFourWinds[0] = ObjectGuid::Empty;
-            m_TriggerFourWinds[1] = ObjectGuid::Empty;
-
-            if (m_TriggerFourWinds[0].IsEmpty())
-            {
-                m_TriggerFourWinds[0] = me->SummonCreature(MobEntries::ArakkoaPincerBirdsController, 1165.871f, 1727.601f, 186)->GetGUID();
-            }
-            if (m_TriggerFourWinds[1].IsEmpty())
-            {
-                m_TriggerFourWinds[1] = me->SummonCreature(MobEntries::ArakkoaPincerBirdsController, 1165.871f, 1727.601f, 189.4522f)->GetGUID();
-            }
+            m_TriggerFourWinds[0].Clear();
+            m_TriggerFourWinds[1].Clear();
+            // wtf are they for
+            //m_TriggerFourWinds[0] = me->SummonCreature(MobEntries::ArakkoaPincerBirdsController, 1165.871f, 1727.601f, 186)->GetGUID();
+            //m_TriggerFourWinds[1] = me->SummonCreature(MobEntries::ArakkoaPincerBirdsController, 1165.871f, 1727.601f, 189.4522f)->GetGUID();
         }
 
-        void JustReachedHome()
+        void EnterEvadeMode(EvadeReason why) override
         {
-            _JustReachedHome();
-            //DoScriptText(int32(Texts::VICTORY), me);
-
+            _EnterEvadeMode(why);
+            _DespawnAtEvade(5s);
             if (instance)
             {
                 instance->SetBossState(Data::Ranjit, FAIL);
@@ -131,11 +130,11 @@ public:
             }
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(Unit* killer) override
         {
-            _JustDied();
+            BossAI::JustDied(killer);
 
-            //DoScriptText(int32(Texts::JUST_DIED), me);
+            Talk(TalkDeath);
 
             me->CastSpell(me, RandomSpells::DespawnAreaTriggers, true);
 
@@ -151,14 +150,32 @@ public:
         //        DoScriptText(int32(Texts::KILL_PLAYER_2), me);
         //}
 
-        void JustEngagedWith(Unit* who)
+        bool _isIntro = true;
+
+        void JustEngagedWith(Unit* who) override
         {
             _JustEngagedWith(who);
 
-            events.ScheduleEvent(uint32(RanjitEvents::WINDWALL_EVENT), 8000);
-            events.ScheduleEvent(uint32(RanjitEvents::FAN_OF_BLADES_EVENT), 5000);
-            events.ScheduleEvent(uint32(RanjitEvents::PIERCING_RUSH_EVENT), 1000);
-            events.ScheduleEvent(uint32(RanjitEvents::SPINNING_BLADE_EVENT), urand(8000, 10000));
+            // Sniff sends this
+            me->SetVirtualItem(0, 0);
+
+            scheduler.Schedule(400ms, [this](TaskContext /*context*/)
+            {
+                me->SetAnimTier(AnimTier::Ground, false);
+                me->SetStandState(UnitStandStateType::UNIT_STAND_STATE_STAND);
+            });
+
+            scheduler.Schedule(1s, [this](TaskContext /*context*/)
+            {
+                Talk(TalkCombat);
+                me->SetReactState(REACT_AGGRESSIVE);
+                _isIntro = false;
+            });
+
+            events.ScheduleEvent(RanjitEvents::WINDWALL_EVENT, 8s);
+            events.ScheduleEvent(RanjitEvents::FAN_OF_BLADES_EVENT, 5s);
+            events.ScheduleEvent(RanjitEvents::PIERCING_RUSH_EVENT, 1s);
+            events.ScheduleEvent(RanjitEvents::SPINNING_BLADE_EVENT, 8s, 10s);
 
             //DoScriptText(int32(Texts::COMBAT_START), me);
 
@@ -168,6 +185,11 @@ public:
 
         void UpdateAI(const uint32 diff)
         {
+            scheduler.Update(diff);
+
+            if (_isIntro)
+                return;
+
             if (!UpdateVictim())
                 return;
 
@@ -178,47 +200,44 @@ public:
 
             switch (events.ExecuteEvent())
             {
-            case uint32(RanjitEvents::FOUR_WINDS_EVENT):
-                me->CastSpell(me->GetVictim(), uint32(Spells::FOUR_WINDS));
+                case RanjitEvents::FOUR_WINDS_EVENT:
+                    me->CastSpell(me->GetVictim(), Spells::FOUR_WINDS);
 
-                m_countWindwalls = 0;
-                //if (urand(0, 1))
-                //    DoScriptText(int32(Texts::FOUR_WINDS_1), me);
-                //else
-                //    DoScriptText(int32(Texts::FOUR_WINDS_2), me);
+                    m_countWindwalls = 0;
+                    Talk(eTalks::TalkOutrun);
 
-                if (IsHeroic())
-                    events.ScheduleEvent(uint32(RanjitEvents::LENS_FLARE_EVENT), 14000);
-                break;
-            case uint32(RanjitEvents::WINDWALL_EVENT):
-                events.ScheduleEvent(uint32(RanjitEvents::WINDWALL_EVENT), urand(19000, 26000));
+                    if (IsHeroic())
+                        events.ScheduleEvent(RanjitEvents::LENS_FLARE_EVENT, 14000);
+                    break;
+                case RanjitEvents::WINDWALL_EVENT:
+                    events.ScheduleEvent(RanjitEvents::WINDWALL_EVENT, urand(19000, 26000));
 
-                if (Unit* unit = SelectRandomPlayerIncludedTank(me, 40.0f))
-                    me->CastSpell(unit, uint32(Spells::WINDWALL));
+                    if (Unit* unit = SelectRandomPlayerIncludedTank(me, 40.0f))
+                        me->CastSpell(unit, Spells::WINDWALL);
 
-                if (m_countWindwalls++ == 2)
-                    events.ScheduleEvent(uint32(RanjitEvents::FOUR_WINDS_EVENT), urand(2000, 3000));
-                break;
-            case uint32(RanjitEvents::FAN_OF_BLADES_EVENT):
-                events.ScheduleEvent(uint32(RanjitEvents::FAN_OF_BLADES_EVENT), urand(15000, 17000));
-                me->CastSpell(me, uint32(Spells::FAN_OF_BLADES));
-                break;
-            case uint32(RanjitEvents::SPINNING_BLADE_EVENT):
-                events.ScheduleEvent(uint32(RanjitEvents::SPINNING_BLADE_EVENT), urand(8000, 10000));
-                if (Player* target = SelectRandomPlayerIncludedTank(me, 45.0f))
-                    me->CastSpell(target, uint32(Spells::SPINNING_BLADE));
-                break;
-            case uint32(RanjitEvents::PIERCING_RUSH_EVENT):
-                events.ScheduleEvent(uint32(RanjitEvents::PIERCING_RUSH_EVENT), urand(13000, 16000));
-                if (Unit* unit = SelectRandomPlayerExcludedTank(me, 40.0f))
-                    me->CastSpell(unit, uint32(Spells::PIERCING_RUSH));
-                break;
-            case uint32(RanjitEvents::LENS_FLARE_EVENT):
-                if (Player* plr = SelectRandomPlayerIncludedTank(me, 80.0f))
-                    plr->CastSpell(plr, uint32(Spells::LensFlare), true);
-                break;
-            default:
-                break;
+                    if (m_countWindwalls++ == 2)
+                        events.ScheduleEvent(RanjitEvents::FOUR_WINDS_EVENT, urand(2000, 3000));
+                    break;
+                case RanjitEvents::FAN_OF_BLADES_EVENT:
+                    events.ScheduleEvent(RanjitEvents::FAN_OF_BLADES_EVENT, urand(15000, 17000));
+                    me->CastSpell(me, Spells::FAN_OF_BLADES);
+                    break;
+                case RanjitEvents::SPINNING_BLADE_EVENT:
+                    events.ScheduleEvent(RanjitEvents::SPINNING_BLADE_EVENT, urand(8000, 10000));
+                    if (Player* target = SelectRandomPlayerIncludedTank(me, 45.0f))
+                        me->CastSpell(target, Spells::SPINNING_BLADE);
+                    break;
+                case RanjitEvents::PIERCING_RUSH_EVENT:
+                    events.ScheduleEvent(RanjitEvents::PIERCING_RUSH_EVENT, urand(13000, 16000));
+                    if (Unit* unit = SelectRandomPlayerExcludedTank(me, 40.0f))
+                        me->CastSpell(unit, Spells::PIERCING_RUSH);
+                    break;
+                case RanjitEvents::LENS_FLARE_EVENT:
+                    if (Player* plr = SelectRandomPlayerIncludedTank(me, 80.0f))
+                        plr->CastSpell(plr, Spells::LensFlare, true);
+                    break;
+                default:
+                    break;
             }
 
             DoMeleeAttackIfReady();
@@ -258,9 +277,9 @@ public:
                 {
                     uint32 random = urand(0, 1);
                     if (random == 0)
-                        GetCaster()->CastSpell(target, uint32(Spells::WINDWALL_1));
+                        GetCaster()->CastSpell(target, uint32(Spells::WINDWALL_1), true);
                     else
-                        GetCaster()->CastSpell(target, uint32(Spells::WINDWALL_2));
+                        GetCaster()->CastSpell(target, uint32(Spells::WINDWALL_2), true);
                 }
             }
         }

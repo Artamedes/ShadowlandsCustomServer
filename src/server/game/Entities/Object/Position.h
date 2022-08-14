@@ -26,8 +26,8 @@ class ByteBuffer;
 
 struct TC_GAME_API Position
 {
-    Position(float x = 0, float y = 0, float z = 0, float o = 0)
-        : m_positionX(x), m_positionY(y), m_positionZ(z), m_orientation(NormalizeOrientation(o)) { }
+    Position(float x = 0.0f, float y = 0.0f, float z = 0.0f, float o = 0.0f, float h = 0.0f)
+        : m_positionX(x), m_positionY(y), m_positionZ(z), m_orientation(NormalizeOrientation(o)), m_positionH(h) { }
 
     // streamer tags
     struct XY;
@@ -53,6 +53,7 @@ struct TC_GAME_API Position
     float m_positionX;
     float m_positionY;
     float m_positionZ;
+    float m_positionH;
     // Better to limit access to _orientation field, to guarantee the value is normalized
 private:
     float m_orientation;
@@ -61,9 +62,57 @@ public:
     bool operator==(Position const& a) const;
     bool operator!=(Position const& a) const { return !(operator==(a)); }
 
+    Position operator-(Position const& p_Rhs) const
+    {
+        Position l_Pos;
+        l_Pos.m_positionX = m_positionX - p_Rhs.m_positionX;
+        l_Pos.m_positionY = m_positionY - p_Rhs.m_positionY;
+        l_Pos.m_positionZ = m_positionZ - p_Rhs.m_positionZ;
+        l_Pos.m_positionH = m_positionH - p_Rhs.m_positionH;
+
+        return l_Pos;
+    }
+
+    Position operator+(Position const& p_Rhs) const
+    {
+        Position l_Pos;
+        l_Pos.m_positionX = m_positionX + p_Rhs.m_positionX;
+        l_Pos.m_positionY = m_positionY + p_Rhs.m_positionY;
+        l_Pos.m_positionZ = m_positionZ + p_Rhs.m_positionZ;
+        l_Pos.m_positionH = m_positionH + p_Rhs.m_positionH;
+
+        return l_Pos;
+    }
+
+    Position operator*(float p_Rhs) const
+    {
+        Position l_Pos;
+        l_Pos.m_positionX = m_positionX * p_Rhs;
+        l_Pos.m_positionY = m_positionY * p_Rhs;
+        l_Pos.m_positionZ = m_positionZ * p_Rhs;
+        l_Pos.m_positionH = m_positionH * p_Rhs;
+
+        return l_Pos;
+    }
+
+    Position operator/(float p_Rhs) const
+    {
+        Position l_Pos;
+        l_Pos.m_positionX = m_positionX / p_Rhs;
+        l_Pos.m_positionY = m_positionY / p_Rhs;
+        l_Pos.m_positionZ = m_positionZ / p_Rhs;
+        l_Pos.m_positionH = m_positionH / p_Rhs;
+
+        return l_Pos;
+    }
+
     void Relocate(float x, float y) { m_positionX = x; m_positionY = y; }
     void Relocate(float x, float y, float z) { Relocate(x, y); m_positionZ = z; }
     void Relocate(float x, float y, float z, float o) { Relocate(x, y, z); SetOrientation(o); }
+    void Relocate(float x, float y, float z, float orientation, float hover)
+    {
+        m_positionX = x; m_positionY = y; m_positionZ = z; SetOrientation(orientation); m_positionH = hover;
+    }
     void Relocate(Position const& pos) { *this = pos; }
     void Relocate(Position const* pos) { *this = *pos; }
 
@@ -77,7 +126,9 @@ public:
     float GetPositionX() const { return m_positionX; }
     float GetPositionY() const { return m_positionY; }
     float GetPositionZ() const { return m_positionZ; }
+    float GetPositionH()    const { return m_positionH; }
     float GetOrientation() const { return m_orientation; }
+    float GetPositionZH()   const { return m_positionZ - m_positionH; }
 
     void GetPositionWithDistInFront(float dist, float& x, float& y) const
     {
