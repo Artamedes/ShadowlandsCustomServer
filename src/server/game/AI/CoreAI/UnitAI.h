@@ -325,6 +325,12 @@ class TC_GAME_API UnitAI
         SpellCastResult DoCastSelf(uint32 spellId, CastSpellExtraArgs const& args = {}) { return DoCast(me, spellId, args); }
         SpellCastResult DoCastVictim(uint32 spellId, CastSpellExtraArgs const& args = {});
         SpellCastResult DoCastAOE(uint32 spellId, CastSpellExtraArgs const& args = {}) { return DoCast(nullptr, spellId, args); }
+        SpellCastResult DoCastRandom(uint32 spellId, float dist, bool triggered = false, int32 aura = 0, uint32 position = 0);
+
+        // In mostly cases, heals will be targeted too
+        Player* SelectRangedTarget(bool allowHeal = true, int32 checkAura = 0) const;
+        // In mostly cases, tanks will not be targeted
+        Player* SelectMeleeTarget(bool allowTank = false) const;
 
         virtual bool ShouldSparWith(Unit const* /*target*/) const { return false; }
 

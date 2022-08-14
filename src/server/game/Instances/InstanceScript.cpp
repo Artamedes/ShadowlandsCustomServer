@@ -986,6 +986,33 @@ void InstanceScript::DoRemoveSpellCooldownWithTimeOnPlayers(uint32 minRecoveryTi
     }
 }
 
+void InstanceScript::DoCombatStopOnPlayers()
+{
+    Map::PlayerList const& playerList = instance->GetPlayers();
+    if (playerList.isEmpty())
+        return;
+
+    for (Map::PlayerList::const_iterator iter = playerList.begin(); iter != playerList.end(); ++iter)
+    {
+        if (Player* player = iter->GetSource())
+        {
+            if (!player->IsInCombat())
+                continue;
+
+            player->CombatStop();
+        }
+    }
+}
+
+void InstanceScript::DoPlayConversation(uint32 conversationId)
+{
+    Map::PlayerList const& playerList = instance->GetPlayers();
+    if (!playerList.isEmpty())
+        for (Map::PlayerList::const_iterator i = playerList.begin(); i != playerList.end(); ++i)
+            if (Player* player = i->GetSource())
+                player->PlayConversation(conversationId);
+}
+
 void InstanceScript::DoCompleteAchievement(uint32 achievement)
 {
     AchievementEntry const* achievementEntry = sAchievementStore.LookupEntry(achievement);

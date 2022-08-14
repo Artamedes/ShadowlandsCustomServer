@@ -24,7 +24,6 @@
 #include "EventMap.h"
 #include "TaskScheduler.h"
 
-class InstanceScript;
 enum SelectTargetType : uint8;
 enum SelectEffect : uint8;
 
@@ -168,6 +167,7 @@ struct TC_GAME_API ScriptedAI : public CreatureAI
         // return true for 25 man or 25 man heroic mode
         bool Is25ManRaid() const { return _difficulty == DIFFICULTY_25_N || _difficulty == DIFFICULTY_25_HC; }
         bool IsChallengeMode() const { return _difficulty == DIFFICULTY_MYTHIC_KEYSTONE; }
+        bool IsMythic() const { return _difficulty == DIFFICULTY_MYTHIC_KEYSTONE || _difficulty == DIFFICULTY_MYTHIC; }
 
         template <class T>
         inline T const& DUNGEON_MODE(T const& normal5, T const& heroic10) const
@@ -232,8 +232,6 @@ class TC_GAME_API BossAI : public ScriptedAI
     public:
         BossAI(Creature* creature, uint32 bossId);
         virtual ~BossAI() { }
-
-        InstanceScript* const instance;
 
         void JustSummoned(Creature* summon) override;
         void SummonedCreatureDespawn(Creature* summon) override;

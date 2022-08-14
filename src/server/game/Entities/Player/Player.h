@@ -1203,6 +1203,8 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void SendTransferAborted(uint32 mapid, TransferAbortReason reason, uint8 arg = 0, int32 mapDifficultyXConditionID = 0) const;
         void SendInstanceResetWarning(uint32 mapid, Difficulty difficulty, uint32 time, bool welcome) const;
 
+        void PlayConversation(uint32 conversationId);
+
         void AddTrackingQuestIfNeeded(ObjectGuid sourceGuid);
 
         bool CanInteractWithQuestGiver(Object* questGiver) const;

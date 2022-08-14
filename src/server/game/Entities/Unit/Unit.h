@@ -942,6 +942,7 @@ class TC_GAME_API Unit : public WorldObject
         bool IsFullHealth() const { return GetHealth() == GetMaxHealth(); }
         bool HealthBelowPct(int32 pct) const { return GetHealth() < CountPctFromMaxHealth(pct); }
         bool HealthBelowPctDamaged(int32 pct, uint32 damage) const { return int64(GetHealth()) - int64(damage) < int64(CountPctFromMaxHealth(pct)); }
+        bool HealthWillBeBelowPctDamaged(int32 pct, uint32 damage) const;
         bool HealthAbovePct(int32 pct) const { return GetHealth() > CountPctFromMaxHealth(pct); }
         bool HealthAbovePctHealed(int32 pct, uint32 heal) const { return uint64(GetHealth()) + uint64(heal) > CountPctFromMaxHealth(pct); }
         float GetHealthPct() const { return GetMaxHealth() ? 100.f * GetHealth() / GetMaxHealth() : 0.0f; }
@@ -1614,6 +1615,9 @@ class TC_GAME_API Unit : public WorldObject
         void SetCurrentCastSpell(Spell* pSpell);
         void InterruptSpell(CurrentSpellTypes spellType, bool withDelayed = true, bool withInstant = true, Spell* interruptingSpell = nullptr);
         void FinishSpell(CurrentSpellTypes spellType, bool ok = true);
+
+        void AddWorldEffect(int32 effectID) { AddDynamicUpdateFieldValue(m_values.ModifyValue(&Unit::m_unitData).ModifyValue(&UF::UnitData::WorldEffects)) = effectID; }
+        void SetWorldEffect(uint32 slot, int32 effectID) { SetUpdateFieldValue(m_values.ModifyValue(&Unit::m_unitData).ModifyValue(&UF::UnitData::WorldEffects, slot), effectID); }
 
         // set withDelayed to true to account delayed spells as cast
         // delayed+channeled spells are always accounted as cast

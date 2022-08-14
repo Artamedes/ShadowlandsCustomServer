@@ -30034,6 +30034,11 @@ void Player::ChallengeKeyCharded(Item* item, uint32 challengeLevel, bool runRand
     m_playerChallenge->ResetMythicKeystoneTo(item, challengeLevel, runRand);
 }
 
+void Player::PlayConversation(uint32 conversationId)
+{
+    Conversation::CreateConversation(conversationId, this, GetPosition(), { GetGUID() });
+}
+
 void Player::AddTrackingQuestIfNeeded(ObjectGuid sourceGuid)
 {
     uint32 trackingQuest = 0;

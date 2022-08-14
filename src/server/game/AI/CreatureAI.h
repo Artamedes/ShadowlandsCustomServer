@@ -23,6 +23,7 @@
 #include "EventMap.h"
 #include "Optional.h"
 #include "QuestDef.h"
+#include "DamageEventMap.h"
 #include "UnitAI.h"
 
 class AreaBoundary;
@@ -31,6 +32,7 @@ class Creature;
 class DynamicObject;
 class GameObject;
 class PlayerAI;
+class InstanceScript;
 class WorldObject;
 struct Position;
 struct ItemTemplate;
@@ -243,6 +245,9 @@ class TC_GAME_API CreatureAI : public UnitAI
         // Called when a spell finishes
         virtual void OnSpellCast(SpellInfo const* /*spell*/) { }
 
+        // Called when a spell is finished
+        virtual void OnSpellFinished(SpellInfo const* /*spellInfo*/) { }
+
         // Called when a spell fails
         virtual void OnSpellFailed(SpellInfo const* /*spell*/) { }
 
@@ -262,6 +267,12 @@ class TC_GAME_API CreatureAI : public UnitAI
         virtual void MovementInform(uint32 /*type*/, uint32 /*id*/) { }
 
         void OnCharmed(bool isNew) override;
+
+        // Called when a spell cast gets interrupted
+        virtual void OnSpellCastInterrupt(SpellInfo const* /*spell*/) { }
+
+        // Called when a spell cast has been successfully finished
+        virtual void OnSuccessfulSpellCast(SpellInfo const* /*spell*/) { }
 
         // Called at reaching home after evade
         virtual void JustReachedHome() { }
@@ -328,6 +339,10 @@ class TC_GAME_API CreatureAI : public UnitAI
 
         virtual void PassengerBoarded(Unit* /*passenger*/, int8 /*seatId*/, bool /*apply*/) { }
 
+        virtual void OnVehicleExited(Unit* /*vehicle*/) { }
+
+        virtual void OnVehicleEntered(Unit* /*vehicle*/) { }
+
         virtual void OnSpellClick(Unit* /*clicker*/, bool /*spellClickHandled*/) { }
 
         virtual bool CanSeeAlways(WorldObject const* /*obj*/) { return false; }
@@ -365,6 +380,8 @@ class TC_GAME_API CreatureAI : public UnitAI
         EventMap events;
         SummonList summons;
         TaskScheduler scheduler;
+        DamageEventMap damageEvents;
+        InstanceScript* const instance;
 
     private:
         void OnOwnerCombatInteraction(Unit* target);

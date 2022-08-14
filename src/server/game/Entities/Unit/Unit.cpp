@@ -3166,6 +3166,9 @@ void Unit::InterruptSpell(CurrentSpellTypes spellType, bool withDelayed, bool wi
         }
 
         if (GetTypeId() == TYPEID_UNIT && IsAIEnabled())
+            ToCreature()->AI()->OnSpellCastInterrupt(spell->GetSpellInfo());
+
+        if (GetTypeId() == TYPEID_UNIT && IsAIEnabled())
             ToCreature()->AI()->OnSpellFailed(spell->GetSpellInfo());
 
         if (spell->GetCaster() && spell->GetCaster()->IsPlayer())
@@ -10183,6 +10186,12 @@ void Unit::SetLevel(uint8 lvl, bool sendUpdate/* = true*/)
 
         sCharacterCache->UpdateCharacterLevel(GetGUID(), lvl);
     }
+}
+
+// Return true if unit was above health pct and will be below with damage
+bool Unit::HealthWillBeBelowPctDamaged(int32 pct, uint32 damage) const
+{
+    return !HealthBelowPct(pct) && HealthBelowPctDamaged(pct, damage);
 }
 
 void Unit::SetHealth(uint64 val)

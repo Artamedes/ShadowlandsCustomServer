@@ -20,6 +20,7 @@
 #include "Containers.h"
 #include "Creature.h"
 #include "CreatureAIImpl.h"
+#include "InstanceScript.h"
 #include "CreatureTextMgr.h"
 #include "DB2Structure.h"
 #include "Errors.h"
@@ -42,7 +43,8 @@ AISpellInfoType* GetAISpellInfo(uint32 spellId, Difficulty difficulty)
 
 CreatureAI::CreatureAI(Creature* creature, uint32 scriptId)
     : UnitAI(creature), me(creature), _boundary(nullptr),
-      _negateBoundary(false), _scriptId(scriptId ? scriptId : creature->GetScriptId()), _isEngaged(false), _moveInLOSLocked(false), summons(creature)
+    instance(creature->GetInstanceScript()),
+      _negateBoundary(false), _scriptId(scriptId ? scriptId : creature->GetScriptId()), _isEngaged(false), _moveInLOSLocked(false), summons(creature), damageEvents(creature)
 {
     ASSERT(_scriptId, "A CreatureAI was initialized with an invalid scriptId!");
 }

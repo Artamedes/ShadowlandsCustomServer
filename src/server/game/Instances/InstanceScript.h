@@ -320,6 +320,11 @@ class TC_GAME_API InstanceScript : public ZoneScript
         // Remove cooldowns equal or less than specified time to all players in instance
         void DoRemoveSpellCooldownWithTimeOnPlayers(uint32 minRecoveryTime);
 
+        // Do combat stop on all players in instance
+        void DoCombatStopOnPlayers();
+
+        void DoPlayConversation(uint32 conversationId);
+
         // Complete Achievement for all players in instance
         void DoCompleteAchievement(uint32 achievement);
 

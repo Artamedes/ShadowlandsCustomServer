@@ -3753,6 +3753,10 @@ void Spell::cancel(bool sendInterrupted /*= true*/)
     uint32 oldState = m_spellState;
     m_spellState = SPELL_STATE_FINISHED;
 
+    if (m_originalCaster)
+        if (m_originalCaster->IsCreature() && m_originalCaster->IsAIEnabled())
+            m_originalCaster->ToCreature()->AI()->OnSpellFinished(m_spellInfo);
+
     m_autoRepeat = false;
     switch (oldState)
     {
@@ -4134,6 +4138,11 @@ void Spell::_cast(bool skipCheck)
     if (Creature* caster = m_originalCaster->ToCreature())
         if (caster->IsAIEnabled())
             caster->AI()->OnSpellCast(GetSpellInfo());
+
+    // Call CreatureAI hook OnSuccessfulSpellCast
+    if (Creature* caster = m_originalCaster->ToCreature())
+        if (caster->IsAIEnabled())
+            caster->AI()->OnSuccessfulSpellCast(GetSpellInfo());
 }
 
 template <class Container>

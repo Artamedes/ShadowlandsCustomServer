@@ -542,7 +542,7 @@ void ScriptedAI::DamageDealt(Unit* victim, uint32& damage, DamageEffectType type
 }
 
 // BossAI - for instanced bosses
-BossAI::BossAI(Creature* creature, uint32 bossId) : ScriptedAI(creature), instance(creature->GetInstanceScript()), _bossId(bossId)
+BossAI::BossAI(Creature* creature, uint32 bossId) : ScriptedAI(creature), _bossId(bossId)
 {
     if (instance)
         SetBoundary(instance->GetBossBoundary(bossId));
