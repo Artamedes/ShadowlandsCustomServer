@@ -2699,6 +2699,11 @@ struct MapDifficultyEntry
     int32 ContentTuningID;
     uint32 MapID;
 
+    bool HasResetSchedule() const { return ResetInterval != MAP_DIFFICULTY_RESET_ANYTIME; }
+    bool IsUsingEncounterLocks() const { return GetFlags().HasFlag(MapDifficultyFlags::UseLootBasedLockInsteadOfInstanceLock); }
+    bool IsRestoringDungeonState() const { return GetFlags().HasFlag(MapDifficultyFlags::ResumeDungeonProgressBasedOnLockout); }
+    bool IsExtendable() const { return !GetFlags().HasFlag(MapDifficultyFlags::DisableLockExtension); }
+
     uint32 GetRaidDuration() const
     {
         if (ResetInterval == 1)
@@ -2707,6 +2712,8 @@ struct MapDifficultyEntry
             return 604800;
         return 0;
     }
+
+    EnumFlag<MapDifficultyFlags> GetFlags() const { return static_cast<MapDifficultyFlags>(Flags); }
 };
 
 struct MapDifficultyXConditionEntry
