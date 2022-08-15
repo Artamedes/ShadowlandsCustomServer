@@ -398,6 +398,7 @@ class TC_GAME_API InstanceScript : public ZoneScript
         bool                                                    emptyWarned;              ///< Warning when there are no more delayed operations
 
         bool IsEncounterCompleted(uint32 dungeonEncounterId) const;
+        bool IsEncounterCompletedInMaskByBossId(uint32 completedEncountersMask, uint32 bossId) const;
 
         uint32 GetEncounterCount() const { return uint32(bosses.size()); }
 
