@@ -226,6 +226,8 @@ void PlayerMenu::SendGossipMenu(uint32 titleTextId, ObjectGuid objectGUID)
     packet.GossipID = _gossipMenu.GetMenuId();
     if (NpcText const* text = sObjectMgr->GetNpcText(titleTextId))
         packet.TextID = Trinity::Containers::SelectRandomWeightedContainerElement(text->Data, [](NpcTextData const& data) { return data.Probability; })->BroadcastTextID;
+    else
+        packet.TextID = titleTextId;
     if (GossipMenuAddon const* addon = sObjectMgr->GetGossipMenuAddon(packet.GossipID))
         packet.FriendshipFactionID = addon->FriendshipFactionID;
 
