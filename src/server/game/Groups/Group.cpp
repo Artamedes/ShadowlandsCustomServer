@@ -1787,7 +1787,7 @@ void Group::SendUpdateToPlayer(ObjectGuid playerGUID, MemberSlot* slot)
         playerInfos.Name = citr->name;
         playerInfos.Class = citr->_class;
 
-        playerInfos.FactionGroup = Player::GetFactionGroupForRace(citr->race);
+       // playerInfos.FactionGroup = Player::GetFactionGroupForRace(citr->race);
 
         playerInfos.Status = MEMBER_STATUS_OFFLINE;
         if (member && member->GetSession() && !member->GetSession()->PlayerLogout())

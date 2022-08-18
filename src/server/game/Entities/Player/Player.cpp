@@ -6735,7 +6735,7 @@ uint8 Player::GetFactionGroupForRace(uint8 race)
         if (FactionTemplateEntry const* faction = sFactionTemplateStore.LookupEntry(rEntry->FactionID))
             return faction->FactionGroup;
 
-    return 1;
+    return 0;
 }
 
 void Player::SetFactionForRace(uint8 race)
