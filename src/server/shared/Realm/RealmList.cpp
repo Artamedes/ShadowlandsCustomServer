@@ -321,6 +321,8 @@ std::vector<uint8> RealmList::GetRealmList(uint32 build, std::string const& subR
                 continue;
 
             uint32 flag = realm.second.Flags;
+            if (build < 45114)
+                flag |= REALM_FLAG_VERSION_MISMATCH;
             //if (realm.second.Build != build)
             //    flag |= REALM_FLAG_VERSION_MISMATCH;
 
