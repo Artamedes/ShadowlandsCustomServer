@@ -1178,6 +1178,22 @@ void MotionMaster::MoveFormation(Unit* leader, float range, float angle, uint32 
     }
 }
 
+void MotionMaster::MoveBackward(uint32 id, float x, float y, float z, float speed)
+{
+    if (_owner->GetTypeId() == TYPEID_PLAYER)
+        _owner->AddUnitMovementFlag(MOVEMENTFLAG_BACKWARD);
+
+    std::function<void(Movement::MoveSplineInit&)> initializer = [=](Movement::MoveSplineInit& init)
+    {
+        init.MoveTo(x, y, z);
+        init.SetBackward();
+        init.Launch();
+        if (speed > 0.0f)
+            init.SetVelocity(speed);
+    };
+    Add(new GenericMovementGenerator(std::move(initializer), EFFECT_MOTION_TYPE, id), MOTION_SLOT_ACTIVE);
+}
+
 MovementGenerator* MotionMaster::Move(uint32 p_Id, MoveTypes p_MoveType, uint32 p_Options, float p_Distance)
 {
     Position l_CurrentPos = *_owner;

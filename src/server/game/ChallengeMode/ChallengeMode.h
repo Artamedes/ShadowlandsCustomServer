@@ -24,6 +24,8 @@
 #include "FunctionProcessor.h"
 
 struct MapChallengeModeEntry;
+struct ChallengeLevelInfo;
+struct MythicKeystoneInfo;
 class Scenario;
 
 enum Affixes : uint32
@@ -242,7 +244,14 @@ const float ChestPositions[CHALLENGE_MAX][8] =
 class TC_GAME_API Challenge : public InstanceScript
 {
 public:
-    Challenge(InstanceMap* map, Player* player, uint32 instanceID, Scenario* scenario);
+    /// <summary>
+    /// Constructor
+    /// </summary>
+    /// <param name="map">Current InstanceMap object</param>
+    /// <param name="player">KeyStarter player</param>
+    /// <param name="scenario">Current Scenario object</param>
+    /// <param name="mythicKeystone">The Used MythicKeystoneInfo object</param>
+    Challenge(InstanceMap* map, Player* player, Scenario* scenario, MythicKeystoneInfo* mythicKeystone);
     ~Challenge();
 
     void OnPlayerEnterForScript(Player* player) override;
@@ -253,8 +262,8 @@ public:
     void OnCreatureUpdateDifficulty(Creature* creature) override;
     void EnterCombatForScript(Creature* creature, Unit* enemy) override;
     void CreatureDiesForScript(Creature* creature, Unit* killer) override;
-    void OnGameObjectCreateForScript(GameObject* /*go*/) override {}
-    void OnGameObjectRemoveForScript(GameObject* /*go*/) override {}
+    void OnGameObjectCreateForScript(GameObject* go) override;
+    void OnGameObjectRemoveForScript(GameObject* go) override;
     void OnUnitCharmed(Unit* unit, Unit* charmer) override;
     void OnUnitRemoveCharmed(Unit* unit, Unit* charmer) override;
 
@@ -268,7 +277,11 @@ public:
 
     void HitTimer();
 
-    uint32 GetChallengeLevel() const;
+    /// <summary>
+    /// Gets the current Challenge Level
+    /// </summary>
+    /// <returns>returns _challengeLevel</returns>
+    uint32 GetChallengeLevel() { return _challengeLevel; }
     std::array<int32, 4> GetAffixes() const;
     bool HasAffix(Affixes affix);
 
@@ -277,17 +290,56 @@ public:
     uint32 GetChallengeTimer();
 
     void ResetGo();
+
+    /////////////////////////////////////////////////////////////////////////////
+    /// Packets
+    /////////////////////////////////////////////////////////////////////////////
+
+    /// <summary>
+    /// Builds and sends SMSG_START_TIMER
+    /// </summary>
+    /// <param name="player">Specific player to send to, otherwise whole instance</param>
     void SendStartTimer(Player* player = nullptr);
+    /// <summary>
+    /// Builds and sends SMSG_START_ELAPSED_TIMER
+    /// </summary>
+    /// <param name="player">Specific player to send to, otherwise whole instance</param>
     void SendStartElapsedTimer(Player* player = nullptr);
+    /// <summary>
+    /// Builds and sends SMSG_CHALLENGE_MODE_START
+    /// </summary>
+    /// <param name="player">Specific player to send to, otherwise whole instance</param>
     void SendChallengeModeStart(Player* player = nullptr);
+    /// <summary>
+    /// Sets the combat res to 1 and sends SMSG_ENCOUNTER_START from the InstanceScript
+    /// </summary>
     void SendChallengeInstanceEncounterStart();
+    /// <summary>
+    /// Builds and sends SMSG_MYTHIC_PLUS_NEW_WEEK_RECORD
+    /// </summary>
+    /// <param name="player">Player to send to</param>
     void SendChallengeModeNewPlayerRecord(Player* player);
+
+    /////////////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////////
+
     void SummonGobject(bool door);
     uint8 GetItemCount(ObjectGuid guid) const;
     uint8 GetLevelBonus() const;
     void SendChallengeBonusLootPrompt(Player* player);
 
+    /// <summary>
+    /// Returns the current damage multiplier of the key, if we don't have a custom set checks the GT
+    /// </summary>
+    /// <param name="challengeLevel">Current ChallengeLevel if not initalized custom</param>
+    /// <returns></returns>
     float GetDamageMultiplier(uint8 challengeLevel);
+    /// <summary>
+    /// Returns the current health multiplier of the key, if we don't have a custom set checks the GT
+    /// </summary>
+    /// <param name="challengeLevel">Current ChallengeLevel if not initalized custom</param>
+    /// <returns></returns>
     float GetHealthMultiplier(uint8 challengeLevel);
 
     void SetInstanceScript(InstanceScript* instanceScript);
@@ -301,8 +353,8 @@ public:
 
     GuidUnorderedSet _challengers;
 
-    ObjectGuid m_gguid;
-    ObjectGuid m_ownerGuid;
+    ObjectGuid _groupGUID;
+    ObjectGuid _keyOwner;
     ObjectGuid m_itemGuid;
 
     uint32 _challengeTimer;
@@ -314,16 +366,13 @@ public:
 private:
     std::map<ObjectGuid, uint8> _countItems;
 
-    ObjectGuid _creator;
     std::array<int32, 4> _affixes;  // key modifiers
     std::bitset<size_t(MaxAffix)> _affixesTest;
     uint16 _chestTimers[3];
-    Item* _item;
     Map* _map;
     InstanceScript* _instanceScript;
     MapChallengeModeEntry const* _challengeEntry;
     uint32 _challengeLevel;
-    uint32 _instanceID;
     uint8 _rewardLevel;
     bool _isKeyDepleted;
     Scenario* _scenario;
@@ -333,6 +382,9 @@ private:
     bool _run;
     bool _complete;
     bool _hordeSpawn;
+
+    /// Custom ChallengeLevelInfo
+    ChallengeLevelInfo* _challengeLevelInfo = nullptr;
 };
 
 #endif

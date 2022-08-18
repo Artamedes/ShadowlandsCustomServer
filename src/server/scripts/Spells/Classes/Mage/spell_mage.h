@@ -57,6 +57,8 @@ namespace Mage
         CometStorm = 153595,
         FrostStorm4pc = 364544,
         FrostStormDebuff = 363544,
+        Frostbolt = 116,
+        FrostboltDmg = 228597,
     };
 
     enum eArcane
@@ -76,6 +78,7 @@ namespace Mage
         SunKingsBlessingProc = 333315,
         FreezingWinds = 327364,
         FreezingWindsProc = 327478,
+        DeathsFathom = 354294, ///< Necrolord Legendary
     };
 
     enum eConduits
@@ -85,6 +88,11 @@ namespace Mage
         ArcaneProdigy = 336873,
         NetherPrecision = 336886,
         NetherPrecisionBuff = 336889,
+    };
+
+    enum eCovenant
+    {
+        Deathborne = 324220
     };
 
     inline bool DropWinterChill(Unit* caster, Unit* target)

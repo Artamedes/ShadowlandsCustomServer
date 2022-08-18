@@ -163,6 +163,7 @@ bool Group::Create(Player* leader)
 
     m_guid = ObjectGuid::Create<HighGuid::Party>(sGroupMgr->GenerateGroupId());
     m_leaderGuid = leaderGuid;
+    m_leaderFactionGroup = Player::GetFactionGroupForRace(leader->GetRace());
     m_leaderName = leader->GetName();
     leader->SetPlayerFlag(PLAYER_FLAGS_GROUP_LEADER);
 
@@ -239,9 +240,12 @@ void Group::LoadGroupFromDB(Field* fields)
     m_leaderGuid = ObjectGuid::Create<HighGuid::Player>(fields[0].GetUInt64());
 
     // group leader not exist
-    if (!sCharacterCache->GetCharacterNameByGuid(m_leaderGuid, m_leaderName))
+    CharacterCacheEntry const* leader = sCharacterCache->GetCharacterCacheByGuid(m_leaderGuid);
+    if (!leader)
         return;
 
+    m_leaderFactionGroup = Player::GetFactionGroupForRace(leader->Race);
+    m_leaderName = leader->Name;
     m_lootMethod = LootMethod(fields[1].GetUInt8());
     m_looterGuid = ObjectGuid::Create<HighGuid::Player>(fields[2].GetUInt64());
     m_lootThreshold = ItemQualities(fields[3].GetUInt8());
@@ -393,6 +397,7 @@ bool Group::AddLeaderInvite(Player* player)
         return false;
 
     m_leaderGuid = player->GetGUID();
+    m_leaderFactionGroup = Player::GetFactionGroupForRace(player->GetRace());
     m_leaderName = player->GetName();
     return true;
 }
@@ -795,6 +800,7 @@ void Group::ChangeLeader(ObjectGuid newLeaderGuid, int8 partyIndex)
 
     newLeader->SetPlayerFlag(PLAYER_FLAGS_GROUP_LEADER);
     m_leaderGuid = newLeader->GetGUID();
+    m_leaderFactionGroup = Player::GetFactionGroupForRace(newLeader->GetRace());
     m_leaderName = newLeader->GetName();
     ToggleGroupMemberFlag(slot, MEMBER_FLAG_ASSISTANT, false);
 
@@ -1762,6 +1768,7 @@ void Group::SendUpdateToPlayer(ObjectGuid playerGUID, MemberSlot* slot)
 
     partyUpdate.PartyGUID = m_guid;
     partyUpdate.LeaderGUID = m_leaderGuid;
+    partyUpdate.LeaderFactionGroup = m_leaderFactionGroup;
 
     partyUpdate.SequenceNum = player->NextGroupUpdateSequenceNumber(m_groupCategory);
 
@@ -1780,12 +1787,7 @@ void Group::SendUpdateToPlayer(ObjectGuid playerGUID, MemberSlot* slot)
         playerInfos.Name = citr->name;
         playerInfos.Class = citr->_class;
 
-        ChrRacesEntry const* race = sChrRacesStore.LookupEntry(citr->race);
-        if (race)
-        {
-            FactionTemplateEntry const* raceFaction = sFactionTemplateStore.AssertEntry(race->FactionID);
-            playerInfos.FactionGroup = raceFaction->FactionGroup;
-        }
+        playerInfos.FactionGroup = Player::GetFactionGroupForRace(citr->race);
 
         playerInfos.Status = MEMBER_STATUS_OFFLINE;
         if (member && member->GetSession() && !member->GetSession()->PlayerLogout())
@@ -2335,7 +2337,123 @@ void Group::ResetInstances(uint8 method, bool isRaid, bool isLegacy, Player* Sen
             diff = GetLegacyRaidDifficultyID();
     }
 
-    auto difficultyItr = m_boundInstances.find(diff);
+    /// RESET MYTHIC KEYSTONE
+    auto difficultyItr = m_boundInstances.find(DIFFICULTY_MYTHIC_KEYSTONE);
+    if (difficultyItr != m_boundInstances.end())
+    {
+        for (auto itr = difficultyItr->second.begin(); itr != difficultyItr->second.end();)
+        {
+            InstanceSave* instanceSave = itr->second.save;
+            MapEntry const* entry = sMapStore.LookupEntry(itr->first);
+            if (!entry || entry->IsRaid() != isRaid || (!instanceSave->CanReset() && method != INSTANCE_RESET_GROUP_DISBAND))
+            {
+                ++itr;
+                continue;
+            }
+
+            if (method == INSTANCE_RESET_ALL)
+            {
+                // the "reset all instances" method can only reset normal maps
+                if (entry->IsRaid() || diff == DIFFICULTY_HEROIC)
+                {
+                    ++itr;
+                    continue;
+                }
+            }
+
+            bool isEmpty = true;
+            // if the map is loaded, reset it
+            Map* map = sMapMgr->FindMap(instanceSave->GetMapId(), instanceSave->GetInstanceId());
+            if (map && map->IsDungeon() && !(method == INSTANCE_RESET_GROUP_DISBAND && !instanceSave->CanReset()))
+            {
+                if (instanceSave->CanReset())
+                    isEmpty = ((InstanceMap*)map)->Reset(method);
+                else
+                    isEmpty = !map->HavePlayers();
+            }
+
+            if (SendMsgTo)
+            {
+                if (!isEmpty)
+                    SendMsgTo->SendResetInstanceFailed(INSTANCE_RESET_FAILED, instanceSave->GetMapId());
+                else if (sWorld->getBoolConfig(CONFIG_INSTANCES_RESET_ANNOUNCE))
+                {
+                    if (Group* group = SendMsgTo->GetGroup())
+                    {
+                        for (GroupReference* groupRef = group->GetFirstMember(); groupRef != nullptr; groupRef = groupRef->next())
+                            if (Player* player = groupRef->GetSource())
+                                player->SendResetInstanceSuccess(instanceSave->GetMapId());
+                    }
+
+                    else
+                        SendMsgTo->SendResetInstanceSuccess(instanceSave->GetMapId());
+                }
+                else
+                    SendMsgTo->SendResetInstanceSuccess(instanceSave->GetMapId());
+            }
+
+            if (isEmpty || method == INSTANCE_RESET_GROUP_DISBAND || method == INSTANCE_RESET_CHANGE_DIFFICULTY)
+            {
+                // do not reset the instance, just unbind if others are permanently bound to it
+                if (isEmpty && instanceSave->CanReset())
+                {
+                    if (map && map->IsDungeon() && SendMsgTo)
+                    {
+                        AreaTriggerStruct const* instanceEntrance = sObjectMgr->GetGoBackTrigger(map->GetId());
+
+                        if (!instanceEntrance)
+                            TC_LOG_DEBUG("root", "Instance entrance not found for maps %u", map->GetId());
+                        else
+                        {
+                            WorldSafeLocsEntry const* graveyardLocation = sObjectMgr->GetClosestGraveyard(
+                                WorldLocation(instanceEntrance->target_mapId, instanceEntrance->target_X, instanceEntrance->target_Y, instanceEntrance->target_Z),
+                                SendMsgTo->GetTeam(), nullptr);
+                            uint32 const zoneId = sTerrainMgr.GetZoneId(PhasingHandler::GetEmptyPhaseShift(), graveyardLocation->Loc.GetMapId(),
+                                graveyardLocation->Loc.GetPositionX(), graveyardLocation->Loc.GetPositionY(), graveyardLocation->Loc.GetPositionZ());
+
+                            for (MemberSlot const& member : GetMemberSlots())
+                            {
+                                if (!ObjectAccessor::FindConnectedPlayer(member.guid))
+                                {
+                                    CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_CHARACTER_POSITION_BY_MAPID);
+
+                                    stmt->setFloat(0, graveyardLocation->Loc.GetPositionX());
+                                    stmt->setFloat(1, graveyardLocation->Loc.GetPositionY());
+                                    stmt->setFloat(2, graveyardLocation->Loc.GetPositionZ());
+                                    stmt->setFloat(3, instanceEntrance->target_Orientation);
+                                    stmt->setUInt32(4, graveyardLocation->Loc.GetMapId());
+                                    stmt->setUInt32(5, zoneId);
+                                    stmt->setUInt64(6, member.guid.GetCounter());
+                                    stmt->setUInt32(7, map->GetId());
+
+                                    CharacterDatabase.Execute(stmt);
+                                }
+                            }
+                        }
+                    }
+
+                    instanceSave->DeleteFromDB();
+                }
+                else
+                {
+                    CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_GROUP_INSTANCE_BY_INSTANCE);
+
+                    stmt->setUInt32(0, instanceSave->GetInstanceId());
+
+                    CharacterDatabase.Execute(stmt);
+                }
+
+                itr = difficultyItr->second.erase(itr);
+                // this unloads the instance save unless online players are bound to it
+                // (eg. permanent binds or GM solo binds)
+                instanceSave->RemoveGroup(this);
+            }
+            else
+                ++itr;
+        }
+    }
+
+    difficultyItr = m_boundInstances.find(diff);
     if (difficultyItr == m_boundInstances.end())
         return;
 
@@ -3050,10 +3168,4 @@ void Group::SetEveryoneIsAssistant(bool apply)
         ToggleGroupMemberFlag(itr, MEMBER_FLAG_ASSISTANT, apply);
 
     SendUpdate();
-}
-
-
-bool Group::InChallenge()
-{
-    return m_dungeonDifficulty == DIFFICULTY_MYTHIC_KEYSTONE;
 }

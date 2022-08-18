@@ -288,8 +288,12 @@ namespace MMAP
 
     }
 
-    bool MMapManager::loadMapInstance(std::string const& basePath, uint32 mapId, uint32 instanceId)
+    bool MMapManager::loadMapInstance(std::string const& basePath, uint32 p_MapId, uint32 instanceId)
     {
+        uint32 mapId = p_MapId;
+        if (p_MapId == 10001)
+            mapId = 2162;
+
         if (!loadMapData(basePath, mapId))
             return false;
 
@@ -387,8 +391,12 @@ namespace MMAP
         return true;
     }
 
-    bool MMapManager::unloadMapInstance(uint32 mapId, uint32 instanceId)
+    bool MMapManager::unloadMapInstance(uint32 p_MapId, uint32 instanceId)
     {
+        uint32 mapId = p_MapId;
+        if (p_MapId == 10001)
+            mapId = 2162;
+
         // check if we have this map loaded
         MMapDataSet::const_iterator itr = GetMMapData(mapId);
         if (itr == loadedMMaps.end())
@@ -423,8 +431,12 @@ namespace MMAP
         return itr->second->navMesh;
     }
 
-    dtNavMeshQuery const* MMapManager::GetNavMeshQuery(uint32 mapId, uint32 instanceId)
+    dtNavMeshQuery const* MMapManager::GetNavMeshQuery(uint32 p_MapId, uint32 instanceId)
     {
+        uint32 mapId = p_MapId;
+        if (p_MapId == 10001)
+            mapId = 2162;
+
         auto itr = GetMMapData(mapId);
         if (itr == loadedMMaps.end())
             return nullptr;

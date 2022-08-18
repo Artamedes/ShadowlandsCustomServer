@@ -20,5 +20,6 @@ void WorldSession::HandleCovenantRenownRequestCatchupStateOpcode(WorldPackets::C
 
 void WorldSession::HandleActivateSoulbindOpcode(WorldPackets::Covenant::ActivateSoulbind& packet)
 {
+    /// Cheating is checked in system
     _player->GetCovenantMgr()->SetSoulbind((SoulbindID)packet.SoulbindID, true);
 }

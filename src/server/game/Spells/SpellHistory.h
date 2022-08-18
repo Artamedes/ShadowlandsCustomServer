@@ -228,6 +228,23 @@ public:
     void RestoreCooldownStateAfterDuel();
 
     void RemoveSpellCooldownsWithTime(uint32 minRecoveryTime);
+
+    // COPY ON PURPOSE
+    CooldownStorageType GetCooldowns()
+    {
+        return _spellCooldowns;
+    }
+
+    CategoryCooldownStorageType GetCategories()
+    {
+        return _categoryCooldowns;
+    }
+
+    ChargeStorageType GetCharges()
+    {
+        return _categoryCharges;
+    }
+
 private:
     Player* GetPlayerOwner() const;
     void ModifySpellCooldown(uint32 spellId, Duration cooldownMod, bool withoutCategoryCooldown = false);

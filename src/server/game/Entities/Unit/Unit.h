@@ -942,6 +942,7 @@ class TC_GAME_API Unit : public WorldObject
         bool IsFullHealth() const { return GetHealth() == GetMaxHealth(); }
         bool HealthBelowPct(int32 pct) const { return GetHealth() < CountPctFromMaxHealth(pct); }
         bool HealthBelowPctDamaged(int32 pct, uint32 damage) const { return int64(GetHealth()) - int64(damage) < int64(CountPctFromMaxHealth(pct)); }
+        bool HealthWillBeBelowPctDamaged(int32 pct, uint32 damage) const;
         bool HealthAbovePct(int32 pct) const { return GetHealth() > CountPctFromMaxHealth(pct); }
         bool HealthAbovePctHealed(int32 pct, uint32 heal) const { return uint64(GetHealth()) + uint64(heal) > CountPctFromMaxHealth(pct); }
         float GetHealthPct() const { return GetMaxHealth() ? 100.f * GetHealth() / GetMaxHealth() : 0.0f; }
@@ -1306,6 +1307,7 @@ class TC_GAME_API Unit : public WorldObject
         bool SetDisableInertia(bool disable);
         void SendSetVehicleRecId(uint32 vehicleId);
 
+        bool HasMovementForce(ObjectGuid source);
         MovementForces const* GetMovementForces() const { return _movementForces.get(); }
         void ApplyMovementForce(ObjectGuid id, Position origin, float magnitude, MovementForceType type, Position direction = {}, ObjectGuid transportGuid = ObjectGuid::Empty);
         void RemoveMovementForce(ObjectGuid id);
@@ -1578,6 +1580,10 @@ class TC_GAME_API Unit : public WorldObject
         float GetNegStat(Stats stat) const { return m_unitData->StatNegBuff[stat]; }
         float GetCreateStat(Stats stat) const { return m_createStats[stat]; }
 
+        void DisableEvadeMode() { m_disableEnterEvadeMode = true; }
+        void ReenableEvadeMode() { m_disableEnterEvadeMode = false; }
+        bool EvadeModeIsDisable() const { return m_disableEnterEvadeMode; }
+
         uint32 GetChannelSpellId() const { return m_unitData->ChannelData->SpellID; }
         void SetChannelSpellId(uint32 channelSpellId)
         {
@@ -1609,6 +1615,9 @@ class TC_GAME_API Unit : public WorldObject
         void SetCurrentCastSpell(Spell* pSpell);
         void InterruptSpell(CurrentSpellTypes spellType, bool withDelayed = true, bool withInstant = true, Spell* interruptingSpell = nullptr);
         void FinishSpell(CurrentSpellTypes spellType, bool ok = true);
+
+        void AddWorldEffect(int32 effectID) { AddDynamicUpdateFieldValue(m_values.ModifyValue(&Unit::m_unitData).ModifyValue(&UF::UnitData::WorldEffects)) = effectID; }
+        void SetWorldEffect(uint32 slot, int32 effectID) { SetUpdateFieldValue(m_values.ModifyValue(&Unit::m_unitData).ModifyValue(&UF::UnitData::WorldEffects, slot), effectID); }
 
         // set withDelayed to true to account delayed spells as cast
         // delayed+channeled spells are always accounted as cast
@@ -1836,6 +1845,8 @@ class TC_GAME_API Unit : public WorldObject
         void SetSpeed(UnitMoveType mtype, float newValue);
         void SetSpeedRate(UnitMoveType mtype, float rate);
 
+        void SendAdjustSplineDuration(float scale);
+
         // Makes the unit follow the given target. Use this function above using the MotionMaster::MoveFollow for default follow behaivior.
         void FollowTarget(Unit* target);
 
@@ -1979,6 +1990,7 @@ class TC_GAME_API Unit : public WorldObject
 
         // Movement info
         Movement::MoveSpline * movespline;
+        void UpdateSplineSpeed();
 
         void SaveDamageHistory(uint32 damage);
         uint32 GetDamageOverLastSeconds(uint32 seconds) const;
@@ -2008,6 +2020,7 @@ class TC_GAME_API Unit : public WorldObject
         void GetAttackableUnitListInRange(std::list<Unit*>& list, float fMaxSearchRange) const;
         void GetAttackableUnitListInRangeFromCenterObj(WorldObject* centerObj, std::list<Unit*>& list, float fMaxSearchRange) const;
         void GetFriendlyUnitListInRange(std::list<Unit*>& list, float fMaxSearchRange, bool exceptSelf = false) const;
+        void GetAreaTriggerListWithSpellIDInRange(std::list<AreaTrigger*>& list, uint32 spellid, float fMaxSearchRange) const;
 
         // Control Alert
         void SendLossOfControlAuraUpdate(AuraApplication const* aurApp, Mechanics mechanic, SpellEffIndex effIndex, LossOfControlType type);
@@ -2127,6 +2140,8 @@ class TC_GAME_API Unit : public WorldObject
 
         uint32 m_unitTypeMask;
         LiquidTypeEntry const* _lastLiquid;
+
+        bool m_disableEnterEvadeMode;
 
         bool IsAlwaysVisibleFor(WorldObject const* seer) const override;
         bool IsAlwaysDetectableFor(WorldObject const* seer) const override;

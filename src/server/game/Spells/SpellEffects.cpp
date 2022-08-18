@@ -3426,6 +3426,10 @@ void Spell::EffectActivateObject()
 
     GameObjectActions action = GameObjectActions(effectInfo->MiscValue);
 
+    // Check 305309  Warden's Authority, should only open certain objects. (Condition/SpellScript needed)?
+    if (m_spellInfo->Id == 305309)
+        return;
+
     gameObjTarget->ActivateObject(action, effectInfo->MiscValueB, m_caster, m_spellInfo->Id, int32(effectInfo->EffectIndex));
 }
 
@@ -3788,13 +3792,11 @@ void Spell::EffectQuestComplete()
     if (questId)
     {
         Quest const* quest = sObjectMgr->GetQuestTemplate(questId);
-        if (!quest)
-            return;
 
         uint16 logSlot = player->FindQuestSlot(questId);
         if (logSlot < MAX_QUEST_LOG_SIZE)
             player->AreaExploredOrEventHappens(questId);
-        else if (quest->HasFlag(QUEST_FLAGS_TRACKING))  // Check if the quest is used as a serverside flag.
+        else if (!quest || quest->HasFlag(QUEST_FLAGS_TRACKING))  // Check if the quest is used as a serverside flag.
             player->SetRewardedQuest(questId);          // If so, set status to rewarded without broadcasting it to client.
     }
 }

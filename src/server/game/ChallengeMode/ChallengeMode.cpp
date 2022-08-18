@@ -37,87 +37,46 @@
 #include "ObjectAccessor.h"
 #include "TemporarySummon.h"
 #include "PlayerChallenge.h"
+#include "CustomObjectMgr.h"
 
-Challenge::Challenge(InstanceMap* map, Player* player, uint32 instanceID, Scenario* scenario) : InstanceScript(map), _instanceScript(nullptr), _challengeEntry(nullptr), _isKeyDepleted(false), _scenario(scenario)
+Challenge::Challenge(InstanceMap* map, Player* player, Scenario* scenario, MythicKeystoneInfo* mythicKeystone)
+    : InstanceScript(map), _instanceScript(map->GetInstanceScript()),
+    _challengeLevel(mythicKeystone->Level), _challengeEntry(mythicKeystone->challengeEntry),
+    _isKeyDepleted(false), _scenario(scenario)
 {
-    if (!player)
-    {
-        _canRun = false;
-        return;
-    }
-
     _checkStart = true;
     _canRun = true;
-    _creator = player->GetGUID();
-    _instanceID = instanceID;
+    _keyOwner = player->GetGUID();
     _challengeTimer = 0;
     _affixQuakingTimer = 0;
     _deathCount = 0;
     _complete = false;
     _run = false;
-    _item = nullptr;
     _hordeSpawn = player->IsInHorde();
+    m_itemGuid = mythicKeystone->KeystoneGUID;
 
     ASSERT(map);
     _map = map;
     _mapID = _map->GetId();
 
+    _affixes.fill(0);
+    if (_challengeLevel > MYTHIC_LEVEL_1)
+        _affixes[0] = mythicKeystone->Affix;
+    if (_challengeLevel > MYTHIC_LEVEL_3)
+        _affixes[1] = mythicKeystone->Affix1;
+    if (_challengeLevel > MYTHIC_LEVEL_6)
+        _affixes[2] = mythicKeystone->Affix2;
+    if (_challengeLevel > MYTHIC_LEVEL_9)
+        _affixes[3] = mythicKeystone->Affix3;
+
     Group* group = player->GetGroup();
     if (group)
     {
-        group->m_challengeMapID = _mapID;
-        group->m_challengeInstanceID = _instanceID;
-        m_ownerGuid = group->m_challengeOwner;
-        m_itemGuid = group->m_challengeItem;
-        _challengeEntry = group->m_challengeEntry;
-        m_gguid = group->GetGUID();
-
-        if (!m_itemGuid)
-        {
-            _canRun = false;
-            ChatHandler(player->GetSession()).PSendSysMessage("Error: Key not found.");
-            return;
-        }
+        _groupGUID = group->GetGUID();
 
         for (GroupReference* itr = group->GetFirstMember(); itr != nullptr; itr = itr->next())
             if (Player* member = itr->GetSource())
                 _challengers.insert(member->GetGUID());
-
-        _affixes = group->m_affixes;
-        _challengeLevel = group->m_challengeLevel;
-    }
-    else
-    {
-        m_ownerGuid = player->GetGUID();
-        auto playerChallenge = player->GetPlayerChallenge();
-        uint32 itemEntry = playerChallenge->GetKeystoneEntryFromMap(map);
-
-        if (Item* item = player->GetItemByEntry(itemEntry))
-        {
-            m_itemGuid = item->GetGUID();
-
-            if (auto keyInfo = playerChallenge->GetKeystoneInfo(item))
-            {
-                _challengeLevel = keyInfo->Level;
-                _challengeEntry = keyInfo->challengeEntry;
-
-                _affixes.fill(0);
-                if (_challengeLevel > MYTHIC_LEVEL_1)
-                    _affixes[0] = keyInfo->Affix;
-                if (_challengeLevel > MYTHIC_LEVEL_3)
-                    _affixes[1] = keyInfo->Affix1;
-                if (_challengeLevel > MYTHIC_LEVEL_6)
-                    _affixes[2] = keyInfo->Affix2;
-                if (_challengeLevel > MYTHIC_LEVEL_9)
-                    _affixes[3] = keyInfo->Affix3;
-            }
-        }
-        else
-        {
-            _canRun = false;
-            ChatHandler(player->GetSession()).PSendSysMessage("Error: Key not found.");
-            return;
-        }
     }
 
     if (!_challengeEntry)
@@ -127,7 +86,7 @@ Challenge::Challenge(InstanceMap* map, Player* player, uint32 instanceID, Scenar
         return;
     }
 
-    _challengers.insert(_creator);
+    _challengers.insert(_keyOwner);
 
     _rewardLevel = CHALLENGE_NOT_IN_TIMER;
 
@@ -136,6 +95,8 @@ Challenge::Challenge(InstanceMap* map, Player* player, uint32 instanceID, Scenar
 
     for (uint8 i = 0; i < CHALLENGE_TIMER_LEVEL_3; i++)
         _chestTimers[i] = _challengeEntry->CriteriaCount[i];
+
+    sCustomObjectMgr->SetChallengeLevelInfoIfNeed(mythicKeystone, _challengeLevelInfo);
 }
 
 Challenge::~Challenge()
@@ -168,12 +129,12 @@ void Challenge::OnPlayerLeaveForScript(Player* player)
     if (!player)
         return;
 
-    Player* keyOwner = ObjectAccessor::FindPlayer(m_ownerGuid);
+    Player* keyOwner = ObjectAccessor::FindPlayer(_keyOwner);
     if (keyOwner && player == keyOwner)
     {
         if (auto playerChallenge = keyOwner->GetPlayerChallenge())
         {
-            if (auto keyInfo = playerChallenge->GetKeystoneInfo(_item))
+            if (auto keyInfo = playerChallenge->GetKeystoneInfo(m_itemGuid))
             {
                 keyInfo->InstanceID = 0;
                 keyInfo->needUpdate = true;
@@ -333,6 +294,14 @@ void Challenge::CreatureDiesForScript(Creature* creature, Unit* killer)
     }    
 }
 
+void Challenge::OnGameObjectCreateForScript(GameObject* go)
+{
+}
+
+void Challenge::OnGameObjectRemoveForScript(GameObject* go)
+{
+}
+
 void Challenge::OnUnitCharmed(Unit* unit, Unit* /*charmer*/)
 {
     if (!unit || !unit->ToCreature())
@@ -389,34 +358,29 @@ void Challenge::Update(uint32 diff)
     {
         _isKeyDepleted = true;
 
-        if (Group* group = sGroupMgr->GetGroupByGUID(m_gguid))
+        if (Group* group = sGroupMgr->GetGroupByGUID(_groupGUID))
         {
-            group->m_challengeEntry = nullptr;
-            group->m_challengeLevel = 0;
-            group->m_affixes.fill(0);
             group->SetDungeonDifficultyID(DIFFICULTY_MYTHIC);
-            group->m_challengeInstanceID = 0;
-            group->m_challengeMapID = 0;
         }
 
-        _item = nullptr;
-        Player* keyOwner = ObjectAccessor::FindPlayer(m_ownerGuid);
+        Item* keystone = nullptr;
+        Player* keyOwner = ObjectAccessor::FindPlayer(_keyOwner);
         if (keyOwner)
-            _item = keyOwner->GetItemByGuid(m_itemGuid);
+            keystone = keyOwner->GetItemByGuid(m_itemGuid);
 
-        if (_item)
-            keyOwner->ChallengeKeyCharded(_item, _challengeLevel);
+        if (keystone)
+            keyOwner->ChallengeKeyCharded(keystone, _challengeLevel);
         else
         {
-            if (keyOwner = ObjectAccessor::FindPlayer(m_ownerGuid))
+            if (keyOwner = ObjectAccessor::FindPlayer(_keyOwner))
             {
-                if (_item = keyOwner->GetItemByGuid(m_itemGuid))
-                    keyOwner->ChallengeKeyCharded(_item, _challengeLevel);
+                if (keystone = keyOwner->GetItemByGuid(m_itemGuid))
+                    keyOwner->ChallengeKeyCharded(keystone, _challengeLevel);
                 else
-                    CharacterDatabase.PQuery("UPDATE challenge_key SET KeyIsCharded = 0, InstanceID = 0 WHERE guid = %u", m_ownerGuid.GetCounter());
+                    CharacterDatabase.PExecute("UPDATE challenge_key SET KeyIsCharded = 0, InstanceID = 0 WHERE guid = %u and itemid = %u", _keyOwner.GetCounter(), m_itemGuid.GetCounter());
             }
             else
-                CharacterDatabase.PQuery("UPDATE challenge_key SET KeyIsCharded = 0, InstanceID = 0 WHERE guid = %u", m_ownerGuid.GetCounter());
+                CharacterDatabase.PExecute("UPDATE challenge_key SET KeyIsCharded = 0, InstanceID = 0 WHERE guid = %u and itemid = %u", _keyOwner.GetCounter(), m_itemGuid.GetCounter());
         }
     }
 }
@@ -434,17 +398,17 @@ void Challenge::Start()
     if (!CanRun())
         return;
 
-    Player* keyOwner = ObjectAccessor::FindPlayer(m_ownerGuid);
+    Player* keyOwner = ObjectAccessor::FindPlayer(_keyOwner);
     if (!keyOwner)
         return;
 
-    _item = keyOwner->GetItemByGuid(m_itemGuid);
-    if (!_item)
+    Item* keystone = keyOwner->GetItemByGuid(m_itemGuid);
+    if (!keystone)
         return;
 
     if (auto playerChallenge = keyOwner->GetPlayerChallenge())
     {
-        if (auto keyInfo = playerChallenge->GetKeystoneInfo(_item))
+        if (auto keyInfo = playerChallenge->GetKeystoneInfo(keystone))
         {
             keyInfo->InstanceID = keyOwner->GetInstanceId();
             keyInfo->needUpdate = true;
@@ -458,7 +422,7 @@ void Challenge::Start()
     float z = 0.0f;
     float o = 0.0f;
 
-    if(!sChallengeModeMgr->GetStartPosition(keyOwner->GetInstanceScript(), x, y, z, o, m_ownerGuid))
+    if(!sChallengeModeMgr->GetStartPosition(keyOwner->GetInstanceScript(), x, y, z, o, _keyOwner))
         return;
 
     _map->DoOnPlayers([&](Player* player)
@@ -518,10 +482,10 @@ void Challenge::Complete()
 
     _complete = true;
 
-    Player* keyOwner = ObjectAccessor::FindPlayer(m_ownerGuid);
-    _item = nullptr;
+    Player* keyOwner = ObjectAccessor::FindPlayer(_keyOwner);
+    Item* keystone = nullptr;
     if (keyOwner)
-        _item = keyOwner->GetItemByGuid(m_itemGuid);
+        keystone = keyOwner->GetItemByGuid(m_itemGuid);
 
     HitTimer();
 
@@ -540,14 +504,9 @@ void Challenge::Complete()
         BroadcastPacket(complete.Write());
     }
 
-    if (Group* group = sGroupMgr->GetGroupByGUID(m_gguid))
+    if (Group* group = sGroupMgr->GetGroupByGUID(_groupGUID))
     {
-        group->m_challengeEntry = nullptr;
-        group->m_challengeLevel = 0;
-        group->m_affixes.fill(0);
         group->SetDungeonDifficultyID(DIFFICULTY_MYTHIC);
-        group->m_challengeInstanceID = 0;
-        group->m_challengeMapID = 0;
 
         //if(keyOwner)
         //    if(group->IsGuildGroup() && group->CanRecieveGuildChallengeCredit())
@@ -556,38 +515,38 @@ void Challenge::Complete()
     }
 
     // Reward part
-    if (_item)
+    if (keystone)
     {
         if (!_isKeyDepleted)
         {
             if (_challengeEntry)
             {
-                if (auto keyInfo = keyOwner->GetPlayerChallenge()->GetKeystoneInfo(_item))
+                if (auto keyInfo = keyOwner->GetPlayerChallenge()->GetKeystoneInfo(keystone))
                 {
                     keyInfo->GenerateNewDungeon();
                     keyInfo->Level = std::min(_challengeLevel + _rewardLevel, sWorld->getIntConfig(CONFIG_CHALLENGE_LEVEL_LIMIT));
-                    _item->SetModifier(ITEM_MODIFIER_CHALLENGE_MAP_CHALLENGE_MODE_ID, keyInfo->ID);
-                    _item->SetModifier(ITEM_MODIFIER_CHALLENGE_KEYSTONE_LEVEL, keyInfo->Level);
+                    keystone->SetModifier(ITEM_MODIFIER_CHALLENGE_MAP_CHALLENGE_MODE_ID, keyInfo->ID);
+                    keystone->SetModifier(ITEM_MODIFIER_CHALLENGE_KEYSTONE_LEVEL, keyInfo->Level);
                 }
             }            
         }
         else
-            keyOwner->ChallengeKeyCharded(_item, _challengeLevel);
+            keyOwner->ChallengeKeyCharded(keystone, _challengeLevel);
 
-        keyOwner->UpdateChallengeKey(_item);
-        _item->SetState(ITEM_CHANGED, keyOwner);
+        keyOwner->UpdateChallengeKey(keystone);
+        keystone->SetState(ITEM_CHANGED, keyOwner);
     }
     else
     {
-        if (keyOwner = ObjectAccessor::FindPlayer(m_ownerGuid))
+        if (keyOwner = ObjectAccessor::FindPlayer(_keyOwner))
         {
-            if (_item = keyOwner->GetItemByGuid(m_itemGuid))
-                keyOwner->ChallengeKeyCharded(_item, _challengeLevel);
+            if (keystone = keyOwner->GetItemByGuid(m_itemGuid))
+                keyOwner->ChallengeKeyCharded(keystone, _challengeLevel);
             else
-                CharacterDatabase.PQuery("UPDATE challenge_key SET KeyIsCharded = 0, InstanceID = 0 WHERE guid = %u", m_ownerGuid.GetCounter());
+                CharacterDatabase.PExecute("UPDATE challenge_key SET KeyIsCharded = 0, InstanceID = 0 WHERE guid = %u and itemid = %u", _keyOwner.GetCounter(), m_itemGuid.GetCounter());
         }
         else
-            CharacterDatabase.PQuery("UPDATE challenge_key SET KeyIsCharded = 0, InstanceID = 0 WHERE guid = %u", m_ownerGuid.GetCounter());
+            CharacterDatabase.PExecute("UPDATE challenge_key SET KeyIsCharded = 0, InstanceID = 0 WHERE guid = %u and itemid = %u", _keyOwner.GetCounter(), m_itemGuid.GetCounter());
     }
 
     auto challengeData = new ChallengeData;
@@ -714,11 +673,6 @@ void Challenge::HitTimer()
     }
 }
 
-uint32 Challenge::GetChallengeLevel() const
-{
-    return std::min(_challengeLevel, sWorld->getIntConfig(CONFIG_CHALLENGE_LEVEL_LIMIT));
-}
-
 std::array<int32, 4> Challenge::GetAffixes() const
 {
     return _affixes;
@@ -771,26 +725,27 @@ void Challenge::ResetGo()
 
 void Challenge::SendStartTimer(Player* player)
 {
-    WorldPackets::Misc::StartTimer startTimer;
-    startTimer.Type = WorldPackets::Misc::StartTimer::TimerType::ChallengeMode;
-    startTimer.TimeLeft = 9s;
-    startTimer.TotalTime = 10s;
+    WorldPackets::Misc::StartTimer packet;
+    packet.Type      = WorldPackets::Misc::StartTimer::TimerType::ChallengeMode;
+    packet.TimeLeft  = 9s;
+    packet.TotalTime = 10s;
     if (player)
-        player->SendDirectMessage(startTimer.Write());
+        player->SendDirectMessage(packet.Write());
     else
-        BroadcastPacket(startTimer.Write());
+        BroadcastPacket(packet.Write());
 }
 
 void Challenge::SendStartElapsedTimer(Player* player)
 {
-    WorldPackets::Misc::StartElapsedTimer timer;
-    timer.Timer.TimerID = WorldPackets::Misc::StartTimer::TimerType::ChallengeMode;
-    timer.Timer.CurrentDuration = GetChallengeTimer();
+    WorldPackets::Misc::StartElapsedTimer packet;
+
+    packet.Timer.TimerID         = WorldPackets::Misc::StartTimer::TimerType::ChallengeMode;
+    packet.Timer.CurrentDuration = GetChallengeTimer();
 
     if (player)
-        player->SendDirectMessage(timer.Write());
+        player->SendDirectMessage(packet.Write());
     else
-        BroadcastPacket(timer.Write());
+        BroadcastPacket(packet.Write());
 }
 
 void Challenge::SendChallengeModeStart(Player* player /*= nullptr*/)
@@ -798,17 +753,17 @@ void Challenge::SendChallengeModeStart(Player* player /*= nullptr*/)
     if (!_challengeEntry)
         return;
 
-    WorldPackets::ChallengeMode::Start start;
-    start.MapID = _mapID;
-    start.ChallengeId = _challengeEntry->ID;
-    start.ChallengeLevel = _challengeLevel;
-    start.Affixes = _affixes;
-    start.IsKeyCharged = true; //Always true since 735
+    WorldPackets::ChallengeMode::Start packet;
+    packet.MapID                 = _mapID;
+    packet.ChallengeId           = _challengeEntry->ID;
+    packet.ChallengeLevel        = _challengeLevel;
+    packet.Affixes               = _affixes;
+    packet.IsKeyCharged          = true; //Always true since 735
 
     if (player)
-        player->SendDirectMessage(start.Write());
+        player->SendDirectMessage(packet.Write());
     else
-        BroadcastPacket(start.Write());
+        BroadcastPacket(packet.Write());
 }
 
 void Challenge::SendChallengeInstanceEncounterStart()
@@ -825,12 +780,12 @@ void Challenge::SendChallengeInstanceEncounterStart()
 void Challenge::SendChallengeModeNewPlayerRecord(Player* player)
 {
     WorldPackets::ChallengeMode::NewPlayerRecord newRecord;
-    newRecord.ChallengeId = _challengeEntry->ID;
-    newRecord.Duration = _challengeTimer;
+
+    newRecord.ChallengeId    = _challengeEntry->ID;
+    newRecord.Duration       = _challengeTimer;
     newRecord.ChallengeLevel = _challengeLevel;
 
-    if (player)
-        player->SendDirectMessage(newRecord.Write());
+    player->SendDirectMessage(newRecord.Write());
 }
 
 void Challenge::SummonGobject(bool door)
@@ -886,6 +841,12 @@ uint8 Challenge::GetLevelBonus() const
 
 float Challenge::GetDamageMultiplier(uint8 challengeLevel)
 {
+    if (_challengeLevelInfo)
+    {
+        uint32 challengers = _challengers.size();
+        return _challengeLevelInfo->BaseDmgScaling + (_challengeLevelInfo->DMGScalingPerPlayer * (float)challengers);
+    }
+
     if (GtChallengeModeDamage const* challengeDamage = sChallengeModeDamage.GetRow(challengeLevel))
         return challengeDamage->Scalar;
 
@@ -894,6 +855,12 @@ float Challenge::GetDamageMultiplier(uint8 challengeLevel)
 
 float Challenge::GetHealthMultiplier(uint8 challengeLevel)
 {
+    if (_challengeLevelInfo)
+    {
+        uint32 challengers = _challengers.size();
+        return _challengeLevelInfo->BaseHPScaling + (_challengeLevelInfo->HPScalingPerPlayer * (float)challengers);
+    }
+
     if (GtChallengeModeHealth const* challengeHealth = sChallengeModeHealth.GetRow(challengeLevel))
         return challengeHealth->Scalar;
 

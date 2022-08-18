@@ -1074,3 +1074,11 @@ void WorldPackets::Movement::MoveInitActiveMoverComplete::Read()
 {
     _worldPacket >> Ticks;
 }
+
+WorldPacket const* WorldPackets::Movement::AdjustSplineDuration::Write()
+{
+    _worldPacket << Unit;
+    _worldPacket << Scale;
+
+    return &_worldPacket;
+}

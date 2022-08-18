@@ -66,6 +66,8 @@ struct TalentEntry;
 struct TrainerSpell;
 struct VendorItem;
 
+class AnimaPower;
+class AnimaPowerChoice;
 class AELootResult;
 class Bag;
 class Battleground;
@@ -93,6 +95,7 @@ class ReputationMgr;
 class RestMgr;
 class SpellCastTargets;
 class TradeData;
+struct MythicKeystoneInfo;
 class PlayerChallenge;
 
 enum GroupCategory : uint8;
@@ -129,13 +132,13 @@ typedef std::deque<Mail*> PlayerMails;
 
 enum PlayerSkillsConstants
 {
-    PLAYER_MAX_SKILLS   = decltype(UF::SkillInfo::SkillLineID)::Size
+    PLAYER_MAX_SKILLS   = UF::size<decltype(UF::SkillInfo::SkillLineID)>()
 };
 
 enum PlayerExplorationConstants
 {
-    PLAYER_EXPLORED_ZONES_SIZE  = decltype(UF::ActivePlayerData::ExploredZones)::Size,
-    PLAYER_EXPLORED_ZONES_BITS  = sizeof(decltype(UF::ActivePlayerData::ExploredZones)::value_type) * 8
+    PLAYER_EXPLORED_ZONES_SIZE  = UF::size<decltype(UF::ActivePlayerData::ExploredZones)>(),
+    PLAYER_EXPLORED_ZONES_BITS  = UF::size_of_value_type<decltype(UF::ActivePlayerData::ExploredZones)>() * 8
 };
 
 enum SpellModType : uint8
@@ -182,6 +185,14 @@ struct PlayerSpell
     bool active            : 1;                             // show in spellbook
     bool dependent         : 1;                             // learned as result another spell learn, skill grow, quest reward, etc
     bool disabled          : 1;                             // first rank has been learned in result talent learn but currently talent unlearned, save max learned ranks
+};
+
+struct TalentSpell
+{
+    PlayerSpellState state;
+    bool IsAddedByAura = false;
+    bool IsLearned     = false;
+    PlayerSpellState oldState;
 };
 
 struct StoredAuraTeleportLocation
@@ -300,7 +311,7 @@ struct PlayerCurrency
     uint8 Flags;
 };
 
-typedef std::unordered_map<uint32, PlayerSpellState> PlayerTalentMap;
+typedef std::unordered_map<uint32, TalentSpell> PlayerTalentMap;
 typedef std::array<uint32, MAX_PVP_TALENT_SLOTS> PlayerPvpTalentMap;
 typedef std::unordered_map<uint32, PlayerSpell> PlayerSpellMap;
 typedef std::unordered_set<SpellModifier*> SpellModContainer;
@@ -599,13 +610,13 @@ typedef std::map<uint32, QuestSaveType> QuestStatusSaveMap;
 // Size of client completed quests bit map
 enum PlayerQuestCompletedConstants
 {
-    QUESTS_COMPLETED_BITS_SIZE      = decltype(UF::ActivePlayerData::QuestCompleted)::Size,
-    QUESTS_COMPLETED_BITS_PER_BLOCK = sizeof(decltype(UF::ActivePlayerData::QuestCompleted)::value_type) * 8
+    QUESTS_COMPLETED_BITS_SIZE      = UF::size<decltype(UF::ActivePlayerData::QuestCompleted)>(),
+    QUESTS_COMPLETED_BITS_PER_BLOCK = UF::size_of_value_type<decltype(UF::ActivePlayerData::QuestCompleted)>() * 8
 };
 
 enum PlayerQuestLogConstants
 {
-    MAX_QUEST_COUNTS    = decltype(UF::QuestLog::ObjectiveProgress)::Size
+    MAX_QUEST_COUNTS    = UF::size<decltype(UF::QuestLog::ObjectiveProgress)>()
 };
 
 enum QuestSlotStateMask
@@ -648,7 +659,7 @@ enum PlayerSlots
     PLAYER_SLOTS_COUNT          = (PLAYER_SLOT_END - PLAYER_SLOT_START)
 };
 
-static_assert(decltype(UF::ActivePlayerData::InvSlots)::Size == PLAYER_SLOT_END);
+static_assert(UF::size<decltype(UF::ActivePlayerData::InvSlots)>() == PLAYER_SLOT_END);
 
 #define INVENTORY_SLOT_BAG_0    255
 #define INVENTORY_DEFAULT_SIZE  16
@@ -1171,7 +1182,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         bool TeleportTo(uint32 mapid, Position const& pos, uint32 options = 0, uint32 optionParam = 0, Transport* transport = nullptr, Optional<uint32> instanceId = {});
         bool TeleportTo(WorldLocation const& loc, uint32 options = 0, uint32 optionParam = 0, Transport* transport = nullptr, Optional<uint32> instanceId = {});
         bool TeleportToBGEntryPoint();
-        void TeleportToChallenge(Map* map, float x, float y, float z, float orientation, Player* keyOwner = nullptr);
+        void TeleportToChallenge(Map* map, float x, float y, float z, float orientation, Player* keyOwner, MythicKeystoneInfo* mythicKeystone);
         std::function<void()> TeleportCallback = nullptr;
 
         bool HasSummonPending() const;
@@ -1191,6 +1202,8 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void SendSupercededSpell(uint32 oldSpell, uint32 newSpell) const;
         void SendTransferAborted(uint32 mapid, TransferAbortReason reason, uint8 arg = 0, int32 mapDifficultyXConditionID = 0) const;
         void SendInstanceResetWarning(uint32 mapid, Difficulty difficulty, uint32 time, bool welcome) const;
+
+        void PlayConversation(uint32 conversationId);
 
         void AddTrackingQuestIfNeeded(ObjectGuid sourceGuid);
 
@@ -1889,10 +1902,10 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         uint32 GetNextResetTalentsCost() const;
         void InitTalentForLevel();
         void SendTalentsInfoData();
-        TalentLearnResult LearnTalent(uint32 talentId, int32* spellOnCooldown);
-        bool AddTalent(TalentEntry const* talent, uint8 spec, bool learning);
+        TalentLearnResult LearnTalent(uint32 talentId, int32* spellOnCooldown, bool auraTalent = false, bool wasLearnedBefore = false);
+        bool AddTalent(TalentEntry const* talent, uint8 spec, bool learning, bool auraTalent = false, bool wasLearnedBefore = false);
         bool HasTalent(uint32 spell_id, uint8 spec) const;
-        void RemoveTalent(TalentEntry const* talent);
+        void RemoveTalent(TalentEntry const* talent, bool auraTalent = false);
         void ResetTalentSpecialization();
         uint8 GetRole() const;
         static uint8 _GetRole(uint32 spec);
@@ -1922,7 +1935,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void LoadActions(PreparedQueryResult result);
 
         uint32 GetFreePrimaryProfessionPoints() const { return m_activePlayerData->CharacterPoints; }
-        void SetFreePrimaryProfessions(uint16 profs) { SetUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::CharacterPoints), profs); }
+        void SetFreePrimaryProfessions(uint32 profs) { SetUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::CharacterPoints), profs); }
         void InitPrimaryProfessions();
 
         PlayerSpellMap const& GetSpellMap() const { return m_spells; }
@@ -2272,6 +2285,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
 
         static uint32 TeamForRace(uint8 race);
         static TeamId TeamIdForRace(uint8 race);
+        static uint8 GetFactionGroupForRace(uint8 race);
         uint32 GetTeam() const { return m_team; }
         void SwitchToOppositeTeam(bool apply);
         TeamId GetTeamId() const { return m_team == ALLIANCE ? TEAM_ALLIANCE : TEAM_HORDE; }
@@ -2418,7 +2432,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void DeleteEquipmentSet(uint64 id);
 
         void SendInitWorldStates(uint32 zoneId, uint32 areaId);
-        void SendUpdateWorldState(uint32 variable, uint32 value, bool hidden = false) const;
+        void SendUpdateWorldState(uint32 variable, int32 value, bool hidden = false) const;
         void SendDirectMessage(WorldPacket const* data) const;
 
         void SendAurasForTarget(Unit* target) const;
@@ -2813,6 +2827,8 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         // Only use this function for setting field! - Proper set in GetCovenant()!
         void SetSoulbind(int32 soulbind) { SetUpdateFieldValue(m_values.ModifyValue(&Player::m_playerData).ModifyValue(&UF::PlayerData::SoulbindID), soulbind); }
 
+        void SetCharacterPoints(uint32 points) { SetUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::CharacterPoints), points); }
+
         void SetModPetHaste(float petHaste) { SetUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::ModPetHaste), petHaste); }
 
         void SendPetTameFailure(PetTameFailureReason reason);
@@ -2937,6 +2953,27 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void SetWarModeLocal(bool enabled);
         bool CanEnableWarModeInArea() const;
         void UpdateWarModeAuras();
+
+        /// Torghast
+        AnimaPowerChoice* GenerateAnimaPowerChoice(GameObject* go);
+        void SetAnimaPowerChoice(AnimaPowerChoice* choice);
+        void RerollAnimaPowers();
+        void ResetAndGainAnimaPowerChoice(AnimaPower* power);
+        void ResetAnimaPowerChoice();
+        AnimaPowerChoice* GetAnimaPowerChoice();
+        GuidUnorderedSet ConsumedAnimaPowers;
+
+        void SetJailerTowerLevel(int8 level)
+        {
+            SetUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData)
+                .ModifyValue(&UF::ActivePlayerData::JailersTowerLevel), level);
+        }
+
+        void SetJailerTowerLevelMax(int8 level)
+        {
+            SetUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData)
+                .ModifyValue(&UF::ActivePlayerData::JailersTowerLevelMax), level);
+        }
 
         void LoadCustom(CharacterDatabaseQueryHolder const& holder);
         void SaveCustom(CharacterDatabaseTransaction trans);
@@ -3329,6 +3366,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         std::unique_ptr<RestMgr> _restMgr;
         std::unique_ptr<CovenantMgr> _covenantMgr;
         std::unique_ptr<PlayerChallenge> m_playerChallenge;
+        std::unique_ptr<AnimaPowerChoice> _animaPowerChoice;
 
         bool _usePvpItemLevels;
 

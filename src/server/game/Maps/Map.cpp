@@ -3518,6 +3518,11 @@ bool Map::IsHeroic() const
     return false;
 }
 
+bool Map::IsMythic() const
+{
+    return i_spawnMode == DIFFICULTY_MYTHIC || i_spawnMode == DIFFICULTY_MYTHIC_KEYSTONE || i_spawnMode == DIFFICULTY_MYTHIC_RAID;
+}
+
 bool Map::IsChallengeMode() const
 {
     return i_spawnMode == DIFFICULTY_MYTHIC_KEYSTONE;

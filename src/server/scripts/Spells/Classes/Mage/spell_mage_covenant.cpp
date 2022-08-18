@@ -1,4 +1,7 @@
 #include "SpellIncludes.h"
+#include "spell_mage.h"
+
+using namespace Mage;
 
 enum eMage
 {
@@ -122,9 +125,92 @@ class spell_artifice_of_the_archmage : public AuraScript
     }
 };
 
+/// ID: 324220 Deathborne
+class spell_deathborne : public AuraScript
+{
+    PrepareAuraScript(spell_deathborne);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        if (!eventInfo.GetSpellInfo())
+            return false;
+
+        switch (eventInfo.GetSpellInfo()->Id)
+        {
+            case Frostbolt:
+            case Fireball:
+            case ArcaneBlast:
+            case FrostboltDmg:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (auto caster = GetCaster())
+            if (caster->HasAura(eLegendary::DeathsFathom))
+                if (auto eff = GetEffect(EFFECT_1))
+                    eff->ChangeAmount(eff->GetAmount() + 1);
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_deathborne::CheckProc);
+        OnProc += AuraProcFn(spell_deathborne::HandleProc);
+    }
+};
+
+/// ID: 354294 Death's Fathom
+class spell_deaths_fathom : public AuraScript
+{
+    PrepareAuraScript(spell_deaths_fathom);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        if (!eventInfo.GetSpellInfo())
+            return false;
+
+        switch (eventInfo.GetSpellInfo()->Id)
+        {
+            case Frostbolt:
+            case Fireball:
+            case ArcaneBlast:
+            case FrostboltDmg:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (auto caster = GetCaster())
+        {
+            uint32 duration = [&]() -> uint32
+            {
+                if (auto aura = caster->GetAura(Deathborne))
+                    return aura->GetDuration() + 8000;
+                return 8000;
+            }();
+
+            caster->CastSpell(caster, Deathborne, CastSpellExtraArgs(true).AddSpellMod(SpellValueMod::SPELLVALUE_DURATION, duration));
+        }
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_deaths_fathom::CheckProc);
+        OnProc += AuraProcFn(spell_deaths_fathom::HandleProc);
+    }
+};
+
 void AddSC_spell_mage_covenant()
 {
     RegisterSpellScript(spell_grounding_surge);
     RegisterSpellScript(spell_incantation_of_swiftness);
     RegisterSpellScript(spell_artifice_of_the_archmage);
+    RegisterSpellScript(spell_deathborne);
+    RegisterSpellScript(spell_deaths_fathom);
 }

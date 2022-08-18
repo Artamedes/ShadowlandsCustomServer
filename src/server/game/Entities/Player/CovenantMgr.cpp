@@ -29,7 +29,7 @@ bool Covenant::IsActiveCovenant() const
 void Covenant::SetSoulbind(SoulbindID soulbind, bool sendPacket /*= false*/)
 {
     m_SaveFlags.AddFlag(eCovenantSaveFlags::SaveSoulbind);
-    DisableAllConduitsForSoulbind();
+    _player->GetCovenantMgr()->DisableAllConduitsForSoulbind();
     _soulbindId = soulbind;
 
     if (IsActiveCovenant())
@@ -40,13 +40,13 @@ void Covenant::SetSoulbind(SoulbindID soulbind, bool sendPacket /*= false*/)
         if (sendPacket)
         {
             WorldPackets::Garrison::AddSpecGroups packet;
-            packet.GarrTypeID = 111;
+            packet.GarrTypeID = CovenantMgr::TheShadowlands;
             packet.SpecGroups.resize(1);
             packet.SpecGroups[0].ChrSpecializationID = _player->GetSpecializationId();
             packet.SpecGroups[0].SoulbindID = static_cast<int32>(GetSoulbindID());
             _player->SendDirectMessage(packet.Write());
         }
-        UpdateAllConduitsForSoulbind();
+        _player->GetCovenantMgr()->UpdateAllConduitsForSoulbind();
     }
 }
 
@@ -64,10 +64,31 @@ void Covenant::SetRenown(int32 renown, bool /*modCurr = true*/)
 
 void Covenant::SetAnima(uint32 anima, bool modCurr /*= true*/, bool inital)
 {
+    uint32 beforeAnima = _anima;
     m_SaveFlags.AddFlag(eCovenantSaveFlags::SaveCovenant);
     _anima = anima;
-    if (IsActiveCovenant() && modCurr)
-        _player->ModifyCurrency(1813, anima, !inital, false, true);
+    if (IsActiveCovenant())
+    {
+        if (modCurr)
+        {
+            _player->ModifyCurrency(1813, anima, false, false, true);
+
+            if (!inital)
+            {
+                _player->GetScheduler().Schedule(3s, 1000, [this, beforeAnima](TaskContext /*context*/)
+                {
+                    /// Only sends a yellow message...pretty boring.
+                    if (beforeAnima < _anima)
+                    {
+                        WorldPacket data(SMSG_CONVERT_ITEMS_TO_CURRENCY_VALUE, 4 + 4);
+                        data << uint32(1813);
+                        data << _anima - beforeAnima;
+                        _player->SendDirectMessage(&data);
+                    }
+                });
+            }
+        }
+    }
 }
 
 void Covenant::SetSouls(uint32 souls, bool modCurr /*= true*/, bool inital)
@@ -175,7 +196,7 @@ void Conduit::FlagsUpdated(bool forceRemove /*= false*/)
 {
     bool disabled = Flags == 0 || forceRemove;
 
-    if (auto talentRank = sDB2Manager.GetTalentRankEntryByGarrTalentID(TalentEntryId))
+    if (auto talentRank = sDB2Manager.GetTalentRankEntryByGarrTalentID(TalentEntryId, Rank > 1 ? Rank - 1 : 0))
     {
         if (talentRank->PerkSpellID > 0)
         {
@@ -281,7 +302,7 @@ void Covenant::SocketTalent(WorldPackets::Garrison::GarrisonSocketTalent& packet
 {
     // SMSG_GARRISON_APPLY_TALENT_SOCKET_DATA_CHANGES
     WorldPackets::Garrison::GarrisonApplyTalentSocketDataChanges response;
-    response.GarrTypeID = 111;
+    response.GarrTypeID = CovenantMgr::TheShadowlands;
     //response.Sockets.resize(packet.Sockets.size());
     for (int i = 0; i < packet.Sockets.size(); ++i)
     {
@@ -317,8 +338,8 @@ void Covenant::SocketTalent(WorldPackets::Garrison::GarrisonSocketTalent& packet
     _player->SendDirectMessage(response.Write());
 
     // just incase to remove auras for whatever reason, maybe it bug, but it's ok it will remove/apply
-    UpdateAllConduitsForSoulbind();
-    m_SaveFlags.AddFlag(eCovenantSaveFlags::SaveConduits);
+    _player->GetCovenantMgr()->UpdateAllConduitsForSoulbind();
+    _player->GetCovenantMgr()->SetSaveConduits();
 }
 
 void Covenant::SaveToDB(CharacterDatabaseTransaction trans)
@@ -352,115 +373,82 @@ void Covenant::SaveToDB(CharacterDatabaseTransaction trans)
         }
         m_SaveFlags.RemoveFlag(eCovenantSaveFlags::SaveRenownRewards);
     }
-
-    if (m_SaveFlags.HasFlag(eCovenantSaveFlags::SaveConduits))
-    {
-        for (auto const& itr : GetConduits())
-        {
-            auto covenantid = static_cast<uint32>(GetCovenantID());
-            auto const& conduit = itr.second;
-
-            auto index = 0;
-
-            auto stmt = CharacterDatabase.GetPreparedStatement(CHAR_REP_COVENANT_CONDUITS);
-            stmt->setUInt64(index++, _player->GetGUID().GetCounter());
-            stmt->setUInt32(index++, covenantid);
-            stmt->setUInt32(index++, conduit.TalentEntryId);
-            stmt->setUInt32(index++, conduit.TreeEntryId);
-            stmt->setUInt32(index++, conduit.Rank);
-            stmt->setUInt32(index++, conduit.Flags);
-            stmt->setUInt64(index++, conduit.ResearchStartTime);
-
-            uint32 SoulbindConduitID = 0;
-            uint32 SoulbindConduitRank = 0;
-
-            if (conduit.Socket.has_value())
-            {
-                SoulbindConduitID = conduit.Socket->SoulbindConduitID;
-                SoulbindConduitRank = conduit.Socket->SoulbindConduitRank;
-            }
-
-            stmt->setUInt32(index++, SoulbindConduitID);
-            stmt->setUInt32(index++, SoulbindConduitRank);
-            trans->Append(stmt);
-        }
-        m_SaveFlags.RemoveFlag(eCovenantSaveFlags::SaveConduits);
-    }
 }
 
-void Covenant::DisableAllConduits()
+void CovenantMgr::DisableAllConduits()
+{
+    auto covenantId = static_cast<uint32>(GetCovenant()->GetCovenantID());
+
+    for (auto& itr : _conduits)
+    {
+        if (itr.second->CovenantID != covenantId)
+            continue;
+
+        itr.second->FlagsUpdated(true);
+    }
+    m_SaveFlags.AddFlag(eCovenantMgrSaveFlags::SaveConduits);
+}
+
+void CovenantMgr::DisableAllConduitsForSoulbind()
 {
     // no soulbind - nothing to do. same for covenantid
-    if (!IsActiveCovenant())
+    if (_player->m_playerData->SoulbindID == 0)
+        return;
+
+    auto covenantId = static_cast<uint32>(GetCovenant()->GetCovenantID());
+
+    for (auto& itr : _conduits)
+    {
+        if (itr.second->CovenantID != covenantId)
+            continue;
+
+        if (itr.second->GetSoulbindID() == _player->m_playerData->SoulbindID)
+            itr.second->FlagsUpdated(true);
+    }
+    m_SaveFlags.AddFlag(eCovenantMgrSaveFlags::SaveConduits);
+}
+
+void CovenantMgr::UpdateAllConduits()
+{
+    for (auto& itr : _conduits)
+    {
+        auto soulbind = itr.second->GetSoulbindID();
+        // only track covenant
+        if (soulbind == 0)
+            continue;
+
+        bool add = soulbind == _player->m_playerData->SoulbindID;
+        itr.second->FlagsUpdated(!add);
+    }
+    m_SaveFlags.AddFlag(eCovenantMgrSaveFlags::SaveConduits);
+}
+
+void CovenantMgr::UpdateAllConduitsForSoulbind()
+{
+    if (_player->m_playerData->SoulbindID == 0)
         return;
 
     for (auto& itr : _conduits)
     {
-        itr.second.FlagsUpdated(true);
+        auto soulbind = itr.second->GetSoulbindID();
+        if (soulbind == 0)
+            continue;
+
+        if (soulbind  == _player->m_playerData->SoulbindID)
+            itr.second->FlagsUpdated();
     }
-    m_SaveFlags.AddFlag(eCovenantSaveFlags::SaveConduits);
+    m_SaveFlags.AddFlag(eCovenantMgrSaveFlags::SaveConduits);
 }
 
-void Covenant::DisableAllConduitsForSoulbind()
+void CovenantMgr::AddConduit(Conduit* conduit)
 {
-    // no soulbind - nothing to do. same for covenantid
-    if (_player->m_playerData->SoulbindID == 0 || !IsActiveCovenant())
-        return;
-
-    for (auto& itr : _conduits)
-    {
-        if (itr.first == _player->m_playerData->SoulbindID)
-            itr.second.FlagsUpdated(true);
-    }
-    m_SaveFlags.AddFlag(eCovenantSaveFlags::SaveConduits);
+    _conduits[conduit->TalentEntryId] = conduit;
+    m_SaveFlags.AddFlag(eCovenantMgrSaveFlags::SaveConduits);
 }
 
-void Covenant::UpdateAllConduits()
+void CovenantMgr::SetSaveConduits()
 {
-    if (!IsActiveCovenant())
-        return;
-
-    for (auto& itr : _conduits)
-    {
-        bool remove = false;
-
-        if (itr.first != _player->m_playerData->SoulbindID)
-            remove = true;
-
-        if (!remove)
-        {
-            auto requiredSoulbindId = static_cast<int32>(GetSoulbindIDFromTalentTreeId(itr.second.TreeEntryId));
-            if (requiredSoulbindId != 0 && requiredSoulbindId != _player->m_playerData->SoulbindID)
-                remove = true;
-        }
-
-        itr.second.FlagsUpdated(remove);
-    }
-    m_SaveFlags.AddFlag(eCovenantSaveFlags::SaveConduits);
-}
-
-void Covenant::UpdateAllConduitsForSoulbind()
-{
-    if (_player->m_playerData->SoulbindID == 0 || !IsActiveCovenant())
-        return;
-
-    for (auto& itr : _conduits)
-    {
-        if (itr.first == _player->m_playerData->SoulbindID)
-            itr.second.FlagsUpdated();
-    }
-    m_SaveFlags.AddFlag(eCovenantSaveFlags::SaveConduits);
-}
-
-void Covenant::AddConduit(Conduit& conduit)
-{
-    _conduits.insert({ conduit.GetSoulbindID(), conduit});
-    m_SaveFlags.AddFlag(eCovenantSaveFlags::SaveConduits);
-}
-
-void Covenant::SetSaveConduits()
-{
-    m_SaveFlags.AddFlag(eCovenantSaveFlags::SaveConduits);
+    m_SaveFlags.AddFlag(eCovenantMgrSaveFlags::SaveConduits);
 }
 
 CovenantMgr::CovenantMgr(Player* player) : _player(player), _currCovenantIndex(0), _loaded(false)
@@ -470,6 +458,12 @@ CovenantMgr::CovenantMgr(Player* player) : _player(player), _currCovenantIndex(0
     _playerCovenants[2] = std::make_unique<Covenant>(CovenantID::Venthyr, _player);
     _playerCovenants[3] = std::make_unique<Covenant>(CovenantID::NightFae, _player);
     _playerCovenants[4] = std::make_unique<Covenant>(CovenantID::Necrolord, _player);
+}
+
+CovenantMgr::~CovenantMgr()
+{
+    for (auto it = _conduits.begin(); it != _conduits.end(); ++it)
+        delete it->second;
 }
 
 void CovenantMgr::LoadFromDB(CharacterDatabaseQueryHolder const& holder)
@@ -496,17 +490,18 @@ void CovenantMgr::LoadFromDB(CharacterDatabaseQueryHolder const& holder)
         {
             auto fields = result->Fetch();
 
-            uint32 CovenantID = fields[0].GetUInt32();
+            uint32 covenantId = fields[0].GetUInt32();
             uint32 GarrTalentID = fields[1].GetUInt32();
             uint32 GarrTalentTreeID = fields[2].GetUInt32();
 
-            Conduit conduit(_player);
+            Conduit* conduit = new Conduit(_player);
 
-            conduit.TalentEntryId = GarrTalentID;
-            conduit.TreeEntryId = GarrTalentTreeID;
-            conduit.Rank = fields[3].GetUInt32();
-            conduit.Flags = fields[4].GetUInt32();
-            conduit.ResearchStartTime = fields[5].GetUInt64();
+            conduit->TalentEntryId = GarrTalentID;
+            conduit->TreeEntryId = GarrTalentTreeID;
+            conduit->CovenantID = covenantId;
+            conduit->Rank = fields[3].GetUInt32();
+            conduit->Flags = fields[4].GetUInt32();
+            conduit->ResearchStartTime = fields[5].GetUInt64();
 
             uint32 SoulbindConduitID = fields[6].GetUInt32();
             if (SoulbindConduitID > 0)
@@ -514,10 +509,10 @@ void CovenantMgr::LoadFromDB(CharacterDatabaseQueryHolder const& holder)
                 WorldPackets::Garrison::GarrisonTalentSocketData data;
                 data.SoulbindConduitID = SoulbindConduitID;
                 data.SoulbindConduitRank = fields[7].GetUInt32();
-                conduit.Socket = data;
+                conduit->Socket = data;
             }
 
-            _playerCovenants[CovenantID]->AddConduit(conduit);
+            AddConduit(conduit);
 
         } while (result->NextRow());
     }
@@ -606,6 +601,39 @@ void CovenantMgr::SaveToDB(CharacterDatabaseTransaction trans)
         itr->SaveToDB(trans);
     }
 
+    if (m_SaveFlags.HasFlag(eCovenantMgrSaveFlags::SaveConduits))
+    {
+        for (auto const& itr : _conduits)
+        {
+            auto const& conduit = itr.second;
+
+            auto index = 0;
+
+            auto stmt = CharacterDatabase.GetPreparedStatement(CHAR_REP_COVENANT_CONDUITS);
+            stmt->setUInt64(index++, _player->GetGUID().GetCounter());
+            stmt->setUInt32(index++, conduit->CovenantID);
+            stmt->setUInt32(index++, conduit->TalentEntryId);
+            stmt->setUInt32(index++, conduit->TreeEntryId);
+            stmt->setUInt32(index++, conduit->Rank);
+            stmt->setUInt32(index++, conduit->Flags);
+            stmt->setUInt64(index++, conduit->ResearchStartTime);
+
+            uint32 SoulbindConduitID = 0;
+            uint32 SoulbindConduitRank = 0;
+
+            if (conduit->Socket.has_value())
+            {
+                SoulbindConduitID = conduit->Socket->SoulbindConduitID;
+                SoulbindConduitRank = conduit->Socket->SoulbindConduitRank;
+            }
+
+            stmt->setUInt32(index++, SoulbindConduitID);
+            stmt->setUInt32(index++, SoulbindConduitRank);
+            trans->Append(stmt);
+        }
+        m_SaveFlags.RemoveFlag(eCovenantMgrSaveFlags::SaveConduits);
+    }
+
     if (m_SaveFlags.HasFlag(eCovenantMgrSaveFlags::SaveSoulbindSpecs))
     {
         for (auto const& itr : _covenantSoulbinds)
@@ -682,8 +710,7 @@ Covenant* CovenantMgr::GetCovenant()
 
 void CovenantMgr::SetCovenant(CovenantID covenant)
 {
-    if (auto covenant = GetCovenant())
-        covenant->DisableAllConduits();
+    DisableAllConduits();
 
     size_t newCovenantId = -1;
 
@@ -851,7 +878,7 @@ void CovenantMgr::LearnSoulbindConduit(Item* item)
     // SMSG_GARRISON_COLLECTION_UPDATE_ENTRY
     WorldPackets::Garrison::GarrisonCollectionUpdateEntry packet;
 
-    packet.GarrTypeID = 111;
+    packet.GarrTypeID = CovenantMgr::TheShadowlands;
     packet.UnkInt2 = 1; // Type.
     packet.Socket.SoulbindConduitID = conduitId;
     packet.Socket.SoulbindConduitRank = rank;
@@ -868,7 +895,7 @@ void CovenantMgr::LearnSoulbindConduit(Item* item)
         CollectionEntries[conduitId] = rank;
     }
 
-    GetCovenant()->UpdateAllConduitsForSoulbind();
+    UpdateAllConduitsForSoulbind();
     m_SaveFlags.AddFlag(eCovenantMgrSaveFlags::SaveCollections);
 }
 
@@ -876,7 +903,7 @@ void CovenantMgr::AddGarrisonInfo(WorldPackets::Garrison::GetGarrisonInfoResult&
 {
     WorldPackets::Garrison::GarrisonInfo cov;
 
-    cov.GarrTypeID = 111; // GarrType.db2
+    cov.GarrTypeID = CovenantMgr::TheShadowlands; // GarrType.db2
     cov.GarrSiteID = 299; // don't know
     cov.GarrSiteLevelID = 864; // GarrSiteLevel.db2
 
@@ -917,27 +944,27 @@ void CovenantMgr::AddGarrisonInfo(WorldPackets::Garrison::GetGarrisonInfoResult&
 }
 
 
-void CovenantMgr::LearnConduit(GarrTalentEntry const* talent, GarrTalentTreeEntry const* tree)
+void CovenantMgr::LearnConduit(GarrTalentEntry const* talent, GarrTalentTreeEntry const* tree, uint32 Rank /*= 1*/)
 {
-    Conduit conduit(_player);
-    conduit.TalentEntryId = talent->ID;
-    conduit.TreeEntryId = tree->ID;
-    conduit.Flags = GarrisonTalentFlags::TalentFlagEnabled;
+    Conduit* conduit = GetConduitByGarrTalentId(talent->ID);
 
-    auto covenant = GetCovenant();
-    auto soulbindID = GetSoulbindIDFromTalentTreeId(talent->GarrTalentTreeID);
-    auto range = covenant->GetConduits().equal_range(static_cast<uint32>(soulbindID));
-    bool found = false;
-    for (auto i = range.first; i != range.second; ++i)
+    auto soulbindId = GetSoulbindIDFromTalentTreeId(tree->ID);
+
+    if (!conduit)
     {
-        if (i->second.TalentEntryId == talent->ID)
-        {
-            found = true;
-            break;
-        }
+        conduit = new Conduit(_player);
+        conduit->TalentEntryId = talent->ID;
+        conduit->TreeEntryId = tree->ID;
+        conduit->Flags = GarrisonTalentFlags::TalentFlagEnabled;
+        conduit->CovenantID = static_cast<int32>(GetCovenantIDFromSoulbindID(soulbindId));
+        AddConduit(conduit);
     }
-    if (!found)
-        covenant->AddConduit(conduit);
+
+    // unapply
+    conduit->FlagsUpdated(true);
+
+    // apply rank after unapplying
+    conduit->Rank = Rank;
 
     // SMSG_GARRISON_RESEARCH_TALENT_RESULT send instead
     //_player->SendGarrisonInfoResult();
@@ -947,31 +974,31 @@ void CovenantMgr::LearnConduit(GarrTalentEntry const* talent, GarrTalentTreeEntr
     // unkbit: True
 
     WorldPackets::Garrison::GarrisonResearchTalentResult result;
-    result.GarrTypeID = 111;
-    conduit.BuildGarrisonTalent(result.talent);
+    result.GarrTypeID = CovenantMgr::TheShadowlands;
+    conduit->BuildGarrisonTalent(result.talent);
     _player->SendDirectMessage(result.Write());
 
     // SMSG_LEARNED_SPELLS - need implement GarrTalentRank.db2
-    auto soulbindId = GetSoulbindIDFromTalentTreeId(tree->ID);
-    if (soulbindId == SoulbindID::None || soulbindId == covenant->GetSoulbindID())
-        conduit.FlagsUpdated();
+    if (soulbindId == SoulbindID::None || static_cast<int32>(soulbindId) == _player->m_playerData->SoulbindID)
+        conduit->FlagsUpdated();
     // SMSG_CRITERIA_UPDATE Criteria ID, 30952, 3x Quantity
     // SMSG_GARRISON_TALENT_COMPLETED
     WorldPackets::Garrison::GarrisonTalentCompleted result2;
-    result2.GarrTypeID = 111;
+    result2.GarrTypeID = CovenantMgr::TheShadowlands;
     result2.GarrTalentID = talent->ID;
+    result2.UnkInt1 = Rank;
     _player->SendDirectMessage(result2.Write());
-    covenant->SetSaveConduits();
+    SetSaveConduits();
 }
 
 void CovenantMgr::BuildGarrisonPacket(WorldPackets::Garrison::GarrisonInfo& result)
 {
     auto covenant = GetCovenant();
 
-    for (auto& itr : covenant->GetConduits())
+    for (auto& itr : _conduits)
     {
         WorldPackets::Garrison::GarrisonTalent talent;
-        itr.second.BuildGarrisonTalent(talent); // maybe make const
+        itr.second->BuildGarrisonTalent(talent); // maybe make const
         result.Talents.push_back(talent);
     }
 }
@@ -990,37 +1017,27 @@ void CovenantMgr::LearnTalent(WorldPackets::Garrison::GarrisonLearnTalent& resea
 
     uint32 covId = (uint32)_currCovenantIndex;
     auto covenant = GetCovenant();
-    auto range = covenant->GetConduits().equal_range(SoulbindID);
 
     auto AddConduitToListIfNeed([covenant, covId, SoulbindID, this](GarrTalentEntry const* pTalent)
     {
-        bool found = false;
-        auto rangeCopie = covenant->GetConduits().equal_range(SoulbindID);
-        for (auto i = rangeCopie.first; i != rangeCopie.second; ++i)
+        auto it = _conduits.find(pTalent->ID);
+        if (it == _conduits.end())
         {
-            if (i->second.TalentEntryId == pTalent->ID)
-            {
-                found = true;
-                break;
-            }
-        }
-        if (!found)
-        {
-            Conduit conduit(_player);
-            conduit.TalentEntryId = pTalent->ID;
-            conduit.TreeEntryId = pTalent->GarrTalentTreeID;
-            conduit.Flags = GarrisonTalentFlags::TalentFlagEnabled;
+            Conduit* conduit = new Conduit(_player);
+            conduit->TalentEntryId = pTalent->ID;
+            conduit->TreeEntryId = pTalent->GarrTalentTreeID;
+            conduit->Flags = GarrisonTalentFlags::TalentFlagEnabled;
 
-            covenant->AddConduit(conduit);
+            AddConduit(conduit);
 
             //// TODO: Verify this. - seems fine
             WorldPackets::Garrison::GarrisonResearchTalentResult result;
-            result.GarrTypeID = 111;
-            conduit.BuildGarrisonTalent(result.talent);
+            result.GarrTypeID = CovenantMgr::TheShadowlands;
+            conduit->BuildGarrisonTalent(result.talent);
             _player->SendDirectMessage(result.Write());
-            
+
             WorldPackets::Garrison::GarrisonTalentCompleted result2;
-            result2.GarrTypeID = 111;
+            result2.GarrTypeID = CovenantMgr::TheShadowlands;
             result2.GarrTalentID = pTalent->ID;
             _player->SendDirectMessage(result2.Write());
         }
@@ -1054,52 +1071,48 @@ void CovenantMgr::LearnTalent(WorldPackets::Garrison::GarrisonLearnTalent& resea
     }
 
     WorldPackets::Garrison::GarrisonSwitchTalentTreeBranch packet;
-    packet.GarrTypeID = 111;
-    for (auto i = range.first; i != range.second; ++i)
+    packet.GarrTypeID = CovenantMgr::TheShadowlands;
+
+    for (auto itr : _conduits)
     {
-        auto entry = sGarrTalentStore.LookupEntry(i->second.TalentEntryId);
+        auto entry = sGarrTalentStore.LookupEntry(itr.second->TalentEntryId);
 
         if (TalentTiersToCheck.count(entry->Tier))
         {
             if (entry->GarrTalentTreeID != talent->GarrTalentTreeID)
                 continue;
 
-            if (i->second.TalentEntryId == talent->ID || entry->PrerequesiteTalentID == talent->ID)
+            if (itr.second->TalentEntryId == talent->ID || entry->PrerequesiteTalentID == talent->ID)
             {
-                i->second.Flags = GarrisonTalentFlags::TalentFlagEnabled;
+                itr.second->Flags = GarrisonTalentFlags::TalentFlagEnabled;
             }
             else
             {
-                i->second.Flags = GarrisonTalentFlags::TalentFlagDisabled;
+                itr.second->Flags = GarrisonTalentFlags::TalentFlagDisabled;
             }
 
             if (researchResult.SoulbindID == _player->m_playerData->SoulbindID)
             {
-                i->second.FlagsUpdated(true);
-                i->second.FlagsUpdated();
+                itr.second->FlagsUpdated(true);
+                itr.second->FlagsUpdated();
             }
             WorldPackets::Garrison::GarrisonTalent garrTalentPacket;
-            i->second.BuildGarrisonTalent(garrTalentPacket);
+            itr.second->BuildGarrisonTalent(garrTalentPacket);
             packet.Talents.push_back(garrTalentPacket);
         }
     }
 
-    covenant->SetSaveConduits();
+    SetSaveConduits();
     _player->SendDirectMessage(packet.Write());
 }
 
 Conduit* CovenantMgr::GetConduitByGarrTalentId(uint32 garrTalentId)
 {
-    auto covenant = GetCovenant();
-    auto range = covenant->GetConduits();
+    auto it = _conduits.find(garrTalentId);
+    if (it == _conduits.end())
+        return nullptr;
 
-    for (auto& itr : covenant->GetConduits())
-    {
-        if (itr.second.TalentEntryId == garrTalentId)
-            return &itr.second;
-    }
-
-    return nullptr;
+    return it->second;
 }
 
 void CovenantMgr::SetSoulbind(SoulbindID soulbind, bool sendPacket /*= false*/)
@@ -1162,5 +1175,5 @@ void CovenantMgr::UpdateConduits()
     if (!covenant)
         return;
 
-    covenant->UpdateAllConduits();
+    UpdateAllConduits();
 }

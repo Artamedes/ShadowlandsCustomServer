@@ -41,7 +41,7 @@ void AddSC_ElarianSanctuary();
 void AddSC_ShadoPanMonastary();
 void AddSC_LightDungeon3();
 void AddSC_DailyRewardsSystem();
-void AddSC_Torghast();
+void AddSC_OldTorghast();
 void AddSC_StabilityTest();
 void AddSC_MawFinale();
 void AddSC_TheUnderrot();
@@ -91,6 +91,11 @@ void AddSC_boss_echelon();
 void AddSC_boss_halkias();
 void AddSC_boss_high_adjudicator_aleez();
 
+/// Torghast
+void AddSC_TorghastMain();
+void AddSC_instance_torghast();
+void AddSC_TorghastSpells();
+
 void AddCustomScripts()
 {
     AddSC_LoginScript();
@@ -115,7 +120,7 @@ void AddCustomScripts()
     AddSC_ShadoPanMonastary();
     AddSC_LightDungeon3();
     AddSC_DailyRewardsSystem();
-    AddSC_Torghast();
+    AddSC_OldTorghast();
     AddSC_StabilityTest();
     AddSC_MawFinale();
     AddSC_TheUnderrot();
@@ -162,4 +167,9 @@ void AddCustomScripts()
     AddSC_boss_echelon();
     AddSC_boss_halkias();
     AddSC_boss_high_adjudicator_aleez();
+
+    /// Torghast
+    AddSC_TorghastMain();
+    AddSC_instance_torghast();
+    AddSC_TorghastSpells();
 }

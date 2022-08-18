@@ -62,6 +62,11 @@ class TC_GAME_API GameObjectAI
 
         virtual void Reset() { }
 
+        /// <summary>
+        /// Called when the gameobject is added to the world (after SMSG_UPDATE_OBJECT is sent)
+        /// </summary>
+        virtual void OnAddToWorld() { }
+
         // Pass parameters between AI
         virtual void DoAction(int32 /*param = 0 */) { }
         virtual void SetGUID(ObjectGuid const& /*guid*/, int32 /*id = 0 */) { }
@@ -90,6 +95,8 @@ class TC_GAME_API GameObjectAI
         // Called when a Player clicks a GameObject, before GossipHello
         // prevents achievement tracking if returning true
         virtual bool OnReportUse(Player* /*player*/) { return false; }
+
+        virtual bool OnPlayerChoice(Player* /*player*/) { return false; }
 
         virtual void Destroyed(WorldObject* /*attacker*/, uint32 /*eventId*/) { }
         virtual void Damaged(WorldObject* /*attacker*/, uint32 /*eventId*/) { }

@@ -23,6 +23,7 @@
 #include "CustomInstanceScript.h"
 #include "ReputationMgr.h"
 #include "ChatPackets.h"
+#include "ItemPackets.h"
 
 enum MallScript
 {
@@ -3028,28 +3029,63 @@ struct npc_keystone_master : public ScriptedAI
 public:
     npc_keystone_master(Creature* creature) : ScriptedAI(creature) { }
 
+    void DropKeystoneAndSendPacket(Player* player, uint32 itemId)
+    {
+        if (auto item = player->GetItemByEntry(itemId))
+        {
+            auto keystoneInfo = player->GetPlayerChallenge()->GetKeystoneInfo(item);
+            if (keystoneInfo)
+            {
+                uint32 beforeLevel = keystoneInfo->Level;
+                auto itemLinkBefore = Item::GetItemLink(item, player);
+                WorldPackets::Item::ItemChanged packet;
+                packet.Before.Initialize(item);
+                player->GetPlayerChallenge()->ResetMythicKeystoneTo(item, keystoneInfo->Level, false);
+                packet.After.Initialize(item);
+                player->SendDirectMessage(packet.Write());
+                auto itemLinkAfter = Item::GetItemLink(item, player);
+                if (beforeLevel != keystoneInfo->Level)
+                    ChatHandler(player).PSendSysMessage("%s |cffEE3535downgraded into %s", itemLinkBefore.c_str(), itemLinkAfter.c_str());
+            }
+        }
+    }
+
     bool OnGossipHello(Player* player) override
     {
-        auto status = player->GetQuestStatus(800030);
+        // Quest has been deprecated
+        //auto status = player->GetQuestStatus(800030);
 
         ClearGossipMenuFor(player);
         player->PrepareQuestMenu(me->GetGUID());
-        if (status == QUEST_STATUS_REWARDED || status == QUEST_STATUS_COMPLETE)
+        //if (status == QUEST_STATUS_REWARDED || status == QUEST_STATUS_COMPLETE)
         {
             if (!player->HasItemCount(158923, 1, true))
-                AddGossipItemFor(player, GossipOptionIcon::None, "I need a Keystone.", 0, 1);
+                AddGossipItemFor(player, GossipOptionIcon::None, "I need a Group Keystone.", 0, 1);
             else
-                AddGossipItemFor(player, GossipOptionIcon::None, "Can you drop my keystone?", 0, 5);
+                AddGossipItemFor(player, GossipOptionIcon::None, "Can you lower my Group Keystone level?", 0, 5);
             if (!player->HasItemCount(180653, 1, true))
-                AddGossipItemFor(player, GossipOptionIcon::None, "I need a Mini-Keystone", 0, 2);
+                AddGossipItemFor(player, GossipOptionIcon::None, "I need a Solo Keystone", 0, 2);
             else
-                AddGossipItemFor(player, GossipOptionIcon::None, "Can you drop my mini-keystone?", 0, 6);
+                AddGossipItemFor(player, GossipOptionIcon::None, "Can you lower my Solo Keystone level?", 0, 6);
+            if (!player->HasItemCount(700019, 1, true))
+            {
+                AddGossipItemFor(player, GossipOptionIcon::None, "I need a Timewalking Keystone", 0, 0, [player, this](std::string /*callback*/)
+                {
+                    player->AddItem(700019, 1);
+                    OnGossipHello(player);
+                });
+            }
+            else
+            {
+                AddGossipItemFor(player, GossipOptionIcon::None, "Can you lower my Timewalking Keystone level?", 0, 6, [this, player](std::string /*callback*/)
+                {
+                    DropKeystoneAndSendPacket(player, 700019);
+                    OnGossipHello(player);
+                });
+            }
 
             AddGossipItemFor(player, GossipOptionIcon::None, "Can you tell me about Keystones again?", 0, 3);
         }
-
-        if (status == QUEST_STATUS_INCOMPLETE)
-            AddGossipItemFor(player, GossipOptionIcon::None, "Can you tell me about Keystones?", 0, 3);
         SendGossipMenuFor(player, me->GetEntry(), me);
         return true;
     }
@@ -3061,10 +3097,10 @@ public:
         {
             case 1:
                 player->AddItem(158923, 1);
-                break;
+                return OnGossipHello(player);
             case 2:
                 player->AddItem(180653, 1);
-                break;
+                return OnGossipHello(player);
             case 3:
                 ClearGossipMenuFor(player);
                 AddGossipItemFor(player, GossipOptionIcon::None, "Okay", 0, 4);
@@ -3074,26 +3110,10 @@ public:
             case 4:
                 return OnGossipHello(player);
             case 5:
-                if (auto item = player->GetItemByEntry(158923))
-                {
-                    auto keystoneInfo = player->GetPlayerChallenge()->GetKeystoneInfo(item);
-                    if (keystoneInfo)
-                    {
-                        player->GetPlayerChallenge()->ResetMythicKeystoneTo(item, keystoneInfo->Level, false);
-                        ChatHandler(player).PSendSysMessage("Keystone dropped to %u", keystoneInfo->Level);
-                    }
-                }
+                DropKeystoneAndSendPacket(player, 158923);
                 return OnGossipHello(player);
             case 6:
-                if (auto item = player->GetItemByEntry(180653))
-                {
-                    auto keystoneInfo = player->GetPlayerChallenge()->GetKeystoneInfo(item);
-                    if (keystoneInfo)
-                    {
-                        player->GetPlayerChallenge()->ResetMythicKeystoneTo(item, keystoneInfo->Level, false);
-                        ChatHandler(player).PSendSysMessage("Mini-keystone dropped to %u", keystoneInfo->Level);
-                    }
-                }
+                DropKeystoneAndSendPacket(player, 180653);
                 return OnGossipHello(player);
         }
         CloseGossipMenuFor(player);

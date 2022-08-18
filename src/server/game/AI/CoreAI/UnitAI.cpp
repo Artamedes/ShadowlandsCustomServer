@@ -208,6 +208,17 @@ SpellCastResult UnitAI::DoCastVictim(uint32 spellId, CastSpellExtraArgs const& a
     return SPELL_FAILED_BAD_TARGETS;
 }
 
+SpellCastResult UnitAI::DoCastRandom(uint32 spellId, float dist, bool triggered, int32 aura, uint32 position)
+{
+    if (me->HasUnitState(UNIT_STATE_CASTING) && !triggered)
+        return SpellCastResult::SPELL_FAILED_NOT_WHILE_CHROMIE_TIMED;
+
+    if (Unit* target = SelectTarget(SelectTargetMethod::Random, position, dist, true, aura))
+        return me->CastSpell(target, spellId, triggered);
+
+    return SpellCastResult::SPELL_FAILED_BAD_TARGETS;
+}
+
 #define UPDATE_TARGET(a) {if (AIInfo->target<a) AIInfo->target=a;}
 
 void UnitAI::FillAISpellInfo()
@@ -506,4 +517,82 @@ bool FarthestTargetSelector::operator()(Unit const* target) const
 void SortByDistanceTo(Unit* reference, std::list<Unit*>& targets)
 {
     targets.sort(Trinity::ObjectDistanceOrderPred(reference));
+}
+
+Player* UnitAI::SelectRangedTarget(bool alowHeal /*= true*/, int32 checkAura /*= 0*/) const
+{
+    auto const& threatList = me->GetThreatManager().GetModifiableThreatList();
+    if (threatList.empty())
+        return nullptr;
+
+    std::list<Player*> targetList;
+    for (auto* iter : threatList)
+    {
+        if (iter->GetOwner()->IsPlayer())
+            targetList.push_back(iter->GetOwner()->ToPlayer());
+    }
+
+    if (targetList.empty())
+        return nullptr;
+
+    targetList.remove_if([&](Player* player) -> bool
+    {
+        if (!player->IsRangedDamageDealer(alowHeal))
+            return true;
+
+        if (checkAura)
+        {
+            if (checkAura > 0)
+            {
+                if (!player->HasAura(checkAura))
+                    return true;
+            }
+            else
+            {
+                if (player->HasAura(-checkAura))
+                    return true;
+            }
+        }
+
+        return false;
+    });
+
+    if (targetList.empty())
+        return nullptr;
+
+    Trinity::Containers::RandomResize(targetList, 1);
+
+    return targetList.front();
+}
+
+Player* UnitAI::SelectMeleeTarget(bool allowTank /*= false*/) const
+{
+    auto const& threatList = me->GetThreatManager().GetModifiableThreatList();
+    if (threatList.empty())
+        return nullptr;
+
+    std::list<Player*> targetList;
+    for (auto* iter : threatList)
+    {
+        if (iter->GetOwner()->IsPlayer())
+            targetList.push_back(iter->GetOwner()->ToPlayer());
+    }
+
+    if (targetList.empty())
+        return nullptr;
+
+    targetList.remove_if([this, allowTank](Player* player) -> bool
+    {
+        if (!player->IsMeleeDamageDealer(allowTank))
+            return true;
+
+        return false;
+    });
+
+    if (targetList.empty())
+        return nullptr;
+
+    Trinity::Containers::RandomResize(targetList, 1);
+
+    return targetList.front();
 }

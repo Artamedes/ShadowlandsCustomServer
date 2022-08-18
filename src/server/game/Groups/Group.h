@@ -442,15 +442,6 @@ class TC_GAME_API Group
         //
         ObjectGuid GetGroupGuid() const { return m_guid; }
 
-        bool InChallenge();
-        ObjectGuid m_challengeOwner;
-        ObjectGuid m_challengeItem;
-        MapChallengeModeEntry const* m_challengeEntry;
-        uint32 m_challengeLevel;
-        uint32 m_challengeMapID;
-        uint32 m_challengeInstanceID;
-        std::array<int32, 4> m_affixes;
-
     protected:
         bool _setMembersGroup(ObjectGuid guid, uint8 group);
         void _homebindIfInstance(Player* player);
@@ -466,6 +457,7 @@ class TC_GAME_API Group
         GroupRefManager     m_memberMgr;
         InvitesList         m_invitees;
         ObjectGuid          m_leaderGuid;
+        uint8               m_leaderFactionGroup;
         std::string         m_leaderName;
         GroupFlags          m_groupFlags;
         GroupCategory       m_groupCategory;

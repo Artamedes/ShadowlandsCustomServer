@@ -37,7 +37,7 @@ namespace WorldPackets
 
             WorldPacket const* Write() override;
 
-            int32 MythicPlusDisplaySeasonID = 12;
+            int32 MythicPlusDisplaySeasonID = 17;
             int32 MythicPlusMilestoneSeasonID = 81;
             int32 PreviousArenaSeason = 32;
             int32 CurrentArenaSeason = 31;

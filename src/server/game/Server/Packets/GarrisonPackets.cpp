@@ -485,7 +485,7 @@ void GarrisonResearchTalent::Read()
 {
     _worldPacket >> UnkGuid;
     _worldPacket >> GarrTalentID;
-    _worldPacket >> UnkInt2;
+    _worldPacket >> Rank;
     UnkBool = _worldPacket.ReadBit();
 }
 WorldPacket const* AddSpecGroups::Write()

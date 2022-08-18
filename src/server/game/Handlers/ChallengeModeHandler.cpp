@@ -75,8 +75,6 @@ void WorldSession::HandleChallengeModeStart(WorldPackets::ChallengeMode::StartRe
         return;
     }
 
-    Difficulty difficulty = DIFFICULTY_MYTHIC_KEYSTONE;
-
     //if (inst->GetSpawnMode() == difficulty)
     //{
     //    ChatHandler(_player->GetSession()).PSendSysMessage("Error: To run this Mythic please rerun instance.");
@@ -84,11 +82,20 @@ void WorldSession::HandleChallengeModeStart(WorldPackets::ChallengeMode::StartRe
     //}
 
     auto playerChallenge = _player->GetPlayerChallenge();
-    auto challengeKeyInfo = playerChallenge->GetKeystoneInfo(playerChallenge->GetKeystoneEntryFromMap(inst));
+    auto challengeKeyInfo = playerChallenge->GetKeystoneInfo(key);
     if (!challengeKeyInfo)
     {
         ChatHandler(_player).PSendSysMessage("No keystone data found");
         return;
+    }
+
+    if (_player->GetGroup())
+    {
+        if (challengeKeyInfo->Type == KeystoneType::Solo)
+        {
+            ChatHandler(_player).PSendSysMessage("You can only run that key in solo");
+            return;
+        }
     }
 
     //if (challengeKeyInfo->InstanceID)
@@ -99,8 +106,7 @@ void WorldSession::HandleChallengeModeStart(WorldPackets::ChallengeMode::StartRe
 
     if (challengeKeyInfo->Level < MYTHIC_LEVEL_2)
     {
-        if (auto item = _player->GetItemByEntry(challengeKeyInfo->KeystoneEntry))
-            _player->ChallengeKeyCharded(item, challengeKeyInfo->Level, false); // Deleted bugged key
+        _player->ChallengeKeyCharded(key, challengeKeyInfo->Level, false); // Deleted bugged key
         ChatHandler(_player->GetSession()).PSendSysMessage("Error: Key is bugged.");
         return;
     }
@@ -128,11 +134,10 @@ void WorldSession::HandleChallengeModeStart(WorldPackets::ChallengeMode::StartRe
 
     if (Group* group = _player->GetGroup())
     {
-        group->m_challengeEntry = sMapChallengeModeStore.LookupEntry(challengeKeyInfo->ID);
         MapChallengeModeEntry const* challengeEntry = sDB2Manager.GetChallengeModeByMapID(_player->GetMapId());
-        if (!group->m_challengeEntry || !challengeEntry || challengeEntry->MapID != group->m_challengeEntry->MapID)
+        if (!challengeKeyInfo->challengeEntry || !challengeEntry || challengeEntry->MapID != challengeKeyInfo->challengeEntry->MapID)
         {
-            group->m_challengeEntry = nullptr;
+            challengeKeyInfo->challengeEntry = nullptr;
             ChatHandler(_player->GetSession()).PSendSysMessage("Error: Incorrect challenge.");
             return;
         }
@@ -160,9 +165,9 @@ void WorldSession::HandleChallengeModeStart(WorldPackets::ChallengeMode::StartRe
 
             if (player->GetScheduler().HasGroup(700000) || player->IsBeingTeleported())
             {
-            }
                 ChatHandler(_player->GetSession()).PSendSysMessage("Error: player is teleporting");
                 return;
+            }
         }
     }
     else
@@ -191,69 +196,89 @@ void WorldSession::HandleChallengeModeStart(WorldPackets::ChallengeMode::StartRe
         return;
     }
 
+    auto SendGroupKeystoneInfo([&](Player* player)
+    {
+        ChatHandler(player).PSendSysMessage("|cff35B3EEGroup Keystone %s|cff35B3EE started by %s|cff35B3EE!", Item::GetItemLink(key), _player->GetName().c_str());
+    });
+
+    auto SendTimewalkKeystoneInfo([&](Player* player)
+    {
+        ChatHandler(player).PSendSysMessage("|cff35B3EETimewalking Keystone %s|cff35B3EE started by %s|cff35B3EE!", Item::GetItemLink(key), _player->GetName().c_str());
+    });
+
     if (Group* group = _player->GetGroup())
     {
-        group->m_affixes.fill(0);
-
-        group->m_challengeOwner = _player->GetGUID();
-        group->m_challengeItem = key->GetGUID();
-        group->m_challengeLevel = challengeKeyInfo->Level;
-
-        if (group->m_challengeLevel > MYTHIC_LEVEL_1)
-            group->m_affixes[0] = challengeKeyInfo->Affix;
-        if (group->m_challengeLevel > MYTHIC_LEVEL_3)
-            group->m_affixes[1] = challengeKeyInfo->Affix1;
-        if (group->m_challengeLevel > MYTHIC_LEVEL_6)
-            group->m_affixes[2] = challengeKeyInfo->Affix2;
-        if (group->m_challengeLevel > MYTHIC_LEVEL_9)
-            group->m_affixes[3] = challengeKeyInfo->Affix3;        
-
-        WorldPackets::Instance::ChangePlayerDifficultyResult result;
-        result.Result = AsUnderlyingType(ChangeDifficultyResult::DIFFICULTY_CHANGE_SET_COOLDOWN_S);
-        result.CooldownReason = 18446744072059367961;
-        group->BroadcastPacket(result.Write(), true);
-
-        WorldPackets::Instance::ChangePlayerDifficultyResult result2;
-        result2.Result = AsUnderlyingType(ChangeDifficultyResult::DIFFICULTY_CHANGE_BY_PARTY_LEADER);
-        result2.InstanceMapID = _player->GetMapId();
-        result2.DifficultyRecID = difficulty;                
-        
-        group->SetDungeonDifficultyID(difficulty);
-        _player->GetMap()->SetSpawnMode(difficulty);
-        _player->SendDirectMessage(result2.Write());
-        _player->TeleportToChallenge(newMap, x, y, z, o, _player);
+        //WorldPackets::Instance::ChangePlayerDifficultyResult result;
+        //result.Result = AsUnderlyingType(ChangeDifficultyResult::DIFFICULTY_CHANGE_SET_COOLDOWN_S);
+        //result.CooldownReason = 18446744072059367961;
+        //group->BroadcastPacket(result.Write(), true);
+        //
+        //WorldPackets::Instance::ChangePlayerDifficultyResult result2;
+        //result2.Result = AsUnderlyingType(ChangeDifficultyResult::DIFFICULTY_CHANGE_BY_PARTY_LEADER);
+        //result2.InstanceMapID = _player->GetMapId();
+        //result2.DifficultyRecID = DIFFICULTY_MYTHIC_KEYSTONE;                
+        //
+        //_player->SendDirectMessage(result2.Write());
+        _player->TeleportToChallenge(newMap, x, y, z, o, _player, challengeKeyInfo);
 
         for (GroupReference* itr = group->GetFirstMember(); itr != nullptr; itr = itr->next())
         {
             if (Player* player = itr->GetSource())
             {
+                switch (challengeKeyInfo->Type)
+                {
+                    case KeystoneType::Solo:
+                        ChatHandler(player).PSendSysMessage("PIGPIG! |cff35B3EESolo Keystone %s |cff35B3EEstarted!", Item::GetItemLink(key), _player->GetName().c_str());
+                        break;
+                    case KeystoneType::Group:
+                        SendGroupKeystoneInfo(_player);
+                        break;
+                    case KeystoneType::Timewalking:
+                        SendTimewalkKeystoneInfo(_player);
+                        break;
+                    default:
+                        break;
+                }
                 if (player == _player)
                     continue;
                 
-                player->SendDirectMessage(result2.Write());
-                player->TeleportToChallenge(newMap, x, y, z, o);
+             //   player->SendDirectMessage(result2.Write());
+                player->TeleportToChallenge(newMap, x, y, z, o, nullptr, challengeKeyInfo);
                 player->CastSpell(player, SPELL_CHALLENGER_BURDEN, true);
             }
         }        
     }
     else
     {
-        WorldPackets::Instance::ChangePlayerDifficultyResult result;
-        result.Result = AsUnderlyingType(ChangeDifficultyResult::DIFFICULTY_CHANGE_SET_COOLDOWN_S);
-        result.CooldownReason = 18446744072059367961;
-        SendPacket(result.Write(), true);
-
-        WorldPackets::Instance::ChangePlayerDifficultyResult result2;
-        result2.Result = AsUnderlyingType(ChangeDifficultyResult::DIFFICULTY_CHANGE_BY_PARTY_LEADER);
-        result2.InstanceMapID = _player->GetMapId();
-        result2.DifficultyRecID = difficulty;
-
-        _player->GetMap()->SetSpawnMode(difficulty);
-        _player->SetDungeonDifficultyID(difficulty);
-        _player->SendDirectMessage(result2.Write());
-        _player->TeleportToChallenge(newMap, x, y, z, o, _player);
+        //WorldPackets::Instance::ChangePlayerDifficultyResult result;
+        //result.Result = AsUnderlyingType(ChangeDifficultyResult::DIFFICULTY_CHANGE_SET_COOLDOWN_S);
+        //result.CooldownReason = 18446744072059367961;
+        //SendPacket(result.Write(), true);
+        //
+        //WorldPackets::Instance::ChangePlayerDifficultyResult result2;
+        //result2.Result = AsUnderlyingType(ChangeDifficultyResult::DIFFICULTY_CHANGE_BY_PARTY_LEADER);
+        //result2.InstanceMapID = _player->GetMapId();
+        //result2.DifficultyRecID = DIFFICULTY_MYTHIC_KEYSTONE;
+        //
+        //_player->SendDirectMessage(result2.Write());
+        _player->TeleportToChallenge(newMap, x, y, z, o, _player, challengeKeyInfo);
         _player->CastSpell(_player, SPELL_CHALLENGER_BURDEN, true);
-    }        
+
+        switch (challengeKeyInfo->Type)
+        {
+            case KeystoneType::Solo:
+                ChatHandler(_player).PSendSysMessage("|cff35B3EESolo Keystone %s |cff35B3EEstarted!", Item::GetItemLink(key), _player->GetName().c_str());
+                break;
+            case KeystoneType::Group:
+                SendGroupKeystoneInfo(_player);
+                break;
+            case KeystoneType::Timewalking:
+                SendTimewalkKeystoneInfo(_player);
+                break;
+            default:
+                break;
+        }
+    }
 
     object->SetGoState(GO_STATE_ACTIVE);
     object->SetFlag(GO_FLAG_NODESPAWN);
@@ -320,7 +345,7 @@ void WorldSession::HandleRequestLeaders(WorldPackets::ChallengeMode::RequestLead
 void WorldSession::HandleChallengeModeRequestMapStats(WorldPackets::ChallengeMode::RequestMapStats& /*mapStats*/)
 {
     WorldPackets::ChallengeMode::AllMapStats stats;
-    int8 seasonID = 12;
+    int8 seasonID = 17;
     stats.Season = seasonID; // 7
     stats.SubSeason = seasonID; // 71
     if (ChallengeByMap* last = sChallengeModeMgr->LastForMember(_player->GetGUID()))
@@ -380,9 +405,10 @@ void WorldSession::HandleGetChallengeModeRewards(WorldPackets::ChallengeMode::Gl
 
 void WorldSession::HandleResetChallengeMode(WorldPackets::ChallengeMode::ResetChallengeMode& /*reset*/)
 {
-    if (auto const& instanceScript = _player->GetInstanceScript())
-        if (instanceScript->instance->IsChallengeMode())
-            instanceScript->ResetChallengeMode(_player);
+    // couldn't get this to trigger.
+    //if (auto const& instanceScript = _player->GetInstanceScript())
+    //    if (instanceScript->instance->IsChallengeMode())
+    //        instanceScript->ResetChallengeMode(_player);
 }
 
 void WorldSession::HandleRequestChallengeModeAffixes(WorldPackets::ChallengeMode::RequestChallengeModeAffixes& /*modeAffixes*/)

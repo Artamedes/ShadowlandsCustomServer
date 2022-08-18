@@ -198,7 +198,7 @@ namespace WorldPackets
         class NewPlayerRecord final : public ServerPacket
         {
         public:
-            NewPlayerRecord() : ServerPacket(SMSG_MYTHIC_PLUS_NEW_WEEK_RECORD, 4) { }
+            NewPlayerRecord() : ServerPacket(SMSG_MYTHIC_PLUS_NEW_WEEK_RECORD, 12) { }
 
             WorldPacket const* Write() override;
 

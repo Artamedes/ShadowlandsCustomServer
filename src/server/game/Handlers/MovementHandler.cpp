@@ -106,7 +106,17 @@ void WorldSession::HandleMoveWorldportAck()
     }
 
     float z = loc.GetPositionZ() + player->GetHoverOffset();
-    player->Relocate(loc.GetPositionX(), loc.GetPositionY(), z, loc.GetOrientation());
+
+    bool skipRelocate = false;
+
+    if (auto instanceMap = newMap->ToInstanceMap())
+        if (auto script = instanceMap->GetInstanceScript())
+            if (script->HandleRelocatePlayer(player))
+                skipRelocate = true;
+
+    if (!skipRelocate)
+        player->Relocate(loc.GetPositionX(), loc.GetPositionY(), z, loc.GetOrientation());
+
     player->SetFallInformation(0, player->GetPositionZ());
 
     player->ResetMap();
@@ -789,6 +799,14 @@ void WorldSession::HandleMoveSplineDoneOpcode(WorldPackets::Movement::MoveSpline
 {
     MovementInfo movementInfo = moveSplineDone.Status;
     _player->ValidateMovementInfo(&movementInfo);
+
+    if (auto vehicle = _player->GetVehicleBase())
+    {
+        // seen SMSG_MOVE_UPDATE in sniff -  even sent to self
+        WorldPackets::Movement::MoveUpdate moveUpdate;
+        moveUpdate.Status = &vehicle->m_movementInfo;
+        SendPacket(moveUpdate.Write());
+    }
 
     // in taxi flight packet received in 2 case:
     // 1) end taxi path in far (multi-node) flight

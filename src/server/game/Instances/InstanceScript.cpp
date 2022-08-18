@@ -80,7 +80,7 @@ InstanceScript::~InstanceScript()
 {
     if (_challenge)
     {
-        _challenge->SetInstanceScript(nullptr);
+        /// InstanceScript will be set to nullptr in challenge's deconstructor
         delete _challenge;
         _challenge = nullptr;
     }
@@ -859,6 +859,27 @@ void InstanceScript::DoCastSpellOnPlayer(Player* player, uint32 spell, bool incl
     }
 }
 
+// Cast spell on all players in instance
+void InstanceScript::DoPlayScenePackageIdOnPlayers(uint32 scenePackageId)
+{
+    Map::PlayerList const& PlayerList = instance->GetPlayers();
+
+    if (!PlayerList.isEmpty())
+        for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+            if (Player* player = i->GetSource())
+                player->GetSceneMgr().PlaySceneByPackageId(scenePackageId, SceneFlag::None);
+}
+
+void InstanceScript::DoPlaySceneOnPlayers(uint32 sceneId)
+{
+    Map::PlayerList const& PlayerList = instance->GetPlayers();
+
+    if (!PlayerList.isEmpty())
+        for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+            if (Player* player = i->GetSource())
+                player->GetSceneMgr().PlayScene(sceneId);
+}
+
 //Pop all player to the graveyard more near in the instance
 void InstanceScript::RepopPlayersAtGraveyard()
 {
@@ -963,6 +984,49 @@ void InstanceScript::DoRemoveSpellCooldownWithTimeOnPlayers(uint32 minRecoveryTi
         if (Player* player = iter->GetSource())
             player->GetSpellHistory()->RemoveSpellCooldownsWithTime(minRecoveryTime);
     }
+}
+
+void InstanceScript::DoCombatStopOnPlayers()
+{
+    Map::PlayerList const& playerList = instance->GetPlayers();
+    if (playerList.isEmpty())
+        return;
+
+    for (Map::PlayerList::const_iterator iter = playerList.begin(); iter != playerList.end(); ++iter)
+    {
+        if (Player* player = iter->GetSource())
+        {
+            if (!player->IsInCombat())
+                continue;
+
+            player->CombatStop();
+        }
+    }
+}
+
+void InstanceScript::DoPlayConversation(uint32 conversationId)
+{
+    Map::PlayerList const& playerList = instance->GetPlayers();
+    if (!playerList.isEmpty())
+        for (Map::PlayerList::const_iterator i = playerList.begin(); i != playerList.end(); ++i)
+            if (Player* player = i->GetSource())
+                player->PlayConversation(conversationId);
+}
+
+void InstanceScript::DoCompleteAchievement(uint32 achievement)
+{
+    AchievementEntry const* achievementEntry = sAchievementStore.LookupEntry(achievement);
+    if (!achievementEntry)
+    {
+        TC_LOG_ERROR("scripts", "DoCompleteAchievement called for not existing achievement %u", achievement);
+        return;
+    }
+
+    Map::PlayerList const& playerList = instance->GetPlayers();
+    if (!playerList.isEmpty())
+        for (Map::PlayerList::const_iterator i = playerList.begin(); i != playerList.end(); ++i)
+            if (Player* player = i->GetSource())
+                player->CompletedAchievement(achievementEntry);
 }
 
 void InstanceScript::SetEntranceLocation(uint32 worldSafeLocationId)
@@ -1323,7 +1387,7 @@ void InstanceScript::BuildPlayerDatas(WorldPackets::Instance::EncounterStart& pa
             PlayerTalentMap const* talents = player->GetTalentMap(player->GetActiveTalentGroup());
             for (PlayerTalentMap::value_type const& v : *talents)
             {
-                if (v.second != PLAYERSPELL_REMOVED)
+                if (v.second.state != PLAYERSPELL_REMOVED)
                     packet.PlayerDatas[count].Talents.push_back(v.first);
             }
 
@@ -1489,7 +1553,7 @@ void InstanceScript::ResetChallengeMode(Player* player)
 
     instance->m_respawnChallenge = time(nullptr); // For respawn all mobs  
     RepopPlayersAtGraveyard();    
-    CreateChallenge(player);
+    //CreateChallenge(player);
 }
 
 void InstanceScript::AddChallengeModeChest(ObjectGuid chestGuid)
@@ -1617,21 +1681,15 @@ void InstanceScript::BroadcastPacket(WorldPacket const* data) const
     });
 }
 
-void InstanceScript::CreateChallenge(Player* player)
+void InstanceScript::CreateChallenge(Player* player, MythicKeystoneInfo* keystoneInfo)
 {
-    if (!player)
-        return;
-
     InstanceMap* instanceMap = instance->ToInstanceMap();
     uint32 instanceID = instanceMap->GetInstanceId();
 
     if (!instanceMap || !instanceID)
         return;
 
-    auto playerChallenge = player->GetPlayerChallenge();
-    auto keystoneInfo = playerChallenge->GetKeystoneInfo(playerChallenge->GetKeystoneEntryFromMap(instanceMap));
-
-    MapChallengeModeEntry const* m_challengeEntry = player->GetGroup() ? player->GetGroup()->m_challengeEntry : (keystoneInfo ? keystoneInfo->challengeEntry : nullptr);
+    MapChallengeModeEntry const* m_challengeEntry = keystoneInfo ? keystoneInfo->challengeEntry : nullptr;
     if (!m_challengeEntry)
         return;
 
@@ -1654,7 +1712,7 @@ void InstanceScript::CreateChallenge(Player* player)
     if (!scenario)
         return;
 
-    _challenge = new Challenge(instanceMap, player, instanceID, scenario);
+    _challenge = new Challenge(instanceMap, player, scenario, keystoneInfo);
 
     if (!_challenge->CanRun())
     {
@@ -1665,5 +1723,4 @@ void InstanceScript::CreateChallenge(Player* player)
     // Remove all cooldowns with a recovery time equal or superior than 2 minutes
     DoRemoveSpellCooldownWithTimeOnPlayers(2 * TimeConstants::IN_MILLISECONDS * TimeConstants::MINUTE);
     SetChallenge(_challenge);
-    _challenge->SetInstanceScript(this);
 }

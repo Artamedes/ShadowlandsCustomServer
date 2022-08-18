@@ -135,6 +135,7 @@
 #include "QuestAI.h"
 #include "CreatureAISelector.h"
 #include "PlayerChallenge.h"
+#include "Torghast/AnimaPower.h"
 
 #define ZONE_UPDATE_INTERVAL (1*IN_MILLISECONDS)
 
@@ -1676,7 +1677,7 @@ bool Player::TeleportToBGEntryPoint()
     return TeleportTo(m_bgData.joinPos);
 }
 
-void Player::TeleportToChallenge(Map* map, float x, float y, float z, float orientation, Player* keyOwner /*= nullptr*/)
+void Player::TeleportToChallenge(Map* map, float x, float y, float z, float orientation, Player* keyOwner, MythicKeystoneInfo* mythicKeystone)
 {
     MapEntry const* mEntry = map->GetEntry();
     if (!GetSession() || !mEntry)
@@ -1717,20 +1718,25 @@ void Player::TeleportToChallenge(Map* map, float x, float y, float z, float orie
     RemoveAurasByType(SPELL_AURA_OVERRIDE_SPELLS);
     RemoveAurasByType(SPELL_AURA_MOD_NEXT_SPELL);
 
-    UpdateDataMapType update_players;
-    BuildUpdate(update_players);
-    WorldPacket packet;
-    for (UpdateDataMapType::iterator iter = update_players.begin(); iter != update_players.end(); ++iter)
-    {
-        if (iter->second.BuildPacket(&packet))
-            iter->first->SendDirectMessage(&packet);
-        packet.clear();
-    }
+    //UpdateDataMapType update_players;
+    //BuildUpdate(update_players);
+    //WorldPacket packet;
+    //for (UpdateDataMapType::iterator iter = update_players.begin(); iter != update_players.end(); ++iter)
+    //{
+    //    if (iter->second.BuildPacket(&packet))
+    //        iter->first->SendDirectMessage(&packet);
+    //    packet.clear();
+    //}
 
     m_teleport_dest = WorldLocation(map->GetId(), x, y, z, orientation);
     m_teleport_options = 0;
 
     SetSemaphoreTeleportFar(true);
+
+    WorldPackets::Movement::TransferPending transferPending;
+    transferPending.MapID          = map->GetId();
+    transferPending.OldMapPosition = GetPosition();
+    SendDirectMessage(transferPending.Write());
 
     // remove from old map now
     if (oldmap)
@@ -1741,7 +1747,7 @@ void Player::TeleportToChallenge(Map* map, float x, float y, float z, float orie
         if (keyOwner)
             if (InstanceMap* instance = map->ToInstanceMap())
                 if (!instance->GetInstanceScript()->IsChallenge())
-                    instance->GetInstanceScript()->CreateChallenge(keyOwner);
+                    instance->GetInstanceScript()->CreateChallenge(keyOwner, mythicKeystone);
 
         m_teleport_target_map = map;
 
@@ -2514,32 +2520,6 @@ void Player::RemoveFromGroup(Group* group, ObjectGuid guid, RemoveMethod method 
     if (!group)
         return;
 
-    if (Map* map = sMapMgr->FindMap(group->m_challengeMapID, group->m_challengeInstanceID))
-    {
-        if (InstanceMap* instance = map->ToInstanceMap())
-        {
-            if (InstanceScript* instanceScript = instance->GetInstanceScript())
-            {
-                if (Challenge* _challenge = instanceScript->GetChallenge())
-                {
-                    if (guid == group->m_challengeOwner && !_challenge->IsComplete() && _challenge->IsRunning())
-                    {
-                        if (Player* keyOwner = ObjectAccessor::FindPlayer(guid))
-                        {
-                            auto playerChallenge = keyOwner->GetPlayerChallenge();
-                            auto keystoneInfo = playerChallenge->GetKeystoneInfo(playerChallenge->GetKeystoneEntryFromMap(instance));
-
-                            if (keystoneInfo)
-                                keyOwner->ChallengeKeyCharded(keyOwner->GetItemByEntry(keystoneInfo->KeystoneEntry), keystoneInfo->Level, false);
-                        }
-                        else
-                            CharacterDatabase.PExecute("UPDATE challenge_key SET KeyIsCharded = 0, InstanceID = 0 WHERE guid = %u", guid.GetCounter());
-                    }
-                }
-            }
-        }
-    }
-
     group->RemoveMember(guid, method, kicker, reason);
 }
 
@@ -3028,7 +3008,7 @@ void DeleteSpellFromAllPlayers(uint32 spellId)
     CharacterDatabase.Execute(stmt);
 }
 
-bool Player::AddTalent(TalentEntry const* talent, uint8 spec, bool learning)
+bool Player::AddTalent(TalentEntry const* talent, uint8 spec, bool learning, bool auraTalent /*= false*/, bool wasLearnedBefore /*= false*/)
 {
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(talent->SpellID, DIFFICULTY_NONE);
     if (!spellInfo)
@@ -3047,18 +3027,31 @@ bool Player::AddTalent(TalentEntry const* talent, uint8 spec, bool learning)
         AddOverrideSpell(talent->OverridesSpellID, talent->SpellID);
 
     PlayerTalentMap::iterator itr = GetTalentMap(spec)->find(talent->ID);
+    // talent exists ok check auraTalent things
     if (itr != GetTalentMap(spec)->end())
-        itr->second = PLAYERSPELL_UNCHANGED;
+    {
+        itr->second.oldState = itr->second.state;
+        itr->second.state = auraTalent ? PLAYERSPELL_TEMPORARY : PLAYERSPELL_UNCHANGED;
+        itr->second.IsAddedByAura = true;
+        itr->second.IsLearned = wasLearnedBefore;
+    }
     else
-        (*GetTalentMap(spec))[talent->ID] = learning ? PLAYERSPELL_NEW : PLAYERSPELL_UNCHANGED;
+    {
+        auto& talentData = (*GetTalentMap(spec))[talent->ID];
 
-    if (learning)
+        talentData.state = learning ? (auraTalent ? PLAYERSPELL_TEMPORARY : PLAYERSPELL_NEW) : PLAYERSPELL_UNCHANGED;
+        talentData.oldState = talentData.state;
+        itr->second.IsLearned = wasLearnedBefore;
+        itr->second.IsAddedByAura = auraTalent;
+    }
+
+    if (learning && !auraTalent)
         RemoveAurasWithInterruptFlags(SpellAuraInterruptFlags2::ChangeTalent);
 
     return true;
 }
 
-void Player::RemoveTalent(TalentEntry const* talent)
+void Player::RemoveTalent(TalentEntry const* talent, bool auraTalent /*= false*/)
 {
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(talent->SpellID, DIFFICULTY_NONE);
     if (!spellInfo)
@@ -3077,7 +3070,9 @@ void Player::RemoveTalent(TalentEntry const* talent)
     // if this talent rank can be found in the PlayerTalentMap, mark the talent as removed so it gets deleted
     PlayerTalentMap::iterator plrTalent = GetTalentMap(GetActiveTalentGroup())->find(talent->ID);
     if (plrTalent != GetTalentMap(GetActiveTalentGroup())->end())
-        plrTalent->second = PLAYERSPELL_REMOVED;
+    {
+        plrTalent->second.state = PLAYERSPELL_REMOVED;
+    }
 }
 
 void Player::AddStoredAuraTeleportLocation(uint32 spellId)
@@ -4037,7 +4032,7 @@ bool Player::HasSpell(uint32 spell) const
 bool Player::HasTalent(uint32 talentId, uint8 group) const
 {
     PlayerTalentMap::const_iterator itr = GetTalentMap(group)->find(talentId);
-    return (itr != GetTalentMap(group)->end() && itr->second != PLAYERSPELL_REMOVED);
+    return (itr != GetTalentMap(group)->end() && itr->second.state != PLAYERSPELL_REMOVED);
 }
 
 bool Player::HasActiveSpell(uint32 spell) const
@@ -6732,6 +6727,15 @@ void Player::SwitchToOppositeTeam(bool apply)
 
     if (apply)
         m_team = (m_team == ALLIANCE) ? HORDE : ALLIANCE;
+}
+
+uint8 Player::GetFactionGroupForRace(uint8 race)
+{
+    if (ChrRacesEntry const* rEntry = sChrRacesStore.LookupEntry(race))
+        if (FactionTemplateEntry const* faction = sFactionTemplateStore.LookupEntry(rEntry->FactionID))
+            return faction->FactionGroup;
+
+    return 1;
 }
 
 void Player::SetFactionForRace(uint8 race)
@@ -9761,7 +9765,7 @@ void Player::SendNotifyLootItemRemoved(ObjectGuid lootObj, uint8 lootSlot) const
     SendDirectMessage(packet.Write());
 }
 
-void Player::SendUpdateWorldState(uint32 variable, uint32 value, bool hidden /*= false*/) const
+void Player::SendUpdateWorldState(uint32 variable, int32 value, bool hidden /*= false*/) const
 {
     WorldPackets::WorldState::UpdateWorldState worldstate;
     worldstate.VariableID = variable;
@@ -14531,20 +14535,31 @@ void Player::SendNewItem(Item* item, uint32 quantity, bool pushed, bool created,
     packet.Quantity = quantity;
     packet.QuantityInInventory = GetItemCount(item->GetEntry());
     //packet.DungeonEncounterID;
-    packet.BattlePetSpeciesID = item->GetModifier(ITEM_MODIFIER_BATTLE_PET_SPECIES_ID);
-    packet.BattlePetBreedID = item->GetModifier(ITEM_MODIFIER_BATTLE_PET_BREED_DATA) & 0xFFFFFF;
+    packet.BattlePetSpeciesID    = item->GetModifier(ITEM_MODIFIER_BATTLE_PET_SPECIES_ID);
+    packet.BattlePetBreedID      = item->GetModifier(ITEM_MODIFIER_BATTLE_PET_BREED_DATA) & 0xFFFFFF;
     packet.BattlePetBreedQuality = (item->GetModifier(ITEM_MODIFIER_BATTLE_PET_BREED_DATA) >> 24) & 0xFF;
-    packet.BattlePetLevel = item->GetModifier(ITEM_MODIFIER_BATTLE_PET_LEVEL);
+    packet.BattlePetLevel        = item->GetModifier(ITEM_MODIFIER_BATTLE_PET_LEVEL);
 
     packet.ItemGUID = item->GetGUID();
 
     packet.Pushed = pushed;
-    packet.DisplayText = WorldPackets::Item::ItemPushResult::DISPLAY_TYPE_NORMAL;
+    packet.DisplayText = [&]() -> WorldPackets::Item::ItemPushResult::DisplayType
+    {
+        switch (item->GetEntry())
+        {
+            case Keystones::Group:
+            case Keystones::Solo:
+            case Keystones::Timewalking:
+                return WorldPackets::Item::ItemPushResult::DisplayType::DISPLAY_TYPE_HIDDEN;
+            default:
+                return WorldPackets::Item::ItemPushResult::DisplayType::DISPLAY_TYPE_NORMAL;
+        }
+    }();
     packet.Created = created;
     //packet.IsBonusRoll;
     //packet.IsEncounterLoot;
 
-    if (broadcast && GetGroup())
+    if (broadcast && GetGroup() && !item->GetTemplate()->HasFlag(ITEM_FLAG3_DONT_REPORT_LOOT_LOG_TO_PARTY))
         GetGroup()->BroadcastPacket(packet.Write(), true);
     else
         SendDirectMessage(packet.Write());
@@ -17145,10 +17160,17 @@ void Player::UpdateQuestObjectiveProgress(QuestObjectiveType objectiveType, int3
                     SetQuestObjectiveData(objective, newProgress);
                     if (addCount > 0 && !(objective.Flags & QUEST_OBJECTIVE_FLAG_HIDE_CREDIT_MSG))
                     {
-                        if (objectiveType != QUEST_OBJECTIVE_PLAYERKILLS)
-                            SendQuestUpdateAddCredit(quest, victimGuid, objective, newProgress);
-                        else
-                            SendQuestUpdateAddPlayer(quest, newProgress);
+                        switch (objectiveType)
+                        {
+                            case QUEST_OBJECTIVE_ITEM:
+                                break; // case handled by SMSG_ITEM_PUSH_RESULT
+                            case QUEST_OBJECTIVE_PLAYERKILLS:
+                                SendQuestUpdateAddPlayer(quest, newProgress);
+                                break;
+                            default:
+                                SendQuestUpdateAddCredit(quest, victimGuid, objective, newProgress);
+                                break;
+                        }
                     }
 
                     objectiveIsNowComplete = IsQuestObjectiveComplete(logSlot, quest, objective);
@@ -18424,6 +18446,11 @@ bool Player::LoadFromDB(ObjectGuid guid, CharacterDatabaseQueryHolder const& hol
             areaTrigger = sObjectMgr->GetMapEntranceTrigger(mapId);
             check = true;
         }
+
+        // relocate player on login
+        if (auto instanceMap = map->ToInstanceMap())
+            if (auto script = instanceMap->GetInstanceScript())
+                script->HandleRelocatePlayer(this);
     }
 
     if (check) // in case of special event when creating map...
@@ -21877,7 +21904,53 @@ void Player::ResetInstances(uint8 method, bool isRaid, bool isLegacy)
             diff = GetLegacyRaidDifficultyID();
     }
 
-    auto difficultyItr = m_boundInstances.find(diff);
+    /// RESET MYTHIC KEYSTONE
+    auto difficultyItr = m_boundInstances.find(DIFFICULTY_MYTHIC_KEYSTONE);
+    if (difficultyItr != m_boundInstances.end())
+    {
+        for (auto itr = difficultyItr->second.begin(); itr != difficultyItr->second.end();)
+        {
+            InstanceSave* p = itr->second.save;
+            MapEntry const* entry = sMapStore.LookupEntry(itr->first);
+            if (!entry || entry->IsRaid() != isRaid || !p->CanReset())
+            {
+                ++itr;
+                continue;
+            }
+
+            if (method == INSTANCE_RESET_ALL)
+            {
+                // the "reset all instances" method can only reset normal maps
+                if (entry->IsRaid() || diff == DIFFICULTY_HEROIC)
+                {
+                    ++itr;
+                    continue;
+                }
+            }
+
+            // if the map is loaded, reset it
+            Map* map = sMapMgr->FindMap(p->GetMapId(), p->GetInstanceId());
+            if (map && map->IsDungeon())
+                if (!map->ToInstanceMap()->Reset(method))
+                {
+                    ++itr;
+                    continue;
+                }
+
+            // since this is a solo instance there should not be any players inside
+            if (method == INSTANCE_RESET_ALL || method == INSTANCE_RESET_CHANGE_DIFFICULTY)
+                SendResetInstanceSuccess(p->GetMapId());
+
+            p->DeleteFromDB();
+            difficultyItr->second.erase(itr++);
+
+            // the following should remove the instance save from the manager and delete it as well
+            p->RemovePlayer(this);
+        }
+    }
+
+
+    difficultyItr = m_boundInstances.find(diff);
     if (difficultyItr == m_boundInstances.end())
         return;
 
@@ -27318,12 +27391,12 @@ bool Player::ModifierTreeSatisfied(uint32 modifierTreeId) const
     return m_achievementMgr->ModifierTreeSatisfied(modifierTreeId);
 }
 
-TalentLearnResult Player::LearnTalent(uint32 talentId, int32* spellOnCooldown)
+TalentLearnResult Player::LearnTalent(uint32 talentId, int32* spellOnCooldown, bool auraTalent /*= false*/, bool wasLearnedBefore /*= false*/)
 {
-    if (IsInCombat())
+    if (IsInCombat() && !auraTalent)
         return TALENT_FAILED_AFFECTING_COMBAT;
 
-    if (isDead())
+    if (isDead() && !auraTalent)
         return TALENT_FAILED_CANT_DO_THAT_RIGHT_NOW;
 
     if (!GetPrimarySpecialization())
@@ -27333,6 +27406,7 @@ TalentLearnResult Player::LearnTalent(uint32 talentId, int32* spellOnCooldown)
     if (!talentInfo)
         return TALENT_FAILED_UNKNOWN;
 
+    // for aura talents - can happen but we just ignore it
     if (talentInfo->SpecID && talentInfo->SpecID != GetPrimarySpecialization())
         return TALENT_FAILED_UNKNOWN;
 
@@ -27341,7 +27415,7 @@ TalentLearnResult Player::LearnTalent(uint32 talentId, int32* spellOnCooldown)
         return TALENT_FAILED_UNKNOWN;
 
     // check if we have enough talent points
-    if (talentInfo->TierID >= m_activePlayerData->MaxTalentTiers)
+    if (talentInfo->TierID >= m_activePlayerData->MaxTalentTiers && !auraTalent)
         return TALENT_FAILED_UNKNOWN;
 
     // TODO: prevent changing talents that are on cooldown
@@ -27367,25 +27441,28 @@ TalentLearnResult Player::LearnTalent(uint32 talentId, int32* spellOnCooldown)
     if (talentInfo != bestSlotMatch)
         return TALENT_FAILED_UNKNOWN;
 
-    // Check if player doesn't have any talent in current tier
-    for (uint32 c = 0; c < MAX_TALENT_COLUMNS; ++c)
+    // Check if player doesn't have any talent in current tier - but not care for aura talent
+    if (!auraTalent)
     {
-        for (TalentEntry const* talent : sDB2Manager.GetTalentsByPosition(GetClass(), talentInfo->TierID, c))
+        for (uint32 c = 0; c < MAX_TALENT_COLUMNS; ++c)
         {
-            if (!HasTalent(talent->ID, GetActiveTalentGroup()))
-                continue;
-
-            if (!HasPlayerFlag(PLAYER_FLAGS_RESTING) && !HasUnitFlag2(UNIT_FLAG2_ALLOW_CHANGING_TALENTS))
-                return TALENT_FAILED_REST_AREA;
-
-            if (GetSpellHistory()->HasCooldown(talent->SpellID))
+            for (TalentEntry const* talent : sDB2Manager.GetTalentsByPosition(GetClass(), talentInfo->TierID, c))
             {
-                if (spellOnCooldown)
-                    *spellOnCooldown = talent->SpellID;
-                return TALENT_FAILED_CANT_REMOVE_TALENT;
-            }
+                if (!HasTalent(talent->ID, GetActiveTalentGroup()))
+                    continue;
 
-            RemoveTalent(talent);
+                if (!HasPlayerFlag(PLAYER_FLAGS_RESTING) && !HasUnitFlag2(UNIT_FLAG2_ALLOW_CHANGING_TALENTS))
+                    return TALENT_FAILED_REST_AREA;
+
+                if (GetSpellHistory()->HasCooldown(talent->SpellID))
+                {
+                    if (spellOnCooldown)
+                        *spellOnCooldown = talent->SpellID;
+                    return TALENT_FAILED_CANT_REMOVE_TALENT;
+                }
+
+                RemoveTalent(talent);
+            }
         }
     }
 
@@ -27399,9 +27476,13 @@ TalentLearnResult Player::LearnTalent(uint32 talentId, int32* spellOnCooldown)
 
     // already known
     if (HasTalent(talentId, GetActiveTalentGroup()) || HasSpell(spellid))
-        return TALENT_FAILED_UNKNOWN;
+    {
+        // but not for aura talent, aura talent should take the spot forced
+        if (!auraTalent)
+            return TALENT_FAILED_UNKNOWN;
+    }
 
-    if (!AddTalent(talentInfo, GetActiveTalentGroup(), true))
+    if (!AddTalent(talentInfo, GetActiveTalentGroup(), true, auraTalent, wasLearnedBefore))
         return TALENT_FAILED_UNKNOWN;
 
     LearnSpell(spellid, false);
@@ -27747,7 +27828,7 @@ void Player::SendTalentsInfoData()
 
         for (PlayerTalentMap::const_iterator itr = talents->begin(); itr != talents->end(); ++itr)
         {
-            if (itr->second == PLAYERSPELL_REMOVED)
+            if (itr->second.state == PLAYERSPELL_REMOVED)
                 continue;
 
             TalentEntry const* talentInfo = sTalentStore.LookupEntry(itr->first);
@@ -28098,7 +28179,7 @@ void Player::_SaveTalents(CharacterDatabaseTransaction trans)
         PlayerTalentMap* talents = GetTalentMap(group);
         for (auto itr = talents->begin(); itr != talents->end();)
         {
-            if (itr->second == PLAYERSPELL_REMOVED)
+            if (itr->second.state == PLAYERSPELL_REMOVED || (itr->second.IsAddedByAura && !itr->second.IsLearned))
             {
                 itr = talents->erase(itr);
                 continue;
@@ -29561,7 +29642,7 @@ void Player::SendRaidGroupOnlyMessage(RaidGroupReason reason, int32 delay) const
 
 uint32 Player::DoRandomRoll(uint32 minimum, uint32 maximum)
 {
-    ASSERT(maximum <= 10000);
+    ASSERT(maximum <= 1000000);
 
     uint32 roll = urand(minimum, maximum);
 
@@ -29969,6 +30050,11 @@ void Player::ChallengeKeyCharded(Item* item, uint32 challengeLevel, bool runRand
     m_playerChallenge->ResetMythicKeystoneTo(item, challengeLevel, runRand);
 }
 
+void Player::PlayConversation(uint32 conversationId)
+{
+    Conversation::CreateConversation(conversationId, this, GetPosition(), { GetGUID() });
+}
+
 void Player::AddTrackingQuestIfNeeded(ObjectGuid sourceGuid)
 {
     uint32 trackingQuest = 0;
@@ -29998,3 +30084,106 @@ void Player::SendPetTameFailure(PetTameFailureReason reason)
     packet.Result = static_cast<uint8>(reason);
     GetSession()->SendPacket(packet.Write());
 }
+
+////////////////////////////////////////////////////////////////////////////////////////
+/// TORGHAST
+////////////////////////////////////////////////////////////////////////////////////////
+
+AnimaPowerChoice* Player::GenerateAnimaPowerChoice(GameObject* go)
+{
+    _animaPowerChoice = std::make_unique<AnimaPowerChoice>(this, go);
+    RerollAnimaPowers();
+    return _animaPowerChoice.get();
+}
+
+void Player::SetAnimaPowerChoice(AnimaPowerChoice* choice)
+{
+    _animaPowerChoice.reset(choice);
+
+    WorldPackets::Quest::DisplayPlayerChoice packet;
+    choice->BuildPacket(packet);
+    PlayerTalkClass->GetInteractionData().Reset();
+    PlayerTalkClass->GetInteractionData().PlayerChoiceId = 573;
+    SendDirectMessage(packet.Write());
+}
+
+void Player::RerollAnimaPowers()
+{
+    if (auto choice = GetAnimaPowerChoice())
+    {
+        choice->GeneratePowers(this);
+
+        WorldPackets::Quest::DisplayPlayerChoice packet;
+        choice->BuildPacket(packet);
+        PlayerTalkClass->GetInteractionData().Reset();
+        PlayerTalkClass->GetInteractionData().PlayerChoiceId = 573;
+        SendDirectMessage(packet.Write());
+    }
+}
+
+void Player::ResetAndGainAnimaPowerChoice(AnimaPower* power)
+{
+    bool apply = true;
+    UF::MawPower mawPower;
+
+    ConsumedAnimaPowers.insert(_animaPowerChoice->GetGameObjectGUID());
+
+    if (auto go = ObjectAccessor::GetGameObject(*this, _animaPowerChoice->GetGameObjectGUID()))
+    {
+        go->UpdateDynamicFlagsForNearbyPlayers();
+        go->AI()->SetGUID(GetGUID(), 1);
+    }
+
+    mawPower.Amount = power->MaxStacks;
+    mawPower.MawPowerID = power->MawPowerID;
+    mawPower.SpellID = power->SpellID;
+
+    if (apply)
+    {
+        AddDynamicUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData)
+            .ModifyValue(&UF::ActivePlayerData::MawPowers)) = mawPower;
+    }
+    else
+    {
+        int32 firstIndex = m_activePlayerData->MawPowers.FindIndex(mawPower);
+        if (firstIndex >= 0)
+            RemoveDynamicUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData)
+                .ModifyValue(&UF::ActivePlayerData::MawPowers), firstIndex);
+    }
+
+    CastSpell(this, power->SpellID, true);
+
+    WorldPacket data(SMSG_GAME_OBJECT_SET_STATE_LOCAL, 16 + 1);
+    data << _animaPowerChoice->GetGameObjectGUID();
+    data << uint8(1);
+    SendDirectMessage(&data);
+
+    data.Initialize(SMSG_GAIN_MAW_POWER, 16 + 4);
+    data << GetGUID();
+    data << power->MawPowerID;
+    SendMessageToSet(&data, true);
+
+    SendPlaySpellVisual(GetGUID(), 85010, 0, 0, 0, false);
+
+    data.Initialize(SMSG_PLAYER_CHOICE_CLEAR, 4);
+    data << uint32(0);
+    SendDirectMessage(&data);
+
+    _animaPowerChoice.reset();
+}
+
+void Player::ResetAnimaPowerChoice()
+{
+    _animaPowerChoice.reset();
+
+    WorldPacket data(SMSG_PLAYER_CHOICE_CLEAR, 4);
+    data << uint32(0);
+    SendDirectMessage(&data);
+}
+
+AnimaPowerChoice* Player::GetAnimaPowerChoice()
+{
+    return _animaPowerChoice.get();
+}
+
+////////////////////////////////////////////////////////////////////////////////////////

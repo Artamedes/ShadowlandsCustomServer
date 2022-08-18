@@ -74,7 +74,6 @@ enum GarrTalentTreeIds : uint32
 enum class eCovenantSaveFlags : uint32
 {
     None              = 0x0,
-    SaveConduits      = 0x1,
     SaveSoulbind      = 0x2,
     SaveCovenant      = 0x4,
     SaveRenownRewards = 0x8,
@@ -87,6 +86,7 @@ enum class eCovenantMgrSaveFlags : uint32
     None              = 0x0,
     SaveCollections   = 0x1,
     SaveSoulbindSpecs = 0x2,
+    SaveConduits      = 0x4,
 };
 
 DEFINE_ENUM_FLAG(eCovenantMgrSaveFlags);
@@ -119,6 +119,31 @@ static SoulbindID GetSoulbindIDFromTalentTreeId(uint32 talentTreeId)
     }
 }
 
+static CovenantID GetCovenantIDFromSoulbindID(SoulbindID soulbind)
+{
+    switch (soulbind)
+    {
+        case SoulbindID::Niya:
+        case SoulbindID::Dreamweaver:
+        case SoulbindID::Korayn:
+            return CovenantID::NightFae;
+        case SoulbindID::NadjiaTheMistblade:
+        case SoulbindID::TheotarTheMadDuke:
+        case SoulbindID::GeneralDraven:
+            return CovenantID::Necrolord;
+        case SoulbindID::PlagueDeviserMarileth:
+        case SoulbindID::Emeni:
+        case SoulbindID::BonesmithHeimer:
+            return CovenantID::Necrolord;
+        case SoulbindID::Pelagos:
+        case SoulbindID::Kleia:
+        case SoulbindID::ForgePrimeMikanikos:
+            return CovenantID::Kyrian;
+        default:
+            return CovenantID::None;
+    }
+}
+
 struct TC_GAME_API Conduit
 {
     Conduit(Player* player) : _player(player) { }
@@ -127,6 +152,7 @@ struct TC_GAME_API Conduit
     uint32 TreeEntryId = 0;//GarrTalentTreeEntry const* TreeEntry;
     uint32 Rank = 1;
     uint32 Flags = 1;
+    uint32 CovenantID = 0;
     uint64 ResearchStartTime = 0;
 
     Optional<WorldPackets::Garrison::GarrisonTalentSocketData> Socket;
@@ -173,40 +199,6 @@ class TC_GAME_API Covenant
 
         std::set<uint32> _claimedRenownRewards;
 
-        /// <summary>
-        /// Use for swapping covenants
-        /// </summary>
-        void DisableAllConduits();
-        /// <summary>
-        /// Use for swapping soulbinds
-        /// </summary>
-        void DisableAllConduitsForSoulbind();
-        /// <summary>
-        /// updates all conduits use after swap covenant only
-        /// </summary>
-        void UpdateAllConduits();
-        /// <summary>
-        /// updates all conduits use after swap conduits on soulbind
-        /// </summary>
-        void UpdateAllConduitsForSoulbind();
-
-        std::multimap<int32, Conduit>& GetConduits()
-        {
-            return _conduits;
-        }
-
-        /// <summary>
-        /// Adds a conduit to the conduit map
-        /// </summary>
-        /// <param name="SoulbindID">what soulbind to add it to</param>
-        /// <param name="conduit">reference to the conduit passed</param>
-        void AddConduit(Conduit& conduit);
-
-        /// <summary>
-        /// Sets m_SaveFlags to include eCovenantSaveFlags::SaveConduits
-        /// </summary>
-        void SetSaveConduits();
-
     private:
         Player* _player;
         CovenantID _covenantId;
@@ -214,7 +206,6 @@ class TC_GAME_API Covenant
         int32 _renownLevel;
         uint32 _anima;
         uint32 _souls;
-        std::multimap<int32, Conduit> _conduits; ///< SoulbindID, Conduit
         EnumFlag<eCovenantSaveFlags> m_SaveFlags = eCovenantSaveFlags::None;
 };
 
@@ -228,6 +219,8 @@ class TC_GAME_API CovenantMgr
 {
     public:
         CovenantMgr(Player* player);
+        ~CovenantMgr();
+        static constexpr uint32 TheShadowlands = 111;
 
         void LoadFromDB(CharacterDatabaseQueryHolder const& holder);
         void SaveToDB(CharacterDatabaseTransaction trans);
@@ -245,7 +238,7 @@ class TC_GAME_API CovenantMgr
 
         void AddGarrisonInfo(WorldPackets::Garrison::GetGarrisonInfoResult & garrisonInfo);
         void LearnSoulbindConduit(Item* item);
-        void LearnConduit(GarrTalentEntry const* talent, GarrTalentTreeEntry const* tree);
+        void LearnConduit(GarrTalentEntry const* talent, GarrTalentTreeEntry const* tree, uint32 Rank = 1);
         void BuildGarrisonPacket(WorldPackets::Garrison::GarrisonInfo& result);
         void LearnTalent(WorldPackets::Garrison::GarrisonLearnTalent& researchResult);
         Conduit* GetConduitByGarrTalentId(uint32 garrTalentId);
@@ -287,11 +280,50 @@ class TC_GAME_API CovenantMgr
             return 0;
         }
 
-    private:
+        /// <summary>
+        /// Use for swapping covenants
+        /// </summary>
+        void DisableAllConduits();
+        /// <summary>
+        /// Use for swapping soulbinds
+        /// </summary>
+        void DisableAllConduitsForSoulbind();
+        /// <summary>
+        /// updates all conduits use after swap covenant only
+        /// </summary>
+        void UpdateAllConduits();
+        /// <summary>
+        /// updates all conduits use after swap conduits on soulbind
+        /// </summary>
+        void UpdateAllConduitsForSoulbind();
+
+        /// <summary>
+        /// Adds a conduit to the conduit map
+        /// </summary>
+        /// <param name="SoulbindID">what soulbind to add it to</param>
+        /// <param name="conduit">reference to the conduit passed</param>
+        void AddConduit(Conduit* conduit);
+
+        /// <summary>
+        /// Sets m_SaveFlags to include eCovenantSaveFlags::SaveConduits
+        /// </summary>
+        void SetSaveConduits();
+
+        /// <summary>
+        /// Returns a reference of our _conduits
+        /// </summary>
+        /// <returns></returns>
+        std::unordered_map<uint32, Conduit*>& GetConduits()
+        {
+            return _conduits;
+        }
+
+private:
         Player* _player;
         size_t _currCovenantIndex;
         std::array<std::unique_ptr<Covenant>, 5> _playerCovenants = { };
         std::unordered_map<int32, int32> CollectionEntries;
         std::unordered_multimap <int32, CovenantSoulbind> _covenantSoulbinds;
         EnumFlag<eCovenantMgrSaveFlags> m_SaveFlags = eCovenantMgrSaveFlags::None;
+        std::unordered_map<uint32, Conduit*> _conduits; ///< GarrTalentId, Conduit
 };

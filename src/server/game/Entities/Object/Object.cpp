@@ -191,6 +191,11 @@ void Object::BuildCreateUpdateBlockForPlayer(UpdateData* data, Player* target) c
 
     //if (GetTypeId() == TYPEID_ITEM)
     //    target->SendNewItem((Item*)this, 0, false, false);
+
+    if (GameObject const* go = ToGameObject())
+    {
+        const_cast<GameObject*>(go)->IsSentToClient = true;
+    }
 }
 
 void Object::SendUpdateToPlayer(Player* player)
@@ -2243,6 +2248,15 @@ std::list<Creature*> WorldObject::FindNearestCreatures(uint32 entry, float range
     return creatureList;
 }
 
+Player* WorldObject::FindNearestPlayer(float range, bool alive)
+{
+    Player* player = NULL;
+    Trinity::AnyPlayerInObjectRangeCheck check(this, range, alive);
+    Trinity::PlayerSearcher<Trinity::AnyPlayerInObjectRangeCheck> searcher(this, player, check);
+    Cell::VisitAllObjects(this, searcher, range);
+    return player;
+}
+
 std::list<Creature*> WorldObject::FindAllCreaturesInRange(float range)
 {
     std::list<Creature*> templist;
@@ -2287,9 +2301,28 @@ Player* WorldObject::SelectNearestPlayer(float distance) const
 
     Trinity::NearestPlayerInObjectRangeCheck checker(this, distance);
     Trinity::PlayerLastSearcher<Trinity::NearestPlayerInObjectRangeCheck> searcher(this, target, checker);
-    Cell::VisitGridObjects(this, searcher, distance);
+    Cell::VisitAllObjects(this, searcher, distance);
 
     return target;
+}
+
+std::list<Player*> WorldObject::SelectNearestPlayers(float range, bool alive)
+{
+    std::list<Player*> PlayerList;
+    Trinity::AnyPlayerInObjectRangeCheck checker(this, range, alive);
+    Trinity::PlayerListSearcher<Trinity::AnyPlayerInObjectRangeCheck> searcher(this, PlayerList, checker);
+    Cell::VisitGridObjects(this, searcher, range);
+    return PlayerList;
+}
+
+Player* WorldObject::SelectRandomPlayerInRange(float range, bool alive)
+{
+    std::list<Player*> pList = SelectNearestPlayers(range, alive);
+
+    if (pList.empty())
+        return nullptr;
+
+    return Trinity::Containers::SelectRandomContainerElement(pList);
 }
 
 ObjectGuid WorldObject::GetCharmerOrOwnerOrOwnGUID() const
@@ -2561,7 +2594,9 @@ void WorldObject::ModSpellCastTime(SpellInfo const* spellInfo, int32& castTime, 
         return;
     }
 
-    if (!(spellInfo->HasAttribute(SPELL_ATTR0_IS_ABILITY) || spellInfo->HasAttribute(SPELL_ATTR0_IS_TRADESKILL) || spellInfo->HasAttribute(SPELL_ATTR3_IGNORE_CASTER_MODIFIERS)) &&
+    if (modOwner && modOwner->GetCommandStatus(CHEAT_CASTTIME))
+        castTime = 0;
+    else if (!(spellInfo->HasAttribute(SPELL_ATTR0_IS_ABILITY) || spellInfo->HasAttribute(SPELL_ATTR0_IS_TRADESKILL) || spellInfo->HasAttribute(SPELL_ATTR3_IGNORE_CASTER_MODIFIERS)) &&
         ((GetTypeId() == TYPEID_PLAYER && spellInfo->SpellFamilyName) || GetTypeId() == TYPEID_UNIT))
     {
         if (unitCaster->CanInstantCast())

@@ -4,28 +4,41 @@
 #include "DatabaseEnvFwd.h"
 
 class Player;
-class InstanceMap;
 class Item;
 struct MapChallengeModeEntry;
 
-constexpr uint32 MythicKeystone = 158923;
-constexpr uint32 MiniMythicKeystone = 180653;
+namespace Keystones
+{
+    /// <summary>
+    /// ItemIds
+    /// </summary>
+    enum : uint32
+    {
+        Group       = 158923,
+        Solo        = 180653,
+        Timewalking = 700019,
+    };
+}
 
 enum class KeystoneType
 {
-    Normal,
-    Mini,
+    Group,
+    Solo,
+    Timewalking,
+    Unk,
 };
+
+static KeystoneType KeystoneTypeFromItem(Item* item);
 
 struct MythicKeystoneInfo
 {
-    MythicKeystoneInfo(KeystoneType type, uint32 keystoneEntry) : Type(type), KeystoneEntry(keystoneEntry) { }
+    MythicKeystoneInfo(Item* keystone);
     bool IsActive() { return ID != 0; }
 
     MapChallengeModeEntry const* challengeEntry = nullptr;
     uint32 InstanceID = 0;
     uint32 timeReset = 0;
-    uint16 ID = 0;
+    uint32 ID = 0;
     uint8 Level = 0;
     uint8 Affix = 0;
     uint8 Affix1 = 0;
@@ -35,7 +48,8 @@ struct MythicKeystoneInfo
     bool needSave = false;
     bool needUpdate = false;
     KeystoneType Type;
-    uint32 KeystoneEntry;
+    uint32 KeystoneItemID;
+    ObjectGuid KeystoneGUID;
 
     void GenerateNewDungeon();
 };
@@ -44,6 +58,7 @@ class TC_GAME_API PlayerChallenge
 {
 public:
     PlayerChallenge(Player* player);
+    ~PlayerChallenge();
 
     /// <summary>
     /// Initializes the fields of a mythic keystone
@@ -62,12 +77,9 @@ public:
     void _SaveMythicKeystones(CharacterDatabaseTransaction& trans);
 
     MythicKeystoneInfo* GetKeystoneInfo(Item* item, bool createIfNeed = false);
-    MythicKeystoneInfo* GetKeystoneInfo(uint32 itemEntry, bool createIfNeed = false);
-
-    uint32 GetKeystoneEntryFromMap(InstanceMap* map) const;
+    MythicKeystoneInfo* GetKeystoneInfo(ObjectGuid const& itemGuid, bool createIfNeed = false);
 
 private:
     Player* _player;
-    std::unique_ptr<MythicKeystoneInfo> MainKeystone;
-    std::unique_ptr<MythicKeystoneInfo> MiniKeystone;
+    std::unordered_map<uint32, MythicKeystoneInfo*> Keystones;
 };

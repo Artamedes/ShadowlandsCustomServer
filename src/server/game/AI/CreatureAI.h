@@ -20,8 +20,10 @@
 
 #include "LootItemType.h"
 #include "ObjectDefines.h"
+#include "EventMap.h"
 #include "Optional.h"
 #include "QuestDef.h"
+#include "DamageEventMap.h"
 #include "UnitAI.h"
 
 class AreaBoundary;
@@ -30,11 +32,102 @@ class Creature;
 class DynamicObject;
 class GameObject;
 class PlayerAI;
+class InstanceScript;
 class WorldObject;
 struct Position;
 struct ItemTemplate;
 struct VendorItem;
 enum class QuestGiverStatus : uint32;
+
+class TC_GAME_API SummonList
+{
+public:
+    typedef GuidList StorageType;
+    typedef StorageType::iterator iterator;
+    typedef StorageType::const_iterator const_iterator;
+    typedef StorageType::size_type size_type;
+    typedef StorageType::value_type value_type;
+
+    explicit SummonList(Creature* creature) : _me(creature) { }
+
+    // And here we see a problem of original inheritance approach. People started
+    // to exploit presence of std::list members, so I have to provide wrappers
+
+    iterator begin()
+    {
+        return _storage.begin();
+    }
+
+    const_iterator begin() const
+    {
+        return _storage.begin();
+    }
+
+    iterator end()
+    {
+        return _storage.end();
+    }
+
+    const_iterator end() const
+    {
+        return _storage.end();
+    }
+
+    iterator erase(iterator i)
+    {
+        return _storage.erase(i);
+    }
+
+    bool empty() const
+    {
+        return _storage.empty();
+    }
+
+    size_type size() const
+    {
+        return _storage.size();
+    }
+
+    // Clear the underlying storage. This does NOT despawn the creatures - use DespawnAll for that!
+    void clear()
+    {
+        _storage.clear();
+    }
+
+    void Summon(Creature const* summon);
+    void Despawn(Creature const* summon);
+    void DespawnEntry(uint32 entry);
+    void DespawnAll();
+    void DespawnAll(Milliseconds time);
+
+    void DoOnSummons(std::function<void(Creature*)> fn);
+
+    template <typename T>
+    void DespawnIf(T const& predicate)
+    {
+        _storage.remove_if(predicate);
+    }
+
+    template <class Predicate>
+    void DoAction(int32 info, Predicate&& predicate, uint16 max = 0)
+    {
+        // We need to use a copy of SummonList here, otherwise original SummonList would be modified
+        StorageType listCopy = _storage;
+        Trinity::Containers::RandomResize<StorageType, Predicate>(listCopy, std::forward<Predicate>(predicate), max);
+        DoActionImpl(info, listCopy);
+    }
+
+    void DoZoneInCombat(uint32 entry = 0);
+    void RemoveNotExisting();
+    bool HasEntry(uint32 entry) const;
+
+private:
+    void DoActionImpl(int32 action, StorageType const& summons);
+
+    Creature* _me;
+    StorageType _storage;
+};
+
 
 typedef std::vector<AreaBoundary const*> CreatureBoundary;
 
@@ -152,6 +245,9 @@ class TC_GAME_API CreatureAI : public UnitAI
         // Called when a spell finishes
         virtual void OnSpellCast(SpellInfo const* /*spell*/) { }
 
+        // Called when a spell is finished
+        virtual void OnSpellFinished(SpellInfo const* /*spellInfo*/) { }
+
         // Called when a spell fails
         virtual void OnSpellFailed(SpellInfo const* /*spell*/) { }
 
@@ -171,6 +267,12 @@ class TC_GAME_API CreatureAI : public UnitAI
         virtual void MovementInform(uint32 /*type*/, uint32 /*id*/) { }
 
         void OnCharmed(bool isNew) override;
+
+        // Called when a spell cast gets interrupted
+        virtual void OnSpellCastInterrupt(SpellInfo const* /*spell*/) { }
+
+        // Called when a spell cast has been successfully finished
+        virtual void OnSuccessfulSpellCast(SpellInfo const* /*spell*/) { }
 
         // Called at reaching home after evade
         virtual void JustReachedHome() { }
@@ -237,6 +339,10 @@ class TC_GAME_API CreatureAI : public UnitAI
 
         virtual void PassengerBoarded(Unit* /*passenger*/, int8 /*seatId*/, bool /*apply*/) { }
 
+        virtual void OnVehicleExited(Unit* /*vehicle*/) { }
+
+        virtual void OnVehicleEntered(Unit* /*vehicle*/) { }
+
         virtual void OnSpellClick(Unit* /*clicker*/, bool /*spellClickHandled*/) { }
 
         virtual bool CanSeeAlways(WorldObject const* /*obj*/) { return false; }
@@ -270,6 +376,12 @@ class TC_GAME_API CreatureAI : public UnitAI
 
         CreatureBoundary const* _boundary;
         bool _negateBoundary;
+
+        EventMap events;
+        SummonList summons;
+        TaskScheduler scheduler;
+        DamageEventMap damageEvents;
+        InstanceScript* const instance;
 
     private:
         void OnOwnerCombatInteraction(Unit* target);

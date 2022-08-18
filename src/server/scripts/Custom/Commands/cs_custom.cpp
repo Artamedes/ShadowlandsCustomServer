@@ -17,6 +17,7 @@
 #include "GameTime.h"
 #include "LootMgr.h"
 #include "SpellFormulaOverride.h"
+#include "Torghast/AnimaPower.h"
 
 #ifdef WIN32
 #include "windows.h"
@@ -1899,7 +1900,9 @@ public:
             { "commentator",      HandleCommentatorCommand,    rbac::RBAC_PERM_COMMAND_GM, Console::No },
             { "giveloot",         HandleGiveLootCommand,       rbac::RBAC_PERM_COMMAND_RELOAD_ALL_ITEM, Console::No },
             { "spellformulas",    HandleModifySpellFormulas,   rbac::RBAC_PERM_COMMAND_RELOAD_ALL_ITEM, Console::No },
-            { "logout",           HandleLogoutCommand,   rbac::RBAC_PERM_COMMAND_RELOAD_ALL_ITEM, Console::No },
+            { "ilogout",           HandleLogoutCommand,   rbac::RBAC_PERM_COMMAND_RELOAD_ALL_ITEM, Console::No },
+            { "animareset",     HandleResetAnima,   rbac::RBAC_PERM_COMMAND_RELOAD_ALL_ITEM, Console::No },
+            { "SetAnimaPowerChoice",     HandleSetAnimaPowerChoice,   rbac::RBAC_PERM_COMMAND_RELOAD_ALL_ITEM, Console::No },
 
 #ifdef WIN32
             { "gpscopy", HandleGPSCopyCommand,  rbac::RBAC_PERM_COMMAND_RELOAD_ALL_ITEM, Console::No },
@@ -1907,6 +1910,30 @@ public:
 
         };
         return commandTable;
+    }
+
+    static bool HandleSetAnimaPowerChoice(ChatHandler* handler, uint32 mawPowerId)
+    {
+        auto player = handler->GetPlayer();
+
+        handler->PSendSysMessage("Generating maw power id for %u", mawPowerId);
+
+        if (auto choice = player->GetAnimaPowerChoice())
+        {
+            choice->GeneratePowers(player, mawPowerId);
+            WorldPackets::Quest::DisplayPlayerChoice packet;
+            choice->BuildPacket(packet);
+            player->PlayerTalkClass->GetInteractionData().Reset();
+            player->PlayerTalkClass->GetInteractionData().PlayerChoiceId = 573;
+            player->SendDirectMessage(packet.Write());
+        }
+        return true;
+    }
+
+    static bool HandleResetAnima(ChatHandler* handler)
+    {
+        handler->GetPlayer()->ResetAnimaPowerChoice();
+        return true;
     }
 
     static bool HandleLogoutCommand(ChatHandler* handler)

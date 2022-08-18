@@ -796,6 +796,35 @@ void Trinity::PlayerLastSearcher<Check>::Visit(PlayerMapType& m)
     }
 }
 
+template<class Check>
+void Trinity::AreaTriggerListSearcher<Check>::Visit(AreaTriggerMapType& areaTriggerMap)
+{
+    for (AreaTriggerMapType::iterator itr = areaTriggerMap.begin(); itr != areaTriggerMap.end(); ++itr)
+    {
+        if (!itr->GetSource()->IsInPhase(i_searcher))
+            continue;
+
+        if (i_check(itr->GetSource()))
+            i_objects.push_back(itr->GetSource());
+    }
+}
+
+template<class Check>
+void Trinity::AreaTriggerSearcher<Check>::Visit(AreaTriggerMapType& areaTriggerMap)
+{
+    for (AreaTriggerMapType::iterator itr = areaTriggerMap.begin(); itr != areaTriggerMap.end(); ++itr)
+    {
+        if (!itr->GetSource()->IsInPhase(i_searcher))
+            continue;
+
+        if (i_check(itr->GetSource()))
+        {
+            i_object = itr->GetSource();
+            return;
+        }
+    }
+}
+
 template<typename Localizer>
 void Trinity::LocalizedDo<Localizer>::operator()(Player const* p)
 {

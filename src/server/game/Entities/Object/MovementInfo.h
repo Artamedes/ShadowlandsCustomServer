@@ -150,7 +150,7 @@ struct MovementForce
     uint32 TransportID = 0;
     float Magnitude = 0.0f;
     MovementForceType Type = MovementForceType::SingleDirectional;
-    int32 Unused910 = 0;
+    int32 Unused910 = 139;
 };
 
 class MovementForces
@@ -179,6 +179,15 @@ public:
             _forces.erase(itr);
             return true;
         }
+
+        return false;
+    }
+
+    bool HasMovementForce(ObjectGuid id)
+    {
+        auto itr = FindMovementForce(id);
+        if (itr != _forces.end())
+            return true;
 
         return false;
     }

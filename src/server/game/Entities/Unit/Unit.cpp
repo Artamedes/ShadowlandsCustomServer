@@ -307,7 +307,7 @@ Unit::Unit(bool isWorldObject) :
     m_removedAurasCount(0), m_interruptMask(SpellAuraInterruptFlags::None), m_interruptMask2(SpellAuraInterruptFlags2::None),
     m_unitMovedByMe(nullptr), m_playerMovingMe(nullptr), m_charmer(nullptr), m_charmed(nullptr),
     i_motionMaster(new MotionMaster(this)), m_regenTimer(0), m_vehicle(nullptr),
-    m_vehicleKit(nullptr), m_unitTypeMask(UNIT_MASK_NONE), m_Diminishing(), m_combatManager(this),
+    m_vehicleKit(nullptr), m_unitTypeMask(UNIT_MASK_NONE), m_disableEnterEvadeMode(false), m_Diminishing(), m_combatManager(this),
     m_threatManager(this), m_aiLocked(false), _playHoverAnim(false), _aiAnimKitId(0), _movementAnimKitId(0), _meleeAnimKitId(0),
     _spellHistory(new SpellHistory(this)), _scheduler(this)
 {
@@ -517,7 +517,7 @@ void Unit::Update(uint32 p_time)
     // All position info based actions have been executed, reset info
     _positionUpdateInfo.Reset();
 
-    if (m_NextLeechTimer >= 5000)
+    if (m_NextLeechTimer >= 500)
     {
         if (m_NextLeech)
         {
@@ -3164,6 +3164,9 @@ void Unit::InterruptSpell(CurrentSpellTypes spellType, bool withDelayed, bool wi
             m_currentSpells[spellType] = nullptr;
             spell->SetReferencedFromCurrent(false);
         }
+
+        if (GetTypeId() == TYPEID_UNIT && IsAIEnabled())
+            ToCreature()->AI()->OnSpellCastInterrupt(spell->GetSpellInfo());
 
         if (GetTypeId() == TYPEID_UNIT && IsAIEnabled())
             ToCreature()->AI()->OnSpellFailed(spell->GetSpellInfo());
@@ -9361,6 +9364,14 @@ void Unit::SetSpeedRate(UnitMoveType mtype, float rate)
     }
 }
 
+void Unit::SendAdjustSplineDuration(float scale)
+{
+    WorldPackets::Movement::AdjustSplineDuration packet;
+    packet.Unit = GetGUID();
+    packet.Scale = scale;
+    SendMessageToSetInRange(packet.Write(), GetMap()->GetVisibilityRange(), false);
+}
+
 #pragma optimize( "", off )
 void Unit::FollowTarget(Unit* target)
 {
@@ -10175,6 +10186,12 @@ void Unit::SetLevel(uint8 lvl, bool sendUpdate/* = true*/)
 
         sCharacterCache->UpdateCharacterLevel(GetGUID(), lvl);
     }
+}
+
+// Return true if unit was above health pct and will be below with damage
+bool Unit::HealthWillBeBelowPctDamaged(int32 pct, uint32 damage) const
+{
+    return !HealthBelowPct(pct) && HealthBelowPctDamaged(pct, damage);
 }
 
 void Unit::SetHealth(uint64 val)
@@ -13778,7 +13795,7 @@ void Unit::HandleSpellClick(Unit* clicker, int8 seatId /*= -1*/)
 
 void Unit::EnterVehicle(Unit* base, int8 seatId /*= -1*/)
 {
-    CastSpellExtraArgs args(TRIGGERED_IGNORE_CASTER_MOUNTED_OR_ON_VEHICLE);
+    CastSpellExtraArgs args(true);
     args.AddSpellMod(SPELLVALUE_BASE_POINT0, seatId + 1);
     CastSpell(base, VEHICLE_SPELL_RIDE_HARDCODED, args);
 }
@@ -14776,6 +14793,14 @@ void Unit::SendSetVehicleRecId(uint32 vehicleId)
     SendMessageToSet(setVehicleRec.Write(), true);
 }
 
+bool Unit::HasMovementForce(ObjectGuid source)
+{
+    if (!_movementForces)
+        return false;
+
+    return _movementForces->HasMovementForce(source);
+}
+
 void Unit::ApplyMovementForce(ObjectGuid id, Position origin, float magnitude, MovementForceType type, Position direction /*= {}*/, ObjectGuid transportGuid /*= ObjectGuid::Empty*/)
 {
     if (!_movementForces)
@@ -15253,6 +15278,33 @@ void Unit::GetFriendlyUnitListInRange(std::list<Unit*>& list, float fMaxSearchRa
     cell.Visit(p, grid_unit_searcher, *GetMap(), *this, fMaxSearchRange);
 }
 
+void Unit::GetAreaTriggerListWithSpellIDInRange(std::list<AreaTrigger*>& list, uint32 spellid, float fMaxSearchRange) const
+{
+    CellCoord l_Coords(Trinity::ComputeCellCoord(GetPositionX(), GetPositionY()));
+    Cell l_Cell(l_Coords);
+    l_Cell.SetNoCreate();
+
+    Trinity::AnyAreatriggerInObjectRangeCheck check(this, fMaxSearchRange);
+    Trinity::AreaTriggerListSearcher<Trinity::AnyAreatriggerInObjectRangeCheck> searcher(this, list, check);
+
+    TypeContainerVisitor<Trinity::AreaTriggerListSearcher<Trinity::AnyAreatriggerInObjectRangeCheck>, WorldTypeMapContainer> l_WorldSearcher(searcher);
+    TypeContainerVisitor<Trinity::AreaTriggerListSearcher<Trinity::AnyAreatriggerInObjectRangeCheck>, GridTypeMapContainer>  l_GridSearcher(searcher);
+
+    l_Cell.Visit(l_Coords, l_WorldSearcher, *GetMap(), *this, fMaxSearchRange);
+    l_Cell.Visit(l_Coords, l_GridSearcher, *GetMap(), *this, fMaxSearchRange);
+
+    if (!list.empty())
+    {
+        list.remove_if([spellid](AreaTrigger* p_AreaTrigger) -> bool
+        {
+            if (p_AreaTrigger == nullptr || p_AreaTrigger->GetSpellId() != spellid)
+                return true;
+
+            return false;
+        });
+    }
+}
+
 void Unit::Talk(uint32 textId, ChatMsg msgType, float textRange, WorldObject const* target)
 {
     if (!sBroadcastTextStore.LookupEntry(textId))
@@ -15587,4 +15639,16 @@ bool Unit::isAnySummons() const
         return false;
 
     return (m_unitTypeMask & (UNIT_MASK_GUARDIAN | UNIT_MASK_PET | UNIT_MASK_HUNTER_PET | UNIT_MASK_TOTEM | UNIT_MASK_VEHICLE | UNIT_MASK_SUMMON)) != 0;
+}
+
+void Unit::UpdateSplineSpeed()
+{
+    if (movespline->Finalized())
+        return;
+
+    // Prevent crash on empty spline
+    if (!movespline->Initialized())
+        return;
+
+    movespline->UpdateVelocity(this);
 }

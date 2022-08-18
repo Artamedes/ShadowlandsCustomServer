@@ -534,6 +534,12 @@ Vehicle* Vehicle::RemovePassenger(WorldObject* passenger)
     if (_me->GetTypeId() == TYPEID_UNIT && _me->ToCreature()->IsAIEnabled())
         _me->ToCreature()->AI()->PassengerBoarded(unit, seat->first, false);
 
+    if (Creature* passenger = unit->ToCreature())
+    {
+        if (passenger->AI())
+            passenger->AI()->OnVehicleExited(_me);
+    }
+
     if (GetBase()->GetTypeId() == TYPEID_UNIT)
         sScriptMgr->OnRemovePassenger(this, unit);
 
@@ -906,6 +912,12 @@ bool VehicleJoinEvent::Execute(uint64, uint32)
         // Actually quite a redundant hook. Could just use OnAddPassenger and check for unit typemask inside script.
         if (Passenger->HasUnitTypeMask(UNIT_MASK_ACCESSORY))
             sScriptMgr->OnInstallAccessory(Target, Passenger->ToCreature());
+    }
+
+    if (Creature* creaturePassenger = Passenger->ToCreature())
+    {
+        if (creaturePassenger->AI())
+            creaturePassenger->AI()->OnVehicleEntered(Target->GetBase());
     }
 
     return true;

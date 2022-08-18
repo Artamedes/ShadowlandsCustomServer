@@ -35,6 +35,7 @@ class AreaBoundary;
 class Creature;
 class GameObject;
 class InstanceMap;
+class Item;
 class ModuleReference;
 class Player;
 class Unit;
@@ -42,6 +43,7 @@ class TempSummon;
 class Challenge;
 struct InstanceSpawnGroupInfo;
 struct CriteriaTree;
+struct MythicKeystoneInfo;
 enum class CriteriaType : uint8;
 enum class CriteriaStartEvent : uint8;
 enum EncounterCreditType : uint8;
@@ -240,6 +242,8 @@ class TC_GAME_API InstanceScript : public ZoneScript
         virtual void BroadcastPacket(WorldPacket const* data) const;
         virtual void SummonChallengeGameObject(bool /*door*/) { };
 
+        virtual bool HandleRelocatePlayer(Player* player) { return false; }
+
         // Called when falling damage are calculated for player
         virtual bool IsPlayerImmuneToFallDamage(Player* /*player*/) const { return false; }
 
@@ -289,6 +293,12 @@ class TC_GAME_API InstanceScript : public ZoneScript
         void DoCastSpellOnPlayers(uint32 spell, bool includePets = false, bool includeControlled = false);
         void DoCastSpellOnPlayer(Player* player, uint32 spell, bool includePets = false, bool includeControlled = false);
 
+        // Play scene by packageId on all players in instance
+        void DoPlayScenePackageIdOnPlayers(uint32 scenePackageId);
+
+        // Play scene by Id on all players in instance
+        void DoPlaySceneOnPlayers(uint32 sceneId);
+
         // Return wether server allow two side groups or not
         static bool ServerAllowsTwoSideGroups();
 
@@ -309,6 +319,14 @@ class TC_GAME_API InstanceScript : public ZoneScript
 
         // Remove cooldowns equal or less than specified time to all players in instance
         void DoRemoveSpellCooldownWithTimeOnPlayers(uint32 minRecoveryTime);
+
+        // Do combat stop on all players in instance
+        void DoCombatStopOnPlayers();
+
+        void DoPlayConversation(uint32 conversationId);
+
+        // Complete Achievement for all players in instance
+        void DoCompleteAchievement(uint32 achievement);
 
         // Achievement criteria additional requirements check
         // NOTE: not use this if same can be checked existed requirement types from AchievementCriteriaRequirementType
@@ -412,7 +430,7 @@ class TC_GAME_API InstanceScript : public ZoneScript
         void AddChallengeModeChest(ObjectGuid chestGuid);
         void AddChallengeModeDoor(ObjectGuid doorGuid);
         void AddChallengeModeOrb(ObjectGuid orbGuid);
-        void CreateChallenge(Player* player);
+        void CreateChallenge(Player* player, MythicKeystoneInfo* keystoneInfo);
 
         ObjectGuid _challengeDoorGuid;
         ObjectGuid _challengeOrbGuid;

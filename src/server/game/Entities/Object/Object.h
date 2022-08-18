@@ -586,11 +586,15 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
         GameObject* FindNearestUnspawnedGameObject(uint32 entry, float range) const;
         GameObject* FindNearestGameObjectOfType(GameobjectTypes type, float range) const;
 
+        Player*                 FindNearestPlayer(float range, bool alive = true);
+
         std::list<Creature*>    FindNearestCreatures(uint32 entry, float range) const;
         std::list<Creature*>    FindAllCreaturesInRange(float range);
         std::list<Creature*>    FindAllUnfriendlyCreaturesInRange(float range);
-
-        Player* SelectNearestPlayer(float distance) const;
+        
+        Player*                 SelectNearestPlayer(float distance = 0.0f) const;
+        std::list<Player*>      SelectNearestPlayers(float range, bool alive = true);
+        Player*                 SelectRandomPlayerInRange(float range, bool alive);
 
         virtual ObjectGuid GetOwnerGUID() const = 0;
         virtual ObjectGuid GetCharmerOrOwnerGUID() const { return GetOwnerGUID(); }
