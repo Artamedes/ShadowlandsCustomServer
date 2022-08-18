@@ -190,7 +190,6 @@ Map* MapManager::CreateMap(uint32 mapId, Player* player, uint32 loginInstanceId 
                 if (!map && pSave && pSave->GetInstanceId() == loginInstanceId)
                 {
                     map = CreateInstance(mapId, loginInstanceId, pSave, pSave->GetDifficultyID(), player->GetTeamId());
-
                     // add this here to make sure it's in the map list
                     i_maps[{ map->GetId(), map->GetInstanceId() }] = map;
                 }
