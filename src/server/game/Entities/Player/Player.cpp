@@ -3032,8 +3032,8 @@ bool Player::AddTalent(TalentEntry const* talent, uint8 spec, bool learning, boo
     {
         itr->second.oldState = itr->second.state;
         itr->second.state = auraTalent ? PLAYERSPELL_TEMPORARY : PLAYERSPELL_UNCHANGED;
-        itr->second.IsAddedByAura = true;
-        itr->second.IsLearned = wasLearnedBefore;
+     //   itr->second.IsAddedByAura = true;
+       // itr->second.IsLearned = wasLearnedBefore;
     }
     else
     {
@@ -3041,8 +3041,8 @@ bool Player::AddTalent(TalentEntry const* talent, uint8 spec, bool learning, boo
 
         talentData.state = learning ? (auraTalent ? PLAYERSPELL_TEMPORARY : PLAYERSPELL_NEW) : PLAYERSPELL_UNCHANGED;
         talentData.oldState = talentData.state;
-        itr->second.IsLearned = wasLearnedBefore;
-        itr->second.IsAddedByAura = auraTalent;
+        //itr->second.IsLearned = wasLearnedBefore;
+        //itr->second.IsAddedByAura = auraTalent;
     }
 
     if (learning && !auraTalent)
@@ -28179,7 +28179,7 @@ void Player::_SaveTalents(CharacterDatabaseTransaction trans)
         PlayerTalentMap* talents = GetTalentMap(group);
         for (auto itr = talents->begin(); itr != talents->end();)
         {
-            if (itr->second.state == PLAYERSPELL_REMOVED || (itr->second.IsAddedByAura && !itr->second.IsLearned))
+            if (itr->second.state == PLAYERSPELL_REMOVED)
             {
                 itr = talents->erase(itr);
                 continue;
