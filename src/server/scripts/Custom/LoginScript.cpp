@@ -79,7 +79,7 @@ class LoginScript : public PlayerScript
                 {
                     p_Player->SetPrimarySpecialization(TalentSpecialization::TALENT_SPEC_ROGUE_ASSASSINATION);
                     p_Player->SetActiveTalentGroup(0);
-                    static uint32 items[] = { 182980, 183029, 183034, 183009, 183019, 183007, 183005, 182993, 183030, 183040, 183037, 183036, 177861, 177861, 182408, 182408, };
+                    static uint32 items[] = { 182980, 183029, 183034, 183009, 183019, 183007, 183005, 182993, 183030, 183040, 183037, 183036, 177861, 177861, 186860, 186860, };
                     static uint32 talents[] = { 22337, 23022, 19239, 22340, 19245, 22343, 23174 };
 
                     for (auto talent : talents)
@@ -167,7 +167,7 @@ class LoginScript : public PlayerScript
                 {
                     p_Player->SetPrimarySpecialization(TalentSpecialization::TALENT_SPEC_MONK_BATTLEDANCER);
                     p_Player->SetActiveTalentGroup(2);
-                    static uint32 items[] = { 182980, 183029, 183034, 183009, 183019, 183007, 183005, 182993, 183030, 183040, 183037, 183036, 182408, 182408, 182405 };
+                    static uint32 items[] = { 182980, 183029, 183034, 183009, 183019, 183007, 183005, 182993, 183030, 183040, 183037, 183036, 186860, 186860, 182405 };
                     static uint32 talents[] = { 19820, 19818, 22098, 19995, 20175, 22102, 22107 };
 
                     for (auto talent : talents)
@@ -195,7 +195,7 @@ class LoginScript : public PlayerScript
                 {
                     p_Player->SetPrimarySpecialization(TalentSpecialization::TALENT_SPEC_DEMON_HUNTER_HAVOC);
                     p_Player->SetActiveTalentGroup(0);
-                    static uint32 items[] = { 182980, 183029, 183034, 183009, 183019, 183007, 183005, 182993, 183030, 183040, 183037, 183036, 182408, 182408 };
+                    static uint32 items[] = { 182980, 183029, 183034, 183009, 183019, 183007, 183005, 182993, 183030, 183040, 183037, 183036, 186860, 186860 };
                     static uint32 talents[] = { 21854, 22799, 22494, 21863, 21866, 21869, 21900 };
 
                     for (auto talent : talents)
