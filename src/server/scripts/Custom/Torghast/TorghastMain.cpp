@@ -105,6 +105,7 @@ public:
         data << uint32(461);
         data << uint32(0);
         player->SendDirectMessage(&data);
+        return true;
     }
 };
 
