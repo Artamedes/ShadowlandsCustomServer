@@ -430,7 +430,8 @@ ByteBuffer& operator<<(ByteBuffer& data, WorldPackets::Party::PartyPlayerInfo co
     data << uint8(playerInfo.Subgroup);
     data << uint8(playerInfo.Flags);
     data << uint8(playerInfo.RolesAssigned);
-    data << uint8(playerInfo.Status);
+    data << uint8(playerInfo.Class);
+    data << uint8(playerInfo.FactionGroup);
     data.WriteString(playerInfo.Name);
     if (!playerInfo.VoiceStateID.empty())
         data << playerInfo.VoiceStateID;
