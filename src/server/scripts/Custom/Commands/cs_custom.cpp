@@ -18,6 +18,7 @@
 #include "LootMgr.h"
 #include "SpellFormulaOverride.h"
 #include "Torghast/AnimaPower.h"
+#include "MiscPackets.h"
 
 #ifdef WIN32
 #include "windows.h"
@@ -2043,10 +2044,175 @@ public:
 
     static bool HandleTest6Command(ChatHandler* handler)
     {
-        WorldPacket data(SMSG_MYTHIC_PLUS_SEASON_DATA);
-        data.WriteBit(1);
 
-        handler->GetSession()->SendPacket(&data);
+        auto item = handler->GetPlayer()->GetItemByEntry(187219);
+        WorldPackets::Misc::WeeklyRewardsResult packet;
+        packet.TotalVaults = 8;
+        packet.Vaults.resize(5);
+
+        packet.Vaults[0].UnkUInt32 = 82;
+        packet.Vaults[0].Rewards.resize(1);
+        packet.Vaults[0].Rewards[0].UnkItemInt1 = 1;
+        packet.Vaults[0].Rewards[0].Count = 1;
+        packet.Vaults[0].Rewards[0].UnkInt64 = 4611686067268333540;
+        packet.Vaults[0].Rewards[0].OpenTime = 1661272108;
+
+        if (auto item = handler->GetPlayer()->GetItemByEntry(186815))
+        {
+            auto itemInst = WorldPackets::Item::ItemInstance();
+            itemInst.Initialize(item);
+            packet.Vaults[0].Rewards[0].Item = itemInst;
+        }
+
+        packet.Vaults[1].UnkUInt32 = 81;
+        packet.Vaults[1].Rewards.resize(1);
+        packet.Vaults[1].Rewards[0].UnkItemInt1 = 1;
+        packet.Vaults[1].Rewards[0].Count = 1;
+        packet.Vaults[1].Rewards[0].UnkInt64 = 4611686067268333519;
+        packet.Vaults[1].Rewards[0].OpenTime = 1661272108;
+
+        if (item = handler->GetPlayer()->GetItemByEntry(187219))
+        {
+            auto itemInst = WorldPackets::Item::ItemInstance();
+            itemInst.Initialize(item);
+            packet.Vaults[1].Rewards[0].Item = itemInst;
+        }
+
+        packet.Vaults[2].UnkUInt32 = 83;
+        packet.Vaults[2].Rewards.resize(1);
+        packet.Vaults[2].Rewards[0].UnkItemInt1 = 1;
+        packet.Vaults[2].Rewards[0].Count = 1;
+        packet.Vaults[2].Rewards[0].UnkInt64 = 4611686067268333547;
+        packet.Vaults[2].Rewards[0].OpenTime = 1661272108;
+
+        if (item = handler->GetPlayer()->GetItemByEntry(187219))
+        {
+            auto itemInst = WorldPackets::Item::ItemInstance();
+            itemInst.Initialize(item);
+            packet.Vaults[2].Rewards[0].Item = itemInst;
+        }
+
+        packet.Vaults[3].UnkUInt32 = 84;
+        packet.Vaults[3].Rewards.resize(1);
+        packet.Vaults[3].Rewards[0].UnkItemInt1 = 1;
+        packet.Vaults[3].Rewards[0].Count = 1;
+        packet.Vaults[3].Rewards[0].UnkInt64 = 4611686067268333551;
+        packet.Vaults[3].Rewards[0].OpenTime = 1661272108;
+
+        if (item = handler->GetPlayer()->GetItemByEntry(187219))
+        {
+            auto itemInst = WorldPackets::Item::ItemInstance();
+            itemInst.Initialize(item);
+            packet.Vaults[3].Rewards[0].Item = itemInst;
+        }
+
+        packet.Vaults[4].UnkUInt32 = 87;
+        packet.Vaults[4].Rewards.resize(1);
+        packet.Vaults[4].Rewards[0].UnkItemInt1 = 1;
+        packet.Vaults[4].Rewards[0].Count = 6;
+        packet.Vaults[4].Rewards[0].UnkInt64 = 4611686067268333555;
+        packet.Vaults[4].Rewards[0].OpenTime = 1661272108;
+
+        if (item = handler->GetPlayer()->GetItemByEntry(187219))
+        {
+            auto itemInst = WorldPackets::Item::ItemInstance();
+            itemInst.Initialize(item);
+            packet.Vaults[4].Rewards[0].Item = itemInst;
+        }
+
+        handler->GetSession()->SendPacket(packet.Write());
+
+        {
+            WorldPackets::Misc::WeeklyRewardsProgressResult result;
+
+            result.UnkInt321 = 0;
+            result.UnkInt323 = 7;
+            result.VaultProgresses.resize(9);
+            result.VaultProgresses[0].Index = 78;
+            result.VaultProgresses[1].Index = 79;
+            result.VaultProgresses[2].Index = 80;
+            result.VaultProgresses[3].Index = 81;
+            result.VaultProgresses[3].TotalCompleted = 0;
+            result.VaultProgresses[3].UnkInt3 = -1;
+            result.VaultProgresses[4].Index = 82;
+            result.VaultProgresses[4].TotalCompleted = 0;
+            result.VaultProgresses[4].UnkInt3 = -1;
+            result.VaultProgresses[5].Index = 83;
+            result.VaultProgresses[5].TotalCompleted = 0;
+            result.VaultProgresses[5].UnkInt3 = -1;
+            result.VaultProgresses[6].Index = 84;
+            result.VaultProgresses[7].Index = 85;
+            result.VaultProgresses[8].Index = 86;
+
+            for (int i = 6; i <= 8; ++i)
+            {
+                result.VaultProgresses[i].UnkVaultVec.resize(31);
+                result.VaultProgresses[i].UnkVaultVec[0].Unk1 = 2406;
+                result.VaultProgresses[i].UnkVaultVec[0].Unk2 = 0;
+                result.VaultProgresses[i].UnkVaultVec[1].Unk1 = 2405;
+                result.VaultProgresses[i].UnkVaultVec[1].Unk2 = 0;
+                result.VaultProgresses[i].UnkVaultVec[2].Unk1 = 2412;
+                result.VaultProgresses[i].UnkVaultVec[2].Unk2 = 0;
+                result.VaultProgresses[i].UnkVaultVec[3].Unk1 = 2407;
+                result.VaultProgresses[i].UnkVaultVec[3].Unk2 = 0;
+                result.VaultProgresses[i].UnkVaultVec[4].Unk1 = 2399;
+                result.VaultProgresses[i].UnkVaultVec[4].Unk2 = 0;
+                result.VaultProgresses[i].UnkVaultVec[5].Unk1 = 2398;
+                result.VaultProgresses[i].UnkVaultVec[5].Unk2 = 0;
+                result.VaultProgresses[i].UnkVaultVec[6].Unk1 = 2417;
+                result.VaultProgresses[i].UnkVaultVec[6].Unk2 = 0;
+                result.VaultProgresses[i].UnkVaultVec[7].Unk1 = 2418;
+                result.VaultProgresses[i].UnkVaultVec[7].Unk2 = 0;
+                result.VaultProgresses[i].UnkVaultVec[8].Unk1 = 2402;
+                result.VaultProgresses[i].UnkVaultVec[8].Unk2 = 0;
+                result.VaultProgresses[i].UnkVaultVec[9].Unk1 = 2383;
+                result.VaultProgresses[i].UnkVaultVec[9].Unk2 = 0;
+                result.VaultProgresses[i].UnkVaultVec[10].Unk1 = 2433;
+                result.VaultProgresses[i].UnkVaultVec[10].Unk2 = 0;
+                result.VaultProgresses[i].UnkVaultVec[11].Unk1 = 2431;
+                result.VaultProgresses[i].UnkVaultVec[11].Unk2 = 0;
+                result.VaultProgresses[i].UnkVaultVec[12].Unk1 = 2422;
+                result.VaultProgresses[i].UnkVaultVec[12].Unk2 = 0;
+                result.VaultProgresses[i].UnkVaultVec[13].Unk1 = 2432;
+                result.VaultProgresses[i].UnkVaultVec[13].Unk2 = 0;
+                result.VaultProgresses[i].UnkVaultVec[14].Unk1 = 2429;
+                result.VaultProgresses[i].UnkVaultVec[14].Unk2 = 0;
+                result.VaultProgresses[i].UnkVaultVec[15].Unk1 = 2430;
+                result.VaultProgresses[i].UnkVaultVec[15].Unk2 = 0;
+                result.VaultProgresses[i].UnkVaultVec[16].Unk1 = 2436;
+                result.VaultProgresses[i].UnkVaultVec[16].Unk2 = 0;
+                result.VaultProgresses[i].UnkVaultVec[17].Unk1 = 2435;
+                result.VaultProgresses[i].UnkVaultVec[17].Unk2 = 0;
+                result.VaultProgresses[i].UnkVaultVec[18].Unk1 = 2423;
+                result.VaultProgresses[i].UnkVaultVec[18].Unk2 = 0;
+                result.VaultProgresses[i].UnkVaultVec[19].Unk1 = 2434;
+                result.VaultProgresses[i].UnkVaultVec[19].Unk2 = 0;
+                result.VaultProgresses[i].UnkVaultVec[20].Unk1 = 2546;
+                result.VaultProgresses[i].UnkVaultVec[20].Unk2 = 0;
+                result.VaultProgresses[i].UnkVaultVec[21].Unk1 = 2553;
+                result.VaultProgresses[i].UnkVaultVec[21].Unk2 = 0;
+                result.VaultProgresses[i].UnkVaultVec[22].Unk1 = 2549;
+                result.VaultProgresses[i].UnkVaultVec[22].Unk2 = 0;
+                result.VaultProgresses[i].UnkVaultVec[23].Unk1 = 2544;
+                result.VaultProgresses[i].UnkVaultVec[23].Unk2 = 0;
+                result.VaultProgresses[i].UnkVaultVec[24].Unk1 = 2529;
+                result.VaultProgresses[i].UnkVaultVec[24].Unk2 = 0;
+                result.VaultProgresses[i].UnkVaultVec[25].Unk1 = 2543;
+                result.VaultProgresses[i].UnkVaultVec[25].Unk2 = 0;
+                result.VaultProgresses[i].UnkVaultVec[26].Unk1 = 2537;
+                result.VaultProgresses[i].UnkVaultVec[26].Unk2 = 0;
+                result.VaultProgresses[i].UnkVaultVec[27].Unk1 = 2540;
+                result.VaultProgresses[i].UnkVaultVec[27].Unk2 = 0;
+                result.VaultProgresses[i].UnkVaultVec[28].Unk1 = 2539;
+                result.VaultProgresses[i].UnkVaultVec[28].Unk2 = 0;
+                result.VaultProgresses[i].UnkVaultVec[29].Unk1 = 2512;
+                result.VaultProgresses[i].UnkVaultVec[29].Unk2 = 0;
+                result.VaultProgresses[i].UnkVaultVec[30].Unk1 = 2542;
+                result.VaultProgresses[i].UnkVaultVec[30].Unk2 = 0;
+            }
+
+            handler->GetSession()->SendPacket(result.Write());
+        }
 
         return true;
     }
