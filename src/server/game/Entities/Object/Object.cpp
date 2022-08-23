@@ -1502,6 +1502,11 @@ bool WorldObject::CheckPrivateObjectOwnerVisibility(WorldObject const* seer) con
     if (_privateObjectOwner == seer->GetPrivateObjectOwner())
         return true;
 
+    // THIS NEEDS TO BE CHECKED - groups should be false here.
+    if (SmoothPhasing const* smoothPhasing = GetSmoothPhasing())
+        if (smoothPhasing->IsBeingReplacedForSeer(seer->GetGUID()))
+            return false;
+
     if (Player const* playerSeer = seer->ToPlayer())
         if (playerSeer->IsInGroup(_privateObjectOwner))
             return true;
