@@ -1215,14 +1215,28 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder const& holder)
             chH.PSendSysMessage("%s", sWorld->GetNewCharString().c_str());
     }
 
-    if (!pCurrChar->GetMap()->AddPlayerToMap(pCurrChar))
+    bool needLoad = false;
+
+    if (!pCurrChar->GetMap()->IsGridLoaded(*pCurrChar))
     {
-        AreaTriggerStruct const* at = sObjectMgr->GetGoBackTrigger(pCurrChar->GetMapId());
-        if (at)
-            pCurrChar->TeleportTo(at->target_mapId, at->target_X, at->target_Y, at->target_Z, pCurrChar->GetOrientation());
-        else
-            pCurrChar->TeleportTo(pCurrChar->m_homebind);
+        chH.PSendSysMessage("%s", "Map is currently being loaded");
+        needLoad = true;
     }
+
+    pCurrChar->GetMap()->AddTask([pCurrChar, needLoad]()
+    {
+        if (!pCurrChar->GetMap()->AddPlayerToMap(pCurrChar))
+        {
+            // this is so bad..
+            AreaTriggerStruct const* at = sObjectMgr->GetGoBackTrigger(pCurrChar->GetMapId());
+            if (at)
+                pCurrChar->TeleportTo(at->target_mapId, at->target_X, at->target_Y, at->target_Z, pCurrChar->GetOrientation());
+            else
+                pCurrChar->TeleportTo(pCurrChar->m_homebind);
+        }
+        else if (needLoad)
+            ChatHandler(pCurrChar).PSendSysMessage("%s", "Map at this point loaded");
+    });
 
     ObjectAccessor::AddObject(pCurrChar);
     //TC_LOG_DEBUG("Player %s added to Map.", pCurrChar->GetName().c_str());

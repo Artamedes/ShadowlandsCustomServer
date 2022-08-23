@@ -18556,7 +18556,11 @@ bool Player::LoadFromDB(ObjectGuid guid, CharacterDatabaseQueryHolder const& hol
     }
 
     SetMap(map);
-    UpdatePositionData();
+    /// Update vmap calls on map thread.
+    map->AddTask([this]()
+    {
+        UpdatePositionData();
+    });
 
     // now that map position is determined, check instance validity
     if (!CheckInstanceValidity(true) && !IsInstanceLoginGameMasterException())

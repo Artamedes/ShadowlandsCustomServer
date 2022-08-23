@@ -638,9 +638,12 @@ bool Guild::Member::LoadFromDB(Field* fields)
         return false;
 
     if (!m_zoneId)
+
     {
         TC_LOG_DEBUG("guild", "%s has broken zone-data", m_guid.ToString().c_str());
-        m_zoneId = Player::GetZoneIdFromDB(m_guid);
+        m_zoneId = 4395; ///< Dalaran crater
+        // WTF
+        //m_zoneId = Player::GetZoneIdFromDB(m_guid);
     }
 
     ResetFlags();

@@ -434,6 +434,7 @@ bool Map::AddPlayerToMap(Player* player, bool initPlayer /*= true*/)
     AddToGrid(player, cell);
 
     // Check if we are adding to correct map
+    /// why is this assert here, if it sets map under?
     ASSERT (player->GetMap() == this);
     player->SetMap(this);
     player->AddToWorld();
@@ -3146,7 +3147,7 @@ bool InstanceMap::AddPlayerToMap(Player* player, bool initPlayer /*= true*/)
         if (group)
         {
             // solo saves should have been reset when the map was loaded
-            InstanceGroupBind* groupBind = group->GetBoundInstance(this);
+            InstanceGroupBind* groupBind = group->GetBoundInstance(GetDifficultyID(), GetId()); // updated to use difficultyid, example being m+, new raid shd bound by DifficultyId not just by id
             if (playerBind && playerBind->save != mapSave)
             {
                 TC_LOG_ERROR("maps", "InstanceMap::Add: player %s %s is being put into instance %s %d, %d, %d, %d, %d, %d but he is in group %s and is bound to instance %d, %d, %d, %d, %d, %d!", player->GetName().c_str(), player->GetGUID().ToString().c_str(), GetMapName(), mapSave->GetMapId(), mapSave->GetInstanceId(), static_cast<uint32>(mapSave->GetDifficultyID()), mapSave->GetPlayerCount(), mapSave->GetGroupCount(), mapSave->CanReset(), group->GetLeaderGUID().ToString().c_str(), playerBind->save->GetMapId(), playerBind->save->GetInstanceId(), static_cast<uint32>(playerBind->save->GetDifficultyID()), playerBind->save->GetPlayerCount(), playerBind->save->GetGroupCount(), playerBind->save->CanReset());
