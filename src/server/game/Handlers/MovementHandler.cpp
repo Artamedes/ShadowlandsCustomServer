@@ -138,32 +138,33 @@ void WorldSession::HandleMoveWorldportAck()
     uint32 l_OldMapId = oldMap->GetId();
     uint32 l_OldZoneId = _player->GetZoneId();
 
-    WorldPackets::Movement::ResumeToken resumeToken;
-    resumeToken.SequenceIndex = player->m_movementCounter;
-    resumeToken.Reason = seamlessTeleport ? 2 : 1;
-    SendPacket(resumeToken.Write());
-
-    if (!seamlessTeleport)
-        player->SendInitialPacketsBeforeAddToMap();
-
-    if (!player->GetMap()->AddPlayerToMap(player, !seamlessTeleport))
-    {
-        TC_LOG_ERROR("network", "WORLD: failed to teleport player %s %s to map %d (%s) because of unknown reason!",
-            player->GetName().c_str(), player->GetGUID().ToString().c_str(), loc.GetMapId(), newMap ? newMap->GetMapName() : "Unknown");
-        player->ResetMap();
-        Map* l_OldMap = sMapMgr->CreateMap(l_OldMapId, GetPlayer());
-        if (l_OldMap)
-            GetPlayer()->SetMap(l_OldMap);
-        player->TeleportTo(player->m_homebind);
-        return;
-    }
-
     /// Process spawn on the new map into maps threads instead worldsession update, the operation is cpu consuming - better to handle it in parrallel
     newMap->AddTask([=]() -> void
     {
         Player* player = ObjectAccessor::FindConnectedPlayer(l_PlayerGUID);
         if (!player)
             return;
+
+        /// TODO: Check sniff, this maybe send later
+        WorldPackets::Movement::ResumeToken resumeToken;
+        resumeToken.SequenceIndex = player->m_movementCounter;
+        resumeToken.Reason = 1;
+        SendPacket(resumeToken.Write());
+
+        if (!seamlessTeleport)
+            player->SendInitialPacketsBeforeAddToMap();
+
+        if (!newMap->AddPlayerToMap(player, !seamlessTeleport))
+        {
+            TC_LOG_ERROR("network", "WORLD: failed to teleport player %s %s to map %d (%s) because of unknown reason!",
+                player->GetName().c_str(), player->GetGUID().ToString().c_str(), loc.GetMapId(), newMap->GetMapName());
+            player->ResetMap();
+            Map* l_OldMap = sMapMgr->CreateMap(l_OldMapId, GetPlayer());
+            if (l_OldMap)
+                GetPlayer()->SetMap(l_OldMap);
+            player->TeleportTo(player->m_homebind);
+            return;
+        }
 
         // battleground state prepare (in case join to BG), at relogin/tele player not invited
         // only add to bg group and object, if the player was invited (else he entered through command)
@@ -285,6 +286,7 @@ void WorldSession::HandleMoveWorldportAck()
 
 void WorldSession::HandleSuspendTokenResponse(WorldPackets::Movement::SuspendTokenResponse& /*suspendTokenResponse*/)
 {
+    // packet not just being used for teleporting.. can also be used to freeze client packets until recieve resume token, (on retail when you up renown, it sends until renown rewards are back)
     if (!_player->IsBeingTeleportedFar())
         return;
 

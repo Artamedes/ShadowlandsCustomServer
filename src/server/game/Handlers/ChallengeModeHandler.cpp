@@ -231,10 +231,10 @@ void WorldSession::HandleChallengeModeStart(WorldPackets::ChallengeMode::StartRe
                         ChatHandler(player).PSendSysMessage("PIGPIG! |cff35B3EESolo Keystone %s |cff35B3EEstarted!", Item::GetItemLink(key), _player->GetName().c_str());
                         break;
                     case KeystoneType::Group:
-                        SendGroupKeystoneInfo(_player);
+                        SendGroupKeystoneInfo(player);
                         break;
                     case KeystoneType::Timewalking:
-                        SendTimewalkKeystoneInfo(_player);
+                        SendTimewalkKeystoneInfo(player);
                         break;
                     default:
                         break;
