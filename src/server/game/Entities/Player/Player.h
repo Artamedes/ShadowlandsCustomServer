@@ -1178,6 +1178,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
 
         void SetObjectScale(float scale) override;
 
+        bool TeleportToMap(Map* map, Position const& pos);
         bool TeleportTo(uint32 mapid, float x, float y, float z, float orientation, uint32 options = 0, uint32 optionParam = 0, Transport* transport = nullptr, uint32 spellID = 0, Optional<uint32> instanceId = {});
         bool TeleportTo(uint32 mapid, Position const& pos, uint32 options = 0, uint32 optionParam = 0, Transport* transport = nullptr, Optional<uint32> instanceId = {});
         bool TeleportTo(WorldLocation const& loc, uint32 options = 0, uint32 optionParam = 0, Transport* transport = nullptr, Optional<uint32> instanceId = {});

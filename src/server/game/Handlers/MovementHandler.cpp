@@ -285,6 +285,7 @@ void WorldSession::HandleMoveWorldportAck()
 
 void WorldSession::HandleSuspendTokenResponse(WorldPackets::Movement::SuspendTokenResponse& /*suspendTokenResponse*/)
 {
+    // packet not just being used for teleporting.. can also be used to freeze client packets until recieve resume token, (on retail when you up renown, it sends until renown rewards are back)
     if (!_player->IsBeingTeleportedFar())
         return;
 

@@ -1400,6 +1400,83 @@ uint8 Player::GetChatFlags() const
     return tag;
 }
 
+bool Player::TeleportToMap(Map* map, Position const& pos)
+{
+    if (GetMap() == map)
+    {
+        NearTeleportTo(pos, true, true);
+        return true;
+    }
+    else
+    {
+
+        MapEntry const* mEntry = map->GetEntry();
+        if (!GetSession() || !mEntry)
+            return false;
+
+        if (m_vehicle)
+            ExitVehicle();
+
+        // reset movement flags at teleport, because player will continue move with these flags after teleport
+        SetUnitMovementFlags(GetUnitMovementFlags() & MOVEMENTFLAG_MASK_HAS_PLAYER_STATUS_OPCODE);
+        m_movementInfo.ResetJump();
+        DisableSpline();
+
+        if (IsMounted())
+            Dismount();
+
+        Map* oldmap = GetMap();
+
+        SetSelection(ObjectGuid::Empty);
+        CombatStop();
+        ResetContestedPvP();
+
+        UnsummonPetTemporaryIfAny();
+
+        // remove all dyn objects
+        RemoveAllDynObjects();
+        RemoveAllAreaTriggers();
+
+        // stop spellcasting
+        // not attempt interrupt teleportation spell at caster teleport
+        if (IsNonMeleeSpellCast(true))
+            InterruptNonMeleeSpells(true);
+
+        //remove auras before removing from map...
+        RemoveAurasWithInterruptFlags(SpellAuraInterruptFlags::Moving | SpellAuraInterruptFlags::Turning | SpellAuraInterruptFlags::LeaveWorld);
+        RemoveAurasByType(SPELL_AURA_MOD_NEXT_SPELL);
+        RemoveAurasByType(SPELL_AURA_CLONE_CASTER);
+        RemoveAurasByType(SPELL_AURA_OVERRIDE_SPELLS);
+        RemoveAurasByType(SPELL_AURA_MOD_NEXT_SPELL);
+
+        m_teleport_dest = WorldLocation(map->GetId(), pos);
+        m_teleport_options = 0;
+
+        SetSemaphoreTeleportFar(true);
+
+        WorldPackets::Movement::TransferPending transferPending;
+        transferPending.MapID = map->GetId();
+        transferPending.OldMapPosition = GetPosition();
+        SendDirectMessage(transferPending.Write());
+
+        // remove from old map now
+        if (oldmap)
+            oldmap->RemovePlayerFromMap(this, false);
+
+        if (!GetSession()->PlayerLogout())
+        {
+            m_teleport_target_map = map;
+
+            WorldPackets::Movement::SuspendToken suspendToken;
+            suspendToken.SequenceIndex = m_movementCounter; // not incrementing
+            suspendToken.Reason = 0; // changing maps (client only cares about 1)
+            SendDirectMessage(suspendToken.Write());
+        }
+    }
+
+    return true;
+}
+
 bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientation, uint32 options, uint32 optionParam, Transport* transport, uint32 spellID /*= 0*/, Optional<uint32> instanceId)
 {
     if (!MapManager::IsValidMapCoord(mapid, x, y, z, orientation))
@@ -1640,7 +1717,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
             {
                 WorldPackets::Movement::SuspendToken suspendToken;
                 suspendToken.SequenceIndex = m_movementCounter; // not incrementing
-                suspendToken.Reason = options & TELE_TO_SEAMLESS ? 2 : 1;
+                suspendToken.Reason = options & TELE_TO_SEAMLESS ? 2 : 1; // reason = 1 suspends movement
                 SendDirectMessage(suspendToken.Write());
             }
 
