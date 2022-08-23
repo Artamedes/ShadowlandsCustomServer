@@ -8080,9 +8080,7 @@ class spell_warl_malefic_rapture : public SpellScript
         {
             caster->RemoveAurasDueToSpell(364322); ///< Calamitous Crescendo
 
-            //int32 baseDamage = caster->GetTotalSpellPowerValue(SPELL_SCHOOL_MASK_SHADOW, false) * GetEffectInfo(EFFECT_0).BonusCoefficient;
-
-            int32 baseDamage = 0;
+            int32 baseDamage = caster->GetTotalSpellPowerValue(SPELL_SCHOOL_MASK_SHADOW, false) * GetEffectInfo(EFFECT_0).BonusCoefficient;
 
             std::list<Unit*> enemies;
             caster->GetAttackableUnitListInRange(enemies, 100.0f);
@@ -8094,18 +8092,20 @@ class spell_warl_malefic_rapture : public SpellScript
                 for (auto dot : Warlock::dotAuras)
                     if (auto aura = enemy->GetAura(dot, caster->GetGUID()))
                     {
-                        // Focused Malignancy Conduit
-                        if (dot == Warlock::eAffliction::UnstableAffliction)
-                            hasUA = true;
-
-                        for (auto eff : aura->GetAuraEffects())
-                            if (eff && eff->GetAuraType() == AuraType::SPELL_AURA_PERIODIC_DAMAGE)
-                            {
-                                extraDmg += eff->GetDamage() * 3;
-                            }
+                       //// Focused Malignancy Conduit
+                       //if (dot == Warlock::eAffliction::UnstableAffliction)
+                       //    hasUA = true;
+                       //
+                       //for (auto eff : aura->GetAuraEffects())
+                       //    if (eff && eff->GetAuraType() == AuraType::SPELL_AURA_PERIODIC_DAMAGE)
+                       //    {
+                       //        extraDmg += eff->GetDamage() * 3;
+                       //    }
 
                         ++totalAuras;
                     }
+
+                extraDmg *= totalAuras;
 
                 if (hasUA)
                 {
