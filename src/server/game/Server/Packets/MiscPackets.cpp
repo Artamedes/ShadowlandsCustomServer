@@ -854,3 +854,71 @@ void WorldPackets::Misc::CommentatorEnable::Read()
 {
     _worldPacket >> Enable;
 }
+
+WorldPacket const* WorldPackets::Misc::WeeklyRewardsResult::Write()
+{
+    _worldPacket << uint32(Vaults.size());
+    _worldPacket << uint32(TotalVaults);
+
+    for (auto const& vault : Vaults)
+    {
+        _worldPacket << vault.UnkUInt32;
+        _worldPacket << uint32(vault.Rewards.size());
+        for (auto const& reward : vault.Rewards)
+        {
+            _worldPacket << reward.UnkItemInt1;
+            _worldPacket << reward.Count;
+
+            _worldPacket.WriteBit(reward.UnkInt64.has_value());
+            _worldPacket.WriteBit(reward.OpenTime.has_value());
+            _worldPacket.WriteBit(reward.UnkInt32.has_value());
+            _worldPacket.WriteBit(reward.Item.has_value());
+
+            _worldPacket.FlushBits();
+
+            if (reward.Item)
+                _worldPacket << *reward.Item;
+            if (reward.UnkInt64)
+                _worldPacket << *reward.UnkInt64;
+            if (reward.OpenTime)
+                _worldPacket << *reward.OpenTime;
+            if (reward.UnkInt32)
+                _worldPacket << *reward.UnkInt32;
+        }
+    }
+
+    return &_worldPacket;
+}
+
+WorldPacket const* WorldPackets::Misc::WeeklyRewardsProgressResult::Write()
+{
+    _worldPacket << uint32(UnkInt321);
+    _worldPacket << uint32(VaultProgresses.size());
+    _worldPacket << uint32(UnkInt323);
+
+    for (auto const& vault : VaultProgresses)
+    {
+        _worldPacket << vault.Index;
+        _worldPacket << vault.TotalCompleted;
+        _worldPacket << vault.UnkInt3;
+        _worldPacket << uint32(vault.UnkVaultVec.size());
+
+        for (auto const& unk : vault.UnkVaultVec)
+        {
+            _worldPacket << uint32(unk.Unk1);
+            _worldPacket << uint32(unk.Unk2);
+        }
+
+        _worldPacket.WriteBit(vault.RewardItemExample.has_value());
+        _worldPacket.WriteBit(vault.RewardItemExampleNext.has_value());
+
+        _worldPacket.FlushBits();
+
+        if (vault.RewardItemExample)
+            _worldPacket << *vault.RewardItemExample;
+        if (vault.RewardItemExampleNext)
+            _worldPacket << *vault.RewardItemExampleNext;
+    }
+
+    return &_worldPacket;
+}

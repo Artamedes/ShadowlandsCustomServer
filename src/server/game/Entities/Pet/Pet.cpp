@@ -48,8 +48,6 @@ Pet::Pet(Player* owner, PetType type) :
     m_petType(type), m_duration(0), m_loading(false), m_groupUpdateMask(0),
     m_petSpecialization(0)
 {
-    ASSERT(GetOwner());
-
     m_unitTypeMask |= UNIT_MASK_PET;
     if (type == HUNTER_PET)
         m_unitTypeMask |= UNIT_MASK_HUNTER_PET;
@@ -487,6 +485,9 @@ void Pet::SavePetToDB(PetSaveMode mode, bool stampeded /*= false*/)
 
     Player* owner = GetOwner();
 
+    if (!owner)
+        return;
+
     // not save pet as current if another pet temporary unsummoned
     if (mode == PET_SAVE_AS_CURRENT && owner->GetTemporaryUnsummonedPetNumber() &&
         owner->GetTemporaryUnsummonedPetNumber() != m_charmInfo->GetPetNumber())
@@ -669,6 +670,9 @@ void Pet::Update(uint32 diff)
         {
             // unsummon pet that lost owner
             Player* owner = GetOwner();
+            if (!owner)
+                return;
+
             if ((!IsWithinDistInMap(owner, GetMap()->GetVisibilityRange()) && !isPossessed()) || (isControlled() && !owner->GetPetGUID()))
             //if (!owner || (!IsWithinDistInMap(owner, GetMap()->GetVisibilityDistance()) && (owner->GetCharmGUID() && (owner->GetCharmGUID() != GetGUID()))) || (isControlled() && !owner->GetPetGUID()))
             {
@@ -824,6 +828,9 @@ bool Pet::CreateBaseAtCreature(Creature* creature)
 
     SetDisplayId(creature->GetDisplayId());
 
+    if (!GetOwner())
+        return;
+
     if (CreatureFamilyEntry const* cFamily = sCreatureFamilyStore.LookupEntry(cinfo->family))
         SetName(cFamily->Name[GetOwner()->GetSession()->GetSessionDbcLocale()]);
     else
@@ -879,7 +886,8 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
 
     //Determine pet type
     PetType petType = MAX_PET_TYPE;
-    if (IsPet() && GetOwner()->GetTypeId() == TYPEID_PLAYER)
+
+    if (IsPet() && GetOwner() && GetOwner()->GetTypeId() == TYPEID_PLAYER)
     {
         if (GetOwner()->GetClass() == CLASS_WARLOCK
             || GetOwner()->GetClass() == CLASS_SHAMAN        // Fire Elemental
@@ -954,6 +962,9 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
         SetCreateStat(STAT_STAMINA, 25);
         SetCreateStat(STAT_INTELLECT, 28);
     }
+
+    if (!GetOwner())
+        return;
 
     // Power
     if (petType == HUNTER_PET) // Hunter pets have focus
@@ -1540,6 +1551,9 @@ bool Pet::learnSpell(uint32 spell_id)
     if (!addSpell(spell_id))
         return false;
 
+    if (!GetOwner())
+        return;
+
     if (!m_loading)
     {
         WorldPackets::Pet::PetLearnedSpells packet;
@@ -1561,6 +1575,9 @@ void Pet::learnSpells(std::vector<uint32> const& spellIds)
 
         packet.Spells.push_back(spell);
     }
+
+    if (!GetOwner())
+        return;
 
     if (!m_loading)
         GetOwner()->GetSession()->SendPacket(packet.Write());
@@ -1609,6 +1626,9 @@ bool Pet::unlearnSpell(uint32 spell_id, bool learn_prev, bool clear_ab)
     {
         if (!m_loading)
         {
+            if (!GetOwner())
+                return;
+
             WorldPackets::Pet::PetUnlearnedSpells packet;
             packet.Spells.push_back(spell_id);
             GetOwner()->SendDirectMessage(packet.Write());
@@ -1629,6 +1649,9 @@ void Pet::unlearnSpells(std::vector<uint32> const& spellIds, bool learn_prev, bo
 
         packet.Spells.push_back(spell);
     }
+
+    if (!GetOwner())
+        return;
 
     if (!m_loading)
         GetOwner()->GetSession()->SendPacket(packet.Write());
@@ -1661,6 +1684,9 @@ bool Pet::removeSpell(uint32 spell_id, bool learn_prev, bool clear_ab)
     // if remove last rank or non-ranked then update action bar at server and client if need
     if (clear_ab && !learn_prev && m_charmInfo->RemoveSpellFromActionBar(spell_id))
     {
+        if (!GetOwner())
+            return;
+
         if (!m_loading)
             GetOwner()->PetSpellInitialize(); // need update action bar for last removed rank
     }
@@ -1816,6 +1842,9 @@ void Pet::CastPetAuras(bool current)
 {
     Player* owner = GetOwner();
 
+    if (!GetOwner())
+        return;
+
     if (!IsPermanentPetFor(owner))
         return;
 
@@ -1849,6 +1878,9 @@ void Pet::CastPetAura(PetAura const* aura)
 bool Pet::IsPetAura(Aura const* aura)
 {
     Player* owner = GetOwner();
+
+    if (!GetOwner())
+        return false;
 
     // if the owner has that pet aura, return true
     for (PetAura const* petAura : owner->m_petAuras)
@@ -1918,7 +1950,7 @@ void Pet::SetDisplayId(uint32 modelId, float displayScale /*= 1.f*/)
 
 void Pet::SetGroupUpdateFlag(uint32 flag)
 {
-    if (GetOwner()->GetGroup())
+    if (GetOwner() && GetOwner()->GetGroup())
     {
         m_groupUpdateMask |= flag;
         GetOwner()->SetGroupUpdateFlag(GROUP_UPDATE_FLAG_PET);
@@ -1928,7 +1960,7 @@ void Pet::SetGroupUpdateFlag(uint32 flag)
 void Pet::ResetGroupUpdateFlag()
 {
     m_groupUpdateMask = GROUP_UPDATE_FLAG_PET_NONE;
-    if (GetOwner()->GetGroup())
+    if (GetOwner() && GetOwner()->GetGroup())
         GetOwner()->RemoveGroupUpdateFlag(GROUP_UPDATE_FLAG_PET);
 }
 
@@ -2005,11 +2037,13 @@ void Pet::SetSpecialization(uint16 spec)
 
     // resend SMSG_PET_SPELLS_MESSAGE to remove old specialization spells from the pet action bar
     CleanupActionBar();
-    GetOwner()->PetSpellInitialize();
+    if (GetOwner())
+        GetOwner()->PetSpellInitialize();
 
     WorldPackets::Pet::SetPetSpecialization setPetSpecialization;
     setPetSpecialization.SpecID = m_petSpecialization;
-    GetOwner()->GetSession()->SendPacket(setPetSpecialization.Write());
+    if (GetOwner())
+        GetOwner()->GetSession()->SendPacket(setPetSpecialization.Write());
 }
 
 std::string Pet::GenerateActionBarData() const

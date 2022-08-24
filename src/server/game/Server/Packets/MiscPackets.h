@@ -1075,6 +1075,61 @@ namespace WorldPackets
             ::Gender Gender = GENDER_NONE;
             uint32 CurrencyID = 0;
         };
+
+        struct TC_GAME_API WeeklyRewardItem
+        {
+            uint32 UnkItemInt1 = 0;
+            uint32 Count = 0;
+            Optional<Item::ItemInstance> Item;
+            Optional<uint64> UnkInt64;
+            Optional<uint64> OpenTime;
+            Optional<uint32> UnkInt32;
+        };
+
+        struct TC_GAME_API WeeklyReward
+        {
+            uint32 UnkUInt32;
+            std::vector<WeeklyRewardItem> Rewards;
+        };
+
+        class TC_GAME_API WeeklyRewardsResult final : public ServerPacket
+        {
+            public:
+                WeeklyRewardsResult() : ServerPacket(SMSG_WEEKLY_REWARDS_RESULT) { }
+
+                WorldPacket const* Write() override;
+
+                std::vector<WeeklyReward> Vaults;
+                uint32 TotalVaults = 0;
+        };
+
+        struct UnkVaultStruct
+        {
+            uint32 Unk1;
+            uint32 Unk2;
+        };
+
+        struct VaultProgress
+        {
+            uint32 Index;
+            uint32 TotalCompleted;
+            int32 UnkInt3;
+            std::vector<UnkVaultStruct> UnkVaultVec;
+            Optional<Item::ItemInstance> RewardItemExample;
+            Optional<Item::ItemInstance> RewardItemExampleNext;
+        };
+
+        class TC_GAME_API WeeklyRewardsProgressResult final : public ServerPacket
+        {
+            public:
+                WeeklyRewardsProgressResult() : ServerPacket(SMSG_WEEKLY_REWARDS_PROGRESS_RESULT) { }
+
+                WorldPacket const* Write() override;
+
+                uint32 UnkInt321;
+                std::vector<VaultProgress> VaultProgresses;
+                uint32 UnkInt323;
+        };
     }
 }
 
