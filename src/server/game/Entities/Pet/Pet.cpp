@@ -1552,7 +1552,7 @@ bool Pet::learnSpell(uint32 spell_id)
         return false;
 
     if (!GetOwner())
-        return;
+        return true;
 
     if (!m_loading)
     {
