@@ -68,4 +68,12 @@ namespace DH
         SinfulBrand = 317009,
         ShatteredSoulsNecrolord = 328951,
     };
+
+    enum ePvpTalents
+    {
+        Glimpse = 354489,
+        GlimpseAura = 354610,
+        BloodMoon = 355995,
+        BloodMoonLeech = 360258,
+    };
 }

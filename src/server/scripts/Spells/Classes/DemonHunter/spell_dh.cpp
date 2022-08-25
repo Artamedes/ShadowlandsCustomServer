@@ -1880,12 +1880,17 @@ class spell_dh_vengeful_retreat_trigger : public SpellScript
     void HandleOnHit(SpellEffIndex /*effIndex*/)
     {
         if (Unit* caster = GetCaster())
+        {
             if (caster->HasAura(SPELL_DH_MOMENTUM) && !momentum)
             {
                 caster->CastSpell(caster, SPELL_DH_PREPARED_ENERGIZE, true);
                 momentum = true;
                 caster->Variables.Set<bool>("MOMENTUM", true);
             }
+
+            if (caster->HasAura(DH::ePvpTalents::Glimpse))
+                caster->CastSpell(caster, DH::ePvpTalents::GlimpseAura);
+        }
     }
 
     void Register() override
@@ -3852,35 +3857,23 @@ class spell_dh_consume_magic : public SpellScript
         consume = true;
     }
 
+    void OnSuccessfulDispelPvP(SpellEffIndex effIndex)
+    {
+        if (Unit* caster = GetCaster())
+        {
+            if (!caster->HasAura(DH::ePvpTalents::BloodMoon))
+                return;
+
+            caster->CastSpell(caster, DH::ePvpTalents::BloodMoonLeech, true);
+        }
+
+        PreventHitEffect(effIndex);
+    }
+
     void HandleEffectHitHVengeance(SpellEffIndex effIndex)
     {
         if (Unit* caster = GetCaster())
         {
-            if (Player* player = caster->ToPlayer())
-                if (player->GetSpecializationId() != TALENT_SPEC_DEMON_HUNTER_HAVOC)
-                {
-                    PreventHitEffect(effIndex);
-                    return;
-                }
-
-            if (consume)
-                return;
-
-            PreventHitEffect(effIndex);
-        }
-    }
-
-    void HandleEffectHitHavoc(SpellEffIndex effIndex)
-    {
-        if (Unit* caster = GetCaster())
-        {
-            if (Player* player = caster->ToPlayer())
-                if (player->GetPrimarySpecialization() != TALENT_SPEC_DEMON_HUNTER_VENGEANCE)
-                {
-                    PreventHitEffect(effIndex);
-                    return;
-                }
-
             if (consume)
                 return;
 
@@ -3892,7 +3885,7 @@ class spell_dh_consume_magic : public SpellScript
     {
         OnEffectSuccessfulDispel += SpellEffectFn(spell_dh_consume_magic::OnSuccessfulDispel, EFFECT_0, SPELL_EFFECT_DISPEL);
         OnEffectHitTarget += SpellEffectFn(spell_dh_consume_magic::HandleEffectHitHVengeance, EFFECT_1, SPELL_EFFECT_ENERGIZE);
-        OnEffectHitTarget += SpellEffectFn(spell_dh_consume_magic::HandleEffectHitHavoc, EFFECT_2, SPELL_EFFECT_ENERGIZE);
+        OnEffectHitTarget += SpellEffectFn(spell_dh_consume_magic::OnSuccessfulDispelPvP, EFFECT_2, SPELL_EFFECT_DISPEL);
     }
 
 private:
@@ -4381,6 +4374,7 @@ class spell_dh_fel_rush_dmg : public SpellScript
         OnEffectHitTarget += SpellEffectFn(spell_dh_fel_rush_dmg::HandleDamage, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
     }
 };
+
 /// ID: 328725 Mortal Dance
 class spell_mortal_dance : public AuraScript
 {
@@ -4409,6 +4403,128 @@ class spell_mortal_dance : public AuraScript
         DoCheckProc += AuraCheckProcFn(spell_mortal_dance::CheckProc);
     }
 };
+
+/// ID: 356510 Chaotic Imprint
+class spell_chaotic_imprint : public AuraScript
+{
+    PrepareAuraScript(spell_chaotic_imprint);
+
+    enum eChaoticImprint
+    {
+        ChaosBrandShadow = 356604,
+        ChaosBrandFire   = 356616,
+        ChaosBrandNature = 356621,
+        ChaosBrandFrost  = 356626,
+        ChaosBrandArcane = 356632,
+
+        ChaoticImprintShadow = 356656,
+        ChaoticImprintArcane = 356658,
+        ChaoticImprintFrost  = 356659,
+        ChaoticImprintNature = 356660,
+        ChaoticImprintFire   = 356661,
+    };
+
+    const std::unordered_map<uint32, uint32> ChaoticImprints =
+    {
+        { ChaoticImprintShadow , ChaosBrandShadow },
+        { ChaoticImprintArcane , ChaosBrandFire   },
+        { ChaoticImprintFrost  , ChaosBrandNature },
+        { ChaoticImprintNature , ChaosBrandFrost  },
+        { ChaoticImprintFire   , ChaosBrandArcane },
+    };
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == DH::eSpells::ThrowGlaive;
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (auto caster = GetCaster())
+        {
+            if (auto procTarget = eventInfo.GetProcTarget())
+            {
+                for (auto const& itr : ChaoticImprints)
+                {
+                    if (caster->HasAura(itr.first))
+                    {
+                        caster->CastSpell(procTarget, itr.second, true);
+                        caster->RemoveAurasDueToSpell(itr.first);
+                        caster->CastSpell(caster,
+                            RAND(ChaoticImprintShadow,
+                                ChaoticImprintArcane,
+                                ChaoticImprintFrost,
+                                ChaoticImprintNature,
+                                ChaoticImprintFire), true);
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    void HandleApply(const AuraEffect* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+    {
+        if (auto caster = GetCaster())
+        {
+            caster->CastSpell(caster,
+                RAND(ChaoticImprintShadow,
+                ChaoticImprintArcane,
+                ChaoticImprintFrost,
+                ChaoticImprintNature,
+                ChaoticImprintFire), true);
+        }
+    }
+
+    void HandleRemove(const AuraEffect* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+    {
+        if (auto caster = GetCaster())
+        {
+            caster->RemoveAurasDueToSpell(ChaoticImprintShadow);
+            caster->RemoveAurasDueToSpell(ChaoticImprintArcane);
+            caster->RemoveAurasDueToSpell(ChaoticImprintFrost);
+            caster->RemoveAurasDueToSpell(ChaoticImprintNature);
+            caster->RemoveAurasDueToSpell(ChaoticImprintFire);
+        }
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_chaotic_imprint::CheckProc);
+        OnProc += AuraProcFn(spell_chaotic_imprint::HandleProc);
+        OnEffectApply += AuraEffectApplyFn(spell_chaotic_imprint::HandleApply, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+        OnEffectRemove += AuraEffectApplyFn(spell_chaotic_imprint::HandleRemove, EFFECT_1, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+    }
+};
+
+/// ID: 213480 Unending Hatred
+class spell_unending_hatred : public AuraScript
+{
+    PrepareAuraScript(spell_unending_hatred);
+
+    enum eUnendingHatred
+    {
+        UnendingHatredProc = 213479,
+    };
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (auto caster = GetCaster())
+        {
+            if (auto dmgInfo = eventInfo.GetDamageInfo())
+            {
+                /// TODO: Need more researcxh for this talent
+                caster->CastSpell(caster, UnendingHatredProc, true);
+            }
+        }
+    }
+
+    void Register() override
+    {
+        OnProc += AuraProcFn(spell_unending_hatred::HandleProc);
+    }
+};
+
 
 void AddSC_demon_hunter_spell_scripts()
 {
@@ -4497,6 +4613,8 @@ void AddSC_demon_hunter_spell_scripts()
     RegisterSpellScript(spell_dh_disrupt);
     RegisterSpellScript(spell_mortal_dance);
     RegisterSpellScript(spell_infernal_strike_jump);
+    RegisterSpellScript(spell_chaotic_imprint);
+    RegisterSpellScript(spell_unending_hatred);
 
     /// AreaTrigger Scripts
     RegisterAreaTriggerAI(at_dh_darkness);
