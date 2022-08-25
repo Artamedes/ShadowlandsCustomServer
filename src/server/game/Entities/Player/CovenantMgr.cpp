@@ -172,6 +172,17 @@ void Covenant::UpdateRenownRewards()
                     continue;
                 }
 
+            switch (reward->ItemID)
+            {
+                case 186472: ///< Wisp of Memory
+                    continue;
+                default:
+                    break;
+            }
+
+            if (_player->GetSession()->GetCollectionMgr()->HasToy(reward->ItemID))
+                continue;
+
             if (!_player->AddItem(reward->ItemID, 1))
                 _player->SendItemRetrievalMail(reward->ItemID, 1, ItemContext::NONE);
         }
