@@ -829,7 +829,7 @@ bool Pet::CreateBaseAtCreature(Creature* creature)
     SetDisplayId(creature->GetDisplayId());
 
     if (!GetOwner())
-        return;
+        return true;
 
     if (CreatureFamilyEntry const* cFamily = sCreatureFamilyStore.LookupEntry(cinfo->family))
         SetName(cFamily->Name[GetOwner()->GetSession()->GetSessionDbcLocale()]);
@@ -964,7 +964,7 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
     }
 
     if (!GetOwner())
-        return;
+        return true;
 
     // Power
     if (petType == HUNTER_PET) // Hunter pets have focus
@@ -1627,7 +1627,7 @@ bool Pet::unlearnSpell(uint32 spell_id, bool learn_prev, bool clear_ab)
         if (!m_loading)
         {
             if (!GetOwner())
-                return;
+                return true;
 
             WorldPackets::Pet::PetUnlearnedSpells packet;
             packet.Spells.push_back(spell_id);
@@ -1685,7 +1685,7 @@ bool Pet::removeSpell(uint32 spell_id, bool learn_prev, bool clear_ab)
     if (clear_ab && !learn_prev && m_charmInfo->RemoveSpellFromActionBar(spell_id))
     {
         if (!GetOwner())
-            return;
+            return true;
 
         if (!m_loading)
             GetOwner()->PetSpellInitialize(); // need update action bar for last removed rank
