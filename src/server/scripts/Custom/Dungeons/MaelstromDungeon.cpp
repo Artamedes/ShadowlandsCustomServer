@@ -398,8 +398,8 @@ class maelstrom_dungeon_player_script : public PlayerScript
 
         void OnQuestStatusChange(Player* player, uint32 questId) override
         {
-            if (player->GetMapId() != 1469)
-                return;
+            //if (player->GetMapId() != 1469)
+            //    return;
 
             switch (questId)
             {

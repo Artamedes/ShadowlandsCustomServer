@@ -732,8 +732,8 @@ class crapopolis_dungeon_player_script : public PlayerScript
 
         void OnQuestStatusChange(Player* player, uint32 questId) override
         {
-            if (player->GetMapId() != 2263)
-                return;
+            //if (player->GetMapId() != 2263)
+            //    return;
 
             switch (questId)
             {

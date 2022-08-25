@@ -837,8 +837,8 @@ public:
 
     void OnQuestStatusChange(Player* player, uint32 questId) override
     {
-        if (player->GetMapId() != 2472)
-            return;
+        //if (player->GetMapId() != 2472)
+        //    return;
 
         switch (questId)
         {
