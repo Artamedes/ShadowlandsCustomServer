@@ -3112,8 +3112,11 @@ class spell_warr_execute : public SpellScript
         if (!caster || !target)
             return;
 
-        if (caster->HasAura(SPELL_WARRIOR_DEATH_SENTENCE))
+        if (caster->HasAura(SPELL_WARRIOR_DEATH_SENTENCE) && !caster->HasAura(Warrior::ePvpTalents::DeathSentenceCD))
+        {
+            caster->CastSpell(caster, Warrior::ePvpTalents::DeathSentenceCD, true);
             caster->CastSpell(target, SPELL_WARRIOR_CHARGE_EFFECT, true);
+        }
     }
 
     void HandleAfterCast()

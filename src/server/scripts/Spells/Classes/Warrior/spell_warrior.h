@@ -109,4 +109,9 @@ namespace Warrior
         ConquerorsBanner = 324143,
         AncientAftershock = 325886,
     };
+
+    enum ePvpTalents
+    {
+        DeathSentenceCD = 368439,
+    };
 }
