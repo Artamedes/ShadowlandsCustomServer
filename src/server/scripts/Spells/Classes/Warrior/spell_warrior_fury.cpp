@@ -53,9 +53,32 @@ class spell_reckless_abandon : public AuraScript
         OnEffectApply += AuraEffectApplyFn(spell_reckless_abandon::HandleApply, EFFECT_1, SPELL_AURA_PROC_TRIGGER_SPELL, AURA_EFFECT_HANDLE_REAL);
     }
 };
+/// ID: 23881 Bloodthirst
+class spell_bloodthirst : public SpellScript
+{
+    PrepareSpellScript(spell_bloodthirst);
+
+    void HandleDummy(SpellEffIndex /*eff*/)
+    {
+        if (auto caster = GetCaster())
+        {
+            if (auto target = GetHitUnit())
+            {
+                if (caster->HasAura(Warrior::ePvpTalents::Slaughterhouse))
+                    caster->CastSpell(target, Warrior::ePvpTalents::SlaughterhouseDebuff, true);
+            }
+        }
+    }
+
+    void Register() override
+    {
+        OnEffectHitTarget += SpellEffectFn(spell_bloodthirst::HandleDummy, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
+    }
+};
 
 void AddSC_spell_warrior_fury()
 {
     RegisterSpellScript(spell_recklessness);
     RegisterSpellScript(spell_reckless_abandon);
+    RegisterSpellScript(spell_bloodthirst);
 }

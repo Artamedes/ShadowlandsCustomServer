@@ -1176,6 +1176,52 @@ public:
 
                     SetHitDamage(attackPower);
                 }
+
+                auto hitDmg = GetHitDamage();
+
+                /// Shattering throw does more dmg to absorb shield by 500% (Eff 2 * 100)
+                if (caster->HasAura(Warrior::ePvpTalents::Demolition))
+                {
+                    if (auto target = GetHitUnit())
+                    {
+                        uint32 absorb = 0;
+
+                        // We're going to call functions which can modify content of the list during iteration over it's elements
+                        // Let's copy the list so we can prevent iterator invalidation
+                        std::list<AuraEffect*> vSchoolAbsorbCopy(target->GetAuraEffectsByType(SPELL_AURA_SCHOOL_ABSORB));
+                        vSchoolAbsorbCopy.sort(Trinity::AbsorbAuraOrderPred());
+
+                        // absorb without mana cost
+                        for (auto itr = vSchoolAbsorbCopy.begin(); (itr != vSchoolAbsorbCopy.end()) && (hitDmg > 0); ++itr)
+                        {
+                            AuraEffect* absorbAurEff = *itr;
+                            // Check if aura was removed during iteration - we don't need to work on such auras
+                            AuraApplication const* aurApp = absorbAurEff->GetBase()->GetApplicationOfTarget(target->GetGUID());
+                            if (!aurApp)
+                                continue;
+                            if (!(absorbAurEff->GetMiscValue() & SPELL_SCHOOL_MASK_NORMAL))
+                                continue;
+
+                            // get amount which can be still absorbed by the aura
+                            int32 currentAbsorb = absorbAurEff->GetAmount();
+                            // aura with infinite absorb amount - let the scripts handle absorbtion amount, set here to 0 for safety
+                            if (currentAbsorb < 0)
+                                currentAbsorb = 0;
+
+                            absorb += currentAbsorb;
+                        }
+
+                        if (absorb > 0)
+                        {
+                            AddPct(hitDmg, 500);
+
+                            if (hitDmg > absorb)
+                                hitDmg = absorb;
+
+                            SetHitDamage(hitDmg);
+                        }
+                    }
+                }
             }
         }
 
@@ -1185,7 +1231,9 @@ public:
 
             // remove shields, will still display immune to damage part
             if (Unit* target = GetHitUnit())
+            {
                 target->RemoveAurasWithMechanic(1 << MECHANIC_IMMUNE_SHIELD, AURA_REMOVE_BY_ENEMY_SPELL);
+            }
         }
 
         void Register() override
@@ -3736,45 +3784,53 @@ class spell_warr_execute_fury : public SpellScript
 };
 
 // 213857 - Battle Trance
+/// Updated 9.2.7.45114
 class aura_warr_battle_trance : public AuraScript
 {
     PrepareAuraScript(aura_warr_battle_trance);
 
-    bool CheckProc(ProcEventInfo& eventInfo)
-    {
-        if (eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == SPELL_WARRIOR_RAGING_BLOW)
-            return true;
-
-        return false;
-    }
+    ObjectGuid BattleTranceTarget;
+    uint32 Hits = 0;
 
     void HandleProc(ProcEventInfo& eventInfo)
     {
+        if (!eventInfo.GetSpellInfo())
+            return;
+
         Unit* caster = GetCaster();
         Unit* target = eventInfo.GetActionTarget();
         if (!caster || !target)
             return;
 
-        if (caster->Variables.Exist("BATTE_TRANCE_TARGET"))
-            if (caster->Variables.GetValue<ObjectGuid>("BATTE_TRANCE_TARGET") == target->GetGUID())
-            {
-                caster->CastSpell(caster, SPELL_WARRIOR_BATTLE_TRACE, true);
-                caster->Variables.Remove("BATTE_TRANCE_TARGET");
-                caster->Variables.Set<ObjectGuid>("LAST_BATTLE_TRANCE_TARGET", target->GetGUID());
-                return;
-            }
+        /// Not used raging blow in a row. - reset hits
+        if (eventInfo.GetSpellInfo()->Id != Warrior::eFury::RagingBlow)
+        {
+            Hits = 0;
+            return;
+        }
 
-        caster->Variables.Set<ObjectGuid>("BATTE_TRANCE_TARGET", target->GetGUID());
-        if (caster->Variables.Exist("LAST_BATTLE_TRANCE_TARGET") && caster->Variables.GetValue<ObjectGuid>("LAST_BATTLE_TRANCE_TARGET") != target->GetGUID())
+        /// Hit another target with raging blow - reset hits and remove battle trance
+        if (BattleTranceTarget.IsEmpty() || BattleTranceTarget != target->GetGUID())
         {
             caster->RemoveAurasDueToSpell(SPELL_WARRIOR_BATTLE_TRACE);
-            caster->Variables.Remove("LAST_BATTLE_TRANCE_TARGET");
+            Hits = 0;
+        }
+
+        /// We already have the aura, only need to reapply if above condition is reached
+        if (caster->HasAura(SPELL_WARRIOR_BATTLE_TRACE))
+            return;
+
+        ++Hits;
+        BattleTranceTarget = target->GetGUID();
+
+        if (Hits == 2)
+        {
+            caster->CastSpell(caster, SPELL_WARRIOR_BATTLE_TRACE, true);
         }
     }
 
     void Register() override
     {
-        DoCheckProc += AuraCheckProcFn(aura_warr_battle_trance::CheckProc);
         OnProc += AuraProcFn(aura_warr_battle_trance::HandleProc);
     }
 };

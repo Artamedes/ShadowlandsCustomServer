@@ -113,5 +113,8 @@ namespace Warrior
     enum ePvpTalents
     {
         DeathSentenceCD = 368439,
+        Slaughterhouse = 352998,
+        SlaughterhouseDebuff = 354788,
+        Demolition = 329033,
     };
 }
