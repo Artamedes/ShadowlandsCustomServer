@@ -1790,7 +1790,12 @@ public:
         {
             if (Unit* caster = GetCaster())
             {
-                if (roll_chance_i(GetSpellInfo()->GetEffect(EFFECT_0).BasePoints))
+                int32 chance = GetSpellInfo()->GetEffect(EFFECT_0).BasePoints;
+
+                if (caster->HasAura(Warrior::eFury::Cruelty))
+                    chance += 30;
+
+                if (roll_chance_i(chance))
                 {
                     caster->GetSpellHistory()->RestoreCharge(GetSpellInfo()->ChargeCategoryId);
                     caster->AddAura(SPELL_WARRIOR_ALLOW_RAGING_BLOW);

@@ -59,6 +59,9 @@ namespace Warrior
         SingleMindedFury = 81099,
         TitansGrip = 46917,
         Siegebreaker = 280772,
+
+        /// Talents
+        Cruelty = 335070,
     };
 
     enum eProtection : uint32
