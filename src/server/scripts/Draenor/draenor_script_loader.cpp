@@ -1,24 +1,42 @@
-/*
- * This file is part of the TrinityCore Project. See AUTHORS file for Copyright information
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or (at your
- * option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
- * more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program. If not, see <http://www.gnu.org/licenses/>.
- */
 
- // This is where scripts' loading functions should be declared:
+// Skyreach Dungeon
+void AddSC_instance_Skyreach();
+void AddSC_skyreach();
+void AddSC_boss_ranjit();
+void AddSC_boss_Araknath();
+void AddSC_boss_Rukhran();
+void AddSC_boss_HighSaveViryx();
 
-// The name of this function should match:
-// void Add${NameOfDirectory}Scripts()
+// Bloodmaul Slag Mines
+void AddSC_areatrigger_Bloodmaul();
+void AddSC_boss_forgemaster_gogduh();
+void AddSC_boss_gugrokk();
+void AddSC_boss_roltall();
+void AddSC_boss_SlaveWatcherCrushto();
+void AddSC_mob_Bloodmaul();
+void AddSC_spell_Bloodmaul();
+void AddSC_instance_Bloodmaul();
+
+void AddSC_draenor_shadowmoon_valley();
+
 void AddDraenorScripts()
 {
+    AddSC_instance_Skyreach();
+    AddSC_skyreach();
+    AddSC_boss_ranjit();
+    AddSC_boss_Araknath();
+    AddSC_boss_Rukhran();
+    AddSC_boss_HighSaveViryx();
+
+    // Bloodmaul Slag Mines
+    AddSC_areatrigger_Bloodmaul();
+    AddSC_boss_forgemaster_gogduh();
+    AddSC_boss_gugrokk();
+    AddSC_boss_roltall();
+    AddSC_boss_SlaveWatcherCrushto();
+    AddSC_mob_Bloodmaul();
+    AddSC_spell_Bloodmaul();
+    AddSC_instance_Bloodmaul();
+
+    AddSC_draenor_shadowmoon_valley();
 }
