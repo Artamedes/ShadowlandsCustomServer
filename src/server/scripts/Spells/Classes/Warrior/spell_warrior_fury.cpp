@@ -32,16 +32,10 @@ class spell_reckless_abandon : public AuraScript
         return eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == Recklessness;
     }
 
-    void HandleProc(ProcEventInfo& eventInfo)
+    void HandleProc(AuraEffect* aurEff, ProcEventInfo& eventInfo)
     {
         PreventDefaultAction();
-        //if (auto caster = GetCaster())
-        //    caster->CastSpell(caster, 0, true);
-    }
 
-    void HandleApply(const AuraEffect* /*aurEff*/, AuraEffectHandleModes /*mode*/)
-    {
-        PreventDefaultAction();
         if (auto caster = GetCaster())
             caster->CastSpell(caster, 335101, true); ///< Replaces the spells with override
     }
@@ -49,10 +43,10 @@ class spell_reckless_abandon : public AuraScript
     void Register() override
     {
         DoCheckProc += AuraCheckProcFn(spell_reckless_abandon::CheckProc);
-        OnProc += AuraProcFn(spell_reckless_abandon::HandleProc);
-        OnEffectApply += AuraEffectApplyFn(spell_reckless_abandon::HandleApply, EFFECT_1, SPELL_AURA_PROC_TRIGGER_SPELL, AURA_EFFECT_HANDLE_REAL);
+        OnEffectProc += AuraEffectProcFn(spell_reckless_abandon::HandleProc, EFFECT_1, SPELL_AURA_PROC_TRIGGER_SPELL);
     }
 };
+
 /// ID: 23881 Bloodthirst
 class spell_bloodthirst : public SpellScript
 {
