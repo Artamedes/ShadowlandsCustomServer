@@ -328,6 +328,7 @@ namespace WorldPackets
     namespace Collections
     {
         class CollectionItemSetFavorite;
+        class AddAccountCosmetic;
     }
 
     namespace Combat
@@ -1791,6 +1792,7 @@ class TC_GAME_API WorldSession
 
         // Collections
         void HandleCollectionItemSetFavorite(WorldPackets::Collections::CollectionItemSetFavorite& collectionItemSetFavorite);
+        void HandleAddAccountCosmetic(WorldPackets::Collections::AddAccountCosmetic& addAccountCosmetic);
 
         // Transmogrification
         void HandleTransmogrifyItems(WorldPackets::Transmogrification::TransmogrifyItems& transmogrifyItems);

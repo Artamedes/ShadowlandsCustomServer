@@ -138,6 +138,7 @@ public:
             { "stabilitytest",      HandleDebugStabilityTestCommand,       rbac::RBAC_PERM_COMMAND_DEBUG,   Console::No },
             { "splashscreen",       HandleDebugSplashScreenCommand,        rbac::RBAC_PERM_COMMAND_DEBUG,   Console::No },
             { "spell",              HandleDebugSpells,                     rbac::RBAC_PERM_INSTANT_LOGOUT,   Console::No },
+            { "packet",             HandleDebugPacket,                     rbac::RBAC_PERM_COMMAND_DEBUG,   Console::No },
         };
         static ChatCommandTable commandTable =
         {
@@ -158,6 +159,14 @@ public:
         else
             return false;
 
+        return true;
+    }
+
+    static bool HandleDebugPacket(ChatHandler* handler, uint32 opcode, uint32 value)
+    {
+        WorldPacket data(opcode);
+        data << uint32(value);
+        handler->GetSession()->SendPacket(&data);
         return true;
     }
 

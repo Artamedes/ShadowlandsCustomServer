@@ -5875,6 +5875,7 @@ void Player::UpdateRating(CombatRating cr)
                 case CR_HASTE_SPELL:
                     //ApplyCastTimePercentMod(oldVal, false);
                     //ApplyCastTimePercentMod(newVal, true);
+                    // TODO: we shouldn't do this really
                     SetModCastingSpeed(0.0f);
                     if (Pet* pet = GetPet())
                     {

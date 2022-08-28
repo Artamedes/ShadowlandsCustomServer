@@ -23,3 +23,8 @@ void WorldPackets::Collections::CollectionItemSetFavorite::Read()
     ID = _worldPacket.read<uint32>();
     IsFavorite = _worldPacket.ReadBit();
 }
+
+void WorldPackets::Collections::AddAccountCosmetic::Read()
+{
+    _worldPacket >> Item;
+}

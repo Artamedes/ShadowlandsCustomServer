@@ -18,6 +18,7 @@
 #include "WorldSession.h"
 #include "CollectionMgr.h"
 #include "CollectionPackets.h"
+#include "Item.h"
 
 void WorldSession::HandleCollectionItemSetFavorite(WorldPackets::Collections::CollectionItemSetFavorite& collectionItemSetFavorite)
 {
@@ -40,5 +41,31 @@ void WorldSession::HandleCollectionItemSetFavorite(WorldPackets::Collections::Co
             break;
         default:
             break;
+    }
+}
+
+void WorldSession::HandleAddAccountCosmetic(WorldPackets::Collections::AddAccountCosmetic& addAccountCosmetic)
+{
+    if (auto item = _player->GetItemByGuid(addAccountCosmetic.Item))
+    {
+        if (item->GetTemplate()->GetSubClass() == 5 && item->GetItemModifiedAppearance() && !GetCollectionMgr()->HasItemAppearance(item->GetItemModifiedAppearance()->ID).second)
+        {
+            // ServerToClient: SMSG_PLAY_SPELL_VISUAL_KIT(0x2C49) Length : 22 ConnIdx : 1 Time : 08 / 26 / 2022 23:13 : 34.130 Number : 6293
+            // Unit : Full : 0x0801340000000000000000000EC8BD77 Player / 0 R77 / S0 Map : 0 (Eastern Kingdoms) Low : 248036727
+            // KitRecID : 362
+            // KitType : 1
+            // Duration : 0
+            // MountedVisual : False
+
+            _player->SendPlaySpellVisualKit(362, 1, 0);
+
+            item->SetBinding(true);
+            WorldPacket data(SMSG_ACCOUNT_COSMETIC_ADDED);
+            data << uint32(113239);
+            SendPacket(&data);
+            GetCollectionMgr()->AddItemAppearance(item);
+            _player->DestroyItem(item->GetBagSlot(), item->GetSlot(), true);
+
+        }
     }
 }

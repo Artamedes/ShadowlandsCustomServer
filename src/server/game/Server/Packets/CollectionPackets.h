@@ -43,6 +43,16 @@ namespace WorldPackets
             uint32 ID = 0;
             bool IsFavorite = false;
         };
+
+        class AddAccountCosmetic final : public ClientPacket
+        {
+        public:
+            AddAccountCosmetic(WorldPacket&& packet) : ClientPacket(CMSG_ADD_ACCOUNT_COSMETIC, std::move(packet)) { }
+
+            void Read() override;
+
+            ObjectGuid Item;
+        };
     }
 }
 

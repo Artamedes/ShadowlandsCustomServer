@@ -139,7 +139,7 @@ void OpcodeTable::Initialize()
     DEFINE_HANDLER(CMSG_ACTIVATE_SOULBIND,                                  STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleActivateSoulbindOpcode);
     DEFINE_HANDLER(CMSG_ACTIVATE_TAXI,                                      STATUS_LOGGEDIN,  PROCESS_THREADSAFE,   &WorldSession::HandleActivateTaxiOpcode);
     DEFINE_HANDLER(CMSG_ADDON_LIST,                                         STATUS_UNHANDLED, PROCESS_INPLACE,      &WorldSession::Handle_NULL);
-    DEFINE_HANDLER(CMSG_ADD_ACCOUNT_COSMETIC,                               STATUS_UNHANDLED, PROCESS_THREADUNSAFE, &WorldSession::Handle_NULL);
+    DEFINE_HANDLER(CMSG_ADD_ACCOUNT_COSMETIC,                               STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleAddAccountCosmetic);
     DEFINE_HANDLER(CMSG_ADD_BATTLENET_FRIEND,                               STATUS_UNHANDLED, PROCESS_THREADUNSAFE, &WorldSession::Handle_NULL);
     DEFINE_HANDLER(CMSG_ADD_FRIEND,                                         STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleAddFriendOpcode);
     DEFINE_HANDLER(CMSG_ADD_IGNORE,                                         STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleAddIgnoreOpcode);
@@ -935,7 +935,7 @@ void OpcodeTable::Initialize()
     ValidateAndSetServerOpcode(opcode, #opcode, status, con)
 
     DEFINE_SERVER_OPCODE_HANDLER(SMSG_ABORT_NEW_WORLD,                         STATUS_UNHANDLED,    CONNECTION_TYPE_REALM);
-    DEFINE_SERVER_OPCODE_HANDLER(SMSG_ACCOUNT_COSMETIC_ADDED,                  STATUS_UNHANDLED,    CONNECTION_TYPE_REALM);
+    DEFINE_SERVER_OPCODE_HANDLER(SMSG_ACCOUNT_COSMETIC_ADDED,                  STATUS_NEVER,        CONNECTION_TYPE_REALM);
     DEFINE_SERVER_OPCODE_HANDLER(SMSG_ACCOUNT_CRITERIA_UPDATE,                 STATUS_NEVER,        CONNECTION_TYPE_REALM);
     DEFINE_SERVER_OPCODE_HANDLER(SMSG_ACCOUNT_DATA_TIMES,                      STATUS_NEVER,        CONNECTION_TYPE_REALM);
     DEFINE_SERVER_OPCODE_HANDLER(SMSG_ACCOUNT_HEIRLOOM_UPDATE,                 STATUS_NEVER,        CONNECTION_TYPE_INSTANCE);
