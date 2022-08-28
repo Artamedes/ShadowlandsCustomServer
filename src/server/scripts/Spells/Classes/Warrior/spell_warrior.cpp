@@ -3187,6 +3187,7 @@ class spell_warr_execute : public SpellScript
 };
 
 // 260798  - Executes damages
+// 317488 - Condemnn
 class spell_warr_execute_damages : public SpellScript
 {
     PrepareSpellScript(spell_warr_execute_damages);
