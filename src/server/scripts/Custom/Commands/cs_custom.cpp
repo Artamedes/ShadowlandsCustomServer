@@ -1993,7 +1993,7 @@ public:
             auto index = 0;
             for (auto item : personalLoot.items)
             {
-                selectedPlayerOrSelf->StoreLootItem(index, &personalLoot);
+                selectedPlayerOrSelf->StoreLootItem(ObjectGuid::Empty, index, &personalLoot);
                 ++index;
                 if (item.type == LootItemType::Currency)
                 {

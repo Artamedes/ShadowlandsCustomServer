@@ -17,6 +17,8 @@ void AddSC_mob_Bloodmaul();
 void AddSC_spell_Bloodmaul();
 void AddSC_instance_Bloodmaul();
 
+void AddSC_draenor_shadowmoon_valley();
+
 void AddDraenorScripts()
 {
     AddSC_instance_Skyreach();
@@ -35,4 +37,6 @@ void AddDraenorScripts()
     AddSC_mob_Bloodmaul();
     AddSC_spell_Bloodmaul();
     AddSC_instance_Bloodmaul();
+
+    AddSC_draenor_shadowmoon_valley();
 }
