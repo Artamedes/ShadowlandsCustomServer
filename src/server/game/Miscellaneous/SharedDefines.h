@@ -5713,7 +5713,7 @@ enum UnitDynFlags
     UNIT_DYNFLAG_TRACK_UNIT                 = 0x0008,
     UNIT_DYNFLAG_TAPPED                     = 0x0010, // Lua_UnitIsTapped - Hide this flag if we aren't personal
     UNIT_DYNFLAG_SPECIALINFO                = 0x0020,
-    UNIT_DYNFLAG_UNUSED                     = 0x0040, // previously UNIT_DYNFLAG_DEAD
+    UNIT_DYNFLAG_ALLOW_SKIN                 = 0x0040, ///< Brings up the skinning right click (valid 9.2.7)
     UNIT_DYNFLAG_REFER_A_FRIEND             = 0x0080
 };
 

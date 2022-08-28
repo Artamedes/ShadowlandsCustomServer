@@ -78,6 +78,10 @@ public:
 
                 if (!receiver->isAllowedToLoot(creature))
                     dynamicFlags &= ~UNIT_DYNFLAG_LOOTABLE;
+
+                // TODO: Check if player has skinning?
+                if (creature->HasUnitFlag(UNIT_FLAG_SKINNABLE))
+                    dynamicFlags |= UNIT_DYNFLAG_ALLOW_SKIN;
             }
 
             // unit UNIT_DYNFLAG_TRACK_UNIT should only be sent to caster of SPELL_AURA_MOD_STALKED auras

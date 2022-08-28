@@ -2220,6 +2220,14 @@ void Creature::setDeathState(DeathState s)
 
         setActive(false);
 
+        if (!IsPet() && GetCreatureTemplate()->SkinLootId)
+        {
+            if (LootTemplates_Skinning.HaveLootFor(GetCreatureTemplate()->SkinLootId))
+            {
+                SetUnitFlag(UNIT_FLAG_SKINNABLE);
+            }
+        }
+
         SetNoSearchAssistance(false);
 
         //Dismiss group if is leader
@@ -2945,29 +2953,6 @@ void Creature::RefreshCanSwimFlag(bool recheck)
 
 void Creature::AllLootRemovedFromCorpse()
 {
-    if (GetLootFor()->loot_type != LOOT_SKINNING && !IsPet() && GetCreatureTemplate()->SkinLootId && hasLootRecipient())
-        if (LootTemplates_Skinning.HaveLootFor(GetCreatureTemplate()->SkinLootId))
-        {
-            SetUnitFlag(UNIT_FLAG_SKINNABLE);
-
-            if (CanHavePersonalLoot() && !wasSkinned)
-            {
-                wasSkinned = true;
-                for (auto& loot : m_PersonalLoots)
-                {
-                    auto player = ObjectAccessor::GetPlayer(*this, loot.first);
-                    if (player)
-                    {
-                        if (loot.second.get())
-                        {
-                            loot.second.get()->clear();
-                            loot.second.get()->FillLoot(GetCreatureTemplate()->SkinLootId, LootTemplates_Skinning, player, true);
-                        }
-                    }
-                }
-            }
-        }
-
     time_t now = GameTime::GetGameTime();
     // Do not reset corpse remove time if corpse is already removed
     if (m_corpseRemoveTime <= now)
