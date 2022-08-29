@@ -5482,9 +5482,8 @@ void Spell::TakeCastItem()
     bool expendable = false;
     bool withoutCharges = false;
 
-    if (auto bonusData = m_CastItem->GetBonus())
-        for (auto itemEffect : bonusData->Effects)
-            if (itemEffect)
+    // TODO: Check this again, i think this is making old iteration before an issue..
+    for (ItemEffectEntry const* itemEffect : m_CastItem->GetEffects())
     {
         if (itemEffect->LegacySlotIndex >= m_CastItem->m_itemData->SpellCharges.size())
             continue;
