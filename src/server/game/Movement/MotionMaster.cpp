@@ -33,6 +33,7 @@
 #include "ScriptSystem.h"
 #include "Unit.h"
 #include "WaypointDefines.h"
+#include "WaypointManager.h"
 #include <algorithm>
 #include <iterator>
 
@@ -942,7 +943,7 @@ void MotionMaster::MoveJumpWithGravity(Position const& pos, float speedXY, float
     Add(movement);
 }
 
-GenericMovementGenerator* MotionMaster::MoveCirclePath(float x, float y, float z, float radius, bool clockwise, uint8 stepCount)
+GenericMovementGenerator* MotionMaster::MoveCirclePath(float x, float y, float z, float radius, bool clockwise, uint8 stepCount, float velocity /*= 0.f*/)
 {
     std::function<void(Movement::MoveSplineInit&)> initializer = [=](Movement::MoveSplineInit& init)
     {
@@ -972,15 +973,57 @@ GenericMovementGenerator* MotionMaster::MoveCirclePath(float x, float y, float z
             init.SetFly();
             init.SetCyclic();
             init.SetAnimation(AnimTier::Hover);
+            init.SetUncompressed();
         }
         else
         {
             init.SetWalk(true);
             init.SetCyclic();
         }
+
+        // cata has smooth here, didnt check why
+        init.SetSmooth();
+        if (velocity > 0.f)
+            init.SetVelocity(velocity);
     };
 
     return Add(new GenericMovementGenerator(std::move(initializer), EFFECT_MOTION_TYPE, 0));
+}
+
+void MotionMaster::MoveCyclicPath(Position const* pathPoints, size_t pathSize, bool walk /*= false*/, bool fly /*= false*/, float velocity /*= 0.0f*/)
+{
+    std::function<void(Movement::MoveSplineInit&)> initializer = [=](Movement::MoveSplineInit& init)
+    {
+        Movement::PointsArray path;
+        path.reserve(pathSize);
+        std::transform(pathPoints, pathPoints + pathSize, std::back_inserter(path), [](Position const& point)
+        {
+            return G3D::Vector3(point.GetPositionX(), point.GetPositionY(), point.GetPositionZ());
+        });
+
+        if (fly)
+        {
+            init.SetFly();
+            init.SetUncompressed();
+        }
+
+        if (velocity > 0.0f)
+            init.SetVelocity(velocity);
+
+        init.MovebyPath(path);
+        init.SetSmooth();
+        init.SetWalk(walk);
+        init.SetCyclic();
+    };
+
+    Add(new GenericMovementGenerator(std::move(initializer), EFFECT_MOTION_TYPE, 0));
+}
+
+void MotionMaster::MoveCyclicPath(uint32 pathId)
+{
+    /// @TODO:
+    //if (WaypointPath const* splinePath = sWaypointMgr->GetPath(pathId))
+    //    Mutate(new CyclicMovementGenerator<Creature>(splinePath), MOTION_SLOT_IDLE);
 }
 
 GenericMovementGenerator* MotionMaster::MoveSmoothPath(uint32 pointId, Position const* pathPoints, size_t pathSize, bool walk, bool fly, Optional<float> velocity)
