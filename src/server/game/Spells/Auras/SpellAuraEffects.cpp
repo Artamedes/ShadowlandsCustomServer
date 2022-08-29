@@ -2537,12 +2537,29 @@ void AuraEffect::HandleAuraModStalked(AuraApplication const* aurApp, uint8 mode,
 
     // used by spells: Hunter's Mark, Mind Vision, Syndicate Tracker (MURP) DND
     if (apply)
+    {
         target->SetDynamicFlag(UNIT_DYNFLAG_TRACK_UNIT);
+        target->m_StalkedAuraSeers.insert(GetCasterGUID());
+    }
     else
     {
         // do not remove unit flag if there are more than this auraEffect of that kind on unit on unit
         if (!target->HasAuraType(GetAuraType()))
             target->RemoveDynamicFlag(UNIT_DYNFLAG_TRACK_UNIT);
+
+        // TODO: We should only remove if we don't have another aura - check if this works as intended.
+        bool shouldRemove = true;
+        for (auto aur : target->GetAuraEffectsByType(SPELL_AURA_MOD_STALKED))
+        {
+            if (aur->GetCasterGUID() == GetCasterGUID())
+                if (aur->GetBase() != GetBase())
+                {
+                    shouldRemove = false;
+                    break;
+                }
+        }
+        if (shouldRemove)
+            target->m_StalkedAuraSeers.erase(GetCasterGUID());
     }
 
     // call functions which may have additional effects after changing state of unit

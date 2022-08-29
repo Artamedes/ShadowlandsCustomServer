@@ -9140,7 +9140,10 @@ bool Unit::IsAlwaysDetectableFor(WorldObject const* seer) const
     if (WorldObject::IsAlwaysDetectableFor(seer))
         return true;
 
-    if (HasAuraTypeWithCaster(SPELL_AURA_MOD_STALKED, seer->GetGUID()))
+    // this has really bad performance, we can handle with easier way with set and find :)
+    //if (HasAuraTypeWithCaster(SPELL_AURA_MOD_STALKED, seer->GetGUID()))
+    //    return true;
+    if (m_StalkedAuraSeers.find(seer->GetGUID()) != m_StalkedAuraSeers.end())
         return true;
 
     return false;

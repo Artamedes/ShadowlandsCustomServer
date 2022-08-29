@@ -2146,6 +2146,10 @@ class TC_GAME_API Unit : public WorldObject
         bool IsAlwaysVisibleFor(WorldObject const* seer) const override;
         bool IsAlwaysDetectableFor(WorldObject const* seer) const override;
 
+    public:
+        GuidUnorderedSet m_StalkedAuraSeers;
+    protected:
+
         void DisableSpline();
 
         void ProcessPositionDataChanged(PositionFullTerrainStatus const& data) override;
