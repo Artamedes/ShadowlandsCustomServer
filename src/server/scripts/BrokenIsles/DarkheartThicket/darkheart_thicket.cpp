@@ -112,10 +112,8 @@ public:
         npc_dt_malfurion_stormrage_AI(Creature* creature) : ScriptedAI(creature)
         {
             Initialize();
-            instance = me->GetInstanceScript();
         }
 
-        InstanceScript* instance;
         EventMap events;
         Phase phase;
 
@@ -396,12 +394,24 @@ public:
         return new at_dt_trash_blood_assaultAI(areatrigger);
     }
 };
+// 100400 - npc_dead_perserver_druid_100400
+struct npc_dead_perserver_druid_100400 : public ScriptedAI
+{
+public:
+    npc_dead_perserver_druid_100400(Creature* creature) : ScriptedAI(creature) { }
+
+    void InitializeAI() override
+    {
+        DoCastSelf(146007); ///< Permanent feign
+    }
+};
 
 void AddSC_darkheart_thicket()
 {
     // NPC Scripts
     new npc_dt_trash_vile_mushroom();
     new npc_dt_malfurion_stormrage();
+    RegisterCreatureAI(npc_dead_perserver_druid_100400);
 
     // Spell Scripts
     new spell_dt_trash_star_shower();

@@ -1,0 +1,2 @@
+REPLACE INTO `creature_template_movement` (`CreatureId`, `Ground`, `Swim`, `Flight`, `Rooted`, `Chase`, `Random`, `InteractionPauseTimer`) VALUES (95769, 1, 0, 1, 0, 0, 0, NULL);
+ UPDATE creature_template set ScriptName = 'npc_dead_perserver_druid_100400' WHERE entry = 100400;

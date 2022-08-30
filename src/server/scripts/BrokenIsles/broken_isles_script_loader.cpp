@@ -18,9 +18,25 @@
 // This is where scripts' loading functions should be declared:
 void AddSC_orderhall_warrior();
 
+// Darkheart Thicket
+void AddSC_instance_darkheart_thicket();
+void AddSC_darkheart_thicket();
+void AddSC_boss_archdruid_glaidalis();
+void AddSC_boss_oakheart();
+void AddSC_boss_dresaron();
+void AddSC_boss_shade_of_xavius();
+
 // The name of this function should match:
 // void Add${NameOfDirectory}Scripts()
 void AddBrokenIslesScripts()
 {
     AddSC_orderhall_warrior();
+
+    // Darkheart Thicket
+    AddSC_instance_darkheart_thicket();
+    AddSC_darkheart_thicket();
+    AddSC_boss_archdruid_glaidalis();
+    AddSC_boss_oakheart();
+    AddSC_boss_dresaron();
+    AddSC_boss_shade_of_xavius();
 }
