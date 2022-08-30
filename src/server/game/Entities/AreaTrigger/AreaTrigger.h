@@ -145,6 +145,11 @@ class TC_GAME_API AreaTrigger : public WorldObject, public GridObject<AreaTrigge
         bool _reachedDestination;
 
         void SetTargetGUID(ObjectGuid const& guid);
+        void SetExtraScaleCurveParameter(uint32 param) { SetUpdateFieldValue(m_values.ModifyValue(&AreaTrigger::m_areaTriggerData).ModifyValue(&UF::AreaTriggerData::ExtraScaleCurve).ModifyValue(&UF::ScaleCurve::ParameterCurve), param); }
+        void SetExtraScaleOverrideActive(bool over) { SetUpdateFieldValue(m_values.ModifyValue(&AreaTrigger::m_areaTriggerData).ModifyValue(&UF::AreaTriggerData::ExtraScaleCurve).ModifyValue(&UF::ScaleCurve::OverrideActive), over); }
+
+        void SetSpellForVisuals(uint32 spellId) { SetUpdateFieldValue(m_values.ModifyValue(&AreaTrigger::m_areaTriggerData).ModifyValue(&UF::AreaTriggerData::SpellForVisuals), spellId); }
+        void SetDecalPropertiesId(uint32 decalPropertiesId) { SetUpdateFieldValue(m_values.ModifyValue(&AreaTrigger::m_areaTriggerData).ModifyValue(&UF::AreaTriggerData::DecalPropertiesID), decalPropertiesId); }
 
         uint32 CreateTimeMS = 0;
 

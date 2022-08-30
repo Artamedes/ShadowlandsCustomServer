@@ -166,11 +166,52 @@ public:
     void RescheduleEvent(uint32 eventId, Milliseconds minTime, Milliseconds maxTime, uint32 group = 0, uint8 phase = 0);
 
     /**
+    * @name ScheduleNextEvent
+    * @brief Schedule the next event (_lastEvent + 1).
+    * @param time Time until in milliseconds as std::chrono::duration the event occurs.
+    */
+    void ScheduleNextEvent(Milliseconds const& time)
+    {
+        _eventMap.insert(EventStore::value_type(_time + time, _lastEvent + 1));
+    }
+
+    /**
+    * @name ScheduleNextEvent
+    * @brief Schedule the next event (_lastEvent + 1).
+    * @param time Time until the event occurs.
+    */
+    void ScheduleNextEvent(uint32 time)
+    {
+        _eventMap.insert(EventStore::value_type(_time + Milliseconds(time), _lastEvent + 1));
+    }
+
+    /**
     * @name RepeatEvent
     * @brief Repeats the most recently executed event.
     * @param time Time until the event occurs as std::chrono type.
     */
     void Repeat(Milliseconds time);
+
+    /**
+    * @name RepeatEvent
+    * @brief Repeats the mostly recently executed event.
+    * @param time Time until the event occurs.
+    */
+    void Repeat(uint32 time)
+    {
+        _eventMap.insert(EventStore::value_type(_time + Milliseconds(time), _lastEvent));
+    }
+
+    /**
+    * @name RepeatEvent
+    * @brief Repeats the mostly recently executed event, Equivalent to Repeat(urand(minTime, maxTime).
+    * @param minTime Minimum time until the event occurs.
+    * @param maxTime Maximum time until the event occurs.
+    */
+    void Repeat(uint32 minTime, uint32 maxTime)
+    {
+        Repeat(Milliseconds(minTime), Milliseconds(maxTime));
+    }
 
     /**
     * @name RepeatEvent
