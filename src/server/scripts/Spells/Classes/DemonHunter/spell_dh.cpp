@@ -4525,6 +4525,29 @@ class spell_unending_hatred : public AuraScript
     }
 };
 
+/// ID: 196055 Double Jump
+class spell_double_jump : public AuraScript
+{
+    PrepareAuraScript(spell_double_jump);
+
+    void HandleApply(const AuraEffect* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+    {
+        if (GetTarget())
+            GetTarget()->SetCanDoubleJump(true);
+    }
+
+    void HandleRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+    {
+        if (GetTarget())
+            GetTarget()->SetCanDoubleJump(false);
+    }
+
+    void Register() override
+    {
+        OnEffectApply += AuraEffectApplyFn(spell_double_jump::HandleApply, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+        OnEffectRemove += AuraEffectRemoveFn(spell_double_jump::HandleRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+    }
+};
 
 void AddSC_demon_hunter_spell_scripts()
 {
@@ -4615,6 +4638,7 @@ void AddSC_demon_hunter_spell_scripts()
     RegisterSpellScript(spell_infernal_strike_jump);
     RegisterSpellScript(spell_chaotic_imprint);
     RegisterSpellScript(spell_unending_hatred);
+    RegisterSpellScript(spell_double_jump);
 
     /// AreaTrigger Scripts
     RegisterAreaTriggerAI(at_dh_darkness);

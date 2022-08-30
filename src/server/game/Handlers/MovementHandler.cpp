@@ -186,9 +186,8 @@ void WorldSession::HandleMoveWorldportAck()
             }
         }
 
-        if (!seamlessTeleport)
-            player->SendInitialPacketsAfterAddToMap();
-        else
+        player->SendInitialPacketsAfterAddToMap();
+        if (seamlessTeleport)
         {
             player->UpdateVisibilityForPlayer();
             if (Garrison* garrison = player->GetGarrison())
@@ -265,6 +264,10 @@ void WorldSession::HandleMoveWorldportAck()
 
         // resummon pet
         player->ResummonPetTemporaryUnSummonedIfAny();
+
+        /// this should be handled by setCompoundState but it's not work idk why
+        if (player->HasAura(196055))   ///< Cannot be done any other way
+            player->SetCanDoubleJump(true);
 
         // now that the player has been relocated, it's time to cast the arrival spell (if any)
         if (castOnArrivalSpellId != 0)
