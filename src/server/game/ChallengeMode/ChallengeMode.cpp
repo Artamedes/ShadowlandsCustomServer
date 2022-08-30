@@ -38,6 +38,7 @@
 #include "TemporarySummon.h"
 #include "PlayerChallenge.h"
 #include "CustomObjectMgr.h"
+#include "GameTime.h"
 
 Challenge::Challenge(InstanceMap* map, Player* player, Scenario* scenario, MythicKeystoneInfo* mythicKeystone)
     : InstanceScript(map), _instanceScript(map->GetInstanceScript()),
@@ -76,7 +77,8 @@ Challenge::Challenge(InstanceMap* map, Player* player, Scenario* scenario, Mythi
 
         for (GroupReference* itr = group->GetFirstMember(); itr != nullptr; itr = itr->next())
             if (Player* member = itr->GetSource())
-                _challengers.insert(member->GetGUID());
+                if (_keyOwner != member->GetGUID())
+                    _challengers.emplace_back(member->GetGUID());
     }
 
     if (!_challengeEntry)
@@ -86,7 +88,7 @@ Challenge::Challenge(InstanceMap* map, Player* player, Scenario* scenario, Mythi
         return;
     }
 
-    _challengers.insert(_keyOwner);
+    _challengers.emplace_back(_keyOwner);
 
     _rewardLevel = CHALLENGE_NOT_IN_TIMER;
 
@@ -496,11 +498,27 @@ void Challenge::Complete()
     if (_challengeEntry)
     {
         WorldPackets::ChallengeMode::Complete complete;
-        complete.Run.MapChallengeModeID = _mapID;
-        complete.Run.DurationMs = _challengeTimer;
-        complete.Run.Level = _challengeLevel;
-        complete.Run.MapChallengeModeID = _challengeEntry->ID;
-        complete.IsCompletedInTimer = _rewardLevel > CHALLENGE_NOT_IN_TIMER;
+        complete.Run.MapChallengeModeID     = _mapID;
+        complete.Run.DurationMs             = _challengeTimer;
+        complete.Run.Level                  = _challengeLevel;
+        complete.Run.MapChallengeModeID     = _challengeEntry->ID;
+        complete.Run.CompletionDate         = time(nullptr);
+        complete.Run.KeystoneAffixIDs       = _affixes;
+        complete.Run.RunScore               = 122.39794921875f;
+        complete.IsCompletedInTimer         = _rewardLevel > CHALLENGE_NOT_IN_TIMER;
+
+        complete.Members.resize(_challengers.size());
+
+        for (uint32 i = 0; i < _challengers.size(); ++i)
+        {
+            auto const& guid = _challengers[i];
+            if (auto player = ObjectAccessor::FindConnectedPlayer(guid))
+            {
+                complete.Members[i].Member = guid;
+                complete.Members[i].Name = player->GetName();
+            }
+        }
+
         BroadcastPacket(complete.Write());
     }
 
@@ -517,20 +535,20 @@ void Challenge::Complete()
     // Reward part
     if (keystone)
     {
+        /// Check if we depleted the key
         if (!_isKeyDepleted)
         {
-            if (_challengeEntry)
+            /// Get the key used for challenge
+            if (auto keyInfo = keyOwner->GetPlayerChallenge()->GetKeystoneInfo(keystone))
             {
-                if (auto keyInfo = keyOwner->GetPlayerChallenge()->GetKeystoneInfo(keystone))
-                {
-                    keyInfo->GenerateNewDungeon();
-                    keyInfo->Level = std::min(_challengeLevel + _rewardLevel, sWorld->getIntConfig(CONFIG_CHALLENGE_LEVEL_LIMIT));
-                    keystone->SetModifier(ITEM_MODIFIER_CHALLENGE_MAP_CHALLENGE_MODE_ID, keyInfo->ID);
-                    keystone->SetModifier(ITEM_MODIFIER_CHALLENGE_KEYSTONE_LEVEL, keyInfo->Level);
-                }
-            }            
+                // TODO: we need to move this all to handle in KeystoneInfo itself
+                keyInfo->GenerateNewDungeon();
+                keyInfo->Level = std::min(_challengeLevel + _rewardLevel, sWorld->getIntConfig(CONFIG_CHALLENGE_LEVEL_LIMIT));
+                keystone->SetModifier(ITEM_MODIFIER_CHALLENGE_MAP_CHALLENGE_MODE_ID, keyInfo->ID);
+                keystone->SetModifier(ITEM_MODIFIER_CHALLENGE_KEYSTONE_LEVEL, keyInfo->Level);
+            }
         }
-        else
+        else ///< Depleted the key, drop keystone level.
             keyOwner->ChallengeKeyCharded(keystone, _challengeLevel);
 
         keyOwner->UpdateChallengeKey(keystone);

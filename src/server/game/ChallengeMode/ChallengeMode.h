@@ -351,7 +351,7 @@ public:
     bool IsComplete() { return _complete; }
     bool IsHordeChallenge() { return _hordeSpawn; }
 
-    GuidUnorderedSet _challengers;
+    GuidVector _challengers;
 
     ObjectGuid _groupGUID;
     ObjectGuid _keyOwner;

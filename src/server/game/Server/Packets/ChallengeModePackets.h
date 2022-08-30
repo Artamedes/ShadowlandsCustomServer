@@ -184,6 +184,12 @@ namespace WorldPackets
             uint32 DeathCount;
         };
 
+        struct ChallengeCompleteMembers
+        {
+            ObjectGuid Member;
+            std::string Name;
+        };
+
         class Complete final : public ServerPacket
         {
         public:
@@ -193,6 +199,8 @@ namespace WorldPackets
 
             WorldPackets::MythicPlus::MythicPlusRun Run;
             bool IsCompletedInTimer = false;
+            uint32 UnkInt = 1127717072;
+            std::vector< ChallengeCompleteMembers> Members;
         };
 
         class NewPlayerRecord final : public ServerPacket

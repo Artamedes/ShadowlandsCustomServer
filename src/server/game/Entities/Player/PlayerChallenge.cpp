@@ -272,7 +272,7 @@ void PlayerChallenge::_LoadMythicKeystones(PreparedQueryResult result)
         uint8 index = 0;
         auto itemId = fields[index++].GetUInt32();
         /// Get object pointer from bag
-        auto item = _player->GetItemByEntry(itemId);
+        auto item = _player->GetItemByEntry(itemId, ItemSearchLocation::Everywhere);
         if (!item)
             continue;
         auto keystoneInfo = GetKeystoneInfo(item, true);

@@ -146,12 +146,17 @@ WorldPacket const* WorldPackets::ChallengeMode::UpdateDeathCount::Write()
 WorldPacket const* WorldPackets::ChallengeMode::Complete::Write()
 {
     _worldPacket << Run;
-    _worldPacket << int32(0); // Unk
-    _worldPacket << int32(0); // Unk count
+    _worldPacket << int32(UnkInt);
+    _worldPacket << uint32(Members.size());
     _worldPacket.WriteBit(IsCompletedInTimer);
     _worldPacket.FlushBits();
-
-    // For unk count, read guid, read bit
+    for (auto const& mem : Members)
+    {
+        _worldPacket << mem.Member;
+        _worldPacket.WriteBits(mem.Name.size(), 6);
+        _worldPacket.FlushBits();
+        _worldPacket.WriteString(mem.Name);
+    }
 
     return &_worldPacket;
 }
