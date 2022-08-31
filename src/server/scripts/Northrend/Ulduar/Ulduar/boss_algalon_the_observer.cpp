@@ -596,7 +596,7 @@ struct boss_algalon_the_observer : public BossAI
                     Talk(SAY_ALGALON_COLLAPSING_STAR);
                     Talk(EMOTE_ALGALON_COLLAPSING_STAR);
                     for (uint8 i = 0; i < COLLAPSING_STAR_COUNT; ++i)
-                        me->SummonCreature(NPC_COLLAPSING_STAR, CollapsingStarPos[i], TEMPSUMMON_CORPSE_DESPAWN);
+                        me->SummonCreature(NPC_COLLAPSING_STAR, CollapsingStarPos[i], TEMPSUMMON_CORPSE_DESPAWN, 0);
                     events.Repeat(1min);
                     break;
                 case EVENT_BIG_BANG:
@@ -657,7 +657,7 @@ struct boss_algalon_the_observer : public BossAI
                     me->RemoveUnitFlag(UNIT_FLAG_UNINTERACTIBLE);
                     break;
                 case EVENT_OUTRO_5:
-                    if (Creature* brann = me->SummonCreature(NPC_BRANN_BRONZBEARD_ALG, BrannOutroPos))
+                    if (Creature* brann = me->SummonCreature(NPC_BRANN_BRONZBEARD_ALG, BrannOutroPos, TEMPSUMMON_MANUAL_DESPAWN, 0))
                         brann->AI()->DoAction(ACTION_OUTRO);
                     events.ScheduleEvent(EVENT_OUTRO_6, 10s);
                     break;
@@ -1000,7 +1000,7 @@ struct go_celestial_planetarium_access : public GameObjectAI
         // Start Algalon event
         me->SetFlag(GO_FLAG_IN_USE);
         _events.ScheduleEvent(EVENT_DESPAWN_CONSOLE, 5s);
-        if (Creature* brann = me->SummonCreature(NPC_BRANN_BRONZBEARD_ALG, BrannIntroSpawnPos))
+        if (Creature* brann = me->SummonCreature(NPC_BRANN_BRONZBEARD_ALG, BrannIntroSpawnPos, TEMPSUMMON_MANUAL_DESPAWN, 0))
             brann->AI()->DoAction(ACTION_START_INTRO);
 
         _instance->SetData(DATA_ALGALON_SUMMON_STATE, 1);

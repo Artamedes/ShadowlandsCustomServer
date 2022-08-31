@@ -738,7 +738,7 @@ struct npc_icc_orb_controller : public ScriptedAI
         for (ObjectGuid guid : _minionGuids)
         {
             if (Creature* minion = ObjectAccessor::GetCreature(*me, guid))
-                if (minion->IsAIEnabled() && !minion->IsInCombat())
+                if (minion->AI() && !minion->IsInCombat())
                     minion->AI()->DoZoneInCombat(darkfallen);
         }
 
@@ -897,7 +897,7 @@ struct npc_darkfallen_noble : public DarkFallenAI
         {
             // Vampiric should be summoned by 70647 but i have no idea what is miscB of summon effect
             if (Unit* target = me->GetVictim())
-                if (Creature* vampiric = me->SummonCreature(NPC_VAMPIRIC_FIEND, target->GetPosition(), TEMPSUMMON_CORPSE_DESPAWN))
+                if (Creature* vampiric = me->SummonCreature(NPC_VAMPIRIC_FIEND, target->GetPosition(), TEMPSUMMON_CORPSE_DESPAWN, 0))
                     vampiric->AI()->AttackStart(target);
             summonVampiric.Repeat(30s);
         });
@@ -1116,7 +1116,7 @@ struct go_empowering_blood_orb : public GameObjectAI
 
     void Reset() override
     {
-        if (Creature* trigger = me->SummonCreature(NPC_ORB_VISUAL_STALKER, me->GetPosition(), TEMPSUMMON_MANUAL_DESPAWN))
+        if (Creature* trigger = me->SummonCreature(NPC_ORB_VISUAL_STALKER, me->GetPosition(), TEMPSUMMON_MANUAL_DESPAWN, 0))
             _triggerGuid = trigger->GetGUID();
     }
 

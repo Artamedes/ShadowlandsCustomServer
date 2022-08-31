@@ -275,7 +275,7 @@ struct npc_firework : public ScriptedAI
                                 minion->AI()->AttackStart(me->SelectNearestPlayer(20.0f));
                             break;
                         case 9:
-                            me->SummonCreature(NPC_OMEN, omenSummonPos);
+                            me->SummonCreature(NPC_OMEN, omenSummonPos, TEMPSUMMON_MANUAL_DESPAWN, 0);
                             break;
                     }
                 }

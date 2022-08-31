@@ -325,7 +325,7 @@ class spell_baleroc_blades_of_baleroc : public SpellScript
     void ChooseBlade(SpellEffIndex /*effIndex*/)
     {
         Creature* caster = GetCaster()->ToCreature();
-        if (!caster || !caster->IsAIEnabled())
+        if (!caster || !caster->AI())
             return;
 
         switch (urand(1, 2))

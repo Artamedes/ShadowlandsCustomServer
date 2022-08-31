@@ -576,7 +576,7 @@ class spell_auriaya_agro_creator : public SpellScript
     void HandleDummyEffect(SpellEffIndex /*effIndex*/)
     {
         Creature* caster = GetCaster()->ToCreature();
-        if (!caster || !caster->IsAIEnabled() || caster->HasReactState(REACT_PASSIVE))
+        if (!caster || !caster->AI() || caster->HasReactState(REACT_PASSIVE))
             return;
 
         if (Unit* target = caster->AI()->SelectTarget(SelectTargetMethod::Random, 0, CatsTargetSelector(caster, 5.0f, 10.0f)))

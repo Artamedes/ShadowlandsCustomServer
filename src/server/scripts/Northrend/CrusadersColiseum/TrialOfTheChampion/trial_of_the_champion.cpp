@@ -226,7 +226,7 @@ public:
                     return;
             }
 
-            if (Creature* pBoss = me->SummonCreature(VEHICLE_TO_SUMMON1, SpawnPosition))
+            if (Creature* pBoss = me->SummonCreature(VEHICLE_TO_SUMMON1, SpawnPosition, TEMPSUMMON_MANUAL_DESPAWN, 0))
             {
                 switch (uiSummonTimes)
                 {
@@ -272,7 +272,7 @@ public:
 
                 for (uint8 i = 0; i < 3; ++i)
                 {
-                    if (Creature* pAdd = me->SummonCreature(VEHICLE_TO_SUMMON2, SpawnPosition, TEMPSUMMON_CORPSE_DESPAWN))
+                    if (Creature* pAdd = me->SummonCreature(VEHICLE_TO_SUMMON2, SpawnPosition, TEMPSUMMON_CORPSE_DESPAWN, 0))
                     {
                         switch (uiSummonTimes)
                         {
@@ -309,15 +309,15 @@ public:
         {
             me->GetMotionMaster()->MovePoint(1, 735.81f, 661.92f, 412.39f);
 
-            if (me->SummonCreature(uiArgentChampion, SpawnPosition))
+            if (me->SummonCreature(uiArgentChampion, SpawnPosition, TEMPSUMMON_MANUAL_DESPAWN, 0))
             {
                 for (uint8 i = 0; i < 3; ++i)
                 {
-                    if (Creature* pTrash = me->SummonCreature(NPC_ARGENT_LIGHWIELDER, SpawnPosition))
+                    if (Creature* pTrash = me->SummonCreature(NPC_ARGENT_LIGHWIELDER, SpawnPosition, TEMPSUMMON_MANUAL_DESPAWN, 0))
                         pTrash->AI()->SetData(i, 0);
-                    if (Creature* pTrash = me->SummonCreature(NPC_ARGENT_MONK, SpawnPosition))
+                    if (Creature* pTrash = me->SummonCreature(NPC_ARGENT_MONK, SpawnPosition, TEMPSUMMON_MANUAL_DESPAWN, 0))
                         pTrash->AI()->SetData(i, 0);
-                    if (Creature* pTrash = me->SummonCreature(NPC_PRIESTESS, SpawnPosition))
+                    if (Creature* pTrash = me->SummonCreature(NPC_PRIESTESS, SpawnPosition, TEMPSUMMON_MANUAL_DESPAWN, 0))
                         pTrash->AI()->SetData(i, 0);
                 }
             }
@@ -367,7 +367,7 @@ public:
                if ((instance->GetBossState(BOSS_GRAND_CHAMPIONS) == DONE &&
                    instance->GetBossState(BOSS_ARGENT_CHALLENGE_E) == DONE) ||
                    instance->GetBossState(BOSS_ARGENT_CHALLENGE_P) == DONE)
-                    me->SummonCreature(VEHICLE_BLACK_KNIGHT, 769.834f, 651.915f, 447.035f, 0);
+                    me->SummonCreature(VEHICLE_BLACK_KNIGHT, 769.834f, 651.915f, 447.035f, 0, TEMPSUMMON_MANUAL_DESPAWN, 0);
             }
         }
 

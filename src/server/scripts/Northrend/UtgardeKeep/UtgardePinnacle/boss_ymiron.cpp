@@ -165,7 +165,7 @@ struct boss_ymiron : public BossAI
         if (pointId == POINT_BOAT) // Check might not be needed.
         {
             Talk(ActiveBoat[ActiveOrder[ActivedNumber]].say);
-            if (Creature* ancestor = me->SummonCreature(ActiveBoat[ActiveOrder[ActivedNumber]].npc, ActiveBoat[ActiveOrder[ActivedNumber]].SpawnX, ActiveBoat[ActiveOrder[ActivedNumber]].SpawnY, ActiveBoat[ActiveOrder[ActivedNumber]].SpawnZ, ActiveBoat[ActiveOrder[ActivedNumber]].SpawnO, TEMPSUMMON_CORPSE_DESPAWN))
+            if (Creature* ancestor = me->SummonCreature(ActiveBoat[ActiveOrder[ActivedNumber]].npc, ActiveBoat[ActiveOrder[ActivedNumber]].SpawnX, ActiveBoat[ActiveOrder[ActivedNumber]].SpawnY, ActiveBoat[ActiveOrder[ActivedNumber]].SpawnZ, ActiveBoat[ActiveOrder[ActivedNumber]].SpawnO, TEMPSUMMON_CORPSE_DESPAWN, 0))
             {
                 DoCast(ancestor, SPELL_CHANNEL_YMIRON_TO_SPIRIT);
                 ancestor->CastSpell(me, SPELL_CHANNEL_SPIRIT_TO_YMIRON, true);

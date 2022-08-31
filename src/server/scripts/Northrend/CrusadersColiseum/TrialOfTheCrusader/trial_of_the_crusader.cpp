@@ -385,21 +385,21 @@ struct npc_tirion_toc : public ScriptedAI
     void HandleBarrettSummon()
     {
         if (IsHeroic() && _instance->GetBossState(DATA_NORTHREND_BEASTS) != DONE)
-            me->SummonCreature(NPC_BARRETT_BEASTS_HC, BarretSpawnPosition);
+            me->SummonCreature(NPC_BARRETT_BEASTS_HC, BarretSpawnPosition, TEMPSUMMON_MANUAL_DESPAWN, 0);
         else if (_instance->GetBossState(DATA_NORTHREND_BEASTS) != DONE)
-            me->SummonCreature(NPC_BARRETT_BEASTS, BarretSpawnPosition);
+            me->SummonCreature(NPC_BARRETT_BEASTS, BarretSpawnPosition, TEMPSUMMON_MANUAL_DESPAWN, 0);
         else if (_instance->GetBossState(DATA_JARAXXUS) != DONE)
         {
-            me->SummonCreature(NPC_BARRETT_JARAXXUS, BarretSpawnPosition);
+            me->SummonCreature(NPC_BARRETT_JARAXXUS, BarretSpawnPosition, TEMPSUMMON_MANUAL_DESPAWN, 0);
             if (_instance->GetBossState(DATA_JARAXXUS) == FAIL)
                 DoAction(ACTION_SUMMON_JARAXXUS);
         }
         else if (_instance->GetBossState(DATA_FACTION_CRUSADERS) != DONE)
-            me->SummonCreature(NPC_BARRETT_FACTION, BarretSpawnPosition);
+            me->SummonCreature(NPC_BARRETT_FACTION, BarretSpawnPosition, TEMPSUMMON_MANUAL_DESPAWN, 0);
         else if (_instance->GetBossState(DATA_TWIN_VALKIRIES) != DONE)
-            me->SummonCreature(NPC_BARRETT_VALKYR, BarretSpawnPosition);
+            me->SummonCreature(NPC_BARRETT_VALKYR, BarretSpawnPosition, TEMPSUMMON_MANUAL_DESPAWN, 0);
         else if (_instance->GetBossState(DATA_LICH_KING) != DONE)
-            me->SummonCreature(NPC_BARRETT_LK, BarretSpawnPosition);
+            me->SummonCreature(NPC_BARRETT_LK, BarretSpawnPosition, TEMPSUMMON_MANUAL_DESPAWN, 0);
     }
 
     void DoAction(int32 action) override
@@ -419,7 +419,7 @@ struct npc_tirion_toc : public ScriptedAI
                 _jormungarsSummoned = true;
                 Talk(TIRION_SAY_JORMUNGARS);
                 _instance->DoUseDoorOrButton(_instance->GetGuidData(DATA_MAIN_GATE));
-                me->SummonCreature(NPC_DREADSCALE, NorthrendBeastsSpawnPositions[1]);
+                me->SummonCreature(NPC_DREADSCALE, NorthrendBeastsSpawnPositions[1], TEMPSUMMON_MANUAL_DESPAWN, 0);
                 _events.ScheduleEvent(EVENT_EXCLAMATION, 7s);
                 break;
             case ACTION_START_ICEHOWL:
@@ -428,7 +428,7 @@ struct npc_tirion_toc : public ScriptedAI
                 _icehowlSummoned = true;
                 Talk(TIRION_SAY_ICEHOWL);
                 _instance->DoUseDoorOrButton(_instance->GetGuidData(DATA_MAIN_GATE));
-                me->SummonCreature(NPC_ICEHOWL, NorthrendBeastsSpawnPositions[0], TEMPSUMMON_DEAD_DESPAWN);
+                me->SummonCreature(NPC_ICEHOWL, NorthrendBeastsSpawnPositions[0], TEMPSUMMON_DEAD_DESPAWN, 0);
                 _events.ScheduleEvent(EVENT_EXCLAMATION, 6s);
                 break;
             case ACTION_NORTHREND_BEASTS_WIPE:
@@ -475,7 +475,7 @@ struct npc_tirion_toc : public ScriptedAI
                 _events.ScheduleEvent(EVENT_TRAGIC_VICTORY, 7s);
                 break;
             case ACTION_SUMMON_JARAXXUS:
-                me->SummonCreature(NPC_JARAXXUS, JaraxxusSpawnPosition);
+                me->SummonCreature(NPC_JARAXXUS, JaraxxusSpawnPosition, TEMPSUMMON_MANUAL_DESPAWN, 0);
                 break;
             case ACTION_KILL_JARAXXUS:
                 _events.ScheduleEvent(EVENT_KILL_JARAXXUS, 6s);
@@ -608,7 +608,7 @@ struct npc_tirion_toc : public ScriptedAI
                     me->SummonCreature(NPC_LICH_KING, LichKingSpawnPosition, TEMPSUMMON_TIMED_DESPAWN, 30s);
                     break;
                 case EVENT_SUMMON_CHAMPIONS:
-                    if (Creature* factitonController = me->SummonCreature(NPC_CHAMPIONS_CONTROLLER, ToCCommonLoc[1]))
+                    if (Creature* factitonController = me->SummonCreature(NPC_CHAMPIONS_CONTROLLER, ToCCommonLoc[1], TEMPSUMMON_MANUAL_DESPAWN, 0))
                         factitonController->AI()->SetData(0, _instance->GetData(DATA_TEAM)); // will be changed to DoAction soon
                     _events.ScheduleEvent(EVENT_START_CHAMPIONS, 3s);
                     break;
@@ -691,14 +691,14 @@ struct npc_fizzlebang_toc : public ScriptedAI
         _events.Update(diff);
 
         while (uint32 eventId = _events.ExecuteEvent())
-        {
+            {
             switch (eventId)
             {
                 case EVENT_START_MOVE:
                     me->GetMotionMaster()->MoveAlongSplineChain(POINT_SUMMON, SPLINE_INITIAL_MOVEMENT, true);
                     break;
                 case EVENT_OBLIVION:
-                    me->SummonCreature(NPC_WILFRED_PORTAL, PortalTargetSpawnPosition);
+                    me->SummonCreature(NPC_WILFRED_PORTAL, PortalTargetSpawnPosition, TEMPSUMMON_MANUAL_DESPAWN, 0);
                     me->SummonCreature(NPC_PURPLE_GROUND, PurpleGroundSpawnPosition, TEMPSUMMON_TIMED_DESPAWN, 16s);
                     Talk(WILFRED_SAY_OBLIVION);
                     DoCastSelf(SPELL_OPEN_PORTAL);

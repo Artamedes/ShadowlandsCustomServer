@@ -464,7 +464,7 @@ struct npc_mawsworn_defiler : public npc_crapopolis_ai_base
 
             scheduler.Schedule(5s, [this](TaskContext context)
             {
-                me->SummonCreature(700220, { 1029.028076f, -3572.835205f, 12.149024f, 2.73798f }, TempSummonType::TEMPSUMMON_MANUAL_DESPAWN);
+                me->SummonCreature(700220, { 1029.028076f, -3572.835205f, 12.149024f, 2.73798f }, TEMPSUMMON_MANUAL_DESPAWN, 0);
             });
         });
     }
@@ -559,7 +559,7 @@ struct npc_crap_warden_of_souls : public npc_crapopolis_ai_base
 
                 scheduler.Schedule(5s, [this](TaskContext context)
                     {
-                        me->SummonCreature(700221, { 1029.028076f, -3572.835205f, 12.149024f, 2.73798f }, TempSummonType::TEMPSUMMON_MANUAL_DESPAWN);
+                        me->SummonCreature(700221, { 1029.028076f, -3572.835205f, 12.149024f, 2.73798f }, TEMPSUMMON_MANUAL_DESPAWN, 0);
                     });
             });
     }

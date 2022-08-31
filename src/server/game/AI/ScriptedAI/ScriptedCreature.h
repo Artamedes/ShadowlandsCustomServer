@@ -246,6 +246,7 @@ class TC_GAME_API BossAI : public ScriptedAI
 
         virtual void ScheduleTasks() { }
 
+        void InitializeAI() override { _InitializeAI(); }
         void Reset() override { _Reset(); }
         void JustEngagedWith(Unit* who) override { _JustEngagedWith(who); }
         void JustDied(Unit* /*killer*/) override { _JustDied(); }
@@ -254,6 +255,7 @@ class TC_GAME_API BossAI : public ScriptedAI
         bool CanAIAttack(Unit const* target) const override;
 
     protected:
+        void _InitializeAI();
         void _Reset();
         void _JustEngagedWith(Unit* who);
         void _JustDied();

@@ -82,7 +82,7 @@ struct boss_hogger : public BossAI
 
         Talk(SAY_DEATH);
 
-        me->SummonCreature(NPC_WARDEN_THELWATER, wardenThelwaterSpawnPosition);
+        me->SummonCreature(NPC_WARDEN_THELWATER, wardenThelwaterSpawnPosition, TEMPSUMMON_MANUAL_DESPAWN, 0);
     }
 
     void JustSummoned(Creature* summon) override

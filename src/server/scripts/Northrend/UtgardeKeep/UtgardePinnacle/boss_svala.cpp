@@ -194,7 +194,7 @@ struct boss_svala : public BossAI
             if (GameObject* mirror = instance->GetGameObject(DATA_UTGARDE_MIRROR))
                 mirror->SetGoState(GO_STATE_READY);
 
-            if (Creature* arthas = me->SummonCreature(NPC_ARTHAS, ArthasPos, TEMPSUMMON_MANUAL_DESPAWN))
+            if (Creature* arthas = me->SummonCreature(NPC_ARTHAS, ArthasPos, TEMPSUMMON_MANUAL_DESPAWN, 0))
             {
                 arthas->SetUnitFlag(UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_UNINTERACTIBLE);
                 _arthasGUID = arthas->GetGUID();

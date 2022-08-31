@@ -993,7 +993,7 @@ struct npc_malcolm_moore : public CreatureScript
         void InitializeAI() override
         {
             me->GetMotionMaster()->MoveAlongSplineChain(MOVEID_EVENT1, CHAIN_MALCOLM1, true);
-            if (Creature* scruffy = me->SummonCreature(NPC_SCRUFFY, scruffySpawn))
+            if (Creature* scruffy = me->SummonCreature(NPC_SCRUFFY, scruffySpawn, TEMPSUMMON_MANUAL_DESPAWN, 0))
                 scruffy->GetMotionMaster()->MoveAlongSplineChain(0, CHAIN_SCRUFFY1, true);
         }
 

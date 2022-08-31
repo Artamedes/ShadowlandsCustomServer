@@ -443,7 +443,7 @@ struct boss_headless_horseman : public ScriptedAI
         DoCastSelf(SPELL_HEADLESS_HORSEMAN_BURNING_COSMETIC);
         _instance->SetData(DATA_HORSEMAN_EVENT_STATE, DONE);
         Talk(SAY_DEATH);
-        me->SummonCreature(NPC_SIR_THOMAS, me->GetPosition());
+        me->SummonCreature(NPC_SIR_THOMAS, me->GetPosition(), TEMPSUMMON_MANUAL_DESPAWN, 0);
         // Credit LFG
         if (me->GetMap()->HavePlayers())
         {
@@ -797,7 +797,7 @@ class spell_headless_horseman_yell_timer : public AuraScript
     void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
     {
         Creature* horseman = GetTarget()->ToCreature();
-        if (!horseman || !horseman->IsAIEnabled())
+        if (!horseman || !horseman->AI())
             return;
 
         horseman->AI()->Talk(SAY_HORSEMAN_ENTRANCE);
@@ -943,7 +943,7 @@ class spell_headless_horseman_head_is_dead : public SpellScript
     void HandleDummy(SpellEffIndex /*effIndex*/)
     {
         Creature* target = GetHitCreature();
-        if (!target || !target->IsAIEnabled())
+        if (!target || !target->AI())
             return;
 
         switch (target->GetEntry())

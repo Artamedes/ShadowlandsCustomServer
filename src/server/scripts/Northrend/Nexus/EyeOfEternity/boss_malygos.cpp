@@ -825,15 +825,15 @@ struct boss_malygos : public BossAI
                     {
                         for (uint8 rangeDisks = 0; rangeDisks < (GetDifficulty() == DIFFICULTY_10_N ? 4 : 5); rangeDisks++)
                         {
-                            Creature* casterDiskSummon = me->SummonCreature(NPC_HOVER_DISK_CASTER, RangeHoverDisksSpawnPositions[rangeDisks]);
+                            Creature* casterDiskSummon = me->SummonCreature(NPC_HOVER_DISK_CASTER, RangeHoverDisksSpawnPositions[rangeDisks], TEMPSUMMON_MANUAL_DESPAWN, 0);
 
-                            if (casterDiskSummon->IsAIEnabled())
+                            if (casterDiskSummon->AI())
                                 casterDiskSummon->AI()->DoAction(rangeDisks);
                         }
 
                         for (uint8 meleeDisks = 0; meleeDisks < 2; meleeDisks++)
                         {
-                            Creature* meleeDiskSummon = me->SummonCreature(NPC_HOVER_DISK_MELEE, MeleeHoverDisksSpawnPositions[meleeDisks]);
+                            Creature* meleeDiskSummon = me->SummonCreature(NPC_HOVER_DISK_MELEE, MeleeHoverDisksSpawnPositions[meleeDisks], TEMPSUMMON_MANUAL_DESPAWN, 0);
                             meleeDiskSummon->GetMotionMaster()->MovePoint(meleeDisks * MAX_MELEE_HOVER_DISK_SPAWNPOINTS, MeleeHoverDisksWaypoints[meleeDisks * MAX_MELEE_HOVER_DISK_SPAWNPOINTS]);
                         }
 
@@ -846,15 +846,15 @@ struct boss_malygos : public BossAI
                 case EVENT_DELAYED_REINFORCEMENTS:
                     for (uint8 rangeDisks = 5; rangeDisks < 8; rangeDisks++)
                     {
-                        Creature* casterDiskSummon = me->SummonCreature(NPC_HOVER_DISK_CASTER, RangeHoverDisksSpawnPositions[rangeDisks]);
+                        Creature* casterDiskSummon = me->SummonCreature(NPC_HOVER_DISK_CASTER, RangeHoverDisksSpawnPositions[rangeDisks], TEMPSUMMON_MANUAL_DESPAWN, 0);
 
-                        if (casterDiskSummon->IsAIEnabled())
+                        if (casterDiskSummon->AI())
                             casterDiskSummon->AI()->DoAction(rangeDisks);
                     }
 
                     for (uint8 meleeDisks = 2; meleeDisks < 4; meleeDisks++)
                     {
-                        Creature* meleeDiskSummon = me->SummonCreature(NPC_HOVER_DISK_MELEE, MeleeHoverDisksSpawnPositions[meleeDisks]);
+                        Creature* meleeDiskSummon = me->SummonCreature(NPC_HOVER_DISK_MELEE, MeleeHoverDisksSpawnPositions[meleeDisks], TEMPSUMMON_MANUAL_DESPAWN, 0);
                         meleeDiskSummon->GetMotionMaster()->MovePoint(meleeDisks * MAX_MELEE_HOVER_DISK_SPAWNPOINTS, MeleeHoverDisksWaypoints[meleeDisks * MAX_MELEE_HOVER_DISK_SPAWNPOINTS]);
                     }
                     break;
@@ -974,7 +974,7 @@ struct boss_malygos : public BossAI
         if (Creature* alexstraszaGiftBoxBunny = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_GIFT_BOX_BUNNY_GUID)))
             alexstraszaGiftBoxBunny->SummonGameObject(RAID_MODE(GO_HEART_OF_MAGIC_10, GO_HEART_OF_MAGIC_25), HeartOfMagicSpawnPos, QuaternionData(), 0s);
 
-        me->SummonCreature(NPC_ALEXSTRASZA, AlexstraszaSpawnPos, TEMPSUMMON_MANUAL_DESPAWN);
+        me->SummonCreature(NPC_ALEXSTRASZA, AlexstraszaSpawnPos, TEMPSUMMON_MANUAL_DESPAWN, 0);
         me->DespawnOrUnsummon(5s);
     }
 

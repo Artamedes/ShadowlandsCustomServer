@@ -155,7 +155,7 @@ struct npc_raging_flames : public ScriptedAI
 
         if (TempSummon* summon = me->ToTempSummon())
             if (Creature* summoner = summon->GetSummonerCreatureBase())
-                if (summoner->IsAIEnabled())
+                if (summoner->AI())
                     if (Unit* target = summoner->AI()->SelectTarget(SelectTargetMethod::Random, 1, 100.0f, true, false))
                         AddThreat(target, 1000000.0f);
     }

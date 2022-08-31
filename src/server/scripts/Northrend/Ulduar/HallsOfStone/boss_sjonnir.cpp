@@ -451,7 +451,7 @@ class spell_sjonnir_iron_sludge_spawn_visual : public AuraScript
         if (Creature* creature = GetTarget()->ToCreature())
         {
             creature->SetReactState(REACT_AGGRESSIVE);
-            if (creature->IsAIEnabled() && creature->IsAlive())
+            if (creature->AI() && creature->IsAlive())
                 creature->AI()->DoZoneInCombat();
         }
     }

@@ -357,7 +357,7 @@ struct boss_gormok : public boss_northrend_beastsAI
                 me->SetImmuneToPC(false);
                 me->SetReactState(REACT_AGGRESSIVE);
                 // Npc that should keep raid in combat while boss change
-                if (Creature* combatStalker = me->SummonCreature(NPC_BEASTS_COMBAT_STALKER, CombatStalkerPosition))
+                if (Creature* combatStalker = me->SummonCreature(NPC_BEASTS_COMBAT_STALKER, CombatStalkerPosition, TEMPSUMMON_MANUAL_DESPAWN, 0))
                 {
                     DoZoneInCombat(combatStalker);
                     combatStalker->SetCombatPulseDelay(5);
@@ -831,7 +831,7 @@ struct boss_jormungarAI : public boss_northrend_beastsAI
                 events.Repeat(12s);
                 break;
             case EVENT_SUMMON_ACIDMAW:
-                me->SummonCreature(NPC_ACIDMAW, ToCCommonLoc[9]);
+                me->SummonCreature(NPC_ACIDMAW, ToCCommonLoc[9], TEMPSUMMON_MANUAL_DESPAWN, 0);
                 break;
             case EVENT_SPRAY:
                 if (Unit* target = SelectTarget(SelectTargetMethod::Random, 1, 0.0f, true))
@@ -1313,7 +1313,7 @@ class spell_icehowl_trample : public SpellScript
     void CheckTargets(std::list<WorldObject*>& targets)
     {
         Creature* caster = GetCaster()->ToCreature();
-        if (!caster || !caster->IsAIEnabled())
+        if (!caster || !caster->AI())
             return;
 
         if (targets.empty())

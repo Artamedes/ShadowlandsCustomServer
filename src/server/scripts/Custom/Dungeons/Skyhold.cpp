@@ -325,7 +325,7 @@ struct gobj_ancient_chest_700000 : public GameObjectAI
                 {
                     if (auto instance = me->GetInstanceScript())
                         instance->DoCastSpellOnPlayers(365127);
-                    me->SummonCreature(700316, { 836.420166f, 7234.518066f, 6.497904f, 4.732021f });
+                    me->SummonCreature(700316, { 836.420166f, 7234.518066f, 6.497904f, 4.732021f }, TEMPSUMMON_MANUAL_DESPAWN, 0);
                 });
             }
             return true;

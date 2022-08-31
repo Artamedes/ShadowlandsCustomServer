@@ -73,7 +73,7 @@ struct boss_emalon : public BossAI
         _Reset();
 
         for (uint8 i = 0; i < MAX_TEMPEST_MINIONS; ++i)
-            me->SummonCreature(NPC_TEMPEST_MINION, TempestMinions[i], TEMPSUMMON_CORPSE_DESPAWN);
+            me->SummonCreature(NPC_TEMPEST_MINION, TempestMinions[i], TEMPSUMMON_CORPSE_DESPAWN, 0);
     }
 
     void JustEngagedWith(Unit* who) override
@@ -194,7 +194,7 @@ struct npc_tempest_minion : public ScriptedAI
         {
             if (emalon->IsAlive())
             {
-                emalon->SummonCreature(NPC_TEMPEST_MINION, 0, 0, 0, 0, TEMPSUMMON_CORPSE_DESPAWN);
+                emalon->SummonCreature(NPC_TEMPEST_MINION, 0, 0, 0, 0, TEMPSUMMON_CORPSE_DESPAWN, 0);
                 Talk(EMOTE_MINION_RESPAWN);
             }
         }

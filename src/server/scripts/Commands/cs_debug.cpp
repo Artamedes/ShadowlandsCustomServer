@@ -1099,7 +1099,7 @@ public:
         handler->GetPlayer()->GetClosePoint(x, y, z, handler->GetPlayer()->GetCombatReach());
 
         if (!id)
-            return handler->GetPlayer()->SummonCreature(entry, x, y, z, o) != nullptr;
+            return handler->GetPlayer()->SummonCreature(entry, x, y, z, o, TEMPSUMMON_MANUAL_DESPAWN, 0) != nullptr;
 
         CreatureTemplate const* ci = sObjectMgr->GetCreatureTemplate(entry);
 
@@ -1371,7 +1371,7 @@ public:
         if (!player)
             return false;
         Creature* target = handler->getSelectedCreature();
-        if (!target || !target->IsAIEnabled())
+        if (!target || !target->AI())
             return false;
 
         Seconds duration = durationArg ? Seconds(*durationArg) : 0s;

@@ -559,7 +559,7 @@ class instance_halls_of_reflection : public InstanceMapScript
                                 {
                                     if (Creature* boss = instance->GetCreature(bossGuid))
                                     {
-                                        if (Creature* temp = boss->SummonCreature(entry, SpawnPos[posIndex], TEMPSUMMON_DEAD_DESPAWN))
+                                        if (Creature* temp = boss->SummonCreature(entry, SpawnPos[posIndex], TEMPSUMMON_DEAD_DESPAWN, 0))
                                         {
                                             temp->AI()->SetData(0, i);
                                             waveGuidList[i].insert(temp->GetGUID());

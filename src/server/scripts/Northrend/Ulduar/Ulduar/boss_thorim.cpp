@@ -620,7 +620,7 @@ class boss_thorim : public CreatureScript
                     lever->RemoveFlag(GO_FLAG_NOT_SELECTABLE);
 
                 // Summon Sif
-                me->SummonCreature(NPC_SIF, SifSpawnPosition);
+                me->SummonCreature(NPC_SIF, SifSpawnPosition, TEMPSUMMON_MANUAL_DESPAWN, 0);
             }
 
             void JustSummoned(Creature* summon) override

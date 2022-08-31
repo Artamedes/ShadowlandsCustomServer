@@ -137,7 +137,7 @@ public:
 
                         if (GameObject* go = instance->GetGameObject(goGongGUID))
                             for (uint8 i = summonLowRange; i < summonHighRange; ++i)
-                                if (Creature* creature = go->SummonCreature(summonCreature, PosSummonTutenkash[i]))
+                                if (Creature* creature = go->SummonCreature(summonCreature, PosSummonTutenkash[i], TEMPSUMMON_MANUAL_DESPAWN, 0))
                                     creature->GetMotionMaster()->MovePoint(0, 2533.479f + float(irand(-5, 5)), 870.020f + float(irand(-5, 5)), 47.678f);
 
                         ++gongWave;

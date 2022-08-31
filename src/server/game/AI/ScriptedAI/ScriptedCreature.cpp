@@ -552,6 +552,15 @@ BossAI::BossAI(Creature* creature, uint32 bossId) : ScriptedAI(creature), _bossI
     });
 }
 
+void BossAI::_InitializeAI()
+{
+    if (!me->isDead())
+        Reset();
+
+    else if (instance && instance->GetBossState(_bossId) != DONE)
+        me->Respawn();
+}
+
 void BossAI::_Reset()
 {
     if (!me->IsAlive())

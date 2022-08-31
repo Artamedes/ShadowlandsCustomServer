@@ -279,7 +279,7 @@ public:
 
                 Creature* temp = medivh->SummonCreature(NPC_TIME_RIFT,
                     PortalLocation[tmp][0], PortalLocation[tmp][1], PortalLocation[tmp][2], PortalLocation[tmp][3],
-                    TEMPSUMMON_CORPSE_DESPAWN);
+                    TEMPSUMMON_CORPSE_DESPAWN, 0);
                 if (temp)
                 {
                     if (Creature* boss = SummonedPortalBoss(temp))

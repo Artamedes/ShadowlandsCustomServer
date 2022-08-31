@@ -213,11 +213,11 @@ class instance_shattered_halls : public InstanceMapScript
                 instance->LoadGrid(Executioner.GetPositionX(), Executioner.GetPositionY());
                 if (Creature* kargath = instance->GetCreature(kargathGUID))
                     if (executionerGUID.IsEmpty())
-                        executioner = kargath->SummonCreature(NPC_SHATTERED_EXECUTIONER, Executioner);
+                        executioner = kargath->SummonCreature(NPC_SHATTERED_EXECUTIONER, Executioner, TEMPSUMMON_MANUAL_DESPAWN, 0);
 
                 if (executioner)
                     for (uint8 i = executed; i < VictimCount; ++i)
-                        executioner->SummonCreature(executionerVictims[i](GetData(DATA_TEAM_IN_INSTANCE)), executionerVictims[i].GetPos());
+                        executioner->SummonCreature(executionerVictims[i](GetData(DATA_TEAM_IN_INSTANCE)), executionerVictims[i].GetPos(), TEMPSUMMON_MANUAL_DESPAWN, 0);
 
                 executionTimer = readbuff;
             }

@@ -136,7 +136,7 @@ class boss_viscidus : public CreatureScript
                         float Y = ViscidusCoord.GetPositionY() + std::sin(Angle) * RoomRadius;
                         float Z = -35.0f;
 
-                        if (TempSummon* Glob = me->SummonCreature(NPC_GLOB_OF_VISCIDUS, X, Y, Z))
+                        if (TempSummon* Glob = me->SummonCreature(NPC_GLOB_OF_VISCIDUS, X, Y, Z, 0.0f, TEMPSUMMON_MANUAL_DESPAWN, 0))
                         {
                             Glob->UpdateAllowedPositionZ(X, Y, Z);
                             Glob->NearTeleportTo(X, Y, Z, 0.0f);

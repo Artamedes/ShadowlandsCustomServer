@@ -285,7 +285,7 @@ struct boss_helix_gearbreaker : public BossAI
                         if (events.IsInPhase(PHASE_1))
                         {
                             if (Creature* crew = DoSummon(NPC_HELIX_CREW, HelixFirstCrewPositions[i], 2s, TEMPSUMMON_CORPSE_TIMED_DESPAWN))
-                                if (!i && crew->IsAIEnabled())
+                                if (!i && crew->AI())
                                     crew->AI()->DoAction(ACTION_TALK_CREW);
                         }
                         else
@@ -307,7 +307,7 @@ struct boss_helix_gearbreaker : public BossAI
                     break;
                 case EVENT_OAF_SMASH:
                     if (Creature* oaf = instance->GetCreature(DATA_LUMBERING_OAF))
-                        if (oaf->IsAIEnabled())
+                        if (oaf->AI())
                             oaf->AI()->DoAction(ACTION_OAF_SMASH);
 
                     events.RescheduleEvent(EVENT_STICKY_BOMB, 11s, 0, PHASE_1);
@@ -344,7 +344,7 @@ struct npc_helix_lumbering_oaf : public ScriptedAI
         _instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, me, 1);
 
         if (Creature* helix = _instance->GetCreature(DATA_HELIX_GEARBREAKER))
-            if (helix->IsAIEnabled())
+            if (helix->AI())
                 helix->AI()->DoZoneInCombat();
     }
 
@@ -606,7 +606,7 @@ class spell_helix_sticky_bomb_periodic_trigger : public AuraScript
     {
         PreventDefaultAction();
         Creature* target = GetTarget()->ToCreature();
-        if (!target || !target->IsAIEnabled())
+        if (!target || !target->AI())
             return;
 
         SpellInfo const* spell = sSpellMgr->GetSpellInfo(GetSpellInfo()->GetEffect(EFFECT_0).TriggerSpell);
@@ -830,7 +830,7 @@ class spell_helix_chest_bomb_emote : public SpellScript
     {
         if (Unit* caster = GetCaster())
             if (Creature* creature = caster->ToCreature())
-                if (creature->IsAIEnabled())
+                if (creature->AI())
                     creature->AI()->Talk(SAY_ANNOUNCE_CHEST_BOMB, GetHitUnit());
     }
 

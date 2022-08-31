@@ -95,7 +95,7 @@ struct boss_randolph_moloch : public BossAI
 
         Talk(SAY_DEATH);
 
-        me->SummonCreature(NPC_MORTIMER_MOLOCH, mortimerMolochPos);
+        me->SummonCreature(NPC_MORTIMER_MOLOCH, mortimerMolochPos, TEMPSUMMON_MANUAL_DESPAWN, 0);
     }
 
     void ExecuteEvent(uint32 eventId) override

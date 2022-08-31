@@ -134,6 +134,7 @@ class TC_COMMON_API EventProcessor
         is_lambda_event<T> AddEventAtOffset(T&& event, Milliseconds offset, Milliseconds offset2) { AddEventAtOffset(new LambdaBasicEvent<T>(std::move(event)), offset, offset2); }
         void ModifyEventTime(BasicEvent* event, Milliseconds newTime);
         Milliseconds CalculateTime(Milliseconds t_offset) const { return Milliseconds(m_time) + t_offset; }
+        Milliseconds CalculateTime(uint32 t_offset) const { return CalculateTime(Milliseconds(t_offset)); }
         std::multimap<uint64, BasicEvent*> const& GetEvents() const { return m_events; }
 
     protected:

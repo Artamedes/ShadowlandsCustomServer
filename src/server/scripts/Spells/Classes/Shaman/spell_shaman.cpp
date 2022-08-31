@@ -4047,7 +4047,7 @@ class spell_sha_rainfall : public SpellScript
     void HandleHitTarget(SpellEffIndex /*effIndex*/)
     {
         if (WorldLocation* pos = GetHitDest())
-            GetCaster()->SummonCreature(NPC_RAINFALL, *pos);
+            GetCaster()->SummonCreature(NPC_RAINFALL, *pos, TEMPSUMMON_MANUAL_DESPAWN, 0);
     }
 
     void Register() override
@@ -4099,7 +4099,7 @@ class spell_sha_healing_rain : public SpellScript
         if (!pos || !caster)
             return;
 
-        caster->SummonCreature(NPC_HEALING_RAIN, *pos);
+        caster->SummonCreature(NPC_HEALING_RAIN, *pos, TEMPSUMMON_MANUAL_DESPAWN, 0);
     }
 
     void HandleAfterCast()

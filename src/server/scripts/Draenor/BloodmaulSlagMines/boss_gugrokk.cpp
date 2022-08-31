@@ -211,7 +211,7 @@ namespace Instances { namespace Bloodmaul
                             {
                                 Position pos = player->GetPosition();
 
-                                if (Creature* l_MagmaEruption = me->SummonCreature(eCreatures::NpcMagmaEruption, pos))
+                                if (Creature* l_MagmaEruption = me->SummonCreature(eCreatures::NpcMagmaEruption, pos, TEMPSUMMON_MANUAL_DESPAWN, 0))
                                     l_MagmaEruption->CastSpell(l_MagmaEruption, eSpells::SpellMagmaEruptionVisual, true);
                             }
 

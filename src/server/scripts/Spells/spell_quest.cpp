@@ -771,7 +771,7 @@ class spell_q11010_q11102_q11023_choose_loc : public SpellScript
             // Check if found player target is on fly mount or using flying form
             if ((*itr)->HasAuraType(SPELL_AURA_FLY) || (*itr)->HasAuraType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED))
                 // Summom Fel Cannon (bunny version) at found player
-                caster->SummonCreature(NPC_FEL_CANNON2, (*itr)->GetPositionX(), (*itr)->GetPositionY(), (*itr)->GetPositionZ());
+                caster->SummonCreature(NPC_FEL_CANNON2, (*itr)->GetPositionX(), (*itr)->GetPositionY(), (*itr)->GetPositionZ(), 0.0f, TEMPSUMMON_MANUAL_DESPAWN, 0);
     }
 
     void Register() override

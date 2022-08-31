@@ -539,7 +539,7 @@ public:
         {
             if (GetCaster())
             {
-                GetCaster()->SummonCreature(MobEntries::SOLAR_FLARE, *GetHitDest());
+                GetCaster()->SummonCreature(MobEntries::SOLAR_FLARE, *GetHitDest(), TEMPSUMMON_MANUAL_DESPAWN, 0);
             }
         }
 

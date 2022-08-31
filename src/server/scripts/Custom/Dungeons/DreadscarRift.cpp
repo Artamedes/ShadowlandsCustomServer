@@ -659,7 +659,7 @@ class spell_362864_echoes_of_andorhal : public SpellScript
 
         if (auto caster = GetCaster())
         {
-            if (auto skelly = caster->SummonCreature(NecoWarriorAdd, *GetExplTargetDest(), TEMPSUMMON_NO_OWNER_DESPAWN))
+            if (auto skelly = caster->SummonCreature(NecoWarriorAdd, *GetExplTargetDest(), TEMPSUMMON_MANUAL_DESPAWN, 0))
             {
                 skelly->SetOwnerGUID(caster->GetGUID());
                 skelly->SetUnitFlag(UnitFlags::UNIT_FLAG_NON_ATTACKABLE);
@@ -1790,7 +1790,7 @@ class spell_destroying_369260 : public SpellScript
     void HandleDummy(SpellEffIndex /*effIndex*/)
     {
         Creature* target = GetHitCreature();
-        if (!target || !target->IsAIEnabled())
+        if (!target || !target->AI())
             return;
 
         target->AI()->DoAction(40);

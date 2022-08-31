@@ -236,7 +236,7 @@ struct boss_volazj : public BossAI
                 if (!player || !player->IsAlive())
                     continue;
                 // Summon clone
-                if (TempSummon* summon = me->SummonCreature(NPC_TWISTED_VISAGE, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), me->GetOrientation(), TEMPSUMMON_CORPSE_DESPAWN))
+                if (TempSummon* summon = me->SummonCreature(NPC_TWISTED_VISAGE, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), me->GetOrientation(), TEMPSUMMON_CORPSE_DESPAWN, 0))
                 {
                     // clone
                     player->CastSpell(summon, SPELL_CLONE_PLAYER, true);

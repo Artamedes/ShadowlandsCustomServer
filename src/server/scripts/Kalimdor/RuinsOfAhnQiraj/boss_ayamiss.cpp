@@ -219,7 +219,7 @@ class boss_ayamiss : public CreatureScript
                         case EVENT_SUMMON_SWARMER:
                         {
                             Position Pos = me->GetRandomPoint(SwarmerPos, 80.0f);
-                            me->SummonCreature(NPC_SWARMER, Pos);
+                            me->SummonCreature(NPC_SWARMER, Pos, TEMPSUMMON_MANUAL_DESPAWN, 0);
                             events.ScheduleEvent(EVENT_SUMMON_SWARMER, 5s);
                             break;
                         }

@@ -508,7 +508,7 @@ class spell_beckon_slime_underrot : public SpellScript
 
         if (GetExplTargetDest())
         {
-            if (auto slime = GetCaster()->SummonCreature(entry, *GetExplTargetDest(), TEMPSUMMON_MANUAL_DESPAWN))
+            if (auto slime = GetCaster()->SummonCreature(entry, *GetExplTargetDest(), TEMPSUMMON_MANUAL_DESPAWN, 0))
             {
                 slime->SetMaxHealth(GetCaster()->CountPctFromMaxHealth(5));
                 slime->SetFullHealth();
@@ -1606,7 +1606,7 @@ class spell_361487_cleansing : public SpellScript
     void HandleDummy(SpellEffIndex /*effIndex*/)
     {
         Creature* target = GetHitCreature();
-        if (!target || !target->IsAIEnabled() || target->GetEntry() != 800055)
+        if (!target || !target->AI() || target->GetEntry() != 800055)
             return;
 
         if (auto caster = GetCaster())

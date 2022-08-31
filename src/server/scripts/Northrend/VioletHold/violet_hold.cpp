@@ -366,7 +366,7 @@ struct npc_sinclari_vh : public ScriptedAI
     {
         _summons.DespawnAll();
         for (uint8 i = 0; i < PortalIntroCount; ++i)
-            if (Creature* summon = me->SummonCreature(NPC_TELEPORTATION_PORTAL_INTRO, PortalIntroPositions[i], TEMPSUMMON_MANUAL_DESPAWN))
+            if (Creature* summon = me->SummonCreature(NPC_TELEPORTATION_PORTAL_INTRO, PortalIntroPositions[i], TEMPSUMMON_MANUAL_DESPAWN, 0))
                 summon->AI()->SetData(DATA_PORTAL_LOCATION, i);
 
         me->SetNpcFlag(UNIT_NPC_FLAG_GOSSIP);

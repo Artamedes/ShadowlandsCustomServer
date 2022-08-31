@@ -579,7 +579,7 @@ class boss_mimiron : public CreatureScript
                             events.ScheduleEvent(EVENT_AERIAL_ACTIVATION_3, 5s);
                             break;
                         case EVENT_AERIAL_ACTIVATION_3:
-                            me->SummonCreature(NPC_AERIAL_COMMAND_UNIT, ACUSummonPos, TEMPSUMMON_MANUAL_DESPAWN);
+                            me->SummonCreature(NPC_AERIAL_COMMAND_UNIT, ACUSummonPos, TEMPSUMMON_MANUAL_DESPAWN, 0);
                             events.ScheduleEvent(EVENT_AERIAL_ACTIVATION_4, 5s);
                             break;
                         case EVENT_AERIAL_ACTIVATION_4:

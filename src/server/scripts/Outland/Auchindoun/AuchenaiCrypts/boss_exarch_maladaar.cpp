@@ -146,7 +146,7 @@ struct boss_exarch_maladaar : public BossAI
     {
         _JustDied();
         Talk(SAY_DEATH);
-        me->SummonCreature(NPC_DORE, DoreSpawnPos, TEMPSUMMON_MANUAL_DESPAWN);
+        me->SummonCreature(NPC_DORE, DoreSpawnPos, TEMPSUMMON_MANUAL_DESPAWN, 0);
     }
 
     void UpdateAI(uint32 diff) override

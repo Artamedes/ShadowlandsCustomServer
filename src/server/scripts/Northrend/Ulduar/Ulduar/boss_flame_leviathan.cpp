@@ -440,7 +440,7 @@ class boss_flame_leviathan : public CreatureScript
                             events.CancelEvent(EVENT_THORIM_S_HAMMER);
                             break;
                         case EVENT_MIMIRON_S_INFERNO: // Tower of Flames
-                            me->SummonCreature(NPC_MIMIRON_BEACON, InfernoStart);
+                            me->SummonCreature(NPC_MIMIRON_BEACON, InfernoStart, TEMPSUMMON_MANUAL_DESPAWN, 0);
                             Talk(SAY_TOWER_FLAME);
                             events.CancelEvent(EVENT_MIMIRON_S_INFERNO);
                             break;
@@ -456,7 +456,7 @@ class boss_flame_leviathan : public CreatureScript
                         case EVENT_FREYA_S_WARD:    // Tower of Nature
                             Talk(SAY_TOWER_NATURE);
                             for (int32 i = 0; i < 4; ++i)
-                                me->SummonCreature(NPC_FREYA_BEACON, FreyaBeacons[i]);
+                                me->SummonCreature(NPC_FREYA_BEACON, FreyaBeacons[i], TEMPSUMMON_MANUAL_DESPAWN, 0);
 
                             if (Unit* target = SelectTarget(SelectTargetMethod::Random))
                                 DoCast(target, SPELL_FREYA_S_WARD);

@@ -142,7 +142,7 @@ struct boss_coren_direbrew : public BossAI
         events.SetPhase(PHASE_ALL);
 
         for (uint8 i = 0; i < MAX_ANTAGONISTS; ++i)
-            me->SummonCreature(NPC_ANTAGONIST, AntagonistPos[i], TEMPSUMMON_DEAD_DESPAWN);
+            me->SummonCreature(NPC_ANTAGONIST, AntagonistPos[i], TEMPSUMMON_DEAD_DESPAWN, 0);
     }
 
     void EnterEvadeMode(EvadeReason /*why*/) override
@@ -216,7 +216,7 @@ struct boss_coren_direbrew : public BossAI
 
     void SummonSister(uint32 entry)
     {
-        if (Creature* sister = me->SummonCreature(entry, me->GetPosition(), TEMPSUMMON_DEAD_DESPAWN))
+        if (Creature* sister = me->SummonCreature(entry, me->GetPosition(), TEMPSUMMON_DEAD_DESPAWN, 0))
             DoZoneInCombat(sister);
     }
 

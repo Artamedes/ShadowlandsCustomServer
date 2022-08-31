@@ -544,7 +544,7 @@ public:
                         if (pile->ToCreature())
                         {
                             pile->CastSpell(pos, uint32(Spells::SUMMON_SOLAR_FLARE), true);
-                            TempSummon* summon = pile->SummonCreature(MobEntries::SOLAR_FLARE, pos);
+                            TempSummon* summon = pile->SummonCreature(MobEntries::SOLAR_FLARE, pos, TEMPSUMMON_MANUAL_DESPAWN, 0);
                             m_SolarFlaresGuid.insert(summon->GetGUID());
                             pile->ToCreature()->DespawnOrUnsummon(500ms);
                             ++l_SolarFlaresFormed;
@@ -558,7 +558,7 @@ public:
                     solarFlareDying->CastSpell(solarFlareDying, uint32(Spells::DORMANT), true);
 
                     Position pos = *solarFlareDying;
-                    TempSummon* sum = solarFlareDying->SummonCreature(MobEntries::PILE_OF_ASHES, pos);
+                    TempSummon* sum = solarFlareDying->SummonCreature(MobEntries::PILE_OF_ASHES, pos, TEMPSUMMON_MANUAL_DESPAWN, 0);
                     sum->SetFaction(FACTION_MONSTER_2);
                     sum->SetReactState(REACT_PASSIVE);
                     sum->CastSpell(sum, uint32(Spells::DORMANT), true);

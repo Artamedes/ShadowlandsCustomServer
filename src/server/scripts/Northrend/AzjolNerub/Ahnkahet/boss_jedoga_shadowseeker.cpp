@@ -154,9 +154,9 @@ struct boss_jedoga_shadowseeker : public BossAI
         for (TempSummon* value : summoned)
             _initiateGUIDS.insert(value->GetGUID());
 
-        if (TempSummon* controller = me->SummonCreature(NPC_JEDOGA_CONTROLLER, JedogaControllerPositions[0], TEMPSUMMON_MANUAL_DESPAWN))
+        if (TempSummon* controller = me->SummonCreature(NPC_JEDOGA_CONTROLLER, JedogaControllerPositions[0], TEMPSUMMON_MANUAL_DESPAWN, 0))
             controller->CastSpell(me, SPELL_BEAM_VISUAL_JEDOGA);
-        if (TempSummon* controller = me->SummonCreature(NPC_JEDOGA_CONTROLLER, JedogaControllerPositions[1], TEMPSUMMON_MANUAL_DESPAWN))
+        if (TempSummon* controller = me->SummonCreature(NPC_JEDOGA_CONTROLLER, JedogaControllerPositions[1], TEMPSUMMON_MANUAL_DESPAWN, 0))
             controller->CastSpell(me, SPELL_BEAM_VISUAL_JEDOGA);
 
         events.ScheduleEvent(EVENT_INTRO_SAY, Minutes(2), 0, PHASE_INTRO);
@@ -336,7 +336,7 @@ struct boss_jedoga_shadowseeker : public BossAI
                     me->GetMotionMaster()->MoveTakeoff(POINT_PHASE_TWO_FLY, JedogaFlyPosition);
                     break;
                 case EVENT_CHOOSE_VOLUNTEER:
-                    if (TempSummon* controller = me->SummonCreature(NPC_JEDOGA_CONTROLLER, JedogaControllerPositions[2], TEMPSUMMON_MANUAL_DESPAWN))
+                    if (TempSummon* controller = me->SummonCreature(NPC_JEDOGA_CONTROLLER, JedogaControllerPositions[2], TEMPSUMMON_MANUAL_DESPAWN, 0))
                     {
                         me->SetFacingToObject(controller);
                         controller->CastSpell(controller, SPELL_SACRIFICE_VISUAL);

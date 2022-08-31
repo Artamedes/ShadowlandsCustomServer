@@ -24,6 +24,7 @@
 #include "Loot.h"
 #include "MapObject.h"
 #include "SharedDefines.h"
+#include "TaskScheduler.h"
 
 class GameObject;
 class GameObjectAI;
@@ -407,6 +408,8 @@ class TC_GAME_API GameObject : public WorldObject, public GridObject<GameObject>
 
         UF::UpdateField<UF::GameObjectData, 0, TYPEID_GAMEOBJECT> m_gameObjectData;
 
+        TaskScheduler& GetScheduler() { return _scheduler; }
+
         /// Pig
         bool IsSentToClient = false;
         bool DidOnAddToWorld = false;
@@ -470,5 +473,7 @@ class TC_GAME_API GameObject : public WorldObject, public GridObject<GameObject>
         bool m_respawnCompatibilityMode;
         uint16 _animKitId;
         uint32 _worldEffectID;
+
+        TaskScheduler _scheduler;
 };
 #endif

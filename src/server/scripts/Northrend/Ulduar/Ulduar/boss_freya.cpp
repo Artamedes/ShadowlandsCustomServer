@@ -1598,7 +1598,7 @@ class spell_freya_iron_roots : public SpellScriptLoader
 
                 Position pos = GetCaster()->GetPosition();
                 // Not good at all, but this prevents having roots in a different position then player
-                if (Creature* Roots = GetCaster()->SummonCreature(entry, pos))
+                if (Creature* Roots = GetCaster()->SummonCreature(entry, pos, TEMPSUMMON_MANUAL_DESPAWN, 0))
                     GetCaster()->NearTeleportTo(Roots->GetPositionX(), Roots->GetPositionY(), Roots->GetPositionZ(), GetCaster()->GetOrientation());
             }
 

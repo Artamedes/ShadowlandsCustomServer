@@ -199,7 +199,7 @@ struct boss_urom : public BossAI
         for (uint8 i = 0; i < 4; ++i)
         {
             SetPosition(i);
-            me->SummonCreature(Group[_group[_platform]].entry[i], _x, _y, me->GetPositionZ(), me->GetOrientation());
+            me->SummonCreature(Group[_group[_platform]].entry[i], _x, _y, me->GetPositionZ(), me->GetOrientation(), TEMPSUMMON_MANUAL_DESPAWN, 0);
         }
 
         Talk(_platform);

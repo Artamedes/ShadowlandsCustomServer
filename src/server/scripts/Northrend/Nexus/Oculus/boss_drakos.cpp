@@ -100,7 +100,7 @@ struct boss_drakos : public BossAI
                         for (uint8 i = 0; i <= (postPull ? 3 : 0); i++)
                         {
                             Position position = me->GetRandomNearPosition(frand(0.0f, 10.0f));
-                            me->SummonCreature(NPC_UNSTABLE_SPHERE, position);
+                            me->SummonCreature(NPC_UNSTABLE_SPHERE, position, TEMPSUMMON_MANUAL_DESPAWN, 0);
                         }
                     }
                     events.ScheduleEvent(EVENT_BOMB_SUMMON, 2s);

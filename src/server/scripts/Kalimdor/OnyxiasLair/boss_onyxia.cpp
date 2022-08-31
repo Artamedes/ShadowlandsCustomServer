@@ -241,7 +241,7 @@ struct boss_onyxia : public BossAI
                     me->SetCanFly(true);
                     me->SetDisableGravity(true);
                     me->SetFacingTo(me->GetOrientation() + float(M_PI));
-                    if (Creature * trigger = me->SummonCreature(NPC_TRIGGER, MiddleRoomLocation, TEMPSUMMON_CORPSE_DESPAWN))
+                    if (Creature * trigger = me->SummonCreature(NPC_TRIGGER, MiddleRoomLocation, TEMPSUMMON_CORPSE_DESPAWN, 0))
                         triggerGUID = trigger->GetGUID();
                     me->GetMotionMaster()->MoveTakeoff(11, Phase2Floating);
                     me->SetSpeedRate(MOVE_FLIGHT, 1.0f);
@@ -450,12 +450,12 @@ struct boss_onyxia : public BossAI
                             events.ScheduleEvent(EVENT_FIREBALL, 1s);
                         break;
                     case EVENT_LAIR_GUARD:       // Phase PHASE_BREATH
-                        me->SummonCreature(NPC_LAIRGUARD, SpawnLocations[2], TEMPSUMMON_CORPSE_DESPAWN);
+                        me->SummonCreature(NPC_LAIRGUARD, SpawnLocations[2], TEMPSUMMON_CORPSE_DESPAWN, 0);
                         events.ScheduleEvent(EVENT_LAIR_GUARD, 30s);
                         break;
                     case EVENT_WHELP_SPAWN:      // Phase PHASE_BREATH
-                        me->SummonCreature(NPC_WHELP, SpawnLocations[0], TEMPSUMMON_CORPSE_DESPAWN);
-                        me->SummonCreature(NPC_WHELP, SpawnLocations[1], TEMPSUMMON_CORPSE_DESPAWN);
+                        me->SummonCreature(NPC_WHELP, SpawnLocations[0], TEMPSUMMON_CORPSE_DESPAWN, 0);
+                        me->SummonCreature(NPC_WHELP, SpawnLocations[1], TEMPSUMMON_CORPSE_DESPAWN, 0);
                         if (SummonWhelpCount >= RAID_MODE(20, 40))
                         {
                             SummonWhelpCount = 0;

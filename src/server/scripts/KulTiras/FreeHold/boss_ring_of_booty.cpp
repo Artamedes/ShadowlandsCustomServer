@@ -455,8 +455,8 @@ struct boss_trothak : public BossAI
 
     void Initialize()
     {
-        me->SummonCreature(FreeholdCreature::NPC_HAMMER_SHARK, me->GetPosition());
-        me->SummonCreature(FreeholdCreature::NPC_SAWTOOTH_SHARK, me->GetPosition());
+        me->SummonCreature(FreeholdCreature::NPC_HAMMER_SHARK, me->GetPosition(), TEMPSUMMON_MANUAL_DESPAWN, 0);
+        me->SummonCreature(FreeholdCreature::NPC_SAWTOOTH_SHARK, me->GetPosition(), TEMPSUMMON_MANUAL_DESPAWN, 0);
     }
 
     void Clean()

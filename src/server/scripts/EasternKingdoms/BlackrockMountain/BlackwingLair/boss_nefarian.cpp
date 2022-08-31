@@ -335,7 +335,7 @@ struct boss_victor_nefarius : public BossAI
                                 CreatureID = NPC_CHROMATIC_DRAKANOID;
                             else
                                 CreatureID = Entry[urand(0, 4)];
-                            if (Creature* dragon = me->SummonCreature(CreatureID, DrakeSpawnLoc[i]))
+                            if (Creature* dragon = me->SummonCreature(CreatureID, DrakeSpawnLoc[i], TEMPSUMMON_MANUAL_DESPAWN, 0))
                             {
                                 dragon->SetFaction(FACTION_DRAGONFLIGHT_BLACK);
                                 dragon->AI()->AttackStart(me->GetVictim());
@@ -343,7 +343,7 @@ struct boss_victor_nefarius : public BossAI
 
                             if (++SpawnedAdds >= 42)
                             {
-                                if (Creature* nefarian = me->SummonCreature(NPC_NEFARIAN, NefarianLoc[0]))
+                                if (Creature* nefarian = me->SummonCreature(NPC_NEFARIAN, NefarianLoc[0], TEMPSUMMON_MANUAL_DESPAWN, 0))
                                 {
                                     nefarian->setActive(true);
                                     nefarian->SetFarVisible(true);

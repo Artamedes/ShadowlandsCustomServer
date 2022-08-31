@@ -157,7 +157,7 @@ class instance_oculus : public InstanceMapScript
                     return;
 
                 if (Creature* varos = instance->GetCreature(VarosGUID))
-                    if (Creature* drake = varos->SummonCreature(NPC_AZURE_RING_GUARDIAN, varos->GetPositionX(), varos->GetPositionY(), varos->GetPositionZ() + 40))
+                    if (Creature* drake = varos->SummonCreature(NPC_AZURE_RING_GUARDIAN, varos->GetPositionX(), varos->GetPositionY(), varos->GetPositionZ() + 40, varos->GetOrientation(), TEMPSUMMON_MANUAL_DESPAWN, 0))
                         drake->AI()->DoAction(ACTION_CALL_DRAGON_EVENT);
             }
 

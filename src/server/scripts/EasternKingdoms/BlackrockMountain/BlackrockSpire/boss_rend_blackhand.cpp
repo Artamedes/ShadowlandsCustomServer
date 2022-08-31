@@ -366,7 +366,7 @@ struct boss_rend_blackhand : public BossAI
                         break;
                     case EVENT_TELEPORT_2:
                         me->NearTeleportTo(216.485f, -434.93f, 110.888f, -0.01225555f);
-                        me->SummonCreature(NPC_GYTH, 211.762f, -397.5885f, 111.1817f, 4.747295f);
+                        me->SummonCreature(NPC_GYTH, 211.762f, -397.5885f, 111.1817f, 4.747295f, TEMPSUMMON_MANUAL_DESPAWN, 0);
                         break;
                     case EVENT_WAVE_1:
                         if (GameObject* portcullis = ObjectAccessor::GetGameObject(*me, portcullisGUID))

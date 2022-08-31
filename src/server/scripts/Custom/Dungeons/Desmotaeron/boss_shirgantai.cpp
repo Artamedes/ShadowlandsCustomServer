@@ -292,7 +292,7 @@ public:
                     float y = me->GetPositionY() + frand(diff - 10.0f, 10.0f);
                     float z = me->GetPositionZ();
 
-                    if (auto spawn = me->SummonCreature(NpcSpawnOfShirgantai, { x, y, z }, TEMPSUMMON_MANUAL_DESPAWN))
+                    if (auto spawn = me->SummonCreature(NpcSpawnOfShirgantai, { x, y, z }, TEMPSUMMON_MANUAL_DESPAWN, 0))
                         if (spawn->AI())
                             spawn->AI()->SetGUID(me->GetGUID(), ActionSetGuidShirgantai);
 

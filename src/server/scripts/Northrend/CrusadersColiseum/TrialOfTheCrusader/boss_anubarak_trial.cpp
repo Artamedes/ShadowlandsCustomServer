@@ -219,7 +219,7 @@ struct boss_anubarak_trial : public BossAI
         instance->SetBossState(DATA_ANUBARAK, FAIL);
         //Summon Scarab Swarms neutral at random places
         for (int i = 0; i < 10; i++)
-            if (Creature* scarab = me->SummonCreature(NPC_SCARAB, AnubarakLoc[1].GetPositionX()+urand(0, 50)-25, AnubarakLoc[1].GetPositionY()+urand(0, 50)-25, AnubarakLoc[1].GetPositionZ()))
+            if (Creature* scarab = me->SummonCreature(NPC_SCARAB, AnubarakLoc[1].GetPositionX()+urand(0, 50)-25, AnubarakLoc[1].GetPositionY()+urand(0, 50)-25, AnubarakLoc[1].GetPositionZ(), 0.0f, TEMPSUMMON_MANUAL_DESPAWN, 0))
             {
                 scarab->SetFaction(FACTION_PREY);
                 scarab->GetMotionMaster()->MoveRandom(10);
@@ -276,11 +276,11 @@ struct boss_anubarak_trial : public BossAI
 
         // Spawn Burrow
         for (int i = 0; i < 4; i++)
-            me->SummonCreature(NPC_BURROW, AnubarakLoc[i + 2]);
+            me->SummonCreature(NPC_BURROW, AnubarakLoc[i + 2], TEMPSUMMON_MANUAL_DESPAWN, 0);
 
         // Spawn 6 Frost Spheres at start
         for (int i = 0; i < 6; i++)
-            if (Unit* summoned = me->SummonCreature(NPC_FROST_SPHERE, SphereSpawn[i]))
+            if (Unit* summoned = me->SummonCreature(NPC_FROST_SPHERE, SphereSpawn[i], TEMPSUMMON_MANUAL_DESPAWN, 0))
                 _sphereGUID[i] = summoned->GetGUID();
     }
 
@@ -388,7 +388,7 @@ struct boss_anubarak_trial : public BossAI
                         {
                             if (!pSphere->HasAura(SPELL_FROST_SPHERE))
                             {
-                                if (Creature* summon = me->SummonCreature(NPC_FROST_SPHERE, SphereSpawn[i]))
+                                if (Creature* summon = me->SummonCreature(NPC_FROST_SPHERE, SphereSpawn[i], TEMPSUMMON_MANUAL_DESPAWN, 0))
                                     _sphereGUID[i] = summon->GetGUID();
                                 break;
                             }

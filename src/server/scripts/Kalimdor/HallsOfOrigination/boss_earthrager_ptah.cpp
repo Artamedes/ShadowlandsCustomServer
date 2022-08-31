@@ -232,7 +232,7 @@ public:
                     case EVENT_QUICKSAND:
                         // Spell not in DBC, it is not cast either, according to sniffs
                         if (Unit* target = SelectTarget(SelectTargetMethod::Random, 0, 100.0f, true))
-                            if (Creature* quicksand = me->SummonCreature(NPC_QUICKSAND, *target))
+                            if (Creature* quicksand = me->SummonCreature(NPC_QUICKSAND, *target, TEMPSUMMON_MANUAL_DESPAWN, 0))
                                 quicksand->SetCreatedBySpell(SPELL_SUMMON_QUICKSAND);
                         events.ScheduleEvent(EVENT_QUICKSAND, 10s, 0, PHASE_DISPERSE);
                         break;

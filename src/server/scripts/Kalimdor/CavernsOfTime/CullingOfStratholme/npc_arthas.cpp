@@ -592,12 +592,12 @@ public:
                     events.ScheduleEvent(EVENT_TOWN_HALL_REACHED, 3s);
                     break;
                 case UTHER_TALK:
-                    if (Creature* uther = me->SummonCreature(NPC_UTHER, ArthasPositions[RP1_UTHER_SPAWN], TEMPSUMMON_MANUAL_DESPAWN))
+                    if (Creature* uther = me->SummonCreature(NPC_UTHER, ArthasPositions[RP1_UTHER_SPAWN], TEMPSUMMON_MANUAL_DESPAWN, 0))
                     {
                         uther->setActive(true);
                         uther->GetMotionMaster()->MoveAlongSplineChain(RP1_POINTID_UTHER1, RP1_CHAIN_UTHER1, false);
                     }
-                    if (Creature* jaina = me->SummonCreature(NPC_JAINA, ArthasPositions[RP1_JAINA_SPAWN], TEMPSUMMON_MANUAL_DESPAWN))
+                    if (Creature* jaina = me->SummonCreature(NPC_JAINA, ArthasPositions[RP1_JAINA_SPAWN], TEMPSUMMON_MANUAL_DESPAWN, 0))
                     {
                         jaina->setActive(true);
                         jaina->GetMotionMaster()->MoveAlongSplineChain(0, RP1_CHAIN_JAINA1, true);

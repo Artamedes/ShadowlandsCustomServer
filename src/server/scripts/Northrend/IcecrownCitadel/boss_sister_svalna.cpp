@@ -450,7 +450,7 @@ struct boss_sister_svalna : public BossAI
                 Unit::Kill(me, unitTarget);
                 break;
             case SPELL_IMPALING_SPEAR:
-                if (TempSummon* summon = unitTarget->SummonCreature(NPC_IMPALING_SPEAR, *unitTarget))
+                if (TempSummon* summon = unitTarget->SummonCreature(NPC_IMPALING_SPEAR, *unitTarget, TEMPSUMMON_MANUAL_DESPAWN, 0))
                 {
                     Talk(EMOTE_SVALNA_IMPALE, unitTarget);
                     CastSpellExtraArgs args;

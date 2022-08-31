@@ -438,7 +438,7 @@ struct npc_akama_shade : public ScriptedAI
     {
         for (uint8 i = 0; i < 18; i++)
         {
-            if (TempSummon* summoned = me->SummonCreature(NPC_ASHTONGUE_BROKEN, BrokenPos[i]))
+            if (TempSummon* summoned = me->SummonCreature(NPC_ASHTONGUE_BROKEN, BrokenPos[i], TEMPSUMMON_MANUAL_DESPAWN, 0))
             {
                 summoned->SetWalk(true);
                 summoned->GetMotionMaster()->MovePoint(0, BrokenWP[i]);

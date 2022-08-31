@@ -345,7 +345,7 @@ struct boss_krick : public ScriptedAI
         {
             if (Creature* tyrannusPtr = ObjectAccessor::GetCreature(*me, _instanceScript->GetGuidData(DATA_TYRANNUS_EVENT)))
                 tyrannusPtr->NearTeleportTo(outroPos[1].GetPositionX(), outroPos[1].GetPositionY(), outroPos[1].GetPositionZ(), outroPos[1].GetOrientation());
-            else if (TempSummon* newTyrannus = me->SummonCreature(NPC_TYRANNUS_EVENTS, outroPos[1], TEMPSUMMON_MANUAL_DESPAWN))
+            else if (TempSummon* newTyrannus = me->SummonCreature(NPC_TYRANNUS_EVENTS, outroPos[1], TEMPSUMMON_MANUAL_DESPAWN, 0))
             {
                 newTyrannus->SetCanFly(true);
                 newTyrannus->SetFacingToObject(me);
@@ -384,9 +384,9 @@ struct boss_krick : public ScriptedAI
 
                     Creature* jainaOrSylvanas = nullptr;
                     if (_instanceScript->GetData(DATA_TEAM_IN_INSTANCE) == ALLIANCE)
-                        jainaOrSylvanas = me->SummonCreature(NPC_JAINA_PART1, outroPos[2], TEMPSUMMON_MANUAL_DESPAWN);
+                        jainaOrSylvanas = me->SummonCreature(NPC_JAINA_PART1, outroPos[2], TEMPSUMMON_MANUAL_DESPAWN, 0);
                     else
-                        jainaOrSylvanas = me->SummonCreature(NPC_SYLVANAS_PART1, outroPos[2], TEMPSUMMON_MANUAL_DESPAWN);
+                        jainaOrSylvanas = me->SummonCreature(NPC_SYLVANAS_PART1, outroPos[2], TEMPSUMMON_MANUAL_DESPAWN, 0);
 
                     if (jainaOrSylvanas)
                     {

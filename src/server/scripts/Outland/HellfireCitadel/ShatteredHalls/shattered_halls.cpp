@@ -45,14 +45,14 @@ class at_nethekurse_exit : public AreaTriggerScript
                     {
                         if (is->GetGuidData(NPC_SHATTERED_EXECUTIONER).IsEmpty())
                         {
-                            executioner = kargath->SummonCreature(NPC_SHATTERED_EXECUTIONER, Executioner);
+                            executioner = kargath->SummonCreature(NPC_SHATTERED_EXECUTIONER, Executioner, TEMPSUMMON_MANUAL_DESPAWN, 0);
                             kargath->AI()->DoAction(ACTION_EXECUTIONER_TAUNT);
                         }
                     }
 
                     if (executioner)
                         for (uint8 i = 0; i < VictimCount; ++i)
-                            executioner->SummonCreature(executionerVictims[i](is->GetData(DATA_TEAM_IN_INSTANCE)), executionerVictims[i].GetPos());
+                            executioner->SummonCreature(executionerVictims[i](is->GetData(DATA_TEAM_IN_INSTANCE)), executionerVictims[i].GetPos(), TEMPSUMMON_MANUAL_DESPAWN, 0);
                 }
             }
 

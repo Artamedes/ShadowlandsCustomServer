@@ -622,7 +622,7 @@ class boss_voice_of_yogg_saron : public CreatureScript
                         break;
                     case ACTION_PHASE_TWO:
                         events.SetPhase(PHASE_TWO);
-                        me->SummonCreature(NPC_YOGG_SARON, YoggSaronSpawnPos);
+                        me->SummonCreature(NPC_YOGG_SARON, YoggSaronSpawnPos, TEMPSUMMON_MANUAL_DESPAWN, 0);
                         if (Creature* brain = instance->GetCreature(DATA_BRAIN_OF_YOGG_SARON))
                             DoZoneInCombat(brain);
                         events.ScheduleEvent(EVENT_SUMMON_CORRUPTOR_TENTACLE, 5s, EVENT_GROUP_SUMMON_TENTACLES, PHASE_TWO);
@@ -1560,16 +1560,16 @@ class npc_observation_ring_keeper : public CreatureScript
                 switch (me->GetEntry())
                 {
                     case NPC_FREYA_OBSERVATION_RING:
-                        me->SummonCreature(NPC_FREYA_YS, YSKeepersPos[0]);
+                        me->SummonCreature(NPC_FREYA_YS, YSKeepersPos[0], TEMPSUMMON_MANUAL_DESPAWN, 0);
                         break;
                     case NPC_HODIR_OBSERVATION_RING:
-                        me->SummonCreature(NPC_HODIR_YS, YSKeepersPos[1]);
+                        me->SummonCreature(NPC_HODIR_YS, YSKeepersPos[1], TEMPSUMMON_MANUAL_DESPAWN, 0);
                         break;
                     case NPC_THORIM_OBSERVATION_RING:
-                        me->SummonCreature(NPC_THORIM_YS, YSKeepersPos[2]);
+                        me->SummonCreature(NPC_THORIM_YS, YSKeepersPos[2], TEMPSUMMON_MANUAL_DESPAWN, 0);
                         break;
                     case NPC_MIMIRON_OBSERVATION_RING:
-                        me->SummonCreature(NPC_MIMIRON_YS, YSKeepersPos[3]);
+                        me->SummonCreature(NPC_MIMIRON_YS, YSKeepersPos[3], TEMPSUMMON_MANUAL_DESPAWN, 0);
                         break;
                 }
                 return false;

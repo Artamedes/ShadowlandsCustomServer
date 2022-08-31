@@ -1253,7 +1253,7 @@ class spell_sindragosa_ice_tomb_trap : public AuraScript
             {
                 Position pos = GetTarget()->GetPosition();
 
-                if (TempSummon* summon = caster->SummonCreature(NPC_ICE_TOMB, pos))
+                if (TempSummon* summon = caster->SummonCreature(NPC_ICE_TOMB, pos, TEMPSUMMON_MANUAL_DESPAWN, 0))
                 {
                     summon->AI()->SetGUID(GetTarget()->GetGUID(), DATA_TRAPPED_PLAYER);
                     GetTarget()->CastSpell(GetTarget(), SPELL_ICE_TOMB_UNTARGETABLE);

@@ -473,7 +473,7 @@ struct boss_toc_champion_controller : public BossAI
         for (uint8 i = 0; i < vChampionEntries.size(); ++i)
         {
             uint8 pos = urand(0, vChampionJumpTarget.size()-1);
-            if (Creature* champion = me->SummonCreature(vChampionEntries[i], vChampionJumpOrigin[urand(0, vChampionJumpOrigin.size()-1)], TEMPSUMMON_MANUAL_DESPAWN))
+            if (Creature* champion = me->SummonCreature(vChampionEntries[i], vChampionJumpOrigin[urand(0, vChampionJumpOrigin.size()-1)], TEMPSUMMON_MANUAL_DESPAWN, 0))
             {
                 summons.Summon(champion);
                 champion->SetReactState(REACT_PASSIVE);

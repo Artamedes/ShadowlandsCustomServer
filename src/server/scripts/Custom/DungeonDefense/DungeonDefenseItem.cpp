@@ -76,7 +76,7 @@ public:
                                     player->ModifyCurrency(RiftEnergy, -static_cast<int32>(cost));
                                     instance->SetData(SetAddDefensePoints, defensePoints);
                                     ChatHandler(player).PSendSysMessage("|cffFFA600-%u Rift Energy", cost);
-                                    if (auto defense = crystal->SummonCreature(creatureTemplate->Entry, *player, TEMPSUMMON_MANUAL_DESPAWN))
+                                    if (auto defense = crystal->SummonCreature(creatureTemplate->Entry, *player, TEMPSUMMON_MANUAL_DESPAWN, 0))
                                     {
                                         if (defense->AI())
                                         {

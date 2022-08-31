@@ -308,7 +308,7 @@ class spell_occuthar_eyes_of_occuthar_vehicle : public SpellScriptLoader
 
                 if (Creature* occuthar = ObjectAccessor::GetCreature(*GetCaster(), GetCaster()->GetInstanceScript()->GetGuidData(DATA_OCCUTHAR)))
                 {
-                    if (Creature* creature = occuthar->SummonCreature(NPC_EYE_OF_OCCUTHAR, pos))
+                    if (Creature* creature = occuthar->SummonCreature(NPC_EYE_OF_OCCUTHAR, pos, TEMPSUMMON_MANUAL_DESPAWN, 0))
                         creature->CastSpell(GetHitUnit(), SPELL_GAZE_OF_OCCUTHAR, false);
                 }
             }

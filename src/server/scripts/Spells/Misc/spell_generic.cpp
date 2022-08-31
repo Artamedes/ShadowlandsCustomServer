@@ -1604,7 +1604,7 @@ class spell_ethereal_pet_aura : public AuraScript
         GetUnitOwner()->GetAllMinionsByEntry(minionList, NPC_ETHEREAL_SOUL_TRADER);
         for (Creature* minion : minionList)
         {
-            if (minion->IsAIEnabled())
+            if (minion->AI())
             {
                 minion->AI()->Talk(SAY_STEAL_ESSENCE);
                 minion->CastSpell(eventInfo.GetProcTarget(), SPELL_STEAL_ESSENCE_VISUAL);
@@ -2105,7 +2105,7 @@ class spell_gen_lich_pet_aura : public AuraScript
         std::list<TempSummon*> minionList;
         GetUnitOwner()->GetAllMinionsByEntry(minionList, NPC_LICH_PET);
         for (Creature* minion : minionList)
-            if (minion->IsAIEnabled())
+            if (minion->AI())
                 minion->AI()->DoCastSelf(SPELL_LICH_PET_AURA_ONKILL);
     }
 

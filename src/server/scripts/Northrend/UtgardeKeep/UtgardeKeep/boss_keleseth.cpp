@@ -215,7 +215,7 @@ struct boss_keleseth : public BossAI
     {
         // I could not found any spell cast for this
         for (uint8 i = 0; i < 4; ++i)
-            me->SummonCreature(NPC_SKELETON, SkeletonSpawnPoint[0][0], SkeletonSpawnPoint[0][1], SKELETONSPAWN_Z, 0);
+            me->SummonCreature(NPC_SKELETON, SkeletonSpawnPoint[0][0], SkeletonSpawnPoint[0][1], SKELETONSPAWN_Z, 0, TEMPSUMMON_MANUAL_DESPAWN, 0);
     }
 
 private:

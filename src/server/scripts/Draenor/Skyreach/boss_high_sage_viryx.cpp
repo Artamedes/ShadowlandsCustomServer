@@ -404,7 +404,7 @@ public:
                 break;
             case uint32(Events::CallAdds):
                 //DoScriptText(int32(Texts::SpellCallAdds), me);
-                me->SummonCreature(SkyreachDefenseConstruct, 1080.45f, 1787.38f, 262.172f, 5.28156f, TempSummonType::TEMPSUMMON_MANUAL_DESPAWN);
+                me->SummonCreature(SkyreachDefenseConstruct, 1080.45f, 1787.38f, 262.172f, 5.28156f, TempSummonType::TEMPSUMMON_MANUAL_DESPAWN, 0);
                 events.ScheduleEvent(uint32(Events::CallAdds), 60000);
                 break;
             default:

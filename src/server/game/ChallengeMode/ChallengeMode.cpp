@@ -277,7 +277,7 @@ void Challenge::CreatureDiesForScript(Creature* creature, Unit* killer)
                 
                 for (uint8 i = 0; i < 2; i++)
                 {
-                    if (auto spawn = creature->SummonCreature(NPC_SPAWN_OF_GHUUN, creature->GetRandomNearPosition(2.0f), TEMPSUMMON_MANUAL_DESPAWN))
+                    if (auto spawn = creature->SummonCreature(NPC_SPAWN_OF_GHUUN, creature->GetRandomNearPosition(2.0f), TEMPSUMMON_MANUAL_DESPAWN, 0))
                     {
                         spawn->SetReactState(REACT_PASSIVE);
                         m_Functions.AddFunction([spawn, creatureSelected]() -> void

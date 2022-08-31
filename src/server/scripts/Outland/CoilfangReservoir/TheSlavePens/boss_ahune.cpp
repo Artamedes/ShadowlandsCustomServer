@@ -370,9 +370,9 @@ struct npc_ahune_bunny : public ScriptedAI
         if (action == ACTION_START_EVENT)
         {
             DoCastSelf(SPELL_SUMMONING_VISUAL_1);
-            me->SummonCreature(NPC_SHAMAN_BONFIRE_BUNNY_000, SummonPositions[2], TEMPSUMMON_MANUAL_DESPAWN);
-            me->SummonCreature(NPC_SHAMAN_BONFIRE_BUNNY_001, SummonPositions[3], TEMPSUMMON_MANUAL_DESPAWN);
-            me->SummonCreature(NPC_SHAMAN_BONFIRE_BUNNY_002, SummonPositions[4], TEMPSUMMON_MANUAL_DESPAWN);
+            me->SummonCreature(NPC_SHAMAN_BONFIRE_BUNNY_000, SummonPositions[2], TEMPSUMMON_MANUAL_DESPAWN, 0);
+            me->SummonCreature(NPC_SHAMAN_BONFIRE_BUNNY_001, SummonPositions[3], TEMPSUMMON_MANUAL_DESPAWN, 0);
+            me->SummonCreature(NPC_SHAMAN_BONFIRE_BUNNY_002, SummonPositions[4], TEMPSUMMON_MANUAL_DESPAWN, 0);
 
             for (uint8 counter = 0; counter < MAX_FLAMECALLERS; ++counter)
                 if (Creature* flameCaller = ObjectAccessor::GetCreature(*me, _instance->GetGuidData(DATA_FLAMECALLER_000 + counter)))
@@ -425,9 +425,9 @@ struct npc_ahune_bunny : public ScriptedAI
                     DoCast(SPELL_SUMMON_FROSTWIND);
                     break;
                 case EVENT_SUMMON_AHUNE:
-                    if (TempSummon* ahune = me->SummonCreature(NPC_AHUNE, SummonPositions[0], TEMPSUMMON_DEAD_DESPAWN))
+                    if (TempSummon* ahune = me->SummonCreature(NPC_AHUNE, SummonPositions[0], TEMPSUMMON_DEAD_DESPAWN, 0))
                     {
-                        ahune->SummonCreature(NPC_FROZEN_CORE, SummonPositions[1], TEMPSUMMON_CORPSE_DESPAWN);
+                        ahune->SummonCreature(NPC_FROZEN_CORE, SummonPositions[1], TEMPSUMMON_CORPSE_DESPAWN, 0);
                         DoZoneInCombat(ahune);
                         DoCast(ahune, SPELL_RESURFACE);
                     }

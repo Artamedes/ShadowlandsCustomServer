@@ -467,7 +467,7 @@ class npc_jaina_or_sylvanas_intro_hor : public CreatureScript
                         _events.ScheduleEvent(EVENT_INTRO_A2_4, 10s);
                         break;
                     case EVENT_INTRO_A2_4:
-                        if (Creature* uther = me->SummonCreature(NPC_UTHER, UtherSpawnPos, TEMPSUMMON_MANUAL_DESPAWN))
+                        if (Creature* uther = me->SummonCreature(NPC_UTHER, UtherSpawnPos, TEMPSUMMON_MANUAL_DESPAWN, 0))
                             _utherGUID = uther->GetGUID();
                         _events.ScheduleEvent(EVENT_INTRO_A2_5, 2s);
                         break;
@@ -560,7 +560,7 @@ class npc_jaina_or_sylvanas_intro_hor : public CreatureScript
                         break;
                     case EVENT_INTRO_H2_4:
                         // spawn UTHER during speach 2
-                        if (Creature* uther = me->SummonCreature(NPC_UTHER, UtherSpawnPos, TEMPSUMMON_MANUAL_DESPAWN))
+                        if (Creature* uther = me->SummonCreature(NPC_UTHER, UtherSpawnPos, TEMPSUMMON_MANUAL_DESPAWN, 0))
                             _utherGUID = uther->GetGUID();
                         _events.ScheduleEvent(EVENT_INTRO_H2_5, 2s);
                         break;
@@ -620,7 +620,7 @@ class npc_jaina_or_sylvanas_intro_hor : public CreatureScript
                     // Remaining Intro Events common for both faction
                     case EVENT_INTRO_LK_1:
                         // Spawn LK in front of door, and make him move to the sword.
-                        if (Creature* lichking = me->SummonCreature(NPC_THE_LICH_KING_INTRO, LichKingIntroPosition[0], TEMPSUMMON_MANUAL_DESPAWN))
+                        if (Creature* lichking = me->SummonCreature(NPC_THE_LICH_KING_INTRO, LichKingIntroPosition[0], TEMPSUMMON_MANUAL_DESPAWN, 0))
                         {
                             lichking->SetWalk(true);
                             lichking->GetMotionMaster()->MovePoint(0, LichKingIntroPosition[2]);
@@ -755,7 +755,7 @@ class npc_jaina_or_sylvanas_intro_hor : public CreatureScript
                         if (Creature* korelnOrLoralen = ObjectAccessor::GetCreature(*me, _instance->GetGuidData(DATA_KORELN_LORALEN)))
                             korelnOrLoralen->GetMotionMaster()->MovePoint(0, KorelnOrLoralenPos[1]);
 
-                        if (Creature* lichking = me->SummonCreature(NPC_THE_LICH_KING_INTRO, LichKingIntroPosition[0], TEMPSUMMON_MANUAL_DESPAWN))
+                        if (Creature* lichking = me->SummonCreature(NPC_THE_LICH_KING_INTRO, LichKingIntroPosition[0], TEMPSUMMON_MANUAL_DESPAWN, 0))
                         {
                             lichking->SetWalk(true);
                             lichking->GetMotionMaster()->MovePoint(0, LichKingIntroPosition[2]);
@@ -2531,7 +2531,7 @@ class npc_uther_quel_delar : public CreatureScript
                             _events.ScheduleEvent(EVENT_UTHER_3, 2s);
                             break;
                         case EVENT_UTHER_3:
-                            me->SummonCreature(NPC_QUEL_DELAR, QuelDelarSummonPos);
+                            me->SummonCreature(NPC_QUEL_DELAR, QuelDelarSummonPos, TEMPSUMMON_MANUAL_DESPAWN, 0);
                             _events.ScheduleEvent(EVENT_UTHER_4, 2s);
                             break;
                         case EVENT_UTHER_4:

@@ -115,8 +115,8 @@ public:
             m_TriggerFourWinds[0].Clear();
             m_TriggerFourWinds[1].Clear();
 
-            m_TriggerFourWinds[0] = me->SummonCreature(MobEntries::ArakkoaPincerBirdsController, 1165.871f, 1727.601f, 186)->GetGUID();
-            m_TriggerFourWinds[1] = me->SummonCreature(MobEntries::ArakkoaPincerBirdsController, 1165.871f, 1727.601f, 189.4522f)->GetGUID();
+            m_TriggerFourWinds[0] = me->SummonCreature(MobEntries::ArakkoaPincerBirdsController, 1165.871f, 1727.601f, 186.f, 0.0f, TEMPSUMMON_MANUAL_DESPAWN, 0)->GetGUID();
+            m_TriggerFourWinds[1] = me->SummonCreature(MobEntries::ArakkoaPincerBirdsController, 1165.871f, 1727.601f, 189.4522f, 0.0f, TEMPSUMMON_MANUAL_DESPAWN, 0)->GetGUID();
         }
 
         void EnterEvadeMode(EvadeReason why) override

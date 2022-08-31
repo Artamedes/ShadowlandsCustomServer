@@ -432,7 +432,7 @@ namespace Instances { namespace Bloodmaul
                     {
                         //Position pos = me->GetPosition();
                         Position pos = { 1892.26f, -217.18f, 239.85f, 1.687212f };
-                        if (Creature* enslavedMiner = me->SummonCreature((uint32)Npcs::NPC_ENSLAVED_MINER, pos))
+                        if (Creature* enslavedMiner = me->SummonCreature((uint32)Npcs::NPC_ENSLAVED_MINER, pos, TEMPSUMMON_MANUAL_DESPAWN, 0, 0, 0, ObjectGuid::Empty))
                         {
                             slaveGuid = enslavedMiner->GetGUID();
                             //enslavedMiner->EnterVehicle(me, -1);

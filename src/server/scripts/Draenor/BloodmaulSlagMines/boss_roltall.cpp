@@ -179,7 +179,7 @@ namespace Instances { namespace Bloodmaul
                                     triggerMinY = s_FieryBoulderPos1.GetPositionY() - 1;
                                     triggerMaxY = s_FieryBoulderPos1.GetPositionY() - 1;
 
-                                    fieryBoulder = me->SummonCreature(l_BoulderEntry, s_FieryBoulderPos1);
+                                    fieryBoulder = me->SummonCreature(l_BoulderEntry, s_FieryBoulderPos1, TEMPSUMMON_MANUAL_DESPAWN, 0);
                                 }
                                 else if ((1 << l_Boulder) & eDatas::Boulder2Spawned && !(m_FieryBoulderFlags & eDatas::Boulder2Spawned))
                                 {
@@ -189,7 +189,7 @@ namespace Instances { namespace Bloodmaul
                                     triggerMinY = s_FieryBoulderPos2.GetPositionY() - 1;
                                     triggerMaxY = s_FieryBoulderPos2.GetPositionY() - 1;
 
-                                    fieryBoulder = me->SummonCreature(l_BoulderEntry, s_FieryBoulderPos2);
+                                    fieryBoulder = me->SummonCreature(l_BoulderEntry, s_FieryBoulderPos2, TEMPSUMMON_MANUAL_DESPAWN, 0);
                                 }
                                 else if ((1 << l_Boulder) & eDatas::Boulder3Spawned && !(m_FieryBoulderFlags & eDatas::Boulder3Spawned))
                                 {
@@ -199,7 +199,7 @@ namespace Instances { namespace Bloodmaul
                                     triggerMinY = s_FieryBoulderPos3.GetPositionY() - 1;
                                     triggerMaxY = s_FieryBoulderPos3.GetPositionY() - 1;
 
-                                    fieryBoulder = me->SummonCreature(l_BoulderEntry, s_FieryBoulderPos3);
+                                    fieryBoulder = me->SummonCreature(l_BoulderEntry, s_FieryBoulderPos3, TEMPSUMMON_MANUAL_DESPAWN, 0);
                                 }
                             }
                             while (fieryBoulder == nullptr);  ///< Is this safe ?

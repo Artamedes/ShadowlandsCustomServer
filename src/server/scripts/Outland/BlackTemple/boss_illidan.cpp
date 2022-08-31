@@ -903,7 +903,7 @@ struct boss_illidan_stormrage : public BossAI
                 {
                     events.CancelEvent(EVENT_DARK_BARRAGE);
                     Position pos = IllidanDBTargetSpawnPositions[_pillarIndex];
-                    if (TempSummon* dbTarget = me->SummonCreature(NPC_ILLIDAN_DB_TARGET, pos, TEMPSUMMON_MANUAL_DESPAWN))
+                    if (TempSummon* dbTarget = me->SummonCreature(NPC_ILLIDAN_DB_TARGET, pos, TEMPSUMMON_MANUAL_DESPAWN, 0))
                     {
                         Talk(SAY_ILLIDAN_EYE_BLAST);
                         DoCast(dbTarget, SPELL_EYE_BLAST);

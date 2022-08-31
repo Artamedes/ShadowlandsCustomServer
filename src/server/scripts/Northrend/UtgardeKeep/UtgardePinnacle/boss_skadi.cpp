@@ -165,7 +165,7 @@ struct boss_skadi : public BossAI
         Initialize();
         me->SetReactState(REACT_PASSIVE);
         if (!instance->GetCreature(DATA_GRAUF))
-            me->SummonCreature(NPC_GRAUF, GraufLoc);
+            me->SummonCreature(NPC_GRAUF, GraufLoc, TEMPSUMMON_MANUAL_DESPAWN, 0);
     }
 
     void EnterEvadeMode(EvadeReason /*why*/) override
@@ -244,10 +244,10 @@ struct boss_skadi : public BossAI
                             DoCast(grauf, SPELL_RIDE_GRAUF);
                     });
 
-                if (Creature* summonTrigger = me->SummonCreature(NPC_WORLD_TRIGGER, SpawnLoc))
+                if (Creature* summonTrigger = me->SummonCreature(NPC_WORLD_TRIGGER, SpawnLoc, TEMPSUMMON_MANUAL_DESPAWN, 0))
                     summonTrigger->CastSpell(summonTrigger, SPELL_SUMMON_GAUNLET_MOBS_PERIODIC, true);
 
-                if (Creature* combatTrigger = me->SummonCreature(NPC_COMBAT_TRIGGER, SpawnLoc))
+                if (Creature* combatTrigger = me->SummonCreature(NPC_COMBAT_TRIGGER, SpawnLoc, TEMPSUMMON_MANUAL_DESPAWN, 0))
                     combatTrigger->AI()->DoZoneInCombat();
                 break;
             case ACTION_DRAKE_BREATH:

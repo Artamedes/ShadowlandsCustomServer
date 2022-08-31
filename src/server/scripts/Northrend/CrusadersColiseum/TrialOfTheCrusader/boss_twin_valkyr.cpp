@@ -438,7 +438,7 @@ struct boss_fjola : public boss_twin_baseAI
     {
         instance->TriggerGameEvent(EVENT_START_TWINS_FIGHT);
         events.ScheduleEvent(EVENT_SPECIAL_ABILITY, 45s);
-        me->SummonCreature(NPC_BULLET_CONTROLLER, ToCCommonLoc[1].GetPositionX(), ToCCommonLoc[1].GetPositionY(), ToCCommonLoc[1].GetPositionZ(), 0.0f, TEMPSUMMON_MANUAL_DESPAWN);
+        me->SummonCreature(NPC_BULLET_CONTROLLER, ToCCommonLoc[1].GetPositionX(), ToCCommonLoc[1].GetPositionY(), ToCCommonLoc[1].GetPositionZ(), 0.0f, TEMPSUMMON_MANUAL_DESPAWN, 0);
         boss_twin_baseAI::JustEngagedWith(who);
     }
 
