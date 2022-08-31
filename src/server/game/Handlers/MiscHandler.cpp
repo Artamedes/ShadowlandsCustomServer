@@ -89,6 +89,21 @@ void WorldSession::HandleRepopRequest(WorldPackets::Misc::RepopRequest& /*packet
             return;
         }
 
+    // If we are inside an instance, check if player should resurect at instance beginning
+    if (InstanceTemplate const* instanceTemplate = sObjectMgr->GetInstanceTemplate(_player->GetMapId()))
+        if (InstanceScript* instanceScript = _player->GetInstanceScript())
+        {
+            Position resurectPosition;
+
+            if (WorldSafeLocsEntry const* entranceLocation = sObjectMgr->GetWorldSafeLoc(instanceScript->GetEntranceLocation()))
+            {
+                resurectPosition.Relocate(entranceLocation->Loc.GetPositionX(), entranceLocation->Loc.GetPositionY(), entranceLocation->Loc.GetPositionZ(), entranceLocation->Loc.GetOrientation());
+                _player->NearTeleportTo(resurectPosition);
+                _player->ResurrectPlayer(75.0f);
+                return;
+            }
+        }
+
     // For entire MapId
     switch (GetPlayer()->GetMapId())
     {
