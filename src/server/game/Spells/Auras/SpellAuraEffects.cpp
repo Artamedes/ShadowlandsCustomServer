@@ -3661,7 +3661,9 @@ void AuraEffect::HandleModPercentStat(AuraApplication const* aurApp, uint8 mode,
 
     Unit* target = aurApp->GetTarget();
 
-    if (GetMiscValue() < -1 || GetMiscValue() > 4)
+    bool isPrimaryStat = GetMiscValue() == -2;
+
+    if (!isPrimaryStat && (GetMiscValue() < -1 || GetMiscValue() > 4))
     {
         TC_LOG_ERROR("spells.aura.effect", "WARNING: Misc Value for SPELL_AURA_MOD_PERCENT_STAT not valid");
         return;
@@ -3671,21 +3673,42 @@ void AuraEffect::HandleModPercentStat(AuraApplication const* aurApp, uint8 mode,
     if (target->GetTypeId() != TYPEID_PLAYER)
         return;
 
-    for (int32 i = STAT_STRENGTH; i < MAX_STATS; ++i)
+    if (isPrimaryStat)
     {
-        if (GetMiscValue() == i || GetMiscValue() == -1)
+        auto player = target->ToPlayer();
+        auto stat = player->GetPrimaryStat();
+
+        if (apply)
+            target->ApplyStatPctModifier(UnitMods(UNIT_MOD_STAT_START + stat), BASE_PCT, float(GetAmount()));
+        else
         {
-            if (apply)
-                target->ApplyStatPctModifier(UnitMods(UNIT_MOD_STAT_START + i), BASE_PCT, float(GetAmount()));
-            else
+            float amount = target->GetTotalAuraMultiplier(SPELL_AURA_MOD_PERCENT_STAT, [stat](AuraEffect const* aurEff) -> bool
             {
-                float amount = target->GetTotalAuraMultiplier(SPELL_AURA_MOD_PERCENT_STAT, [i](AuraEffect const* aurEff) -> bool
+                if (aurEff->GetMiscValue() == -2)
+                    return true;
+                return false;
+            });
+            target->SetStatPctModifier(UnitMods(UNIT_MOD_STAT_START + stat), BASE_PCT, amount);
+        }
+    }
+    else
+    {
+        for (int32 i = STAT_STRENGTH; i < MAX_STATS; ++i)
+        {
+            if (GetMiscValue() == i || GetMiscValue() == -1)
+            {
+                if (apply)
+                    target->ApplyStatPctModifier(UnitMods(UNIT_MOD_STAT_START + i), BASE_PCT, float(GetAmount()));
+                else
+                {
+                    float amount = target->GetTotalAuraMultiplier(SPELL_AURA_MOD_PERCENT_STAT, [i](AuraEffect const* aurEff) -> bool
                     {
                         if (aurEff->GetMiscValue() == i || aurEff->GetMiscValue() == -1)
                             return true;
                         return false;
                     });
-                target->SetStatPctModifier(UnitMods(UNIT_MOD_STAT_START + i), BASE_PCT, amount);
+                    target->SetStatPctModifier(UnitMods(UNIT_MOD_STAT_START + i), BASE_PCT, amount);
+                }
             }
         }
     }

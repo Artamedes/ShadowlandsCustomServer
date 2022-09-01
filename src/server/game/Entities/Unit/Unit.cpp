@@ -5725,6 +5725,19 @@ void Unit::UpdateStatBuffMod(Stats stat)
             return false;
         });
 
+    if (auto player = ToPlayer())
+    {
+        if (stat == player->GetPrimaryStat())
+        {
+            factor = GetTotalAuraMultiplier(SPELL_AURA_MOD_PERCENT_STAT, [stat](AuraEffect const* aurEff) -> bool
+            {
+                if (aurEff->GetMiscValue() == -2)
+                    return true;
+                return false;
+            });
+        }
+    }
+
     factor *= GetTotalAuraMultiplier(SPELL_AURA_MOD_TOTAL_STAT_PERCENTAGE, [stat](AuraEffect const* aurEff) -> bool
         {
             if (aurEff->GetMiscValue() == -1 || aurEff->GetMiscValue() == stat)
