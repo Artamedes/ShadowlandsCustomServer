@@ -5729,7 +5729,7 @@ void Unit::UpdateStatBuffMod(Stats stat)
     {
         if (stat == player->GetPrimaryStat())
         {
-            factor = GetTotalAuraMultiplier(SPELL_AURA_MOD_PERCENT_STAT, [stat](AuraEffect const* aurEff) -> bool
+            factor += GetTotalAuraMultiplier(SPELL_AURA_MOD_PERCENT_STAT, [stat](AuraEffect const* aurEff) -> bool
             {
                 if (aurEff->GetMiscValue() == -2)
                     return true;
