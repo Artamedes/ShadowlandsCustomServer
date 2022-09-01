@@ -84,8 +84,8 @@ class spell_blistering_wave : public SpellScript
                     auto caster = context.GetUnit();
                     Position pos = caster->GetPosition();
                     float radius = frand(6.0f, 11.0f) * i;
-                    caster->MovePosition(pos, radius, 0.0f);
-                    caster->MovePosition(pos, frand(5.0f, 7.0f) * (float)rand_norm(), ((float)rand_norm() * static_cast<float>(2 * M_PI)) - caster->GetOrientation());
+                    //caster->MovePosition(pos, radius, 0.0f);
+                    //caster->MovePosition(pos, frand(5.0f, 7.0f) * (float)rand_norm(), ((float)rand_norm() * static_cast<float>(2 * M_PI)) - caster->GetOrientation());
                     caster->CastSpell(pos, WaveMissle, true);
                 });
             }

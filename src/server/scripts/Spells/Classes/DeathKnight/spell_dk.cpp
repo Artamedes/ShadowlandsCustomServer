@@ -2413,7 +2413,7 @@ class spell_dk_glacial_advance : public SpellScript
             {
                 Unit* caster = context.GetUnit();
                 Position targetPosition = castPosition;
-                caster->MovePosition(targetPosition, dist, 0.0f);
+                caster->MovePositionToFirstCollision(targetPosition, dist, 0.0f);
                 caster->CastSpell(targetPosition, SPELL_DK_GLACIAL_ADVANCE_DAMAGE, true);
             });
         }

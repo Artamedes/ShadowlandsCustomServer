@@ -2810,7 +2810,7 @@ class spell_hor_evasion : public SpellScriptLoader
 
                 float angle = pos.GetAbsoluteAngle(&home);
                 float dist = GetEffectInfo().CalcRadius(GetCaster());
-                target->MovePosition(pos, dist, angle);
+                target->MovePositionToFirstCollision(pos, dist, angle);
 
                 dest.Relocate(pos);
             }

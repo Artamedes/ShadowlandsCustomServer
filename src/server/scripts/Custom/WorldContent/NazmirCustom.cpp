@@ -213,7 +213,7 @@ struct npc_nazmir_custom_spawn_trigger : public ScriptedAI
 
             uint32 nextEntry = AllyQueue.front();
             auto pos = AllyPosQue.front();
-            me->MovePosition(pos, 3.0f * (float)rand_norm(), (float)rand_norm() * static_cast<float>(2 * M_PI));
+            me->MovePositionToFirstCollision(pos, 3.0f * (float)rand_norm(), (float)rand_norm() * static_cast<float>(2 * M_PI));
 
             DoSummon(nextEntry, pos);
 
