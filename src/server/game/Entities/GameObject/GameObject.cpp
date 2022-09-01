@@ -827,15 +827,6 @@ bool GameObject::Create(uint32 entry, Map* map, Position const& pos, QuaternionD
     LastUsedScriptID = GetGOInfo()->ScriptId;
     AIM_Initialize();
 
-    // Initialize loot duplicate count depending on raid difficulty
-    if (map->Is25ManRaid())
-    {
-        if (!loot)
-            loot = std::make_unique<Loot>();
-
-        loot->maxDuplicates = 3;
-    }
-
     if (spawnid)
         m_spawnId = spawnid;
 
@@ -1209,14 +1200,14 @@ void GameObject::Update(uint32 diff)
                     }
                     break;
                 case GAMEOBJECT_TYPE_CHEST:
-                    if (m_groupLootTimer)
+                    if (m_loot && m_groupLootTimer)
                     {
                         if (m_groupLootTimer <= diff)
                         {
                             if (loot)
                             {
                                 if (Group* group = sGroupMgr->GetGroupByGUID(lootingGroupLowGUID))
-                                    group->EndRoll(loot.get(), GetMap());
+                                    group->EndRoll(m_loot.get(), GetMap());
                             }
 
                             m_groupLootTimer = 0;
@@ -1304,7 +1295,7 @@ void GameObject::Update(uint32 diff)
                         return;
             }
 
-            loot = nullptr;
+            m_loot = nullptr;
 
             // Do not delete chests or goobers that are not consumed on loot, while still allowing them to despawn when they expire if summoned
             bool isSummonedAndExpired = (GetOwner() || GetSpellId()) && m_respawnTime == 0;
@@ -3851,28 +3842,6 @@ MapTransport const* GameObject::ToMapTransport() const
         return reinterpret_cast<MapTransport const*>(this);
 
     return nullptr;
-}
-
-Loot* GameObject::GetLootFor(Player* player, bool create)
-{
-    if (player)
-    {
-        auto itr = m_PersonalLoots.find(player->GetGUID());
-        if (itr != m_PersonalLoots.end())
-            return m_PersonalLoots[player->GetGUID()].get();
-        else if (create)
-        {
-            m_PersonalLoots.insert({ player->GetGUID(), std::make_unique<Loot>() });
-            //ASSERT(loot);
-            m_PersonalLoots[player->GetGUID()]->SetGUID(loot ? loot->GetGUID() : ObjectGuid::Create<HighGuid::LootObject>(GetMapId(), GetEntry(), GetMap()->GenerateLowGuid<HighGuid::LootObject>())); // loot should already be initialized
-            return m_PersonalLoots[player->GetGUID()].get();
-        }
-    }
-
-    if (!loot)
-        loot = std::make_unique<Loot>();
-
-    return loot.get();
 }
 
 bool GameObject::IsAllLooted() const

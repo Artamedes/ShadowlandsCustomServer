@@ -156,7 +156,8 @@ bool LootItem::IsPersonalLootFor(Player const* player) const
 // --------- Loot ---------
 //
 
-Loot::Loot(uint32 _gold /*= 0*/) : gold(_gold), unlootedCount(0), roundRobinPlayer(), loot_type(LOOT_NONE), maxDuplicates(1), _itemContext(ItemContext::NONE), _challengeLevel(0), _realChallengeLevel(0), _challengeMap(0), _levelBonus(0)
+Loot::Loot() : gold(0), unlootedCount(0), roundRobinPlayer(), loot_type(LOOT_NONE), maxDuplicates(1), _itemContext(ItemContext::NONE),
+_challengeLevel(0), _realChallengeLevel(0), _challengeMap(0), _levelBonus(0)
 {
 }
 

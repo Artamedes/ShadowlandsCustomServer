@@ -11827,9 +11827,6 @@ void Unit::SetMeleeAnimKitId(uint16 animKitId)
     if (creature && creature->IsPet() && creature->GetOwnerGUID().IsPlayer())
         isRewardAllowed = false;
 
-    if (creature && creature->CanHavePersonalLoot() && victim->IsPlayer() && creature->isTappedBy(victim->ToPlayer()))
-        player = victim->ToPlayer();
-
     // Reward player, his pets, and group/raid members
     // call kill spell proc event (before real die and combat stop to triggering auras removed at death/combat stop)
     if (isRewardAllowed && player && player != victim)
@@ -11861,68 +11858,44 @@ void Unit::SetMeleeAnimKitId(uint16 animKitId)
             }
         }
         else
-        {
             player->SendDirectMessage(partyKillLog.Write());
-
-            if (creature)
-            {
-                WorldPackets::Loot::LootList lootList;
-                lootList.Owner = creature->GetGUID();
-                lootList.LootObj = creature->GetLootFor(player)->GetGUID();
-
-                player->SendMessageToSet(lootList.Write(), true);
-            }
-        }
 
         // Generate loot before updating looter
         if (creature)
         {
-            auto GenerateLootAndSendToGroup([&](Player* who, bool personal = false)
+            creature->m_loot.reset(new Loot());
+            Loot* loot = creature->m_loot.get();
+            loot->SetGUID(ObjectGuid::Create<HighGuid::LootObject>(creature->GetMapId(), 0, creature->GetMap()->GenerateLowGuid<HighGuid::LootObject>()));
+            if (creature->GetMap()->Is25ManRaid())
+                loot->maxDuplicates = 3;
+
+            if (uint32 lootid = creature->GetCreatureTemplate()->lootid)
+                loot->FillLoot(lootid, LootTemplates_Creature, looter, false, false, creature->GetLootMode(), creature->GetMap()->GetDifficultyLootItemContext());
+
+            if (creature->GetLootMode() > 0)
+                loot->generateMoneyLoot(creature->GetCreatureTemplate()->mingold, creature->GetCreatureTemplate()->maxgold);
+
+            if (group)
             {
-                // Don't allow loot on challenge mode
-                bool isChallengeActive = false;
+                if (hasLooterGuid)
+                    group->SendLooter(creature, looter);
+                else
+                    group->SendLooter(creature, nullptr);
 
-                if (auto instance = creature->GetInstanceScript())
-                    isChallengeActive = instance->IsChallenge();
-
-                if (!isChallengeActive)
-                {
-                    Loot* loot = creature->GetLootFor(who);
-                    loot->clear();
-                    if (uint32 lootid = creature->GetCreatureTemplate()->lootid)
-                        loot->FillLoot(lootid, LootTemplates_Creature, who, personal, false, creature->GetLootMode(), true, personal); // checking loot spec!
-
-                    if (creature->GetLootMode() > 0)
-                        loot->generateMoneyLoot(creature->GetCreatureTemplate()->mingold, creature->GetCreatureTemplate()->maxgold);
-
-                    if (group && !personal)
-                    {
-                        if (hasLooterGuid)
-                            group->SendLooter(creature, looter);
-                        else
-                            group->SendLooter(creature, nullptr);
-
-                        // Update round robin looter only if the creature had loot // TODO RESEARCH CRASH
-                        if (!loot->empty())
-                            group->UpdateLooterGuid(creature);
-                    }
-                }
-                who->RewardPlayerAndGroupAtKill(victim, false);
-            });
-
-            if (creature->CanHavePersonalLoot())
-            {
-                for (auto guid : creature->m_lootRecipientsPersonal)
-                {
-                    if (auto who = ObjectAccessor::GetPlayer(*creature, guid))
-                        GenerateLootAndSendToGroup(who, true);
-                }
+                // Update round robin looter only if the creature had loot
+                if (!loot->empty())
+                    group->UpdateLooterGuid(creature);
             }
             else
-                GenerateLootAndSendToGroup(player);
+            {
+                WorldPackets::Loot::LootList lootList;
+                lootList.Owner = creature->GetGUID();
+                lootList.LootObj = creature->m_loot->GetGUID();
+                player->SendMessageToSet(lootList.Write(), true);
+            }
         }
-        else
-            player->RewardPlayerAndGroupAtKill(victim, false);
+
+        player->RewardPlayerAndGroupAtKill(victim, false);
     }
 
     // Do KILL and KILLED procs. KILL proc is called only for the unit who landed the killing blow (and its owner - for pets and totems) regardless of who tapped the victim
@@ -12040,7 +12013,7 @@ void Unit::SetMeleeAnimKitId(uint16 animKitId)
         if (!creature->IsPet())
         {
             // must be after setDeathState which resets dynamic flags
-            if (!creature->GetLootFor(player)->isLooted())
+            if (creature->m_loot && !creature->m_loot->isLooted())
                 creature->SetDynamicFlag(UNIT_DYNFLAG_LOOTABLE);
             else
                 creature->AllLootRemovedFromCorpse();

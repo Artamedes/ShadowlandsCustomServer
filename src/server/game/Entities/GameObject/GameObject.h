@@ -34,6 +34,7 @@ class OPvPCapturePoint;
 class Transport;
 class TransportBase;
 class Unit;
+struct Loot;
 struct TransportAnimation;
 enum TriggerCastFlags : uint32;
 
@@ -287,11 +288,10 @@ class TC_GAME_API GameObject : public WorldObject, public GridObject<GameObject>
 
         void SaveRespawnTime(uint32 forceDelay = 0);
 
-        Loot* GetLootFor(Player* player = nullptr, bool create = false);
         bool IsAllLooted() const;
 
         bool m_canBePersonalLooted = false;
-        std::unique_ptr<Loot> loot;
+        std::unique_ptr<Loot> m_loot;
         std::unordered_map<ObjectGuid, std::unique_ptr<Loot>> m_PersonalLoots;
 
         Player* GetLootRecipient() const;
@@ -299,6 +299,7 @@ class TC_GAME_API GameObject : public WorldObject, public GridObject<GameObject>
         void SetLootRecipient(Unit* unit, Group* group = nullptr);
         bool IsLootAllowedFor(Player const* player) const;
         bool HasLootRecipient() const { return !m_lootRecipient.IsEmpty() || !m_lootRecipientGroup.IsEmpty(); }
+        Loot* GetLootForPlayer(Player const* /*player*/) const override { return m_loot.get(); }
         uint32 m_groupLootTimer;                            // (msecs)timer used for group loot
         ObjectGuid lootingGroupLowGUID;                     // used to find group which is looting
 

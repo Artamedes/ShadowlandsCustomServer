@@ -9298,9 +9298,22 @@ void Player::RemovedInsignia(Player* looterPlr)
     // Now we must make bones lootable, and send player loot
     bones->SetCorpseDynamicFlag(CORPSE_DYNFLAG_LOOTABLE);
 
-    // We store the level of our player in the gold field
-    // We retrieve this information at Player::SendLoot()
-    bones->loot.gold = GetLevel();
+    bones->m_loot.reset(new Loot());
+    bones->m_loot->SetGUID(ObjectGuid::Create<HighGuid::LootObject>(GetMapId(), 0, GetMap()->GenerateLowGuid<HighGuid::LootObject>()));
+
+    // For AV Achievement
+    if (Battleground* bg = GetBattleground())
+    {
+        if (bg->GetTypeID(true) == BATTLEGROUND_AV)
+            bones->m_loot->FillLoot(PLAYER_CORPSE_LOOT_ENTRY, LootTemplates_Creature, this, true);
+    }
+    // For wintergrasp Quests
+    else if (GetZoneId() == AREA_WINTERGRASP)
+        bones->m_loot->FillLoot(PLAYER_CORPSE_LOOT_ENTRY, LootTemplates_Creature, this, true);
+
+    // It may need a better formula
+    // Now it works like this: lvl10: ~6copper, lvl70: ~9silver
+    bones->m_loot->gold = uint32(urand(50, 150) * 0.016f * std::pow(float(GetLevel()) / 5.76f, 2.5f) * sWorld->getRate(RATE_DROP_MONEY));
     bones->lootRecipient = looterPlr;
     looterPlr->SendLoot(bones->GetGUID(), LOOT_INSIGNIA);
 }
@@ -9385,12 +9398,12 @@ void Player::SendLoot(ObjectGuid guid, LootType loot_type, bool aeLooting/* = fa
             return;
         }
 
-        loot = go->GetLootFor(this);
+        loot = go->GetLootForPlayer(this);
 
         // loot was generated and respawntime has passed since then, allow to recreate loot
         // to avoid bugs, this rule covers spawned gameobjects only
         // Don't allow to regenerate chest loot inside instances and raids, to avoid exploits with duplicate boss loot being given for some encounters
-        if (go->isSpawnedByDefault() && go->getLootState() == GO_ACTIVATED && !loot->isLooted() && !go->GetMap()->Instanceable() && go->GetLootGenerationTime() + go->GetRespawnDelay() < GameTime::GetGameTime())
+        if (go->isSpawnedByDefault() && go->getLootState() == GO_ACTIVATED && (!loot || !loot->isLooted()) && !go->GetMap()->Instanceable() && go->GetLootGenerationTime() + go->GetRespawnDelay() < GameTime::GetGameTime())
             go->SetLootState(GO_READY);
 
         if (go->getLootState() == GO_READY)
@@ -9408,6 +9421,13 @@ void Player::SendLoot(ObjectGuid guid, LootType loot_type, bool aeLooting/* = fa
                 if (auto instance = GetInstanceScript())
                     lootid = instance->GetLootIdForDungeon();
             }
+            
+            loot = new Loot();
+            loot->SetGUID(ObjectGuid::Create<HighGuid::LootObject>(go->GetMapId(), 0, go->GetMap()->GenerateLowGuid<HighGuid::LootObject>()));
+            if (go->GetMap()->Is25ManRaid())
+                loot->maxDuplicates = 3;
+
+            go->m_loot.reset(loot);
 
             if (lootid)
             {
@@ -9426,7 +9446,7 @@ void Player::SendLoot(ObjectGuid guid, LootType loot_type, bool aeLooting/* = fa
                 go->SetLootGenerationTime();
 
                 // get next RR player (for next loot)
-                if (groupRules && !go->loot->empty())
+                if (groupRules && !loot->empty())
                     group->UpdateLooterGuid(go);
 
                 if (group && !go->GetGOInfo()->IsOploteChest())
@@ -9519,14 +9539,16 @@ void Player::SendLoot(ObjectGuid guid, LootType loot_type, bool aeLooting/* = fa
 
         permission = OWNER_PERMISSION;
 
-        loot = &item->loot;
+        loot = item->GetLootForPlayer(this);
 
         // If item doesn't already have loot, attempt to load it. If that
         // fails then this is first time opening, generate loot
         if (!item->m_lootGenerated && !sLootItemStorage->LoadStoredLoot(item, this))
         {
             item->m_lootGenerated = true;
-            loot->clear();
+            loot = new Loot();
+            loot->SetGUID(ObjectGuid::Create<HighGuid::LootObject>(GetMapId(), 0, GetMap()->GenerateLowGuid<HighGuid::LootObject>()));
+            item->m_loot.reset(loot);
 
             switch (loot_type)
             {
@@ -9562,29 +9584,9 @@ void Player::SendLoot(ObjectGuid guid, LootType loot_type, bool aeLooting/* = fa
             return;
         }
 
-        loot = &bones->loot;
+        loot = bones->GetLootForPlayer(this);
 
-        if (loot->loot_type == LOOT_NONE)
-        {
-            uint32 pLevel = bones->loot.gold;
-            bones->loot.clear();
-
-            // For AV Achievement
-            if (Battleground* bg = GetBattleground())
-            {
-                if (bg->GetTypeID(true) == BATTLEGROUND_AV)
-                    loot->FillLoot(PLAYER_CORPSE_LOOT_ENTRY, LootTemplates_Creature, this, true);
-            }
-            // For wintergrasp Quests
-            else if (GetZoneId() == AREA_WINTERGRASP)
-                loot->FillLoot(PLAYER_CORPSE_LOOT_ENTRY, LootTemplates_Creature, this, true);
-
-            // It may need a better formula
-            // Now it works like this: lvl10: ~6copper, lvl70: ~9silver
-            bones->loot.gold = uint32(urand(50, 150) * 0.016f * std::pow(float(pLevel) / 5.76f, 2.5f) * sWorld->getRate(RATE_DROP_MONEY));
-        }
-
-        if (bones->lootRecipient != this)
+        if (bones->lootRecipient && bones->lootRecipient != this)
             permission = NONE_PERMISSION;
         else
             permission = OWNER_PERMISSION;
@@ -9606,8 +9608,7 @@ void Player::SendLoot(ObjectGuid guid, LootType loot_type, bool aeLooting/* = fa
             return;
         }
 
-        bool isPersonal = creature->CanHavePersonalLoot() && creature->isTappedBy(this);
-        loot = creature->GetLootFor(this);
+        loot = creature->GetLootForPlayer(this);
 
         //if (creature->CanHavePersonalLoot() && creature->isTappedBy(this))
         //{
@@ -9670,7 +9671,7 @@ void Player::SendLoot(ObjectGuid guid, LootType loot_type, bool aeLooting/* = fa
                 }
             }
 
-            if (loot->loot_type == LOOT_NONE && !isPersonal) // ignore personal in group.
+            if (loot->loot_type == LOOT_NONE)
             {
                 // for creature, loot is filled when creature is killed.
                 if (Group* group = creature->GetLootRecipientGroup())
@@ -9708,7 +9709,7 @@ void Player::SendLoot(ObjectGuid guid, LootType loot_type, bool aeLooting/* = fa
             // set group rights only for loot_type != LOOT_SKINNING
             else
             {
-                if (creature->GetLootRecipientGroup() && !isPersonal)
+                if (creature->GetLootRecipientGroup())
                 {
                     Group* group = GetGroup();
                     if (group == creature->GetLootRecipientGroup())
@@ -9747,7 +9748,8 @@ void Player::SendLoot(ObjectGuid guid, LootType loot_type, bool aeLooting/* = fa
     }
 
     // need know merged fishing/corpse loot type for achievements
-    loot->loot_type = loot_type;
+    if (loot)
+        loot->loot_type = loot_type;
 
     if (permission != NONE_PERMISSION)
     {
@@ -9790,7 +9792,7 @@ void Player::SendLoot(ObjectGuid guid, LootType loot_type, bool aeLooting/* = fa
             SetUnitFlag(UNIT_FLAG_LOOTING);
     }
     else
-        SendLootError(loot->GetGUID(), guid, LOOT_ERROR_DIDNT_KILL);
+        SendLootError(loot ? loot->GetGUID() : ObjectGuid::Empty, guid, LOOT_ERROR_DIDNT_KILL);
 }
 
 void Player::SendLootError(ObjectGuid const& lootObj, ObjectGuid const& owner, LootError error) const
@@ -18989,12 +18991,9 @@ bool Player::isAllowedToLoot(const Creature* creature) const
 
     if (HasPendingBind())
         return false;
-
-    if (!creature->isTappedBy(this))
-        return false;
-
-    Loot const* loot = (const_cast<Creature*>(creature)->GetLootFor(const_cast<Player*>(this)));
-    if (loot->empty()) // nothing to loot or everything looted.
+    
+    Loot const* loot = creature->GetLootForPlayer(this);
+    if (!loot || loot->isLooted()) // nothing to loot or everything looted.
         return false;
     if (!loot->hasItemForAll() && !loot->hasItemFor(this)) // no loot in creature for this player
         return false;

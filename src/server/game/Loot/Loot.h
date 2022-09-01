@@ -268,7 +268,7 @@ struct TC_GAME_API Loot
     uint8 maxDuplicates;                                    // Max amount of items with the same entry that can drop (default is 1; on 25 man raid mode 3)
     ObjectGuid _sourceLoot;
 
-    Loot(uint32 _gold = 0);
+    Loot();
     ~Loot();
 
     ObjectGuid const& GetGUID() const { return _GUID; }

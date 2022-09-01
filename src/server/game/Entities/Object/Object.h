@@ -63,6 +63,7 @@ class WorldObject;
 class WorldPacket;
 class ZoneScript;
 struct FactionTemplateEntry;
+struct Loot;
 struct PositionFullTerrainStatus;
 struct QuaternionData;
 enum ZLiquidStatus : uint32;
@@ -261,6 +262,8 @@ class TC_GAME_API Object
         }
 
         virtual std::string GetDebugInfo() const;
+
+        virtual Loot* GetLootForPlayer([[maybe_unused]] Player const* player) const { return nullptr; }
 
     protected:
         Object();
