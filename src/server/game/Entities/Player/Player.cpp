@@ -30207,9 +30207,9 @@ void Player::ResetAndGainAnimaPowerChoice(AnimaPower* power)
         go->AI()->SetGUID(GetGUID(), 1);
     }
 
-    mawPower.Amount = power->MaxStacks;
-    mawPower.MawPowerID = power->MawPowerID;
-    mawPower.SpellID = power->SpellID;
+    //mawPower.Amount = power->MaxStacks;
+    //mawPower.MawPowerID = power->MawPowerID;
+    //mawPower.SpellID = power->SpellID;
 
     if (apply)
     {

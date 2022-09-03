@@ -317,24 +317,24 @@ public:
     }
 };
 
-template<>
-class ViewerDependentValue<UF::GameObjectData::DisplayIDTag>
-{
-public:
-    using value_type = UF::GameObjectData::DisplayIDTag::value_type;
-
-    static value_type GetValue(UF::GameObjectData const* gameObjectData, GameObject const* gameObject, Player const* receiver)
-    {
-        value_type displayId = gameObjectData->DisplayID;
-        if (gameObject->GetGoType() == GAMEOBJECT_TYPE_PLAYER_CHOICE_CHEST)
-        {
-            if (!const_cast<Player*>(receiver)->ConsumedAnimaPowers.count(gameObject->GetGUID()))
-                displayId = 61847;
-        }
-
-        return displayId;
-    }
-};
+//template<>
+//class ViewerDependentValue<UF::GameObjectData::DisplayIDTag>
+//{
+//public:
+//    using value_type = UF::GameObjectData::DisplayIDTag::value_type;
+//
+//    static value_type GetValue(UF::GameObjectData const* gameObjectData, GameObject const* gameObject, Player const* receiver)
+//    {
+//        value_type displayId = gameObjectData->DisplayID;
+//        if (gameObject->GetGoType() == GAMEOBJECT_TYPE_PLAYER_CHOICE_CHEST)
+//        {
+//            if (!const_cast<Player*>(receiver)->ConsumedAnimaPowers.count(gameObject->GetGUID()))
+//                displayId = 61847;
+//        }
+//
+//        return displayId;
+//    }
+//};
 
 template<>
 class ViewerDependentValue<UF::ConversationData::LastLineEndTimeTag>

@@ -149,10 +149,12 @@ void Object::BuildCreateUpdateBlockForPlayer(UpdateData* data, Player* target) c
     if (!target)
         return;
 
-   // if (target == this)
-   //     return;
+    // if (target == this)
+    //    return;
    //
-    if (!IsCreature() && !IsPlayer() && !dynamic_cast<Item const*>(this))
+    //if (!IsCreature() && !IsPlayer() && !dynamic_cast<Item const*>(this))
+    //    return;
+    if (!IsPlayer())
         return;
 
     uint8 updateType = m_isNewObject ? UPDATETYPE_CREATE_OBJECT2 : UPDATETYPE_CREATE_OBJECT;
@@ -230,18 +232,18 @@ void Object::BuildValuesUpdateBlockForPlayer(UpdateData* data, Player const* tar
 {
     ByteBuffer buf = PrepareValuesUpdateBuffer();
 
-   // BuildValuesUpdate(&buf, target);
-
-    //data->AddUpdateBlock(buf);
+    BuildValuesUpdate(&buf, target);
+    
+    data->AddUpdateBlock(buf);
 }
 
 void Object::BuildValuesUpdateBlockForPlayerWithFlag(UpdateData* data, UF::UpdateFieldFlag flags, Player const* target) const
 {
     ByteBuffer buf = PrepareValuesUpdateBuffer();
 
-   // BuildValuesUpdateWithFlag(&buf, flags, target);
+    BuildValuesUpdateWithFlag(&buf, flags, target);
 
-   // data->AddUpdateBlock(buf);
+    data->AddUpdateBlock(buf);
 }
 
 void Object::BuildDestroyUpdateBlock(UpdateData* data) const
