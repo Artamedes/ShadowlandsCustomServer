@@ -149,6 +149,12 @@ void Object::BuildCreateUpdateBlockForPlayer(UpdateData* data, Player* target) c
     if (!target)
         return;
 
+   // if (target == this)
+   //     return;
+   //
+    if (!IsCreature() && !IsPlayer() && !dynamic_cast<Item const*>(this))
+        return;
+
     uint8 updateType = m_isNewObject ? UPDATETYPE_CREATE_OBJECT2 : UPDATETYPE_CREATE_OBJECT;
     uint8 objectType = m_objectTypeId;
     CreateObjectBits flags = m_updateFlag;
@@ -212,8 +218,9 @@ void Object::SendUpdateToPlayer(Player* player)
         l_Create = true;
         BuildCreateUpdateBlockForPlayer(&upd, player);
     }
-    upd.BuildPacket(&packet);
-    player->SendDirectMessage(&packet);
+
+    if (upd.BuildPacket(&packet))
+        player->SendDirectMessage(&packet);
 
     //if (l_Create && GetTypeId() == TYPEID_ITEM)
     //    player->SendNewItem((Item*)this, 0, false, false);
@@ -223,18 +230,18 @@ void Object::BuildValuesUpdateBlockForPlayer(UpdateData* data, Player const* tar
 {
     ByteBuffer buf = PrepareValuesUpdateBuffer();
 
-    BuildValuesUpdate(&buf, target);
+   // BuildValuesUpdate(&buf, target);
 
-    data->AddUpdateBlock(buf);
+    //data->AddUpdateBlock(buf);
 }
 
 void Object::BuildValuesUpdateBlockForPlayerWithFlag(UpdateData* data, UF::UpdateFieldFlag flags, Player const* target) const
 {
     ByteBuffer buf = PrepareValuesUpdateBuffer();
 
-    BuildValuesUpdateWithFlag(&buf, flags, target);
+   // BuildValuesUpdateWithFlag(&buf, flags, target);
 
-    data->AddUpdateBlock(buf);
+   // data->AddUpdateBlock(buf);
 }
 
 void Object::BuildDestroyUpdateBlock(UpdateData* data) const
@@ -332,21 +339,36 @@ void Object::BuildMovementUpdate(ByteBuffer* data, CreateObjectBits flags, Playe
         //for (std::size_t i = 0; i < RemoveForcesIDs.size(); ++i)
         //    *data << ObjectGuid(RemoveForcesIDs);
 
+        bool hasUnkDF = false;
+
         data->WriteBit(!unit->m_movementInfo.transport.guid.IsEmpty()); // HasTransport
         data->WriteBit(HasFall);                                        // HasFall
         data->WriteBit(HasSpline);                                      // HasSpline - marks that the unit uses spline movement
         data->WriteBit(false);                                          // HeightChangeFailed
         data->WriteBit(false);                                          // RemoteTimeValid
         data->WriteBit(HasInertia);                                     // HasInertia
+        data->WriteBit(hasUnkDF);                                       // hasUnkDF
 
         if (!unit->m_movementInfo.transport.guid.IsEmpty())
             *data << unit->m_movementInfo.transport;
 
         if (HasInertia)
         {
-            *data << unit->m_movementInfo.inertia->guid;
+            *data << (uint32)unit->m_movementInfo.inertia->guid.GetCounter();
             *data << unit->m_movementInfo.inertia->force.PositionXYZStream();
             *data << uint32(unit->m_movementInfo.inertia->lifetime);
+        }
+
+        if (hasUnkDF)
+        {
+            *data << float(0.0f);
+            *data << float(0.0f);
+            *data << float(0.0f);
+            *data << float(0.0f);
+            *data << float(0.0f);
+            *data << float(0.0f);
+            *data << float(0.0f);
+            *data << float(0.0f);
         }
 
         if (HasFall)
@@ -382,6 +404,9 @@ void Object::BuildMovementUpdate(ByteBuffer* data, CreateObjectBits flags, Playe
             *data << uint32(0);
             *data << float(1.0f);                                       // MovementForcesModMagnitude
         }
+        // unk df
+        for (int y = 0; y < 17; ++y)
+            *data << float(0.0f);
 
         data->WriteBit(HasSpline);
         data->FlushBits();

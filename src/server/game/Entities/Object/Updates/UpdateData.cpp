@@ -45,8 +45,10 @@ void UpdateData::AddUpdateBlock(ByteBuffer const& block)
 
 bool UpdateData::BuildPacket(WorldPacket* packet)
 {
-    ASSERT(packet->empty());                                // shouldn't happen
+    ASSERT(packet->empty()); // packet must be empty
     packet->Initialize(SMSG_UPDATE_OBJECT, 4 + 2 + 1 + (2 + 4 + 17 * (m_destroyGUIDs.size() + m_outOfRangeGUIDs.size())) + m_data.wpos());
+
+    bool hasData = false;
 
     *packet << uint32(m_blockCount);
     *packet << uint16(m_map);
@@ -61,7 +63,12 @@ bool UpdateData::BuildPacket(WorldPacket* packet)
 
         for (ObjectGuid const& outOfRangeGuid : m_outOfRangeGUIDs)
             *packet << outOfRangeGuid;
+
+        hasData = true;
     }
+
+    if (m_data.empty() && !hasData)
+        return false;
 
     *packet << uint32(m_data.size());
     packet->append(m_data);

@@ -56,6 +56,7 @@ ByteBuffer& operator<<(ByteBuffer& data, MovementInfo const& movementInfo)
     {
         data << ObjectGuid;
     }*/
+    bool hasUnkDF = false;
 
     data.WriteBit(hasTransportData);
     data.WriteBit(hasFallData);
@@ -64,6 +65,7 @@ ByteBuffer& operator<<(ByteBuffer& data, MovementInfo const& movementInfo)
     data.WriteBit(movementInfo.HeightChangeFailed); // HeightChangeFailed
     data.WriteBit(movementInfo.RemoteTimeValid); // RemoteTimeValid
     data.WriteBit(hasInertia);
+    data.WriteBit(hasUnkDF);                                       // hasUnkDF
 
     data.FlushBits();
 
@@ -72,9 +74,21 @@ ByteBuffer& operator<<(ByteBuffer& data, MovementInfo const& movementInfo)
 
     if (hasInertia)
     {
-        data << movementInfo.inertia->guid;
+        data << (uint32)movementInfo.inertia->guid.GetCounter();
         data << movementInfo.inertia->force.PositionXYZStream();
         data << uint32(movementInfo.inertia->lifetime);
+    }
+
+    if (hasUnkDF)
+    {
+        data << float(0.0f);
+        data << float(0.0f);
+        data << float(0.0f);
+        data << float(0.0f);
+        data << float(0.0f);
+        data << float(0.0f);
+        data << float(0.0f);
+        data << float(0.0f);
     }
 
     if (hasFallData)
@@ -491,6 +505,11 @@ void WorldPackets::Movement::CommonMovement::WriteMovementForceWithDirection(Mov
     }
     else
         data << movementForce.Direction;
+
+    // 3 unk floats df
+    data << float(0.0f);
+    data << float(0.0f);
+    data << float(0.0f);
 
     data << uint32(movementForce.TransportID);
     data << float(movementForce.Magnitude);

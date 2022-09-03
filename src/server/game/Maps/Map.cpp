@@ -442,7 +442,7 @@ bool Map::AddPlayerToMap(Player* player, bool initPlayer /*= true*/)
     if (initPlayer)
         SendInitSelf(player);
 
-    SendInitTransports(player);
+   //SendInitTransports(player);
 
     if (initPlayer)
         player->m_clientGUIDs.clear();
@@ -2110,8 +2110,8 @@ void Map::SendInitSelf(Player* player)
                 passenger->BuildCreateUpdateBlockForPlayer(&data, player);
 
     WorldPacket packet;
-    data.BuildPacket(&packet);
-    player->SendDirectMessage(&packet);
+    if (data.BuildPacket(&packet))
+        player->SendDirectMessage(&packet);
 }
 
 void Map::SendInitTransports(Player* player)
@@ -2128,8 +2128,8 @@ void Map::SendInitTransports(Player* player)
     }
 
     WorldPacket packet;
-    transData.BuildPacket(&packet);
-    player->SendDirectMessage(&packet);
+    if (transData.BuildPacket(&packet))
+        player->SendDirectMessage(&packet);
 }
 
 void Map::SendRemoveTransports(Player* player)
@@ -2189,6 +2189,8 @@ inline void Map::setNGrid(NGridType *grid, uint32 x, uint32 y)
 
 void Map::SendObjectUpdates()
 {
+    if (true)return;
+
     UpdateDataMapType update_players;
 
     while (!_updateObjects.empty())

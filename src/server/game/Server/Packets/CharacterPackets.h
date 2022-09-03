@@ -159,7 +159,7 @@ namespace WorldPackets
                     uint8 Subclass          = 0;
                 };
 
-                std::array<VisualItemInfo, 23> VisualItems = { };
+                std::array<VisualItemInfo, 35> VisualItems = { };
                 std::vector<std::string> MailSenders;
                 std::vector<uint32> MailSenderTypes;
             };

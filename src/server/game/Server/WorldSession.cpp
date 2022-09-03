@@ -1205,19 +1205,19 @@ void WorldSession::InitializeSessionCallback(LoginDatabaseQueryHolder const& hol
     SetInQueue(false);
     ResetTimeOutTime(false);
 
-    SendSetTimeZoneInformation();
-    SendFeatureSystemStatusGlueScreen();
-    SendClientCacheVersion(sWorld->getIntConfig(CONFIG_CLIENTCACHE_VERSION));
-    SendAvailableHotfixes();
-
-    // send battlepay here
-    WorldPacket data(SMSG_BATTLE_PAY_GET_DISTRIBUTION_LIST_RESPONSE);
-    data << uint32(0);
-    data.WriteBits(0, 11);
-    SendPacket(&data);
-
-    SendAccountDataTimes(ObjectGuid::Empty, GLOBAL_CACHE_MASK);
-    SendTutorialsData();
+   SendSetTimeZoneInformation();
+   SendFeatureSystemStatusGlueScreen();
+   SendClientCacheVersion(sWorld->getIntConfig(CONFIG_CLIENTCACHE_VERSION));
+   //SendAvailableHotfixes();
+   //
+   //// send battlepay here
+   //WorldPacket data(SMSG_BATTLE_PAY_GET_DISTRIBUTION_LIST_RESPONSE);
+   //data << uint32(0);
+   //data.WriteBits(0, 11);
+   //SendPacket(&data);
+   //
+   SendAccountDataTimes(ObjectGuid::Empty, GLOBAL_CACHE_MASK);
+   SendTutorialsData();
 
     if (PreparedQueryResult characterCountsResult = holder.GetPreparedResult(AccountInfoQueryHolder::GLOBAL_REALM_CHARACTER_COUNTS))
     {
@@ -1264,6 +1264,9 @@ void WorldSession::InvalidateRBACData()
 
 bool WorldSession::DosProtection::EvaluateOpcode(WorldPacket& p, time_t time) const
 {
+    if (true)
+        return true;
+
     uint32 maxPacketCounterAllowed = GetMaxPacketCounterAllowed(p.GetOpcode());
 
     // Return true if there no limit for the opcode
@@ -1468,7 +1471,7 @@ uint32 WorldSession::DosProtection::GetMaxPacketCounterAllowed(uint16 opcode) co
         case CMSG_QUERY_PETITION:                       //   4               3.5       1 sync db query
         case CMSG_CHAR_CUSTOMIZE:                       //   5               5         1 sync db query
         case CMSG_CHAR_RACE_OR_FACTION_CHANGE:          //   5               5         1 sync db query
-        case CMSG_CHAR_DELETE:                          //   4               4         1 sync db query
+      //  case CMSG_CHAR_DELETE:                          //   4               4         1 sync db query
         case CMSG_DEL_FRIEND:                           //   7               5         1 async db query
         case CMSG_ADD_FRIEND:                           //   6               4         1 async db query
         case CMSG_CHARACTER_RENAME_REQUEST:             //   5               3         1 async db query

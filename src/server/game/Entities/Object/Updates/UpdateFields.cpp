@@ -268,11 +268,6 @@ void SocketedGem::ClearChangesMask()
 
 void ItemData::WriteCreate(ByteBuffer& data, EnumFlag<UpdateFieldFlag> fieldVisibilityFlags, Item const* owner, Player const* receiver) const
 {
-    data << uint32(BonusListIDs->size());
-    for (uint32 i = 0; i < BonusListIDs->size(); ++i)
-    {
-        data << int32((*BonusListIDs)[i]);
-    }
     data << Owner;
     data << ContainedIn;
     data << Creator;
@@ -299,6 +294,7 @@ void ItemData::WriteCreate(ByteBuffer& data, EnumFlag<UpdateFieldFlag> fieldVisi
     data << uint32(CreatePlayedTime);
     data << int32(Context);
     data << int64(CreateTime);
+
     if (fieldVisibilityFlags.HasFlag(UpdateFieldFlag::Owner))
     {
         data << uint64(ArtifactXP);
@@ -309,17 +305,35 @@ void ItemData::WriteCreate(ByteBuffer& data, EnumFlag<UpdateFieldFlag> fieldVisi
     if (fieldVisibilityFlags.HasFlag(UpdateFieldFlag::Owner))
     {
         data << uint32(DynamicFlags2);
-        data << uint16(DEBUGItemLevel);
+       // data << uint16(DEBUGItemLevel);
     }
+
+    // unk here
+    data << uint32(0);
+    data << uint32(0);
+    data << uint32(0);
+
+    // sub_B79490
+
+    if (fieldVisibilityFlags.HasFlag(UpdateFieldFlag::Owner))
+        data << uint16(0); ///< unk uint16
+
     for (uint32 i = 0; i < ArtifactPowers.size(); ++i)
     {
         ArtifactPowers[i].WriteCreate(data, owner, receiver);
     }
+
     for (uint32 i = 0; i < Gems.size(); ++i)
     {
         Gems[i].WriteCreate(data, owner, receiver);
     }
     Modifiers->WriteCreate(data, owner, receiver);
+
+    //data << uint32(BonusListIDs->size());
+    //for (uint32 i = 0; i < BonusListIDs->size(); ++i)
+    //{
+    //    data << int32((*BonusListIDs)[i]);
+    //}
 }
 
 void ItemData::WriteUpdate(ByteBuffer& data, EnumFlag<UpdateFieldFlag> fieldVisibilityFlags, Item const* owner, Player const* receiver) const
@@ -967,7 +981,9 @@ void UnitData::WriteCreate(ByteBuffer& data, EnumFlag<UpdateFieldFlag> fieldVisi
     data << Target;
     data << BattlePetCompanionGUID;
     data << uint64(BattlePetDBID);
+    // NOT EAN EXTRA INT32 HERE!@! its channel data
     ChannelData->WriteCreate(data, owner, receiver);
+    data << uint8(1); ///< Unk DF
     data << uint32(SummonedByHomeRealm);
     data << uint8(Race);
     data << uint8(ClassId);
@@ -1047,6 +1063,10 @@ void UnitData::WriteCreate(ByteBuffer& data, EnumFlag<UpdateFieldFlag> fieldVisi
     data << float(ModRangedHaste);
     data << float(ModHasteRegen);
     data << float(ModTimeRate);
+    data << float(0.0f); ///< Unk DF 1
+    data << float(0.0f); ///< Unk DF 2
+    data << float(0.0f); ///< Unk DF 3
+    data << float(0.0f); ///< Unk DF 4
     data << int32(CreatedBySpell);
     data << int32(EmoteState);
     if (fieldVisibilityFlags.HasFlag(UpdateFieldFlag::Owner))
@@ -1121,6 +1141,7 @@ void UnitData::WriteCreate(ByteBuffer& data, EnumFlag<UpdateFieldFlag> fieldVisi
     data << uint32(WorldEffects.size());
     data << uint32(ChannelObjects.size());
     data << uint32(SilencedSchoolMask);
+    data << uint32(1); ///< Unk DF
     data << NameplateAttachToGUID;
     for (uint32 i = 0; i < PassiveSpells.size(); ++i)
     {
@@ -2565,6 +2586,7 @@ void RestInfo::ClearChangesMask()
 
 void PVPInfo::WriteCreate(ByteBuffer& data, Player const* owner, Player const* receiver) const
 {
+    data << uint8(0);
     data << uint32(WeeklyPlayed);
     data << uint32(WeeklyWon);
     data << uint32(SeasonPlayed);
@@ -2576,6 +2598,11 @@ void PVPInfo::WriteCreate(ByteBuffer& data, Player const* owner, Player const* r
     data << uint32(WeeklyBestWinPvpTierID);
     data << uint32(Field_28);
     data << uint32(Field_2C);
+    data << uint32(0);
+    data << uint32(0);
+    data << uint32(0);
+    data << uint32(0);
+    data << uint32(0);
     data.WriteBit(Disqualified);
     data.FlushBits();
 }
@@ -2928,7 +2955,7 @@ void ReplayedQuest::ClearChangesMask()
 
 void ActivePlayerData::WriteCreate(ByteBuffer& data, EnumFlag<UpdateFieldFlag> fieldVisibilityFlags, Player const* owner, Player const* receiver) const
 {
-    for (uint32 i = 0; i < 199; ++i)
+    for (uint32 i = 0; i < 218; ++i)
     {
         data << InvSlots[i];
     }
@@ -3014,6 +3041,7 @@ void ActivePlayerData::WriteCreate(ByteBuffer& data, EnumFlag<UpdateFieldFlag> f
     {
         data << int32(CombatRatings[i]);
     }
+    data << int32(0); ///< DF - unk loop counter
     data << int32(MaxLevel);
     data << int32(ScalingPlayerLevelDelta);
     data << int32(MaxCreatureScalingLevel);
@@ -3088,6 +3116,9 @@ void ActivePlayerData::WriteCreate(ByteBuffer& data, EnumFlag<UpdateFieldFlag> f
     data << int32(TransportServerTime);
     data << uint32(WeeklyRewardsPeriodSinceOrigin);
     data << int16(DEBUGSoulbindConduitRank);
+    data << uint32(0); ///< Unk loop counter df
+    data << uint32(1); ///< Unk DF
+
     for (uint32 i = 0; i < KnownTitles.size(); ++i)
     {
         data << uint64(KnownTitles[i]);
@@ -3172,26 +3203,35 @@ void ActivePlayerData::WriteCreate(ByteBuffer& data, EnumFlag<UpdateFieldFlag> f
     {
         data << int32(DisabledSpells[i]);
     }
-    for (uint32 i = 0; i < 6; ++i)
-    {
-        PvpInfo[i].WriteCreate(data, owner, receiver);
-    }
-    data.FlushBits();
+    data.FlushBits(); // bitpos is already 8 here
     data.WriteBit(BackpackAutoSortDisabled);
     data.WriteBit(BankAutoSortDisabled);
     data.WriteBit(SortBagsRightToLeft);
     data.WriteBit(InsertItemsLeftToRight);
-    data.WriteBits(QuestSession.has_value(), 1);
+    data.WriteBit(QuestSession.has_value());
+    //data.FlushBits(); // objectguid in next  will flush already
     Field_1410->WriteCreate(data, owner, receiver);
     if (QuestSession.has_value())
     {
         QuestSession->WriteCreate(data, owner, receiver);
+        // weird data in here
     }
+
     data << DungeonScore;
+    /// unk loop32 pvpinfo ?
+
+   // for (uint32 i = 0; i < 6; ++i)
+   // {
+   //     PvpInfo[i].WriteCreate(data, owner, receiver);
+   // }
+
     for (uint32 i = 0; i < CharacterRestrictions.size(); ++i)
     {
         CharacterRestrictions[i].WriteCreate(data, owner, receiver);
     }
+
+    // another unk df counter with lots of data and read string - relating to traits
+
     data.FlushBits();
 }
 

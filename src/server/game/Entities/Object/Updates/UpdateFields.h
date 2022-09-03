@@ -764,7 +764,7 @@ struct ActivePlayerData : public IsUpdateFieldStructureTag, public HasChangesMas
     UpdateField<uint32, 98, 109> WeeklyRewardsPeriodSinceOrigin;                // week count since Cfg_RegionsEntry::ChallengeOrigin
     UpdateField<int16, 98, 110> DEBUGSoulbindConduitRank;
     UpdateField<WorldPackets::MythicPlus::DungeonScoreData, 98, 111> DungeonScore;
-    UpdateFieldArray<ObjectGuid, 199, 112, 113> InvSlots;
+    UpdateFieldArray<ObjectGuid, 218, 112, 113> InvSlots;
     UpdateFieldArray<uint64, 240, 312, 313> ExploredZones;
     UpdateFieldArray<UF::RestInfo, 2, 553, 554> RestInfo;
     UpdateFieldArray<int32, 7, 556, 557> ModDamageDonePos;

@@ -83,6 +83,8 @@ WorldPacket const* FeatureSystemStatus::Write()
     _worldPacket << int16(MaxPlayerNameQueriesPerPacket);
     _worldPacket << int16(PlayerNameQueryTelemetryInterval);
 
+    _worldPacket << int32(0); ///< Unk dword174 DF
+
     for (GameRuleValuePair const& gameRuleValue : GameRuleValues)
         _worldPacket << gameRuleValue;
 
@@ -122,6 +124,8 @@ WorldPacket const* FeatureSystemStatus::Write()
     _worldPacket.WriteBit(ChatDisabledByDefault);
     _worldPacket.WriteBit(ChatDisabledByPlayer);
     _worldPacket.WriteBit(LFGListCustomRequiresAuthenticator);
+    _worldPacket.WriteBit(0); ///< Unk DF
+    _worldPacket.WriteBit(0); ///< Unk DF
 
     _worldPacket.FlushBits();
 
@@ -149,6 +153,8 @@ WorldPacket const* FeatureSystemStatus::Write()
         _worldPacket << float(QuickJoinConfig.ThrottleRfIlvlScalingAbove);
         _worldPacket << float(QuickJoinConfig.ThrottleDfMaxItemLevel);
         _worldPacket << float(QuickJoinConfig.ThrottleDfBestPriority);
+        // WRONG
+        //_worldPacket << uint32(0); ///< Unk DF, above are 2 uint16 in 9.2.7 as well and df, but i guess 1 float ? WTF
     }
 
     if (SessionAlert)
@@ -191,6 +197,10 @@ WorldPacket const* FeatureSystemStatusGlueScreen::Write()
     _worldPacket.WriteBit(Unknown901CheckoutRelated);
     _worldPacket.WriteBit(EuropaTicketSystemStatus.has_value());
     _worldPacket.WriteBit(LaunchETA.has_value());
+    _worldPacket.WriteBit(0); ///< Unk DF
+    _worldPacket.WriteBit(0); ///< Unk DF
+    _worldPacket.WriteBit(0); ///< Unk DF
+    _worldPacket.WriteBit(0); ///< Unk DF
     _worldPacket.FlushBits();
 
     if (EuropaTicketSystemStatus)
@@ -210,6 +220,7 @@ WorldPacket const* FeatureSystemStatusGlueScreen::Write()
     _worldPacket << uint32(GameRuleValues.size());
     _worldPacket << int16(MaxPlayerNameQueriesPerPacket);
     _worldPacket << int16(PlayerNameQueryTelemetryInterval);
+    _worldPacket << uint32(1); ///< Unk DF
 
     if (LaunchETA)
         _worldPacket << int32(*LaunchETA);
@@ -243,9 +254,11 @@ WorldPacket const* SetTimeZoneInformation::Write()
 {
     _worldPacket.WriteBits(ServerTimeTZ.length(), 7);
     _worldPacket.WriteBits(GameTimeTZ.length(), 7);
+    _worldPacket.WriteBits(GameTimeTZ.length(), 7);
     _worldPacket.FlushBits();
 
     _worldPacket.WriteString(ServerTimeTZ);
+    _worldPacket.WriteString(GameTimeTZ);
     _worldPacket.WriteString(GameTimeTZ);
 
     return &_worldPacket;
