@@ -753,6 +753,7 @@ struct BattlePetBreedQualityLoadInfo
         static constexpr DB2FieldMeta fields[] =
         {
             { false, FT_INT, "ID" },
+            { false, FT_INT, "UnkDF" },
             { false, FT_FLOAT, "StateMultiplier" },
             { true, FT_BYTE, "QualityEnum" },
         };
@@ -934,6 +935,7 @@ struct CharBaseInfoLoadInfo
             { false, FT_INT, "ID" },
             { true, FT_BYTE, "RaceID" },
             { true, FT_BYTE, "ClassID" },
+            { true, FT_INT, "OtherFactionRaceID" },
         };
         static DB2LoadInfo const loadInfo(&fields[0], std::extent<decltype(fields)>::value, CharBaseInfoMeta::Instance(), HOTFIX_SEL_CHAR_BASE_INFO);
         return &loadInfo;
@@ -1144,6 +1146,7 @@ struct ChrCustomizationElementLoadInfo
             { true, FT_INT, "ChrCustomizationCondModelID" },
             { true, FT_INT, "ChrCustomizationDisplayInfoID" },
             { true, FT_INT, "ChrCustItemGeoModifyID" },
+            { true, FT_INT, "ChrCustomizationVoiceID" },
         };
         static DB2LoadInfo const loadInfo(&fields[0], std::size(fields), ChrCustomizationElementMeta::Instance(), HOTFIX_SEL_CHR_CUSTOMIZATION_ELEMENT);
         return &loadInfo;
@@ -1182,9 +1185,11 @@ struct ChrCustomizationReqLoadInfo
         static constexpr DB2FieldMeta fields[] =
         {
             { false, FT_INT, "ID" },
+            { false, FT_STRING, "Name" },
             { true, FT_INT, "Flags" },
             { true, FT_INT, "ClassMask" },
             { true, FT_INT, "AchievementID" },
+            { true, FT_INT, "ReqQuestID" },
             { true, FT_INT, "OverrideArchive" },
             { true, FT_INT, "ItemModifiedAppearanceID" },
         };
@@ -1250,6 +1255,7 @@ struct ChrRaceXChrModelLoadInfo
             { false, FT_INT, "ID" },
             { true, FT_INT, "ChrRacesID" },
             { true, FT_INT, "ChrModelID" },
+            { true, FT_INT, "Sex" },
         };
         static DB2LoadInfo const loadInfo(&fields[0], std::size(fields), ChrRaceXChrModelMeta::Instance(), HOTFIX_SEL_CHR_RACE_X_CHR_MODEL);
         return &loadInfo;
@@ -1318,6 +1324,7 @@ struct ChrRacesLoadInfo
             { false, FT_FLOAT, "Unknown910_21" },
             { false, FT_FLOAT, "Unknown910_22" },
             { false, FT_FLOAT, "Unknown910_23" },
+            { true, FT_INT, "UnkDF" },
             { true, FT_BYTE, "BaseLanguage" },
             { true, FT_BYTE, "CreatureType" },
             { true, FT_BYTE, "MaleModelFallbackSex" },
@@ -1738,11 +1745,11 @@ struct CurvePointLoadInfo
     {
         static constexpr DB2FieldMeta fields[] =
         {
-            { false, FT_INT, "ID" },
             { false, FT_FLOAT, "PosX" },
             { false, FT_FLOAT, "PosY" },
             { false, FT_FLOAT, "PreSLSquishPosX" },
             { false, FT_FLOAT, "PreSLSquishPosY" },
+            { false, FT_INT, "ID" },
             { false, FT_SHORT, "CurveID" },
             { false, FT_BYTE, "OrderIndex" },
         };
@@ -1825,7 +1832,6 @@ struct DungeonEncounterLoadInfo
             { true, FT_INT, "OrderIndex" },
             { true, FT_INT, "CompleteWorldStateID" },
             { true, FT_BYTE, "Bit" },
-            { true, FT_INT, "CreatureDisplayID" },
             { true, FT_INT, "Flags" },
             { true, FT_INT, "SpellIconFileID" },
             { true, FT_INT, "Faction" },
@@ -2011,6 +2017,8 @@ struct FactionLoadInfo
             { false, FT_INT, "FriendshipRepID" },
             { false, FT_BYTE, "Flags" },
             { false, FT_SHORT, "ParagonFactionID" },
+            { false, FT_INT, "RenownFactionID" },
+            { false, FT_INT, "RenownCurrencyID" },
             { true, FT_SHORT, "ReputationClassMask1" },
             { true, FT_SHORT, "ReputationClassMask2" },
             { true, FT_SHORT, "ReputationClassMask3" },
@@ -3449,7 +3457,7 @@ struct ItemSearchNameLoadInfo
             { false, FT_BYTE, "OverallQualityID" },
             { true, FT_INT, "ExpansionID" },
             { false, FT_SHORT, "MinFactionID" },
-            { false, FT_BYTE, "MinReputation" },
+            { false, FT_INT, "MinReputation" },
             { true, FT_INT, "AllowableClass" },
             { true, FT_BYTE, "RequiredLevel" },
             { false, FT_SHORT, "RequiredSkill" },
@@ -3561,6 +3569,7 @@ struct ItemSparseLoadInfo
             { true, FT_INT, "StatPercentEditor10" },
             { true, FT_INT, "Stackable" },
             { true, FT_INT, "MaxCount" },
+            { false, FT_INT, "MinReputation" },
             { false, FT_INT, "RequiredAbility" },
             { false, FT_INT, "SellPrice" },
             { false, FT_INT, "BuyPrice" },
@@ -3615,7 +3624,6 @@ struct ItemSparseLoadInfo
             { true, FT_BYTE, "StatModifierBonusStat9" },
             { true, FT_BYTE, "StatModifierBonusStat10" },
             { false, FT_BYTE, "ContainerSlots" },
-            { false, FT_BYTE, "MinReputation" },
             { false, FT_BYTE, "RequiredPVPMedal" },
             { false, FT_BYTE, "RequiredPVPRank" },
             { true, FT_BYTE, "RequiredLevel" },
@@ -4103,6 +4111,7 @@ struct MapLoadInfo
             { true, FT_SHORT, "WindSettingsID" },
             { true, FT_INT, "ZmpFileDataID" },
             { true, FT_INT, "WdtFileDataID" },
+            { true, FT_INT, "UnkDF" },
             { true, FT_INT, "Flags1" },
             { true, FT_INT, "Flags2" },
             { true, FT_INT, "Flags3" },
@@ -4263,6 +4272,7 @@ struct MountCapabilityLoadInfo
             { true, FT_INT, "ModSpellAuraID" },
             { true, FT_SHORT, "ReqMapID" },
             { true, FT_INT, "PlayerConditionID" },
+            { true, FT_INT, "UnkDF" },
         };
         static DB2LoadInfo const loadInfo(&fields[0], std::size(fields), MountCapabilityMeta::Instance(), HOTFIX_SEL_MOUNT_CAPABILITY);
         return &loadInfo;
@@ -5724,6 +5734,7 @@ struct SpellItemEnchantmentLoadInfo
             { false, FT_INT, "ID" },
             { false, FT_STRING, "Name" },
             { false, FT_STRING, "HordeName" },
+            { true, FT_INT, "Duration" },
             { false, FT_INT, "EffectArg1" },
             { false, FT_INT, "EffectArg2" },
             { false, FT_INT, "EffectArg3" },
@@ -6042,6 +6053,14 @@ struct SpellReagentsLoadInfo
             { true, FT_SHORT, "ReagentCount6" },
             { true, FT_SHORT, "ReagentCount7" },
             { true, FT_SHORT, "ReagentCount8" },
+            { true, FT_SHORT, "RequiredQuality1" },
+            { true, FT_SHORT, "RequiredQuality2" },
+            { true, FT_SHORT, "RequiredQuality3" },
+            { true, FT_SHORT, "RequiredQuality4" },
+            { true, FT_SHORT, "RequiredQuality5" },
+            { true, FT_SHORT, "RequiredQuality6" },
+            { true, FT_SHORT, "RequiredQuality7" },
+            { true, FT_SHORT, "RequiredQuality8" },
         };
         static DB2LoadInfo const loadInfo(&fields[0], std::size(fields), SpellReagentsMeta::Instance(), HOTFIX_SEL_SPELL_REAGENTS);
         return &loadInfo;

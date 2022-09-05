@@ -1467,7 +1467,7 @@ uint32 InstanceScript::GetEncounterIDForBoss(Creature* boss) const
 
     for (DungeonEncounterList::const_iterator iter = encounters->begin(); iter != encounters->end(); ++iter)
     {
-        if (iter->dbcEntry->CreatureDisplayID == boss->GetNativeDisplayId() || iter->creditEntry == boss->GetEntry())
+        if (iter->creditEntry == boss->GetEntry())
             return iter->dbcEntry->ID;
     }
 

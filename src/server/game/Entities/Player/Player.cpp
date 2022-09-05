@@ -25102,7 +25102,7 @@ void Player::SendInitialPacketsBeforeAddToMap()
     SendInitialActionButtons();
 
     /// SMSG_INITIALIZE_FACTIONS
-    m_reputationMgr->SendInitialReputations();
+    //m_reputationMgr->SendInitialReputations();
     /// SMSG_SETUP_CURRENCY
     SendCurrencies();
     /// SMSG_EQUIPMENT_SET_LIST
@@ -28161,34 +28161,11 @@ void Player::SendTalentsInfoData()
 
         for (std::size_t slot = 0; slot < MAX_PVP_TALENT_SLOTS; ++slot)
         {
-            if (!pvpTalents[slot])
-                continue;
-
-            PvpTalentEntry const* talentInfo = sPvpTalentStore.LookupEntry(pvpTalents[slot]);
-            if (!talentInfo)
-            {
-                TC_LOG_ERROR("entities.player", "Player::SendTalentsInfoData: Player '%s' (%s) has unknown pvp talent id: %u",
-                    GetName().c_str(), GetGUID().ToString().c_str(), pvpTalents[slot]);
-                continue;
-            }
-
-            SpellInfo const* spellEntry = sSpellMgr->GetSpellInfo(talentInfo->SpellID, DIFFICULTY_NONE);
-            if (!spellEntry)
-            {
-                TC_LOG_ERROR("entities.player", "Player::SendTalentsInfoData: Player '%s' (%s) has unknown pvp talent spell: %u",
-                    GetName().c_str(), GetGUID().ToString().c_str(), talentInfo->SpellID);
-                continue;
-            }
-
             groupInfoPkt.PvPTalents.emplace_back();
             WorldPackets::Talent::PvPTalent& pvpTalent = groupInfoPkt.PvPTalents.back();
             pvpTalent.PvPTalentID = pvpTalents[slot];
             pvpTalent.Slot = slot;
         }
-
-        if (i == GetActiveTalentGroup())
-            packet.Info.ActiveGroup = packet.Info.TalentGroups.size();
-
         packet.Info.TalentGroups.push_back(groupInfoPkt);
     }
 

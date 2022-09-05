@@ -451,6 +451,7 @@ struct BarberShopStyleEntry
 struct BattlePetBreedQualityEntry
 {
     uint32 ID;
+    uint32 UnkDF;
     float StateMultiplier;
     int8 QualityEnum;
 };
@@ -554,6 +555,7 @@ struct CharBaseInfoEntry
     uint32 ID;
     int8 RaceID;
     int8 ClassID;
+    uint32 OtherFactionRaceID;
 };
 
 struct CharTitlesEntry
@@ -685,6 +687,7 @@ struct ChrCustomizationElementEntry
     int32 ChrCustomizationCondModelID;
     int32 ChrCustomizationDisplayInfoID;
     int32 ChrCustItemGeoModifyID;
+    int32 ChrCustomizationVoiceID;
 };
 
 struct ChrCustomizationOptionEntry
@@ -707,9 +710,11 @@ struct ChrCustomizationOptionEntry
 struct ChrCustomizationReqEntry
 {
     uint32 ID;
+    LocalizedString Name;
     int32 Flags;
     int32 ClassMask;
     int32 AchievementID;
+    int32 ReqQuestID;
     int32 OverrideArchive;                                          // -1: allow any, otherwise must match OverrideArchive cvar
     int32 ItemModifiedAppearanceID;
 
@@ -749,6 +754,7 @@ struct ChrRaceXChrModelEntry
     uint32 ID;
     int32 ChrRacesID;
     int32 ChrModelID;
+    int32 Sex;
 };
 
 struct ChrRacesEntry
@@ -799,6 +805,7 @@ struct ChrRacesEntry
     float AlteredFormCustomizeRotationFallback;
     std::array<float, 3> Unknown910_1;
     std::array<float, 3> Unknown910_2;
+    uint32 UnkDF;
     int8 BaseLanguage;
     int8 CreatureType;
     int8 MaleModelFallbackSex;
@@ -1292,9 +1299,9 @@ struct CurveEntry
 
 struct CurvePointEntry
 {
-    uint32 ID;
     DBCPosition2D Pos;
     DBCPosition2D PreSLSquishPos;
+    uint32 ID;
     uint16 CurveID;
     uint8 OrderIndex;
 };
@@ -1353,7 +1360,6 @@ struct DungeonEncounterEntry
     int32 OrderIndex;
     int32 CompleteWorldStateID;
     int8 Bit;
-    int32 CreatureDisplayID;
     int32 Flags;
     int32 SpellIconFileID;
     int32 Faction;
@@ -1445,6 +1451,8 @@ struct FactionEntry
     uint32 FriendshipRepID;
     uint8 Flags;
     uint16 ParagonFactionID;
+    uint32 RenownFactionID;
+    uint32 RenownCurrencyID;
     std::array<int16, 4> ReputationClassMask;
     std::array<uint16, 4> ReputationFlags;
     std::array<int32, 4> ReputationBase;
@@ -2254,7 +2262,7 @@ struct ItemSearchNameEntry
     uint8 OverallQualityID;
     int32 ExpansionID;
     uint16 MinFactionID;
-    uint8 MinReputation;
+    uint32 MinReputation;
     int32 AllowableClass;
     int8 RequiredLevel;
     uint16 RequiredSkill;
@@ -2307,6 +2315,7 @@ struct ItemSparseEntry
     std::array<int32, MAX_ITEM_PROTO_STATS> StatPercentEditor;
     int32 Stackable;
     int32 MaxCount;
+    uint32 MinReputation;
     uint32 RequiredAbility;
     uint32 SellPrice;
     uint32 BuyPrice;
@@ -2346,7 +2355,6 @@ struct ItemSparseEntry
     uint8 DamageDamageType;
     std::array<int8, MAX_ITEM_PROTO_STATS> StatModifierBonusStat;
     uint8 ContainerSlots;
-    uint8 MinReputation;
     uint8 RequiredPVPMedal;
     uint8 RequiredPVPRank;
     int8 RequiredLevel;
@@ -2592,6 +2600,7 @@ struct MapEntry
     int16 WindSettingsID;
     int32 ZmpFileDataID;
     int32 WdtFileDataID;
+    uint32 UnkDF;
     std::array<int32, 3> Flags;
 
     // Helpers
@@ -2743,6 +2752,7 @@ struct MountCapabilityEntry
     int32 ModSpellAuraID;
     int16 ReqMapID;
     int32 PlayerConditionID;
+    int32 UnkDF;
 };
 
 struct MountTypeXCapabilityEntry
@@ -3528,6 +3538,7 @@ struct SpellItemEnchantmentEntry
     uint32 ID;
     LocalizedString Name;
     LocalizedString HordeName;
+    uint32 Duration;
     std::array<uint32, MAX_ITEM_ENCHANTMENT_EFFECTS> EffectArg;
     std::array<float, MAX_ITEM_ENCHANTMENT_EFFECTS> EffectScalingPoints;
     uint32 IconFileDataID;
@@ -3685,6 +3696,7 @@ struct SpellReagentsEntry
     int32 SpellID;
     std::array<int32, MAX_SPELL_REAGENTS> Reagent;
     std::array<int16, MAX_SPELL_REAGENTS> ReagentCount;
+    std::array<int16, MAX_SPELL_REAGENTS> RequiredQuality;
 };
 
 struct SpellReagentsCurrencyEntry

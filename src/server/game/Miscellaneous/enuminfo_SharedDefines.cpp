@@ -172,12 +172,14 @@ TC_API_EXPORT EnumText EnumUtils<Classes>::ToString(Classes value)
         case CLASS_MONK: return { "CLASS_MONK", "Monk", "" };
         case CLASS_DRUID: return { "CLASS_DRUID", "Druid", "" };
         case CLASS_DEMON_HUNTER: return { "CLASS_DEMON_HUNTER", "Demon Hunter", "" };
+        case CLASS_EVOKER: return { "CLASS_EVOKER", "Evoker", "" };
+        case CLASS_ADVENTURER: return { "CLASS_ADVENTURER", "Adventurer", "" };
         default: throw std::out_of_range("value");
     }
 }
 
 template <>
-TC_API_EXPORT size_t EnumUtils<Classes>::Count() { return 12; }
+TC_API_EXPORT size_t EnumUtils<Classes>::Count() { return 14; }
 
 template <>
 TC_API_EXPORT Classes EnumUtils<Classes>::FromIndex(size_t index)
@@ -196,6 +198,8 @@ TC_API_EXPORT Classes EnumUtils<Classes>::FromIndex(size_t index)
         case 9: return CLASS_MONK;
         case 10: return CLASS_DRUID;
         case 11: return CLASS_DEMON_HUNTER;
+        case 12: return CLASS_EVOKER;
+        case 13: return CLASS_ADVENTURER;
         default: throw std::out_of_range("index");
     }
 }
@@ -217,6 +221,8 @@ TC_API_EXPORT size_t EnumUtils<Classes>::ToIndex(Classes value)
         case CLASS_MONK: return 9;
         case CLASS_DRUID: return 10;
         case CLASS_DEMON_HUNTER: return 11;
+        case CLASS_EVOKER: return 12;
+        case CLASS_ADVENTURER: return 13;
         default: throw std::out_of_range("value");
     }
 }
@@ -249,12 +255,13 @@ TC_API_EXPORT EnumText EnumUtils<Powers>::ToString(Powers value)
         case POWER_ARCANE_CHARGES: return { "POWER_ARCANE_CHARGES", "Arcane Charges", "" };
         case POWER_FURY: return { "POWER_FURY", "Fury", "" };
         case POWER_PAIN: return { "POWER_PAIN", "Pain", "" };
+        case POWER_ESSENCE: return { "POWER_ESSENCE", "POWER_ESSENCE", "Title ESSENCE" };
         default: throw std::out_of_range("value");
     }
 }
 
 template <>
-TC_API_EXPORT size_t EnumUtils<Powers>::Count() { return 20; }
+TC_API_EXPORT size_t EnumUtils<Powers>::Count() { return 21; }
 
 template <>
 TC_API_EXPORT Powers EnumUtils<Powers>::FromIndex(size_t index)
@@ -281,6 +288,7 @@ TC_API_EXPORT Powers EnumUtils<Powers>::FromIndex(size_t index)
         case 17: return POWER_ARCANE_CHARGES;
         case 18: return POWER_FURY;
         case 19: return POWER_PAIN;
+        case 20: return POWER_ESSENCE;
         default: throw std::out_of_range("index");
     }
 }
@@ -310,6 +318,7 @@ TC_API_EXPORT size_t EnumUtils<Powers>::ToIndex(Powers value)
         case POWER_ARCANE_CHARGES: return 17;
         case POWER_FURY: return 18;
         case POWER_PAIN: return 19;
+        case POWER_ESSENCE: return 20;
         default: throw std::out_of_range("value");
     }
 }

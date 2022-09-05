@@ -37,8 +37,8 @@ void WorldSession::SendAuthResponse(uint32 code, bool queued, uint32 queuePos)
     {
         response.SuccessInfo.emplace();
 
-        response.SuccessInfo->ActiveExpansionLevel = EXPANSION_SHADOWLANDS + 1;
-        response.SuccessInfo->AccountExpansionLevel = EXPANSION_SHADOWLANDS + 1;
+        response.SuccessInfo->ActiveExpansionLevel  = EXPANSION_DRAGONFLIGHT;
+        response.SuccessInfo->AccountExpansionLevel = EXPANSION_DRAGONFLIGHT;
         response.SuccessInfo->VirtualRealmAddress = realm.Id.GetAddress();
         response.SuccessInfo->Time = int32(GameTime::GetGameTime());
 

@@ -61,11 +61,20 @@ enum Races
     RACE_DARK_IRON_DWARF        = 34, // TITLE Dark Iron Dwarf DESCRIPTION Dark Iron Dwarf (RaceMask bit 11)
     RACE_VULPERA                = 35, // TITLE Vulpera DESCRIPTION Vulpera (RaceMask bit 12)
     RACE_MAGHAR_ORC             = 36, // TITLE Mag'har Orc DESCRIPTION Mag'har Orc (RaceMask bit 13)
-    RACE_MECHAGNOME             = 37  // TITLE Mechagnome DESCRIPTION Mechagnome (RaceMask bit 14)
+    RACE_MECHAGNOME             = 37, // TITLE Mechagnome DESCRIPTION Mechagnome (RaceMask bit 14)
+    RACE_DRACTHYR_1             = 52, // TITLE dracthyr unk
+    RACE_DRACTHYR_2             = 70, // TITLE dracthyr unk
+    RACE_CompanionDrake         = 71, // TITLE highland drake
+    RACE_CompanionProtoDragon   = 72, // TITLE renewed proto-drake
+    RACE_CompanionSerpent       = 73, // TITLE winding slitherdrake
+    RACE_CompanionWyvern        = 74, // TITLE cliffside wylderdrake
+    RACE_Dracthyr_3             = 75, // TITLE visage
+    RACE_Dracthyr_4             = 76, // TITLE visage
+    RACE_CompanionPterrodax     = 77, // TITLE windborne velocidrake
 };
 
 // max+1 for player race
-#define MAX_RACES         38
+#define MAX_RACES         78
 
 namespace Trinity
 {
@@ -88,7 +97,12 @@ struct RaceMask
             0, 0, 1, 2, 3, 4, 5, 6, 7, 8,
             9, 10, -1, -1, -1, -1, -1, -1, -1, -1,
             -1, -1, 21, -1, 23, 24, 25, 26, 27, 28,
-            29, 30, 31, -1, 11, 12, 13, 14
+            29, 30, 31, -1, 11, 12, 13, 14, // 37
+            -1, -1, -1, // 40
+            -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, // 50
+            -1, 16, -1, -1, -1, -1, -1, -1, -1, -1, // 60
+            -1, -1, -1, -1, -1, -1, -1, -1, -1, 15, // 70
+            -1, -1, -1, -1, -1, -1, -1, // 77
         };
         return raceId < MAX_RACES && raceBits[raceId] >= 0 && raceBits[raceId] < 64 ? (T(1) << raceBits[raceId]) : T(0);
     }
@@ -127,7 +141,9 @@ constexpr Trinity::RaceMask<uint64> RACEMASK_ALL_PLAYABLE = { std::integral_cons
      Trinity::RaceMask<uint64>::GetMaskForRace(RACE_DARK_IRON_DWARF)     |
      Trinity::RaceMask<uint64>::GetMaskForRace(RACE_VULPERA)             |
      Trinity::RaceMask<uint64>::GetMaskForRace(RACE_MAGHAR_ORC)          |
-     Trinity::RaceMask<uint64>::GetMaskForRace(RACE_MECHAGNOME)>::value };
+     Trinity::RaceMask<uint64>::GetMaskForRace(RACE_MECHAGNOME)          |
+     Trinity::RaceMask<uint64>::GetMaskForRace(RACE_DRACTHYR_1)          |
+     Trinity::RaceMask<uint64>::GetMaskForRace(RACE_DRACTHYR_2)>::value };
 
 constexpr Trinity::RaceMask<uint64> RACEMASK_NEUTRAL = { std::integral_constant<uint64, Trinity::RaceMask<uint64>::GetMaskForRace(RACE_PANDAREN_NEUTRAL)>::value };
 
@@ -143,7 +159,8 @@ constexpr Trinity::RaceMask<uint64> RACEMASK_ALLIANCE = { std::integral_constant
      Trinity::RaceMask<uint64>::GetMaskForRace(RACE_LIGHTFORGED_DRAENEI) |
      Trinity::RaceMask<uint64>::GetMaskForRace(RACE_KUL_TIRAN)           |
      Trinity::RaceMask<uint64>::GetMaskForRace(RACE_DARK_IRON_DWARF)     |
-     Trinity::RaceMask<uint64>::GetMaskForRace(RACE_MECHAGNOME)>::value };
+     Trinity::RaceMask<uint64>::GetMaskForRace(RACE_MECHAGNOME)          |
+     Trinity::RaceMask<uint64>::GetMaskForRace(RACE_DRACTHYR_1)>::value };
 
 constexpr Trinity::RaceMask<uint64> RACEMASK_HORDE = { std::integral_constant<uint64, (RACEMASK_ALL_PLAYABLE & ~(RACEMASK_NEUTRAL | RACEMASK_ALLIANCE)).RawValue>::value };
 

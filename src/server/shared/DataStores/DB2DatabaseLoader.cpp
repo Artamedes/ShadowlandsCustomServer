@@ -32,6 +32,10 @@ static char const* nullStr = "";
 
 char* DB2DatabaseLoader::Load(bool custom, uint32& records, char**& indexTable, std::vector<char*>& stringPool)
 {
+    // we don't want to load hotfixes at all right now, TODO fix for DF
+    if (true)
+        return nullptr;
+
     // Even though this query is executed only once, prepared statement is used to send data from mysql server in binary format
     HotfixDatabasePreparedStatement* stmt = HotfixDatabase.GetPreparedStatement(_loadInfo->Statement);
     stmt->setBool(0, !custom);

@@ -98,12 +98,13 @@ enum Expansions
     EXPANSION_LEGION                   = 6,
     EXPANSION_BATTLE_FOR_AZEROTH       = 7,
     EXPANSION_SHADOWLANDS              = 8,
+    EXPANSION_DRAGONFLIGHT             = 9,
     MAX_EXPANSIONS,
 
     MAX_ACCOUNT_EXPANSIONS
 };
 
-#define CURRENT_EXPANSION EXPANSION_SHADOWLANDS
+#define CURRENT_EXPANSION EXPANSION_DRAGONFLIGHT
 
 constexpr uint32 GetMaxLevelForExpansion(uint32 expansion)
 {
@@ -127,6 +128,8 @@ constexpr uint32 GetMaxLevelForExpansion(uint32 expansion)
             return 50;
         case EXPANSION_SHADOWLANDS:
             return 60;
+        case EXPANSION_DRAGONFLIGHT:
+            return 70;
         default:
             break;
     }
@@ -157,7 +160,9 @@ enum Classes : uint8
     CLASS_WARLOCK       = 9,  // TITLE Warlock
     CLASS_MONK          = 10, // TITLE Monk
     CLASS_DRUID         = 11, // TITLE Druid
-    CLASS_DEMON_HUNTER  = 12  // TITLE Demon Hunter
+    CLASS_DEMON_HUNTER  = 12, // TITLE Demon Hunter
+    CLASS_EVOKER        = 13, // TITLE Evoker
+    CLASS_ADVENTURER    = 14, // TITLE Adventurer
 };
 
 enum ClassMasks : uint32
@@ -175,10 +180,12 @@ enum ClassMasks : uint32
     CLASSMASK_MONK          = 0x200, ///< TITLE Monk
     CLASSMASK_DRUID         = 0x400, ///< TITLE Druid
     CLASSMASK_DEMON_HUNTER  = 0x800, ///< TITLE Demon Hunter
+    CLASSMASK_EVOKER        = 0x1000, ///< TITLE Evoker
+    CLASSMASK_ADVENTURER    = 0x2000, ///< TITLE Adventurer
 };
 
 // max+1 for player class
-#define MAX_CLASSES       13
+#define MAX_CLASSES       15
 
 #define CLASSMASK_ALL_PLAYABLE     \
     ((1<<(CLASS_WARRIOR-1))      | \
@@ -192,7 +199,8 @@ enum ClassMasks : uint32
      (1<<(CLASS_WARLOCK-1))      | \
      (1<<(CLASS_MONK-1))         | \
      (1<<(CLASS_DRUID-1))        | \
-     (1<<(CLASS_DEMON_HUNTER-1)))
+     (1<<(CLASS_DEMON_HUNTER-1)) | \
+     (1<<(CLASS_EVOKER-1)))
 
 // valid classes for creature_template.unit_class
 enum UnitClass
@@ -319,7 +327,8 @@ enum Powers : int8
     POWER_ARCANE_CHARGES                = 16, // TITLE Arcane Charges
     POWER_FURY                          = 17, // TITLE Fury
     POWER_PAIN                          = 18, // TITLE Pain
-    MAX_POWERS                          = 19, // SKIP
+    POWER_ESSENCE                       = 19, // Title ESSENCE
+    MAX_POWERS                          = 20, // SKIP
     POWER_ALL                           = 127 // SKIP
 };
 
