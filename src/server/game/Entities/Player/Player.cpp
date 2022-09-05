@@ -28033,7 +28033,7 @@ void Player::ActivateSpecialization(ChrSpecializationEntry const* spec)
     if (CanUseMastery())
         for (uint32 i = 0; i < MAX_MASTERY_SPELLS; ++i)
             if (uint32 mastery = spec->MasterySpellID[i])
-                LearnSpell(mastery, false);
+                LearnSpell(mastery, true);
 
     // load them asynchronously
     {
@@ -29142,7 +29142,7 @@ void Player::LearnSpecializationSpells()
             if (!spellInfo || spellInfo->SpellLevel > GetLevel())
                 continue;
 
-            LearnSpell(specSpell->SpellID, false);
+            LearnSpell(specSpell->SpellID, true);
             if (specSpell->OverridesSpellID)
                 AddOverrideSpell(specSpell->OverridesSpellID, specSpell->SpellID);
         }
