@@ -1051,10 +1051,10 @@ void UnitData::WriteCreate(ByteBuffer& data, EnumFlag<UpdateFieldFlag> fieldVisi
     data << float(ModRangedHaste);
     data << float(ModHasteRegen);
     data << float(ModTimeRate);
-    data << float(UnkDFFloat1);
-    data << float(UnkDFFloat2);
-    data << float(UnkDFFloat3);
-    data << float(UnkDFFloat4);
+  // data << float(UnkDFFloat1);
+  // data << float(UnkDFFloat2);
+  // data << float(UnkDFFloat3);
+  // data << float(UnkDFFloat4);
     data << int32(CreatedBySpell);
     data << int32(EmoteState);
     if (fieldVisibilityFlags.HasFlag(UpdateFieldFlag::Owner))

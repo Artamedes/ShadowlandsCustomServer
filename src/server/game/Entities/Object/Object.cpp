@@ -154,7 +154,7 @@ void Object::BuildCreateUpdateBlockForPlayer(UpdateData* data, Player* target) c
    //
     //if (!IsCreature() && !IsPlayer() && !dynamic_cast<Item const*>(this))
     //    return;
-    if (!IsPlayer())
+    if (!IsPlayer() && !IsCreature())
         return;
 
     uint8 updateType = m_isNewObject ? UPDATETYPE_CREATE_OBJECT2 : UPDATETYPE_CREATE_OBJECT;
