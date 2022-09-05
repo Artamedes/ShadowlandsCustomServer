@@ -467,16 +467,20 @@ WorldPacket const* WorldPackets::Spells::SpellGo::Write()
 WorldPacket const* WorldPackets::Spells::LearnedSpells::Write()
 {
     _worldPacket << uint32(SpellID.size());
-    _worldPacket << uint32(FavoriteSpellID.size());
     _worldPacket << uint32(SpecializationID);
-    for (int32 spell : SpellID)
-        _worldPacket << spell;
-
-    for (int32 spell : FavoriteSpellID)
-        _worldPacket << spell;
-
     _worldPacket.WriteBit(SuppressMessaging);
     _worldPacket.FlushBits();
+    for (int32 spell : SpellID)
+    {
+        _worldPacket << spell;
+        _worldPacket.WriteBit(0);
+        _worldPacket.WriteBit(1);
+        _worldPacket.WriteBit(0);
+        _worldPacket.WriteBit(1);
+        _worldPacket.WriteBit(0);
+        _worldPacket << int32(-1);
+        _worldPacket << int32(85259);
+    }
 
     return &_worldPacket;
 }

@@ -491,6 +491,7 @@ bool Item::Create(ObjectGuid::LowType guidlow, uint32 itemId, ItemContext contex
     SetExpiration(itemProto->GetDuration());
     SetCreatePlayedTime(0);
     SetUpdateFieldValue(m_values.ModifyValue(&Item::m_itemData).ModifyValue(&UF::ItemData::CreateTime), GameTime::GetGameTime());
+    SetUpdateFieldValue(m_values.ModifyValue(&Item::m_itemData).ModifyValue(&UF::ItemData::Unkdf1), GetEntry());
     SetContext(context);
 
     if (itemProto->GetArtifactID())

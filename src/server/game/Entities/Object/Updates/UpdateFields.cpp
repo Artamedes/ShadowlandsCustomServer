@@ -306,8 +306,12 @@ void ItemData::WriteCreate(ByteBuffer& data, EnumFlag<UpdateFieldFlag> fieldVisi
         data << uint32(DynamicFlags2);
     }
     data << int32(Unkdf1);
-    data << int32(Unkdf2);
+    data << int32(BonusListIDs->size());
     data << int32(Unkdf3);
+
+    for (uint32 bonusId : *BonusListIDs)
+        data << bonusId;
+
     if (fieldVisibilityFlags.HasFlag(UpdateFieldFlag::Owner))
     {
         data << uint16(DEBUGItemLevel);
@@ -3005,41 +3009,71 @@ void CharacterTrait::WriteCreate(ByteBuffer& data, Player const* owner, Player c
 {
     data << int32(Dword0);
     data << int32(Dword108);
-    data << int32(Amount);
-    data << int32(Dword148);
-    data << int32(Dword14C);
-    data << int32(Dword150);
-    data << int32(Dword154);
-    data << int32(Dword158);
-    data.WriteString(UnkStr);
+    data << int32(Talents.size());
+
+    if (Dword108 == 2)
+        data << int32(Dword148);
+    if (Dword108 == 1)
+    {
+        data << int32(Dword14C);
+        data << int32(Dword150);
+        data << int32(Dword154);
+    }
+    if (Dword108 == 3)
+        data << int32(Dword158);
+
+    for (auto const& talent : Talents)
+    {
+        data << talent.Unk0;
+        data << talent.Unk1;
+        data << talent.Unk2;
+        data << talent.Unk3;
+    }
+
+    data.WriteBits(Spec.size(), 9);
     data.FlushBits();
+    data.WriteString(Spec);
 }
 
 void CharacterTrait::WriteUpdate(ByteBuffer& data, bool ignoreChangesMask, Player const* owner, Player const* receiver) const
 {
     data << int32(Dword0);
     data << int32(Dword108);
-    data << int32(Amount);
-    data << int32(Dword148);
-    data << int32(Dword14C);
-    data << int32(Dword150);
-    data << int32(Dword154);
-    data << int32(Dword158);
-    data.WriteString(UnkStr);
+    data << int32(Talents.size());
+
+    if (Dword108 == 2)
+        data << int32(Dword148);
+    if (Dword108 == 1)
+    {
+        data << int32(Dword14C);
+        data << int32(Dword150);
+        data << int32(Dword154);
+    }
+    if (Dword108 == 3)
+        data << int32(Dword158);
+
+    for (auto const& talent : Talents)
+    {
+        data << talent.Unk0;
+        data << talent.Unk1;
+        data << talent.Unk2;
+        data << talent.Unk3;
+    }
+
+    data.WriteBits(Spec.size(), 9);
     data.FlushBits();
+    data.WriteString(Spec);
 }
 
 bool CharacterTrait::operator==(CharacterTrait const& right) const
 {
     return Dword0 == right.Dword0
         && Dword108 == right.Dword108
-        && Amount == right.Amount
         && Dword148 == right.Dword148
         && Dword14C == right.Dword14C
         && Dword150 == right.Dword150
         && Dword154 == right.Dword154
-        && Dword158 == right.Dword158
-        && UnkStr == right.UnkStr;
+        && Dword158 == right.Dword158;
 }
 
 void ActivePlayerData::WriteCreate(ByteBuffer& data, EnumFlag<UpdateFieldFlag> fieldVisibilityFlags, Player const* owner, Player const* receiver) const

@@ -670,17 +670,27 @@ struct ReplayedQuest : public IsUpdateFieldStructureTag, public HasChangesMask<3
     void ClearChangesMask();
 };
 
+struct CharacterTraitTalent
+{
+    int32 Unk0;
+    int32 Unk1;
+    int32 Unk2;
+    int32 Unk3;
+};
+
 struct CharacterTrait : public IsUpdateFieldStructureTag
 {
     int32 Dword0;
     int32 Dword108;
-    int32 Amount;
+    std::vector<CharacterTraitTalent> Talents;
     int32 Dword148;
+
     int32 Dword14C;
     int32 Dword150;
     int32 Dword154;
+
     int32 Dword158;
-    std::string UnkStr;
+    std::string Spec;
 
     void WriteCreate(ByteBuffer& data, Player const* owner, Player const* receiver) const;
     void WriteUpdate(ByteBuffer& data, bool ignoreChangesMask, Player const* owner, Player const* receiver) const;
