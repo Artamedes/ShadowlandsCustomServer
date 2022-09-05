@@ -48,14 +48,14 @@ namespace WorldPackets
             ObjectGuid ForgeGUID;
         };
 
-        class CloseHeartForge final : public ServerPacket
-        {
-        public:
-            CloseHeartForge() : ServerPacket(SMSG_CLOSE_HEART_FORGE, 0) { }
-
-            WorldPacket const* Write() override { return &_worldPacket; }
-        };
-
+      //  class CloseHeartForge final : public ServerPacket
+      //  {
+      //  public:
+      //      CloseHeartForge() : ServerPacket(SMSG_CLOSE_HEART_FORGE, 0) { }
+      //
+      //      WorldPacket const* Write() override { return &_worldPacket; }
+      //  };
+      //
         class AzeriteEssenceUnlockMilestone final : public ClientPacket
         {
         public:

@@ -145,7 +145,7 @@ namespace WorldPackets
         class UpdateActionButtons final : public ServerPacket
         {
         public:
-            static std::size_t constexpr NumActionButtons = 132;
+            static std::size_t constexpr NumActionButtons = 144;
 
             UpdateActionButtons() : ServerPacket(SMSG_UPDATE_ACTION_BUTTONS, NumActionButtons * 8 + 1)
             {
@@ -1094,15 +1094,15 @@ namespace WorldPackets
             uint8 Mechanic = 0;
         };
 
-        class LossControlClear final : public ServerPacket
-        {
-        public:
-            LossControlClear() : ServerPacket(SMSG_CLEAR_LOSS_OF_CONTROL, 16) { }
-
-            WorldPacket const* Write() override;
-            ObjectGuid OwnerGUID;
-        };
-
+       //class LossControlClear final : public ServerPacket
+       //{
+       //public:
+       //    LossControlClear() : ServerPacket(SMSG_CLEAR_LOSS_OF_CONTROL, 16) { }
+       //
+       //    WorldPacket const* Write() override;
+       //    ObjectGuid OwnerGUID;
+       //};
+       //
         class LossControlAdd final : public ServerPacket
         {
         public:
@@ -1120,19 +1120,19 @@ namespace WorldPackets
             uint8 Type;
         };
 
-        class LossControlRemove final : public ServerPacket
-        {
-        public:
-            LossControlRemove() : ServerPacket(SMSG_REMOVE_LOSS_OF_CONTROL, sizeof(ObjectGuid) + 5) { }
-
-            WorldPacket const* Write() override;
-
-            ObjectGuid TargetGUID;
-            int32 SpellId;
-            ObjectGuid CasterGUID;
-            uint8 Type;
-        };
-
+       // class LossControlRemove final : public ServerPacket
+       // {
+       // public:
+       //     LossControlRemove() : ServerPacket(SMSG_REMOVE_LOSS_OF_CONTROL, sizeof(ObjectGuid) + 5) { }
+       //
+       //     WorldPacket const* Write() override;
+       //
+       //     ObjectGuid TargetGUID;
+       //     int32 SpellId;
+       //     ObjectGuid CasterGUID;
+       //     uint8 Type;
+       // };
+       //
         class ModifyCooldownRecoverySpeed final : public ServerPacket
         {
         public:

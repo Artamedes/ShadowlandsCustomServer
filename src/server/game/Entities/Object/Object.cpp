@@ -152,10 +152,10 @@ void Object::BuildCreateUpdateBlockForPlayer(UpdateData* data, Player* target) c
     // if (target == this)
     //    return;
    //
-    //if (!IsCreature() && !IsPlayer() && !dynamic_cast<Item const*>(this))
-    //    return;
-    if (!IsPlayer() && !IsCreature())
+    if (!IsCreature() && !IsPlayer() && !dynamic_cast<Item const*>(this))
         return;
+    //if (!IsPlayer() && !IsCreature())
+    //    return;
 
     uint8 updateType = m_isNewObject ? UPDATETYPE_CREATE_OBJECT2 : UPDATETYPE_CREATE_OBJECT;
     uint8 objectType = m_objectTypeId;
@@ -515,6 +515,7 @@ void Object::BuildMovementUpdate(ByteBuffer* data, CreateObjectBits flags, Playe
         data->WriteBit(hasAreaTriggerSpline);
         data->WriteBit(hasOrbit);
         data->WriteBit(hasMovementScript);
+        data->WriteBit(false); ///< Unk DF
 
         data->FlushBits();
 

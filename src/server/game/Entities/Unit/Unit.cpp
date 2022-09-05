@@ -15536,10 +15536,10 @@ void Unit::SendClearLossOfControl()
 {
     if (GetTypeId() != TYPEID_PLAYER)
         return;
-
-    WorldPackets::Spells::LossControlClear LossControlClear;
-    LossControlClear.OwnerGUID = this->GetGUID();
-    ToPlayer()->SendDirectMessage(LossControlClear.Write());
+   //
+   // WorldPackets::Spells::LossControlClear LossControlClear;
+   // LossControlClear.OwnerGUID = this->GetGUID();
+   // ToPlayer()->SendDirectMessage(LossControlClear.Write());
 }
 
 void Unit::SendAddLossOfControl(AuraApplication const* aurApp, Mechanics mechanic, LossOfControlType type)

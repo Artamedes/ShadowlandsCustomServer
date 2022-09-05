@@ -1056,26 +1056,26 @@ WorldPacket const* WorldPackets::Spells::LossControlAdd::Write()
     return &_worldPacket;
 }
 
-WorldPacket const* WorldPackets::Spells::LossControlRemove::Write()
-{
-    _worldPacket << TargetGUID;
-    _worldPacket << int32(SpellId);
-    _worldPacket << CasterGUID;
-    _worldPacket << uint8(Type);
-    return &_worldPacket;
-}
+//WorldPacket const* WorldPackets::Spells::LossControlRemove::Write()
+//{
+//    _worldPacket << TargetGUID;
+//    _worldPacket << int32(SpellId);
+//    _worldPacket << CasterGUID;
+//    _worldPacket << uint8(Type);
+//    return &_worldPacket;
+//}
 
-WorldPacket const* WorldPackets::Spells::LossControlClear::Write()
-{
-    _worldPacket << OwnerGUID;
-    // not sure about this packet. just matching struct
-    _worldPacket << int32(0);
-    _worldPacket << int32(0);
-    _worldPacket << int32(0);
-    _worldPacket << int32(0);
-    return &_worldPacket;
-}
-
+//WorldPacket const* WorldPackets::Spells::LossControlClear::Write()
+//{
+//    _worldPacket << OwnerGUID;
+//    // not sure about this packet. just matching struct
+//    _worldPacket << int32(0);
+//    _worldPacket << int32(0);
+//    _worldPacket << int32(0);
+//    _worldPacket << int32(0);
+//    return &_worldPacket;
+//}
+//
 WorldPacket const* WorldPackets::Spells::UpdateCooldown::Write()
 {
     _worldPacket << SpellID;

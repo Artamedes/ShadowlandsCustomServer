@@ -556,7 +556,6 @@ WorldPacket const* LogXPGain::Write()
     _worldPacket << uint8(Reason);
     _worldPacket << int32(Amount);
     _worldPacket << float(GroupBonus);
-    _worldPacket << uint8(ReferAFriendBonusType);
 
     return &_worldPacket;
 }
