@@ -25,7 +25,8 @@
 void WorldPackets::Chat::ChatMessage::Read()
 {
     _worldPacket >> Language;
-    uint32 len = _worldPacket.ReadBits(9);
+    _worldPacket.ReadBits(3); // unk
+    uint32 len = _worldPacket.ReadBits(8);
     Text = _worldPacket.ReadString(len);
 }
 
