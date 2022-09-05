@@ -67,9 +67,13 @@ WorldPacket const* GossipMessage::Write()
     _worldPacket << GossipGUID;
     _worldPacket << int32(GossipID);
     _worldPacket << int32(FriendshipFactionID);
-    _worldPacket << int32(TextID);
+    //_worldPacket << int32(TextID);
     _worldPacket << uint32(GossipOptions.size());
     _worldPacket << uint32(GossipText.size());
+
+    _worldPacket.WriteBit(TextID);
+    _worldPacket.WriteBit(0);
+    _worldPacket.FlushBits();
 
     for (ClientGossipOptions const& options : GossipOptions)
     {
@@ -78,10 +82,14 @@ WorldPacket const* GossipMessage::Write()
         _worldPacket << int8(options.OptionFlags);
         _worldPacket << int32(options.OptionCost);
         _worldPacket << uint32(options.OptionLanguage);
+        _worldPacket << uint32(0);
+        _worldPacket << uint32(0);
+        _worldPacket << uint32(0);
         _worldPacket.WriteBits(options.Text.size(), 12);
         _worldPacket.WriteBits(options.Confirm.size(), 12);
         _worldPacket.WriteBits(AsUnderlyingType(options.Status), 2);
         _worldPacket.WriteBit(options.SpellID.has_value());
+        _worldPacket.WriteBit(0); // unk uint
         _worldPacket.FlushBits();
 
         _worldPacket << options.Treasure;
@@ -92,6 +100,9 @@ WorldPacket const* GossipMessage::Write()
         if (options.SpellID)
             _worldPacket << int32(*options.SpellID);
     }
+
+    if (TextID)
+        _worldPacket << TextID;
 
     for (ClientGossipText const& text : GossipText)
         _worldPacket << text;
