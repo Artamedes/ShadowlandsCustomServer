@@ -6391,7 +6391,7 @@ struct ItemMeta
 {
     static DB2Meta const* Instance()
     {
-        static constexpr DB2MetaField fields[10] =
+        static constexpr DB2MetaField fields[11] =
         {
             { FT_BYTE, 1, false },
             { FT_BYTE, 1, false },
@@ -6403,8 +6403,9 @@ struct ItemMeta
             { FT_BYTE, 1, false },
             { FT_INT, 1, true },
             { FT_INT, 1, true },
+            { FT_INT, 1, false },
         };
-        static constexpr DB2Meta instance(841626, -1, 10, 10, 0x327E4945, fields, -1);
+        static constexpr DB2Meta instance(841626, -1, 11, 11, 0xBCC9BC83, fields, -1);
         return &instance;
     }
 };
@@ -7696,7 +7697,7 @@ struct LFGDungeonsMeta
             { FT_INT, 1, true },
             { FT_INT, 2, true },
         };
-        static constexpr DB2Meta instance(1361033, -1, 29, 29, 0x11A21324, fields, -1);
+        static constexpr DB2Meta instance(1361033, -1, 29, 29, 0x5314B0A9, fields, -1);
         return &instance;
     }
 };
@@ -9544,7 +9545,7 @@ struct PlayerConditionMeta
 {
     static DB2Meta const* Instance()
     {
-        static constexpr DB2MetaField fields[80] =
+        static constexpr DB2MetaField fields[84] =
         {
             { FT_LONG, 1, true },
             { FT_STRING, 1, true },
@@ -9602,6 +9603,7 @@ struct PlayerConditionMeta
             { FT_BYTE, 1, false },
             { FT_INT, 1, true },
             { FT_INT, 1, true },
+            { FT_INT, 1, false },
             { FT_SHORT, 4, false },
             { FT_SHORT, 4, false },
             { FT_SHORT, 4, false },
@@ -9626,8 +9628,11 @@ struct PlayerConditionMeta
             { FT_INT, 4, false },
             { FT_INT, 6, false },
             { FT_INT, 2, true },
+            { FT_INT, 4, true },
+            { FT_SHORT, 4, false },
+            { FT_SHORT, 4, false },
         };
-        static constexpr DB2Meta instance(1045411, -1, 80, 80, 0xCBD65EC2, fields, -1);
+        static constexpr DB2Meta instance(1045411, -1, 84, 84, 0x4FD5055D, fields, -1);
         return &instance;
     }
 };
@@ -10850,9 +10855,11 @@ struct SkillLineAbilityMeta
 {
     static DB2Meta const* Instance()
     {
-        static constexpr DB2MetaField fields[15] =
+        static constexpr DB2MetaField fields[17] =
         {
             { FT_LONG, 1, true },
+            { FT_STRING, 1, true },
+            { FT_STRING, 1, true },
             { FT_INT, 1, false },
             { FT_SHORT, 1, true },
             { FT_INT, 1, true },
@@ -10868,7 +10875,7 @@ struct SkillLineAbilityMeta
             { FT_SHORT, 1, true },
             { FT_SHORT, 1, true },
         };
-        static constexpr DB2Meta instance(1266278, 1, 15, 15, 0x0FCCC8B4, fields, 2);
+        static constexpr DB2Meta instance(1266278, 3, 17, 17, 0x1D9E00B1, fields, 3);
         return &instance;
     }
 };
@@ -11199,7 +11206,7 @@ struct SoundKitMeta
             { FT_SHORT, 1, false },
             { FT_BYTE, 1, false },
         };
-        static constexpr DB2Meta instance(1237434, -1, 15, 15, 0x3FE1D132, fields, -1);
+        static constexpr DB2Meta instance(1237434, -1, 15, 15, 0x754500C5, fields, -1);
         return &instance;
     }
 };
@@ -11611,7 +11618,7 @@ struct SpellCastingRequirementsMeta
             { FT_BYTE, 1, false },
             { FT_SHORT, 1, false },
         };
-        static constexpr DB2Meta instance(1002166, -1, 7, 7, 0xA1320F30, fields, -1);
+        static constexpr DB2Meta instance(1002166, -1, 7, 7, 0x76B9E4FB, fields, -1);
         return &instance;
     }
 };
@@ -11845,7 +11852,7 @@ struct SpellCooldownsMeta
             { FT_INT, 1, true },
             { FT_INT, 1, true },
         };
-        static constexpr DB2Meta instance(1139924, -1, 5, 4, 0xDD35D72E, fields, 4);
+        static constexpr DB2Meta instance(1139924, -1, 5, 4, 0x254654DD, fields, 4);
         return &instance;
     }
 };
@@ -12867,7 +12874,7 @@ struct SpellXSpellVisualMeta
             { FT_INT, 1, false },
             { FT_INT, 1, true },
         };
-        static constexpr DB2Meta instance(1101657, 0, 12, 11, 0x4C5EA5C5, fields, 11);
+        static constexpr DB2Meta instance(1101657, 0, 12, 11, 0x049D96D6, fields, 11);
         return &instance;
     }
 };

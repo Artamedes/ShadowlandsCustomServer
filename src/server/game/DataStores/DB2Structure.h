@@ -1986,6 +1986,7 @@ struct ItemEntry
     uint8 ItemGroupSoundsID;
     int32 ContentTuningID;
     int32 ModifiedCraftingReagentItemID;
+    uint32 CraftingQualityID;
 };
 
 struct ItemAppearanceEntry
@@ -2908,6 +2909,7 @@ struct PlayerConditionEntry
     uint8 MaxPVPRank;
     int32 ContentTuningID;
     int32 CovenantID;
+    uint32 Field_10_0_0_44999_056;
     std::array<uint16, 4> SkillID;
     std::array<uint16, 4> MinSkill;
     std::array<uint16, 4> MaxSkill;
@@ -2932,6 +2934,9 @@ struct PlayerConditionEntry
     std::array<uint32, 4> CurrencyCount;
     std::array<uint32, 6> QuestKillMonster;
     std::array<int32, 2> MovementFlags;
+    std::array<int32, 4> Field_10_0_0_44999_081;
+    std::array<uint16, 4> Field_10_0_0_44999_082;
+    std::array<uint16, 4> Field_10_0_0_44999_083;
 };
 
 struct PowerDisplayEntry
@@ -3231,6 +3236,8 @@ struct SkillLineEntry
 struct SkillLineAbilityEntry
 {
     Trinity::RaceMask<int64> RaceMask;
+    LocalizedString Field_10_0_0_44795_001_lang;
+    LocalizedString Field_10_0_0_44795_002_lang;
     uint32 ID;
     int16 SkillLine;
     int32 Spell;

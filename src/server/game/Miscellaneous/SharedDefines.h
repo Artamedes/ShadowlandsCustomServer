@@ -1479,6 +1479,21 @@ enum SpellEffectName
     SPELL_EFFECT_SET_GARRISON_FOLLOWER_LEVEL        = 287,
     SPELL_EFFECT_288                                = 288,
     SPELL_EFFECT_289                                = 289,
+    SPELL_EFFECT_290                                = 290,
+    SPELL_EFFECT_291                                = 291,
+    SPELL_EFFECT_292                                = 292,
+    SPELL_EFFECT_293                                = 293,
+    SPELL_EFFECT_294                                = 294,
+    SPELL_EFFECT_295                                = 295,
+    SPELL_EFFECT_296                                = 296,
+    SPELL_EFFECT_297                                = 297,
+    SPELL_EFFECT_298                                = 298,
+    SPELL_EFFECT_299                                = 299,
+    SPELL_EFFECT_300                                = 300,
+    SPELL_EFFECT_301                                = 301,
+    SPELL_EFFECT_302                                = 302,
+    SPELL_EFFECT_303                                = 303,
+    SPELL_EFFECT_304                                = 304,
     TOTAL_SPELL_EFFECTS
 };
 

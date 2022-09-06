@@ -374,6 +374,21 @@ NonDefaultConstructible<SpellEffectHandlerFn> SpellEffectHandlers[TOTAL_SPELL_EF
     &Spell::EffectNULL,                                     //287 SPELL_EFFECT_SET_GARRISON_FOLLOWER_LEVEL
     &Spell::EffectUnused,                                   //288 SPELL_EFFECT_288
     &Spell::EffectNULL,                                     //289 SPELL_EFFECT_289
+    &Spell::EffectNULL,                                     //290 SPELL_EFFECT_290
+    &Spell::EffectNULL,                                     //291 SPELL_EFFECT_291
+    &Spell::EffectNULL,                                     //292 SPELL_EFFECT_292
+    &Spell::EffectNULL,                                     //293 SPELL_EFFECT_293
+    &Spell::EffectNULL,                                     //294 SPELL_EFFECT_294
+    &Spell::EffectNULL,                                     //295 SPELL_EFFECT_295
+    &Spell::EffectNULL,                                     //296 SPELL_EFFECT_296
+    &Spell::EffectNULL,                                     //296 SPELL_EFFECT_297
+    &Spell::EffectNULL,                                     //296 SPELL_EFFECT_298
+    &Spell::EffectNULL,                                     //296 SPELL_EFFECT_299
+    &Spell::EffectNULL,                                     //296 SPELL_EFFECT_300
+    &Spell::EffectNULL,                                     //296 SPELL_EFFECT_301
+    &Spell::EffectNULL,                                     //296 SPELL_EFFECT_302
+    &Spell::EffectNULL,                                     //296 SPELL_EFFECT_303
+    &Spell::EffectNULL,                                     //296 SPELL_EFFECT_304
 };
 
 void Spell::EffectNULL()

@@ -2610,13 +2610,28 @@ TC_API_EXPORT EnumText EnumUtils<SpellEffectName>::ToString(SpellEffectName valu
         case SPELL_EFFECT_SET_GARRISON_FOLLOWER_LEVEL: return { "SPELL_EFFECT_SET_GARRISON_FOLLOWER_LEVEL", "SPELL_EFFECT_SET_GARRISON_FOLLOWER_LEVEL", "" };
         case SPELL_EFFECT_288: return { "SPELL_EFFECT_288", "SPELL_EFFECT_288", "" };
         case SPELL_EFFECT_289: return { "SPELL_EFFECT_289", "SPELL_EFFECT_289", "" };
+        case SPELL_EFFECT_290: return { "SPELL_EFFECT_290", "SPELL_EFFECT_290", "" };
+        case SPELL_EFFECT_291: return { "SPELL_EFFECT_291", "SPELL_EFFECT_291", "" };
+        case SPELL_EFFECT_292: return { "SPELL_EFFECT_292", "SPELL_EFFECT_292", "" };
+        case SPELL_EFFECT_293: return { "SPELL_EFFECT_293", "SPELL_EFFECT_293", "" };
+        case SPELL_EFFECT_294: return { "SPELL_EFFECT_294", "SPELL_EFFECT_294", "" };
+        case SPELL_EFFECT_295: return { "SPELL_EFFECT_295", "SPELL_EFFECT_295", "" };
+        case SPELL_EFFECT_296: return { "SPELL_EFFECT_296", "SPELL_EFFECT_296", "" };
+        case SPELL_EFFECT_297: return { "SPELL_EFFECT_297", "SPELL_EFFECT_297", "" };
+        case SPELL_EFFECT_298: return { "SPELL_EFFECT_298", "SPELL_EFFECT_298", "" };
+        case SPELL_EFFECT_299: return { "SPELL_EFFECT_299", "SPELL_EFFECT_299", "" };
+        case SPELL_EFFECT_300: return { "SPELL_EFFECT_300", "SPELL_EFFECT_300", "" };
+        case SPELL_EFFECT_301: return { "SPELL_EFFECT_301", "SPELL_EFFECT_301", "" };
+        case SPELL_EFFECT_302: return { "SPELL_EFFECT_302", "SPELL_EFFECT_302", "" };
+        case SPELL_EFFECT_303: return { "SPELL_EFFECT_303", "SPELL_EFFECT_303", "" };
+        case SPELL_EFFECT_304: return { "SPELL_EFFECT_304", "SPELL_EFFECT_304", "" };
         case TOTAL_SPELL_EFFECTS: return { "TOTAL_SPELL_EFFECTS", "TOTAL_SPELL_EFFECTS", "" };
         default: throw std::out_of_range("value");
     }
 }
 
 template <>
-TC_API_EXPORT size_t EnumUtils<SpellEffectName>::Count() { return 291; }
+TC_API_EXPORT size_t EnumUtils<SpellEffectName>::Count() { return 306; }
 
 template <>
 TC_API_EXPORT SpellEffectName EnumUtils<SpellEffectName>::FromIndex(size_t index)
@@ -2913,7 +2928,22 @@ TC_API_EXPORT SpellEffectName EnumUtils<SpellEffectName>::FromIndex(size_t index
         case 287: return SPELL_EFFECT_SET_GARRISON_FOLLOWER_LEVEL;
         case 288: return SPELL_EFFECT_288;
         case 289: return SPELL_EFFECT_289;
-        case 290: return TOTAL_SPELL_EFFECTS;
+        case 290: return SPELL_EFFECT_290;
+        case 291: return SPELL_EFFECT_291;
+        case 292: return SPELL_EFFECT_292;
+        case 293: return SPELL_EFFECT_293;
+        case 294: return SPELL_EFFECT_294;
+        case 295: return SPELL_EFFECT_295;
+        case 296: return SPELL_EFFECT_296;
+        case 297: return SPELL_EFFECT_297;
+        case 298: return SPELL_EFFECT_298;
+        case 299: return SPELL_EFFECT_299;
+        case 300: return SPELL_EFFECT_300;
+        case 301: return SPELL_EFFECT_301;
+        case 302: return SPELL_EFFECT_302;
+        case 303: return SPELL_EFFECT_303;
+        case 304: return SPELL_EFFECT_304;
+        case 305: return TOTAL_SPELL_EFFECTS;
         default: throw std::out_of_range("index");
     }
 }
@@ -3213,7 +3243,22 @@ TC_API_EXPORT size_t EnumUtils<SpellEffectName>::ToIndex(SpellEffectName value)
         case SPELL_EFFECT_SET_GARRISON_FOLLOWER_LEVEL: return 287;
         case SPELL_EFFECT_288: return 288;
         case SPELL_EFFECT_289: return 289;
-        case TOTAL_SPELL_EFFECTS: return 290;
+        case SPELL_EFFECT_290: return 290;
+        case SPELL_EFFECT_291: return 291;
+        case SPELL_EFFECT_292: return 292;
+        case SPELL_EFFECT_293: return 293;
+        case SPELL_EFFECT_294: return 294;
+        case SPELL_EFFECT_295: return 295;
+        case SPELL_EFFECT_296: return 296;
+        case SPELL_EFFECT_297: return 297;
+        case SPELL_EFFECT_298: return 298;
+        case SPELL_EFFECT_299: return 299;
+        case SPELL_EFFECT_300: return 300;
+        case SPELL_EFFECT_301: return 301;
+        case SPELL_EFFECT_302: return 302;
+        case SPELL_EFFECT_303: return 303;
+        case SPELL_EFFECT_304: return 304;
+        case TOTAL_SPELL_EFFECTS: return 305;
         default: throw std::out_of_range("value");
     }
 }

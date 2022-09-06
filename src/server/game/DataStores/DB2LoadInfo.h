@@ -2902,6 +2902,7 @@ struct ItemLoadInfo
             { false, FT_BYTE, "ItemGroupSoundsID" },
             { true, FT_INT, "ContentTuningID" },
             { true, FT_INT, "ModifiedCraftingReagentItemID" },
+            { false, FT_INT, "CraftingQualityID" },
         };
         static DB2LoadInfo const loadInfo(&fields[0], std::size(fields), ItemMeta::Instance(), HOTFIX_SEL_ITEM);
         return &loadInfo;
@@ -4538,6 +4539,7 @@ struct PlayerConditionLoadInfo
             { false, FT_BYTE, "MaxPVPRank" },
             { true, FT_INT, "ContentTuningID" },
             { true, FT_INT, "CovenantID" },
+            { false, FT_INT, "Field_10_0_0_44999_056" },
             { false, FT_SHORT, "SkillID1" },
             { false, FT_SHORT, "SkillID2" },
             { false, FT_SHORT, "SkillID3" },
@@ -4628,6 +4630,18 @@ struct PlayerConditionLoadInfo
             { false, FT_INT, "QuestKillMonster6" },
             { true, FT_INT, "MovementFlags1" },
             { true, FT_INT, "MovementFlags2" },
+            { true, FT_INT, "Field_10_0_0_44999_0811" },
+            { true, FT_INT, "Field_10_0_0_44999_0812" },
+            { true, FT_INT, "Field_10_0_0_44999_0813" },
+            { true, FT_INT, "Field_10_0_0_44999_0814" },
+            { false, FT_SHORT, "Field_10_0_0_44999_0821" },
+            { false, FT_SHORT, "Field_10_0_0_44999_0822" },
+            { false, FT_SHORT, "Field_10_0_0_44999_0823" },
+            { false, FT_SHORT, "Field_10_0_0_44999_0824" },
+            { false, FT_SHORT, "Field_10_0_0_44999_0831" },
+            { false, FT_SHORT, "Field_10_0_0_44999_0832" },
+            { false, FT_SHORT, "Field_10_0_0_44999_0833" },
+            { false, FT_SHORT, "Field_10_0_0_44999_0834" },
         };
         static DB2LoadInfo const loadInfo(&fields[0], std::size(fields), PlayerConditionMeta::Instance(), HOTFIX_SEL_PLAYER_CONDITION);
         return &loadInfo;
@@ -5205,6 +5219,8 @@ struct SkillLineAbilityLoadInfo
         static constexpr DB2FieldMeta fields[] =
         {
             { true, FT_LONG, "RaceMask" },
+            { false, FT_STRING, "Field_10_0_0_44795_001_lang" },
+            { false, FT_STRING, "Field_10_0_0_44795_002_lang" },
             { false, FT_INT, "ID" },
             { true, FT_SHORT, "SkillLine" },
             { true, FT_INT, "Spell" },

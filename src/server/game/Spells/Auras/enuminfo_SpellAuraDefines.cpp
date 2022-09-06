@@ -542,13 +542,22 @@ TC_API_EXPORT EnumText EnumUtils<AuraType>::ToString(AuraType value)
         case SPELL_AURA_508: return { "SPELL_AURA_508", "SPELL_AURA_508", "" };
         case SPELL_AURA_509: return { "SPELL_AURA_509", "SPELL_AURA_509", "" };
         case SPELL_AURA_MODIFIED_RAID_INSTANCE: return { "SPELL_AURA_MODIFIED_RAID_INSTANCE", "SPELL_AURA_MODIFIED_RAID_INSTANCE", "Related to \042Fated\042 raid affixes" };
+        case SPELL_AURA_511: return { "SPELL_AURA_511", "SPELL_AURA_511", "" };
+        case SPELL_AURA_512: return { "SPELL_AURA_512", "SPELL_AURA_512", "" };
+        case SPELL_AURA_513: return { "SPELL_AURA_513", "SPELL_AURA_513", "" };
+        case SPELL_AURA_514: return { "SPELL_AURA_514", "SPELL_AURA_514", "" };
+        case SPELL_AURA_515: return { "SPELL_AURA_515", "SPELL_AURA_515", "" };
+        case SPELL_AURA_516: return { "SPELL_AURA_516", "SPELL_AURA_516", "" };
+        case SPELL_AURA_517: return { "SPELL_AURA_517", "SPELL_AURA_517", "" };
+        case SPELL_AURA_518: return { "SPELL_AURA_518", "SPELL_AURA_518", "" };
+        case SPELL_AURA_519: return { "SPELL_AURA_519", "SPELL_AURA_519", "" };
         case TOTAL_AURAS: return { "TOTAL_AURAS", "TOTAL_AURAS", "" };
         default: throw std::out_of_range("value");
     }
 }
 
 template <>
-TC_API_EXPORT size_t EnumUtils<AuraType>::Count() { return 512; }
+TC_API_EXPORT size_t EnumUtils<AuraType>::Count() { return 521; }
 
 template <>
 TC_API_EXPORT AuraType EnumUtils<AuraType>::FromIndex(size_t index)
@@ -1066,7 +1075,16 @@ TC_API_EXPORT AuraType EnumUtils<AuraType>::FromIndex(size_t index)
         case 508: return SPELL_AURA_508;
         case 509: return SPELL_AURA_509;
         case 510: return SPELL_AURA_MODIFIED_RAID_INSTANCE;
-        case 511: return TOTAL_AURAS;
+        case 511: return SPELL_AURA_511;
+        case 512: return SPELL_AURA_512;
+        case 513: return SPELL_AURA_513;
+        case 514: return SPELL_AURA_514;
+        case 515: return SPELL_AURA_515;
+        case 516: return SPELL_AURA_516;
+        case 517: return SPELL_AURA_517;
+        case 518: return SPELL_AURA_518;
+        case 519: return SPELL_AURA_519;
+        case 520: return TOTAL_AURAS;
         default: throw std::out_of_range("index");
     }
 }
@@ -1587,7 +1605,16 @@ TC_API_EXPORT size_t EnumUtils<AuraType>::ToIndex(AuraType value)
         case SPELL_AURA_508: return 508;
         case SPELL_AURA_509: return 509;
         case SPELL_AURA_MODIFIED_RAID_INSTANCE: return 510;
-        case TOTAL_AURAS: return 511;
+        case SPELL_AURA_511: return 511;
+        case SPELL_AURA_512: return 512;
+        case SPELL_AURA_513: return 513;
+        case SPELL_AURA_514: return 514;
+        case SPELL_AURA_515: return 515;
+        case SPELL_AURA_516: return 516;
+        case SPELL_AURA_517: return 517;
+        case SPELL_AURA_518: return 518;
+        case SPELL_AURA_519: return 519;
+        case TOTAL_AURAS: return 520;
         default: throw std::out_of_range("value");
     }
 }
