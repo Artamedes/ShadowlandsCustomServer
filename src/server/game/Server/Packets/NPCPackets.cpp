@@ -75,6 +75,8 @@ WorldPacket const* GossipMessage::Write()
     _worldPacket.WriteBit(0);
     _worldPacket.FlushBits();
 
+    uint32 index = 0;
+
     for (ClientGossipOptions const& options : GossipOptions)
     {
         _worldPacket << int32(options.ClientOption);
@@ -83,8 +85,7 @@ WorldPacket const* GossipMessage::Write()
         _worldPacket << int32(options.OptionCost);
         _worldPacket << uint32(options.OptionLanguage);
         _worldPacket << uint32(0);
-        _worldPacket << uint32(0);
-        _worldPacket << uint32(0);
+        _worldPacket << uint32(index++); // ordering
         _worldPacket.WriteBits(options.Text.size(), 12);
         _worldPacket.WriteBits(options.Confirm.size(), 12);
         _worldPacket.WriteBits(AsUnderlyingType(options.Status), 2);
