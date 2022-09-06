@@ -310,6 +310,9 @@ std::vector<uint8> RealmList::GetRealmEntryJSON(Battlenet::RealmHandle const& id
     return compressed;
 }
 
+constexpr uint32 Retail927_Initial = 45114;
+constexpr uint32 Beta1000 = 45335;
+
 std::vector<uint8> RealmList::GetRealmList(uint32 build, std::string const& subRegion) const
 {
     JSON::RealmList::RealmListUpdates realmList;
@@ -321,7 +324,8 @@ std::vector<uint8> RealmList::GetRealmList(uint32 build, std::string const& subR
                 continue;
 
             uint32 flag = realm.second.Flags;
-            if (build < 45114)
+            // 45335 - DRAGOONFLIGHT BETA
+            if (build < Retail927_Initial || (realm.second.Build == Beta1000 && build != Beta1000))
                 flag |= REALM_FLAG_VERSION_MISMATCH;
             //if (realm.second.Build != build)
             //    flag |= REALM_FLAG_VERSION_MISMATCH;
@@ -342,9 +346,9 @@ std::vector<uint8> RealmList::GetRealmList(uint32 build, std::string const& subR
             }
             else
             {
-                version->set_versionmajor(6);
-                version->set_versionminor(2);
-                version->set_versionrevision(4);
+                version->set_versionmajor(10);
+                version->set_versionminor(0);
+                version->set_versionrevision(0);
                 version->set_versionbuild(realm.second.Build);
             }
 
