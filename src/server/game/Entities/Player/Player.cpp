@@ -28168,6 +28168,10 @@ void Player::SendTalentsInfoData()
             pvpTalent.PvPTalentID = pvpTalents[slot];
             pvpTalent.Slot = slot;
         }
+
+        if (i == GetActiveTalentGroup())
+            packet.Info.ActiveGroup = packet.Info.TalentGroups.size();
+
         packet.Info.TalentGroups.push_back(groupInfoPkt);
     }
 

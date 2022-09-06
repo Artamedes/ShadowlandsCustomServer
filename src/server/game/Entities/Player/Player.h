@@ -692,41 +692,42 @@ enum EquipmentSlots : uint8                                 // 19 slots
 #define VISIBLE_ITEM_ENTRY_OFFSET 0
 #define VISIBLE_ITEM_ENCHANTMENT_OFFSET 1
 
-enum InventorySlots : uint8                                 // 4 slots
+/// all updated for DF
+enum InventorySlots : uint8                                 ///< 5 slots DF
 {
-    INVENTORY_SLOT_BAG_START    = 19,
-    INVENTORY_SLOT_BAG_END      = 23
+    INVENTORY_SLOT_BAG_START    = 30,
+    INVENTORY_SLOT_BAG_END      = 35
 };
 
 enum InventoryPackSlots : uint8                             // 28 slots
 {
-    INVENTORY_SLOT_ITEM_START   = 23,
-    INVENTORY_SLOT_ITEM_END     = 51
+    INVENTORY_SLOT_ITEM_START   = 35,
+    INVENTORY_SLOT_ITEM_END     = INVENTORY_SLOT_ITEM_START + 28,
 };
 
 enum BankItemSlots                                          // 28 slots
 {
-    BANK_SLOT_ITEM_START        = 51,
-    BANK_SLOT_ITEM_END          = 79
+    BANK_SLOT_ITEM_START        = 63,
+    BANK_SLOT_ITEM_END          = 91
 };
 
 enum BankBagSlots                                           // 7 slots
 {
-    BANK_SLOT_BAG_START         = 79,
-    BANK_SLOT_BAG_END           = 86
+    BANK_SLOT_BAG_START         = 91,
+    BANK_SLOT_BAG_END           = 98
 };
 
 enum BuyBackSlots                                           // 12 slots
 {
     // stored in m_buybackitems
-    BUYBACK_SLOT_START          = 86,
-    BUYBACK_SLOT_END            = 98
+    BUYBACK_SLOT_START          = 98,
+    BUYBACK_SLOT_END            = 110
 };
 
 enum ReagentSlots                                           // 98 slots
 {
-    REAGENT_SLOT_START          = 98,
-    REAGENT_SLOT_END            = 196,
+    REAGENT_SLOT_START          = 110,
+    REAGENT_SLOT_END            = 207,
 };
 
 enum ChildEquipmentSlots

@@ -4446,7 +4446,6 @@ void GameObjectData::WriteCreate(ByteBuffer& data, EnumFlag<UpdateFieldFlag> fie
     data << uint32(UnkDFInt1);
     data << uint32(UnkDFInt2);
     data << uint32(UnkDFInt3);
-    data << uint32(UnkDFInt4);
     data << uint32(UnkDFLoop.size());
     for (uint32 i = 0; i < EnableDoodadSets.size(); ++i)
     {
@@ -4465,7 +4464,7 @@ void GameObjectData::WriteUpdate(ByteBuffer& data, EnumFlag<UpdateFieldFlag> fie
 
 void GameObjectData::WriteUpdate(ByteBuffer& data, Mask const& changesMask, bool ignoreNestedChangesMask, GameObject const* owner, Player const* receiver) const
 {
-    data.WriteBits(changesMask.GetBlock(0), 26);
+    data.WriteBits(changesMask.GetBlock(0), 25);
 
     if (changesMask[0])
     {
@@ -4606,10 +4605,6 @@ void GameObjectData::WriteUpdate(ByteBuffer& data, Mask const& changesMask, bool
         {
             data << uint32(UnkDFInt3);
         }
-        if (changesMask[25])
-        {
-            data << uint32(UnkDFInt4);
-        }
     }
 }
 
@@ -4639,7 +4634,6 @@ void GameObjectData::ClearChangesMask()
     Base::ClearChangesMask(UnkDFInt1);
     Base::ClearChangesMask(UnkDFInt2);
     Base::ClearChangesMask(UnkDFInt3);
-    Base::ClearChangesMask(UnkDFInt4);
     _changesMask.ResetAll();
 }
 

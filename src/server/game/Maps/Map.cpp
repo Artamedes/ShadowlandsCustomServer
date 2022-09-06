@@ -2189,8 +2189,6 @@ inline void Map::setNGrid(NGridType *grid, uint32 x, uint32 y)
 
 void Map::SendObjectUpdates()
 {
-    if (true)return;
-
     UpdateDataMapType update_players;
 
     while (!_updateObjects.empty())

@@ -830,7 +830,7 @@ struct ActivePlayerData : public IsUpdateFieldStructureTag, public HasChangesMas
     void ClearChangesMask();
 };
 
-struct GameObjectData : public IsUpdateFieldStructureTag, public HasChangesMask<26>
+struct GameObjectData : public IsUpdateFieldStructureTag, public HasChangesMask<25>
 {
     UpdateField<std::vector<uint32>, 0, 1> StateWorldEffectIDs;
     DynamicUpdateField<int32, 0, 2> EnableDoodadSets;
@@ -857,7 +857,6 @@ struct GameObjectData : public IsUpdateFieldStructureTag, public HasChangesMask<
     UpdateField<uint32, 0, 22> UnkDFInt1;
     UpdateField<uint32, 0, 23> UnkDFInt2;
     UpdateField<uint32, 0, 24> UnkDFInt3;
-    UpdateField<uint32, 0, 25> UnkDFInt4;
 
     void WriteCreate(ByteBuffer& data, EnumFlag<UpdateFieldFlag> fieldVisibilityFlags, GameObject const* owner, Player const* receiver) const;
     void WriteUpdate(ByteBuffer& data, EnumFlag<UpdateFieldFlag> fieldVisibilityFlags, GameObject const* owner, Player const* receiver) const;
