@@ -3990,17 +3990,17 @@ void ObjectMgr::LoadPlayerInfo()
                     continue;
                 }
 
-                if (!sDB2Manager.GetChrModel(current_race, GENDER_MALE))
-                {
-                    TC_LOG_ERROR("sql.sql", "Missing male model for race %u, ignoring.", current_race);
-                    continue;
-                }
-
-                if (!sDB2Manager.GetChrModel(current_race, GENDER_FEMALE))
-                {
-                    TC_LOG_ERROR("sql.sql", "Missing female model for race %u, ignoring.", current_race);
-                    continue;
-                }
+                //if (!sDB2Manager.GetChrModel(current_race, GENDER_MALE))
+                //{
+                //    TC_LOG_ERROR("sql.sql", "Missing male model for race %u, ignoring.", current_race);
+                //    continue;
+                //}
+                //
+                //if (!sDB2Manager.GetChrModel(current_race, GENDER_FEMALE))
+                //{
+                //    TC_LOG_ERROR("sql.sql", "Missing female model for race %u, ignoring.", current_race);
+                //    continue;
+                //}
 
                 std::unique_ptr<PlayerInfo> info = std::make_unique<PlayerInfo>();
                 info->createPosition.Loc.WorldRelocate(mapId, positionX, positionY, positionZ, orientation);
@@ -10828,7 +10828,7 @@ void ObjectMgr::LoadRaceAndClassExpansionRequirements()
     _classExpansionRequirementStore.clear();
 
     //                                         0       1                     2                      3
-    result = WorldDatabase.Query("SELECT ClassID, RaceID, ActiveExpansionLevel, AccountExpansionLevel FROM `class_expansion_requirement`");
+    result = WorldDatabase.Query("SELECT ClassID, RaceID, ActiveExpansionLevel, AccountExpansionLevel FROM `class_expansion_requirement` order by `Primary`");
 
     if (result)
     {

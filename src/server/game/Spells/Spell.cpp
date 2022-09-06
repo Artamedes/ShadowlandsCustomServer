@@ -7933,19 +7933,19 @@ SpellCastResult Spell::CheckItems(int32* param1 /*= nullptr*/, int32* param2 /*=
             {
                 Item const* item = m_targets.GetItemTarget();
                 if (!item)
-                    return SPELL_FAILED_CANT_BE_DISENCHANTED;
+                    return SPELL_FAILED_CANT_BE_SALVAGED;
 
                 // prevent disenchanting in trade slot
                 if (item->GetOwnerGUID() != player->GetGUID())
-                    return SPELL_FAILED_CANT_BE_DISENCHANTED;
+                    return SPELL_FAILED_CANT_BE_SALVAGED;
 
                 ItemTemplate const* itemProto = item->GetTemplate();
                 if (!itemProto)
-                    return SPELL_FAILED_CANT_BE_DISENCHANTED;
+                    return SPELL_FAILED_CANT_BE_SALVAGED;
 
                 ItemDisenchantLootEntry const* itemDisenchantLoot = item->GetDisenchantLoot(m_caster->ToPlayer());
                 if (!itemDisenchantLoot)
-                    return SPELL_FAILED_CANT_BE_DISENCHANTED;
+                    return SPELL_FAILED_CANT_BE_SALVAGED;
                 if (itemDisenchantLoot->SkillRequired > player->GetSkillValue(SKILL_ENCHANTING))
                     return SPELL_FAILED_LOW_CASTLEVEL;
                 break;

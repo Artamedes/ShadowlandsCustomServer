@@ -369,8 +369,8 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
                         {
                             requeuePackets.push_back(packet);
                             deletePacket = false;
-                            TC_LOG_DEBUG("network", "Re-enqueueing packet with opcode %s with with status STATUS_LOGGEDIN. "
-                                "Player is currently not in world yet.", GetOpcodeNameForLogging(static_cast<OpcodeClient>(packet->GetOpcode())).c_str());
+                            //TC_LOG_DEBUG("network", "Re-enqueueing packet with opcode %s with with status STATUS_LOGGEDIN. "
+                            //    "Player is currently not in world yet.", GetOpcodeNameForLogging(static_cast<OpcodeClient>(packet->GetOpcode())).c_str());
                         }
                     }
                     else if (_player->IsInWorld())
@@ -1022,6 +1022,13 @@ void WorldSession::InitWarden(SessionKey const& k)
     {
         // Not implemented
     }
+
+    WorldPacket data(SMSG_WARDEN3_DISABLED, 4);
+    data << uint8(0x02);
+    data << uint8(0x00);
+    data << uint8(0x00);
+    data << uint8(0x00);
+    SendPacket(&data);
 }
 
 void WorldSession::LoadPermissions()

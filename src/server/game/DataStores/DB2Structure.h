@@ -955,7 +955,7 @@ struct CreatureDisplayInfoEntry
     int8 Gender;
     int32 DissolveOutEffectID;
     int8 CreatureModelMinLod;
-    std::array<int32, 3> TextureVariationFileDataID;
+    std::array<int32, 4> TextureVariationFileDataID;
 };
 
 struct CreatureDisplayInfoExtraEntry

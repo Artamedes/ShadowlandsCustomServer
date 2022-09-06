@@ -142,13 +142,13 @@ namespace WorldPackets
 
                 AuthSuccessInfo() { } // work around clang bug https://gcc.gnu.org/bugzilla/show_bug.cgi?id=101227
 
-                uint8 ActiveExpansionLevel = 0; ///< the current server expansion, the possible values are in @ref Expansions
-                uint8 AccountExpansionLevel = 0; ///< the current expansion of this account, the possible values are in @ref Expansions
+                uint8 ActiveExpansionLevel = 9; ///< the current server expansion, the possible values are in @ref Expansions
+                uint8 AccountExpansionLevel = 9; ///< the current expansion of this account, the possible values are in @ref Expansions
                 uint32 TimeRested = 0; ///< affects the return value of the GetBillingTimeRested() client API call, it is the number of seconds you have left until the experience points and loot you receive from creatures and quests is reduced. It is only used in the Asia region in retail, it's not implemented in TC and will probably never be.
 
                 uint32 VirtualRealmAddress = 0; ///< a special identifier made from the Index, BattleGroup and Region.
                 uint32 TimeSecondsUntilPCKick = 0; ///< @todo research
-                uint32 CurrencyID = 0; ///< this is probably used for the ingame shop. @todo implement
+                uint32 CurrencyID = 1; ///< this is probably used for the ingame shop. @todo implement
                 Timestamp<> Time;
 
                 GameTime GameTimeInfo;

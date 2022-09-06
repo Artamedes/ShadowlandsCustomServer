@@ -124,7 +124,7 @@ namespace WorldPackets
             uint32 TwitterPostThrottleCooldown           = 0; ///< Time in seconds the client has to wait before posting again after hitting post limit
             uint32 TokenPollTimeSeconds                  = 0;
             int64 TokenBalanceAmount                     = 0;
-            uint32 BpayStoreProductDeliveryDelay         = 0;
+            uint32 BpayStoreProductDeliveryDelay         = 180;
             uint32 ClubsPresenceUpdateTimer              = 0;
             uint32 HiddenUIClubsPresenceUpdateTimer      = 0; ///< Timer for updating club presence when communities ui frame is hidden
             uint32 KioskSessionMinutes                   = 0;
@@ -194,17 +194,17 @@ namespace WorldPackets
             std::vector<int32> LiveRegionCharacterCopySourceRegions;
             uint32 TokenPollTimeSeconds              = 0;     // NYI
             int64 TokenBalanceAmount                 = 0;     // NYI
-            int32 MaxCharactersPerRealm              = 0;
-            uint32 BpayStoreProductDeliveryDelay     = 0;     // NYI
+            int32 MaxCharactersPerRealm              = 50;
+            uint32 BpayStoreProductDeliveryDelay     = 180;     // NYI
             int32 ActiveCharacterUpgradeBoostType    = 0;     // NYI
-            int32 ActiveClassTrialBoostType          = 0;     // NYI
-            int32 MinimumExpansionLevel              = 0;
-            int32 MaximumExpansionLevel              = 0;
+            int32 ActiveClassTrialBoostType          = 6;     // NYI
+            int32 MinimumExpansionLevel              = 7;
+            int32 MaximumExpansionLevel              = 9;
             uint32 KioskSessionMinutes               = 0;
             int32 ActiveSeason                       = 0;     // Currently active Classic season
             std::vector<GameRuleValuePair> GameRuleValues;
-            int16 MaxPlayerNameQueriesPerPacket = 50;
-            int16 PlayerNameQueryTelemetryInterval = 600;
+            int16 MaxPlayerNameQueriesPerPacket = 32;
+            int16 PlayerNameQueryTelemetryInterval = 32;
             Optional<int32> LaunchETA;
         };
 

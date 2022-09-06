@@ -198,8 +198,7 @@ WorldPacket const* FeatureSystemStatusGlueScreen::Write()
     _worldPacket.WriteBit(EuropaTicketSystemStatus.has_value());
     _worldPacket.WriteBit(LaunchETA.has_value());
     _worldPacket.WriteBit(0); ///< Unk DF
-    _worldPacket.WriteBit(0); ///< Unk DF
-    _worldPacket.WriteBit(0); ///< Unk DF
+    _worldPacket.WriteBit(1); ///< Unk DF
     _worldPacket.WriteBit(0); ///< Unk DF
     _worldPacket.FlushBits();
 
@@ -220,7 +219,7 @@ WorldPacket const* FeatureSystemStatusGlueScreen::Write()
     _worldPacket << uint32(GameRuleValues.size());
     _worldPacket << int16(MaxPlayerNameQueriesPerPacket);
     _worldPacket << int16(PlayerNameQueryTelemetryInterval);
-    _worldPacket << uint32(1); ///< Unk DF
+    _worldPacket << uint32(10); ///< Unk DF
 
     if (LaunchETA)
         _worldPacket << int32(*LaunchETA);

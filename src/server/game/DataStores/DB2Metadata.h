@@ -3344,9 +3344,9 @@ struct CreatureDisplayInfoMeta
             { FT_BYTE, 1, true },
             { FT_INT, 1, true },
             { FT_BYTE, 1, true },
-            { FT_INT, 3, true },
+            { FT_INT, 4, true },
         };
-        static constexpr DB2Meta instance(1108759, 0, 25, 25, 0x1D5BDC6A, fields, -1);
+        static constexpr DB2Meta instance(1108759, 0, 25, 25, 0x357FF9CD, fields, -1);
         return &instance;
     }
 };

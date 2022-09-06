@@ -1517,6 +1517,7 @@ struct CreatureDisplayInfoLoadInfo
             { true, FT_INT, "TextureVariationFileDataID1" },
             { true, FT_INT, "TextureVariationFileDataID2" },
             { true, FT_INT, "TextureVariationFileDataID3" },
+            { true, FT_INT, "TextureVariationFileDataID4" },
         };
         static DB2LoadInfo const loadInfo(&fields[0], std::size(fields), CreatureDisplayInfoMeta::Instance(), HOTFIX_SEL_CREATURE_DISPLAY_INFO);
         return &loadInfo;
