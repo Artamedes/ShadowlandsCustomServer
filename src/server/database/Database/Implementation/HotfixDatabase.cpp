@@ -238,7 +238,7 @@ void HotfixDatabaseConnection::DoPrepareStatements()
         " WHERE (`VerifiedBuild` > 0) = ? AND locale = ?", CONNECTION_SYNCH);
 
     // BattlePetBreedQuality.db2
-    PrepareStatement(HOTFIX_SEL_BATTLE_PET_BREED_QUALITY, "SELECT ID, StateMultiplier, QualityEnum FROM battle_pet_breed_quality"
+    PrepareStatement(HOTFIX_SEL_BATTLE_PET_BREED_QUALITY, "SELECT ID, UnkDF, StateMultiplier, QualityEnum FROM battle_pet_breed_quality"
         " WHERE (`VerifiedBuild` > 0) = ?", CONNECTION_SYNCH);
     PREPARE_MAX_ID_STMT(HOTFIX_SEL_BATTLE_PET_BREED_QUALITY, "SELECT MAX(ID) + 1 FROM battle_pet_breed_quality", CONNECTION_SYNCH);
 
@@ -286,7 +286,7 @@ void HotfixDatabaseConnection::DoPrepareStatements()
         " WHERE (`VerifiedBuild` > 0) = ?", CONNECTION_SYNCH);
     PREPARE_MAX_ID_STMT(HOTFIX_SEL_CFG_REGIONS, "SELECT MAX(ID) + 1 FROM cfg_regions", CONNECTION_SYNCH);
 
-    PrepareStatement(HOTFIX_SEL_CHAR_BASE_INFO, "SELECT ID, RaceID, ClassID FROM char_base_info WHERE (`VerifiedBuild` > 0) = ?", CONNECTION_SYNCH);
+    PrepareStatement(HOTFIX_SEL_CHAR_BASE_INFO, "SELECT ID, RaceID, ClassID, OtherFactionRaceID FROM char_base_info WHERE (`VerifiedBuild` > 0) = ?", CONNECTION_SYNCH);
     PREPARE_MAX_ID_STMT(HOTFIX_SEL_CHAR_BASE_INFO, "SELECT MAX(ID) + 1 FROM char_base_info", CONNECTION_SYNCH);
 
     // CharTitles.db2
@@ -351,7 +351,7 @@ void HotfixDatabaseConnection::DoPrepareStatements()
     // ChrCustomizationElement.db2
     PrepareStatement(HOTFIX_SEL_CHR_CUSTOMIZATION_ELEMENT, "SELECT ID, ChrCustomizationChoiceID, RelatedChrCustomizationChoiceID, "
         "ChrCustomizationGeosetID, ChrCustomizationSkinnedModelID, ChrCustomizationMaterialID, ChrCustomizationBoneSetID, "
-        "ChrCustomizationCondModelID, ChrCustomizationDisplayInfoID, ChrCustItemGeoModifyID FROM chr_customization_element"
+        "ChrCustomizationCondModelID, ChrCustomizationDisplayInfoID, ChrCustItemGeoModifyID, ChrCustomizationVoiceID FROM chr_customization_element"
         " WHERE (`VerifiedBuild` > 0) = ?", CONNECTION_SYNCH);
     PREPARE_MAX_ID_STMT(HOTFIX_SEL_CHR_CUSTOMIZATION_ELEMENT, "SELECT MAX(ID) + 1 FROM chr_customization_element", CONNECTION_SYNCH);
 
@@ -364,7 +364,7 @@ void HotfixDatabaseConnection::DoPrepareStatements()
         " WHERE (`VerifiedBuild` > 0) = ? AND locale = ?", CONNECTION_SYNCH);
 
     // ChrCustomizationReq.db2
-    PrepareStatement(HOTFIX_SEL_CHR_CUSTOMIZATION_REQ, "SELECT ID, Flags, ClassMask, AchievementID, OverrideArchive, ItemModifiedAppearanceID"
+    PrepareStatement(HOTFIX_SEL_CHR_CUSTOMIZATION_REQ, "SELECT ID, Name, Flags, ClassMask, AchievementID, ReqQuestID, OverrideArchive, ItemModifiedAppearanceID"
         " FROM chr_customization_req WHERE (`VerifiedBuild` > 0) = ?", CONNECTION_SYNCH);
     PREPARE_MAX_ID_STMT(HOTFIX_SEL_CHR_CUSTOMIZATION_REQ, "SELECT MAX(ID) + 1 FROM chr_customization_req", CONNECTION_SYNCH);
 
@@ -381,7 +381,7 @@ void HotfixDatabaseConnection::DoPrepareStatements()
     PREPARE_MAX_ID_STMT(HOTFIX_SEL_CHR_MODEL, "SELECT MAX(ID) + 1 FROM chr_model", CONNECTION_SYNCH);
 
     // ChrRaceXChrModel.db2
-    PrepareStatement(HOTFIX_SEL_CHR_RACE_X_CHR_MODEL, "SELECT ID, ChrRacesID, ChrModelID FROM chr_race_x_chr_model WHERE (`VerifiedBuild` > 0) = ?", CONNECTION_SYNCH);
+    PrepareStatement(HOTFIX_SEL_CHR_RACE_X_CHR_MODEL, "SELECT ID, ChrRacesID, ChrModelID, Sex FROM chr_race_x_chr_model WHERE (`VerifiedBuild` > 0) = ?", CONNECTION_SYNCH);
     PREPARE_MAX_ID_STMT(HOTFIX_SEL_CHR_RACE_X_CHR_MODEL, "SELECT MAX(ID) + 1 FROM chr_race_x_chr_model", CONNECTION_SYNCH);
 
     // ChrRaces.db2
@@ -394,7 +394,7 @@ void HotfixDatabaseConnection::DoPrepareStatements()
         "MaleModelFallbackRaceID, FemaleModelFallbackRaceID, MaleTextureFallbackRaceID, FemaleTextureFallbackRaceID, PlayableRaceBit, "
         "HelmetAnimScalingRaceID, TransmogrifyDisabledSlotMask, UnalteredVisualCustomizationRaceID, AlteredFormCustomizeOffsetFallback1, "
         "AlteredFormCustomizeOffsetFallback2, AlteredFormCustomizeOffsetFallback3, AlteredFormCustomizeRotationFallback, Unknown910_11, "
-        "Unknown910_12, Unknown910_13, Unknown910_21, Unknown910_22, Unknown910_23, BaseLanguage, CreatureType, MaleModelFallbackSex, "
+        "Unknown910_12, Unknown910_13, Unknown910_21, Unknown910_22, Unknown910_23, UnkDF, BaseLanguage, CreatureType, MaleModelFallbackSex, "
         "FemaleModelFallbackSex, MaleTextureFallbackSex, FemaleTextureFallbackSex FROM chr_races WHERE (`VerifiedBuild` > 0) = ?", CONNECTION_SYNCH);
     PREPARE_MAX_ID_STMT(HOTFIX_SEL_CHR_RACES, "SELECT MAX(ID) + 1 FROM chr_races", CONNECTION_SYNCH);
     PREPARE_LOCALE_STMT(HOTFIX_SEL_CHR_RACES, "SELECT ID, Name_lang, NameFemale_lang, NameLowercase_lang, NameFemaleLowercase_lang, LoreName_lang, "
@@ -444,7 +444,7 @@ void HotfixDatabaseConnection::DoPrepareStatements()
         "ExtendedDisplayInfoID, NPCSoundID, ParticleColorID, PortraitCreatureDisplayInfoID, PortraitTextureFileDataID, ObjectEffectPackageID, "
         "AnimReplacementSetID, Flags, StateSpellVisualKitID, PlayerOverrideScale, PetInstanceScale, UnarmedWeaponType, MountPoofSpellVisualKitID, "
         "DissolveEffectID, Gender, DissolveOutEffectID, CreatureModelMinLod, TextureVariationFileDataID1, TextureVariationFileDataID2, "
-        "TextureVariationFileDataID3 FROM creature_display_info WHERE (`VerifiedBuild` > 0) = ?", CONNECTION_SYNCH);
+        "TextureVariationFileDataID3, TextureVariationFileDataID4 FROM creature_display_info WHERE (`VerifiedBuild` > 0) = ?", CONNECTION_SYNCH);
     PREPARE_MAX_ID_STMT(HOTFIX_SEL_CREATURE_DISPLAY_INFO, "SELECT MAX(ID) + 1 FROM creature_display_info", CONNECTION_SYNCH);
 
     // CreatureDisplayInfoExtra.db2
@@ -504,7 +504,7 @@ void HotfixDatabaseConnection::DoPrepareStatements()
     PREPARE_MAX_ID_STMT(HOTFIX_SEL_CURVE, "SELECT MAX(ID) + 1 FROM curve", CONNECTION_SYNCH);
 
     // CurvePoint.db2
-    PrepareStatement(HOTFIX_SEL_CURVE_POINT, "SELECT ID, PosX, PosY, PreSLSquishPosX, PreSLSquishPosY, CurveID, OrderIndex FROM curve_point"
+    PrepareStatement(HOTFIX_SEL_CURVE_POINT, "SELECT PosX, PosY, PreSLSquishPosX, PreSLSquishPosY, ID, CurveID, OrderIndex FROM curve_point"
         " WHERE (`VerifiedBuild` > 0) = ?", CONNECTION_SYNCH);
     PREPARE_MAX_ID_STMT(HOTFIX_SEL_CURVE_POINT, "SELECT MAX(ID) + 1 FROM curve_point", CONNECTION_SYNCH);
 
@@ -524,7 +524,7 @@ void HotfixDatabaseConnection::DoPrepareStatements()
     PREPARE_LOCALE_STMT(HOTFIX_SEL_DIFFICULTY, "SELECT ID, Name_lang FROM difficulty_locale WHERE (`VerifiedBuild` > 0) = ? AND locale = ?", CONNECTION_SYNCH);
 
     // DungeonEncounter.db2
-    PrepareStatement(HOTFIX_SEL_DUNGEON_ENCOUNTER, "SELECT Name, ID, MapID, DifficultyID, OrderIndex, CompleteWorldStateID, Bit, CreatureDisplayID, "
+    PrepareStatement(HOTFIX_SEL_DUNGEON_ENCOUNTER, "SELECT Name, ID, MapID, DifficultyID, OrderIndex, CompleteWorldStateID, Bit, "
         "Flags, SpellIconFileID, Faction FROM dungeon_encounter WHERE (`VerifiedBuild` > 0) = ?", CONNECTION_SYNCH);
     PREPARE_MAX_ID_STMT(HOTFIX_SEL_DUNGEON_ENCOUNTER, "SELECT MAX(ID) + 1 FROM dungeon_encounter", CONNECTION_SYNCH);
     PREPARE_LOCALE_STMT(HOTFIX_SEL_DUNGEON_ENCOUNTER, "SELECT ID, Name_lang FROM dungeon_encounter_locale WHERE (`VerifiedBuild` > 0) = ?"
@@ -571,7 +571,7 @@ void HotfixDatabaseConnection::DoPrepareStatements()
 
     // Faction.db2
     PrepareStatement(HOTFIX_SEL_FACTION, "SELECT ID, ReputationRaceMask1, ReputationRaceMask2, ReputationRaceMask3, ReputationRaceMask4, Name, "
-        "Description, ReputationIndex, ParentFactionID, Expansion, FriendshipRepID, Flags, ParagonFactionID, ReputationClassMask1, "
+        "Description, ReputationIndex, ParentFactionID, Expansion, FriendshipRepID, Flags, ParagonFactionID, RenownFactionID, RenownCurrencyID, ReputationClassMask1, "
         "ReputationClassMask2, ReputationClassMask3, ReputationClassMask4, ReputationFlags1, ReputationFlags2, ReputationFlags3, ReputationFlags4, "
         "ReputationBase1, ReputationBase2, ReputationBase3, ReputationBase4, ReputationMax1, ReputationMax2, ReputationMax3, ReputationMax4, "
         "ParentFactionMod1, ParentFactionMod2, ParentFactionCap1, ParentFactionCap2 FROM faction WHERE (`VerifiedBuild` > 0) = ?", CONNECTION_SYNCH);
@@ -781,7 +781,7 @@ void HotfixDatabaseConnection::DoPrepareStatements()
 
     // Item.db2
     PrepareStatement(HOTFIX_SEL_ITEM, "SELECT ID, ClassID, SubclassID, Material, InventoryType, SheatheType, SoundOverrideSubclassID, IconFileDataID, "
-        "ItemGroupSoundsID, ContentTuningID, ModifiedCraftingReagentItemID FROM item WHERE (`VerifiedBuild` > 0) = ?", CONNECTION_SYNCH);
+        "ItemGroupSoundsID, ContentTuningID, ModifiedCraftingReagentItemID, CraftingQualityID FROM item WHERE (`VerifiedBuild` > 0) = ?", CONNECTION_SYNCH);
     PREPARE_MAX_ID_STMT(HOTFIX_SEL_ITEM, "SELECT MAX(ID) + 1 FROM item", CONNECTION_SYNCH);
 
     // ItemAppearance.db2
@@ -957,14 +957,14 @@ void HotfixDatabaseConnection::DoPrepareStatements()
         "StatPercentageOfSocket2, StatPercentageOfSocket3, StatPercentageOfSocket4, StatPercentageOfSocket5, StatPercentageOfSocket6, "
         "StatPercentageOfSocket7, StatPercentageOfSocket8, StatPercentageOfSocket9, StatPercentageOfSocket10, StatPercentEditor1, StatPercentEditor2, "
         "StatPercentEditor3, StatPercentEditor4, StatPercentEditor5, StatPercentEditor6, StatPercentEditor7, StatPercentEditor8, StatPercentEditor9, "
-        "StatPercentEditor10, Stackable, MaxCount, RequiredAbility, SellPrice, BuyPrice, VendorStackCount, PriceVariance, PriceRandomValue, Flags1, "
+        "StatPercentEditor10, Stackable, MaxCount, MinReputation, RequiredAbility, SellPrice, BuyPrice, VendorStackCount, PriceVariance, PriceRandomValue, Flags1, "
         "Flags2, Flags3, Flags4, FactionRelated, ModifiedCraftingReagentItemID, ContentTuningID, PlayerLevelToItemLevelCurveID, "
         "ItemNameDescriptionID, RequiredTransmogHoliday, RequiredHoliday, GemProperties, SocketMatchEnchantmentId, TotemCategoryID, InstanceBound, "
         "ZoneBound1, ZoneBound2, ItemSet, LockID, PageID, ItemDelay, MinFactionID, RequiredSkillRank, RequiredSkill, ItemLevel, AllowableClass, "
         "ArtifactID, SpellWeight, SpellWeightCategory, SocketType1, SocketType2, SocketType3, SheatheType, Material, PageMaterialID, Bonding, "
         "DamageDamageType, StatModifierBonusStat1, StatModifierBonusStat2, StatModifierBonusStat3, StatModifierBonusStat4, StatModifierBonusStat5, "
         "StatModifierBonusStat6, StatModifierBonusStat7, StatModifierBonusStat8, StatModifierBonusStat9, StatModifierBonusStat10, ContainerSlots, "
-        "MinReputation, RequiredPVPMedal, RequiredPVPRank, RequiredLevel, InventoryType, OverallQualityID FROM item_sparse"
+        "RequiredPVPMedal, RequiredPVPRank, RequiredLevel, InventoryType, OverallQualityID FROM item_sparse"
         " WHERE (`VerifiedBuild` > 0) = ?", CONNECTION_SYNCH);
     PREPARE_MAX_ID_STMT(HOTFIX_SEL_ITEM_SPARSE, "SELECT MAX(ID) + 1 FROM item_sparse", CONNECTION_SYNCH);
     PREPARE_LOCALE_STMT(HOTFIX_SEL_ITEM_SPARSE, "SELECT ID, Description_lang, Display3_lang, Display2_lang, Display1_lang, Display_lang"
@@ -1074,7 +1074,7 @@ void HotfixDatabaseConnection::DoPrepareStatements()
     // Map.db2
     PrepareStatement(HOTFIX_SEL_MAP, "SELECT ID, Directory, MapName, MapDescription0, MapDescription1, PvpShortDescription, PvpLongDescription, "
         "CorpseX, CorpseY, MapType, InstanceType, ExpansionID, AreaTableID, LoadingScreenID, TimeOfDayOverride, ParentMapID, CosmeticParentMapID, "
-        "TimeOffset, MinimapIconScale, CorpseMapID, MaxPlayers, WindSettingsID, ZmpFileDataID, WdtFileDataID, Flags1, Flags2, Flags3 FROM map"
+        "TimeOffset, MinimapIconScale, CorpseMapID, MaxPlayers, WindSettingsID, ZmpFileDataID, WdtFileDataID, UnkDF, Flags1, Flags2, Flags3 FROM map"
         " WHERE (`VerifiedBuild` > 0) = ?", CONNECTION_SYNCH);
     PREPARE_MAX_ID_STMT(HOTFIX_SEL_MAP, "SELECT MAX(ID) + 1 FROM map", CONNECTION_SYNCH);
     PREPARE_LOCALE_STMT(HOTFIX_SEL_MAP, "SELECT ID, MapName_lang, MapDescription0_lang, MapDescription1_lang, PvpShortDescription_lang, "
@@ -1123,7 +1123,7 @@ void HotfixDatabaseConnection::DoPrepareStatements()
 
     // MountCapability.db2
     PrepareStatement(HOTFIX_SEL_MOUNT_CAPABILITY, "SELECT ID, Flags, ReqRidingSkill, ReqAreaID, ReqSpellAuraID, ReqSpellKnownID, ModSpellAuraID, "
-        "ReqMapID, PlayerConditionID FROM mount_capability WHERE (`VerifiedBuild` > 0) = ?", CONNECTION_SYNCH);
+        "ReqMapID, PlayerConditionID, UnkDF FROM mount_capability WHERE (`VerifiedBuild` > 0) = ?", CONNECTION_SYNCH);
     PREPARE_MAX_ID_STMT(HOTFIX_SEL_MOUNT_CAPABILITY, "SELECT MAX(ID) + 1 FROM mount_capability", CONNECTION_SYNCH);
 
     // MountTypeXCapability.db2
@@ -1186,7 +1186,7 @@ void HotfixDatabaseConnection::DoPrepareStatements()
         "LifetimeMaxPVPRank, AchievementLogic, Gender, NativeGender, AreaLogic, LfgLogic, CurrencyLogic, QuestKillID, QuestKillLogic, "
         "MinExpansionLevel, MaxExpansionLevel, MinAvgItemLevel, MaxAvgItemLevel, MinAvgEquippedItemLevel, MaxAvgEquippedItemLevel, PhaseUseFlags, "
         "PhaseID, PhaseGroupID, Flags, ChrSpecializationIndex, ChrSpecializationRole, ModifierTreeID, PowerType, PowerTypeComp, PowerTypeValue, "
-        "WeaponSubclassMask, MaxGuildLevel, MinGuildLevel, MaxExpansionTier, MinExpansionTier, MinPVPRank, MaxPVPRank, ContentTuningID, CovenantID, "
+        "WeaponSubclassMask, MaxGuildLevel, MinGuildLevel, MaxExpansionTier, MinExpansionTier, MinPVPRank, MaxPVPRank, ContentTuningID, CovenantID, Field_10_0_0_44999_056, "
         "SkillID1, SkillID2, SkillID3, SkillID4, MinSkill1, MinSkill2, MinSkill3, MinSkill4, MaxSkill1, MaxSkill2, MaxSkill3, MaxSkill4, "
         "MinFactionID1, MinFactionID2, MinFactionID3, MinReputation1, MinReputation2, MinReputation3, PrevQuestID1, PrevQuestID2, PrevQuestID3, "
         "PrevQuestID4, CurrQuestID1, CurrQuestID2, CurrQuestID3, CurrQuestID4, CurrentCompletedQuestID1, CurrentCompletedQuestID2, "
@@ -1196,7 +1196,9 @@ void HotfixDatabaseConnection::DoPrepareStatements()
         "LfgStatus1, LfgStatus2, LfgStatus3, LfgStatus4, LfgCompare1, LfgCompare2, LfgCompare3, LfgCompare4, LfgValue1, LfgValue2, LfgValue3, "
         "LfgValue4, CurrencyID1, CurrencyID2, CurrencyID3, CurrencyID4, CurrencyCount1, CurrencyCount2, CurrencyCount3, CurrencyCount4, "
         "QuestKillMonster1, QuestKillMonster2, QuestKillMonster3, QuestKillMonster4, QuestKillMonster5, QuestKillMonster6, MovementFlags1, "
-        "MovementFlags2 FROM player_condition WHERE (`VerifiedBuild` > 0) = ?", CONNECTION_SYNCH);
+        "MovementFlags2, Field_10_0_0_44999_0811, Field_10_0_0_44999_0812, Field_10_0_0_44999_0813, Field_10_0_0_44999_0814, Field_10_0_0_44999_0821, Field_10_0_0_44999_0822, Field_10_0_0_44999_0823, Field_10_0_0_44999_0824, "
+        "Field_10_0_0_44999_0831, Field_10_0_0_44999_0832, Field_10_0_0_44999_0833, Field_10_0_0_44999_0834 "
+        " FROM player_condition WHERE(`VerifiedBuild` > 0) = ? ", CONNECTION_SYNCH);
     PREPARE_MAX_ID_STMT(HOTFIX_SEL_PLAYER_CONDITION, "SELECT MAX(ID) + 1 FROM player_condition", CONNECTION_SYNCH);
     PREPARE_LOCALE_STMT(HOTFIX_SEL_PLAYER_CONDITION, "SELECT ID, FailureDescription_lang FROM player_condition_locale WHERE (`VerifiedBuild` > 0) = ?"
         " AND locale = ?", CONNECTION_SYNCH);
@@ -1351,7 +1353,7 @@ void HotfixDatabaseConnection::DoPrepareStatements()
         " FROM skill_line_locale WHERE (`VerifiedBuild` > 0) = ? AND locale = ?", CONNECTION_SYNCH);
 
     // SkillLineAbility.db2
-    PrepareStatement(HOTFIX_SEL_SKILL_LINE_ABILITY, "SELECT RaceMask, ID, SkillLine, Spell, MinSkillLineRank, ClassMask, SupercedesSpell, "
+    PrepareStatement(HOTFIX_SEL_SKILL_LINE_ABILITY, "SELECT RaceMask, Field_10_0_0_44795_001_lang, Field_10_0_0_44795_002_lang, ID, SkillLine, Spell, MinSkillLineRank, ClassMask, SupercedesSpell, "
         "AcquireMethod, TrivialSkillLineRankHigh, TrivialSkillLineRankLow, Flags, NumSkillUps, UniqueBit, TradeSkillCategoryID, SkillupSkillLineID"
         " FROM skill_line_ability WHERE (`VerifiedBuild` > 0) = ?", CONNECTION_SYNCH);
     PREPARE_MAX_ID_STMT(HOTFIX_SEL_SKILL_LINE_ABILITY, "SELECT MAX(ID) + 1 FROM skill_line_ability", CONNECTION_SYNCH);
@@ -1482,7 +1484,7 @@ void HotfixDatabaseConnection::DoPrepareStatements()
     PREPARE_MAX_ID_STMT(HOTFIX_SEL_SPELL_INTERRUPTS, "SELECT MAX(ID) + 1 FROM spell_interrupts", CONNECTION_SYNCH);
 
     // SpellItemEnchantment.db2
-    PrepareStatement(HOTFIX_SEL_SPELL_ITEM_ENCHANTMENT, "SELECT ID, Name, HordeName, EffectArg1, EffectArg2, EffectArg3, EffectScalingPoints1, "
+    PrepareStatement(HOTFIX_SEL_SPELL_ITEM_ENCHANTMENT, "SELECT ID, Name, HordeName, Duration, EffectArg1, EffectArg2, EffectArg3, EffectScalingPoints1, "
         "EffectScalingPoints2, EffectScalingPoints3, IconFileDataID, MinItemLevel, MaxItemLevel, TransmogUseConditionID, TransmogCost, "
         "EffectPointsMin1, EffectPointsMin2, EffectPointsMin3, ItemVisual, Flags, RequiredSkillID, RequiredSkillRank, ItemLevel, Charges, Effect1, "
         "Effect2, Effect3, ScalingClass, ScalingClassRestricted, ConditionID, MinLevel, MaxLevel FROM spell_item_enchantment"
@@ -1559,7 +1561,7 @@ void HotfixDatabaseConnection::DoPrepareStatements()
 
     // SpellReagents.db2
     PrepareStatement(HOTFIX_SEL_SPELL_REAGENTS, "SELECT ID, SpellID, Reagent1, Reagent2, Reagent3, Reagent4, Reagent5, Reagent6, Reagent7, Reagent8, "
-        "ReagentCount1, ReagentCount2, ReagentCount3, ReagentCount4, ReagentCount5, ReagentCount6, ReagentCount7, ReagentCount8 FROM spell_reagents"
+        "ReagentCount1, ReagentCount2, ReagentCount3, ReagentCount4, ReagentCount5, ReagentCount6, ReagentCount7, ReagentCount8, RequiredQuality1, RequiredQuality2, RequiredQuality3, RequiredQuality4, RequiredQuality5, RequiredQuality6, RequiredQuality7, RequiredQuality8 FROM spell_reagents"
         " WHERE (`VerifiedBuild` > 0) = ?", CONNECTION_SYNCH);
     PREPARE_MAX_ID_STMT(HOTFIX_SEL_SPELL_REAGENTS, "SELECT MAX(ID) + 1 FROM spell_reagents", CONNECTION_SYNCH);
 
