@@ -325,7 +325,7 @@ std::vector<uint8> RealmList::GetRealmList(uint32 build, std::string const& subR
 
             uint32 flag = realm.second.Flags;
             // 45335 - DRAGOONFLIGHT BETA
-            if (build < Retail927_Initial || (realm.second.Build == Beta1000 && build != Beta1000))
+            if (build < Retail927_Initial || (realm.second.Build == Beta1000 && build != Beta1000) || (build == Beta1000 && realm.second.Build != Beta1000))
                 flag |= REALM_FLAG_VERSION_MISMATCH;
             //if (realm.second.Build != build)
             //    flag |= REALM_FLAG_VERSION_MISMATCH;
