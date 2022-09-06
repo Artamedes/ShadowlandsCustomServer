@@ -287,7 +287,7 @@ namespace WorldPackets
             int32 SuggestedPartyMembers     = 0;
             QuestRewards Rewards;
             std::vector<QuestDescEmote> Emotes;
-            int32 QuestFlags[2]             = { }; // Flags and FlagsEx
+            int32 QuestFlags[3]             = { }; // Flags and FlagsEx
         };
 
         class QuestGiverOfferRewardMessage final : public ServerPacket
@@ -383,7 +383,7 @@ namespace WorldPackets
             ObjectGuid InformUnit;
             int32 QuestID           = 0;
             int32 QuestPackageID    = 0;
-            uint32 QuestFlags[2]    = { };
+            uint32 QuestFlags[3]    = { };
             int32 SuggestedPartyMembers = 0;
             QuestRewards Rewards;
             std::vector<QuestObjectiveSimple> Objectives;
@@ -440,7 +440,7 @@ namespace WorldPackets
             std::vector<QuestObjectiveCollect> Collect;
             std::vector<QuestCurrency> Currency;
             int32 StatusFlags           = 0;
-            uint32 QuestFlags[2]        = { };
+            uint32 QuestFlags[3]        = { };
             std::string QuestTitle;
             std::string CompletionText;
         };

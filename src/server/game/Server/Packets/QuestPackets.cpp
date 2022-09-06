@@ -160,6 +160,10 @@ WorldPacket const* QueryQuestInfoResponse::Write()
         _worldPacket << int32(Info.ManagedWorldStateID);
         _worldPacket << int32(Info.QuestSessionBonus);
 
+        // 2 new unk same structs
+        _worldPacket << int32(0); // unk counter
+        _worldPacket << int32(0);// unk counter
+
         for (QuestCompleteDisplaySpell const& rewardDisplaySpell : Info.RewardDisplaySpell)
             _worldPacket << rewardDisplaySpell;
 
@@ -315,6 +319,7 @@ ByteBuffer& operator<<(ByteBuffer& data, QuestGiverOfferReward const& offer)
     data << int32(offer.QuestID);
     data << int32(offer.QuestFlags[0]); // Flags
     data << int32(offer.QuestFlags[1]); // FlagsEx
+    data << int32(offer.QuestFlags[2]); // FlagsEx
     data << int32(offer.SuggestedPartyMembers);
     data << int32(offer.Emotes.size());
     for (QuestDescEmote const& emote : offer.Emotes)
@@ -340,6 +345,9 @@ WorldPacket const* QuestGiverOfferRewardMessage::Write()
     _worldPacket << int32(PortraitGiverMount);
     _worldPacket << int32(PortraitGiverModelSceneID);
     _worldPacket << int32(PortraitTurnIn);
+    // unk struct
+    _worldPacket << int32(0); // counter
+    _worldPacket << int32(0);
 
     _worldPacket.WriteBits(QuestTitle.size(), 9);
     _worldPacket.WriteBits(RewardText.size(), 12);
@@ -407,12 +415,15 @@ WorldPacket const* QuestGiverQuestDetails::Write()
     _worldPacket << int32(PortraitTurnIn);
     _worldPacket << uint32(QuestFlags[0]); // Flags
     _worldPacket << uint32(QuestFlags[1]); // FlagsEx
+    _worldPacket << uint32(QuestFlags[3]); // FlagsEx
     _worldPacket << int32(SuggestedPartyMembers);
     _worldPacket << uint32(LearnSpells.size());
     _worldPacket << uint32(DescEmotes.size());
     _worldPacket << uint32(Objectives.size());
     _worldPacket << int32(QuestStartItemID);
     _worldPacket << int32(QuestSessionBonus);
+    _worldPacket << uint32(0);
+    _worldPacket << uint32(0);
 
     for (int32 spell : LearnSpells)
         _worldPacket << int32(spell);
@@ -465,6 +476,7 @@ WorldPacket const* QuestGiverRequestItems::Write()
     _worldPacket << int32(CompEmoteType);
     _worldPacket << uint32(QuestFlags[0]);
     _worldPacket << uint32(QuestFlags[1]);
+    _worldPacket << uint32(QuestFlags[2]);
     _worldPacket << int32(SuggestPartyMembers);
     _worldPacket << int32(MoneyToGet);
     _worldPacket << int32(Collect.size());
@@ -486,6 +498,10 @@ WorldPacket const* QuestGiverRequestItems::Write()
 
     _worldPacket.WriteBit(AutoLaunched);
     _worldPacket.FlushBits();
+
+    // unk df
+    _worldPacket << uint32(0);
+    _worldPacket << uint32(0);
 
     _worldPacket.WriteBits(QuestTitle.size(), 9);
     _worldPacket.WriteBits(CompletionText.size(), 12);

@@ -88,8 +88,8 @@ WorldPacket const* GossipMessage::Write()
         _worldPacket.WriteBits(options.Text.size(), 12);
         _worldPacket.WriteBits(options.Confirm.size(), 12);
         _worldPacket.WriteBits(AsUnderlyingType(options.Status), 2);
-        _worldPacket.WriteBit(options.SpellID.has_value());
         _worldPacket.WriteBit(0); // unk uint
+        _worldPacket.WriteBit(options.SpellID.has_value());
         _worldPacket.FlushBits();
 
         _worldPacket << options.Treasure;
