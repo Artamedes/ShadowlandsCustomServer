@@ -1212,19 +1212,23 @@ void WorldSession::InitializeSessionCallback(LoginDatabaseQueryHolder const& hol
     SetInQueue(false);
     ResetTimeOutTime(false);
 
-   SendSetTimeZoneInformation();
-   SendFeatureSystemStatusGlueScreen();
-   SendClientCacheVersion(sWorld->getIntConfig(CONFIG_CLIENTCACHE_VERSION));
-   //SendAvailableHotfixes();
-   //
-   //// send battlepay here
-   //WorldPacket data(SMSG_BATTLE_PAY_GET_DISTRIBUTION_LIST_RESPONSE);
-   //data << uint32(0);
-   //data.WriteBits(0, 11);
-   //SendPacket(&data);
-   //
-   SendAccountDataTimes(ObjectGuid::Empty, GLOBAL_CACHE_MASK);
-   SendTutorialsData();
+    SendSetTimeZoneInformation();
+    SendFeatureSystemStatusGlueScreen();
+    SendClientCacheVersion(sWorld->getIntConfig(CONFIG_CLIENTCACHE_VERSION));
+    SendAvailableHotfixes();
+
+    // send battlepay here
+    WorldPacket data(SMSG_BATTLE_PAY_GET_DISTRIBUTION_LIST_RESPONSE);
+    data << uint32(0);
+    data.WriteBits(0, 11);
+    SendPacket(&data);
+
+    SendAccountDataTimes(ObjectGuid::Empty, GLOBAL_CACHE_MASK);
+    SendTutorialsData();
+
+    data.Initialize(SMSG_DISPLAY_PROMOTION, 4);
+    data << uint32(0);
+    SendPacket(&data);
 
     if (PreparedQueryResult characterCountsResult = holder.GetPreparedResult(AccountInfoQueryHolder::GLOBAL_REALM_CHARACTER_COUNTS))
     {

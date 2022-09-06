@@ -122,12 +122,12 @@ namespace WorldPackets
             int32 CfgRealmRecID                          = 0;
             uint32 TwitterPostThrottleLimit              = 0; ///< Number of twitter posts the client can send before they start being throttled
             uint32 TwitterPostThrottleCooldown           = 0; ///< Time in seconds the client has to wait before posting again after hitting post limit
-            uint32 TokenPollTimeSeconds                  = 0;
+            uint32 TokenPollTimeSeconds                  = 300;
             int64 TokenBalanceAmount                     = 0;
             uint32 BpayStoreProductDeliveryDelay         = 180;
             uint32 ClubsPresenceUpdateTimer              = 0;
             uint32 HiddenUIClubsPresenceUpdateTimer      = 0; ///< Timer for updating club presence when communities ui frame is hidden
-            uint32 KioskSessionMinutes                   = 0;
+            uint32 KioskSessionMinutes                   = 30;
             int32 ActiveSeason                           = 0; ///< Currently active Classic season
             int16 MaxPlayerNameQueriesPerPacket          = 50;
             int16 PlayerNameQueryTelemetryInterval       = 600;
@@ -192,15 +192,15 @@ namespace WorldPackets
             bool Unknown901CheckoutRelated           = false; // NYI
             Optional<EuropaTicketConfig> EuropaTicketSystemStatus;
             std::vector<int32> LiveRegionCharacterCopySourceRegions;
-            uint32 TokenPollTimeSeconds              = 0;     // NYI
+            uint32 TokenPollTimeSeconds              = 300;     // NYI
             int64 TokenBalanceAmount                 = 0;     // NYI
             int32 MaxCharactersPerRealm              = 50;
             uint32 BpayStoreProductDeliveryDelay     = 180;     // NYI
-            int32 ActiveCharacterUpgradeBoostType    = 0;     // NYI
+            int32 ActiveCharacterUpgradeBoostType    = 6;     // NYI
             int32 ActiveClassTrialBoostType          = 6;     // NYI
             int32 MinimumExpansionLevel              = 7;
             int32 MaximumExpansionLevel              = 9;
-            uint32 KioskSessionMinutes               = 0;
+            uint32 KioskSessionMinutes               = 30;
             int32 ActiveSeason                       = 0;     // Currently active Classic season
             std::vector<GameRuleValuePair> GameRuleValues;
             int16 MaxPlayerNameQueriesPerPacket = 32;

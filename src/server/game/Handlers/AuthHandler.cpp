@@ -112,9 +112,9 @@ void WorldSession::SendFeatureSystemStatusGlueScreen()
     features.EuropaTicketSystemStatus->ThrottleState.TryCount = 0;
     features.EuropaTicketSystemStatus->ThrottleState.LastResetTimeBeforeNow = 171418;
     features.EuropaTicketSystemStatus->TicketsEnabled     = false;
-    features.EuropaTicketSystemStatus->BugsEnabled        = false;
+    features.EuropaTicketSystemStatus->BugsEnabled        = true;
     features.EuropaTicketSystemStatus->ComplaintsEnabled  = false;
-    features.EuropaTicketSystemStatus->SuggestionsEnabled = false;
+    features.EuropaTicketSystemStatus->SuggestionsEnabled = true;
 
     SendPacket(features.Write());
 }

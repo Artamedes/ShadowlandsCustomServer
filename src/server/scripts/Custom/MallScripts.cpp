@@ -643,7 +643,7 @@ struct npc_morpher_admin : public ScriptedAI
             AddGossipItemFor(player, GossipOptionIcon::None, "nameLike: " + nameLike, 0, 10, "", 0, true);
             AddGossipItemFor(player, GossipOptionIcon::None, "DESPAWN: ", 0, 9);
             AddGossipItemFor(player, GossipOptionIcon::None, "go ", 0, 6);
-            SendGossipMenuFor(player, 1, me);
+            SendGossipMenuFor(player, 5555, me);
             return true;
         }
 

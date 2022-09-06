@@ -903,9 +903,11 @@ enum AccountDataType
     GLOBAL_FLAGGED_CACHE                = 10,
     PER_CHARACTER_FLAGGED_CACHE         = 11,
     PER_CHARACTER_CLICK_BINDINGS_CACHE  = 12,
+    ACCOUNT_DATA_TYPE_UNK_DF_1          = 13,
+    ACCOUNT_DATA_TYPE_UNK_DF_2          = 14,
 };
 
-#define NUM_ACCOUNT_DATA_TYPES        13
+#define NUM_ACCOUNT_DATA_TYPES        15
 
 #define ALL_ACCOUNT_DATA_CACHE_MASK 0x1FFF
 #define GLOBAL_CACHE_MASK           0x515

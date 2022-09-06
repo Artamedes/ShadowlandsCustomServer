@@ -178,28 +178,27 @@ WorldPacket const* FeatureSystemStatus::Write()
 
 WorldPacket const* FeatureSystemStatusGlueScreen::Write()
 {
-    _worldPacket.WriteBit(BpayStoreEnabled);
-    _worldPacket.WriteBit(BpayStoreAvailable);
-    _worldPacket.WriteBit(BpayStoreDisabledByParentalControls);
-    _worldPacket.WriteBit(CharUndeleteEnabled);
-    _worldPacket.WriteBit(CommerceSystemEnabled);
-    _worldPacket.WriteBit(Unk14);
-    _worldPacket.WriteBit(WillKickFromWorld);
-    _worldPacket.WriteBit(IsExpansionPreorderInStore);
-    _worldPacket.WriteBit(KioskModeEnabled);
-    _worldPacket.WriteBit(CompetitiveModeEnabled);
-    _worldPacket.WriteBit(TrialBoostEnabled);
-    _worldPacket.WriteBit(TokenBalanceEnabled);
-    _worldPacket.WriteBit(LiveRegionCharacterListEnabled);
-    _worldPacket.WriteBit(LiveRegionCharacterCopyEnabled);
-    _worldPacket.WriteBit(LiveRegionAccountCopyEnabled);
-    _worldPacket.WriteBit(LiveRegionKeyBindingsCopyEnabled);
-    _worldPacket.WriteBit(Unknown901CheckoutRelated);
+    _worldPacket.WriteBit(false);
+    _worldPacket.WriteBit(true);
+    _worldPacket.WriteBit(false);
+    _worldPacket.WriteBit(true);
+    _worldPacket.WriteBit(true);
+    _worldPacket.WriteBit(true);
+    _worldPacket.WriteBit(false);
+    _worldPacket.WriteBit(false);
+    _worldPacket.WriteBit(false);
+    _worldPacket.WriteBit(false);
+    _worldPacket.WriteBit(true);
+    _worldPacket.WriteBit(true);
+    _worldPacket.WriteBit(false);
+    _worldPacket.WriteBit(true);
+    _worldPacket.WriteBit(true);
+    _worldPacket.WriteBit(true);
+    _worldPacket.WriteBit(true);
     _worldPacket.WriteBit(EuropaTicketSystemStatus.has_value());
     _worldPacket.WriteBit(LaunchETA.has_value());
     _worldPacket.WriteBit(0); ///< Unk DF
     _worldPacket.WriteBit(1); ///< Unk DF
-    _worldPacket.WriteBit(0); ///< Unk DF
     _worldPacket.FlushBits();
 
     if (EuropaTicketSystemStatus)
