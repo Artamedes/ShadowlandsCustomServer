@@ -257,6 +257,7 @@ namespace WorldPackets
         {
             int32 ItemID = 0;
             int32 Slot = 0;
+            int32 UnkDF = 0;
         };
 
         struct SpellExtraCurrencyCost

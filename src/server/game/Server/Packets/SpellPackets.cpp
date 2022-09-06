@@ -177,7 +177,7 @@ ByteBuffer& operator>>(ByteBuffer& buffer, WorldPackets::Spells::SpellTargetData
 {
     buffer.ResetBitPos();
 
-    targetData.Flags = buffer.ReadBits(26);
+    targetData.Flags = buffer.ReadBits(28);
     bool hasSrcLocation = buffer.ReadBit();
     bool hasDstLocation = buffer.ReadBit();
     bool hasOrientation = buffer.ReadBit();
@@ -215,6 +215,7 @@ ByteBuffer& operator>>(ByteBuffer& data, WorldPackets::Spells::SpellOptionalReag
 {
     data >> optionalReagent.ItemID;
     data >> optionalReagent.Slot;
+    data >> optionalReagent.UnkDF;
     return data;
 }
 
@@ -303,7 +304,7 @@ ByteBuffer& operator<<(ByteBuffer& data, WorldPackets::Spells::TargetLocation co
 
 ByteBuffer& operator<<(ByteBuffer& data, WorldPackets::Spells::SpellTargetData const& spellTargetData)
 {
-    data.WriteBits(spellTargetData.Flags, 26);
+    data.WriteBits(spellTargetData.Flags, 28);
     data.WriteBit(spellTargetData.SrcLocation.has_value());
     data.WriteBit(spellTargetData.DstLocation.has_value());
     data.WriteBit(spellTargetData.Orientation.has_value());
