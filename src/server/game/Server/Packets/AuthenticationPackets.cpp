@@ -142,7 +142,7 @@ WorldPacket const* WorldPackets::Auth::AuthResponse::Write()
         }
 
         _worldPacket.WriteBit(SuccessInfo->IsExpansionTrial);
-        _worldPacket.WriteBit(true);
+        _worldPacket.WriteBit(SuccessInfo->ForceCharacterTemplate);
         _worldPacket.WriteBit(SuccessInfo->NumPlayersHorde.has_value());
         _worldPacket.WriteBit(SuccessInfo->NumPlayersAlliance.has_value());
         _worldPacket.WriteBit(SuccessInfo->ExpansionTrialExpiration.has_value());

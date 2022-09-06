@@ -333,15 +333,13 @@ void Object::BuildMovementUpdate(ByteBuffer* data, CreateObjectBits flags, Playe
         //for (std::size_t i = 0; i < RemoveForcesIDs.size(); ++i)
         //    *data << ObjectGuid(RemoveForcesIDs);
 
-        bool hasUnkDF = false;
-
         data->WriteBit(!unit->m_movementInfo.transport.guid.IsEmpty()); // HasTransport
         data->WriteBit(HasFall);                                        // HasFall
         data->WriteBit(HasSpline);                                      // HasSpline - marks that the unit uses spline movement
         data->WriteBit(false);                                          // HeightChangeFailed
         data->WriteBit(false);                                          // RemoteTimeValid
         data->WriteBit(HasInertia);                                     // HasInertia
-        data->WriteBit(hasUnkDF);                                       // hasUnkDF
+        data->WriteBit(unit->m_movementInfo.unkDfMovement.has_value()); // hasUnkDF
 
         if (!unit->m_movementInfo.transport.guid.IsEmpty())
             *data << unit->m_movementInfo.transport;
@@ -353,16 +351,16 @@ void Object::BuildMovementUpdate(ByteBuffer* data, CreateObjectBits flags, Playe
             *data << uint32(unit->m_movementInfo.inertia->lifetime);
         }
 
-        if (hasUnkDF)
+        if (unit->m_movementInfo.unkDfMovement.has_value())
         {
-            *data << float(0.0f);
-            *data << float(0.0f);
-            *data << float(0.0f);
-            *data << float(0.0f);
-            *data << float(0.0f);
-            *data << float(0.0f);
-            *data << float(0.0f);
-            *data << float(0.0f);
+            *data << float(unit->m_movementInfo.unkDfMovement->unk1);
+            *data << float(unit->m_movementInfo.unkDfMovement->unk2);
+            *data << float(unit->m_movementInfo.unkDfMovement->unk3);
+            *data << float(unit->m_movementInfo.unkDfMovement->unk4);
+            *data << float(unit->m_movementInfo.unkDfMovement->unk5);
+            *data << float(unit->m_movementInfo.unkDfMovement->unk6);
+            *data << float(unit->m_movementInfo.unkDfMovement->unk7);
+            *data << float(unit->m_movementInfo.unkDfMovement->unk8);
         }
 
         if (HasFall)
@@ -398,9 +396,24 @@ void Object::BuildMovementUpdate(ByteBuffer* data, CreateObjectBits flags, Playe
             *data << uint32(0);
             *data << float(1.0f);                                       // MovementForcesModMagnitude
         }
-        // unk df
-        for (int y = 0; y < 17; ++y)
-            *data << float(0.0f);
+
+        *data << float(unit->m_movementInfo.unkSpeedDF1);
+        *data << float(unit->m_movementInfo.unkSpeedDF2);
+        *data << float(unit->m_movementInfo.unkSpeedDF3);
+        *data << float(unit->m_movementInfo.unkSpeedDF4);
+        *data << float(unit->m_movementInfo.unkSpeedDF5);
+        *data << float(unit->m_movementInfo.unkSpeedDF6);
+        *data << float(unit->m_movementInfo.unkSpeedDF7);
+        *data << float(unit->m_movementInfo.unkSpeedDF8);
+        *data << float(unit->m_movementInfo.unkSpeedDF9);
+        *data << float(unit->m_movementInfo.unkSpeedDF10);
+        *data << float(unit->m_movementInfo.unkSpeedDF11);
+        *data << float(unit->m_movementInfo.unkSpeedDF12);
+        *data << float(unit->m_movementInfo.unkSpeedDF13);
+        *data << float(unit->m_movementInfo.unkSpeedDF14);
+        *data << float(unit->m_movementInfo.unkSpeedDF15);
+        *data << float(unit->m_movementInfo.unkSpeedDF16);
+        *data << float(unit->m_movementInfo.unkSpeedDF17);
 
         data->WriteBit(HasSpline);
         data->FlushBits();

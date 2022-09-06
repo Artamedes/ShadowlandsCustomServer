@@ -454,22 +454,22 @@ void WorldSession::HandleCharEnum(CharacterDatabaseQueryHolder const& holder)
     
             if (!charEnum.IsDeletedCharacters)
             {
-                if (!ValidateAppearance(Races(charInfo.RaceID), Classes(charInfo.ClassID), Gender(charInfo.SexID), MakeChrCustomizationChoiceRange(charInfo.Customizations)))
-                {
-                    TC_LOG_ERROR("entities.player.loading", "Player %s has wrong Appearance values (Hair/Skin/Color), forcing recustomize", charInfo.Guid.ToString().c_str());
-    
-                    charInfo.Customizations.clear();
-    
-                    if (!(charInfo.Flags2 == CHAR_CUSTOMIZE_FLAG_CUSTOMIZE))
-                    {
-                        CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_ADD_AT_LOGIN_FLAG);
-                        stmt->setUInt16(0, uint16(AT_LOGIN_CUSTOMIZE));
-                        stmt->setUInt64(1, charInfo.Guid.GetCounter());
-                        CharacterDatabase.Execute(stmt);
-                        charInfo.Flags2 = CHAR_CUSTOMIZE_FLAG_CUSTOMIZE;
-                    }
-                }
-    
+               // if (!ValidateAppearance(Races(charInfo.RaceID), Classes(charInfo.ClassID), Gender(charInfo.SexID), MakeChrCustomizationChoiceRange(charInfo.Customizations)))
+               // {
+               //     TC_LOG_ERROR("entities.player.loading", "Player %s has wrong Appearance values (Hair/Skin/Color), forcing recustomize", charInfo.Guid.ToString().c_str());
+               //
+               //     charInfo.Customizations.clear();
+               //
+               //     if (!(charInfo.Flags2 == CHAR_CUSTOMIZE_FLAG_CUSTOMIZE))
+               //     {
+               //         CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_ADD_AT_LOGIN_FLAG);
+               //         stmt->setUInt16(0, uint16(AT_LOGIN_CUSTOMIZE));
+               //         stmt->setUInt64(1, charInfo.Guid.GetCounter());
+               //         CharacterDatabase.Execute(stmt);
+               //         charInfo.Flags2 = CHAR_CUSTOMIZE_FLAG_CUSTOMIZE;
+               //     }
+               // }
+               //
                 // Do not allow locked characters to login
                 if (!(charInfo.Flags & (CHARACTER_FLAG_LOCKED_FOR_TRANSFER | CHARACTER_FLAG_LOCKED_BY_BILLING)))
                     _legitCharacters.insert(charInfo.Guid);
