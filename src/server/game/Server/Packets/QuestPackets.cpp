@@ -161,6 +161,7 @@ WorldPacket const* QueryQuestInfoResponse::Write()
         _worldPacket << int32(Info.QuestSessionBonus);
 
         // 2 new unk same structs
+        _worldPacket << int32(0); //unk
         _worldPacket << int32(0); // unk counter
         _worldPacket << int32(0);// unk counter
 
