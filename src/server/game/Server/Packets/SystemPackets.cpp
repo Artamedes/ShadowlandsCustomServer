@@ -83,7 +83,7 @@ WorldPacket const* FeatureSystemStatus::Write()
     _worldPacket << int16(MaxPlayerNameQueriesPerPacket);
     _worldPacket << int16(PlayerNameQueryTelemetryInterval);
 
-    _worldPacket << int32(0); ///< Unk dword174 DF
+    _worldPacket << int32(10); //< UNK DF
 
     for (GameRuleValuePair const& gameRuleValue : GameRuleValues)
         _worldPacket << gameRuleValue;
@@ -104,7 +104,7 @@ WorldPacket const* FeatureSystemStatus::Write()
     _worldPacket.WriteBit(CommerceSystemEnabled);
     _worldPacket.WriteBit(TutorialsEnabled);
     _worldPacket.WriteBit(TwitterEnabled);
-    _worldPacket.WriteBit(Unk67);
+    _worldPacket.WriteBit(true);
     _worldPacket.WriteBit(WillKickFromWorld);
     _worldPacket.WriteBit(KioskModeEnabled);
     _worldPacket.WriteBit(CompetitiveModeEnabled);

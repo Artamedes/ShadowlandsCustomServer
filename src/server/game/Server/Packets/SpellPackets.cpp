@@ -477,10 +477,9 @@ WorldPacket const* WorldPackets::Spells::LearnedSpells::Write()
         _worldPacket.WriteBit(0);
         _worldPacket.WriteBit(1);
         _worldPacket.WriteBit(0);
-        _worldPacket.WriteBit(1);
+        _worldPacket.WriteBit(0);
         _worldPacket.WriteBit(0);
         _worldPacket << int32(-1);
-        _worldPacket << int32(85259);
     }
 
     return &_worldPacket;

@@ -2044,7 +2044,11 @@ public:
 
     static bool HandleTest6Command(ChatHandler* handler)
     {
+        handler->GetPlayer()->SendPetTameFailure(PetTameFailureReason::PET_TAME_FAILURE_ACTIVE_SUMMON);
+        handler->PSendSysMessage("ok done");
 
+        if (true)
+            return true;
         auto item = handler->GetPlayer()->GetItemByEntry(187219);
         WorldPackets::Misc::WeeklyRewardsResult packet;
         packet.TotalVaults = 8;
@@ -2323,80 +2327,25 @@ public:
         handler->GetSession()->SendPacket(displayPlayerChoice.Write());
         return true;
     }
-    static bool HandleTest5Command(ChatHandler* handler, Optional<uint32> flag)
-    {
-        auto player = handler->GetPlayer();
-        WorldPackets::Quest::DisplayPlayerChoice displayPlayerChoice;
+    static bool HandleTest5Command(ChatHandler* handler, uint32 unk1, uint32 unk2, uint32 unk3)
+    {   //
+        //WorldPackets::Garrison::GarrisonResearchTalentResult result;
+        //result.GarrTypeID = CovenantMgr::TheShadowlands;
+        //result.UnkBit = true;
+        //result.UnkInt1 = 0;
+        //result.talent.GarrTalentID = 2078;
+        //result.talent.Rank = 1;
+        //result.talent.ResearchStartTime = 1662496826;
+        //result.talent.Flags = 1;
+        //
+        //handler->GetSession()->SendPacket(result.Write());
 
-        displayPlayerChoice.SenderGUID = player->GetGUID();
-        displayPlayerChoice.ChoiceID = 682925853;
-        displayPlayerChoice.Question = "Rewards Chest";
-        displayPlayerChoice.CloseChoiceFrame = false;
-        displayPlayerChoice.HideWarboardHeader = false;
-        displayPlayerChoice.KeepOpenAfterChoice = false;
-
-        displayPlayerChoice.UiTextureKitID = 5240;
-        displayPlayerChoice.SoundKitID = 40319; // 80244 brwaler upgrade
-
-        for (int i = 0; i < 2; ++i)
-        {
-            WorldPackets::Quest::PlayerChoiceResponse playerChoiceResponse;
-
-            playerChoiceResponse.ResponseID = 4412414;
-            playerChoiceResponse.ResponseIdentifier = 335;
-            playerChoiceResponse.Flags = 2;
-            playerChoiceResponse.ChoiceArtFileID = flag.value_or(986496);
-            playerChoiceResponse.UiTextureKitID = 0;
-            playerChoiceResponse.Reward.emplace();
-            //playerChoiceResponse.RewardQuestID = 591918;
-            if (i == 0)
-            {
-                playerChoiceResponse.Header = "Today";
-                //playerChoiceResponse.SubHeader = "Requirements";
-                playerChoiceResponse.ButtonTooltip = "Clicking this will consume the requirements!";
-                playerChoiceResponse.Confirmation = "Confirmation";
-                playerChoiceResponse.Flags = 5;
-                playerChoiceResponse.Answer = "Requirements";
-                playerChoiceResponse.ButtonTooltip = "|cffFF0000Not enough x...";
-                playerChoiceResponse.SubHeader = "";
-            }
-            else
-            {
-                playerChoiceResponse.Header = "Tommorow";
-                //playerChoiceResponse.SubHeader = "Rewards";
-                playerChoiceResponse.Flags = 5;
-                playerChoiceResponse.SubHeader = "";
-                playerChoiceResponse.Answer = "Upgrade";
-                playerChoiceResponse.ButtonTooltip = "Login tommorow to claim!";
-                playerChoiceResponse.Confirmation = "Confirmation";
-            }
-
-            playerChoiceResponse.Reward.emplace();
-            playerChoiceResponse.Reward->Money = 400000;
-            for (int i = 0; i < 2; ++i)
-            {
-                if (auto item = player->GetItemByEntry(i == 0 ? 183021 : 175921))
-                {
-
-                    {
-                        playerChoiceResponse.Reward->Items.emplace_back();
-                        WorldPackets::Quest::PlayerChoiceResponseRewardEntry& rewardEntry = playerChoiceResponse.Reward->Items.back();
-                        rewardEntry.Item.ItemID = item->GetEntry();
-                        rewardEntry.Item.Initialize(item);
-                    }
-                }
-            }
-
-            playerChoiceResponse.Reward->Currencies.emplace_back();
-            WorldPackets::Quest::PlayerChoiceResponseRewardEntry& rewardEntry = playerChoiceResponse.Reward->Currencies.back();
-            rewardEntry.Item.ItemID = 1813;
-            rewardEntry.Quantity = 500;
-
-            displayPlayerChoice.Responses.push_back(playerChoiceResponse);
-        }
-
-
-        handler->GetSession()->SendPacket(displayPlayerChoice.Write());
+        WorldPacket data(SMSG_UNK_DF);
+        data << uint32(unk1);
+        data << uint32(unk2);
+        data.WriteBits(unk3, 4);
+        data.FlushBits();
+        handler->GetSession()->SendPacket(&data);
         return true;
     }
 

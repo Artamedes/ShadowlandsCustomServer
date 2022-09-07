@@ -1012,6 +1012,17 @@ void CovenantMgr::BuildGarrisonPacket(WorldPackets::Garrison::GarrisonInfo& resu
         itr.second->BuildGarrisonTalent(talent); // maybe make const
         result.Talents.push_back(talent);
     }
+
+    // DF
+    for (int i = 0; i < 6; ++i)
+    {
+        WorldPackets::Garrison::GarrisonTalent talent;
+        talent.Flags = 1;
+        talent.GarrTalentID = 2078 + i;
+        talent.Rank = 1;
+        talent.ResearchStartTime = 1662496826;
+        result.Talents.push_back(talent);
+    }
 }
 
 void CovenantMgr::LearnTalent(WorldPackets::Garrison::GarrisonLearnTalent& researchResult)

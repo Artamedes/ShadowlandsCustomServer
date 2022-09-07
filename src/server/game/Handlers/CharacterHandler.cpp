@@ -1475,8 +1475,8 @@ void WorldSession::SendFeatureSystemStatus()
     features.ScrollOfResurrectionMaxRequestsPerDay = 1;
     features.TwitterPostThrottleLimit = 60;
     features.TwitterPostThrottleCooldown = 20;
-    features.CfgRealmID = 2;
-    features.CfgRealmRecID = 0;
+    features.CfgRealmID = 6;
+    features.CfgRealmRecID = 976;
     features.TokenPollTimeSeconds = 300;
     features.VoiceEnabled = false;
     features.BrowserEnabled = false; // Has to be false, otherwise client will crash if "Customer Support" is opened
@@ -1485,7 +1485,7 @@ void WorldSession::SendFeatureSystemStatus()
     features.EuropaTicketSystemStatus->ThrottleState.MaxTries = 10;
     features.EuropaTicketSystemStatus->ThrottleState.PerMilliseconds = 60000;
     features.EuropaTicketSystemStatus->ThrottleState.TryCount = 1;
-    features.EuropaTicketSystemStatus->ThrottleState.LastResetTimeBeforeNow = 111111;
+    features.EuropaTicketSystemStatus->ThrottleState.LastResetTimeBeforeNow = 322865;
     features.TutorialsEnabled = true;
     features.NPETutorialsEnabled = true;
     /// END OF DUMMY VALUES

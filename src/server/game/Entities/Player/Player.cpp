@@ -2791,7 +2791,7 @@ void Player::InitTalentForLevel()
                         RemoveTalent(talent);
     }
 
-    SetUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::MaxTalentTiers), talentTiers);
+  //  SetUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::MaxTalentTiers), talentTiers);
 
     if (!GetSession()->HasPermission(rbac::RBAC_PERM_SKIP_CHECK_MORE_TALENTS_THAN_ALLOWED))
         for (uint8 spec = 0; spec < MAX_SPECIALIZATIONS; ++spec)
@@ -2814,12 +2814,7 @@ void Player::InitStatsForLevel(bool reapplyMods)
     PlayerLevelInfo info;
     sObjectMgr->GetPlayerLevelInfo(GetRace(), GetClass(), GetLevel(), &info);
 
-    uint8 exp_max_lvl = GetMaxLevelForExpansion(GetSession()->GetExpansion());
-    uint8 conf_max_lvl = sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL);
-    if (exp_max_lvl == DEFAULT_MAX_LEVEL || exp_max_lvl >= conf_max_lvl)
-        SetUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::MaxLevel), conf_max_lvl);
-    else
-        SetUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::MaxLevel), exp_max_lvl);
+    SetUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::MaxLevel), 70);
     SetUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::NextLevelXP), sObjectMgr->GetXPForLevel(GetLevel()));
     if (m_activePlayerData->XP >= m_activePlayerData->NextLevelXP)
         SetUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::XP), m_activePlayerData->NextLevelXP - 1);
@@ -3406,8 +3401,8 @@ bool Player::AddSpell(uint32 spellId, bool active, bool learning, bool dependent
     // update free primary prof.points (if any, can be none in case GM .learn prof. learning)
     if (uint32 freeProfs = GetFreePrimaryProfessionPoints())
     {
-        if (spellInfo->IsPrimaryProfessionFirstRank())
-            SetFreePrimaryProfessions(freeProfs - 1);
+        //if (spellInfo->IsPrimaryProfessionFirstRank())
+        //    SetFreePrimaryProfessions(freeProfs - 1);
     }
 
     SkillLineAbilityMapBounds skill_bounds = sSpellMgr->GetSkillLineAbilityMapBounds(spellId);
@@ -3635,9 +3630,9 @@ void Player::RemoveSpell(uint32 spell_id, bool disabled /*= false*/, bool learn_
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spell_id, DIFFICULTY_NONE);
     if (spellInfo && spellInfo->IsPrimaryProfessionFirstRank())
     {
-        uint32 freeProfs = GetFreePrimaryProfessionPoints()+1;
-        if (freeProfs <= sWorld->getIntConfig(CONFIG_MAX_PRIMARY_TRADE_SKILL))
-            SetFreePrimaryProfessions(freeProfs);
+        //uint32 freeProfs = GetFreePrimaryProfessionPoints()+1;
+        //if (freeProfs <= sWorld->getIntConfig(CONFIG_MAX_PRIMARY_TRADE_SKILL))
+        //    SetFreePrimaryProfessions(freeProfs);
     }
 
     // remove dependent skill
@@ -9888,11 +9883,12 @@ void Player::SendRespecWipeConfirm(ObjectGuid const& guid, uint32 cost) const
 
 uint8 Player::FindEquipSlot(Item const* item, uint32 slot, bool swap) const
 {
-    uint8 slots[4];
+    uint8 slots[5];
     slots[0] = NULL_SLOT;
     slots[1] = NULL_SLOT;
     slots[2] = NULL_SLOT;
     slots[3] = NULL_SLOT;
+    slots[4] = NULL_SLOT;
     switch (item->GetTemplate()->GetInventoryType())
     {
         case INVTYPE_HEAD:
@@ -9980,6 +9976,7 @@ uint8 Player::FindEquipSlot(Item const* item, uint32 slot, bool swap) const
             slots[1] = INVENTORY_SLOT_BAG_START + 1;
             slots[2] = INVENTORY_SLOT_BAG_START + 2;
             slots[3] = INVENTORY_SLOT_BAG_START + 3;
+            slots[4] = INVENTORY_SLOT_BAG_START + 4;
             break;
         default:
             return NULL_SLOT;
@@ -9988,14 +9985,14 @@ uint8 Player::FindEquipSlot(Item const* item, uint32 slot, bool swap) const
     if (slot != NULL_SLOT)
     {
         if (swap || !GetItemByPos(INVENTORY_SLOT_BAG_0, slot))
-            for (uint8 i = 0; i < 4; ++i)
+            for (uint8 i = 0; i < 5; ++i)
                 if (slots[i] == slot)
                     return slot;
     }
     else
     {
         // search free slot at first
-        for (uint8 i = 0; i < 4; ++i)
+        for (uint8 i = 0; i < 5; ++i)
             if (slots[i] != NULL_SLOT && !GetItemByPos(INVENTORY_SLOT_BAG_0, slots[i]))
                 // in case 2hand equipped weapon (without titan grip) offhand slot empty but not free
                 if (slots[i] != EQUIPMENT_SLOT_OFFHAND || !IsTwoHandUsed())
@@ -10006,7 +10003,7 @@ uint8 Player::FindEquipSlot(Item const* item, uint32 slot, bool swap) const
         {
             uint32 minItemLevel = std::numeric_limits<uint32>::max();
             uint8 minItemLevelIndex = 0;
-            for (uint8 i = 0; i < 4; ++i)
+            for (uint8 i = 0; i < 5; ++i)
             {
                 if (slots[i] != NULL_SLOT)
                 {
@@ -18725,11 +18722,11 @@ bool Player::LoadFromDB(ObjectGuid guid, CharacterDatabaseQueryHolder const& hol
 
     // check PLAYER_CHOSEN_TITLE compatibility with PLAYER__FIELD_KNOWN_TITLES
     // note: PLAYER__FIELD_KNOWN_TITLES updated at quest status loaded
-    uint32 curTitle = fields.chosenTitle;
+    int32 curTitle = fields.chosenTitle;
     if (curTitle && !HasTitle(curTitle))
-        curTitle = 0;
+        curTitle = -1;
 
-    SetChosenTitle(curTitle);
+    SetChosenTitle(curTitle == 0 ? -1 : curTitle);
 
     // has to be called after last Relocate() in Player::LoadFromDB
     SetFallInformation(0, GetPositionZ());
@@ -18886,6 +18883,31 @@ bool Player::LoadFromDB(ObjectGuid guid, CharacterDatabaseQueryHolder const& hol
    // SetUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::UnkDF), 22);
  //   SetUpdateFieldValue(m_values.ModifyValue(&Player::m_unitData).ModifyValue(&UF::UnitData::UnkDFInt), 33);
     SetUpdateFieldValue(m_values.ModifyValue(&Player::m_unitData).ModifyValue(&UF::UnitData::UnkDFByte), 255);
+    SetUpdateFieldValue(m_values.ModifyValue(&Player::m_unitData).ModifyValue(&UF::UnitData::LookAtControllerID), -1);
+    SetUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::ScalingPlayerLevelDelta), -1);
+    SetUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::LocalFlags), 4104);
+    SetMultiActionBars(1);
+    
+    SetUpdateFieldValue(m_values.ModifyValue(&Player::m_playerData)
+        .ModifyValue(&UF::PlayerData::CtrOptions)
+        .ModifyValue(&UF::CTROptions::Field_4), 5);
+    SetPlayerFlagEx(PLAYER_FLAGS_EX_UNLOCKED_AOE_LOOT);
+  //
+  // SetUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData)
+  //     .ModifyValue(&UF::ActivePlayerData::DungeonScore)
+  //     .ModifyValue(&WorldPackets::MythicPlus::DungeonScoreSummary::OverallScoreCurrentSeason), 0.0f);
+
+   // score.Seasons.resize(1);
+   // score.TotalRuns = 0;
+   //
+   // score.Seasons[0].Season = 9;
+   // score.Seasons[0].SeasonMaps.resize(1);
+   //
+   // auto& map1 = score.Seasons[0].SeasonMaps[0];
+   // map1.MapChallengeModeID = 399;
+   // score.Seasons[0].LadderMaps.resize(1);
+   // auto& map2 = score.Seasons[0].LadderMaps[0];
+   // map2.MapChallengeModeID = 399;
 
     //{
     //    UF::CharacterTrait trait1;
@@ -19115,6 +19137,7 @@ bool Player::LoadFromDB(ObjectGuid guid, CharacterDatabaseQueryHolder const& hol
     //AddDynamicUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData)
     //    .ModifyValue(&UF::ActivePlayerData::CharacterTraits)) = trait1;
     //}
+    //SendPetTameFailure(PetTameFailureReason::PET_TAME_FAILURE_ACTIVE_SUMMON);
 
     LoadCustom(holder);
 
@@ -24960,7 +24983,7 @@ void Player::UpdateVisibilityForPlayer()
 
 void Player::InitPrimaryProfessions()
 {
-    SetFreePrimaryProfessions(sWorld->getIntConfig(CONFIG_MAX_PRIMARY_TRADE_SKILL));
+    //SetFreePrimaryProfessions(sWorld->getIntConfig(CONFIG_MAX_PRIMARY_TRADE_SKILL));
 }
 
 bool Player::ModifyMoney(int64 amount, bool sendError /*= true*/)
@@ -25071,6 +25094,23 @@ void Player::SendInitialPacketsBeforeAddToMap()
     // SMSG_SET_PCT_SPELL_MODIFIER
     // SMSG_SET_FLAT_SPELL_MODIFIER
 
+    WorldPackets::Spells::LearnedSpells knownSpells;
+
+    knownSpells.SpellID.reserve(m_spells.size());
+    knownSpells.SuppressMessaging = true;
+    for (PlayerSpellMap::value_type const& spell : m_spells)
+    {
+        if (spell.second.state == PLAYERSPELL_REMOVED)
+            continue;
+
+        if (!spell.second.active || spell.second.disabled)
+            continue;
+
+        knownSpells.SpellID.push_back(spell.first);
+    }
+
+    SendDirectMessage(knownSpells.Write());
+
     /// SMSG_TALENTS_INFO
     SendTalentsInfoData();
     /// SMSG_INITIAL_SPELLS
@@ -25116,16 +25156,6 @@ void Player::SendInitialPacketsBeforeAddToMap()
     m_achievementMgr->SendAllData(this);
     m_questObjectiveCriteriaMgr->SendAllData(this);
 
-    /// SMSG_LOGIN_SETTIMESPEED
-    static float const TimeSpeed = 0.01666667f;
-    WorldPackets::Misc::LoginSetTimeSpeed loginSetTimeSpeed;
-    loginSetTimeSpeed.NewSpeed = TimeSpeed;
-    loginSetTimeSpeed.GameTime = GameTime::GetGameTime();
-    loginSetTimeSpeed.ServerTime = GameTime::GetGameTime();
-    loginSetTimeSpeed.GameTimeHolidayOffset = 0; /// @todo
-    loginSetTimeSpeed.ServerTimeHolidayOffset = 0; /// @todo
-    SendDirectMessage(loginSetTimeSpeed.Write());
-
     /// SMSG_WORLD_SERVER_INFO
     WorldPackets::Misc::WorldServerInfo worldServerInfo;
     worldServerInfo.InstanceGroupSize = 0;
@@ -25135,9 +25165,23 @@ void Player::SendInitialPacketsBeforeAddToMap()
     worldServerInfo.IsTournamentRealm = 0; /// @todo
     // worldServerInfo.RestrictedAccountMaxLevel; /// @todo
     // worldServerInfo.RestrictedAccountMaxMoney; /// @todo
+    worldServerInfo.BlockExitingLoadingScreen = true;
     worldServerInfo.DifficultyID = GetMap()->GetDifficultyID();
     // worldServerInfo.XRealmPvpAlert;  /// @todo
     SendDirectMessage(worldServerInfo.Write());
+
+    SendActionButtons(0);
+
+
+    /// SMSG_LOGIN_SETTIMESPEED
+    static float const TimeSpeed = 0.16666667535901069f;
+    WorldPackets::Misc::LoginSetTimeSpeed loginSetTimeSpeed;
+    loginSetTimeSpeed.NewSpeed = TimeSpeed;
+    loginSetTimeSpeed.GameTime = GameTime::GetGameTime();
+    loginSetTimeSpeed.ServerTime = GameTime::GetGameTime();
+    loginSetTimeSpeed.GameTimeHolidayOffset = 0; /// @todo
+    loginSetTimeSpeed.ServerTimeHolidayOffset = 0; /// @todo
+    SendDirectMessage(loginSetTimeSpeed.Write());
 
     // Spell modifiers
     SendSpellModifiers();
@@ -25163,7 +25207,7 @@ void Player::SendInitialPacketsBeforeAddToMap()
     GetSession()->GetCollectionMgr()->SendFavoriteAppearances();
 
     WorldPackets::Character::InitialSetup initialSetup;
-    initialSetup.ServerExpansionLevel = sWorld->getIntConfig(CONFIG_EXPANSION);
+    initialSetup.ServerExpansionLevel = 9;
     SendDirectMessage(initialSetup.Write());
 
     SetMovedUnit(this);
@@ -25270,6 +25314,30 @@ void Player::SendInitialPacketsAfterAddToMap()
     }
 
     GetSceneMgr().TriggerDelayedScenes();
+
+    /// SMSG_WORLD_SERVER_INFO
+    WorldPackets::Misc::WorldServerInfo worldServerInfo;
+    worldServerInfo.InstanceGroupSize = 0;
+    // crash PIG
+    if (GetMap() && GetMap()->GetMapDifficulty())
+        worldServerInfo.InstanceGroupSize = GetMap()->GetMapDifficulty()->MaxPlayers;
+    worldServerInfo.IsTournamentRealm = 0; /// @todo
+    // worldServerInfo.RestrictedAccountMaxLevel; /// @todo
+    // worldServerInfo.RestrictedAccountMaxMoney; /// @todo
+    worldServerInfo.BlockExitingLoadingScreen = false;
+    if (GetMap())
+        worldServerInfo.DifficultyID = GetMap()->GetDifficultyID();
+    // worldServerInfo.XRealmPvpAlert;  /// @todo
+    SendDirectMessage(worldServerInfo.Write());
+
+    if (auto map = GetMap())
+    {
+        WorldPackets::Movement::NewWorld packet;
+        packet.MapID = GetMapId();
+        packet.Loc.Pos = GetPosition();
+        packet.Reason = NEW_WORLD_SEAMLESS;
+        SendDirectMessage(packet.Write());
+    }
 
     // send eclipse stuff
     if (HasAura(79577))
@@ -28129,6 +28197,10 @@ void Player::SendTalentsInfoData()
         if (!spec)
             continue;
 
+        // 	Initial specs is not sent by blizz rn
+        if (spec->ID > 1000)
+            continue;
+
         PlayerTalentMap* talents = GetTalentMap(i);
         PlayerPvpTalentMap const& pvpTalents = GetPvpTalentMap(i);
 
@@ -28161,13 +28233,13 @@ void Player::SendTalentsInfoData()
         //    groupInfoPkt.TalentIDs.push_back(uint16(itr->first));
         //}
 
-        for (std::size_t slot = 0; slot < MAX_PVP_TALENT_SLOTS; ++slot)
-        {
-            groupInfoPkt.PvPTalents.emplace_back();
-            WorldPackets::Talent::PvPTalent& pvpTalent = groupInfoPkt.PvPTalents.back();
-            pvpTalent.PvPTalentID = pvpTalents[slot];
-            pvpTalent.Slot = slot;
-        }
+       // for (std::size_t slot = 0; slot < MAX_PVP_TALENT_SLOTS; ++slot)
+       // {
+       //     groupInfoPkt.PvPTalents.emplace_back();
+       //     WorldPackets::Talent::PvPTalent& pvpTalent = groupInfoPkt.PvPTalents.back();
+       //     pvpTalent.PvPTalentID = pvpTalents[slot];
+       //     pvpTalent.Slot = slot;
+       // }
 
         if (i == GetActiveTalentGroup())
             packet.Info.ActiveGroup = packet.Info.TalentGroups.size();
@@ -30374,6 +30446,98 @@ void Player::SendPetTameFailure(PetTameFailureReason reason)
     WorldPackets::Pet::PetTameFailure packet;
     packet.Result = static_cast<uint8>(reason);
     GetSession()->SendPacket(packet.Write());
+
+    {
+        auto trait = m_values.ModifyValue(&Player::m_activePlayerData)
+            .ModifyValue(&UF::ActivePlayerData::CharacterTraits, 0);
+
+        SetUpdateFieldValue(trait.ModifyValue(&UF::CharacterTrait::Dword0), 4000);
+        SetUpdateFieldValue(trait.ModifyValue(&UF::CharacterTrait::Dword108), 3);
+        SetUpdateFieldValue(trait.ModifyValue(&UF::CharacterTrait::Dword158), 5000);
+     //   SetUpdateFieldValue(trait.ModifyValue(&UF::CharacterTrait::UnkStr), "");
+
+        //UF::CharacterTraitTalent& mod = AddDynamicUpdateFieldValue(trait.ModifyValue(&UF::CharacterTrait::Talents));
+        //mod.TraitNode = 59477;
+        //mod.TraitNodeEntryID = 77145;
+        //mod.UnkDF = 1;
+        //mod.Rank = 0;
+        //UF::CharacterTraitTalent& mod4 = AddDynamicUpdateFieldValue(trait.ModifyValue(&UF::CharacterTrait::Talents));
+        //mod4.TraitNode = 59475;
+        //mod4.TraitNodeEntryID = 77143;
+        //mod4.UnkDF = 1;
+        //mod4.Rank = 0;
+        //UF::CharacterTraitTalent& mod1 = AddDynamicUpdateFieldValue(trait.ModifyValue(&UF::CharacterTrait::Talents));
+        //mod1.TraitNode = 59479;
+        //mod1.TraitNodeEntryID = 77147;
+        //mod1.UnkDF = 1;
+        //mod1.Rank = 0;
+        //UF::CharacterTraitTalent& mod2 = AddDynamicUpdateFieldValue(trait.ModifyValue(&UF::CharacterTrait::Talents));
+        //mod2.TraitNode = 59478;
+        //mod2.TraitNodeEntryID = 77146;
+        //mod2.UnkDF = 1;
+        //mod2.Rank = 0;
+        //UF::CharacterTraitTalent& mod3 = AddDynamicUpdateFieldValue(trait.ModifyValue(&UF::CharacterTrait::Talents));
+        //mod3.TraitNode = 59476;
+        //mod3.TraitNodeEntryID = 77144;
+        //mod3.UnkDF = 1;
+        //mod3.Rank = 0;
+    }
+
+    {
+        auto trait = m_values.ModifyValue(&Player::m_activePlayerData)
+            .ModifyValue(&UF::ActivePlayerData::CharacterTraits, 1);
+
+        SetUpdateFieldValue(trait.ModifyValue(&UF::CharacterTrait::Dword0), 4000);
+        SetUpdateFieldValue(trait.ModifyValue(&UF::CharacterTrait::Dword108), 1);
+        SetUpdateFieldValue(trait.ModifyValue(&UF::CharacterTrait::Dword14C), 259); // assasin specid
+        SetUpdateFieldValue(trait.ModifyValue(&UF::CharacterTrait::Dword150), 3);
+        SetUpdateFieldValue(trait.ModifyValue(&UF::CharacterTrait::Dword154), 1);
+        SetUpdateFieldValue(trait.ModifyValue(&UF::CharacterTrait::UnkStr), "Assassination");
+
+        //UF::CharacterTraitTalent& mod = AddDynamicUpdateFieldValue(trait.ModifyValue(&UF::CharacterTrait::Talents));
+        //mod.TraitNode = 31513;
+        //mod.TraitNodeEntryID = 41719;
+        //mod.UnkDF = 1;
+        //mod.Rank = 0;
+    }
+
+    {
+        auto trait = m_values.ModifyValue(&Player::m_activePlayerData)
+            .ModifyValue(&UF::ActivePlayerData::CharacterTraits, 2);
+
+        SetUpdateFieldValue(trait.ModifyValue(&UF::CharacterTrait::Dword0), 451999);
+        SetUpdateFieldValue(trait.ModifyValue(&UF::CharacterTrait::Dword108), 1);
+        SetUpdateFieldValue(trait.ModifyValue(&UF::CharacterTrait::Dword14C), 260); // assasin specid
+        SetUpdateFieldValue(trait.ModifyValue(&UF::CharacterTrait::Dword150), 3);
+        SetUpdateFieldValue(trait.ModifyValue(&UF::CharacterTrait::Dword154), 2);
+        SetUpdateFieldValue(trait.ModifyValue(&UF::CharacterTrait::UnkStr), "Outlaw");
+
+        UF::CharacterTraitTalent& mod = AddDynamicUpdateFieldValue(trait.ModifyValue(&UF::CharacterTrait::Talents));
+        mod.TraitNode = 31523;
+        mod.TraitNodeEntryID = 41729;
+        mod.UnkDF = 1;
+        mod.Rank = 0;
+    }
+
+    SetUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData)
+        .ModifyValue(&UF::ActivePlayerData::CritPercentage), 0.0f);
+    SetUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData)
+        .ModifyValue(&UF::ActivePlayerData::RangedCritPercentage), 0.0f);
+    SetUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData)
+        .ModifyValue(&UF::ActivePlayerData::OffhandCritPercentage), 0.0f);
+    SetUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData)
+        .ModifyValue(&UF::ActivePlayerData::SpellCritPercentage), 0.0f);
+    SetUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData)
+        .ModifyValue(&UF::ActivePlayerData::Mastery), 0.0f);
+    SetUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData)
+        .ModifyValue(&UF::ActivePlayerData::VersatilityBonus), 0.0f);
+    SetUpdateFieldValue(m_values.ModifyValue(&Player::m_playerData)
+        .ModifyValue(&UF::PlayerData::PlayerFlags), 16777248);
+
+    SetUpdateFieldValue(m_values.ModifyValue(&Unit::m_unitData).ModifyValue(&UF::UnitData::AuraState), 13631488);
+    SetUpdateFieldValue(m_values.ModifyValue(&Unit::m_unitData).ModifyValue(&UF::UnitData::Power, 0), 23);
+    SetUpdateFieldValue(m_values.ModifyValue(&Unit::m_unitData).ModifyValue(&UF::UnitData::MaxPower, 0), 120);
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////

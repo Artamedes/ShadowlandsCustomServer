@@ -930,6 +930,7 @@ enum OpcodeServer : uint16
     SMSG_CUSTOM_LOAD_SCREEN                                       = 0x25C9,
     SMSG_SPELL_VISUAL_LOAD_SCREEN                                 = 0x25CA,
     SMSG_TRANSFER_PENDING                                         = 0x25CB,
+    SMSG_UNK_DF                                                   = 0x25CF,
     SMSG_ADJUST_SPLINE_DURATION                                   = 0x25D0,
     SMSG_LEARN_TALENT_FAILED                                      = 0x25D1,
     SMSG_LEARN_PVP_TALENT_FAILED                                  = 0x25D2,

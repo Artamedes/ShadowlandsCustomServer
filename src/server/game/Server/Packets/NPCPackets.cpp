@@ -113,19 +113,19 @@ WorldPacket const* GossipMessage::Write()
 
 ByteBuffer& operator<<(ByteBuffer& data, VendorItem const& item)
 {
-    data << uint32(item.MuID);
+    data << uint64(item.Price);
     data << int32(item.Type);
     data << int32(item.Quantity);
-    data << uint64(item.Price);
     data << int32(item.Durability);
     data << int32(item.StackCount);
     data << int32(item.ExtendedCostID);
-    data << int32(item.PlayerConditionFailed);
-    data << item.Item;
+    data << uint32(item.MuID);
+    //  data << int32(item.PlayerConditionFailed);
     data.WriteBit(item.Locked);
     data.WriteBit(item.DoNotFilterOnVendor);
     data.WriteBit(item.Refundable);
     data.FlushBits();
+    data << item.Item;
 
     return data;
 }

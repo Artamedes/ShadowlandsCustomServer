@@ -679,17 +679,17 @@ struct CharacterTraitTalent : public IsUpdateFieldStructureTag
     bool operator!=(CharacterTraitTalent const& right) const { return !(*this == right); }
 };
 
-struct CharacterTrait : public IsUpdateFieldStructureTag, public HasChangesMask<10>
+struct CharacterTrait : public IsUpdateFieldStructureTag, public HasChangesMask<12>
 {
     DynamicUpdateField<UF::CharacterTraitTalent, 0, 1> Talents;
     UpdateField<int32, 0, 2> Dword0;
-    UpdateField<int32, 0, 3> Dword108;
-    UpdateField<int32, 0, 4> Dword148;
-    UpdateField<int32, 0, 5> Dword14C;
-    UpdateField<int32, 0, 6> Dword150;
-    UpdateField<int32, 0, 7> Dword154;
-    UpdateField<int32, 0, 8> Dword158;
-    UpdateField<std::string, 0, 9> UnkStr;
+    UpdateField<int32, 3, 4> Dword108;
+    UpdateField<int32, 3, 5> Dword148;
+    UpdateField<int32, 3, 6> Dword14C;
+    UpdateField<int32, 7, 8> Dword150;
+    UpdateField<int32, 7, 9> Dword154;
+    UpdateField<int32, 7, 10> Dword158;
+    UpdateField<std::string, 0, 11> UnkStr;
 
     void WriteCreate(ByteBuffer& data, Player const* owner, Player const* receiver) const;
     void WriteUpdate(ByteBuffer& data, bool ignoreChangesMask, Player const* owner, Player const* receiver) const;

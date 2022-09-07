@@ -16,6 +16,9 @@ class LoginScript : public PlayerScript
 
         void OnCreate(Player* p_Player) override
         {
+            if (true)
+                return;
+
             p_Player->StoreNewItemInBestSlots(184479, 1);
             p_Player->StoreNewItemInBestSlots(184479, 1);
             p_Player->StoreNewItemInBestSlots(184479, 1);
@@ -370,7 +373,7 @@ class LoginScript : public PlayerScript
                     p_Player->CompletedAchievement(achievEntry);
             }
 
-            ChatHandler(p_Player).PSendSysMessage("|cff62CBF5Shadowlands v.%s-%s (%s branch) (%s)", GitRevision::GetCommitCount(), GitRevision::GetHash(), GitRevision::GetBranch(), GitRevision::GetPlatformStr());
+            ChatHandler(p_Player).PSendSysMessage("|cff62CBF5Dragonflight Beta v.%s-%s (%s branch) (%s)", GitRevision::GetCommitCount(), GitRevision::GetHash(), GitRevision::GetBranch(), GitRevision::GetPlatformStr());
             ChatHandler(p_Player).PSendSysMessage("|cff62CBF5Last update: %s", GitRevision::GetDate());
             ChatHandler(p_Player).PSendSysMessage("|cff62CBF5Uptime: %s", secsToTimeString(GameTime::GetUptime()).c_str());
             ChatHandler(p_Player).PSendSysMessage("|cff62CBF5World Diff: %ums Map Diff: %ums Average: %ums", sWorldUpdateTime.GetLastUpdateTime(), p_Player->GetMap()->LastMapDiffTime, p_Player->GetMap()->MapDiffAverage);

@@ -815,7 +815,11 @@ void WorldPackets::Misc::ConversationLineStarted::Read()
 
 WorldPacket const* WorldPackets::Misc::SplashScreenShowLatest::Write()
 {
-    _worldPacket << int32(UISplashScreenID);
+   // _worldPacket << int32(UISplashScreenID);
+    _worldPacket << uint8(0x2D);
+    _worldPacket << uint8(0);
+    _worldPacket << uint8(0);
+    _worldPacket << uint8(0);
 
     return &_worldPacket;
 }

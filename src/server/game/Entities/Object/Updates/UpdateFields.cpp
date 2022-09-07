@@ -3070,51 +3070,52 @@ void CharacterTrait::WriteUpdate(ByteBuffer& data, bool ignoreChangesMask, Playe
         {
             data << int32(Dword0);
         }
+    }
+
+    if (changesMask[3])
+    {
         if (changesMask[4])
+        {
+            data << int32(Dword108);
+        }
+        if (Dword108 == 2)
         {
             if (changesMask[5])
             {
-                data << int32(Dword108);
-            }
-            if (Dword108 == 2)
-            {
-                if (changesMask[6])
-                {
-                    data << int32(Dword148);
-                }
-            }
-            if (Dword108 == 1)
-            {
-                if (changesMask[6])
-                {
-                    data << int32(Dword14C);
-                }
+                data << int32(Dword148);
             }
         }
-        if (changesMask[8])
+        if (Dword108 == 1)
         {
-            if (Dword108 == 1)
+            if (changesMask[6])
             {
-                if (changesMask[9])
-                {
-                    data << int32(Dword150);
-                }
-                if (changesMask[10])
-                {
-                    data << int32(Dword154);
-                }
+                data << int32(Dword14C);
             }
+        }
+    }
+    if (changesMask[7])
+    {
+        if (Dword108 == 1)
+        {
+            if (changesMask[8])
+            {
+                data << int32(Dword150);
+            }
+            if (changesMask[9])
+            {
+                data << int32(Dword154);
+            }
+        }
 
-            if (Dword108 == 3)
-                if (changesMask[11])
-                    data << int32(Dword158);
-        }
-        if (changesMask[9])
-        {
-            data.WriteBits(UnkStr->size(), 9);
-            data.FlushBits();
-            data.WriteString(UnkStr);
-        }
+        if (Dword108 == 3)
+            if (changesMask[10])
+                data << int32(Dword158);
+    }
+    if (changesMask[11])
+    {
+        data.WriteBits(UnkStr->size(), 9);
+        data.FlushBits();
+        data.WriteString(UnkStr);
     }
     data.FlushBits();
 }
