@@ -25165,7 +25165,7 @@ void Player::SendInitialPacketsBeforeAddToMap()
     worldServerInfo.IsTournamentRealm = 0; /// @todo
     // worldServerInfo.RestrictedAccountMaxLevel; /// @todo
     // worldServerInfo.RestrictedAccountMaxMoney; /// @todo
-    worldServerInfo.BlockExitingLoadingScreen = true;
+    worldServerInfo.BlockExitingLoadingScreen = false;
     worldServerInfo.DifficultyID = GetMap()->GetDifficultyID();
     // worldServerInfo.XRealmPvpAlert;  /// @todo
     SendDirectMessage(worldServerInfo.Write());
@@ -25314,30 +25314,6 @@ void Player::SendInitialPacketsAfterAddToMap()
     }
 
     GetSceneMgr().TriggerDelayedScenes();
-
-    /// SMSG_WORLD_SERVER_INFO
-    WorldPackets::Misc::WorldServerInfo worldServerInfo;
-    worldServerInfo.InstanceGroupSize = 0;
-    // crash PIG
-    if (GetMap() && GetMap()->GetMapDifficulty())
-        worldServerInfo.InstanceGroupSize = GetMap()->GetMapDifficulty()->MaxPlayers;
-    worldServerInfo.IsTournamentRealm = 0; /// @todo
-    // worldServerInfo.RestrictedAccountMaxLevel; /// @todo
-    // worldServerInfo.RestrictedAccountMaxMoney; /// @todo
-    worldServerInfo.BlockExitingLoadingScreen = false;
-    if (GetMap())
-        worldServerInfo.DifficultyID = GetMap()->GetDifficultyID();
-    // worldServerInfo.XRealmPvpAlert;  /// @todo
-    SendDirectMessage(worldServerInfo.Write());
-
-    if (auto map = GetMap())
-    {
-        WorldPackets::Movement::NewWorld packet;
-        packet.MapID = GetMapId();
-        packet.Loc.Pos = GetPosition();
-        packet.Reason = NEW_WORLD_SEAMLESS;
-        SendDirectMessage(packet.Write());
-    }
 
     // send eclipse stuff
     if (HasAura(79577))
