@@ -2981,75 +2981,156 @@ void ReplayedQuest::ClearChangesMask()
     _changesMask.ResetAll();
 }
 
+void CharacterTraitTalent::WriteCreate(ByteBuffer& data, Player const* owner, Player const* receiver) const
+{
+    data << int32(TraitNode);
+    data << int32(TraitNodeEntryID);
+    data << int32(Rank);
+    data << int32(UnkDF);
+}
+
+void CharacterTraitTalent::WriteUpdate(ByteBuffer& data, bool ignoreChangesMask, Player const* owner, Player const* receiver) const
+{
+    data << int32(TraitNode);
+    data << int32(TraitNodeEntryID);
+    data << int32(Rank);
+    data << int32(UnkDF);
+}
+
+bool CharacterTraitTalent::operator==(CharacterTraitTalent const& right) const
+{
+    return TraitNode == right.TraitNode
+        && TraitNodeEntryID == right.TraitNodeEntryID
+        && Rank == right.Rank
+        && UnkDF == right.UnkDF;
+}
+
 void CharacterTrait::WriteCreate(ByteBuffer& data, Player const* owner, Player const* receiver) const
 {
     data << int32(Dword0);
     data << int32(Dword108);
-    data << int32(Talents.size());
+    data << uint32(Talents.size());
 
     if (Dword108 == 2)
         data << int32(Dword148);
+
     if (Dword108 == 1)
     {
         data << int32(Dword14C);
         data << int32(Dword150);
         data << int32(Dword154);
     }
+
     if (Dword108 == 3)
         data << int32(Dword158);
 
-    for (auto const& talent : Talents)
+    for (uint32 i = 0; i < Talents.size(); ++i)
     {
-        data << talent.Unk0;
-        data << talent.Unk1;
-        data << talent.Unk2;
-        data << talent.Unk3;
+        Talents[i].WriteCreate(data, owner, receiver);
     }
 
-    data.WriteBits(Spec.size(), 9);
+    data.WriteBits(UnkStr->size(), 9);
     data.FlushBits();
-    data.WriteString(Spec);
+    data.WriteString(UnkStr);
+    data.FlushBits();
 }
 
 void CharacterTrait::WriteUpdate(ByteBuffer& data, bool ignoreChangesMask, Player const* owner, Player const* receiver) const
 {
-    data << int32(Dword0);
-    data << int32(Dword108);
-    data << int32(Talents.size());
+    Mask changesMask = _changesMask;
+    if (ignoreChangesMask)
+        changesMask.SetAll();
 
-    if (Dword108 == 2)
-        data << int32(Dword148);
-    if (Dword108 == 1)
+    data.WriteBits(changesMask.GetBlock(0), 12);
+
+    if (changesMask[0])
     {
-        data << int32(Dword14C);
-        data << int32(Dword150);
-        data << int32(Dword154);
+        if (changesMask[1])
+        {
+            if (!ignoreChangesMask)
+                Talents.WriteUpdateMask(data);
+            else
+                WriteCompleteDynamicFieldUpdateMask(Talents.size(), data);
+        }
     }
-    if (Dword108 == 3)
-        data << int32(Dword158);
-
-    for (auto const& talent : Talents)
-    {
-        data << talent.Unk0;
-        data << talent.Unk1;
-        data << talent.Unk2;
-        data << talent.Unk3;
-    }
-
-    data.WriteBits(Spec.size(), 9);
     data.FlushBits();
-    data.WriteString(Spec);
+    if (changesMask[0])
+    {
+        if (changesMask[1])
+        {
+            for (uint32 i = 0; i < Talents.size(); ++i)
+            {
+                if (Talents.HasChanged(i) || ignoreChangesMask)
+                {
+                    Talents[i].WriteUpdate(data, ignoreChangesMask, owner, receiver);
+                }
+            }
+        }
+        if (changesMask[2])
+        {
+            data << int32(Dword0);
+        }
+        if (changesMask[4])
+        {
+            if (changesMask[5])
+            {
+                data << int32(Dword108);
+            }
+            if (Dword108 == 2)
+            {
+                if (changesMask[6])
+                {
+                    data << int32(Dword148);
+                }
+            }
+            if (Dword108 == 1)
+            {
+                if (changesMask[6])
+                {
+                    data << int32(Dword14C);
+                }
+            }
+        }
+        if (changesMask[8])
+        {
+            if (Dword108 == 1)
+            {
+                if (changesMask[9])
+                {
+                    data << int32(Dword150);
+                }
+                if (changesMask[10])
+                {
+                    data << int32(Dword154);
+                }
+            }
+
+            if (Dword108 == 3)
+                if (changesMask[11])
+                    data << int32(Dword158);
+        }
+        if (changesMask[9])
+        {
+            data.WriteBits(UnkStr->size(), 9);
+            data.FlushBits();
+            data.WriteString(UnkStr);
+        }
+    }
+    data.FlushBits();
 }
 
-bool CharacterTrait::operator==(CharacterTrait const& right) const
+void CharacterTrait::ClearChangesMask()
 {
-    return Dword0 == right.Dword0
-        && Dword108 == right.Dword108
-        && Dword148 == right.Dword148
-        && Dword14C == right.Dword14C
-        && Dword150 == right.Dword150
-        && Dword154 == right.Dword154
-        && Dword158 == right.Dword158;
+    Base::ClearChangesMask(Talents);
+    Base::ClearChangesMask(Dword0);
+    Base::ClearChangesMask(Dword108);
+    Base::ClearChangesMask(Dword148);
+    Base::ClearChangesMask(Dword14C);
+    Base::ClearChangesMask(Dword150);
+    Base::ClearChangesMask(Dword154);
+    Base::ClearChangesMask(Dword158);
+    Base::ClearChangesMask(UnkStr);
+    _changesMask.ResetAll();
 }
 
 void ActivePlayerData::WriteCreate(ByteBuffer& data, EnumFlag<UpdateFieldFlag> fieldVisibilityFlags, Player const* owner, Player const* receiver) const
@@ -4124,7 +4205,7 @@ void ActivePlayerData::WriteUpdate(ByteBuffer& data, Mask const& changesMask, bo
                 QuestSession->WriteUpdate(data, ignoreNestedChangesMask, owner, receiver);
             }
         }
-        if (changesMask[114])
+        if (changesMask[113]) // seeing 113 here
         {
             data << DungeonScore;
         }
@@ -4269,16 +4350,17 @@ void ActivePlayerData::WriteUpdate(ByteBuffer& data, Mask const& changesMask, bo
             }
         }
     }
-    if (changesMask[0])
-    {
-        if (changesMask[6])
-        {
-            if (!ignoreNestedChangesMask)
-                PvpInfo.WriteUpdateMask(data);
-            else
-                WriteCompleteDynamicFieldUpdateMask(PvpInfo.size(), data);
-        }
-    }
+    // DONT SEE IN CLIENT
+    // if (changesMask[0])
+    // {
+    //     if (changesMask[6])
+    //     {
+    //         if (!ignoreNestedChangesMask)
+    //             PvpInfo.WriteUpdateMask(data);
+    //         else
+    //             WriteCompleteDynamicFieldUpdateMask(PvpInfo.size(), data);
+    //     }
+    // }
     data.FlushBits();
 }
 

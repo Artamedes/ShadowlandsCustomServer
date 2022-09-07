@@ -666,32 +666,34 @@ struct ReplayedQuest : public IsUpdateFieldStructureTag, public HasChangesMask<3
     void ClearChangesMask();
 };
 
-struct CharacterTraitTalent
+struct CharacterTraitTalent : public IsUpdateFieldStructureTag
 {
-    int32 Unk0;
-    int32 Unk1;
-    int32 Unk2;
-    int32 Unk3;
-};
-
-struct CharacterTrait : public IsUpdateFieldStructureTag
-{
-    int32 Dword0;
-    int32 Dword108;
-    std::vector<CharacterTraitTalent> Talents;
-    int32 Dword148;
-
-    int32 Dword14C;
-    int32 Dword150;
-    int32 Dword154;
-
-    int32 Dword158;
-    std::string Spec;
+    int32 TraitNode;
+    int32 TraitNodeEntryID;
+    int32 Rank;
+    int32 UnkDF;
 
     void WriteCreate(ByteBuffer& data, Player const* owner, Player const* receiver) const;
     void WriteUpdate(ByteBuffer& data, bool ignoreChangesMask, Player const* owner, Player const* receiver) const;
-    bool operator==(CharacterTrait const& right) const;
-    bool operator!=(CharacterTrait const& right) const { return !(*this == right); }
+    bool operator==(CharacterTraitTalent const& right) const;
+    bool operator!=(CharacterTraitTalent const& right) const { return !(*this == right); }
+};
+
+struct CharacterTrait : public IsUpdateFieldStructureTag, public HasChangesMask<10>
+{
+    DynamicUpdateField<UF::CharacterTraitTalent, 0, 1> Talents;
+    UpdateField<int32, 0, 2> Dword0;
+    UpdateField<int32, 0, 3> Dword108;
+    UpdateField<int32, 0, 4> Dword148;
+    UpdateField<int32, 0, 5> Dword14C;
+    UpdateField<int32, 0, 6> Dword150;
+    UpdateField<int32, 0, 7> Dword154;
+    UpdateField<int32, 0, 8> Dword158;
+    UpdateField<std::string, 0, 9> UnkStr;
+
+    void WriteCreate(ByteBuffer& data, Player const* owner, Player const* receiver) const;
+    void WriteUpdate(ByteBuffer& data, bool ignoreChangesMask, Player const* owner, Player const* receiver) const;
+    void ClearChangesMask();
 };
 
 struct ActivePlayerData : public IsUpdateFieldStructureTag, public HasChangesMask<1569>
