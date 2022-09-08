@@ -18421,8 +18421,10 @@ bool Player::LoadFromDB(ObjectGuid guid, CharacterDatabaseQueryHolder const& hol
     UpdateSkillsForLevel(); //update skills after load, to make sure they are correctly update at player load
 
     SetNumRespecs(fields.numRespecs);
-    SetPrimarySpecialization(fields.primarySpecialization);
+    _traitMgr->Setup();
     _traitMgr->SetActiveTalentGroup(fields.activeTalentGroup);
+    _traitMgr->LoadFromDB(holder);
+    SetPrimarySpecialization(fields.primarySpecialization);
 
     uint32 lootSpecId = fields.lootSpecId;
     if (ChrSpecializationEntry const* chrSpec = sChrSpecializationStore.LookupEntry(lootSpecId))
@@ -18652,10 +18654,6 @@ bool Player::LoadFromDB(ObjectGuid guid, CharacterDatabaseQueryHolder const& hol
 
     m_achievementMgr->CheckAllAchievementCriteria(this);
     m_questObjectiveCriteriaMgr->CheckAllQuestObjectiveCriteria(this);
-
-    // must be loaded before covenants
-    _traitMgr->Setup();
-    _traitMgr->LoadFromDB(holder);
 
     _covenantMgr->LoadFromDB(holder);
     _covenantMgr->UnlearnCovenantSpells(); // Cleanup before initial load to remove duplicate spells
