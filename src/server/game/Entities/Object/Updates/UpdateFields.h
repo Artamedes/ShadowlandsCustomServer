@@ -457,44 +457,45 @@ struct CTROptions : public IsUpdateFieldStructureTag
     bool operator!=(CTROptions const& right) const { return !(*this == right); }
 };
 
-struct PlayerData : public IsUpdateFieldStructureTag, public HasChangesMask<188>
+struct PlayerData : public IsUpdateFieldStructureTag, public HasChangesMask<189>
 {
     UpdateField<bool, 0, 1> HasQuestSession;
     UpdateField<bool, 0, 2> HasLevelLink;
     DynamicUpdateField<UF::ChrCustomizationChoice, 0, 3> Customizations;
     DynamicUpdateField<UF::QuestLog, 0, 4> QuestSessionQuestLog;
     DynamicUpdateField<UF::ArenaCooldown, 0, 5> ArenaCooldowns;
-    UpdateField<ObjectGuid, 0, 6> DuelArbiter;
-    UpdateField<ObjectGuid, 0, 7> WowAccount;
-    UpdateField<ObjectGuid, 0, 8> LootTargetGUID;
-    UpdateField<uint32, 0, 9> PlayerFlags;
-    UpdateField<uint32, 0, 10> PlayerFlagsEx;
-    UpdateField<uint32, 0, 11> GuildRankID;
-    UpdateField<uint32, 0, 12> GuildDeleteDate;
-    UpdateField<int32, 0, 13> GuildLevel;
-    UpdateField<uint8, 0, 14> PartyType;
-    UpdateField<uint8, 0, 15> NativeSex;
-    UpdateField<uint8, 0, 16> Inebriation;
-    UpdateField<uint8, 0, 17> PvpTitle;
-    UpdateField<uint8, 0, 18> ArenaFaction;
-    UpdateField<uint32, 0, 19> DuelTeam;
-    UpdateField<int32, 0, 20> GuildTimeStamp;
-    UpdateField<int32, 0, 21> PlayerTitle;
-    UpdateField<int32, 0, 22> FakeInebriation;
-    UpdateField<uint32, 0, 23> VirtualPlayerRealm;
-    UpdateField<uint32, 0, 24> CurrentSpecID;
-    UpdateField<int32, 0, 25> TaxiMountAnimKitID;
-    UpdateField<uint8, 0, 26> CurrentBattlePetBreedQuality;
-    UpdateField<int32, 0, 27> HonorLevel;
-    UpdateField<int32, 0, 28> Field_B0;
-    UpdateField<int32, 0, 29> Field_B4;
-    UpdateField<UF::CTROptions, 0, 30> CtrOptions;
-    UpdateField<int32, 0, 31> CovenantID;
-    UpdateField<int32, 32, 33> SoulbindID;
-    UpdateField<WorldPackets::MythicPlus::DungeonScoreSummary, 32, 34> DungeonScore;
-    UpdateFieldArray<UF::QuestLog, 125, 35, 36> QuestLog;
-    UpdateFieldArray<UF::VisibleItem, 19, 161, 162> VisibleItems;
-    UpdateFieldArray<float, 6, 181, 182> AvgItemLevel;
+    DynamicUpdateField<uint32, 0, 6> UnkPlayerLoopInt32DF;
+    UpdateField<ObjectGuid, 0, 7> DuelArbiter;
+    UpdateField<ObjectGuid, 0, 8> WowAccount;
+    UpdateField<ObjectGuid, 0, 9> LootTargetGUID;
+    UpdateField<uint32, 0, 10> PlayerFlags;
+    UpdateField<uint32, 0, 11> PlayerFlagsEx;
+    UpdateField<uint32, 0, 12> GuildRankID;
+    UpdateField<uint32, 0, 13> GuildDeleteDate;
+    UpdateField<int32, 0, 14> GuildLevel;
+    UpdateField<uint8, 0, 15> PartyType;
+    UpdateField<uint8, 0, 16> NativeSex;
+    UpdateField<uint8, 0, 17> Inebriation;
+    UpdateField<uint8, 0, 18> PvpTitle;
+    UpdateField<uint8, 0, 19> ArenaFaction;
+    UpdateField<uint32, 0, 20> DuelTeam;
+    UpdateField<int32, 0, 21> GuildTimeStamp;
+    UpdateField<int32, 0, 22> PlayerTitle;
+    UpdateField<int32, 0, 23> FakeInebriation;
+    UpdateField<uint32, 0, 24> VirtualPlayerRealm;
+    UpdateField<uint32, 0, 25> CurrentSpecID;
+    UpdateField<int32, 0, 26> TaxiMountAnimKitID;
+    UpdateField<uint8, 0, 27> CurrentBattlePetBreedQuality;
+    UpdateField<int32, 0, 28> HonorLevel;
+    UpdateField<int32, 0, 29> Field_B0;
+    UpdateField<int32, 0, 30> Field_B4;
+    UpdateField<UF::CTROptions, 0, 31> CtrOptions;
+    UpdateField<int32, 32, 33> CovenantID;
+    UpdateField<int32, 32, 34> SoulbindID;
+    UpdateField<WorldPackets::MythicPlus::DungeonScoreSummary, 32, 35> DungeonScore;
+    UpdateFieldArray<UF::QuestLog, 125, 36, 37> QuestLog;
+    UpdateFieldArray<UF::VisibleItem, 19, 162, 163> VisibleItems;
+    UpdateFieldArray<float, 6, 182, 183> AvgItemLevel;
 
     void WriteCreate(ByteBuffer& data, EnumFlag<UpdateFieldFlag> fieldVisibilityFlags, Player const* owner, Player const* receiver) const;
     void WriteUpdate(ByteBuffer& data, EnumFlag<UpdateFieldFlag> fieldVisibilityFlags, Player const* owner, Player const* receiver) const;
