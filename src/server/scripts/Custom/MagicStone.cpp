@@ -20,7 +20,7 @@ void MagicStoneMgr::LoadFromDB()
     m_MagicStoneActions.clear();
     m_MagicStoneMenuTexts.clear();
 
-    QueryResult result = WorldDatabase.Query("SELECT MenuID, `Text`, ExtraText, ActionID, GossipOptionIcon, ConditionID FROM z_magicstone_menus ORDER by ordering;");
+    QueryResult result = WorldDatabase.Query("SELECT MenuID, `Text`, ExtraText, ActionID, GossipOptionNpc, ConditionID FROM z_magicstone_menus ORDER by ordering;");
     if (result)
     {
         do
@@ -34,7 +34,7 @@ void MagicStoneMgr::LoadFromDB()
             l_Menu.Text = fields[1].GetString();
             l_Menu.ExtraText = fields[2].GetString();
             l_Menu.ActionID = fields[3].GetUInt32();
-            l_Menu.Icon = static_cast<GossipOptionIcon>(fields[4].GetUInt32());
+            l_Menu.Icon = static_cast<GossipOptionNpc>(fields[4].GetUInt32());
             l_Menu.ConditionID = fields[5].GetUInt32();
 
             m_MagicStoneMenus.insert({ MenuID, l_Menu });

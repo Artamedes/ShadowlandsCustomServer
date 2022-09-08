@@ -1426,7 +1426,7 @@ public:
         {
             if (instance->GetBossState(BOSS_MISTER_DOCTOR) == EncounterState::DONE)
             {
-                AddGossipItemFor(player, GossipOptionIcon::None, "Teleport me back to the entrance", 0, 0, [this, player](std::string /*callback*/)
+                AddGossipItemFor(player, GossipOptionNpc::None, "Teleport me back to the entrance", 0, 0, [this, player](std::string /*callback*/)
                 {
                     player->TeleportTo(WorldLocation(1841, { 625.044f, 1253.41f, 99.8346f, 6.27532f }));
                 });
