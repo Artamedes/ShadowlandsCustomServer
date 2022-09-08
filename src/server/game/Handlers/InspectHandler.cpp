@@ -46,17 +46,18 @@ void WorldSession::HandleInspectOpcode(WorldPackets::Inspect::Inspect& inspect)
     WorldPackets::Inspect::InspectResult inspectResult;
     inspectResult.DisplayInfo.Initialize(player);
 
-    if (GetPlayer()->CanBeGameMaster() || sWorld->getIntConfig(CONFIG_TALENTS_INSPECTING) + (GetPlayer()->GetEffectiveTeam() == player->GetEffectiveTeam()) > 1)
-    {
-        PlayerTalentMap const* talents = player->GetTalentMap(player->GetActiveTalentGroup());
-        for (PlayerTalentMap::value_type const& v : *talents)
-            if (v.second.state != PLAYERSPELL_REMOVED)
-                inspectResult.Talents.push_back(v.first);
-
-        PlayerPvpTalentMap const& pvpTalents = player->GetPvpTalentMap(player->GetActiveTalentGroup());
-        for (std::size_t i = 0; i < pvpTalents.size(); ++i)
-            inspectResult.PvpTalents[i] = pvpTalents[i];
-    }
+    // @TODO: NEW TALENTS
+   //if (GetPlayer()->CanBeGameMaster() || sWorld->getIntConfig(CONFIG_TALENTS_INSPECTING) + (GetPlayer()->GetEffectiveTeam() == player->GetEffectiveTeam()) > 1)
+   //{
+   //    PlayerTalentMap const* talents = player->GetTalentMap(player->GetActiveTalentGroup());
+   //    for (PlayerTalentMap::value_type const& v : *talents)
+   //        if (v.second.state != PLAYERSPELL_REMOVED)
+   //            inspectResult.Talents.push_back(v.first);
+   //
+   //    PlayerPvpTalentMap const& pvpTalents = player->GetPvpTalentMap(player->GetActiveTalentGroup());
+   //    for (std::size_t i = 0; i < pvpTalents.size(); ++i)
+   //        inspectResult.PvpTalents[i] = pvpTalents[i];
+   //}
 
     if (Guild* guild = sGuildMgr->GetGuildById(player->GetGuildId()))
     {

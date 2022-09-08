@@ -313,6 +313,8 @@ enum OpcodeClient : uint16
     CMSG_ABANDON_NPE_RESPONSE                              = 0x33E1 + 0x1,
     CMSG_REQUEST_GARRISON_TALENT_WORLD_QUEST_UNLOCKS       = 0x33E3 + 0x1,
     CMSG_GARRISON_SOCKET_TALENT                            = 0x33E4 + 0x1,
+    CMSG_LEARN_TRAITS                                      = 0x33FF, ///< Dragonflight
+    CMSG_CREATE_NEW_LOADOUT                                = 0x3404, ///< Dragonflight
     CMSG_SEND_TEXT_EMOTE                                   = 0x348E,
     CMSG_SET_SHEATHED                                      = 0x348F,
     CMSG_PET_SET_ACTION                                    = 0x3490,

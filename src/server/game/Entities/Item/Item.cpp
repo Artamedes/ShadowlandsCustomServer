@@ -47,6 +47,7 @@
 #include "WorldSession.h"
 #include <sstream>
 #include "PlayerChallenge.h"
+#include "TraitsMgr.h"
 
 Item* NewItemOrBag(ItemTemplate const* proto)
 {
@@ -2504,7 +2505,7 @@ ItemDisenchantLootEntry const* Item::GetDisenchantLoot(ItemTemplate const* itemT
 
 uint32 Item::GetDisplayId(Player const* owner) const
 {
-    uint32 itemModifiedAppearanceId = GetModifier(AppearanceModifierSlotBySpec[owner->GetActiveTalentGroup()]);
+    uint32 itemModifiedAppearanceId = GetModifier(AppearanceModifierSlotBySpec[owner->GetTraitsMgr()->GetActiveTalentGroupSafe()]);
     if (!itemModifiedAppearanceId)
         itemModifiedAppearanceId = GetModifier(ITEM_MODIFIER_TRANSMOG_APPEARANCE_ALL_SPECS);
 
@@ -2567,7 +2568,7 @@ void Item::SetModifier(ItemModifier modifier, uint32 value)
 
 uint32 Item::GetVisibleEntry(Player const* owner) const
 {
-    uint32 itemModifiedAppearanceId = GetModifier(AppearanceModifierSlotBySpec[owner->GetActiveTalentGroup()]);
+    uint32 itemModifiedAppearanceId = GetModifier(AppearanceModifierSlotBySpec[owner->GetTraitsMgr()->GetActiveTalentGroupSafe()]);
     if (!itemModifiedAppearanceId)
         itemModifiedAppearanceId = GetModifier(ITEM_MODIFIER_TRANSMOG_APPEARANCE_ALL_SPECS);
 
@@ -2579,7 +2580,7 @@ uint32 Item::GetVisibleEntry(Player const* owner) const
 
 uint16 Item::GetVisibleAppearanceModId(Player const* owner) const
 {
-    uint32 itemModifiedAppearanceId = GetModifier(AppearanceModifierSlotBySpec[owner->GetActiveTalentGroup()]);
+    uint32 itemModifiedAppearanceId = GetModifier(AppearanceModifierSlotBySpec[owner->GetTraitsMgr()->GetActiveTalentGroupSafe()]);
     if (!itemModifiedAppearanceId)
         itemModifiedAppearanceId = GetModifier(ITEM_MODIFIER_TRANSMOG_APPEARANCE_ALL_SPECS);
 
@@ -2591,7 +2592,7 @@ uint16 Item::GetVisibleAppearanceModId(Player const* owner) const
 
 int32 Item::GetVisibleSecondaryModifiedAppearanceId(Player const* owner) const
 {
-    uint32 itemModifiedAppearanceId = GetModifier(SecondaryAppearanceModifierSlotBySpec[owner->GetActiveTalentGroup()]);
+    uint32 itemModifiedAppearanceId = GetModifier(SecondaryAppearanceModifierSlotBySpec[owner->GetTraitsMgr()->GetActiveTalentGroupSafe()]);
     if (!itemModifiedAppearanceId)
         itemModifiedAppearanceId = GetModifier(ITEM_MODIFIER_TRANSMOG_SECONDARY_APPEARANCE_ALL_SPECS);
 
@@ -2600,7 +2601,7 @@ int32 Item::GetVisibleSecondaryModifiedAppearanceId(Player const* owner) const
 
 uint32 Item::GetVisibleEnchantmentId(Player const* owner) const
 {
-    uint32 enchantmentId = GetModifier(IllusionModifierSlotBySpec[owner->GetActiveTalentGroup()]);
+    uint32 enchantmentId = GetModifier(IllusionModifierSlotBySpec[owner->GetTraitsMgr()->GetActiveTalentGroupSafe()]);
     if (!enchantmentId)
         enchantmentId = GetModifier(ITEM_MODIFIER_ENCHANT_ILLUSION_ALL_SPECS);
 

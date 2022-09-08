@@ -1310,9 +1310,10 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder const& holder)
 
         if (pCurrChar->HasAtLoginFlag(AT_LOGIN_RESET_TALENTS))
         {
-            pCurrChar->ResetTalents(true);
-            pCurrChar->ResetTalentSpecialization();
-            pCurrChar->SendTalentsInfoData(); // original talents send already in to SendInitialPacketsBeforeAddToMap, resend reset state
+            // @TODO: DF
+            //pCurrChar->ResetTalents(true);
+            //pCurrChar->ResetTalentSpecialization();
+            //pCurrChar->SendTalentsInfoData(); // original talents send already in to SendInitialPacketsBeforeAddToMap, resend reset state
             //SendNotification(LANG_RESET_TALENTS);
         }
 

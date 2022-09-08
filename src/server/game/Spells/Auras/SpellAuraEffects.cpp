@@ -49,6 +49,7 @@
 #include "WorldSession.h"
 #include "SpellPackets.h"
 #include <G3D/g3dmath.h>
+#include "TraitsMgr.h"
 #include <numeric>
 
 class Aura;
@@ -6458,9 +6459,9 @@ void AuraEffect::HandleAuraPvpTalents(AuraApplication const* auraApp, uint8 mode
     if (Player* target = auraApp->GetTarget()->ToPlayer())
     {
         if (apply)
-            target->TogglePvpTalents(true);
+            target->GetTraitsMgr()->TogglePVPTalents(true);
         else if (!target->HasAuraType(SPELL_AURA_PVP_TALENTS))
-            target->TogglePvpTalents(false);
+            target->GetTraitsMgr()->TogglePVPTalents(false);
     }
 }
 
@@ -6915,45 +6916,47 @@ void AuraEffect::HandleLearnTalent(AuraApplication const* aurApp, uint8 mode, bo
     if (!player)
         return;
 
-    auto talentEntry = sTalentStore.LookupEntry(GetMiscValue());
+    /// @TODO: DRAGONFLIGHT - unsure how it works in retail
 
-    if (apply)
-    {
-        bool wasLearned = false;
-        /// SMSG_UNLEARNED_SPELLS
-        if (player->HasTalent(talentEntry->ID, player->GetActiveTalentGroup()))
-        {
-            wasLearned = true;
-            player->RemoveTalent(talentEntry, true);
-            player->SetCharacterPoints(player->m_activePlayerData->CharacterPoints + 1);
-            player->AddToObjectUpdate();
-        }
-        /// SMSG_LEARNED_SPELLS
-        player->LearnTalent(GetMiscValue(), nullptr, true, wasLearned);
-        /// SMSG_UPDATE_TALENT_DATA
-        player->SendTalentsInfoData();
-    }
-    else
-    {
-        auto it = player->GetTalentMap(player->GetActiveTalentGroup())->find(talentEntry->ID);
-        bool wasLearned = false;
-        if (it != player->GetTalentMap(player->GetActiveTalentGroup())->end())
-        {
-            if (it->second.IsLearned)
-            {
-                if (player->m_activePlayerData->CharacterPoints)
-                    player->SetCharacterPoints(player->m_activePlayerData->CharacterPoints - 1);
-                wasLearned = true;
-            }
-        }
-
-        player->RemoveTalent(talentEntry, true);
-
-        if (wasLearned)
-            player->LearnTalent(GetMiscValue(), nullptr, false, wasLearned);
-
-        player->SendTalentsInfoData();
-    }
+  // auto talentEntry = sTalentStore.LookupEntry(GetMiscValue());
+  //
+  // if (apply)
+  // {
+  //     bool wasLearned = false;
+  //     /// SMSG_UNLEARNED_SPELLS
+  //     if (player->HasTalent(talentEntry->ID, player->GetActiveTalentGroup()))
+  //     {
+  //         wasLearned = true;
+  //         player->RemoveTalent(talentEntry, true);
+  //         player->SetCharacterPoints(player->m_activePlayerData->CharacterPoints + 1);
+  //         player->AddToObjectUpdate();
+  //     }
+  //     /// SMSG_LEARNED_SPELLS
+  //     player->LearnTalent(GetMiscValue(), nullptr, true, wasLearned);
+  //     /// SMSG_UPDATE_TALENT_DATA
+  //     player->SendTalentsInfoData();
+  // }
+  // else
+  // {
+  //     auto it = player->GetTalentMap(player->GetActiveTalentGroup())->find(talentEntry->ID);
+  //     bool wasLearned = false;
+  //     if (it != player->GetTalentMap(player->GetActiveTalentGroup())->end())
+  //     {
+  //         if (it->second.IsLearned)
+  //         {
+  //             if (player->m_activePlayerData->CharacterPoints)
+  //                 player->SetCharacterPoints(player->m_activePlayerData->CharacterPoints - 1);
+  //             wasLearned = true;
+  //         }
+  //     }
+  //
+  //     player->RemoveTalent(talentEntry, true);
+  //
+  //     if (wasLearned)
+  //         player->LearnTalent(GetMiscValue(), nullptr, false, wasLearned);
+  //
+  //     player->SendTalentsInfoData();
+  // }
 }
 
 using Clock = std::chrono::system_clock;

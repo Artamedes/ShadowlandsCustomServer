@@ -672,7 +672,7 @@ struct CharacterTraitTalent : public IsUpdateFieldStructureTag
     int32 TraitNode;
     int32 TraitNodeEntryID;
     int32 Rank;
-    int32 UnkDF;
+    int32 UnkDF; // might be related to swap 0/1
 
     void WriteCreate(ByteBuffer& data, Player const* owner, Player const* receiver) const;
     void WriteUpdate(ByteBuffer& data, bool ignoreChangesMask, Player const* owner, Player const* receiver) const;
@@ -683,14 +683,14 @@ struct CharacterTraitTalent : public IsUpdateFieldStructureTag
 struct CharacterTrait : public IsUpdateFieldStructureTag, public HasChangesMask<12>
 {
     DynamicUpdateField<UF::CharacterTraitTalent, 0, 1> Talents;
-    UpdateField<int32, 0, 2> Dword0;
+    UpdateField<int32, 0, 2> ConfigID;
     UpdateField<int32, 3, 4> Dword108;
     UpdateField<int32, 3, 5> Dword148;
-    UpdateField<int32, 3, 6> Dword14C;
+    UpdateField<int32, 3, 6> SpecializationID;
     UpdateField<int32, 7, 8> Dword150;
     UpdateField<int32, 7, 9> Dword154;
     UpdateField<int32, 7, 10> Dword158;
-    UpdateField<std::string, 0, 11> UnkStr;
+    UpdateField<std::string, 0, 11> ConfigName;
 
     void WriteCreate(ByteBuffer& data, Player const* owner, Player const* receiver) const;
     void WriteUpdate(ByteBuffer& data, bool ignoreChangesMask, Player const* owner, Player const* receiver) const;
@@ -807,7 +807,7 @@ struct ActivePlayerData : public IsUpdateFieldStructureTag, public HasChangesMas
     UpdateField<int32, 98, 110> TransportServerTime;
     UpdateField<uint32, 98, 111> WeeklyRewardsPeriodSinceOrigin;                // week count since Cfg_RegionsEntry::ChallengeOrigin
     UpdateField<int16, 98, 112> DEBUGSoulbindConduitRank;
-    UpdateField<uint32, 98, 113> UnkDF;
+    UpdateField<uint32, 98, 113> ActiveConfigID;
     UpdateField<WorldPackets::MythicPlus::DungeonScoreData, 98, 114> DungeonScore;
     UpdateFieldArray<ObjectGuid, 218, 115, 116> InvSlots;
     UpdateFieldArray<uint64, 240, 334, 335> ExploredZones;

@@ -95,6 +95,7 @@ class ReputationMgr;
 class RestMgr;
 class SpellCastTargets;
 class TradeData;
+class TraitsMgr;
 struct MythicKeystoneInfo;
 class PlayerChallenge;
 
@@ -185,14 +186,6 @@ struct PlayerSpell
     bool active            : 1;                             // show in spellbook
     bool dependent         : 1;                             // learned as result another spell learn, skill grow, quest reward, etc
     bool disabled          : 1;                             // first rank has been learned in result talent learn but currently talent unlearned, save max learned ranks
-};
-
-struct TalentSpell
-{
-    PlayerSpellState state;
-    bool IsAddedByAura = false;
-    bool IsLearned     = false;
-    PlayerSpellState oldState;
 };
 
 struct StoredAuraTeleportLocation
@@ -311,8 +304,6 @@ struct PlayerCurrency
     uint8 Flags;
 };
 
-typedef std::unordered_map<uint32, TalentSpell> PlayerTalentMap;
-typedef std::array<uint32, MAX_PVP_TALENT_SLOTS> PlayerPvpTalentMap;
 typedef std::unordered_map<uint32, PlayerSpell> PlayerSpellMap;
 typedef std::unordered_set<SpellModifier*> SpellModContainer;
 typedef std::unordered_map<uint32, PlayerCurrency> PlayerCurrenciesMap;
@@ -1109,39 +1100,6 @@ struct GroupUpdateCounter
     int32 UpdateSequenceNumber;
 };
 
-enum TalentLearnResult
-{
-    TALENT_LEARN_OK                                     = 0,
-    TALENT_FAILED_UNKNOWN                               = 1,
-    TALENT_FAILED_NOT_ENOUGH_TALENTS_IN_PRIMARY_TREE    = 2,
-    TALENT_FAILED_NO_PRIMARY_TREE_SELECTED              = 3,
-    TALENT_FAILED_CANT_DO_THAT_RIGHT_NOW                = 4,
-    TALENT_FAILED_AFFECTING_COMBAT                      = 5,
-    TALENT_FAILED_CANT_REMOVE_TALENT                    = 6,
-    TALENT_FAILED_CANT_DO_THAT_CHALLENGE_MODE_ACTIVE    = 7,
-    TALENT_FAILED_REST_AREA                             = 8
-};
-
-struct TC_GAME_API SpecializationInfo
-{
-    SpecializationInfo() : PvpTalents(), ResetTalentsCost(0), ResetTalentsTime(0), ActiveGroup(0)
-    {
-        for (PlayerPvpTalentMap& pvpTalents : PvpTalents)
-            pvpTalents.fill(0);
-    }
-
-    PlayerTalentMap Talents[MAX_SPECIALIZATIONS];
-    PlayerPvpTalentMap PvpTalents[MAX_SPECIALIZATIONS];
-    std::vector<uint32> Glyphs[MAX_SPECIALIZATIONS];
-    uint32 ResetTalentsCost;
-    time_t ResetTalentsTime;
-    uint8 ActiveGroup;
-
-private:
-    SpecializationInfo(SpecializationInfo const&) = delete;
-    SpecializationInfo& operator=(SpecializationInfo const&) = delete;
-};
-
 uint32 constexpr PLAYER_MAX_HONOR_LEVEL = 500;
 uint8 constexpr PLAYER_LEVEL_MIN_HONOR = 10;
 uint32 constexpr SPELL_PVP_RULES_ENABLED = 134735;
@@ -1881,16 +1839,9 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         ZonePVPTypeOverride GetOverrideZonePVPType() const { return ZonePVPTypeOverride(*m_activePlayerData->OverrideZonePVPType); }
         void SetOverrideZonePVPType(ZonePVPTypeOverride type) { SetUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::OverrideZonePVPType), uint32(type)); }
 
-        // Talents
-        uint32 GetTalentResetCost() const { return _specializationInfo.ResetTalentsCost; }
-        void SetTalentResetCost(uint32 cost)  { _specializationInfo.ResetTalentsCost = cost; }
-        time_t GetTalentResetTime() const { return _specializationInfo.ResetTalentsTime; }
-        void SetTalentResetTime(time_t time_)  { _specializationInfo.ResetTalentsTime = time_; }
         uint32 GetPrimarySpecialization() const { return m_playerData->CurrentSpecID; }
         uint32 GetSpecializationId() const { return GetPrimarySpecialization(); }
         void SetPrimarySpecialization(uint32 spec);
-        uint8 GetActiveTalentGroup() const { return _specializationInfo.ActiveGroup; }
-        void SetActiveTalentGroup(uint8 group){ _specializationInfo.ActiveGroup = group; }
         uint32 GetDefaultSpecId() const;
 
         static uint32 GetRoleBySpecializationId(uint32 specializationId);
@@ -1899,24 +1850,9 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         bool IsMeleeDamageDealer(bool allowTank = false) const;
         bool IsActiveSpecTankSpec() const;
 
-        bool ResetTalents(bool noCost = false);
-        void ResetPvpTalents();
-        uint32 GetNextResetTalentsCost() const;
-        void InitTalentForLevel();
-        void SendTalentsInfoData();
-        TalentLearnResult LearnTalent(uint32 talentId, int32* spellOnCooldown, bool auraTalent = false, bool wasLearnedBefore = false);
-        bool AddTalent(TalentEntry const* talent, uint8 spec, bool learning, bool auraTalent = false, bool wasLearnedBefore = false);
-        bool HasTalent(uint32 spell_id, uint8 spec) const;
-        void RemoveTalent(TalentEntry const* talent, bool auraTalent = false);
-        void ResetTalentSpecialization();
         uint8 GetRole() const;
         static uint8 _GetRole(uint32 spec);
 
-        TalentLearnResult LearnPvpTalent(uint32 talentID, uint8 slot, int32* spellOnCooldown);
-        bool AddPvpTalent(PvpTalentEntry const* talent, uint8 activeTalentGroup, uint8 slot);
-        void RemovePvpTalent(PvpTalentEntry const* talent, uint8 activeTalentGroup);
-        void TogglePvpTalents(bool enable);
-        bool HasPvpTalent(uint32 talentID, uint8 activeTalentGroup) const;
         void EnablePvpRules(bool dueToCombat = false);
         void DisablePvpRules();
         bool HasPvpRulesEnabled() const;
@@ -1925,14 +1861,8 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         bool IsInWarMode() const { return HasPlayerLocalFlag(PLAYER_LOCAL_FLAG_WAR_MODE); }
 
         // Dual Spec
-        void ActivateTalentGroup(ChrSpecializationEntry const* spec);
+        void ActivateSpecialization(ChrSpecializationEntry const* spec);
 
-        PlayerTalentMap const* GetTalentMap(uint8 spec) const { return &_specializationInfo.Talents[spec]; }
-        PlayerTalentMap* GetTalentMap(uint8 spec) { return &_specializationInfo.Talents[spec]; }
-        PlayerPvpTalentMap const& GetPvpTalentMap(uint8 spec) const { return _specializationInfo.PvpTalents[spec]; }
-        PlayerPvpTalentMap& GetPvpTalentMap(uint8 spec) { return _specializationInfo.PvpTalents[spec]; }
-        std::vector<uint32> const& GetGlyphs(uint8 spec) const { return _specializationInfo.Glyphs[spec]; }
-        std::vector<uint32>& GetGlyphs(uint8 spec) { return _specializationInfo.Glyphs[spec]; }
         ActionButtonList const& GetActionButtons() const { return m_actionButtons; }
         void LoadActions(PreparedQueryResult result);
 
@@ -2831,6 +2761,11 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
 
         void SetCharacterPoints(uint32 points) { SetUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::CharacterPoints), points); }
 
+        TraitsMgr* GetTraitsMgr();
+        TraitsMgr const* GetTraitsMgr() const;
+
+        void SetCurrentConfigID(uint32 configId) { SetUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::ActiveConfigID), configId); }
+
         void SetModPetHaste(float petHaste) { SetUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::ModPetHaste), petHaste); }
 
         void SendPetTameFailure(PetTameFailureReason reason);
@@ -3176,11 +3111,11 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
 
         PlayerMails m_mail;
         PlayerSpellMap m_spells;
+    public:
         std::unordered_map<uint32 /*overridenSpellId*/, std::unordered_set<uint32> /*newSpellId*/> m_overrideSpells;
+    private:
         uint32 m_lastPotionId;                              // last used health/mana potion in combat, that block next potion use
         std::unordered_map<uint32, StoredAuraTeleportLocation> m_storedAuraTeleportLocations;
-
-        SpecializationInfo _specializationInfo;
 
         ActionButtonList m_actionButtons;
 
@@ -3367,6 +3302,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void _InitHonorLevelOnLoadFromDB(uint32 honor, uint32 honorLevel);
         std::unique_ptr<RestMgr> _restMgr;
         std::unique_ptr<CovenantMgr> _covenantMgr;
+        std::unique_ptr<TraitsMgr> _traitMgr;
         std::unique_ptr<PlayerChallenge> m_playerChallenge;
         std::unique_ptr<AnimaPowerChoice> _animaPowerChoice;
 

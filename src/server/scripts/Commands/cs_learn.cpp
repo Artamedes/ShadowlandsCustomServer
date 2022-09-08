@@ -183,32 +183,32 @@ public:
 
     static bool HandleLearnAllTalentsCommand(ChatHandler* handler)
     {
-        Player* player = handler->GetSession()->GetPlayer();
-        uint32 playerClass = player->GetClass();
-
-        for (uint32 i = 0; i < sTalentStore.GetNumRows(); ++i)
-        {
-            TalentEntry const* talentInfo = sTalentStore.LookupEntry(i);
-            if (!talentInfo)
-                continue;
-
-            if (playerClass != talentInfo->ClassID)
-                continue;
-
-            if (talentInfo->SpecID && player->GetPrimarySpecialization() != talentInfo->SpecID)
-                continue;
-
-            SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(talentInfo->SpellID, DIFFICULTY_NONE);
-            if (!spellInfo || !SpellMgr::IsSpellValid(spellInfo, handler->GetSession()->GetPlayer(), false))
-                continue;
-
-            player->AddTalent(talentInfo, player->GetActiveTalentGroup(), true);
-            player->LearnSpell(talentInfo->SpellID, false);
-        }
-
-        player->SendTalentsInfoData();
-
-        handler->SendSysMessage(LANG_COMMAND_LEARN_CLASS_TALENTS);
+        //Player* player = handler->GetSession()->GetPlayer();
+        //uint32 playerClass = player->GetClass();
+        //
+        //for (uint32 i = 0; i < sTalentStore.GetNumRows(); ++i)
+        //{
+        //    TalentEntry const* talentInfo = sTalentStore.LookupEntry(i);
+        //    if (!talentInfo)
+        //        continue;
+        //
+        //    if (playerClass != talentInfo->ClassID)
+        //        continue;
+        //
+        //    if (talentInfo->SpecID && player->GetPrimarySpecialization() != talentInfo->SpecID)
+        //        continue;
+        //
+        //    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(talentInfo->SpellID, DIFFICULTY_NONE);
+        //    if (!spellInfo || !SpellMgr::IsSpellValid(spellInfo, handler->GetSession()->GetPlayer(), false))
+        //        continue;
+        //
+        //    player->AddTalent(talentInfo, player->GetActiveTalentGroup(), true);
+        //    player->LearnSpell(talentInfo->SpellID, false);
+        //}
+        //
+        //player->SendTalentsInfoData();
+        //
+        //handler->SendSysMessage(LANG_COMMAND_LEARN_CLASS_TALENTS);
         return true;
     }
 

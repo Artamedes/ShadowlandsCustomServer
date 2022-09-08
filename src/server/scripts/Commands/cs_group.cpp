@@ -101,7 +101,7 @@ public:
                 if (level != oldlevel)
                 {
                     target->SetLevel(static_cast<uint8>(level));
-                    target->InitTalentForLevel();
+               //     target->InitTalentForLevel();
                     target->SetXP(0);
                 }
 

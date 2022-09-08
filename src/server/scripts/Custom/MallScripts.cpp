@@ -391,11 +391,11 @@ struct npc_char_services : public ScriptedAI
         {
             ClearGossipMenuFor(p_Player);
             p_Player->PrepareQuestMenu(me->GetGUID());
-            AddGossipItemFor(p_Player, GossipOptionIcon::None, "|TInterface\\ICONS\\achievement_general.BLP:30:30:-28:0|tReset my talents.", 0, 0, [this, p_Player](std::string /*callback*/)
-            {
-                p_Player->ResetTalents(true);
-                CloseGossipMenuFor(p_Player);
-            });
+           // AddGossipItemFor(p_Player, GossipOptionIcon::None, "|TInterface\\ICONS\\achievement_general.BLP:30:30:-28:0|tReset my talents.", 0, 0, [this, p_Player](std::string /*callback*/)
+           // {
+           //     p_Player->ResetTalents(true);
+           //     CloseGossipMenuFor(p_Player);
+           // });
             AddGossipItemFor(p_Player, GossipOptionIcon::None, "|TInterface\\ICONS\\inv_inscription_talenttome01.BLP:30:30:-28:0|tGive me 5 tomes.", 0, 0, [this, p_Player](std::string /*callback*/)
             {
                 p_Player->AddItem(173049, 5);

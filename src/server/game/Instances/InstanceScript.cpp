@@ -1384,16 +1384,17 @@ void InstanceScript::BuildPlayerDatas(WorldPackets::Instance::EncounterStart& pa
 
             packet.PlayerDatas[count].SpecID = player->GetSpecializationId();
 
-            PlayerTalentMap const* talents = player->GetTalentMap(player->GetActiveTalentGroup());
-            for (PlayerTalentMap::value_type const& v : *talents)
-            {
-                if (v.second.state != PLAYERSPELL_REMOVED)
-                    packet.PlayerDatas[count].Talents.push_back(v.first);
-            }
-
-            PlayerPvpTalentMap const& pvpTalents = player->GetPvpTalentMap(player->GetActiveTalentGroup());
-            for (std::size_t i = 0; i < pvpTalents.size(); ++i)
-                packet.PlayerDatas[count].PvpTalents[i] = pvpTalents[i];
+            // @TODO: NEW TALENTS
+          //PlayerTalentMap const* talents = player->GetTalentMap(player->GetActiveTalentGroup());
+          //for (PlayerTalentMap::value_type const& v : *talents)
+          //{
+          //    if (v.second.state != PLAYERSPELL_REMOVED)
+          //        packet.PlayerDatas[count].Talents.push_back(v.first);
+          //}
+          //
+          //PlayerPvpTalentMap const& pvpTalents = player->GetPvpTalentMap(player->GetActiveTalentGroup());
+          //for (std::size_t i = 0; i < pvpTalents.size(); ++i)
+          //    packet.PlayerDatas[count].PvpTalents[i] = pvpTalents[i];
 
             //ToDo send Azerite Power Data
 
@@ -1454,7 +1455,6 @@ void InstanceScript::SendEncounterEnd(uint32 encounterID, bool success)
     encounterEnd.Success = success;
     instance->SendToPlayers(encounterEnd.Write());
 }
-
 
 uint32 InstanceScript::GetEncounterIDForBoss(Creature* boss) const
 {

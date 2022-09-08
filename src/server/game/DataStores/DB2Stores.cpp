@@ -2061,6 +2061,9 @@ char const* DB2Manager::GetChrRaceName(uint8 race, LocaleConstant locale /*= DEF
 
 ChrSpecializationEntry const* DB2Manager::GetChrSpecializationByIndex(uint32 class_, uint32 index) const
 {
+    if (index > 5)
+        return nullptr;
+
     return _chrSpecializationsByIndex[class_][index];
 }
 
