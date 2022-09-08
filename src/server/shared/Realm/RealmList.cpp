@@ -341,10 +341,12 @@ std::vector<uint8> RealmList::GetRealmList(uint32 build, std::string const& subR
             bool isClientDF = isDFBuild(build);
             bool isRealmDF = isDFBuild(realm.second.Build);
 
-            // Don't allow live clients to connect to beta
-            if (!isClientDF && isRealmDF)
-                flag |= REALM_FLAG_VERSION_MISMATCH;
-            else if (isClientDF && !isRealmDF) ///< Don't let dragonflight connect to live realm
+            if (isRealmDF)
+            {
+                if (!isClientDF)
+                    flag |= REALM_FLAG_VERSION_MISMATCH;
+            }
+            else if (isClientDF)
                 flag |= REALM_FLAG_VERSION_MISMATCH | REALM_FLAG_OFFLINE;
 
             JSON::RealmList::RealmState* state = realmList.add_updates();
