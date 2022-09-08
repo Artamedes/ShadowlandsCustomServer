@@ -324,11 +324,28 @@ std::vector<uint8> RealmList::GetRealmList(uint32 build, std::string const& subR
                 continue;
 
             uint32 flag = realm.second.Flags;
-            // 45335 - DRAGOONFLIGHT BETA
-            if (build < Retail927_Initial || (realm.second.Build == Beta1000 && build != Beta1000) || (build == Beta1000 && realm.second.Build != Beta1000))
+
+            auto isDFBuild = ([](uint32 version) -> bool
+            {
+                switch (version)
+                {
+                    case 45335:
+                    case 45454:
+                    case 45480:
+                        return true;
+                    default:
+                        return false;
+                }
+            });
+
+            bool isClientDF = isDFBuild(build);
+            bool isRealmDF = isDFBuild(realm.second.Build);
+
+            // Don't allow live clients to connect to beta
+            if (!isClientDF && isRealmDF)
                 flag |= REALM_FLAG_VERSION_MISMATCH;
-            //if (realm.second.Build != build)
-            //    flag |= REALM_FLAG_VERSION_MISMATCH;
+            else if (isClientDF && !isRealmDF) ///< Don't let dragonflight connect to live realm
+                flag |= REALM_FLAG_VERSION_MISMATCH | REALM_FLAG_OFFLINE;
 
             JSON::RealmList::RealmState* state = realmList.add_updates();
             state->mutable_update()->set_wowrealmaddress(realm.second.Id.GetAddress());
@@ -348,7 +365,7 @@ std::vector<uint8> RealmList::GetRealmList(uint32 build, std::string const& subR
             {
                 version->set_versionmajor(10);
                 version->set_versionminor(0);
-                version->set_versionrevision(0);
+                version->set_versionrevision(2);
                 version->set_versionbuild(realm.second.Build);
             }
 
