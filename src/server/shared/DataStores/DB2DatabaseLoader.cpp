@@ -23,7 +23,7 @@
 #include "Log.h"
 #include <cstring>
 
-DB2LoadInfo::DB2LoadInfo(DB2FieldMeta const* fields, std::size_t fieldCount, DB2Meta const* meta, HotfixDatabaseStatements statement)
+DB2LoadInfo::DB2LoadInfo(DB2FieldMeta const* fields, std::size_t fieldCount, DB2Meta const* meta, HotfixDatabaseStatements statement = HOTFIX_SEL_NYI)
     : DB2FileLoadInfo(fields, fieldCount, meta), Statement(statement)
 {
 }
@@ -32,6 +32,10 @@ static char const* nullStr = "";
 
 char* DB2DatabaseLoader::Load(bool custom, uint32& records, char**& indexTable, std::vector<char*>& stringPool)
 {
+    // sometimes unimplemented hotfix is exist but we load db2
+    if (_loadInfo->Statement == HOTFIX_SEL_NYI)
+        return nullptr;
+
     // Even though this query is executed only once, prepared statement is used to send data from mysql server in binary format
     HotfixDatabasePreparedStatement* stmt = HotfixDatabase.GetPreparedStatement(_loadInfo->Statement);
     stmt->setBool(0, !custom);

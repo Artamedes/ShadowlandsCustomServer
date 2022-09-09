@@ -30,6 +30,8 @@ enum HotfixDatabaseStatements : uint32
         When updating more than one field, consider looking at the calling function
         name for a suiting suffix.
     */
+    HOTFIX_SEL_NYI,
+    HOTFIX_SEL_NYI_MAX_ID,
 
     HOTFIX_SEL_ACHIEVEMENT,
     HOTFIX_SEL_ACHIEVEMENT_MAX_ID,

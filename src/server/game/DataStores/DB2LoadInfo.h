@@ -7072,4 +7072,217 @@ struct WorldStateExpressionLoadInfo
     }
 };
 
+struct TraitEdgeLoadInfo
+{
+    static DB2LoadInfo const* Instance()
+    {
+        static constexpr DB2FieldMeta fields[] =
+        {
+            { true, FT_INT, "ID" },
+            { true, FT_INT, "VisualStyle" },
+            { true, FT_INT, "LeftTraitNodeID" },
+            { true, FT_INT, "RightTraitNodeID" },
+            { true, FT_INT, "Type" },
+        };
+        static DB2LoadInfo const loadInfo(&fields[0], std::size(fields), TraitEdgeMeta::Instance(), HOTFIX_SEL_NYI);
+        return &loadInfo;
+    };
+};
+struct TraitNodeLoadInfo
+{
+    static DB2LoadInfo const* Instance()
+    {
+        static constexpr DB2FieldMeta fields[] =
+        {
+            { true, FT_INT, "ID" },
+            { true, FT_INT, "TraitTreeID" },
+            { true, FT_INT, "PosX" },
+            { true, FT_INT, "PosY" },
+            { true, FT_INT, "Type" },
+            { true, FT_INT, "Flags" },
+        };
+        static DB2LoadInfo const loadInfo(&fields[0], std::size(fields), TraitNodeMeta::Instance(), HOTFIX_SEL_NYI);
+        return &loadInfo;
+    };
+};
+struct TraitNodeEntryLoadInfo
+{
+    static DB2LoadInfo const* Instance()
+    {
+        static constexpr DB2FieldMeta fields[] =
+        {
+            { true, FT_INT, "ID" },
+            { true, FT_INT, "TraitDefinitionID" },
+            { true, FT_INT, "MaxRanks" },
+            { true, FT_INT, "NodeEntryType" },
+        };
+        static DB2LoadInfo const loadInfo(&fields[0], std::size(fields), TraitNodeEntryMeta::Instance(), HOTFIX_SEL_NYI);
+        return &loadInfo;
+    };
+};
+struct TraitNodeEntryXTraitCostLoadInfo
+{
+    static DB2LoadInfo const* Instance()
+    {
+        static constexpr DB2FieldMeta fields[] =
+        {
+            { true, FT_INT, "ID" },
+            { true, FT_INT, "TraitNodeEntryID" },
+            { true, FT_INT, "TraitCostID" },
+        };
+        static DB2LoadInfo const loadInfo(&fields[0], std::size(fields), TraitNodeEntryXTraitCostMeta::Instance(), HOTFIX_SEL_NYI);
+        return &loadInfo;
+    };
+};
+struct TraitNodeGroupLoadInfo
+{
+    static DB2LoadInfo const* Instance()
+    {
+        static constexpr DB2FieldMeta fields[] =
+        {
+            { true, FT_INT, "ID" },
+            { true, FT_INT, "TraitTreeID" },
+            { true, FT_INT, "Flags" },
+        };
+        static DB2LoadInfo const loadInfo(&fields[0], std::size(fields), TraitNodeGroupMeta::Instance(), HOTFIX_SEL_NYI);
+        return &loadInfo;
+    };
+};
+struct TraitNodeGroupXTraitCondLoadInfo
+{
+    static DB2LoadInfo const* Instance()
+    {
+        static constexpr DB2FieldMeta fields[] =
+        {
+            { true, FT_INT, "ID" },
+            { true, FT_INT, "TraitCondID" },
+            { true, FT_INT, "TraitNodeGroupID" },
+        };
+        static DB2LoadInfo const loadInfo(&fields[0], std::size(fields), TraitNodeGroupXTraitCondMeta::Instance(), HOTFIX_SEL_NYI);
+        return &loadInfo;
+    };
+};
+struct TraitNodeGroupXTraitCostLoadInfo
+{
+    static DB2LoadInfo const* Instance()
+    {
+        static constexpr DB2FieldMeta fields[] =
+        {
+            { true, FT_INT, "ID" },
+            { true, FT_INT, "TraitNodeGroupID" },
+            { true, FT_INT, "TraitCostID" },
+        };
+        static DB2LoadInfo const loadInfo(&fields[0], std::size(fields), TraitNodeGroupXTraitCostMeta::Instance(), HOTFIX_SEL_NYI);
+        return &loadInfo;
+    };
+};
+struct TraitNodeGroupXTraitNodeLoadInfo
+{
+    static DB2LoadInfo const* Instance()
+    {
+        static constexpr DB2FieldMeta fields[] =
+        {
+            { true, FT_INT, "ID" },
+            { true, FT_INT, "TraitNodeGroupID" },
+            { true, FT_INT, "TraitNodeID" },
+            { true, FT_INT, "Index" },
+        };
+        static DB2LoadInfo const loadInfo(&fields[0], std::size(fields), TraitNodeGroupXTraitNodeMeta::Instance(), HOTFIX_SEL_NYI);
+        return &loadInfo;
+    };
+};
+struct TraitNodeXTraitCondLoadInfo
+{
+    static DB2LoadInfo const* Instance()
+    {
+        static constexpr DB2FieldMeta fields[] =
+        {
+            { true, FT_INT, "ID" },
+            { true, FT_INT, "TraitCondID" },
+            { true, FT_INT, "TraitNodeID" },
+        };
+        static DB2LoadInfo const loadInfo(&fields[0], std::size(fields), TraitNodeXTraitCondMeta::Instance(), HOTFIX_SEL_NYI);
+        return &loadInfo;
+    };
+};
+struct TraitNodeXTraitNodeEntryLoadInfo
+{
+    static DB2LoadInfo const* Instance()
+    {
+        static constexpr DB2FieldMeta fields[] =
+        {
+            { true, FT_INT, "ID" },
+            { true, FT_INT, "TraitNodeID" },
+            { true, FT_INT, "TraitNodeEntryID" },
+            { true, FT_INT, "Index" },
+        };
+        static DB2LoadInfo const loadInfo(&fields[0], std::size(fields), TraitNodeXTraitNodeEntryMeta::Instance(), HOTFIX_SEL_NYI);
+        return &loadInfo;
+    };
+};
+struct TraitTreeLoadInfo
+{
+    static DB2LoadInfo const* Instance()
+    {
+        static constexpr DB2FieldMeta fields[] =
+        {
+            { false, FT_STRING_NOT_LOCALIZED, "Name" },
+            { true, FT_INT, "ID" },
+            { true, FT_INT, "Field_10_0_0_44707_002" },
+            { true, FT_INT, "TraitTreeID" },
+            { true, FT_INT, "FirstTraitNodeID" },
+            { true, FT_INT, "PlayerConditionID" },
+            { true, FT_INT, "Flags" },
+        };
+        static DB2LoadInfo const loadInfo(&fields[0], std::size(fields), TraitTreeMeta::Instance(), HOTFIX_SEL_NYI);
+        return &loadInfo;
+    };
+};
+struct TraitTreeLoadoutLoadInfo
+{
+    static DB2LoadInfo const* Instance()
+    {
+        static constexpr DB2FieldMeta fields[] =
+        {
+            { true, FT_INT, "ID" },
+            { true, FT_INT, "TraitTreeID" },
+            { true, FT_INT, "Field_10_0_0_45232_002" },
+        };
+        static DB2LoadInfo const loadInfo(&fields[0], std::size(fields), TraitTreeLoadoutMeta::Instance(), HOTFIX_SEL_NYI);
+        return &loadInfo;
+    };
+};
+struct TraitTreeLoadoutEntryLoadInfo
+{
+    static DB2LoadInfo const* Instance()
+    {
+        static constexpr DB2FieldMeta fields[] =
+        {
+            { true, FT_INT, "ID" },
+            { true, FT_INT, "TraitTreeLoadoutID" },
+            { true, FT_INT, "SelectedTraitNodeID" },
+            { true, FT_INT, "SelectedTraitNodeEntryID" },
+            { true, FT_INT, "NumPoints" },
+            { true, FT_INT, "OrderIndex" },
+        };
+        static DB2LoadInfo const loadInfo(&fields[0], std::size(fields), TraitTreeLoadoutEntryMeta::Instance(), HOTFIX_SEL_NYI);
+        return &loadInfo;
+    };
+};
+struct TraitTreeXTraitCurrencyLoadInfo
+{
+    static DB2LoadInfo const* Instance()
+    {
+        static constexpr DB2FieldMeta fields[] =
+        {
+            { true, FT_INT, "ID" },
+            { true, FT_INT, "Index" },
+            { true, FT_INT, "TraitTreeID" },
+            { true, FT_INT, "TraitCurrencyID" },
+        };
+        static DB2LoadInfo const loadInfo(&fields[0], std::size(fields), TraitTreeXTraitCurrencyMeta::Instance(), HOTFIX_SEL_NYI);
+        return &loadInfo;
+    };
+};
+
 #endif // DB2LoadInfo_h__

@@ -4308,6 +4308,106 @@ struct WorldStateExpressionEntry
     uint32 ID;
     char const* Expression;
 };
+struct TraitEdgeEntry
+{
+    int32 ID;
+    int32 VisualStyle;
+    int32 LeftTraitNodeID;
+    int32 RightTraitNodeID;
+    int32 Type;
+};
+struct TraitNodeEntry
+{
+    int32 ID;
+    int32 TraitTreeID;
+    int32 PosX;
+    int32 PosY;
+    int32 Type;
+    int32 Flags;
+};
+struct TraitNodeEntryEntry
+{
+    int32 ID;
+    int32 TraitDefinitionID;
+    int32 MaxRanks;
+    int32 NodeEntryType;
+};
+struct TraitNodeEntryXTraitCostEntry
+{
+    int32 ID;
+    int32 TraitNodeEntryID;
+    int32 TraitCostID;
+};
+struct TraitNodeGroupEntry
+{
+    int32 ID;
+    int32 TraitTreeID;
+    int32 Flags;
+};
+struct TraitNodeGroupXTraitCondEntry
+{
+    int32 ID;
+    int32 TraitCondID;
+    int32 TraitNodeGroupID;
+};
+struct TraitNodeGroupXTraitCostEntry
+{
+    int32 ID;
+    int32 TraitNodeGroupID;
+    int32 TraitCostID;
+};
+struct TraitNodeGroupXTraitNodeEntry
+{
+    int32 ID;
+    int32 TraitNodeGroupID;
+    int32 TraitNodeID;
+    int32 Index;
+};
+struct TraitNodeXTraitCondEntry
+{
+    int32 ID;
+    int32 TraitCondID;
+    int32 TraitNodeID;
+};
+struct TraitNodeXTraitNodeEntryEntry
+{
+    int32 ID;
+    int32 TraitNodeID;
+    int32 TraitNodeEntryID;
+    int32 Index;
+};
+struct TraitTreeEntry
+{
+    char const* Name;
+    int32 ID;
+    int32 Field_10_0_0_44707_002;
+    int32 TraitTreeID;
+    int32 FirstTraitNodeID;
+    int32 PlayerConditionID;
+    int32 Flags;
+};
+struct TraitTreeLoadoutEntry
+{
+    int32 ID;
+    int32 TraitTreeID;
+    int32 Field_10_0_0_45232_002;
+};
+struct TraitTreeLoadoutEntryEntry
+{
+    int32 ID;
+    int32 TraitTreeLoadoutID;
+    int32 SelectedTraitNodeID;
+    int32 SelectedTraitNodeEntryID;
+    int32 NumPoints;
+    int32 OrderIndex;
+};
+struct TraitTreeXTraitCurrencyEntry
+{
+    int32 ID;
+    int32 Index;
+    int32 TraitTreeID;
+    int32 TraitCurrencyID;
+};
 
 #pragma pack(pop)
 #endif
