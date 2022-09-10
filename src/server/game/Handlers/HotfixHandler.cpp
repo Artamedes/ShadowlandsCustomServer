@@ -33,11 +33,6 @@ void WorldSession::HandleDBQueryBulk(WorldPackets::Hotfix::DBQueryBulk& dbQuery)
         dbReply.TableHash = dbQuery.TableHash;
         dbReply.RecordID = record.RecordID;
 
-        if (record.RecordID == 700014 && dbReply.TableHash == 35137211)
-        {
-            continue;
-        }
-
         if (store && store->HasRecord(record.RecordID))
         {
             dbReply.Status = DB2Manager::HotfixRecord::Status::Valid;

@@ -81,6 +81,14 @@ void Specialization::SetPVPTalent(uint16 pvpTalentId, uint8 slot)
     _pvpTalents[slot] = pvpTalentId;
 }
 
+uint16 Specialization::GetPVPTalent(uint8 slot) const
+{
+    if (slot >= MAX_PVP_TALENT_SLOTS)
+        return 0;
+
+    return _pvpTalents[slot];
+}
+
 ////////////////////////////////////////////////////////////////////////
 
 TraitsMgr::TraitsMgr(Player* player) : _player(player)
@@ -110,6 +118,11 @@ void TraitsMgr::Setup()
         _specializations.emplace_back(new Specialization(_player, spec));
     }
 
+    //std::sort(_specializations.begin(), _specializations.end(), [](Specialization* a, Specialization* b)
+    //{
+    //    return a->GetSpecId() > b->GetSpecId();
+    //});
+
     _player->SetCurrentConfigID(_nextConfigId++);
 }
 
@@ -131,9 +144,9 @@ void TraitsMgr::SendUpdateTalentData()
     _player->SendDirectMessage(packet.Write());
 }
 
-void TraitsMgr::SetActiveTalentGroup(int8 orderIndex)
+void TraitsMgr::SetActiveTalentGroup(int8 orderIndex, bool force /*= false*/)
 {
-    if (_activeTalentGroup == orderIndex)
+    if (_activeTalentGroup == orderIndex && !force)
     {
         TC_LOG_ERROR("player.talents", "Same talent group was tried to set!");
         return;
@@ -149,7 +162,27 @@ void TraitsMgr::SetActiveTalentGroup(int8 orderIndex)
 
     auto currSpecialization = GetActiveSpecialization();
 
-    // specialization spells is already unlearned in Player::ActivateSpecialization
+    /// unlearn old specialization spells
+    for (auto spec : _specializations)
+    {
+        if (ChrSpecializationEntry const* specialization = sChrSpecializationStore.LookupEntry(spec->GetSpecId()))
+        {
+            if (std::vector<SpecializationSpellsEntry const*> const* specSpells = sDB2Manager.GetSpecializationSpells(specialization->ID))
+            {
+                for (size_t j = 0; j < specSpells->size(); ++j)
+                {
+                    SpecializationSpellsEntry const* specSpell = (*specSpells)[j];
+                    _player->RemoveSpell(specSpell->SpellID, true);
+                    if (specSpell->OverridesSpellID)
+                        _player->RemoveOverrideSpell(specSpell->OverridesSpellID, specSpell->SpellID);
+                }
+            }
+
+            for (uint32 j = 0; j < MAX_MASTERY_SPELLS; ++j)
+                if (uint32 mastery = specialization->MasterySpellID[j])
+                    _player->RemoveAurasDueToSpell(mastery);
+        }
+    }
 
     currSpecialization->RemoveGlyphAuras();
     currSpecialization->TogglePVPTalents(false);
@@ -159,8 +192,21 @@ void TraitsMgr::SetActiveTalentGroup(int8 orderIndex)
     newSpecialization->LoadGlyphAuras();
     newSpecialization->TogglePVPTalents(true);
 
-    // specialization spells is are learned in Player::ActivateSpecialization
-    // maybe should move to maintain clean
+    /// learn new specialization spells
+    if (std::vector<SpecializationSpellsEntry const*> const* specSpells = sDB2Manager.GetSpecializationSpells(newSpecialization->GetSpecId()))
+    {
+        for (size_t j = 0; j < specSpells->size(); ++j)
+        {
+            SpecializationSpellsEntry const* specSpell = (*specSpells)[j];
+            SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(specSpell->SpellID, DIFFICULTY_NONE);
+            if (!spellInfo || spellInfo->SpellLevel > _player->GetLevel())
+                continue;
+
+            _player->LearnSpell(specSpell->SpellID, false);
+            if (specSpell->OverridesSpellID)
+                _player->AddOverrideSpell(specSpell->OverridesSpellID, specSpell->SpellID);
+        }
+    }
 }
 
 Specialization* TraitsMgr::GetActiveSpecialization()
@@ -182,6 +228,42 @@ Specialization* TraitsMgr::GetSpecialization(int8 orderIndex)
 Trait* TraitsMgr::GetActiveTrait()
 {
     return _activeTrait;
+}
+
+void TraitsMgr::LearnTraits(WorldPackets::Talent::LearnTraits& learnTraits)
+{
+    auto UpdateTrait([&](Trait* trait)
+    {
+        trait->SetConfigName(learnTraits.Trait.ConfigName);
+
+        _player->SetCurrentConfigID(learnTraits.Trait.ConfigID);
+
+        for (auto const& talent : learnTraits.Trait.Talents)
+        {
+            TraitTalent* newTalent = new TraitTalent(_player, trait, talent.TraitNode, talent.TraitNodeEntryID, talent.Rank, talent.Unk);
+            trait->AddTrait(newTalent);
+        }
+
+        trait->LearnTraitSpells();
+    });
+
+    auto it = _traits.find(learnTraits.Trait.ConfigID);
+
+    Trait* trait = nullptr;
+
+    if (it == _traits.end())
+    {
+        trait = new Trait(_player, learnTraits.Trait.ConfigID, _player->GetSpecializationId(), uint32(_traits.size()));
+        _traits[learnTraits.Trait.ConfigID] = trait;
+    }
+    else
+    {
+        trait = it->second;
+    }
+
+    UpdateTrait(trait);
+    _player->AddOrSetTrait(trait);
+    _activeTrait = trait;
 }
 
 void TraitsMgr::SendActiveGlyphs(bool fullUpdate /*= false*/)
@@ -229,18 +311,23 @@ TalentLearnResult TraitsMgr::LearnPVPTalent(uint16 pvpTalentId, uint8 slot, int3
     if (_player->IsInCombat())
         return TalentLearnResult::AffectingCombat;
 
-    if (!_player->HasPlayerFlag(PLAYER_FLAGS_RESTING) && !_player->HasUnitFlag2(UNIT_FLAG2_ALLOW_CHANGING_TALENTS))
-        return TalentLearnResult::RestArea;
-
-    if (slot > 3)
+    if (slot >= MAX_PVP_TALENT_SLOTS)
         return TalentLearnResult::NoPrimaryTreeSelected;
 
-    if (auto spellInfo = sSpellMgr->GetSpellInfo(pvpTalentEntry->SpellID))
+    uint16 oldPvpTalent = currSpec->GetPVPTalent(slot);
+
+    if (oldPvpTalent && !_player->HasPlayerFlag(PLAYER_FLAGS_RESTING) && !_player->HasUnitFlag2(UNIT_FLAG2_ALLOW_CHANGING_TALENTS))
+        return TalentLearnResult::RestArea;
+
+    if (auto oldEntry = sPvpTalentStore.LookupEntry(oldPvpTalent))
     {
-        if (_player->GetSpellHistory()->HasCooldown(spellInfo))
+        if (auto spellInfo = sSpellMgr->GetSpellInfo(oldEntry->SpellID))
         {
-            *spellOnCooldown = pvpTalentEntry->SpellID;
-            return TalentLearnResult::SpellOnCooldown;
+            if (_player->GetSpellHistory()->HasCooldown(spellInfo))
+            {
+                *spellOnCooldown = oldEntry->SpellID;
+                return TalentLearnResult::SpellOnCooldown;
+            }
         }
     }
 
@@ -249,8 +336,15 @@ TalentLearnResult TraitsMgr::LearnPVPTalent(uint16 pvpTalentId, uint8 slot, int3
     return TalentLearnResult::Ok;
 }
 
-Trait::Trait(Player* player, uint32 configId, uint32 specId) : _player(player), _configID(configId), _specializationID(specId)
+Trait::Trait(Player* player, uint32 configId, uint32 specId, uint32 index) :
+    _player(player), _configID(configId), _specializationID(specId), _index(index)
 {
+}
+
+Trait::~Trait()
+{
+    for (auto talent : _talents)
+        delete talent;
 }
 
 void Trait::SetConfigName(std::string_view configName)
@@ -258,6 +352,74 @@ void Trait::SetConfigName(std::string_view configName)
     _configName = configName;
 }
 
-TraitTalent::TraitTalent(Player* player, Trait* trait) : _player(player), _trait(trait)
+void Trait::AddTrait(TraitTalent* talent)
 {
+    _talents.push_back(talent);
+}
+
+void Trait::LearnTraitSpells()
+{
+    for (TraitTalent* talent : _talents)
+    {
+        LearnTraitSpell(talent);
+    }
+}
+
+void Trait::LearnTraitSpell(TraitTalent* talent)
+{
+    if (talent->TraitDefinitionEntry)
+    {
+        _player->LearnSpell(talent->TraitDefinitionEntry->SpellID, true, 0, false, talent->TraitDefinitionEntry->ID);
+        if (talent->TraitDefinitionEntry->OverridesSpellID)
+            _player->AddOverrideSpell(talent->TraitDefinitionEntry->OverridesSpellID, talent->TraitDefinitionEntry->SpellID);
+    }
+}
+
+void Trait::UnlearnTraitSpells()
+{
+    for (TraitTalent* talent : _talents)
+    {
+        RemoveTraitSpell(talent);
+    }
+}
+
+void Trait::RemoveTraitSpell(TraitTalent* talent)
+{
+    if (talent->TraitDefinitionEntry)
+    {
+        _player->RemoveSpell(talent->TraitDefinitionEntry->SpellID);
+
+        // search for spells that the talent teaches and unlearn them
+
+        auto spellInfo = sSpellMgr->GetSpellInfo(talent->TraitDefinitionEntry->SpellID);
+        if (spellInfo)
+        {
+            for (SpellEffectInfo const& spellEffectInfo : spellInfo->GetEffects())
+                if (spellEffectInfo.IsEffect(SPELL_EFFECT_LEARN_SPELL) && spellEffectInfo.TriggerSpell > 0)
+                    _player->RemoveSpell(spellEffectInfo.TriggerSpell, true);
+        }
+
+        if (talent->TraitDefinitionEntry->OverridesSpellID)
+            _player->RemoveOverrideSpell(talent->TraitDefinitionEntry->OverridesSpellID, talent->TraitDefinitionEntry->SpellID);
+    }
+}
+
+std::vector<TraitTalent*>* Trait::GetTalents()
+{
+    return &_talents;
+}
+
+TraitTalent::TraitTalent(Player* player, Trait* trait, uint32 traitNode, uint32 traitNodeEntryID, uint32 rank, uint32 unk)
+    : _player(player), _trait(trait),
+    TraitNode(traitNode), TraitNodeEntryID(traitNodeEntryID), Rank(rank), Unk(unk)
+{
+    TraitNodeEntry       = sTraitNodeStore.LookupEntry(traitNode);
+    TraitTreeEntry       = sTraitTreeStore.LookupEntry(TraitNodeEntry ? TraitNodeEntry->TraitTreeID : 0);
+    TraitNodeEntryEntry  = sTraitNodeEntryStore.LookupEntry(traitNodeEntryID);
+    TraitDefinitionEntry = sTraitDefinitionStore.LookupEntry(TraitNodeEntryEntry ? TraitNodeEntryEntry->TraitDefinitionID : 0);
+}
+
+bool TraitTalent::operator==(TraitTalent const& right) const
+{
+    return TraitNode == right.TraitNode && TraitNodeEntryID == right.TraitNodeEntryID;
 }

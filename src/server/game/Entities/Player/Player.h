@@ -95,6 +95,7 @@ class ReputationMgr;
 class RestMgr;
 class SpellCastTargets;
 class TradeData;
+class Trait;
 class TraitsMgr;
 struct MythicKeystoneInfo;
 class PlayerChallenge;
@@ -1807,7 +1808,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void SendKnownSpells();
         void SendUnlearnSpells();
         bool AddSpell(uint32 spellId, bool active, bool learning, bool dependent, bool disabled, bool loading = false, int32 fromSkill = 0);
-        void LearnSpell(uint32 spell_id, bool dependent, int32 fromSkill = 0, bool suppressMessaging = false);
+        void LearnSpell(uint32 spell_id, bool dependent, int32 fromSkill = 0, bool suppressMessaging = false, int32 traitDefinitionId = 0);
         void RemoveSpell(uint32 spell_id, bool disabled = false, bool learn_low_rank = true, bool suppressMessaging = false);
         void ResetSpells(bool myClassOnly = false);
         void LearnCustomSpells();
@@ -2763,6 +2764,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
 
         TraitsMgr* GetTraitsMgr();
         TraitsMgr const* GetTraitsMgr() const;
+        void AddOrSetTrait(Trait* trait);
 
         void SetCurrentConfigID(uint32 configId) { SetUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::ActiveConfigID), configId); }
 
@@ -3302,9 +3304,11 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void _InitHonorLevelOnLoadFromDB(uint32 honor, uint32 honorLevel);
         std::unique_ptr<RestMgr> _restMgr;
         std::unique_ptr<CovenantMgr> _covenantMgr;
-        std::unique_ptr<TraitsMgr> _traitMgr;
         std::unique_ptr<PlayerChallenge> m_playerChallenge;
         std::unique_ptr<AnimaPowerChoice> _animaPowerChoice;
+
+        /// Traits!
+        std::unique_ptr<TraitsMgr> _traitMgr;
 
         bool _usePvpItemLevels;
 

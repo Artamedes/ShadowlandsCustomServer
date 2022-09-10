@@ -121,3 +121,54 @@ WorldPacket const* WorldPackets::Talent::LearnPvpTalentFailed::Write()
 
     return &_worldPacket;
 }
+
+ByteBuffer& operator>>(ByteBuffer& data, WorldPackets::Talent::CharacterTraitEntry& entry)
+{
+    data >> entry.TraitNode;
+    data >> entry.TraitNodeEntryID;
+    data >> entry.Unk;
+    data >> entry.Rank;
+    return data;
+}
+
+ByteBuffer& operator>>(ByteBuffer& data, WorldPackets::Talent::CharacterTraitInfo& traitInfo)
+{
+    data >> traitInfo.ConfigID;
+    data >> traitInfo.Result;
+    traitInfo.Talents.resize(data.read<uint32>());
+
+    if (traitInfo.Result == 2)
+        data >> traitInfo.Res2Int;
+
+    if (traitInfo.Result == 1)
+    {
+        data >> traitInfo.Res1Int_1;
+        data >> traitInfo.Res1Int_2;
+        data >> traitInfo.Res1Int_3;
+    }
+
+    if (traitInfo.Result == 3)
+        data >> traitInfo.Res3Int;
+
+    for (uint32 i = 0; i < traitInfo.Talents.size(); ++i)
+    {
+        data >> traitInfo.Talents[i];
+    }
+
+    uint32 configNameLen = data.ReadBits(9);
+    traitInfo.ConfigName = data.ReadString(configNameLen);
+
+    return data;
+}
+
+void WorldPackets::Talent::LearnTraits::Read()
+{
+    _worldPacket >> Trait;
+    _worldPacket >> UnkInt32_1;
+    _worldPacket >> UnkInt32_2;
+}
+
+void WorldPackets::Talent::CreateNewLoadout::Read()
+{
+    _worldPacket >> Trait;
+}

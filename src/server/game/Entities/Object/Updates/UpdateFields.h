@@ -807,8 +807,8 @@ struct ActivePlayerData : public IsUpdateFieldStructureTag, public HasChangesMas
     UpdateField<int32, 98, 110> TransportServerTime;
     UpdateField<uint32, 98, 111> WeeklyRewardsPeriodSinceOrigin;                // week count since Cfg_RegionsEntry::ChallengeOrigin
     UpdateField<int16, 98, 112> DEBUGSoulbindConduitRank;
-    UpdateField<uint32, 98, 113> ActiveConfigID;
-    UpdateField<WorldPackets::MythicPlus::DungeonScoreData, 98, 114> DungeonScore;
+    UpdateField<WorldPackets::MythicPlus::DungeonScoreData, 98, 113> DungeonScore;
+    UpdateField<uint32, 98, 114> ActiveConfigID;
     UpdateFieldArray<ObjectGuid, 218, 115, 116> InvSlots;
     UpdateFieldArray<uint64, 240, 334, 335> ExploredZones;
     UpdateFieldArray<UF::RestInfo, 2, 575, 576> RestInfo;

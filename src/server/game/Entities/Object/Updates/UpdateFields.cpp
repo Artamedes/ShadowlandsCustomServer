@@ -4210,7 +4210,7 @@ void ActivePlayerData::WriteUpdate(ByteBuffer& data, Mask const& changesMask, bo
         {
             data << int16(DEBUGSoulbindConduitRank);
         }
-        if (changesMask[113])
+        if (changesMask[114])
         {
             data << uint32(ActiveConfigID);
         }

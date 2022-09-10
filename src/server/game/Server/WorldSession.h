@@ -771,6 +771,8 @@ namespace WorldPackets
         class LearnTalents;
         class LearnPvpTalents;
         class ConfirmRespecWipe;
+        class LearnTraits;
+        class CreateNewLoadout;
     }
 
     namespace Taxi
@@ -1577,6 +1579,9 @@ class TC_GAME_API WorldSession
         void HandleLearnTalentsOpcode(WorldPackets::Talent::LearnTalents& packet);
         void HandleConfirmRespecWipeOpcode(WorldPackets::Talent::ConfirmRespecWipe& confirmRespecWipe);
         void HandleUnlearnSkillOpcode(WorldPackets::Spells::UnlearnSkill& packet);
+
+        void HandleLearnTraitsOpcode(WorldPackets::Talent::LearnTraits& learnTraits);
+        void HandleCreateNewLoadoutOpcode(WorldPackets::Talent::CreateNewLoadout& createNewLoadout);
 
         void HandleQuestgiverStatusQueryOpcode(WorldPackets::Quest::QuestGiverStatusQuery& packet);
         void HandleQuestgiverStatusMultipleQuery(WorldPackets::Quest::QuestGiverStatusMultipleQuery& packet);

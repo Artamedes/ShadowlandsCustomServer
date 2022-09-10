@@ -269,20 +269,21 @@ TC_GAME_API extern DB2Storage<VignetteEntry>                        sVignetteSto
 TC_GAME_API extern DB2Storage<WorldEffectEntry>                     sWorldEffectStore;
 TC_GAME_API extern DB2Storage<WorldMapOverlayEntry>                 sWorldMapOverlayStore;
 TC_GAME_API extern DB2Storage<WorldStateExpressionEntry>            sWorldStateExpressionStore;
-TC_GAME_API extern DB2Storage<TraitEdgeEntry>                       TraitEdgeStore;
-TC_GAME_API extern DB2Storage<TraitNodeEntry>                       TraitNodeStore;
-TC_GAME_API extern DB2Storage<TraitNodeEntryEntry>                  TraitNodeEntryStore;
-TC_GAME_API extern DB2Storage<TraitNodeEntryXTraitCostEntry>        TraitNodeEntryXTraitCostStore;
-TC_GAME_API extern DB2Storage<TraitNodeGroupEntry>                  TraitNodeGroupStore;
-TC_GAME_API extern DB2Storage<TraitNodeGroupXTraitCondEntry>        TraitNodeGroupXTraitCondStore;
-TC_GAME_API extern DB2Storage<TraitNodeGroupXTraitCostEntry>        TraitNodeGroupXTraitCostStore;
-TC_GAME_API extern DB2Storage<TraitNodeGroupXTraitNodeEntry>        TraitNodeGroupXTraitNodeStore;
-TC_GAME_API extern DB2Storage<TraitNodeXTraitCondEntry>             TraitNodeXTraitCondStore;
-TC_GAME_API extern DB2Storage<TraitNodeXTraitNodeEntryEntry>        TraitNodeXTraitNodeEntryStore;
-TC_GAME_API extern DB2Storage<TraitTreeEntry>                       TraitTreeStore;
-TC_GAME_API extern DB2Storage<TraitTreeLoadoutEntry>                TraitTreeLoadoutStore;
-TC_GAME_API extern DB2Storage<TraitTreeLoadoutEntryEntry>           TraitTreeLoadoutEntryStore;
-TC_GAME_API extern DB2Storage<TraitTreeXTraitCurrencyEntry>         TraitTreeXTraitCurrencyStore;
+TC_GAME_API extern DB2Storage<TraitEdgeEntry>                       sTraitEdgeStore;
+TC_GAME_API extern DB2Storage<TraitNodeEntry>                       sTraitNodeStore;
+TC_GAME_API extern DB2Storage<TraitNodeEntryEntry>                  sTraitNodeEntryStore;
+TC_GAME_API extern DB2Storage<TraitNodeEntryXTraitCostEntry>        sTraitNodeEntryXTraitCostStore;
+TC_GAME_API extern DB2Storage<TraitNodeGroupEntry>                  sTraitNodeGroupStore;
+TC_GAME_API extern DB2Storage<TraitNodeGroupXTraitCondEntry>        sTraitNodeGroupXTraitCondStore;
+TC_GAME_API extern DB2Storage<TraitNodeGroupXTraitCostEntry>        sTraitNodeGroupXTraitCostStore;
+TC_GAME_API extern DB2Storage<TraitNodeGroupXTraitNodeEntry>        sTraitNodeGroupXTraitNodeStore;
+TC_GAME_API extern DB2Storage<TraitNodeXTraitCondEntry>             sTraitNodeXTraitCondStore;
+TC_GAME_API extern DB2Storage<TraitNodeXTraitNodeEntryEntry>        sTraitNodeXTraitNodeEntryStore;
+TC_GAME_API extern DB2Storage<TraitTreeEntry>                       sTraitTreeStore;
+TC_GAME_API extern DB2Storage<TraitTreeLoadoutEntry>                sTraitTreeLoadoutStore;
+TC_GAME_API extern DB2Storage<TraitTreeLoadoutEntryEntry>           sTraitTreeLoadoutEntryStore;
+TC_GAME_API extern DB2Storage<TraitTreeXTraitCurrencyEntry>         sTraitTreeXTraitCurrencyStore;
+TC_GAME_API extern DB2Storage<TraitDefinitionEntry>                 sTraitDefinitionStore;
 
 struct ContentTuningLevels
 {

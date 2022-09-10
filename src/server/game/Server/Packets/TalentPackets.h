@@ -141,6 +141,53 @@ namespace WorldPackets
             int32 SpellID = 0;
             std::vector<PvPTalent> Talents;
         };
+
+        struct CharacterTraitEntry
+        {
+            uint32 TraitNode = 0;
+            uint32 TraitNodeEntryID = 0;
+            uint32 Rank = 0;
+            uint32 Unk = 0;
+        };
+
+        struct CharacterTraitInfo
+        {
+            uint32 ConfigID = 0;
+            uint32 Result = 0;
+            std::vector<CharacterTraitEntry> Talents;
+
+            uint32 Res2Int = 0;
+
+            uint32 Res1Int_1 = 0;
+            uint32 Res1Int_2 = 0;
+            uint32 Res1Int_3 = 0;
+
+            uint32 Res3Int = 0;
+
+            std::string ConfigName;
+        };
+
+        class LearnTraits final : public ClientPacket
+        {
+        public:
+            LearnTraits(WorldPacket&& packet) : ClientPacket(CMSG_LEARN_TRAITS, std::move(packet)) { }
+
+            void Read() override;
+
+            CharacterTraitInfo Trait;
+            uint32 UnkInt32_1 = 0;
+            uint32 UnkInt32_2 = 0;
+        };
+
+        class CreateNewLoadout final : public ClientPacket
+        {
+        public:
+            CreateNewLoadout(WorldPacket&& packet) : ClientPacket(CMSG_CREATE_NEW_LOADOUT, std::move(packet)) { }
+
+            void Read() override;
+
+            CharacterTraitInfo Trait;
+        };
     }
 }
 

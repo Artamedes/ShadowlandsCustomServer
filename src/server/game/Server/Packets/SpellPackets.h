@@ -428,6 +428,15 @@ namespace WorldPackets
             SpellCastData Cast;
         };
 
+        struct LearnedSpellInfo
+        {
+            uint32 SpellID  = 0;
+            bool IsFavorite = false;
+            Optional<int32> Unk1;
+            Optional<int32> Unk2;
+            Optional<int32> TraitDefinitionID;
+        };
+
         class LearnedSpells final : public ServerPacket
         {
         public:
@@ -435,8 +444,7 @@ namespace WorldPackets
 
             WorldPacket const* Write() override;
 
-            std::vector<int32> SpellID;
-            std::vector<int32> FavoriteSpellID;
+            std::vector<LearnedSpellInfo> Spells;
             uint32 SpecializationID = 0;
             bool SuppressMessaging = false;
         };

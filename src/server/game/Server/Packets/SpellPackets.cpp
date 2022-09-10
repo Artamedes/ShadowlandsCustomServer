@@ -465,22 +465,36 @@ WorldPacket const* WorldPackets::Spells::SpellGo::Write()
     return &_worldPacket;
 }
 
+ByteBuffer& operator<<(ByteBuffer& data, WorldPackets::Spells::LearnedSpellInfo const& spell)
+{
+    data << uint32(spell.SpellID);
+    data.WriteBit(spell.IsFavorite);
+    data.WriteBit(spell.Unk1.has_value());
+    data.WriteBit(spell.Unk2.has_value());
+    data.WriteBit(spell.TraitDefinitionID.has_value());
+
+    data.FlushBits();
+
+    if (spell.Unk1)
+        data << *spell.Unk1;
+
+    if (spell.Unk2)
+        data << *spell.Unk2;
+
+    if (spell.TraitDefinitionID)
+        data << *spell.TraitDefinitionID;
+
+    return data;
+}
+
 WorldPacket const* WorldPackets::Spells::LearnedSpells::Write()
 {
-    _worldPacket << uint32(SpellID.size());
+    _worldPacket << uint32(Spells.size());
     _worldPacket << uint32(SpecializationID);
     _worldPacket.WriteBit(SuppressMessaging);
     _worldPacket.FlushBits();
-    for (int32 spell : SpellID)
-    {
+    for (LearnedSpellInfo const& spell : Spells)
         _worldPacket << spell;
-        _worldPacket.WriteBit(0);
-        _worldPacket.WriteBit(1);
-        _worldPacket.WriteBit(0);
-        _worldPacket.WriteBit(0);
-        _worldPacket.WriteBit(0);
-        _worldPacket << int32(-1);
-    }
 
     return &_worldPacket;
 }

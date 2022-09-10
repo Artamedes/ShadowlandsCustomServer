@@ -276,7 +276,7 @@ DB2Storage<SkillLineAbilityEntry>               sSkillLineAbilityStore("SkillLin
 DB2Storage<SkillRaceClassInfoEntry>             sSkillRaceClassInfoStore("SkillRaceClassInfo.db2", SkillRaceClassInfoLoadInfo::Instance());
 DB2Storage<SoulbindEntry>                       sSoulbindStore("Soulbind.db2", SoulbindLoadInfo::Instance());
 DB2Storage<SoulbindConduitEntry>                sSoulbindConduitStore("SoulbindConduit.db2", SoulbindConduitLoadInfo::Instance());
-DB2Storage<SoulbindConduitEnhancedSocketEntry>  sSoulbindConduitEnhancedSocketStore("SoulbindConduitEnhancedSocket.db2", SoulbindConduitEnhancedSocket::Instance());
+DB2Storage<SoulbindConduitEnhancedSocketEntry>  sSoulbindConduitEnhancedSocketStore("SoulbindConduitEnhancedSocket.db2", SoulbindConduitEnhancedSocketLoadInfo::Instance());
 DB2Storage<SoulbindConduitItemEntry>            sSoulbindConduitItemStore("SoulbindConduitItem.db2", SoulbindConduitItemLoadInfo::Instance());
 DB2Storage<SoulbindConduitRankEntry>            sSoulbindConduitRankStore("SoulbindConduitRank.db2", SoulbindConduitRankLoadInfo::Instance());
 DB2Storage<SoulbindConduitRankPropertiesEntry>  sSoulbindConduitRankPropertiesStore("SoulbindConduitRankProperties.db2", SoulbindConduitRankPropertiesLoadInfo::Instance());
@@ -365,6 +365,7 @@ DB2Storage<TraitTreeEntry>                      sTraitTreeStore("TraitTree.db2",
 DB2Storage<TraitTreeLoadoutEntry>               sTraitTreeLoadoutStore("TraitTreeLoadout.db2", TraitTreeLoadoutLoadInfo::Instance());
 DB2Storage<TraitTreeLoadoutEntryEntry>          sTraitTreeLoadoutEntryStore("TraitTreeLoadoutEntry.db2", TraitTreeLoadoutEntryLoadInfo::Instance());
 DB2Storage<TraitTreeXTraitCurrencyEntry>        sTraitTreeXTraitCurrencyStore("TraitTreeXTraitCurrency.db2", TraitTreeXTraitCurrencyLoadInfo::Instance());
+DB2Storage<TraitDefinitionEntry>                sTraitDefinitionStore("TraitDefinition.db2", TraitDefinitionLoadInfo::Instance());
 
 TaxiMask                                        sTaxiNodesMask;
 TaxiMask                                        sOldContinentsNodesMask;
@@ -983,6 +984,7 @@ uint32 DB2Manager::LoadStores(std::string const& dataPath, LocaleConstant defaul
     LOAD_DB2(sTraitTreeLoadoutStore);
     LOAD_DB2(sTraitTreeLoadoutEntryStore);
     LOAD_DB2(sTraitTreeXTraitCurrencyStore);
+    LOAD_DB2(sTraitDefinitionStore);
 
 #undef LOAD_DB2
 

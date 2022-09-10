@@ -4409,5 +4409,17 @@ struct TraitTreeXTraitCurrencyEntry
     int32 TraitCurrencyID;
 };
 
+struct TraitDefinitionEntry
+{
+    LocalizedString OverrideName_lang;
+    LocalizedString OverrideSubtext_lang;
+    LocalizedString OverrideDescription_lang;
+    int32 ID;
+    int32 SpellID;
+    int32 OverrideIcon;
+    int32 OverridesSpellID;
+    int32 Field_10_0_0_45232_007;
+};
+
 #pragma pack(pop)
 #endif

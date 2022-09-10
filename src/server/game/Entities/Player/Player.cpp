@@ -3434,7 +3434,7 @@ bool Player::HandlePassiveSpellLearn(SpellInfo const* spellInfo)
     return need_cast && (!spellInfo->CasterAuraState || HasAuraState(AuraStateType(spellInfo->CasterAuraState)));
 }
 
-void Player::LearnSpell(uint32 spell_id, bool dependent, int32 fromSkill /*= 0*/, bool suppressMessaging /*= false*/)
+void Player::LearnSpell(uint32 spell_id, bool dependent, int32 fromSkill /*= 0*/, bool suppressMessaging /*= false*/, int32 traitDefinitionId /*= 0*/)
 {
     PlayerSpellMap::iterator itr = m_spells.find(spell_id);
 
@@ -3447,7 +3447,10 @@ void Player::LearnSpell(uint32 spell_id, bool dependent, int32 fromSkill /*= 0*/
     if (learning && IsInWorld())
     {
         WorldPackets::Spells::LearnedSpells packet;
-        packet.SpellID.push_back(spell_id);
+        packet.Spells.resize(1);
+        packet.Spells[0].SpellID = spell_id;
+        if (traitDefinitionId)
+            packet.Spells[0].TraitDefinitionID = traitDefinitionId;
         packet.SuppressMessaging = suppressMessaging;
         SendDirectMessage(packet.Write());
 
@@ -8506,7 +8509,8 @@ void Player::ApplyArtifactPowerRank(Item* artifact, ArtifactPowerRankEntry const
             AddTemporarySpell(artifactPowerRank->SpellID);
             WorldPackets::Spells::LearnedSpells learnedSpells;
             learnedSpells.SuppressMessaging = true;
-            learnedSpells.SpellID.push_back(artifactPowerRank->SpellID);
+            learnedSpells.Spells.resize(1);
+            learnedSpells.Spells[0].SpellID = artifactPowerRank->SpellID;
             SendDirectMessage(learnedSpells.Write());
         }
         else if (!apply)
@@ -18422,7 +18426,7 @@ bool Player::LoadFromDB(ObjectGuid guid, CharacterDatabaseQueryHolder const& hol
 
     SetNumRespecs(fields.numRespecs);
     _traitMgr->Setup();
-    _traitMgr->SetActiveTalentGroup(fields.activeTalentGroup);
+    _traitMgr->SetActiveTalentGroup(fields.activeTalentGroup, true);
     _traitMgr->LoadFromDB(holder);
     SetPrimarySpecialization(fields.primarySpecialization);
 
@@ -18675,15 +18679,36 @@ bool Player::LoadFromDB(ObjectGuid guid, CharacterDatabaseQueryHolder const& hol
     SetPlayerFlagEx(PLAYER_FLAGS_EX_UNLOCKED_AOE_LOOT);
 
     {
+        // @todo: this is temporary, we need to set in here default talents every spec gets. For example
+        // havooc gets vengeful retreat and the sniff had this:
+        // [346](CharacterTraits)[0] ConfigId: 90082
+        // [346](CharacterTraits)[0] Dword108 : 1
+        // [346](CharacterTraits)[0] SpecID : 577
+        // [346](CharacterTraits)[0] Dword150 : 1
+        // [346](CharacterTraits)[0] Dword154 : 1
+        // [346](CharacterTraits)[0](Talents)[0] TraitNode : 74073
+        // [346](CharacterTraits)[0](Talents)[0] TraitNodeEntryID : 93918
+        // [346](CharacterTraits)[0](Talents)[0] Rank : 0
+        // [346](CharacterTraits)[0](Talents)[0] UnkDF : 1
+        // [346](CharacterTraits)[0] ConfigName : Havoc
+
         auto trait = m_values.ModifyValue(&Player::m_activePlayerData)
             .ModifyValue(&UF::ActivePlayerData::CharacterTraits, 0);
 
         SetUpdateFieldValue(trait.ModifyValue(&UF::CharacterTrait::ConfigID), 4000);
         SetUpdateFieldValue(trait.ModifyValue(&UF::CharacterTrait::Dword108), 1);
         SetUpdateFieldValue(trait.ModifyValue(&UF::CharacterTrait::SpecializationID), GetSpecializationId());
-        SetUpdateFieldValue(trait.ModifyValue(&UF::CharacterTrait::Dword150), 3);
+        SetUpdateFieldValue(trait.ModifyValue(&UF::CharacterTrait::Dword150), 1);
         SetUpdateFieldValue(trait.ModifyValue(&UF::CharacterTrait::Dword154), 1);
-        SetUpdateFieldValue(trait.ModifyValue(&UF::CharacterTrait::ConfigName), "");
+
+        if (auto spec = sChrSpecializationStore.LookupEntry(GetSpecializationId()))
+            SetUpdateFieldValue(trait.ModifyValue(&UF::CharacterTrait::ConfigName), spec->Name.Str[GetSession()->GetSessionDbcLocale()]);
+
+        UF::CharacterTraitTalent& mod = AddDynamicUpdateFieldValue(trait.ModifyValue(&UF::CharacterTrait::Talents));
+        mod.TraitNode = 74406;
+        mod.TraitNodeEntryID = 94261;
+        mod.UnkDF = 1;
+        mod.Rank = 0;
     }
 
     LoadCustom(holder);
@@ -24645,23 +24670,6 @@ void Player::SendInitialPacketsBeforeAddToMap()
     // SMSG_SET_PCT_SPELL_MODIFIER
     // SMSG_SET_FLAT_SPELL_MODIFIER
 
-    WorldPackets::Spells::LearnedSpells knownSpells;
-
-    knownSpells.SpellID.reserve(m_spells.size());
-    knownSpells.SuppressMessaging = true;
-    for (PlayerSpellMap::value_type const& spell : m_spells)
-    {
-        if (spell.second.state == PLAYERSPELL_REMOVED)
-            continue;
-
-        if (!spell.second.active || spell.second.disabled)
-            continue;
-
-        knownSpells.SpellID.push_back(spell.first);
-    }
-
-    SendDirectMessage(knownSpells.Write());
-
     /// SMSG_TALENTS_INFO
     _traitMgr->SendUpdateTalentData();
     /// SMSG_INITIAL_SPELLS
@@ -27800,7 +27808,7 @@ void Player::ActivateSpecialization(ChrSpecializationEntry const* spec)
     }
 
     // Remove spec specific spells
-    RemoveSpecializationSpells();
+    //RemoveSpecializationSpells();
 
     //for (uint32 glyphId : GetGlyphs(GetActiveTalentGroup()))
     //    RemoveAurasDueToSpell(sGlyphPropertiesStore.AssertEntry(glyphId)->SpellID);
@@ -27830,7 +27838,7 @@ void Player::ActivateSpecialization(ChrSpecializationEntry const* spec)
     //     }
     // }
 
-    LearnSpecializationSpells();
+    //LearnSpecializationSpells();
 
     if (CanUseMastery())
         for (uint32 i = 0; i < MAX_MASTERY_SPELLS; ++i)
@@ -29675,6 +29683,49 @@ TraitsMgr* Player::GetTraitsMgr()
 TraitsMgr const* Player::GetTraitsMgr() const
 {
     return _traitMgr.get();
+}
+
+void Player::AddOrSetTrait(Trait* trait)
+{
+    auto traitUF = m_values.ModifyValue(&Player::m_activePlayerData)
+        .ModifyValue(&UF::ActivePlayerData::CharacterTraits, trait->GetIndex());
+
+    SetUpdateFieldValue(traitUF.ModifyValue(&UF::CharacterTrait::ConfigID), trait->GetConfigID());
+    SetUpdateFieldValue(traitUF.ModifyValue(&UF::CharacterTrait::SpecializationID), trait->GetSpecializationID());
+    SetUpdateFieldValue(traitUF.ModifyValue(&UF::CharacterTrait::ConfigName), trait->GetConfigName());
+    SetUpdateFieldValue(traitUF.ModifyValue(&UF::CharacterTrait::Dword108), 1);
+    SetUpdateFieldValue(traitUF.ModifyValue(&UF::CharacterTrait::Dword150), 1);
+    SetUpdateFieldValue(traitUF.ModifyValue(&UF::CharacterTrait::Dword154), 1);
+
+    // UF::CharacterTrait& powerField = AddDynamicUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData)
+    //     .ModifyValue(&UF::ActivePlayerData::CharacterTraits));
+
+    for (TraitTalent* talent : *trait->GetTalents())
+    {
+        int32 foundIndex = m_activePlayerData->CharacterTraits[trait->GetIndex()].Talents.FindIndexIf([&](UF::CharacterTraitTalent ufTalent)
+        {
+            return ufTalent.TraitNode == talent->TraitNode && ufTalent.TraitNodeEntryID == talent->TraitNodeEntryID;
+        });
+
+        if (foundIndex == -1)
+        {
+            UF::CharacterTraitTalent& mod = AddDynamicUpdateFieldValue(traitUF.ModifyValue(&UF::CharacterTrait::Talents));
+            mod.TraitNode        = talent->TraitNode;
+            mod.TraitNodeEntryID = talent->TraitNodeEntryID;
+            mod.UnkDF            = talent->Unk;
+            mod.Rank             = talent->Rank;
+        }
+        else
+        {
+            auto mod = traitUF.ModifyValue(&UF::CharacterTrait::Talents, foundIndex);
+
+            SetUpdateFieldValue(mod.ModifyValue(&UF::CharacterTraitTalent::TraitNode),        talent->TraitNode);
+            SetUpdateFieldValue(mod.ModifyValue(&UF::CharacterTraitTalent::TraitNodeEntryID), talent->TraitNodeEntryID);
+            SetUpdateFieldValue(mod.ModifyValue(&UF::CharacterTraitTalent::UnkDF),            talent->Unk);
+            SetUpdateFieldValue(mod.ModifyValue(&UF::CharacterTraitTalent::Rank),             talent->Rank);
+        }
+    }
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////

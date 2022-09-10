@@ -15398,4 +15398,24 @@ struct TraitTreeXTraitCurrencyMeta
     };
 };
 
+struct TraitDefinitionMeta
+{
+    static DB2Meta const* Instance()
+    {
+        static constexpr DB2MetaField fields[8] =
+        {
+            { FT_STRING, 1, false },
+            { FT_STRING, 1, false },
+            { FT_STRING, 1, false },
+            { FT_INT, 1, true },
+            { FT_INT, 1, true },
+            { FT_INT, 1, true },
+            { FT_INT, 1, true },
+            { FT_INT, 1, true },
+        };
+        static constexpr DB2Meta const instance(0, 3, 8, 8, 0x05675F68, fields, 3);
+        return &instance;
+    };
+};
+
 #endif // DB2Metadata_h__

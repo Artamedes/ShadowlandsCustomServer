@@ -16,10 +16,16 @@ namespace WorldPackets
     {
         struct TalentGroupInfo;
         class ActiveGlyphs;
+        class LearnTraits;
     }
 }
 
-class ChrSpecializationEntry;
+struct ChrSpecializationEntry;
+struct TraitNodeEntry;
+struct TraitTreeEntry;
+struct TraitNodeEntryEntry;
+struct TraitDefinitionEntry;
+
 class Player;
 class Trait;
 
@@ -51,6 +57,7 @@ class TC_GAME_API Specialization
         void RemoveGlyphAuras();
         void LoadGlyphAuras();
         void SetPVPTalent(uint16 pvpTalentId, uint8 slot);
+        uint16 GetPVPTalent(uint8 slot) const;
 
     private:
         Player* _player;
@@ -59,26 +66,53 @@ class TC_GAME_API Specialization
         std::vector<uint32> _glyphs;
 };
 
-class TC_GAME_API TraitTalent
+struct TC_GAME_API TraitTalent
 {
-    public:
-        TraitTalent(Player* player, Trait* trait);
+    TraitTalent(Player* player, Trait* trait, uint32 TraitNode, uint32 TraitNodeEntryID, uint32 Rank, uint32 Unk);
 
-    private:
-        Player* _player;
-        Trait* _trait;
+    uint32 TraitNode;
+    uint32 TraitNodeEntryID;
+    uint32 Rank;
+    uint32 Unk;
+
+    /// Stored to prevent lookup at runtime
+    TraitNodeEntry       const* TraitNodeEntry;
+    TraitTreeEntry       const* TraitTreeEntry;
+    TraitNodeEntryEntry  const* TraitNodeEntryEntry;
+    TraitDefinitionEntry const* TraitDefinitionEntry;
+
+    Player* _player;
+    Trait* _trait;
+
+    bool operator==(TraitTalent const& right) const;
+    bool operator!=(TraitTalent const& right) const { return !(*this == right); }
 };
 
 class TC_GAME_API Trait
 {
     public:
-        Trait(Player* player, uint32 configId, uint32 specId);
+        Trait(Player* player, uint32 configId, uint32 specId, uint32 index);
+        ~Trait();
 
         void SetConfigName(std::string_view configName);
         std::string const& GetConfigName() { return _configName; }
 
+        uint32 GetIndex() const { return _index; }
+        uint32 GetConfigID() const { return _configID; }
+        uint32 GetSpecializationID() const { return _specializationID; }
+
+        void AddTrait(TraitTalent* talent);
+
+        void LearnTraitSpells();
+        void LearnTraitSpell(TraitTalent* talent);
+        void UnlearnTraitSpells();
+        void RemoveTraitSpell(TraitTalent* talent);
+
+        std::vector<TraitTalent*>* GetTalents();
+
     private:
         Player* _player;
+        uint32 _index;
         uint32 _configID;
         uint32 _specializationID;
         std::string _configName;
@@ -103,12 +137,13 @@ class TC_GAME_API TraitsMgr
         /// Specialization
         int8 GetActiveTalentGroup() const { return _activeTalentGroup; }
         int8 GetActiveTalentGroupSafe() const { return _activeTalentGroup == -1 ? 0 : _activeTalentGroup; }
-        void SetActiveTalentGroup(int8 orderIndex);
+        void SetActiveTalentGroup(int8 orderIndex, bool force = false);
         Specialization* GetActiveSpecialization();
         Specialization* GetSpecialization(int8 orderIndex);
 
         /// Traits
         Trait* GetActiveTrait();
+        void LearnTraits(WorldPackets::Talent::LearnTraits& learnTraits);
 
         /// Glyphs
         void SendActiveGlyphs(bool fullUpdate = false);
