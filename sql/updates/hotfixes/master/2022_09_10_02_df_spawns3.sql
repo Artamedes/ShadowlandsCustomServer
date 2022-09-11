@@ -4009,3 +4009,143 @@ INSERT INTO `gameobject_questitem` (`GameObjectEntry`, `Idx`, `ItemId`, `Verifie
 (376941, 0, 192745, 45505); -- The Titanic Comedy
 
 
+
+REPLACE INTO `vehicle_template_accessory` (`entry`, `accessory_entry`, `seat_id`, `minion`, `description`, `summontype`, `summontimer`) VALUES
+(191210, 191209, 1, UNKNOWN, 'Tigari Khan - Ohuna Feather', UNKNOWN, UNKNOWN), -- Tigari Khan - Ohuna Feather
+(191210, 181215, 0, UNKNOWN, 'Tigari Khan - Altan', UNKNOWN, UNKNOWN), -- Tigari Khan - Altan
+(191197, 191195, 0, UNKNOWN, 'Sansok Khan - Shikaar Spear', UNKNOWN, UNKNOWN), -- Sansok Khan - Shikaar Spear
+(191156, 181215, 0, UNKNOWN, 'Tigari Khan - Altan', UNKNOWN, UNKNOWN), -- Tigari Khan - Altan
+(197600, 197601, 0, UNKNOWN, 'Merithra - Everblooming Soil', UNKNOWN, UNKNOWN), -- Merithra - Everblooming Soil
+(188105, 191208, 0, UNKNOWN, 'Khanam Matra Sarest - Horn of the Khanam Matra', UNKNOWN, UNKNOWN), -- Khanam Matra Sarest - Horn of the Khanam Matra
+(195094, 188180, 0, UNKNOWN, 'Stormbound Proto-Drake - Koroleth', UNKNOWN, UNKNOWN), -- Stormbound Proto-Drake - Koroleth
+(190484, 190485, 0, UNKNOWN, 'Kyrakka - Erkhart Stormvein', UNKNOWN, UNKNOWN), -- Kyrakka - Erkhart Stormvein
+(192926, 195367, 0, UNKNOWN, 'Trainer Frodrum - Roki', UNKNOWN, UNKNOWN), -- Trainer Frodrum - Roki
+(187092, 181215, 0, UNKNOWN, 'Tigari Khan - Altan', UNKNOWN, UNKNOWN); -- Tigari Khan - Altan
+
+
+REPLACE INTO `npc_spellclick_spells` (`npc_entry`, `spell_id`, `cast_flags`, `user_type`) VALUES
+(192687, 391971, UNKNOWN, UNKNOWN),
+(192997, 379035, UNKNOWN, UNKNOWN),
+(195669, 391971, UNKNOWN, UNKNOWN),
+(196650, 391971, UNKNOWN, UNKNOWN),
+(196651, 391971, UNKNOWN, UNKNOWN),
+(190708, 262751, UNKNOWN, UNKNOWN),
+(191097, 385014, UNKNOWN, UNKNOWN),
+(194667, 384300, UNKNOWN, UNKNOWN),
+(197728, 391605, UNKNOWN, UNKNOWN),
+(197348, 390564, UNKNOWN, UNKNOWN),
+(195054, 383139, UNKNOWN, UNKNOWN),
+(195049, 383139, UNKNOWN, UNKNOWN),
+(194161, 383139, UNKNOWN, UNKNOWN),
+(194005, 383139, UNKNOWN, UNKNOWN),
+(197569, 391971, UNKNOWN, UNKNOWN),
+(197777, 224326, UNKNOWN, UNKNOWN),
+(197775, 224326, UNKNOWN, UNKNOWN),
+(193554, 381852, UNKNOWN, UNKNOWN),
+(191195, 375466, UNKNOWN, UNKNOWN),
+(191209, 375472, UNKNOWN, UNKNOWN),
+(191208, 375470, UNKNOWN, UNKNOWN),
+(197601, 391289, UNKNOWN, UNKNOWN);
+
+
+DELETE FROM `quest_template` WHERE `ID`=66336;
+INSERT INTO `quest_template` (`ID`, `QuestType`, `QuestPackageID`, `ContentTuningID`, `QuestSortID`, `QuestInfoID`, `SuggestedGroupNum`, `RewardNextQuest`, `RewardXPDifficulty`, `RewardXPMultiplier`, `RewardMoneyDifficulty`, `RewardMoneyMultiplier`, `RewardBonusMoney`, `RewardSpell`, `RewardHonor`, `RewardKillHonor`, `StartItem`, `RewardArtifactXPDifficulty`, `RewardArtifactXPMultiplier`, `RewardArtifactCategoryID`, `Flags`, `FlagsEx`, `FlagsEx2`, `RewardSkillLineID`, `RewardNumSkillUps`, `PortraitGiver`, `PortraitGiverMount`, `PortraitGiverModelSceneID`, `PortraitTurnIn`, `RewardItem1`, `RewardItem2`, `RewardItem3`, `RewardItem4`, `RewardAmount1`, `RewardAmount2`, `RewardAmount3`, `RewardAmount4`, `ItemDrop1`, `ItemDrop2`, `ItemDrop3`, `ItemDrop4`, `ItemDropQuantity1`, `ItemDropQuantity2`, `ItemDropQuantity3`, `ItemDropQuantity4`, `RewardChoiceItemID1`, `RewardChoiceItemID2`, `RewardChoiceItemID3`, `RewardChoiceItemID4`, `RewardChoiceItemID5`, `RewardChoiceItemID6`, `RewardChoiceItemQuantity1`, `RewardChoiceItemQuantity2`, `RewardChoiceItemQuantity3`, `RewardChoiceItemQuantity4`, `RewardChoiceItemQuantity5`, `RewardChoiceItemQuantity6`, `RewardChoiceItemDisplayID1`, `RewardChoiceItemDisplayID2`, `RewardChoiceItemDisplayID3`, `RewardChoiceItemDisplayID4`, `RewardChoiceItemDisplayID5`, `RewardChoiceItemDisplayID6`, `POIContinent`, `POIx`, `POIy`, `POIPriority`, `RewardTitle`, `RewardArenaPoints`, `RewardFactionID1`, `RewardFactionID2`, `RewardFactionID3`, `RewardFactionID4`, `RewardFactionID5`, `RewardFactionValue1`, `RewardFactionValue2`, `RewardFactionValue3`, `RewardFactionValue4`, `RewardFactionValue5`, `RewardFactionCapIn1`, `RewardFactionCapIn2`, `RewardFactionCapIn3`, `RewardFactionCapIn4`, `RewardFactionCapIn5`, `RewardFactionOverride1`, `RewardFactionOverride2`, `RewardFactionOverride3`, `RewardFactionOverride4`, `RewardFactionOverride5`, `RewardFactionFlags`, `AreaGroupID`, `TimeAllowed`, `AllowableRaces`, `TreasurePickerID`, `Expansion`, `ManagedWorldStateID`, `QuestSessionBonus`, `LogTitle`, `LogDescription`, `QuestDescription`, `AreaDescription`, `QuestCompletionLog`, `RewardCurrencyID1`, `RewardCurrencyID2`, `RewardCurrencyID3`, `RewardCurrencyID4`, `RewardCurrencyQty1`, `RewardCurrencyQty2`, `RewardCurrencyQty3`, `RewardCurrencyQty4`, `PortraitGiverText`, `PortraitGiverName`, `PortraitTurnInText`, `PortraitTurnInName`, `AcceptedSoundKitID`, `CompleteSoundKitID`, `VerifiedBuild`) VALUES
+(66336, 2, 0, 2152, 13645, 0, 0, 0, 1, 1, 1, 1, 1900, 0, 0, 0, 0, 0, 1, 0, 37748744, 8192, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2503, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 7, 7, 7, 7, 800, 0, 0, 0, 0, 0, 0, 0, 18446744073709551615, 0, 9, 0, 0, 'The Isle of Emerald', 'Meet Merithra in the Ancient Bough.', 'Your part in this has not escaped me, mortal. It is large part due to your bravery that we were able to defeat the Primalists.\n\nI have invited the centaur to join me under the Ancient Bough. You, along with the Khanam Matra and her people, are welcome in our home.\n\nFollow this path through the archway across the water and into the trees beyond. I will wait for you there.', '', '', 0, 0, 0, 0, 0, 0, 0, 0, '', '', '', '', 890, 878, 45505); -- -Unknown-
+
+UPDATE `quest_template` SET `RewardBonusMoney`=22950, `VerifiedBuild`=45505 WHERE `ID`=66783; -- Renewal of Vows
+UPDATE `quest_template` SET `RewardBonusMoney`=19100, `PortraitGiver`=107111, `PortraitGiverText`='This primalist leader seeks to destroy the green dragons\' sanctuary.', `PortraitGiverName`='Koroleth', `VerifiedBuild`=45505 WHERE `ID`=66337; -- Stormbreaker
+UPDATE `quest_template` SET `RewardBonusMoney`=15300, `VerifiedBuild`=45505 WHERE `ID`=66784; -- Starve the Storm
+UPDATE `quest_template` SET `RewardBonusMoney`=15300, `VerifiedBuild`=45505 WHERE `ID`=66335; -- Deconstruct Additional Pylons
+UPDATE `quest_template` SET `RewardBonusMoney`=15300, `VerifiedBuild`=45505 WHERE `ID`=66333; -- Justice for Solethus
+UPDATE `quest_template` SET `RewardBonusMoney`=30550, `VerifiedBuild`=45505 WHERE `ID`=66421; -- Bonus Objective: The Storm Scar
+UPDATE `quest_template` SET `VerifiedBuild`=45505 WHERE `ID` IN (65266, 65020, 64599, 64527, 64438, 63949, 63861, 47148, 45539, 66650, 65717, 65649, 64833, 49135, 49076, 45088, 26137, 13178, 3861, 65764, 64598, 63892, 49077, 36589);
+UPDATE `quest_template` SET `RewardBonusMoney`=775, `VerifiedBuild`=45505 WHERE `ID`=64304; -- New Opportunities Await
+UPDATE `quest_template` SET `RewardBonusMoney`=390, `VerifiedBuild`=45505 WHERE `ID`=64216; -- Tower Knowledge
+UPDATE `quest_template` SET `RewardBonusMoney`=975, `VerifiedBuild`=45505 WHERE `ID`=64106; -- A Unified Effort
+UPDATE `quest_template` SET `RewardBonusMoney`=775, `VerifiedBuild`=45505 WHERE `ID`=63977; -- Insider Trading
+UPDATE `quest_template` SET `RewardBonusMoney`=1050, `VerifiedBuild`=45505 WHERE `ID`=57532; -- Foraging for Fragments
+UPDATE `quest_template` SET `RewardBonusMoney`=210, `VerifiedBuild`=45505 WHERE `ID`=49930; -- The Call for Allies
+UPDATE `quest_template` SET `RewardBonusMoney`=470, `VerifiedBuild`=45505 WHERE `ID`=40329; -- Battle Pet Tamers: Warlords
+UPDATE `quest_template` SET `Expansion`=9, `VerifiedBuild`=45505 WHERE `ID`=33137; -- The Celestial Tournament
+UPDATE `quest_template` SET `RewardBonusMoney`=15300, `Expansion`=9, `VerifiedBuild`=45505 WHERE `ID`=32863; -- What We've Been Training For
+UPDATE `quest_template` SET `RewardBonusMoney`=15300, `Expansion`=9, `VerifiedBuild`=45505 WHERE `ID`=31952; -- Battle Pet Tamers: Pandaria
+UPDATE `quest_template` SET `RewardBonusMoney`=900 WHERE `ID`=65435;
+UPDATE `quest_template` SET `RewardBonusMoney`=22950, `Expansion`=9, `VerifiedBuild`=45505 WHERE `ID`=57639; -- The Legend of Korrak
+UPDATE `quest_template` SET `RewardBonusMoney`=775, `VerifiedBuild`=45505 WHERE `ID`=53207; -- The Warfront Looms
+UPDATE `quest_template` SET `RewardBonusMoney`=7300, `VerifiedBuild`=45505 WHERE `ID`=70148; -- Without Purpose
+UPDATE `quest_template` SET `RewardBonusMoney`=7300 WHERE `ID` IN (66000, 65999, 65998, 66439);
+UPDATE `quest_template` SET `RewardBonusMoney`=7650, `VerifiedBuild`=45505 WHERE `ID`=66331; -- The Primalist Front
+UPDATE `quest_template` SET `RewardBonusMoney`=7650, `VerifiedBuild`=45505 WHERE `ID`=70220; -- Shady Sanctuary
+UPDATE `quest_template` SET `RewardBonusMoney`=1900, `VerifiedBuild`=45505 WHERE `ID`=66344; -- With the Wind At Our Backs
+UPDATE `quest_template` SET `RewardBonusMoney`=1900, `VerifiedBuild`=45505 WHERE `ID`=66328; -- Green Dragon Down
+UPDATE `quest_template` SET `RewardBonusMoney`=1900, `VerifiedBuild`=45505 WHERE `ID`=66329; -- Blowing of the Horn
+UPDATE `quest_template` SET `RewardBonusMoney`=3650 WHERE `ID`=69911;
+UPDATE `quest_template` SET `RewardBonusMoney`=15300 WHERE `ID` IN (71012, 69915, 65950);
+UPDATE `quest_template` SET `RewardBonusMoney`=15300, `VerifiedBuild`=45505 WHERE `ID`=70739; -- Bloodlines, Sweets, and Teerai
+UPDATE `quest_template` SET `ContentTuningID`=2226, `RewardBonusMoney`=15300, `VerifiedBuild`=45505 WHERE `ID`=70730; -- Shikaar Giver
+UPDATE `quest_template` SET `RewardBonusMoney`=1900 WHERE `ID` IN (69919, 66671);
+UPDATE `quest_template` SET `RewardBonusMoney`=5450, `VerifiedBuild`=45505 WHERE `ID`=67143; -- To Give One's Heart
+UPDATE `quest_template` SET `RewardBonusMoney`=19100 WHERE `ID` IN (66958, 66459);
+UPDATE `quest_template` SET `RewardBonusMoney`=30550 WHERE `ID`=66658;
+UPDATE `quest_template` SET `RewardBonusMoney`=1550, `VerifiedBuild`=45505 WHERE `ID`=64607; -- Tazavesh: A Hard Bargain
+UPDATE `quest_template` SET `RewardBonusMoney`=15300, `VerifiedBuild`=45505 WHERE `ID`=70244; -- Nokhud Can Come of This
+UPDATE `quest_template` SET `RewardBonusMoney`=1900, `Flags`=37748744, `VerifiedBuild`=45505 WHERE `ID`=66327; -- Chasing the Wind
+UPDATE `quest_template` SET `RewardBonusMoney`=1900, `VerifiedBuild`=45505 WHERE `ID`=66259; -- A Storm of Ill Tidings
+UPDATE `quest_template` SET `RewardBonusMoney`=19100, `VerifiedBuild`=45505 WHERE `ID`=66258; -- Oh No, Ohn'ahra!
+
+
+UPDATE `quest_objectives` SET `VerifiedBuild`=45505 WHERE `ID` IN (430653, 430339, 428300, 428301, 428632, 428631, 428630, 428629, 428628, 428627, 428299, 430338, 426824, 428367, 426808, 426807, 426806, 430505, 430501, 428625, 428624, 428623, 428622, 428621, 428356, 428355, 426898, 428354, 428353, 426897, 422649, 422651, 422653, 421930, 421208, 421023, 421167, 420864, 420756, 420622, 420337, 420336, 420335, 420334, 421948, 421947, 421946, 421945, 421944, 421943, 421942, 421941, 421940, 421939, 420917, 421394, 420319, 421393, 420374, 420373, 421171, 420320, 420318, 420044, 392630, 392627, 392629, 392625, 392628, 392624, 290090, 288101, 280702, 270923, 270529, 269341, 269340, 269270, 269269, 269268, 269267, 427707, 423183, 392814, 293812, 293682, 287539, 263590, 257847, 430021, 430020, 429984, 429983, 429982, 428351, 428350, 428349, 428348, 430259, 430602, 430258, 430257, 430255, 427268, 430209, 430208, 430507, 428006, 431039, 431042, 431041, 431040, 431128, 431047, 431216, 431350, 431215, 431352, 431359, 429153, 429098, 423291, 421231, 421230, 421205, 420120, 293996, 293995, 293994, 274942, 430229, 430228, 430227, 430226, 430219, 428597, 430327, 430326, 427253, 428902, 428871, 428869, 428864, 428860, 428859, 428858, 428857, 430830, 428856, 428839);
+
+DELETE FROM `quest_visual_effect` WHERE (`ID`=430219 AND `Index`=0);
+INSERT INTO `quest_visual_effect` (`ID`, `Index`, `VisualEffect`, `VerifiedBuild`) VALUES
+(430219, 0, 2099, 45505);
+
+UPDATE `quest_visual_effect` SET `VerifiedBuild`=45505 WHERE (`Index`=1 AND `ID` IN (430339,428300,428301,428299,428367,420335)) OR (`Index`=0 AND `ID` IN (430339,428300,428301,428299,430338,428367,426808,426807,426806,430505,422653,421930,421167,420337,420336,420335,420334,421171,420044,392624,270923,269341,269340,269270,269269,269268,269267,430021,430020,429984,429983,429982,428351,428350,428349,428348,430259,430602,430258,430257,430255,427268,430208,428006,431042,431040,431128,431047,431350,431215,431352,431359,429153,429098,293995,293994,430228,428597,430327,427253)) OR (`Index`=2 AND `ID` IN (428300,428301,428299));
+
+
+UPDATE `quest_reward_display_spell` SET `VerifiedBuild`=45505 WHERE (`Idx`=0 AND `QuestID` IN (64216,70220));
+
+DELETE FROM `creature_template` WHERE `entry` IN (191195 /*Shikaar Spear*/, 191197 /*Sansok Khan*/);
+INSERT INTO `creature_template` (`entry`, `KillCredit1`, `KillCredit2`, `name`, `femaleName`, `subname`, `TitleAlt`, `IconName`, `HealthScalingExpansion`, `RequiredExpansion`, `VignetteID`, `unit_class`, `WidgetSetID`, `WidgetSetUnitConditionID`, `rank`, `family`, `type`, `type_flags`, `type_flags2`, `HealthModifier`, `ManaModifier`, `RacialLeader`, `movementId`, `CreatureDifficultyID`, `VerifiedBuild`) VALUES
+(191195, 0, 0, 'Shikaar Spear', '', NULL, NULL, 'questinteract', 9, 0, 0, 1, 0, 0, 0, 0, 7, 1073741840, 117440518, 1.10000002384185791, 1, 0, 0, 219400, 45505), -- Shikaar Spear
+(191197, 0, 0, 'Sansok Khan', '', NULL, NULL, NULL, 9, 0, 0, 1, 0, 0, 1, 0, 7, 0, 0, 1, 1, 0, 0, 219402, 45505); -- Sansok Khan
+
+UPDATE `creature_template` SET `VerifiedBuild`=45505 WHERE `entry` IN (185726, 190282, 100820, 188068, 194796, 188106, 194834, 190383, 188150, 188156, 194873, 194875, 188180, 194899, 194901, 194902, 195024, 195044, 188343, 192833, 192834, 192853, 195094, 195136, 195137, 197418, 197419, 197420, 192961, 197447, 186303, 184091, 184092, 184093, 195342, 195361, 195368, 195374, 195377, 193144, 195388, 193165, 193169, 190945, 190946, 190948, 190951, 195433, 195435, 186492, 186494, 186495, 195449, 186502, 195455, 186518, 186519, 197705, 197707, 197708, 191097, 191158, 193396, 191235, 191249, 191251, 191259, 88403, 191325, 191343, 191354, 198068, 191358, 191370, 191371, 191426, 191434, 191482, 191483, 191486, 191494, 191495, 195984, 191533, 166949, 191652, 191802, 191808, 189599, 191919, 191927, 189697, 187507, 192065, 192079, 192081, 192085, 192087, 189853, 187671, 185445, 192199, 192206, 192237, 194556, 192319);
+UPDATE `creature_template` SET `HealthScalingExpansion`=9, `VerifiedBuild`=45505 WHERE `entry`=194839; -- Hua Greenpaw
+UPDATE `creature_template` SET `CreatureDifficultyID`=226175 WHERE `entry`=184422;
+UPDATE `creature_template` SET `HealthModifier`=1, `VerifiedBuild`=45505 WHERE `entry`=194284; -- Sedentary Sediment
+
+DELETE FROM `creature_template_model` WHERE (`Idx`=0 AND `CreatureID` IN (191197,191195));
+INSERT INTO `creature_template_model` (`CreatureID`, `Idx`, `CreatureDisplayID`, `DisplayScale`, `Probability`, `VerifiedBuild`) VALUES
+(191197, 0, 102115, 1, 1, 45505), -- Sansok Khan
+(191195, 0, 105717, 1, 1, 45505); -- Shikaar Spear
+
+UPDATE `creature_template_model` SET `VerifiedBuild`=45505 WHERE (`Idx`=1 AND `CreatureID` IN (188150,195137,191483,100820,191482,191371,191358,191652,191259,188343,190282,189853,193169,191158,197708,197707,195433,195377,195374,195368,195361,191927,191802,192081,191808,192079,192853,192834,190951,190948,191097,190945,190946,185445,187671,195449,192237)) OR (`Idx`=0 AND `CreatureID` IN (188150,195137,195136,191495,191483,100820,193165,184093,191482,191370,195094,188180,191371,184091,184092,191354,191358,191652,191259,191434,191235,191533,191426,191251,188343,197447,195455,191343,191249,191325,190282,187507,189853,186303,185726,193169,193144,198068,191158,197705,197708,197707,194556,188106,186502,195435,186495,186494,195433,186519,186518,186492,194899,194902,195388,194901,195377,195374,195368,195361,192087,192085,191927,191802,192081,192199,191919,191808,192206,192079,195984,192833,192853,192834,192961,192065,194875,194873,190951,190948,190383,189697,188156,193396,166949,194834,194796,191486,197420,197419,197418,188068,191097,190945,191494,190946,185445,195044,88403,194839,187671,195024,192319,195449,195342,192237)) OR (`Idx`=2 AND `CreatureID` IN (100820,191259,188343,190282,189853,193169,197708,197707,195377,195374,195368,195361,191802,192079,190945,190946)) OR (`Idx`=7 AND `CreatureID` IN (191259,188343,197708,197707,195374,195368,195361,190945,190946)) OR (`Idx`=6 AND `CreatureID` IN (191259,188343,197708,197707,195374,195368,195361,190945,190946)) OR (`Idx`=5 AND `CreatureID` IN (191259,188343,197708,197707,195377,195374,195368,195361,190945,190946)) OR (`Idx`=4 AND `CreatureID` IN (191259,188343,197708,197707,195377,195374,195368,195361,190945,190946)) OR (`Idx`=3 AND `CreatureID` IN (191259,188343,190282,189853,197708,197707,195377,195374,195368,195361,192079,190945,190946)) OR (`Idx`=9 AND `CreatureID` IN (197708,197707,195368,195361)) OR (`Idx`=8 AND `CreatureID` IN (197708,197707,195368,195361)) OR (`Idx`=11 AND `CreatureID` IN (197707,195368,195361)) OR (`Idx`=10 AND `CreatureID` IN (197707,195368,195361)) OR (`Idx`=12 AND `CreatureID` IN (195368,195361));
+UPDATE `creature_template_model` SET `CreatureDisplayID`=91239, `VerifiedBuild`=45505 WHERE (`CreatureID`=189599 AND `Idx`=0); -- Merithra
+UPDATE `creature_template_model` SET `CreatureDisplayID`=102642, `VerifiedBuild`=45505 WHERE (`CreatureID`=194284 AND `Idx`=3); -- Sedentary Sediment
+UPDATE `creature_template_model` SET `CreatureDisplayID`=102643, `VerifiedBuild`=45505 WHERE (`CreatureID`=194284 AND `Idx`=2); -- Sedentary Sediment
+UPDATE `creature_template_model` SET `CreatureDisplayID`=102644, `VerifiedBuild`=45505 WHERE (`CreatureID`=194284 AND `Idx`=1); -- Sedentary Sediment
+UPDATE `creature_template_model` SET `CreatureDisplayID`=102645, `VerifiedBuild`=45505 WHERE (`CreatureID`=194284 AND `Idx`=0); -- Sedentary Sediment
+
+
+UPDATE `creature_questitem` SET `VerifiedBuild`=45505 WHERE (`CreatureEntry`=191235 AND `Idx`=0) OR (`CreatureEntry`=192961 AND `Idx` IN (2,1,0));
+
+DELETE FROM `gameobject_template` WHERE `entry` IN (380577 /*Lofty Malygite*/, 377283 /*Storm Corridor Portal*/, 377225 /*Dragon-Killer Ballista*/, 380915 /*Falconry Perch*/, 382109 /*Campfire*/, 380599 /*Catnip Frond*/, 381043 /*Lightning Bound Chest*/);
+INSERT INTO `gameobject_template` (`entry`, `type`, `displayId`, `name`, `IconName`, `castBarCaption`, `unk1`, `size`, `Data0`, `Data1`, `Data2`, `Data3`, `Data4`, `Data5`, `Data6`, `Data7`, `Data8`, `Data9`, `Data10`, `Data11`, `Data12`, `Data13`, `Data14`, `Data15`, `Data16`, `Data17`, `Data18`, `Data19`, `Data20`, `Data21`, `Data22`, `Data23`, `Data24`, `Data25`, `Data26`, `Data27`, `Data28`, `Data29`, `Data30`, `Data31`, `Data32`, `Data33`, `Data34`, `ContentTuningId`, `VerifiedBuild`) VALUES
+(380577, 3, 64768, 'Lofty Malygite', '', 'Opening', '', 1, 43, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 21400, 0, 0, 100246, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5304, 112490, 0, 108, 0, 0, 2214, 45505), -- Lofty Malygite
+(377283, 5, 74594, 'Storm Corridor Portal', '', '', '', 1.5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 45505), -- Storm Corridor Portal
+(377225, 10, 75138, 'Dragon-Killer Ballista', 'questinteract', 'Destroying', '', 1, 2668, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 24585, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2253, 45505), -- Dragon-Killer Ballista
+(380915, 5, 76672, 'Falconry Perch', '', '', '', 0.75, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 45505), -- Falconry Perch
+(382109, 8, 70622, 'Campfire', '', '', '', 0.910000026226043701, 4, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 45505), -- Campfire
+(380599, 3, 76437, 'Catnip Frond', '', '', '', 0.75, 57, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 112509, 0, 0, 0, 0, 2437, 45505), -- Catnip Frond
+(381043, 50, 8627, 'Lightning Bound Chest', '', '', '', 1, 3427, 112828, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2214, 45505); -- Lightning Bound Chest
+
+UPDATE `gameobject_template` SET `VerifiedBuild`=45505 WHERE `entry` IN (380908, 377976, 380909, 380906, 381199, 377040, 377570, 377567, 377566, 377568, 378048);
+
+DELETE FROM `scenario_poi` WHERE (`CriteriaTreeID`=138386 AND `BlobIndex`=0 AND `Idx1`=0) OR (`CriteriaTreeID`=138245 AND `BlobIndex`=0 AND `Idx1`=0) OR (`CriteriaTreeID`=138238 AND `BlobIndex`=0 AND `Idx1`=0);
+INSERT INTO `scenario_poi` (`CriteriaTreeID`, `BlobIndex`, `Idx1`, `MapID`, `UiMapID`, `Priority`, `Flags`, `WorldEffectID`, `PlayerConditionID`, `VerifiedBuild`) VALUES
+(138386, 0, 0, 2444, 2023, 0, 2, 0, 0, 45505),
+(138245, 0, 0, 2444, 2023, 0, 2, 0, 0, 45505),
+(138238, 0, 0, 2444, 2023, 0, 2, 0, 0, 45505);
+
+
