@@ -18695,7 +18695,7 @@ bool Player::LoadFromDB(ObjectGuid guid, CharacterDatabaseQueryHolder const& hol
         auto trait = m_values.ModifyValue(&Player::m_activePlayerData)
             .ModifyValue(&UF::ActivePlayerData::CharacterTraits, 0);
 
-        SetUpdateFieldValue(trait.ModifyValue(&UF::CharacterTrait::ConfigID), 4000);
+        SetUpdateFieldValue(trait.ModifyValue(&UF::CharacterTrait::ConfigID), 520777);
         SetUpdateFieldValue(trait.ModifyValue(&UF::CharacterTrait::Dword108), 1);
         SetUpdateFieldValue(trait.ModifyValue(&UF::CharacterTrait::SpecializationID), GetSpecializationId());
         SetUpdateFieldValue(trait.ModifyValue(&UF::CharacterTrait::Dword150), 1);
@@ -29695,7 +29695,7 @@ void Player::AddOrSetTrait(Trait* trait)
     SetUpdateFieldValue(traitUF.ModifyValue(&UF::CharacterTrait::ConfigName), trait->GetConfigName());
     SetUpdateFieldValue(traitUF.ModifyValue(&UF::CharacterTrait::Dword108), 1);
     SetUpdateFieldValue(traitUF.ModifyValue(&UF::CharacterTrait::Dword150), 1);
-    SetUpdateFieldValue(traitUF.ModifyValue(&UF::CharacterTrait::Dword154), 1);
+    SetUpdateFieldValue(traitUF.ModifyValue(&UF::CharacterTrait::Dword154), trait->GetIndex() + 1);
 
     // UF::CharacterTrait& powerField = AddDynamicUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData)
     //     .ModifyValue(&UF::ActivePlayerData::CharacterTraits));

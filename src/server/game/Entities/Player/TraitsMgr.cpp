@@ -306,7 +306,8 @@ TalentLearnResult TraitsMgr::LearnPVPTalent(uint16 pvpTalentId, uint8 slot, int3
 
     if (auto instance = _player->GetInstanceScript())
         if (auto challenge = instance->GetChallenge())
-            return TalentLearnResult::CantDoThatChallengeModeActive;
+            if (!challenge->IsComplete())
+                return TalentLearnResult::CantDoThatChallengeModeActive;
 
     if (_player->IsInCombat())
         return TalentLearnResult::AffectingCombat;

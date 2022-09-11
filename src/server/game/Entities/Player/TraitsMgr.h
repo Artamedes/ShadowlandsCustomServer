@@ -159,5 +159,5 @@ class TC_GAME_API TraitsMgr
         Trait* _activeTrait = nullptr;
         std::vector<Specialization*> _specializations;
         std::unordered_map<uint32, Trait*> _traits; ///< Key: ConfigID, Value: Trait*
-        uint32 _nextConfigId = 4000;
+        uint32 _nextConfigId = 520777;
 };
