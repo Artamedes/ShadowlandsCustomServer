@@ -1575,7 +1575,7 @@ void Group::CountTheRoll(Rolls::iterator rollI, Map* allowedMap)
                     if (msg == EQUIP_ERR_OK)
                     {
                         item->is_looted = true;
-                        roll->getLoot()->NotifyItemRemoved(roll->itemSlot);
+                        roll->getLoot()->NotifyItemRemoved(roll->itemSlot, allowedMap);
                         roll->getLoot()->unlootedCount--;
                         player->StoreNewItem(dest, roll->itemid, true, item->randomBonusListId, item->GetAllowedLooters(), item->context, item->BonusListIDs);
                     }
@@ -1642,7 +1642,7 @@ void Group::CountTheRoll(Rolls::iterator rollI, Map* allowedMap)
                         if (msg == EQUIP_ERR_OK)
                         {
                             item->is_looted = true;
-                            roll->getLoot()->NotifyItemRemoved(roll->itemSlot);
+                            roll->getLoot()->NotifyItemRemoved(roll->itemSlot, allowedMap);
                             roll->getLoot()->unlootedCount--;
                             player->StoreNewItem(dest, roll->itemid, true, item->randomBonusListId, item->GetAllowedLooters(), item->context, item->BonusListIDs);
                         }
@@ -1656,7 +1656,7 @@ void Group::CountTheRoll(Rolls::iterator rollI, Map* allowedMap)
                     else if (rollvote == DISENCHANT)
                     {
                         item->is_looted = true;
-                        roll->getLoot()->NotifyItemRemoved(roll->itemSlot);
+                        roll->getLoot()->NotifyItemRemoved(roll->itemSlot, allowedMap);
                         roll->getLoot()->unlootedCount--;
                         player->UpdateCriteria(CriteriaType::CastSpell, 13262); // Disenchant
 
@@ -1668,7 +1668,7 @@ void Group::CountTheRoll(Rolls::iterator rollI, Map* allowedMap)
                             player->AutoStoreLoot(disenchant->ID, LootTemplates_Disenchant, ItemContext::NONE, true);
                         else // If the player's inventory is full, send the disenchant result in a mail.
                         {
-                            Loot loot;
+                            Loot loot(allowedMap, roll->getLoot()->GetOwnerGUID(), LOOT_DISENCHANTING);
                             loot.FillLoot(disenchant->ID, LootTemplates_Disenchant, player, true);
 
                             uint32 max_slot = loot.GetMaxSlotInLootFor(player);
