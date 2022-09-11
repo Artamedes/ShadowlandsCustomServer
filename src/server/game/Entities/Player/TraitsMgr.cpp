@@ -123,7 +123,25 @@ void TraitsMgr::Setup()
     //    return a->GetSpecId() > b->GetSpecId();
     //});
 
-    _player->SetCurrentConfigID(_nextConfigId++);
+    uint32 configId = _nextConfigId;
+
+    _player->SetCurrentConfigID(configId);
+
+    // Learn default traits for spec
+    Trait* trait = new Trait(_player, configId, _player->GetSpecializationId(), uint32(_traits.size()));
+    _traits[configId] = trait;
+
+    if (auto spec = sChrSpecializationStore.LookupEntry(_player->GetSpecializationId()))
+        trait->SetConfigName(spec->Name.Str[_player->GetSession()->GetSessionDbcLocale()]);
+
+    // @TODO: Figure out how blizz does this, this is for shiv ona ssa rogue
+    TraitTalent* newTalent = new TraitTalent(_player, trait, 74406, 94261, 0, 1);
+    trait->AddTrait(newTalent);
+    trait->LearnTraitSpells();
+    _player->AddOrSetTrait(trait);
+    _activeTrait = trait;
+
+    _nextConfigId++;
 }
 
 void TraitsMgr::LoadFromDB(CharacterDatabaseQueryHolder const& holder)

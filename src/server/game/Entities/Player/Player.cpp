@@ -18425,10 +18425,10 @@ bool Player::LoadFromDB(ObjectGuid guid, CharacterDatabaseQueryHolder const& hol
     UpdateSkillsForLevel(); //update skills after load, to make sure they are correctly update at player load
 
     SetNumRespecs(fields.numRespecs);
+    SetPrimarySpecialization(fields.primarySpecialization);
     _traitMgr->Setup();
     _traitMgr->SetActiveTalentGroup(fields.activeTalentGroup, true);
     _traitMgr->LoadFromDB(holder);
-    SetPrimarySpecialization(fields.primarySpecialization);
 
     uint32 lootSpecId = fields.lootSpecId;
     if (ChrSpecializationEntry const* chrSpec = sChrSpecializationStore.LookupEntry(lootSpecId))
@@ -18692,23 +18692,23 @@ bool Player::LoadFromDB(ObjectGuid guid, CharacterDatabaseQueryHolder const& hol
         // [346](CharacterTraits)[0](Talents)[0] UnkDF : 1
         // [346](CharacterTraits)[0] ConfigName : Havoc
 
-        auto trait = m_values.ModifyValue(&Player::m_activePlayerData)
-            .ModifyValue(&UF::ActivePlayerData::CharacterTraits, 0);
-
-        SetUpdateFieldValue(trait.ModifyValue(&UF::CharacterTrait::ConfigID), 520777);
-        SetUpdateFieldValue(trait.ModifyValue(&UF::CharacterTrait::Dword108), 1);
-        SetUpdateFieldValue(trait.ModifyValue(&UF::CharacterTrait::SpecializationID), GetSpecializationId());
-        SetUpdateFieldValue(trait.ModifyValue(&UF::CharacterTrait::Dword150), 1);
-        SetUpdateFieldValue(trait.ModifyValue(&UF::CharacterTrait::Dword154), 1);
-
-        if (auto spec = sChrSpecializationStore.LookupEntry(GetSpecializationId()))
-            SetUpdateFieldValue(trait.ModifyValue(&UF::CharacterTrait::ConfigName), spec->Name.Str[GetSession()->GetSessionDbcLocale()]);
-
-        UF::CharacterTraitTalent& mod = AddDynamicUpdateFieldValue(trait.ModifyValue(&UF::CharacterTrait::Talents));
-        mod.TraitNode = 74406;
-        mod.TraitNodeEntryID = 94261;
-        mod.UnkDF = 1;
-        mod.Rank = 0;
+        //auto trait = m_values.ModifyValue(&Player::m_activePlayerData)
+        //    .ModifyValue(&UF::ActivePlayerData::CharacterTraits, 0);
+        //
+        //SetUpdateFieldValue(trait.ModifyValue(&UF::CharacterTrait::ConfigID), 520777);
+        //SetUpdateFieldValue(trait.ModifyValue(&UF::CharacterTrait::Dword108), 1);
+        //SetUpdateFieldValue(trait.ModifyValue(&UF::CharacterTrait::SpecializationID), GetSpecializationId());
+        //SetUpdateFieldValue(trait.ModifyValue(&UF::CharacterTrait::Dword150), 1);
+        //SetUpdateFieldValue(trait.ModifyValue(&UF::CharacterTrait::Dword154), 1);
+        //
+        //if (auto spec = sChrSpecializationStore.LookupEntry(GetSpecializationId()))
+        //    SetUpdateFieldValue(trait.ModifyValue(&UF::CharacterTrait::ConfigName), spec->Name.Str[GetSession()->GetSessionDbcLocale()]);
+        //
+        //UF::CharacterTraitTalent& mod = AddDynamicUpdateFieldValue(trait.ModifyValue(&UF::CharacterTrait::Talents));
+        //mod.TraitNode = 74406;
+        //mod.TraitNodeEntryID = 94261;
+        //mod.UnkDF = 1;
+        //mod.Rank = 0;
     }
 
     LoadCustom(holder);
