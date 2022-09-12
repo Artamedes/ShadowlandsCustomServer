@@ -265,7 +265,7 @@ void WaypointMovementGenerator<Creature>::StartMove(Creature* creature, bool rel
                 init.Path().insert(init.Path().begin(), PositionToVector3(creature->GetPosition()));
         }
         else
-            init.MoveTo(waypoint.X, waypoint.Y, waypoint.Z);
+            init.MoveTo(waypoint.X, waypoint.Y, waypoint.Z, false); ///< This is generating bad paths, better to move directly
     }
 
     if (waypoint.Orientation.has_value() && waypoint.Delay > 0)
