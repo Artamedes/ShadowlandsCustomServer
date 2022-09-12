@@ -21,6 +21,7 @@
 #include "cascfile.h"
 #include "DB2CascFileSource.h"
 #include "ExtractorDB2LoadInfo.h"
+#include "DB2FileSystemSource.h"
 #include "StringFormat.h"
 #include "VMapDefinitions.h"
 #include "vmapexport.h"
@@ -61,8 +62,8 @@ std::vector<MapEntry> map_ids; // partitioned by parent maps first
 std::unordered_set<uint32> maps_that_are_parents;
 boost::filesystem::path input_path;
 bool preciseVectorData = true;
-char const* CascProduct = "wow";
-char const* CascRegion = "eu";
+char const* CascProduct = "wow_beta";
+char const* CascRegion = "us";
 bool UseRemoteCasc = false;
 uint32 DbcLocale = 0;
 std::unordered_map<std::string, WMODoodadData> WmoDoodads;
@@ -487,27 +488,29 @@ int main(int argc, char ** argv)
     int32 FirstLocale = -1;
     for (int i = 0; i < TOTAL_LOCALES; ++i)
     {
-        if (DbcLocale && !(DbcLocale & (1 << i)))
-            continue;
-
-        if (i == LOCALE_none)
-            continue;
-
-        if (!(installedLocalesMask & WowLocaleToCascLocaleFlags[i]))
-            continue;
+       //if (DbcLocale && !(DbcLocale & (1 << i)))
+       //    continue;
+       //
+       //if (i == LOCALE_none)
+       //    continue;
+        //
+        //if (!(installedLocalesMask & WowLocaleToCascLocaleFlags[i]))
+        //    continue;
 
         if (!OpenCascStorage(i))
             continue;
 
-        FirstLocale = i;
         uint32 build = CascStorage->GetBuildNumber();
+        printf("Detected client build %u for locale %s\n\n", build, localeNames[i]);
+
+        FirstLocale = i;
         if (!build)
         {
             CascStorage.reset();
             continue;
         }
 
-        printf("Detected client build %u for locale %s\n\n", build, localeNames[i]);
+        printf("DDDetected client build %u for locale %s\n\n", build, localeNames[i]);
         break;
     }
 
@@ -526,10 +529,17 @@ int main(int argc, char ** argv)
     {
         printf("Read Map.dbc file... ");
 
-        DB2CascFileSource source(CascStorage, MapLoadInfo::Instance()->Meta->FileDataId);
+       // DB2CascFileSource source(CascStorage, MapLoadInfo::Instance()->Meta->FileDataId);
         DB2FileLoader db2;
         try
         {
+            std::string dataPath = ".";
+            if (dataPath.empty() || (dataPath.at(dataPath.length() - 1) != '/' && dataPath.at(dataPath.length() - 1) != '\\'))
+                dataPath.push_back('/');
+
+            std::string db2Path = dataPath + "dbc/";
+            db2Path = db2Path + localeNames[0] + '/';
+            DB2FileSystemSource source(db2Path + std::string("Map.db2"));
             db2.Load(&source, MapLoadInfo::Instance());
         }
         catch (std::exception const& e)

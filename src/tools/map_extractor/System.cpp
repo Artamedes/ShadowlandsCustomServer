@@ -20,6 +20,7 @@
 #include "Common.h"
 #include "DB2CascFileSource.h"
 #include "DB2Meta.h"
+#include "DB2FileSystemSource.h"
 #include "DBFilesClientList.h"
 #include "ExtractorDB2LoadInfo.h"
 #include "MapDefines.h"
@@ -107,8 +108,8 @@ float CONF_flat_liquid_delta_limit = 0.001f; // If max - min less this value - l
 
 uint32 CONF_Locale = 0;
 
-char const* CONF_Product = "wow";
-char const* CONF_Region = "eu";
+char const* CONF_Product = "wow_beta";
+char const* CONF_Region = "us";
 bool CONF_UseRemoteCasc = false;
 
 #define CASC_LOCALES_COUNT 17
@@ -256,7 +257,14 @@ void TryLoadDB2(char const* name, DB2CascFileSource* source, DB2FileLoader* db2,
 {
     try
     {
-        db2->Load(source, loadInfo);
+        std::string dataPath = ".";
+        if (dataPath.empty() || (dataPath.at(dataPath.length() - 1) != '/' && dataPath.at(dataPath.length() - 1) != '\\'))
+            dataPath.push_back('/');
+
+        std::string db2Path = dataPath + "dbc/";
+        db2Path = db2Path + localeNames[0] + '/';
+        DB2FileSystemSource source(db2Path + std::string(name));
+        db2->Load(&source, loadInfo);
     }
     catch (std::exception const& e)
     {
@@ -1519,7 +1527,7 @@ int main(int argc, char * arg[])
         }
 
         printf("Detected client build %u for locale %s\n\n", tempBuild, localeNames[i]);
-        ExtractDBFilesClient(i);
+       // ExtractDBFilesClient(i);
         CascStorage.reset();
 
         if (firstInstalledLocale < 0)
