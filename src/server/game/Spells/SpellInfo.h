@@ -38,6 +38,7 @@ struct Condition;
 struct SpellChainNode;
 struct SpellModifier;
 struct SpellTargetPosition;
+struct SpellProcEntry;
 enum WeaponAttackType : uint8;
 
 enum SpellTargetSelectionCategories
@@ -632,6 +633,9 @@ class TC_GAME_API SpellInfo
 
         bool HasLabel(uint32 labelId) const;
 
+        SpellProcEntry const* GetSpellProcEntry() const;
+        void SetSpellProcEntry(SpellProcEntry const* proc);
+
     private:
         // loading helpers
         void _InitializeExplicitTargetMask();
@@ -643,6 +647,8 @@ class TC_GAME_API SpellInfo
 
         // unloading helpers
         void _UnloadImplicitTargetConditionLists();
+
+        SpellProcEntry const* _spellProcEntry;
 
     private:
         std::vector<SpellEffectInfo> _effects;

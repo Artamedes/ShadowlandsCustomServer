@@ -471,10 +471,11 @@ bool Player::Create(ObjectGuid::LowType guidlow, WorldPackets::Character::Charac
     m_createMode = createInfo->UseNPE && info->createPositionNPE ? PlayerCreateMode::NPE : PlayerCreateMode::Normal;
 
     Relocate(position.Loc);
+    // this kind of bad, ran on WorldSession update, we can store this value in PlayerCreateInfo
+    uint32 l_ZoneId = sTerrainMgr.GetZoneId(PhasingHandler::GetEmptyPhaseShift(), position.Loc.GetMapId(), position.Loc);
 
-    // TODO: Move to map thread
-    SetMap(sMapMgr->CreateMap(position.Loc.GetMapId(), this));
-
+    SetMap(sMapMgr->CreateMap(position.Loc.GetMapId(), this, l_ZoneId));
+    
     if (position.TransportGuid)
     {
         if (MapTransport* transport = HashMapHolder<MapTransport>::Find(ObjectGuid::Create<HighGuid::Transport>(*position.TransportGuid)))
@@ -487,9 +488,9 @@ bool Player::Create(ObjectGuid::LowType guidlow, WorldPackets::Character::Charac
             Relocate(x, y, z, o);
         }
     }
-
+    
     // set initial homebind position
-    SetHomebind(*this, GetAreaId());
+    SetHomebind(*this, l_ZoneId);
 
     uint8 powertype = cEntry->DisplayPower;
 
@@ -18497,9 +18498,9 @@ bool Player::LoadFromDB(ObjectGuid guid, CharacterDatabaseQueryHolder const& hol
 
     // NOW player must have valid map
     // load the player's map here if it's not already loaded
-    // @TODO: load zoneid here
+    auto zoneId = fields.zone;
     if (!map)
-        map = sMapMgr->CreateMap(mapId, this, 0, instanceId);
+        map = sMapMgr->CreateMap(mapId, this, zoneId, instanceId);
     AreaTriggerStruct const* areaTrigger = nullptr;
     bool check = false;
 
@@ -18555,7 +18556,7 @@ bool Player::LoadFromDB(ObjectGuid guid, CharacterDatabaseQueryHolder const& hol
             if (mapId != areaTrigger->target_mapId)
             {
                 mapId = areaTrigger->target_mapId;
-                map = sMapMgr->CreateMap(mapId, this);
+                map = sMapMgr->CreateMap(mapId, this, zoneId);
             }
         }
     }
@@ -18563,7 +18564,7 @@ bool Player::LoadFromDB(ObjectGuid guid, CharacterDatabaseQueryHolder const& hol
     if (!map)
     {
         RelocateToHomebind();
-        map = sMapMgr->CreateMap(mapId, this);
+        map = sMapMgr->CreateMap(mapId, this, m_homebindAreaId);
         if (!map)
         {
             TC_LOG_ERROR("entities.player.loading", "Player::LoadFromDB: Player '%s' (%s) Map: %u, X: %f, Y: %f, Z: %f, O: %f. Invalid default map coordinates or instance couldn't be created.",

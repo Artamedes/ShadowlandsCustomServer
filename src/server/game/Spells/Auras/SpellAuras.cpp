@@ -1903,7 +1903,7 @@ void Aura::PrepareProcToTrigger(AuraApplication* aurApp, ProcEventInfo& eventInf
     if (!prepare)
         return;
 
-    SpellProcEntry const* procEntry = sSpellMgr->GetSpellProcEntry(GetSpellInfo());
+    SpellProcEntry const* procEntry = GetSpellInfo()->GetSpellProcEntry();
     ASSERT(procEntry);
 
     PrepareProcChargeDrop(procEntry, eventInfo);
@@ -1943,7 +1943,7 @@ uint32 Aura::GetProcEffectMask(AuraApplication* aurApp, ProcEventInfo& eventInfo
     if (!GetSpellInfo())
         return 0;
 
-    SpellProcEntry const* procEntry = sSpellMgr->GetSpellProcEntry(GetSpellInfo());
+    SpellProcEntry const* procEntry = GetSpellInfo()->GetSpellProcEntry();
     // only auras with spell proc entry can trigger proc
     if (!procEntry)
         return 0;

@@ -42,6 +42,8 @@
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/accumulators/statistics.hpp>
 #include "ObjectAccessor.h"
+#include "TerrainMgr.h"
+#include "PhasingHandler.h"
 
 void WorldSession::HandleMoveWorldportAckOpcode(WorldPackets::Movement::WorldPortResponse& /*packet*/)
 {
@@ -84,10 +86,23 @@ void WorldSession::HandleMoveWorldportAck()
     if (player->m_InstanceValid == false && !mEntry->IsDungeon())
         player->m_InstanceValid = true;
 
+    // we should store destination zoneid in GetTeleportDest.
     Map* oldMap = player->GetMap();
-    Map* newMap = teleport ? teleport : (GetPlayer()->GetTeleportDestInstanceId() ?
-        sMapMgr->FindMap(loc.GetMapId(), *GetPlayer()->GetTeleportDestInstanceId()) :
-        sMapMgr->CreateMap(loc.GetMapId(), GetPlayer()));
+    Map* newMap = nullptr;
+
+    if (teleport)
+        newMap = teleport;
+    {
+        if (player->GetTeleportDestInstanceId())
+        {
+            newMap = sMapMgr->FindMap(loc.GetMapId(), *GetPlayer()->GetTeleportDestInstanceId());
+        }
+        else
+        {
+            uint32 l_ZoneId = sTerrainMgr.GetZoneId(PhasingHandler::GetEmptyPhaseShift(), loc.GetMapId(), loc);
+            newMap = sMapMgr->CreateMap(loc.GetMapId(), GetPlayer(), l_ZoneId);
+        }
+    }
 
     if (player->IsInWorld())
     {
@@ -159,7 +174,7 @@ void WorldSession::HandleMoveWorldportAck()
             TC_LOG_ERROR("network", "WORLD: failed to teleport player %s %s to map %d (%s) because of unknown reason!",
                 player->GetName().c_str(), player->GetGUID().ToString().c_str(), loc.GetMapId(), newMap->GetMapName());
             player->ResetMap();
-            Map* l_OldMap = sMapMgr->CreateMap(l_OldMapId, GetPlayer());
+            Map* l_OldMap = sMapMgr->CreateMap(l_OldMapId, GetPlayer(), l_OldZoneId);
             if (l_OldMap)
                 GetPlayer()->SetMap(l_OldMap);
             player->TeleportTo(player->m_homebind);

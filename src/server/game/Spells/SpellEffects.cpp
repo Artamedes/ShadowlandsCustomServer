@@ -5249,7 +5249,7 @@ void Spell::EffectBind()
     else
         homeLoc = player->GetWorldLocation();
 
-    player->SetHomebind(homeLoc, areaId);
+    player->SetHomebind(homeLoc, effectInfo->MiscValue ? effectInfo->MiscValue : player->GetZoneId());
     player->SendBindPointUpdate();
 
     TC_LOG_DEBUG("spells", "EffectBind: New homebind X: %f, Y: %f, Z: %f O: %f, MapId: %u, AreaId: %u",

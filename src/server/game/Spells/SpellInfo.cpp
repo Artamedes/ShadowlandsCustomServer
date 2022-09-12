@@ -1305,6 +1305,7 @@ SpellInfo::SpellInfo(SpellNameEntry const* spellName, ::Difficulty difficulty, S
     }
 
     _visuals = data.Visuals;
+    _spellProcEntry = nullptr;
 }
 
 SpellInfo::SpellInfo(SpellNameEntry const* spellName, ::Difficulty difficulty, std::vector<SpellEffectEntry> const& effects)
@@ -1321,6 +1322,7 @@ SpellInfo::SpellInfo(SpellNameEntry const* spellName, ::Difficulty difficulty, s
         _effects[i].EffectIndex = SpellEffIndex(i);
 
     _effects.shrink_to_fit();
+    _spellProcEntry = nullptr;
 }
 
 SpellInfo::~SpellInfo()
@@ -5233,4 +5235,14 @@ bool SpellInfo::MeetsFutureSpellPlayerCondition(Player const* player) const
 bool SpellInfo::HasLabel(uint32 labelId) const
 {
     return Labels.find(labelId) != Labels.end();
+}
+
+SpellProcEntry const* SpellInfo::GetSpellProcEntry() const
+{
+    return _spellProcEntry;
+}
+
+void SpellInfo::SetSpellProcEntry(SpellProcEntry const* proc)
+{
+    _spellProcEntry = proc;
 }

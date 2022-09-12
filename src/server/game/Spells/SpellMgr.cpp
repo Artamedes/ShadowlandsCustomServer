@@ -1854,6 +1854,16 @@ void SpellMgr::LoadSpellProcs()
         ++count;
     }
 
+    for (auto itr = mSpellProcMap.begin(); itr != mSpellProcMap.end(); ++itr)
+    {
+        uint32 spellId = itr->first.first;
+        auto spellInfo = GetSpellInfo(spellId, itr->first.second);
+        if (spellInfo)
+        {
+            const_cast<SpellInfo*>(spellInfo)->SetSpellProcEntry(&itr->second);
+        }
+    }
+
     TC_LOG_INFO("server.loading", ">> Generated spell proc data for %u spells in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
 }
 

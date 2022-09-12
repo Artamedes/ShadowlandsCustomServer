@@ -63,35 +63,35 @@ public:
         if (!player->GetSession()->IsStabilityTest())
             return;
 
-        if (auto dimmy = player->FindNearestCreature(175450, 250.0f))
-        {
-            if (player->GetDistance(dimmy) >= 5.0f)
-                player->GetMotionMaster()->MoveCloserAndStop(0, dimmy, 3.0f);
-            else
-            {
-                player->Attack(dimmy, true);
-
-                auto wep = player->GetWeaponForAttack(BASE_ATTACK);
-                if (!wep)
-                    player->StoreNewItemInBestSlots(182408, 2);
-
-                if (player->HasUnitState(UNIT_STATE_CASTING))
-                    return;
-
-                if (player->GetCovenant()->GetCovenantID() != CovenantID::NightFae)
-                {
-                    player->GetCovenantMgr()->SetCovenant(CovenantID::NightFae);
-                    player->GetCovenantMgr()->SetSoulbind(SoulbindID::Korayn);
-                }
-
-                for (auto spell : { 323639, 258920, 198013, 188499,  210152, 201427, 191427, 162794, 162243,  })
-                {
-                    if (!player->GetSpellHistory()->HasCooldown(spell))
-                        if (player->CastSpell(player->GetSelectedUnit(), spell) == SPELL_CAST_OK)
-                            break;
-                }
-            }
-        }
+        //if (auto dimmy = player->FindNearestCreature(175450, 250.0f))
+        //{
+        //    if (player->GetDistance(dimmy) >= 5.0f)
+        //        player->GetMotionMaster()->MoveCloserAndStop(0, dimmy, 3.0f);
+        //    else
+        //    {
+        //        player->Attack(dimmy, true);
+        //
+        //        auto wep = player->GetWeaponForAttack(BASE_ATTACK);
+        //        if (!wep)
+        //            player->StoreNewItemInBestSlots(182408, 2);
+        //
+        //        if (player->HasUnitState(UNIT_STATE_CASTING))
+        //            return;
+        //
+        //        if (player->GetCovenant()->GetCovenantID() != CovenantID::NightFae)
+        //        {
+        //            player->GetCovenantMgr()->SetCovenant(CovenantID::NightFae);
+        //            player->GetCovenantMgr()->SetSoulbind(SoulbindID::Korayn);
+        //        }
+        //
+        //        for (auto spell : { 323639, 258920, 198013, 188499,  210152, 201427, 191427, 162794, 162243,  })
+        //        {
+        //            if (!player->GetSpellHistory()->HasCooldown(spell))
+        //                if (player->CastSpell(player->GetSelectedUnit(), spell) == SPELL_CAST_OK)
+        //                    break;
+        //        }
+        //    }
+        //}
 
         auto itr = m_RandomEventTimer.find(player->GetGUID().GetCounter());
         if (itr == m_RandomEventTimer.end())
