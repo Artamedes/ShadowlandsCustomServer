@@ -29,7 +29,6 @@
 #include "World.h"
 
 using namespace Trinity::Hyperlinks;
-
 inline uint8 toHex(char c) { return (c >= '0' && c <= '9') ? c - '0' + 0x10 : (c >= 'a' && c <= 'f') ? c - 'a' + 0x1a : 0x00; }
 // Validates a single hyperlink
 HyperlinkInfo Trinity::Hyperlinks::ParseSingleHyperlink(std::string_view str)
@@ -49,7 +48,7 @@ HyperlinkInfo Trinity::Hyperlinks::ParseSingleHyperlink(std::string_view str)
 
     for (uint8 i = 0; i < 8; ++i)
     {
-        if (uint8 hex = toHex(str[i]))
+        if (uint8 hex = toHex(std::tolower(str[i])))
             color = (color << 4) | (hex & 0xf);
         else
             return {};
@@ -99,7 +98,6 @@ HyperlinkInfo Trinity::Hyperlinks::ParseSingleHyperlink(std::string_view str)
     // ok, valid hyperlink, return info
     return { str, color, tag, data, text };
 }
-
 template <typename T>
 struct LinkValidator
 {
