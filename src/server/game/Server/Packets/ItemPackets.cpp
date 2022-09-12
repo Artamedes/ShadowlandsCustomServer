@@ -258,13 +258,26 @@ WorldPacket const* WorldPackets::Item::ItemPushResult::Write()
     _worldPacket << uint32(BattlePetBreedQuality);
     _worldPacket << int32(BattlePetLevel);
     _worldPacket << ItemGUID;
+    _worldPacket << uint32(0); ///< Unk Coounter
+    // For unk counter, Write int32, int32
     _worldPacket.WriteBit(Pushed);
     _worldPacket.WriteBit(Created);
     _worldPacket.WriteBits(DisplayText, 3);
     _worldPacket.WriteBit(IsBonusRoll);
     _worldPacket.WriteBit(IsEncounterLoot);
+    bool unkBitDragonFlight = false;
+    _worldPacket.WriteBit(unkBitDragonFlight);
     _worldPacket.FlushBits();
     _worldPacket << Item;
+
+    if (unkBitDragonFlight)
+    {
+        // 9 ints
+        // float
+        // For unk counter, Write uint32, uint32
+        // bit
+        // bit
+    }
 
     return &_worldPacket;
 }

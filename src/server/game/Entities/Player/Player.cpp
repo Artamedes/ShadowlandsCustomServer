@@ -14611,7 +14611,6 @@ void Player::SendNewItem(Item* item, uint32 quantity, bool pushed, bool created,
     if (!item)  // prevent crash
         return;
 
-    // TODO: UPDATE TO DF
     WorldPackets::Item::ItemPushResult packet;
 
     packet.PlayerGUID = GetGUID();
@@ -14649,10 +14648,10 @@ void Player::SendNewItem(Item* item, uint32 quantity, bool pushed, bool created,
     //packet.IsBonusRoll;
     //packet.IsEncounterLoot;
 
-    //if (broadcast && GetGroup() && !item->GetTemplate()->HasFlag(ITEM_FLAG3_DONT_REPORT_LOOT_LOG_TO_PARTY))
-    //    GetGroup()->BroadcastPacket(packet.Write(), true);
-    //else
-    //    SendDirectMessage(packet.Write());
+    if (broadcast && GetGroup() && !item->GetTemplate()->HasFlag(ITEM_FLAG3_DONT_REPORT_LOOT_LOG_TO_PARTY))
+        GetGroup()->BroadcastPacket(packet.Write(), true);
+    else
+        SendDirectMessage(packet.Write());
 }
 
 /*********************************************************/
