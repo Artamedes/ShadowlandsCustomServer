@@ -7511,7 +7511,7 @@ uint32 Player::GetZoneIdFromDB(ObjectGuid guid)
     return zone;
 }
 
-void Player::UpdateArea(uint32 newArea)
+void Player::UpdateArea(uint32 newArea, bool updatePhasing /*= true*/)
 {
     // FFA_PVP flags are area and not zone id dependent
     // so apply them accordingly
@@ -7526,7 +7526,8 @@ void Player::UpdateArea(uint32 newArea)
     if (oldFFAPvPArea && !pvpInfo.IsInFFAPvPArea)
         ValidateAttackersAndOwnTarget();
 
-    PhasingHandler::OnAreaChange(this);
+    if (updatePhasing)
+        PhasingHandler::OnAreaChange(this);
     UpdateAreaDependentAuras(newArea);
 
     if (IsAreaThatActivatesPvpTalents(newArea))
@@ -7559,7 +7560,7 @@ void Player::UpdateArea(uint32 newArea)
     UpdateMountCapability();
 }
 
-void Player::UpdateZone(uint32 newZone, uint32 newArea)
+void Player::UpdateZone(uint32 newZone, uint32 newArea, bool updatePhasing /*= true*/)
 {
     if (!IsInWorld())
         return;
@@ -7586,7 +7587,7 @@ void Player::UpdateZone(uint32 newZone, uint32 newArea)
     }
 
     // zone changed, so area changed as well, update it.
-    UpdateArea(newArea);
+    UpdateArea(newArea, updatePhasing);
 
     AreaTableEntry const* zone = sAreaTableStore.LookupEntry(newZone);
     if (!zone)
@@ -24770,7 +24771,8 @@ void Player::SendInitialPacketsAfterAddToMap()
     // update zone
     uint32 newzone, newarea;
     GetZoneAndAreaId(newzone, newarea);
-    UpdateZone(newzone, newarea);                            // also call SendInitWorldStates();
+    UpdateZone(newzone, newarea, false);                            // also call SendInitWorldStates();
+    // Phasing is set in this function later
 
     GetSession()->SendLoadCUFProfiles();
 

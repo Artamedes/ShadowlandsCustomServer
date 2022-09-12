@@ -448,7 +448,8 @@ bool Map::AddPlayerToMap(Player* player, bool initPlayer /*= true*/)
         player->m_clientGUIDs.clear();
 
     player->UpdateObjectVisibility(false);
-    PhasingHandler::SendToPlayer(player);
+    // Conditions need to be updated first, so we can't send phasing yet, otherwise client crashes at load invalid maps
+    //PhasingHandler::SendToPlayer(player);
 
     if (player->IsAlive())
         ConvertCorpseToBones(player->GetGUID());

@@ -1929,8 +1929,8 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void UpdatePvPState(bool onlyFFA = false);
         void SetPvP(bool state) override;
         void UpdatePvP(bool state, bool override = false);
-        void UpdateZone(uint32 newZone, uint32 newArea);
-        void UpdateArea(uint32 newArea);
+        void UpdateZone(uint32 newZone, uint32 newArea, bool updatePhasing = true);
+        void UpdateArea(uint32 newArea, bool updatePhasing = true);
         void UpdateHostileAreaState(AreaTableEntry const* area);
         void UpdateZoneDependentAuras(uint32 zone_id);    // zones
         void UpdateAreaDependentAuras(uint32 area_id);    // subzones
