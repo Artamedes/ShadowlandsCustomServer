@@ -34,6 +34,7 @@ class InstanceMap;
 class InstanceSave;
 class Map;
 class Player;
+struct CustomInstanceZone;
 enum Difficulty : uint8;
 
 class TC_GAME_API MapManager
@@ -49,7 +50,7 @@ class TC_GAME_API MapManager
 
         static MapManager* instance();
 
-        Map* CreateMap(uint32 mapId, Player* player, uint32 loginInstanceId = 0, bool createChallenge = false);
+        Map* CreateMap(uint32 mapId, Player* player, uint32 zoneId = 0, uint32 loginInstanceId = 0, bool createChallenge = false, CustomInstanceZone const* p_CustomInstanceZone = nullptr);
         Map* FindMap(uint32 mapId, uint32 instanceId) const;
 
         void Initialize();
@@ -115,6 +116,12 @@ class TC_GAME_API MapManager
 
         MapUpdater * GetMapUpdater() { return &m_updater; }
 
+        void AddCriticalOperation(std::function<bool()> const&& p_Function)
+        {
+            std::shared_lock<std::shared_mutex> lock(m_CriticalOperationLock);
+            m_CriticalOperation.push(std::function<bool()>(p_Function));
+        }
+
         template<typename Worker>
         void DoForAllMaps(Worker&& worker);
 
@@ -146,6 +153,9 @@ class TC_GAME_API MapManager
         uint32 i_gridCleanUpDelay;
         MapMapType i_maps;
         IntervalTimer i_timer;
+
+        std::queue<std::function<bool()>> m_CriticalOperation;
+        mutable std::shared_mutex m_CriticalOperationLock;
 
         std::unique_ptr<InstanceIds> _freeInstanceIds;
         uint32 _nextInstanceId;

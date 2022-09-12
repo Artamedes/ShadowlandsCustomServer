@@ -52,6 +52,7 @@ struct CurrencyTypesEntry;
 struct FactionEntry;
 struct ItemAdditionalLoadInfo;
 struct ItemExtendedCostEntry;
+struct CustomInstanceZone;
 struct ItemLimitCategoryEntry;
 struct ItemSetEffect;
 struct ItemTemplate;
@@ -1143,6 +1144,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         bool TeleportTo(uint32 mapid, Position const& pos, uint32 options = 0, uint32 optionParam = 0, Transport* transport = nullptr, Optional<uint32> instanceId = {});
         bool TeleportTo(WorldLocation const& loc, uint32 options = 0, uint32 optionParam = 0, Transport* transport = nullptr, Optional<uint32> instanceId = {});
         bool TeleportToBGEntryPoint();
+        void SwitchToPhasedMap(uint32 p_MapID, CustomInstanceZone const* p_CustomInstanceZone = nullptr);
         void TeleportToChallenge(Map* map, float x, float y, float z, float orientation, Player* keyOwner, MythicKeystoneInfo* mythicKeystone);
         std::function<void()> TeleportCallback = nullptr;
 
@@ -2081,6 +2083,19 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
 
         void SwitchToWorgenForm() { CastSpell(this, 97709, true); }
         void SwitchForm();
+
+        bool IsInMapSwitch() const { return m_IsInMapSwitch; }
+        void SetInMapSwitch(bool p_In) { m_IsInMapSwitch = p_In; }
+
+        void PreventClientDestroy(ObjectGuid p_Guid) { m_PrevenClientDestroyGUIDs.insert(p_Guid); }
+        void RemovePreventClientDestroy(ObjectGuid p_Guid) { m_PrevenClientDestroyGUIDs.erase(p_Guid); }
+        bool PreventClientDestroyFor(ObjectGuid p_Guid) const
+        {
+            return m_PrevenClientDestroyGUIDs.find(p_Guid) != m_PrevenClientDestroyGUIDs.end();
+        }
+
+        GuidSet m_PrevenClientDestroyGUIDs;
+        bool m_IsInMapSwitch;
 
         WorldSession* GetSession() const { return m_session; }
 

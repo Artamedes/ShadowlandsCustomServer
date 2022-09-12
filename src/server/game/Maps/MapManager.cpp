@@ -131,14 +131,38 @@ GarrisonMap* MapManager::CreateGarrison(uint32 mapId, uint32 instanceId, Player*
     return map;
 }
 
-Map* MapManager::CreateMap(uint32 mapId, Player* player, uint32 loginInstanceId /*= 0*/, bool createChallenge /*= false*/)
+Map* MapManager::CreateMap(uint32 mapId, Player* player, uint32 zoneId /*= 0*/, uint32 loginInstanceId /*= 0*/, bool createChallenge /*= false*/, CustomInstanceZone const* p_CustomInstanceZone /*=nullptr*/)
 {
     if (!player)
         return nullptr;
 
+    if (p_CustomInstanceZone)
+        zoneId = p_CustomInstanceZone->CustomZoneID;
+
+    /// Try to find zone instance with group first
+    if (Group* l_Group = player->GetGroup())
+    {
+        for (GroupReference* l_GroupRef = l_Group->GetFirstMember(); l_GroupRef != nullptr; l_GroupRef = l_GroupRef->next())
+        {
+            Player* l_Member = l_GroupRef->GetSource();
+            if (!l_Member || !l_Member->FindMap() || (l_Member->GetMap()->GetInstanceZoneId() & 0xFFFF) != zoneId || l_Member == player)
+                continue;
+
+            zoneId = l_Member->GetMap()->GetInstanceZoneId();
+
+            Map* m = FindMap_i(mapId, zoneId);
+            return m;
+        }
+    }
+
     MapEntry const* entry = sMapStore.LookupEntry(mapId);
     if (!entry)
         return nullptr;
+
+    /// Instanced map aren't zone-instanced
+    if (entry->Instanceable()
+        || mapId == 1191 || mapId == 1502)  ///< Ashran can't be splitted
+        zoneId = 0;
 
     std::unique_lock<std::shared_mutex> lock(_mapsLock);
 
@@ -265,13 +289,47 @@ Map* MapManager::CreateMap(uint32 mapId, Player* player, uint32 loginInstanceId 
     else
     {
         newInstanceId = 0;
-        // When we need to implement map phasing, we would do it here.
         if (entry->IsSplitByFaction())
             newInstanceId = player->GetTeamId();
 
-        map = FindMap_i(mapId, newInstanceId);
-        if (!map)
-            map = CreateWorldMap(mapId, newInstanceId);
+        if (newInstanceId)
+        {
+            map = FindMap_i(mapId, newInstanceId);
+            if (!map)
+                map = CreateWorldMap(mapId, newInstanceId);
+
+            if (map)
+                i_maps[{ map->GetId(), map->GetInstanceId() }] = map;
+
+            return map;
+        }
+
+        uint32 l_MaxZonePlayerCount = p_CustomInstanceZone ? p_CustomInstanceZone->MaxPlayerCount : 150;
+
+        for (uint32 l_ZoneInstanceId = 0; l_ZoneInstanceId < 0xFFFFFFFF; l_ZoneInstanceId++)
+        {
+            Map* l_Map = FindMap_i(mapId, l_ZoneInstanceId << 16 | zoneId);
+            if (!l_Map)
+                l_Map = CreateWorldMap(mapId, l_ZoneInstanceId << 16 | zoneId);
+
+            if (mapId == 1191 || mapId == 1502) ///< Ashran, DalaranUnderbelly
+                return l_Map;
+
+            ///  Orgrimmar & Stormwind
+            if (zoneId == 1617 || zoneId == 1519)
+                return l_Map;
+
+            if (l_Map->GetPlayerCount() > l_MaxZonePlayerCount)
+            {
+                l_ZoneInstanceId++;
+                continue;
+            }
+
+            if (l_Map)
+                i_maps[{ l_Map->GetId(), l_Map->GetInstanceId() }] = l_Map;
+
+            return l_Map;
+        }
     }
 
     if (map)
@@ -317,6 +375,39 @@ void MapManager::Update(uint32 diff)
 
     for (iter = i_maps.begin(); iter != i_maps.end(); ++iter)
         iter->second->DelayedUpdate(uint32(i_timer.GetCurrent()));
+
+    std::queue<std::function<bool()>> l_Operations;
+    {
+        std::shared_lock<std::shared_mutex> lock(m_CriticalOperationLock);
+        l_Operations = m_CriticalOperation;
+
+        while (!m_CriticalOperation.empty())
+            m_CriticalOperation.pop();
+        lock.unlock();
+    }
+
+    std::queue<std::function<bool()>> l_CriticalOperationFallBack;
+    while (!l_Operations.empty())
+    {
+        if (l_Operations.front())
+        {
+            if (!(l_Operations.front()()))
+                l_CriticalOperationFallBack.push(l_Operations.front());
+        }
+
+        l_Operations.pop();
+    }
+
+    if (!l_CriticalOperationFallBack.empty())
+    {
+        std::shared_lock<std::shared_mutex> lock(m_CriticalOperationLock);
+        while (!l_CriticalOperationFallBack.empty())
+        {
+            m_CriticalOperation.push(l_CriticalOperationFallBack.front());
+            l_CriticalOperationFallBack.pop();
+        }
+        lock.unlock();
+    }
 
     i_timer.SetCurrent(0);
 }

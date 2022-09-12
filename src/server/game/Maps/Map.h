@@ -482,6 +482,16 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
         void SendZoneWeather(uint32 zoneId, Player* player) const;
         void SendZoneWeather(ZoneDynamicInfo const& zoneDynamicInfo, Player* player) const;
 
+        void SetInstanceZoneId(uint32 p_ZoneId)
+        {
+            m_InstanceZoneId = p_ZoneId;
+        }
+
+        uint32 GetInstanceZoneId() const
+        {
+            return m_InstanceZoneId;
+        }
+
         void SetZoneMusic(uint32 zoneId, uint32 musicId);
         Weather* GetOrGenerateZoneDefaultWeather(uint32 zoneId);
         WeatherState GetZoneWeather(uint32 zoneId) const;
@@ -799,6 +809,7 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
         /***                   Phasing                         ***/
         /*********************************************************/
     public:
+        uint32 m_InstanceZoneId;
         MultiPersonalPhaseTracker& GetMultiPersonalPhaseTracker() { return _multiPersonalPhaseTracker; }
         void UpdatePersonalPhasesForPlayer(Player const* player);
 

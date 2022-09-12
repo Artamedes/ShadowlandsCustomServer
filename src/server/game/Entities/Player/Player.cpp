@@ -214,6 +214,8 @@ Player::Player(WorldSession* session) : Unit(true), m_sceneMgr(this), m_Vignette
 
     m_movie = 0;
 
+    m_IsInMapSwitch = false;
+
     PlayerTalkClass = new PlayerMenu(GetSession());
     m_currentBuybackSlot = BUYBACK_SLOT_START;
 
@@ -1192,6 +1194,30 @@ void Player::Update(uint32 p_time)
                 if (m_areaUpdateId != newarea)
                     UpdateArea(newarea);
 
+                /// Check for custom instance zones ...
+                uint32 l_ActualInstanceZoneId = GetMap()->GetInstanceZoneId() & 0xFFFF;
+                if (CustomInstanceZones const* l_CustomInstanceZones = sObjectMgr->GetCustomInstanceZones(newzone))
+                {
+                    for (CustomInstanceZone const& l_InstanceZone : *l_CustomInstanceZones)
+                    {
+                        bool l_In = GetDistance(l_InstanceZone.Position) < l_InstanceZone.Radius;
+                        if ((!l_In && l_ActualInstanceZoneId == l_InstanceZone.CustomZoneID)        ///< Player just get out of a custom instanced zone
+                            || (l_In && l_ActualInstanceZoneId != l_InstanceZone.CustomZoneID))     ///< Player just get into a custom instanced zone
+                        {
+                            ObjectGuid l_PlayerGuid = GetGUID();
+                            uint32 l_CustomZoneId = l_InstanceZone.CustomZoneID;
+                            sMapMgr->AddCriticalOperation([l_PlayerGuid, l_InstanceZone, l_In]()-> bool
+                            {
+                                if (Player* l_Player = ObjectAccessor::FindPlayer(l_PlayerGuid))
+                                    l_Player->SwitchToPhasedMap(l_Player->GetMapId(), l_In ? &l_InstanceZone : nullptr);
+
+                                return true;
+                            });
+                            break;
+                        }
+                    }
+                }
+
                 m_zoneUpdateTimer = ZONE_UPDATE_INTERVAL;
             }
         }
@@ -1742,6 +1768,191 @@ bool Player::TeleportTo(uint32 mapid, Position const& pos, uint32 options /*= 0*
 bool Player::TeleportTo(WorldLocation const& loc, uint32 options /*= 0*/, uint32 optionParam /*= 0*/, Transport* transport /*=nullptr*/, Optional<uint32> instanceId)
 {
     return TeleportTo(loc.GetMapId(), loc.GetPositionX(), loc.GetPositionY(), loc.GetPositionZ(), loc.GetOrientation(), options, optionParam, transport, 0, instanceId);
+}
+
+/// MUST be call with "sMapMgr::AddCriticalOperation"
+void Player::SwitchToPhasedMap(uint32 p_MapID, CustomInstanceZone const* p_CustomInstanceZone /*= nullptr*/)
+{
+    MapEntry const* l_MapEntry = sMapStore.LookupEntry(p_MapID);
+    if (!l_MapEntry)
+        return;
+
+    // Check enter rights before map getting to avoid creating instance copy for player
+    // this check not dependent from map instance copy and same for all instance copies of selected map
+    if (Map::PlayerCannotEnter(p_MapID, this, false))
+        return;
+
+    float l_X = GetPositionX();
+    float l_Y = GetPositionY();
+    float l_Z = GetPositionZ();
+    float l_Orientation = GetOrientation();
+
+    uint32 l_ZoneId = sTerrainMgr.GetZoneId(PhasingHandler::GetEmptyPhaseShift(), p_MapID, l_X, l_Y, l_Z);
+
+    // Relocate the player to the teleport destination
+    Map* l_NewMap = sMapMgr->CreateMap(p_MapID, this, l_ZoneId, 0, false, p_CustomInstanceZone);
+    if (!l_NewMap || l_NewMap->CannotEnter(this))
+        return;
+
+    if (l_NewMap == GetMap())
+        return;
+
+    m_IsInMapSwitch = true;
+
+    DuelComplete(DuelCompleteType::DUEL_FLED);
+
+    /// If the player is a vehicle kit (2 seats mount case) save passengers in order to switch them & restore them on the vehicle
+    std::vector<std::pair<ObjectGuid, uint8>> l_Passengers;
+    if (Vehicle* l_VehicleKit = GetVehicleKit())
+    {
+        for (auto l_Itr : l_VehicleKit->Seats)
+        {
+            ObjectGuid l_PassengerGuid = l_Itr.second.Passenger.Guid;
+            if (l_PassengerGuid.IsPlayer())
+            {
+                Player* l_Passenger = ObjectAccessor::FindPlayer(l_PassengerGuid);
+                if (!l_Passenger)
+                    continue;
+
+                /// Prevent destroy client-side to make smooth map switch
+                l_Passenger->PreventClientDestroy(GetGUID());
+                PreventClientDestroy(l_Passenger->GetGUID());
+
+                l_Passengers.push_back(std::make_pair(l_PassengerGuid, l_Itr.first));
+            }
+        }
+    }
+
+    // @Todo
+   // if (Group* l_Group = GetGroup())
+   // {
+   //     if (l_MapEntry->IsDungeon())
+   //         l_Group->IncrementPlayersInInstance();
+   //     else
+   //         l_Group->DecrementPlayersInInstance();
+   // }
+
+    SetSelection(ObjectGuid::Empty);
+    CombatStop();
+    ResetContestedPvP();
+
+#ifndef CROSS
+    // Remove player from battleground on far teleport (when changing maps)
+    if (Battleground const* l_Battleground = GetBattleground())
+    {
+        if (l_Battleground->GetMapId() != p_MapID)
+            LeaveBattleground(false);
+    }
+#endif
+
+    // Remove pet on map change
+    if (Pet* l_Pet = GetPet()) ///< l_Pet is unused
+        UnsummonPetTemporaryIfAny();
+
+  //  UnsummonCurrentBattlePetIfAny(true);
+
+    // Remove all dynamic objects and AreaTrigger
+    RemoveAllDynObjects();
+    RemoveAllAreaTriggers();
+
+    // Stop spellcasting
+    // Not attempt interrupt teleportation spell at caster teleport
+    if (IsNonMeleeSpellCast(true))
+        InterruptNonMeleeSpells(true);
+
+    // Remove auras before removing from map...
+    RemoveAurasWithInterruptFlags(SpellAuraInterruptFlags::Moving | SpellAuraInterruptFlags::Turning | SpellAuraInterruptFlags::LeaveWorld);
+
+    // Remove from old map now
+    if (Map* l_OldMap = IsInWorld() ? GetMap() : NULL)
+#ifdef CROSS
+    {
+        SetMapSwitchDestination(p_MapID);
+#endif /* CROSS */
+        l_OldMap->RemovePlayerFromMap(this, false);
+#ifdef CROSS
+    }
+#endif /* CROSS */
+
+    m_teleport_dest = WorldLocation(p_MapID, l_X, l_Y, l_Z, l_Orientation);
+    SetFallInformation(0, l_Z);
+    WorldLocation const l_NewLoc = GetTeleportDest();
+
+    Relocate(&l_NewLoc);
+    ResetMap();
+    SetMap(l_NewMap);
+
+    ObjectGuid l_Guid = GetGUID();
+    bool l_ProcessPassenger = l_Passengers.size() > 0;
+    auto l_AddToMapProcess = [l_Guid, p_MapID, l_ProcessPassenger, l_Passengers, p_CustomInstanceZone]()->void
+    {
+        Player* l_Player = ObjectAccessor::FindConnectedPlayer(l_Guid);
+        if (!l_Player)
+            return;
+
+        if (!l_Player->GetSession()->PlayerLogout())
+        {
+            WorldPackets::Movement::NewWorld packet;
+            packet.MapID = p_MapID;
+            packet.Loc.Pos = l_Player->GetTeleportDest();
+            packet.Reason = NEW_WORLD_SEAMLESS;
+            l_Player->SendDirectMessage(packet.Write());
+        }
+
+        l_Player->GetMap()->AddPlayerToMap(l_Player, true);
+
+#ifdef CROSS
+        l_Player->SetMapSwitchDestination(-1);
+#endif /* CROSS */
+
+        // Update zone immediately, otherwise leave channel will cause crash in mtmap
+        uint32 l_NewZone, l_NewArea;
+        l_Player->GetZoneAndAreaId(l_NewZone, l_NewArea);
+        l_Player->UpdateZone(l_NewZone, l_NewArea);
+
+        for (uint8 i = 0; i < 9; ++i)
+            l_Player->UpdateSpeed(UnitMoveType(i));
+
+        l_Player->ResummonPetTemporaryUnSummonedIfAny();
+
+        /// Also switch passengers in case of 2 mounts seat
+        if (l_ProcessPassenger)
+        {
+            for (auto l_Seat : l_Passengers)
+            {
+                Player* l_Passenger = ObjectAccessor::FindPlayer(l_Seat.first);
+                if (!l_Passenger)
+                    continue;
+
+                /// Relocate the passanger to the player position to make sure he is in the new zone
+                l_Passenger->Relocate(l_Player->GetPositionX(), l_Player->GetPositionY(), l_Player->GetPositionZ(), l_Player->GetOrientation());
+
+                /// Switch to the new zone-map
+                l_Passenger->SwitchToPhasedMap(l_Player->GetMapId(), p_CustomInstanceZone);
+
+                /// Keep InMapSwitch stat to prevent the passenger to receive enter vehicle packet
+                l_Passenger->SetInMapSwitch(true);
+
+                /// Update the player vehicle & the passenger client-side visibility
+                l_Passenger->UpdateObjectVisibility(true);
+                l_Player->UpdateObjectVisibility(true);
+
+                /// Enter in the player vehicle again
+                l_Passenger->EnterVehicle(l_Player, -1);
+                l_Passenger->SetInMapSwitch(false);
+
+                l_Passenger->RemovePreventClientDestroy(l_Player->GetGUID());
+                l_Player->RemovePreventClientDestroy(l_Passenger->GetGUID());
+            }
+        }
+
+        l_Player->m_IsInMapSwitch = false;
+    };
+
+    if (l_ProcessPassenger)
+        l_AddToMapProcess();
+    else
+        l_NewMap->AddTask(l_AddToMapProcess);
 }
 
 bool Player::TeleportToBGEntryPoint()
@@ -7574,6 +7785,21 @@ void Player::UpdateZone(uint32 newZone, uint32 newArea, bool updatePhasing /*= t
     // call leave script hooks immedately (before updating flags)
     if (oldZone != newZone)
     {
+        if (!GetTransport() && !GetVehicle() && !(GetVehicle() && GetVehicle()->GetBase()->IsPlayer()) && !GetMap()->Instanceable()
+            && GetMap() != sMapMgr->CreateMap(GetMapId(), this, newZone) && !(newZone == 6941 || newZone == 8392) && !m_IsInMapSwitch) ///< Ashran and Dalaran Sewers
+        {
+            ObjectGuid l_PlayerGuid = GetGUID();
+
+            sMapMgr->AddCriticalOperation([l_PlayerGuid]()-> bool
+            {
+                if (Player* l_Player = ObjectAccessor::FindPlayer(l_PlayerGuid))
+                    l_Player->SwitchToPhasedMap(l_Player->GetMapId());
+
+                return true;
+            });
+            return;
+        }
+
         sOutdoorPvPMgr->HandlePlayerLeaveZone(this, oldZone);
         sBattlefieldMgr->HandlePlayerLeaveZone(this, oldZone);
     }
@@ -18271,8 +18497,9 @@ bool Player::LoadFromDB(ObjectGuid guid, CharacterDatabaseQueryHolder const& hol
 
     // NOW player must have valid map
     // load the player's map here if it's not already loaded
+    // @TODO: load zoneid here
     if (!map)
-        map = sMapMgr->CreateMap(mapId, this, instanceId);
+        map = sMapMgr->CreateMap(mapId, this, 0, instanceId);
     AreaTriggerStruct const* areaTrigger = nullptr;
     bool check = false;
 

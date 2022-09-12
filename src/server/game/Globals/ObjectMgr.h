@@ -1085,6 +1085,18 @@ enum QueryDataGroup
     QUERY_DATA_ALL = 0xFF
 };
 
+struct CustomInstanceZone
+{
+    uint32   RealZoneID;
+    uint32   CustomZoneID;
+    uint32   MaxPlayerCount;
+    float    Radius;
+    Position Position;
+};
+
+typedef std::vector<CustomInstanceZone> CustomInstanceZones;
+typedef std::unordered_map<uint32/*zoneId*/, CustomInstanceZones> CustomInstanceZonesMap;
+
 class PlayerDumpReader;
 
 class TC_GAME_API ObjectMgr
@@ -1831,6 +1843,17 @@ class TC_GAME_API ObjectMgr
         JumpChargeParams const* GetJumpChargeParams(int32 id) const;
 
         std::unordered_map<uint32, float> m_CustomSpellBuffs;
+
+        CustomInstanceZonesMap m_CustomInstanceZones;
+        void LoadCustomInstanceZones();
+        CustomInstanceZones const* GetCustomInstanceZones(uint32 p_Zone) const
+        {
+            auto l_Itr = m_CustomInstanceZones.find(p_Zone);
+            if (l_Itr == m_CustomInstanceZones.end())
+                return nullptr;
+
+            return &l_Itr->second;
+        }
 
     private:
         // first free id for selected id type

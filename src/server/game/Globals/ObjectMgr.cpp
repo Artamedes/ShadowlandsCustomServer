@@ -10996,6 +10996,34 @@ JumpChargeParams const* ObjectMgr::GetJumpChargeParams(int32 id) const
     return Trinity::Containers::MapGetValuePtr(_jumpChargeParams, id);
 }
 
+void ObjectMgr::LoadCustomInstanceZones()
+{
+    uint32 l_OldMSTime = getMSTime();
+
+    QueryResult l_Result = WorldDatabase.PQuery("SELECT zone, customZone, maxPlayerCount, radius, x, y, z FROM custom_instance_zone");
+    if (!l_Result)
+        return;
+
+    uint32 l_Count = 0;
+
+    do
+    {
+        Field* l_Fields = l_Result->Fetch();
+        l_Count++;
+
+        CustomInstanceZone l_CustomInstanceZone;
+        l_CustomInstanceZone.RealZoneID     = l_Fields[0].GetUInt32();
+        l_CustomInstanceZone.CustomZoneID   = l_Fields[1].GetUInt32();
+        l_CustomInstanceZone.MaxPlayerCount = l_Fields[2].GetUInt32();
+        l_CustomInstanceZone.Radius         = l_Fields[3].GetFloat();
+        l_CustomInstanceZone.Position       = Position(l_Fields[4].GetFloat(), l_Fields[5].GetFloat(), l_Fields[6].GetFloat());
+
+        m_CustomInstanceZones[l_CustomInstanceZone.RealZoneID].push_back(l_CustomInstanceZone);
+    } while (l_Result->NextRow());
+
+    TC_LOG_INFO("server.loading", ">> Loaded %u custom instance zone in %u ms", l_Count, GetMSTimeDiffToNow(l_OldMSTime));
+}
+
 void ObjectMgr::LoadGameObjectQuestItems()
 {
     uint32 oldMSTime = getMSTime();

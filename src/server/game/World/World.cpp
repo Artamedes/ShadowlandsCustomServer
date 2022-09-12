@@ -2292,6 +2292,9 @@ void World::SetInitialWorldSettings()
     TC_LOG_INFO("server.loading", "Loading Creature Formations...");
     sFormationMgr->LoadCreatureFormations();
 
+    TC_LOG_INFO("server.loading", "Loading custom instance zone...");
+    sObjectMgr->LoadCustomInstanceZones();
+
     TC_LOG_INFO("server.loading", "Loading World State templates...");
     sWorldStateMgr->LoadFromDB();                               // must be loaded before battleground, outdoor PvP and conditions
 
