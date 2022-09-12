@@ -5055,6 +5055,7 @@ void AreaTriggerData::WriteCreate(ByteBuffer& data, EnumFlag<UpdateFieldFlag> fi
     OverrideScaleCurve->WriteCreate(data, owner, receiver);
     data << Caster;
     data << uint32(Duration);
+    data << int32(UnkAreaTriggerDF);
     data << uint32(TimeToTarget);
     data << uint32(TimeToTargetScale);
     data << uint32(TimeToTargetExtraScale);
@@ -5067,6 +5068,12 @@ void AreaTriggerData::WriteCreate(ByteBuffer& data, EnumFlag<UpdateFieldFlag> fi
     data << uint32(Field_80);
     data << uint32(Field_84);
     data << TargetGUID;
+    data << float(UnkX);
+    data << float(UnkY);
+    data << float(UnkZ);
+    ExtraScaleCurve2->WriteCreate(data, owner, receiver);
+    ExtraScaleCurve3->WriteCreate(data, owner, receiver);
+    ExtraScaleCurve4->WriteCreate(data, owner, receiver);
     ExtraScaleCurve->WriteCreate(data, owner, receiver);
     VisualAnim->WriteCreate(data, owner, receiver);
 }
@@ -5078,7 +5085,7 @@ void AreaTriggerData::WriteUpdate(ByteBuffer& data, EnumFlag<UpdateFieldFlag> fi
 
 void AreaTriggerData::WriteUpdate(ByteBuffer& data, Mask const& changesMask, bool ignoreNestedChangesMask, AreaTrigger const* owner, Player const* receiver) const
 {
-    data.WriteBits(changesMask.GetBlock(0), 18);
+    data.WriteBits(changesMask.GetBlock(0), 25);
 
     data.FlushBits();
     if (changesMask[0])
@@ -5089,65 +5096,93 @@ void AreaTriggerData::WriteUpdate(ByteBuffer& data, Mask const& changesMask, boo
         }
         if (changesMask[3])
         {
-            data << Caster;
+            ExtraScaleCurve2->WriteUpdate(data, ignoreNestedChangesMask, owner, receiver);
         }
         if (changesMask[4])
         {
-            data << uint32(Duration);
+            ExtraScaleCurve3->WriteUpdate(data, ignoreNestedChangesMask, owner, receiver);
         }
         if (changesMask[5])
         {
-            data << uint32(TimeToTarget);
+            ExtraScaleCurve4->WriteUpdate(data, ignoreNestedChangesMask, owner, receiver);
         }
         if (changesMask[6])
         {
-            data << uint32(TimeToTargetScale);
+            data << Caster;
         }
         if (changesMask[7])
         {
-            data << uint32(TimeToTargetExtraScale);
+            data << uint32(Duration);
         }
         if (changesMask[8])
         {
-            data << int32(SpellID);
+            data << int32(UnkAreaTriggerDF);
         }
         if (changesMask[9])
         {
-            data << int32(SpellForVisuals);
+            data << uint32(TimeToTarget);
         }
         if (changesMask[10])
         {
-            SpellVisual->WriteUpdate(data, ignoreNestedChangesMask, owner, receiver);
+            data << uint32(TimeToTargetScale);
         }
         if (changesMask[11])
         {
-            data << float(BoundsRadius2D);
+            data << uint32(TimeToTargetExtraScale);
         }
         if (changesMask[12])
         {
-            data << uint32(DecalPropertiesID);
+            data << int32(SpellID);
         }
         if (changesMask[13])
         {
-            data << CreatingEffectGUID;
+            data << int32(SpellForVisuals);
         }
         if (changesMask[14])
         {
-            data << uint32(Field_80);
+            SpellVisual->WriteUpdate(data, ignoreNestedChangesMask, owner, receiver);
         }
         if (changesMask[15])
         {
-            data << uint32(Field_84);
+            data << float(BoundsRadius2D);
         }
         if (changesMask[16])
         {
+            data << uint32(DecalPropertiesID);
+        }
+        if (changesMask[17])
+        {
+            data << CreatingEffectGUID;
+        }
+        if (changesMask[18])
+        {
+            data << uint32(Field_80);
+        }
+        if (changesMask[19])
+        {
+            data << uint32(Field_84);
+        }
+        if (changesMask[20])
+        {
             data << TargetGUID;
+        }
+        if (changesMask[21])
+        {
+            data << float(UnkX);
+        }
+        if (changesMask[22])
+        {
+            data << float(UnkY);
+        }
+        if (changesMask[23])
+        {
+            data << float(UnkZ);
         }
         if (changesMask[2])
         {
             ExtraScaleCurve->WriteUpdate(data, ignoreNestedChangesMask, owner, receiver);
         }
-        if (changesMask[17])
+        if (changesMask[24])
         {
             VisualAnim->WriteUpdate(data, ignoreNestedChangesMask, owner, receiver);
         }
@@ -5158,8 +5193,12 @@ void AreaTriggerData::ClearChangesMask()
 {
     Base::ClearChangesMask(OverrideScaleCurve);
     Base::ClearChangesMask(ExtraScaleCurve);
+    Base::ClearChangesMask(ExtraScaleCurve2);
+    Base::ClearChangesMask(ExtraScaleCurve3);
+    Base::ClearChangesMask(ExtraScaleCurve4);
     Base::ClearChangesMask(Caster);
     Base::ClearChangesMask(Duration);
+    Base::ClearChangesMask(UnkAreaTriggerDF);
     Base::ClearChangesMask(TimeToTarget);
     Base::ClearChangesMask(TimeToTargetScale);
     Base::ClearChangesMask(TimeToTargetExtraScale);
@@ -5172,6 +5211,9 @@ void AreaTriggerData::ClearChangesMask()
     Base::ClearChangesMask(Field_80);
     Base::ClearChangesMask(Field_84);
     Base::ClearChangesMask(TargetGUID);
+    Base::ClearChangesMask(UnkX);
+    Base::ClearChangesMask(UnkY);
+    Base::ClearChangesMask(UnkZ);
     Base::ClearChangesMask(VisualAnim);
     _changesMask.ResetAll();
 }

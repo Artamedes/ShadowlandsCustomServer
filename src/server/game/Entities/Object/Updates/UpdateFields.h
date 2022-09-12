@@ -928,25 +928,32 @@ struct VisualAnim : public IsUpdateFieldStructureTag, public HasChangesMask<5>
     void ClearChangesMask();
 };
 
-struct AreaTriggerData : public IsUpdateFieldStructureTag, public HasChangesMask<18>
+struct AreaTriggerData : public IsUpdateFieldStructureTag, public HasChangesMask<25>
 {
     UpdateField<UF::ScaleCurve, 0, 1> OverrideScaleCurve;
     UpdateField<UF::ScaleCurve, 0, 2> ExtraScaleCurve;
-    UpdateField<ObjectGuid, 0, 3> Caster;
-    UpdateField<uint32, 0, 4> Duration;
-    UpdateField<uint32, 0, 5> TimeToTarget;
-    UpdateField<uint32, 0, 6> TimeToTargetScale;
-    UpdateField<uint32, 0, 7> TimeToTargetExtraScale;
-    UpdateField<int32, 0, 8> SpellID;
-    UpdateField<int32, 0, 9> SpellForVisuals;
-    UpdateField<UF::SpellCastVisual, 0, 10> SpellVisual;
-    UpdateField<float, 0, 11> BoundsRadius2D;
-    UpdateField<uint32, 0, 12> DecalPropertiesID;
-    UpdateField<ObjectGuid, 0, 13> CreatingEffectGUID;
-    UpdateField<uint32, 0, 14> Field_80;
-    UpdateField<uint32, 0, 15> Field_84;
-    UpdateField<ObjectGuid, 0, 16> TargetGUID;
-    UpdateField<UF::VisualAnim, 0, 17> VisualAnim;
+    UpdateField<UF::ScaleCurve, 0, 3> ExtraScaleCurve2;
+    UpdateField<UF::ScaleCurve, 0, 4> ExtraScaleCurve3;
+    UpdateField<UF::ScaleCurve, 0, 5> ExtraScaleCurve4;
+    UpdateField<ObjectGuid, 0, 6> Caster;
+    UpdateField<uint32, 0, 7> Duration;
+    UpdateField<int32, 0, 8> UnkAreaTriggerDF;
+    UpdateField<uint32, 0, 9> TimeToTarget;
+    UpdateField<uint32, 0, 10> TimeToTargetScale;
+    UpdateField<uint32, 0, 11> TimeToTargetExtraScale;
+    UpdateField<int32, 0, 12> SpellID;
+    UpdateField<int32, 0, 13> SpellForVisuals;
+    UpdateField<UF::SpellCastVisual, 0, 14> SpellVisual;
+    UpdateField<float, 0, 15> BoundsRadius2D;
+    UpdateField<uint32, 0, 16> DecalPropertiesID;
+    UpdateField<ObjectGuid, 0, 17> CreatingEffectGUID;
+    UpdateField<uint32, 0, 18> Field_80;
+    UpdateField<uint32, 0, 19> Field_84;
+    UpdateField<ObjectGuid, 0, 20> TargetGUID;
+    UpdateField<float, 0, 21> UnkX;
+    UpdateField<float, 0, 22> UnkY;
+    UpdateField<float, 0, 23> UnkZ;
+    UpdateField<UF::VisualAnim, 0, 24> VisualAnim;
 
     void WriteCreate(ByteBuffer& data, EnumFlag<UpdateFieldFlag> fieldVisibilityFlags, AreaTrigger const* owner, Player const* receiver) const;
     void WriteUpdate(ByteBuffer& data, EnumFlag<UpdateFieldFlag> fieldVisibilityFlags, AreaTrigger const* owner, Player const* receiver) const;
