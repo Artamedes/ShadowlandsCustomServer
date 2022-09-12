@@ -304,7 +304,7 @@ bool MoveSplineInitArgs::Validate(Unit* unit) const
     CHECK(path.size() > 1, true);
     CHECK(velocity >= 0.01f, true);
     CHECK(time_perc >= 0.f && time_perc <= 1.f, true);
-   // CHECK(_checkPathLengths(), false);
+    CHECK(_checkPathLengths(), false);
     if (spellEffectExtra)
     {
         CHECK(!spellEffectExtra->ProgressCurveId || sCurveStore.LookupEntry(spellEffectExtra->ProgressCurveId), true);
@@ -343,7 +343,7 @@ bool MoveSplineInitArgs::_checkPathLengths() const
 {
     if (path.size() > 2 || facing.type == MONSTER_MOVE_NORMAL)
         for (uint32 i = 0; i < path.size() - 1; ++i)
-            if ((path[i + 1] - path[i]).length() < 0.1f)
+            if ((path[i + 1] - path[i]).length() < 0.00000023841858f) ///< FROM DF BETA CLIENT
                 return false;
     return true;
 }
