@@ -45,7 +45,7 @@ struct CinematicCameraLoadInfo
             { FT_INT, 1, false },
             { FT_INT, 1, true },
         };
-        static DB2Meta meta(1294214, -1, 5, 5, 0x3920D07C, fields, -1);
+        static DB2Meta meta(1294214, -1, 5, 5, 0x4B3DF171, fields, -1);
         static DB2FileLoadInfo const loadInfo(&loadedFields[0], std::extent<decltype(loadedFields)>::value, &meta);
         return &loadInfo;
     }
@@ -254,11 +254,12 @@ struct MapLoadInfo
             { true, FT_SHORT, "WindSettingsID" },
             { true, FT_INT, "ZmpFileDataID" },
             { true, FT_INT, "WdtFileDataID" },
+            { false, FT_INT, "UnkDF" },
             { true, FT_INT, "Flags1" },
             { true, FT_INT, "Flags2" },
             { true, FT_INT, "Flags3" },
         };
-        static DB2MetaField const fields[23] =
+        static DB2MetaField const fields[24] =
         {
             { FT_STRING_NOT_LOCALIZED, 1, true },
             { FT_STRING, 1, true },
@@ -282,9 +283,10 @@ struct MapLoadInfo
             { FT_SHORT, 1, true },
             { FT_INT, 1, true },
             { FT_INT, 1, true },
+            { FT_INT, 1, true },
             { FT_INT, 3, true },
         };
-        static DB2Meta meta(1349477, -1, 23, 23, 0xAAA1F94E, fields, -1);
+        static DB2Meta meta(1349477, -1, 24, 24, 0x43E626E4, fields, -1);
         static DB2FileLoadInfo const loadInfo(&loadedFields[0], std::extent<decltype(loadedFields)>::value, &meta);
         return &loadInfo;
     }
