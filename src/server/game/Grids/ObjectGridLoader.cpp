@@ -131,15 +131,17 @@ void LoadHelper(CellGuidSet const& guid_set, CellCoord& cell, GridRefManager<T>&
 void ObjectGridLoader::Visit(GameObjectMapType& m)
 {
     CellCoord cellCoord = i_cell.GetCellCoord();
-    CellObjectGuids const& cell_guids = sObjectMgr->GetCellObjectGuids(i_map->GetId(), i_map->GetDifficultyID(), cellCoord.GetId());
-    LoadHelper(cell_guids.gameobjects, cellCoord, m, i_gameObjects, i_map);
+    CellObjectGuids const* cell_guids = sObjectMgr->GetCellObjectGuids(i_map->GetId(), i_map->GetDifficultyID(), cellCoord.GetId());
+    if (cell_guids)
+        LoadHelper(cell_guids->gameobjects, cellCoord, m, i_gameObjects, i_map);
 }
 
 void ObjectGridLoader::Visit(CreatureMapType &m)
 {
     CellCoord cellCoord = i_cell.GetCellCoord();
-    CellObjectGuids const& cell_guids = sObjectMgr->GetCellObjectGuids(i_map->GetId(), i_map->GetDifficultyID(), cellCoord.GetId());
-    LoadHelper(cell_guids.creatures, cellCoord, m, i_creatures, i_map);
+    CellObjectGuids const* cell_guids = sObjectMgr->GetCellObjectGuids(i_map->GetId(), i_map->GetDifficultyID(), cellCoord.GetId());
+    if (cell_guids)
+        LoadHelper(cell_guids->creatures, cellCoord, m, i_creatures, i_map);
 }
 
 void ObjectGridLoader::Visit(AreaTriggerMapType& m)

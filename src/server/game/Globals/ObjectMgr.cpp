@@ -2561,6 +2561,24 @@ void ObjectMgr::LoadCreatures()
     TC_LOG_INFO("server.loading", ">> Loaded " SZFMTD " creatures in %u ms", _creatureDataStore.size(), GetMSTimeDiffToNow(oldMSTime));
 }
 
+CellObjectGuids const* ObjectMgr::GetCellObjectGuids(uint32 mapid, Difficulty spawnMode, uint32 cell_id)
+{
+    auto it = _mapObjectGuidsStore.find(std::make_pair(mapid, spawnMode));
+    if (it == _mapObjectGuidsStore.end())
+        return nullptr;
+
+    auto it2 = it->second.find(cell_id);
+    if (it2 == it->second.end())
+        return nullptr;
+
+    return &it2->second;
+}
+
+CellObjectGuidsMap const& ObjectMgr::GetMapObjectGuids(uint32 mapid, Difficulty spawnMode)
+{
+    return _mapObjectGuidsStore[{ mapid, spawnMode }];
+}
+
 bool ObjectMgr::HasPersonalSpawns(uint32 mapid, Difficulty spawnMode, uint32 phaseId) const
 {
     return Trinity::Containers::MapGetValuePtr(_mapPersonalObjectGuidsStore, { mapid, spawnMode, phaseId }) != nullptr;
