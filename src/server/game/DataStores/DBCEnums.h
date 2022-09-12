@@ -607,6 +607,9 @@ enum class CriteriaType : uint8
     SpentTalentPoint                               = 231, /*NYI*/ // (Player) spent talent point
 
     MythicPlusDisplaySeasonEnded                   = 234, /*NYI*/ // {DisplaySeason}
+    UnkNewDFCriteria0                              = 239, // M+ Related
+    UnkNewDFCriteria1                              = 240, // Rated Solo Shuffle rounds participated in
+    UnkNewDFCriteria2                              = 243, // Reputation earned throughout Dragon Isles
     Count
 };
 

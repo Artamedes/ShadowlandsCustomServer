@@ -2676,7 +2676,7 @@ SET @GROUP_ID = 0;
 SET @ID = 0;
 REPLACE INTO `creature_text` (`CreatureID`, `GroupID`, `ID`, `Text`, `Type`, `Language`, `Probability`, `Emote`, `Duration`, `Sound`, `BroadcastTextId`, `TextRange`, `comment`) VALUES
 (3296, @GROUP_ID+0, @ID, 'What do dragons eat, anyway?', 12, 0, 100, 4, 0, 0, 0, 0, 'Orgrimmar Grunt to Player'),
-(3296, @GROUP_ID+1, @ID, 'Amazing!', 12, 0, 100, 4, 0, 0, PLEASE_SET_A_BROADCASTTEXT_ID, 0, 'Orgrimmar Grunt to Player'), -- BroadcastTextID: 41615 - 124042
+(3296, @GROUP_ID+1, @ID, 'Amazing!', 12, 0, 100, 4, 0, 0, 0, 0, 'Orgrimmar Grunt to Player'), -- BroadcastTextID: 41615 - 124042
 (3296, @GROUP_ID+2, @ID, 'I guess those wings aren\'t just for show!', 12, 0, 100, 4, 0, 0, 0, 0, 'Orgrimmar Grunt to Player'),
 (3296, @GROUP_ID+3, @ID, 'Do a barrel roll!', 12, 0, 100, 4, 0, 0, 168079, 0, 'Orgrimmar Grunt to Player'),
 (3296, @GROUP_ID+4, @ID, 'Could I have one of your scales? For crafting purposes, of course.', 12, 0, 100, 25, 0, 0, 0, 0, 'Orgrimmar Grunt to Player'),

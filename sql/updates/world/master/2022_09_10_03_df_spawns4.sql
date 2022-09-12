@@ -9741,7 +9741,7 @@ SET @GROUP_ID = 0;
 SET @ID = 0;
 
 
-INSERT INTO `creature_text` (`CreatureID`, `GroupID`, `ID`, `Text`, `Type`, `Language`, `Probability`, `Emote`, `Duration`, `Sound`, `BroadcastTextId`, `TextRange`, `comment`) VALUES
+replace INTO `creature_text` (`CreatureID`, `GroupID`, `ID`, `Text`, `Type`, `Language`, `Probability`, `Emote`, `Duration`, `Sound`, `BroadcastTextId`, `TextRange`, `comment`) VALUES
 (186109, @GROUP_ID+0, @ID, 'You\'re no challenge!', 12, 0, 100, 0, 0, 0, 0, 0, 'Qalashi Necksnapper to Player'),
 (186274, @GROUP_ID+0, @ID, 'Years of searching, and there it stands... my legacy.', 12, 0, 100, 0, 0, 204519, 0, 0, 'Wrathion to Player'),
 (186274, @GROUP_ID+1, @ID, 'Once you\'ve finished your assessment, we\'ll begin the assault.', 12, 0, 100, 0, 0, 204520, 0, 0, 'Wrathion to Player'),
