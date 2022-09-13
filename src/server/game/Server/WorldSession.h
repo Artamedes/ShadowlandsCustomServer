@@ -562,6 +562,7 @@ namespace WorldPackets
         class ConversationLineStarted;
         class RequestLatestSplashScreen;
         class CommentatorEnable;
+        class KeyboundOverride;
     }
 
     namespace Movement
@@ -1929,6 +1930,7 @@ class TC_GAME_API WorldSession
 
         void HandleRequestLatestSplashScreen(WorldPackets::Misc::RequestLatestSplashScreen& requestLatestSplashScreen);
         void HandleCommentatorEnable(WorldPackets::Misc::CommentatorEnable& commentatorEnable);
+        void HandleKeyboundOverride(WorldPackets::Misc::KeyboundOverride& keyboundOverride);
 
         void HandleSocialContractRequest(WorldPackets::Social::SocialContractRequest & socialContractRequest);
 

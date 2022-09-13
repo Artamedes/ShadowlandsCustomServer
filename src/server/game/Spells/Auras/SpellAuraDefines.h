@@ -535,10 +535,10 @@ enum AuraType : uint32
     SPELL_AURA_MOD_MULTISTRIKE_DAMAGE                       = 440,  // NYI
     SPELL_AURA_MOD_MULTISTRIKE_CHANCE                       = 441,  // NYI
     SPELL_AURA_MOD_READINESS                                = 442,  // NYI
-    SPELL_AURA_MOD_LEECH                                    = 443,  // NYI
+    SPELL_AURA_MOD_LEECH                                    = 443,
     SPELL_AURA_444                                          = 444,
     SPELL_AURA_445                                          = 445,
-    SPELL_AURA_446                                          = 446,
+    SPELL_AURA_MOD_DRAGONRIDING                             = 446,
     SPELL_AURA_MOD_XP_FROM_CREATURE_TYPE                    = 447,
     SPELL_AURA_448                                          = 448,
     SPELL_AURA_449                                          = 449,

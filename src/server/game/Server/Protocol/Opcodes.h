@@ -1982,6 +1982,24 @@ enum OpcodeServer : uint16
     SMSG_COMPRESSED_PACKET                                        = 0x3052,
     SMSG_ARENA_TEAM_STATS                                         = 0xBADD,
 
+    /// Unknown dragonriding packets, need more research
+    SMSG_MOVE_UNK_2E32                                            = 0x2E32,
+    SMSG_MOVE_UNK_2E33                                            = 0x2E33,
+    SMSG_MOVE_UNK_2E34                                            = 0x2E34,
+    SMSG_MOVE_UNK_2E36                                            = 0x2E36,
+    SMSG_MOVE_UNK_2E37                                            = 0x2E37,
+    SMSG_MOVE_UNK_2E38                                            = 0x2E38,
+    SMSG_MOVE_UNK_2E39                                            = 0x2E39,
+    SMSG_MOVE_UNK_2E3A                                            = 0x2E3A,
+    SMSG_MOVE_UNK_2E3B                                            = 0x2E3B,
+    SMSG_MOVE_UNK_2E3C                                            = 0x2E3C,
+    SMSG_MOVE_UNK_2E3D                                            = 0x2E3D,
+    SMSG_MOVE_UNK_2E3E                                            = 0x2E3E,
+    SMSG_MOVE_UNK_2E3F                                            = 0x2E3F,
+    SMSG_MOVE_UNK_2E40                                            = 0x2E40,
+    SMSG_MOVE_UNK_2E41                                            = 0x2E41,
+    SMSG_MOVE_UNK_2E42                                            = 0x2E42,
+
 };
 
 inline bool IsInstanceOnlyOpcode(uint32 opcode)

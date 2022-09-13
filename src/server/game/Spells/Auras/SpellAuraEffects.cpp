@@ -514,7 +514,7 @@ NonDefaultConstructible<pAuraEffectHandler> AuraEffectHandler[TOTAL_AURAS]=
     &AuraEffect::HandleAuraLeech,                                 //443 SPELL_AURA_MOD_LEECH
     &AuraEffect::HandleNULL,                                      //444
     &AuraEffect::HandleNULL,                                      //445
-    &AuraEffect::HandleNULL,                                      //446
+    &AuraEffect::HandleAuraDragonriding,                          //446 SPELL_AURA_MOD_DRAGONRIDING
     &AuraEffect::HandleNoImmediateEffect,                         //447 SPELL_AURA_MOD_XP_FROM_CREATURE_TYPE implemented in KillRewarder::_RewardXP
     &AuraEffect::HandleNULL,                                      //448
     &AuraEffect::HandleNULL,                                      //449
@@ -6671,6 +6671,104 @@ void AuraEffect::HandleAuraLeech(AuraApplication const* auraApp, uint8 mode, boo
         player->UpdateLeechPercentage();
 }
 
+void AuraEffect::HandleAuraDragonriding(AuraApplication const* aurApp, uint8 mode, bool apply) const
+{
+    if (!(mode & AURA_EFFECT_HANDLE_REAL))
+        return;
+
+    Player* player = aurApp->GetTarget()->ToPlayer();
+
+    if (apply && player)
+    {
+        ObjectGuid const& playerGuid = aurApp->GetTarget()->GetGUID();
+
+        WorldPacket data(SMSG_MOVE_UNK_2E34, 16 + 4);
+        data << playerGuid;
+        data << uint32(player->m_movementCounter++);
+        player->SendDirectMessage(&data);
+
+        data.Initialize(SMSG_MOVE_UNK_2E36, 16 + 4);
+        data << playerGuid;
+        data << uint32(player->m_movementCounter++);
+        player->SendDirectMessage(&data);
+
+        data.Initialize(SMSG_MOVE_UNK_2E37, 16 + 4);
+        data << playerGuid;
+        data << uint32(player->m_movementCounter++);
+        data << float(65.0f);
+        player->SendDirectMessage(&data);
+
+        data.Initialize(SMSG_MOVE_UNK_2E38, 16 + 4);
+        data << playerGuid;
+        data << uint32(player->m_movementCounter++);
+        data << float(0.070000000298023223f);
+        player->SendDirectMessage(&data);
+
+        data.Initialize(SMSG_MOVE_UNK_2E39, 16 + 4);
+        data << playerGuid;
+        data << uint32(player->m_movementCounter++);
+        data << float(5.0f);
+        player->SendDirectMessage(&data);
+
+        data.Initialize(SMSG_MOVE_UNK_2E3A, 16 + 4);
+        data << playerGuid;
+        data << uint32(player->m_movementCounter++);
+        data << float(7.5f);
+        player->SendDirectMessage(&data);
+
+        data.Initialize(SMSG_MOVE_UNK_2E3B, 16 + 4);
+        data << playerGuid;
+        data << uint32(player->m_movementCounter++);
+        data << float(100.0f);
+        player->SendDirectMessage(&data);
+
+        data.Initialize(SMSG_MOVE_UNK_2E3C, 16 + 4);
+        data << playerGuid;
+        data << uint32(player->m_movementCounter++);
+        data << float(140.0f);
+        data << float(270.0f);
+        player->SendDirectMessage(&data);
+
+        data.Initialize(SMSG_MOVE_UNK_2E3D, 16 + 4);
+        data << playerGuid;
+        data << uint32(player->m_movementCounter++);
+        data << float(180.0f);
+        data << float(360.0f);
+        player->SendDirectMessage(&data);
+
+        data.Initialize(SMSG_MOVE_UNK_2E3E, 16 + 4);
+        data << playerGuid;
+        data << uint32(player->m_movementCounter++);
+        data << float(180.0f);
+        data << float(360.0f);
+        player->SendDirectMessage(&data);
+
+        data.Initialize(SMSG_MOVE_UNK_2E3F, 16 + 4);
+        data << playerGuid;
+        data << uint32(player->m_movementCounter++);
+        data << float(45.0f);
+        data << float(65.0f);
+        player->SendDirectMessage(&data);
+
+        data.Initialize(SMSG_MOVE_UNK_2E40, 16 + 4);
+        data << playerGuid;
+        data << uint32(player->m_movementCounter++);
+        data << float(2.75f);
+        player->SendDirectMessage(&data);
+
+        data.Initialize(SMSG_MOVE_UNK_2E41, 16 + 4);
+        data << playerGuid;
+        data << uint32(player->m_movementCounter++);
+        data << float(7.0f);
+        player->SendDirectMessage(&data);
+
+        data.Initialize(SMSG_MOVE_UNK_2E42, 16 + 4);
+        data << playerGuid;
+        data << uint32(player->m_movementCounter++);
+        data << float(0.400000005960464477f);
+        player->SendDirectMessage(&data);
+    }
+}
 
 enum HandleProfilCameraData
 {

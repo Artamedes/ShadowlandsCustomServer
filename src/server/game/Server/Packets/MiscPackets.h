@@ -1046,6 +1046,16 @@ namespace WorldPackets
             int32 Enable = 0;        ///< Offset 0x0000 Type _MJVTBL_INT32
         };
 
+        class KeyboundOverride final : public ClientPacket
+        {
+        public:
+            KeyboundOverride(WorldPacket&& packet) : ClientPacket(CMSG_KEYBOUND_OVERRIDE, std::move(packet)) { }
+
+            void Read() override;
+
+            int16 OverrideID = 0;
+        };
+
         class TC_GAME_API SplashScreenShowLatest final : public ServerPacket
         {
         public:

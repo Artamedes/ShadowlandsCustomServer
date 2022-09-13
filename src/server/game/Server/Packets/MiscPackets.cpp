@@ -926,3 +926,8 @@ WorldPacket const* WorldPackets::Misc::WeeklyRewardsProgressResult::Write()
 
     return &_worldPacket;
 }
+
+void WorldPackets::Misc::KeyboundOverride::Read()
+{
+    _worldPacket >> OverrideID;
+}

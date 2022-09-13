@@ -49,6 +49,7 @@
 #include "OutdoorPvP.h"
 #include "Player.h"
 #include "RestMgr.h"
+#include "Unit.h"
 #include "ScriptMgr.h"
 #include "Spell.h"
 #include "SpellPackets.h"
@@ -57,6 +58,7 @@
 #include "World.h"
 #include <cstdarg>
 #include <zlib.h>
+#include "SpellAuraEffects.h"
 
 void WorldSession::HandleRepopRequest(WorldPackets::Misc::RepopRequest& /*packet*/)
 {
@@ -1291,5 +1293,31 @@ void WorldSession::HandleCommentatorEnable(WorldPackets::Misc::CommentatorEnable
         default:
             TC_LOG_ERROR("network.opcode", "WorldSession::HandleCommentatorModeOpcode: player %d sent an invalid commentator mode action", _player->GetGUID().GetCounter());
             return;
+    }
+}
+
+void WorldSession::HandleKeyboundOverride(WorldPackets::Misc::KeyboundOverride& keyboundOverride)
+{
+    auto const& aurEffList = _player->GetAuraEffectsByType(AuraType::SPELL_AURA_KEYBOUND_OVERRIDE);
+
+    for (auto aurEff : aurEffList)
+    {
+        if (aurEff->GetMiscValue() == keyboundOverride.OverrideID)
+        {
+            if (keyboundOverride.OverrideID == 218)
+            {
+                WorldPacket data(SMSG_MOVE_UNK_2E32, 16 + 4 + 4 + 4 + 4);
+                data << uint32(_player->m_movementCounter++);
+                data << float(19.81738662719726562f);
+                data << float(-15.2404470443725585f);
+                data << float(0.0f);
+                SendPacket(&data);
+                _player->CastSpell(_player, 374763, false); ///< Lift Off
+            }
+
+            // 218 
+            //' 0x2E32 sent
+             // 374763  - lift off
+        }
     }
 }

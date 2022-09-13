@@ -474,10 +474,10 @@ TC_API_EXPORT EnumText EnumUtils<AuraType>::ToString(AuraType value)
         case SPELL_AURA_MOD_MULTISTRIKE_DAMAGE: return { "SPELL_AURA_MOD_MULTISTRIKE_DAMAGE", "SPELL_AURA_MOD_MULTISTRIKE_DAMAGE", "NYI" };
         case SPELL_AURA_MOD_MULTISTRIKE_CHANCE: return { "SPELL_AURA_MOD_MULTISTRIKE_CHANCE", "SPELL_AURA_MOD_MULTISTRIKE_CHANCE", "NYI" };
         case SPELL_AURA_MOD_READINESS: return { "SPELL_AURA_MOD_READINESS", "SPELL_AURA_MOD_READINESS", "NYI" };
-        case SPELL_AURA_MOD_LEECH: return { "SPELL_AURA_MOD_LEECH", "SPELL_AURA_MOD_LEECH", "NYI" };
+        case SPELL_AURA_MOD_LEECH: return { "SPELL_AURA_MOD_LEECH", "SPELL_AURA_MOD_LEECH", "" };
         case SPELL_AURA_444: return { "SPELL_AURA_444", "SPELL_AURA_444", "" };
         case SPELL_AURA_445: return { "SPELL_AURA_445", "SPELL_AURA_445", "" };
-        case SPELL_AURA_446: return { "SPELL_AURA_446", "SPELL_AURA_446", "" };
+        case SPELL_AURA_MOD_DRAGONRIDING: return { "SPELL_AURA_MOD_DRAGONRIDING", "SPELL_AURA_MOD_DRAGONRIDING", "" };
         case SPELL_AURA_MOD_XP_FROM_CREATURE_TYPE: return { "SPELL_AURA_MOD_XP_FROM_CREATURE_TYPE", "SPELL_AURA_MOD_XP_FROM_CREATURE_TYPE", "" };
         case SPELL_AURA_448: return { "SPELL_AURA_448", "SPELL_AURA_448", "" };
         case SPELL_AURA_449: return { "SPELL_AURA_449", "SPELL_AURA_449", "" };
@@ -551,13 +551,21 @@ TC_API_EXPORT EnumText EnumUtils<AuraType>::ToString(AuraType value)
         case SPELL_AURA_517: return { "SPELL_AURA_517", "SPELL_AURA_517", "" };
         case SPELL_AURA_518: return { "SPELL_AURA_518", "SPELL_AURA_518", "" };
         case SPELL_AURA_519: return { "SPELL_AURA_519", "SPELL_AURA_519", "" };
+        case SPELL_AURA_520: return { "SPELL_AURA_520", "SPELL_AURA_520", "" };
+        case SPELL_AURA_521: return { "SPELL_AURA_521", "SPELL_AURA_521", "" };
+        case SPELL_AURA_522: return { "SPELL_AURA_522", "SPELL_AURA_522", "" };
+        case SPELL_AURA_523: return { "SPELL_AURA_523", "SPELL_AURA_523", "" };
+        case SPELL_AURA_524: return { "SPELL_AURA_524", "SPELL_AURA_524", "" };
+        case SPELL_AURA_525: return { "SPELL_AURA_525", "SPELL_AURA_525", "" };
+        case SPELL_AURA_526: return { "SPELL_AURA_526", "SPELL_AURA_526", "" };
+        case SPELL_AURA_527: return { "SPELL_AURA_527", "SPELL_AURA_527", "" };
         case TOTAL_AURAS: return { "TOTAL_AURAS", "TOTAL_AURAS", "" };
         default: throw std::out_of_range("value");
     }
 }
 
 template <>
-TC_API_EXPORT size_t EnumUtils<AuraType>::Count() { return 521; }
+TC_API_EXPORT size_t EnumUtils<AuraType>::Count() { return 529; }
 
 template <>
 TC_API_EXPORT AuraType EnumUtils<AuraType>::FromIndex(size_t index)
@@ -1010,7 +1018,7 @@ TC_API_EXPORT AuraType EnumUtils<AuraType>::FromIndex(size_t index)
         case 443: return SPELL_AURA_MOD_LEECH;
         case 444: return SPELL_AURA_444;
         case 445: return SPELL_AURA_445;
-        case 446: return SPELL_AURA_446;
+        case 446: return SPELL_AURA_MOD_DRAGONRIDING;
         case 447: return SPELL_AURA_MOD_XP_FROM_CREATURE_TYPE;
         case 448: return SPELL_AURA_448;
         case 449: return SPELL_AURA_449;
@@ -1084,7 +1092,15 @@ TC_API_EXPORT AuraType EnumUtils<AuraType>::FromIndex(size_t index)
         case 517: return SPELL_AURA_517;
         case 518: return SPELL_AURA_518;
         case 519: return SPELL_AURA_519;
-        case 520: return TOTAL_AURAS;
+        case 520: return SPELL_AURA_520;
+        case 521: return SPELL_AURA_521;
+        case 522: return SPELL_AURA_522;
+        case 523: return SPELL_AURA_523;
+        case 524: return SPELL_AURA_524;
+        case 525: return SPELL_AURA_525;
+        case 526: return SPELL_AURA_526;
+        case 527: return SPELL_AURA_527;
+        case 528: return TOTAL_AURAS;
         default: throw std::out_of_range("index");
     }
 }
@@ -1540,7 +1556,7 @@ TC_API_EXPORT size_t EnumUtils<AuraType>::ToIndex(AuraType value)
         case SPELL_AURA_MOD_LEECH: return 443;
         case SPELL_AURA_444: return 444;
         case SPELL_AURA_445: return 445;
-        case SPELL_AURA_446: return 446;
+        case SPELL_AURA_MOD_DRAGONRIDING: return 446;
         case SPELL_AURA_MOD_XP_FROM_CREATURE_TYPE: return 447;
         case SPELL_AURA_448: return 448;
         case SPELL_AURA_449: return 449;
@@ -1614,7 +1630,15 @@ TC_API_EXPORT size_t EnumUtils<AuraType>::ToIndex(AuraType value)
         case SPELL_AURA_517: return 517;
         case SPELL_AURA_518: return 518;
         case SPELL_AURA_519: return 519;
-        case TOTAL_AURAS: return 520;
+        case SPELL_AURA_520: return 520;
+        case SPELL_AURA_521: return 521;
+        case SPELL_AURA_522: return 522;
+        case SPELL_AURA_523: return 523;
+        case SPELL_AURA_524: return 524;
+        case SPELL_AURA_525: return 525;
+        case SPELL_AURA_526: return 526;
+        case SPELL_AURA_527: return 527;
+        case TOTAL_AURAS: return 528;
         default: throw std::out_of_range("value");
     }
 }

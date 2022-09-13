@@ -2181,6 +2181,7 @@ class TC_GAME_API Unit : public WorldObject
         void SetStunned(bool apply);
         void SetRooted(bool apply, bool packetOnly = false);
 
+    public:
         uint32 m_movementCounter;       ///< Incrementing counter used in movement packets
 
     private:

@@ -361,6 +361,7 @@ class TC_GAME_API AuraEffect
         void HandleSuppressItemPassiveEffectBySpellLabel(AuraApplication const* aurApp, uint8 mode, bool apply) const;
         void HandleForceBreathBar(AuraApplication const* aurApp, uint8 mode, bool apply) const;
         void HandleAuraLeech(AuraApplication const* auraApp, uint8 mode, bool apply) const;
+        void HandleAuraDragonriding(AuraApplication const* auraApp, uint8 mode, bool apply) const;
         void HandleProfilCamera(AuraApplication const* aurApp, uint8 mode, bool apply) const;
         void HandleCreateVignette(AuraApplication const* aurApp, uint8 mode, bool apply) const;
         void HandleAuraModCharges(AuraApplication const* aurApp, uint8 mode, bool apply) const;
