@@ -2781,7 +2781,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         TraitsMgr const* GetTraitsMgr() const;
         void AddOrSetTrait(Trait* trait);
 
-        void SetCurrentConfigID(uint32 configId) { SetUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::ActiveConfigID), configId); }
+        void SetCurrentConfigID(uint32 configId);
 
         void SetModPetHaste(float petHaste) { SetUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::ModPetHaste), petHaste); }
 

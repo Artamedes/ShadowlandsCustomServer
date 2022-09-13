@@ -28043,7 +28043,6 @@ void Player::ActivateSpecialization(ChrSpecializationEntry const* spec)
     //    RemoveAurasDueToSpell(sGlyphPropertiesStore.AssertEntry(glyphId)->SpellID);
 
     _traitMgr->SetActiveTalentGroup(spec->OrderIndex);
-    SetPrimarySpecialization(spec->ID);
 
     // for (uint32 talentId = 0; talentId < sTalentStore.GetNumRows(); ++talentId)
     // {
@@ -29938,7 +29937,7 @@ void Player::AddOrSetTrait(Trait* trait)
             case TraitType::Talents:
                 SetUpdateFieldValue(traitUF.ModifyValue(&UF::CharacterTrait::SpecializationID), trait->GetSpecializationID());
                 SetUpdateFieldValue(traitUF.ModifyValue(&UF::CharacterTrait::Dword150), 1);
-                SetUpdateFieldValue(traitUF.ModifyValue(&UF::CharacterTrait::Dword154), 1);// trait->GetIndex() + 1); - unsure about this now, Maybe it's total talent configs idx
+                SetUpdateFieldValue(traitUF.ModifyValue(&UF::CharacterTrait::Dword154), trait->GetTalentGroup() + 1);// - unsure about this now, Maybe it's total talent configs idx or TalentGroup + 1
                 break;
             case TraitType::Unk:
                 SetUpdateFieldValue(traitUF.ModifyValue(&UF::CharacterTrait::Dword148), 1);
@@ -29981,6 +29980,12 @@ void Player::AddOrSetTrait(Trait* trait)
         }
     }
 
+}
+
+void Player::SetCurrentConfigID(uint32 configId)
+{
+    SetUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::ActiveConfigID), configId);
+    ForceUpdateFieldChange(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::ActiveConfigID));
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////

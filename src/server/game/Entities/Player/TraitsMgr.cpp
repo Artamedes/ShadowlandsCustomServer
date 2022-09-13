@@ -125,16 +125,8 @@ void TraitsMgr::Setup()
         _specializations.emplace_back(new Specialization(_player, spec));
 
         if (spec->ID == _player->GetSpecializationId())
-            activeTalentGroup = spec->ID;
+            activeTalentGroup = spec->OrderIndex;
     }
-
-    if (activeTalentGroup != -1)
-        SetActiveTalentGroup(activeTalentGroup, true);
-
-    //std::sort(_specializations.begin(), _specializations.end(), [](Specialization* a, Specialization* b)
-    //{
-    //    return a->GetSpecId() > b->GetSpecId();
-    //});
 
     /// Dragonriding
     {
@@ -162,13 +154,16 @@ void TraitsMgr::Setup()
 
         trait->LearnTraitSpells();
         _player->AddOrSetTrait(trait);
+        _nextConfigId++;
     }
 
-    _nextConfigId++;
+    if (activeTalentGroup != -1)
+        SetActiveTalentGroup(activeTalentGroup, true);
 
-    /// Talents
-    if (auto specEntry = sChrSpecializationStore.LookupEntry(_player->GetSpecializationId()))
-        CreateDefaultTraitForSpec(specEntry, true);
+    //std::sort(_specializations.begin(), _specializations.end(), [](Specialization* a, Specialization* b)
+    //{
+    //    return a->GetSpecId() > b->GetSpecId();
+    //});
 }
 
 void TraitsMgr::LoadFromDB(CharacterDatabaseQueryHolder const& holder)
@@ -180,7 +175,7 @@ void TraitsMgr::SendUpdateTalentData()
     WorldPackets::Talent::UpdateTalentData packet;
 
     packet.Info.ActiveGroup = GetActiveTalentGroupSafe();
-    packet.Info.PrimarySpecialization = _player->GetSpecializationId();
+    packet.Info.PrimarySpecialization = !_specializations.empty() ? _specializations[0]->GetSpecId() : 0; ///< Unsure why blizz always sneding same here
     packet.Info.TalentGroups.resize(_specializations.size());
 
     for (uint32 i = 0; i < _specializations.size(); ++i)
@@ -259,17 +254,40 @@ void TraitsMgr::SetActiveTalentGroup(int8 orderIndex, bool force /*= false*/)
         }
     }
 
+    /// Update primary specialization UF
+    _player->SetPrimarySpecialization(newSpecialization->GetSpecId());
+    /// Send SMSG_UPDATE_TALENT_DATA to update the UI
+    SendUpdateTalentData();
+    uint32 configId = 0;
+
     if (Trait* swappedTrait = GetTraitForSpec(newSpecialization->GetSpecId()))
     {
         swappedTrait->LearnTraitSpells();
+        configId = swappedTrait->GetConfigID();
+        _player->SetCurrentConfigID(configId);
         _activeTrait = swappedTrait;
     }
     else
     {
         /// First time setting the spec
         if (auto specEntry = sChrSpecializationStore.LookupEntry(newSpecialization->GetSpecId()))
-            CreateDefaultTraitForSpec(specEntry, true);
+            if (auto trait = CreateDefaultTraitForSpec(specEntry, true))
+                configId = trait->GetConfigID();
     }
+
+    Map* map = _player->GetMap();
+    ObjectGuid _playerGuid = _player->GetGUID();
+
+    /// yes, this is bad, but I don't understand atm why configid gets garbaged in the client when it gets set before.
+    /// I have to check ActivePlayerUpdate::ReadUpdate in client fully to find where index is wrong, however setting this alone works..
+    _player->GetMap()->AddTask([map, _playerGuid, configId]()
+    {
+        if (auto player = map->GetPlayer(_playerGuid))
+        {
+            player->SetCurrentConfigID(configId);
+            player->GetTraitsMgr()->SendUpdateTalentData();
+        }
+    });
 }
 
 Specialization* TraitsMgr::GetActiveSpecialization()
@@ -310,7 +328,7 @@ Trait* TraitsMgr::CreateDefaultTraitForSpec(ChrSpecializationEntry const* specEn
     uint32 talentConfigId = _nextConfigId;
 
     // Learn default traits for spec
-    Trait* trait = new Trait(_player, talentConfigId, _player->GetSpecializationId(), TraitType::Talents, uint32(_traits.size()));
+    Trait* trait = new Trait(_player, talentConfigId, _player->GetSpecializationId(), TraitType::Talents, uint32(_traits.size()), specEntry->OrderIndex);
     _traits[talentConfigId] = trait;
     trait->SetConfigName(specEntry->Name.Str[_player->GetSession()->GetSessionDbcLocale()]);
 
@@ -348,6 +366,21 @@ Trait* TraitsMgr::CreateDefaultTraitForSpec(ChrSpecializationEntry const* specEn
     //        }
     //    }
     //}
+
+    switch (specEntry->ID)
+    {
+        case TALENT_SPEC_ROGUE_ASSASSINATION:
+            trait->AddTraitTalent(new TraitTalent(_player, trait, 74406, 94261, 0, 1));
+            break;
+        case TALENT_SPEC_ROGUE_COMBAT:
+            trait->AddTraitTalent(new TraitTalent(_player, trait, 74416, 94271, 0, 1));
+            break;
+        case TALENT_SPEC_ROGUE_SUBTLETY:
+            trait->AddTraitTalent(new TraitTalent(_player, trait, 74413, 94268, 0, 1));
+            break;
+        default:
+            break;
+    }
 
     if (activeSpec)
     {
@@ -415,6 +448,83 @@ void TraitsMgr::LearnTraits(WorldPackets::Talent::LearnTraits& learnTraits)
     UpdateTrait(trait);
     _player->AddOrSetTrait(trait);
     _activeTrait = trait;
+}
+
+void TraitsMgr::CreateNewLoadout(WorldPackets::Talent::CreateNewLoadout& createNewLoadout)
+{
+    auto UpdateTrait([&](Trait* trait)
+    {
+        trait->SetConfigName(createNewLoadout.Trait.ConfigName);
+
+        _player->SetCurrentConfigID(createNewLoadout.Trait.ConfigID);
+
+        std::vector<uint32> unlearnedTraits;
+        unlearnedTraits.reserve(createNewLoadout.Trait.Talents.size());
+
+        for (auto const& talent : createNewLoadout.Trait.Talents)
+        {
+            // learn case
+            if (talent.Rank > 0)
+            {
+                TraitTalent* newTalent = new TraitTalent(_player, trait, talent.TraitNode, talent.TraitNodeEntryID, talent.Rank, talent.Unk);
+                trait->AddTraitTalent(newTalent);
+            }
+            else
+            {
+                // unlearn case
+                unlearnedTraits.emplace_back(talent.TraitNode);
+            }
+        }
+
+        // Now we need to check old traits in relearn unlearn case
+        for (uint32 removedTrait : unlearnedTraits)
+        {
+            if (!trait->RemoveTraitTalent(removedTrait))
+                TC_LOG_ERROR("network.opcode", "Client tried to unlearn not learned trait! %u", removedTrait);
+        }
+
+        trait->LearnTraitSpells();
+    });
+
+    // Since we are swapping, remove active trait data
+    if (GetActiveTrait())
+        GetActiveTrait()->UnlearnTraitSpells();
+
+    // seems like this packet supplies old configid of copy
+    uint32 newConfigId = _nextConfigId++;
+
+    auto it = _traits.find(newConfigId);
+
+    Trait* trait = nullptr;
+
+    if (it == _traits.end())
+    {
+        trait = new Trait(_player, newConfigId, _player->GetSpecializationId(), TraitType::Talents, uint32(_traits.size()));
+        _traits[newConfigId] = trait;
+    }
+    else
+    {
+        trait = it->second;
+    }
+
+    UpdateTrait(trait);
+    _player->AddOrSetTrait(trait);
+    _activeTrait = trait;
+
+    Map* map = _player->GetMap();
+    ObjectGuid _playerGuid = _player->GetGUID();
+    uint32 configId = trait->GetConfigID();
+
+    /// yes, this is bad, but I don't understand atm why configid gets garbaged in the client when it gets set before.
+    /// I have to check ActivePlayerUpdate::ReadUpdate in client fully to find where index is wrong, however setting this alone works..
+    _player->GetMap()->AddTask([map, _playerGuid, configId]()
+    {
+        if (auto player = map->GetPlayer(_playerGuid))
+        {
+            player->SetCurrentConfigID(configId);
+            player->GetTraitsMgr()->SendUpdateTalentData();
+        }
+    });
 }
 
 void TraitsMgr::SendActiveGlyphs(bool fullUpdate /*= false*/)
@@ -488,8 +598,8 @@ TalentLearnResult TraitsMgr::LearnPVPTalent(uint16 pvpTalentId, uint8 slot, int3
     return TalentLearnResult::Ok;
 }
 
-Trait::Trait(Player* player, uint32 configId, uint32 specId, TraitType type, uint32 index) :
-    _player(player), _configID(configId), _specializationID(specId), _type(type), _index(index)
+Trait::Trait(Player* player, uint32 configId, uint32 specId, TraitType type, uint32 index, uint32 talentGroup /*= 0*/) :
+    _player(player), _configID(configId), _specializationID(specId), _type(type), _index(index), _talentGroup(talentGroup)
 {
 }
 

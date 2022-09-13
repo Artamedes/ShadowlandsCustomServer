@@ -2235,23 +2235,23 @@ void PlayerData::WriteUpdate(ByteBuffer& data, Mask const& changesMask, bool ign
         if (changesMask[4])
         {
             if (!ignoreNestedChangesMask)
-                UnkPlayerLoopInt32DF.WriteUpdateMask(data);
-            else
-                WriteCompleteDynamicFieldUpdateMask(UnkPlayerLoopInt32DF.size(), data);
-        }
-        if (changesMask[5])
-        {
-            if (!ignoreNestedChangesMask)
                 QuestSessionQuestLog.WriteUpdateMask(data);
             else
                 WriteCompleteDynamicFieldUpdateMask(QuestSessionQuestLog.size(), data);
         }
-        if (changesMask[6])
+        if (changesMask[5])
         {
             if (!ignoreNestedChangesMask)
                 ArenaCooldowns.WriteUpdateMask(data);
             else
                 WriteCompleteDynamicFieldUpdateMask(ArenaCooldowns.size(), data);
+        }
+        if (changesMask[6])
+        {
+            if (!ignoreNestedChangesMask)
+                UnkPlayerLoopInt32DF.WriteUpdateMask(data);
+            else
+                WriteCompleteDynamicFieldUpdateMask(UnkPlayerLoopInt32DF.size(), data);
         }
     }
     data.FlushBits();
@@ -2269,16 +2269,6 @@ void PlayerData::WriteUpdate(ByteBuffer& data, Mask const& changesMask, bool ign
         }
         if (changesMask[4])
         {
-            for (uint32 i = 0; i < UnkPlayerLoopInt32DF.size(); ++i)
-            {
-                if (UnkPlayerLoopInt32DF.HasChanged(i) || ignoreNestedChangesMask)
-                {
-                    data << uint32(UnkPlayerLoopInt32DF[i]);
-                }
-            }
-        }
-        if (changesMask[5])
-        {
             for (uint32 i = 0; i < QuestSessionQuestLog.size(); ++i)
             {
                 if (QuestSessionQuestLog.HasChanged(i) || ignoreNestedChangesMask)
@@ -2290,13 +2280,23 @@ void PlayerData::WriteUpdate(ByteBuffer& data, Mask const& changesMask, bool ign
                 }
             }
         }
-        if (changesMask[6])
+        if (changesMask[5])
         {
             for (uint32 i = 0; i < ArenaCooldowns.size(); ++i)
             {
                 if (ArenaCooldowns.HasChanged(i) || ignoreNestedChangesMask)
                 {
                     ArenaCooldowns[i].WriteUpdate(data, ignoreNestedChangesMask, owner, receiver);
+                }
+            }
+        }
+        if (changesMask[6])
+        {
+            for (uint32 i = 0; i < UnkPlayerLoopInt32DF.size(); ++i)
+            {
+                if (UnkPlayerLoopInt32DF.HasChanged(i) || ignoreNestedChangesMask)
+                {
+                    data << uint32(UnkPlayerLoopInt32DF[i]);
                 }
             }
         }
@@ -4229,7 +4229,7 @@ void ActivePlayerData::WriteUpdate(ByteBuffer& data, Mask const& changesMask, bo
                 QuestSession->WriteUpdate(data, ignoreNestedChangesMask, owner, receiver);
             }
         }
-        if (changesMask[113]) // seeing 113 here
+        if (changesMask[113])
         {
             data << DungeonScore;
         }
@@ -4374,17 +4374,16 @@ void ActivePlayerData::WriteUpdate(ByteBuffer& data, Mask const& changesMask, bo
             }
         }
     }
-    // DONT SEE IN CLIENT
-    // if (changesMask[0])
-    // {
-    //     if (changesMask[6])
-    //     {
-    //         if (!ignoreNestedChangesMask)
-    //             PvpInfo.WriteUpdateMask(data);
-    //         else
-    //             WriteCompleteDynamicFieldUpdateMask(PvpInfo.size(), data);
-    //     }
-    // }
+    if (changesMask[0])
+    {
+        if (changesMask[6])
+        {
+            if (!ignoreNestedChangesMask)
+                PvpInfo.WriteUpdateMask(data);
+            else
+                WriteCompleteDynamicFieldUpdateMask(PvpInfo.size(), data);
+        }
+    }
     data.FlushBits();
 }
 
@@ -4498,8 +4497,8 @@ void ActivePlayerData::ClearChangesMask()
     Base::ClearChangesMask(TransportServerTime);
     Base::ClearChangesMask(WeeklyRewardsPeriodSinceOrigin);
     Base::ClearChangesMask(DEBUGSoulbindConduitRank);
-    Base::ClearChangesMask(ActiveConfigID);
     Base::ClearChangesMask(DungeonScore);
+    Base::ClearChangesMask(ActiveConfigID);
     Base::ClearChangesMask(InvSlots);
     Base::ClearChangesMask(ExploredZones);
     Base::ClearChangesMask(RestInfo);

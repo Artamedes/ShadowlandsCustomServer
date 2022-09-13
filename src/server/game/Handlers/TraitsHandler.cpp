@@ -76,5 +76,5 @@ void WorldSession::HandleLearnTraitsOpcode(WorldPackets::Talent::LearnTraits& le
 
 void WorldSession::HandleCreateNewLoadoutOpcode(WorldPackets::Talent::CreateNewLoadout& createNewLoadout)
 {
-
+    _player->GetTraitsMgr()->CreateNewLoadout(createNewLoadout);
 }

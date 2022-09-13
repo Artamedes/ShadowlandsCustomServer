@@ -17,6 +17,7 @@ namespace WorldPackets
         struct TalentGroupInfo;
         class ActiveGlyphs;
         class LearnTraits;
+        class CreateNewLoadout;
     }
 }
 
@@ -107,13 +108,14 @@ enum class TraitType
 class TC_GAME_API Trait
 {
     public:
-        Trait(Player* player, uint32 configId, uint32 specId, TraitType type, uint32 index);
+        Trait(Player* player, uint32 configId, uint32 specId, TraitType type, uint32 index, uint32 talentGroup = 0);
         ~Trait();
 
         void SetConfigName(std::string_view configName);
         std::string const& GetConfigName() { return _configName; }
 
         uint32 GetIndex() const { return _index; }
+        uint32 GetTalentGroup() const { return _talentGroup; }
         uint32 GetConfigID() const { return _configID; }
         uint32 GetSpecializationID() const { return _specializationID; }
         TraitType GetType() const { return _type; }
@@ -131,6 +133,7 @@ class TC_GAME_API Trait
     private:
         Player* _player;
         uint32 _index;
+        uint32 _talentGroup;
         uint32 _configID;
         uint32 _specializationID;
         TraitType _type;
@@ -165,6 +168,7 @@ class TC_GAME_API TraitsMgr
         Trait* GetTraitForSpec(uint32 specId);
         Trait* CreateDefaultTraitForSpec(ChrSpecializationEntry const* specEntry, bool activeSpec = false);
         void LearnTraits(WorldPackets::Talent::LearnTraits& learnTraits);
+        void CreateNewLoadout(WorldPackets::Talent::CreateNewLoadout& createNewLoadout);
 
         /// Glyphs
         void SendActiveGlyphs(bool fullUpdate = false);
