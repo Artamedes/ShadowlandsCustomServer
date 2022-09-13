@@ -66,7 +66,7 @@ void WorldSession::HandleLearnTraitsOpcode(WorldPackets::Talent::LearnTraits& le
 
     // SMSG_UPDATE_OBJECT is sent (handled by map update)
 
-    // swapping (when talents isn't 41?)
+    // swapping (when talents isn't 41?) - hmm seems like Rank being 0 = UNLEARN
     // cast 384255 (Changing Talents)
     // SMSG_SUSPEND_TOKEN
     // SMSG_UNLEARNED_SPELLS

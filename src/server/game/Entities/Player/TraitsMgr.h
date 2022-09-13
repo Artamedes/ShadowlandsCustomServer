@@ -109,14 +109,15 @@ class TC_GAME_API Trait
         uint32 GetSpecializationID() const { return _specializationID; }
         TraitType GetType() const { return _type; }
 
-        void AddTrait(TraitTalent* talent);
+        void AddTraitTalent(TraitTalent* talent);
+        bool RemoveTraitTalent(uint32 traitNode);
 
         void LearnTraitSpells();
         void LearnTraitSpell(TraitTalent* talent);
         void UnlearnTraitSpells();
         void RemoveTraitSpell(TraitTalent* talent);
 
-        std::vector<TraitTalent*>* GetTalents();
+        std::unordered_map<uint32, TraitTalent*>* GetTalents();
 
     private:
         Player* _player;
@@ -125,7 +126,7 @@ class TC_GAME_API Trait
         uint32 _specializationID;
         TraitType _type;
         std::string _configName;
-        std::vector<TraitTalent*> _talents;
+        std::unordered_map<uint32, TraitTalent*> _talents;
 };
 
 class TC_GAME_API TraitsMgr

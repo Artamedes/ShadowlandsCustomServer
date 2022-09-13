@@ -157,7 +157,7 @@ void TraitsMgr::Setup()
         for (auto const& t : DragonRidingTraits)
         {
             TraitTalent* newTalent = new TraitTalent(_player, trait, t.first, t.second, 0, 1);
-            trait->AddTrait(newTalent);
+            trait->AddTraitTalent(newTalent);
         }
 
         trait->LearnTraitSpells();
@@ -178,7 +178,7 @@ void TraitsMgr::Setup()
 
         // @TODO: Figure out how blizz does this, this is for shiv ona ssa rogue
         TraitTalent* newTalent = new TraitTalent(_player, trait, 74073, 93918, 0, 1);
-        trait->AddTrait(newTalent);
+        trait->AddTraitTalent(newTalent);
         trait->LearnTraitSpells();
 
         _player->AddOrSetTrait(trait);
@@ -306,10 +306,29 @@ void TraitsMgr::LearnTraits(WorldPackets::Talent::LearnTraits& learnTraits)
 
         _player->SetCurrentConfigID(learnTraits.Trait.ConfigID);
 
+        std::vector<uint32> unlearnedTraits;
+        unlearnedTraits.reserve(learnTraits.Trait.Talents.size());
+
         for (auto const& talent : learnTraits.Trait.Talents)
         {
-            TraitTalent* newTalent = new TraitTalent(_player, trait, talent.TraitNode, talent.TraitNodeEntryID, talent.Rank, talent.Unk);
-            trait->AddTrait(newTalent);
+            // learn case
+            if (talent.Rank > 0)
+            {
+                TraitTalent* newTalent = new TraitTalent(_player, trait, talent.TraitNode, talent.TraitNodeEntryID, talent.Rank, talent.Unk);
+                trait->AddTraitTalent(newTalent);
+            }
+            else
+            {
+                // unlearn case
+                unlearnedTraits.emplace_back(talent.TraitNode);
+            }
+        }
+
+        // Now we need to check old traits in relearn unlearn case
+        for (uint32 removedTrait : unlearnedTraits)
+        {
+            if (!trait->RemoveTraitTalent(removedTrait))
+                TC_LOG_ERROR("network.opcode", "Client tried to unlearn not learned trait! %u", removedTrait);
         }
 
         trait->LearnTraitSpells();
@@ -412,8 +431,8 @@ Trait::Trait(Player* player, uint32 configId, uint32 specId, TraitType type, uin
 
 Trait::~Trait()
 {
-    for (auto talent : _talents)
-        delete talent;
+    for (auto itr = _talents.begin(); itr != _talents.end(); itr++)
+        delete itr->second;
 }
 
 void Trait::SetConfigName(std::string_view configName)
@@ -421,16 +440,31 @@ void Trait::SetConfigName(std::string_view configName)
     _configName = configName;
 }
 
-void Trait::AddTrait(TraitTalent* talent)
+void Trait::AddTraitTalent(TraitTalent* talent)
 {
-    _talents.push_back(talent);
+    _talents[talent->TraitNode] = (talent);
+}
+
+bool Trait::RemoveTraitTalent(uint32 traitNode)
+{
+    auto it = _talents.find(traitNode);
+    if (it == _talents.end())
+        return false;
+
+    /// Remove trait auras/learned spells
+    RemoveTraitSpell(it->second);
+
+    /// Free memory
+    delete it->second;
+    _talents.erase(it);
+    return true;
 }
 
 void Trait::LearnTraitSpells()
 {
-    for (TraitTalent* talent : _talents)
+    for (auto itr = _talents.begin(); itr != _talents.end(); itr++)
     {
-        LearnTraitSpell(talent);
+        LearnTraitSpell(itr->second);
     }
 }
 
@@ -446,9 +480,9 @@ void Trait::LearnTraitSpell(TraitTalent* talent)
 
 void Trait::UnlearnTraitSpells()
 {
-    for (TraitTalent* talent : _talents)
+    for (auto itr = _talents.begin(); itr != _talents.end(); itr++)
     {
-        RemoveTraitSpell(talent);
+        RemoveTraitSpell(itr->second);
     }
 }
 
@@ -473,7 +507,7 @@ void Trait::RemoveTraitSpell(TraitTalent* talent)
     }
 }
 
-std::vector<TraitTalent*>* Trait::GetTalents()
+std::unordered_map<uint32, TraitTalent*>* Trait::GetTalents()
 {
     return &_talents;
 }

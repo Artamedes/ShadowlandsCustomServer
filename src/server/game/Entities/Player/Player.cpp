@@ -29951,8 +29951,12 @@ void Player::AddOrSetTrait(Trait* trait)
     // UF::CharacterTrait& powerField = AddDynamicUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData)
     //     .ModifyValue(&UF::ActivePlayerData::CharacterTraits));
 
-    for (TraitTalent* talent : *trait->GetTalents())
+    auto map = trait->GetTalents();
+
+    for (auto itr = map->begin(); itr != map->end(); ++itr)
     {
+        auto talent = itr->second;
+
         int32 foundIndex = m_activePlayerData->CharacterTraits[trait->GetIndex()].Talents.FindIndexIf([&](UF::CharacterTraitTalent ufTalent)
         {
             return ufTalent.TraitNode == talent->TraitNode && ufTalent.TraitNodeEntryID == talent->TraitNodeEntryID;
