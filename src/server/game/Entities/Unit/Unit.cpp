@@ -109,10 +109,10 @@ float playerBaseMoveSpeed[MAX_MOVE_TYPE] =
     4.5f,                  // MOVE_RUN_BACK
     4.722222f,             // MOVE_SWIM
     2.5f,                  // MOVE_SWIM_BACK
-    3.141594f,             // MOVE_TURN_RATE
+    3.141592741012573242f, // MOVE_TURN_RATE
     7.0f,                  // MOVE_FLIGHT
     4.5f,                  // MOVE_FLIGHT_BACK
-    3.14f                  // MOVE_PITCH_RATE
+    3.141592741012573242f  // MOVE_PITCH_RATE
 };
 
 DispelableAura::DispelableAura(Aura* aura, int32 dispelChance, uint8 dispelCharges) :

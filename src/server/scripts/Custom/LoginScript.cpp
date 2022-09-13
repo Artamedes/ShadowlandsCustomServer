@@ -23,6 +23,71 @@ class LoginScript : public PlayerScript
             p_Player->StoreNewItemInBestSlots(184479, 1);
             p_Player->StoreNewItemInBestSlots(184479, 1);
             p_Player->StoreNewItemInBestSlots(6948, 1);
+
+
+            switch (p_Player->GetClass())
+            {
+                case CLASS_WARRIOR:
+                {
+                    p_Player->SetPrimarySpecialization(TALENT_SPEC_WARRIOR_FURY);
+                    break;
+                }
+                case CLASS_PALADIN:
+                {
+                    p_Player->SetPrimarySpecialization(TALENT_SPEC_PALADIN_RETRIBUTION);
+                    break;
+                }
+                case CLASS_HUNTER:
+                {
+                    p_Player->SetPrimarySpecialization(TalentSpecialization::TALENT_SPEC_HUNTER_MARKSMAN);
+                    break;
+                }
+                case CLASS_ROGUE:
+                {
+                    p_Player->SetPrimarySpecialization(TalentSpecialization::TALENT_SPEC_ROGUE_ASSASSINATION);
+                    break;
+                }
+                case CLASS_PRIEST:
+                {
+                    p_Player->SetPrimarySpecialization(TalentSpecialization::TALENT_SPEC_PRIEST_SHADOW);
+                    break;
+                }
+                case CLASS_DEATH_KNIGHT:
+                {
+                    p_Player->SetPrimarySpecialization(TalentSpecialization::TALENT_SPEC_DEATHKNIGHT_FROST);
+                    break;
+                }
+                case CLASS_SHAMAN:
+                {
+                    p_Player->SetPrimarySpecialization(TalentSpecialization::TALENT_SPEC_SHAMAN_ENHANCEMENT);
+                    break;
+                }
+                case CLASS_MAGE:
+                {
+                    p_Player->SetPrimarySpecialization(TalentSpecialization::TALENT_SPEC_MAGE_FIRE);
+                    break;
+                }
+                case CLASS_WARLOCK:
+                {
+                    p_Player->SetPrimarySpecialization(TalentSpecialization::TALENT_SPEC_WARLOCK_AFFLICTION);
+                    break;
+                }
+                case CLASS_MONK:
+                {
+                    p_Player->SetPrimarySpecialization(TalentSpecialization::TALENT_SPEC_MONK_BATTLEDANCER);
+                    break;
+                }
+                case CLASS_DRUID:
+                {
+                    p_Player->SetPrimarySpecialization(TalentSpecialization::TALENT_SPEC_DRUID_CAT);
+                    break;
+                }
+                case CLASS_DEMON_HUNTER:
+                {
+                    p_Player->SetPrimarySpecialization(TalentSpecialization::TALENT_SPEC_DEMON_HUNTER_HAVOC);
+                    break;
+                }
+            }
         }
 
         // Piggy

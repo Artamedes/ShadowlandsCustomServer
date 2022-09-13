@@ -18655,7 +18655,7 @@ bool Player::LoadFromDB(ObjectGuid guid, CharacterDatabaseQueryHolder const& hol
     SetNumRespecs(fields.numRespecs);
     SetPrimarySpecialization(fields.primarySpecialization);
     _traitMgr->Setup();
-    _traitMgr->SetActiveTalentGroup(fields.activeTalentGroup, true);
+    //_traitMgr->SetActiveTalentGroup(fields.activeTalentGroup, true);
     _traitMgr->LoadFromDB(holder);
 
     uint32 lootSpecId = fields.lootSpecId;
@@ -29916,15 +29916,37 @@ TraitsMgr const* Player::GetTraitsMgr() const
 
 void Player::AddOrSetTrait(Trait* trait)
 {
+    int32 foundIndexTrait = m_activePlayerData->CharacterTraits.FindIndexIf([&](UF::CharacterTrait ufTrait)
+    {
+        return ufTrait.ConfigID == trait->GetConfigID();
+    });
+
     auto traitUF = m_values.ModifyValue(&Player::m_activePlayerData)
         .ModifyValue(&UF::ActivePlayerData::CharacterTraits, trait->GetIndex());
 
-    SetUpdateFieldValue(traitUF.ModifyValue(&UF::CharacterTrait::ConfigID), trait->GetConfigID());
-    SetUpdateFieldValue(traitUF.ModifyValue(&UF::CharacterTrait::SpecializationID), trait->GetSpecializationID());
-    SetUpdateFieldValue(traitUF.ModifyValue(&UF::CharacterTrait::ConfigName), trait->GetConfigName());
-    SetUpdateFieldValue(traitUF.ModifyValue(&UF::CharacterTrait::Dword108), 1);
-    SetUpdateFieldValue(traitUF.ModifyValue(&UF::CharacterTrait::Dword150), 1);
-    SetUpdateFieldValue(traitUF.ModifyValue(&UF::CharacterTrait::Dword154), trait->GetIndex() + 1);
+    if (foundIndexTrait == -1)
+    {
+        SetUpdateFieldValue(traitUF.ModifyValue(&UF::CharacterTrait::ConfigID), trait->GetConfigID());
+        SetUpdateFieldValue(traitUF.ModifyValue(&UF::CharacterTrait::ConfigName), trait->GetConfigName());
+        SetUpdateFieldValue(traitUF.ModifyValue(&UF::CharacterTrait::Dword108), static_cast<uint32>(trait->GetType()));
+
+        switch (trait->GetType())
+        {
+            case TraitType::DragonRiding:
+                SetUpdateFieldValue(traitUF.ModifyValue(&UF::CharacterTrait::Dword158), 1);
+                break;
+            case TraitType::Talents:
+                SetUpdateFieldValue(traitUF.ModifyValue(&UF::CharacterTrait::SpecializationID), trait->GetSpecializationID());
+                SetUpdateFieldValue(traitUF.ModifyValue(&UF::CharacterTrait::Dword150), 1);
+                SetUpdateFieldValue(traitUF.ModifyValue(&UF::CharacterTrait::Dword154), 1);// trait->GetIndex() + 1); - unsure about this now, Maybe it's total talent configs idx
+                break;
+            case TraitType::Unk:
+                SetUpdateFieldValue(traitUF.ModifyValue(&UF::CharacterTrait::Dword148), 1);
+                break;
+            default:
+                break;
+        }
+    }
 
     // UF::CharacterTrait& powerField = AddDynamicUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData)
     //     .ModifyValue(&UF::ActivePlayerData::CharacterTraits));

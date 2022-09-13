@@ -109,39 +109,86 @@ TraitsMgr::~TraitsMgr()
 void TraitsMgr::Setup()
 {
     _specializations.reserve(MAX_SPECIALIZATIONS);
+
+    int8 activeTalentGroup = -1;
+
     for (uint8 i = 0; i < MAX_SPECIALIZATIONS; ++i)
     {
         ChrSpecializationEntry const* spec = sDB2Manager.GetChrSpecializationByIndex(_player->GetClass(), i);
         if (!spec)
             continue;
 
+        /// Don't send Initial in packet
+        if (spec->ID >= 1444 && spec->ID <= 1465)
+            continue;
+
         _specializations.emplace_back(new Specialization(_player, spec));
+
+        if (spec->ID == _player->GetSpecializationId())
+            activeTalentGroup = spec->ID;
     }
+
+    if (activeTalentGroup != -1)
+        SetActiveTalentGroup(activeTalentGroup, true);
 
     //std::sort(_specializations.begin(), _specializations.end(), [](Specialization* a, Specialization* b)
     //{
     //    return a->GetSpecId() > b->GetSpecId();
     //});
 
-    uint32 configId = _nextConfigId;
+    /// Dragonriding
+    {
+        uint32 configId = _nextConfigId;
 
-    _player->SetCurrentConfigID(configId);
+        // Learn default traits for spec
+        Trait* trait = new Trait(_player, configId, 0, TraitType::DragonRiding, uint32(_traits.size()));
+        _traits[configId] = trait;
 
-    // Learn default traits for spec
-    Trait* trait = new Trait(_player, configId, _player->GetSpecializationId(), uint32(_traits.size()));
-    _traits[configId] = trait;
+        static const std::unordered_map<uint32, uint32> DragonRidingTraits =
+        {
+            { 64057, 82376 },
+            { 64055, 82374 },
+            { 64053, 82372 },
+            { 64056, 82375 },
+            { 64052, 82371 },
+            { 64054, 82373 },
+        };
 
-    if (auto spec = sChrSpecializationStore.LookupEntry(_player->GetSpecializationId()))
-        trait->SetConfigName(spec->Name.Str[_player->GetSession()->GetSessionDbcLocale()]);
+        for (auto const& t : DragonRidingTraits)
+        {
+            TraitTalent* newTalent = new TraitTalent(_player, trait, t.first, t.second, 0, 1);
+            trait->AddTrait(newTalent);
+        }
 
-    // @TODO: Figure out how blizz does this, this is for shiv ona ssa rogue
-    TraitTalent* newTalent = new TraitTalent(_player, trait, 74406, 94261, 0, 1);
-    trait->AddTrait(newTalent);
-    trait->LearnTraitSpells();
-    _player->AddOrSetTrait(trait);
-    _activeTrait = trait;
+        trait->LearnTraitSpells();
+        _player->AddOrSetTrait(trait);
+    }
 
     _nextConfigId++;
+    /// Talents
+    {
+        uint32 talentConfigId = _nextConfigId;
+
+        // Learn default traits for spec
+        Trait* trait = new Trait(_player, talentConfigId, _player->GetSpecializationId(), TraitType::Talents, uint32(_traits.size()));
+        _traits[talentConfigId] = trait;
+
+        if (auto spec = sChrSpecializationStore.LookupEntry(_player->GetSpecializationId()))
+            trait->SetConfigName(spec->Name.Str[_player->GetSession()->GetSessionDbcLocale()]);
+
+        // @TODO: Figure out how blizz does this, this is for shiv ona ssa rogue
+        TraitTalent* newTalent = new TraitTalent(_player, trait, 74073, 93918, 0, 1);
+        trait->AddTrait(newTalent);
+        trait->LearnTraitSpells();
+
+        _player->AddOrSetTrait(trait);
+        _activeTrait = trait;
+        _player->SetCurrentConfigID(talentConfigId);
+
+    }
+
+    _nextConfigId++;
+
 }
 
 void TraitsMgr::LoadFromDB(CharacterDatabaseQueryHolder const& holder)
@@ -202,8 +249,11 @@ void TraitsMgr::SetActiveTalentGroup(int8 orderIndex, bool force /*= false*/)
         }
     }
 
-    currSpecialization->RemoveGlyphAuras();
-    currSpecialization->TogglePVPTalents(false);
+    if (currSpecialization)
+    {
+        currSpecialization->RemoveGlyphAuras();
+        currSpecialization->TogglePVPTalents(false);
+    }
 
     _activeTalentGroup = orderIndex;
 
@@ -271,7 +321,7 @@ void TraitsMgr::LearnTraits(WorldPackets::Talent::LearnTraits& learnTraits)
 
     if (it == _traits.end())
     {
-        trait = new Trait(_player, learnTraits.Trait.ConfigID, _player->GetSpecializationId(), uint32(_traits.size()));
+        trait = new Trait(_player, learnTraits.Trait.ConfigID, _player->GetSpecializationId(), TraitType::Talents, uint32(_traits.size()));
         _traits[learnTraits.Trait.ConfigID] = trait;
     }
     else
@@ -355,8 +405,8 @@ TalentLearnResult TraitsMgr::LearnPVPTalent(uint16 pvpTalentId, uint8 slot, int3
     return TalentLearnResult::Ok;
 }
 
-Trait::Trait(Player* player, uint32 configId, uint32 specId, uint32 index) :
-    _player(player), _configID(configId), _specializationID(specId), _index(index)
+Trait::Trait(Player* player, uint32 configId, uint32 specId, TraitType type, uint32 index) :
+    _player(player), _configID(configId), _specializationID(specId), _type(type), _index(index)
 {
 }
 

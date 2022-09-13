@@ -88,10 +88,17 @@ struct TC_GAME_API TraitTalent
     bool operator!=(TraitTalent const& right) const { return !(*this == right); }
 };
 
+enum class TraitType
+{
+    Talents      = 1,
+    Unk          = 2,
+    DragonRiding = 3,
+};
+
 class TC_GAME_API Trait
 {
     public:
-        Trait(Player* player, uint32 configId, uint32 specId, uint32 index);
+        Trait(Player* player, uint32 configId, uint32 specId, TraitType type, uint32 index);
         ~Trait();
 
         void SetConfigName(std::string_view configName);
@@ -100,6 +107,7 @@ class TC_GAME_API Trait
         uint32 GetIndex() const { return _index; }
         uint32 GetConfigID() const { return _configID; }
         uint32 GetSpecializationID() const { return _specializationID; }
+        TraitType GetType() const { return _type; }
 
         void AddTrait(TraitTalent* talent);
 
@@ -115,6 +123,7 @@ class TC_GAME_API Trait
         uint32 _index;
         uint32 _configID;
         uint32 _specializationID;
+        TraitType _type;
         std::string _configName;
         std::vector<TraitTalent*> _talents;
 };
@@ -159,5 +168,5 @@ class TC_GAME_API TraitsMgr
         Trait* _activeTrait = nullptr;
         std::vector<Specialization*> _specializations;
         std::unordered_map<uint32, Trait*> _traits; ///< Key: ConfigID, Value: Trait*
-        uint32 _nextConfigId = 4000;
+        uint32 _nextConfigId = 608843;
 };

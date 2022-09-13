@@ -6682,91 +6682,96 @@ void AuraEffect::HandleAuraDragonriding(AuraApplication const* aurApp, uint8 mod
     {
         ObjectGuid const& playerGuid = aurApp->GetTarget()->GetGUID();
 
+        player->SetCanDoubleJump(true);
+        player->SetCanFly(true);
+
         WorldPacket data(SMSG_MOVE_UNK_2E34, 16 + 4);
         data << playerGuid;
         data << uint32(player->m_movementCounter++);
         player->SendDirectMessage(&data);
-
+        
         data.Initialize(SMSG_MOVE_UNK_2E36, 16 + 4);
         data << playerGuid;
         data << uint32(player->m_movementCounter++);
         player->SendDirectMessage(&data);
-
+        
         data.Initialize(SMSG_MOVE_UNK_2E37, 16 + 4);
         data << playerGuid;
         data << uint32(player->m_movementCounter++);
         data << float(65.0f);
         player->SendDirectMessage(&data);
-
+        
         data.Initialize(SMSG_MOVE_UNK_2E38, 16 + 4);
         data << playerGuid;
         data << uint32(player->m_movementCounter++);
         data << float(0.070000000298023223f);
         player->SendDirectMessage(&data);
-
+        
         data.Initialize(SMSG_MOVE_UNK_2E39, 16 + 4);
         data << playerGuid;
         data << uint32(player->m_movementCounter++);
         data << float(5.0f);
         player->SendDirectMessage(&data);
-
+        
         data.Initialize(SMSG_MOVE_UNK_2E3A, 16 + 4);
         data << playerGuid;
         data << uint32(player->m_movementCounter++);
         data << float(7.5f);
         player->SendDirectMessage(&data);
-
+        
         data.Initialize(SMSG_MOVE_UNK_2E3B, 16 + 4);
         data << playerGuid;
         data << uint32(player->m_movementCounter++);
         data << float(100.0f);
         player->SendDirectMessage(&data);
-
+        
         data.Initialize(SMSG_MOVE_UNK_2E3C, 16 + 4);
         data << playerGuid;
         data << uint32(player->m_movementCounter++);
         data << float(140.0f);
         data << float(270.0f);
         player->SendDirectMessage(&data);
-
+        
         data.Initialize(SMSG_MOVE_UNK_2E3D, 16 + 4);
         data << playerGuid;
         data << uint32(player->m_movementCounter++);
         data << float(180.0f);
         data << float(360.0f);
         player->SendDirectMessage(&data);
-
+        
         data.Initialize(SMSG_MOVE_UNK_2E3E, 16 + 4);
         data << playerGuid;
         data << uint32(player->m_movementCounter++);
         data << float(180.0f);
         data << float(360.0f);
         player->SendDirectMessage(&data);
-
+        
         data.Initialize(SMSG_MOVE_UNK_2E3F, 16 + 4);
         data << playerGuid;
         data << uint32(player->m_movementCounter++);
         data << float(45.0f);
         data << float(65.0f);
         player->SendDirectMessage(&data);
-
+        
         data.Initialize(SMSG_MOVE_UNK_2E40, 16 + 4);
         data << playerGuid;
         data << uint32(player->m_movementCounter++);
         data << float(2.75f);
         player->SendDirectMessage(&data);
-
+        
         data.Initialize(SMSG_MOVE_UNK_2E41, 16 + 4);
         data << playerGuid;
         data << uint32(player->m_movementCounter++);
         data << float(7.0f);
         player->SendDirectMessage(&data);
-
+        
         data.Initialize(SMSG_MOVE_UNK_2E42, 16 + 4);
         data << playerGuid;
         data << uint32(player->m_movementCounter++);
         data << float(0.400000005960464477f);
         player->SendDirectMessage(&data);
+        
+        player->CastSpell(player, 388598, false);
     }
 }
 

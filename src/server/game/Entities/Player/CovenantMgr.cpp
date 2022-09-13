@@ -17,8 +17,20 @@
 #include <sstream>
 #include "CollectionMgr.h"
 
-Covenant::Covenant(CovenantID covId, Player* player) : _covenantId(covId), _player(player), _soulbindId(SoulbindID::None), _renownLevel(80), _anima(0), _souls(0)
+Covenant::Covenant(CovenantID covId, Player* player) : _covenantId(covId), _player(player), _soulbindId(SoulbindID::None), _anima(0), _souls(0)
 {
+    switch (covId)
+    {
+        case CovenantID::Kyrian:
+        case CovenantID::Venthyr:
+        case CovenantID::NightFae:
+        case CovenantID::Necrolord:
+            _renownLevel = 80;
+            break;
+        default:
+            _renownLevel = 1;
+            break;
+    }
 }
 
 bool Covenant::IsActiveCovenant() const
@@ -788,7 +800,7 @@ std::list<uint32> CovenantMgr::GetCovenantSpells(CovenantID covenantId)
         case CovenantID::Necrolord: RequiredCovenantPreviewID = 6; break;
         case CovenantID::NightFae: RequiredCovenantPreviewID = 5; break;
         default:
-            RequiredCovenantPreviewID = 99999;
+            RequiredCovenantPreviewID = 99999; /// Unlearning case, currently only affects shadowlands covenants
             break;
     }
 
@@ -797,6 +809,7 @@ std::list<uint32> CovenantMgr::GetCovenantSpells(CovenantID covenantId)
     ChrClassesEntry const* clsEntry = sChrClassesStore.LookupEntry(_player->GetClass());
     auto family = clsEntry->SpellClassSet;
 
+    /// Shadowlands only
     for (auto entry : sUiCovenantAbilityEntry)
     {
         if (RequiredCovenantPreviewID != 99999 && entry->CovenantPreviewID != RequiredCovenantPreviewID)
@@ -845,13 +858,15 @@ std::list<uint32> CovenantMgr::GetCovenantSpells(CovenantID covenantId)
             // 321077  - night fae
             SpellsToLearn.push_back(321077);
             break;
-        default:
+        default: /// Unlearning case, currently only effects Shadowlands covenants
             SpellsToLearn.push_back(321076);
             SpellsToLearn.push_back(321079);
             SpellsToLearn.push_back(321078);
             SpellsToLearn.push_back(321077);
             break;
     }
+
+    /// @TODO: Check in dragonflight if we are suppoed to remove renown reward spells on swap covenant
 
     // Check Renown
     auto covIdInt = static_cast<int32>(covenantId);

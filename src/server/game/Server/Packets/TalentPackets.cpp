@@ -126,8 +126,8 @@ ByteBuffer& operator>>(ByteBuffer& data, WorldPackets::Talent::CharacterTraitEnt
 {
     data >> entry.TraitNode;
     data >> entry.TraitNodeEntryID;
-    data >> entry.Unk;
     data >> entry.Rank;
+    data >> entry.Unk;
     return data;
 }
 

@@ -106,15 +106,15 @@ struct MovementInfo
     // spline
     float splineElevation;
 
-    float unkSpeedDF1  = 2.0f;
-    float unkSpeedDF2 = 65.0f;
-    float unkSpeedDF3 = 1.0f;
-    float unkSpeedDF4 = 3.0f;
-    float unkSpeedDF5 = 10.0f;
-    float unkSpeedDF6 = 100.0f;
-    float unkSpeedDF7 = 90.0f;
-    float unkSpeedDF8 = 140.0f;
-    float unkSpeedDF9 = 180.0f;
+    float unkSpeedDF1  = 1.5f;
+    float unkSpeedDF2  = 65.0f;
+    float unkSpeedDF3  = 0.070000000298023223f;
+    float unkSpeedDF4  = 5.0f;
+    float unkSpeedDF5  = 7.5f;
+    float unkSpeedDF6  = 100.0f;
+    float unkSpeedDF7  = 90.0f;
+    float unkSpeedDF8  = 140.0f;
+    float unkSpeedDF9  = 180.0f;
     float unkSpeedDF10 = 360.0f;
     float unkSpeedDF11 = 90.0f;
     float unkSpeedDF12 = 270.0f;

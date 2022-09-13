@@ -363,7 +363,7 @@ NonDefaultConstructible<SpellEffectHandlerFn> SpellEffectHandlers[TOTAL_SPELL_EF
     &Spell::EffectLearnTransmogIllusion,                    //276 SPELL_EFFECT_LEARN_TRANSMOG_ILLUSION
     &Spell::EffectNULL,                                     //277 SPELL_EFFECT_SET_CHROMIE_TIME
     &Spell::EffectNULL,                                     //278 SPELL_EFFECT_278
-    &Spell::EffectNULL,                                     //279 SPELL_EFFECT_LEARN_GARR_TALENT
+    &Spell::EffectLearnGarrTalent,                          //279 SPELL_EFFECT_LEARN_GARR_TALENT
     &Spell::EffectUnused,                                   //280 SPELL_EFFECT_280
     &Spell::EffectLearnSoulbindConduit,                     //281 SPELL_EFFECT_LEARN_SOULBIND_CONDUIT
     &Spell::EffectNULL,                                     //282 SPELL_EFFECT_CONVERT_ITEMS_TO_CURRENCY
@@ -6243,6 +6243,20 @@ void Spell::EffectCraftRuneforgeLegendary()
     playerCaster->DestroyItemCount(Missive1, 1, true);
     playerCaster->DestroyItemCount(Missive2, 1, true);
     playerCaster->ModifyCurrency(1813, -2000); ///< Custom 
+}
+
+void Spell::EffectLearnGarrTalent()
+{
+    if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT)
+        return;
+
+    Player* playerCaster = m_caster->ToPlayer();
+    if (!playerCaster)
+        return;
+
+    if (auto garrTalentEntry = sGarrTalentStore.LookupEntry(effectInfo->MiscValue))
+        if (auto garrTalentTreeEntry = sGarrTalentTreeStore.LookupEntry(garrTalentEntry->GarrTalentTreeID))
+            playerCaster->GetCovenantMgr()->LearnConduit(garrTalentEntry, garrTalentTreeEntry);
 }
 
 void Spell::EffectLearnSoulbindConduit()

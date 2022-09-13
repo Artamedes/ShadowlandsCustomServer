@@ -91,6 +91,7 @@ void AddSC_spell_venthyr();
 void AddSC_spell_corruption();
 void AddSC_spell_covenant();
 void AddSC_spell_legendary();
+void AddSC_spell_dragonriding();
 
 // The name of this function should match:
 // void Add${NameOfDirectory}Scripts()
@@ -171,4 +172,5 @@ void AddSpellsScripts()
     AddSC_spell_corruption();
     AddSC_spell_covenant();
     AddSC_spell_legendary();
+    AddSC_spell_dragonriding();
 }

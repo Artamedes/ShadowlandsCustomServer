@@ -1306,13 +1306,127 @@ void WorldSession::HandleKeyboundOverride(WorldPackets::Misc::KeyboundOverride& 
         {
             if (keyboundOverride.OverrideID == 218)
             {
-                WorldPacket data(SMSG_MOVE_UNK_2E32, 16 + 4 + 4 + 4 + 4);
+                auto player = _player;
+                auto playerGuid = _player->GetGUID();
+                player->SetCanDoubleJump(true);
+                player->SetCanFly(true);
+
+                WorldPacket data(SMSG_MOVE_UNK_2E34, 16 + 4);
+                data << playerGuid;
+                data << uint32(player->m_movementCounter++);
+                player->SendDirectMessage(&data);
+
+                data.Initialize(SMSG_MOVE_UNK_2E36, 16 + 4);
+                data << playerGuid;
+                data << uint32(player->m_movementCounter++);
+                player->SendDirectMessage(&data);
+
+                data.Initialize(SMSG_MOVE_UNK_2E37, 16 + 4);
+                data << playerGuid;
+                data << uint32(player->m_movementCounter++);
+                data << float(65.0f);
+                player->SendDirectMessage(&data);
+
+                data.Initialize(SMSG_MOVE_UNK_2E38, 16 + 4);
+                data << playerGuid;
+                data << uint32(player->m_movementCounter++);
+                data << float(0.070000000298023223f);
+                player->SendDirectMessage(&data);
+
+                data.Initialize(SMSG_MOVE_UNK_2E39, 16 + 4);
+                data << playerGuid;
+                data << uint32(player->m_movementCounter++);
+                data << float(5.0f);
+                player->SendDirectMessage(&data);
+
+                data.Initialize(SMSG_MOVE_UNK_2E3A, 16 + 4);
+                data << playerGuid;
+                data << uint32(player->m_movementCounter++);
+                data << float(7.5f);
+                player->SendDirectMessage(&data);
+
+                data.Initialize(SMSG_MOVE_UNK_2E3B, 16 + 4);
+                data << playerGuid;
+                data << uint32(player->m_movementCounter++);
+                data << float(100.0f);
+                player->SendDirectMessage(&data);
+
+                data.Initialize(SMSG_MOVE_UNK_2E3C, 16 + 4);
+                data << playerGuid;
+                data << uint32(player->m_movementCounter++);
+                data << float(140.0f);
+                data << float(270.0f);
+                player->SendDirectMessage(&data);
+
+                data.Initialize(SMSG_MOVE_UNK_2E3D, 16 + 4);
+                data << playerGuid;
+                data << uint32(player->m_movementCounter++);
+                data << float(180.0f);
+                data << float(360.0f);
+                player->SendDirectMessage(&data);
+
+                data.Initialize(SMSG_MOVE_UNK_2E3E, 16 + 4);
+                data << playerGuid;
+                data << uint32(player->m_movementCounter++);
+                data << float(180.0f);
+                data << float(360.0f);
+                player->SendDirectMessage(&data);
+
+                data.Initialize(SMSG_MOVE_UNK_2E3F, 16 + 4);
+                data << playerGuid;
+                data << uint32(player->m_movementCounter++);
+                data << float(45.0f);
+                data << float(65.0f);
+                player->SendDirectMessage(&data);
+
+                data.Initialize(SMSG_MOVE_UNK_2E40, 16 + 4);
+                data << playerGuid;
+                data << uint32(player->m_movementCounter++);
+                data << float(2.75f);
+                player->SendDirectMessage(&data);
+
+                data.Initialize(SMSG_MOVE_UNK_2E41, 16 + 4);
+                data << playerGuid;
+                data << uint32(player->m_movementCounter++);
+                data << float(7.0f);
+                player->SendDirectMessage(&data);
+
+                data.Initialize(SMSG_MOVE_UNK_2E42, 16 + 4);
+                data << playerGuid;
+                data << uint32(player->m_movementCounter++);
+                data << float(0.400000005960464477f);
+                player->SendDirectMessage(&data);
+
+
+                // ServerToClient: SMSG_MOVE_UNK_2E32(0x2E32) Length : 24 ConnIdx : 1 Time : 09 / 13 / 2022 01:23 : 19.653 Number : 571
+                data.Initialize(SMSG_MOVE_UNK_2E32, 16 + 4 + 4 + 4 + 4);
                 data << uint32(_player->m_movementCounter++);
-                data << float(19.81738662719726562f);
-                data << float(-15.2404470443725585f);
                 data << float(0.0f);
+                data << float(0.0f);
+                data << float(40.0f);
                 SendPacket(&data);
-                _player->CastSpell(_player, 374763, false); ///< Lift Off
+                _player->CastSpell(_player, 374763, true); ///< Lift Off
+                _player->CastSpell(_player, 372771, true); ///< Dragonrider Energy
+
+                // was sent after first CMSG_MOVE_HEARTBEAT
+
+                _player->GetScheduler().Schedule(1s, [this](TaskContext /*context*/)
+                {
+                    WorldPacket data(SMSG_MOVE_UNK_2E32, 16 + 4 + 4 + 4 + 4);
+                    data << uint32(_player->m_movementCounter++);
+                    data << float(16.62887191772460937f);
+                    data << float(-18.6676349639892578f);
+                    data << float(0.0f);
+                    SendPacket(&data);
+                });
+                // ServerToClient: SMSG_MOVE_UNK_2E32(0x2E32) Length : 24 ConnIdx : 1 Time : 09 / 13 / 2022 01:23 : 20.418 Number : 583
+                // MoverGUID : Full : 0x080F280000000000000000000068BBDB Player / 0 R970 / S0 Map : 0 (Eastern Kingdoms) Low : 6863835
+                // SequenceIndex : 24
+                // Speed : -24.9888420104980468
+                // Speed2 : 0.746828258037567138
+                // Speed3 : 0
+
+                // client send back - 0x3A50 so it's some lift off ack
             }
 
             // 218 

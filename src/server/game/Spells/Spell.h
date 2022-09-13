@@ -408,6 +408,7 @@ class TC_GAME_API Spell
         void EffectScrapItem();
         void EffectSetCovenant();
         void EffectCraftRuneforgeLegendary();
+        void EffectLearnGarrTalent();
         void EffectLearnSoulbindConduit();
 
         typedef std::unordered_set<Aura*> UsedSpellMods;

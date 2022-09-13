@@ -14,10 +14,17 @@ class Item;
 enum class CovenantID : int32
 {
     None        = 0,
+
+    /// Shadowlands
     Kyrian      = 1,
     Venthyr     = 2,
     NightFae    = 3,
     Necrolord   = 4,
+    /// Dragonflight
+    MaruukCentaur           = 12,
+    DragonscaleExpedition   = 13,
+    IskaaraTuskarr          = 14,
+    TheValdrakkenAccord     = 15,
 };
 
 enum class SoulbindID : int32
@@ -69,6 +76,11 @@ enum GarrTalentTreeIds : uint32
     Nadjia        = 272,
     Nadjia2       = 368, // hmm
     Theotar       = 392,
+
+    DragonRidingSkills   = 482,
+    AdvancedDragonriding = 484,
+    TuskarrFishing       = 488,
+    ExpeditionSupplies   = 489,
 };
 
 enum class eCovenantSaveFlags : uint32
