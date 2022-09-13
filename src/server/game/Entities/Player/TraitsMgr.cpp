@@ -165,30 +165,10 @@ void TraitsMgr::Setup()
     }
 
     _nextConfigId++;
+
     /// Talents
-    {
-        uint32 talentConfigId = _nextConfigId;
-
-        // Learn default traits for spec
-        Trait* trait = new Trait(_player, talentConfigId, _player->GetSpecializationId(), TraitType::Talents, uint32(_traits.size()));
-        _traits[talentConfigId] = trait;
-
-        if (auto spec = sChrSpecializationStore.LookupEntry(_player->GetSpecializationId()))
-            trait->SetConfigName(spec->Name.Str[_player->GetSession()->GetSessionDbcLocale()]);
-
-        // @TODO: Figure out how blizz does this, this is for shiv ona ssa rogue
-        TraitTalent* newTalent = new TraitTalent(_player, trait, 74073, 93918, 0, 1);
-        trait->AddTraitTalent(newTalent);
-        trait->LearnTraitSpells();
-
-        _player->AddOrSetTrait(trait);
-        _activeTrait = trait;
-        _player->SetCurrentConfigID(talentConfigId);
-
-    }
-
-    _nextConfigId++;
-
+    if (auto specEntry = sChrSpecializationStore.LookupEntry(_player->GetSpecializationId()))
+        CreateDefaultTraitForSpec(specEntry, true);
 }
 
 void TraitsMgr::LoadFromDB(CharacterDatabaseQueryHolder const& holder)
@@ -253,6 +233,9 @@ void TraitsMgr::SetActiveTalentGroup(int8 orderIndex, bool force /*= false*/)
     {
         currSpecialization->RemoveGlyphAuras();
         currSpecialization->TogglePVPTalents(false);
+
+        if (GetActiveTrait())
+            GetActiveTrait()->UnlearnTraitSpells();
     }
 
     _activeTalentGroup = orderIndex;
@@ -275,6 +258,18 @@ void TraitsMgr::SetActiveTalentGroup(int8 orderIndex, bool force /*= false*/)
                 _player->AddOverrideSpell(specSpell->OverridesSpellID, specSpell->SpellID);
         }
     }
+
+    if (Trait* swappedTrait = GetTraitForSpec(newSpecialization->GetSpecId()))
+    {
+        swappedTrait->LearnTraitSpells();
+        _activeTrait = swappedTrait;
+    }
+    else
+    {
+        /// First time setting the spec
+        if (auto specEntry = sChrSpecializationStore.LookupEntry(newSpecialization->GetSpecId()))
+            CreateDefaultTraitForSpec(specEntry, true);
+    }
 }
 
 Specialization* TraitsMgr::GetActiveSpecialization()
@@ -296,6 +291,75 @@ Specialization* TraitsMgr::GetSpecialization(int8 orderIndex)
 Trait* TraitsMgr::GetActiveTrait()
 {
     return _activeTrait;
+}
+
+Trait* TraitsMgr::GetTraitForSpec(uint32 specId)
+{
+    for (auto itr = _traits.begin(); itr != _traits.end(); ++itr)
+    {
+        Trait* trait = itr->second;
+        if (trait->GetType() == TraitType::Talents && trait->GetSpecializationID() == specId)
+            return trait;
+    }
+
+    return nullptr;
+}
+
+Trait* TraitsMgr::CreateDefaultTraitForSpec(ChrSpecializationEntry const* specEntry, bool activeSpec /*= false*/)
+{
+    uint32 talentConfigId = _nextConfigId;
+
+    // Learn default traits for spec
+    Trait* trait = new Trait(_player, talentConfigId, _player->GetSpecializationId(), TraitType::Talents, uint32(_traits.size()));
+    _traits[talentConfigId] = trait;
+    trait->SetConfigName(specEntry->Name.Str[_player->GetSession()->GetSessionDbcLocale()]);
+
+    /// Commented out due to need more research I think this might be better just to sniff.. and hardcode the values
+    //auto traitTreeId = GetTraitTreeForClass(_player->GetClass());
+    //if (traitTreeId != TraitTrees::Unk)
+    //{
+    //    // TODO: load this in db2 to a multimap
+    //    uint32 tree = static_cast<uint32>(traitTreeId);
+    //
+    //    for (auto traitNode : sTraitNodeStore)
+    //    {
+    //        if (traitNode->TraitTreeID == tree)
+    //        {
+    //            // @TODO: Fix this to load at startup as well
+    //
+    //            for (auto traitXNode : sTraitNodeXTraitNodeEntryStore)
+    //            {
+    //                if (traitXNode->TraitNodeID == traitNode->ID)
+    //                {
+    //                    if (auto traitNodeEnttry = sTraitNodeEntryStore.LookupEntry(traitXNode->TraitNodeEntryID))
+    //                    {
+    //                        if (auto traitDefinition = sTraitDefinitionStore.LookupEntry(traitNodeEnttry->TraitDefinitionID))
+    //                        {
+    //                            if (_player->HasSpell(traitDefinition->SpellID))
+    //                            {
+    //                                TraitTalent* newTalent = new TraitTalent(_player, trait, traitNode->ID, traitXNode->TraitNodeEntryID, 0, 1);
+    //                                trait->AddTraitTalent(newTalent);
+    //                            }
+    //                        }
+    //                    }
+    //                    break;
+    //                }
+    //            }
+    //        }
+    //    }
+    //}
+
+    if (activeSpec)
+    {
+        trait->LearnTraitSpells();
+        _player->SetCurrentConfigID(talentConfigId);
+        _activeTrait = trait;
+    }
+
+    _player->AddOrSetTrait(trait);
+    _nextConfigId++;
+
+    return trait;
 }
 
 void TraitsMgr::LearnTraits(WorldPackets::Talent::LearnTraits& learnTraits)
@@ -525,4 +589,18 @@ TraitTalent::TraitTalent(Player* player, Trait* trait, uint32 traitNode, uint32 
 bool TraitTalent::operator==(TraitTalent const& right) const
 {
     return TraitNode == right.TraitNode && TraitNodeEntryID == right.TraitNodeEntryID;
+}
+
+inline TraitTrees GetTraitTreeForClass(uint8 classId)
+{
+    switch (classId)
+    {
+        case CLASS_HUNTER:
+            return TraitTrees::HunterMain;
+        case CLASS_DEMON_HUNTER:
+            return TraitTrees::DHAllAlpha;
+
+        default:
+            return TraitTrees::Unk;
+    }
 }

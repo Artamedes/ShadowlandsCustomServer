@@ -43,6 +43,15 @@ enum class TalentLearnResult
     RestArea                      = 8,
 };
 
+enum class TraitTrees
+{
+    Unk        = 0,
+    HunterMain = 127,
+    DHAllAlpha = 732,
+};
+
+inline TraitTrees GetTraitTreeForClass(uint8 classId);
+
 class TC_GAME_API Specialization
 {
     public:
@@ -153,6 +162,8 @@ class TC_GAME_API TraitsMgr
 
         /// Traits
         Trait* GetActiveTrait();
+        Trait* GetTraitForSpec(uint32 specId);
+        Trait* CreateDefaultTraitForSpec(ChrSpecializationEntry const* specEntry, bool activeSpec = false);
         void LearnTraits(WorldPackets::Talent::LearnTraits& learnTraits);
 
         /// Glyphs
