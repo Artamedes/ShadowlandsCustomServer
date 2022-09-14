@@ -289,11 +289,12 @@ struct TC_GAME_API Loot
     uint8 maxDuplicates;                                    // Max amount of items with the same entry that can drop (default is 1; on 25 man raid mode 3)
     ObjectGuid _sourceLoot;
 
-    explicit Loot(Map* map, ObjectGuid owner, LootType type);
+    explicit Loot(Map* map, ObjectGuid owner, LootType type, LootMethod lootMethod);
     ~Loot();
 
     ObjectGuid const& GetGUID() const { return _guid; }
     ObjectGuid const& GetOwnerGUID() const { return _owner; }
+    LootMethod GetLootMethod() const { return _lootMethod; }
 
     ObjectGuid const& GetSourceLoot() const { return _sourceLoot; }
     void SetSourceLoot(ObjectGuid sourceLoot) { _sourceLoot = sourceLoot; }
@@ -361,6 +362,7 @@ private:
     ObjectGuid _guid;
     ObjectGuid _owner;                                              // The WorldObject that holds this loot
     ItemContext _itemContext;
+    LootMethod _lootMethod;
     uint32 _challengeLevel; //Capped to 10 level
     uint32 _realChallengeLevel; //Real challenge level capped in worldserver config
     uint32 _challengeMap;
