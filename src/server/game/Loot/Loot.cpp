@@ -32,6 +32,7 @@
 #include "Player.h"
 #include "Random.h"
 #include "World.h"
+#include "WorldSession.h"
 
 //
 // --------- LootItem ---------
@@ -183,7 +184,11 @@ void Loot::clear()
         delete itr->second;
     PlayerNonQuestNonFFAConditionalItems.clear();
 
+    for (ObjectGuid playerGuid : PlayersLooting)
+        if (Player* player = ObjectAccessor::FindConnectedPlayer(playerGuid))
+            player->GetSession()->DoLootRelease(this);
     PlayersLooting.clear();
+
     items.clear();
     quest_items.clear();
     gold = 0;

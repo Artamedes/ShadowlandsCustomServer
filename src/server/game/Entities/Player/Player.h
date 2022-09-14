@@ -2076,11 +2076,8 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
 
         ObjectGuid const& GetLootGUID() const { return m_playerData->LootTargetGUID; }
         void SetLootGUID(ObjectGuid const& guid) { SetUpdateFieldValue(m_values.ModifyValue(&Player::m_playerData).ModifyValue(&UF::PlayerData::LootTargetGUID), guid); }
-        ObjectGuid GetLootWorldObjectGUID(ObjectGuid const& lootObjectGuid) const;
-        void RemoveAELootedWorldObject(ObjectGuid const& lootWorldObjectGuid);
-        bool HasLootWorldObjectGUID(ObjectGuid const& lootWorldObjectGuid) const;
-        std::unordered_map<ObjectGuid, ObjectGuid> const& GetAELootView() const { return m_AELootView; }
-        std::unordered_map<ObjectGuid /*LootObject*/, ObjectGuid /*world object*/> m_AELootView;
+        Loot* GetLootByWorldObjectGUID(ObjectGuid const& lootWorldObjectGuid) const;
+        std::unordered_map<ObjectGuid, Loot*> const& GetAELootView() const { return m_AELootView; }
 
         void RemovedInsignia(Player* looterPlr);
 
@@ -3322,6 +3319,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
 
         SceneMgr m_sceneMgr;
 
+        std::unordered_map<ObjectGuid /*LootObject*/, Loot*> m_AELootView;
 
         bool m_isJumping = false;
 
