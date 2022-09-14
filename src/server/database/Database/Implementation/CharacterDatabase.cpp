@@ -824,12 +824,12 @@ void CharacterDatabaseConnection::DoPrepareStatements()
     PrepareStatement(CHAR_DEL_CHALLENGE_OPLOTE_LOOT_BY_GUID, "DELETE FROM challenge_oplote_loot WHERE guid = ?", CONNECTION_ASYNC);
 
     /// Traits
-    PrepareStatement(CHAR_SEL_TRAITS,        "SELECT ConfigID, SpecId, `Type`, `Index`, TalentGroup, ConfigName FROM character_traits WHERE Guid = ?", CONNECTION_ASYNC);
-    PrepareStatement(CHAR_SEL_TRAIT_TALENTS, "SELECT ConfigID, TraitNode, TraitNodeEntryID, `Rank`, `Unk` FROM character_traits_talents WHERE Guid = ?", CONNECTION_ASYNC);
-    PrepareStatement(CHAR_REP_TRAIT,         "REPLACE INTO character_traits (Guid, ConfigID, SpecId, `Type`, `Index`, TalentGroup, ConfigName) VALUES (?, ?, ?, ?, ?, ?, ?)", CONNECTION_ASYNC);
-    PrepareStatement(CHAR_REP_TRAIT_TALENT,  "REPLACE INTO character_traits_talents (Guid, ConfigID, TraitNode, TraitNodeEntryID, `Rank`, `Unk`) VALUES (?, ?, ?, ?, ?, ?)", CONNECTION_ASYNC);
-    PrepareStatement(CHAR_DEL_TRAIT,         "DELETE FROM character_traits WHERE Guid = ? AND ConfigID = ?", CONNECTION_ASYNC);
-    PrepareStatement(CHAR_DEL_TRAIT_TALENT,  "DELETE FROM character_traits_talents WHERE Guid = ? And ConfigID = ? AND TraitNode = ?", CONNECTION_ASYNC);
+    PrepareStatement(CHAR_SEL_TRAITS,        "SELECT `ConfigID`, `SpecId`, `Type`, `Index`, `TalentGroup`, `ConfigName` FROM character_traits WHERE Guid = ?", CONNECTION_ASYNC);
+    PrepareStatement(CHAR_SEL_TRAIT_TALENTS, "SELECT `ConfigID`, `TraitNode`, TraitNodeEntryID, `Rank`, `Unk` FROM character_traits_talents WHERE Guid = ?", CONNECTION_ASYNC);
+    PrepareStatement(CHAR_REP_TRAIT,         "REPLACE INTO character_traits (`Guid`, `ConfigID`, SpecId, `Type`, `Index`, `TalentGroup`, `ConfigName`) VALUES (?, ?, ?, ?, ?, ?, ?)", CONNECTION_ASYNC);
+    PrepareStatement(CHAR_REP_TRAIT_TALENT,  "REPLACE INTO character_traits_talents (`Guid`, `ConfigID`, `TraitNode`, `TraitNodeEntryID`, `Rank`, `Unk`) VALUES (?, ?, ?, ?, ?, ?)", CONNECTION_ASYNC);
+    PrepareStatement(CHAR_DEL_TRAIT,         "DELETE FROM character_traits WHERE `Guid` = ? AND `ConfigID` = ?", CONNECTION_ASYNC);
+    PrepareStatement(CHAR_DEL_TRAIT_TALENT,  "DELETE FROM character_traits_talents WHERE `Guid` = ? And `ConfigID` = ? AND `TraitNode` = ?", CONNECTION_ASYNC);
 
 
     PrepareStatement(CHAR_SEL_CUSTOM, "SELECT DaysLoggedIn FROM z_character_custom where guid = ?", CONNECTION_ASYNC);
