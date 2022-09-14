@@ -689,7 +689,15 @@ enum CharacterDatabaseStatements : uint32
     CHAR_REP_CHALLENGE_KEY,
     CHAR_DEL_CHALLENGE_KEY,
 
-        // custom
+    /// Traits
+    CHAR_SEL_TRAITS,
+    CHAR_SEL_TRAIT_TALENTS,
+    CHAR_REP_TRAIT,
+    CHAR_REP_TRAIT_TALENT,
+    CHAR_DEL_TRAIT,
+    CHAR_DEL_TRAIT_TALENT,
+
+    // custom
     CHAR_SEL_CUSTOM,
     CHAR_REP_CUSTOM,
 

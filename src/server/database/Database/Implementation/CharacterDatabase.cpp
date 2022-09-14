@@ -87,7 +87,7 @@ void CharacterDatabaseConnection::DoPrepareStatements()
                      "resettalents_time, primarySpecialization, trans_x, trans_y, trans_z, trans_o, transguid, extra_flags, summonedPetNumber, at_login, zone, online, death_expire_time, taxi_path, dungeonDifficulty, "
                      "totalKills, todayKills, yesterdayKills, chosenTitle, watchedFaction, drunk, "
                      "health, power1, power2, power3, power4, power5, power6, power7, instance_id, activeTalentGroup, lootSpecId, exploredZones, knownTitles, actionBars, raidDifficulty, legacyRaidDifficulty, fishingSteps, "
-                     "honor, honorLevel, honorRestState, honorRestBonus, numRespecs, covenant "
+                     "honor, honorLevel, honorRestState, honorRestBonus, numRespecs, covenant, configId "
                      "FROM characters c LEFT JOIN character_fishingsteps cfs ON c.guid = cfs.guid WHERE c.guid = ?", CONNECTION_ASYNC);
 
     PrepareStatement(CHAR_SEL_CHARACTER_CUSTOMIZATIONS, "SELECT chrCustomizationOptionID, chrCustomizationChoiceID FROM character_customizations WHERE guid = ? ORDER BY chrCustomizationOptionID", CONNECTION_ASYNC);
@@ -482,7 +482,7 @@ void CharacterDatabaseConnection::DoPrepareStatements()
                      "logout_time=?,is_logout_resting=?,resettalents_cost=?,resettalents_time=?,numRespecs=?,primarySpecialization=?,extra_flags=?,summonedPetNumber=?,at_login=?,zone=?,death_expire_time=?,taxi_path=?,"
                      "totalKills=?,todayKills=?,yesterdayKills=?,chosenTitle=?,"
                      "watchedFaction=?,drunk=?,health=?,power1=?,power2=?,power3=?,power4=?,power5=?,power6=?,power7=?,latency=?,activeTalentGroup=?,lootSpecId=?,exploredZones=?,"
-                     "equipmentCache=?,knownTitles=?,actionBars=?,online=?,honor=?,honorLevel=?,honorRestState=?,honorRestBonus=?,covenant=?,lastLoginBuild=? WHERE guid=?", CONNECTION_ASYNC);
+                     "equipmentCache=?,knownTitles=?,actionBars=?,online=?,honor=?,honorLevel=?,honorRestState=?,honorRestBonus=?,covenant=?,configId=?,lastLoginBuild=? WHERE guid=?", CONNECTION_ASYNC);
 
     PrepareStatement(CHAR_UPD_ADD_AT_LOGIN_FLAG, "UPDATE characters SET at_login = at_login | ? WHERE guid = ?", CONNECTION_ASYNC);
     PrepareStatement(CHAR_UPD_REM_AT_LOGIN_FLAG, "UPDATE characters set at_login = at_login & ~ ? WHERE guid = ?", CONNECTION_ASYNC);
@@ -822,6 +822,15 @@ void CharacterDatabaseConnection::DoPrepareStatements()
     PrepareStatement(CHAR_INS_CHALLENGE_OPLOTE_LOOT, "REPLACE INTO challenge_oplote_loot (`guid`, `chestListID`, `date`, `ChallengeLevel`, `ChallengeID`) VALUES (?, ?, ?, ?, ?)", CONNECTION_ASYNC);
     PrepareStatement(CHAR_DEL_CHALLENGE_OPLOTE_LOOT, "DELETE FROM challenge_oplote_loot WHERE date <= UNIX_TIMESTAMP()", CONNECTION_ASYNC);
     PrepareStatement(CHAR_DEL_CHALLENGE_OPLOTE_LOOT_BY_GUID, "DELETE FROM challenge_oplote_loot WHERE guid = ?", CONNECTION_ASYNC);
+
+    /// Traits
+    PrepareStatement(CHAR_SEL_TRAITS,        "SELECT ConfigID, SpecId, `Type`, `Index`, TalentGroup, ConfigName FROM character_traits WHERE Guid = ?", CONNECTION_ASYNC);
+    PrepareStatement(CHAR_SEL_TRAIT_TALENTS, "SELECT ConfigID, TraitNode, TraitNodeEntryID, `Rank`, `Unk` FROM character_traits_talents WHERE Guid = ?", CONNECTION_ASYNC);
+    PrepareStatement(CHAR_REP_TRAIT,         "REPLACE INTO character_traits (Guid, ConfigID, SpecId, `Type`, `Index`, TalentGroup, ConfigName) VALUES (?, ?, ?, ?, ?, ?, ?)", CONNECTION_ASYNC);
+    PrepareStatement(CHAR_REP_TRAIT_TALENT,  "REPLACE INTO character_traits_talents (Guid, ConfigID, TraitNode, TraitNodeEntryID, `Rank`, `Unk`) VALUES (?, ?, ?, ?, ?, ?)", CONNECTION_ASYNC);
+    PrepareStatement(CHAR_DEL_TRAIT,         "DELETE FROM character_traits WHERE Guid = ? AND ConfigID = ?", CONNECTION_ASYNC);
+    PrepareStatement(CHAR_DEL_TRAIT_TALENT,  "DELETE FROM character_traits_talents WHERE Guid = ? And ConfigID = ? AND TraitNode = ?", CONNECTION_ASYNC);
+
 
     PrepareStatement(CHAR_SEL_CUSTOM, "SELECT DaysLoggedIn FROM z_character_custom where guid = ?", CONNECTION_ASYNC);
     PrepareStatement(CHAR_REP_CUSTOM, "REPLACE INTO z_character_custom (guid, DaysLoggedIn) VALUES (?, ?)", CONNECTION_ASYNC);

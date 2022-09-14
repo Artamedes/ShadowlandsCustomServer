@@ -97,6 +97,7 @@ class RestMgr;
 class SpellCastTargets;
 class TradeData;
 class Trait;
+struct TraitTalent;
 class TraitsMgr;
 struct MythicKeystoneInfo;
 class PlayerChallenge;
@@ -917,6 +918,8 @@ enum PlayerLoginQueryIndex
     PLAYER_LOGIN_QUERY_LOAD_CHARACTER_COVENANT,
     PLAYER_LOGIN_QUERY_LOAD_CHARACTER_COVENANT_SOULBIND,
     PLAYER_LOGIN_QUERY_LOAD_CHARACTER_COVENANT_CLAIMED_RENOWN_REWARDS,
+    PLAYER_LOGIN_QUERY_LOAD_SEL_TRAITS,
+    PLAYER_LOGIN_QUERY_LOAD_SEL_TRAIT_TALENTS,
     PLAYER_LOGIN_QUERY_LOAD_CHARACTER_CUSTOM,
     PLAYER_LOGIN_QUERY_LOAD_CHARACTER_DAILY_REWARDS,
     MAX_PLAYER_LOGIN_QUERY
@@ -2780,6 +2783,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         TraitsMgr* GetTraitsMgr();
         TraitsMgr const* GetTraitsMgr() const;
         void AddOrSetTrait(Trait* trait);
+        void RemoveTraitTalent(Trait* trait, TraitTalent* talent);
 
         void SetCurrentConfigID(uint32 configId);
 

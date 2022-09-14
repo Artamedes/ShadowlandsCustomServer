@@ -78,12 +78,13 @@ class TC_GAME_API Specialization
 
 struct TC_GAME_API TraitTalent
 {
-    TraitTalent(Player* player, Trait* trait, uint32 TraitNode, uint32 TraitNodeEntryID, uint32 Rank, uint32 Unk);
+    TraitTalent(Player* player, Trait* trait, uint32 TraitNode, uint32 TraitNodeEntryID, uint32 Rank, uint32 Unk, bool isDefault = false);
 
     uint32 TraitNode;
     uint32 TraitNodeEntryID;
     uint32 Rank;
     uint32 Unk;
+    bool IsDefault;
 
     /// Stored to prevent lookup at runtime
     TraitNodeEntry       const* TraitNodeEntry;
@@ -130,6 +131,8 @@ class TC_GAME_API Trait
 
         std::unordered_map<uint32, TraitTalent*>* GetTalents();
 
+        void SaveToDB(CharacterDatabaseTransaction trans);
+
     private:
         Player* _player;
         uint32 _index;
@@ -154,6 +157,7 @@ class TC_GAME_API TraitsMgr
         void SetupDragonRiding();
 
         void LoadFromDB(CharacterDatabaseQueryHolder const& holder);
+        void SaveToDB(CharacterDatabaseTransaction trans);
 
         void SendUpdateTalentData();
 
@@ -167,6 +171,7 @@ class TC_GAME_API TraitsMgr
         /// Traits
         Trait* GetActiveTrait();
         Trait* GetTraitForSpec(uint32 specId);
+        Trait* GetTraitByConfigID(uint32 configID);
         Trait* CreateDefaultTraitForSpec(ChrSpecializationEntry const* specEntry, bool activeSpec = false);
         void LearnTraits(WorldPackets::Talent::LearnTraits& learnTraits);
         void CreateNewLoadout(WorldPackets::Talent::CreateNewLoadout& createNewLoadout);
@@ -186,4 +191,5 @@ class TC_GAME_API TraitsMgr
         std::vector<Specialization*> _specializations;
         std::unordered_map<uint32, Trait*> _traits; ///< Key: ConfigID, Value: Trait*
         uint32 _nextConfigId = 608843;
+        bool _hasDragonriding = false;
 };

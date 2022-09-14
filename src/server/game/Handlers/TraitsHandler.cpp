@@ -9,45 +9,43 @@
 
 void WorldSession::HandleLearnTraitsOpcode(WorldPackets::Talent::LearnTraits& learnTraits)
 {
-    // ChatHandler(_player).PSendSysMessage("CMSG_LEARN_TRAITS %u %u", learnTraits.UnkInt32_1, learnTraits.UnkInt32_2);
-    // 
-    // ChatHandler(_player).PSendSysMessage("ConfigID: %u Result: %u Talents: %u", learnTraits.Trait.ConfigID, learnTraits.Trait.Result, static_cast<uint32>(learnTraits.Trait.Talents.size()));
-    // ChatHandler(_player).PSendSysMessage("ConfigName: %s", learnTraits.Trait.ConfigName);
-    // 
-    // switch (learnTraits.Trait.Result)
-    // {
-    //     case 2:
-    //         ChatHandler(_player).PSendSysMessage("Res2Int %u", learnTraits.Trait.Res2Int);
-    //         break;
-    //     case 1:
-    //         ChatHandler(_player).PSendSysMessage("Res1Int_1 %u", learnTraits.Trait.Res1Int_1);
-    //         ChatHandler(_player).PSendSysMessage("Res1Int_2 %u", learnTraits.Trait.Res1Int_2);
-    //         ChatHandler(_player).PSendSysMessage("Res1Int_3 %u", learnTraits.Trait.Res1Int_3);
-    //         break;
-    //     case 3:
-    //         ChatHandler(_player).PSendSysMessage("Res3Int %u", learnTraits.Trait.Res3Int);
-    //         break;
-    //     default:
-    //         ChatHandler(_player).PSendSysMessage("Unk Result was passed %u", learnTraits.Trait.Result);
-    //         break;
-    // }
+    auto traitMgr = _player->GetTraitsMgr();
+    auto trait = traitMgr->GetTraitByConfigID(learnTraits.Trait.ConfigID);
+    if (!trait)
+    {
+        TC_LOG_ERROR("network.opcode", "Client tried to edit invalid config id");
+        // send error
+        return;
+    }
 
-    //uint32 i = 0;
-    //
-    //for (auto const& talent : learnTraits.Trait.Talents)
-    //{
-    //    auto traitNode = sTraitNodeStore.LookupEntry(talent.TraitNode);
-    //    auto traitTree = sTraitTreeStore.LookupEntry(traitNode ? traitNode->TraitTreeID : 0);
-    //    auto traitNodeEntry = sTraitNodeEntryStore.LookupEntry(talent.TraitNodeEntryID);
-    //    auto traitDefinition = sTraitDefinitionStore.LookupEntry(traitNodeEntry ? traitNodeEntry->TraitDefinitionID : 0);
-    //
-    //    ChatHandler(_player).PSendSysMessage("[%u] %u %u %u %u %s", i, talent.TraitNode, talent.TraitNodeEntryID, talent.Rank, talent.Unk, traitDefinition ? traitDefinition->OverrideName_lang.Str[0] : "");
-    //    if (traitDefinition)
-    //        ChatHandler(_player).PSendSysMessage("[%u] TraitDefinition Found! SpellID: %u, OverrideSpellID: %u", i, traitDefinition->SpellID, traitDefinition->OverridesSpellID);
-    //    if (traitTree)
-    //        ChatHandler(_player).PSendSysMessage("[%u] traitTree Found! %s", i, traitTree->Name);
-    //    ++i;
-    //}
+    auto talentMap = trait->GetTalents();
+
+    for (auto const& talent : learnTraits.Trait.Talents)
+    {
+        // TODO: Verify talent is for class.
+
+        // learn case
+        if (talent.Rank > 0)
+        {
+            bool hasTalent = talentMap->find(talent.TraitNode) != talentMap->end();
+            if (hasTalent)
+            {
+                TC_LOG_ERROR("network.opcode", "Client tried to learn already learned talent");
+                // send error
+                return;
+            }
+        }
+        else
+        {
+            bool hasTalent = talentMap->find(talent.TraitNode) != talentMap->end();
+            if (!hasTalent)
+            {
+                TC_LOG_ERROR("network.opcode", "Client tried to unlearn not learned talent");
+                // send error
+                return;
+            }
+        }
+    }
 
     // SMSG_SUSPEND_TOKEN
     WorldPackets::Movement::SuspendToken tokenPacket;
@@ -65,16 +63,10 @@ void WorldSession::HandleLearnTraitsOpcode(WorldPackets::Talent::LearnTraits& le
     SendPacket(resumeToken.Write());
 
     // SMSG_UPDATE_OBJECT is sent (handled by map update)
-
-    // swapping (when talents isn't 41?) - hmm seems like Rank being 0 = UNLEARN
-    // cast 384255 (Changing Talents)
-    // SMSG_SUSPEND_TOKEN
-    // SMSG_UNLEARNED_SPELLS
-    // SMSG_LEARNED_SPELLS
-    // SMSG_RESUME_TOKEN
 }
 
 void WorldSession::HandleCreateNewLoadoutOpcode(WorldPackets::Talent::CreateNewLoadout& createNewLoadout)
 {
+    // TODO: research this more
     //_player->GetTraitsMgr()->CreateNewLoadout(createNewLoadout);
 }

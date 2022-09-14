@@ -18085,6 +18085,7 @@ bool Player::LoadFromDB(ObjectGuid guid, CharacterDatabaseQueryHolder const& hol
         float honorRestBonus;
         uint8 numRespecs;
         uint32 covenant;
+        uint32 configId;
 
         PlayerLoadData(Field* fields)
         {
@@ -18157,6 +18158,7 @@ bool Player::LoadFromDB(ObjectGuid guid, CharacterDatabaseQueryHolder const& hol
             honorRestBonus = fields[i++].GetFloat();
             numRespecs = fields[i++].GetUInt8();
             covenant = fields[i++].GetUInt32();
+            configId = fields[i++].GetUInt32();
         }
 
     } fields(result->Fetch());
@@ -18654,9 +18656,14 @@ bool Player::LoadFromDB(ObjectGuid guid, CharacterDatabaseQueryHolder const& hol
 
     SetNumRespecs(fields.numRespecs);
     SetPrimarySpecialization(fields.primarySpecialization);
+
+    if (fields.configId > 0)
+        SetCurrentConfigID(fields.configId);
+
+    /// Load first intended
     _traitMgr->Setup();
-    //_traitMgr->SetActiveTalentGroup(fields.activeTalentGroup, true);
     _traitMgr->LoadFromDB(holder);
+    //_traitMgr->SetActiveTalentGroup(fields.activeTalentGroup, true);
 
     uint32 lootSpecId = fields.lootSpecId;
     if (ChrSpecializationEntry const* chrSpec = sChrSpecializationStore.LookupEntry(lootSpecId))
@@ -18664,8 +18671,8 @@ bool Player::LoadFromDB(ObjectGuid guid, CharacterDatabaseQueryHolder const& hol
             SetLootSpecId(lootSpecId);
 
     UpdateDisplayPower();
-    _LoadTalents(holder.GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_TALENTS));
-    _LoadPvpTalents(holder.GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_PVP_TALENTS));
+    //_LoadTalents(holder.GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_TALENTS));
+    //_LoadPvpTalents(holder.GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_PVP_TALENTS));
     _LoadSpells(holder.GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_SPELLS));
     GetSession()->GetCollectionMgr()->LoadToys();
     GetSession()->GetCollectionMgr()->LoadHeirlooms();
@@ -20987,6 +20994,7 @@ void Player::SaveToDB(LoginDatabaseTransaction loginTransaction, CharacterDataba
         stmt->setUInt8(index++, m_activePlayerData->RestInfo[REST_TYPE_HONOR].StateID);
         stmt->setFloat(index++, finiteAlways(_restMgr->GetRestBonus(REST_TYPE_HONOR)));
         stmt->setInt32(index++, m_playerData->CovenantID);
+        stmt->setUInt32(index++, m_activePlayerData->ActiveConfigID);
         stmt->setUInt32(index++, sRealmList->GetMinorMajorBugfixVersionForBuild(realm.Build));
 
         // Index
@@ -21036,6 +21044,7 @@ void Player::SaveToDB(LoginDatabaseTransaction loginTransaction, CharacterDataba
     if (_garrison)
         _garrison->SaveToDB(trans);
     _covenantMgr->SaveToDB(trans);
+    _traitMgr->SaveToDB(trans);
     SaveCustom(trans);
 
     // check if stats should only be saved on logout
@@ -29956,10 +29965,22 @@ void Player::AddOrSetTrait(Trait* trait)
     {
         auto talent = itr->second;
 
+        bool isRemove = !talent->IsDefault && talent->Rank == 0;
+
         int32 foundIndex = m_activePlayerData->CharacterTraits[trait->GetIndex()].Talents.FindIndexIf([&](UF::CharacterTraitTalent ufTalent)
         {
             return ufTalent.TraitNode == talent->TraitNode && ufTalent.TraitNodeEntryID == talent->TraitNodeEntryID;
         });
+
+        if (isRemove)
+        {
+            /// Check if index exists in update fields already
+            if (foundIndex == -1)
+                continue;
+
+            RemoveDynamicUpdateFieldValue(traitUF.ModifyValue(&UF::CharacterTrait::Talents), foundIndex);
+            continue;
+        }
 
         if (foundIndex == -1)
         {
@@ -29980,6 +30001,30 @@ void Player::AddOrSetTrait(Trait* trait)
         }
     }
 
+}
+
+void Player::RemoveTraitTalent(Trait* trait, TraitTalent* talent)
+{
+    int32 foundIndexTrait = m_activePlayerData->CharacterTraits.FindIndexIf([&](UF::CharacterTrait ufTrait)
+    {
+        return ufTrait.ConfigID == trait->GetConfigID();
+    });
+
+    if (foundIndexTrait == -1)
+        return;
+
+    auto traitUF = m_values.ModifyValue(&Player::m_activePlayerData)
+        .ModifyValue(&UF::ActivePlayerData::CharacterTraits, trait->GetIndex());
+
+    int32 foundIndex = m_activePlayerData->CharacterTraits[trait->GetIndex()].Talents.FindIndexIf([&](UF::CharacterTraitTalent ufTalent)
+    {
+        return ufTalent.TraitNode == talent->TraitNode && ufTalent.TraitNodeEntryID == talent->TraitNodeEntryID;
+    });
+
+    if (foundIndex == -1)
+        return;
+
+    RemoveDynamicUpdateFieldValue(traitUF.ModifyValue(&UF::CharacterTrait::Talents), foundIndex);
 }
 
 void Player::SetCurrentConfigID(uint32 configId)

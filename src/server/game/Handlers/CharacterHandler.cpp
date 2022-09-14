@@ -365,6 +365,14 @@ bool LoginQueryHolder::Initialize()
     stmt->setUInt64(0, lowGuid);
     res &= SetPreparedQuery(PLAYER_LOGIN_QUERY_CHALLENGE_KEY, stmt);
 
+    stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_TRAITS);
+    stmt->setUInt64(0, lowGuid);
+    res &= SetPreparedQuery(PLAYER_LOGIN_QUERY_LOAD_SEL_TRAITS, stmt);
+
+    stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_TRAIT_TALENTS);
+    stmt->setUInt64(0, lowGuid);
+    res &= SetPreparedQuery(PLAYER_LOGIN_QUERY_LOAD_SEL_TRAIT_TALENTS, stmt);
+
     return res;
 }
 
