@@ -9,28 +9,28 @@
 
 void WorldSession::HandleLearnTraitsOpcode(WorldPackets::Talent::LearnTraits& learnTraits)
 {
-    ChatHandler(_player).PSendSysMessage("CMSG_LEARN_TRAITS %u %u", learnTraits.UnkInt32_1, learnTraits.UnkInt32_2);
-
-    ChatHandler(_player).PSendSysMessage("ConfigID: %u Result: %u Talents: %u", learnTraits.Trait.ConfigID, learnTraits.Trait.Result, static_cast<uint32>(learnTraits.Trait.Talents.size()));
-    ChatHandler(_player).PSendSysMessage("ConfigName: %s", learnTraits.Trait.ConfigName);
-
-    switch (learnTraits.Trait.Result)
-    {
-        case 2:
-            ChatHandler(_player).PSendSysMessage("Res2Int %u", learnTraits.Trait.Res2Int);
-            break;
-        case 1:
-            ChatHandler(_player).PSendSysMessage("Res1Int_1 %u", learnTraits.Trait.Res1Int_1);
-            ChatHandler(_player).PSendSysMessage("Res1Int_2 %u", learnTraits.Trait.Res1Int_2);
-            ChatHandler(_player).PSendSysMessage("Res1Int_3 %u", learnTraits.Trait.Res1Int_3);
-            break;
-        case 3:
-            ChatHandler(_player).PSendSysMessage("Res3Int %u", learnTraits.Trait.Res3Int);
-            break;
-        default:
-            ChatHandler(_player).PSendSysMessage("Unk Result was passed %u", learnTraits.Trait.Result);
-            break;
-    }
+    // ChatHandler(_player).PSendSysMessage("CMSG_LEARN_TRAITS %u %u", learnTraits.UnkInt32_1, learnTraits.UnkInt32_2);
+    // 
+    // ChatHandler(_player).PSendSysMessage("ConfigID: %u Result: %u Talents: %u", learnTraits.Trait.ConfigID, learnTraits.Trait.Result, static_cast<uint32>(learnTraits.Trait.Talents.size()));
+    // ChatHandler(_player).PSendSysMessage("ConfigName: %s", learnTraits.Trait.ConfigName);
+    // 
+    // switch (learnTraits.Trait.Result)
+    // {
+    //     case 2:
+    //         ChatHandler(_player).PSendSysMessage("Res2Int %u", learnTraits.Trait.Res2Int);
+    //         break;
+    //     case 1:
+    //         ChatHandler(_player).PSendSysMessage("Res1Int_1 %u", learnTraits.Trait.Res1Int_1);
+    //         ChatHandler(_player).PSendSysMessage("Res1Int_2 %u", learnTraits.Trait.Res1Int_2);
+    //         ChatHandler(_player).PSendSysMessage("Res1Int_3 %u", learnTraits.Trait.Res1Int_3);
+    //         break;
+    //     case 3:
+    //         ChatHandler(_player).PSendSysMessage("Res3Int %u", learnTraits.Trait.Res3Int);
+    //         break;
+    //     default:
+    //         ChatHandler(_player).PSendSysMessage("Unk Result was passed %u", learnTraits.Trait.Result);
+    //         break;
+    // }
 
     //uint32 i = 0;
     //
@@ -76,5 +76,5 @@ void WorldSession::HandleLearnTraitsOpcode(WorldPackets::Talent::LearnTraits& le
 
 void WorldSession::HandleCreateNewLoadoutOpcode(WorldPackets::Talent::CreateNewLoadout& createNewLoadout)
 {
-    _player->GetTraitsMgr()->CreateNewLoadout(createNewLoadout);
+    //_player->GetTraitsMgr()->CreateNewLoadout(createNewLoadout);
 }

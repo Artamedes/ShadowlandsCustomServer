@@ -17,6 +17,10 @@ Specialization::Specialization(Player* player, ChrSpecializationEntry const* spe
 {
     for (int i = 0; i < MAX_PVP_TALENT_SLOTS; ++i)
         _pvpTalents[i] = 0;
+
+    // Create default trait for this spec
+    auto traitMgr = _player->GetTraitsMgr();
+    traitMgr->CreateDefaultTraitForSpec(specEntry);
 }
 
 void Specialization::BuildUpdateTalentDataPacket(WorldPackets::Talent::TalentGroupInfo& info)
@@ -108,6 +112,7 @@ TraitsMgr::~TraitsMgr()
 
 void TraitsMgr::Setup()
 {
+    SetupDragonRiding();
     _specializations.reserve(MAX_SPECIALIZATIONS);
 
     int8 activeTalentGroup = -1;
@@ -128,35 +133,6 @@ void TraitsMgr::Setup()
             activeTalentGroup = spec->OrderIndex;
     }
 
-    /// Dragonriding
-    {
-        uint32 configId = _nextConfigId;
-
-        // Learn default traits for spec
-        Trait* trait = new Trait(_player, configId, 0, TraitType::DragonRiding, uint32(_traits.size()));
-        _traits[configId] = trait;
-
-        static const std::unordered_map<uint32, uint32> DragonRidingTraits =
-        {
-            { 64057, 82376 },
-            { 64055, 82374 },
-            { 64053, 82372 },
-            { 64056, 82375 },
-            { 64052, 82371 },
-            { 64054, 82373 },
-        };
-
-        for (auto const& t : DragonRidingTraits)
-        {
-            TraitTalent* newTalent = new TraitTalent(_player, trait, t.first, t.second, 0, 1);
-            trait->AddTraitTalent(newTalent);
-        }
-
-        trait->LearnTraitSpells();
-        _player->AddOrSetTrait(trait);
-        _nextConfigId++;
-    }
-
     if (activeTalentGroup != -1)
         SetActiveTalentGroup(activeTalentGroup, true);
 
@@ -164,6 +140,35 @@ void TraitsMgr::Setup()
     //{
     //    return a->GetSpecId() > b->GetSpecId();
     //});
+}
+
+void TraitsMgr::SetupDragonRiding()
+{
+    uint32 configId = _nextConfigId;
+
+    // Learn default traits for spec
+    Trait* trait = new Trait(_player, configId, 0, TraitType::DragonRiding, uint32(_traits.size()));
+    _traits[configId] = trait;
+
+    static const std::unordered_map<uint32, uint32> DragonRidingTraits =
+    {
+        { 64057, 82376 },
+        { 64055, 82374 },
+        { 64053, 82372 },
+        { 64056, 82375 },
+        { 64052, 82371 },
+        { 64054, 82373 },
+    };
+
+    for (auto const& t : DragonRidingTraits)
+    {
+        TraitTalent* newTalent = new TraitTalent(_player, trait, t.first, t.second, 0, 1);
+        trait->AddTraitTalent(newTalent);
+    }
+
+    trait->LearnTraitSpells();
+    _player->AddOrSetTrait(trait);
+    _nextConfigId++;
 }
 
 void TraitsMgr::LoadFromDB(CharacterDatabaseQueryHolder const& holder)
@@ -270,6 +275,7 @@ void TraitsMgr::SetActiveTalentGroup(int8 orderIndex, bool force /*= false*/)
     else
     {
         /// First time setting the spec
+        TC_LOG_ERROR("network.opcode", "Somehow player not have traits!");
         if (auto specEntry = sChrSpecializationStore.LookupEntry(newSpecialization->GetSpecId()))
             if (auto trait = CreateDefaultTraitForSpec(specEntry, true))
                 configId = trait->GetConfigID();
@@ -277,17 +283,6 @@ void TraitsMgr::SetActiveTalentGroup(int8 orderIndex, bool force /*= false*/)
 
     Map* map = _player->GetMap();
     ObjectGuid _playerGuid = _player->GetGUID();
-
-    /// yes, this is bad, but I don't understand atm why configid gets garbaged in the client when it gets set before.
-    /// I have to check ActivePlayerUpdate::ReadUpdate in client fully to find where index is wrong, however setting this alone works..
-    _player->GetMap()->AddTask([map, _playerGuid, configId]()
-    {
-        if (auto player = map->GetPlayer(_playerGuid))
-        {
-            player->SetCurrentConfigID(configId);
-            player->GetTraitsMgr()->SendUpdateTalentData();
-        }
-    });
 }
 
 Specialization* TraitsMgr::GetActiveSpecialization()
@@ -328,7 +323,7 @@ Trait* TraitsMgr::CreateDefaultTraitForSpec(ChrSpecializationEntry const* specEn
     uint32 talentConfigId = _nextConfigId;
 
     // Learn default traits for spec
-    Trait* trait = new Trait(_player, talentConfigId, _player->GetSpecializationId(), TraitType::Talents, uint32(_traits.size()), specEntry->OrderIndex);
+    Trait* trait = new Trait(_player, talentConfigId, specEntry->ID, TraitType::Talents, uint32(_traits.size()), specEntry->OrderIndex);
     _traits[talentConfigId] = trait;
     trait->SetConfigName(specEntry->Name.Str[_player->GetSession()->GetSessionDbcLocale()]);
 
@@ -510,21 +505,6 @@ void TraitsMgr::CreateNewLoadout(WorldPackets::Talent::CreateNewLoadout& createN
     UpdateTrait(trait);
     _player->AddOrSetTrait(trait);
     _activeTrait = trait;
-
-    Map* map = _player->GetMap();
-    ObjectGuid _playerGuid = _player->GetGUID();
-    uint32 configId = trait->GetConfigID();
-
-    /// yes, this is bad, but I don't understand atm why configid gets garbaged in the client when it gets set before.
-    /// I have to check ActivePlayerUpdate::ReadUpdate in client fully to find where index is wrong, however setting this alone works..
-    _player->GetMap()->AddTask([map, _playerGuid, configId]()
-    {
-        if (auto player = map->GetPlayer(_playerGuid))
-        {
-            player->SetCurrentConfigID(configId);
-            player->GetTraitsMgr()->SendUpdateTalentData();
-        }
-    });
 }
 
 void TraitsMgr::SendActiveGlyphs(bool fullUpdate /*= false*/)

@@ -151,6 +151,7 @@ class TC_GAME_API TraitsMgr
         /// Setups the player's specialization info. Called when player is first loading
         /// </summary>
         void Setup();
+        void SetupDragonRiding();
 
         void LoadFromDB(CharacterDatabaseQueryHolder const& holder);
 
