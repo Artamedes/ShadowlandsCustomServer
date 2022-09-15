@@ -2328,8 +2328,11 @@ public:
                 player->CastSpell(*dest, SPELL_DH_METAMORPHOSIS_LEAP, false);
             }
 
-            player->GetSpellHistory()->ResetCooldown(SPELL_DH_EYE_BEAM, true);
-            player->GetSpellHistory()->ResetCooldown(SPELL_DH_BLADE_DANCE, true);
+            if (player->HasAura(DH::eHavocTraits::ChaoticTransformation))
+            {
+                player->GetSpellHistory()->ResetCooldown(SPELL_DH_EYE_BEAM, true);
+                player->GetSpellHistory()->ResetCooldown(SPELL_DH_BLADE_DANCE, true);
+            }
         }
 
         void Register() override
