@@ -1,0 +1,3 @@
+
+ALTER TABLE `chr_race_x_chr_model`
+	ADD COLUMN `Field_10_0_0_45570_003` INT(11) NOT NULL DEFAULT '0' AFTER `Sex`;
