@@ -620,6 +620,10 @@ enum AuraType : uint32
     SPELL_AURA_525                                          = 525,
     SPELL_AURA_526                                          = 526,
     SPELL_AURA_527                                          = 527,
+    SPELL_AURA_528                                          = 528,
+    SPELL_AURA_529                                          = 529,
+    SPELL_AURA_530                                          = 530,
+    SPELL_AURA_531                                          = 531,
     TOTAL_AURAS
 };
 

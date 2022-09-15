@@ -1256,6 +1256,7 @@ struct ChrRaceXChrModelLoadInfo
             { true, FT_INT, "ChrRacesID" },
             { true, FT_INT, "ChrModelID" },
             { true, FT_INT, "Sex" },
+            { true, FT_INT, "Field_10_0_0_45570_003" },
         };
         static DB2LoadInfo const loadInfo(&fields[0], std::size(fields), ChrRaceXChrModelMeta::Instance(), HOTFIX_SEL_CHR_RACE_X_CHR_MODEL);
         return &loadInfo;

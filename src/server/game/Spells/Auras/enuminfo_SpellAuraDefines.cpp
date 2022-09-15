@@ -559,13 +559,17 @@ TC_API_EXPORT EnumText EnumUtils<AuraType>::ToString(AuraType value)
         case SPELL_AURA_525: return { "SPELL_AURA_525", "SPELL_AURA_525", "" };
         case SPELL_AURA_526: return { "SPELL_AURA_526", "SPELL_AURA_526", "" };
         case SPELL_AURA_527: return { "SPELL_AURA_527", "SPELL_AURA_527", "" };
+        case SPELL_AURA_528: return { "SPELL_AURA_528", "SPELL_AURA_528", "" };
+        case SPELL_AURA_529: return { "SPELL_AURA_529", "SPELL_AURA_529", "" };
+        case SPELL_AURA_530: return { "SPELL_AURA_530", "SPELL_AURA_530", "" };
+        case SPELL_AURA_531: return { "SPELL_AURA_531", "SPELL_AURA_531", "" };
         case TOTAL_AURAS: return { "TOTAL_AURAS", "TOTAL_AURAS", "" };
         default: throw std::out_of_range("value");
     }
 }
 
 template <>
-TC_API_EXPORT size_t EnumUtils<AuraType>::Count() { return 529; }
+TC_API_EXPORT size_t EnumUtils<AuraType>::Count() { return 533; }
 
 template <>
 TC_API_EXPORT AuraType EnumUtils<AuraType>::FromIndex(size_t index)
@@ -1100,7 +1104,11 @@ TC_API_EXPORT AuraType EnumUtils<AuraType>::FromIndex(size_t index)
         case 525: return SPELL_AURA_525;
         case 526: return SPELL_AURA_526;
         case 527: return SPELL_AURA_527;
-        case 528: return TOTAL_AURAS;
+        case 528: return SPELL_AURA_528;
+        case 529: return SPELL_AURA_529;
+        case 530: return SPELL_AURA_530;
+        case 531: return SPELL_AURA_531;
+        case 532: return TOTAL_AURAS;
         default: throw std::out_of_range("index");
     }
 }
@@ -1638,7 +1646,11 @@ TC_API_EXPORT size_t EnumUtils<AuraType>::ToIndex(AuraType value)
         case SPELL_AURA_525: return 525;
         case SPELL_AURA_526: return 526;
         case SPELL_AURA_527: return 527;
-        case TOTAL_AURAS: return 528;
+        case SPELL_AURA_528: return 528;
+        case SPELL_AURA_529: return 529;
+        case SPELL_AURA_530: return 530;
+        case SPELL_AURA_531: return 531;
+        case TOTAL_AURAS: return 532;
         default: throw std::out_of_range("value");
     }
 }

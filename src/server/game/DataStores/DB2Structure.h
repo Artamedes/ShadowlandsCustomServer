@@ -755,6 +755,7 @@ struct ChrRaceXChrModelEntry
     int32 ChrRacesID;
     int32 ChrModelID;
     int32 Sex;
+    int32 Field_10_0_0_45570_003;
 };
 
 struct ChrRacesEntry
