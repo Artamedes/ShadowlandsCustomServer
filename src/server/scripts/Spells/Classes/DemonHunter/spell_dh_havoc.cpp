@@ -1,11 +1,6 @@
-#include "SpellIncludes.h"
+#include "spell_dh.h"
 
-enum eHavoc
-{
-    Metamorphosis = 162264,
-
-    ThrowGlaive = 185123,
-};
+using namespace DH;
 
 /// 21832
 struct at_glaive_tempest : public AreaTriggerAI
@@ -106,9 +101,40 @@ class spell_dh_serrated_glaive : public AuraScript
     }
 };
 
+/// ID - 388107 Ragefire
+class spell_ragefire_388107 : public AuraScript
+{
+    PrepareAuraScript(spell_ragefire_388107);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == ImmolationAuraDmg;
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (auto caster = GetCaster())
+        {
+            if (auto dmgInfo = eventInfo.GetDamageInfo())
+            {
+                if (auto aura = caster->GetAura(eHavocTraits::RagefireAura))
+                    if (auto eff = aura->GetEffect(EFFECT_0))
+                        eff->ChangeAmount(eff->GetAmount() + dmgInfo->GetDamage());
+            }
+        }
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_ragefire_388107::CheckProc);
+        OnProc += AuraProcFn(spell_ragefire_388107::HandleProc);
+    }
+};
+
 void AddSC_spell_dh_havoc()
 {
     RegisterAreaTriggerAI(at_glaive_tempest);
     RegisterSpellScript(spell_deadly_dance);
     RegisterSpellScript(spell_dh_serrated_glaive);
+    RegisterSpellScript(spell_ragefire_388107);
 }

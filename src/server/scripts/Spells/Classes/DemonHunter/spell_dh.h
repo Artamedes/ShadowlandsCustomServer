@@ -17,6 +17,7 @@ namespace DH
         Torment            = 185245,
         ChaosBrand         = 255260,
         DoubleJump         = 196055,
+        ImmolationAuraDmg  = 258921,
 
         // Veng
         FelDevstation      = 212084,
@@ -55,6 +56,7 @@ namespace DH
         DemonicWards       = 278386,
         BladeDanceDmg      = 199552,
         DeathSweepDmg      = 210153,
+        Metamorphosis      = 162264,
 
         FelDevstationDmg = 212105,
         EyeBeamDmg       = 198030,
@@ -67,6 +69,13 @@ namespace DH
     {
         SinfulBrand = 317009,
         ShatteredSoulsNecrolord = 328951,
+    };
+
+    enum eHavocTraits
+    {
+        RagefireProc = 388107,
+        RagefireAura = 390192,
+        RagefireDmg  = 390197,
     };
 
     enum ePvpTalents

@@ -1822,6 +1822,13 @@ public:
             {
                 caster->Variables.Remove("ImmolationAuraTicks");
                 caster->RemoveAurasDueToSpell(FelFlameFortificationDR);
+
+                if (auto aura = caster->GetAura(DH::eHavocTraits::RagefireAura))
+                    if (auto eff = aura->GetEffect(EFFECT_0))
+                    {
+                        caster->CastSpell(caster, DH::eHavocTraits::RagefireDmg, CastSpellExtraArgs(true).AddSpellBP0(eff->GetAmount()));
+                        aura->Remove();
+                    }
             }
         }
         void Register() override
