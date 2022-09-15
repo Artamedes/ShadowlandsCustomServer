@@ -399,12 +399,9 @@ public:
         return false;
     }
 
-    static bool CheckModifySpeed(ChatHandler* handler, char const* args, Unit* target, float& speed, float minimumBound, float maximumBound, bool checkInFlight = true)
+    static bool CheckModifySpeed(ChatHandler* handler, float speedCmd, Unit* target, float& speed, float minimumBound, float maximumBound, bool checkInFlight = true)
     {
-        if (!*args)
-            return false;
-
-        speed = (float)atof((char*)args);
+        speed = speedCmd;
 
         if (speed > maximumBound || speed < minimumBound)
         {
@@ -437,28 +434,42 @@ public:
     }
 
     //Edit Player Aspeed
-    static bool HandleModifyASpeedCommand(ChatHandler* handler, char const* args)
+    static bool HandleModifyASpeedCommand(ChatHandler* handler, float speed, Optional<float> reset)
     {
         float allSpeed;
         Player* target = handler->getSelectedPlayerOrSelf();
-        if (CheckModifySpeed(handler, args, target, allSpeed, 0.1f, 50.0f))
+
+        if (reset.has_value() && *reset)
+        {
+            if (target->Variables.Exist("ModifySpeed"))
+                target->Variables.Remove("ModifySpeed");
+
+            target->UpdateSpeed(MOVE_WALK);
+            target->UpdateSpeed(MOVE_RUN);
+            target->UpdateSpeed(MOVE_SWIM);
+            target->UpdateSpeed(MOVE_FLIGHT);
+            return true;
+        }
+
+        if (CheckModifySpeed(handler, speed, target, allSpeed, 0.1f, 50.0f))
         {
             NotifyModification(handler, target, LANG_YOU_CHANGE_ASPEED, LANG_YOURS_ASPEED_CHANGED, allSpeed);
             target->SetSpeedRate(MOVE_WALK, allSpeed);
             target->SetSpeedRate(MOVE_RUN, allSpeed);
             target->SetSpeedRate(MOVE_SWIM, allSpeed);
             target->SetSpeedRate(MOVE_FLIGHT, allSpeed);
+            target->Variables.Set("ModifySpeed", true);
             return true;
         }
         return false;
     }
 
     //Edit Player Speed
-    static bool HandleModifySpeedCommand(ChatHandler* handler, char const* args)
+    static bool HandleModifySpeedCommand(ChatHandler* handler, float speed)
     {
         float Speed;
         Player* target = handler->getSelectedPlayerOrSelf();
-        if (CheckModifySpeed(handler, args, target, Speed, 0.1f, 50.0f))
+        if (CheckModifySpeed(handler, speed, target, Speed, 0.1f, 50.0f))
         {
             NotifyModification(handler, target, LANG_YOU_CHANGE_SPEED, LANG_YOURS_SPEED_CHANGED, Speed);
             target->SetSpeedRate(MOVE_RUN, Speed);
@@ -468,11 +479,11 @@ public:
     }
 
     //Edit Player Swim Speed
-    static bool HandleModifySwimCommand(ChatHandler* handler, char const* args)
+    static bool HandleModifySwimCommand(ChatHandler* handler, float speed)
     {
         float swimSpeed;
         Player* target = handler->getSelectedPlayerOrSelf();
-        if (CheckModifySpeed(handler, args, target, swimSpeed, 0.1f, 50.0f))
+        if (CheckModifySpeed(handler, speed, target, swimSpeed, 0.1f, 50.0f))
         {
             NotifyModification(handler, target, LANG_YOU_CHANGE_SWIM_SPEED, LANG_YOURS_SWIM_SPEED_CHANGED, swimSpeed);
             target->SetSpeedRate(MOVE_SWIM, swimSpeed);
@@ -482,11 +493,11 @@ public:
     }
 
     //Edit Player Backwards Walk Speed
-    static bool HandleModifyBWalkCommand(ChatHandler* handler, char const* args)
+    static bool HandleModifyBWalkCommand(ChatHandler* handler, float speed)
     {
         float backSpeed;
         Player* target = handler->getSelectedPlayerOrSelf();
-        if (CheckModifySpeed(handler, args, target, backSpeed, 0.1f, 50.0f))
+        if (CheckModifySpeed(handler, speed, target, backSpeed, 0.1f, 50.0f))
         {
             NotifyModification(handler, target, LANG_YOU_CHANGE_BACK_SPEED, LANG_YOURS_BACK_SPEED_CHANGED, backSpeed);
             target->SetSpeedRate(MOVE_RUN_BACK, backSpeed);
@@ -496,11 +507,11 @@ public:
     }
 
     //Edit Player Fly
-    static bool HandleModifyFlyCommand(ChatHandler* handler, char const* args)
+    static bool HandleModifyFlyCommand(ChatHandler* handler, float speed)
     {
         float flySpeed;
         Player* target = handler->getSelectedPlayerOrSelf();
-        if (CheckModifySpeed(handler, args, target, flySpeed, 0.1f, 50.0f, false))
+        if (CheckModifySpeed(handler, speed, target, flySpeed, 0.1f, 50.0f, false))
         {
             NotifyModification(handler, target, LANG_YOU_CHANGE_FLY_SPEED, LANG_YOURS_FLY_SPEED_CHANGED, flySpeed);
             target->SetSpeedRate(MOVE_FLIGHT, flySpeed);
@@ -510,11 +521,11 @@ public:
     }
 
     //Edit Player or Creature Scale
-    static bool HandleModifyScaleCommand(ChatHandler* handler, char const* args)
+    static bool HandleModifyScaleCommand(ChatHandler* handler, float speed)
     {
         float Scale;
         Unit* target = handler->getSelectedUnit();
-        if (CheckModifySpeed(handler, args, target, Scale, 0.1f, 10.0f, false))
+        if (CheckModifySpeed(handler, speed, target, Scale, 0.1f, 10.0f, false))
         {
             NotifyModification(handler, target, LANG_YOU_CHANGE_SIZE, LANG_YOURS_SIZE_CHANGED, Scale);
             if (Creature* creatureTarget = target->ToCreature())
@@ -527,19 +538,9 @@ public:
     }
 
     //Enable Player mount
-    static bool HandleModifyMountCommand(ChatHandler* handler, char const* args)
+    static bool HandleModifyMountCommand(ChatHandler* handler, uint32 displayId, float speed)
     {
-        if (!*args)
-            return false;
-
-        char const* mount_cstr = strtok(const_cast<char*>(args), " ");
-        char const* speed_cstr = strtok(nullptr, " ");
-
-        if (!mount_cstr || !speed_cstr)
-            return false;
-
-        uint32 mount = atoul(mount_cstr);
-        if (!sCreatureDisplayInfoStore.HasRecord(mount))
+        if (!sCreatureDisplayInfoStore.HasRecord(displayId))
         {
             handler->SendSysMessage(LANG_NO_MOUNT);
             handler->SetSentErrorMessage(true);
@@ -558,12 +559,11 @@ public:
         if (handler->HasLowerSecurity(target, ObjectGuid::Empty))
             return false;
 
-        float speed;
-        if (!CheckModifySpeed(handler, speed_cstr, target, speed, 0.1f, 50.0f))
+        if (!CheckModifySpeed(handler, speed, target, speed, 0.1f, 50.0f))
             return false;
 
         NotifyModification(handler, target, LANG_YOU_GIVE_MOUNT, LANG_MOUNT_GIVED);
-        target->Mount(mount);
+        target->Mount(displayId);
         target->SetSpeedRate(MOVE_RUN, speed);
         target->SetSpeedRate(MOVE_FLIGHT, speed);
         return true;

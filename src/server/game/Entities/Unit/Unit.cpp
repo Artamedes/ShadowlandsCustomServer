@@ -9179,6 +9179,9 @@ void Unit::SetVisible(bool x)
 
 void Unit::UpdateSpeed(UnitMoveType mtype)
 {
+    if (IsPlayer() && Variables.Exist("ModifySpeed"))
+        return;
+
     int32 main_speed_mod  = 0;
     float stack_bonus     = 1.0f;
     float non_stack_bonus = 1.0f;
@@ -9331,6 +9334,9 @@ void Unit::SetSpeedRate(UnitMoveType mtype, float rate)
 
     // Update speed only on change
     if (m_speed_rate[mtype] == rate)
+        return;
+
+    if (IsPlayer() && Variables.Exist("ModifySpeed"))
         return;
 
     m_speed_rate[mtype] = rate;
