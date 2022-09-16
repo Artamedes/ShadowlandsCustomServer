@@ -16,6 +16,7 @@ enum eRogue
 };
 
 // 323654
+// 384631
 class spell_rog_flagellation : public AuraScript
 {
     PrepareAuraScript(spell_rog_flagellation);

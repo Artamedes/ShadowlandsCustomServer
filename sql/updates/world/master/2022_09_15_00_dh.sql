@@ -20,3 +20,5 @@ REPLACE INTO spell_script_names (`spell_id`,`ScriptName`) VALUES
 ('382517','spell_deeper_daggers_382517');
 REPLACE INTO spell_script_names (`spell_id`, `ScriptName`) VALUES
 (385408, 'spell_rog_sepsis');
+REPLACE INTO spell_script_names (`spell_id`, `ScriptName`) VALUES
+(384631, 'spell_rog_flagellation');
