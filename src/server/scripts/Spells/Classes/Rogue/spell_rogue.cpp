@@ -2688,16 +2688,22 @@ public:
     {
         PrepareAuraScript(spell_rog_alacrity_AuraScript);
 
-        void HandleProc(AuraEffect* /*aurEff*/, ProcEventInfo& /*eventInfo*/)
+        enum eAlacrity
         {
+            AlacrityProc = 193538,
+        };
+
+        void HandleProc(AuraEffect* /*aurEff*/, ProcEventInfo& eventInfo)
+        {
+            PreventDefaultAction();
             Unit* caster = GetCaster();
             if (!caster)
                 return;
 
-            int chance = 20 + (20 * caster->GetPower(POWER_COMBO_POINTS));
-
-            if (roll_chance_i(chance))
-                caster->CastSpell(caster, 193538, true);
+            if (auto procSpell = eventInfo.GetProcSpell())
+                if (auto comboPoints = procSpell->GetUsedComboPoints())
+                    if (roll_chance_i(std::min(100.0f, static_cast<float>(GetEffect(EFFECT_1)->GetAmount()) * comboPoints)))
+                        caster->CastSpell(caster, AlacrityProc, true);
         }
 
         void Register() override
