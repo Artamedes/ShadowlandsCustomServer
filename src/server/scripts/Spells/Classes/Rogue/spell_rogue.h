@@ -97,6 +97,7 @@ namespace Rogue
         FadeToNothingProc     = 386237,
         CloakedInShadows      = 382515,
         CloakedInShadowsBuff  = 386165,
+        DeeperDaggersProc     = 383405,
     };
 
     enum eCovenant

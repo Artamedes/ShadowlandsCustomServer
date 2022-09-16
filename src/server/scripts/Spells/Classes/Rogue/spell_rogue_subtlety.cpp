@@ -15,8 +15,8 @@ enum eSubtlety
     FindWeakness = 316220,
 
     /// Conduits
-    DeeperDaggers = 341549,
-    DeeperDaggersProc = 341550,
+    DeeperDaggersConduit = 341549,
+    DeeperDaggersProcConduit = 341550,
 };
 
 /// ID: 341549 Deeper Daggers
@@ -36,7 +36,7 @@ class spell_deeper_daggers : public AuraScript
         {
             if (auto eff = GetEffect(EFFECT_0))
                 if (eff->ConduitRankEntry)
-                    caster->CastSpell(caster, DeeperDaggersProc, CastSpellExtraArgs(true).AddSpellBP0(eff->ConduitRankEntry->AuraPointsOverride));
+                    caster->CastSpell(caster, DeeperDaggersProcConduit, CastSpellExtraArgs(true).AddSpellBP0(eff->ConduitRankEntry->AuraPointsOverride));
         }
     }
 
@@ -439,6 +439,22 @@ class spell_inevitability_382512 : public AuraScript
     }
 };
 
+/// ID - 382517 Deeper Daggers
+class spell_deeper_daggers_382517 : public AuraScript
+{
+    PrepareAuraScript(spell_deeper_daggers_382517);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && (eventInfo.GetSpellInfo()->Id == Eviscerate || eventInfo.GetSpellInfo()->Id == BlackPowder);
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_deeper_daggers_382517::CheckProc);
+    }
+};
+
 void AddSC_spell_rogue_subtlety()
 {
     RegisterSpellScript(spell_deeper_daggers);
@@ -455,4 +471,5 @@ void AddSC_spell_rogue_subtlety()
     RegisterSpellScript(spell_premeditation_343173);
     RegisterSpellScript(spell_silent_storm_385727);
     RegisterSpellScript(spell_inevitability_382512);
+    RegisterSpellScript(spell_deeper_daggers_382517);
 }
