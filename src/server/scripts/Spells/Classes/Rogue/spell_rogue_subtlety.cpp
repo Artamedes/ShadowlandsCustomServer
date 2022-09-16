@@ -270,6 +270,44 @@ class spell_rog_eviscerate : public SpellScript
     }
 };
 
+/// ID - 382518 Perforated Veins
+class spell_perforated_veins_382518 : public AuraScript
+{
+    PrepareAuraScript(spell_perforated_veins_382518);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == Shadowstrike;
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_perforated_veins_382518::CheckProc);
+    }
+};
+
+/// ID - 341572 Perforated Veins
+class spell_perforated_veins_341572 : public AuraScript
+{
+    PrepareAuraScript(spell_perforated_veins_341572);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && (eventInfo.GetSpellInfo()->Id == Shadowstrike || eventInfo.GetSpellInfo()->Id == Backstab);
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        Remove();
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_perforated_veins_341572::CheckProc);
+        OnProc += AuraProcFn(spell_perforated_veins_341572::HandleProc);
+    }
+};
+
 void AddSC_spell_rogue_subtlety()
 {
     RegisterSpellScript(spell_deeper_daggers);
@@ -280,4 +318,6 @@ void AddSC_spell_rogue_subtlety()
     RegisterSpellScript(spell_the_rotten);
     RegisterSpellScript(spell_the_rotten_proc);
     RegisterSpellScript(spell_rog_eviscerate);
+    RegisterSpellScript(spell_perforated_veins_382518);
+    RegisterSpellScript(spell_perforated_veins_341572);
 }
