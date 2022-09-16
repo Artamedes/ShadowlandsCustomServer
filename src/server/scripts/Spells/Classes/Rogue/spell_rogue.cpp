@@ -2278,15 +2278,18 @@ class spell_rog_shadow_dance : public SpellScript
 
         void HandleHit(SpellEffIndex /*effIndex*/)
         {
-            Unit* caster = GetCaster();
-        {
-            if (caster->HasAura(SPELL_ROGUE_MASTER_OF_SHADOWS))
-                caster->CastSpell(caster, SPELL_ROGUE_MASTER_OF_SHADOW_BUFF, true);
+            if (Unit* caster = GetCaster())
+            {
+                if (caster->HasAura(SPELL_ROGUE_MASTER_OF_SHADOWS))
+                    caster->CastSpell(caster, SPELL_ROGUE_MASTER_OF_SHADOW_BUFF, true);
 
-			caster->CastSpell(caster, SPELL_ROGUE_STEALTH_BAR);
-			caster->CastSpell(caster, SPELL_ROGUE_SHADOW_DANCE_AURA, true);
+			    caster->CastSpell(caster, SPELL_ROGUE_STEALTH_BAR);
+			    caster->CastSpell(caster, SPELL_ROGUE_SHADOW_DANCE_AURA, true);
+
+                if (caster->HasAura(Rogue::eSubtletyTraits::TheFirstDance))
+                    caster->EnergizeBySpell(caster, sSpellMgr->GetSpellInfo(Rogue::eSubtletyTraits::TheFirstDance), 4, Powers::POWER_COMBO_POINTS);
+            }
         }
-    }
 
         void Register() override
         {
