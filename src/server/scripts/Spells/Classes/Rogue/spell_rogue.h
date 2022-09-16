@@ -82,8 +82,9 @@ namespace Rogue
 
     enum eSubtletyTraits
     {
-        TheFirstDance    = 382505,
-        StiletoStaccato  = 382509,
+        TheFirstDance         = 382505,
+        StiletoStaccato       = 382509,
+        ImprovedShurikenStorm = 319951,
     };
 
     enum eCovenant

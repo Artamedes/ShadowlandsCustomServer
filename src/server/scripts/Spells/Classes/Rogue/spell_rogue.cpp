@@ -1840,6 +1840,10 @@ public:
               // if (IsHitCrit())
               //     caster->CastSpell(target, )
 
+
+                if (IsHitCrit() && caster->HasAura(Rogue::eSubtletyTraits::ImprovedShurikenStorm))
+                    caster->CastSpell(target, Rogue::eSubtlety::FindWeaknesDebuff, true);
+
                 // Night Terrors
                 if (caster->HasAura(SPELL_ROGUE_NIGHT_TERRORS))
                     caster->CastSpell(target, SPELL_ROGUE_SHADOW_GRASP_SLOW, true);
@@ -2572,7 +2576,7 @@ public:
 
         enum eShadowTechniques
         {
-            StilettoStaccato = 341559,
+            StilettoStaccatoConduit = 341559,
         };
 
         bool CheckProc(ProcEventInfo& eventInfo)
@@ -2598,29 +2602,29 @@ public:
 
             caster->Variables.Set<uint8>("ShadowTechniques", count);
 
+            auto ApplyEffects([&]() -> void
+            {
+                if (auto eff = caster->GetAuraEffect(StilettoStaccatoConduit, EFFECT_0))
+                    if (eff->ConduitRankEntry)
+                        caster->GetSpellHistory()->ModifyCooldown(SPELL_ROGUE_SHADOW_BLADES, -(eff->ConduitRankEntry->AuraPointsOverride * 1000.0f));
+
+                if (auto eff = caster->GetAuraEffect(Rogue::eSubtletyTraits::StiletoStaccato, EFFECT_0))
+                    caster->GetSpellHistory()->ModifyCooldown(SPELL_ROGUE_SHADOW_BLADES, -(eff->GetAmount() * 1000));
+
+                caster->CastSpell(caster, SPELL_ROGUE_SHADOW_TENCHNIQUES_POWER, true);
+                caster->Variables.Remove("ShadowTechniques");
+            });
+
             if (count == 4)
             {
                 if (roll_chance_i(50))
                 {
-                    if (auto eff = caster->GetAuraEffect(StilettoStaccato, EFFECT_0))
-                        if (eff->ConduitRankEntry)
-                            caster->GetSpellHistory()->ModifyCooldown(SPELL_ROGUE_SHADOW_BLADES, -(eff->ConduitRankEntry->AuraPointsOverride * 1000.0f));
-
-                    if (auto eff = caster->GetAuraEffect(Rogue::eSubtletyTraits::StiletoStaccato, EFFECT_0))
-                        caster->GetSpellHistory()->ModifyCooldown(SPELL_ROGUE_SHADOW_BLADES, -(eff->GetAmount() * 1000));
-
-                    caster->CastSpell(caster, SPELL_ROGUE_SHADOW_TENCHNIQUES_POWER, true);
-                    caster->Variables.Remove("ShadowTechniques");
+                    ApplyEffects();
                 }
             }
             else if (count > 4)
             {
-                if (auto eff = caster->GetAuraEffect(StilettoStaccato, EFFECT_0))
-                    if (eff->ConduitRankEntry)
-                        caster->GetSpellHistory()->ModifyCooldown(SPELL_ROGUE_SHADOW_BLADES, -(eff->ConduitRankEntry->AuraPointsOverride * 1000.0f));
-
-                caster->CastSpell(caster, SPELL_ROGUE_SHADOW_TENCHNIQUES_POWER, true);
-                caster->Variables.Remove("ShadowTechniques");
+                ApplyEffects();
             }
         }
 
