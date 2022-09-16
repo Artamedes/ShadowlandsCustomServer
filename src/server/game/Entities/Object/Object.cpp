@@ -2506,15 +2506,18 @@ float WorldObject::ApplyEffectModifiers(SpellInfo const* spellInfo, uint8 effInd
     return value;
 }
 
-int32 WorldObject::CalcSpellDuration(SpellInfo const* spellInfo, bool refresh, Spell* spell, int32 oldDuration) const
+int32 WorldObject::CalcSpellDuration(SpellInfo const* spellInfo, bool refresh, Spell* spell, int32 oldDuration, bool useComboPoints) const
 {
     int32 comboPoints = 0;
     int32 maxComboPoints = 5;
-    if (Unit const* unit = ToUnit())
+    if (useComboPoints)
     {
-        comboPoints = unit->GetPower(POWER_COMBO_POINTS);
-        // I believe max combopoitns should always return 5 to get the right formulas here.
-        //maxComboPoints = unit->GetMaxPower(POWER_COMBO_POINTS);
+        if (Unit const* unit = ToUnit())
+        {
+            comboPoints = unit->GetPower(POWER_COMBO_POINTS);
+            // I believe max combopoitns should always return 5 to get the right formulas here.
+            //maxComboPoints = unit->GetMaxPower(POWER_COMBO_POINTS);
+        }
     }
 
     if (spell)

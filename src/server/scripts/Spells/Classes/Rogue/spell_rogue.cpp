@@ -922,7 +922,6 @@ class spell_rog_stealth : public SpellScriptLoader
                     SPELL_ROGUE_MASTER_OF_SUBTLETY_DAMAGE_PERCENT,
                     SPELL_ROGUE_SANCTUARY,
                     SPELL_ROGUE_SHADOW_FOCUS,
-                    SPELL_ROGUE_SHADOW_FOCUS_EFFECT,
                     SPELL_ROGUE_STEALTH_STEALTH_AURA,
                     SPELL_ROGUE_STEALTH_SHAPESHIFT_AURA,
                     SPELL_ROGUE_MASTER_ASSASIN,
@@ -957,7 +956,7 @@ class spell_rog_stealth : public SpellScriptLoader
 
                     // Shadow Focus
                     if (target->HasAura(SPELL_ROGUE_SHADOW_FOCUS))
-                        target->CastSpell(target, SPELL_ROGUE_SHADOW_FOCUS_EFFECT, TRIGGERED_FULL_MASK);
+                        target->CastSpell(target, SPELL_ROGUE_SHADOW_FOCUS_COST_PCT, TRIGGERED_FULL_MASK);
 
                     // Master Assasin
                     if (target->HasAura(SPELL_ROGUE_MASTER_ASSASIN))
@@ -965,6 +964,9 @@ class spell_rog_stealth : public SpellScriptLoader
 
                     if (target->HasAura(MarkOfTheMasterAssassin))
                         target->CastSpell(target, MasterAssassinsMark, true);
+
+                    if (target->HasAura(Rogue::eSubtletyTraits::Premeditation))
+                        target->CastSpell(target, Rogue::eSubtletyTraits::PremeditationProcAura, true);
 
                     // Shadowstrike Rank 2
                     //if (target->HasAura(SPELL_ROGUE_SHADOWSTRIKE_RANK_2))
@@ -1023,10 +1025,13 @@ class spell_rog_stealth : public SpellScriptLoader
                         aura->RefreshDuration();
                     }
 
-                    target->RemoveAurasDueToSpell(SPELL_ROGUE_SHADOW_FOCUS_EFFECT);
+                    target->RemoveAurasDueToSpell(SPELL_ROGUE_SHADOW_FOCUS_COST_PCT);
                     target->RemoveAurasDueToSpell(SPELL_ROGUE_STEALTH_STEALTH_AURA);
                     target->RemoveAurasDueToSpell(SPELL_ROGUE_STEALTH_SHAPESHIFT_AURA);
                     target->RemoveAurasDueToSpell(SPELL_ROGUE_SHROUD_OF_CONCEALMENT);
+                    target->RemoveAurasDueToSpell(Rogue::eSubtletyTraits::PremeditationProcAura);
+
+
                     if (target->HasAura(SPELL_ROGUE_SUBTERFUGE))
                         target->CastSpell(target, SPELL_ROGUE_SUBTERFUGE_AURA, true);
                     if (Aura* aur = target->GetAura(SPELL_ROGUE_MASTER_OF_SUBTLETY_DAMAGE_PERCENT))
@@ -1190,7 +1195,10 @@ class spell_rog_vanish_aura : public SpellScriptLoader
 
                 // Shadow Focus
                 if (target->HasAura(SPELL_ROGUE_SHADOW_FOCUS))
-                    target->CastSpell(target, SPELL_ROGUE_SHADOW_FOCUS_EFFECT, TRIGGERED_FULL_MASK);
+                    target->CastSpell(target, SPELL_ROGUE_SHADOW_FOCUS_COST_PCT, TRIGGERED_FULL_MASK);
+
+                if (target->HasAura(Rogue::eSubtletyTraits::Premeditation))
+                    target->CastSpell(target, Rogue::eSubtletyTraits::PremeditationProcAura, true);
 
                 // Master Assasin
                 if (target->HasAura(SPELL_ROGUE_MASTER_ASSASIN))
@@ -1520,7 +1528,7 @@ public:
                 if (caster->HasAura(SPELL_ROGUE_NIGHTSTALKER_AURA))
                     caster->CastSpell(caster, SPELL_ROGUE_NIGHTSTALKER_DAMAGE_DONE, true);
 
-                if (caster->HasAura(SPELL_ROGUE_SHADOW_FOCUS_AURA))
+                if (caster->HasAura(SPELL_ROGUE_SHADOW_FOCUS))
                     caster->CastSpell(caster, SPELL_ROGUE_SHADOW_FOCUS_COST_PCT, true);
             }
         }
@@ -2308,10 +2316,13 @@ class aura_rog_shadow_dance_effect : public AuraScript
 		if (Unit* caster = GetCaster())
 		{
 			if (caster->HasAura(SPELL_ROGUE_SHADOW_FOCUS))
-				caster->CastSpell(caster, SPELL_ROGUE_SHADOW_FOCUS_EFFECT, true);
+				caster->CastSpell(caster, SPELL_ROGUE_SHADOW_FOCUS_COST_PCT, true);
 
 			if (caster->HasAura(SPELL_ROGUE_SHOT_IN_THE_DARK))
 				caster->CastSpell(caster, SPELL_ROGUE_SHOT_IN_THE_DARK_BUFF, true);
+
+            if (caster->HasAura(Rogue::eSubtletyTraits::Premeditation))
+                caster->CastSpell(caster, Rogue::eSubtletyTraits::PremeditationProcAura, true);
 		}
     }
 
@@ -2319,10 +2330,11 @@ class aura_rog_shadow_dance_effect : public AuraScript
     {
         if (Unit* caster = GetCaster())
         {
-            caster->RemoveAura(SPELL_ROGUE_SHADOW_FOCUS_EFFECT);
+            caster->RemoveAura(SPELL_ROGUE_SHADOW_FOCUS_COST_PCT);
             caster->RemoveAura(SPELL_ROGUE_STEALTH_BAR);
             caster->RemoveAura(SPELL_ROGUE_SHADOW_DANCE_AURA);
             caster->RemoveAurasDueToSpell(SPELL_ROGUE_SHROUD_OF_CONCEALMENT);
+            caster->RemoveAurasDueToSpell(Rogue::eSubtletyTraits::PremeditationProcAura);
         }
     }
 

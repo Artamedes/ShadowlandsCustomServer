@@ -12,6 +12,7 @@ namespace Rogue
         Sprint            = 2983,
         GrapplingHook     = 195457,
         MarkedForDeath    = 137619,
+        SliceAndDice      = 315496,
         /// Covenant
         Flagellation      = 323654,
         Sepsis            = 328305,
@@ -50,7 +51,6 @@ namespace Rogue
         /// Finishers
         Dispatch = 2098,
         BetweenTheEyes = 315341,
-        SliceAndDice = 315496,
         /// Conduits
         CountTheOdds = 341546,
         SleightOfHand = 341543,
@@ -85,6 +85,9 @@ namespace Rogue
         TheFirstDance         = 382505,
         StiletoStaccato       = 382509,
         ImprovedShurikenStorm = 319951,
+        Premeditation         = 343160,
+        PremeditationEnergize = 343170,
+        PremeditationProcAura = 343173,
     };
 
     enum eCovenant

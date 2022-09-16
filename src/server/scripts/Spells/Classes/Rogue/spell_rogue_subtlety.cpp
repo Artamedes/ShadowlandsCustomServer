@@ -334,6 +334,47 @@ class spell_improved_backstab_319949 : public AuraScript
     }
 };
 
+/// ID - 343173 Premeditation
+class spell_premeditation_343173 : public AuraScript
+{
+    PrepareAuraScript(spell_premeditation_343173);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == Shadowstrike;
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (auto caster = GetCaster())
+        {
+            auto aura = caster->GetAura(SliceAndDice);
+            uint32 oldSndDuration = [&]() -> uint32
+            {
+                if (aura)
+                    return aura->GetDuration();
+
+                return 0;
+            }();
+
+            auto newDurataion = caster->CalcSpellDuration(sSpellMgr->GetSpellInfo(SliceAndDice), true, nullptr, oldSndDuration, false);
+
+            if (aura)
+                aura->SetDuration(newDurataion);
+            else if (auto newAura = caster->AddAura(SliceAndDice, caster))
+                newAura->SetDuration(newDurataion);
+
+            caster->CastSpell(caster, PremeditationEnergize, true);
+        }
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_premeditation_343173::CheckProc);
+        OnProc += AuraProcFn(spell_premeditation_343173::HandleProc);
+    }
+};
+
 void AddSC_spell_rogue_subtlety()
 {
     RegisterSpellScript(spell_deeper_daggers);
@@ -347,4 +388,5 @@ void AddSC_spell_rogue_subtlety()
     RegisterSpellScript(spell_perforated_veins_382518);
     RegisterSpellScript(spell_perforated_veins_341572);
     RegisterSpellScript(spell_improved_backstab_319949);
+    RegisterSpellScript(spell_premeditation_343173);
 }
