@@ -71,9 +71,12 @@ class spell_black_powder : public SpellScript
                 {
                     if (auto hitUnit = GetHitUnit())
                     {
-                        if (hitUnit->HasAura(FindWeakness, caster->GetGUID()))
+                        if (auto shadowedFinishers = caster->GetAuraEffect(ShadowedFinishers, EFFECT_0))
                         {
-                            caster->CastSpell(hitUnit, BlackPowderFindWeaknessDmg, CastSpellExtraArgs(true).AddSpellBP0(CalculatePct(damage, 40)));
+                            if (hitUnit->HasAura(FindWeakness, caster->GetGUID()))
+                            {
+                                caster->CastSpell(hitUnit, BlackPowderFindWeaknessDmg, CastSpellExtraArgs(true).AddSpellBP0(CalculatePct(damage, shadowedFinishers->GetAmount())));
+                            }
                         }
                     }
                 }
@@ -257,9 +260,12 @@ class spell_rog_eviscerate : public SpellScript
 
         if (auto hitUnit = GetHitUnit())
         {
-            if (hitUnit->GetAura(FindWeakness))
+            if (auto shadowedFinishers = caster->GetAuraEffect(ShadowedFinishers, EFFECT_0))
             {
-                caster->CastSpell(hitUnit, EviscerateShadowDmg, CastSpellExtraArgs(true).AddSpellBP0(CalculatePct(damage, 50)));
+                if (hitUnit->HasAura(FindWeakness, caster->GetGUID()))
+                {
+                    caster->CastSpell(hitUnit, EviscerateShadowDmg, CastSpellExtraArgs(true).AddSpellBP0(CalculatePct(damage, shadowedFinishers->GetAmount())));
+                }
             }
         }
     }

@@ -2495,7 +2495,7 @@ public:
     }
 };
 
-/// 185314 - Deepening Shadows  Update 9.2.0 43206
+/// 185314 - Deepening Shadows - Updated 10.0.2.45596
 class spell_rog_deepening_shadows : public AuraScript
 {
     PrepareAuraScript(spell_rog_deepening_shadows);
@@ -2509,27 +2509,15 @@ class spell_rog_deepening_shadows : public AuraScript
 
     bool CheckProc(ProcEventInfo& eventInfo)
     {
-        if (!eventInfo.GetSpellInfo())
-            return false;
+        if (auto procSpell = eventInfo.GetProcSpell())
+            return procSpell->GetUsedComboPoints();
 
-        switch (eventInfo.GetSpellInfo()->Id)
-        {
-            case SPELL_ROGUE_EVISCERATE:
-            case SPELL_ROGUE_NIGHTBLADE:
-            case SPELL_ROGUE_KIDNEY_SHOT:
-            case SPELL_ROGUE_SECRET_TECHNIQUE:
-            case SPELL_ROGUE_RUPTURE:
-            case SPELL_ROGUE_BLACK_POWDER:
-            case SPELL_ROGUE_SLICE_AND_DICE:
-                return true;
-            default:
-                return false;
-        }
+        return false;
     }
 
     void HandleProc(AuraEffect* aurEff, ProcEventInfo& eventInfo)
     {
-        //if (auto spell = eventInfo.GetProcSpell())
+        if (auto spell = eventInfo.GetProcSpell())
         {
             if (Unit* caster = GetCaster())
             {
@@ -2538,9 +2526,10 @@ class spell_rog_deepening_shadows : public AuraScript
                 if (caster->HasAura(EnvelopingShadows))
                     CDR += 500;
 
-                auto cp = RogueComboPoints(caster);
+                auto cp = spell->GetUsedComboPoints();
 
                 // 4 set bonus
+                /// TODO: move this to proc spell script
                 if (caster->HasAura(ImmortalTechnique))
                 {
                     if (roll_chance_i(cp * 3))

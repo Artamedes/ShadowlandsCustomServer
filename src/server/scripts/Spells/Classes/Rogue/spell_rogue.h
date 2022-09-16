@@ -91,6 +91,7 @@ namespace Rogue
         PremeditationProcAura = 343173,
         SilentStorm           = 385722,
         SilentStormProcAura   = 385727,
+        ShadowedFinishers     = 382511,
     };
 
     enum eCovenant
