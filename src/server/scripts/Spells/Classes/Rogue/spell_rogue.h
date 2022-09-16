@@ -79,6 +79,12 @@ namespace Rogue
         ShadowBlades = 121471,
     };
 
+    enum eSubtletyTraits
+    {
+        TheFirstDance    = 382505,
+        StiletoStaccato  = 382509,
+    };
+
     enum eCovenant
     {
         SepticShock = 341309,

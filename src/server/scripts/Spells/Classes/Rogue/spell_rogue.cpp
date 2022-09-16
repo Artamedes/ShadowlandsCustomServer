@@ -2606,6 +2606,9 @@ public:
                         if (eff->ConduitRankEntry)
                             caster->GetSpellHistory()->ModifyCooldown(SPELL_ROGUE_SHADOW_BLADES, -(eff->ConduitRankEntry->AuraPointsOverride * 1000.0f));
 
+                    if (auto eff = caster->GetAuraEffect(Rogue::eSubtletyTraits::StiletoStaccato, EFFECT_0))
+                        caster->GetSpellHistory()->ModifyCooldown(SPELL_ROGUE_SHADOW_BLADES, -(eff->GetAmount() * 1000));
+
                     caster->CastSpell(caster, SPELL_ROGUE_SHADOW_TENCHNIQUES_POWER, true);
                     caster->Variables.Remove("ShadowTechniques");
                 }
