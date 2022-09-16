@@ -121,10 +121,10 @@ ByteBuffer& operator<<(ByteBuffer& data, VendorItem const& item)
     //data << int32(item.Quantity);
     data << int32(item.ExtendedCostID);
     data << int32(item.PlayerConditionFailed);
+    data.WriteBits(1, 3);
     data.WriteBit(item.Locked);
     data.WriteBit(item.DoNotFilterOnVendor);
     data.WriteBit(item.Refundable);
-    data.WriteBit(false); ///< Unk DF
     data.FlushBits();
     data << item.Item;
 

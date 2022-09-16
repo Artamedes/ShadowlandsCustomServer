@@ -132,8 +132,8 @@ namespace WorldPackets
             WorldPackets::Item::ItemInstance Item;
             int32 Quantity                  = -1;
             uint64 Price                    = 0;
-            int32 Durability                = 0;
-            int32 StackCount                = 0;
+            int32 Durability                = -1;
+            int32 StackCount                = -1;
             int32 ExtendedCostID            = 0;
             int32 PlayerConditionFailed     = 0;
             bool Locked                     = false;

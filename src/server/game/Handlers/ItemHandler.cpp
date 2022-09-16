@@ -680,11 +680,11 @@ void WorldSession::SendListInventory(ObjectGuid vendorGuid, uint32 vendorEntry)
                 price -= CalculatePct(price, priceMod);
 
             item.MuID = slot + 1; // client expects counting to start at 1
-            item.Durability = itemTemplate->MaxDurability;
+            item.Durability = itemTemplate->MaxDurability == 0 ? -1 : itemTemplate->MaxDurability;
             item.ExtendedCostID = vendorItem->ExtendedCost;
             item.Type = vendorItem->Type;
             item.Quantity = leftInStock;
-            item.StackCount = itemTemplate->GetBuyCount();
+            item.StackCount = itemTemplate->GetBuyCount() <= 1 ? -1 : itemTemplate->GetBuyCount();
             item.Price = price;
             item.DoNotFilterOnVendor = vendorItem->IgnoreFiltering;
             item.Refundable = itemTemplate->HasFlag(ITEM_FLAG_ITEM_PURCHASE_RECORD) && vendorItem->ExtendedCost && itemTemplate->GetMaxStackSize() == 1;
