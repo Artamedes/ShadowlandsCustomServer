@@ -1231,7 +1231,7 @@ class spell_rog_vanish_aura : public SpellScriptLoader
                 target->CastSpell(target, SPELL_ROGUE_SHADOWSTRIKE_BONUS, true);
                 HandleFadeToNothingConduit(target);
 
-                if (target->HasAura(InvigoratingShadowdust))
+                if (target->HasAura(InvigoratingShadowdustLegendary))
                 {
                     target->GetSpellHistory()->ReduceCooldowns([target](SpellHistory::CooldownStorageType::iterator itr) -> bool
                     {
@@ -1255,6 +1255,31 @@ class spell_rog_vanish_aura : public SpellScriptLoader
                         return remainingCooldown > 0ms
                             && !itr->second.OnHold;
                     }, 20000);
+                }
+                if (auto dustEff = target->GetAuraEffect(InvigoratingShadowdust, EFFECT_0))
+                {
+                    target->GetSpellHistory()->ReduceCooldowns([target](SpellHistory::CooldownStorageType::iterator itr) -> bool
+                    {
+                        SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(itr->first, DIFFICULTY_NONE);
+                        Milliseconds remainingCooldown = target->GetSpellHistory()->GetRemainingCooldown(spellInfo);
+
+                        bool allow = spellInfo->SpellFamilyName == SPELLFAMILY_ROGUE;
+
+                        if (!allow)
+                        {
+                            return false;
+                            ///switch (spellInfo->Id)
+                            ///{
+                            ///        return true;
+                            ///    default:
+                            ///        return false;
+                            ///}
+                            /// 
+                        }
+
+                        return remainingCooldown > 0ms
+                            && !itr->second.OnHold;
+                    }, dustEff->GetAmount());
                 }
             }
 

@@ -24,7 +24,7 @@ namespace Rogue
         /// Conduits
 
         /// Legendaries
-        InvigoratingShadowdust  = 340080,
+        InvigoratingShadowdustLegendary  = 340080,
         DeathlyShadows          = 340092,
         DeathlyShadowsOutlaw    = 341202,
         DeathlyShadowsAssa      = 350964,
@@ -98,6 +98,7 @@ namespace Rogue
         CloakedInShadows      = 382515,
         CloakedInShadowsBuff  = 386165,
         DeeperDaggersProc     = 383405,
+        InvigoratingShadowdust = 382523,
     };
 
     enum eCovenant
