@@ -77,6 +77,7 @@ namespace Rogue
     enum eSubtlety
     {
         ShadowBlades = 121471,
+        FindWeaknesDebuff = 91021,
     };
 
     enum eSubtletyTraits

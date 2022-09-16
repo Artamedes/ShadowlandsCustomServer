@@ -308,6 +308,32 @@ class spell_perforated_veins_341572 : public AuraScript
     }
 };
 
+/// ID - 319949 Improved Backstab
+class spell_improved_backstab_319949 : public AuraScript
+{
+    PrepareAuraScript(spell_improved_backstab_319949);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && (eventInfo.GetSpellInfo()->Id == Shadowstrike || eventInfo.GetSpellInfo()->Id == Backstab)
+            && eventInfo.GetProcTarget() && GetCaster()
+            && !eventInfo.GetProcTarget()->isInFront(GetCaster());
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (auto caster = GetCaster())
+            if (auto procTarget = eventInfo.GetProcTarget())
+                caster->CastSpell(procTarget, FindWeaknesDebuff, true);
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_improved_backstab_319949::CheckProc);
+        OnProc += AuraProcFn(spell_improved_backstab_319949::HandleProc);
+    }
+};
+
 void AddSC_spell_rogue_subtlety()
 {
     RegisterSpellScript(spell_deeper_daggers);
@@ -320,4 +346,5 @@ void AddSC_spell_rogue_subtlety()
     RegisterSpellScript(spell_rog_eviscerate);
     RegisterSpellScript(spell_perforated_veins_382518);
     RegisterSpellScript(spell_perforated_veins_341572);
+    RegisterSpellScript(spell_improved_backstab_319949);
 }
