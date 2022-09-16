@@ -453,6 +453,8 @@ public:
 
         if (CheckModifySpeed(handler, speed, target, allSpeed, 0.1f, 50.0f))
         {
+            if (target->Variables.Exist("ModifySpeed"))
+                target->Variables.Remove("ModifySpeed");
             NotifyModification(handler, target, LANG_YOU_CHANGE_ASPEED, LANG_YOURS_ASPEED_CHANGED, allSpeed);
             target->SetSpeedRate(MOVE_WALK, allSpeed);
             target->SetSpeedRate(MOVE_RUN, allSpeed);
