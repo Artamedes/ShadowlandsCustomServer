@@ -968,6 +968,9 @@ class spell_rog_stealth : public SpellScriptLoader
                     if (target->HasAura(Rogue::eSubtletyTraits::Premeditation))
                         target->CastSpell(target, Rogue::eSubtletyTraits::PremeditationProcAura, true);
 
+                    if (target->HasAura(Rogue::eSubtletyTraits::SilentStorm))
+                        target->CastSpell(target, Rogue::eSubtletyTraits::SilentStormProcAura, true);
+
                     // Shadowstrike Rank 2
                     //if (target->HasAura(SPELL_ROGUE_SHADOWSTRIKE_RANK_2))
                         target->CastSpell(target, SPELL_ROGUE_SHADOWSTRIKE_BONUS, true);
@@ -1199,6 +1202,9 @@ class spell_rog_vanish_aura : public SpellScriptLoader
 
                 if (target->HasAura(Rogue::eSubtletyTraits::Premeditation))
                     target->CastSpell(target, Rogue::eSubtletyTraits::PremeditationProcAura, true);
+
+                if (target->HasAura(Rogue::eSubtletyTraits::SilentStorm))
+                    target->CastSpell(target, Rogue::eSubtletyTraits::SilentStormProcAura, true);
 
                 // Master Assasin
                 if (target->HasAura(SPELL_ROGUE_MASTER_ASSASIN))
@@ -2323,6 +2329,9 @@ class aura_rog_shadow_dance_effect : public AuraScript
 
             if (caster->HasAura(Rogue::eSubtletyTraits::Premeditation))
                 caster->CastSpell(caster, Rogue::eSubtletyTraits::PremeditationProcAura, true);
+
+            if (caster->HasAura(Rogue::eSubtletyTraits::SilentStorm))
+                caster->CastSpell(caster, Rogue::eSubtletyTraits::SilentStormProcAura, true);
 		}
     }
 

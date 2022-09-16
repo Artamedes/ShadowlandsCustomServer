@@ -375,6 +375,28 @@ class spell_premeditation_343173 : public AuraScript
     }
 };
 
+/// ID - 385727 Silent Storm
+class spell_silent_storm_385727 : public AuraScript
+{
+    PrepareAuraScript(spell_silent_storm_385727);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == ShurikenStorm;
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        Remove();
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_silent_storm_385727::CheckProc);
+        OnProc += AuraProcFn(spell_silent_storm_385727::HandleProc);
+    }
+};
+
 void AddSC_spell_rogue_subtlety()
 {
     RegisterSpellScript(spell_deeper_daggers);
@@ -389,4 +411,5 @@ void AddSC_spell_rogue_subtlety()
     RegisterSpellScript(spell_perforated_veins_341572);
     RegisterSpellScript(spell_improved_backstab_319949);
     RegisterSpellScript(spell_premeditation_343173);
+    RegisterSpellScript(spell_silent_storm_385727);
 }

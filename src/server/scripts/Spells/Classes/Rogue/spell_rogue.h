@@ -78,6 +78,7 @@ namespace Rogue
     {
         ShadowBlades = 121471,
         FindWeaknesDebuff = 91021,
+        ShurikenStorm = 197835,
     };
 
     enum eSubtletyTraits
@@ -88,6 +89,8 @@ namespace Rogue
         Premeditation         = 343160,
         PremeditationEnergize = 343170,
         PremeditationProcAura = 343173,
+        SilentStorm           = 385722,
+        SilentStormProcAura   = 385727,
     };
 
     enum eCovenant
