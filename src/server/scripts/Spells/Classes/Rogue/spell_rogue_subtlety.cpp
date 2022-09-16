@@ -209,6 +209,7 @@ class spell_finality_black_powder : public AuraScript
 };
 
 /// ID: 340091 The Rotten
+/// 382015
 class spell_the_rotten : public AuraScript
 {
     PrepareAuraScript(spell_the_rotten);
