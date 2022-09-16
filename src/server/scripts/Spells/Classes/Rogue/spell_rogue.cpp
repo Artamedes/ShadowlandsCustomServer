@@ -2644,48 +2644,42 @@ public:
 // Weaponmaster - 193537
 class spell_rog_weaponmaster : public SpellScriptLoader
 {
-public:
-    spell_rog_weaponmaster() : SpellScriptLoader("spell_rog_weaponmaster") {}
+    public:
+        spell_rog_weaponmaster() : SpellScriptLoader("spell_rog_weaponmaster") {}
 
-    class spell_rog_weaponmaster_AuraScript : public AuraScript
-    {
-        PrepareAuraScript(spell_rog_weaponmaster_AuraScript);
-
-        bool CheckProc(ProcEventInfo& eventInfo)
+        class spell_rog_weaponmaster_AuraScript : public AuraScript
         {
-            Unit* caster = eventInfo.GetActor();
-            Unit* target = eventInfo.GetActionTarget();
-            if (!target || !caster)
-                return false;
+            PrepareAuraScript(spell_rog_weaponmaster_AuraScript);
 
-            SpellInfo const* triggerSpell = eventInfo.GetSpellInfo();
-            if (!triggerSpell)
-                return false;
+            bool CheckProc(ProcEventInfo& eventInfo)
+            {
+                Unit* caster = eventInfo.GetActor();
+                Unit* target = eventInfo.GetActionTarget();
+                if (!target || !caster)
+                    return false;
 
-            if (!roll_chance_i(10))
-                return false;
+                SpellInfo const* triggerSpell = eventInfo.GetSpellInfo();
+                if (!triggerSpell)
+                    return false;
 
-            if (!eventInfo.GetDamageInfo())
-                return false;
+                if (!roll_chance_i(GetEffect(EFFECT_0)->GetAmount()))
+                    return false;
 
-            SpellNonMeleeDamage damageLog(caster, target, triggerSpell, { triggerSpell->GetSpellXSpellVisualId(), 0 }, triggerSpell->SchoolMask);
-            damageLog.damage = eventInfo.GetDamageInfo()->GetDamage();
-            damageLog.cleanDamage = damageLog.damage;
-            caster->DealSpellDamage(&damageLog, true);
-            caster->SendSpellNonMeleeDamageLog(&damageLog);
-            return true;
-        }
+                // SPELL_AURA_PROC_TRIGGER_SPELL_COPY maybe can handle automatically. Not sure rn since only 3 spells use it as of patch 10.0.2.45569
+                caster->CastSpell(target, triggerSpell->Id, true);
+                return true;
+            }
 
-        void Register() override
+            void Register() override
+            {
+                DoCheckProc += AuraCheckProcFn(spell_rog_weaponmaster_AuraScript::CheckProc);
+            }
+        };
+
+        AuraScript* GetAuraScript() const override
         {
-            DoCheckProc += AuraCheckProcFn(spell_rog_weaponmaster_AuraScript::CheckProc);
+            return new spell_rog_weaponmaster_AuraScript();
         }
-    };
-
-    AuraScript* GetAuraScript() const override
-    {
-        return new spell_rog_weaponmaster_AuraScript();
-    }
 };
 
 // Alacrity - 193539
