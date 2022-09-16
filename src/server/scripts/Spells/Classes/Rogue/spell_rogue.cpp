@@ -314,10 +314,17 @@ void Rogue::HandleGrudgeMatch(Unit* caster, Unit* target, Aura* dot)
     }
 }
 
+/// <summary>
+/// Handles conduit or trait for Fade to Nothing
+/// </summary>
+/// <param name="caster"></param>
 void HandleFadeToNothingConduit(Unit* caster)
 {
     if (auto fadeToNothingAura = caster->GetAuraEffect(FadeToNothingConduit, EFFECT_0))
         caster->CastSpell(caster, FadeToNothingConduitBuff, CastSpellExtraArgs(true).AddSpellBP0(fadeToNothingAura->GetAmount()));
+
+    if (auto fadeToNothingAura = caster->GetAuraEffect(Rogue::eSubtletyTraits::FadeToNothing, EFFECT_0))
+        caster->CastSpell(caster, Rogue::eSubtletyTraits::FadeToNothingProc, true);
 }
 
 class rogue_playerscript : public PlayerScript
@@ -940,8 +947,8 @@ class spell_rog_stealth : public SpellScriptLoader
 
             enum Stealth
             {
-                CloakedInShadowsAura = 341529,
-                CloakedInShadowsBuff = 341530,
+                CloakedInShadowsAuraConduit = 341529,
+                CloakedInShadowsBuffConduit = 341530,
                 MarkOfTheMasterAssassin = 340076,
                 MasterAssassinsMark = 340094,
             };
@@ -990,7 +997,13 @@ class spell_rog_stealth : public SpellScriptLoader
                     if (target->HasAura(SPELL_ROGUE_SHOT_IN_THE_DARK))
                         target->CastSpell(target, SPELL_ROGUE_SHOT_IN_THE_DARK_BUFF, true);
 
-                    if (auto aurEff = target->GetAuraEffect(CloakedInShadowsAura, EFFECT_0))
+                    if (auto aurEff = target->GetAuraEffect(CloakedInShadowsAuraConduit, EFFECT_0))
+                    {
+                        auto health = CalculatePct(target->GetMaxHealth(), aurEff->GetAmount());
+                        target->CastSpell(target, CloakedInShadowsBuffConduit, CastSpellExtraArgs(true).AddSpellBP0(health));
+                    }
+
+                    if (auto aurEff = target->GetAuraEffect(CloakedInShadows, EFFECT_0))
                     {
                         auto health = CalculatePct(target->GetMaxHealth(), aurEff->GetAmount());
                         target->CastSpell(target, CloakedInShadowsBuff, CastSpellExtraArgs(true).AddSpellBP0(health));
@@ -2304,6 +2317,8 @@ class spell_rog_shadow_dance : public SpellScript
 
                 if (caster->HasAura(Rogue::eSubtletyTraits::TheFirstDance))
                     caster->EnergizeBySpell(caster, sSpellMgr->GetSpellInfo(Rogue::eSubtletyTraits::TheFirstDance), 4, Powers::POWER_COMBO_POINTS);
+
+                HandleFadeToNothingConduit(caster);
             }
         }
 

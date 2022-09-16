@@ -93,6 +93,10 @@ namespace Rogue
         SilentStormProcAura   = 385727,
         ShadowedFinishers     = 382511,
         Gloomblade            = 200758,
+        FadeToNothing         = 382514,
+        FadeToNothingProc     = 386237,
+        CloakedInShadows      = 382515,
+        CloakedInShadowsBuff  = 386165,
     };
 
     enum eCovenant
