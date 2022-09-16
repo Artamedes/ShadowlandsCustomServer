@@ -28,7 +28,7 @@ namespace Rogue
         DeathlyShadows          = 340092,
         DeathlyShadowsOutlaw    = 341202,
         DeathlyShadowsAssa      = 350964,
-        FinalityRupture         = 340601,
+        FinalityRuptureLegendary = 340601,
     };
 
     enum eAssassination
@@ -99,6 +99,10 @@ namespace Rogue
         CloakedInShadowsBuff  = 386165,
         DeeperDaggersProc     = 383405,
         InvigoratingShadowdust = 382523,
+        Finality              = 382525,
+        FinalityBlackPowder   = 385948,
+        FinalityEviscerate    = 385948,
+        FinalityRupture       = 385951,
     };
 
     enum eCovenant

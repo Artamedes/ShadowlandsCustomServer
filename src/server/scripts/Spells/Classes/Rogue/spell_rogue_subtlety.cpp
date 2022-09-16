@@ -81,6 +81,9 @@ class spell_black_powder : public SpellScript
                     }
                 }
             }
+
+            if (!caster->HasAura(FinalityBlackPowder))
+                caster->CastSpell(caster, FinalityBlackPowder, true);
         }
     }
 
@@ -92,8 +95,8 @@ class spell_black_powder : public SpellScript
 
 enum eFinality
 {
-    FinalityEviscerate  = 340600,
-    FinalityBlackPowder = 340603,
+    FinalityEviscerateLegendary  = 340600,
+    FinalityBlackPowderLegendary = 340603,
 };
 
 /// ID: 340089 Finality
@@ -131,20 +134,20 @@ class spell_finality : public AuraScript
         {
             case BlackPowder:
             {
-                if (!caster->HasAura(FinalityBlackPowder))
-                    caster->CastSpell(caster, FinalityBlackPowder, true);
+                if (!caster->HasAura(FinalityBlackPowderLegendary))
+                    caster->CastSpell(caster, FinalityBlackPowderLegendary, true);
                 break;
             }
             case Rupture:
             {
-                if (!caster->HasAura(FinalityRupture))
-                    caster->CastSpell(caster, FinalityRupture, true);
+                if (!caster->HasAura(FinalityRuptureLegendary))
+                    caster->CastSpell(caster, FinalityRuptureLegendary, true);
                 break;
             }
             case Eviscerate:
             {
-                if (!caster->HasAura(FinalityEviscerate))
-                    caster->CastSpell(caster, FinalityEviscerate, true);
+                if (!caster->HasAura(FinalityEviscerateLegendary))
+                    caster->CastSpell(caster, FinalityEviscerateLegendary, true);
                 break;
             }
         }
@@ -158,6 +161,7 @@ class spell_finality : public AuraScript
 };
 
 /// ID: 340600 Finality: Eviscerate
+/// 385949
 class spell_finality_eviscerate : public AuraScript
 {
     PrepareAuraScript(spell_finality_eviscerate);
@@ -181,6 +185,7 @@ class spell_finality_eviscerate : public AuraScript
 };
 
 /// ID: 340603 Finality: Black Powder
+/// 385948
 class spell_finality_black_powder : public AuraScript
 {
     PrepareAuraScript(spell_finality_black_powder);
@@ -268,6 +273,9 @@ class spell_rog_eviscerate : public SpellScript
                 }
             }
         }
+
+        if (!caster->HasAura(FinalityEviscerate))
+            caster->CastSpell(caster, FinalityEviscerate, true);
     }
 
     void Register() override

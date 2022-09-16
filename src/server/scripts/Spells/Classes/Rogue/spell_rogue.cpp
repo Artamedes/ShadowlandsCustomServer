@@ -862,8 +862,13 @@ class spell_rog_rupture : public SpellScript
                             //ruptureAura->SetMaxDuration(duration * IN_MILLISECONDS);
                             Rogue::HandleGrudgeMatch(GetCaster(), target, ruptureAura);
 
+                            if (auto finality = caster->GetAura(FinalityRuptureLegendary))
+                                finality->Remove();
                             if (auto finality = caster->GetAura(FinalityRupture))
                                 finality->Remove();
+
+                            if (!caster->HasAura(FinalityRupture))
+                                caster->CastSpell(caster, FinalityRupture, true);
                         }
                     }
                 }

@@ -22,3 +22,7 @@ REPLACE INTO spell_script_names (`spell_id`, `ScriptName`) VALUES
 (385408, 'spell_rog_sepsis');
 REPLACE INTO spell_script_names (`spell_id`, `ScriptName`) VALUES
 (384631, 'spell_rog_flagellation');
+REPLACE INTO spell_script_names (`spell_id`, `ScriptName`) VALUES
+(385948, 'spell_finality_black_powder');
+REPLACE INTO spell_script_names (`spell_id`, `ScriptName`) VALUES
+(385949, 'spell_finality_eviscerate');
