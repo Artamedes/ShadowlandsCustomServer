@@ -27,8 +27,8 @@ void WorldSession::HandleLearnTraitsOpcode(WorldPackets::Talent::LearnTraits& le
         // learn case
         if (talent.Rank > 0)
         {
-            bool hasTalent = talentMap->find(talent.TraitNode) != talentMap->end();
-            if (hasTalent)
+            auto it = talentMap->find(talent.TraitNode);
+            if (it != talentMap->end() && it->second->Rank == talent.Rank)
             {
                 TC_LOG_ERROR("network.opcode", "Client tried to learn already learned talent");
                 // send error

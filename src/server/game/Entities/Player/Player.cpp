@@ -3280,7 +3280,7 @@ WorldLocation const* Player::GetStoredAuraTeleportLocation(uint32 spellId) const
     return nullptr;
 }
 
-bool Player::AddSpell(uint32 spellId, bool active, bool learning, bool dependent, bool disabled, bool loading /*= false*/, int32 fromSkill /*= 0*/)
+bool Player::AddSpell(uint32 spellId, bool active, bool learning, bool dependent, bool disabled, bool loading /*= false*/, int32 fromSkill /*= 0*/, std::function<void()> callback /*= []() {}*/)
 {
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId, DIFFICULTY_NONE);
     if (!spellInfo)
@@ -3373,7 +3373,10 @@ bool Player::AddSpell(uint32 spellId, bool active, bool learning, bool dependent
             if (active)
             {
                 if (spellInfo->IsPassive() && HandlePassiveSpellLearn(spellInfo))
+                {
                     CastSpell(this, spellId, true);
+                    callback();
+                }
             }
             else if (IsInWorld())
             {
@@ -3500,7 +3503,10 @@ bool Player::AddSpell(uint32 spellId, bool active, bool learning, bool dependent
     else if (spellInfo->IsPassive())
     {
         if (HandlePassiveSpellLearn(spellInfo))
+        {
             CastSpell(this, spellId, true);
+            callback();
+        }
     }
     else if (spellInfo->HasEffect(SPELL_EFFECT_SKILL_STEP))
     {
@@ -3646,14 +3652,14 @@ bool Player::HandlePassiveSpellLearn(SpellInfo const* spellInfo)
     return need_cast && (!spellInfo->CasterAuraState || HasAuraState(AuraStateType(spellInfo->CasterAuraState)));
 }
 
-void Player::LearnSpell(uint32 spell_id, bool dependent, int32 fromSkill /*= 0*/, bool suppressMessaging /*= false*/, int32 traitDefinitionId /*= 0*/)
+void Player::LearnSpell(uint32 spell_id, bool dependent, int32 fromSkill /*= 0*/, bool suppressMessaging /*= false*/, int32 traitDefinitionId /*= 0*/, std::function<void()> callback /*= []() {}*/)
 {
     PlayerSpellMap::iterator itr = m_spells.find(spell_id);
 
     bool disabled = (itr != m_spells.end()) ? itr->second.disabled : false;
     bool active = disabled ? itr->second.active : true;
 
-    bool learning = AddSpell(spell_id, active, true, dependent, false, false, fromSkill);
+    bool learning = AddSpell(spell_id, active, true, dependent, false, false, fromSkill, callback);
 
     // prevent duplicated entires in spell book, also not send if not in world (loading)
     if (learning && IsInWorld())

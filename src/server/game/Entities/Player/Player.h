@@ -240,7 +240,10 @@ enum TalentSpecialization // talent tabs
     TALENT_SPEC_MONK_BATTLEDANCER       = 269,
     TALENT_SPEC_MONK_MISTWEAVER         = 270,
     TALENT_SPEC_DEMON_HUNTER_HAVOC      = 577,
-    TALENT_SPEC_DEMON_HUNTER_VENGEANCE  = 581
+    TALENT_SPEC_DEMON_HUNTER_VENGEANCE  = 581,
+    // initial 1444-1465
+    TALENT_SPEC_EVOKER_DEVASTATION      = 1467,
+    TALENT_SPEC_EVOKER_PRESERVATION     = 1468,
 };
 
 enum TalentSpecRoles
@@ -1812,8 +1815,8 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void SendProficiency(ItemClass itemClass, uint32 itemSubclassMask) const;
         void SendKnownSpells();
         void SendUnlearnSpells();
-        bool AddSpell(uint32 spellId, bool active, bool learning, bool dependent, bool disabled, bool loading = false, int32 fromSkill = 0);
-        void LearnSpell(uint32 spell_id, bool dependent, int32 fromSkill = 0, bool suppressMessaging = false, int32 traitDefinitionId = 0);
+        bool AddSpell(uint32 spellId, bool active, bool learning, bool dependent, bool disabled, bool loading = false, int32 fromSkill = 0, std::function<void()> callback = []() {});
+        void LearnSpell(uint32 spell_id, bool dependent, int32 fromSkill = 0, bool suppressMessaging = false, int32 traitDefinitionId = 0, std::function<void()> callback = []() {});
         void RemoveSpell(uint32 spell_id, bool disabled = false, bool learn_low_rank = true, bool suppressMessaging = false);
         void ResetSpells(bool myClassOnly = false);
         void LearnCustomSpells();

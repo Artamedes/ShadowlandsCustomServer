@@ -8,6 +8,8 @@
 #include "Player.h"
 #include "TalentPackets.h"
 #include "TraitsMgr.h"
+#include "SpellAuras.h"
+#include "SpellAuraEffects.h"
 #include "SpellHistory.h"
 #include "SpellInfo.h"
 
@@ -174,8 +176,12 @@ void TraitsMgr::SetupDragonRiding()
     _nextConfigId++;
 }
 
+constexpr uint32 OldConfigIdPre45569 = 618843;
+
 void TraitsMgr::LoadFromDB(CharacterDatabaseQueryHolder const& holder)
 {
+    bool sendPacketTalentsReset = false;
+
     auto traitResult = holder.GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_SEL_TRAITS);
     if (traitResult)
     {
@@ -189,6 +195,16 @@ void TraitsMgr::LoadFromDB(CharacterDatabaseQueryHolder const& holder)
             uint32 index           = fields[3].GetUInt32();
             uint32 talentGroup     = fields[4].GetUInt32();
             std::string configName = fields[5].GetString();
+
+            if (configId < OldConfigIdPre45569)
+            {
+                auto stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_TRAIT);
+                stmt->setUInt64(0, _player->GetGUID().GetCounter());
+                stmt->setUInt32(1, configId);
+                CharacterDatabase.Execute(stmt);
+                sendPacketTalentsReset = true;
+                continue;
+            }
 
             if (type == TraitType::DragonRiding)
                 _hasDragonriding = true;
@@ -224,6 +240,17 @@ void TraitsMgr::LoadFromDB(CharacterDatabaseQueryHolder const& holder)
             uint32 rank              = fields[3].GetUInt32();
             uint32 unk               = fields[4].GetUInt32();
 
+            if (configId < OldConfigIdPre45569)
+            {
+                auto stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_TRAIT_TALENT);
+                stmt->setUInt64(0, _player->GetGUID().GetCounter());
+                stmt->setUInt32(1, configId);
+                stmt->setUInt32(2, traitNode);
+                CharacterDatabase.Execute(stmt);
+                sendPacketTalentsReset = true;
+                continue;
+            }
+
             auto it = _traits.find(configId);
             if (it != _traits.end())
             {
@@ -243,13 +270,18 @@ void TraitsMgr::LoadFromDB(CharacterDatabaseQueryHolder const& holder)
         } while (talentResult->NextRow());
     }
 
+    if (_player->m_activePlayerData->ActiveConfigID < OldConfigIdPre45569)
+        _player->SetCurrentConfigID(0);
+
     /// Initialize updatefields
     for (auto itr = _traits.begin(); itr != _traits.end(); ++itr)
     {
         auto trait = itr->second;
 
-        if (trait->GetConfigID() == _player->m_activePlayerData->ActiveConfigID)
+        if (trait->GetConfigID() == _player->m_activePlayerData->ActiveConfigID
+            || (_player->m_activePlayerData->ActiveConfigID == 0 && _player->GetSpecializationId() > 0 && trait->GetSpecializationID() == _player->GetSpecializationId()))
         {
+            _player->SetCurrentConfigID(trait->GetConfigID());
             trait->LearnTraitSpells();
             _activeTrait = trait;
         }
@@ -258,6 +290,15 @@ void TraitsMgr::LoadFromDB(CharacterDatabaseQueryHolder const& holder)
 
         if (_nextConfigId <= trait->GetConfigID())
             _nextConfigId = trait->GetConfigID() + 1;
+    }
+
+    /// If we still have 0 configid at this point, player spec change should set it.
+    if (sendPacketTalentsReset)
+    {
+        WorldPacket data(SMSG_TALENTS_INVOLUNTARILY_RESET, 1);
+        data.WriteBit(0); ///< IsPet
+        data.FlushBits();
+        _player->SendDirectMessage(&data);
     }
 }
 
@@ -425,13 +466,136 @@ Trait* TraitsMgr::CreateDefaultTraitForSpec(ChrSpecializationEntry const* specEn
     switch (specEntry->ID)
     {
         case TALENT_SPEC_ROGUE_ASSASSINATION:
-            trait->AddTraitTalent(new TraitTalent(_player, trait, 74406, 94261, 0, 1, true));
+            trait->AddTraitTalent(new TraitTalent(_player, trait, 79645, 100324, 0, 1, true));
             break;
         case TALENT_SPEC_ROGUE_COMBAT:
-            trait->AddTraitTalent(new TraitTalent(_player, trait, 74416, 94271, 0, 1, true));
+            trait->AddTraitTalent(new TraitTalent(_player, trait, 79655, 100334, 0, 1, true));
             break;
         case TALENT_SPEC_ROGUE_SUBTLETY:
-            trait->AddTraitTalent(new TraitTalent(_player, trait, 74413, 94268, 0, 1, true));
+            trait->AddTraitTalent(new TraitTalent(_player, trait, 79652, 100331, 0, 1, true));
+            break;
+        ///////////////////////////////////////////////////////////////////
+        case TALENT_SPEC_WARRIOR_ARMS:
+            trait->AddTraitTalent(new TraitTalent(_player, trait, 78006, 98461, 0, 1, true));
+            break;
+        case TALENT_SPEC_WARRIOR_FURY:
+            trait->AddTraitTalent(new TraitTalent(_player, trait, 77990, 98443, 0, 1, true));
+            break;
+        case TALENT_SPEC_WARRIOR_PROTECTION:
+            trait->AddTraitTalent(new TraitTalent(_player, trait, 78008, 98463, 0, 1, true));
+            break;
+        ///////////////////////////////////////////////////////////////////
+        case TALENT_SPEC_MAGE_ARCANE:
+            trait->AddTraitTalent(new TraitTalent(_player, trait, 62121, 80180, 0, 1, true));
+            break;
+        case TALENT_SPEC_MAGE_FIRE:
+            trait->AddTraitTalent(new TraitTalent(_player, trait, 62119, 80178, 0, 1, true));
+            break;
+        case TALENT_SPEC_MAGE_FROST:
+            trait->AddTraitTalent(new TraitTalent(_player, trait, 62117, 80176, 0, 1, true));
+            break;
+        ///////////////////////////////////////////////////////////////////
+        case TALENT_SPEC_PALADIN_HOLY:
+            trait->AddTraitTalent(new TraitTalent(_player, trait, 78953, 99577, 0, 1, true));
+            trait->AddTraitTalent(new TraitTalent(_player, trait, 79068, 99711, 0, 1, true));
+            break;
+        case TALENT_SPEC_PALADIN_PROTECTION:
+            trait->AddTraitTalent(new TraitTalent(_player, trait, 78953, 99577, 0, 1, true));
+            trait->AddTraitTalent(new TraitTalent(_player, trait, 79068, 99711, 0, 1, true));
+            break;
+        case TALENT_SPEC_PALADIN_RETRIBUTION:
+            trait->AddTraitTalent(new TraitTalent(_player, trait, 78949, 99573, 0, 1, true));
+            trait->AddTraitTalent(new TraitTalent(_player, trait, 78951, 99575, 0, 1, true));
+            break;
+        ///////////////////////////////////////////////////////////////////
+        case TALENT_SPEC_DRUID_BALANCE:
+            trait->AddTraitTalent(new TraitTalent(_player, trait, 71638, 91105, 0, 1, true));
+            trait->AddTraitTalent(new TraitTalent(_player, trait, 71637, 91104, 0, 1, true));
+            break;
+        case TALENT_SPEC_DRUID_CAT:
+            trait->AddTraitTalent(new TraitTalent(_player, trait, 71607, 91071, 0, 1, true));
+            trait->AddTraitTalent(new TraitTalent(_player, trait, 71646, 91113, 0, 1, true));
+            break;
+        case TALENT_SPEC_DRUID_BEAR:
+            trait->AddTraitTalent(new TraitTalent(_player, trait, 71645, 91112, 0, 1, true));
+            trait->AddTraitTalent(new TraitTalent(_player, trait, 71646, 91113, 0, 1, true));
+            break;
+        case TALENT_SPEC_DRUID_RESTORATION:
+            trait->AddTraitTalent(new TraitTalent(_player, trait, 71643, 91110, 0, 1, true));
+            trait->AddTraitTalent(new TraitTalent(_player, trait, 71642, 91109, 0, 1, true));
+            break;
+        ///////////////////////////////////////////////////////////////////
+        case TALENT_SPEC_DEATHKNIGHT_BLOOD:
+            trait->AddTraitTalent(new TraitTalent(_player, trait, 76071, 96200, 0, 1, true));
+            break;
+        case TALENT_SPEC_DEATHKNIGHT_FROST:
+            trait->AddTraitTalent(new TraitTalent(_player, trait, 76081, 96210, 0, 1, true));
+            break;
+        case TALENT_SPEC_DEATHKNIGHT_UNHOLY:
+            trait->AddTraitTalent(new TraitTalent(_player, trait, 76072, 96201, 0, 1, true));
+            break;
+        ///////////////////////////////////////////////////////////////////
+        case TALENT_SPEC_HUNTER_BEASTMASTER:
+            trait->AddTraitTalent(new TraitTalent(_player, trait, 79935, 100648, 0, 1, true));
+            break;
+        case TALENT_SPEC_HUNTER_MARKSMAN:
+            trait->AddTraitTalent(new TraitTalent(_player, trait, 79834, 100538, 0, 1, true));
+            break;
+        case TALENT_SPEC_HUNTER_SURVIVAL:
+            trait->AddTraitTalent(new TraitTalent(_player, trait, 79839, 100542, 0, 1, true));
+            break;
+        ///////////////////////////////////////////////////////////////////
+        case TALENT_SPEC_PRIEST_DISCIPLINE:
+            trait->AddTraitTalent(new TraitTalent(_player, trait, 78412, 98939, 0, 1, true));
+            trait->AddTraitTalent(new TraitTalent(_player, trait, 78408, 98935, 0, 1, true));
+            break;
+        case TALENT_SPEC_PRIEST_HOLY:
+            trait->AddTraitTalent(new TraitTalent(_player, trait, 78412, 98939, 0, 1, true));
+            trait->AddTraitTalent(new TraitTalent(_player, trait, 78413, 98940, 0, 1, true));
+            break;
+        case TALENT_SPEC_PRIEST_SHADOW:
+            trait->AddTraitTalent(new TraitTalent(_player, trait, 78408, 98935, 0, 1, true));
+            trait->AddTraitTalent(new TraitTalent(_player, trait, 78407, 98934, 0, 1, true));
+            break;
+        ///////////////////////////////////////////////////////////////////
+        case TALENT_SPEC_SHAMAN_ELEMENTAL:
+            trait->AddTraitTalent(new TraitTalent(_player, trait, 77654, 98053, 0, 1, true));
+            trait->AddTraitTalent(new TraitTalent(_player, trait, 77655, 98054, 0, 1, true));
+            break;
+        case TALENT_SPEC_SHAMAN_ENHANCEMENT:
+            trait->AddTraitTalent(new TraitTalent(_player, trait, 77656, 98055, 0, 1, true));
+            trait->AddTraitTalent(new TraitTalent(_player, trait, 77655, 98054, 0, 1, true));
+            break;
+        case TALENT_SPEC_SHAMAN_RESTORATION:
+            trait->AddTraitTalent(new TraitTalent(_player, trait, 77657, 98056, 0, 1, true));
+            trait->AddTraitTalent(new TraitTalent(_player, trait, 77656, 98055, 0, 1, true));
+            break;
+        ///////////////////////////////////////////////////////////////////
+        case TALENT_SPEC_WARLOCK_AFFLICTION:
+            trait->AddTraitTalent(new TraitTalent(_player, trait, 71933, 91441, 0, 1, true));
+            break;
+        case TALENT_SPEC_WARLOCK_DEMONOLOGY:
+            trait->AddTraitTalent(new TraitTalent(_player, trait, 71933, 91441, 0, 1, true));
+            break;
+        case TALENT_SPEC_WARLOCK_DESTRUCTION:
+            trait->AddTraitTalent(new TraitTalent(_player, trait, 71933, 91441, 0, 1, true));
+            break;
+        ///////////////////////////////////////////////////////////////////
+        case TALENT_SPEC_MONK_BREWMASTER:
+            trait->AddTraitTalent(new TraitTalent(_player, trait, 76373, 96534, 0, 2, true));
+            break;
+        case TALENT_SPEC_MONK_BATTLEDANCER:
+            trait->AddTraitTalent(new TraitTalent(_player, trait, 76372, 96533, 0, 2, true));
+            break;
+        case TALENT_SPEC_MONK_MISTWEAVER:
+            trait->AddTraitTalent(new TraitTalent(_player, trait, 76412, 96576, 0, 1, true));
+            break;
+        ///////////////////////////////////////////////////////////////////
+        case TALENT_SPEC_DEMON_HUNTER_HAVOC:
+            trait->AddTraitTalent(new TraitTalent(_player, trait, 79312, 99981, 0, 1, true));
+            break;
+        case TALENT_SPEC_DEMON_HUNTER_VENGEANCE:
+            trait->AddTraitTalent(new TraitTalent(_player, trait, 79305, 99974, 0, 1, true));
             break;
         default:
             break;
@@ -468,7 +632,15 @@ void TraitsMgr::LearnTraits(WorldPackets::Talent::LearnTraits& learnTraits)
             // learn case
             if (talent.Rank > 0)
             {
-                trait->AddTraitTalent(new TraitTalent(_player, trait, talent.TraitNode, talent.TraitNodeEntryID, talent.Rank, talent.Unk));
+                auto it = traitMap->find(talent.TraitNode);
+
+                if (it == traitMap->end())
+                    trait->AddTraitTalent(new TraitTalent(_player, trait, talent.TraitNode, talent.TraitNodeEntryID, talent.Rank, talent.Unk));
+                else
+                {
+                    // update new rank
+                    it->second->Rank = talent.Rank;
+                }
             }
             else
             {
@@ -666,7 +838,7 @@ void Trait::SetConfigName(std::string_view configName)
 
 void Trait::AddTraitTalent(TraitTalent* talent)
 {
-    _talents[talent->TraitNode] = (talent);
+    _talents[talent->TraitNode] = talent;
 }
 
 bool Trait::RemoveTraitTalent(uint32 traitNode)
@@ -709,7 +881,34 @@ void Trait::LearnTraitSpell(TraitTalent* talent)
 {
     if (talent->TraitDefinitionEntry)
     {
-        _player->LearnSpell(talent->TraitDefinitionEntry->SpellID, true, 0, false, talent->TraitDefinitionEntry->ID);
+        auto spellInfo = sSpellMgr->GetSpellInfo(talent->TraitDefinitionEntry->SpellID);
+
+        if (spellInfo && spellInfo->IsPassive())
+            if (auto aura = _player->GetAura(spellInfo->Id))
+            {
+                // we going to remove this aura, then reapply it in Player::AddSpell below
+                aura->Remove();
+            }
+
+        _player->LearnSpell(talent->TraitDefinitionEntry->SpellID, true, 0, false, talent->TraitDefinitionEntry->ID, [&]()
+        {
+            if (auto aura = _player->GetAura(talent->TraitDefinitionEntry->SpellID))
+            {
+                aura->SetTraitTalent(talent);
+
+                if (talent->Rank > 1)
+                {
+                    for (auto aurEff : aura->GetAuraEffects())
+                    {
+                        if (aurEff)
+                        {
+                            aurEff->RecalculateAmount();
+                        }
+                    }
+                }
+            }
+        });
+
         if (talent->TraitDefinitionEntry->OverridesSpellID)
             _player->AddOverrideSpell(talent->TraitDefinitionEntry->OverridesSpellID, talent->TraitDefinitionEntry->SpellID);
     }
@@ -761,7 +960,6 @@ void Trait::RemoveTraitSpell(TraitTalent* talent)
         _player->RemoveSpell(talent->TraitDefinitionEntry->SpellID);
 
         // search for spells that the talent teaches and unlearn them
-
         auto spellInfo = sSpellMgr->GetSpellInfo(talent->TraitDefinitionEntry->SpellID);
         if (spellInfo)
         {

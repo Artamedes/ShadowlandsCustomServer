@@ -51,6 +51,7 @@
 #include <G3D/g3dmath.h>
 #include "TraitsMgr.h"
 #include <numeric>
+#include "TraitsMgr.h"
 
 class Aura;
 //
@@ -724,6 +725,11 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
                 break;
         }
     }
+
+    /// Blizz seems to multiplate by 2 for talent rank
+    if (auto talent = GetBase()->GetTraitTalent())
+        if (talent->Rank > 1)
+            amount *= talent->Rank;
 
     return amount;
 }
