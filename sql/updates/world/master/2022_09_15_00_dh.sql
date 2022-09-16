@@ -14,3 +14,5 @@ REPLACE INTO spell_script_names (`spell_id`,`ScriptName`) VALUES
 ('343173','spell_premeditation_343173');
 REPLACE INTO spell_script_names (`spell_id`,`ScriptName`) VALUES 
 ('385727','spell_silent_storm_385727');
+REPLACE INTO spell_script_names (`spell_id`,`ScriptName`) VALUES 
+('382512','spell_inevitability_382512');

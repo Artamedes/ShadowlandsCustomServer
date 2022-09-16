@@ -92,6 +92,7 @@ namespace Rogue
         SilentStorm           = 385722,
         SilentStormProcAura   = 385727,
         ShadowedFinishers     = 382511,
+        Gloomblade            = 200758,
     };
 
     enum eCovenant

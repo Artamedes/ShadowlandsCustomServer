@@ -945,14 +945,21 @@ int32 Aura::CalcMaxDuration(Unit* caster, bool refresh, Spell* spell) const
     return maxDuration;
 }
 
-void Aura::SetDuration(int32 duration, bool withMods)
+void Aura::SetDuration(int32 duration, bool withMods, bool withLimit)
 {
     if (withMods)
         if (Unit* caster = GetCaster())
             if (Player* modOwner = caster->GetSpellModOwner())
                 modOwner->ApplySpellMod(GetSpellInfo(), SpellModOp::Duration, duration);
 
-    m_duration = duration;
+    if (withLimit)
+    {
+        int32 maxDuration = CalcMaxDuration(GetSpellInfo(), GetCaster(), false, nullptr, m_duration);
+        m_duration = std::min(maxDuration, duration);
+    }
+    else
+        m_duration = duration;
+
     SetNeedClientUpdateForTargets();
 }
 

@@ -403,6 +403,42 @@ class spell_silent_storm_385727 : public AuraScript
     }
 };
 
+/// ID - 382512 Inevitability
+class spell_inevitability_382512 : public AuraScript
+{
+    PrepareAuraScript(spell_inevitability_382512);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        if (!eventInfo.GetSpellInfo())
+            return false;
+
+        switch (eventInfo.GetSpellInfo()->Id)
+        {
+            case Shadowstrike:
+            case Backstab:
+            case Gloomblade:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (auto caster = GetCaster())
+            if (auto aura = caster->GetAura(SymbolsOfDeath))
+                if (auto eff = GetEffect(EFFECT_1))
+                    aura->ModDuration(eff->GetAmount() / 10, false, true);
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_inevitability_382512::CheckProc);
+        OnProc += AuraProcFn(spell_inevitability_382512::HandleProc);
+    }
+};
+
 void AddSC_spell_rogue_subtlety()
 {
     RegisterSpellScript(spell_deeper_daggers);
@@ -418,4 +454,5 @@ void AddSC_spell_rogue_subtlety()
     RegisterSpellScript(spell_improved_backstab_319949);
     RegisterSpellScript(spell_premeditation_343173);
     RegisterSpellScript(spell_silent_storm_385727);
+    RegisterSpellScript(spell_inevitability_382512);
 }

@@ -179,8 +179,8 @@ class TC_GAME_API Aura
         int32 CalcMaxDuration(Unit* caster, bool refresh, Spell* spell = nullptr) const;
         static int32 CalcMaxDuration(SpellInfo const* spellInfo, WorldObject* caster, bool refresh, Spell* spell = nullptr, int32 oldDuration = 0);
         int32 GetDuration() const { return m_duration; }
-        void SetDuration(int32 duration, bool withMods = false);
-        void ModDuration(int32 duration, bool withMods = false) { SetDuration(GetDuration() + duration, withMods); }
+        void SetDuration(int32 duration, bool withMods = false, bool withLimit = false);
+        void ModDuration(int32 duration, bool withMods = false, bool withLimit = false) { SetDuration(GetDuration() + duration, withMods, withLimit); }
         void RefreshDuration(bool withMods = false, Spell* spell = nullptr);
         void RefreshTimers(bool resetPeriodicTimer, Spell* spell = nullptr);
         bool IsExpired() const { return !GetDuration() && !m_dropEvent; }
