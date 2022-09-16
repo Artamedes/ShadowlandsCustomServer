@@ -111,9 +111,7 @@ enum RogueSpells
     SPELL_ROGUE_SHADOW_DANCE                        = 185313,
     SPELL_ROGUE_SHADOW_DANCE_AURA                   = 185422,
     SPELL_ROGUE_SHADOW_FOCUS                        = 108209,
-    SPELL_ROGUE_SHADOW_FOCUS_AURA                   = 108209,
     SPELL_ROGUE_SHADOW_FOCUS_COST_PCT               = 112942,
-    SPELL_ROGUE_SHADOW_FOCUS_EFFECT                 = 112942,
     SPELL_ROGUE_SHADOW_TENCHNIQUES_POWER            = 196911,
     SPELL_ROGUE_SHIV_TRIGGERED                      = 5940,
     SPELL_ROGUE_SHROUD_OF_CONCEALMENT_AURA          = 115834,
@@ -3791,9 +3789,8 @@ class aura_rog_relentless_strikes : public AuraScript
 
     bool CheckProc(ProcEventInfo& eventInfo)
     {
-        if (eventInfo.GetSpellInfo() && (eventInfo.GetSpellInfo()->Id == SPELL_ROGUE_EVISCERATE || eventInfo.GetSpellInfo()->Id == SPELL_ROGUE_NIGHTBLADE ||
-            eventInfo.GetSpellInfo()->Id == SPELL_ROGUE_KIDNEY_SHOT || eventInfo.GetSpellInfo()->Id == SPELL_ROGUE_SECRET_TECHNIQUE) || eventInfo.GetSpellInfo()->Id == SPELL_ROGUE_BLACK_POWDER)
-            return true;
+        if (auto procSpell = eventInfo.GetProcSpell())
+            return procSpell->GetUsedComboPoints();
 
         return false;
     }
@@ -3801,7 +3798,9 @@ class aura_rog_relentless_strikes : public AuraScript
     void HandleProc(ProcEventInfo& eventInfo)
     {
         if (Unit* caster = GetCaster())
-            caster->CastSpell(caster, SPELL_ROGUE_RELENTLESS_STRIKES_POWER, CastSpellExtraArgs(true).AddSpellBP0(6 * RogueComboPoints(caster)));
+            if (auto procSpell = eventInfo.GetProcSpell())
+                if (auto comboPoints = procSpell->GetUsedComboPoints())
+                    caster->CastSpell(caster, SPELL_ROGUE_RELENTLESS_STRIKES_POWER, CastSpellExtraArgs(true).AddSpellBP0(6 * comboPoints));
     }
 
     void Register() override
