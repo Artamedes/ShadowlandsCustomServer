@@ -695,7 +695,10 @@ void Loot::NotifyItemRemoved(uint8 lootListId, Map const* map)
     {
         LootItem const& item = items[lootListId];
         if (item.GetAllowedLooters().find(*itr) == item.GetAllowedLooters().end())
+        {
+            ++itr;
             continue;
+        }
 
         if (Player* player = ObjectAccessor::GetPlayer(map, *itr))
         {
@@ -841,7 +844,8 @@ bool Loot::FillLoot(uint32 lootId, LootStore const& store, Player* lootOwner, bo
     Group const* group = lootOwner->GetGroup();
     if (!personal && !oploteChest && group)
     {
-        roundRobinPlayer = lootOwner->GetGUID();
+        if (loot_type == LOOT_CORPSE)
+            roundRobinPlayer = lootOwner->GetGUID();
 
         for (GroupReference const* itr = group->GetFirstMember(); itr != nullptr; itr = itr->next())
             if (Player* player = itr->GetSource())   // should actually be looted object instead of lootOwner but looter has to be really close so doesnt really matter
