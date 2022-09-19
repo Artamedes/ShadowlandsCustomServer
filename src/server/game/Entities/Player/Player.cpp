@@ -630,6 +630,11 @@ bool Player::StoreNewItemInBestSlots(uint32 titem_id, uint32 titem_amount, ItemC
     TC_LOG_DEBUG("entities.player.items", "Player::StoreNewItemInBestSlots: Player '%s' (%s) creates initial item (ItemID: %u, Count: %u)",
         GetName().c_str(), GetGUID().ToString().c_str(), titem_id, titem_amount);
 
+    ItemContext itemContext = ItemContext::New_Character;
+    std::vector<int32> bonusListIDs;
+    std::set<uint32> contextBonuses = sDB2Manager.GetDefaultItemBonusTree(titem_id, itemContext);
+    bonusListIDs.insert(bonusListIDs.begin(), contextBonuses.begin(), contextBonuses.end());
+
     // attempt equip by one
     while (titem_amount > 0)
     {
