@@ -914,6 +914,14 @@ StartDemonHunterPlayerLevel = 8
 StartAlliedRacePlayerLevel = 10
 
 #
+#    StartEvokerPlayerLevel
+#        Description: Staring level for evoker class after creation.
+#        Range:       1-MaxPlayerLevel
+#        Default:     58
+
+StartEvokerPlayerLevel = 58
+
+#
 #    StartPlayerMoney
 #        Description: Amount of money (in Copper) that a character has after creation.
 #        Default:     0
