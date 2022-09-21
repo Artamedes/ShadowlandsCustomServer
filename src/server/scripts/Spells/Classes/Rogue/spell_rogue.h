@@ -131,6 +131,7 @@ namespace Rogue
         TripleThreatNew        = 381894,
         Audacity               = 381845,
         AudacityProc           = 386270,
+        HeavyHitter            = 381885, // must be implemented by blizz first beta
     };
 
     enum eCovenant

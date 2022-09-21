@@ -2272,7 +2272,7 @@ public:
     }
 };
 
-//14161 - Ruthlessness
+/// ID: 14161 Ruthlessness
 class spell_rog_ruthlessness : public SpellScriptLoader
 {
 public:
@@ -2284,18 +2284,18 @@ public:
 
         bool CheckProc(ProcEventInfo& eventInfo)
         {
-            if (eventInfo.GetSpellInfo() && (eventInfo.GetSpellInfo()->Id == SPELL_ROGUE_BETWEEN_THE_EYES || eventInfo.GetSpellInfo()->Id == SPELL_ROGUE_RUN_THROUGH ||
-                eventInfo.GetSpellInfo()->Id == SPELL_ROGUE_ROLL_THE_BONES || eventInfo.GetSpellInfo()->Id == SPELL_ROGUE_SLICE_AND_DICE))
-                return true;
+            if (auto spell = eventInfo.GetProcSpell())
+                if (auto comboPoints = spell->GetUsedComboPoints())
+                    return roll_chance_i(20 * comboPoints);
 
             return false;
         }
 
         void HandleProc(ProcEventInfo& /*procInfo*/)
         {
+            // @todo: find if this energize is a spell!
             if (Unit* caster = GetCaster())
-                if (roll_chance_i(20 * RogueComboPoints(caster)))
-                    caster->ModifyPower(POWER_COMBO_POINTS, +1);
+                caster->ModifyPower(POWER_COMBO_POINTS, + 1);
         }
 
         void Register() override
