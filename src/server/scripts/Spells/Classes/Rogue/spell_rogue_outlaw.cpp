@@ -664,6 +664,22 @@ class spell_keep_it_rolling_381989 : public AuraScript
     }
 };
 
+/// ID - 344363 Riposte
+class spell_riposte_344363 : public AuraScript
+{
+    PrepareAuraScript(spell_riposte_344363);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetHitMask() & ProcFlagsHit::PROC_HIT_DODGE;
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_riposte_344363::CheckProc);
+    }
+};
+
 void AddSC_spell_rogue_outlaw()
 {
     RegisterSpellScript(spell_rog_roll_the_bones);
@@ -681,4 +697,5 @@ void AddSC_spell_rogue_outlaw()
     RegisterSpellScript(spell_greenskins_wickers);
     RegisterSpellScript(aura_rog_restless_blades);
     RegisterSpellScript(spell_keep_it_rolling_381989);
+    RegisterSpellScript(spell_riposte_344363);
 }
