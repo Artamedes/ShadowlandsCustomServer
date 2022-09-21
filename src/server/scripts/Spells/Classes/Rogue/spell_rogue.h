@@ -123,6 +123,8 @@ namespace Rogue
         CountTheOddsNew        = 381982,
         Dispatcher             = 381990,
         DispatcherProc         = 386868,
+        HiddenOpportunity      = 383281,
+        OpportunityNew         = 279876,
     };
 
     enum eCovenant

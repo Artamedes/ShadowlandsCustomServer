@@ -169,10 +169,39 @@ class spell_ambush : public SpellScript
 {
     PrepareSpellScript(spell_ambush);
 
+    enum eSinisterStrike
+    {
+        WeaponMaster = 200733,
+    };
+
     void HandleDummy(SpellEffIndex /*eff*/)
     {
-        if (GetCaster())
-            ApplyCountTheOdds(GetCaster());
+        // hack, maybe there is other ambush spellid!
+        if (auto spell = GetSpell())
+            if (spell->Variables.Exist("DontProcWM"))
+                return;
+
+        if (auto caster = GetCaster())
+            if (auto hitUnit = GetHitUnit())
+            {
+                ApplyCountTheOdds(GetCaster());
+
+                // only with this aura..
+                if (caster->HasAura(OpportunityNew) && caster->HasAura(HiddenOpportunity))
+                {
+                    float chance = 35.0f;
+                    if (caster->HasAura(WeaponMaster))
+                        chance += 10.0f;
+
+                    if (roll_chance_i(chance))
+                    {
+                        if (auto spell = caster->CastAndGetSpell(hitUnit, GetSpellInfo()->Id, true))
+                        {
+                            spell->Variables.Set("DontProcWM", true);
+                        }
+                    }
+                }
+            }
     }
 
     void Register() override
@@ -401,18 +430,22 @@ class spell_sinister_strike : public SpellScript
         if (!hitUnit)
             return;
 
-        uint32 chance = 35.0f;
-        if (caster->HasAura(WeaponMaster))
-            chance += 10.0f;
-
-        if (roll_chance_i(chance))
+        // only with this aura..
+        if (caster->HasAura(OpportunityNew))
         {
-            caster->CastSpell(hitUnit, SinisterStrike, true);
-            caster->CastSpell(caster, Opportunity, true);
+            float chance = 35.0f;
+            if (caster->HasAura(WeaponMaster))
+                chance += 10.0f;
 
-            if (caster->HasAura(ConcealedBlunderbuss) && roll_chance_i(40))
+            if (roll_chance_i(chance))
             {
-                caster->CastSpell(caster, ConcealedBlunderbussProc, true);
+                caster->CastSpell(hitUnit, SinisterStrike, true);
+                caster->CastSpell(caster, Opportunity, true);
+
+                if (caster->HasAura(ConcealedBlunderbuss) && roll_chance_i(40))
+                {
+                    caster->CastSpell(caster, ConcealedBlunderbussProc, true);
+                }
             }
         }
     }
