@@ -591,15 +591,18 @@ class aura_rog_restless_blades : public AuraScript
                 {
                     case AdrenalineRush:
                     case BetweenTheEyes:
+                    case BladeFlurry:
+                    case BladeRush:
+                    case Dreadblades: // dreadblades
+                    case GhostlyStrike:
                     case GrapplingHook:
+                    case KeepItRolling: // keep it roolling
+                    case KillingSpree:
+                    case MarkedForDeath:
+                    case RollTheBones:
+                    case SepsisNew: // sepsis
                     case Sprint:
                     case Vanish:
-                    case BladeFlurry:
-                    case GhostlyStrike:
-                    case MarkedForDeath:
-                    case BladeRush:
-                    case KillingSpree:
-                    case RollTheBones:
                         return !itr->second.OnHold;
                     default:
                         return false;

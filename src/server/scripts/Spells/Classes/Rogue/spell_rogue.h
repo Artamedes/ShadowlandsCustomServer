@@ -81,6 +81,11 @@ namespace Rogue
         ShurikenStorm = 197835,
     };
 
+    enum eRogueTraits
+    {
+        SepsisNew = 385408,
+    };
+
     enum eSubtletyTraits
     {
         TheFirstDance         = 382505,
@@ -109,6 +114,8 @@ namespace Rogue
     {
         LongArmOfTheOutlaw     = 381878,
         LongArmOfTheOutlawProc = 385835,
+        KeepItRolling          = 381989,
+        Dreadblades            = 343142,
     };
 
     enum eCovenant
