@@ -1457,6 +1457,7 @@ enum CombatPotency
 };
 
 // 35551 - Combat Potency
+/// ID - 35551 Fatal Flourish
 class spell_rogue_combat_potency : public SpellScriptLoader
 {
 public:
@@ -1469,7 +1470,7 @@ public:
         bool CheckProc(ProcEventInfo& eventInfo)
         {
             if (eventInfo.GetDamageInfo() && eventInfo.GetDamageInfo()->GetAttackType() == OFF_ATTACK &&
-                roll_chance_i(sSpellMgr->GetSpellInfo(SPELL_ROGUE_COMBAT_POTENCY)->GetEffect(EFFECT_0).BasePoints))
+                roll_chance_i(GetEffect(EFFECT_0)->GetAmount()))
                 return true;
 
             return false;
