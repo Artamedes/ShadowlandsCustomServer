@@ -831,19 +831,6 @@ void AuraEffect::CalculatePeriodic(Unit* caster, bool resetPeriodicTimer /*= tru
             {
                 float ModCastingSpeed = *caster->m_unitData->ModCastingSpeed;
 
-                if (modOwner)
-                {
-                    ModCastingSpeed = 1.0f;
-
-                    auto haste = modOwner->GetRatingBonusValue(CR_HASTE_SPELL);
-                    if (haste > 0.0f)
-                    {
-                        //auto result = (1.0f - (haste / 35000.0f)) / 40.0F;
-                        auto result = (1.0f - (haste / 35000.0f)) / 10.0F; // nerfed because of server lag
-                        ModCastingSpeed = std::max(0.001f, result);
-                    }
-                }
-
                 if (m_spellInfo->HasAttribute(SPELL_ATTR5_SPELL_HASTE_AFFECTS_PERIODIC))
                     _period = int32(_period * ModCastingSpeed);
 

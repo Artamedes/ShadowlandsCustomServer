@@ -3426,19 +3426,12 @@ public:
 // AreaTriggerID - 10801
 struct at_mage_flame_patch : AreaTriggerAI
 {
-    at_mage_flame_patch(AreaTrigger* areatrigger) : AreaTriggerAI(areatrigger) { }
-
-
-    void OnCreate() override
+    at_mage_flame_patch(AreaTrigger* areatrigger) : AreaTriggerAI(areatrigger)
     {
-        Unit* caster = at->GetCaster();
-        if (!caster)
-            timeInterval = 1000;
-        else
-        {
-            timeInterval = 100; // custom HASTE
-        }
+        // @todo: scale by haste
+        timeInterval = 1000;
     }
+
 
     int32 timeInterval;
 

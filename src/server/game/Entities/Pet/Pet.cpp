@@ -913,14 +913,15 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
 
     SetStatFlatModifier(UNIT_MOD_ARMOR, BASE_VALUE, float(petlevel * 50));
 
-    if (m_owner && m_owner->IsPlayer())
-    {
-        SetBaseAttackTime(BASE_ATTACK, 100);
-        SetBaseAttackTime(OFF_ATTACK, 100);
-        SetBaseAttackTime(RANGED_ATTACK, 100);
-        SetModCastingSpeed(0.0f);
-    }
-    else
+    // @todo: inherit haste from owner
+    //if (m_owner && m_owner->IsPlayer())
+    //{
+    //    SetBaseAttackTime(BASE_ATTACK, 100);
+    //    SetBaseAttackTime(OFF_ATTACK, 100);
+    //    SetBaseAttackTime(RANGED_ATTACK, 100);
+    //    SetModCastingSpeed(0.0f);
+    //}
+    //else
     {
         SetBaseAttackTime(BASE_ATTACK, BASE_ATTACK_TIME);
         SetBaseAttackTime(OFF_ATTACK, BASE_ATTACK_TIME);

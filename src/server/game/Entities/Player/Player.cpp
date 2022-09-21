@@ -1085,9 +1085,11 @@ void Player::Update(uint32 p_time)
                     m_swingErrorMsg = 0;                    // reset swing error state
 
                     // prevent base and off attack in same time, delay attack at 0.2 sec
-                    //if (haveOffhandWeapon())
-                    //    if (getAttackTimer(OFF_ATTACK) < ATTACK_DISPLAY_DELAY)
-                    //        setAttackTimer(OFF_ATTACK, ATTACK_DISPLAY_DELAY);
+
+                    if (m_unitData->AttackRoundBaseTime[OFF_ATTACK] > ATTACK_DISPLAY_DELAY)
+                        if (haveOffhandWeapon())
+                            if (getAttackTimer(OFF_ATTACK) < ATTACK_DISPLAY_DELAY)
+                                setAttackTimer(OFF_ATTACK, ATTACK_DISPLAY_DELAY);
 
                     // do attack if player doesn't have SPELL_AURA_OVERRIDE_AUTOATTACK_WITH_RANGED_SPELL
                     if (!HasAuraType(SPELL_AURA_OVERRIDE_AUTOATTACK_WITH_RANGED_SPELL))
@@ -1124,8 +1126,9 @@ void Player::Update(uint32 p_time)
                 else
                 {
                     // prevent base and off attack in same time, delay attack at 0.2 sec
-                    //if (getAttackTimer(BASE_ATTACK) < ATTACK_DISPLAY_DELAY)
-                    //    setAttackTimer(BASE_ATTACK, ATTACK_DISPLAY_DELAY);
+                    if (m_unitData->AttackRoundBaseTime[BASE_ATTACK] > ATTACK_DISPLAY_DELAY)
+                        if (getAttackTimer(BASE_ATTACK) < ATTACK_DISPLAY_DELAY)
+                            setAttackTimer(BASE_ATTACK, ATTACK_DISPLAY_DELAY);
 
                     // do attack if player doesn't have Shadow Blades or SPELL_AURA_OVERRIDE_AUTOATTACK_WITH_RANGED_SPELL
                     if (!HasAuraType(SPELL_AURA_OVERRIDE_AUTOATTACK_WITH_RANGED_SPELL))
@@ -5771,7 +5774,7 @@ void Player::UpdateRating(CombatRating cr)
         float haste = 1.0f / (1.0f + hastePct / 100.0f);
 
         // Update haste percentage for client
-        //SetModCastingSpeed(haste);
+        SetModCastingSpeed(haste);
         SetModSpellHaste(haste);
         SetModHaste(haste);
         SetModRangedHaste(haste);
@@ -5837,57 +5840,6 @@ void Player::UpdateRating(CombatRating cr)
         case CR_LIFESTEAL:
             UpdateLeechPercentage();
             break;
-        case CR_HASTE_MELEE:
-        case CR_HASTE_RANGED:
-        case CR_HASTE_SPELL:
-        {
-            // explicit affected values
-            float const multiplier = GetRatingMultiplier(cr);
-            float const oldVal = ApplyRatingDiminishing(cr, oldRating * multiplier);
-            float const newVal = ApplyRatingDiminishing(cr, amount * multiplier);
-            switch (cr)
-            {
-                case CR_HASTE_MELEE:
-                    //ApplyAttackTimePercentMod(BASE_ATTACK, oldVal, false);
-                    //ApplyAttackTimePercentMod(OFF_ATTACK, oldVal, false);
-                    //ApplyAttackTimePercentMod(BASE_ATTACK, newVal, true);
-                    //ApplyAttackTimePercentMod(OFF_ATTACK, newVal, true);
-                    if (GetClass() == CLASS_DEATH_KNIGHT)
-                        UpdateAllRunesRegen();
-                    UpdateAttackTimeField(BASE_ATTACK, 100);
-                    UpdateAttackTimeField(OFF_ATTACK, 100);
-                    if (Pet* pet = GetPet())
-                    {
-                        pet->UpdateAttackTimeField(BASE_ATTACK, 100);
-                        pet->UpdateAttackTimeField(OFF_ATTACK, 100);
-                    }
-                    break;
-                case CR_HASTE_RANGED:
-                    //ApplyAttackTimePercentMod(RANGED_ATTACK, oldVal, false);
-                    //ApplyAttackTimePercentMod(RANGED_ATTACK, newVal, true);
-                    UpdateAttackTimeField(RANGED_ATTACK, 100);
-                    m_modAttackSpeedPct[RANGED_ATTACK] = 0.01f;
-                    if (Pet* pet = GetPet())
-                    {
-                        pet->UpdateAttackTimeField(RANGED_ATTACK, 100);
-                        pet->UpdatePlayerFieldModPetHaste();
-                    }
-                    break;
-                case CR_HASTE_SPELL:
-                    //ApplyCastTimePercentMod(oldVal, false);
-                    //ApplyCastTimePercentMod(newVal, true);
-                    // TODO: we shouldn't do this really
-                    SetModCastingSpeed(0.0f);
-                    if (Pet* pet = GetPet())
-                    {
-                        pet->SetModCastingSpeed(0.0f);
-                    }
-                    break;
-                default:
-                    break;
-            }
-            break;
-        }
         case CR_STURDINESS:
         case CR_UNUSED_7:
             break;

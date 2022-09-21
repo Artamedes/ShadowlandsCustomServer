@@ -8,7 +8,8 @@ struct at_glaive_tempest : public AreaTriggerAI
 public:
     at_glaive_tempest(AreaTrigger* at) : AreaTriggerAI(at)
     {
-        at->SetPeriodicProcTimer(100); ///< Custom HASTe
+        // @todo: scale by haste
+        at->SetPeriodicProcTimer(1000);
     }
 
     enum eGlaiveTempest
