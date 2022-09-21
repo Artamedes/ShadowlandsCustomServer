@@ -189,8 +189,29 @@ class spell_dispatch : public SpellScript
 
     void HandleDummy(SpellEffIndex /*eff*/)
     {
-        if (GetCaster())
+        if (auto caster = GetCaster())
+        {
             ApplyCountTheOdds(GetCaster());
+
+            if (auto spell = GetSpell())
+            {
+                if (auto comboPoints = spell->GetUsedComboPoints())
+                {
+                    if (comboPoints >= 5)
+                    {
+                        // no idea what rank does for this spell, blizz bug on beta?
+                        if (auto dispatcher = caster->GetAuraEffect(Dispatcher, EFFECT_0))
+                        {
+                            // adding spell not increase duration..
+                            if (auto dispatcherProc = caster->GetAura(DispatcherProc))
+                                dispatcherProc->ModStackAmount(1, AURA_REMOVE_BY_DEFAULT, false, false);
+                            else
+                                caster->CastSpell(caster, DispatcherProc, CastSpellExtraArgs(true));
+                        }
+                    }
+                }
+            }
+        }
     }
 
     void Register() override

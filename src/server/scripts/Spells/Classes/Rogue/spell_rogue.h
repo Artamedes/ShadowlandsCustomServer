@@ -121,6 +121,8 @@ namespace Rogue
         SleightOfHandNew       = 381839,
         LoadedDiceProc         = 256171,
         CountTheOddsNew        = 381982,
+        Dispatcher             = 381990,
+        DispatcherProc         = 386868,
     };
 
     enum eCovenant
