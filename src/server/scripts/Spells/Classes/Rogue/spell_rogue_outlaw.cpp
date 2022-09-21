@@ -98,9 +98,15 @@ class spell_rog_roll_the_bones : public SpellScript
             numBuffs = 2;
 
         if (numBuffs < 5)
+        {
             if (auto sleightOfHand = GetCaster()->GetAuraEffect(SleightOfHand, EFFECT_0))
                 if (roll_chance_i(std::min(100, sleightOfHand->GetAmount())))
                     numBuffs++;
+
+            if (auto sleightOfHand = GetCaster()->GetAuraEffect(SleightOfHandNew, EFFECT_0))
+                if (roll_chance_i(std::min(100, sleightOfHand->GetAmount())))
+                    numBuffs++;
+        }
 
         for (int32 i = 0; i < numBuffs; ++i)
         {

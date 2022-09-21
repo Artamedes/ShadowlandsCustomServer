@@ -118,6 +118,7 @@ namespace Rogue
         Dreadblades            = 343142,
         AceUpYourSleeve        = 381828,
         AceUpYourSleeveEnergize = 279714,
+        SleightOfHandNew       = 381839,
     };
 
     enum eCovenant
