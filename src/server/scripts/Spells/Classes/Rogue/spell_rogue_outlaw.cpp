@@ -635,6 +635,32 @@ class aura_rog_restless_blades : public AuraScript
     }
 };
 
+/// ID - 381989 Keep It Rolling
+class spell_keep_it_rolling_381989 : public AuraScript
+{
+    PrepareAuraScript(spell_keep_it_rolling_381989);
+
+    void HandleApply0(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+    {
+        auto caster = GetCaster();
+        if (!caster)
+            return;
+
+        for (uint32 spellId : RTBSpells)
+        {
+            if (auto aura = caster->GetAura(spellId))
+            {
+                aura->SetDuration(aura->GetDuration() + GetEffect(EFFECT_0)->GetAmount());
+            }
+        }
+    }
+
+    void Register() override
+    {
+        OnEffectApply += AuraEffectApplyFn(spell_keep_it_rolling_381989::HandleApply0, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL_OR_REAPPLY_MASK);
+    }
+};
+
 void AddSC_spell_rogue_outlaw()
 {
     RegisterSpellScript(spell_rog_roll_the_bones);
@@ -651,4 +677,5 @@ void AddSC_spell_rogue_outlaw()
     RegisterSpellScript(spell_pistol_shot);
     RegisterSpellScript(spell_greenskins_wickers);
     RegisterSpellScript(aura_rog_restless_blades);
+    RegisterSpellScript(spell_keep_it_rolling_381989);
 }
