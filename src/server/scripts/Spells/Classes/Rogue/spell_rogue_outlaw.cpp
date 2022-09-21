@@ -629,6 +629,7 @@ class spell_pistol_shot : public SpellScript
 };
 
 /// ID: 340085 Greenskin's Wickers
+/// ID - 386823 Greenskin's Wickers
 class spell_greenskins_wickers : public AuraScript
 {
     PrepareAuraScript(spell_greenskins_wickers);

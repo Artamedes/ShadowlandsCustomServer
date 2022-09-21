@@ -125,6 +125,7 @@ namespace Rogue
         DispatcherProc         = 386868,
         HiddenOpportunity      = 383281,
         OpportunityNew         = 279876,
+        FanTheHammer           = 381846, // handled by spell system
     };
 
     enum eCovenant

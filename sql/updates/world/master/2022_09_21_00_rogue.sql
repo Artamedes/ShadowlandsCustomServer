@@ -4,3 +4,6 @@ REPLACE INTO spell_script_names (`spell_id`,`ScriptName`) VALUES
 ('344363','spell_riposte_344363');
 REPLACE INTO spell_script_names (`spell_id`,`ScriptName`) VALUES 
 ('256170','spell_loaded_dice_256170');
+
+REPLACE INTO spell_script_names (`spell_id`,`ScriptName`) VALUES 
+('386823','spell_greenskins_wickers');
