@@ -580,6 +580,25 @@ class spell_rog_blade_flurry : public AuraScript
 
         int32 damage = CalculatePct(eventInfo.GetDamageInfo()->GetDamage(), sSpellMgr->GetSpellInfo(SPELL_ROGUE_BLADE_FLURRY_EXTRA_ATTACK)->GetEffect(EFFECT_0).BonusCoefficient);
 
+        if (auto preciseCuts = caster->GetAuraEffect(PreciseCuts, EFFECT_0))
+        {
+            std::list<Unit*> attackableUnits;
+            caster->GetAttackableUnitListInRange(attackableUnits, MELEE_RANGE);
+            if (auto spellInfo = sSpellMgr->GetSpellInfo(SPELL_ROGUE_BLADE_FLURRY_EXTRA_ATTACK))
+            {
+                int32 maxTargets = spellInfo->GetEffect(EFFECT_0).ChainTargets;
+                if (Player* modOwner = caster->GetSpellModOwner())
+                    modOwner->ApplySpellMod(spellInfo, SpellModOp::ChainTargets, maxTargets);
+
+                if (attackableUnits.size() < maxTargets)
+                {
+                    uint32 diff = maxTargets - attackableUnits.size();
+
+                    AddPct(damage, diff * preciseCuts->GetAmount());
+                }
+            }
+        }
+
         CastSpellExtraArgs args(TRIGGERED_FULL_MASK);
         args.AddSpellBP0(damage);
         caster->CastSpell(target, SPELL_ROGUE_BLADE_FLURRY_EXTRA_ATTACK, args);
