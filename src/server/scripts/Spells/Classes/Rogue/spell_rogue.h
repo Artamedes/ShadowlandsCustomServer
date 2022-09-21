@@ -105,6 +105,12 @@ namespace Rogue
         FinalityRupture       = 385951,
     };
 
+    enum eOutlawTraits
+    {
+        LongArmOfTheOutlaw     = 381878,
+        LongArmOfTheOutlawProc = 385835,
+    };
+
     enum eCovenant
     {
         SepticShock = 341309,

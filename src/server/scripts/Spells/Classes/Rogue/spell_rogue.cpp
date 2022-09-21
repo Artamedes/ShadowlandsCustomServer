@@ -580,10 +580,21 @@ class spell_rog_blade_flurry : public AuraScript
         caster->CastSpell(target, SPELL_ROGUE_BLADE_FLURRY_EXTRA_ATTACK, args);
     }
 
+    void HandleApply3(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+    {
+        Unit* caster = GetCaster();
+        if (!caster || !caster->HasAura(Rogue::eOutlawTraits::LongArmOfTheOutlaw))
+        {
+            PreventDefaultAction();
+            return;
+        }
+    }
+
     void Register()
     {
         DoCheckProc += AuraCheckProcFn(spell_rog_blade_flurry::CheckProc);
         OnProc += AuraProcFn(spell_rog_blade_flurry::HandleProc);
+        OnEffectApply += AuraEffectApplyFn(spell_rog_blade_flurry::HandleApply3, EFFECT_3, SPELL_AURA_LINKED_2, AURA_EFFECT_HANDLE_REAL_OR_REAPPLY_MASK);
     }
 };
 
