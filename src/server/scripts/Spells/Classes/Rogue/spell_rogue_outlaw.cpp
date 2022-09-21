@@ -440,6 +440,11 @@ class spell_sinister_strike : public SpellScript
             if (roll_chance_i(chance))
             {
                 caster->CastSpell(hitUnit, SinisterStrike, true);
+
+                if (auto tripleThreat = caster->GetAuraEffect(TripleThreatNew, EFFECT_0))
+                    if (roll_chance_i(tripleThreat->GetAmount()))
+                        caster->CastSpell(hitUnit, SinisterStrikeTripleThreatProc, true);
+
                 caster->CastSpell(caster, Opportunity, true);
 
                 if (caster->HasAura(ConcealedBlunderbuss) && roll_chance_i(40))

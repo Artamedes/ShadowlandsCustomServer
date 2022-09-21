@@ -126,6 +126,8 @@ namespace Rogue
         HiddenOpportunity      = 383281,
         OpportunityNew         = 279876,
         FanTheHammer           = 381846, // handled by spell system
+        SinisterStrikeTripleThreatProc = 341541,
+        TripleThreatNew        = 381894,
     };
 
     enum eCovenant
