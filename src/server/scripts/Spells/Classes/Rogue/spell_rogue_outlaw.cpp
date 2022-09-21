@@ -106,6 +106,12 @@ class spell_rog_roll_the_bones : public SpellScript
             if (auto sleightOfHand = GetCaster()->GetAuraEffect(SleightOfHandNew, EFFECT_0))
                 if (roll_chance_i(std::min(100, sleightOfHand->GetAmount())))
                     numBuffs++;
+
+            if (auto loadedDice = GetCaster()->GetAura(LoadedDiceProc))
+            {
+                loadedDice->Remove();
+                numBuffs++;
+            }
         }
 
         for (int32 i = 0; i < numBuffs; ++i)
@@ -686,6 +692,22 @@ class spell_riposte_344363 : public AuraScript
     }
 };
 
+/// ID - 256170 Loaded Dice
+class spell_loaded_dice_256170 : public AuraScript
+{
+    PrepareAuraScript(spell_loaded_dice_256170);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == AdrenalineRush;
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_loaded_dice_256170::CheckProc);
+    }
+};
+
 void AddSC_spell_rogue_outlaw()
 {
     RegisterSpellScript(spell_rog_roll_the_bones);
@@ -704,4 +726,5 @@ void AddSC_spell_rogue_outlaw()
     RegisterSpellScript(aura_rog_restless_blades);
     RegisterSpellScript(spell_keep_it_rolling_381989);
     RegisterSpellScript(spell_riposte_344363);
+    RegisterSpellScript(spell_loaded_dice_256170);
 }

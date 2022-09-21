@@ -119,6 +119,7 @@ namespace Rogue
         AceUpYourSleeve        = 381828,
         AceUpYourSleeveEnergize = 279714,
         SleightOfHandNew       = 381839,
+        LoadedDiceProc         = 256171,
     };
 
     enum eCovenant
