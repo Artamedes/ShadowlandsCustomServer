@@ -13,6 +13,7 @@ namespace Rogue
         GrapplingHook     = 195457,
         MarkedForDeath    = 137619,
         SliceAndDice      = 315496,
+        Ambush            = 8676,
         /// Covenant
         Flagellation      = 323654,
         Sepsis            = 328305,
@@ -128,6 +129,8 @@ namespace Rogue
         FanTheHammer           = 381846, // handled by spell system
         SinisterStrikeTripleThreatProc = 341541,
         TripleThreatNew        = 381894,
+        Audacity               = 381845,
+        AudacityProc           = 386270,
     };
 
     enum eCovenant

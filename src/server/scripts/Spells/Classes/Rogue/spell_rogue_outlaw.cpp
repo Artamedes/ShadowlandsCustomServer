@@ -475,6 +475,10 @@ class spell_opportunity : public AuraScript
     {
         PreventDefaultAction();
         Remove();
+
+        if (auto caster = GetCaster())
+            if (caster->HasAura(Audacity))
+                caster->CastSpell(caster, AudacityProc, true);
     }
 
     void Register() override
@@ -802,6 +806,28 @@ class spell_loaded_dice_256170 : public AuraScript
     }
 };
 
+/// ID - 386270 Audacity
+class spell_audacity_386270 : public AuraScript
+{
+    PrepareAuraScript(spell_audacity_386270);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == Ambush;
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        Remove();
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_audacity_386270::CheckProc);
+        OnProc += AuraProcFn(spell_audacity_386270::HandleProc);
+    }
+};
+
 void AddSC_spell_rogue_outlaw()
 {
     RegisterSpellScript(spell_rog_roll_the_bones);
@@ -821,4 +847,5 @@ void AddSC_spell_rogue_outlaw()
     RegisterSpellScript(spell_keep_it_rolling_381989);
     RegisterSpellScript(spell_riposte_344363);
     RegisterSpellScript(spell_loaded_dice_256170);
+    RegisterSpellScript(spell_audacity_386270);
 }

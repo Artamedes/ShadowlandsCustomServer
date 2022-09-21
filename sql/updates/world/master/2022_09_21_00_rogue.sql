@@ -7,3 +7,5 @@ REPLACE INTO spell_script_names (`spell_id`,`ScriptName`) VALUES
 
 REPLACE INTO spell_script_names (`spell_id`,`ScriptName`) VALUES 
 ('386823','spell_greenskins_wickers');
+REPLACE INTO spell_script_names (`spell_id`,`ScriptName`) VALUES 
+('386270','spell_audacity_386270');
