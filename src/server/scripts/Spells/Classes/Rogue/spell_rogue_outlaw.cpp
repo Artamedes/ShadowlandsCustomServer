@@ -59,6 +59,40 @@ void ApplyCountTheOdds(Unit* caster)
                 }
             }
         }
+
+        if (auto countTheOdds = caster->GetAuraEffect(CountTheOddsNew, EFFECT_0))
+        {
+            bool stealthed = caster->HasAuraType(AuraType::SPELL_AURA_MOD_STEALTH);
+
+            float chance = static_cast<float>(countTheOdds->GetAmount());
+            uint32 duration = 5000;
+
+            if (caster->HasAuraType(AuraType::SPELL_AURA_MOD_STEALTH))
+            {
+                chance *= 3.0f;
+                duration *= 3;
+            }
+
+            if (chance > 100.0f)
+                chance = 100.0f;
+
+            if (roll_chance_f(chance))
+            {
+                std::vector<uint32> NotHaveRTBBuffs;
+                for (uint32 spellId : RTBSpells)
+                {
+                    if (!caster->GetAura(spellId))
+                    {
+                        NotHaveRTBBuffs.push_back(spellId);
+                    }
+                }
+
+                if (!NotHaveRTBBuffs.empty())
+                {
+                    caster->CastSpell(caster, Trinity::Containers::SelectRandomContainerElement(NotHaveRTBBuffs), CastSpellExtraArgs(true).AddSpellMod(SpellValueMod::SPELLVALUE_DURATION, duration));
+                }
+            }
+        }
     }
 }
 
