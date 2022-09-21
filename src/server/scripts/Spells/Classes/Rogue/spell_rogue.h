@@ -116,6 +116,8 @@ namespace Rogue
         LongArmOfTheOutlawProc = 385835,
         KeepItRolling          = 381989,
         Dreadblades            = 343142,
+        AceUpYourSleeve        = 381828,
+        AceUpYourSleeveEnergize = 279714,
     };
 
     enum eCovenant

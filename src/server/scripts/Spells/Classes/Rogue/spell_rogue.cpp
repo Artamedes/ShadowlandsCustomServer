@@ -461,6 +461,7 @@ class spell_rog_between_the_eyes :public SpellScript
         
         int32 duration = _cp * IN_MILLISECONDS;
 
+        // TODO: remove this, this was changed in SL BetweenTheEyes isn't a stun!
         DiminishingGroup const diminishGroup = GetSpellInfo()->GetDiminishingReturnsGroupForSpell();
         target->ApplyDiminishingToDuration(GetSpellInfo(), duration, caster, target->GetDiminishing(diminishGroup));
         duration = caster->ModSpellDuration(GetSpellInfo(), target, duration, false, 1 << EFFECT_1);
@@ -477,6 +478,10 @@ class spell_rog_between_the_eyes :public SpellScript
                 damage += aura->GetAmount() * _cp;
 
             SetHitDamage(damage);
+
+            if (auto aurEff = caster->GetAuraEffect(AceUpYourSleeve, EFFECT_0))
+                if (roll_chance_i(_cp * aurEff->GetAmount()))
+                    caster->CastSpell(caster, AceUpYourSleeveEnergize, true);
         }		
 	}
 
