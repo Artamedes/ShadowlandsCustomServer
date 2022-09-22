@@ -2972,20 +2972,10 @@ class aura_rog_elaborate_planning : public AuraScript
 
 	bool CheckProc(ProcEventInfo& eventInfo)
 	{
-        if (!eventInfo.GetSpellInfo())
+        if (!eventInfo.GetProcSpell())
             return false;
 
-        switch (eventInfo.GetSpellInfo()->Id)
-        {
-            case SPELL_ROGUE_ENVENOM:
-            case SPELL_ROGUE_RUPTURE:
-            case SPELL_ROGUE_KIDNEY_SHOT:
-            case SPELL_ROGUE_CRIMSON_TEMPEST:
-            case SPELL_ROGUE_BLINDSIDE:
-                return true;
-            default:
-                return false;
-        }
+        return eventInfo.GetProcSpell()->GetUsedComboPoints() > 0;
 	}
 
 	void Register() override

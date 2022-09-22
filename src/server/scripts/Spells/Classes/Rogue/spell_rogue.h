@@ -18,6 +18,7 @@ namespace Rogue
         DeadlyPoisonDot   = 2818,
         DeadlyPoisonInstant = 113780,
         AmplifyingPoisonDmg = 383414,
+        SliceAndDiceAssa  = 5171,
         /// Covenant
         Flagellation      = 323654,
         Sepsis            = 328305,
