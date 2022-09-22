@@ -3373,6 +3373,8 @@ class spell_rog_shadowstep : public SpellScript
 		return ValidateSpellInfo({ SPELL_ROGUE_INTENT_TO_KILL });
 	}
 
+    bool _hasGarrote = false;
+
 	void HandleHitTarget(SpellEffIndex /*effIndex*/)
 	{
 		Unit* caster = GetCaster();
@@ -3382,11 +3384,28 @@ class spell_rog_shadowstep : public SpellScript
 
 		if (caster->HasAura(SPELL_ROGUE_INTENT_TO_KILL) && target->HasAura(SPELL_ROGUE_VENDETTA, caster->GetGUID()))
 			caster->GetSpellHistory()->ReduceChargeCooldown(sSpellMgr->GetSpellInfo(SPELL_ROGUE_SHADOWSTEP)->ChargeCategoryId, CalculatePct(30, sSpellMgr->GetSpellInfo(SPELL_ROGUE_INTENT_TO_KILL)->GetEffect(EFFECT_0).BasePoints) * IN_MILLISECONDS);
-	}
+
+        if (caster->HasAura(Rogue::eAssassinationTraits::IntentToKillAssa) && target->HasAura(SPELL_ROGUE_GARROTE_DOT, caster->GetGUID()))
+            _hasGarrote = true;
+    }
+
+    void HandleAfterCast()
+    {
+        Unit* caster = GetCaster();
+        if (!caster)
+            return;
+
+        if (_hasGarrote)
+        {
+            uint32 chargeId = sSpellMgr->GetSpellInfo(SPELL_ROGUE_SHADOWSTEP)->ChargeCategoryId;
+            caster->GetSpellHistory()->ReduceChargeCooldown(chargeId, caster->GetSpellHistory()->GetChargeRecoveryTime(chargeId) * 0.3333f);
+        }
+    }
 
 	void Register() override
 	{
 		OnEffectHitTarget += SpellEffectFn(spell_rog_shadowstep::HandleHitTarget, EFFECT_0, SPELL_EFFECT_TRIGGER_SPELL);
+        AfterCast += SpellCastFn(spell_rog_shadowstep::HandleAfterCast);
 	}
 };
 
