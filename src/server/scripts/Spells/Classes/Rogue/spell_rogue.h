@@ -148,7 +148,8 @@ namespace Rogue
 
     enum eAssassinationTraits
     {
-
+        InternalBleedingNew = 381627,
+        InternalBleedingProc = 381628,
     };
 
     enum eCovenant

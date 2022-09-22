@@ -1446,6 +1446,12 @@ class spell_rog_kidney_shot :public SpellScript
 				aura->GetEffect(EFFECT_0)->SetDamage(baseDamage * _ct);
         }
 
+        if (caster->HasAura(Rogue::eAssassinationTraits::InternalBleedingNew))
+        {
+            caster->CastSpell(target, Rogue::eAssassinationTraits::InternalBleedingProc, CastSpellExtraArgs(true)
+                .AddSpellMod(SpellValueMod::SPELLVALUE_DURATION, 1000 * _ct));
+        }
+
         // Prey on the Weak
 		if (caster->HasAura(SPELL_ROGUE_PREY_ON_THE_WEAK))
 			caster->CastSpell(target, SPELL_ROGUE_PREY_ON_THE_WEAK_DEBUFF, true);
