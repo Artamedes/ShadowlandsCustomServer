@@ -2189,13 +2189,16 @@ class spell_rog_garrote : public SpellScript
             return;
 
         uint32 damage = GetHitDamage();
-        if (_stealthed && caster->HasAura(SPELL_ROGUE_GARROTE_RANK_2))
+        if (_stealthed)
         {
             caster->CastSpell(target, SPELL_ROGUE_GARROTE_SILENCE, true);
 
             // Shrouded Suffocation
-            if (Aura* aura = caster->GetAura(SPELL_ROGUE_SHROUDED_SUFFOCATION))            
-                caster->CastSpell(caster, SPELL_ROGUE_SHROUDED_SUFFOCATION_ENERGIZE, true);            
+            if (Aura* aura = caster->GetAura(SPELL_ROGUE_SHROUDED_SUFFOCATION))
+                caster->CastSpell(caster, SPELL_ROGUE_SHROUDED_SUFFOCATION_ENERGIZE, true);
+
+            if (caster->GetAura(Rogue::eAssassinationTraits::ShroudedSuffocationAssa))
+                caster->CastSpell(caster, SPELL_ROGUE_SHROUDED_SUFFOCATION_ENERGIZE, true);
 
             // Iron Wire
             if (caster->HasAura(SPELL_ROGUE_IRON_WIRE))
@@ -3015,9 +3018,14 @@ class spell_rog_mutilate : public SpellScript
 
         // Venom Rush
         if (Aura* aura = caster->GetAura(SPELL_ROGUE_VENOM_RUSH))
+        {
             if (target->HasAura(SPELL_ROGUE_DEADLY_POISON_DOT, caster->GetGUID()) || target->HasAura(SPELL_ROGUE_WOUND_POISON_DOT, caster->GetGUID()) ||
-                target->HasAura(SPELL_ROGUE_CRIPPLING_POISON_DEBUFF, caster->GetGUID()))
+                target->HasAura(SPELL_ROGUE_CRIPPLING_POISON_DEBUFF, caster->GetGUID())
+                || target->HasAuraWithDispelFlagsFromCaster(caster, DISPEL_POISON, false))
+            {
                 caster->CastSpell(caster, SPELL_ROGUE_VENOM_RUSH_ENERGIZE, true);
+            }
+        }
 	}
 
 	void Register() override

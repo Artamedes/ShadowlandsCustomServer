@@ -152,6 +152,8 @@ namespace Rogue
         InternalBleedingProc    = 381628,
         ImprovedGarrote         = 392403,
         ImprovedGarroteProc     = 392401,
+        IntentToKillAssa        = 381630,
+        ShroudedSuffocationAssa = 385478,
     };
 
     enum eCovenant
