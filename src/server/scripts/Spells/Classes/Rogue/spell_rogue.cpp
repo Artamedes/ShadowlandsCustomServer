@@ -2954,28 +2954,13 @@ class aura_rog_seal_fate : public AuraScript
 
 	bool CheckProc(ProcEventInfo& eventInfo)
 	{
-        if (!eventInfo.GetSpellInfo())
+        if (!eventInfo.GetProcSpell())
             return false;
 
         if (!(eventInfo.GetHitMask() & PROC_HIT_CRITICAL))
             return false;
 
-        switch (eventInfo.GetSpellInfo()->Id)
-        {
-            case SPELL_ROGUE_MUTILATE_MAINHAND:
-            case SPELL_ROGUE_MUTILATE_OFFHAND:
-            case SPELL_ROGUE_SINISTER_STRIKE:
-            case SPELL_ROGUE_GARROTE_DOT:
-            case SPELL_ROGUE_BLINDSIDE:
-            case SPELL_ROGUE_TOXIC_BLADE:
-            case SPELL_ROGUE_FAN_OF_KNIVES:
-            case 8676: // Ambush
-            case 5938: // Shiv
-            case 323547: // Echoing Reprimand
-                return true;
-            default:
-                return false;
-        }
+        return eventInfo.GetProcSpell()->GetUsedComboPoints() > 0;
 	}
 
 	void Register() override
