@@ -457,7 +457,7 @@ struct CTROptions : public IsUpdateFieldStructureTag
     bool operator!=(CTROptions const& right) const { return !(*this == right); }
 };
 
-struct PlayerData : public IsUpdateFieldStructureTag, public HasChangesMask<189>
+struct PlayerData : public IsUpdateFieldStructureTag, public HasChangesMask<190>
 {
     UpdateField<bool, 0, 1> HasQuestSession;
     UpdateField<bool, 0, 2> HasLevelLink;
@@ -487,15 +487,16 @@ struct PlayerData : public IsUpdateFieldStructureTag, public HasChangesMask<189>
     UpdateField<int32, 0, 26> TaxiMountAnimKitID;
     UpdateField<uint8, 0, 27> CurrentBattlePetBreedQuality;
     UpdateField<int32, 0, 28> HonorLevel;
-    UpdateField<int32, 0, 29> Field_B0;
-    UpdateField<int32, 0, 30> Field_B4;
-    UpdateField<UF::CTROptions, 0, 31> CtrOptions;
-    UpdateField<int32, 32, 33> CovenantID;
-    UpdateField<int32, 32, 34> SoulbindID;
-    UpdateField<WorldPackets::MythicPlus::DungeonScoreSummary, 32, 35> DungeonScore;
-    UpdateFieldArray<UF::QuestLog, 125, 36, 37> QuestLog;
-    UpdateFieldArray<UF::VisibleItem, 19, 162, 163> VisibleItems;
-    UpdateFieldArray<float, 6, 182, 183> AvgItemLevel;
+    UpdateField<uint64, 0, 29> UnkDF64;
+    UpdateField<int32, 0, 30> Field_B0;
+    UpdateField<int32, 0, 31> Field_B4;
+    UpdateField<UF::CTROptions, 32, 33> CtrOptions;
+    UpdateField<int32, 32, 34> CovenantID;
+    UpdateField<int32, 32, 35> SoulbindID;
+    UpdateField<WorldPackets::MythicPlus::DungeonScoreSummary, 32, 36> DungeonScore;
+    UpdateFieldArray<UF::QuestLog, 125, 37, 38> QuestLog;
+    UpdateFieldArray<UF::VisibleItem, 19, 163, 164> VisibleItems;
+    UpdateFieldArray<float, 6, 183, 184> AvgItemLevel;
 
     void WriteCreate(ByteBuffer& data, EnumFlag<UpdateFieldFlag> fieldVisibilityFlags, Player const* owner, Player const* receiver) const;
     void WriteUpdate(ByteBuffer& data, EnumFlag<UpdateFieldFlag> fieldVisibilityFlags, Player const* owner, Player const* receiver) const;

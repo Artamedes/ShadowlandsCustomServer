@@ -258,6 +258,7 @@ ByteBuffer& operator<<(ByteBuffer& data, EnumCharactersResult::RaceUnlock const&
     data.WriteBit(raceUnlock.HasExpansion);
     data.WriteBit(raceUnlock.HasAchievement);
     data.WriteBit(raceUnlock.HasHeritageArmor);
+    data.WriteBit(false); ///< Added in 10.0.2.45698
     data.FlushBits();
 
     return data;

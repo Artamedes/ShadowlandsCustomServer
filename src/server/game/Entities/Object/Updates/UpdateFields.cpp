@@ -2152,6 +2152,7 @@ void PlayerData::WriteCreate(ByteBuffer& data, EnumFlag<UpdateFieldFlag> fieldVi
     }
     data << uint8(CurrentBattlePetBreedQuality);
     data << int32(HonorLevel);
+    data << uint64(UnkDF64);
     data << uint32(ArenaCooldowns.size());
     data << int32(Field_B0);
     data << int32(Field_B4);
@@ -2162,10 +2163,6 @@ void PlayerData::WriteCreate(ByteBuffer& data, EnumFlag<UpdateFieldFlag> fieldVi
     for (uint32 i = 0; i < Customizations.size(); ++i)
     {
         Customizations[i].WriteCreate(data, owner, receiver);
-    }
-    for (uint32 i = 0; i < UnkPlayerLoopInt32DF.size(); ++i)
-    {
-        data << uint32(UnkPlayerLoopInt32DF[i]);
     }
     if (fieldVisibilityFlags.HasFlag(UpdateFieldFlag::PartyMember))
     {
@@ -2178,6 +2175,10 @@ void PlayerData::WriteCreate(ByteBuffer& data, EnumFlag<UpdateFieldFlag> fieldVi
     {
         ArenaCooldowns[i].WriteCreate(data, owner, receiver);
     }
+    for (uint32 i = 0; i < UnkPlayerLoopInt32DF.size(); ++i)
+    {
+        data << uint32(UnkPlayerLoopInt32DF[i]);
+    }
     if (fieldVisibilityFlags.HasFlag(UpdateFieldFlag::PartyMember))
     {
         data.WriteBit(HasQuestSession);
@@ -2189,7 +2190,7 @@ void PlayerData::WriteCreate(ByteBuffer& data, EnumFlag<UpdateFieldFlag> fieldVi
 
 void PlayerData::WriteUpdate(ByteBuffer& data, EnumFlag<UpdateFieldFlag> fieldVisibilityFlags, Player const* owner, Player const* receiver) const
 {
-    Mask allowedMaskForTarget({ 0xFFFFFFEDu, 0x0000000Fu, 0x00000000u, 0x00000000u, 0x00000000u, 0x1FFFFFFCu });
+    Mask allowedMaskForTarget({ 0xFFFFFFEDu, 0x0000001Fu, 0x00000000u, 0x00000000u, 0x00000000u, 0x3FFFFFF8u });
     AppendAllowedFieldsMaskForFlag(allowedMaskForTarget, fieldVisibilityFlags);
     WriteUpdate(data, _changesMask & allowedMaskForTarget, false, owner, receiver);
 }
@@ -2197,12 +2198,12 @@ void PlayerData::WriteUpdate(ByteBuffer& data, EnumFlag<UpdateFieldFlag> fieldVi
 void PlayerData::AppendAllowedFieldsMaskForFlag(Mask& allowedMaskForTarget, EnumFlag<UpdateFieldFlag> fieldVisibilityFlags)
 {
     if (fieldVisibilityFlags.HasFlag(UpdateFieldFlag::PartyMember))
-        allowedMaskForTarget |= { 0x00000012u, 0xFFFFFFF0u, 0xFFFFFFFFu, 0xFFFFFFFFu, 0xFFFFFFFFu, 0x00000003u };
+        allowedMaskForTarget |= { 0x00000012u, 0xFFFFFFE0u, 0xFFFFFFFFu, 0xFFFFFFFFu, 0xFFFFFFFFu, 0x00000007u };
 }
 
 void PlayerData::FilterDisallowedFieldsMaskForFlag(Mask& changesMask, EnumFlag<UpdateFieldFlag> fieldVisibilityFlags)
 {
-    Mask allowedMaskForTarget({ 0xFFFFFFEDu, 0x0000000Fu, 0x00000000u, 0x00000000u, 0x00000000u, 0x1FFFFFFCu });
+    Mask allowedMaskForTarget({ 0xFFFFFFEDu, 0x0000001Fu, 0x00000000u, 0x00000000u, 0x00000000u, 0x3FFFFFF8u });
     AppendAllowedFieldsMaskForFlag(allowedMaskForTarget, fieldVisibilityFlags);
     changesMask &= allowedMaskForTarget;
 }
@@ -2390,37 +2391,41 @@ void PlayerData::WriteUpdate(ByteBuffer& data, Mask const& changesMask, bool ign
         }
         if (changesMask[29])
         {
-            data << int32(Field_B0);
+            data << uint64(UnkDF64);
         }
         if (changesMask[30])
         {
-            data << int32(Field_B4);
+            data << int32(Field_B0);
         }
         if (changesMask[31])
         {
-            CtrOptions->WriteUpdate(data, ignoreNestedChangesMask, owner, receiver);
+            data << int32(Field_B4);
         }
     }
     if (changesMask[32])
     {
         if (changesMask[33])
         {
-            data << int32(CovenantID);
+            CtrOptions->WriteUpdate(data, ignoreNestedChangesMask, owner, receiver);
         }
         if (changesMask[34])
         {
-            data << int32(SoulbindID);
+            data << int32(CovenantID);
         }
         if (changesMask[35])
+        {
+            data << int32(SoulbindID);
+        }
+        if (changesMask[36])
         {
             data << DungeonScore;
         }
     }
-    if (changesMask[36])
+    if (changesMask[37])
     {
         for (uint32 i = 0; i < 125; ++i)
         {
-            if (changesMask[37 + i])
+            if (changesMask[38 + i])
             {
                 if (noQuestLogChangesMask)
                     QuestLog[i].WriteCreate(data, owner, receiver);
@@ -2429,21 +2434,21 @@ void PlayerData::WriteUpdate(ByteBuffer& data, Mask const& changesMask, bool ign
             }
         }
     }
-    if (changesMask[162])
+    if (changesMask[163])
     {
         for (uint32 i = 0; i < 19; ++i)
         {
-            if (changesMask[163 + i])
+            if (changesMask[164 + i])
             {
                 VisibleItems[i].WriteUpdate(data, ignoreNestedChangesMask, owner, receiver);
             }
         }
     }
-    if (changesMask[182])
+    if (changesMask[183])
     {
         for (uint32 i = 0; i < 6; ++i)
         {
-            if (changesMask[183 + i])
+            if (changesMask[184 + i])
             {
                 data << float(AvgItemLevel[i]);
             }
@@ -2482,6 +2487,7 @@ void PlayerData::ClearChangesMask()
     Base::ClearChangesMask(TaxiMountAnimKitID);
     Base::ClearChangesMask(CurrentBattlePetBreedQuality);
     Base::ClearChangesMask(HonorLevel);
+    Base::ClearChangesMask(UnkDF64);
     Base::ClearChangesMask(Field_B0);
     Base::ClearChangesMask(Field_B4);
     Base::ClearChangesMask(CtrOptions);
