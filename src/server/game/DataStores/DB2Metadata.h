@@ -15339,9 +15339,8 @@ struct TraitTreeMeta
 {
     static DB2Meta const* Instance()
     {
-        static constexpr DB2MetaField fields[10] =
+        static constexpr DB2MetaField fields[8] =
         {
-            { FT_STRING_NOT_LOCALIZED, 1, false },
             { FT_INT, 1, true },
             { FT_INT, 1, true },
             { FT_INT, 1, true },
@@ -15351,7 +15350,7 @@ struct TraitTreeMeta
             { FT_INT, 1, true },
             { FT_INT, 1, true },
         };
-        static constexpr DB2Meta const instance(0, 1, 10, 10, 0xCA7B3D57, fields, 1);
+        static constexpr DB2Meta const instance(0, 0, 8, 8, 0xCA7B3D57, fields, 0);
         return &instance;
     };
 };

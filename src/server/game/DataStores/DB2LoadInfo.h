@@ -7234,7 +7234,6 @@ struct TraitTreeLoadInfo
     {
         static constexpr DB2FieldMeta fields[] =
         {
-            { false, FT_STRING_NOT_LOCALIZED, "Name" },
             { true, FT_INT, "ID" },
             { true, FT_INT, "Field_10_0_0_44707_002" },
             { true, FT_INT, "TraitTreeID" },

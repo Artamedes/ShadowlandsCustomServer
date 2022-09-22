@@ -1880,7 +1880,7 @@ void HotfixDatabaseConnection::DoPrepareStatements()
     PREPARE_MAX_ID_STMT(HOTFIX_SEL_TRAIT_NODE_X_TRAIT_NODE_ENTRY, "SELECT MAX(ID) + 1 FROM trait_node_x_trait_node_entry", CONNECTION_SYNCH);
 
     // TraitTree.db2
-    PrepareStatement(HOTFIX_SEL_TRAIT_TREE, "SELECT Name, ID, Field_10_0_0_44707_002, TraitTreeID, FirstTraitNodeID, PlayerConditionID, Flags, Field_10_0_0_45697_006, Field_10_0_0_45697_007"
+    PrepareStatement(HOTFIX_SEL_TRAIT_TREE, "SELECT ID, Field_10_0_0_44707_002, TraitTreeID, FirstTraitNodeID, PlayerConditionID, Flags, Field_10_0_0_45697_006, Field_10_0_0_45697_007"
         " FROM trait_tree WHERE (`VerifiedBuild` > 0) = ?", CONNECTION_SYNCH);
     PREPARE_MAX_ID_STMT(HOTFIX_SEL_TRAIT_TREE, "SELECT MAX(ID) + 1 FROM trait_tree", CONNECTION_SYNCH);
 

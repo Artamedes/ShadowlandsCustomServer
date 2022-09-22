@@ -4380,7 +4380,6 @@ struct TraitNodeXTraitNodeEntryEntry
 };
 struct TraitTreeEntry
 {
-    char const* Name;
     int32 ID;
     int32 Field_10_0_0_44707_002;
     int32 TraitTreeID;
