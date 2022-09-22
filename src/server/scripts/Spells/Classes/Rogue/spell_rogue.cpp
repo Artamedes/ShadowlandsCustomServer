@@ -1012,6 +1012,9 @@ class spell_rog_stealth : public SpellScriptLoader
                     if (target->HasAura(MarkOfTheMasterAssassin))
                         target->CastSpell(target, MasterAssassinsMark, true);
 
+                    if (target->HasAura(TakeEmbySuprise))
+                        target->CastSpell(target, TakeEmbySupriseBuff, true);
+
                     if (target->HasAura(Rogue::eSubtletyTraits::Premeditation))
                         target->CastSpell(target, Rogue::eSubtletyTraits::PremeditationProcAura, true);
 
@@ -1078,6 +1081,12 @@ class spell_rog_stealth : public SpellScriptLoader
                     if (Aura* aura = target->GetAura(MasterAssassinsMark))
                     {
                         aura->SetMaxDuration(4000);
+                        aura->RefreshDuration();
+                    }
+
+                    if (Aura* aura = target->GetAura(TakeEmbySupriseBuff))
+                    {
+                        aura->SetMaxDuration(10000);
                         aura->RefreshDuration();
                     }
 

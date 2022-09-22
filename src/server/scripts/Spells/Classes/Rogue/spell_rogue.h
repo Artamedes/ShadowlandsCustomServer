@@ -133,6 +133,8 @@ namespace Rogue
         AudacityProc           = 386270,
         HeavyHitter            = 381885, // must be implemented by blizz first beta
         PreciseCuts            = 381985, ///< NYI on blizz
+        TakeEmbySuprise        = 382742,
+        TakeEmbySupriseBuff    = 385907,
     };
 
     enum eCovenant
