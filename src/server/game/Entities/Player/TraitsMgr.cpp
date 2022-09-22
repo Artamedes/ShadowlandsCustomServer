@@ -176,7 +176,7 @@ void TraitsMgr::SetupDragonRiding()
     _nextConfigId++;
 }
 
-constexpr uint32 OldConfigIdPre45569 = 700000;
+constexpr uint32 OldConfigIdPre45569 = 700050;
 
 void TraitsMgr::LoadFromDB(CharacterDatabaseQueryHolder const& holder)
 {
@@ -463,143 +463,144 @@ Trait* TraitsMgr::CreateDefaultTraitForSpec(ChrSpecializationEntry const* specEn
 
     /// Sniffed values
     /// We can convert to enum later on.
-    switch (specEntry->ID)
-    {
-        case TALENT_SPEC_ROGUE_ASSASSINATION:
-            trait->AddTraitTalent(new TraitTalent(_player, trait, 79645, 100324, 0, 1, true));
-            break;
-        case TALENT_SPEC_ROGUE_COMBAT:
-            trait->AddTraitTalent(new TraitTalent(_player, trait, 79655, 100334, 0, 1, true));
-            break;
-        case TALENT_SPEC_ROGUE_SUBTLETY:
-            trait->AddTraitTalent(new TraitTalent(_player, trait, 79652, 100331, 0, 1, true));
-            break;
-        ///////////////////////////////////////////////////////////////////
-        case TALENT_SPEC_WARRIOR_ARMS:
-            trait->AddTraitTalent(new TraitTalent(_player, trait, 78006, 98461, 0, 1, true));
-            break;
-        case TALENT_SPEC_WARRIOR_FURY:
-            trait->AddTraitTalent(new TraitTalent(_player, trait, 77990, 98443, 0, 1, true));
-            break;
-        case TALENT_SPEC_WARRIOR_PROTECTION:
-            trait->AddTraitTalent(new TraitTalent(_player, trait, 78008, 98463, 0, 1, true));
-            break;
-        ///////////////////////////////////////////////////////////////////
-        case TALENT_SPEC_MAGE_ARCANE:
-            trait->AddTraitTalent(new TraitTalent(_player, trait, 62121, 80180, 0, 1, true));
-            break;
-        case TALENT_SPEC_MAGE_FIRE:
-            trait->AddTraitTalent(new TraitTalent(_player, trait, 62119, 80178, 0, 1, true));
-            break;
-        case TALENT_SPEC_MAGE_FROST:
-            trait->AddTraitTalent(new TraitTalent(_player, trait, 62117, 80176, 0, 1, true));
-            break;
-        ///////////////////////////////////////////////////////////////////
-        case TALENT_SPEC_PALADIN_HOLY:
-            trait->AddTraitTalent(new TraitTalent(_player, trait, 78953, 99577, 0, 1, true));
-            trait->AddTraitTalent(new TraitTalent(_player, trait, 79068, 99711, 0, 1, true));
-            break;
-        case TALENT_SPEC_PALADIN_PROTECTION:
-            trait->AddTraitTalent(new TraitTalent(_player, trait, 78953, 99577, 0, 1, true));
-            trait->AddTraitTalent(new TraitTalent(_player, trait, 79068, 99711, 0, 1, true));
-            break;
-        case TALENT_SPEC_PALADIN_RETRIBUTION:
-            trait->AddTraitTalent(new TraitTalent(_player, trait, 78949, 99573, 0, 1, true));
-            trait->AddTraitTalent(new TraitTalent(_player, trait, 78951, 99575, 0, 1, true));
-            break;
-        ///////////////////////////////////////////////////////////////////
-        case TALENT_SPEC_DRUID_BALANCE:
-            trait->AddTraitTalent(new TraitTalent(_player, trait, 71638, 91105, 0, 1, true));
-            trait->AddTraitTalent(new TraitTalent(_player, trait, 71637, 91104, 0, 1, true));
-            break;
-        case TALENT_SPEC_DRUID_CAT:
-            trait->AddTraitTalent(new TraitTalent(_player, trait, 71607, 91071, 0, 1, true));
-            trait->AddTraitTalent(new TraitTalent(_player, trait, 71646, 91113, 0, 1, true));
-            break;
-        case TALENT_SPEC_DRUID_BEAR:
-            trait->AddTraitTalent(new TraitTalent(_player, trait, 71645, 91112, 0, 1, true));
-            trait->AddTraitTalent(new TraitTalent(_player, trait, 71646, 91113, 0, 1, true));
-            break;
-        case TALENT_SPEC_DRUID_RESTORATION:
-            trait->AddTraitTalent(new TraitTalent(_player, trait, 71643, 91110, 0, 1, true));
-            trait->AddTraitTalent(new TraitTalent(_player, trait, 71642, 91109, 0, 1, true));
-            break;
-        ///////////////////////////////////////////////////////////////////
-        case TALENT_SPEC_DEATHKNIGHT_BLOOD:
-            trait->AddTraitTalent(new TraitTalent(_player, trait, 76071, 96200, 0, 1, true));
-            break;
-        case TALENT_SPEC_DEATHKNIGHT_FROST:
-            trait->AddTraitTalent(new TraitTalent(_player, trait, 76081, 96210, 0, 1, true));
-            break;
-        case TALENT_SPEC_DEATHKNIGHT_UNHOLY:
-            trait->AddTraitTalent(new TraitTalent(_player, trait, 76072, 96201, 0, 1, true));
-            break;
-        ///////////////////////////////////////////////////////////////////
-        case TALENT_SPEC_HUNTER_BEASTMASTER:
-            trait->AddTraitTalent(new TraitTalent(_player, trait, 79935, 100648, 0, 1, true));
-            break;
-        case TALENT_SPEC_HUNTER_MARKSMAN:
-            trait->AddTraitTalent(new TraitTalent(_player, trait, 79834, 100538, 0, 1, true));
-            break;
-        case TALENT_SPEC_HUNTER_SURVIVAL:
-            trait->AddTraitTalent(new TraitTalent(_player, trait, 79839, 100542, 0, 1, true));
-            break;
-        ///////////////////////////////////////////////////////////////////
-        case TALENT_SPEC_PRIEST_DISCIPLINE:
-            trait->AddTraitTalent(new TraitTalent(_player, trait, 78412, 98939, 0, 1, true));
-            trait->AddTraitTalent(new TraitTalent(_player, trait, 78408, 98935, 0, 1, true));
-            break;
-        case TALENT_SPEC_PRIEST_HOLY:
-            trait->AddTraitTalent(new TraitTalent(_player, trait, 78412, 98939, 0, 1, true));
-            trait->AddTraitTalent(new TraitTalent(_player, trait, 78413, 98940, 0, 1, true));
-            break;
-        case TALENT_SPEC_PRIEST_SHADOW:
-            trait->AddTraitTalent(new TraitTalent(_player, trait, 78408, 98935, 0, 1, true));
-            trait->AddTraitTalent(new TraitTalent(_player, trait, 78407, 98934, 0, 1, true));
-            break;
-        ///////////////////////////////////////////////////////////////////
-        case TALENT_SPEC_SHAMAN_ELEMENTAL:
-            trait->AddTraitTalent(new TraitTalent(_player, trait, 77654, 98053, 0, 1, true));
-            trait->AddTraitTalent(new TraitTalent(_player, trait, 77655, 98054, 0, 1, true));
-            break;
-        case TALENT_SPEC_SHAMAN_ENHANCEMENT:
-            trait->AddTraitTalent(new TraitTalent(_player, trait, 77656, 98055, 0, 1, true));
-            trait->AddTraitTalent(new TraitTalent(_player, trait, 77655, 98054, 0, 1, true));
-            break;
-        case TALENT_SPEC_SHAMAN_RESTORATION:
-            trait->AddTraitTalent(new TraitTalent(_player, trait, 77657, 98056, 0, 1, true));
-            trait->AddTraitTalent(new TraitTalent(_player, trait, 77656, 98055, 0, 1, true));
-            break;
-        ///////////////////////////////////////////////////////////////////
-        case TALENT_SPEC_WARLOCK_AFFLICTION:
-            trait->AddTraitTalent(new TraitTalent(_player, trait, 71933, 91441, 0, 1, true));
-            break;
-        case TALENT_SPEC_WARLOCK_DEMONOLOGY:
-            trait->AddTraitTalent(new TraitTalent(_player, trait, 71933, 91441, 0, 1, true));
-            break;
-        case TALENT_SPEC_WARLOCK_DESTRUCTION:
-            trait->AddTraitTalent(new TraitTalent(_player, trait, 71933, 91441, 0, 1, true));
-            break;
-        ///////////////////////////////////////////////////////////////////
-        case TALENT_SPEC_MONK_BREWMASTER:
-            trait->AddTraitTalent(new TraitTalent(_player, trait, 76373, 96534, 0, 2, true));
-            break;
-        case TALENT_SPEC_MONK_BATTLEDANCER:
-            trait->AddTraitTalent(new TraitTalent(_player, trait, 76372, 96533, 0, 2, true));
-            break;
-        case TALENT_SPEC_MONK_MISTWEAVER:
-            trait->AddTraitTalent(new TraitTalent(_player, trait, 76412, 96576, 0, 1, true));
-            break;
-        ///////////////////////////////////////////////////////////////////
-        case TALENT_SPEC_DEMON_HUNTER_HAVOC:
-            trait->AddTraitTalent(new TraitTalent(_player, trait, 79312, 99981, 0, 1, true));
-            break;
-        case TALENT_SPEC_DEMON_HUNTER_VENGEANCE:
-            trait->AddTraitTalent(new TraitTalent(_player, trait, 79305, 99974, 0, 1, true));
-            break;
-        default:
-            break;
-    }
+    /// @TODO: update for latest versioon, this gets outdated, wtf is blizz doing
+    //switch (specEntry->ID)
+    //{
+    //    case TALENT_SPEC_ROGUE_ASSASSINATION:
+    //        trait->AddTraitTalent(new TraitTalent(_player, trait, 79645, 100324, 0, 1, true));
+    //        break;
+    //    case TALENT_SPEC_ROGUE_COMBAT:
+    //        trait->AddTraitTalent(new TraitTalent(_player, trait, 79655, 100334, 0, 1, true));
+    //        break;
+    //    case TALENT_SPEC_ROGUE_SUBTLETY:
+    //        trait->AddTraitTalent(new TraitTalent(_player, trait, 79652, 100331, 0, 1, true));
+    //        break;
+    //    ///////////////////////////////////////////////////////////////////
+    //    case TALENT_SPEC_WARRIOR_ARMS:
+    //        trait->AddTraitTalent(new TraitTalent(_player, trait, 78006, 98461, 0, 1, true));
+    //        break;
+    //    case TALENT_SPEC_WARRIOR_FURY:
+    //        trait->AddTraitTalent(new TraitTalent(_player, trait, 77990, 98443, 0, 1, true));
+    //        break;
+    //    case TALENT_SPEC_WARRIOR_PROTECTION:
+    //        trait->AddTraitTalent(new TraitTalent(_player, trait, 78008, 98463, 0, 1, true));
+    //        break;
+    //    ///////////////////////////////////////////////////////////////////
+    //    case TALENT_SPEC_MAGE_ARCANE:
+    //        trait->AddTraitTalent(new TraitTalent(_player, trait, 62121, 80180, 0, 1, true));
+    //        break;
+    //    case TALENT_SPEC_MAGE_FIRE:
+    //        trait->AddTraitTalent(new TraitTalent(_player, trait, 62119, 80178, 0, 1, true));
+    //        break;
+    //    case TALENT_SPEC_MAGE_FROST:
+    //        trait->AddTraitTalent(new TraitTalent(_player, trait, 62117, 80176, 0, 1, true));
+    //        break;
+    //    ///////////////////////////////////////////////////////////////////
+    //    case TALENT_SPEC_PALADIN_HOLY:
+    //        trait->AddTraitTalent(new TraitTalent(_player, trait, 78953, 99577, 0, 1, true));
+    //        trait->AddTraitTalent(new TraitTalent(_player, trait, 79068, 99711, 0, 1, true));
+    //        break;
+    //    case TALENT_SPEC_PALADIN_PROTECTION:
+    //        trait->AddTraitTalent(new TraitTalent(_player, trait, 78953, 99577, 0, 1, true));
+    //        trait->AddTraitTalent(new TraitTalent(_player, trait, 79068, 99711, 0, 1, true));
+    //        break;
+    //    case TALENT_SPEC_PALADIN_RETRIBUTION:
+    //        trait->AddTraitTalent(new TraitTalent(_player, trait, 78949, 99573, 0, 1, true));
+    //        trait->AddTraitTalent(new TraitTalent(_player, trait, 78951, 99575, 0, 1, true));
+    //        break;
+    //    ///////////////////////////////////////////////////////////////////
+    //    case TALENT_SPEC_DRUID_BALANCE:
+    //        trait->AddTraitTalent(new TraitTalent(_player, trait, 71638, 91105, 0, 1, true));
+    //        trait->AddTraitTalent(new TraitTalent(_player, trait, 71637, 91104, 0, 1, true));
+    //        break;
+    //    case TALENT_SPEC_DRUID_CAT:
+    //        trait->AddTraitTalent(new TraitTalent(_player, trait, 71607, 91071, 0, 1, true));
+    //        trait->AddTraitTalent(new TraitTalent(_player, trait, 71646, 91113, 0, 1, true));
+    //        break;
+    //    case TALENT_SPEC_DRUID_BEAR:
+    //        trait->AddTraitTalent(new TraitTalent(_player, trait, 71645, 91112, 0, 1, true));
+    //        trait->AddTraitTalent(new TraitTalent(_player, trait, 71646, 91113, 0, 1, true));
+    //        break;
+    //    case TALENT_SPEC_DRUID_RESTORATION:
+    //        trait->AddTraitTalent(new TraitTalent(_player, trait, 71643, 91110, 0, 1, true));
+    //        trait->AddTraitTalent(new TraitTalent(_player, trait, 71642, 91109, 0, 1, true));
+    //        break;
+    //    ///////////////////////////////////////////////////////////////////
+    //    case TALENT_SPEC_DEATHKNIGHT_BLOOD:
+    //        trait->AddTraitTalent(new TraitTalent(_player, trait, 76071, 96200, 0, 1, true));
+    //        break;
+    //    case TALENT_SPEC_DEATHKNIGHT_FROST:
+    //        trait->AddTraitTalent(new TraitTalent(_player, trait, 76081, 96210, 0, 1, true));
+    //        break;
+    //    case TALENT_SPEC_DEATHKNIGHT_UNHOLY:
+    //        trait->AddTraitTalent(new TraitTalent(_player, trait, 76072, 96201, 0, 1, true));
+    //        break;
+    //    ///////////////////////////////////////////////////////////////////
+    //    case TALENT_SPEC_HUNTER_BEASTMASTER:
+    //        trait->AddTraitTalent(new TraitTalent(_player, trait, 79935, 100648, 0, 1, true));
+    //        break;
+    //    case TALENT_SPEC_HUNTER_MARKSMAN:
+    //        trait->AddTraitTalent(new TraitTalent(_player, trait, 79834, 100538, 0, 1, true));
+    //        break;
+    //    case TALENT_SPEC_HUNTER_SURVIVAL:
+    //        trait->AddTraitTalent(new TraitTalent(_player, trait, 79839, 100542, 0, 1, true));
+    //        break;
+    //    ///////////////////////////////////////////////////////////////////
+    //    case TALENT_SPEC_PRIEST_DISCIPLINE:
+    //        trait->AddTraitTalent(new TraitTalent(_player, trait, 78412, 98939, 0, 1, true));
+    //        trait->AddTraitTalent(new TraitTalent(_player, trait, 78408, 98935, 0, 1, true));
+    //        break;
+    //    case TALENT_SPEC_PRIEST_HOLY:
+    //        trait->AddTraitTalent(new TraitTalent(_player, trait, 78412, 98939, 0, 1, true));
+    //        trait->AddTraitTalent(new TraitTalent(_player, trait, 78413, 98940, 0, 1, true));
+    //        break;
+    //    case TALENT_SPEC_PRIEST_SHADOW:
+    //        trait->AddTraitTalent(new TraitTalent(_player, trait, 78408, 98935, 0, 1, true));
+    //        trait->AddTraitTalent(new TraitTalent(_player, trait, 78407, 98934, 0, 1, true));
+    //        break;
+    //    ///////////////////////////////////////////////////////////////////
+    //    case TALENT_SPEC_SHAMAN_ELEMENTAL:
+    //        trait->AddTraitTalent(new TraitTalent(_player, trait, 77654, 98053, 0, 1, true));
+    //        trait->AddTraitTalent(new TraitTalent(_player, trait, 77655, 98054, 0, 1, true));
+    //        break;
+    //    case TALENT_SPEC_SHAMAN_ENHANCEMENT:
+    //        trait->AddTraitTalent(new TraitTalent(_player, trait, 77656, 98055, 0, 1, true));
+    //        trait->AddTraitTalent(new TraitTalent(_player, trait, 77655, 98054, 0, 1, true));
+    //        break;
+    //    case TALENT_SPEC_SHAMAN_RESTORATION:
+    //        trait->AddTraitTalent(new TraitTalent(_player, trait, 77657, 98056, 0, 1, true));
+    //        trait->AddTraitTalent(new TraitTalent(_player, trait, 77656, 98055, 0, 1, true));
+    //        break;
+    //    ///////////////////////////////////////////////////////////////////
+    //    case TALENT_SPEC_WARLOCK_AFFLICTION:
+    //        trait->AddTraitTalent(new TraitTalent(_player, trait, 71933, 91441, 0, 1, true));
+    //        break;
+    //    case TALENT_SPEC_WARLOCK_DEMONOLOGY:
+    //        trait->AddTraitTalent(new TraitTalent(_player, trait, 71933, 91441, 0, 1, true));
+    //        break;
+    //    case TALENT_SPEC_WARLOCK_DESTRUCTION:
+    //        trait->AddTraitTalent(new TraitTalent(_player, trait, 71933, 91441, 0, 1, true));
+    //        break;
+    //    ///////////////////////////////////////////////////////////////////
+    //    case TALENT_SPEC_MONK_BREWMASTER:
+    //        trait->AddTraitTalent(new TraitTalent(_player, trait, 76373, 96534, 0, 2, true));
+    //        break;
+    //    case TALENT_SPEC_MONK_BATTLEDANCER:
+    //        trait->AddTraitTalent(new TraitTalent(_player, trait, 76372, 96533, 0, 2, true));
+    //        break;
+    //    case TALENT_SPEC_MONK_MISTWEAVER:
+    //        trait->AddTraitTalent(new TraitTalent(_player, trait, 76412, 96576, 0, 1, true));
+    //        break;
+    //    ///////////////////////////////////////////////////////////////////
+    //    case TALENT_SPEC_DEMON_HUNTER_HAVOC:
+    //        trait->AddTraitTalent(new TraitTalent(_player, trait, 79312, 99981, 0, 1, true));
+    //        break;
+    //    case TALENT_SPEC_DEMON_HUNTER_VENGEANCE:
+    //        trait->AddTraitTalent(new TraitTalent(_player, trait, 79305, 99974, 0, 1, true));
+    //        break;
+    //    default:
+    //        break;
+    //}
 
     if (activeSpec)
     {
