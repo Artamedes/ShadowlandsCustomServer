@@ -6,3 +6,5 @@ REPLACE INTO spell_script_names (`spell_id`,`ScriptName`) VALUES
 
 REPLACE INTO spell_script_names (`spell_id`,`ScriptName`) VALUES 
 ('385627','spell_kingsbane_385627');
+REPLACE INTO spell_script_names (`spell_id`,`ScriptName`) VALUES 
+('51667','spell_cut_to_the_chase_51667');

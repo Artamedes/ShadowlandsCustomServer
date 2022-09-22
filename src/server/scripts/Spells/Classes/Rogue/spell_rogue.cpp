@@ -1828,16 +1828,6 @@ class spell_rog_envenom : public SpellScript
 
         damage *= cp;
 
-        // Cut to the chase
-        if (GetCaster()->HasAura(51667))
-        {
-            int32 amount = 4000 * (uint32)cp;
-            if (Aura* aura = GetCaster()->GetAura(SPELL_ROGUE_SLICE_AND_DICE))
-            {
-                aura->SetDuration(aura->GetDuration() + amount);
-                aura->SetMaxDuration(aura->GetMaxDuration() + amount);
-            }
-        }
         caster->Variables.Remove("DFA_ComboPoints");
         SetHitDamage(damage);        
     }
