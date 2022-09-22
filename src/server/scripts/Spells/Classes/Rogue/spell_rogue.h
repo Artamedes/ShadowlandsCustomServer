@@ -14,6 +14,10 @@ namespace Rogue
         MarkedForDeath    = 137619,
         SliceAndDice      = 315496,
         Ambush            = 8676,
+        InstantPoisonDmg  = 315585,
+        DeadlyPoisonDot   = 2818,
+        DeadlyPoisonInstant = 113780,
+        AmplifyingPoisonDmg = 383414,
         /// Covenant
         Flagellation      = 323654,
         Sepsis            = 328305,
@@ -85,7 +89,7 @@ namespace Rogue
     enum eRogueTraits
     {
         SepsisNew = 385408,
-        SoothingDarkness = 393970,
+        SoothingDarkness     = 393970,
         SoothingDarknessProc = 393971,
     };
 
@@ -139,6 +143,11 @@ namespace Rogue
         PreciseCuts            = 381985, ///< NYI on blizz
         TakeEmbySuprise        = 382742,
         TakeEmbySupriseBuff    = 385907,
+    };
+
+    enum eAssassinationTraits
+    {
+
     };
 
     enum eCovenant

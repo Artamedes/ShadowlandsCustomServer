@@ -227,6 +227,46 @@ class spell_mutilate_27576 : public SpellScript
     }
 };
 
+/// ID - 385627 Kingsbane
+class spell_kingsbane_385627 : public AuraScript
+{
+    PrepareAuraScript(spell_kingsbane_385627);
+
+    enum eKingsBane
+    {
+        KingsBaneProc = 394095,
+    };
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        if (!eventInfo.GetSpellInfo())
+            return false;
+
+        switch (eventInfo.GetSpellInfo()->Id)
+        {
+            case eRogue::InstantPoisonDmg:
+            case eRogue::DeadlyPoisonInstant:
+            case eRogue::AmplifyingPoisonDmg:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (auto caster = GetCaster())
+            if (auto target = eventInfo.GetProcTarget())
+                caster->CastSpell(target, KingsBaneProc, true);
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_kingsbane_385627::CheckProc);
+        OnProc += AuraProcFn(spell_kingsbane_385627::HandleProc);
+    }
+};
+
 void AddSC_spell_rogue_assassination()
 {
     RegisterSpellScript(aura_rog_poison_bomb);
@@ -234,6 +274,7 @@ void AddSC_spell_rogue_assassination()
     RegisterSpellScript(aura_rog_venomous_wounds);
     RegisterSpellScript(spell_mutilate_5374);
     RegisterSpellScript(spell_mutilate_27576);
+    RegisterSpellScript(spell_kingsbane_385627);
         
     RegisterAreaTriggerAI(at_rogue_poison_bomb); // 16552
 }
