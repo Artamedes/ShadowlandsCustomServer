@@ -4673,6 +4673,50 @@ class spell_essence_of_bloodfang : public AuraScript
     }
 };
 
+/// ID - 385616 Echoing Reprimand
+class spell_echoing_reprimand_385616 : public SpellScript
+{
+    PrepareSpellScript(spell_echoing_reprimand_385616);
+
+    enum eEchoingReprimand
+    {
+        EchoingReprimand3 = 394136,
+        EchoingReprimand4 = 394138,
+        EchoingReprimand2 = 394140,
+        ResoundingClarity = 381622,
+    };
+
+    void HandleDummy(SpellEffIndex /*eff*/)
+    {
+        if (auto caster = GetCaster())
+        {
+            caster->RemoveAurasDueToSpell(EchoingReprimand2);
+            caster->RemoveAurasDueToSpell(EchoingReprimand3);
+            caster->RemoveAurasDueToSpell(EchoingReprimand4);
+
+            if (caster->HasAura(ResoundingClarity))
+            {
+                caster->CastSpell(caster, EchoingReprimand2, true);
+                caster->CastSpell(caster, EchoingReprimand3, true);
+                caster->CastSpell(caster, EchoingReprimand4, true);
+            }
+            else
+            {
+                caster->CastSpell(caster, RAND(
+                    EchoingReprimand2,
+                    EchoingReprimand3,
+                    EchoingReprimand4
+                ), true);
+            }
+        }
+    }
+
+    void Register() override
+    {
+        OnEffectHitTarget += SpellEffectFn(spell_echoing_reprimand_385616::HandleDummy, EFFECT_1, SPELL_EFFECT_DUMMY);
+    }
+};
+
 void AddSC_rogue_spell_scripts()
 {
     // SpellScripts
@@ -4765,6 +4809,7 @@ void AddSC_rogue_spell_scripts()
     RegisterSpellScript(spell_instant_poison);
     RegisterSpellScript(spell_prepared_for_all);
     RegisterSpellScript(spell_essence_of_bloodfang);
+    RegisterSpellScript(spell_echoing_reprimand_385616);
 
 	// Areatrigger
     RegisterAreaTriggerAI(at_rog_smoke_bomb);    // 11451
