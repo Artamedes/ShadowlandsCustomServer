@@ -925,6 +925,19 @@ class aura_rog_rupture : public AuraScript
 {
 	PrepareAuraScript(aura_rog_rupture);
 
+    void HandleApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+    {
+        Unit* caster = GetCaster();
+        if (!caster)
+            return;
+
+        if (auto eff = caster->GetAuraEffect(Rogue::eAssassinationTraits::ScentOfBlood, EFFECT_0))
+        {
+            caster->CastSpell(caster, Rogue::eAssassinationTraits::ScentOfBloodProc, CastSpellExtraArgs(true).AddSpellBP0(eff->GetAmount()));
+            _scentOfBlood = true;
+        }
+    }
+
 	void HandleRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
 	{
         Unit* caster = GetCaster();
@@ -933,6 +946,10 @@ class aura_rog_rupture : public AuraScript
 
         if (Aura* bloodAura = caster->GetAura(SPELL_ROGUE_SCENT_OF_BLOOD_BUFF))
             bloodAura->DropStack();
+
+        if (_scentOfBlood)
+            if (auto scentOfBlood = caster->GetAura(Rogue::eAssassinationTraits::ScentOfBloodProc))
+                scentOfBlood->DropStack();
 
         if (GetTargetApplication()->GetRemoveMode() != AURA_REMOVE_BY_DEATH)
             return;
@@ -945,9 +962,12 @@ class aura_rog_rupture : public AuraScript
         caster->EnergizeBySpell(caster, info, energyRegen, POWER_ENERGY);
 	}
 
+    bool _scentOfBlood = false;
+
 	void Register() override
 	{
-		OnEffectRemove += AuraEffectRemoveFn(aura_rog_rupture::HandleRemove, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE, AURA_EFFECT_HANDLE_REAL);
+        OnEffectApply += AuraEffectApplyFn(aura_rog_rupture::HandleApply, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE, AURA_EFFECT_HANDLE_REAL_OR_REAPPLY_MASK);
+        OnEffectRemove += AuraEffectRemoveFn(aura_rog_rupture::HandleRemove, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE, AURA_EFFECT_HANDLE_REAL);
 	}
 };
 

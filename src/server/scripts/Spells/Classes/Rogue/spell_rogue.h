@@ -154,6 +154,8 @@ namespace Rogue
         ImprovedGarroteProc     = 392401,
         IntentToKillAssa        = 381630,
         ShroudedSuffocationAssa = 385478,
+        ScentOfBlood            = 381799,
+        ScentOfBloodProc        = 394080,
     };
 
     enum eCovenant
