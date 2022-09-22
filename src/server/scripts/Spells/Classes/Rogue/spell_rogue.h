@@ -109,6 +109,8 @@ namespace Rogue
         FinalityBlackPowder   = 385948,
         FinalityEviscerate    = 385948,
         FinalityRupture       = 385951,
+        DanseMacabre          = 382528,
+        DanseMacabreProc      = 393969,
     };
 
     enum eOutlawTraits

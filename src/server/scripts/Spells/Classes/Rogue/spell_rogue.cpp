@@ -2422,6 +2422,9 @@ class aura_rog_shadow_dance_effect : public AuraScript
 
             if (caster->HasAura(Rogue::eSubtletyTraits::SilentStorm))
                 caster->CastSpell(caster, Rogue::eSubtletyTraits::SilentStormProcAura, true);
+
+            if (caster->HasAura(Rogue::eSubtletyTraits::DanseMacabre))
+                caster->CastSpell(caster, Rogue::eSubtletyTraits::DanseMacabreProc, true);
 		}
     }
 
@@ -2434,6 +2437,7 @@ class aura_rog_shadow_dance_effect : public AuraScript
             caster->RemoveAura(SPELL_ROGUE_SHADOW_DANCE_AURA);
             caster->RemoveAurasDueToSpell(SPELL_ROGUE_SHROUD_OF_CONCEALMENT);
             caster->RemoveAurasDueToSpell(Rogue::eSubtletyTraits::PremeditationProcAura);
+            caster->RemoveAurasDueToSpell(Rogue::eSubtletyTraits::DanseMacabreProc);
         }
     }
 
