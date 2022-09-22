@@ -156,6 +156,9 @@ namespace Rogue
         ShroudedSuffocationAssa = 385478,
         ScentOfBlood            = 381799,
         ScentOfBloodProc        = 394080,
+        IndiscriminateCarnage   = 381802,        ///< @todo: research this one more.
+        IndiscriminateCarnageRupture = 385747,   ///< @todo: research this one more.
+        IndiscriminateCarnageGarrote = 385754,   ///< @todo: research this one more.
     };
 
     enum eCovenant
