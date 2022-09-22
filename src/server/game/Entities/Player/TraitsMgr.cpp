@@ -176,7 +176,7 @@ void TraitsMgr::SetupDragonRiding()
     _nextConfigId++;
 }
 
-constexpr uint32 OldConfigIdPre45569 = 618843;
+constexpr uint32 OldConfigIdPre45569 = 700000;
 
 void TraitsMgr::LoadFromDB(CharacterDatabaseQueryHolder const& holder)
 {
