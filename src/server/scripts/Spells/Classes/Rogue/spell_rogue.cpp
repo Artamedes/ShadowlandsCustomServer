@@ -1108,6 +1108,9 @@ class spell_rog_stealth : public SpellScriptLoader
                     // Veil of the Night
                     if (target->HasAura(SPELL_ROGUE_VEIL_OF_THE_NIGHT))
                         target->CastSpell(target, SPELL_ROGUE_VEIL_OF_THE_NIGHT_BUFF, true);
+
+                    if (target->HasAura(Rogue::eAssassinationTraits::ImprovedGarrote))
+                        target->CastSpell(target, Rogue::eAssassinationTraits::ImprovedGarroteProc, true);
                 }
             }
 
