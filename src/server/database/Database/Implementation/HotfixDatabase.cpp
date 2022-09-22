@@ -338,7 +338,7 @@ void HotfixDatabaseConnection::DoPrepareStatements()
     PREPARE_MAX_ID_STMT(HOTFIX_SEL_CHR_CLASSES_X_POWER_TYPES, "SELECT MAX(ID) + 1 FROM chr_classes_x_power_types", CONNECTION_SYNCH);
 
     // ChrCustomizationChoice.db2
-    PrepareStatement(HOTFIX_SEL_CHR_CUSTOMIZATION_CHOICE, "SELECT Name, ID, ChrCustomizationOptionID, ChrCustomizationReqID, SortOrder, UiOrderIndex, "
+    PrepareStatement(HOTFIX_SEL_CHR_CUSTOMIZATION_CHOICE, "SELECT Name, ID, ChrCustomizationOptionID, ChrCustomizationReqID, ChrCustomizationVisReqID, SortOrder, UiOrderIndex, "
         "Flags, AddedInPatch, SwatchColor1, SwatchColor2 FROM chr_customization_choice WHERE (`VerifiedBuild` > 0) = ?", CONNECTION_SYNCH);
     PREPARE_MAX_ID_STMT(HOTFIX_SEL_CHR_CUSTOMIZATION_CHOICE, "SELECT MAX(ID) + 1 FROM chr_customization_choice", CONNECTION_SYNCH);
     PREPARE_LOCALE_STMT(HOTFIX_SEL_CHR_CUSTOMIZATION_CHOICE, "SELECT ID, Name_lang FROM chr_customization_choice_locale"
@@ -1880,7 +1880,7 @@ void HotfixDatabaseConnection::DoPrepareStatements()
     PREPARE_MAX_ID_STMT(HOTFIX_SEL_TRAIT_NODE_X_TRAIT_NODE_ENTRY, "SELECT MAX(ID) + 1 FROM trait_node_x_trait_node_entry", CONNECTION_SYNCH);
 
     // TraitTree.db2
-    PrepareStatement(HOTFIX_SEL_TRAIT_TREE, "SELECT Name, ID, Field_10_0_0_44707_002, TraitTreeID, FirstTraitNodeID, PlayerConditionID, Flags"
+    PrepareStatement(HOTFIX_SEL_TRAIT_TREE, "SELECT Name, ID, Field_10_0_0_44707_002, TraitTreeID, FirstTraitNodeID, PlayerConditionID, Flags, Field_10_0_0_45697_006, Field_10_0_0_45697_007"
         " FROM trait_tree WHERE (`VerifiedBuild` > 0) = ?", CONNECTION_SYNCH);
     PREPARE_MAX_ID_STMT(HOTFIX_SEL_TRAIT_TREE, "SELECT MAX(ID) + 1 FROM trait_tree", CONNECTION_SYNCH);
 

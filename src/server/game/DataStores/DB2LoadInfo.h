@@ -1101,6 +1101,7 @@ struct ChrCustomizationChoiceLoadInfo
             { false, FT_INT, "ID" },
             { true, FT_INT, "ChrCustomizationOptionID" },
             { true, FT_INT, "ChrCustomizationReqID" },
+            { true, FT_INT, "ChrCustomizationVisReqID" },
             { false, FT_SHORT, "SortOrder" },
             { false, FT_SHORT, "UiOrderIndex" },
             { true, FT_INT, "Flags" },
@@ -7240,6 +7241,8 @@ struct TraitTreeLoadInfo
             { true, FT_INT, "FirstTraitNodeID" },
             { true, FT_INT, "PlayerConditionID" },
             { true, FT_INT, "Flags" },
+            { true, FT_INT, "Field_10_0_0_45697_006" },
+            { true, FT_INT, "Field_10_0_0_45697_007" },
         };
         static DB2LoadInfo const loadInfo(&fields[0], std::size(fields), TraitTreeMeta::Instance(), HOTFIX_SEL_TRAIT_TREE);
         return &loadInfo;

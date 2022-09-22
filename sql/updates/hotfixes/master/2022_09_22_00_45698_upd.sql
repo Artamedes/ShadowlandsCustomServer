@@ -1,0 +1,7 @@
+ALTER TABLE `trait_tree`
+	ADD COLUMN `Field_10_0_0_45697_006` INT(11) NOT NULL DEFAULT '0' AFTER `Flags`,
+	ADD COLUMN `Field_10_0_0_45697_007` INT(11) NOT NULL DEFAULT '0' AFTER `Field_10_0_0_45697_006`;
+
+
+ALTER TABLE `chr_customization_choice`
+	ADD COLUMN `ChrCustomizationVisReqID` INT(11) NOT NULL DEFAULT '0' AFTER `ChrCustomizationReqID`;

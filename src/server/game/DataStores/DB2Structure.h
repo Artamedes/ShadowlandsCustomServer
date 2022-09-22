@@ -659,6 +659,7 @@ struct ChrCustomizationChoiceEntry
     uint32 ID;
     int32 ChrCustomizationOptionID;
     int32 ChrCustomizationReqID;
+    int32 ChrCustomizationVisReqID;
     uint16 SortOrder;
     uint16 UiOrderIndex;
     int32 Flags;
@@ -4386,6 +4387,8 @@ struct TraitTreeEntry
     int32 FirstTraitNodeID;
     int32 PlayerConditionID;
     int32 Flags;
+    int32 Field_10_0_0_45697_006;
+    int32 Field_10_0_0_45697_007;
 };
 struct TraitTreeLoadoutEntry
 {

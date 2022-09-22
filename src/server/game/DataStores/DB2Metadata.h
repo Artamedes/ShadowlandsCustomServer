@@ -2433,10 +2433,11 @@ struct ChrCustomizationChoiceMeta
 {
     static DB2Meta const* Instance()
     {
-        static constexpr DB2MetaField fields[9] =
+        static constexpr DB2MetaField fields[10] =
         {
             { FT_STRING, 1, true },
             { FT_INT, 1, false },
+            { FT_INT, 1, true },
             { FT_INT, 1, true },
             { FT_INT, 1, true },
             { FT_SHORT, 1, false },
@@ -2445,7 +2446,7 @@ struct ChrCustomizationChoiceMeta
             { FT_INT, 1, true },
             { FT_INT, 2, true },
         };
-        static constexpr DB2Meta instance(3450554, 1, 9, 9, 0xAA51F086, fields, 2);
+        static constexpr DB2Meta instance(3450554, 1, 10, 10, 0x03A6DCB1, fields, 2);
         return &instance;
     }
 };
@@ -15338,7 +15339,7 @@ struct TraitTreeMeta
 {
     static DB2Meta const* Instance()
     {
-        static constexpr DB2MetaField fields[7] =
+        static constexpr DB2MetaField fields[10] =
         {
             { FT_STRING_NOT_LOCALIZED, 1, false },
             { FT_INT, 1, true },
@@ -15347,8 +15348,10 @@ struct TraitTreeMeta
             { FT_INT, 1, true },
             { FT_INT, 1, true },
             { FT_INT, 1, true },
+            { FT_INT, 1, true },
+            { FT_INT, 1, true },
         };
-        static constexpr DB2Meta const instance(0, 1, 7, 7, 0x38F4D293, fields, 1);
+        static constexpr DB2Meta const instance(0, 1, 10, 10, 0xCA7B3D57, fields, 1);
         return &instance;
     };
 };
