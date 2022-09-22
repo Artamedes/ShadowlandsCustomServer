@@ -85,6 +85,8 @@ namespace Rogue
     enum eRogueTraits
     {
         SepsisNew = 385408,
+        SoothingDarkness = 393970,
+        SoothingDarknessProc = 393971,
     };
 
     enum eSubtletyTraits

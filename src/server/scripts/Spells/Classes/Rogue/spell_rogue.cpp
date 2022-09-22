@@ -1268,6 +1268,9 @@ class spell_rog_vanish_aura : public SpellScriptLoader
                 if (target->HasAura(Rogue::eSubtletyTraits::SilentStorm))
                     target->CastSpell(target, Rogue::eSubtletyTraits::SilentStormProcAura, true);
 
+                if (target->HasAura(Rogue::eRogueTraits::SoothingDarkness))
+                    target->CastSpell(target, Rogue::eRogueTraits::SoothingDarknessProc, true);
+
                 // Master Assasin
                 if (target->HasAura(SPELL_ROGUE_MASTER_ASSASIN))
                     target->CastSpell(target, SPELL_ROGUE_MASTER_ASSASIN_AURA, true);
@@ -2425,6 +2428,9 @@ class aura_rog_shadow_dance_effect : public AuraScript
 
             if (caster->HasAura(Rogue::eSubtletyTraits::DanseMacabre))
                 caster->CastSpell(caster, Rogue::eSubtletyTraits::DanseMacabreProc, true);
+
+            if (caster->HasAura(Rogue::eRogueTraits::SoothingDarkness))
+                caster->CastSpell(caster, Rogue::eRogueTraits::SoothingDarknessProc, true);
 		}
     }
 
