@@ -60,6 +60,9 @@ class TC_GAME_API AreaTriggerAI
         // Called when the AreaTrigger is removed
         virtual void OnRemove() { }
 
+        // Called before areatrigger is added to remove list
+        virtual void OnRegisterRemove() { }
+
         // Gets the id of the AI (script id)
         uint32 GetId() { return _scriptId; }
 };

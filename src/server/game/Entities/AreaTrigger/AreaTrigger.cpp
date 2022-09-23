@@ -386,6 +386,9 @@ void AreaTrigger::Update(uint32 diff)
                 _UpdateDuration(_duration - diff);
             else
             {
+                if (_ai)
+                    _ai->OnRegisterRemove();
+
                 Remove(); // expired
                 return;
             }
