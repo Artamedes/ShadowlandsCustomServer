@@ -2445,6 +2445,7 @@ public:
                 if (!firstTick)
                 {
                     caster->CastSpell(caster, SPELL_DH_EYE_BEAM_DAMAGE, true);
+                    // is this valid? might be an energize spell..
                     if (int32 energize = caster->GetAuraEffectAmount(SPELL_DH_BLIND_FURY, EFFECT_2))
                         caster->ModifyPower(POWER_FURY, energize * 2.f / 50.f);
                 }

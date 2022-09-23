@@ -212,6 +212,31 @@ class spell_shattered_destiny_388116 : public AuraScript
     }
 };
 
+/// ID - 389977 Relentless Onslaught
+class spell_relentless_onslaught_389977 : public AuraScript
+{
+    PrepareAuraScript(spell_relentless_onslaught_389977);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == ChaosStrike && roll_chance_i(GetEffect(EFFECT_0)->GetAmount());
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (auto caster = GetCaster())
+            if (auto procSpell = eventInfo.GetProcSpell())
+                if (auto target = eventInfo.GetActionTarget())
+                    caster->CastSpell(target, procSpell->GetSpellInfo()->Id, true);
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_relentless_onslaught_389977::CheckProc);
+        OnProc += AuraProcFn(spell_relentless_onslaught_389977::HandleProc);
+    }
+};
+
 void AddSC_spell_dh_havoc()
 {
     RegisterAreaTriggerAI(at_glaive_tempest);
@@ -220,4 +245,5 @@ void AddSC_spell_dh_havoc()
     RegisterSpellScript(spell_ragefire_388107);
     RegisterSpellScript(spell_charred_warblades_213010);
     RegisterSpellScript(spell_shattered_destiny_388116);
+    RegisterSpellScript(spell_relentless_onslaught_389977);
 }
