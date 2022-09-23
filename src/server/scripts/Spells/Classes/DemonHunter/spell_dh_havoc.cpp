@@ -362,7 +362,7 @@ class spell_know_your_enemy_388118 : public AuraScript
     void Register() override
     {
         DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_know_your_enemy_388118::CalculateAmount, EFFECT_0, SPELL_AURA_MOD_CRIT_DAMAGE_BONUS);
-        OnEffectPeriodic += AuraEffectPeriodicFn(spell_know_your_enemy_388118::HandlePeriodic1, SPELL_AURA_PERIODIC_DUMMY, AURA_EFFECT_HANDLE_REAL_OR_REAPPLY_MASK);
+        OnEffectPeriodic += AuraEffectPeriodicFn(spell_know_your_enemy_388118::HandlePeriodic1, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY);
     }
 };
 
