@@ -78,11 +78,13 @@ namespace DH
 
     enum eHavocTraits
     {
-        RagefireProc = 388107,
-        RagefireAura = 390192,
-        RagefireDmg  = 390197,
+        RagefireProc          = 388107,
+        RagefireAura          = 390192,
+        RagefireDmg           = 390197,
         ChaoticTransformation = 388112,
-        CycleOfHatred = 258887,
+        CycleOfHatred         = 258887,
+        RestlessHunter        = 390142,
+        RestlessHunterBuff    = 390212,
     };
 
     enum ePvpTalents
@@ -91,5 +93,10 @@ namespace DH
         GlimpseAura = 354610,
         BloodMoon = 355995,
         BloodMoonLeech = 360258,
+    };
+
+    enum eDHCategoryIds
+    {
+        FelRushCategoryId = 1545,
     };
 }

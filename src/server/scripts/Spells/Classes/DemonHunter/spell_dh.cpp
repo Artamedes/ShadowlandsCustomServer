@@ -3679,15 +3679,18 @@ class aura_dh_metamorphosis_buff : public AuraScript
 
     void HandleApply(const AuraEffect* /*aurEff*/, AuraEffectHandleModes /* mode */)
     {
-        if (Unit* caster = GetCaster())
-            caster->RemoveAura(SPELL_DH_DEMONIC_ORIGINS_DAMAGE);
     }
 
     void HandleRemove(const AuraEffect* /*aurEff*/, AuraEffectHandleModes /* mode */)
     {
-        if (Unit* caster = GetCaster())
-            if (caster->HasSpell(SPELL_DH_DEMONIC_ORIGINS))
-                caster->CastSpell(caster, SPELL_DH_DEMONIC_ORIGINS_DAMAGE, true);
+        if (auto caster = GetCaster())
+        {
+            if (caster->HasAura(DH::eHavocTraits::RestlessHunter))
+            {
+                caster->GetSpellHistory()->RestoreCharge(DH::eDHCategoryIds::FelRushCategoryId);
+                caster->CastSpell(caster, DH::eHavocTraits::RestlessHunterBuff, true);
+            }
+        }
     }
 
     void Register() override
