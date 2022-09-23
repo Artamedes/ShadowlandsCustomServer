@@ -599,7 +599,7 @@ enum OpcodeClient : uint16
     CMSG_SUBMIT_USER_FEEDBACK                              = 0x3693,
     CMSG_REQUEST_ACCOUNT_DATA                              = 0x3694,
     CMSG_UPDATE_ACCOUNT_DATA                               = 0x3695,
-    CMSG_SERVER_TIME_OFFSET_REQUEST                        = 0x369A,
+    CMSG_SERVER_TIME_OFFSET_REQUEST                        = 0x369B,
     CMSG_CHAR_DELETE                                       = 0x369C,
     CMSG_LOW_LEVEL_RAID1                                   = 0x36A0,
     CMSG_QUEST_POI_QUERY                                   = 0x36AE,
