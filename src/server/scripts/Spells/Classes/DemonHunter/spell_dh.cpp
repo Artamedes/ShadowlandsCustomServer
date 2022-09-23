@@ -1802,8 +1802,8 @@ public:
             if (!caster)
                 return;
 
-            if (caster->HasAura(UnboundChaos))
-                caster->CastSpell(caster, UnboundChaosProc, true);
+            if (auto unbound = caster->GetAuraEffect(UnboundChaos, EFFECT_0))
+                caster->CastSpell(caster, UnboundChaosProc, CastSpellExtraArgs(true).AddSpellBP0(unbound->GetAmount()));
 
             if (caster->HasAura(FelFlameFortification))
                 caster->CastSpell(caster, FelFlameFortificationDR, true);
