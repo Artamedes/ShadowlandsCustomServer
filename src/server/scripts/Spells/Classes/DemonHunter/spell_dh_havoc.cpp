@@ -294,6 +294,40 @@ class spell_initiative_388108 : public AuraScript
     }
 };
 
+/// ID - 206476 Momentum
+class spell_momentum_206476 : public AuraScript
+{
+    PrepareAuraScript(spell_momentum_206476);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        if (!eventInfo.GetSpellInfo())
+            return false;
+
+        switch (eventInfo.GetSpellInfo()->Id)
+        {
+            case FelRush:
+            case VengefulRetreat:
+            case TheHuntNew:
+                return true;
+        }
+
+        return false;
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (auto caster = GetCaster())
+            caster->CastSpell(caster, MomentumProc, true);
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_momentum_206476::CheckProc);
+        OnProc += AuraProcFn(spell_momentum_206476::HandleProc);
+    }
+};
+
 void AddSC_spell_dh_havoc()
 {
     RegisterAreaTriggerAI(at_glaive_tempest);
@@ -304,4 +338,5 @@ void AddSC_spell_dh_havoc()
     RegisterSpellScript(spell_shattered_destiny_388116);
     RegisterSpellScript(spell_relentless_onslaught_389977);
     RegisterSpellScript(spell_initiative_388108);
+    RegisterSpellScript(spell_momentum_206476);
 }

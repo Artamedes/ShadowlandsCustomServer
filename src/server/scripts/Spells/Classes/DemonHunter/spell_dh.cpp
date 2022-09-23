@@ -1886,17 +1886,10 @@ class spell_dh_vengeful_retreat_trigger : public SpellScript
         return true;
     }
 
-    void HandleOnHit(SpellEffIndex /*effIndex*/)
+    void HandleAfterCast()
     {
         if (Unit* caster = GetCaster())
         {
-            if (caster->HasAura(SPELL_DH_MOMENTUM) && !momentum)
-            {
-                caster->CastSpell(caster, SPELL_DH_PREPARED_ENERGIZE, true);
-                momentum = true;
-                caster->Variables.Set<bool>("MOMENTUM", true);
-            }
-
             if (caster->HasAura(DH::ePvpTalents::Glimpse))
                 caster->CastSpell(caster, DH::ePvpTalents::GlimpseAura);
 
@@ -1907,7 +1900,7 @@ class spell_dh_vengeful_retreat_trigger : public SpellScript
 
     void Register() override
     {
-        OnEffectHitTarget += SpellEffectFn(spell_dh_vengeful_retreat_trigger::HandleOnHit, EFFECT_1, SPELL_EFFECT_SCHOOL_DAMAGE);
+        AfterCast += SpellCastFn(spell_dh_vengeful_retreat_trigger::HandleAfterCast);
     }
 
 private:
@@ -4024,23 +4017,12 @@ class spell_dh_vengegul_retreat : public SpellScript
     {
         Unit* caster = GetCaster();
         if (caster)
-            caster->RemoveMovementImpairingAuras(true);
-    }
-
-    void HandleAfterCast()
-    {
-        if (Unit* caster = GetCaster())
-            if (caster->Variables.Exist("MOMENTUM"))
-            {
-                caster->GetSpellHistory()->ModifyCooldown(SPELL_DH_VENGEFUL_RETREAT, -5s);
-                caster->Variables.Remove("MOMENTUM");
-            }
+            caster->RemoveMovementImpairingAuras(false); ///< this doesnt remove roots!
     }
 
     void Register() override
     {
         OnPrepare += SpellOnPrepareFn(spell_dh_vengegul_retreat::HandleOnPrepare);
-        AfterCast += SpellCastFn(spell_dh_vengegul_retreat::HandleAfterCast);
     }
 };
 

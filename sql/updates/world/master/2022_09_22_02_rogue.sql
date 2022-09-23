@@ -18,3 +18,5 @@ REPLACE INTO spell_script_names (`spell_id`,`ScriptName`) VALUES
 ('389977','spell_relentless_onslaught_389977');
 REPLACE INTO spell_script_names (`spell_id`,`ScriptName`) VALUES 
 ('388108','spell_initiative_388108');
+REPLACE INTO spell_script_names (`spell_id`,`ScriptName`) VALUES 
+('206476','spell_momentum_206476');

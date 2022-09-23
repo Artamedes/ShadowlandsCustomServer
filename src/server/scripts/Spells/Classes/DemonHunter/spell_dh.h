@@ -63,6 +63,8 @@ namespace DH
 
         // Covenant
         ElysianDecree      = 306830,
+
+        TheHuntNew         = 370965,
     };
 
     enum eCovenant
@@ -88,6 +90,7 @@ namespace DH
         InitiativeProc        = 391215,
         TacticalRetreat       = 389688,
         TacticalRetreatProc   = 389890,
+        MomentumProc          = 208628,
     };
 
     enum ePvpTalents
