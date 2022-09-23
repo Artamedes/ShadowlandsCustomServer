@@ -1899,6 +1899,9 @@ class spell_dh_vengeful_retreat_trigger : public SpellScript
 
             if (caster->HasAura(DH::ePvpTalents::Glimpse))
                 caster->CastSpell(caster, DH::ePvpTalents::GlimpseAura);
+
+            if (caster->HasAura(DH::eHavocTraits::TacticalRetreat))
+                caster->CastSpell(caster, DH::eHavocTraits::TacticalRetreatProc, true);
         }
     }
 

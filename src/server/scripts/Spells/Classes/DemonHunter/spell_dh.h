@@ -86,6 +86,8 @@ namespace DH
         RestlessHunter        = 390142,
         RestlessHunterBuff    = 390212,
         InitiativeProc        = 391215,
+        TacticalRetreat       = 389688,
+        TacticalRetreatProc   = 389890,
     };
 
     enum ePvpTalents
