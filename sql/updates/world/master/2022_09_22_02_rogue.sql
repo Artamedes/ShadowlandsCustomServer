@@ -11,3 +11,6 @@ REPLACE INTO spell_script_names (`spell_id`,`ScriptName`) VALUES
 
 REPLACE INTO spell_script_names (`spell_id`,`ScriptName`) VALUES 
 ('381673 ','spell_doomblade');
+
+REPLACE INTO spell_script_names (`spell_id`,`ScriptName`) VALUES 
+('388116','spell_shattered_destiny_388116');

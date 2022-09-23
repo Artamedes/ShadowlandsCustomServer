@@ -71,6 +71,11 @@ namespace DH
         ShatteredSoulsNecrolord = 328951,
     };
 
+    enum eTraits
+    {
+        BurningHatred = 320374,
+    };
+
     enum eHavocTraits
     {
         RagefireProc = 388107,

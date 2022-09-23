@@ -163,6 +163,51 @@ class spell_charred_warblades_213010 : public AuraScript
     }
 };
 
+/// ID - 388116 Shattered Destiny
+class spell_shattered_destiny_388116 : public AuraScript
+{
+    PrepareAuraScript(spell_shattered_destiny_388116);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        if (auto procSpell = eventInfo.GetProcSpell())
+            if (auto powerCost = procSpell->GetPowerCost(Powers::POWER_FURY))
+                return powerCost->Amount > 0;
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (auto procSpell = eventInfo.GetProcSpell())
+            if (auto powerCost = procSpell->GetPowerCost(Powers::POWER_FURY))
+                if (auto caster = GetCaster())
+                {
+                    _prevFury += powerCost->Amount;
+                    auto furyReq = GetEffect(EFFECT_1)->GetAmount();
+                    auto newDuration = GetEffect(EFFECT_0)->GetAmount();
+                    auto duration = 0u;
+
+                    while (_prevFury >= furyReq)
+                    {
+                        duration += newDuration;
+                    }
+
+                    if (duration > 0)
+                    {
+                        if (auto aura = caster->GetAura(MetaHavoc))
+                            aura->ModDuration(duration);
+                    }
+                }
+    }
+
+    uint32 _prevFury = 0;
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_shattered_destiny_388116::CheckProc);
+        OnProc += AuraProcFn(spell_shattered_destiny_388116::HandleProc);
+    }
+};
+
 void AddSC_spell_dh_havoc()
 {
     RegisterAreaTriggerAI(at_glaive_tempest);
@@ -170,4 +215,5 @@ void AddSC_spell_dh_havoc()
     RegisterSpellScript(spell_dh_serrated_glaive);
     RegisterSpellScript(spell_ragefire_388107);
     RegisterSpellScript(spell_charred_warblades_213010);
+    RegisterSpellScript(spell_shattered_destiny_388116);
 }
