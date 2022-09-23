@@ -2914,7 +2914,7 @@ class spell_dh_infernal_strike : public SpellScript
                         return SPELL_FAILED_NOPATH;
                 }
             }
-            else if (dest->GetPositionZ() > GetCaster()->GetPositionZ() + 4.0f)
+            else if (dest->GetPositionZ() > GetCaster()->GetPositionZ() + 10.0f)
                 return SPELL_FAILED_NOPATH;
 
             return SPELL_CAST_OK;
