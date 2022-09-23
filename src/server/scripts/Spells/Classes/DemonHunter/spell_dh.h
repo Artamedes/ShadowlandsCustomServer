@@ -94,6 +94,8 @@ namespace DH
         IsolatedPrey          = 388113,
         IsolatedPreyEyeBeam   = 357305,
         IsolatedPreyFelRush   = 357323,
+        ChaosTheoryNew        = 389687,
+        ChaosTheoryNewBuff    = 390195,
     };
 
     enum ePvpTalents

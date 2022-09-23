@@ -1342,6 +1342,9 @@ class spell_dh_blade_dance : public SpellScript
         if (auto cycle = caster->GetAuraEffect(DH::eHavocTraits::CycleOfHatred, EFFECT_0))
             caster->GetSpellHistory()->ModifyCooldown(DH::eSpells::EyeBeam, -(cycle->GetAmount()));
 
+        if (caster->GetAura(DH::eHavocTraits::ChaosTheoryNew))
+            caster->CastSpell(caster, DH::eHavocTraits::ChaosTheoryNewBuff, true);
+
         SetHitDamage(dmg);
     }
 
