@@ -237,6 +237,63 @@ class spell_relentless_onslaught_389977 : public AuraScript
     }
 };
 
+/// ID - 388108 Initiative
+class spell_initiative_388108 : public AuraScript
+{
+    PrepareAuraScript(spell_initiative_388108);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        if (eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == VengefulRetreat)
+        {
+            _procTargets.clear();
+            return false;
+        }
+
+        if (eventInfo.GetProcTarget() == GetCaster() && eventInfo.GetActor())
+        {
+            _procTargets.insert(eventInfo.GetActor()->GetGUID());
+            return false;
+        }
+
+        if (auto procTarget = eventInfo.GetProcTarget())
+            if (auto caster = GetCaster())
+                if (caster != procTarget)
+                    if (_procTargets.find(procTarget->GetGUID()) == _procTargets.end())
+                    {
+                        _procTargets.insert(procTarget->GetGUID());
+                        return true;
+                    }
+
+        return false;
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (auto caster = GetCaster())
+        {
+            caster->CastSpell(caster, eHavocTraits::InitiativeProc, true);
+
+            for (auto itr = _procTargets.begin(); itr != _procTargets.end();)
+            {
+                auto unit = ObjectAccessor::GetUnit(*caster, *itr);
+                if (!unit || !unit->IsInCombatWith(caster))
+                    itr = _procTargets.erase(itr);
+                else
+                    ++itr;
+            }
+        }
+    }
+
+    GuidUnorderedSet _procTargets;
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_initiative_388108::CheckProc);
+        OnProc += AuraProcFn(spell_initiative_388108::HandleProc);
+    }
+};
+
 void AddSC_spell_dh_havoc()
 {
     RegisterAreaTriggerAI(at_glaive_tempest);
@@ -246,4 +303,5 @@ void AddSC_spell_dh_havoc()
     RegisterSpellScript(spell_charred_warblades_213010);
     RegisterSpellScript(spell_shattered_destiny_388116);
     RegisterSpellScript(spell_relentless_onslaught_389977);
+    RegisterSpellScript(spell_initiative_388108);
 }

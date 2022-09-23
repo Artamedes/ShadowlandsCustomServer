@@ -85,6 +85,7 @@ namespace DH
         CycleOfHatred         = 258887,
         RestlessHunter        = 390142,
         RestlessHunterBuff    = 390212,
+        InitiativeProc        = 391215,
     };
 
     enum ePvpTalents
