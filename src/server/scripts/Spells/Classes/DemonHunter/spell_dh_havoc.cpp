@@ -328,6 +328,44 @@ class spell_momentum_206476 : public AuraScript
     }
 };
 
+/// ID - 388118 Know Your Enemy
+class spell_know_your_enemy_388118 : public AuraScript
+{
+    PrepareAuraScript(spell_know_your_enemy_388118);
+
+    int32 _critDmgAmount = 0;
+
+    void CalculateAmount(AuraEffect const* /*aurEff*/, int32& amount, bool& canBeRecalculated)
+    {
+        amount = _critDmgAmount;
+    }
+
+    void HandlePeriodic1(AuraEffect const* aurEff)
+    {
+        if (auto caster = GetCaster())
+            if (auto player = caster->ToPlayer())
+            {
+                auto amount = aurEff->GetAmount();
+                auto crit = player->m_activePlayerData->CritPercentage;
+                _critDmgAmount = CalculatePct(crit, amount);
+                if (auto eff = GetEffect(EFFECT_0))
+                {
+                    if (_critDmgAmount != eff->GetAmount())
+                    {
+                        eff->SetCanBeRecalculated(true);
+                        eff->RecalculateAmount(aurEff);
+                    }
+                }
+            }
+    }
+
+    void Register() override
+    {
+        DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_know_your_enemy_388118::CalculateAmount, EFFECT_0, SPELL_AURA_MOD_CRIT_DAMAGE_BONUS);
+        OnEffectPeriodic += AuraEffectPeriodicFn(spell_know_your_enemy_388118::HandlePeriodic1, SPELL_AURA_PERIODIC_DUMMY, AURA_EFFECT_HANDLE_REAL_OR_REAPPLY_MASK);
+    }
+};
+
 void AddSC_spell_dh_havoc()
 {
     RegisterAreaTriggerAI(at_glaive_tempest);
@@ -339,4 +377,5 @@ void AddSC_spell_dh_havoc()
     RegisterSpellScript(spell_relentless_onslaught_389977);
     RegisterSpellScript(spell_initiative_388108);
     RegisterSpellScript(spell_momentum_206476);
+    RegisterSpellScript(spell_know_your_enemy_388118);
 }
