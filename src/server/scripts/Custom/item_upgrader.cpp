@@ -132,7 +132,7 @@ class ItemUpgradeStorage
                     uint32 RequiredBonusID = l_I->second.RequiredID;
                     uint32 RequiredAmount = l_I->second.RequiredAmount;
 
-                    for (uint32 bonusId : *p_TargetItem->m_itemData->BonusListIDs)
+                    for (uint32 bonusId : p_TargetItem->m_itemData->Bonuses->BonusListIDs)
                     {
                         if (bonusId == RequiredBonusID)
                         {
@@ -376,7 +376,7 @@ class item_upgrader : public ItemScript
                         l_Item.Item.Initialize(itemTarget);
                         //l_Item.Item.ItemBonus->Context = ItemContext::Torghast;
 
-                        //for (int32 bonusId : *itemTarget->m_itemData->BonusListIDs)
+                        //for (int32 bonusId : *itemTarget->m_itemData->Bonuses->BonusListIDs)
                         //{
                         //    if (bonusId != itemUpgrade->RequiredID)
                         //    {
@@ -525,7 +525,7 @@ class item_upgrader : public ItemScript
                 for (int32 bonusId : l_ItemUpgrade->ReplaceBonusIDList)
                     l_Item.Item.ItemBonus->BonusListIDs.push_back(bonusId);
 
-                for (int32 bonusId : *l_ItemTarget->m_itemData->BonusListIDs)
+                for (int32 bonusId : l_ItemTarget->m_itemData->Bonuses->BonusListIDs)
                 {
                     if (bonusId != l_ItemUpgrade->RequiredID)
                     {

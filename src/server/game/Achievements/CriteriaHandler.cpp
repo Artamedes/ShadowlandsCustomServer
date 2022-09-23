@@ -3131,7 +3131,7 @@ bool CriteriaHandler::ModifierSatisfied(ModifierTreeEntry const* modifier, uint6
 
             bool bagScanReachedEnd = referencePlayer->ForEachItem(ItemSearchLocation::Everywhere, [&bonusListIDs](Item const* item)
             {
-                bool hasBonus = std::any_of(item->m_itemData->BonusListIDs->begin(), item->m_itemData->BonusListIDs->end(), [&bonusListIDs](int32 bonusListID)
+                bool hasBonus = std::any_of(item->m_itemData->Bonuses->BonusListIDs.begin(), item->m_itemData->Bonuses->BonusListIDs.end(), [&bonusListIDs](int32 bonusListID)
                 {
                     return bonusListIDs.find(bonusListID) != bonusListIDs.end();
                 });

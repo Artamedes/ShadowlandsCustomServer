@@ -50,7 +50,7 @@ bool ItemModList::operator==(ItemModList const& r) const
 void ItemInstance::Initialize(::Item const* item)
 {
     ItemID = item->GetEntry();
-    std::vector<int32> const& bonusListIds = item->m_itemData->BonusListIDs;
+    std::vector<int32> const& bonusListIds = item->m_itemData->Bonuses->BonusListIDs;
     if (!bonusListIds.empty())
     {
         ItemBonus.emplace();

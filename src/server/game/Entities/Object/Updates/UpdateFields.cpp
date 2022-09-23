@@ -266,6 +266,43 @@ void SocketedGem::ClearChangesMask()
     _changesMask.ResetAll();
 }
 
+void ItemBonuses::WriteCreate(ByteBuffer& data, Item const* owner, Player const* receiver) const
+{
+    data << uint32(ItemExtraID);
+    data << uint32(BonusListIDs.size());
+    data << uint32(Values.size());
+    for (uint32 i = 0; i < BonusListIDs.size(); ++i)
+    {
+        data << int32(BonusListIDs[i]);
+    }
+    for (uint32 i = 0; i < Values.size(); ++i)
+    {
+        Values[i].WriteCreate(data, owner, receiver);
+    }
+}
+
+void ItemBonuses::WriteUpdate(ByteBuffer& data, bool ignoreChangesMask, Item const* owner, Player const* receiver) const
+{
+    data << uint32(ItemExtraID);
+    data << uint32(BonusListIDs.size());
+    data << uint32(Values.size());
+    for (uint32 i = 0; i < BonusListIDs.size(); ++i)
+    {
+        data << int32(BonusListIDs[i]);
+    }
+    for (uint32 i = 0; i < Values.size(); ++i)
+    {
+        Values[i].WriteUpdate(data, ignoreChangesMask, owner, receiver);
+    }
+}
+
+bool ItemBonuses::operator==(ItemBonuses const& right) const
+{
+    return BonusListIDs == right.BonusListIDs
+        && Values == right.Values
+        && ItemExtraID == right.ItemExtraID;
+}
+
 void ItemData::WriteCreate(ByteBuffer& data, EnumFlag<UpdateFieldFlag> fieldVisibilityFlags, Item const* owner, Player const* receiver) const
 {
     data << Owner;
@@ -305,12 +342,8 @@ void ItemData::WriteCreate(ByteBuffer& data, EnumFlag<UpdateFieldFlag> fieldVisi
     {
         data << uint32(DynamicFlags2);
     }
-    data << int32(Unkdf1);
-    data << int32(BonusListIDs->size());
-    data << int32(Unkdf3);
 
-    for (uint32 bonusId : *BonusListIDs)
-        data << bonusId;
+    Bonuses->WriteCreate(data, owner, receiver);
 
     if (fieldVisibilityFlags.HasFlag(UpdateFieldFlag::Owner))
     {
@@ -329,7 +362,7 @@ void ItemData::WriteCreate(ByteBuffer& data, EnumFlag<UpdateFieldFlag> fieldVisi
 
 void ItemData::WriteUpdate(ByteBuffer& data, EnumFlag<UpdateFieldFlag> fieldVisibilityFlags, Item const* owner, Player const* receiver) const
 {
-    Mask allowedMaskForTarget({ 0xE03A727Fu, 0x000007FFu });
+    Mask allowedMaskForTarget({ 0xF80A727Fu, 0x000001FFu });
     AppendAllowedFieldsMaskForFlag(allowedMaskForTarget, fieldVisibilityFlags);
     WriteUpdate(data, _changesMask & allowedMaskForTarget, false, owner, receiver);
 }
@@ -337,12 +370,12 @@ void ItemData::WriteUpdate(ByteBuffer& data, EnumFlag<UpdateFieldFlag> fieldVisi
 void ItemData::AppendAllowedFieldsMaskForFlag(Mask& allowedMaskForTarget, EnumFlag<UpdateFieldFlag> fieldVisibilityFlags)
 {
     if (fieldVisibilityFlags.HasFlag(UpdateFieldFlag::Owner))
-        allowedMaskForTarget |= { 0x1FC58D80u, 0x00000000u };
+        allowedMaskForTarget |= { 0x07F58D80u, 0x00000000u };
 }
 
 void ItemData::FilterDisallowedFieldsMaskForFlag(Mask& changesMask, EnumFlag<UpdateFieldFlag> fieldVisibilityFlags)
 {
-    Mask allowedMaskForTarget({ 0xE03A727Fu, 0x000007FFu });
+    Mask allowedMaskForTarget({ 0xF80A727Fu, 0x000001FFu });
     AppendAllowedFieldsMaskForFlag(allowedMaskForTarget, fieldVisibilityFlags);
     changesMask &= allowedMaskForTarget;
 }
@@ -456,17 +489,9 @@ void ItemData::WriteUpdate(ByteBuffer& data, Mask const& changesMask, bool ignor
         }
         if (changesMask[19])
         {
-            data << int32(Unkdf1);
+            Bonuses->WriteUpdate(data, ignoreNestedChangesMask, owner, receiver);
         }
         if (changesMask[20])
-        {
-            data << int32(Unkdf2);
-        }
-        if (changesMask[21])
-        {
-            data << int32(Unkdf3);
-        }
-        if (changesMask[22])
         {
             data << uint16(DEBUGItemLevel);
         }
@@ -475,21 +500,21 @@ void ItemData::WriteUpdate(ByteBuffer& data, Mask const& changesMask, bool ignor
             Modifiers->WriteUpdate(data, ignoreNestedChangesMask, owner, receiver);
         }
     }
-    if (changesMask[23])
+    if (changesMask[21])
     {
         for (uint32 i = 0; i < 5; ++i)
         {
-            if (changesMask[24 + i])
+            if (changesMask[22 + i])
             {
                 data << int32(SpellCharges[i]);
             }
         }
     }
-    if (changesMask[29])
+    if (changesMask[27])
     {
         for (uint32 i = 0; i < 13; ++i)
         {
-            if (changesMask[30 + i])
+            if (changesMask[28 + i])
             {
                 Enchantment[i].WriteUpdate(data, ignoreNestedChangesMask, owner, receiver);
             }
@@ -517,9 +542,7 @@ void ItemData::ClearChangesMask()
     Base::ClearChangesMask(ItemAppearanceModID);
     Base::ClearChangesMask(Modifiers);
     Base::ClearChangesMask(DynamicFlags2);
-    Base::ClearChangesMask(Unkdf1);
-    Base::ClearChangesMask(Unkdf2);
-    Base::ClearChangesMask(Unkdf3);
+    Base::ClearChangesMask(Bonuses);
     Base::ClearChangesMask(DEBUGItemLevel);
     Base::ClearChangesMask(SpellCharges);
     Base::ClearChangesMask(Enchantment);

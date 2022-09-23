@@ -113,9 +113,20 @@ struct SocketedGem : public IsUpdateFieldStructureTag, public HasChangesMask<20>
     void ClearChangesMask();
 };
 
-struct ItemData : public IsUpdateFieldStructureTag, public HasChangesMask<43>
+struct ItemBonuses : public IsUpdateFieldStructureTag
 {
-    UpdateField<std::vector<int32>, 0, 1> BonusListIDs;
+    std::vector<int32> BonusListIDs;
+    std::vector<UF::ItemMod> Values;
+    uint32 ItemExtraID;
+
+    void WriteCreate(ByteBuffer& data, Item const* owner, Player const* receiver) const;
+    void WriteUpdate(ByteBuffer& data, bool ignoreChangesMask, Item const* owner, Player const* receiver) const;
+    bool operator==(ItemBonuses const& right) const;
+    bool operator!=(ItemBonuses const& right) const { return !(*this == right); }
+};
+
+struct ItemData : public IsUpdateFieldStructureTag, public HasChangesMask<41>
+{
     DynamicUpdateField<UF::ArtifactPower, 0, 1> ArtifactPowers;
     DynamicUpdateField<UF::SocketedGem, 0, 2> Gems;
     UpdateField<ObjectGuid, 0, 3> Owner;
@@ -134,12 +145,10 @@ struct ItemData : public IsUpdateFieldStructureTag, public HasChangesMask<43>
     UpdateField<uint8, 0, 16> ItemAppearanceModID;
     UpdateField<UF::ItemModList, 0, 17> Modifiers;
     UpdateField<uint32, 0, 18> DynamicFlags2;
-    UpdateField<int32, 0, 19> Unkdf1;
-    UpdateField<int32, 0, 20> Unkdf2;
-    UpdateField<int32, 0, 21> Unkdf3;
-    UpdateField<uint16, 0, 22> DEBUGItemLevel;
-    UpdateFieldArray<int32, 5, 23, 24> SpellCharges;
-    UpdateFieldArray<UF::ItemEnchantment, 13, 29, 30> Enchantment;
+    UpdateField<UF::ItemBonuses, 0, 19> Bonuses;
+    UpdateField<uint16, 0, 20> DEBUGItemLevel;
+    UpdateFieldArray<int32, 5, 21, 22> SpellCharges;
+    UpdateFieldArray<UF::ItemEnchantment, 13, 27, 28> Enchantment;
 
     void WriteCreate(ByteBuffer& data, EnumFlag<UpdateFieldFlag> fieldVisibilityFlags, Item const* owner, Player const* receiver) const;
     void WriteUpdate(ByteBuffer& data, EnumFlag<UpdateFieldFlag> fieldVisibilityFlags, Item const* owner, Player const* receiver) const;

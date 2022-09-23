@@ -473,7 +473,7 @@ uint64 AuctionHouseMgr::GetItemAuctionDeposit(Player* player, Item* item, Minute
 std::string AuctionHouseMgr::BuildItemAuctionMailSubject(AuctionMailType type, AuctionPosting const* auction)
 {
     return BuildAuctionMailSubject(auction->Items[0]->GetEntry(), type, auction->Id, auction->GetTotalItemCount(),
-        auction->Items[0]->GetModifier(ITEM_MODIFIER_BATTLE_PET_SPECIES_ID), auction->Items[0]->GetContext(), *auction->Items[0]->m_itemData->BonusListIDs);
+        auction->Items[0]->GetModifier(ITEM_MODIFIER_BATTLE_PET_SPECIES_ID), auction->Items[0]->GetContext(), auction->Items[0]->m_itemData->Bonuses->BonusListIDs);
 }
 
 std::string AuctionHouseMgr::BuildCommodityAuctionMailSubject(AuctionMailType type, uint32 itemId, uint32 itemCount)

@@ -270,7 +270,7 @@ class item_enhancement_system : public ItemScript
 
                 if (success)
                 {
-                    std::vector<int32> bonusListIDs = itemTarget->m_itemData->BonusListIDs;
+                    std::vector<int32> bonusListIDs = itemTarget->m_itemData->Bonuses->BonusListIDs;
 
                     std::set<int32> corruptionsToRemove;
                     for (auto bonusId : bonusListIDs)
