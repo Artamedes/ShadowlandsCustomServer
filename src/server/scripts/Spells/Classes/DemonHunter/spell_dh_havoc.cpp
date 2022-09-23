@@ -346,7 +346,7 @@ class spell_know_your_enemy_388118 : public AuraScript
             if (auto player = caster->ToPlayer())
             {
                 auto amount = aurEff->GetAmount();
-                auto crit = player->m_activePlayerData->CritPercentage;
+                auto crit = (int32)player->m_activePlayerData->CritPercentage;
                 _critDmgAmount = CalculatePct(crit, amount);
                 if (auto eff = GetEffect(EFFECT_0))
                 {
