@@ -10,6 +10,10 @@ public:
     {
         // @todo: scale by haste
         at->SetPeriodicProcTimer(1000);
+
+        if (auto caster = at->GetCaster())
+            if (auto cycle = caster->GetAuraEffect(DH::eHavocTraits::CycleOfHatred, EFFECT_0))
+                caster->GetSpellHistory()->ModifyCooldown(DH::eSpells::EyeBeam, -(cycle->GetAmount()));
     }
 
     enum eGlaiveTempest

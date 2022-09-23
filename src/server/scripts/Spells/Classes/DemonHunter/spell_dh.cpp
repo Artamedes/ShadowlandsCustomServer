@@ -180,7 +180,6 @@ enum DHSpells
     SPELL_DH_CHAOS_BRAND                           = 1490,
     SPELL_DH_FELBLADE_AURA                         = 236167,
     SPELL_DH_FELBLADE_INDICATOR                    = 204497,
-    SPELL_DH_CYCLE_OF_HATRED                       = 258887,
     SPELL_AURA_DH_INSATIABLE_HUNGER                = 258876,
 	SPELL_DH_BLUR_AURA						       = 212800,
 	SPELL_DH_SOLITUDE_BUFF					       = 211510,
@@ -1339,6 +1338,9 @@ class spell_dh_blade_dance : public SpellScript
         if (GetSpellInfo()->Id == SPELL_DH_BLADE_DANCE_LAST_HIT)
             if (auto aurEff = caster->GetAuraEffect(DancingWithFate, EFFECT_0))
                 AddPct(dmg, aurEff->GetAmount());
+
+        if (auto cycle = caster->GetAuraEffect(DH::eHavocTraits::CycleOfHatred, EFFECT_0))
+            caster->GetSpellHistory()->ModifyCooldown(DH::eSpells::EyeBeam, -(cycle->GetAmount()));
 
         SetHitDamage(dmg);
     }
@@ -4254,11 +4256,8 @@ class spell_dh_chaos_strike : public SpellScript
             if (roll_chance_i(chance))
                 caster->CastSpell(caster, SPELL_DH_CHAOS_STRIKE_PROC, true);
 
-            if (roll_chance_i(40))
-            {
-                if (caster->HasAura(SPELL_DH_CYCLE_OF_HATRED))
-                    caster->GetSpellHistory()->ModifyCooldown(SPELL_DH_EYE_BEAM, -1s);
-            }
+            if (auto cycle = caster->GetAuraEffect(DH::eHavocTraits::CycleOfHatred, EFFECT_0))
+                caster->GetSpellHistory()->ModifyCooldown(SPELL_DH_EYE_BEAM, -(cycle->GetAmount()));
         }
     }
 

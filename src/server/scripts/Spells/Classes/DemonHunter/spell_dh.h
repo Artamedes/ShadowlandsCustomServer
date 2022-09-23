@@ -82,6 +82,7 @@ namespace DH
         RagefireAura = 390192,
         RagefireDmg  = 390197,
         ChaoticTransformation = 388112,
+        CycleOfHatred = 258887,
     };
 
     enum ePvpTalents
