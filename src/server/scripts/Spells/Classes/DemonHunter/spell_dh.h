@@ -91,6 +91,9 @@ namespace DH
         TacticalRetreat       = 389688,
         TacticalRetreatProc   = 389890,
         MomentumProc          = 208628,
+        IsolatedPrey          = 388113,
+        IsolatedPreyEyeBeam   = 357305,
+        IsolatedPreyFelRush   = 357323,
     };
 
     enum ePvpTalents

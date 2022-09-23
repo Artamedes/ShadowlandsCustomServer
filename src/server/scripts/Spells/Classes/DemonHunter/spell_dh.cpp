@@ -3988,12 +3988,16 @@ class spell_dh_eye_beam_damage : public SpellScript
         std::list<Unit*>  units;
         caster->GetAttackableUnitListInRange(units, 25.f);
         units.remove_if([caster](Unit* unit)
-            {
-                return !caster->HasInLine(unit, 5.f, caster->GetObjectScale());
-            });
+        {
+            return !caster->HasInLine(unit, 5.f, caster->GetObjectScale());
+        });
 
         for (Unit* unit : units)
             unitList.push_back(unit);
+
+        if (unitList.size() == 1)
+            if (caster->HasAura(DH::eHavocTraits::IsolatedPrey))
+                caster->CastSpell(caster, DH::eHavocTraits::IsolatedPreyEyeBeam, true);
     }
 
 
@@ -4363,6 +4367,10 @@ class spell_dh_fel_rush_dmg : public SpellScript
 
         for (Unit* unit : units)
             targets.push_back(unit);
+
+        if (targets.size() == 1)
+            if (caster->HasAura(DH::eHavocTraits::IsolatedPrey))
+                caster->CastSpell(caster, DH::eHavocTraits::IsolatedPreyFelRush, true);
     }
 
     void Register() override
