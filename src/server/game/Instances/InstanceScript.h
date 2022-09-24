@@ -242,7 +242,7 @@ class TC_GAME_API InstanceScript : public ZoneScript
         virtual void BroadcastPacket(WorldPacket const* data) const;
         virtual void SummonChallengeGameObject(bool /*door*/) { };
 
-        virtual bool HandleRelocatePlayer(Player* player) { return false; }
+        virtual bool HandleRelocatePlayer(Player* /*player*/) { return false; }
 
         // Called when falling damage are calculated for player
         virtual bool IsPlayerImmuneToFallDamage(Player* /*player*/) const { return false; }

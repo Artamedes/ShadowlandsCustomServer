@@ -1013,8 +1013,8 @@ namespace WorldPackets
 
             WorldPacket const* Write() override;
 
-            uint32 TimerID;
-            bool   KeepTimer;
+            uint32 TimerID = 0;
+            bool   KeepTimer = false;
         };
 
         class ConversationLineStarted final : public ClientPacket
@@ -1136,9 +1136,9 @@ namespace WorldPackets
 
                 WorldPacket const* Write() override;
 
-                uint32 UnkInt321;
+                uint32 UnkInt321 = 0;
                 std::vector<VaultProgress> VaultProgresses;
-                uint32 UnkInt323;
+                uint32 UnkInt323 = 0;
         };
     }
 }
