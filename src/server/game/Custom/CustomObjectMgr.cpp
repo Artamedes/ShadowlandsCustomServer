@@ -5,6 +5,8 @@
 #include "Unit.h"
 #include "SpellInfo.h"
 #include "SpellFormulaOverride.h"
+#include <boost/asio/thread_pool.hpp>
+#include <boost/asio/post.hpp>
 
 CustomObjectMgr::~CustomObjectMgr()
 {
@@ -20,7 +22,12 @@ void CustomObjectMgr::LoadFromDB()
     LoadCustomScalingEntries();
     LoadCoinModels();
     LoadCustomTransmogVendorData();
-    LoadFiledataData();
+
+    boost::asio::thread_pool pool;
+
+    boost::asio::post(pool, [this]() {
+        LoadFiledataData();
+    });
     LoadCustomChallengeInfo();
     sSpellFormulaOverride->LoadFromDB();
 }

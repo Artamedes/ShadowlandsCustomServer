@@ -110,6 +110,8 @@
 #include "CustomInstanceScript.h"
 #include "Torghast/TorghastMgr.h"
 
+#include <boost/asio/thread_pool.hpp>
+#include <boost/asio/post.hpp>
 #include <boost/algorithm/string.hpp>
 
 TC_GAME_API std::atomic<bool> World::m_stopEvent(false);
@@ -1910,20 +1912,24 @@ void World::SetInitialWorldSettings()
     TC_LOG_INFO("server.loading", "Loading instances...");
     sInstanceSaveMgr->LoadInstances();
 
-    TC_LOG_INFO("server.loading", "Loading Localization strings...");
-    uint32 oldMSTime = getMSTime();
-    sObjectMgr->LoadCreatureLocales();
-    sObjectMgr->LoadGameObjectLocales();
-    sObjectMgr->LoadQuestTemplateLocale();
-    sObjectMgr->LoadQuestOfferRewardLocale();
-    sObjectMgr->LoadQuestRequestItemsLocale();
-    sObjectMgr->LoadQuestObjectivesLocale();
-    sObjectMgr->LoadPageTextLocales();
-    sObjectMgr->LoadGossipMenuItemsLocales();
-    sObjectMgr->LoadPointOfInterestLocales();
+    boost::asio::thread_pool pool;
+
+    boost::asio::post(pool, []() {
+        TC_LOG_INFO("server.loading", "Loading Localization strings...");
+        uint32 oldMSTime = getMSTime();
+        sObjectMgr->LoadCreatureLocales();
+        sObjectMgr->LoadGameObjectLocales();
+        sObjectMgr->LoadQuestTemplateLocale();
+        sObjectMgr->LoadQuestOfferRewardLocale();
+        sObjectMgr->LoadQuestRequestItemsLocale();
+        sObjectMgr->LoadQuestObjectivesLocale();
+        sObjectMgr->LoadPageTextLocales();
+        sObjectMgr->LoadGossipMenuItemsLocales();
+        sObjectMgr->LoadPointOfInterestLocales();
+        TC_LOG_INFO("server.loading", ">> Localization strings loaded in %u ms", GetMSTimeDiffToNow(oldMSTime));
+    });
 
     sObjectMgr->SetDBCLocaleIndex(GetDefaultDbcLocale());        // Get once for all the locale index of DBC language (console/broadcasts)
-    TC_LOG_INFO("server.loading", ">> Localization strings loaded in %u ms", GetMSTimeDiffToNow(oldMSTime));
 
     TC_LOG_INFO("server.loading", "Loading Account Roles and Permissions...");
     sAccountMgr->LoadRBAC();
