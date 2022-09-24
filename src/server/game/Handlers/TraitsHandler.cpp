@@ -27,27 +27,27 @@ void WorldSession::HandleLearnTraitsOpcode(WorldPackets::Talent::LearnTraits& le
     {
         // TODO: Verify talent is for class.
 
-        // learn case
-        if (talent.Rank > 0)
-        {
-            auto it = talentMap->find(talent.TraitNode);
-            if (it != talentMap->end() && it->second->Rank == talent.Rank)
-            {
-                TC_LOG_ERROR("network.opcode", "Client tried to learn already learned talent");
-                // send error
-                return;
-            }
-        }
-        else
-        {
-            bool hasTalent = talentMap->find(talent.TraitNode) != talentMap->end();
-            if (!hasTalent)
-            {
-                TC_LOG_ERROR("network.opcode", "Client tried to unlearn not learned talent");
-                // send error
-                return;
-            }
-        }
+        // learn case - can happen in reset talents respec
+        //if (talent.Rank > 0)
+        //{
+        //    auto it = talentMap->find(talent.TraitNode);
+        //    if (it != talentMap->end() && it->second->Rank == talent.Rank)
+        //    {
+        //        TC_LOG_ERROR("network.opcode", "Client tried to learn already learned talent");
+        //        // send error
+        //        return;
+        //    }
+        //}
+        //else
+        //{
+        //    bool hasTalent = talentMap->find(talent.TraitNode) != talentMap->end();
+        //    if (!hasTalent)
+        //    {
+        //        TC_LOG_ERROR("network.opcode", "Client tried to unlearn not learned talent");
+        //        // send error
+        //        return;
+        //    }
+        //}
     }
 
     // SMSG_SUSPEND_TOKEN
@@ -88,7 +88,6 @@ void WorldSession::HandleCreateNewLoadoutOpcode(WorldPackets::Talent::CreateNewL
 
 void WorldSession::HandleSwapLoadoutOpcode(WorldPackets::Talent::SwapLoadout& swapLoadout)
 {
-    ChatHandler(_player).PSendSysMessage("HandleSwapLoadoutOpcode %u", swapLoadout.Loadout);
     _player->GetTraitsMgr()->SwapLoadout(swapLoadout.Loadout);
 }
 

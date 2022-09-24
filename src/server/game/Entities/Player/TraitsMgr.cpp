@@ -694,6 +694,8 @@ void TraitsMgr::LearnTraits(WorldPackets::Talent::LearnTraits& learnTraits)
                 {
                     // update new rank
                     it->second->Rank = talent.Rank;
+                    it->second->Unk  = talent.Unk;
+                    it->second->IsChanged = true;
                 }
             }
             else
@@ -820,37 +822,38 @@ void TraitsMgr::SwapLoadout(uint32 loadoutId, std::vector<WorldPackets::Talent::
         {
             TraitTalent* oldTalent = itTalent->second;
 
-            //if (talent.Rank > 0)
+            if (talent.Rank > 0)
             {
                 oldTalent->Rank = talent.Rank;
                 oldTalent->TraitNodeEntryID = talent.TraitNodeEntryID;
                 oldTalent->Unk = talent.Rank == 0 ? 2 : talent.Unk;
+                oldTalent->IsChanged = true;
                 oldTalent->Initialize();
 
-                if (oldTalent->Rank == 0)
-                    if (!defaultTrait->RemoveTraitTalentOnlyUnlearn(talent.TraitNode))
-                        TC_LOG_ERROR("network.opcode", "Client tried to unlearn not learned trait! %u", talent.TraitNode);
+                //if (oldTalent->Rank == 0)
+                //    if (!defaultTrait->RemoveTraitTalent(talent.TraitNode))
+                //        TC_LOG_ERROR("network.opcode", "Client tried to unlearn not learned trait! %u", talent.TraitNode);
             }
-            //else
-            //{
-            //    if (!defaultTrait->RemoveTraitTalent(talent.TraitNode))
-            //        TC_LOG_ERROR("network.opcode", "Client tried to unlearn not learned trait! %u", talent.TraitNode);
-            //}
+            else
+            {
+                if (!defaultTrait->RemoveTraitTalent(talent.TraitNode))
+                    TC_LOG_ERROR("network.opcode", "Client tried to unlearn not learned trait! %u", talent.TraitNode);
+            }
         }
         else
         {
             // learn case
-            //if (talent.Rank > 0)
+            if (talent.Rank > 0)
             {
                 TraitTalent* newTalent = new TraitTalent(_player, defaultTrait, talent.TraitNode, talent.TraitNodeEntryID, talent.Rank, talent.Unk);
                 defaultTrait->AddTraitTalent(newTalent);
             }
-            //else
-            //{
-            //    // unlearn case
-            //    if (!defaultTrait->RemoveTraitTalentOnlyUnlearn(talent.TraitNode))
-            //        TC_LOG_ERROR("network.opcode", "RemoveTraitTalentOnlyUnlearn Client tried to unlearn not learned trait! %u", talent.TraitNode);
-            //}
+            else
+            {
+                // unlearn case
+                if (!defaultTrait->RemoveTraitTalentOnlyUnlearn(talent.TraitNode))
+                    TC_LOG_ERROR("network.opcode", "RemoveTraitTalentOnlyUnlearn Client tried to unlearn not learned trait! %u ignoring.", talent.TraitNode);
+            }
         }
     }
 
@@ -1053,6 +1056,7 @@ bool Trait::RemoveTraitTalent(uint32 traitNode)
 
     /// Remove trait auras/learned spells
     RemoveTraitSpell(it->second);
+    it->second->IsChanged = true;
 
     /// Remove from DB
     auto stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_TRAIT_TALENT);
@@ -1081,6 +1085,7 @@ bool Trait::RemoveTraitTalentOnlyUnlearn(uint32 traitNode)
 
     /// Remove trait auras/learned spells
     RemoveTraitSpell(it->second);
+    it->second->IsChanged = true;
     return true;
 }
 

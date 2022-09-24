@@ -29921,7 +29921,7 @@ void Player::AddOrSetTrait(Trait* trait)
                 break;
             case TraitType::Talents:
                 SetUpdateFieldValue(traitUF.ModifyValue(&UF::CharacterTrait::SpecializationID), trait->GetSpecializationID());
-                SetUpdateFieldValue(traitUF.ModifyValue(&UF::CharacterTrait::Dword150), trait->GetIndex() <= 3 ? 1 : 0);
+                SetUpdateFieldValue(traitUF.ModifyValue(&UF::CharacterTrait::Dword150), trait->GetIndex() <= 3 ? 1 : 0); ///< IsDefault? 1 : 0
                 SetUpdateFieldValue(traitUF.ModifyValue(&UF::CharacterTrait::LoadoutIndex), trait->GetIndex());// - LoadoutIndex
                 break;
             case TraitType::Unk:
@@ -29932,14 +29932,16 @@ void Player::AddOrSetTrait(Trait* trait)
         }
     }
 
-    // UF::CharacterTrait& powerField = AddDynamicUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData)
-    //     .ModifyValue(&UF::ActivePlayerData::CharacterTraits));
-
     auto map = trait->GetTalents();
 
     for (auto itr = map->begin(); itr != map->end(); ++itr)
     {
         auto talent = itr->second;
+
+        if (!talent->IsChanged)
+            continue;
+
+        talent->IsChanged = false;
 
         bool isRemove = !talent->IsDefault && talent->Rank == 0;
 
@@ -29968,12 +29970,12 @@ void Player::AddOrSetTrait(Trait* trait)
         }
         else
         {
-            auto mod = traitUF.ModifyValue(&UF::CharacterTrait::Talents, foundIndex);
-
             auto const& oldTalent = currTrait.Talents[foundIndex];
 
             if (oldTalent.TraitNode != talent->TraitNode || oldTalent.TraitNodeEntryID != talent->TraitNodeEntryID || oldTalent.UnkDF != talent->Unk || oldTalent.Rank != talent->Rank)
             {
+                auto mod = traitUF.ModifyValue(&UF::CharacterTrait::Talents, foundIndex);
+
                 SetUpdateFieldValue(mod.ModifyValue(&UF::CharacterTraitTalent::TraitNode),        talent->TraitNode);
                 SetUpdateFieldValue(mod.ModifyValue(&UF::CharacterTraitTalent::TraitNodeEntryID), talent->TraitNodeEntryID);
                 SetUpdateFieldValue(mod.ModifyValue(&UF::CharacterTraitTalent::UnkDF),            talent->Unk);

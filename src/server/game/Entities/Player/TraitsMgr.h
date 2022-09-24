@@ -94,6 +94,7 @@ struct TC_GAME_API TraitTalent
     uint32 Rank;
     uint32 Unk;
     bool IsDefault;
+    bool IsChanged = true;
 
     /// Stored to prevent lookup at runtime
     TraitNodeEntry       const* TraitNodeEntry;
