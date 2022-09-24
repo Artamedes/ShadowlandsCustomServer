@@ -15,6 +15,7 @@ namespace WorldPackets
     namespace Talent
     {
         struct TalentGroupInfo;
+        struct CharacterTraitEntry;
         class ActiveGlyphs;
         class LearnTraits;
         class CreateNewLoadout;
@@ -68,17 +69,25 @@ class TC_GAME_API Specialization
         void LoadGlyphAuras();
         void SetPVPTalent(uint16 pvpTalentId, uint8 slot);
         uint16 GetPVPTalent(uint8 slot) const;
+        void SetActiveLoadoutId(uint32 loadoutId) { _activeLoadoutId = loadoutId; }
+        uint32 GetActiveLoadoutId() const { return _activeLoadoutId; };
+
+        Trait* GetDefaultTrait() { return _trait; }
 
     private:
         Player* _player;
         uint32 _specId;
         uint16 _pvpTalents[MAX_PVP_TALENT_SLOTS];
         std::vector<uint32> _glyphs;
+        Trait* _trait;
+        uint32 _activeLoadoutId;
 };
 
 struct TC_GAME_API TraitTalent
 {
     TraitTalent(Player* player, Trait* trait, uint32 TraitNode, uint32 TraitNodeEntryID, uint32 Rank, uint32 Unk, bool isDefault = false);
+
+    void Initialize();
 
     uint32 TraitNode;
     uint32 TraitNodeEntryID;
@@ -123,6 +132,7 @@ class TC_GAME_API Trait
 
         void AddTraitTalent(TraitTalent* talent);
         bool RemoveTraitTalent(uint32 traitNode);
+        bool RemoveTraitTalentOnlyUnlearn(uint32 traitNode);
 
         void LearnTraitSpells();
         void LearnTraitSpell(TraitTalent* talent);
@@ -173,8 +183,13 @@ class TC_GAME_API TraitsMgr
         Trait* GetTraitForSpec(uint32 specId);
         Trait* GetTraitByConfigID(uint32 configID);
         Trait* CreateDefaultTraitForSpec(ChrSpecializationEntry const* specEntry, bool activeSpec = false);
+        Trait* GetTraitByLoadoutID(uint32 loadoutId);
         void LearnTraits(WorldPackets::Talent::LearnTraits& learnTraits);
         void CreateNewLoadout(WorldPackets::Talent::CreateNewLoadout& createNewLoadout);
+        void SwapLoadout(uint32 loadoutId, std::vector<WorldPackets::Talent::CharacterTraitEntry> traits);
+        void SwapLoadout(uint32 loadout);
+        void RenameLoadout(uint32 configId, std::string const& newName);
+        void RemoveLoadout(uint32 configId);
 
         /// Glyphs
         void SendActiveGlyphs(bool fullUpdate = false);

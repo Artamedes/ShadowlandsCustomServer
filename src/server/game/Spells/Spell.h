@@ -240,6 +240,7 @@ class TC_GAME_API Spell
     friend class SpellScript;
     public:
         Trinity::AnyData Variables;
+        std::function<void()> Callback = nullptr;
 
         void EffectNULL();
         void EffectUnused();

@@ -29884,18 +29884,34 @@ TraitsMgr const* Player::GetTraitsMgr() const
 
 void Player::AddOrSetTrait(Trait* trait)
 {
-    int32 foundIndexTrait = m_activePlayerData->CharacterTraits.FindIndexIf([&](UF::CharacterTrait ufTrait)
+    int32 foundIndexTrait = m_activePlayerData->CharacterTraits.FindIndexIf([trait](UF::CharacterTrait ufTrait)
     {
         return ufTrait.ConfigID == trait->GetConfigID();
     });
 
     auto traitUF = m_values.ModifyValue(&Player::m_activePlayerData)
-        .ModifyValue(&UF::ActivePlayerData::CharacterTraits, trait->GetIndex());
+        .ModifyValue(&UF::ActivePlayerData::CharacterTraits, foundIndexTrait == -1 ? trait->GetIndex() : foundIndexTrait);
+
+    auto const& currTrait = m_activePlayerData->CharacterTraits[foundIndexTrait == -1 ? trait->GetIndex() : foundIndexTrait];
+
+    if (trait->GetConfigName() != *currTrait.ConfigName)
+    {
+        SetUpdateFieldValue(traitUF.ModifyValue(&UF::CharacterTrait::ConfigName), trait->GetConfigName());
+
+        // horrible really..
+        ForceUpdateFieldChange(traitUF.ModifyValue(&UF::CharacterTrait::ConfigID));
+        ForceUpdateFieldChange(traitUF.ModifyValue(&UF::CharacterTrait::Dword108));
+        ForceUpdateFieldChange(traitUF.ModifyValue(&UF::CharacterTrait::Dword148));
+        ForceUpdateFieldChange(traitUF.ModifyValue(&UF::CharacterTrait::SpecializationID));
+        ForceUpdateFieldChange(traitUF.ModifyValue(&UF::CharacterTrait::Dword150));
+        ForceUpdateFieldChange(traitUF.ModifyValue(&UF::CharacterTrait::LoadoutIndex));
+        ForceUpdateFieldChange(traitUF.ModifyValue(&UF::CharacterTrait::Dword158));
+        ForceUpdateFieldChange(traitUF.ModifyValue(&UF::CharacterTrait::ConfigName));
+    }
 
     if (foundIndexTrait == -1)
     {
         SetUpdateFieldValue(traitUF.ModifyValue(&UF::CharacterTrait::ConfigID), trait->GetConfigID());
-        SetUpdateFieldValue(traitUF.ModifyValue(&UF::CharacterTrait::ConfigName), trait->GetConfigName());
         SetUpdateFieldValue(traitUF.ModifyValue(&UF::CharacterTrait::Dword108), static_cast<uint32>(trait->GetType()));
 
         switch (trait->GetType())
@@ -29905,8 +29921,8 @@ void Player::AddOrSetTrait(Trait* trait)
                 break;
             case TraitType::Talents:
                 SetUpdateFieldValue(traitUF.ModifyValue(&UF::CharacterTrait::SpecializationID), trait->GetSpecializationID());
-                SetUpdateFieldValue(traitUF.ModifyValue(&UF::CharacterTrait::Dword150), 1);
-                SetUpdateFieldValue(traitUF.ModifyValue(&UF::CharacterTrait::Dword154), trait->GetTalentGroup() + 1);// - unsure about this now, Maybe it's total talent configs idx or TalentGroup + 1
+                SetUpdateFieldValue(traitUF.ModifyValue(&UF::CharacterTrait::Dword150), trait->GetIndex() <= 3 ? 1 : 0);
+                SetUpdateFieldValue(traitUF.ModifyValue(&UF::CharacterTrait::LoadoutIndex), trait->GetIndex());// - LoadoutIndex
                 break;
             case TraitType::Unk:
                 SetUpdateFieldValue(traitUF.ModifyValue(&UF::CharacterTrait::Dword148), 1);
@@ -29927,7 +29943,7 @@ void Player::AddOrSetTrait(Trait* trait)
 
         bool isRemove = !talent->IsDefault && talent->Rank == 0;
 
-        int32 foundIndex = m_activePlayerData->CharacterTraits[trait->GetIndex()].Talents.FindIndexIf([&](UF::CharacterTraitTalent ufTalent)
+        int32 foundIndex = m_activePlayerData->CharacterTraits[trait->GetIndex()].Talents.FindIndexIf([talent](UF::CharacterTraitTalent ufTalent)
         {
             return ufTalent.TraitNode == talent->TraitNode && ufTalent.TraitNodeEntryID == talent->TraitNodeEntryID;
         });
@@ -29954,18 +29970,53 @@ void Player::AddOrSetTrait(Trait* trait)
         {
             auto mod = traitUF.ModifyValue(&UF::CharacterTrait::Talents, foundIndex);
 
-            SetUpdateFieldValue(mod.ModifyValue(&UF::CharacterTraitTalent::TraitNode),        talent->TraitNode);
-            SetUpdateFieldValue(mod.ModifyValue(&UF::CharacterTraitTalent::TraitNodeEntryID), talent->TraitNodeEntryID);
-            SetUpdateFieldValue(mod.ModifyValue(&UF::CharacterTraitTalent::UnkDF),            talent->Unk);
-            SetUpdateFieldValue(mod.ModifyValue(&UF::CharacterTraitTalent::Rank),             talent->Rank);
+            auto const& oldTalent = currTrait.Talents[foundIndex];
+
+            if (oldTalent.TraitNode != talent->TraitNode || oldTalent.TraitNodeEntryID != talent->TraitNodeEntryID || oldTalent.UnkDF != talent->Unk || oldTalent.Rank != talent->Rank)
+            {
+                SetUpdateFieldValue(mod.ModifyValue(&UF::CharacterTraitTalent::TraitNode),        talent->TraitNode);
+                SetUpdateFieldValue(mod.ModifyValue(&UF::CharacterTraitTalent::TraitNodeEntryID), talent->TraitNodeEntryID);
+                SetUpdateFieldValue(mod.ModifyValue(&UF::CharacterTraitTalent::UnkDF),            talent->Unk);
+                SetUpdateFieldValue(mod.ModifyValue(&UF::CharacterTraitTalent::Rank),             talent->Rank);
+            }
         }
     }
+}
 
+void Player::RemoveTrait(Trait* trait)
+{
+    int32 foundIndexTrait = m_activePlayerData->CharacterTraits.FindIndexIf([trait](UF::CharacterTrait ufTrait)
+    {
+        return ufTrait.ConfigID == trait->GetConfigID();
+    });
+
+    if (foundIndexTrait == -1)
+        return;
+
+    RemoveDynamicUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData)
+        .ModifyValue(&UF::ActivePlayerData::CharacterTraits), foundIndexTrait);
+
+    // we need to force updates otherwise client removes the last value
+    // maybe there is better way
+    for (int i = 0; i < m_activePlayerData->CharacterTraits.size(); ++i)
+    {
+        auto traitUF = m_values.ModifyValue(&Player::m_activePlayerData)
+            .ModifyValue(&UF::ActivePlayerData::CharacterTraits, i);
+
+        ForceUpdateFieldChange(traitUF.ModifyValue(&UF::CharacterTrait::ConfigID));
+        ForceUpdateFieldChange(traitUF.ModifyValue(&UF::CharacterTrait::Dword108));
+        ForceUpdateFieldChange(traitUF.ModifyValue(&UF::CharacterTrait::Dword148));
+        ForceUpdateFieldChange(traitUF.ModifyValue(&UF::CharacterTrait::SpecializationID));
+        ForceUpdateFieldChange(traitUF.ModifyValue(&UF::CharacterTrait::Dword150));
+        ForceUpdateFieldChange(traitUF.ModifyValue(&UF::CharacterTrait::LoadoutIndex));
+        ForceUpdateFieldChange(traitUF.ModifyValue(&UF::CharacterTrait::Dword158));
+        ForceUpdateFieldChange(traitUF.ModifyValue(&UF::CharacterTrait::ConfigName));
+    }
 }
 
 void Player::RemoveTraitTalent(Trait* trait, TraitTalent* talent)
 {
-    int32 foundIndexTrait = m_activePlayerData->CharacterTraits.FindIndexIf([&](UF::CharacterTrait ufTrait)
+    int32 foundIndexTrait = m_activePlayerData->CharacterTraits.FindIndexIf([trait](UF::CharacterTrait ufTrait)
     {
         return ufTrait.ConfigID == trait->GetConfigID();
     });
@@ -29976,7 +30027,7 @@ void Player::RemoveTraitTalent(Trait* trait, TraitTalent* talent)
     auto traitUF = m_values.ModifyValue(&Player::m_activePlayerData)
         .ModifyValue(&UF::ActivePlayerData::CharacterTraits, trait->GetIndex());
 
-    int32 foundIndex = m_activePlayerData->CharacterTraits[trait->GetIndex()].Talents.FindIndexIf([&](UF::CharacterTraitTalent ufTalent)
+    int32 foundIndex = m_activePlayerData->CharacterTraits[trait->GetIndex()].Talents.FindIndexIf([talent](UF::CharacterTraitTalent ufTalent)
     {
         return ufTalent.TraitNode == talent->TraitNode && ufTalent.TraitNodeEntryID == talent->TraitNodeEntryID;
     });
@@ -29987,10 +30038,21 @@ void Player::RemoveTraitTalent(Trait* trait, TraitTalent* talent)
     RemoveDynamicUpdateFieldValue(traitUF.ModifyValue(&UF::CharacterTrait::Talents), foundIndex);
 }
 
-void Player::SetCurrentConfigID(uint32 configId)
+void Player::SetCurrentConfigID(uint32 configId, bool suppressed /*= false*/)
 {
-    SetUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::ActiveConfigID), configId);
-    ForceUpdateFieldChange(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::ActiveConfigID));
+    if (suppressed)
+    {
+        DoWithSuppressingObjectUpdates([&]()
+        {
+            SetUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::ActiveConfigID), configId);
+            const_cast<UF::ActivePlayerData&>(*m_activePlayerData).ClearChanged(&UF::ActivePlayerData::ActiveConfigID);
+        });
+    }
+    else
+    {
+        SetUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::ActiveConfigID), configId);
+        ForceUpdateFieldChange(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::ActiveConfigID));
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////

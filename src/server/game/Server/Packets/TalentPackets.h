@@ -175,8 +175,8 @@ namespace WorldPackets
             void Read() override;
 
             CharacterTraitInfo Trait;
-            uint32 UnkInt32_1 = 0;
-            uint32 UnkInt32_2 = 0;
+            uint32 EditingConfigID = 0;
+            uint32 Loadout = 0;
         };
 
         class CreateNewLoadout final : public ClientPacket
@@ -187,6 +187,37 @@ namespace WorldPackets
             void Read() override;
 
             CharacterTraitInfo Trait;
+        };
+
+        class SwapLoadout final : public ClientPacket
+        {
+        public:
+            SwapLoadout(WorldPacket&& packet) : ClientPacket(CMSG_SWAP_TRAIT_LOADOUT, std::move(packet)) { }
+
+            void Read() override;
+
+            uint32 Loadout = 0;
+        };
+
+        class RemoveLoadout final : public ClientPacket
+        {
+        public:
+            RemoveLoadout(WorldPacket&& packet) : ClientPacket(CMSG_REMOVE_LOADOUT, std::move(packet)) { }
+
+            void Read() override;
+
+            uint32 ConfigID = 0;
+        };
+
+        class RenameLoadout final : public ClientPacket
+        {
+        public:
+            RenameLoadout(WorldPacket&& packet) : ClientPacket(CMSG_RENAME_LOADOUT, std::move(packet)) { }
+
+            void Read() override;
+
+            uint32 ConfigID = 0;
+            std::string ConfigName;
         };
     }
 }

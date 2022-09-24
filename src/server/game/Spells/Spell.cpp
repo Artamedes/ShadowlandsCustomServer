@@ -4132,6 +4132,9 @@ void Spell::_cast(bool skipCheck)
     if (Creature* caster = m_originalCaster->ToCreature())
         if (caster->IsAIEnabled())
             caster->AI()->OnSuccessfulSpellCast(GetSpellInfo());
+
+    if (Callback != nullptr)
+        Callback();
 }
 
 template <class Container>

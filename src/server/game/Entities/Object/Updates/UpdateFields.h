@@ -698,7 +698,7 @@ struct CharacterTrait : public IsUpdateFieldStructureTag, public HasChangesMask<
     UpdateField<int32, 3, 5> Dword148;
     UpdateField<int32, 3, 6> SpecializationID;
     UpdateField<int32, 7, 8> Dword150;
-    UpdateField<int32, 7, 9> Dword154;
+    UpdateField<int32, 7, 9> LoadoutIndex;
     UpdateField<int32, 7, 10> Dword158;
     UpdateField<std::string, 0, 11> ConfigName;
 

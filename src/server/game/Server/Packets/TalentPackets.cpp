@@ -164,11 +164,28 @@ ByteBuffer& operator>>(ByteBuffer& data, WorldPackets::Talent::CharacterTraitInf
 void WorldPackets::Talent::LearnTraits::Read()
 {
     _worldPacket >> Trait;
-    _worldPacket >> UnkInt32_1;
-    _worldPacket >> UnkInt32_2;
+    _worldPacket >> EditingConfigID;
+    _worldPacket >> Loadout;
 }
 
 void WorldPackets::Talent::CreateNewLoadout::Read()
 {
     _worldPacket >> Trait;
+}
+
+void WorldPackets::Talent::SwapLoadout::Read()
+{
+    _worldPacket >> Loadout;
+}
+
+void WorldPackets::Talent::RemoveLoadout::Read()
+{
+    _worldPacket >> ConfigID;
+}
+
+void WorldPackets::Talent::RenameLoadout::Read()
+{
+    _worldPacket >> ConfigID;
+    uint32 configNameLen = _worldPacket.ReadBits(9);
+    ConfigName = _worldPacket.ReadString(configNameLen);
 }

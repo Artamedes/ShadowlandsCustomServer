@@ -5,11 +5,14 @@
 #include "DB2Stores.h"
 #include "MovementPackets.h"
 #include "TraitsMgr.h"
-
+#include "Spell.h"
 
 void WorldSession::HandleLearnTraitsOpcode(WorldPackets::Talent::LearnTraits& learnTraits)
 {
     auto traitMgr = _player->GetTraitsMgr();
+    if (!traitMgr->GetActiveSpecialization())
+        return;
+
     auto trait = traitMgr->GetTraitByConfigID(learnTraits.Trait.ConfigID);
     if (!trait)
     {
@@ -54,7 +57,19 @@ void WorldSession::HandleLearnTraitsOpcode(WorldPackets::Talent::LearnTraits& le
     SendPacket(tokenPacket.Write());
 
     // SMSG_LEARNED_SPELLS
-    _player->GetTraitsMgr()->LearnTraits(learnTraits);
+    if (learnTraits.Loadout == 0 || talentMap->empty())
+        _player->GetTraitsMgr()->LearnTraits(learnTraits);
+    else
+    {
+        uint32 loadoutId = learnTraits.Loadout;
+        std::vector<WorldPackets::Talent::CharacterTraitEntry> traits(learnTraits.Trait.Talents);
+
+        _player->CastAndGetSpell(_player, 384255)->Callback = [this, loadoutId, traits]()
+        {
+            // packet is actually sending what we are unlearning, so we dont have to unlearn everything here
+            _player->GetTraitsMgr()->SwapLoadout(loadoutId, traits);
+        };
+    }
 
     // SMSG_RESUME_TOKEN
     WorldPackets::Movement::ResumeToken resumeToken;
@@ -68,5 +83,21 @@ void WorldSession::HandleLearnTraitsOpcode(WorldPackets::Talent::LearnTraits& le
 void WorldSession::HandleCreateNewLoadoutOpcode(WorldPackets::Talent::CreateNewLoadout& createNewLoadout)
 {
     // TODO: research this more
-    //_player->GetTraitsMgr()->CreateNewLoadout(createNewLoadout);
+    _player->GetTraitsMgr()->CreateNewLoadout(createNewLoadout);
+}
+
+void WorldSession::HandleSwapLoadoutOpcode(WorldPackets::Talent::SwapLoadout& swapLoadout)
+{
+    ChatHandler(_player).PSendSysMessage("HandleSwapLoadoutOpcode %u", swapLoadout.Loadout);
+    _player->GetTraitsMgr()->SwapLoadout(swapLoadout.Loadout);
+}
+
+void WorldSession::HandleRenameLoadout(WorldPackets::Talent::RenameLoadout& renameLoadout)
+{
+    _player->GetTraitsMgr()->RenameLoadout(renameLoadout.ConfigID, renameLoadout.ConfigName);
+}
+
+void WorldSession::HandleRemoveLoadout(WorldPackets::Talent::RemoveLoadout& removeLoadout)
+{
+    _player->GetTraitsMgr()->RemoveLoadout(removeLoadout.ConfigID);
 }

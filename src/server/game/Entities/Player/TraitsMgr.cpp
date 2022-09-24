@@ -13,6 +13,9 @@
 #include "SpellHistory.h"
 #include "SpellInfo.h"
 
+// debug
+#include "Chat.h"
+
 ////////////////////////////////////////////////////////////////////////
 
 Specialization::Specialization(Player* player, ChrSpecializationEntry const* specEntry) : _player(player), _specId(specEntry->ID)
@@ -22,7 +25,7 @@ Specialization::Specialization(Player* player, ChrSpecializationEntry const* spe
 
     // Create default trait for this spec
     auto traitMgr = _player->GetTraitsMgr();
-    traitMgr->CreateDefaultTraitForSpec(specEntry);
+    _trait = traitMgr->CreateDefaultTraitForSpec(specEntry);
 }
 
 void Specialization::BuildUpdateTalentDataPacket(WorldPackets::Talent::TalentGroupInfo& info)
@@ -202,6 +205,10 @@ void TraitsMgr::LoadFromDB(CharacterDatabaseQueryHolder const& holder)
                 stmt->setUInt64(0, _player->GetGUID().GetCounter());
                 stmt->setUInt32(1, configId);
                 CharacterDatabase.Execute(stmt);
+                stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_ALL_TRAIT_TALENTS);
+                stmt->setUInt64(0, _player->GetGUID().GetCounter());
+                stmt->setUInt32(1, configId);
+                CharacterDatabase.Execute(stmt);
                 sendPacketTalentsReset = true;
                 continue;
             }
@@ -270,6 +277,27 @@ void TraitsMgr::LoadFromDB(CharacterDatabaseQueryHolder const& holder)
         } while (talentResult->NextRow());
     }
 
+    if (auto specResult = holder.GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_SEL_SPEC_INFO))
+    {
+        do
+        {
+            Field* fields = talentResult->Fetch();
+            
+            uint32 SpecId         = fields[0].GetUInt32();
+            uint32 LoadoutID      = fields[1].GetUInt32();
+
+            for (auto specalization : _specializations)
+            {
+                if (specalization->GetSpecId() == SpecId)
+                {
+                    specalization->SetActiveLoadoutId(LoadoutID);
+                    break;
+                }
+            }
+
+        } while (specResult->NextRow());
+    }
+
     if (_player->m_activePlayerData->ActiveConfigID < OldConfigIdPre45569)
         _player->SetCurrentConfigID(0);
 
@@ -278,8 +306,7 @@ void TraitsMgr::LoadFromDB(CharacterDatabaseQueryHolder const& holder)
     {
         auto trait = itr->second;
 
-        if (trait->GetConfigID() == _player->m_activePlayerData->ActiveConfigID
-            || (_player->m_activePlayerData->ActiveConfigID == 0 && _player->GetSpecializationId() > 0 && trait->GetSpecializationID() == _player->GetSpecializationId()))
+        if (trait->GetConfigID() == _player->m_activePlayerData->ActiveConfigID)
         {
             _player->SetCurrentConfigID(trait->GetConfigID());
             trait->LearnTraitSpells();
@@ -299,6 +326,14 @@ void TraitsMgr::LoadFromDB(CharacterDatabaseQueryHolder const& holder)
         data.WriteBit(0); ///< IsPet
         data.FlushBits();
         _player->SendDirectMessage(&data);
+    }
+
+    // if we still don't have a trait, we going to set one here.
+    if (_activeTrait == nullptr && GetActiveSpecialization())
+    {
+        _activeTrait = GetActiveSpecialization()->GetDefaultTrait();
+        _activeTrait->LearnTraitSpells();
+        _player->SetCurrentConfigID(_activeTrait->GetConfigID());
     }
 }
 
@@ -402,20 +437,23 @@ void TraitsMgr::SetActiveTalentGroup(int8 orderIndex, bool force /*= false*/)
     SendUpdateTalentData();
     uint32 configId = 0;
 
-    if (Trait* swappedTrait = GetTraitForSpec(newSpecialization->GetSpecId()))
+    if (!force || _player->m_activePlayerData->ActiveConfigID == 0)
     {
-        swappedTrait->LearnTraitSpells();
-        configId = swappedTrait->GetConfigID();
-        _player->SetCurrentConfigID(configId);
-        _activeTrait = swappedTrait;
-    }
-    else
-    {
-        /// First time setting the spec
-        TC_LOG_ERROR("network.opcode", "Somehow player not have traits!");
-        if (auto specEntry = sChrSpecializationStore.LookupEntry(newSpecialization->GetSpecId()))
-            if (auto trait = CreateDefaultTraitForSpec(specEntry, true))
-                configId = trait->GetConfigID();
+        if (Trait* swappedTrait = GetTraitForSpec(newSpecialization->GetSpecId()))
+        {
+            swappedTrait->LearnTraitSpells();
+            configId = swappedTrait->GetConfigID();
+            _player->SetCurrentConfigID(configId);
+            _activeTrait = swappedTrait;
+        }
+        else
+        {
+            /// First time setting the spec
+            TC_LOG_ERROR("network.opcode", "Somehow player not have traits!");
+            if (auto specEntry = sChrSpecializationStore.LookupEntry(newSpecialization->GetSpecId()))
+                if (auto trait = CreateDefaultTraitForSpec(specEntry, true))
+                    configId = trait->GetConfigID();
+        }
     }
 }
 
@@ -442,14 +480,17 @@ Trait* TraitsMgr::GetActiveTrait()
 
 Trait* TraitsMgr::GetTraitForSpec(uint32 specId)
 {
+    auto defaultTrait = GetActiveSpecialization()->GetDefaultTrait();
+    uint32 activeLoadoutId = GetActiveSpecialization()->GetActiveLoadoutId();
+
     for (auto itr = _traits.begin(); itr != _traits.end(); ++itr)
     {
         Trait* trait = itr->second;
-        if (trait->GetType() == TraitType::Talents && trait->GetSpecializationID() == specId)
+        if (trait->GetType() == TraitType::Talents && trait->GetSpecializationID() == specId && trait->GetIndex() == activeLoadoutId)
             return trait;
     }
 
-    return nullptr;
+    return defaultTrait;
 }
 
 Trait* TraitsMgr::CreateDefaultTraitForSpec(ChrSpecializationEntry const* specEntry, bool activeSpec /*= false*/)
@@ -615,6 +656,18 @@ Trait* TraitsMgr::CreateDefaultTraitForSpec(ChrSpecializationEntry const* specEn
     return trait;
 }
 
+Trait* TraitsMgr::GetTraitByLoadoutID(uint32 loadoutId)
+{
+    for (auto itr = _traits.begin(); itr != _traits.end(); ++itr)
+    {
+        Trait* trait = itr->second;
+        if (trait->GetType() == TraitType::Talents && trait->GetSpecializationID() == _player->GetSpecializationId() && trait->GetIndex() == loadoutId)
+            return trait;
+    }
+
+    return nullptr;
+}
+
 void TraitsMgr::LearnTraits(WorldPackets::Talent::LearnTraits& learnTraits)
 {
     auto UpdateTrait([&](Trait* trait)
@@ -694,7 +747,7 @@ void TraitsMgr::CreateNewLoadout(WorldPackets::Talent::CreateNewLoadout& createN
     {
         trait->SetConfigName(createNewLoadout.Trait.ConfigName);
 
-        _player->SetCurrentConfigID(createNewLoadout.Trait.ConfigID);
+        //_player->SetCurrentConfigID(createNewLoadout.Trait.ConfigID);
 
         std::vector<uint32> unlearnedTraits;
         unlearnedTraits.reserve(createNewLoadout.Trait.Talents.size());
@@ -748,6 +801,152 @@ void TraitsMgr::CreateNewLoadout(WorldPackets::Talent::CreateNewLoadout& createN
     UpdateTrait(trait);
     _player->AddOrSetTrait(trait);
     _activeTrait = trait;
+   // _player->SetCurrentConfigID(trait->GetConfigID());
+}
+
+void TraitsMgr::SwapLoadout(uint32 loadoutId, std::vector<WorldPackets::Talent::CharacterTraitEntry> traits)
+{
+    auto trait = GetTraitByLoadoutID(loadoutId);
+    if (!trait)
+        return;
+
+    // edit default layout for some reason - wtf blizz
+    auto defaultTrait = GetActiveSpecialization()->GetDefaultTrait();
+
+    for (auto const& talent : traits)
+    {
+        auto itTalent = defaultTrait->GetTalents()->find(talent.TraitNode);
+        if (itTalent != defaultTrait->GetTalents()->end())
+        {
+            TraitTalent* oldTalent = itTalent->second;
+
+            //if (talent.Rank > 0)
+            {
+                oldTalent->Rank = talent.Rank;
+                oldTalent->TraitNodeEntryID = talent.TraitNodeEntryID;
+                oldTalent->Unk = talent.Rank == 0 ? 2 : talent.Unk;
+                oldTalent->Initialize();
+
+                if (oldTalent->Rank == 0)
+                    if (!defaultTrait->RemoveTraitTalentOnlyUnlearn(talent.TraitNode))
+                        TC_LOG_ERROR("network.opcode", "Client tried to unlearn not learned trait! %u", talent.TraitNode);
+            }
+            //else
+            //{
+            //    if (!defaultTrait->RemoveTraitTalent(talent.TraitNode))
+            //        TC_LOG_ERROR("network.opcode", "Client tried to unlearn not learned trait! %u", talent.TraitNode);
+            //}
+        }
+        else
+        {
+            // learn case
+            //if (talent.Rank > 0)
+            {
+                TraitTalent* newTalent = new TraitTalent(_player, defaultTrait, talent.TraitNode, talent.TraitNodeEntryID, talent.Rank, talent.Unk);
+                defaultTrait->AddTraitTalent(newTalent);
+            }
+            //else
+            //{
+            //    // unlearn case
+            //    if (!defaultTrait->RemoveTraitTalentOnlyUnlearn(talent.TraitNode))
+            //        TC_LOG_ERROR("network.opcode", "RemoveTraitTalentOnlyUnlearn Client tried to unlearn not learned trait! %u", talent.TraitNode);
+            //}
+        }
+    }
+
+    _player->AddOrSetTrait(defaultTrait);
+
+    _activeTrait = trait;
+
+    // learn new spells
+    defaultTrait->LearnTraitSpells();
+    _player->SetCurrentConfigID(_activeTrait->GetConfigID());
+}
+
+void TraitsMgr::SwapLoadout(uint32 loadout)
+{
+    for (auto it = _traits.begin(); it != _traits.end(); ++it)
+    {
+        if (it->second->GetSpecializationID() == _player->GetSpecializationId() && it->second->GetIndex() == loadout)
+        {
+            auto trait = it->second;
+
+            if (trait == GetActiveTrait())
+                break;
+
+            // Since we are swapping, remove active trait data
+            // @todo: diff 2 traits and only unlearn/learn what need - blizzlike
+            if (GetActiveTrait())
+                GetActiveTrait()->UnlearnTraitSpells();
+
+            trait->LearnTraitSpells();
+            _activeTrait = trait;
+            GetActiveSpecialization()->SetActiveLoadoutId(trait->GetIndex());
+            _player->SetCurrentConfigID(trait->GetConfigID());
+            break;
+        }
+    }
+}
+
+void TraitsMgr::RenameLoadout(uint32 configId, std::string const& newName)
+{
+    if (auto trait = GetTraitByConfigID(configId))
+    {
+        trait->SetConfigName(newName);
+        _player->AddOrSetTrait(trait);
+    }
+}
+
+void TraitsMgr::RemoveLoadout(uint32 configId)
+{
+    auto it = _traits.find(configId);
+    if (it == _traits.end())
+        return;
+
+    auto trait = it->second;
+
+    auto DeleteTrait([&]() -> void
+    {
+        auto stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_TRAIT);
+        stmt->setUInt64(0, _player->GetGUID().GetCounter());
+        stmt->setUInt32(1, configId);
+        CharacterDatabase.Execute(stmt);
+        stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_ALL_TRAIT_TALENTS);
+        stmt->setUInt64(0, _player->GetGUID().GetCounter());
+        stmt->setUInt32(1, configId);
+        CharacterDatabase.Execute(stmt);
+
+        _player->RemoveTrait(trait);
+        delete trait;
+        _traits.erase(configId);
+    });
+
+    if (trait == GetActiveTrait())
+    {
+        for (auto itr = _traits.begin(); itr != _traits.end(); ++itr)
+        {
+            if (itr->second == trait)
+                continue;
+
+            if (itr->second->GetSpecializationID() == _player->GetSpecializationId())
+            {
+                trait->UnlearnTraitSpells();
+                DeleteTrait();
+
+                auto swappedTrait = itr->second;
+                _activeTrait = swappedTrait;
+                swappedTrait->LearnTraitSpells();
+                configId = swappedTrait->GetConfigID();
+                _player->SetCurrentConfigID(configId);
+                GetActiveSpecialization()->SetActiveLoadoutId(swappedTrait->GetIndex());
+                return;
+            }
+        }
+    }
+    else
+    {
+        DeleteTrait();
+    }
 }
 
 void TraitsMgr::SendActiveGlyphs(bool fullUpdate /*= false*/)
@@ -870,6 +1069,21 @@ bool Trait::RemoveTraitTalent(uint32 traitNode)
     return true;
 }
 
+bool Trait::RemoveTraitTalentOnlyUnlearn(uint32 traitNode)
+{
+    auto it = _talents.find(traitNode);
+    if (it == _talents.end())
+        return false;
+
+    /// Can't remove default talents
+    if (it->second->IsDefault)
+        return false;
+
+    /// Remove trait auras/learned spells
+    RemoveTraitSpell(it->second);
+    return true;
+}
+
 void Trait::LearnTraitSpells()
 {
     for (auto itr = _talents.begin(); itr != _talents.end(); itr++)
@@ -880,7 +1094,7 @@ void Trait::LearnTraitSpells()
 
 void Trait::LearnTraitSpell(TraitTalent* talent)
 {
-    if (talent->TraitDefinitionEntry)
+    if (talent->Unk != 2 && talent->TraitDefinitionEntry)
     {
         auto spellInfo = sSpellMgr->GetSpellInfo(talent->TraitDefinitionEntry->SpellID);
 
@@ -948,6 +1162,8 @@ void Trait::SaveToDB(CharacterDatabaseTransaction trans)
 
 void Trait::UnlearnTraitSpells()
 {
+    _player->InterruptNonMeleeSpells(false);
+
     for (auto itr = _talents.begin(); itr != _talents.end(); itr++)
     {
         RemoveTraitSpell(itr->second);
@@ -983,9 +1199,14 @@ TraitTalent::TraitTalent(Player* player, Trait* trait, uint32 traitNode, uint32 
     : _player(player), _trait(trait),
     TraitNode(traitNode), TraitNodeEntryID(traitNodeEntryID), Rank(rank), Unk(unk), IsDefault(isDefault)
 {
-    TraitNodeEntry       = sTraitNodeStore.LookupEntry(traitNode);
+    Initialize();
+}
+
+void TraitTalent::Initialize()
+{
+    TraitNodeEntry       = sTraitNodeStore.LookupEntry(TraitNode);
     TraitTreeEntry       = sTraitTreeStore.LookupEntry(TraitNodeEntry ? TraitNodeEntry->TraitTreeID : 0);
-    TraitNodeEntryEntry  = sTraitNodeEntryStore.LookupEntry(traitNodeEntryID);
+    TraitNodeEntryEntry  = sTraitNodeEntryStore.LookupEntry(TraitNodeEntryID);
     TraitDefinitionEntry = sTraitDefinitionStore.LookupEntry(TraitNodeEntryEntry ? TraitNodeEntryEntry->TraitDefinitionID : 0);
 }
 

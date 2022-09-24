@@ -3070,7 +3070,7 @@ void CharacterTrait::WriteCreate(ByteBuffer& data, Player const* owner, Player c
     {
         data << int32(SpecializationID);
         data << int32(Dword150);
-        data << int32(Dword154);
+        data << int32(LoadoutIndex);
     }
 
     if (Dword108 == 3)
@@ -3155,7 +3155,7 @@ void CharacterTrait::WriteUpdate(ByteBuffer& data, bool ignoreChangesMask, Playe
             }
             if (changesMask[9])
             {
-                data << int32(Dword154);
+                data << int32(LoadoutIndex);
             }
         }
 
@@ -3180,7 +3180,7 @@ void CharacterTrait::ClearChangesMask()
     Base::ClearChangesMask(Dword148);
     Base::ClearChangesMask(SpecializationID);
     Base::ClearChangesMask(Dword150);
-    Base::ClearChangesMask(Dword154);
+    Base::ClearChangesMask(LoadoutIndex);
     Base::ClearChangesMask(Dword158);
     Base::ClearChangesMask(ConfigName);
     _changesMask.ResetAll();

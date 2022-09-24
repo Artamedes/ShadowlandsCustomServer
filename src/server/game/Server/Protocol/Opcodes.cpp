@@ -153,6 +153,7 @@ void OpcodeTable::Initialize()
     DEFINE_HANDLER(CMSG_AREA_TRIGGER,                                       STATUS_LOGGEDIN,  PROCESS_INPLACE,      &WorldSession::HandleAreaTriggerOpcode);
     DEFINE_HANDLER(CMSG_ARTIFACT_ADD_POWER,                                 STATUS_LOGGEDIN,  PROCESS_INPLACE,      &WorldSession::HandleArtifactAddPower);
     DEFINE_HANDLER(CMSG_ARTIFACT_SET_APPEARANCE,                            STATUS_LOGGEDIN,  PROCESS_INPLACE,      &WorldSession::HandleArtifactSetAppearance);
+    DEFINE_HANDLER(CMSG_SWAP_TRAIT_LOADOUT,                                 STATUS_LOGGEDIN,  PROCESS_THREADSAFE,   &WorldSession::HandleSwapLoadoutOpcode);
     DEFINE_HANDLER(CMSG_ASSIGN_EQUIPMENT_SET_SPEC,                          STATUS_UNHANDLED, PROCESS_INPLACE,      &WorldSession::Handle_NULL);
     DEFINE_HANDLER(CMSG_ATTACK_STOP,                                        STATUS_LOGGEDIN,  PROCESS_INPLACE,      &WorldSession::HandleAttackStopOpcode);
     DEFINE_HANDLER(CMSG_ATTACK_SWING,                                       STATUS_LOGGEDIN,  PROCESS_INPLACE,      &WorldSession::HandleAttackSwingOpcode);
@@ -433,6 +434,8 @@ void OpcodeTable::Initialize()
     DEFINE_HANDLER(CMSG_GARRISON_START_MISSION,                             STATUS_UNHANDLED, PROCESS_INPLACE,      &WorldSession::Handle_NULL);
     DEFINE_HANDLER(CMSG_LEARN_TRAITS,                                       STATUS_LOGGEDIN,  PROCESS_THREADSAFE,   &WorldSession::HandleLearnTraitsOpcode);
     DEFINE_HANDLER(CMSG_CREATE_NEW_LOADOUT,                                 STATUS_LOGGEDIN,  PROCESS_THREADSAFE,   &WorldSession::HandleCreateNewLoadoutOpcode);
+    DEFINE_HANDLER(CMSG_RENAME_LOADOUT,                                     STATUS_LOGGEDIN,  PROCESS_THREADSAFE,   &WorldSession::HandleRenameLoadout);
+    DEFINE_HANDLER(CMSG_REMOVE_LOADOUT,                                     STATUS_LOGGEDIN,  PROCESS_THREADSAFE,   &WorldSession::HandleRemoveLoadout);
     DEFINE_HANDLER(CMSG_GARRISON_SWAP_BUILDINGS,                            STATUS_UNHANDLED, PROCESS_INPLACE,      &WorldSession::Handle_NULL);
     DEFINE_HANDLER(CMSG_GENERATE_RANDOM_CHARACTER_NAME,                     STATUS_AUTHED,    PROCESS_THREADUNSAFE, &WorldSession::HandleRandomizeCharNameOpcode);
     DEFINE_HANDLER(CMSG_GET_ACCOUNT_CHARACTER_LIST,                         STATUS_UNHANDLED, PROCESS_THREADUNSAFE, &WorldSession::Handle_NULL);

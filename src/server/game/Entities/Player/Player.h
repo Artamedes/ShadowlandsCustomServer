@@ -923,6 +923,7 @@ enum PlayerLoginQueryIndex
     PLAYER_LOGIN_QUERY_LOAD_CHARACTER_COVENANT_CLAIMED_RENOWN_REWARDS,
     PLAYER_LOGIN_QUERY_LOAD_SEL_TRAITS,
     PLAYER_LOGIN_QUERY_LOAD_SEL_TRAIT_TALENTS,
+    PLAYER_LOGIN_QUERY_LOAD_SEL_SPEC_INFO,
     PLAYER_LOGIN_QUERY_LOAD_CHARACTER_CUSTOM,
     PLAYER_LOGIN_QUERY_LOAD_CHARACTER_DAILY_REWARDS,
     MAX_PLAYER_LOGIN_QUERY
@@ -2786,9 +2787,10 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         TraitsMgr* GetTraitsMgr();
         TraitsMgr const* GetTraitsMgr() const;
         void AddOrSetTrait(Trait* trait);
+        void RemoveTrait(Trait* trait);
         void RemoveTraitTalent(Trait* trait, TraitTalent* talent);
 
-        void SetCurrentConfigID(uint32 configId);
+        void SetCurrentConfigID(uint32 configId, bool suppressed = false);
 
         void SetModPetHaste(float petHaste) { SetUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::ModPetHaste), petHaste); }
 
