@@ -93,6 +93,22 @@ public:
             { "setphaseshift",      HandleDebugSendSetPhaseShiftCommand,   rbac::RBAC_PERM_COMMAND_DEBUG,   Console::No },
             { "spellfail",          HandleDebugSendSpellFailCommand,       rbac::RBAC_PERM_COMMAND_DEBUG,   Console::No },
             { "playerchoice",       HandleDebugSendPlayerChoiceCommand,    rbac::RBAC_PERM_COMMAND_DEBUG,   Console::No },
+            { "dragonriding",       HandleDebugSendDragonridingCommand,    rbac::RBAC_PERM_COMMAND_DEBUG,   Console::No },
+            { "2E34",                HandleDebugPacket2E34, rbac::RBAC_PERM_COMMAND_DEBUG, Console::No },
+            { "2E35",                HandleDebugPacket2E35, rbac::RBAC_PERM_COMMAND_DEBUG, Console::No },
+            { "2E36",                HandleDebugPacket2E36, rbac::RBAC_PERM_COMMAND_DEBUG, Console::No },
+            { "2E37",                HandleDebugPacket2E37, rbac::RBAC_PERM_COMMAND_DEBUG, Console::No },
+            { "2E38",                HandleDebugPacket2E38, rbac::RBAC_PERM_COMMAND_DEBUG, Console::No },
+            { "2E39",                HandleDebugPacket2E39, rbac::RBAC_PERM_COMMAND_DEBUG, Console::No },
+            { "2E3A",                HandleDebugPacket2E3A, rbac::RBAC_PERM_COMMAND_DEBUG, Console::No },
+            { "2E3B",                HandleDebugPacket2E3B, rbac::RBAC_PERM_COMMAND_DEBUG, Console::No },
+            { "2E3C",                HandleDebugPacket2E3C, rbac::RBAC_PERM_COMMAND_DEBUG, Console::No },
+            { "2E3D",                HandleDebugPacket2E3D, rbac::RBAC_PERM_COMMAND_DEBUG, Console::No },
+            { "2E3E",                HandleDebugPacket2E3E, rbac::RBAC_PERM_COMMAND_DEBUG, Console::No },
+            { "2E3F",                HandleDebugPacket2E3F, rbac::RBAC_PERM_COMMAND_DEBUG, Console::No },
+            { "2E40",                HandleDebugPacket2E40, rbac::RBAC_PERM_COMMAND_DEBUG, Console::No },
+            { "2E41",                HandleDebugPacket2E41, rbac::RBAC_PERM_COMMAND_DEBUG, Console::No },
+            { "2E42",                HandleDebugPacket2E42, rbac::RBAC_PERM_COMMAND_DEBUG, Console::No },
         };
         static ChatCommandTable debugCommandTable =
         {
@@ -146,6 +162,377 @@ public:
             { "wpgps",              HandleWPGPSCommand,                    rbac::RBAC_PERM_COMMAND_DEBUG,   Console::No },
         };
         return commandTable;
+    }
+
+    static bool HandleDebugPacket2E34(ChatHandler* handler)
+    {
+        auto WritepacketBase([&](WorldPacket& data)
+        {
+            data << handler->GetPlayer()->GetGUID();
+            data << uint32(handler->GetPlayer()->m_movementCounter++);
+        });
+
+        auto sendPacket([&](WorldPacket* data)
+        {
+            handler->GetSession()->SendPacket(data);
+        });
+
+        uint32 speed = urand(3, 99); WorldPacket data(SMSG_MOVE_UNK_2E34); data << handler->GetPlayer()->GetGUID(); data << uint32(handler->GetPlayer()->m_movementCounter++); sendPacket(&data);
+        handler->PSendSysMessage("%u randSpeed", speed);
+    }
+    static bool HandleDebugPacket2E35(ChatHandler* handler)
+    {
+        auto WritepacketBase([&](WorldPacket& data)
+        {
+            data << handler->GetPlayer()->GetGUID();
+            data << uint32(handler->GetPlayer()->m_movementCounter++);
+        });
+
+        auto sendPacket([&](WorldPacket* data)
+        {
+            handler->GetSession()->SendPacket(data);
+        });
+
+        uint32 speed = urand(3, 99); WorldPacket data(SMSG_MOVE_UNK_2E35); data << handler->GetPlayer()->GetGUID(); data << uint32(handler->GetPlayer()->m_movementCounter++); sendPacket(&data);
+        handler->PSendSysMessage("%u randSpeed", speed);
+    }
+    static bool HandleDebugPacket2E36(ChatHandler* handler)
+    {
+        auto WritepacketBase([&](WorldPacket& data)
+        {
+            data << handler->GetPlayer()->GetGUID();
+            data << uint32(handler->GetPlayer()->m_movementCounter++);
+        });
+
+        auto sendPacket([&](WorldPacket* data)
+        {
+            handler->GetSession()->SendPacket(data);
+        });
+
+        uint32 speed = urand(3, 99); WorldPacket data(SMSG_MOVE_UNK_2E36); data << handler->GetPlayer()->GetGUID(); data << uint32(handler->GetPlayer()->m_movementCounter++); data << float(speed); sendPacket(&data);
+        handler->PSendSysMessage("%u randSpeed", speed);
+    }
+    static bool HandleDebugPacket2E37(ChatHandler* handler)
+    {
+        auto WritepacketBase([&](WorldPacket& data)
+        {
+            data << handler->GetPlayer()->GetGUID();
+            data << uint32(handler->GetPlayer()->m_movementCounter++);
+        });
+
+        auto sendPacket([&](WorldPacket* data)
+        {
+            handler->GetSession()->SendPacket(data);
+        });
+
+        uint32 speed = urand(3, 99); WorldPacket data(SMSG_MOVE_UNK_2E37); data << handler->GetPlayer()->GetGUID(); data << uint32(handler->GetPlayer()->m_movementCounter++); data << float(speed); sendPacket(&data);
+        handler->PSendSysMessage("%u randSpeed", speed);
+    }
+    static bool HandleDebugPacket2E38(ChatHandler* handler)
+    {
+        auto WritepacketBase([&](WorldPacket& data)
+        {
+            data << handler->GetPlayer()->GetGUID();
+            data << uint32(handler->GetPlayer()->m_movementCounter++);
+        });
+
+        auto sendPacket([&](WorldPacket* data)
+        {
+            handler->GetSession()->SendPacket(data);
+        });
+
+        uint32 speed = urand(3, 99); WorldPacket data(SMSG_MOVE_UNK_2E38); data << handler->GetPlayer()->GetGUID(); data << uint32(handler->GetPlayer()->m_movementCounter++); data << float(speed); sendPacket(&data);
+        handler->PSendSysMessage("%u randSpeed", speed);
+    }
+    static bool HandleDebugPacket2E39(ChatHandler* handler)
+    {
+        auto WritepacketBase([&](WorldPacket& data)
+        {
+            data << handler->GetPlayer()->GetGUID();
+            data << uint32(handler->GetPlayer()->m_movementCounter++);
+        });
+
+        auto sendPacket([&](WorldPacket* data)
+        {
+            handler->GetSession()->SendPacket(data);
+        });
+
+        uint32 speed = urand(3, 99); WorldPacket data(SMSG_MOVE_UNK_2E39); data << handler->GetPlayer()->GetGUID(); data << uint32(handler->GetPlayer()->m_movementCounter++); data << float(speed); sendPacket(&data);
+        handler->PSendSysMessage("%u randSpeed", speed);
+    }
+    static bool HandleDebugPacket2E3A(ChatHandler* handler)
+    {
+        auto WritepacketBase([&](WorldPacket& data)
+        {
+            data << handler->GetPlayer()->GetGUID();
+            data << uint32(handler->GetPlayer()->m_movementCounter++);
+        });
+
+        auto sendPacket([&](WorldPacket* data)
+        {
+            handler->GetSession()->SendPacket(data);
+        });
+
+        uint32 speed = urand(3, 99); WorldPacket data(SMSG_MOVE_UNK_2E3A); data << handler->GetPlayer()->GetGUID(); data << uint32(handler->GetPlayer()->m_movementCounter++); data << float(speed); sendPacket(&data);
+        handler->PSendSysMessage("%u randSpeed", speed);
+    }
+    static bool HandleDebugPacket2E3B(ChatHandler* handler)
+    {
+        auto WritepacketBase([&](WorldPacket& data)
+        {
+            data << handler->GetPlayer()->GetGUID();
+            data << uint32(handler->GetPlayer()->m_movementCounter++);
+        });
+
+        auto sendPacket([&](WorldPacket* data)
+        {
+            handler->GetSession()->SendPacket(data);
+        });
+
+        uint32 speed = urand(3, 99); WorldPacket data(SMSG_MOVE_UNK_2E3B); data << handler->GetPlayer()->GetGUID(); data << uint32(handler->GetPlayer()->m_movementCounter++); data << float(speed); sendPacket(&data);
+        handler->PSendSysMessage("%u randSpeed", speed);
+    }
+    static bool HandleDebugPacket2E3C(ChatHandler* handler)
+    {
+        auto WritepacketBase([&](WorldPacket& data)
+        {
+            data << handler->GetPlayer()->GetGUID();
+            data << uint32(handler->GetPlayer()->m_movementCounter++);
+        });
+
+        auto sendPacket([&](WorldPacket* data)
+        {
+            handler->GetSession()->SendPacket(data);
+        });
+
+        uint32 speed = urand(3, 99);
+        uint32 speed2 = urand(3, 99);
+        WorldPacket data(SMSG_MOVE_UNK_2E3C);
+        data << handler->GetPlayer()->GetGUID();
+        data << uint32(handler->GetPlayer()->m_movementCounter++);
+        data << float(speed);
+        data << float(speed2);
+        sendPacket(&data);
+        handler->PSendSysMessage("%u randSpeed", speed);
+        handler->PSendSysMessage("%u randSpeed2", speed2);
+    }
+    static bool HandleDebugPacket2E3D(ChatHandler* handler)
+    {
+        auto WritepacketBase([&](WorldPacket& data)
+        {
+            data << handler->GetPlayer()->GetGUID();
+            data << uint32(handler->GetPlayer()->m_movementCounter++);
+        });
+
+        auto sendPacket([&](WorldPacket* data)
+        {
+            handler->GetSession()->SendPacket(data);
+        });
+
+        uint32 speed = urand(3, 99);
+        uint32 speed2 = urand(3, 99);
+        WorldPacket data(SMSG_MOVE_UNK_2E3D);
+        data << handler->GetPlayer()->GetGUID();
+        data << uint32(handler->GetPlayer()->m_movementCounter++);
+        data << float(speed);
+        data << float(speed2);
+        sendPacket(&data);
+        handler->PSendSysMessage("%u randSpeed", speed);
+        handler->PSendSysMessage("%u randSpeed2", speed2);
+    }
+    static bool HandleDebugPacket2E3E(ChatHandler* handler)
+    {
+        auto WritepacketBase([&](WorldPacket& data)
+        {
+            data << handler->GetPlayer()->GetGUID();
+            data << uint32(handler->GetPlayer()->m_movementCounter++);
+        });
+
+        auto sendPacket([&](WorldPacket* data)
+        {
+            handler->GetSession()->SendPacket(data);
+        });
+
+        uint32 speed = urand(3, 99);
+        uint32 speed2 = urand(3, 99);
+        WorldPacket data(SMSG_MOVE_UNK_2E3E);
+        data << handler->GetPlayer()->GetGUID();
+        data << uint32(handler->GetPlayer()->m_movementCounter++);
+        data << float(speed);
+        data << float(speed2);
+        sendPacket(&data);
+        handler->PSendSysMessage("%u randSpeed", speed);
+        handler->PSendSysMessage("%u randSpeed2", speed2);
+    }
+    static bool HandleDebugPacket2E3F(ChatHandler* handler)
+    {
+        auto WritepacketBase([&](WorldPacket& data)
+        {
+            data << handler->GetPlayer()->GetGUID();
+            data << uint32(handler->GetPlayer()->m_movementCounter++);
+        });
+
+        auto sendPacket([&](WorldPacket* data)
+        {
+            handler->GetSession()->SendPacket(data);
+        });
+
+        uint32 speed = urand(3, 99);
+        uint32 speed2 = urand(3, 99);
+        WorldPacket data(SMSG_MOVE_UNK_2E3F);
+        data << handler->GetPlayer()->GetGUID();
+        data << uint32(handler->GetPlayer()->m_movementCounter++);
+        data << float(speed);
+        data << float(speed2);
+        sendPacket(&data);
+        handler->PSendSysMessage("%u randSpeed", speed);
+        handler->PSendSysMessage("%u randSpeed2", speed2);
+    }
+    static bool HandleDebugPacket2E40(ChatHandler* handler)
+    {
+        auto WritepacketBase([&](WorldPacket& data)
+        {
+            data << handler->GetPlayer()->GetGUID();
+            data << uint32(handler->GetPlayer()->m_movementCounter++);
+        });
+
+        auto sendPacket([&](WorldPacket* data)
+        {
+            handler->GetSession()->SendPacket(data);
+        });
+
+        uint32 speed = urand(3, 99); WorldPacket data(SMSG_MOVE_UNK_2E40); data << handler->GetPlayer()->GetGUID(); data << uint32(handler->GetPlayer()->m_movementCounter++); data << float(speed); sendPacket(&data);
+        handler->PSendSysMessage("%u randSpeed", speed);
+    }
+    static bool HandleDebugPacket2E41(ChatHandler* handler)
+    {
+        auto WritepacketBase([&](WorldPacket& data)
+        {
+            data << handler->GetPlayer()->GetGUID();
+            data << uint32(handler->GetPlayer()->m_movementCounter++);
+        });
+
+        auto sendPacket([&](WorldPacket* data)
+        {
+            handler->GetSession()->SendPacket(data);
+        });
+
+        uint32 speed = urand(3, 99); WorldPacket data(SMSG_MOVE_UNK_2E41); data << handler->GetPlayer()->GetGUID(); data << uint32(handler->GetPlayer()->m_movementCounter++); data << float(speed); sendPacket(&data);
+        handler->PSendSysMessage("%u randSpeed", speed);
+    }
+    static bool HandleDebugPacket2E42(ChatHandler* handler)
+    {
+        auto WritepacketBase([&](WorldPacket& data)
+        {
+            data << handler->GetPlayer()->GetGUID();
+            data << uint32(handler->GetPlayer()->m_movementCounter++);
+        });
+
+        auto sendPacket([&](WorldPacket* data)
+        {
+            handler->GetSession()->SendPacket(data);
+        });
+
+        uint32 speed = urand(3, 99); WorldPacket data(SMSG_MOVE_UNK_2E42); data << handler->GetPlayer()->GetGUID(); data << uint32(handler->GetPlayer()->m_movementCounter++); data << float(speed); sendPacket(&data);
+        handler->PSendSysMessage("%u randSpeed", speed);
+    }
+
+    static bool HandleDebugSendDragonridingCommand(ChatHandler* handler)
+    {
+        auto WritepacketBase([&](WorldPacket& data)
+        {
+            data << handler->GetPlayer()->GetGUID();
+            data << uint32(handler->GetPlayer()->m_movementCounter++);
+        });
+
+        auto sendPacket([&](WorldPacket* data)
+        {
+            handler->GetSession()->SendPacket(data);
+        });
+
+        WorldPacket data(SMSG_MOVE_UPDATE_APPLY_IMPULSE);
+        WritepacketBase(data);
+        data << float(100.0f);
+        data << float(200.0f);
+        data << float(300.0f);
+        sendPacket(&data);
+
+
+        data.Initialize(SMSG_MOVE_UPDATE_REMOVE_IMPULSE);
+        WritepacketBase(data);
+        data << float(50.0f);
+        data << float(100.0f);
+        data << float(200.0f);
+        sendPacket(&data);
+
+        data.Initialize(SMSG_MOVE_UNK_2E34);
+        WritepacketBase(data);
+        sendPacket(&data);
+
+        data.Initialize(SMSG_MOVE_UNK_2E35);
+        WritepacketBase(data);
+        sendPacket(&data);
+
+        data.Initialize(SMSG_MOVE_UNK_2E36);
+        WritepacketBase(data);
+        data << float(1.0f);
+        sendPacket(&data);
+        data.Initialize(SMSG_MOVE_UNK_2E37);
+        WritepacketBase(data);
+        data << float(2.0f);
+        sendPacket(&data);
+        data.Initialize(SMSG_MOVE_UNK_2E38);
+        WritepacketBase(data);
+        data << float(3.0f);
+        sendPacket(&data);
+        data.Initialize(SMSG_MOVE_UNK_2E39);
+        WritepacketBase(data);
+        data << float(4.0f);
+        sendPacket(&data);
+        data.Initialize(SMSG_MOVE_UNK_2E3A);
+        WritepacketBase(data);
+        data << float(5.0f);
+        sendPacket(&data);
+        data.Initialize(SMSG_MOVE_UNK_2E3B);
+        WritepacketBase(data);
+        data << float(6.0f);
+        sendPacket(&data);
+
+        data.Initialize(SMSG_MOVE_UNK_2E3C);
+        WritepacketBase(data);
+        data << float(7.0f);
+        data << float(40.0f);
+        sendPacket(&data);
+        data.Initialize(SMSG_MOVE_UNK_2E3D);
+        WritepacketBase(data);
+        data << float(8.0f);
+        data << float(50.0f);
+        sendPacket(&data);
+        data.Initialize(SMSG_MOVE_UNK_2E3E);
+        WritepacketBase(data);
+        data << float(9.0f);
+        data << float(60.0f);
+        sendPacket(&data);
+        data.Initialize(SMSG_MOVE_UNK_2E3F);
+        WritepacketBase(data);
+        data << float(10.0f);
+        data << float(70.0f);
+        sendPacket(&data);
+
+        data.Initialize(SMSG_MOVE_UNK_2E40);
+        WritepacketBase(data);
+        data << float(11.0f);
+        sendPacket(&data);
+        data.Initialize(SMSG_MOVE_UNK_2E41);
+        WritepacketBase(data);
+        data << float(12.0f);
+        sendPacket(&data);
+        data.Initialize(SMSG_MOVE_UNK_2E42);
+        WritepacketBase(data);
+        data << float(13.0f);
+        sendPacket(&data);
+
+        return true;
     }
 
     static bool TryExtractTeamId(std::string const &args, TeamId &outFaction)

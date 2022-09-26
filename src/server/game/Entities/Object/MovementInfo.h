@@ -72,21 +72,18 @@ struct MovementInfo
 
     Optional<Inertia> inertia;
 
+    // @todo: research this more
     struct UnkDFMovement
     {
         UnkDFMovement() { }
 
-        float unk1 = 0.0f;
-        float unk2 = 0.0f;
-        float unk3 = 0.0f;
-        float unk4 = 0.0f;
-        float unk5 = 0.0f;
-        float unk6 = 0.0f;
-        float unk7 = 0.0f;
-        float unk8 = 0.0f;
+        float upVelocity = 0.0f;
+        float forwardVelocity = 0.0f;
+        TaggedPosition<Position::XYZ> forwardDirection = { 0.0f, 0.0f, 0.0f, 0.0f };
+        TaggedPosition<Position::XYZ> upDirection = { 0.0f, 0.0f, 0.0f, 0.0f };
     };
 
-    Optional<UnkDFMovement> unkDfMovement;
+    Optional<UnkDFMovement> dragonRiding;
 
     // jumping
     struct JumpInfo
@@ -106,23 +103,24 @@ struct MovementInfo
     // spline
     float splineElevation;
 
-    float unkSpeedDF1  = 1.5f;
-    float unkSpeedDF2  = 65.0f;
-    float unkSpeedDF3  = 0.070000000298023223f;
-    float unkSpeedDF4  = 5.0f;
-    float unkSpeedDF5  = 7.5f;
-    float unkSpeedDF6  = 100.0f;
-    float unkSpeedDF7  = 90.0f;
-    float unkSpeedDF8  = 140.0f;
-    float unkSpeedDF9  = 180.0f;
-    float unkSpeedDF10 = 360.0f;
-    float unkSpeedDF11 = 90.0f;
-    float unkSpeedDF12 = 270.0f;
-    float unkSpeedDF13 = 30.0f;
-    float unkSpeedDF14 = 80.0f;
-    float unkSpeedDF15 = 2.75f;
-    float unkSpeedDF16 = 7.0f;
-    float unkSpeedDF17 = 0.400000005960464477f;
+    // @todo move it to unit speed system like - since movement info edited by cmsg packets
+    float advFlyingAirFriction              = 2.0f;
+    float advFlyingMaxVel                   = 65.0f;
+    float advFlyingLiftCoefficient          = 1.0f;
+    float advFlyingDoubleJumpVelMod         = 3.0f;
+    float advFlyingGlideStartMinHeight      = 10.0f;
+    float advFlyingAddImpulseMaxSpeed       = 100.0f;
+    float advFlyingMinBankingRate           = 90.0f;
+    float advFlyingMaxBankingRate           = 140.0f;
+    float advFlyingMinPitchingRateDown      = 180.0f;
+    float advFlyingMaxPitchingRateDown      = 360.0f;
+    float advFlyingMinPitchingRateUp        = 90.0f;
+    float advFlyingMaxPitchingRateUp        = 270.0f;
+    float advFlyingMinTurnVelocityThreshold = 30.0f;
+    float advFlyingMaxTurnVelocityThreshold = 80.0f;
+    float advFlyingSurfaceFriction          = 2.75f;
+    float advFlyingOverMaxDeceleration      = 7.0f;
+    float advFlyingLaunchSpeedCoefficient   = 0.400000005960464477f;
 
     MovementInfo() :
         flags(0), flags2(0), flags3(0), time(0), pitch(0.0f), splineElevation(0.0f)

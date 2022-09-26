@@ -1903,7 +1903,7 @@ void Player::SwitchToPhasedMap(uint32 p_MapID, CustomInstanceZone const* p_Custo
             l_Player->SendDirectMessage(packet.Write());
         }
 
-        l_Player->GetMap()->AddPlayerToMap(l_Player, true);
+        l_Player->GetMap()->AddPlayerToMap(l_Player, false);
 
 #ifdef CROSS
         l_Player->SetMapSwitchDestination(-1);

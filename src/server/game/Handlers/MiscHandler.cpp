@@ -1309,6 +1309,7 @@ void WorldSession::HandleKeyboundOverride(WorldPackets::Misc::KeyboundOverride& 
                 auto player = _player;
                 auto playerGuid = _player->GetGUID();
                 player->SetCanDoubleJump(true);
+                // collosion height
                 player->SetCanFly(true);
 
                 WorldPacket data(SMSG_MOVE_UNK_2E34, 16 + 4);
@@ -1319,38 +1320,40 @@ void WorldSession::HandleKeyboundOverride(WorldPackets::Misc::KeyboundOverride& 
                 data.Initialize(SMSG_MOVE_UNK_2E36, 16 + 4);
                 data << playerGuid;
                 data << uint32(player->m_movementCounter++);
+                data << float(1.5f); // air friction
                 player->SendDirectMessage(&data);
 
                 data.Initialize(SMSG_MOVE_UNK_2E37, 16 + 4);
                 data << playerGuid;
                 data << uint32(player->m_movementCounter++);
-                data << float(65.0f);
+                data << float(45.0f);
                 player->SendDirectMessage(&data);
 
                 data.Initialize(SMSG_MOVE_UNK_2E38, 16 + 4);
                 data << playerGuid;
                 data << uint32(player->m_movementCounter++);
-                data << float(0.070000000298023223f);
+                data << float(0.070000000298023223f); // adv flying lift coeff
                 player->SendDirectMessage(&data);
 
                 data.Initialize(SMSG_MOVE_UNK_2E39, 16 + 4);
                 data << playerGuid;
                 data << uint32(player->m_movementCounter++);
-                data << float(5.0f);
+                data << float(5.0f); // double jump mod
                 player->SendDirectMessage(&data);
 
                 data.Initialize(SMSG_MOVE_UNK_2E3A, 16 + 4);
                 data << playerGuid;
                 data << uint32(player->m_movementCounter++);
-                data << float(7.5f);
+                data << float(7.5f); // flyingGlideStartMinHeight
                 player->SendDirectMessage(&data);
 
                 data.Initialize(SMSG_MOVE_UNK_2E3B, 16 + 4);
                 data << playerGuid;
                 data << uint32(player->m_movementCounter++);
-                data << float(100.0f);
+                data << float(100.0f); // addImpulseMaxSpeed
                 player->SendDirectMessage(&data);
 
+                // unsure but maybe maxBankingRate and maxPitchingRateUp
                 data.Initialize(SMSG_MOVE_UNK_2E3C, 16 + 4);
                 data << playerGuid;
                 data << uint32(player->m_movementCounter++);
@@ -1399,23 +1402,28 @@ void WorldSession::HandleKeyboundOverride(WorldPackets::Misc::KeyboundOverride& 
 
 
                 // ServerToClient: SMSG_MOVE_UNK_2E32(0x2E32) Length : 24 ConnIdx : 1 Time : 09 / 13 / 2022 01:23 : 19.653 Number : 571
-                data.Initialize(SMSG_MOVE_UNK_2E32, 16 + 4 + 4 + 4 + 4);
+                data.Initialize(SMSG_MOVE_UPDATE_APPLY_IMPULSE, 16 + 4 + 4 + 4 + 4);
+                data << playerGuid;
                 data << uint32(_player->m_movementCounter++);
                 data << float(0.0f);
                 data << float(0.0f);
-                data << float(40.0f);
+                data << float(50.0f);
                 SendPacket(&data);
+
                 _player->CastSpell(_player, 374763, true); ///< Lift Off
                 _player->CastSpell(_player, 372771, true); ///< Dragonrider Energy
 
                 // was sent after first CMSG_MOVE_HEARTBEAT
 
-                _player->GetScheduler().Schedule(1s, [this](TaskContext /*context*/)
+                _player->GetScheduler().Schedule(1s, [this, playerGuid](TaskContext /*context*/)
                 {
-                    WorldPacket data(SMSG_MOVE_UNK_2E32, 16 + 4 + 4 + 4 + 4);
+                    float vcos = std::cos(_player->GetOrientation());
+                    float vsin = std::sin(_player->GetOrientation());
+                    WorldPacket data(SMSG_MOVE_UPDATE_APPLY_IMPULSE, 16 + 4 + 4 + 4 + 4);
+                    data << playerGuid;
                     data << uint32(_player->m_movementCounter++);
-                    data << float(16.62887191772460937f);
-                    data << float(-18.6676349639892578f);
+                    data << float(vcos * 10.0f);
+                    data << float(vsin * 10.0f);
                     data << float(0.0f);
                     SendPacket(&data);
                 });

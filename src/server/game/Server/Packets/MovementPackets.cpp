@@ -141,6 +141,7 @@ ByteBuffer& operator>>(ByteBuffer& data, MovementInfo& movementInfo)
     movementInfo.HeightChangeFailed = data.ReadBit(); // HeightChangeFailed
     movementInfo.RemoteTimeValid = data.ReadBit(); // RemoteTimeValid
     bool hasInertia = data.ReadBit();
+    bool unkDF = data.ReadBit();
 
     if (hasTransport)
         data >> movementInfo.transport;
@@ -152,6 +153,16 @@ ByteBuffer& operator>>(ByteBuffer& data, MovementInfo& movementInfo)
         data >> movementInfo.inertia->guid;
         data >> movementInfo.inertia->force.PositionXYZStream();
         data >> movementInfo.inertia->lifetime;
+    }
+
+    // relating to dragon riding?
+    if (unkDF)
+    {
+        if (!movementInfo.dragonRiding.has_value())
+            movementInfo.dragonRiding = MovementInfo::UnkDFMovement();
+
+        data >> movementInfo.dragonRiding->forwardVelocity;
+        data >> movementInfo.dragonRiding->upVelocity;
     }
 
     if (hasFall)

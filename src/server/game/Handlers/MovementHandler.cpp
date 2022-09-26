@@ -490,6 +490,7 @@ void WorldSession::HandleMovementOpcode(OpcodeClient opcode, MovementInfo& movem
     /* process position-change */
     movementInfo.guid = mover->GetGUID();
     movementInfo.time = AdjustClientMovementTime(movementInfo.time);
+    // todo: dragonriding
     mover->m_movementInfo = movementInfo;
 
     // Some vehicles allow the passenger to turn by himself
