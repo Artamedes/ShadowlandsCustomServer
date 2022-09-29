@@ -2061,7 +2061,7 @@ void Map::SummonCreatureGroup(uint8 group, std::list<TempSummon*>* list /*= null
                 list->push_back(summon);
 }
 
-GameObject* Map::SummonGameObject(uint32 entry, Position const& pos, QuaternionData const& rot, uint32 respawnTime)
+GameObject* Map::SummonGameObject(uint32 entry, Position const& pos, QuaternionData const& rot, uint32 respawnTime, ObjectGuid privateObjectOwner /*= ObjectGuid::Empty*/)
 {
     GameObjectTemplate const* goinfo = sObjectMgr->GetGameObjectTemplate(entry);
     if (!goinfo)
@@ -2074,6 +2074,7 @@ GameObject* Map::SummonGameObject(uint32 entry, Position const& pos, QuaternionD
     if (!go)
         return nullptr;
 
+    go->SetPrivateObjectOwner(privateObjectOwner);
     go->SetRespawnTime(respawnTime);
     go->SetSpawnedByDefault(false);
     AddToMap(go);
@@ -2151,7 +2152,7 @@ TempSummon* WorldObject::SummonPersonalClone(Position const& pos, TempSummonType
     return nullptr;
 }
 
-GameObject* WorldObject::SummonGameObject(uint32 entry, Position const& pos, QuaternionData const& rot, Seconds respawnTime, GOSummonType summonType)
+GameObject* WorldObject::SummonGameObject(uint32 entry, Position const& pos, QuaternionData const& rot, Seconds respawnTime, GOSummonType summonType, ObjectGuid privateObjectOwner)
 {
     if (!IsInWorld())
         return nullptr;
@@ -2180,7 +2181,7 @@ GameObject* WorldObject::SummonGameObject(uint32 entry, Position const& pos, Qua
     return go;
 }
 
-GameObject* WorldObject::SummonGameObject(uint32 entry, float x, float y, float z, float ang, QuaternionData const& rot, Seconds respawnTime, GOSummonType summonType)
+GameObject* WorldObject::SummonGameObject(uint32 entry, float x, float y, float z, float ang, QuaternionData const& rot, Seconds respawnTime, GOSummonType summonType, ObjectGuid privateObjectOwner)
 {
     if (!x && !y && !z)
     {
@@ -2189,7 +2190,7 @@ GameObject* WorldObject::SummonGameObject(uint32 entry, float x, float y, float 
     }
 
     Position pos(x, y, z, ang);
-    return SummonGameObject(entry, pos, rot, respawnTime, summonType);
+    return SummonGameObject(entry, pos, rot, respawnTime, summonType, privateObjectOwner);
 }
 
 Creature* WorldObject::SummonTrigger(float x, float y, float z, float ang, Milliseconds despawnTime, CreatureAI* (*GetAI)(Creature*))
