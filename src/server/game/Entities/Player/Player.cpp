@@ -373,6 +373,15 @@ Player::Player(WorldSession* session) : Unit(true), m_sceneMgr(this), m_Vignette
     _transportSpawnID = 0;
 
     _vignetteID = 0;
+
+    // initialize update fields for Pvp
+    AddDynamicUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::PvpInfo)); // 2v2
+    AddDynamicUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::PvpInfo)); // 3v3
+    AddDynamicUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::PvpInfo)); // 5v5?
+    AddDynamicUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::PvpInfo)); // rbg
+    AddDynamicUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::PvpInfo)); // unk
+    AddDynamicUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::PvpInfo)); // unk
+    AddDynamicUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::PvpInfo)); // solo shuffle
 }
 
 Player::~Player()
