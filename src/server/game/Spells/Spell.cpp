@@ -4931,6 +4931,11 @@ void Spell::SendSpellStart()
     castData.CastFlagsEx = m_castFlagsEx;
     castData.CastTime = m_casttime;
 
+    if (GetSpellInfo()->Id == 371237)
+    {
+        castData.CastFlags = 15;
+    }
+
     m_targets.Write(castData.Target);
 
     if (castFlags & CAST_FLAG_POWER_LEFT_SELF)
@@ -5059,6 +5064,12 @@ void Spell::SendSpellGo()
     castData.CastFlagsEx = m_castFlagsEx;
     castData.CastTime = getMSTime();
 
+    if (GetSpellInfo()->Id == 371237)
+    {
+        castData.CastFlags = 781;
+        castData.CastFlagsEx = 16;
+    }
+
     UpdateSpellCastDataTargets(castData);
 
     m_targets.Write(castData.Target);
@@ -5126,7 +5137,10 @@ void Spell::UpdateSpellCastDataTargets(WorldPackets::Spells::SpellCastData& data
     }
 
     for (GOTargetInfo const& targetInfo : m_UniqueGOTargetInfo)
+    {
         data.HitTargets.push_back(targetInfo.TargetGUID); // Always hits
+        data.HitStatus.emplace_back(SPELL_MISS_NONE);
+    }
 
     for (CorpseTargetInfo const& targetInfo : m_UniqueCorpseTargetInfo)
         data.HitTargets.push_back(targetInfo.TargetGUID); // Always hits
