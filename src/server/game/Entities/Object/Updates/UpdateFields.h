@@ -707,7 +707,7 @@ struct CharacterTrait : public IsUpdateFieldStructureTag, public HasChangesMask<
     void ClearChangesMask();
 };
 
-struct ActivePlayerData : public IsUpdateFieldStructureTag, public HasChangesMask<1569>
+struct ActivePlayerData : public IsUpdateFieldStructureTag, public HasChangesMask<1570>
 {
     UpdateField<bool, 0, 1> BackpackAutoSortDisabled;
     UpdateField<bool, 0, 2> BankAutoSortDisabled;
@@ -818,7 +818,7 @@ struct ActivePlayerData : public IsUpdateFieldStructureTag, public HasChangesMas
     UpdateField<uint32, 98, 111> WeeklyRewardsPeriodSinceOrigin;                // week count since Cfg_RegionsEntry::ChallengeOrigin
     UpdateField<int16, 98, 112> DEBUGSoulbindConduitRank;
     UpdateField<WorldPackets::MythicPlus::DungeonScoreData, 98, 113> DungeonScore;
-    UpdateField<uint32, 98, 114> ActiveConfigID;
+    UpdateField<uint32, 98, 114> ActiveConfigId;
     UpdateFieldArray<ObjectGuid, 218, 115, 116> InvSlots;
     UpdateFieldArray<uint64, 240, 334, 335> ExploredZones;
     UpdateFieldArray<UF::RestInfo, 2, 575, 576> RestInfo;
@@ -833,9 +833,9 @@ struct ActivePlayerData : public IsUpdateFieldStructureTag, public HasChangesMas
     UpdateFieldArray<int32, 32, 639, 640> CombatRatings;
     UpdateFieldArray<uint32, 4, 672, 673> NoReagentCostMask;
     UpdateFieldArray<int32, 2, 677, 678> ProfessionSkillLine;
-    UpdateFieldArray<uint32, 4, 680, 681> BagSlotFlags;
-    UpdateFieldArray<uint32, 7, 685, 686> BankBagSlotFlags;
-    UpdateFieldArray<uint64, 875, 693, 694> QuestCompleted;
+    UpdateFieldArray<uint32, 5, 680, 681> BagSlotFlags;
+    UpdateFieldArray<uint32, 7, 686, 687> BankBagSlotFlags;
+    UpdateFieldArray<uint64, 875, 694, 695> QuestCompleted;
 
     void WriteCreate(ByteBuffer& data, EnumFlag<UpdateFieldFlag> fieldVisibilityFlags, Player const* owner, Player const* receiver) const;
     void WriteUpdate(ByteBuffer& data, EnumFlag<UpdateFieldFlag> fieldVisibilityFlags, Player const* owner, Player const* receiver) const;

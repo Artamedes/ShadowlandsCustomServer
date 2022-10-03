@@ -355,8 +355,6 @@ void Object::BuildMovementUpdate(ByteBuffer* data, CreateObjectBits flags, Playe
         {
             *data << float(unit->m_movementInfo.dragonRiding->upVelocity);
             *data << float(unit->m_movementInfo.dragonRiding->forwardVelocity);
-            *data << unit->m_movementInfo.dragonRiding->forwardDirection;
-            *data << unit->m_movementInfo.dragonRiding->upDirection;
         }
 
         if (HasFall)

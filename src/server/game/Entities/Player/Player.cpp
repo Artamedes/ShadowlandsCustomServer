@@ -18874,7 +18874,7 @@ bool Player::LoadFromDB(ObjectGuid guid, CharacterDatabaseQueryHolder const& hol
    // SetUpdateFieldValue(m_values.ModifyValue(&Player::m_unitData).ModifyValue(&UF::UnitData::ScaleDuration), 100);
    // SetUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::ScalingPlayerLevelDelta), -1);
    // SetUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::LocalFlags), 4104);
-  ////  SetUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::ActiveConfigID), 4000); // ActiveConfigID?
+  ////  SetUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::ActiveConfigId), 4000); // ActiveConfigId?
    // SetUpdateFieldValue(m_values.ModifyValue(&Player::m_playerData)
    //     .ModifyValue(&UF::PlayerData::CtrOptions)
    //     .ModifyValue(&UF::CTROptions::Field_4), 5);
@@ -20961,7 +20961,7 @@ void Player::SaveToDB(LoginDatabaseTransaction loginTransaction, CharacterDataba
         stmt->setUInt8(index++, m_activePlayerData->RestInfo[REST_TYPE_HONOR].StateID);
         stmt->setFloat(index++, finiteAlways(_restMgr->GetRestBonus(REST_TYPE_HONOR)));
         stmt->setInt32(index++, m_playerData->CovenantID);
-        stmt->setUInt32(index++, m_activePlayerData->ActiveConfigID);
+        stmt->setUInt32(index++, m_activePlayerData->ActiveConfigId);
         stmt->setUInt32(index++, sRealmList->GetMinorMajorBugfixVersionForBuild(realm.Build));
 
         // Index
@@ -30055,14 +30055,14 @@ void Player::SetCurrentConfigID(uint32 configId, bool suppressed /*= false*/)
     {
         DoWithSuppressingObjectUpdates([&]()
         {
-            SetUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::ActiveConfigID), configId);
-            const_cast<UF::ActivePlayerData&>(*m_activePlayerData).ClearChanged(&UF::ActivePlayerData::ActiveConfigID);
+            SetUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::ActiveConfigId), configId);
+            const_cast<UF::ActivePlayerData&>(*m_activePlayerData).ClearChanged(&UF::ActivePlayerData::ActiveConfigId);
         });
     }
     else
     {
-        SetUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::ActiveConfigID), configId);
-        ForceUpdateFieldChange(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::ActiveConfigID));
+        SetUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::ActiveConfigId), configId);
+        ForceUpdateFieldChange(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::ActiveConfigId));
     }
 }
 

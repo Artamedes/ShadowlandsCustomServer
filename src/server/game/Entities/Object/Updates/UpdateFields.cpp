@@ -3186,6 +3186,7 @@ void CharacterTrait::ClearChangesMask()
     _changesMask.ResetAll();
 }
 
+
 void ActivePlayerData::WriteCreate(ByteBuffer& data, EnumFlag<UpdateFieldFlag> fieldVisibilityFlags, Player const* owner, Player const* receiver) const
 {
     for (uint32 i = 0; i < 218; ++i)
@@ -3301,7 +3302,7 @@ void ActivePlayerData::WriteCreate(ByteBuffer& data, EnumFlag<UpdateFieldFlag> f
     data << uint32(OverrideZonePVPType);
     data << BnetAccount;
     data << uint64(GuildClubMemberID);
-    for (uint32 i = 0; i < 4; ++i)
+    for (uint32 i = 0; i < 5; ++i)
     {
         data << uint32(BagSlotFlags[i]);
     }
@@ -3350,7 +3351,7 @@ void ActivePlayerData::WriteCreate(ByteBuffer& data, EnumFlag<UpdateFieldFlag> f
     data << uint32(WeeklyRewardsPeriodSinceOrigin);
     data << int16(DEBUGSoulbindConduitRank);
     data << uint32(CharacterTraits.size());
-    data << uint32(ActiveConfigID);
+    data << uint32(ActiveConfigId);
     for (uint32 i = 0; i < KnownTitles.size(); ++i)
     {
         data << uint64(KnownTitles[i]);
@@ -4241,7 +4242,7 @@ void ActivePlayerData::WriteUpdate(ByteBuffer& data, Mask const& changesMask, bo
         }
         if (changesMask[114])
         {
-            data << uint32(ActiveConfigID);
+            data << uint32(ActiveConfigId);
         }
     }
     if (changesMask[98])
@@ -4375,7 +4376,7 @@ void ActivePlayerData::WriteUpdate(ByteBuffer& data, Mask const& changesMask, bo
     }
     if (changesMask[680])
     {
-        for (uint32 i = 0; i < 4; ++i)
+        for (uint32 i = 0; i < 5; ++i)
         {
             if (changesMask[681 + i])
             {
@@ -4383,21 +4384,21 @@ void ActivePlayerData::WriteUpdate(ByteBuffer& data, Mask const& changesMask, bo
             }
         }
     }
-    if (changesMask[685])
+    if (changesMask[686])
     {
         for (uint32 i = 0; i < 7; ++i)
         {
-            if (changesMask[686 + i])
+            if (changesMask[687 + i])
             {
                 data << uint32(BankBagSlotFlags[i]);
             }
         }
     }
-    if (changesMask[693])
+    if (changesMask[694])
     {
         for (uint32 i = 0; i < 875; ++i)
         {
-            if (changesMask[694 + i])
+            if (changesMask[695 + i])
             {
                 data << uint64(QuestCompleted[i]);
             }
@@ -4527,7 +4528,7 @@ void ActivePlayerData::ClearChangesMask()
     Base::ClearChangesMask(WeeklyRewardsPeriodSinceOrigin);
     Base::ClearChangesMask(DEBUGSoulbindConduitRank);
     Base::ClearChangesMask(DungeonScore);
-    Base::ClearChangesMask(ActiveConfigID);
+    Base::ClearChangesMask(ActiveConfigId);
     Base::ClearChangesMask(InvSlots);
     Base::ClearChangesMask(ExploredZones);
     Base::ClearChangesMask(RestInfo);
