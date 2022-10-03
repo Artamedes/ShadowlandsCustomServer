@@ -694,8 +694,8 @@ struct CharacterTrait : public IsUpdateFieldStructureTag, public HasChangesMask<
 {
     DynamicUpdateField<UF::CharacterTraitTalent, 0, 1> Talents;
     UpdateField<int32, 0, 2> ConfigID;
-    UpdateField<int32, 3, 4> Dword108;
-    UpdateField<int32, 3, 5> Dword148;
+    UpdateField<int32, 3, 4> Type;
+    UpdateField<int32, 3, 5> SkillLineID;
     UpdateField<int32, 3, 6> SpecializationID;
     UpdateField<int32, 7, 8> Dword150;
     UpdateField<int32, 7, 9> LoadoutIndex;

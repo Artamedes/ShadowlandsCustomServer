@@ -29909,8 +29909,8 @@ void Player::AddOrSetTrait(Trait* trait)
 
         // horrible really..
         ForceUpdateFieldChange(traitUF.ModifyValue(&UF::CharacterTrait::ConfigID));
-        ForceUpdateFieldChange(traitUF.ModifyValue(&UF::CharacterTrait::Dword108));
-        ForceUpdateFieldChange(traitUF.ModifyValue(&UF::CharacterTrait::Dword148));
+        ForceUpdateFieldChange(traitUF.ModifyValue(&UF::CharacterTrait::Type));
+        ForceUpdateFieldChange(traitUF.ModifyValue(&UF::CharacterTrait::SkillLineID));
         ForceUpdateFieldChange(traitUF.ModifyValue(&UF::CharacterTrait::SpecializationID));
         ForceUpdateFieldChange(traitUF.ModifyValue(&UF::CharacterTrait::Dword150));
         ForceUpdateFieldChange(traitUF.ModifyValue(&UF::CharacterTrait::LoadoutIndex));
@@ -29921,7 +29921,7 @@ void Player::AddOrSetTrait(Trait* trait)
     if (foundIndexTrait == -1)
     {
         SetUpdateFieldValue(traitUF.ModifyValue(&UF::CharacterTrait::ConfigID), trait->GetConfigID());
-        SetUpdateFieldValue(traitUF.ModifyValue(&UF::CharacterTrait::Dword108), static_cast<uint32>(trait->GetType()));
+        SetUpdateFieldValue(traitUF.ModifyValue(&UF::CharacterTrait::Type), static_cast<uint32>(trait->GetType()));
 
         switch (trait->GetType())
         {
@@ -29930,11 +29930,11 @@ void Player::AddOrSetTrait(Trait* trait)
                 break;
             case TraitType::Talents:
                 SetUpdateFieldValue(traitUF.ModifyValue(&UF::CharacterTrait::SpecializationID), trait->GetSpecializationID());
-                SetUpdateFieldValue(traitUF.ModifyValue(&UF::CharacterTrait::Dword150), trait->GetIndex() <= 3 ? 1 : 0); ///< IsDefault? 1 : 0
+                SetUpdateFieldValue(traitUF.ModifyValue(&UF::CharacterTrait::Dword150), trait->GetIndex() <= 3 ? 1 : 0); ///< IsDefault? 1 : 0 - unsure about this atm
                 SetUpdateFieldValue(traitUF.ModifyValue(&UF::CharacterTrait::LoadoutIndex), trait->GetIndex());// - LoadoutIndex
                 break;
-            case TraitType::Unk:
-                SetUpdateFieldValue(traitUF.ModifyValue(&UF::CharacterTrait::Dword148), 1);
+            case TraitType::Skill:
+                SetUpdateFieldValue(traitUF.ModifyValue(&UF::CharacterTrait::SkillLineID), 1);
                 break;
             default:
                 break;
@@ -30015,8 +30015,8 @@ void Player::RemoveTrait(Trait* trait)
             .ModifyValue(&UF::ActivePlayerData::CharacterTraits, i);
 
         ForceUpdateFieldChange(traitUF.ModifyValue(&UF::CharacterTrait::ConfigID));
-        ForceUpdateFieldChange(traitUF.ModifyValue(&UF::CharacterTrait::Dword108));
-        ForceUpdateFieldChange(traitUF.ModifyValue(&UF::CharacterTrait::Dword148));
+        ForceUpdateFieldChange(traitUF.ModifyValue(&UF::CharacterTrait::Type));
+        ForceUpdateFieldChange(traitUF.ModifyValue(&UF::CharacterTrait::SkillLineID));
         ForceUpdateFieldChange(traitUF.ModifyValue(&UF::CharacterTrait::SpecializationID));
         ForceUpdateFieldChange(traitUF.ModifyValue(&UF::CharacterTrait::Dword150));
         ForceUpdateFieldChange(traitUF.ModifyValue(&UF::CharacterTrait::LoadoutIndex));

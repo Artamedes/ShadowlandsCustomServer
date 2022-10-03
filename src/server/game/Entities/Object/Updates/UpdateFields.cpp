@@ -3059,21 +3059,22 @@ bool CharacterTraitTalent::operator==(CharacterTraitTalent const& right) const
 
 void CharacterTrait::WriteCreate(ByteBuffer& data, Player const* owner, Player const* receiver) const
 {
+    data.FlushBits();
     data << int32(ConfigID);
-    data << int32(Dword108);
+    data << int32(Type);
     data << uint32(Talents.size());
 
-    if (Dword108 == 2)
-        data << int32(Dword148);
+    if (Type == 2)
+        data << int32(SkillLineID);
 
-    if (Dword108 == 1)
+    if (Type == 1)
     {
         data << int32(SpecializationID);
         data << int32(Dword150);
         data << int32(LoadoutIndex);
     }
 
-    if (Dword108 == 3)
+    if (Type == 3)
         data << int32(Dword158);
 
     for (uint32 i = 0; i < Talents.size(); ++i)
@@ -3128,16 +3129,16 @@ void CharacterTrait::WriteUpdate(ByteBuffer& data, bool ignoreChangesMask, Playe
     {
         if (changesMask[4])
         {
-            data << int32(Dword108);
+            data << int32(Type);
         }
-        if (Dword108 == 2)
+        if (Type == 2)
         {
             if (changesMask[5])
             {
-                data << int32(Dword148);
+                data << int32(SkillLineID);
             }
         }
-        if (Dword108 == 1)
+        if (Type == 1)
         {
             if (changesMask[6])
             {
@@ -3147,7 +3148,7 @@ void CharacterTrait::WriteUpdate(ByteBuffer& data, bool ignoreChangesMask, Playe
     }
     if (changesMask[7])
     {
-        if (Dword108 == 1)
+        if (Type == 1)
         {
             if (changesMask[8])
             {
@@ -3159,7 +3160,7 @@ void CharacterTrait::WriteUpdate(ByteBuffer& data, bool ignoreChangesMask, Playe
             }
         }
 
-        if (Dword108 == 3)
+        if (Type == 3)
             if (changesMask[10])
                 data << int32(Dword158);
     }
@@ -3176,8 +3177,8 @@ void CharacterTrait::ClearChangesMask()
 {
     Base::ClearChangesMask(Talents);
     Base::ClearChangesMask(ConfigID);
-    Base::ClearChangesMask(Dword108);
-    Base::ClearChangesMask(Dword148);
+    Base::ClearChangesMask(Type);
+    Base::ClearChangesMask(SkillLineID);
     Base::ClearChangesMask(SpecializationID);
     Base::ClearChangesMask(Dword150);
     Base::ClearChangesMask(LoadoutIndex);
@@ -3440,10 +3441,6 @@ void ActivePlayerData::WriteCreate(ByteBuffer& data, EnumFlag<UpdateFieldFlag> f
     data.WriteBit(BankAutoSortDisabled);
     data.WriteBit(SortBagsRightToLeft);
     data.WriteBit(InsertItemsLeftToRight);
-    for (uint32 i = 0; i < PvpInfo.size(); ++i)
-    {
-        PvpInfo[i].WriteCreate(data, owner, receiver);
-    }
     data.WriteBits(QuestSession.has_value(), 1);
     Field_1410->WriteCreate(data, owner, receiver);
     if (QuestSession.has_value())
@@ -3451,6 +3448,10 @@ void ActivePlayerData::WriteCreate(ByteBuffer& data, EnumFlag<UpdateFieldFlag> f
         QuestSession->WriteCreate(data, owner, receiver);
     }
     data << DungeonScore;
+    for (uint32 i = 0; i < PvpInfo.size(); ++i)
+    {
+        PvpInfo[i].WriteCreate(data, owner, receiver);
+    }
     for (uint32 i = 0; i < CharacterRestrictions.size(); ++i)
     {
         CharacterRestrictions[i].WriteCreate(data, owner, receiver);

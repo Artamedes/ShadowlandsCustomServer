@@ -109,11 +109,13 @@ struct TC_GAME_API TraitTalent
     bool operator!=(TraitTalent const& right) const { return !(*this == right); }
 };
 
+// TraitConfigType
 enum class TraitType
 {
-    Talents      = 1,
-    Unk          = 2,
-    DragonRiding = 3,
+    Invalid      = 0,
+    Talents      = 1, ///< Combat
+    Skill        = 2, ///< Profession
+    DragonRiding = 3, ///< Generic
 };
 
 class TC_GAME_API Trait
