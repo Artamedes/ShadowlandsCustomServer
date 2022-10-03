@@ -4932,6 +4932,7 @@ struct QuestV2LoadInfo
         {
             { false, FT_INT, "ID" },
             { false, FT_SHORT, "UniqueBitFlag" },
+            { false, FT_INT, "Field_10_0_2_45779_001" },
         };
         static DB2LoadInfo const loadInfo(&fields[0], std::size(fields), QuestV2Meta::Instance(), HOTFIX_SEL_QUEST_V2);
         return &loadInfo;
@@ -5411,6 +5412,7 @@ struct SoundKitLoadInfo
             { false, FT_FLOAT, "PitchAdjust" },
             { false, FT_SHORT, "BusOverwriteID" },
             { false, FT_BYTE, "MaxInstances" },
+            { false, FT_INT, "Field_10_0_2_45779_015" },
         };
         static DB2LoadInfo const loadInfo(&fields[0], std::size(fields), SoundKitMeta::Instance(), HOTFIX_SEL_SOUND_KIT);
         return &loadInfo;
@@ -5488,6 +5490,10 @@ struct SpellAuraRestrictionsLoadInfo
             { true, FT_INT, "TargetAuraSpell" },
             { true, FT_INT, "ExcludeCasterAuraSpell" },
             { true, FT_INT, "ExcludeTargetAuraSpell" },
+            { false, FT_INT, "Field_10_0_2_45779_009" },
+            { false, FT_INT, "Field_10_0_2_45779_010" },
+            { false, FT_INT, "Field_10_0_2_45779_011" },
+            { false, FT_INT, "Field_10_0_2_45779_012" },
             { false, FT_INT, "SpellID" },
         };
         static DB2LoadInfo const loadInfo(&fields[0], std::size(fields), SpellAuraRestrictionsMeta::Instance(), HOTFIX_SEL_SPELL_AURA_RESTRICTIONS);

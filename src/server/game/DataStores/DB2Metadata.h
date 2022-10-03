@@ -10092,11 +10092,12 @@ struct QuestV2Meta
 {
     static DB2Meta const* Instance()
     {
-        static constexpr DB2MetaField fields[1] =
+        static constexpr DB2MetaField fields[2] =
         {
             { FT_SHORT, 1, false },
+            { FT_INT, 1, false },
         };
-        static constexpr DB2Meta instance(1139443, -1, 1, 1, 0xBB71B2AE, fields, -1);
+        static constexpr DB2Meta instance(1139443, -1, 2, 2, 0xB2004732, fields, -1);
         return &instance;
     }
 };
@@ -11190,7 +11191,7 @@ struct SoundKitMeta
 {
     static DB2Meta const* Instance()
     {
-        static constexpr DB2MetaField fields[15] =
+        static constexpr DB2MetaField fields[16] =
         {
             { FT_INT, 1, true },
             { FT_FLOAT, 1, true },
@@ -11207,8 +11208,9 @@ struct SoundKitMeta
             { FT_FLOAT, 1, true },
             { FT_SHORT, 1, false },
             { FT_BYTE, 1, false },
+            { FT_INT, 1, false },
         };
-        static constexpr DB2Meta instance(1237434, -1, 15, 15, 0x754500C5, fields, -1);
+        static constexpr DB2Meta instance(1237434, -1, 16, 16, 0x170F2CC3, fields, -1);
         return &instance;
     }
 };
@@ -11544,7 +11546,7 @@ struct SpellAuraRestrictionsMeta
 {
     static DB2Meta const* Instance()
     {
-        static constexpr DB2MetaField fields[10] =
+        static constexpr DB2MetaField fields[14] =
         {
             { FT_BYTE, 1, false },
             { FT_BYTE, 1, false },
@@ -11556,8 +11558,12 @@ struct SpellAuraRestrictionsMeta
             { FT_INT, 1, true },
             { FT_INT, 1, true },
             { FT_INT, 1, true },
+            { FT_INT, 1, true },
+            { FT_INT, 1, true },
+            { FT_INT, 1, true },
+            { FT_INT, 1, true },
         };
-        static constexpr DB2Meta instance(981566, -1, 10, 9, 0x98916922, fields, 9);
+        static constexpr DB2Meta instance(981566, -1, 14, 13, 0x78912DD7, fields, 13);
         return &instance;
     }
 };
