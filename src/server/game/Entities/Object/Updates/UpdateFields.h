@@ -677,7 +677,7 @@ struct ReplayedQuest : public IsUpdateFieldStructureTag, public HasChangesMask<3
     void ClearChangesMask();
 };
 
-struct CharacterTraitTalent : public IsUpdateFieldStructureTag
+struct TraitEntry : public IsUpdateFieldStructureTag
 {
     int32 TraitNode;
     int32 TraitNodeEntryID;
@@ -686,28 +686,28 @@ struct CharacterTraitTalent : public IsUpdateFieldStructureTag
 
     void WriteCreate(ByteBuffer& data, Player const* owner, Player const* receiver) const;
     void WriteUpdate(ByteBuffer& data, bool ignoreChangesMask, Player const* owner, Player const* receiver) const;
-    bool operator==(CharacterTraitTalent const& right) const;
-    bool operator!=(CharacterTraitTalent const& right) const { return !(*this == right); }
+    bool operator==(TraitEntry const& right) const;
+    bool operator!=(TraitEntry const& right) const { return !(*this == right); }
 };
 
-struct CharacterTrait : public IsUpdateFieldStructureTag, public HasChangesMask<12>
+struct TraitConfig : public IsUpdateFieldStructureTag, public HasChangesMask<12>
 {
-    DynamicUpdateField<UF::CharacterTraitTalent, 0, 1> Talents;
+    DynamicUpdateField<UF::TraitEntry, 0, 1> Entries;
     UpdateField<int32, 0, 2> ConfigID;
-    UpdateField<int32, 3, 4> Dword108;
-    UpdateField<int32, 3, 5> Dword148;
+    UpdateField<int32, 3, 4> Type;
+    UpdateField<int32, 3, 5> SkillLineID;
     UpdateField<int32, 3, 6> SpecializationID;
     UpdateField<int32, 7, 8> Dword150;
     UpdateField<int32, 7, 9> LoadoutIndex;
     UpdateField<int32, 7, 10> Dword158;
-    UpdateField<std::string, 0, 11> ConfigName;
+    UpdateField<std::string, 0, 11> LoadoutName;
 
     void WriteCreate(ByteBuffer& data, Player const* owner, Player const* receiver) const;
     void WriteUpdate(ByteBuffer& data, bool ignoreChangesMask, Player const* owner, Player const* receiver) const;
     void ClearChangesMask();
 };
 
-struct ActivePlayerData : public IsUpdateFieldStructureTag, public HasChangesMask<1569>
+struct ActivePlayerData : public IsUpdateFieldStructureTag, public HasChangesMask<1570>
 {
     UpdateField<bool, 0, 1> BackpackAutoSortDisabled;
     UpdateField<bool, 0, 2> BankAutoSortDisabled;
@@ -737,7 +737,7 @@ struct ActivePlayerData : public IsUpdateFieldStructureTag, public HasChangesMas
     DynamicUpdateField<int32, 0, 27> DisabledSpells;
     DynamicUpdateField<UF::PVPInfo, 0, 6> PvpInfo;
     DynamicUpdateField<UF::CharacterRestriction, 0, 20> CharacterRestrictions;
-    DynamicUpdateField<UF::CharacterTrait, 0, 28> CharacterTraits;
+    DynamicUpdateField<UF::TraitConfig, 0, 28> TraitConfigs;
     UpdateField<ObjectGuid, 0, 31> FarsightObject;
     UpdateField<ObjectGuid, 0, 32> SummonedBattlePetGUID;
     UpdateField<uint64, 0, 33> Coinage;
@@ -818,7 +818,7 @@ struct ActivePlayerData : public IsUpdateFieldStructureTag, public HasChangesMas
     UpdateField<uint32, 98, 111> WeeklyRewardsPeriodSinceOrigin;                // week count since Cfg_RegionsEntry::ChallengeOrigin
     UpdateField<int16, 98, 112> DEBUGSoulbindConduitRank;
     UpdateField<WorldPackets::MythicPlus::DungeonScoreData, 98, 113> DungeonScore;
-    UpdateField<uint32, 98, 114> ActiveConfigID;
+    UpdateField<uint32, 98, 114> ActiveTraitConfigID;
     UpdateFieldArray<ObjectGuid, 218, 115, 116> InvSlots;
     UpdateFieldArray<uint64, 240, 334, 335> ExploredZones;
     UpdateFieldArray<UF::RestInfo, 2, 575, 576> RestInfo;
@@ -833,9 +833,9 @@ struct ActivePlayerData : public IsUpdateFieldStructureTag, public HasChangesMas
     UpdateFieldArray<int32, 32, 639, 640> CombatRatings;
     UpdateFieldArray<uint32, 4, 672, 673> NoReagentCostMask;
     UpdateFieldArray<int32, 2, 677, 678> ProfessionSkillLine;
-    UpdateFieldArray<uint32, 4, 680, 681> BagSlotFlags;
-    UpdateFieldArray<uint32, 7, 685, 686> BankBagSlotFlags;
-    UpdateFieldArray<uint64, 875, 693, 694> QuestCompleted;
+    UpdateFieldArray<uint32, 5, 680, 681> BagSlotFlags;
+    UpdateFieldArray<uint32, 7, 686, 687> BankBagSlotFlags;
+    UpdateFieldArray<uint64, 875, 694, 695> QuestCompleted;
 
     void WriteCreate(ByteBuffer& data, EnumFlag<UpdateFieldFlag> fieldVisibilityFlags, Player const* owner, Player const* receiver) const;
     void WriteUpdate(ByteBuffer& data, EnumFlag<UpdateFieldFlag> fieldVisibilityFlags, Player const* owner, Player const* receiver) const;

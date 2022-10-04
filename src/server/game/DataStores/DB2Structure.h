@@ -3090,6 +3090,7 @@ struct QuestV2Entry
 {
     uint32 ID;
     uint16 UniqueBitFlag;
+    uint32 Field_10_0_2_45779_001;
 };
 
 struct QuestXPEntry
@@ -3362,6 +3363,7 @@ struct SoundKitEntry
     float PitchAdjust;
     uint16 BusOverwriteID;
     uint8 MaxInstances;
+    uint32 Field_10_0_2_45779_015;
 };
 
 struct SpecializationSpellsEntry
@@ -3406,6 +3408,10 @@ struct SpellAuraRestrictionsEntry
     int32 TargetAuraSpell;
     int32 ExcludeCasterAuraSpell;
     int32 ExcludeTargetAuraSpell;
+    uint32 Field_10_0_2_45779_009;
+    uint32 Field_10_0_2_45779_010;
+    uint32 Field_10_0_2_45779_011;
+    uint32 Field_10_0_2_45779_012;
     uint32 SpellID;
 };
 

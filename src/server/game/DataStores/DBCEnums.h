@@ -610,6 +610,8 @@ enum class CriteriaType : uint8
     UnkNewDFCriteria0                              = 239, // M+ Related
     UnkNewDFCriteria1                              = 240, // Rated Solo Shuffle rounds participated in
     UnkNewDFCriteria2                              = 243, // Reputation earned throughout Dragon Isles
+    UnkNewDFCriteria3                              = 244, // Unk
+    UnkNewDFCriteria4                              = 245, // [test] Player has spent talent point (mainline)
     Count
 };
 

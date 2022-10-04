@@ -15,7 +15,7 @@ namespace WorldPackets
     namespace Talent
     {
         struct TalentGroupInfo;
-        struct CharacterTraitEntry;
+        struct TraitConfigEntry;
         class ActiveGlyphs;
         class LearnTraits;
         class CreateNewLoadout;
@@ -109,11 +109,13 @@ struct TC_GAME_API TraitTalent
     bool operator!=(TraitTalent const& right) const { return !(*this == right); }
 };
 
+// TraitConfigType
 enum class TraitType
 {
-    Talents      = 1,
-    Unk          = 2,
-    DragonRiding = 3,
+    Invalid      = 0,
+    Talents      = 1, ///< Combat
+    Skill        = 2, ///< Profession
+    DragonRiding = 3, ///< Generic
 };
 
 class TC_GAME_API Trait
@@ -187,7 +189,7 @@ class TC_GAME_API TraitsMgr
         Trait* GetTraitByLoadoutID(uint32 loadoutId);
         void LearnTraits(WorldPackets::Talent::LearnTraits& learnTraits);
         void CreateNewLoadout(WorldPackets::Talent::CreateNewLoadout& createNewLoadout);
-        void SwapLoadout(uint32 loadoutId, std::vector<WorldPackets::Talent::CharacterTraitEntry> traits);
+        void SwapLoadout(uint32 loadoutId, std::vector<WorldPackets::Talent::TraitConfigEntry> traits);
         void SwapLoadout(uint32 loadout);
         void RenameLoadout(uint32 configId, std::string const& newName);
         void RemoveLoadout(uint32 configId);

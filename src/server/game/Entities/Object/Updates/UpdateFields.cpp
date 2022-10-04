@@ -3033,7 +3033,7 @@ void ReplayedQuest::ClearChangesMask()
     _changesMask.ResetAll();
 }
 
-void CharacterTraitTalent::WriteCreate(ByteBuffer& data, Player const* owner, Player const* receiver) const
+void TraitEntry::WriteCreate(ByteBuffer& data, Player const* owner, Player const* receiver) const
 {
     data << int32(TraitNode);
     data << int32(TraitNodeEntryID);
@@ -3041,7 +3041,7 @@ void CharacterTraitTalent::WriteCreate(ByteBuffer& data, Player const* owner, Pl
     data << int32(UnkDF);
 }
 
-void CharacterTraitTalent::WriteUpdate(ByteBuffer& data, bool ignoreChangesMask, Player const* owner, Player const* receiver) const
+void TraitEntry::WriteUpdate(ByteBuffer& data, bool ignoreChangesMask, Player const* owner, Player const* receiver) const
 {
     data << int32(TraitNode);
     data << int32(TraitNodeEntryID);
@@ -3049,7 +3049,7 @@ void CharacterTraitTalent::WriteUpdate(ByteBuffer& data, bool ignoreChangesMask,
     data << int32(UnkDF);
 }
 
-bool CharacterTraitTalent::operator==(CharacterTraitTalent const& right) const
+bool TraitEntry::operator==(TraitEntry const& right) const
 {
     return TraitNode == right.TraitNode
         && TraitNodeEntryID == right.TraitNodeEntryID
@@ -3057,37 +3057,36 @@ bool CharacterTraitTalent::operator==(CharacterTraitTalent const& right) const
         && UnkDF == right.UnkDF;
 }
 
-void CharacterTrait::WriteCreate(ByteBuffer& data, Player const* owner, Player const* receiver) const
+void TraitConfig::WriteCreate(ByteBuffer& data, Player const* owner, Player const* receiver) const
 {
+    data.FlushBits();
     data << int32(ConfigID);
-    data << int32(Dword108);
-    data << uint32(Talents.size());
+    data << int32(Type);
+    data << uint32(Entries.size());
 
-    if (Dword108 == 2)
-        data << int32(Dword148);
-
-    if (Dword108 == 1)
+    if (Type == 2)
+        data << int32(SkillLineID);
+    else if (Type == 1)
     {
         data << int32(SpecializationID);
         data << int32(Dword150);
         data << int32(LoadoutIndex);
     }
-
-    if (Dword108 == 3)
+    else if (Type == 3)
         data << int32(Dword158);
 
-    for (uint32 i = 0; i < Talents.size(); ++i)
+    for (uint32 i = 0; i < Entries.size(); ++i)
     {
-        Talents[i].WriteCreate(data, owner, receiver);
+        Entries[i].WriteCreate(data, owner, receiver);
     }
 
-    data.WriteBits(ConfigName->size(), 9);
+    data.WriteBits(LoadoutName->size(), 9);
     data.FlushBits();
-    data.WriteString(ConfigName);
+    data.WriteString(LoadoutName);
     data.FlushBits();
 }
 
-void CharacterTrait::WriteUpdate(ByteBuffer& data, bool ignoreChangesMask, Player const* owner, Player const* receiver) const
+void TraitConfig::WriteUpdate(ByteBuffer& data, bool ignoreChangesMask, Player const* owner, Player const* receiver) const
 {
     Mask changesMask = _changesMask;
     if (ignoreChangesMask)
@@ -3100,9 +3099,9 @@ void CharacterTrait::WriteUpdate(ByteBuffer& data, bool ignoreChangesMask, Playe
         if (changesMask[1])
         {
             if (!ignoreChangesMask)
-                Talents.WriteUpdateMask(data);
+                Entries.WriteUpdateMask(data);
             else
-                WriteCompleteDynamicFieldUpdateMask(Talents.size(), data);
+                WriteCompleteDynamicFieldUpdateMask(Entries.size(), data);
         }
     }
     data.FlushBits();
@@ -3110,11 +3109,11 @@ void CharacterTrait::WriteUpdate(ByteBuffer& data, bool ignoreChangesMask, Playe
     {
         if (changesMask[1])
         {
-            for (uint32 i = 0; i < Talents.size(); ++i)
+            for (uint32 i = 0; i < Entries.size(); ++i)
             {
-                if (Talents.HasChanged(i) || ignoreChangesMask)
+                if (Entries.HasChanged(i) || ignoreChangesMask)
                 {
-                    Talents[i].WriteUpdate(data, ignoreChangesMask, owner, receiver);
+                    Entries[i].WriteUpdate(data, ignoreChangesMask, owner, receiver);
                 }
             }
         }
@@ -3128,16 +3127,16 @@ void CharacterTrait::WriteUpdate(ByteBuffer& data, bool ignoreChangesMask, Playe
     {
         if (changesMask[4])
         {
-            data << int32(Dword108);
+            data << int32(Type);
         }
-        if (Dword108 == 2)
+        if (Type == 2)
         {
             if (changesMask[5])
             {
-                data << int32(Dword148);
+                data << int32(SkillLineID);
             }
         }
-        if (Dword108 == 1)
+        if (Type == 1)
         {
             if (changesMask[6])
             {
@@ -3147,7 +3146,7 @@ void CharacterTrait::WriteUpdate(ByteBuffer& data, bool ignoreChangesMask, Playe
     }
     if (changesMask[7])
     {
-        if (Dword108 == 1)
+        if (Type == 1)
         {
             if (changesMask[8])
             {
@@ -3159,32 +3158,33 @@ void CharacterTrait::WriteUpdate(ByteBuffer& data, bool ignoreChangesMask, Playe
             }
         }
 
-        if (Dword108 == 3)
+        if (Type == 3)
             if (changesMask[10])
                 data << int32(Dword158);
     }
     if (changesMask[11])
     {
-        data.WriteBits(ConfigName->size(), 9);
+        data.WriteBits(LoadoutName->size(), 9);
         data.FlushBits();
-        data.WriteString(ConfigName);
+        data.WriteString(LoadoutName);
     }
     data.FlushBits();
 }
 
-void CharacterTrait::ClearChangesMask()
+void TraitConfig::ClearChangesMask()
 {
-    Base::ClearChangesMask(Talents);
+    Base::ClearChangesMask(Entries);
     Base::ClearChangesMask(ConfigID);
-    Base::ClearChangesMask(Dword108);
-    Base::ClearChangesMask(Dword148);
+    Base::ClearChangesMask(Type);
+    Base::ClearChangesMask(SkillLineID);
     Base::ClearChangesMask(SpecializationID);
     Base::ClearChangesMask(Dword150);
     Base::ClearChangesMask(LoadoutIndex);
     Base::ClearChangesMask(Dword158);
-    Base::ClearChangesMask(ConfigName);
+    Base::ClearChangesMask(LoadoutName);
     _changesMask.ResetAll();
 }
+
 
 void ActivePlayerData::WriteCreate(ByteBuffer& data, EnumFlag<UpdateFieldFlag> fieldVisibilityFlags, Player const* owner, Player const* receiver) const
 {
@@ -3301,7 +3301,7 @@ void ActivePlayerData::WriteCreate(ByteBuffer& data, EnumFlag<UpdateFieldFlag> f
     data << uint32(OverrideZonePVPType);
     data << BnetAccount;
     data << uint64(GuildClubMemberID);
-    for (uint32 i = 0; i < 4; ++i)
+    for (uint32 i = 0; i < 5; ++i)
     {
         data << uint32(BagSlotFlags[i]);
     }
@@ -3349,8 +3349,8 @@ void ActivePlayerData::WriteCreate(ByteBuffer& data, EnumFlag<UpdateFieldFlag> f
     data << int32(TransportServerTime);
     data << uint32(WeeklyRewardsPeriodSinceOrigin);
     data << int16(DEBUGSoulbindConduitRank);
-    data << uint32(CharacterTraits.size());
-    data << uint32(ActiveConfigID);
+    data << uint32(TraitConfigs.size());
+    data << uint32(ActiveTraitConfigID);
     for (uint32 i = 0; i < KnownTitles.size(); ++i)
     {
         data << uint64(KnownTitles[i]);
@@ -3439,10 +3439,6 @@ void ActivePlayerData::WriteCreate(ByteBuffer& data, EnumFlag<UpdateFieldFlag> f
     data.WriteBit(BankAutoSortDisabled);
     data.WriteBit(SortBagsRightToLeft);
     data.WriteBit(InsertItemsLeftToRight);
-    for (uint32 i = 0; i < PvpInfo.size(); ++i)
-    {
-        PvpInfo[i].WriteCreate(data, owner, receiver);
-    }
     data.WriteBits(QuestSession.has_value(), 1);
     Field_1410->WriteCreate(data, owner, receiver);
     if (QuestSession.has_value())
@@ -3450,13 +3446,17 @@ void ActivePlayerData::WriteCreate(ByteBuffer& data, EnumFlag<UpdateFieldFlag> f
         QuestSession->WriteCreate(data, owner, receiver);
     }
     data << DungeonScore;
+    for (uint32 i = 0; i < PvpInfo.size(); ++i)
+    {
+        PvpInfo[i].WriteCreate(data, owner, receiver);
+    }
     for (uint32 i = 0; i < CharacterRestrictions.size(); ++i)
     {
         CharacterRestrictions[i].WriteCreate(data, owner, receiver);
     }
-    for (uint32 i = 0; i < CharacterTraits.size(); ++i)
+    for (uint32 i = 0; i < TraitConfigs.size(); ++i)
     {
-        CharacterTraits[i].WriteCreate(data, owner, receiver);
+        TraitConfigs[i].WriteCreate(data, owner, receiver);
     }
     data.FlushBits();
 }
@@ -3674,9 +3674,9 @@ void ActivePlayerData::WriteUpdate(ByteBuffer& data, Mask const& changesMask, bo
         if (changesMask[28])
         {
             if (!ignoreNestedChangesMask)
-                CharacterTraits.WriteUpdateMask(data);
+                TraitConfigs.WriteUpdateMask(data);
             else
-                WriteCompleteDynamicFieldUpdateMask(CharacterTraits.size(), data);
+                WriteCompleteDynamicFieldUpdateMask(TraitConfigs.size(), data);
         }
     }
     data.FlushBits();
@@ -3914,11 +3914,11 @@ void ActivePlayerData::WriteUpdate(ByteBuffer& data, Mask const& changesMask, bo
         }
         if (changesMask[28])
         {
-            for (uint32 i = 0; i < CharacterTraits.size(); ++i)
+            for (uint32 i = 0; i < TraitConfigs.size(); ++i)
             {
-                if (CharacterTraits.HasChanged(i) || ignoreNestedChangesMask)
+                if (TraitConfigs.HasChanged(i) || ignoreNestedChangesMask)
                 {
-                    CharacterTraits[i].WriteUpdate(data, ignoreNestedChangesMask, owner, receiver);
+                    TraitConfigs[i].WriteUpdate(data, ignoreNestedChangesMask, owner, receiver);
                 }
             }
         }
@@ -4241,7 +4241,7 @@ void ActivePlayerData::WriteUpdate(ByteBuffer& data, Mask const& changesMask, bo
         }
         if (changesMask[114])
         {
-            data << uint32(ActiveConfigID);
+            data << uint32(ActiveTraitConfigID);
         }
     }
     if (changesMask[98])
@@ -4375,7 +4375,7 @@ void ActivePlayerData::WriteUpdate(ByteBuffer& data, Mask const& changesMask, bo
     }
     if (changesMask[680])
     {
-        for (uint32 i = 0; i < 4; ++i)
+        for (uint32 i = 0; i < 5; ++i)
         {
             if (changesMask[681 + i])
             {
@@ -4383,21 +4383,21 @@ void ActivePlayerData::WriteUpdate(ByteBuffer& data, Mask const& changesMask, bo
             }
         }
     }
-    if (changesMask[685])
+    if (changesMask[686])
     {
         for (uint32 i = 0; i < 7; ++i)
         {
-            if (changesMask[686 + i])
+            if (changesMask[687 + i])
             {
                 data << uint32(BankBagSlotFlags[i]);
             }
         }
     }
-    if (changesMask[693])
+    if (changesMask[694])
     {
         for (uint32 i = 0; i < 875; ++i)
         {
-            if (changesMask[694 + i])
+            if (changesMask[695 + i])
             {
                 data << uint64(QuestCompleted[i]);
             }
@@ -4446,7 +4446,7 @@ void ActivePlayerData::ClearChangesMask()
     Base::ClearChangesMask(DisabledSpells);
     Base::ClearChangesMask(PvpInfo);
     Base::ClearChangesMask(CharacterRestrictions);
-    Base::ClearChangesMask(CharacterTraits);
+    Base::ClearChangesMask(TraitConfigs);
     Base::ClearChangesMask(FarsightObject);
     Base::ClearChangesMask(SummonedBattlePetGUID);
     Base::ClearChangesMask(Coinage);
@@ -4527,7 +4527,7 @@ void ActivePlayerData::ClearChangesMask()
     Base::ClearChangesMask(WeeklyRewardsPeriodSinceOrigin);
     Base::ClearChangesMask(DEBUGSoulbindConduitRank);
     Base::ClearChangesMask(DungeonScore);
-    Base::ClearChangesMask(ActiveConfigID);
+    Base::ClearChangesMask(ActiveTraitConfigID);
     Base::ClearChangesMask(InvSlots);
     Base::ClearChangesMask(ExploredZones);
     Base::ClearChangesMask(RestInfo);

@@ -79,8 +79,6 @@ struct MovementInfo
 
         float upVelocity = 0.0f;
         float forwardVelocity = 0.0f;
-        TaggedPosition<Position::XYZ> forwardDirection = { 0.0f, 0.0f, 0.0f, 0.0f };
-        TaggedPosition<Position::XYZ> upDirection = { 0.0f, 0.0f, 0.0f, 0.0f };
     };
 
     Optional<UnkDFMovement> dragonRiding;
