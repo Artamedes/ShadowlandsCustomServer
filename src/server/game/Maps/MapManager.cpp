@@ -161,7 +161,7 @@ Map* MapManager::CreateMap(uint32 mapId, Player* player, uint32 zoneId /*= 0*/, 
 
     /// Instanced map aren't zone-instanced
     if (entry->Instanceable()
-        || mapId == 1191 || mapId == 1502)  ///< Ashran can't be splitted
+        || mapId == 1191 || mapId == 1502 || mapId == 2570)  ///< Ashran can't be splitted
         zoneId = 0;
 
     std::unique_lock<std::shared_mutex> lock(_mapsLock);
