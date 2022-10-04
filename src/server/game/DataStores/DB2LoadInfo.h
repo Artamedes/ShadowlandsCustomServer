@@ -2585,6 +2585,33 @@ struct GarrTalentTreeLoadInfo
     }
 };
 
+struct GossipNPCOptionLoadInfo
+{
+    static DB2LoadInfo const* Instance()
+    {
+        static constexpr DB2FieldMeta fields[] =
+        {
+            { false, FT_INT, "ID" },
+            { false, FT_INT, "GossipNpcOption" },
+            { false, FT_INT, "LFGDungeonsID" },
+            { false, FT_INT, "TrainerID" },
+            { false, FT_INT, "GarrFollowerTypeID" },
+            { false, FT_INT, "CharShipmentID" },
+            { false, FT_INT, "GarrTalentTreeID" },
+            { false, FT_INT, "UiMapID" },
+            { false, FT_INT, "UiItemInteractionID" },
+            { false, FT_INT, "Field_10_0_0_45141_008" },
+            { false, FT_INT, "Field_10_0_0_45141_009" },
+            { false, FT_INT, "CovenantID" },
+            { false, FT_INT, "GossipIndex" },
+            { false, FT_INT, "TraitTreeID" },
+            { false, FT_INT, "ProfessionID" },
+        };
+        static DB2LoadInfo const loadInfo(&fields[0], std::size(fields), GossipNPCOptionMeta::Instance(), HOTFIX_SEL_GOSSIP_N_P_C_OPTION);
+        return &loadInfo;
+    };
+};
+
 struct GemPropertiesLoadInfo
 {
     static DB2LoadInfo const* Instance()

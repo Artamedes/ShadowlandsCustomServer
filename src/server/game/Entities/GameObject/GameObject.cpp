@@ -56,6 +56,8 @@
 #include <G3D/Quat.h>
 #include <sstream>
 #include "CovenantPackets.h"
+#include "GossipDef.h"
+#include "NPCPackets.h"
 #include "CovenantMgr.h"
 
 void GameObjectTemplate::InitializeQueryData()
@@ -2799,7 +2801,12 @@ void GameObject::Use(Unit* user)
                     {
                         player->KillCreditGO(GetEntry(), GetGUID());
                         if (covenant->GetCovenantID() != CovenantID::None)
-                            player->SendDirectMessage(WorldPackets::Covenant::OpenItemForge(GetGUID()).Write());
+                        {
+                            WorldPackets::NPC::PerformPlayerInteraction interaction;
+                            interaction.Gossip = GetGUID();
+                            interaction.InteractionType = PlayerInteractionType::Soulbind;
+                            player->SendDirectMessage(interaction.Write());
+                        }
                     }
                     break;
                 }

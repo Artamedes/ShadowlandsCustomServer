@@ -65,6 +65,7 @@ uint32 GossipMenu::AddMenuItem(int32 menuItemId, GossipOptionIcon icon, std::str
 
     auto menuItem = new GossipMenuItem();
 
+    menuItem->ClientOption    = 0; ///< TODO: we must sniff this value or fill it!
     menuItem->MenuItemIcon    = icon;
     menuItem->Message         = message;
     menuItem->IsCoded         = coded;
@@ -237,7 +238,7 @@ void PlayerMenu::SendGossipMenu(uint32 titleTextId, ObjectGuid objectGUID)
     {
         WorldPackets::NPC::ClientGossipOptions& opt = packet.GossipOptions[count];
         GossipMenuItem const* item = itr->second;
-        opt.ClientOption = itr->first;
+        opt.ClientOption = item->ClientOption ? item->ClientOption : itr->first;
         opt.OptionNPC = item->MenuItemIcon;
         opt.OptionFlags = item->IsCoded;     // makes pop up box password
         opt.OptionCost = item->BoxMoney;     // money required to open menu, 2.0.3

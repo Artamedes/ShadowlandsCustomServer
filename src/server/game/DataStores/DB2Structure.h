@@ -1847,6 +1847,25 @@ struct GarrTalentTreeEntry
     uint32 CurrencyID;
 };
 
+struct GossipNPCOptionEntry
+{
+    uint32 ID;
+    uint32 GossipNpcOption;
+    uint32 LFGDungeonsID;
+    uint32 TrainerID;
+    uint32 GarrFollowerTypeID;
+    uint32 CharShipmentID;
+    uint32 GarrTalentTreeID;
+    uint32 UiMapID;
+    uint32 UiItemInteractionID;
+    uint32 Field_10_0_0_45141_008;
+    uint32 Field_10_0_0_45141_009;
+    uint32 CovenantID;
+    uint32 GossipIndex;
+    uint32 TraitTreeID;
+    uint32 ProfessionID;
+};
+
 struct GemPropertiesEntry
 {
     uint32 ID;

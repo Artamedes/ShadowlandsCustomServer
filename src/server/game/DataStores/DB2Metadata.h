@@ -15427,4 +15427,31 @@ struct TraitDefinitionMeta
     };
 };
 
+struct GossipNPCOptionMeta
+{
+    static DB2Meta const* Instance()
+    {
+        static constexpr DB2MetaField fields[14] =
+        {
+            { FT_INT, 1, false },
+            { FT_INT, 1, false },
+            { FT_INT, 1, false },
+            { FT_INT, 1, false },
+            { FT_INT, 1, false },
+            { FT_INT, 1, false },
+            { FT_INT, 1, false },
+            { FT_INT, 1, false },
+            { FT_INT, 1, false },
+            { FT_INT, 1, false },
+            { FT_INT, 1, false },
+            { FT_INT, 1, false },
+            { FT_INT, 1, false },
+            { FT_INT, 1, false },
+        };
+        static constexpr DB2Meta const instance(0, -1, 14, 15, 0x238BCF2B, fields, -1);
+        return &instance;
+    };
+};
+
+
 #endif // DB2Metadata_h__
