@@ -142,7 +142,7 @@ namespace WorldPackets
             std::vector<PvPTalent> Talents;
         };
 
-        struct CharacterTraitEntry
+        struct TraitConfigEntry
         {
             uint32 TraitNode = 0;
             uint32 TraitNodeEntryID = 0;
@@ -150,11 +150,11 @@ namespace WorldPackets
             uint32 Unk = 0;
         };
 
-        struct CharacterTraitInfo
+        struct TraitConfigInfo
         {
             uint32 ConfigID = 0;
             uint32 Result = 0;
-            std::vector<CharacterTraitEntry> Talents;
+            std::vector<TraitConfigEntry> Talents;
 
             uint32 Res2Int = 0;
 
@@ -174,7 +174,7 @@ namespace WorldPackets
 
             void Read() override;
 
-            CharacterTraitInfo Trait;
+            TraitConfigInfo Trait;
             uint32 EditingConfigID = 0;
             uint32 Loadout = 0;
         };
@@ -186,7 +186,7 @@ namespace WorldPackets
 
             void Read() override;
 
-            CharacterTraitInfo Trait;
+            TraitConfigInfo Trait;
         };
 
         class SwapLoadout final : public ClientPacket

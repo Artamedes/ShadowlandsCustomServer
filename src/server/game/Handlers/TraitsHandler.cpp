@@ -62,7 +62,7 @@ void WorldSession::HandleLearnTraitsOpcode(WorldPackets::Talent::LearnTraits& le
     else
     {
         uint32 loadoutId = learnTraits.Loadout;
-        std::vector<WorldPackets::Talent::CharacterTraitEntry> traits(learnTraits.Trait.Talents);
+        std::vector<WorldPackets::Talent::TraitConfigEntry> traits(learnTraits.Trait.Talents);
 
         _player->CastAndGetSpell(_player, 384255)->Callback = [this, loadoutId, traits]()
         {

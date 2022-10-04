@@ -15,7 +15,7 @@ namespace WorldPackets
     namespace Talent
     {
         struct TalentGroupInfo;
-        struct CharacterTraitEntry;
+        struct TraitConfigEntry;
         class ActiveGlyphs;
         class LearnTraits;
         class CreateNewLoadout;
@@ -189,7 +189,7 @@ class TC_GAME_API TraitsMgr
         Trait* GetTraitByLoadoutID(uint32 loadoutId);
         void LearnTraits(WorldPackets::Talent::LearnTraits& learnTraits);
         void CreateNewLoadout(WorldPackets::Talent::CreateNewLoadout& createNewLoadout);
-        void SwapLoadout(uint32 loadoutId, std::vector<WorldPackets::Talent::CharacterTraitEntry> traits);
+        void SwapLoadout(uint32 loadoutId, std::vector<WorldPackets::Talent::TraitConfigEntry> traits);
         void SwapLoadout(uint32 loadout);
         void RenameLoadout(uint32 configId, std::string const& newName);
         void RemoveLoadout(uint32 configId);

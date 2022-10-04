@@ -3033,7 +3033,7 @@ void ReplayedQuest::ClearChangesMask()
     _changesMask.ResetAll();
 }
 
-void CharacterTraitTalent::WriteCreate(ByteBuffer& data, Player const* owner, Player const* receiver) const
+void TraitEntry::WriteCreate(ByteBuffer& data, Player const* owner, Player const* receiver) const
 {
     data << int32(TraitNode);
     data << int32(TraitNodeEntryID);
@@ -3041,7 +3041,7 @@ void CharacterTraitTalent::WriteCreate(ByteBuffer& data, Player const* owner, Pl
     data << int32(UnkDF);
 }
 
-void CharacterTraitTalent::WriteUpdate(ByteBuffer& data, bool ignoreChangesMask, Player const* owner, Player const* receiver) const
+void TraitEntry::WriteUpdate(ByteBuffer& data, bool ignoreChangesMask, Player const* owner, Player const* receiver) const
 {
     data << int32(TraitNode);
     data << int32(TraitNodeEntryID);
@@ -3049,7 +3049,7 @@ void CharacterTraitTalent::WriteUpdate(ByteBuffer& data, bool ignoreChangesMask,
     data << int32(UnkDF);
 }
 
-bool CharacterTraitTalent::operator==(CharacterTraitTalent const& right) const
+bool TraitEntry::operator==(TraitEntry const& right) const
 {
     return TraitNode == right.TraitNode
         && TraitNodeEntryID == right.TraitNodeEntryID
@@ -3057,38 +3057,36 @@ bool CharacterTraitTalent::operator==(CharacterTraitTalent const& right) const
         && UnkDF == right.UnkDF;
 }
 
-void CharacterTrait::WriteCreate(ByteBuffer& data, Player const* owner, Player const* receiver) const
+void TraitConfig::WriteCreate(ByteBuffer& data, Player const* owner, Player const* receiver) const
 {
     data.FlushBits();
     data << int32(ConfigID);
     data << int32(Type);
-    data << uint32(Talents.size());
+    data << uint32(Entries.size());
 
     if (Type == 2)
         data << int32(SkillLineID);
-
-    if (Type == 1)
+    else if (Type == 1)
     {
         data << int32(SpecializationID);
         data << int32(Dword150);
         data << int32(LoadoutIndex);
     }
-
-    if (Type == 3)
+    else if (Type == 3)
         data << int32(Dword158);
 
-    for (uint32 i = 0; i < Talents.size(); ++i)
+    for (uint32 i = 0; i < Entries.size(); ++i)
     {
-        Talents[i].WriteCreate(data, owner, receiver);
+        Entries[i].WriteCreate(data, owner, receiver);
     }
 
-    data.WriteBits(ConfigName->size(), 9);
+    data.WriteBits(LoadoutName->size(), 9);
     data.FlushBits();
-    data.WriteString(ConfigName);
+    data.WriteString(LoadoutName);
     data.FlushBits();
 }
 
-void CharacterTrait::WriteUpdate(ByteBuffer& data, bool ignoreChangesMask, Player const* owner, Player const* receiver) const
+void TraitConfig::WriteUpdate(ByteBuffer& data, bool ignoreChangesMask, Player const* owner, Player const* receiver) const
 {
     Mask changesMask = _changesMask;
     if (ignoreChangesMask)
@@ -3101,9 +3099,9 @@ void CharacterTrait::WriteUpdate(ByteBuffer& data, bool ignoreChangesMask, Playe
         if (changesMask[1])
         {
             if (!ignoreChangesMask)
-                Talents.WriteUpdateMask(data);
+                Entries.WriteUpdateMask(data);
             else
-                WriteCompleteDynamicFieldUpdateMask(Talents.size(), data);
+                WriteCompleteDynamicFieldUpdateMask(Entries.size(), data);
         }
     }
     data.FlushBits();
@@ -3111,11 +3109,11 @@ void CharacterTrait::WriteUpdate(ByteBuffer& data, bool ignoreChangesMask, Playe
     {
         if (changesMask[1])
         {
-            for (uint32 i = 0; i < Talents.size(); ++i)
+            for (uint32 i = 0; i < Entries.size(); ++i)
             {
-                if (Talents.HasChanged(i) || ignoreChangesMask)
+                if (Entries.HasChanged(i) || ignoreChangesMask)
                 {
-                    Talents[i].WriteUpdate(data, ignoreChangesMask, owner, receiver);
+                    Entries[i].WriteUpdate(data, ignoreChangesMask, owner, receiver);
                 }
             }
         }
@@ -3166,16 +3164,16 @@ void CharacterTrait::WriteUpdate(ByteBuffer& data, bool ignoreChangesMask, Playe
     }
     if (changesMask[11])
     {
-        data.WriteBits(ConfigName->size(), 9);
+        data.WriteBits(LoadoutName->size(), 9);
         data.FlushBits();
-        data.WriteString(ConfigName);
+        data.WriteString(LoadoutName);
     }
     data.FlushBits();
 }
 
-void CharacterTrait::ClearChangesMask()
+void TraitConfig::ClearChangesMask()
 {
-    Base::ClearChangesMask(Talents);
+    Base::ClearChangesMask(Entries);
     Base::ClearChangesMask(ConfigID);
     Base::ClearChangesMask(Type);
     Base::ClearChangesMask(SkillLineID);
@@ -3183,7 +3181,7 @@ void CharacterTrait::ClearChangesMask()
     Base::ClearChangesMask(Dword150);
     Base::ClearChangesMask(LoadoutIndex);
     Base::ClearChangesMask(Dword158);
-    Base::ClearChangesMask(ConfigName);
+    Base::ClearChangesMask(LoadoutName);
     _changesMask.ResetAll();
 }
 
@@ -3351,8 +3349,8 @@ void ActivePlayerData::WriteCreate(ByteBuffer& data, EnumFlag<UpdateFieldFlag> f
     data << int32(TransportServerTime);
     data << uint32(WeeklyRewardsPeriodSinceOrigin);
     data << int16(DEBUGSoulbindConduitRank);
-    data << uint32(CharacterTraits.size());
-    data << uint32(ActiveConfigId);
+    data << uint32(TraitConfigs.size());
+    data << uint32(ActiveTraitConfigID);
     for (uint32 i = 0; i < KnownTitles.size(); ++i)
     {
         data << uint64(KnownTitles[i]);
@@ -3456,9 +3454,9 @@ void ActivePlayerData::WriteCreate(ByteBuffer& data, EnumFlag<UpdateFieldFlag> f
     {
         CharacterRestrictions[i].WriteCreate(data, owner, receiver);
     }
-    for (uint32 i = 0; i < CharacterTraits.size(); ++i)
+    for (uint32 i = 0; i < TraitConfigs.size(); ++i)
     {
-        CharacterTraits[i].WriteCreate(data, owner, receiver);
+        TraitConfigs[i].WriteCreate(data, owner, receiver);
     }
     data.FlushBits();
 }
@@ -3676,9 +3674,9 @@ void ActivePlayerData::WriteUpdate(ByteBuffer& data, Mask const& changesMask, bo
         if (changesMask[28])
         {
             if (!ignoreNestedChangesMask)
-                CharacterTraits.WriteUpdateMask(data);
+                TraitConfigs.WriteUpdateMask(data);
             else
-                WriteCompleteDynamicFieldUpdateMask(CharacterTraits.size(), data);
+                WriteCompleteDynamicFieldUpdateMask(TraitConfigs.size(), data);
         }
     }
     data.FlushBits();
@@ -3916,11 +3914,11 @@ void ActivePlayerData::WriteUpdate(ByteBuffer& data, Mask const& changesMask, bo
         }
         if (changesMask[28])
         {
-            for (uint32 i = 0; i < CharacterTraits.size(); ++i)
+            for (uint32 i = 0; i < TraitConfigs.size(); ++i)
             {
-                if (CharacterTraits.HasChanged(i) || ignoreNestedChangesMask)
+                if (TraitConfigs.HasChanged(i) || ignoreNestedChangesMask)
                 {
-                    CharacterTraits[i].WriteUpdate(data, ignoreNestedChangesMask, owner, receiver);
+                    TraitConfigs[i].WriteUpdate(data, ignoreNestedChangesMask, owner, receiver);
                 }
             }
         }
@@ -4243,7 +4241,7 @@ void ActivePlayerData::WriteUpdate(ByteBuffer& data, Mask const& changesMask, bo
         }
         if (changesMask[114])
         {
-            data << uint32(ActiveConfigId);
+            data << uint32(ActiveTraitConfigID);
         }
     }
     if (changesMask[98])
@@ -4448,7 +4446,7 @@ void ActivePlayerData::ClearChangesMask()
     Base::ClearChangesMask(DisabledSpells);
     Base::ClearChangesMask(PvpInfo);
     Base::ClearChangesMask(CharacterRestrictions);
-    Base::ClearChangesMask(CharacterTraits);
+    Base::ClearChangesMask(TraitConfigs);
     Base::ClearChangesMask(FarsightObject);
     Base::ClearChangesMask(SummonedBattlePetGUID);
     Base::ClearChangesMask(Coinage);
@@ -4529,7 +4527,7 @@ void ActivePlayerData::ClearChangesMask()
     Base::ClearChangesMask(WeeklyRewardsPeriodSinceOrigin);
     Base::ClearChangesMask(DEBUGSoulbindConduitRank);
     Base::ClearChangesMask(DungeonScore);
-    Base::ClearChangesMask(ActiveConfigId);
+    Base::ClearChangesMask(ActiveTraitConfigID);
     Base::ClearChangesMask(InvSlots);
     Base::ClearChangesMask(ExploredZones);
     Base::ClearChangesMask(RestInfo);

@@ -122,7 +122,7 @@ WorldPacket const* WorldPackets::Talent::LearnPvpTalentFailed::Write()
     return &_worldPacket;
 }
 
-ByteBuffer& operator>>(ByteBuffer& data, WorldPackets::Talent::CharacterTraitEntry& entry)
+ByteBuffer& operator>>(ByteBuffer& data, WorldPackets::Talent::TraitConfigEntry& entry)
 {
     data >> entry.TraitNode;
     data >> entry.TraitNodeEntryID;
@@ -131,7 +131,7 @@ ByteBuffer& operator>>(ByteBuffer& data, WorldPackets::Talent::CharacterTraitEnt
     return data;
 }
 
-ByteBuffer& operator>>(ByteBuffer& data, WorldPackets::Talent::CharacterTraitInfo& traitInfo)
+ByteBuffer& operator>>(ByteBuffer& data, WorldPackets::Talent::TraitConfigInfo& traitInfo)
 {
     data >> traitInfo.ConfigID;
     data >> traitInfo.Result;

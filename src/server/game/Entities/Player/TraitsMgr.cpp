@@ -298,7 +298,7 @@ void TraitsMgr::LoadFromDB(CharacterDatabaseQueryHolder const& holder)
         } while (specResult->NextRow());
     }
 
-    if (_player->m_activePlayerData->ActiveConfigId < OldConfigIdPre45569)
+    if (_player->m_activePlayerData->ActiveTraitConfigID < OldConfigIdPre45569)
         _player->SetCurrentConfigID(0);
 
     /// Initialize updatefields
@@ -306,7 +306,7 @@ void TraitsMgr::LoadFromDB(CharacterDatabaseQueryHolder const& holder)
     {
         auto trait = itr->second;
 
-        if (trait->GetConfigID() == _player->m_activePlayerData->ActiveConfigId)
+        if (trait->GetConfigID() == _player->m_activePlayerData->ActiveTraitConfigID)
         {
             _player->SetCurrentConfigID(trait->GetConfigID());
             trait->LearnTraitSpells();
@@ -437,7 +437,7 @@ void TraitsMgr::SetActiveTalentGroup(int8 orderIndex, bool force /*= false*/)
     SendUpdateTalentData();
     uint32 configId = 0;
 
-    if (!force || _player->m_activePlayerData->ActiveConfigId == 0)
+    if (!force || _player->m_activePlayerData->ActiveTraitConfigID == 0)
     {
         if (Trait* swappedTrait = GetTraitForSpec(newSpecialization->GetSpecId()))
         {
@@ -806,7 +806,7 @@ void TraitsMgr::CreateNewLoadout(WorldPackets::Talent::CreateNewLoadout& createN
    // _player->SetCurrentConfigID(trait->GetConfigID());
 }
 
-void TraitsMgr::SwapLoadout(uint32 loadoutId, std::vector<WorldPackets::Talent::CharacterTraitEntry> traits)
+void TraitsMgr::SwapLoadout(uint32 loadoutId, std::vector<WorldPackets::Talent::TraitConfigEntry> traits)
 {
     auto trait = GetTraitByLoadoutID(loadoutId);
     if (!trait)

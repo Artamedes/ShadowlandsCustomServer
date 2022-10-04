@@ -18874,7 +18874,7 @@ bool Player::LoadFromDB(ObjectGuid guid, CharacterDatabaseQueryHolder const& hol
    // SetUpdateFieldValue(m_values.ModifyValue(&Player::m_unitData).ModifyValue(&UF::UnitData::ScaleDuration), 100);
    // SetUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::ScalingPlayerLevelDelta), -1);
    // SetUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::LocalFlags), 4104);
-  ////  SetUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::ActiveConfigId), 4000); // ActiveConfigId?
+  ////  SetUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::ActiveTraitConfigID), 4000); // ActiveTraitConfigID?
    // SetUpdateFieldValue(m_values.ModifyValue(&Player::m_playerData)
    //     .ModifyValue(&UF::PlayerData::CtrOptions)
    //     .ModifyValue(&UF::CTROptions::Field_4), 5);
@@ -18883,30 +18883,30 @@ bool Player::LoadFromDB(ObjectGuid guid, CharacterDatabaseQueryHolder const& hol
     {
         // @todo: this is temporary, we need to set in here default talents every spec gets. For example
         // havooc gets vengeful retreat and the sniff had this:
-        // [346](CharacterTraits)[0] ConfigId: 90082
-        // [346](CharacterTraits)[0] Dword108 : 1
-        // [346](CharacterTraits)[0] SpecID : 577
-        // [346](CharacterTraits)[0] Dword150 : 1
-        // [346](CharacterTraits)[0] Dword154 : 1
-        // [346](CharacterTraits)[0](Talents)[0] TraitNode : 74073
-        // [346](CharacterTraits)[0](Talents)[0] TraitNodeEntryID : 93918
-        // [346](CharacterTraits)[0](Talents)[0] Rank : 0
-        // [346](CharacterTraits)[0](Talents)[0] UnkDF : 1
-        // [346](CharacterTraits)[0] ConfigName : Havoc
+        // [346](TraitConfigs)[0] ConfigId: 90082
+        // [346](TraitConfigs)[0] Dword108 : 1
+        // [346](TraitConfigs)[0] SpecID : 577
+        // [346](TraitConfigs)[0] Dword150 : 1
+        // [346](TraitConfigs)[0] Dword154 : 1
+        // [346](TraitConfigs)[0](Talents)[0] TraitNode : 74073
+        // [346](TraitConfigs)[0](Talents)[0] TraitNodeEntryID : 93918
+        // [346](TraitConfigs)[0](Talents)[0] Rank : 0
+        // [346](TraitConfigs)[0](Talents)[0] UnkDF : 1
+        // [346](TraitConfigs)[0] ConfigName : Havoc
 
         //auto trait = m_values.ModifyValue(&Player::m_activePlayerData)
-        //    .ModifyValue(&UF::ActivePlayerData::CharacterTraits, 0);
+        //    .ModifyValue(&UF::ActivePlayerData::TraitConfigs, 0);
         //
-        //SetUpdateFieldValue(trait.ModifyValue(&UF::CharacterTrait::ConfigID), 520777);
-        //SetUpdateFieldValue(trait.ModifyValue(&UF::CharacterTrait::Dword108), 1);
-        //SetUpdateFieldValue(trait.ModifyValue(&UF::CharacterTrait::SpecializationID), GetSpecializationId());
-        //SetUpdateFieldValue(trait.ModifyValue(&UF::CharacterTrait::Dword150), 1);
-        //SetUpdateFieldValue(trait.ModifyValue(&UF::CharacterTrait::Dword154), 1);
+        //SetUpdateFieldValue(trait.ModifyValue(&UF::TraitConfig::ConfigID), 520777);
+        //SetUpdateFieldValue(trait.ModifyValue(&UF::TraitConfig::Dword108), 1);
+        //SetUpdateFieldValue(trait.ModifyValue(&UF::TraitConfig::SpecializationID), GetSpecializationId());
+        //SetUpdateFieldValue(trait.ModifyValue(&UF::TraitConfig::Dword150), 1);
+        //SetUpdateFieldValue(trait.ModifyValue(&UF::TraitConfig::Dword154), 1);
         //
         //if (auto spec = sChrSpecializationStore.LookupEntry(GetSpecializationId()))
-        //    SetUpdateFieldValue(trait.ModifyValue(&UF::CharacterTrait::ConfigName), spec->Name.Str[GetSession()->GetSessionDbcLocale()]);
+        //    SetUpdateFieldValue(trait.ModifyValue(&UF::TraitConfig::ConfigName), spec->Name.Str[GetSession()->GetSessionDbcLocale()]);
         //
-        //UF::CharacterTraitTalent& mod = AddDynamicUpdateFieldValue(trait.ModifyValue(&UF::CharacterTrait::Talents));
+        //UF::TraitEntry& mod = AddDynamicUpdateFieldValue(trait.ModifyValue(&UF::TraitConfig::Talents));
         //mod.TraitNode = 74406;
         //mod.TraitNodeEntryID = 94261;
         //mod.UnkDF = 1;
@@ -20961,7 +20961,7 @@ void Player::SaveToDB(LoginDatabaseTransaction loginTransaction, CharacterDataba
         stmt->setUInt8(index++, m_activePlayerData->RestInfo[REST_TYPE_HONOR].StateID);
         stmt->setFloat(index++, finiteAlways(_restMgr->GetRestBonus(REST_TYPE_HONOR)));
         stmt->setInt32(index++, m_playerData->CovenantID);
-        stmt->setUInt32(index++, m_activePlayerData->ActiveConfigId);
+        stmt->setUInt32(index++, m_activePlayerData->ActiveTraitConfigID);
         stmt->setUInt32(index++, sRealmList->GetMinorMajorBugfixVersionForBuild(realm.Build));
 
         // Index
@@ -29893,48 +29893,48 @@ TraitsMgr const* Player::GetTraitsMgr() const
 
 void Player::AddOrSetTrait(Trait* trait)
 {
-    int32 foundIndexTrait = m_activePlayerData->CharacterTraits.FindIndexIf([trait](UF::CharacterTrait ufTrait)
+    int32 foundIndexTrait = m_activePlayerData->TraitConfigs.FindIndexIf([trait](UF::TraitConfig ufTrait)
     {
         return ufTrait.ConfigID == trait->GetConfigID();
     });
 
     auto traitUF = m_values.ModifyValue(&Player::m_activePlayerData)
-        .ModifyValue(&UF::ActivePlayerData::CharacterTraits, foundIndexTrait == -1 ? trait->GetIndex() : foundIndexTrait);
+        .ModifyValue(&UF::ActivePlayerData::TraitConfigs, foundIndexTrait == -1 ? trait->GetIndex() : foundIndexTrait);
 
-    auto const& currTrait = m_activePlayerData->CharacterTraits[foundIndexTrait == -1 ? trait->GetIndex() : foundIndexTrait];
+    auto const& currTrait = m_activePlayerData->TraitConfigs[foundIndexTrait == -1 ? trait->GetIndex() : foundIndexTrait];
 
-    if (trait->GetConfigName() != *currTrait.ConfigName)
+    if (trait->GetConfigName() != *currTrait.LoadoutName)
     {
-        SetUpdateFieldValue(traitUF.ModifyValue(&UF::CharacterTrait::ConfigName), trait->GetConfigName());
+        SetUpdateFieldValue(traitUF.ModifyValue(&UF::TraitConfig::LoadoutName), trait->GetConfigName());
 
         // horrible really..
-        ForceUpdateFieldChange(traitUF.ModifyValue(&UF::CharacterTrait::ConfigID));
-        ForceUpdateFieldChange(traitUF.ModifyValue(&UF::CharacterTrait::Type));
-        ForceUpdateFieldChange(traitUF.ModifyValue(&UF::CharacterTrait::SkillLineID));
-        ForceUpdateFieldChange(traitUF.ModifyValue(&UF::CharacterTrait::SpecializationID));
-        ForceUpdateFieldChange(traitUF.ModifyValue(&UF::CharacterTrait::Dword150));
-        ForceUpdateFieldChange(traitUF.ModifyValue(&UF::CharacterTrait::LoadoutIndex));
-        ForceUpdateFieldChange(traitUF.ModifyValue(&UF::CharacterTrait::Dword158));
-        ForceUpdateFieldChange(traitUF.ModifyValue(&UF::CharacterTrait::ConfigName));
+        ForceUpdateFieldChange(traitUF.ModifyValue(&UF::TraitConfig::ConfigID));
+        ForceUpdateFieldChange(traitUF.ModifyValue(&UF::TraitConfig::Type));
+        ForceUpdateFieldChange(traitUF.ModifyValue(&UF::TraitConfig::SkillLineID));
+        ForceUpdateFieldChange(traitUF.ModifyValue(&UF::TraitConfig::SpecializationID));
+        ForceUpdateFieldChange(traitUF.ModifyValue(&UF::TraitConfig::Dword150));
+        ForceUpdateFieldChange(traitUF.ModifyValue(&UF::TraitConfig::LoadoutIndex));
+        ForceUpdateFieldChange(traitUF.ModifyValue(&UF::TraitConfig::Dword158));
+        ForceUpdateFieldChange(traitUF.ModifyValue(&UF::TraitConfig::LoadoutName));
     }
 
     if (foundIndexTrait == -1)
     {
-        SetUpdateFieldValue(traitUF.ModifyValue(&UF::CharacterTrait::ConfigID), trait->GetConfigID());
-        SetUpdateFieldValue(traitUF.ModifyValue(&UF::CharacterTrait::Type), static_cast<uint32>(trait->GetType()));
+        SetUpdateFieldValue(traitUF.ModifyValue(&UF::TraitConfig::ConfigID), trait->GetConfigID());
+        SetUpdateFieldValue(traitUF.ModifyValue(&UF::TraitConfig::Type), static_cast<uint32>(trait->GetType()));
 
         switch (trait->GetType())
         {
             case TraitType::DragonRiding:
-                SetUpdateFieldValue(traitUF.ModifyValue(&UF::CharacterTrait::Dword158), 1);
+                SetUpdateFieldValue(traitUF.ModifyValue(&UF::TraitConfig::Dword158), 1);
                 break;
             case TraitType::Talents:
-                SetUpdateFieldValue(traitUF.ModifyValue(&UF::CharacterTrait::SpecializationID), trait->GetSpecializationID());
-                SetUpdateFieldValue(traitUF.ModifyValue(&UF::CharacterTrait::Dword150), trait->GetIndex() <= 3 ? 1 : 0); ///< IsDefault? 1 : 0 - unsure about this atm
-                SetUpdateFieldValue(traitUF.ModifyValue(&UF::CharacterTrait::LoadoutIndex), trait->GetIndex());// - LoadoutIndex
+                SetUpdateFieldValue(traitUF.ModifyValue(&UF::TraitConfig::SpecializationID), trait->GetSpecializationID());
+                SetUpdateFieldValue(traitUF.ModifyValue(&UF::TraitConfig::Dword150), trait->GetIndex() <= 3 ? 1 : 0); ///< IsDefault? 1 : 0 - unsure about this atm
+                SetUpdateFieldValue(traitUF.ModifyValue(&UF::TraitConfig::LoadoutIndex), trait->GetIndex());// - LoadoutIndex
                 break;
             case TraitType::Skill:
-                SetUpdateFieldValue(traitUF.ModifyValue(&UF::CharacterTrait::SkillLineID), 1);
+                SetUpdateFieldValue(traitUF.ModifyValue(&UF::TraitConfig::SkillLineID), 1);
                 break;
             default:
                 break;
@@ -29954,7 +29954,7 @@ void Player::AddOrSetTrait(Trait* trait)
 
         bool isRemove = !talent->IsDefault && talent->Rank == 0;
 
-        int32 foundIndex = m_activePlayerData->CharacterTraits[trait->GetIndex()].Talents.FindIndexIf([talent](UF::CharacterTraitTalent ufTalent)
+        int32 foundIndex = m_activePlayerData->TraitConfigs[trait->GetIndex()].Entries.FindIndexIf([talent](UF::TraitEntry ufTalent)
         {
             return ufTalent.TraitNode == talent->TraitNode && ufTalent.TraitNodeEntryID == talent->TraitNodeEntryID;
         });
@@ -29965,13 +29965,13 @@ void Player::AddOrSetTrait(Trait* trait)
             if (foundIndex == -1)
                 continue;
 
-            RemoveDynamicUpdateFieldValue(traitUF.ModifyValue(&UF::CharacterTrait::Talents), foundIndex);
+            RemoveDynamicUpdateFieldValue(traitUF.ModifyValue(&UF::TraitConfig::Entries), foundIndex);
             continue;
         }
 
         if (foundIndex == -1)
         {
-            UF::CharacterTraitTalent& mod = AddDynamicUpdateFieldValue(traitUF.ModifyValue(&UF::CharacterTrait::Talents));
+            UF::TraitEntry& mod = AddDynamicUpdateFieldValue(traitUF.ModifyValue(&UF::TraitConfig::Entries));
             mod.TraitNode        = talent->TraitNode;
             mod.TraitNodeEntryID = talent->TraitNodeEntryID;
             mod.UnkDF            = talent->Unk;
@@ -29979,16 +29979,16 @@ void Player::AddOrSetTrait(Trait* trait)
         }
         else
         {
-            auto const& oldTalent = currTrait.Talents[foundIndex];
+            auto const& oldTalent = currTrait.Entries[foundIndex];
 
             if (oldTalent.TraitNode != talent->TraitNode || oldTalent.TraitNodeEntryID != talent->TraitNodeEntryID || oldTalent.UnkDF != talent->Unk || oldTalent.Rank != talent->Rank)
             {
-                auto mod = traitUF.ModifyValue(&UF::CharacterTrait::Talents, foundIndex);
+                auto mod = traitUF.ModifyValue(&UF::TraitConfig::Entries, foundIndex);
 
-                SetUpdateFieldValue(mod.ModifyValue(&UF::CharacterTraitTalent::TraitNode),        talent->TraitNode);
-                SetUpdateFieldValue(mod.ModifyValue(&UF::CharacterTraitTalent::TraitNodeEntryID), talent->TraitNodeEntryID);
-                SetUpdateFieldValue(mod.ModifyValue(&UF::CharacterTraitTalent::UnkDF),            talent->Unk);
-                SetUpdateFieldValue(mod.ModifyValue(&UF::CharacterTraitTalent::Rank),             talent->Rank);
+                SetUpdateFieldValue(mod.ModifyValue(&UF::TraitEntry::TraitNode),        talent->TraitNode);
+                SetUpdateFieldValue(mod.ModifyValue(&UF::TraitEntry::TraitNodeEntryID), talent->TraitNodeEntryID);
+                SetUpdateFieldValue(mod.ModifyValue(&UF::TraitEntry::UnkDF),            talent->Unk);
+                SetUpdateFieldValue(mod.ModifyValue(&UF::TraitEntry::Rank),             talent->Rank);
             }
         }
     }
@@ -29996,7 +29996,7 @@ void Player::AddOrSetTrait(Trait* trait)
 
 void Player::RemoveTrait(Trait* trait)
 {
-    int32 foundIndexTrait = m_activePlayerData->CharacterTraits.FindIndexIf([trait](UF::CharacterTrait ufTrait)
+    int32 foundIndexTrait = m_activePlayerData->TraitConfigs.FindIndexIf([trait](UF::TraitConfig ufTrait)
     {
         return ufTrait.ConfigID == trait->GetConfigID();
     });
@@ -30005,29 +30005,29 @@ void Player::RemoveTrait(Trait* trait)
         return;
 
     RemoveDynamicUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData)
-        .ModifyValue(&UF::ActivePlayerData::CharacterTraits), foundIndexTrait);
+        .ModifyValue(&UF::ActivePlayerData::TraitConfigs), foundIndexTrait);
 
     // we need to force updates otherwise client removes the last value
     // maybe there is better way
-    for (int i = 0; i < m_activePlayerData->CharacterTraits.size(); ++i)
+    for (int i = 0; i < m_activePlayerData->TraitConfigs.size(); ++i)
     {
         auto traitUF = m_values.ModifyValue(&Player::m_activePlayerData)
-            .ModifyValue(&UF::ActivePlayerData::CharacterTraits, i);
+            .ModifyValue(&UF::ActivePlayerData::TraitConfigs, i);
 
-        ForceUpdateFieldChange(traitUF.ModifyValue(&UF::CharacterTrait::ConfigID));
-        ForceUpdateFieldChange(traitUF.ModifyValue(&UF::CharacterTrait::Type));
-        ForceUpdateFieldChange(traitUF.ModifyValue(&UF::CharacterTrait::SkillLineID));
-        ForceUpdateFieldChange(traitUF.ModifyValue(&UF::CharacterTrait::SpecializationID));
-        ForceUpdateFieldChange(traitUF.ModifyValue(&UF::CharacterTrait::Dword150));
-        ForceUpdateFieldChange(traitUF.ModifyValue(&UF::CharacterTrait::LoadoutIndex));
-        ForceUpdateFieldChange(traitUF.ModifyValue(&UF::CharacterTrait::Dword158));
-        ForceUpdateFieldChange(traitUF.ModifyValue(&UF::CharacterTrait::ConfigName));
+        ForceUpdateFieldChange(traitUF.ModifyValue(&UF::TraitConfig::ConfigID));
+        ForceUpdateFieldChange(traitUF.ModifyValue(&UF::TraitConfig::Type));
+        ForceUpdateFieldChange(traitUF.ModifyValue(&UF::TraitConfig::SkillLineID));
+        ForceUpdateFieldChange(traitUF.ModifyValue(&UF::TraitConfig::SpecializationID));
+        ForceUpdateFieldChange(traitUF.ModifyValue(&UF::TraitConfig::Dword150));
+        ForceUpdateFieldChange(traitUF.ModifyValue(&UF::TraitConfig::LoadoutIndex));
+        ForceUpdateFieldChange(traitUF.ModifyValue(&UF::TraitConfig::Dword158));
+        ForceUpdateFieldChange(traitUF.ModifyValue(&UF::TraitConfig::LoadoutName));
     }
 }
 
 void Player::RemoveTraitTalent(Trait* trait, TraitTalent* talent)
 {
-    int32 foundIndexTrait = m_activePlayerData->CharacterTraits.FindIndexIf([trait](UF::CharacterTrait ufTrait)
+    int32 foundIndexTrait = m_activePlayerData->TraitConfigs.FindIndexIf([trait](UF::TraitConfig ufTrait)
     {
         return ufTrait.ConfigID == trait->GetConfigID();
     });
@@ -30036,9 +30036,9 @@ void Player::RemoveTraitTalent(Trait* trait, TraitTalent* talent)
         return;
 
     auto traitUF = m_values.ModifyValue(&Player::m_activePlayerData)
-        .ModifyValue(&UF::ActivePlayerData::CharacterTraits, trait->GetIndex());
+        .ModifyValue(&UF::ActivePlayerData::TraitConfigs, trait->GetIndex());
 
-    int32 foundIndex = m_activePlayerData->CharacterTraits[trait->GetIndex()].Talents.FindIndexIf([talent](UF::CharacterTraitTalent ufTalent)
+    int32 foundIndex = m_activePlayerData->TraitConfigs[trait->GetIndex()].Entries.FindIndexIf([talent](UF::TraitEntry ufTalent)
     {
         return ufTalent.TraitNode == talent->TraitNode && ufTalent.TraitNodeEntryID == talent->TraitNodeEntryID;
     });
@@ -30046,7 +30046,7 @@ void Player::RemoveTraitTalent(Trait* trait, TraitTalent* talent)
     if (foundIndex == -1)
         return;
 
-    RemoveDynamicUpdateFieldValue(traitUF.ModifyValue(&UF::CharacterTrait::Talents), foundIndex);
+    RemoveDynamicUpdateFieldValue(traitUF.ModifyValue(&UF::TraitConfig::Entries), foundIndex);
 }
 
 void Player::SetCurrentConfigID(uint32 configId, bool suppressed /*= false*/)
@@ -30055,14 +30055,14 @@ void Player::SetCurrentConfigID(uint32 configId, bool suppressed /*= false*/)
     {
         DoWithSuppressingObjectUpdates([&]()
         {
-            SetUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::ActiveConfigId), configId);
-            const_cast<UF::ActivePlayerData&>(*m_activePlayerData).ClearChanged(&UF::ActivePlayerData::ActiveConfigId);
+            SetUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::ActiveTraitConfigID), configId);
+            const_cast<UF::ActivePlayerData&>(*m_activePlayerData).ClearChanged(&UF::ActivePlayerData::ActiveTraitConfigID);
         });
     }
     else
     {
-        SetUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::ActiveConfigId), configId);
-        ForceUpdateFieldChange(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::ActiveConfigId));
+        SetUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::ActiveTraitConfigID), configId);
+        ForceUpdateFieldChange(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::ActiveTraitConfigID));
     }
 }
 
