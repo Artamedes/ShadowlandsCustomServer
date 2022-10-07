@@ -32,7 +32,6 @@
 InstanceScenario::InstanceScenario(InstanceMap* map, ScenarioData const* scenarioData) : Scenario(scenarioData), _map(map)
 {
     ASSERT(_map);
-    LoadInstanceData();
 
     //Map::PlayerList const& players = map->GetPlayers();
     //for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)

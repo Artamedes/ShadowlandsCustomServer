@@ -1737,7 +1737,11 @@ void InstanceScript::CreateChallenge(Player* player, MythicKeystoneInfo* keyston
 
     // todo
     if (ScenarioData const* scenarioData = sScenarioMgr->GetScenarioData(scenarioId, player->GetTeamId(), sChallengeModeMgr->IsTeemingAffixInRotation() && canChallengeWithTeeming))
-        instanceMap->SetInstanceScenario(new InstanceScenario(instanceMap, scenarioData));
+    {
+        InstanceScenario* scenario = new InstanceScenario(instanceMap, scenarioData);
+        scenario->LoadInstanceData();
+        instanceMap->SetInstanceScenario(scenario);
+    }
 
     Scenario* scenario = instanceMap->GetInstanceScenario();
     if (!scenario)

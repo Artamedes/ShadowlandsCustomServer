@@ -77,8 +77,9 @@ InstanceScenario* ScenarioMgr::CreateInstanceScenario(InstanceMap* map, TeamId t
         TC_LOG_ERROR("scenario", "Table `scenarios` contained data linking scenario (Id: %u) to map (Id: %u), difficulty (Id: %u) but no scenario data was found related to that scenario Id.", scenarioID, map->GetId(), map->GetDifficultyID());
         return nullptr;
     }
-
-    return new InstanceScenario(map, scenarioData);
+    InstanceScenario* newScenario = new InstanceScenario(map, scenarioData);
+    newScenario->LoadInstanceData();
+    return newScenario;
 }
 
 void ScenarioMgr::LoadDBData()
