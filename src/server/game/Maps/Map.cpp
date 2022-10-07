@@ -157,6 +157,8 @@ i_scriptLock(false), _respawnCheckTimer(0), m_InstanceZoneId(0)
 
     _poolData = sPoolMgr->InitPoolsForMap(this);
 
+    sTransportMgr->CreateTransportsForMap(this);
+
     MMAP::MMapFactory::createOrGetMMapManager()->loadMapInstance(sWorld->GetDataPath(), GetId(), i_InstanceId);
 
     _worldStateValues = sWorldStateMgr->GetInitialWorldStatesForMap(this);
@@ -435,7 +437,7 @@ bool Map::AddPlayerToMap(Player* player, bool initPlayer /*= true*/)
     if (initPlayer)
         SendInitSelf(player);
 
-   //SendInitTransports(player);
+    SendInitTransports(player);
 
     if (initPlayer)
         player->m_clientGUIDs.clear();

@@ -1947,13 +1947,13 @@ void World::SetInitialWorldSettings()
     sObjectMgr->LoadGameObjectTemplateAddons();
 
     TC_LOG_INFO("server.loading", "Loading Transport templates...");
-    //sTransportMgr->LoadTransportTemplates();
+    sTransportMgr->LoadTransportTemplates();
 
     TC_LOG_INFO("server.loading", "Loading Transport animations and rotations...");
-    //sTransportMgr->LoadTransportAnimationAndRotation();
+    sTransportMgr->LoadTransportAnimationAndRotation();
 
     //TC_LOG_INFO("server.loading", "Loading Transport spawns...");
-    //sTransportMgr->LoadTransportSpawns();
+    sTransportMgr->LoadTransportSpawns();
 
     TC_LOG_INFO("server.loading", "Loading Spell Rank Data...");
     sSpellMgr->LoadSpellRanks();
