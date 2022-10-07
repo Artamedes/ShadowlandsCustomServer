@@ -79,7 +79,7 @@ struct UpdateAdditionalSaveDataEvent;
 struct UpdateBossStateSaveDataEvent;
 class Transport;
 class TransportBase;
-class MapTransport;
+class Transport;
 enum Difficulty : uint8;
 enum WeatherState : uint32;
 enum class ItemContext : uint8;
@@ -375,7 +375,7 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
         GameObject* GetGameObject(ObjectGuid const& guid);
         Pet* GetPet(ObjectGuid const& guid);
         Transport* GetTransport(ObjectGuid const& guid);
-        MapTransport* GetMapTransport(ObjectGuid const& guid);
+        Transport* GetTransport(ObjectGuid const& guid);
         Creature* GetCreatureBySpawnId(ObjectGuid::LowType spawnId) const;
         GameObject* GetGameObjectBySpawnId(ObjectGuid::LowType spawnId) const;
         AreaTrigger* GetAreaTriggerBySpawnId(ObjectGuid::LowType spawnId) const;
@@ -623,7 +623,7 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
         ActiveNonPlayers::iterator m_activeNonPlayersIter;
 
         // Objects that must update even in inactive grids without activating them
-        typedef std::set<MapTransport*> TransportsContainer;
+        typedef std::set<Transport*> TransportsContainer;
         TransportsContainer _transports;
         TransportsContainer::iterator _transportsUpdateIter;
 

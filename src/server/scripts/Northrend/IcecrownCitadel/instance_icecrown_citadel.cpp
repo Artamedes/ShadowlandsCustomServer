@@ -1292,14 +1292,14 @@ class instance_icecrown_citadel : public InstanceMapScript
                     case EVENT_PLAYERS_GUNSHIP_SPAWN:
                     case EVENT_PLAYERS_GUNSHIP_COMBAT:
                         if (GameObject* go = source->ToGameObject())
-                            if (MapTransport* transport = go->ToMapTransport())
+                            if (Transport* transport = go->ToTransport())
                                 transport->EnableMovement(false);
                         break;
                     case EVENT_PLAYERS_GUNSHIP_SAURFANG:
                         if (Creature* captain = source->FindNearestCreature(GetData(DATA_TEAM_IN_INSTANCE) == HORDE ? NPC_IGB_HIGH_OVERLORD_SAURFANG : NPC_IGB_MURADIN_BRONZEBEARD, 100.0f))
                             captain->AI()->DoAction(ACTION_EXIT_SHIP);
                         if (GameObject* go = source->ToGameObject())
-                            if (MapTransport* transport = go->ToMapTransport())
+                            if (Transport* transport = go->ToTransport())
                                 transport->EnableMovement(false);
                         break;
                     case EVENT_QUAKE:

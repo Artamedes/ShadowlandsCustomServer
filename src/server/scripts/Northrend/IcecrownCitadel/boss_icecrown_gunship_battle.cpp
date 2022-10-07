@@ -499,10 +499,10 @@ public:
     {
         _caster->CastSpell(_caster, _spellId, true);
 
-        if (Transport* go = HashMapHolder<MapTransport>::Find(_transport))
+        if (Transport* go = HashMapHolder<Transport>::Find(_transport))
             go->AddObjectToRemoveList();
 
-        if (Transport* go = HashMapHolder<MapTransport>::Find(_otherTransport))
+        if (Transport* go = HashMapHolder<Transport>::Find(_otherTransport))
             go->AddObjectToRemoveList();
 
         return true;
@@ -775,10 +775,10 @@ class npc_gunship : public CreatureScript
 
                 if (isVictory)
                 {
-                    if (MapTransport* otherTransport = HashMapHolder<MapTransport>::Find(instance->GetGuidData(DATA_ICECROWN_GUNSHIP_BATTLE)))
+                    if (Transport* otherTransport = HashMapHolder<Transport>::Find(instance->GetGuidData(DATA_ICECROWN_GUNSHIP_BATTLE)))
                         otherTransport->EnableMovement(true);
 
-                    if (MapTransport* transport = me->GetMapTransport())
+                    if (Transport* transport = me->GetTransport())
                         transport->EnableMovement(true);
 
                     if (Creature* ship = me->FindNearestCreature(_teamInInstance == HORDE ? NPC_ORGRIMS_HAMMER : NPC_THE_SKYBREAKER, 200.0f))
@@ -962,7 +962,7 @@ struct npc_high_overlord_saurfang_igb : public ScriptedAI
     bool OnGossipSelect(Player* /*player*/, uint32 /*menuId*/, uint32 /*gossipListId*/) override
     {
         me->RemoveNpcFlag(UNIT_NPC_FLAG_GOSSIP);
-        if (MapTransport* transport = me->GetMapTransport())
+        if (Transport* transport = me->GetTransport())
             transport->EnableMovement(true);
         _events.SetPhase(PHASE_INTRO);
         _events.ScheduleEvent(EVENT_INTRO_H_1, 5s, 0, PHASE_INTRO);
@@ -1034,7 +1034,7 @@ struct npc_high_overlord_saurfang_igb : public ScriptedAI
                     if (Transport* orgrimsHammer = dynamic_cast<Transport*>(me->GetTransport()))
                         orgrimsHammer->SummonPassenger(NPC_TELEPORT_PORTAL, OrgrimsHammerTeleportPortal, TEMPSUMMON_TIMED_DESPAWN, nullptr, 21000);
 
-                    if (Transport* skybreaker = HashMapHolder<MapTransport>::Find(_instance->GetGuidData(DATA_ICECROWN_GUNSHIP_BATTLE)))
+                    if (Transport* skybreaker = HashMapHolder<Transport>::Find(_instance->GetGuidData(DATA_ICECROWN_GUNSHIP_BATTLE)))
                         skybreaker->SummonPassenger(NPC_TELEPORT_EXIT, SkybreakerTeleportExit, TEMPSUMMON_TIMED_DESPAWN, nullptr, 23000);
 
                     _events.ScheduleEvent(EVENT_ADDS_BOARD_YELL, 6s);
@@ -1218,7 +1218,7 @@ struct npc_muradin_bronzebeard_igb : public ScriptedAI
     bool OnGossipSelect(Player* /*player*/, uint32 /*menuId*/, uint32 /*gossipListId*/) override
     {
         me->RemoveNpcFlag(UNIT_NPC_FLAG_GOSSIP);
-        if (MapTransport* transport = me->GetMapTransport())
+        if (Transport* transport = me->GetTransport())
             transport->EnableMovement(true);
         _events.SetPhase(PHASE_INTRO);
         _events.ScheduleEvent(EVENT_INTRO_A_1, 5s);
@@ -1294,7 +1294,7 @@ struct npc_muradin_bronzebeard_igb : public ScriptedAI
                     if (Transport* skybreaker = dynamic_cast<Transport*>(me->GetTransport()))
                         skybreaker->SummonPassenger(NPC_TELEPORT_PORTAL, SkybreakerTeleportPortal, TEMPSUMMON_TIMED_DESPAWN, nullptr, 21000);
 
-                    if (Transport* orgrimsHammer = HashMapHolder<MapTransport>::Find(_instance->GetGuidData(DATA_ICECROWN_GUNSHIP_BATTLE)))
+                    if (Transport* orgrimsHammer = HashMapHolder<Transport>::Find(_instance->GetGuidData(DATA_ICECROWN_GUNSHIP_BATTLE)))
                         orgrimsHammer->SummonPassenger(NPC_TELEPORT_EXIT, OrgrimsHammerTeleportExit, TEMPSUMMON_TIMED_DESPAWN, nullptr, 23000);
 
                     _events.ScheduleEvent(EVENT_ADDS_BOARD_YELL, 6s);
@@ -1421,7 +1421,7 @@ struct npc_gunship_boarding_addAI : public gunship_npc_AI
             if (!myTransport)
                 return;
 
-            if (Transport* destTransport = HashMapHolder<MapTransport>::Find(Instance->GetGuidData(DATA_ICECROWN_GUNSHIP_BATTLE)))
+            if (Transport* destTransport = HashMapHolder<Transport>::Find(Instance->GetGuidData(DATA_ICECROWN_GUNSHIP_BATTLE)))
                 destTransport->CalculatePassengerPosition(x, y, z, &o);
 
             float angle = frand(0, float(M_PI) * 2.0f);
@@ -2133,7 +2133,7 @@ class spell_igb_gunship_fall_teleport : public SpellScript
     void SelectTransport(WorldObject*& target)
     {
         if (InstanceScript* instance = target->GetInstanceScript())
-            target = HashMapHolder<MapTransport>::Find(instance->GetGuidData(DATA_ICECROWN_GUNSHIP_BATTLE));
+            target = HashMapHolder<Transport>::Find(instance->GetGuidData(DATA_ICECROWN_GUNSHIP_BATTLE));
     }
 
     void RelocateDest(SpellEffIndex /*effIndex*/)

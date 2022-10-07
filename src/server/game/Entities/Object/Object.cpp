@@ -4126,10 +4126,10 @@ ObjectGuid WorldObject::GetTransGUID() const
     return ObjectGuid::Empty;
 }
 
-MapTransport* WorldObject::GetMapTransport() const
+Transport* WorldObject::GetTransport() const
 {
     if (auto transport = dynamic_cast<Transport*>(GetTransport()))
-        return transport->ToMapTransport();
+        return transport->ToTransport();
 
     return nullptr;
 }

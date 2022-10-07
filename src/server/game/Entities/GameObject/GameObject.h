@@ -361,8 +361,8 @@ class TC_GAME_API GameObject : public WorldObject, public GridObject<GameObject>
         Transport* ToTransport();
         Transport const* ToTransport() const;
 
-        MapTransport* ToMapTransport();
-        MapTransport const* ToMapTransport() const;
+        Transport* ToTransport();
+        Transport const* ToTransport() const;
 
         float GetStationaryX() const override { return m_stationaryPosition.GetPositionX(); }
         float GetStationaryY() const override { return m_stationaryPosition.GetPositionY(); }

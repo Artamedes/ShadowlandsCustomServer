@@ -310,7 +310,7 @@ void Map::DeleteFromWorld(Player* player)
 }
 
 template<>
-void Map::DeleteFromWorld(MapTransport* transport)
+void Map::DeleteFromWorld(Transport* transport)
 {
     ObjectAccessor::RemoveObject(transport);
     delete transport;
@@ -569,7 +569,7 @@ bool Map::AddToMap(T* obj)
 }
 
 template<>
-bool Map::AddToMap(MapTransport* obj)
+bool Map::AddToMap(Transport* obj)
 {
     //TODO: Needs clean up. An object should not be added to map twice.
     if (obj->IsInWorld())
@@ -590,7 +590,7 @@ bool Map::AddToMap(MapTransport* obj)
     {
         for (Map::PlayerList::const_iterator itr = GetPlayers().begin(); itr != GetPlayers().end(); ++itr)
         {
-            if (itr->GetSource()->GetMapTransport() != obj)
+            if (itr->GetSource()->GetTransport() != obj)
             {
                 UpdateData data(GetId());
                 obj->BuildCreateUpdateBlockForPlayer(&data, itr->GetSource());
@@ -966,7 +966,7 @@ void Map::RemoveFromMap(T *obj, bool remove)
 }
 
 template<>
-void Map::RemoveFromMap(MapTransport* obj, bool remove)
+void Map::RemoveFromMap(Transport* obj, bool remove)
 {
     obj->RemoveFromWorld();
 
@@ -979,7 +979,7 @@ void Map::RemoveFromMap(MapTransport* obj, bool remove)
         data.BuildPacket(&packet);
         for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
         {
-            if (itr->GetSource()->GetMapTransport() != obj)
+            if (itr->GetSource()->GetTransport() != obj)
             {
                 itr->GetSource()->SendDirectMessage(&packet);
                 itr->GetSource()->m_visibleTransports.erase(obj->GetGUID());
@@ -1669,10 +1669,10 @@ void Map::UnloadAll()
 
     for (TransportsContainer::iterator itr = _transports.begin(); itr != _transports.end();)
     {
-        MapTransport* transport = *itr;
+        Transport* transport = *itr;
         ++itr;
 
-        RemoveFromMap<MapTransport>(transport, true);
+        RemoveFromMap<Transport>(transport, true);
     }
 
     for (auto& cellCorpsePair : _corpsesByCell)
@@ -2096,7 +2096,7 @@ void Map::SendInitSelf(Player* player)
     player->BuildCreateUpdateBlockForPlayer(&data, player);
 
     // build other passengers at transport also (they always visible and marked as visible and will not send at visibility update at add to map
-    if (MapTransport* transport = player->GetMapTransport())
+    if (Transport* transport = player->GetTransport())
         for (WorldObject* passenger : transport->GetPassengers())
             if (player != passenger && player->HaveAtClient(passenger))
                 passenger->BuildCreateUpdateBlockForPlayer(&data, player);
@@ -2112,7 +2112,7 @@ void Map::SendInitTransports(Player* player)
     UpdateData transData(player->GetMapId());
     for (Transport* transport : _transports)
     {
-        if (transport != player->GetMapTransport() && player->IsInPhase(transport))
+        if (transport != player->GetTransport() && player->IsInPhase(transport))
         {
             transport->BuildCreateUpdateBlockForPlayer(&transData, player);
             player->m_visibleTransports.insert(transport->GetGUID());
@@ -2130,7 +2130,7 @@ void Map::SendRemoveTransports(Player* player)
     UpdateData transData(player->GetMapId());
     for (Transport* transport : _transports)
     {
-        if (transport != player->GetMapTransport())
+        if (transport != player->GetTransport())
         {
             transport->BuildOutOfRangeUpdateBlock(&transData);
             player->m_visibleTransports.erase(transport->GetGUID());
@@ -2762,7 +2762,7 @@ void Map::DelayedUpdate(uint32 t_diff)
 
     for (_transportsUpdateIter = _transports.begin(); _transportsUpdateIter != _transports.end();)
     {
-        MapTransport* transport = *_transportsUpdateIter;
+        Transport* transport = *_transportsUpdateIter;
         ++_transportsUpdateIter;
 
         if (!transport->IsInWorld())
@@ -2871,7 +2871,7 @@ void Map::RemoveAllObjectsInRemoveList()
             case TYPEID_GAMEOBJECT:
             {
                 GameObject* go = obj->ToGameObject();
-                if (MapTransport* transport = go->ToMapTransport())
+                if (Transport* transport = go->ToTransport())
                     RemoveFromMap(transport, true);
                 else
                     RemoveFromMap(go, true);
@@ -3700,13 +3700,13 @@ Transport* Map::GetTransport(ObjectGuid const& guid)
     return go ? go->ToTransport() : nullptr;
 }
 
-MapTransport* Map::GetMapTransport(ObjectGuid const& guid)
+Transport* Map::GetTransport(ObjectGuid const& guid)
 {
     if (!guid.IsTransport())
         return nullptr;
 
     GameObject* go = GetGameObject(guid);
-    return go ? go->ToMapTransport() : nullptr;
+    return go ? go->ToTransport() : nullptr;
 }
 
 Creature* Map::GetCreatureBySpawnId(ObjectGuid::LowType spawnId) const

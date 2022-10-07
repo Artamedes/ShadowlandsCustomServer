@@ -1676,7 +1676,7 @@ public:
 
     static bool HandleDebugTransportCommand(ChatHandler* handler, std::string operation)
     {
-        MapTransport* transport = handler->GetPlayer()->GetMapTransport();
+        Transport* transport = handler->GetPlayer()->GetTransport();
         if (!transport)
             return false;
 

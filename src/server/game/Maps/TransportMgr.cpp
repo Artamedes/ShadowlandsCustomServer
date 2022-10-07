@@ -627,14 +627,14 @@ Transport* TransportMgr::CreateTransport(uint32 entry, Map* map, ObjectGuid::Low
 
 void TransportMgr::CreateTransportsForMap(Map* map)
 {
-    auto mapTransports = _transportsByMap.find(map->GetId());
+    auto Transports = _transportsByMap.find(map->GetId());
 
     // no transports here
-    if (mapTransports == _transportsByMap.end())
+    if (Transports == _transportsByMap.end())
         return;
 
     // create transports
-    for (TransportSpawn const* transport : mapTransports->second)
+    for (TransportSpawn const* transport : Transports->second)
         CreateTransport(transport->TransportGameObjectId, map, transport->SpawnId, transport->PhaseUseFlags, transport->PhaseId, transport->PhaseGroup);
 }
 

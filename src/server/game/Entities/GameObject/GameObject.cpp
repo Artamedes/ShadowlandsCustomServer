@@ -598,7 +598,7 @@ void GameObject::AddToWorld()
         bool toggledState = GetGoType() == GAMEOBJECT_TYPE_CHEST ? getLootState() == GO_READY : (GetGoState() == GO_STATE_READY || IsTransport());
         if (m_model)
         {
-            if (MapTransport* trans = ToMapTransport())
+            if (Transport* trans = ToTransport())
                 trans->SetDelayedAddModelToMap();
             else
                 GetMap()->InsertGameObjectModel(*m_model);
@@ -3841,18 +3841,18 @@ Transport const* GameObject::ToTransport() const
     return nullptr;
 }
 
-MapTransport* GameObject::ToMapTransport()
+Transport* GameObject::ToTransport()
 {
     if (GetGOInfo()->type == GAMEOBJECT_TYPE_MAP_OBJ_TRANSPORT)
-        return reinterpret_cast<MapTransport*>(this);
+        return reinterpret_cast<Transport*>(this);
 
     return nullptr;
 }
 
-MapTransport const* GameObject::ToMapTransport() const
+Transport const* GameObject::ToTransport() const
 {
     if (GetGOInfo()->type == GAMEOBJECT_TYPE_MAP_OBJ_TRANSPORT)
-        return reinterpret_cast<MapTransport const*>(this);
+        return reinterpret_cast<Transport const*>(this);
 
     return nullptr;
 }

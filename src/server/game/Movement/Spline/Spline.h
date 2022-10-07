@@ -137,6 +137,8 @@ public:
     /** Calculates distance between [i; i+1] points, assumes that index i is in bounds. */
     float SegLength(index_type i) const { return (this->*seglengths[m_mode])(i);}
 
+    void set_steps_per_segment(index_type newStepsPerSegment) { stepsPerSegment = newStepsPerSegment; }
+
     std::string ToString() const;
 };
 

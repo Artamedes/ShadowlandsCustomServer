@@ -482,7 +482,7 @@ bool Player::Create(ObjectGuid::LowType guidlow, WorldPackets::Character::Charac
     
     if (position.TransportGuid)
     {
-        if (MapTransport* transport = HashMapHolder<MapTransport>::Find(ObjectGuid::Create<HighGuid::Transport>(*position.TransportGuid)))
+        if (Transport* transport = HashMapHolder<Transport>::Find(ObjectGuid::Create<HighGuid::Transport>(*position.TransportGuid)))
         {
             transport->AddPassenger(this);
             m_movementInfo.transport.pos.Relocate(position.Loc);
@@ -19980,7 +19980,7 @@ bool Player::_LoadHomeBind(PreparedQueryResult result)
         m_homebind.WorldRelocate(createPosition.Loc);
         if (createPosition.TransportGuid)
         {
-            if (MapTransport* transport = HashMapHolder<MapTransport>::Find(ObjectGuid::Create<HighGuid::Transport>(*createPosition.TransportGuid)))
+            if (Transport* transport = HashMapHolder<Transport>::Find(ObjectGuid::Create<HighGuid::Transport>(*createPosition.TransportGuid)))
             {
                 float orientation = m_homebind.GetOrientation();
                 transport->CalculatePassengerPosition(m_homebind.m_positionX, m_homebind.m_positionY, m_homebind.m_positionZ, &orientation);

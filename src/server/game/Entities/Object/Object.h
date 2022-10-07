@@ -56,7 +56,7 @@ class SpellInfo;
 class TempSummon;
 class Transport;
 class TransportBase;
-class MapTransport;
+class Transport;
 class Unit;
 class UpdateData;
 class WorldObject;
@@ -724,7 +724,7 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
         virtual ObjectGuid GetTransGUID() const;
         void SetTransport(TransportBase* t) { m_transport = t; }
 
-        MapTransport* GetMapTransport() const;
+        Transport* GetTransport() const;
 
         MovementInfo m_movementInfo;
 
