@@ -3573,7 +3573,7 @@ void World::InitChallengeKeyResetTime()
     time_t curTime = time(nullptr);
     tm localTm = *localtime(&curTime);
     localTm.tm_wday = 3;
-    localTm.tm_hour = getIntConfig(CONFIG_INSTANCE_RESET_TIME_HOUR);
+    localTm.tm_hour = getIntConfig(CONFIG_RESET_SCHEDULE_WEEK_DAY);
     localTm.tm_min = 0;
     localTm.tm_sec = 0;
 

@@ -24,7 +24,7 @@
 #include "Position.h"
 #include <array>
 
-enum class GossipOptionNpc : int8;
+enum class GossipOptionNpc : uint8;
 enum class GossipOptionStatus : uint8;
 enum class GossipOptionRewardType : uint8;
 enum class PlayerInteractionType : uint32;

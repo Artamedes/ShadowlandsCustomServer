@@ -724,8 +724,6 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
         virtual ObjectGuid GetTransGUID() const;
         void SetTransport(TransportBase* t) { m_transport = t; }
 
-        Transport* GetTransport() const;
-
         MovementInfo m_movementInfo;
 
         virtual float GetStationaryX() const { return GetPositionX(); }

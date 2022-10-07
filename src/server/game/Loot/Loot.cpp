@@ -21,7 +21,9 @@
 #include "Containers.h"
 #include "DatabaseEnv.h"
 #include "DB2Stores.h"
+#include "GameTime.h"
 #include "Group.h"
+#include "Item.h"
 #include "ItemTemplate.h"
 #include "Log.h"
 #include "LootMgr.h"
@@ -794,7 +796,7 @@ void Loot::generateMoneyLoot(uint32 minAmount, uint32 maxAmount)
 }
 
 // Calls processor of corresponding LootTemplate (which handles everything including references)
-bool Loot::FillLoot(uint32 lootId, LootStore const& store, Player* lootOwner, bool personal, bool noEmptyError, uint16 lootMode /*= LOOT_MODE_DEFAULT*/, bool specOnly /*= false*/, bool personalLoot /*= false*/, bool fishing /* = false*/, bool oploteChest /*= false*/)
+bool Loot::FillLoot(uint32 lootId, LootStore const& store, Player* lootOwner, bool personal, bool noEmptyError, uint16 lootMode /*= LOOT_MODE_DEFAULT*/, ItemContext context /*= ItemContext::NONE*/, bool specOnly /*= false*/, bool personalLoot /*= false*/, bool fishing /* = false*/, bool oploteChest /*= false*/)
 {
     // Must be provided
     if (!lootOwner)
@@ -842,6 +844,8 @@ bool Loot::FillLoot(uint32 lootId, LootStore const& store, Player* lootOwner, bo
             TC_LOG_ERROR("sql.sql", "Table '%s' loot id #%u used but it doesn't have records.", store.GetName(), lootId);
         return false;
     }
+
+    _itemContext = context;
 
     Difficulty difficulty = DIFFICULTY_NONE;
 

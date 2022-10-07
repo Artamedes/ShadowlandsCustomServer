@@ -21,16 +21,6 @@ class instance_skyhold : public InstanceMapScript
                     Quad = { -0.0f, -0.0f, -0.696618f, -0.717442f };
                 }
 
-                void Create() override
-                {
-
-                }
-
-                void Load(char const* data) override
-                {
-
-                }
-
                 void OnCompletedCriteriaTree(CriteriaTree const* /*tree*/) override
                 {
                     if (InstanceScenario* instanceScenario = instance->GetInstanceScenario())

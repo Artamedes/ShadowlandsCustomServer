@@ -3180,35 +3180,36 @@ public:
         player->PrepareQuestMenu(me->GetGUID());
         AddGossipItemFor(player, GossipOptionNpc::None, "Reset all Instances", 0, 0, [this, player](std::string /*callback*/)
         {
-            uint32 mapId = 0;
-            uint32 counter = 0;
-            for (DifficultyEntry const* difficulty : sDifficultyStore)
-            {
-                auto binds = player->GetBoundInstances(Difficulty(difficulty->ID));
-                if (binds != player->m_boundInstances.end())
-                {
-                    for (auto itr = binds->second.begin(); itr != binds->second.end();)
-                    {
-                        InstanceSave const* save = itr->second.save;
-                        if (itr->first != player->GetMapId())
-                        {
-                            std::string timeleft = secsToTimeString(save->GetResetTime() - GameTime::GetGameTime(), TimeFormat::ShortText);
-                            //handler->PSendSysMessage(LANG_COMMAND_INST_UNBIND_UNBINDING, itr->first, save->GetInstanceId(), itr->second.perm ? "yes" : "no", save->GetDifficultyID(), save->CanReset() ? "yes" : "no", timeleft.c_str());
-                            player->UnbindInstance(itr, binds);
-                            counter++;
-                        }
-                        else
-                            ++itr;
-                    }
-                }
-            }
-
-            if (counter > 0)
-            {
-                Talk(0, player);
-            }
-            else
-                Talk(1, player);
+            //@todo: custom
+            //uint32 mapId = 0;
+            //uint32 counter = 0;
+            //for (DifficultyEntry const* difficulty : sDifficultyStore)
+            //{
+            //    auto binds = player->GetBoundInstances(Difficulty(difficulty->ID));
+            //    if (binds != player->m_boundInstances.end())
+            //    {
+            //        for (auto itr = binds->second.begin(); itr != binds->second.end();)
+            //        {
+            //            InstanceSave const* save = itr->second.save;
+            //            if (itr->first != player->GetMapId())
+            //            {
+            //                std::string timeleft = secsToTimeString(save->GetResetTime() - GameTime::GetGameTime(), TimeFormat::ShortText);
+            //                //handler->PSendSysMessage(LANG_COMMAND_INST_UNBIND_UNBINDING, itr->first, save->GetInstanceId(), itr->second.perm ? "yes" : "no", save->GetDifficultyID(), save->CanReset() ? "yes" : "no", timeleft.c_str());
+            //                player->UnbindInstance(itr, binds);
+            //                counter++;
+            //            }
+            //            else
+            //                ++itr;
+            //        }
+            //    }
+            //}
+            //
+            //if (counter > 0)
+            //{
+            //    Talk(0, player);
+            //}
+            //else
+            //    Talk(1, player);
             CloseGossipMenuFor(player);
         });
         SendGossipMenuFor(player, me->GetEntry(), me);

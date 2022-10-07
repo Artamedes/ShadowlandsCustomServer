@@ -482,7 +482,7 @@ bool Player::Create(ObjectGuid::LowType guidlow, WorldPackets::Character::Charac
     
     if (position.TransportGuid)
     {
-        if (Transport* transport = HashMapHolder<Transport>::Find(ObjectGuid::Create<HighGuid::Transport>(*position.TransportGuid)))
+        if (Transport* transport = ObjectAccessor::GetTransport(*this, ObjectGuid::Create<HighGuid::Transport>(*position.TransportGuid)))
         {
             transport->AddPassenger(this);
             m_movementInfo.transport.pos.Relocate(position.Loc);
@@ -1806,7 +1806,7 @@ void Player::SwitchToPhasedMap(uint32 p_MapID, CustomInstanceZone const* p_Custo
     uint32 l_ZoneId = sTerrainMgr.GetZoneId(PhasingHandler::GetEmptyPhaseShift(), p_MapID, l_X, l_Y, l_Z);
 
     // Relocate the player to the teleport destination
-    Map* l_NewMap = sMapMgr->CreateMap(p_MapID, this, l_ZoneId, 0, false, p_CustomInstanceZone);
+    Map* l_NewMap = sMapMgr->CreateMap(p_MapID, this, l_ZoneId, false, p_CustomInstanceZone);
     if (!l_NewMap || l_NewMap->CannotEnter(this))
         return;
 
@@ -14521,14 +14521,14 @@ void Player::OnGossipSelect(WorldObject* source, uint32 gossipListId, uint32 men
             break;
         case GossipOptionNpc::TalentMaster:
             PlayerTalkClass->SendCloseGossip();
-            SendRespecWipeConfirm(guid, sWorld->getBoolConfig(CONFIG_NO_RESET_TALENT_COST) ? 0 : GetNextResetTalentsCost(), SPEC_RESET_TALENTS);
+            SendRespecWipeConfirm(guid, sWorld->getBoolConfig(CONFIG_NO_RESET_TALENT_COST) ? 0 : 0, SPEC_RESET_TALENTS);
             break;
         case GossipOptionNpc::StableMaster:
             GetSession()->SendStablePet(guid);
             break;
         case GossipOptionNpc::PetSpecializationMaster:
             PlayerTalkClass->SendCloseGossip();
-            SendRespecWipeConfirm(guid, sWorld->getBoolConfig(CONFIG_NO_RESET_TALENT_COST) ? 0 : GetNextResetTalentsCost(), SPEC_RESET_PET_TALENTS);
+            SendRespecWipeConfirm(guid, sWorld->getBoolConfig(CONFIG_NO_RESET_TALENT_COST) ? 0 : 0, SPEC_RESET_PET_TALENTS);
             break;
         case GossipOptionNpc::DisableXPGain:
             PlayerTalkClass->SendCloseGossip();
@@ -19976,22 +19976,14 @@ bool Player::_LoadHomeBind(PreparedQueryResult result)
     if (!ok && HasAtLoginFlag(AT_LOGIN_FIRST))
     {
         PlayerInfo::CreatePosition const& createPosition = m_createMode == PlayerCreateMode::NPE && info->createPositionNPE ? *info->createPositionNPE : info->createPosition;
-
-        m_homebind.WorldRelocate(createPosition.Loc);
-        if (createPosition.TransportGuid)
+        if (!createPosition.TransportGuid)
         {
-            if (Transport* transport = HashMapHolder<Transport>::Find(ObjectGuid::Create<HighGuid::Transport>(*createPosition.TransportGuid)))
-            {
-                float orientation = m_homebind.GetOrientation();
-                transport->CalculatePassengerPosition(m_homebind.m_positionX, m_homebind.m_positionY, m_homebind.m_positionZ, &orientation);
-                m_homebind.SetOrientation(orientation);
-            }
+            m_homebind.WorldRelocate(createPosition.Loc);
+            m_homebindAreaId = sTerrainMgr.GetAreaId(PhasingHandler::GetEmptyPhaseShift(), m_homebind);
+
+            saveHomebindToDb();
+            ok = true;
         }
-
-        m_homebindAreaId = sTerrainMgr.GetAreaId(PhasingHandler::GetEmptyPhaseShift(), m_homebind);
-
-        saveHomebindToDb();
-        ok = true;
     }
 
     if (!ok)
@@ -26370,7 +26362,7 @@ void Player::StoreLootItem(ObjectGuid lootWorldObjectGuid, uint8 lootSlot, Loot*
                 UpdateCriteria(CriteriaType::LootAnyItem, item->itemid, item->count);
             }
             else
-                aeResult->Add(newitem, item->count, GetLootTypeForClient(loot->loot_type), loot->GetDungeonEncounterId()));
+                aeResult->Add(newitem, item->count, GetLootTypeForClient(loot->loot_type), loot->GetDungeonEncounterId());
 
             // LootItem is being removed (looted) from the container, delete it from the DB.
             if (loot->loot_type == LOOT_ITEM)
@@ -26412,7 +26404,7 @@ void Player::StoreLootItem(ObjectGuid lootWorldObjectGuid, uint8 lootSlot, Loot*
         //
         // LootItem is being removed (looted) from the container, delete it from the DB.
         if (!lootWorldObjectGuid.IsEmpty())
-            sLootItemStorage->RemoveStoredLootItemForContainer(lootWorldObjectGuid.GetCounter(), item->itemid, item->count, item->itemIndex);
+            sLootItemStorage->RemoveStoredLootItemForContainer(lootWorldObjectGuid.GetCounter(), item->itemid, item->count, item->LootListId);
 
     }
 }

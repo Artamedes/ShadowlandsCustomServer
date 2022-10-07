@@ -46,12 +46,12 @@ PathGenerator::PathGenerator(const WorldObject* owner, bool transformTransportPa
 
     if (_transport)
     {
-        if (_transport->MMapsLoaded())
-        {
-            MMAP::MMapManager* mmap = MMAP::MMapFactory::createOrGetMMapManager();
-            _navMesh = mmap->GetTransportNavMesh(_transport->GetDisplayId());
-            _navMeshQuery = mmap->GetTransportNavMeshQuery(_transport->GetDisplayId());
-        }
+        //if (_transport->MMapsLoaded())
+        //{
+        //    MMAP::MMapManager* mmap = MMAP::MMapFactory::createOrGetMMapManager();
+        //    _navMesh = mmap->GetTransportNavMesh(_transport->GetDisplayId());
+        //    _navMeshQuery = mmap->GetTransportNavMeshQuery(_transport->GetDisplayId());
+        //}
     }
     else
     {

@@ -184,9 +184,9 @@ public:
             TC_LOG_DEBUG("scripts", "Instance Hyjal: Instance data updated for event %u (Data=%u)", type, data);
         }
 
-        bool SetBossState(uint32 id, EncounterState state) override
+        bool SetBossState(uint32 id, EncounterState state, bool forced) override
         {
-            if (!InstanceScript::SetBossState(id, state))
+            if (!InstanceScript::SetBossState(id, state, forced))
                 return false;
 
             switch (id)

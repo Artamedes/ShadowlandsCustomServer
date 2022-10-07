@@ -533,7 +533,7 @@ int32 Transport::GetMapIdForSpawning() const
 
 void Transport::UpdatePosition(float x, float y, float z, float o)
 {
-    sScriptMgr->OnRelocate(this, GetMapId(), x, y, z);
+    sScriptMgr->OnRelocate(this, 0, GetMapId(), x, y, z);
 
     bool newActive = GetMap()->IsGridLoaded(x, y);
     Cell oldCell(GetPositionX(), GetPositionY());

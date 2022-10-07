@@ -134,9 +134,9 @@ public:
 
         handler->PSendSysMessage("Giving %s loot %u", selectedPlayerOrSelf->GetName().c_str(), ReferenceLootId);
 
-        Loot personalLoot;
+        Loot personalLoot(selectedPlayerOrSelf->GetMap(), selectedPlayerOrSelf->GetGUID(), LootType::LOOT_CORPSE, nullptr);
         personalLoot.clear();
-        if (personalLoot.FillLoot(ReferenceLootId, LootTemplates_Reference, selectedPlayerOrSelf, true, true, LOOT_MODE_DEFAULT, true, true))
+        if (personalLoot.FillLoot(ReferenceLootId, LootTemplates_Reference, selectedPlayerOrSelf, true, true, LOOT_MODE_DEFAULT, ItemContext::NONE, true, true))
         {
             auto index = 0;
             for (auto item : personalLoot.items)

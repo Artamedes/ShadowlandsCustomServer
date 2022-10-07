@@ -424,8 +424,9 @@ class spell_volkhan_cool_down : public AuraScript
         Unit* target = GetTarget();
         if (target->GetHealthPct() > 1.f)
         {
+            uint32 dmg = CalculatePct(target->GetMaxHealth(), target->GetMap()->IsHeroic() ? 1 : 2);
             // This damage part feels weird but there is no trace of spells in sniffs that could do such thing otherwise.
-            Unit::DealDamage(target, target, CalculatePct(target->GetMaxHealth(), target->GetMap()->IsHeroic() ? 1 : 2));
+            Unit::DealDamage(target, target, dmg);
             int32 bp = 0 - static_cast<int32>(100.f - target->GetHealthPct());
             target->CastSpell(nullptr, SPELL_COOL_DOWN_SLOW, CastSpellExtraArgs().AddSpellBP0(bp));
         }

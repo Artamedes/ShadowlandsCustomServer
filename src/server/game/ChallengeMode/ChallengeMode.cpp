@@ -39,6 +39,7 @@
 #include "PlayerChallenge.h"
 #include "CustomObjectMgr.h"
 #include "GameTime.h"
+#include "Group.h"
 
 Challenge::Challenge(InstanceMap* map, Player* player, Scenario* scenario, MythicKeystoneInfo* mythicKeystone)
     : InstanceScript(map), _instanceScript(map->GetInstanceScript()),

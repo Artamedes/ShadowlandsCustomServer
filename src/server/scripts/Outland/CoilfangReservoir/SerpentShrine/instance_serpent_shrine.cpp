@@ -315,9 +315,9 @@ class instance_serpent_shrine : public InstanceMapScript
                 }
             }
 
-            bool SetBossState(uint32 id, EncounterState state) override
+            bool SetBossState(uint32 id, EncounterState state, bool forced) override
             {
-                if (!InstanceScript::SetBossState(id, state))
+                if (!InstanceScript::SetBossState(id, state, forced))
                     return false;
 
                 if (id == BOSS_LADY_VASHJ && state == NOT_STARTED)

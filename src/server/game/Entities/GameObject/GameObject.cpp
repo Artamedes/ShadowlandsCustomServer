@@ -861,11 +861,7 @@ GameObject* GameObject::CreateGameObject(uint32 entry, Map* map, Position const&
     if (!goInfo)
         return nullptr;
 
-    GameObject* go = nullptr;
-    if (sObjectMgr->GetGameObjectTypeByEntry(goInfo->entry) == GAMEOBJECT_TYPE_TRANSPORT)
-        go = new Transport();
-    else
-        go = new GameObject();
+    GameObject* go = new GameObject();
     if (!go->Create(entry, map, pos, rotation, animProgress, goState, artKit, false, 0))
     {
         delete go;
@@ -877,23 +873,14 @@ GameObject* GameObject::CreateGameObject(uint32 entry, Map* map, Position const&
 
 GameObject* GameObject::CreateGameObjectFromDB(ObjectGuid::LowType spawnId, Map* map, bool addToMap /*= true*/)
 {
-    GameObjectData const* data = sObjectMgr->GetGameObjectData(spawnId);
-    if (data)
+    GameObject* go = new GameObject();
+    if (!go->LoadFromDB(spawnId, map, addToMap))
     {
-        GameObject* go = nullptr;
-        if (sObjectMgr->GetGameObjectTypeByEntry(data->id) == GAMEOBJECT_TYPE_TRANSPORT)
-            go = new Transport();
-        else
-            go = new GameObject();
-        if (!go->LoadFromDB(spawnId, map, addToMap))
-        {
-            delete go;
-            return nullptr;
-        }
-
-        return go;
+        delete go;
+        return nullptr;
     }
-    return nullptr;
+
+    return go;
 }
 
 void GameObject::Update(uint32 diff)
@@ -3825,41 +3812,9 @@ SpellInfo const* GameObject::GetSpellForLock(Player const* player) const
     return nullptr;
 }
 
-Transport* GameObject::ToTransport()
-{
-    if (IsTransport())
-        return reinterpret_cast<Transport*>(this);
-
-    return nullptr;
-}
-
-Transport const* GameObject::ToTransport() const
-{
-    if (IsTransport())
-        return reinterpret_cast<Transport const*>(this);
-
-    return nullptr;
-}
-
-Transport* GameObject::ToTransport()
-{
-    if (GetGOInfo()->type == GAMEOBJECT_TYPE_MAP_OBJ_TRANSPORT)
-        return reinterpret_cast<Transport*>(this);
-
-    return nullptr;
-}
-
-Transport const* GameObject::ToTransport() const
-{
-    if (GetGOInfo()->type == GAMEOBJECT_TYPE_MAP_OBJ_TRANSPORT)
-        return reinterpret_cast<Transport const*>(this);
-
-    return nullptr;
-}
-
 bool GameObject::IsAllLooted() const
 {
-    for (auto const& personal : m_PersonalLoots)
+    for (auto const& personal : m_personalLoot)
     {
         if (!personal.second->isLooted())
             return false;
@@ -3868,8 +3823,8 @@ bool GameObject::IsAllLooted() const
     if (m_canBePersonalLooted)
         return true;
 
-    if (!loot)
+    if (!m_loot)
         return true;
 
-    return loot->isLooted();
+    return m_loot->isLooted();
 }

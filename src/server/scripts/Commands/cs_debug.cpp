@@ -178,6 +178,7 @@ public:
 
         uint32 speed = urand(3, 99); WorldPacket data(SMSG_MOVE_UNK_2E34); data << handler->GetPlayer()->GetGUID(); data << uint32(handler->GetPlayer()->m_movementCounter++); sendPacket(&data);
         handler->PSendSysMessage("%u randSpeed", speed);
+        return true;
     }
     static bool HandleDebugPacket2E35(ChatHandler* handler)
     {
@@ -194,6 +195,7 @@ public:
 
         uint32 speed = urand(3, 99); WorldPacket data(SMSG_MOVE_UNK_2E35); data << handler->GetPlayer()->GetGUID(); data << uint32(handler->GetPlayer()->m_movementCounter++); sendPacket(&data);
         handler->PSendSysMessage("%u randSpeed", speed);
+        return true;
     }
     static bool HandleDebugPacket2E36(ChatHandler* handler)
     {
@@ -210,6 +212,7 @@ public:
 
         uint32 speed = urand(3, 99); WorldPacket data(SMSG_MOVE_UNK_2E36); data << handler->GetPlayer()->GetGUID(); data << uint32(handler->GetPlayer()->m_movementCounter++); data << float(speed); sendPacket(&data);
         handler->PSendSysMessage("%u randSpeed", speed);
+        return true;
     }
     static bool HandleDebugPacket2E37(ChatHandler* handler)
     {
@@ -226,6 +229,7 @@ public:
 
         uint32 speed = urand(3, 99); WorldPacket data(SMSG_MOVE_UNK_2E37); data << handler->GetPlayer()->GetGUID(); data << uint32(handler->GetPlayer()->m_movementCounter++); data << float(speed); sendPacket(&data);
         handler->PSendSysMessage("%u randSpeed", speed);
+        return true;
     }
     static bool HandleDebugPacket2E38(ChatHandler* handler)
     {
@@ -242,6 +246,7 @@ public:
 
         uint32 speed = urand(3, 99); WorldPacket data(SMSG_MOVE_UNK_2E38); data << handler->GetPlayer()->GetGUID(); data << uint32(handler->GetPlayer()->m_movementCounter++); data << float(speed); sendPacket(&data);
         handler->PSendSysMessage("%u randSpeed", speed);
+        return true;
     }
     static bool HandleDebugPacket2E39(ChatHandler* handler)
     {
@@ -258,6 +263,7 @@ public:
 
         uint32 speed = urand(3, 99); WorldPacket data(SMSG_MOVE_UNK_2E39); data << handler->GetPlayer()->GetGUID(); data << uint32(handler->GetPlayer()->m_movementCounter++); data << float(speed); sendPacket(&data);
         handler->PSendSysMessage("%u randSpeed", speed);
+        return true;
     }
     static bool HandleDebugPacket2E3A(ChatHandler* handler)
     {
@@ -274,6 +280,7 @@ public:
 
         uint32 speed = urand(3, 99); WorldPacket data(SMSG_MOVE_UNK_2E3A); data << handler->GetPlayer()->GetGUID(); data << uint32(handler->GetPlayer()->m_movementCounter++); data << float(speed); sendPacket(&data);
         handler->PSendSysMessage("%u randSpeed", speed);
+        return true;
     }
     static bool HandleDebugPacket2E3B(ChatHandler* handler)
     {
@@ -290,6 +297,7 @@ public:
 
         uint32 speed = urand(3, 99); WorldPacket data(SMSG_MOVE_UNK_2E3B); data << handler->GetPlayer()->GetGUID(); data << uint32(handler->GetPlayer()->m_movementCounter++); data << float(speed); sendPacket(&data);
         handler->PSendSysMessage("%u randSpeed", speed);
+        return true;
     }
     static bool HandleDebugPacket2E3C(ChatHandler* handler)
     {
@@ -314,6 +322,7 @@ public:
         sendPacket(&data);
         handler->PSendSysMessage("%u randSpeed", speed);
         handler->PSendSysMessage("%u randSpeed2", speed2);
+        return true;
     }
     static bool HandleDebugPacket2E3D(ChatHandler* handler)
     {
@@ -338,6 +347,7 @@ public:
         sendPacket(&data);
         handler->PSendSysMessage("%u randSpeed", speed);
         handler->PSendSysMessage("%u randSpeed2", speed2);
+        return true;
     }
     static bool HandleDebugPacket2E3E(ChatHandler* handler)
     {
@@ -362,6 +372,7 @@ public:
         sendPacket(&data);
         handler->PSendSysMessage("%u randSpeed", speed);
         handler->PSendSysMessage("%u randSpeed2", speed2);
+        return true;
     }
     static bool HandleDebugPacket2E3F(ChatHandler* handler)
     {
@@ -386,6 +397,7 @@ public:
         sendPacket(&data);
         handler->PSendSysMessage("%u randSpeed", speed);
         handler->PSendSysMessage("%u randSpeed2", speed2);
+        return true;
     }
     static bool HandleDebugPacket2E40(ChatHandler* handler)
     {
@@ -402,6 +414,7 @@ public:
 
         uint32 speed = urand(3, 99); WorldPacket data(SMSG_MOVE_UNK_2E40); data << handler->GetPlayer()->GetGUID(); data << uint32(handler->GetPlayer()->m_movementCounter++); data << float(speed); sendPacket(&data);
         handler->PSendSysMessage("%u randSpeed", speed);
+        return true;
     }
     static bool HandleDebugPacket2E41(ChatHandler* handler)
     {
@@ -418,6 +431,7 @@ public:
 
         uint32 speed = urand(3, 99); WorldPacket data(SMSG_MOVE_UNK_2E41); data << handler->GetPlayer()->GetGUID(); data << uint32(handler->GetPlayer()->m_movementCounter++); data << float(speed); sendPacket(&data);
         handler->PSendSysMessage("%u randSpeed", speed);
+        return true;
     }
     static bool HandleDebugPacket2E42(ChatHandler* handler)
     {
@@ -434,6 +448,7 @@ public:
 
         uint32 speed = urand(3, 99); WorldPacket data(SMSG_MOVE_UNK_2E42); data << handler->GetPlayer()->GetGUID(); data << uint32(handler->GetPlayer()->m_movementCounter++); data << float(speed); sendPacket(&data);
         handler->PSendSysMessage("%u randSpeed", speed);
+        return true;
     }
 
     static bool HandleDebugSendDragonridingCommand(ChatHandler* handler)
@@ -1676,7 +1691,7 @@ public:
 
     static bool HandleDebugTransportCommand(ChatHandler* handler, std::string operation)
     {
-        Transport* transport = handler->GetPlayer()->GetTransport();
+        Transport* transport = dynamic_cast<Transport*>(handler->GetPlayer()->GetTransport());
         if (!transport)
             return false;
 

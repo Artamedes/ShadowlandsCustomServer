@@ -317,7 +317,7 @@ struct TC_GAME_API Loot
     bool HasAllowedLooter(ObjectGuid const& looter) const;
 
     void generateMoneyLoot(uint32 minAmount, uint32 maxAmount);
-    bool FillLoot(uint32 lootId, LootStore const& store, Player* lootOwner, bool personal, bool noEmptyError = false, uint16 lootMode = LOOT_MODE_DEFAULT, bool specOnly = false, bool personalLoot = false, bool fishing = false, bool oploteChest = false);
+    bool FillLoot(uint32 lootId, LootStore const& store, Player* lootOwner, bool personal, bool noEmptyError = false, uint16 lootMode = LOOT_MODE_DEFAULT, ItemContext context = ItemContext::NONE, bool specOnly = false, bool personalLoot = false, bool fishing = false, bool oploteChest = false);
     bool FillPersonalLoot(LootTemplate const* lootTemplate, Player* playerLoot, uint8 context = 0);
 
     // Inserts the item into the loot (called by LootTemplate processors)

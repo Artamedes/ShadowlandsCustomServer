@@ -245,9 +245,9 @@ class TC_GAME_API InstanceScript : public ZoneScript
         Optional<uint32> GetEntranceLocationForCompletedEncounters(uint32 completedEncountersMask) const;
         virtual Optional<uint32> ComputeEntranceLocationForCompletedEncounters(uint32 completedEncountersMask) const;
 
+        virtual void Update(uint32 /*diff*/) { }
         void UpdateCombatResurrection(uint32 diff);
         void UpdateOperations(uint32 const diff);
-        void UpdateCombatResurrection(uint32 /*diff*/);
 
         // Used by the map's CannotEnter function.
         // This is to prevent players from entering during boss encounters.
@@ -521,6 +521,7 @@ class TC_GAME_API InstanceScript : public ZoneScript
         bool _SkipCheckRequiredBosses(Player const* player = nullptr) const;
 
     private:
+        static void LoadObjectData(ObjectData const* creatureData, ObjectInfoMap& objectInfo);
         void LoadDungeonEncounterData(uint32 bossId, std::array<uint32, MAX_DUNGEON_ENCOUNTERS_PER_BOSS> const& dungeonEncounterIds);
         void UpdateEncounterState(EncounterCreditType type, uint32 creditEntry, Unit* source, Unit* unit = nullptr);
         

@@ -18,16 +18,6 @@ public:
     uint32 DefensePoints = 0;
     uint32 MaxDefensePoints = 1000;
 
-    void Load(char const* /*data*/) override
-    {
-
-    }
-
-    void SaveToDB() override
-    {
-
-    }
-
     void OnCreatureCreate(Creature* creature) override
     {
         CustomInstanceScript::OnCreatureCreate(creature);

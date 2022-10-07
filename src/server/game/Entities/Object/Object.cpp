@@ -4126,14 +4126,6 @@ ObjectGuid WorldObject::GetTransGUID() const
     return ObjectGuid::Empty;
 }
 
-Transport* WorldObject::GetTransport() const
-{
-    if (auto transport = dynamic_cast<Transport*>(GetTransport()))
-        return transport->ToTransport();
-
-    return nullptr;
-}
-
 float WorldObject::GetFloorZ() const
 {
     if (!IsInWorld())

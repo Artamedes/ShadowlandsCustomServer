@@ -107,7 +107,7 @@ void CustomInstanceScript::OnPlayerLeave(Player* player)
 
     if (auto chest = instance->GetGameObject(ChestGuid))
     {
-        auto loot = chest->GetLootFor(player);
+        auto loot = chest->GetLootForPlayer(player);
         if (loot && !loot->empty())
         {
             bool hasLoot = false;
@@ -172,6 +172,23 @@ void CustomInstanceScript::NerfLeechIfNeed(Unit* who, int32& heal)
             else if (Effectiveness <= 0)
                 heal = 0;
         }
+    }
+}
+
+void CustomInstanceScript::OnChallengeComplete()
+{
+    if (auto chest = instance->SummonGameObject(1200005, ChestSpawn, Quad, 0))
+    {
+        instance->DoOnPlayers([this, chest](Player* player)
+        {
+            auto loot = chest->GetLootForPlayer(player);
+            loot->FillLoot(GetLootIdForDungeon(), LootTemplates_Gameobject, player, true, false, chest->GetLootMode(), instance->GetDifficultyLootItemContext(), true, true, false, chest->GetGOInfo()->IsOploteChest());
+        });
+
+        ChestGuid = chest->GetGUID();
+
+        chest->SetLootState(LootState::GO_ACTIVATED); // set activated
+        chest->ForceUpdateFieldChange(chest->m_values.ModifyValue(&Object::m_objectData).ModifyValue(&UF::ObjectData::DynamicFlags)); // force update dynflags
     }
 }
 

@@ -309,13 +309,6 @@ void Map::DeleteFromWorld(Player* player)
     delete player;
 }
 
-template<>
-void Map::DeleteFromWorld(Transport* transport)
-{
-    ObjectAccessor::RemoveObject(transport);
-    delete transport;
-}
-
 //Create NGrid so the object can be added to it
 //But object data is not loaded here
 void Map::EnsureGridCreated(GridCoord const& p)
@@ -762,10 +755,6 @@ void Map::Update(uint32 t_diff)
     {
         WorldObject* obj = *_transportsUpdateIter;
         ++_transportsUpdateIter;
-
-        if (!obj->IsInWorld())
-            continue;
-
         obj->Update(t_diff);
     }
 
@@ -968,18 +957,21 @@ void Map::RemoveFromMap(T *obj, bool remove)
 template<>
 void Map::RemoveFromMap(Transport* obj, bool remove)
 {
-    obj->RemoveFromWorld();
-
-    Map::PlayerList const& players = GetPlayers();
-    if (!players.isEmpty())
+    if (obj->IsInWorld())
     {
+        obj->RemoveFromWorld();
+
         UpdateData data(GetId());
-        obj->BuildOutOfRangeUpdateBlock(&data);
+        if (obj->IsDestroyedObject())
+            obj->BuildDestroyUpdateBlock(&data);
+        else
+            obj->BuildOutOfRangeUpdateBlock(&data);
+
         WorldPacket packet;
         data.BuildPacket(&packet);
-        for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
+        for (Map::PlayerList::const_iterator itr = GetPlayers().begin(); itr != GetPlayers().end(); ++itr)
         {
-            if (itr->GetSource()->GetTransport() != obj)
+            if (itr->GetSource()->GetTransport() != obj && itr->GetSource()->m_visibleTransports.count(obj->GetGUID()))
             {
                 itr->GetSource()->SendDirectMessage(&packet);
                 itr->GetSource()->m_visibleTransports.erase(obj->GetGUID());
@@ -2096,7 +2088,7 @@ void Map::SendInitSelf(Player* player)
     player->BuildCreateUpdateBlockForPlayer(&data, player);
 
     // build other passengers at transport also (they always visible and marked as visible and will not send at visibility update at add to map
-    if (Transport* transport = player->GetTransport())
+    if (Transport* transport = dynamic_cast<Transport*>(player->GetTransport()))
         for (WorldObject* passenger : transport->GetPassengers())
             if (player != passenger && player->HaveAtClient(passenger))
                 passenger->BuildCreateUpdateBlockForPlayer(&data, player);
@@ -2432,17 +2424,9 @@ void Map::DoRespawn(SpawnObjectType type, ObjectGuid::LowType spawnId, uint32 gr
         }
         case SPAWN_TYPE_GAMEOBJECT:
         {
-            GameObjectData const* data = sObjectMgr->GetGameObjectData(spawnId);
-            if (data)
-            {
-                GameObject* obj = nullptr;
-                if (data && sObjectMgr->GetGameObjectTypeByEntry(data->id) == GAMEOBJECT_TYPE_TRANSPORT)
-                    obj = new Transport();
-                else
-                    obj = new GameObject();
-                if (!obj->LoadFromDB(spawnId, this, true))
-                    delete obj;
-            }
+            GameObject* obj = new GameObject();
+            if (!obj->LoadFromDB(spawnId, this, true))
+                delete obj;
             break;
         }
         default:
@@ -2639,11 +2623,7 @@ bool Map::SpawnGroupSpawn(uint32 groupId, bool ignoreRespawn, bool force, std::v
             }
             case SPAWN_TYPE_GAMEOBJECT:
             {
-                GameObject* gameobject = nullptr;
-                if (data && sObjectMgr->GetGameObjectTypeByEntry(data->id) == GAMEOBJECT_TYPE_TRANSPORT)
-                    gameobject = new Transport();
-                else
-                    gameobject = new GameObject();
+                GameObject* gameobject = new GameObject();
                 if (!gameobject->LoadFromDB(data->spawnId, this, true))
                     delete gameobject;
                 else if (spawnedObjects)
@@ -2758,17 +2738,6 @@ void Map::DelayedUpdate(uint32 t_diff)
             (*callback)(this);
             delete callback;
         }
-    }
-
-    for (_transportsUpdateIter = _transports.begin(); _transportsUpdateIter != _transports.end();)
-    {
-        Transport* transport = *_transportsUpdateIter;
-        ++_transportsUpdateIter;
-
-        if (!transport->IsInWorld())
-            continue;
-
-        transport->DelayedUpdate(t_diff);
     }
 
     RemoveAllObjectsInRemoveList();
@@ -3689,15 +3658,6 @@ GameObject* Map::GetGameObject(ObjectGuid const& guid)
 Pet* Map::GetPet(ObjectGuid const& guid)
 {
     return _objectsStore.Find<Pet>(guid);
-}
-
-Transport* Map::GetTransport(ObjectGuid const& guid)
-{
-    if (!guid.IsTransport())
-        return nullptr;
-
-    GameObject* go = GetGameObject(guid);
-    return go ? go->ToTransport() : nullptr;
 }
 
 Transport* Map::GetTransport(ObjectGuid const& guid)

@@ -375,7 +375,6 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
         GameObject* GetGameObject(ObjectGuid const& guid);
         Pet* GetPet(ObjectGuid const& guid);
         Transport* GetTransport(ObjectGuid const& guid);
-        Transport* GetTransport(ObjectGuid const& guid);
         Creature* GetCreatureBySpawnId(ObjectGuid::LowType spawnId) const;
         GameObject* GetGameObjectBySpawnId(ObjectGuid::LowType spawnId) const;
         AreaTrigger* GetAreaTriggerBySpawnId(ObjectGuid::LowType spawnId) const;

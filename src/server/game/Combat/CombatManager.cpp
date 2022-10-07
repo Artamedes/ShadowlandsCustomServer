@@ -212,12 +212,7 @@ bool CombatManager::SetInCombatWith(Unit* who, bool addSecondUnitSuppressed)
     // ...then create new reference
     CombatReference* ref;
     if (_owner->IsControlledByPlayer() && who->IsControlledByPlayer())
-    {
-        PvPCombatReference* refPvp = new PvPCombatReference(_owner, who);
-        if (suppressPvpSecond)
-            refPvp->SuppressFor(who);
-        ref = refPvp;
-    }
+        ref = new PvPCombatReference(_owner, who);
     else
         ref = new CombatReference(_owner, who);
 

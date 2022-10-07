@@ -2465,6 +2465,26 @@ void Unit::SendMeleeAttackStop(Unit* victim)
         TC_LOG_DEBUG("entities.unit", "%s stopped attacking", GetGUID().ToString().c_str());
 }
 
+bool Unit::isSpellBlocked(Unit* victim, SpellInfo const* spellProto, WeaponAttackType attackType)
+{
+    // These spells can't be blocked
+    if (spellProto && (spellProto->HasAttribute(SPELL_ATTR0_NO_ACTIVE_DEFENSE) || spellProto->HasAttribute(SPELL_ATTR3_ALWAYS_HIT)))
+        return false;
+
+    // Can't block when casting/controlled
+    if (victim->IsNonMeleeSpellCast(false) || victim->HasUnitState(UNIT_STATE_CONTROLLED))
+        return false;
+
+    if (victim->HasAuraType(SPELL_AURA_IGNORE_HIT_DIRECTION) || victim->HasInArc(float(M_PI), this))
+    {
+        float blockChance = GetUnitBlockChance(attackType, victim);
+        if (blockChance && roll_chance_f(blockChance))
+            return true;
+    }
+
+    return false;
+}
+
 bool Unit::IsBlockCritical()
 {
     if (roll_chance_i(GetTotalAuraModifier(SPELL_AURA_MOD_BLOCK_CRIT_CHANCE)))

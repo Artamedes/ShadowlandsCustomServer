@@ -4,7 +4,7 @@
 
 #include <map>
 
-enum class GossipOptionNpc : int8;
+enum class GossipOptionNpc : uint8;
 
 struct MagicStoneMenu
 {
