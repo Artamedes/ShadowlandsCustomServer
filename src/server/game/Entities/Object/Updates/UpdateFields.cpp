@@ -3035,26 +3035,26 @@ void ReplayedQuest::ClearChangesMask()
 
 void TraitEntry::WriteCreate(ByteBuffer& data, Player const* owner, Player const* receiver) const
 {
-    data << int32(TraitNode);
+    data << int32(TraitNodeID);
     data << int32(TraitNodeEntryID);
     data << int32(Rank);
-    data << int32(UnkDF);
+    data << int32(TreeFlags);
 }
 
 void TraitEntry::WriteUpdate(ByteBuffer& data, bool ignoreChangesMask, Player const* owner, Player const* receiver) const
 {
-    data << int32(TraitNode);
+    data << int32(TraitNodeID);
     data << int32(TraitNodeEntryID);
     data << int32(Rank);
-    data << int32(UnkDF);
+    data << int32(TreeFlags);
 }
 
 bool TraitEntry::operator==(TraitEntry const& right) const
 {
-    return TraitNode == right.TraitNode
+    return TraitNodeID == right.TraitNodeID
         && TraitNodeEntryID == right.TraitNodeEntryID
         && Rank == right.Rank
-        && UnkDF == right.UnkDF;
+        && TreeFlags == right.TreeFlags;
 }
 
 void TraitConfig::WriteCreate(ByteBuffer& data, Player const* owner, Player const* receiver) const
@@ -3069,11 +3069,11 @@ void TraitConfig::WriteCreate(ByteBuffer& data, Player const* owner, Player cons
     else if (Type == 1)
     {
         data << int32(SpecializationID);
-        data << int32(Dword150);
+        data << int32(CombatConfigFlags);
         data << int32(LoadoutIndex);
     }
     else if (Type == 3)
-        data << int32(Dword158);
+        data << int32(SystemID);
 
     for (uint32 i = 0; i < Entries.size(); ++i)
     {
@@ -3150,7 +3150,7 @@ void TraitConfig::WriteUpdate(ByteBuffer& data, bool ignoreChangesMask, Player c
         {
             if (changesMask[8])
             {
-                data << int32(Dword150);
+                data << int32(CombatConfigFlags);
             }
             if (changesMask[9])
             {
@@ -3160,7 +3160,7 @@ void TraitConfig::WriteUpdate(ByteBuffer& data, bool ignoreChangesMask, Player c
 
         if (Type == 3)
             if (changesMask[10])
-                data << int32(Dword158);
+                data << int32(SystemID);
     }
     if (changesMask[11])
     {
@@ -3178,9 +3178,9 @@ void TraitConfig::ClearChangesMask()
     Base::ClearChangesMask(Type);
     Base::ClearChangesMask(SkillLineID);
     Base::ClearChangesMask(SpecializationID);
-    Base::ClearChangesMask(Dword150);
+    Base::ClearChangesMask(CombatConfigFlags);
     Base::ClearChangesMask(LoadoutIndex);
-    Base::ClearChangesMask(Dword158);
+    Base::ClearChangesMask(SystemID);
     Base::ClearChangesMask(LoadoutName);
     _changesMask.ResetAll();
 }

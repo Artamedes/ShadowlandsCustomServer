@@ -102,7 +102,7 @@ WorldPacket const* GossipMessage::Write()
             _worldPacket << int32(*options.SpellID);
     }
 
-    if (TextID)
+    if (TextID) /// BroadcastTextID
         _worldPacket << TextID;
 
     for (ClientGossipText const& text : GossipText)
@@ -252,6 +252,20 @@ void SetPetSlot::Read()
     _worldPacket >> PetNumber;
     _worldPacket >> DestSlot;
     _worldPacket >> StableMaster;
+}
+WorldPacket const* PerformPlayerInteraction::Write()
+{
+    _worldPacket << Gossip;
+    _worldPacket << static_cast<uint32>(InteractionType);
+    return &_worldPacket;
+}
+WorldPacket const* GossipNpcInteraction::Write()
+{
+    _worldPacket << Gossip;
+    _worldPacket << static_cast<uint32>(InteractionType);
+    _worldPacket.WriteBit(IsInteraction);
+    _worldPacket.FlushBits();
+    return &_worldPacket;
 }
 }
 }

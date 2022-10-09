@@ -35,27 +35,27 @@ void ClearGossipMenuFor(Player* player)
 }
 
 // Using provided text, not from DB
-void AddGossipItemFor(Player* player, GossipOptionIcon icon, std::string const& text, uint32 sender, uint32 action)
+void AddGossipItemFor(Player* player, GossipOptionNpc optionNpc, std::string const& text, uint32 sender, uint32 action)
 {
-    player->PlayerTalkClass->GetGossipMenu().AddMenuItem(-1, icon, text, sender, action, "", 0);
+    player->PlayerTalkClass->GetGossipMenu().AddMenuItem(-1, optionNpc, text, sender, action, "", 0);
 }
 
 // Using provided texts, not from DB
-void AddGossipItemFor(Player* player, GossipOptionIcon icon, std::string const& text, uint32 sender, uint32 action, std::string const& popupText, uint32 popupMoney, bool coded)
+void AddGossipItemFor(Player* player, GossipOptionNpc optionNpc, std::string const& text, uint32 sender, uint32 action, std::string const& popupText, uint32 popupMoney, bool coded)
 {
-    player->PlayerTalkClass->GetGossipMenu().AddMenuItem(-1, icon, text, sender, action, popupText, popupMoney, coded);
+    player->PlayerTalkClass->GetGossipMenu().AddMenuItem(-1, optionNpc, text, sender, action, popupText, popupMoney, coded);
 }
 
 // Using provided text, not from DB
-void AddGossipItemFor(Player* player, GossipOptionIcon icon, std::string const& text, uint32 sender, uint32 action, std::function<void(std::string)> callback)
+void AddGossipItemFor(Player* player, GossipOptionNpc optionNpc, std::string const& text, uint32 sender, uint32 action, std::function<void(std::string)> callback)
 {
-    player->PlayerTalkClass->GetGossipMenu().AddMenuItem(-1, icon, text, sender, action, "", 0, false, callback);
+    player->PlayerTalkClass->GetGossipMenu().AddMenuItem(-1, optionNpc, text, sender, action, "", 0, false, callback);
 }
 
 // Using provided texts, not from DB
-void AddGossipItemFor(Player* player, GossipOptionIcon icon, std::string const& text, uint32 sender, uint32 action, std::string const& popupText, uint32 popupMoney, bool coded, std::function<void(std::string)> callback)
+void AddGossipItemFor(Player* player, GossipOptionNpc optionNpc, std::string const& text, uint32 sender, uint32 action, std::string const& popupText, uint32 popupMoney, bool coded, std::function<void(std::string)> callback)
 {
-    player->PlayerTalkClass->GetGossipMenu().AddMenuItem(-1, icon, text, sender, action, popupText, popupMoney, coded, callback);
+    player->PlayerTalkClass->GetGossipMenu().AddMenuItem(-1, optionNpc, text, sender, action, popupText, popupMoney, coded, callback);
 }
 
 // Uses gossip item info from DB

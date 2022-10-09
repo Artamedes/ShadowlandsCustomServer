@@ -87,19 +87,19 @@ public:
         player->ModifyCurrency(eCurrencies::Phantasma, 0, true, true, true);
     }
 
-    void WriteSaveDataMore(std::ostringstream& data) override
-    {
-        data << CurrFloorLevel;
-    }
-
-    void ReadSaveDataMore(std::istringstream& data) override
-    {
-        data >> CurrFloorLevel;
-
-        DoUpdateWorldState(eWorldStates::CurrentFloor, CurrFloorLevel);
-        DoUpdateWorldState(eWorldStates::NextFloor, CurrFloorLevel + 1);
-    }
-
+    //void WriteSaveDataMore(std::ostringstream& data) override
+    //{
+    //    data << CurrFloorLevel;
+    //}
+    //
+    //void ReadSaveDataMore(std::istringstream& data) override
+    //{
+    //    data >> CurrFloorLevel;
+    //
+    //    DoUpdateWorldState(eWorldStates::CurrentFloor, CurrFloorLevel);
+    //    DoUpdateWorldState(eWorldStates::NextFloor, CurrFloorLevel + 1);
+    //}
+    //
     void OnUnitDeath(Unit* unit) override
     {
         auto creature = unit->ToCreature();

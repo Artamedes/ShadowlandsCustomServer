@@ -16,6 +16,7 @@
  */
 
 #include "TalentPackets.h"
+#include "TraitsMgr.h"
 
 ByteBuffer& operator>>(ByteBuffer& data, WorldPackets::Talent::PvPTalent& pvpTalent)
 {
@@ -127,28 +128,26 @@ ByteBuffer& operator>>(ByteBuffer& data, WorldPackets::Talent::TraitConfigEntry&
     data >> entry.TraitNode;
     data >> entry.TraitNodeEntryID;
     data >> entry.Rank;
-    data >> entry.Unk;
+    entry.TreeFlags = data.read<TraitTreeFlag>();
     return data;
 }
 
 ByteBuffer& operator>>(ByteBuffer& data, WorldPackets::Talent::TraitConfigInfo& traitInfo)
 {
     data >> traitInfo.ConfigID;
-    data >> traitInfo.Result;
+    traitInfo.Type = data.read<TraitType>();
     traitInfo.Talents.resize(data.read<uint32>());
 
-    if (traitInfo.Result == 2)
-        data >> traitInfo.Res2Int;
-
-    if (traitInfo.Result == 1)
+    if (traitInfo.Type == TraitType::Profession)
+        data >> traitInfo.SkillLineID;
+    else if (traitInfo.Type == TraitType::Combat)
     {
-        data >> traitInfo.Res1Int_1;
-        data >> traitInfo.Res1Int_2;
-        data >> traitInfo.Res1Int_3;
+        data >> traitInfo.SpecializationID;
+        traitInfo.CombatConfigFlags = data.read<TraitCombatConfigFlags>();
+        data >> traitInfo.LoadoutIndex;
     }
-
-    if (traitInfo.Result == 3)
-        data >> traitInfo.Res3Int;
+    else if (traitInfo.Type == TraitType::Generic)
+        data >> traitInfo.SystemID;
 
     for (uint32 i = 0; i < traitInfo.Talents.size(); ++i)
     {
@@ -156,7 +155,7 @@ ByteBuffer& operator>>(ByteBuffer& data, WorldPackets::Talent::TraitConfigInfo& 
     }
 
     uint32 configNameLen = data.ReadBits(9);
-    traitInfo.ConfigName = data.ReadString(configNameLen);
+    traitInfo.LoadoutName = data.ReadString(configNameLen);
 
     return data;
 }

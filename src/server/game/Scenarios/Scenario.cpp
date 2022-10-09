@@ -16,7 +16,6 @@
  */
 
 #include "Scenario.h"
-#include "InstanceSaveMgr.h"
 #include "InstanceScenario.h"
 #include "InstanceScript.h"
 #include "Log.h"
@@ -224,8 +223,8 @@ void Scenario::CompletedCriteriaTree(CriteriaTree const* tree, Player* reference
     CriteriaHandler::CompletedCriteriaTree(tree, referencePlayer);
 
     if (InstanceScenario* instanceScenario = ToInstanceScenario())
-        if (InstanceMap* instanceMap = instanceScenario->GetMap()->ToInstanceMap())
-            if (InstanceScript* instanceScript = instanceMap->GetInstanceScript())
+        if (InstanceMap const* instanceMap = instanceScenario->GetMap()->ToInstanceMap())
+            if (InstanceScript* instanceScript = const_cast<InstanceMap*>(instanceMap)->GetInstanceScript())
                 instanceScript->OnCompletedCriteriaTree(tree);
 
     ScenarioStepEntry const* step = tree->ScenarioStep;

@@ -83,9 +83,9 @@ public:
         uint32 mapId = PhasingHandler::GetTerrainMapId(player->GetPhaseShift(), player->GetMap()->GetTerrain(), player->GetPositionX(), player->GetPositionY());
 
         bool ValidNavMesh = false;
-        if (transport && transport->MMapsLoaded())
-            ValidNavMesh = manager->GetTransportNavMesh(transport->GetDisplayId()) != nullptr;
-        else
+        //if (transport && transport->MMapsLoaded())
+        //    ValidNavMesh = manager->GetTransportNavMesh(transport->GetDisplayId()) != nullptr;
+        //else
             ValidNavMesh = manager->GetNavMesh(mapId) != nullptr;
 
         if (!ValidNavMesh)

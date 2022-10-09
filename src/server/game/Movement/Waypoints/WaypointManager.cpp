@@ -286,19 +286,19 @@ void WaypointNode::CreateMenuForPlayer(Player* player)
 {
     ClearGossipMenuFor(player);
 
-    AddGossipItemFor(player, GossipOptionIcon::None, "PathID: " + std::to_string(PathId), 0, 0, [player, this](std::string /*callback*/)
+    AddGossipItemFor(player, GossipOptionNpc::None, "PathID: " + std::to_string(PathId), 0, 0, [player, this](std::string /*callback*/)
     {
         CreateMenuForPlayer(player);
     });
 
-    AddGossipItemFor(player, GossipOptionIcon::None, "PointID: " + std::to_string(Id), 0, 0, [player, this](std::string /*callback*/)
+    AddGossipItemFor(player, GossipOptionNpc::None, "PointID: " + std::to_string(Id), 0, 0, [player, this](std::string /*callback*/)
     {
         CreateMenuForPlayer(player);
     });
 
     std::ostringstream ss;
     ss << "|cffFF0000[X: " << X << " Y: " << Y << " Z: " << Z << "]|R Set New Endpoint";
-    AddGossipItemFor(player, GossipOptionIcon::None, ss.str().c_str(), 0, 0, [player, this](std::string /*callback*/)
+    AddGossipItemFor(player, GossipOptionNpc::None, ss.str().c_str(), 0, 0, [player, this](std::string /*callback*/)
     {
         player->GetPosition(X, Y, Z);
 
@@ -310,13 +310,13 @@ void WaypointNode::CreateMenuForPlayer(Player* player)
         CreateMenuForPlayer(player);
     });
 
-    AddGossipItemFor(player, GossipOptionIcon::None, "Teleport To Position", 0, 0, [this, player](std::string /*callback*/)
+    AddGossipItemFor(player, GossipOptionNpc::None, "Teleport To Position", 0, 0, [this, player](std::string /*callback*/)
     {
         player->NearTeleportTo({ X, Y, Z }, false, true);
         CreateMenuForPlayer(player);
     });
 
-    AddGossipItemFor(player, GossipOptionIcon::None, "Orientation: " + std::to_string((Orientation.has_value() ? *Orientation : 0.0f)), 0, 0, [player, this](std::string /*callback*/)
+    AddGossipItemFor(player, GossipOptionNpc::None, "Orientation: " + std::to_string((Orientation.has_value() ? *Orientation : 0.0f)), 0, 0, [player, this](std::string /*callback*/)
     {
         Orientation = player->GetOrientation();
         ChatHandler(player).PSendSysMessage("Orientation updated to %f", player->GetOrientation());
@@ -326,41 +326,41 @@ void WaypointNode::CreateMenuForPlayer(Player* player)
     ss.clear();
     ss.str("");
 
-    AddGossipItemFor(player, GossipOptionIcon::None, "Velocity: " + std::to_string(Velocity), 0, 0, "", 0, true, [player, this](std::string callback)
+    AddGossipItemFor(player, GossipOptionNpc::None, "Velocity: " + std::to_string(Velocity), 0, 0, "", 0, true, [player, this](std::string callback)
     {
         Velocity = atof(callback.c_str());
         ChatHandler(player).PSendSysMessage("Velocity updated to %f", Velocity);
         CreateMenuForPlayer(player);
     });
 
-    AddGossipItemFor(player, GossipOptionIcon::None, "Delay: " + std::to_string(Delay), 0, 0, "", 0, true, [player, this](std::string callback)
+    AddGossipItemFor(player, GossipOptionNpc::None, "Delay: " + std::to_string(Delay), 0, 0, "", 0, true, [player, this](std::string callback)
     {
         Delay = atol(callback.c_str());
         ChatHandler(player).PSendSysMessage("Delay updated to %u", Delay);
         CreateMenuForPlayer(player);
     });
 
-    AddGossipItemFor(player, GossipOptionIcon::None, "MoveType: " + MoveTypeToString(MoveType), 0, 0, "", 0, true, [player, this](std::string callback)
+    AddGossipItemFor(player, GossipOptionNpc::None, "MoveType: " + MoveTypeToString(MoveType), 0, 0, "", 0, true, [player, this](std::string callback)
     {
         MoveType = static_cast<WaypointMoveType>(atol(callback.c_str()));
         ChatHandler(player).PSendSysMessage("MoveType updated to %u", MoveType);
         CreateMenuForPlayer(player);
     });
 
-    AddGossipItemFor(player, GossipOptionIcon::None, "SplinePoints " + std::to_string(SplinePoints.size()), 0, 0, [player, this](std::string /*callback*/)
+    AddGossipItemFor(player, GossipOptionNpc::None, "SplinePoints " + std::to_string(SplinePoints.size()), 0, 0, [player, this](std::string /*callback*/)
     {
         SendSplinePoints(player);
     });
 
 
-    AddGossipItemFor(player, GossipOptionIcon::None, "Delete Node", 0, 0, [player, this](std::string /*callback*/)
+    AddGossipItemFor(player, GossipOptionNpc::None, "Delete Node", 0, 0, [player, this](std::string /*callback*/)
     {
         auto Parent = sWaypointMgr->GetPathPig(PathId);
         Parent->DeleteWaypointNode(Id);
         Parent->CreateMenuForPlayer(player);
     });
 
-    AddGossipItemFor(player, GossipOptionIcon::None, "Back: ", 0, 0, [player, this](std::string /*callback*/)
+    AddGossipItemFor(player, GossipOptionNpc::None, "Back: ", 0, 0, [player, this](std::string /*callback*/)
     {
         auto Parent = sWaypointMgr->GetPathPig(PathId);
         Parent->CreateMenuForPlayer(player);
@@ -375,12 +375,12 @@ void WaypointNode::CreateSplinePointMenu(Player* player, G3D::Vector3& splinePoi
     std::ostringstream ss;
     ss << "[" << i << "]: " << " |cffFF0000[X:" << splinePoint.x << " Y : " << splinePoint.y << " Z : " << splinePoint.z << "]";
 
-    AddGossipItemFor(player, GossipOptionIcon::None, ss.str(), 0, 0, [this, player, &splinePoint, i](std::string /*callback*/)
+    AddGossipItemFor(player, GossipOptionNpc::None, ss.str(), 0, 0, [this, player, &splinePoint, i](std::string /*callback*/)
     {
         CreateSplinePointMenu(player, splinePoint, i);
     });
 
-    AddGossipItemFor(player, GossipOptionIcon::None, "Set new Position", 0, 0, [this, player, &splinePoint, i](std::string /*callback*/)
+    AddGossipItemFor(player, GossipOptionNpc::None, "Set new Position", 0, 0, [this, player, &splinePoint, i](std::string /*callback*/)
     {
         float x, y, z;
         player->GetPosition(x, y, z);
@@ -391,17 +391,17 @@ void WaypointNode::CreateSplinePointMenu(Player* player, G3D::Vector3& splinePoi
         splinePoint = G3D::Vector3(x, y, z);
         CreateSplinePointMenu(player, splinePoint, i);
     });
-    AddGossipItemFor(player, GossipOptionIcon::None, "Teleport To Position", 0, 0, [this, player, &splinePoint, i](std::string /*callback*/)
+    AddGossipItemFor(player, GossipOptionNpc::None, "Teleport To Position", 0, 0, [this, player, &splinePoint, i](std::string /*callback*/)
     {
         player->NearTeleportTo({ splinePoint.x, splinePoint.y, splinePoint.z }, false, true);
         CreateSplinePointMenu(player, splinePoint, i);
     });
-    AddGossipItemFor(player, GossipOptionIcon::None, "Remove", 0, 0, [this, player, &splinePoint, i](std::string /*callback*/)
+    AddGossipItemFor(player, GossipOptionNpc::None, "Remove", 0, 0, [this, player, &splinePoint, i](std::string /*callback*/)
     {
         SplinePoints.erase(SplinePoints.begin() + i);
         SendSplinePoints(player);
     });
-    AddGossipItemFor(player, GossipOptionIcon::None, "Back", 0, 0, [this, player, &splinePoint, i](std::string /*callback*/)
+    AddGossipItemFor(player, GossipOptionNpc::None, "Back", 0, 0, [this, player, &splinePoint, i](std::string /*callback*/)
     {
         SendSplinePoints(player);
     });
@@ -412,13 +412,13 @@ void WaypointNode::SendSplinePoints(Player* player)
 {
     ClearGossipMenuFor(player);
 
-    AddGossipItemFor(player, GossipOptionIcon::None, "Clear Spline Points " + std::to_string(SplinePoints.size()), 0, 0, [player, this](std::string /*callback*/)
+    AddGossipItemFor(player, GossipOptionNpc::None, "Clear Spline Points " + std::to_string(SplinePoints.size()), 0, 0, [player, this](std::string /*callback*/)
     {
         SplinePoints.clear();
         SendSplinePoints(player);
     });
 
-    AddGossipItemFor(player, GossipOptionIcon::None, "Add spline point", 0, 0, [player, this](std::string /*callback*/)
+    AddGossipItemFor(player, GossipOptionNpc::None, "Add spline point", 0, 0, [player, this](std::string /*callback*/)
     {
         float x, y, z;
         player->GetPosition(x, y, z);
@@ -436,7 +436,7 @@ void WaypointNode::SendSplinePoints(Player* player)
         auto splinePoint = SplinePoints[i];
         ss << "[" << i << "]: " << " |cffFF0000[X:" << splinePoint.x << " Y : " << splinePoint.y << " Z : " << splinePoint.z << "]";
 
-        AddGossipItemFor(player, GossipOptionIcon::None, ss.str(), 0, 0, [player, this, i](std::string /*callback*/)
+        AddGossipItemFor(player, GossipOptionNpc::None, ss.str(), 0, 0, [player, this, i](std::string /*callback*/)
         {
             CreateSplinePointMenu(player, SplinePoints[i], i);
         });
@@ -445,7 +445,7 @@ void WaypointNode::SendSplinePoints(Player* player)
         ss.str("");
     }
 
-    AddGossipItemFor(player, GossipOptionIcon::None, "Visualize Spline Points", 0, 0, [this, player](std::string /*callback*/)
+    AddGossipItemFor(player, GossipOptionNpc::None, "Visualize Spline Points", 0, 0, [this, player](std::string /*callback*/)
     {
         for (int i = 0; i < SplinePoints.size(); ++i)
         {
@@ -458,7 +458,7 @@ void WaypointNode::SendSplinePoints(Player* player)
         SendSplinePoints(player);
     });
 
-    AddGossipItemFor(player, GossipOptionIcon::None, "Back", 0, 0, [this, player](std::string /*callback*/)
+    AddGossipItemFor(player, GossipOptionNpc::None, "Back", 0, 0, [this, player](std::string /*callback*/)
     {
         CreateMenuForPlayer(player);
     });
@@ -484,7 +484,7 @@ void WaypointPath::CreateMenuForPlayer(Player* player)
 {
     ClearGossipMenuFor(player);
 
-    AddGossipItemFor(player, GossipOptionIcon::None, "PathID: " + std::to_string(Id), 0, 0, [this, player](std::string /*callback*/)
+    AddGossipItemFor(player, GossipOptionNpc::None, "PathID: " + std::to_string(Id), 0, 0, [this, player](std::string /*callback*/)
     {
         CreateMenuForPlayer(player);
     });
@@ -497,7 +497,7 @@ void WaypointPath::CreateMenuForPlayer(Player* player)
 
         ss << "Edit Node: [" << i << "]" << " |cffFF0000[X: " << node.X << " Y: " << node.Y << " Z: " << node.Z << "]";
 
-        AddGossipItemFor(player, GossipOptionIcon::None, ss.str(), 0, 0, [this, player, i](std::string /*callback*/)
+        AddGossipItemFor(player, GossipOptionNpc::None, ss.str(), 0, 0, [this, player, i](std::string /*callback*/)
         {
             Nodes[i].CreateMenuForPlayer(player);
         });
@@ -506,7 +506,7 @@ void WaypointPath::CreateMenuForPlayer(Player* player)
         ss.str("");
     }
 
-    AddGossipItemFor(player, GossipOptionIcon::None, "Create Node", 0, 0, [this, player](std::string /*callback*/)
+    AddGossipItemFor(player, GossipOptionNpc::None, "Create Node", 0, 0, [this, player](std::string /*callback*/)
     {
         ChatHandler(player).SendSysMessage("Created a node.");
         ReplacePathInDB();
@@ -528,14 +528,14 @@ void WaypointPath::CreateMenuForPlayer(Player* player)
         CreateMenuForPlayer(player);
     });
 
-    AddGossipItemFor(player, GossipOptionIcon::None, "Save to DB", 0, 0, [player, this](std::string /*callback*/)
+    AddGossipItemFor(player, GossipOptionNpc::None, "Save to DB", 0, 0, [player, this](std::string /*callback*/)
     {
         ReplacePathInDB();
         ChatHandler(player).SendSysMessage("Saved");
         CreateMenuForPlayer(player);
     });
 
-    AddGossipItemFor(player, GossipOptionIcon::None, "Rel WP", 0, 0, [player, this](std::string /*callback*/)
+    AddGossipItemFor(player, GossipOptionNpc::None, "Rel WP", 0, 0, [player, this](std::string /*callback*/)
     {
         if (player->GetSelectedUnit())
         {

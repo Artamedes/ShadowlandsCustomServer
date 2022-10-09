@@ -19,6 +19,7 @@
 #include "Item.h"
 #include "ItemTemplate.h"
 #include "Log.h"
+#include "Loot.h"
 #include "LootItemStorage.h"
 #include "LootMgr.h"
 #include "ObjectMgr.h"
@@ -32,7 +33,7 @@ namespace
     std::unordered_map<uint64, StoredLootContainer> _lootItemStore;
 }
 
-StoredLootItem::StoredLootItem(LootItem const& lootItem) : ItemId(lootItem.itemid), Count(lootItem.count), ItemIndex(lootItem.itemIndex), FollowRules(lootItem.follow_loot_rules),
+StoredLootItem::StoredLootItem(LootItem const& lootItem) : ItemId(lootItem.itemid), Count(lootItem.count), ItemIndex(lootItem.LootListId), FollowRules(lootItem.follow_loot_rules),
 FFA(lootItem.freeforall), Blocked(lootItem.is_blocked), Counted(lootItem.is_counted), UnderThreshold(lootItem.is_underthreshold),
 NeedsQuest(lootItem.needs_quest), RandomBonusListId(lootItem.randomBonusListId), Context(lootItem.context), BonusListIDs(lootItem.BonusListIDs)
 {
@@ -80,7 +81,7 @@ void LootItemStorage::LoadStorageFromDB()
             LootItem lootItem;
             lootItem.itemid = fields[1].GetUInt32();
             lootItem.count = fields[2].GetUInt32();
-            lootItem.itemIndex = fields[3].GetUInt32();
+            lootItem.LootListId = fields[3].GetUInt32();
             lootItem.follow_loot_rules = fields[4].GetBool();
             lootItem.freeforall = fields[5].GetBool();
             lootItem.is_blocked = fields[6].GetBool();
@@ -136,7 +137,6 @@ void LootItemStorage::LoadStorageFromDB()
 
 bool LootItemStorage::LoadStoredLoot(Item* item, Player* player)
 {
-    Loot* loot = &item->loot;
     StoredLootContainer const* container = nullptr;
 
     // read
@@ -151,6 +151,7 @@ bool LootItemStorage::LoadStoredLoot(Item* item, Player* player)
     }
 
     // container is never null at this point
+    Loot* loot = new Loot(player->GetMap(), item->GetGUID(), LOOT_ITEM, nullptr);
     loot->gold = container->GetMoney();
 
     if (LootTemplate const* lt = LootTemplates_Item.GetLootFor(item->GetEntry()))
@@ -160,7 +161,7 @@ bool LootItemStorage::LoadStoredLoot(Item* item, Player* player)
             LootItem li;
             li.itemid = storedItemPair.first;
             li.count = storedItemPair.second.Count;
-            li.itemIndex = storedItemPair.second.ItemIndex;
+            li.LootListId = storedItemPair.second.ItemIndex;
             li.follow_loot_rules = storedItemPair.second.FollowRules;
             li.freeforall = storedItemPair.second.FFA;
             li.is_blocked = storedItemPair.second.Blocked;
@@ -187,6 +188,7 @@ bool LootItemStorage::LoadStoredLoot(Item* item, Player* player)
     }
 
     // Mark the item if it has loot so it won't be generated again on open
+    item->m_loot.reset(loot);
     item->m_lootGenerated = true;
     return true;
 }
@@ -270,7 +272,7 @@ void LootItemStorage::AddNewStoredLoot(uint64 containerId, Loot* loot, Player* p
         // saved to the DB that the player never should have gotten. This check prevents that, so that only
         // items that the player should get in loot are in the DB.
         // IE: Horde items are not saved to the DB for Ally players.
-        if (!li.AllowedForPlayer(player))
+        if (!li.AllowedForPlayer(player, *loot))
             continue;
 
         // Don't save currency tokens
@@ -302,7 +304,7 @@ void StoredLootContainer::AddLootItem(LootItem const& lootItem, CharacterDatabas
     stmt->setUInt64(0, _containerId);
     stmt->setUInt32(1, lootItem.itemid);
     stmt->setUInt32(2, lootItem.count);
-    stmt->setUInt32(3, lootItem.itemIndex);
+    stmt->setUInt32(3, lootItem.LootListId);
     stmt->setBool(4, lootItem.follow_loot_rules);
     stmt->setBool(5, lootItem.freeforall);
     stmt->setBool(6, lootItem.is_blocked);

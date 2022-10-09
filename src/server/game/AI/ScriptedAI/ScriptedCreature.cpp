@@ -25,6 +25,7 @@
 #include "GridNotifiersImpl.h"
 #include "InstanceScript.h"
 #include "Log.h"
+#include "Loot.h"
 #include "MotionMaster.h"
 #include "ObjectAccessor.h"
 #include "PhasingHandler.h"

@@ -247,6 +247,19 @@ void WorldSession::HandleGossipSelectOptionOpcode(WorldPackets::NPC::GossipSelec
         return;
     }
 
+    /// New in dragonflight, GossipIndex with GossipNPCOption
+    if (packet.GossipIndex)
+    {
+        if (auto entry = sDB2Manager.GetGossipNPCOptionEntryByGossipIndex(packet.GossipIndex))
+        {
+            WorldPackets::NPC::GossipNpcInteraction interaction;
+            interaction.Gossip = packet.GossipUnit;
+            interaction.InteractionType = static_cast<PlayerInteractionType>(entry->GossipNpcOption);
+            interaction.IsInteraction = true;
+            SendPacket(interaction.Write());
+        }
+    }
+
     // remove fake death
     if (GetPlayer()->HasUnitState(UNIT_STATE_DIED))
         GetPlayer()->RemoveAurasByType(SPELL_AURA_FEIGN_DEATH);

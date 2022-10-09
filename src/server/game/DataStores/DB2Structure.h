@@ -1847,6 +1847,25 @@ struct GarrTalentTreeEntry
     uint32 CurrencyID;
 };
 
+struct GossipNPCOptionEntry
+{
+    uint32 ID;
+    uint32 GossipNpcOption;
+    uint32 LFGDungeonsID;
+    uint32 TrainerID;
+    uint32 GarrFollowerTypeID;
+    uint32 CharShipmentID;
+    uint32 GarrTalentTreeID;
+    uint32 UiMapID;
+    uint32 UiItemInteractionID;
+    uint32 Field_10_0_0_45141_008;
+    uint32 Field_10_0_0_45141_009;
+    uint32 CovenantID;
+    uint32 GossipIndex;
+    uint32 TraitTreeID;
+    uint32 ProfessionID;
+};
+
 struct GemPropertiesEntry
 {
     uint32 ID;
@@ -2650,9 +2669,13 @@ struct MapEntry
         }
     }
 
-    bool IsDynamicDifficultyMap() const { return (Flags[0] & MAP_FLAG_CAN_TOGGLE_DIFFICULTY) != 0; }
-    bool IsGarrison() const { return (Flags[0] & MAP_FLAG_GARRISON) != 0; }
+    bool IsDynamicDifficultyMap() const { return GetFlags().HasFlag(MapFlags::DynamicDifficulty); }
+    bool IsFlexLocking() const { return GetFlags().HasFlag(MapFlags::FlexibleRaidLocking); }
+    bool IsGarrison() const { return GetFlags().HasFlag(MapFlags::Garrison); }
     bool IsSplitByFaction() const { return ID == 609 || ID == 2175; }
+
+    EnumFlag<MapFlags> GetFlags() const { return static_cast<MapFlags>(Flags[0]); }
+    EnumFlag<MapFlags2> GetFlags2() const { return static_cast<MapFlags2>(Flags[1]); }
 };
 
 struct MapChallengeModeEntry
@@ -2680,14 +2703,21 @@ struct MapDifficultyEntry
     int32 ContentTuningID;
     uint32 MapID;
 
+    bool HasResetSchedule() const { return ResetInterval != MAP_DIFFICULTY_RESET_ANYTIME; }
+    bool IsUsingEncounterLocks() const { return GetFlags().HasFlag(MapDifficultyFlags::UseLootBasedLockInsteadOfInstanceLock); }
+    bool IsRestoringDungeonState() const { return GetFlags().HasFlag(MapDifficultyFlags::ResumeDungeonProgressBasedOnLockout); }
+    bool IsExtendable() const { return !GetFlags().HasFlag(MapDifficultyFlags::DisableLockExtension); }
+
     uint32 GetRaidDuration() const
     {
-        if (ResetInterval == 1)
+        if (ResetInterval == MAP_DIFFICULTY_RESET_DAILY)
             return 86400;
-        if (ResetInterval == 2)
+        if (ResetInterval == MAP_DIFFICULTY_RESET_WEEKLY)
             return 604800;
         return 0;
     }
+
+    EnumFlag<MapDifficultyFlags> GetFlags() const { return static_cast<MapDifficultyFlags>(Flags); }
 };
 
 struct MapDifficultyXConditionEntry
@@ -3232,6 +3262,8 @@ struct SkillLineEntry
     int32 ParentTierIndex;
     uint16 Flags;
     int32 SpellBookSpellID;
+    int32 AllianceSharedStringID;
+    int32 HordeSharedStringID;
 
     EnumFlag<SkillLineFlags> GetFlags() const { return static_cast<SkillLineFlags>(Flags); }
 };
@@ -3645,17 +3677,18 @@ struct SpellNameEntry
 struct SpellPowerEntry
 {
     uint32 ID;
-    uint8 OrderIndex;
-    int32 ManaCost;
-    int32 ManaCostPerLevel;
-    int32 ManaPerSecond;
+    uint8  OrderIndex;
+    int32  ManaCost;
+    int32  ManaCostPerLevel;
+    int32  ManaPerSecond;
     uint32 PowerDisplayID;
-    int32 AltPowerBarID;
-    float PowerCostPct;
-    float PowerCostMaxPct;
-    float PowerPctPerSecond;
-    int8 PowerType;
-    int32 RequiredAuraSpellID;
+    int32  AltPowerBarID;
+    float  PowerCostPct;
+    float  PowerCostMaxPct;
+    float  Field_10_0_2_45969_009;
+    float  PowerPctPerSecond;
+    int8   PowerType;
+    int32  RequiredAuraSpellID;
     uint32 OptionalCost;                                            // Spell uses [ManaCost, ManaCost+ManaCostAdditional] power - affects tooltip parsing as multiplier on SpellEffectEntry::EffectPointsPerResource
                                                                    //   only SPELL_EFFECT_WEAPON_DAMAGE_NOSCHOOL, SPELL_EFFECT_WEAPON_PERCENT_DAMAGE, SPELL_EFFECT_WEAPON_DAMAGE, SPELL_EFFECT_NORMALIZED_WEAPON_DMG
     uint32 SpellID;
@@ -4077,6 +4110,7 @@ struct UiMapLinkEntry
     int32 ParentUiMapID;
     int32 OrderIndex;
     int32 ChildUiMapID;
+    int32 Field_10_0_2_45969_006;
     int32 OverrideHighlightFileDataID;
     int32 OverrideHighlightAtlasID;
     int32 Flags;
@@ -4326,12 +4360,12 @@ struct TraitEdgeEntry
 };
 struct TraitNodeEntry
 {
-    int32 ID;
-    int32 TraitTreeID;
-    int32 PosX;
-    int32 PosY;
-    int32 Type;
-    int32 Flags;
+    int32  ID;                  // ID
+    int32  TraitTreeID;         // Relation
+    int32  PosX;
+    int32  PosY;
+    uint8  Type;
+    int32  Flags;
 };
 struct TraitNodeEntryEntry
 {
@@ -4428,6 +4462,25 @@ struct TraitDefinitionEntry
     int32 OverrideIcon;
     int32 OverridesSpellID;
     int32 Field_10_0_0_45232_007;
+};
+
+struct TraitCondEntry
+{
+    int32  ID;                    // ID
+    int32  CondType;
+    int32  TraitTreeID;           // Relation
+    int32  Field_10_0_0_44649_003;
+    int32  Field_10_0_0_44649_004;
+    int32  AchievementID;
+    int32  SpecSetID;
+    int32  TraitNodeGroupID;
+    int32  TraitNodeID;
+    int32  TraitCurrencyID;
+    int32  SpentAmountRequired;
+    int32  Flags;
+    int32  RequiredLevel;
+    int32  FreeSharedStringID;
+    int32  SpendMoreSharedStringID;
 };
 
 #pragma pack(pop)

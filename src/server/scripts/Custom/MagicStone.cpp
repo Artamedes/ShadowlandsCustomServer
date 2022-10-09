@@ -34,7 +34,7 @@ void MagicStoneMgr::LoadFromDB()
             l_Menu.Text = fields[1].GetString();
             l_Menu.ExtraText = fields[2].GetString();
             l_Menu.ActionID = fields[3].GetUInt32();
-            l_Menu.Icon = static_cast<GossipOptionIcon>(fields[4].GetUInt32());
+            l_Menu.Icon = static_cast<GossipOptionNpc>(fields[4].GetUInt32());
             l_Menu.ConditionID = fields[5].GetUInt32();
 
             m_MagicStoneMenus.insert({ MenuID, l_Menu });

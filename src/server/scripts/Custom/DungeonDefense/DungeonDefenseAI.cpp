@@ -556,7 +556,7 @@ public:
                     ss.clear();
                     ss.str("");
                     ss << "Start Event (" << sDungeonDefenseMgr->GetDifficultyText(diffId) << ") Awards up to " << rewardRiftEssence << " Rift Essence";
-                    AddGossipItemFor(player, GossipOptionIcon::None, ss.str(), 0, 0, [this, instance, player, diffId, rewardRiftEssence, maxRiftEnergy, starRiftEnergy, maxDefensePoints](std::string /*callback*/)
+                    AddGossipItemFor(player, GossipOptionNpc::None, ss.str(), 0, 0, [this, instance, player, diffId, rewardRiftEssence, maxRiftEnergy, starRiftEnergy, maxDefensePoints](std::string /*callback*/)
                     {
                         if (instance)
                         {
@@ -579,7 +579,7 @@ public:
             }
             else if (instance->GetBossState(BossCrystal) == IN_PROGRESS)
             {
-                AddGossipItemFor(player, GossipOptionIcon::None, "Forfeit", 0, 0, "Are you sure you want to forfeit the event?", 0, false, [this, player, instance](std::string /*callback*/)
+                AddGossipItemFor(player, GossipOptionNpc::None, "Forfeit", 0, 0, "Are you sure you want to forfeit the event?", 0, false, [this, player, instance](std::string /*callback*/)
                 {
                     if (instance)
                     {
@@ -592,10 +592,10 @@ public:
                 });
             }
         }
-        AddGossipItemFor(player, GossipOptionIcon::None, "How does this work?", 0, 0, [this, player](std::string /*callback*/)
+        AddGossipItemFor(player, GossipOptionNpc::None, "How does this work?", 0, 0, [this, player](std::string /*callback*/)
         {
             ClearGossipMenuFor(player);
-            AddGossipItemFor(player, GossipOptionIcon::None, "Okay", 0, 0, [this, player](std::string /*callback*/)
+            AddGossipItemFor(player, GossipOptionNpc::None, "Okay", 0, 0, [this, player](std::string /*callback*/)
             {
                 OnGossipHello(player);
             });
@@ -811,7 +811,7 @@ struct npc_darkmaul_citadel_defender_ai : public dungeon_defense_base_ai
             std::ostringstream ss;
             ss << "Rift Energy: " << player->GetCurrency(RiftEnergy) << "/" << instance->GetData(DataGetMaxEnergy);
 
-            AddGossipItemFor(player, GossipOptionIcon::None, ss.str(), 0, 0, [this, player](std::string /*callback*/)
+            AddGossipItemFor(player, GossipOptionNpc::None, ss.str(), 0, 0, [this, player](std::string /*callback*/)
             {
                 OnGossipHello(player);
             });
@@ -821,7 +821,7 @@ struct npc_darkmaul_citadel_defender_ai : public dungeon_defense_base_ai
             auto currDefensePoints = instance->GetData(DataGetDefensePoints);
             auto maxDefensePoints = instance->GetData(DataGetMaxDefensePoints);
             ss << "Defense Points: " << currDefensePoints << "/" << maxDefensePoints;
-            AddGossipItemFor(player, GossipOptionIcon::None, ss.str(), 0, 0, [this, player](std::string /*callback*/)
+            AddGossipItemFor(player, GossipOptionNpc::None, ss.str(), 0, 0, [this, player](std::string /*callback*/)
             {
                 OnGossipHello(player);
             });
@@ -843,7 +843,7 @@ struct npc_darkmaul_citadel_defender_ai : public dungeon_defense_base_ai
                     else
                         ss << " |cffFF0000Cost: " << cost;
 
-                    AddGossipItemFor(player, GossipOptionIcon::None, ss.str(), 0, 0, [this, player](std::string /*callback*/)
+                    AddGossipItemFor(player, GossipOptionNpc::None, ss.str(), 0, 0, [this, player](std::string /*callback*/)
                     {
                         uint32 FullHealthCost = Invested / 2;
                         float costPerPct = FullHealthCost * (1.0f / 100.0f);
@@ -886,7 +886,7 @@ struct npc_darkmaul_citadel_defender_ai : public dungeon_defense_base_ai
                         ss << " |cffFF0000Cost: " << NextUpgradeCost;
                 }
 
-                AddGossipItemFor(player, GossipOptionIcon::None, ss.str(), 0, 0, [this, player](std::string /*callback*/)
+                AddGossipItemFor(player, GossipOptionNpc::None, ss.str(), 0, 0, [this, player](std::string /*callback*/)
                 {
                     if (player->GetCurrency(RiftEnergy) >= NextUpgradeCost)
                     {
@@ -910,7 +910,7 @@ struct npc_darkmaul_citadel_defender_ai : public dungeon_defense_base_ai
             ss.clear();
             ss.str("");
             ss << "Sell for " << (uint32)((float)Invested * 0.75f) << "\nDefensePoints: " << DefensePointsWorth;
-            AddGossipItemFor(player, GossipOptionIcon::None, ss.str(), 0, 0, "Are you sure you want to sell this defender?", 0, false, [this, player](std::string /*callback*/)
+            AddGossipItemFor(player, GossipOptionNpc::None, ss.str(), 0, 0, "Are you sure you want to sell this defender?", 0, false, [this, player](std::string /*callback*/)
             {
                 me->DespawnOrUnsummon();
                 me->RemoveNpcFlag(NPCFlags::UNIT_NPC_FLAG_GOSSIP);

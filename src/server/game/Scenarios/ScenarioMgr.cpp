@@ -30,7 +30,7 @@ ScenarioMgr* ScenarioMgr::Instance()
     return &instance;
 }
 
-InstanceScenario* ScenarioMgr::CreateInstanceScenario(Map* map, TeamId team, LFGDungeonsEntry const* dungeonEntry) const
+InstanceScenario* ScenarioMgr::CreateInstanceScenario(InstanceMap* map, TeamId team, LFGDungeonsEntry const* dungeonEntry) const
 {
     ScenarioDBDataContainer::const_iterator dbDataItr = _scenarioDBData.find(std::make_pair(map->GetId(), map->GetDifficultyID()));
     ScenarioDBDataDungeonsContainer::const_iterator dbDungeonsDataItr;
@@ -77,8 +77,9 @@ InstanceScenario* ScenarioMgr::CreateInstanceScenario(Map* map, TeamId team, LFG
         TC_LOG_ERROR("scenario", "Table `scenarios` contained data linking scenario (Id: %u) to map (Id: %u), difficulty (Id: %u) but no scenario data was found related to that scenario Id.", scenarioID, map->GetId(), map->GetDifficultyID());
         return nullptr;
     }
-
-    return new InstanceScenario(map, scenarioData);
+    InstanceScenario* newScenario = new InstanceScenario(map, scenarioData);
+    newScenario->LoadInstanceData();
+    return newScenario;
 }
 
 void ScenarioMgr::LoadDBData()

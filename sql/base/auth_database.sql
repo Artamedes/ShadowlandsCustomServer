@@ -671,7 +671,9 @@ INSERT INTO `build_info` VALUES
 (44730,9,2,5,NULL,NULL,'FC0B18C47BB4C79F4300CA0FF3E5CAC7',NULL,NULL,NULL),
 (44908,9,2,5,NULL,NULL,'BFFAEC40C9BCD591C7C959A9D5A8BA8C',NULL,NULL,NULL),
 (45114,9,2,7,NULL,NULL,'D7AFE240BD00F06C30D0C2D16E54A8BE',NULL,NULL,NULL),
-(45161,9,2,7,NULL,NULL,'74BD2E787A98B145B063BDA9A98F6CBD',NULL,NULL,NULL);
+(45161,9,2,7,NULL,NULL,'74BD2E787A98B145B063BDA9A98F6CBD',NULL,NULL,NULL),
+(45338,9,2,7,NULL,NULL,'5CE2094A41B61EDA9DF56378BC3B1DE0',NULL,NULL,NULL),
+(45745,9,2,7,NULL,NULL,'0F6DC90161694D765A595A3AF603166B',NULL,NULL,NULL);
 /*!40000 ALTER TABLE `build_info` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1306,6 +1308,7 @@ INSERT INTO `rbac_linked_permissions` VALUES
 (196,879),
 (196,881),
 (196,882),
+(196,883),
 (197,232),
 (197,236),
 (197,237),
@@ -1423,7 +1426,6 @@ INSERT INTO `rbac_linked_permissions` VALUES
 (198,413),
 (198,414),
 (198,415),
-(198,416),
 (198,430),
 (198,431),
 (198,432),
@@ -1798,7 +1800,6 @@ INSERT INTO `rbac_permissions` VALUES
 (413,'Command: instance listbinds'),
 (414,'Command: instance unbind'),
 (415,'Command: instance stats'),
-(416,'Command: instance savedata'),
 (417,'Command: learn'),
 (418,'Command: learn all'),
 (419,'Command: learn all my'),
@@ -2229,7 +2230,8 @@ INSERT INTO `rbac_permissions` VALUES
 (879,'Command: debug poolstatus'),
 (880,'Command: pdump copy'),
 (881,'Command: reload vehicle_template'),
-(882,'Command: reload spell_script_names');
+(882,'Command: reload spell_script_names'),
+(883,'Command: quest objective complete');
 /*!40000 ALTER TABLE `rbac_permissions` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -2277,7 +2279,7 @@ CREATE TABLE `realmlist` (
   `timezone` tinyint unsigned NOT NULL DEFAULT '0',
   `allowedSecurityLevel` tinyint unsigned NOT NULL DEFAULT '0',
   `population` float unsigned NOT NULL DEFAULT '0',
-  `gamebuild` int unsigned NOT NULL DEFAULT '45161',
+  `gamebuild` int unsigned NOT NULL DEFAULT '45745',
   `Region` tinyint unsigned NOT NULL DEFAULT '1',
   `Battlegroup` tinyint unsigned NOT NULL DEFAULT '1',
   PRIMARY KEY (`id`),
@@ -2292,7 +2294,7 @@ CREATE TABLE `realmlist` (
 LOCK TABLES `realmlist` WRITE;
 /*!40000 ALTER TABLE `realmlist` DISABLE KEYS */;
 INSERT INTO `realmlist` VALUES
-(1,'Trinity','127.0.0.1','127.0.0.1','255.255.255.0',8085,0,0,1,0,0,45161,1,1);
+(1,'Trinity','127.0.0.1','127.0.0.1','255.255.255.0',8085,0,0,1,0,0,45745,1,1);
 /*!40000 ALTER TABLE `realmlist` ENABLE KEYS */;
 UNLOCK TABLES;
 

@@ -1,10 +1,14 @@
 #pragma once
 
-enum class GossipOptionIcon : int8;
+#include "Common.h"
+
+#include <map>
+
+enum class GossipOptionNpc : uint8;
 
 struct MagicStoneMenu
 {
-    GossipOptionIcon Icon;
+    GossipOptionNpc Icon;
     std::string Text;
     std::string ExtraText;
     uint32 ActionID;

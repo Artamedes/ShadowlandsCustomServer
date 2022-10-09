@@ -1,0 +1,15 @@
+ALTER TABLE `character_traits_talents`
+	CHANGE COLUMN `Unk` `TreeFlags` INT(10) UNSIGNED NOT NULL DEFAULT '0' AFTER `Rank`;
+	
+ALTER TABLE `character_traits`
+	CHANGE COLUMN `Type` `Type` INT(10) UNSIGNED NOT NULL DEFAULT '0' AFTER `ConfigID`,
+	ADD COLUMN `SkillLineID` INT(10) UNSIGNED NOT NULL DEFAULT '0' AFTER `Type`,
+	CHANGE COLUMN `SpecId` `SpecializationID` INT(10) UNSIGNED NOT NULL DEFAULT '0' AFTER `SkillLineID`,
+	ADD COLUMN `CombatConfigFlags` INT(10) UNSIGNED NOT NULL DEFAULT '0' AFTER `SpecializationID`,
+	CHANGE COLUMN `Index` `LoadoutIndex` INT(10) UNSIGNED NOT NULL DEFAULT '0' AFTER `CombatConfigFlags`,
+	ADD COLUMN `SystemID` INT(10) UNSIGNED NOT NULL DEFAULT '0' AFTER `LoadoutIndex`,
+	DROP COLUMN `TalentGroup`;
+
+
+ALTER TABLE `character_traits`
+	CHANGE COLUMN `ConfigName` `LoadoutName` TEXT NULL DEFAULT NULL COLLATE 'utf8mb4_unicode_ci' AFTER `SystemID`;

@@ -21,16 +21,6 @@ class instance_skyhold : public InstanceMapScript
                     Quad = { -0.0f, -0.0f, -0.696618f, -0.717442f };
                 }
 
-                void Create() override
-                {
-
-                }
-
-                void Load(char const* data) override
-                {
-
-                }
-
                 void OnCompletedCriteriaTree(CriteriaTree const* /*tree*/) override
                 {
                     if (InstanceScenario* instanceScenario = instance->GetInstanceScenario())
@@ -76,7 +66,7 @@ struct npc_skyhold_sylvanas : public ScriptedAI
             ClearGossipMenuFor(player);
             player->PrepareQuestMenu(me->GetGUID());
             if (player->GetQuestStatus(700016) == QUEST_STATUS_REWARDED && player->GetQuestStatus(700017) != QUEST_STATUS_NONE && !m_DidCorrupt)
-                AddGossipItemFor(player, GossipOptionIcon::None, "Wreak havoc", 0, 1);
+                AddGossipItemFor(player, GossipOptionNpc::None, "Wreak havoc", 0, 1);
             SendGossipMenuFor(player, me->GetEntry(), me);
             return true;
         }
@@ -305,7 +295,7 @@ struct gobj_ancient_chest_700000 : public GameObjectAI
             if (m_Locked)
                 return true;
             ClearGossipMenuFor(player);
-            AddGossipItemFor(player, GossipOptionIcon::None, "<Take the loot>", 0, 1);
+            AddGossipItemFor(player, GossipOptionNpc::None, "<Take the loot>", 0, 1);
             SendGossipMenuFor(player, 7000000, me->GetGUID());
             return true;
         }

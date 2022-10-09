@@ -103,7 +103,7 @@ public:
                 case GAMEOBJECT_TYPE_GOOBER:
                     if (gameObject->GetEntry() == 1200005)
                     {
-                        if (const_cast<GameObject*>(gameObject)->GetLootFor(const_cast<Player*>(receiver), true)->empty())
+                        if (gameObject->GetLootForPlayer(receiver)->empty())
                             dynFlags |= GO_DYNFLAG_LO_NO_INTERACT | GO_DYNFLAG_LO_DEPLETED;
                     }
 

@@ -114,7 +114,7 @@ class TC_GAME_API LootTemplate
         // Adds an entry to the group (at loading stage)
         void AddEntry(LootStoreItem* item);
         // Rolls for every item in the template and adds the rolled items the the loot
-        void Process(Loot& loot, bool rate, uint16 lootMode, Difficulty difficulty, uint8 groupId = 0, Player const* player = nullptr, bool specOnly = false, bool personalLoot = false, bool fishing = false) const;
+        void Process(Loot& loot, bool rate, uint16 lootMode, Difficulty difficulty, uint8 groupId, Player const* player, bool specOnly = false, bool personalLoot = false, bool fishing = false) const;
         void ProcessOploteChest(Loot& loot) const;
         void ProcessChallengeChest(Loot& loot, uint32 lootId, Challenge* _challenge, bool rate, uint16 lootMode, Difficulty difficulty) const;
         void CopyConditions(ConditionContainer const& conditions);

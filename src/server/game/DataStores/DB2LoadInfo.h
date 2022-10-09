@@ -2585,6 +2585,33 @@ struct GarrTalentTreeLoadInfo
     }
 };
 
+struct GossipNPCOptionLoadInfo
+{
+    static DB2LoadInfo const* Instance()
+    {
+        static constexpr DB2FieldMeta fields[] =
+        {
+            { false, FT_INT, "ID" },
+            { false, FT_INT, "GossipNpcOption" },
+            { false, FT_INT, "LFGDungeonsID" },
+            { false, FT_INT, "TrainerID" },
+            { false, FT_INT, "GarrFollowerTypeID" },
+            { false, FT_INT, "CharShipmentID" },
+            { false, FT_INT, "GarrTalentTreeID" },
+            { false, FT_INT, "UiMapID" },
+            { false, FT_INT, "UiItemInteractionID" },
+            { false, FT_INT, "Field_10_0_0_45141_008" },
+            { false, FT_INT, "Field_10_0_0_45141_009" },
+            { false, FT_INT, "CovenantID" },
+            { false, FT_INT, "GossipIndex" },
+            { false, FT_INT, "TraitTreeID" },
+            { false, FT_INT, "ProfessionID" },
+        };
+        static DB2LoadInfo const loadInfo(&fields[0], std::size(fields), GossipNPCOptionMeta::Instance(), HOTFIX_SEL_GOSSIP_N_P_C_OPTION);
+        return &loadInfo;
+    };
+};
+
 struct GemPropertiesLoadInfo
 {
     static DB2LoadInfo const* Instance()
@@ -5205,6 +5232,8 @@ struct SkillLineLoadInfo
             { true, FT_INT, "ParentTierIndex" },
             { false, FT_SHORT, "Flags" },
             { true, FT_INT, "SpellBookSpellID" },
+            { true, FT_INT, "AllianceSharedStringID" },
+            { true, FT_INT, "HordeSharedStringID" },
         };
         static DB2LoadInfo const loadInfo(&fields[0], std::size(fields), SkillLineMeta::Instance(), HOTFIX_SEL_SKILL_LINE);
         return &loadInfo;
@@ -5938,6 +5967,7 @@ struct SpellPowerLoadInfo
             { true, FT_INT, "AltPowerBarID" },
             { false, FT_FLOAT, "PowerCostPct" },
             { false, FT_FLOAT, "PowerCostMaxPct" },
+            { false, FT_FLOAT, "Field_10_0_2_45969_009" },
             { false, FT_FLOAT, "PowerPctPerSecond" },
             { true, FT_BYTE, "PowerType" },
             { true, FT_INT, "RequiredAuraSpellID" },
@@ -6717,6 +6747,7 @@ struct UiMapLinkLoadInfo
             { true, FT_INT, "ParentUiMapID" },
             { true, FT_INT, "OrderIndex" },
             { true, FT_INT, "ChildUiMapID" },
+            { true, FT_INT, "Field_10_0_2_45969_006" },
             { true, FT_INT, "OverrideHighlightFileDataID" },
             { true, FT_INT, "OverrideHighlightAtlasID" },
             { true, FT_INT, "Flags" },
@@ -7103,7 +7134,7 @@ struct TraitNodeLoadInfo
             { true, FT_INT, "TraitTreeID" },
             { true, FT_INT, "PosX" },
             { true, FT_INT, "PosY" },
-            { true, FT_INT, "Type" },
+            { false, FT_BYTE, "Type" },
             { true, FT_INT, "Flags" },
         };
         static DB2LoadInfo const loadInfo(&fields[0], std::size(fields), TraitNodeMeta::Instance(), HOTFIX_SEL_TRAIT_NODE);
@@ -7319,6 +7350,33 @@ struct TraitDefinitionLoadInfo
             { true, FT_INT, "Field_10_0_0_45232_007" },
         };
         static DB2LoadInfo const loadInfo(&fields[0], std::size(fields), TraitDefinitionMeta::Instance(), HOTFIX_SEL_TRAIT_DEFINITION);
+        return &loadInfo;
+    }
+};
+
+struct TraitCondLoadInfo
+{
+    static DB2LoadInfo const* Instance()
+    {
+        static constexpr DB2FieldMeta fields[] =
+        {
+            { true, FT_INT, "ID" },
+            { true, FT_INT, "CondType" },
+            { true, FT_INT, "TraitTreeID" },
+            { true, FT_INT, "Field_10_0_0_44649_003" },
+            { true, FT_INT, "Field_10_0_0_44649_004" },
+            { true, FT_INT, "AchievementID" },
+            { true, FT_INT, "SpecSetID" },
+            { true, FT_INT, "TraitNodeGroupID" },
+            { true, FT_INT, "TraitNodeID" },
+            { true, FT_INT, "TraitCurrencyID" },
+            { true, FT_INT, "SpentAmountRequired" },
+            { true, FT_INT, "Flags" },
+            { true, FT_INT, "RequiredLevel" },
+            { true, FT_INT, "FreeSharedStringID" },
+            { true, FT_INT, "SpendMoreSharedStringID" },
+        };
+        static DB2LoadInfo const loadInfo(&fields[0], std::size(fields), TraitCondMeta::Instance(), HOTFIX_SEL_TRAIT_COND);
         return &loadInfo;
     }
 };

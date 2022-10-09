@@ -4744,6 +4744,24 @@ class spell_echoing_reprimand_385616 : public SpellScript
     }
 };
 
+class spell_rog_pickpocket : public SpellScript
+{
+    PrepareSpellScript(spell_rog_pickpocket);
+
+    SpellCastResult CheckCast()
+    {
+        if (!GetExplTargetUnit() || !GetCaster()->IsValidAttackTarget(GetExplTargetUnit(), GetSpellInfo()))
+            return SPELL_FAILED_BAD_TARGETS;
+
+        return SPELL_CAST_OK;
+    }
+
+    void Register() override
+    {
+        OnCheckCast += SpellCheckCastFn(spell_rog_pickpocket::CheckCast);
+    }
+};
+
 void AddSC_rogue_spell_scripts()
 {
     // SpellScripts
@@ -4837,6 +4855,7 @@ void AddSC_rogue_spell_scripts()
     RegisterSpellScript(spell_prepared_for_all);
     RegisterSpellScript(spell_essence_of_bloodfang);
     RegisterSpellScript(spell_echoing_reprimand_385616);
+    RegisterSpellScript(spell_rog_pickpocket);
 
 	// Areatrigger
     RegisterAreaTriggerAI(at_rog_smoke_bomb);    // 11451

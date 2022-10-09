@@ -159,22 +159,22 @@ public:
                     DerzaDead = 1;
                     if (auto velen = instance->GetCreature(VelenGuid))
                         velen->AI()->DoAction(ActionVelenEvent);
-                    SaveToDB();
+                    //SaveToDB();
                     break;
             }
         }
 
         uint32 DerzaDead = 0;
 
-        void WriteSaveDataMore(std::ostringstream& data) override
-        {
-            data << DerzaDead;
-        }
-
-        void ReadSaveDataMore(std::istringstream& data) override
-        {
-            data >> DerzaDead;
-        }
+        //void WriteSaveDataMore(std::ostringstream& data) override
+        //{
+        //    data << DerzaDead;
+        //}
+        //
+        //void ReadSaveDataMore(std::istringstream& data) override
+        //{
+        //    data >> DerzaDead;
+        //}
 
         uint32 RequiredBossKills = 2;
         ObjectGuid DerzaGuid;

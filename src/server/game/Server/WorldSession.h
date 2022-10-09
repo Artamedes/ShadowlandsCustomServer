@@ -44,7 +44,7 @@
 class BlackMarketEntry;
 class CollectionMgr;
 class Creature;
-class InstanceSave;
+class InstanceLock;
 class Item;
 class LoginQueryHolder;
 class Player;
@@ -57,6 +57,7 @@ struct BlackMarketTemplate;
 struct ChrCustomizationReqEntry;
 struct DeclinedName;
 struct ItemTemplate;
+struct Loot;
 struct MovementInfo;
 struct Petition;
 struct Position;
@@ -1196,7 +1197,7 @@ class TC_GAME_API WorldSession
         // Guild/Arena Team
         void SendPetitionShowList(ObjectGuid guid);
 
-        void DoLootRelease(ObjectGuid lguid);
+        void DoLootRelease(Loot* loot);
         void DoLootReleaseAll();
 
         // Account mute time
@@ -1793,8 +1794,8 @@ class TC_GAME_API WorldSession
         void HandleCalendarGetNumPending(WorldPackets::Calendar::CalendarGetNumPending& calendarGetNumPending);
         void HandleCalendarEventSignup(WorldPackets::Calendar::CalendarEventSignUp& calendarEventSignUp);
 
-        void SendCalendarRaidLockout(InstanceSave const* save, bool add);
-        void SendCalendarRaidLockoutUpdated(InstanceSave const* save);
+        void SendCalendarRaidLockoutAdded(InstanceLock const* lock);
+        void SendCalendarRaidLockoutRemoved(InstanceLock const* lock);
         void HandleSetSavedInstanceExtend(WorldPackets::Calendar::SetSavedInstanceExtend& setSavedInstanceExtend);
 
         // Void Storage

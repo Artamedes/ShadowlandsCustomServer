@@ -10833,7 +10833,7 @@ struct SkillLineMeta
 {
     static DB2Meta const* Instance()
     {
-        static constexpr DB2MetaField fields[13] =
+        static constexpr DB2MetaField fields[15] =
         {
             { FT_STRING, 1, true },
             { FT_STRING, 1, true },
@@ -10848,8 +10848,10 @@ struct SkillLineMeta
             { FT_INT, 1, true },
             { FT_SHORT, 1, false },
             { FT_INT, 1, true },
+            { FT_INT, 1, true },
+            { FT_INT, 1, true },
         };
-        static constexpr DB2Meta instance(1240935, 5, 13, 13, 0x83E286E5, fields, -1);
+        static constexpr DB2Meta instance(1240935, 5, 15, 15, 0xF0D60375, fields, -1);
         return &instance;
     }
 };
@@ -12297,7 +12299,7 @@ struct SpellPowerMeta
 {
     static DB2Meta const* Instance()
     {
-        static constexpr DB2MetaField fields[14] =
+        static constexpr DB2MetaField fields[15] =
         {
             { FT_INT, 1, false },
             { FT_BYTE, 1, false },
@@ -12309,12 +12311,13 @@ struct SpellPowerMeta
             { FT_FLOAT, 1, true },
             { FT_FLOAT, 1, true },
             { FT_FLOAT, 1, true },
+            { FT_FLOAT, 1, true },
             { FT_BYTE, 1, true },
             { FT_INT, 1, true },
             { FT_INT, 1, false },
             { FT_INT, 1, true },
         };
-        static constexpr DB2Meta instance(982806, 0, 14, 13, 0xD61F566E, fields, 13);
+        static constexpr DB2Meta instance(982806, 0, 15, 14, 0xE5EED97C, fields, 14);
         return &instance;
     }
 };
@@ -13945,7 +13948,7 @@ struct UiMapLinkMeta
 {
     static DB2Meta const* Instance()
     {
-        static constexpr DB2MetaField fields[9] =
+        static constexpr DB2MetaField fields[10] =
         {
             { FT_FLOAT, 2, true },
             { FT_FLOAT, 2, true },
@@ -13956,8 +13959,9 @@ struct UiMapLinkMeta
             { FT_INT, 1, true },
             { FT_INT, 1, true },
             { FT_INT, 1, true },
+            { FT_INT, 1, true },
         };
-        static constexpr DB2Meta instance(2030690, 2, 9, 9, 0xAB3E538F, fields, 3);
+        static constexpr DB2Meta instance(2030690, 2, 10, 10, 0x11F6CF6C, fields, 3);
         return &instance;
     }
 };
@@ -15215,14 +15219,14 @@ struct TraitNodeMeta
     {
         static constexpr DB2MetaField fields[6] =
         {
-            { FT_INT, 1, false },
             { FT_INT, 1, true },
             { FT_INT, 1, true },
             { FT_INT, 1, true },
             { FT_INT, 1, true },
+            { FT_BYTE, 1, false },
             { FT_INT, 1, true },
         };
-        static constexpr DB2Meta const instance(0, 0, 6, 6, 0x839579A1, fields, 0);
+        static constexpr DB2Meta const instance(0, 0, 6, 6, 0x839579A1, fields, 1);
         return &instance;
     };
 };
@@ -15265,7 +15269,7 @@ struct TraitNodeGroupMeta
             { FT_INT, 1, true },
             { FT_INT, 1, true },
         };
-        static constexpr DB2Meta const instance(0, 0, 3, 3, 0xF4E2E579, fields, 0);
+        static constexpr DB2Meta const instance(0, 0, 3, 3, 0xF4E2E579, fields, 1);
         return &instance;
     };
 };
@@ -15308,7 +15312,7 @@ struct TraitNodeGroupXTraitNodeMeta
             { FT_INT, 1, true },
             { FT_INT, 1, true },
         };
-        static constexpr DB2Meta const instance(0, -0, 4, 4, 0xD91D6CFE, fields, 0);
+        static constexpr DB2Meta const instance(0, -0, 4, 4, 0xD91D6CFE, fields, 1);
         return &instance;
     };
 };
@@ -15322,7 +15326,7 @@ struct TraitNodeXTraitCondMeta
             { FT_INT, 1, true },
             { FT_INT, 1, true },
         };
-        static constexpr DB2Meta const instance(0, 0, 3, 3, 0xFEFA16A7, fields, 0);
+        static constexpr DB2Meta const instance(0, 0, 3, 3, 0xFEFA16A7, fields, 2);
         return &instance;
     };
 };
@@ -15337,7 +15341,7 @@ struct TraitNodeXTraitNodeEntryMeta
             { FT_INT, 1, true },
             { FT_INT, 1, true },
         };
-        static constexpr DB2Meta const instance(0, 0, 4, 4, 0xCED10275, fields, 0);
+        static constexpr DB2Meta const instance(0, 0, 4, 4, 0xCED10275, fields, 1);
         return &instance;
     };
 };
@@ -15426,5 +15430,59 @@ struct TraitDefinitionMeta
         return &instance;
     };
 };
+
+struct GossipNPCOptionMeta
+{
+    static DB2Meta const* Instance()
+    {
+        static constexpr DB2MetaField fields[14] =
+        {
+            { FT_INT, 1, false },
+            { FT_INT, 1, false },
+            { FT_INT, 1, false },
+            { FT_INT, 1, false },
+            { FT_INT, 1, false },
+            { FT_INT, 1, false },
+            { FT_INT, 1, false },
+            { FT_INT, 1, false },
+            { FT_INT, 1, false },
+            { FT_INT, 1, false },
+            { FT_INT, 1, false },
+            { FT_INT, 1, false },
+            { FT_INT, 1, false },
+            { FT_INT, 1, false },
+        };
+        static constexpr DB2Meta const instance(0, -1, 14, 15, 0x238BCF2B, fields, -1);
+        return &instance;
+    };
+};
+
+struct TraitCondMeta
+{
+    static DB2Meta const* Instance()
+    {
+        static constexpr DB2MetaField fields[15] =
+        {
+            { FT_INT, 1, true },
+            { FT_INT, 1, true },
+            { FT_INT, 1, true },
+            { FT_INT, 1, true },
+            { FT_INT, 1, true },
+            { FT_INT, 1, true },
+            { FT_INT, 1, true },
+            { FT_INT, 1, true },
+            { FT_INT, 1, true },
+            { FT_INT, 1, true },
+            { FT_INT, 1, true },
+            { FT_INT, 1, true },
+            { FT_INT, 1, true },
+            { FT_INT, 1, true },
+            { FT_INT, 1, true },
+        };
+        static constexpr DB2Meta const instance(0, 0, 15, 15, 0x91F4174C, fields, 2);
+        return &instance;
+    };
+};
+
 
 #endif // DB2Metadata_h__

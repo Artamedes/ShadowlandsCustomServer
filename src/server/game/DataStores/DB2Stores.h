@@ -122,6 +122,7 @@ TC_GAME_API extern DB2Storage<GarrTalentEntry>                      sGarrTalentS
 TC_GAME_API extern DB2Storage<GarrTalentCostEntry>                  sGarrTalentCostStore;
 TC_GAME_API extern DB2Storage<GarrTalentRankEntry>                  sGarrTalentRankStore;
 TC_GAME_API extern DB2Storage<GarrTalentTreeEntry>                  sGarrTalentTreeStore;
+TC_GAME_API extern DB2Storage<GossipNPCOptionEntry>                 sGossipNPCOptionStore;
 TC_GAME_API extern DB2Storage<GemPropertiesEntry>                   sGemPropertiesStore;
 TC_GAME_API extern DB2Storage<GlyphPropertiesEntry>                 sGlyphPropertiesStore;
 TC_GAME_API extern DB2Storage<GuildColorBackgroundEntry>            sGuildColorBackgroundStore;
@@ -284,6 +285,8 @@ TC_GAME_API extern DB2Storage<TraitTreeLoadoutEntry>                sTraitTreeLo
 TC_GAME_API extern DB2Storage<TraitTreeLoadoutEntryEntry>           sTraitTreeLoadoutEntryStore;
 TC_GAME_API extern DB2Storage<TraitTreeXTraitCurrencyEntry>         sTraitTreeXTraitCurrencyStore;
 TC_GAME_API extern DB2Storage<TraitDefinitionEntry>                 sTraitDefinitionStore;
+TC_GAME_API extern DB2Storage<TraitCondEntry>                       sTraitCondStore;
+
 
 struct ContentTuningLevels
 {
@@ -515,6 +518,7 @@ public:
     RuneforgeLegendaryAbilityEntry const* GetRuneforgeLegendaryAbilityEntryBySpellID(uint32 spellId);
     std::vector<GarrTalentCostEntry const*> const* GetGarrTalentCostEntriesByGarrTalentId(uint32 garrTalentId) const;
     std::vector<MawPowerEntry const*>* GetMawPowerEntriesBySpellId(uint32 spellId) const;
+    GossipNPCOptionEntry const* GetGossipNPCOptionEntryByGossipIndex(uint32 gossipIndex) const;
 private:
     friend class DB2HotfixGeneratorBase;
     int32 _maxHotfixId = 0;

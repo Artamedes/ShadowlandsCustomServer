@@ -188,7 +188,7 @@ void WorldSession::HandleChallengeModeStart(WorldPackets::ChallengeMode::StartRe
     }
 
     auto mapId = _player->GetMapId();
-    Map* newMap = sMapMgr->CreateMap(mapId, _player, 0, 0, true);
+    Map* newMap = sMapMgr->CreateMap(mapId, _player, 0, true);
 
     if (!newMap)
     {

@@ -19,7 +19,7 @@
 #include "BattlegroundMgr.h"
 #include "CellImpl.h"
 #include "CombatPackets.h"
-#include "Common.h"
+#include "Containers.h"
 #include "CreatureAI.h"
 #include "CreatureAISelector.h"
 #include "CreatureGroups.h"
@@ -31,8 +31,9 @@
 #include "GridNotifiersImpl.h"
 #include "Group.h"
 #include "GroupMgr.h"
-#include "InstanceScript.h"
+#include "ItemTemplate.h"
 #include "Log.h"
+#include "Loot.h"
 #include "LootMgr.h"
 #include "MapManager.h"
 #include "MiscPackets.h"
@@ -44,14 +45,13 @@
 #include "PoolMgr.h"
 #include "QueryPackets.h"
 #include "ScriptedGossip.h"
+#include "Spell.h"
 #include "SpellAuraEffects.h"
 #include "SpellMgr.h"
 #include "TemporarySummon.h"
-#include "Transport.h"
-#include "Util.h"
 #include "Vehicle.h"
 #include "World.h"
-#include "WorldPacket.h"
+#include "ZoneScript.h"
 #include <G3D/g3dmath.h>
 #include <sstream>
 #include "CustomObjectMgr.h"
@@ -305,7 +305,7 @@ bool ForcedDespawnDelayEvent::Execute(uint64 /*e_time*/, uint32 /*p_time*/)
     return true;
 }
 
-Creature::Creature(bool isWorldObject): Unit(isWorldObject), MapObject(), m_groupLootTimer(0), m_PlayerDamageReq(0), _pickpocketLootRestore(0),
+Creature::Creature(bool isWorldObject): Unit(isWorldObject), MapObject(), m_PlayerDamageReq(0), _pickpocketLootRestore(0),
     m_corpseRemoveTime(0), m_respawnTime(0), m_respawnDelay(300), m_respawnChallenge(0), m_corpseDelay(60), m_ignoreCorpseDecayRatio(false), m_wanderDistance(0.0f), m_boundaryCheckTime(2500), m_combatPulseTime(0), m_combatPulseDelay(0), m_reactState(REACT_AGGRESSIVE),
     m_defaultMovementType(IDLE_MOTION_TYPE), m_spawnId(UI64LIT(0)), m_equipmentId(0), m_originalEquipmentId(0), m_AlreadyCallAssistance(false), m_AlreadySearchedAssistance(false), m_cannotReachTarget(false), m_cannotReachTimer(0),
     m_meleeDamageSchoolMask(SPELL_SCHOOL_MASK_NORMAL), m_originalEntry(0), m_homePosition(), m_transportHomePosition(), m_creatureInfo(nullptr), m_creatureData(nullptr), _waypointPathId(0), _currentWaypointNodeInfo(0, 0),
@@ -326,6 +326,8 @@ Creature::Creature(bool isWorldObject): Unit(isWorldObject), MapObject(), m_grou
     m_isTempWorldObject = false;
     m_spawnMode = 0;
 }
+
+Creature::~Creature() = default;
 
 void Creature::AddToWorld()
 {
@@ -432,7 +434,7 @@ void Creature::RemoveCorpse(bool setSpawnTime, bool destroyForNearbyPlayers)
         m_corpseRemoveTime = GameTime::GetGameTime();
         setDeathState(DEAD);
         RemoveAllAuras();
-        GetLootFor()->clear();
+        m_loot = nullptr;
         m_PersonalLoots.clear();
         uint32 respawnDelay = m_respawnDelay;
         if (CreatureAI* ai = AI())
@@ -527,10 +529,6 @@ bool Creature::InitEntry(uint32 entry, CreatureData const* data /*= nullptr*/)
 
     if (!cinfo)
         cinfo = normalInfo;
-
-    // Initialize loot duplicate count depending on raid difficulty
-    if (GetMap()->Is25ManRaid())
-        GetLootFor()->maxDuplicates = 3;
 
     m_spawnMode = GetMap()->GetSpawnMode();
 
@@ -793,20 +791,9 @@ void Creature::Update(uint32 diff)
           //  if (IsEngaged())
             Unit::AIUpdateTick(diff);
 
-            if (m_groupLootTimer && !lootingGroupLowGUID.IsEmpty())
-            {
-                if (m_groupLootTimer <= diff)
-                {
-                    if (Group* group = sGroupMgr->GetGroupByGUID(lootingGroupLowGUID))
-                        group->EndRoll(GetLootFor(), GetMap());
-
-                    m_groupLootTimer = 0;
-                    lootingGroupLowGUID.Clear();
-                }
-                else
-                    m_groupLootTimer -= diff;
-            }
-            else if (m_corpseRemoveTime <= GameTime::GetGameTime())
+            if (m_loot)
+                m_loot->Update();
+            if (m_corpseRemoveTime <= GameTime::GetGameTime())
             {
                 RemoveCorpse(false);
                 TC_LOG_DEBUG("entities.unit", "Removing corpse... %u ", GetEntry());
@@ -1864,12 +1851,6 @@ bool Creature::LoadFromDB(ObjectGuid::LowType spawnId, Map* map, bool addToMap, 
     // checked at creature_template loading
     m_defaultMovementType = MovementGeneratorType(data->movementType);
 
-    auto lootGuid = ObjectGuid::Create<HighGuid::LootObject>(GetMapId(), data->id, GetMap()->GenerateLowGuid<HighGuid::LootObject>());
-
-    GetLootFor()->SetGUID(lootGuid);
-    for (auto & loot : m_PersonalLoots) // TODO: Verify this
-        loot.second->SetGUID(lootGuid);
-
     if (addToMap && !GetMap()->AddToMap(this))
         return false;
     return true;
@@ -2021,26 +2002,6 @@ bool Creature::hasInvolvedQuest(uint32 quest_id) const
     return true;
 }
 
-Loot* Creature::GetLootFor(Player* player)
-{
-    if (CanHavePersonalLoot() && player && m_lootRecipientsPersonal.count(player->GetGUID()))
-    {
-        auto itr = m_PersonalLoots.find(player->GetGUID());
-        if (itr == m_PersonalLoots.end())
-        {
-            m_PersonalLoots.insert({ player->GetGUID(), std::make_unique<Loot>() });
-            //ASSERT(loot);
-            m_PersonalLoots[player->GetGUID()]->SetGUID(loot ? loot->GetGUID() : ObjectGuid::Create<HighGuid::LootObject>(GetMapId(), GetEntry(), GetMap()->GenerateLowGuid<HighGuid::LootObject>())); // loot should already be initialized
-        }
-        return m_PersonalLoots[player->GetGUID()].get();
-    }
-
-    if (!loot)
-        loot = std::make_unique<Loot>();
-
-    return loot.get();
-}
-
 bool Creature::IsAllLooted() const
 {
     for (auto const& personal : m_PersonalLoots)
@@ -2052,10 +2013,10 @@ bool Creature::IsAllLooted() const
     if (m_canBePersonalLooted)
         return true;
 
-    if (!loot)
+    if (!m_loot)
         return true;
 
-    return loot->isLooted();
+    return m_loot->isLooted();
 }
 
 bool Creature::IsInvisibleDueToDespawn() const
@@ -2309,7 +2270,7 @@ void Creature::Respawn(bool force)
             TC_LOG_DEBUG("entities.unit", "Respawning creature %s (%s)", GetName().c_str(), GetGUID().ToString().c_str());
             m_respawnTime = 0;
             ResetPickPocketRefillTimer();
-            GetLootFor()->clear();
+            m_loot = nullptr;
 
             if (m_originalEntry != GetEntry())
                 UpdateEntry(m_originalEntry);
@@ -2448,12 +2409,13 @@ void Creature::LoadTemplateImmunities()
     }
 }
 
-bool Creature::IsImmunedToSpellEffect(SpellInfo const* spellInfo, SpellEffectInfo const& spellEffectInfo, WorldObject const* caster) const
+bool Creature::IsImmunedToSpellEffect(SpellInfo const* spellInfo, SpellEffectInfo const& spellEffectInfo, WorldObject const* caster,
+    bool requireImmunityPurgesEffectAttribute /*= false*/) const
 {
     if (GetCreatureTemplate()->type == CREATURE_TYPE_MECHANICAL && spellEffectInfo.IsEffect(SPELL_EFFECT_HEAL))
         return true;
 
-    return Unit::IsImmunedToSpellEffect(spellInfo, spellEffectInfo, caster);
+    return Unit::IsImmunedToSpellEffect(spellInfo, spellEffectInfo, caster, requireImmunityPurgesEffectAttribute);
 }
 
 bool Creature::isElite() const
@@ -2896,7 +2858,7 @@ void Creature::UpdateMovementFlags()
         else
             SetDisableGravity(true);
 
-        if (!HasAuraType(SPELL_AURA_HOVER))
+        if (!HasAuraType(SPELL_AURA_HOVER) && GetMovementTemplate().Ground != CreatureGroundMovementType::Hover)
             SetHover(false);
     }
     else
@@ -2962,7 +2924,7 @@ void Creature::AllLootRemovedFromCorpse()
     float decayRate = m_ignoreCorpseDecayRatio ? 1.f : sWorld->getRate(RATE_CORPSE_DECAY_LOOTED);
 
     // corpse skinnable, but without skinning flag, and then skinned, corpse will despawn next update
-    if (GetLootFor()->loot_type == LOOT_SKINNING)
+    if (m_loot && m_loot->loot_type == LOOT_SKINNING)
         m_corpseRemoveTime = now;
     else
         m_corpseRemoveTime = now + uint32(m_corpseDelay * decayRate);

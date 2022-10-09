@@ -793,7 +793,7 @@ void ObjectMgr::LoadCreatureTemplateAddons()
 
         uint32 entry = fields[0].GetUInt32();
 
-        if (!sObjectMgr->GetCreatureTemplate(entry))
+        if (!GetCreatureTemplate(entry))
         {
             TC_LOG_ERROR("sql.sql", "Creature template (Entry: %u) does not exist but has a record in `creature_template_addon`", entry);
             continue;
@@ -909,7 +909,7 @@ void ObjectMgr::LoadCreatureSparringTemplate()
         uint32 entry = fields[0].GetUInt32();
         float healthPct = fields[1].GetFloat();
 
-        if (!sObjectMgr->GetCreatureTemplate(entry))
+        if (!GetCreatureTemplate(entry))
         {
             TC_LOG_ERROR("sql.sql", "Creature template (Entry: %u) does not exist but has a record in `creature_sparring_template`", entry);
             continue;
@@ -1657,7 +1657,7 @@ void ObjectMgr::LoadEquipmentTemplates()
 
         uint32 entry = fields[0].GetUInt32();
 
-        if (!sObjectMgr->GetCreatureTemplate(entry))
+        if (!GetCreatureTemplate(entry))
         {
             TC_LOG_ERROR("sql.sql", "Creature template (CreatureID: %u) does not exist but has a record in `creature_equip_template`", entry);
             continue;
@@ -3034,9 +3034,14 @@ void ObjectMgr::LoadInstanceSpawnGroups()
         }
 
         uint16 const instanceMapId = fields[0].GetUInt16();
-        std::vector<InstanceSpawnGroupInfo>& vector = _instanceSpawnGroupStore[instanceMapId];
-        vector.emplace_back();
-        InstanceSpawnGroupInfo& info = vector.back();
+        if (it->second.mapId != instanceMapId)
+        {
+            TC_LOG_ERROR("sql.sql", "Instance spawn group %u specified for instance %u has spawns on a different map %u. Skipped.",
+                spawnGroupId, instanceMapId, it->second.mapId);
+            continue;
+        }
+
+        InstanceSpawnGroupInfo& info = _instanceSpawnGroupStore[instanceMapId].emplace_back();
         info.SpawnGroupId = spawnGroupId;
         info.BossStateId = fields[1].GetUInt8();
 
@@ -3602,13 +3607,13 @@ void ObjectMgr::LoadVehicleTemplateAccessories()
         uint8  summonType   = fields[4].GetUInt8();
         uint32 summonTimer  = fields[5].GetUInt32();
 
-        if (!sObjectMgr->GetCreatureTemplate(entry))
+        if (!GetCreatureTemplate(entry))
         {
             TC_LOG_ERROR("sql.sql", "Table `vehicle_template_accessory`: creature template entry %u does not exist.", entry);
             continue;
         }
 
-        if (!sObjectMgr->GetCreatureTemplate(accessory))
+        if (!GetCreatureTemplate(accessory))
         {
             TC_LOG_ERROR("sql.sql", "Table `vehicle_template_accessory`: Accessory %u does not exist.", accessory);
             continue;
@@ -3650,7 +3655,7 @@ void ObjectMgr::LoadVehicleTemplate()
 
         uint32 creatureId = fields[0].GetUInt32();
 
-        if (!sObjectMgr->GetCreatureTemplate(creatureId))
+        if (!GetCreatureTemplate(creatureId))
         {
             TC_LOG_ERROR("sql.sql", "Table `vehicle_template`: Vehicle %u does not exist.", creatureId);
             continue;
@@ -3692,7 +3697,7 @@ void ObjectMgr::LoadVehicleAccessories()
         uint8  uiSummonType = fields[4].GetUInt8();
         uint32 uiSummonTimer= fields[5].GetUInt32();
 
-        if (!sObjectMgr->GetCreatureTemplate(uiAccessory))
+        if (!GetCreatureTemplate(uiAccessory))
         {
             TC_LOG_ERROR("sql.sql", "Table `vehicle_accessory`: Accessory %u does not exist.", uiAccessory);
             continue;
@@ -3785,7 +3790,7 @@ void ObjectMgr::LoadPetOwnerBenefit()
 
         uint32 creatureID = fields[0].GetUInt32();
 
-        if (!sObjectMgr->GetCreatureTemplate(creatureID))
+        if (!GetCreatureTemplate(creatureID))
         {
             TC_LOG_ERROR("sql.sql", "Creature template (CreatureID: %u) does not exist but has a record in `pet_owner_benefit`", creatureID);
             continue;
@@ -3849,7 +3854,7 @@ void ObjectMgr::LoadPetLevelInfo()
         Field* fields = result->Fetch();
 
         uint32 creature_id = fields[0].GetUInt32();
-        if (!sObjectMgr->GetCreatureTemplate(creature_id))
+        if (!GetCreatureTemplate(creature_id))
         {
             TC_LOG_ERROR("sql.sql", "Wrong creature id %u in `pet_levelstats` table, ignoring.", creature_id);
             continue;
@@ -5076,7 +5081,7 @@ void ObjectMgr::LoadQuests()
 
         if (qinfo->_sourceItemId)
         {
-            if (!sObjectMgr->GetItemTemplate(qinfo->_sourceItemId))
+            if (!GetItemTemplate(qinfo->_sourceItemId))
             {
                 TC_LOG_ERROR("sql.sql", "Quest %u has `SourceItemId` = %u but item with entry %u does not exist, quest can't be done.",
                     qinfo->GetQuestId(), qinfo->_sourceItemId, qinfo->_sourceItemId);
@@ -5141,22 +5146,22 @@ void ObjectMgr::LoadQuests()
             switch (obj.Type)
             {
                 case QUEST_OBJECTIVE_ITEM:
-                    if (!sObjectMgr->GetItemTemplate(obj.ObjectID))
+                    if (!GetItemTemplate(obj.ObjectID))
                         TC_LOG_ERROR("sql.sql", "Quest %u objective %u has non existing item entry %u, quest can't be done.",
                             qinfo->GetQuestId(), obj.ID, obj.ObjectID);
                     break;
                 case QUEST_OBJECTIVE_MONSTER:
-                    if (!sObjectMgr->GetCreatureTemplate(obj.ObjectID))
+                    if (!GetCreatureTemplate(obj.ObjectID))
                         TC_LOG_ERROR("sql.sql", "Quest %u objective %u has non existing creature entry %u, quest can't be done.",
                             qinfo->GetQuestId(), obj.ID, uint32(obj.ObjectID));
                     break;
                 case QUEST_OBJECTIVE_GAMEOBJECT:
-                    if (!sObjectMgr->GetGameObjectTemplate(obj.ObjectID))
+                    if (!GetGameObjectTemplate(obj.ObjectID))
                         TC_LOG_ERROR("sql.sql", "Quest %u objective %u has non existing gameobject entry %u, quest can't be done.",
                             qinfo->GetQuestId(), obj.ID, uint32(obj.ObjectID));
                     break;
                 case QUEST_OBJECTIVE_TALKTO:
-                    if (!sObjectMgr->GetCreatureTemplate(obj.ObjectID))
+                    if (!GetCreatureTemplate(obj.ObjectID))
                         TC_LOG_ERROR("sql.sql", "Quest %u objective %u has non existing creature entry %u, quest can't be done.",
                             qinfo->GetQuestId(), obj.ID, uint32(obj.ObjectID));
                     break;
@@ -5183,7 +5188,7 @@ void ObjectMgr::LoadQuests()
                         TC_LOG_ERROR("sql.sql", "Quest %u objective %u has non existing spell id %d", qinfo->GetQuestId(), obj.ID, obj.ObjectID);
                     break;
                 case QUEST_OBJECTIVE_WINPETBATTLEAGAINSTNPC:
-                    if (obj.ObjectID && !sObjectMgr->GetCreatureTemplate(obj.ObjectID))
+                    if (obj.ObjectID && !GetCreatureTemplate(obj.ObjectID))
                         TC_LOG_ERROR("sql.sql", "Quest %u objective %u has non existing creature entry %u, quest can't be done.",
                             qinfo->GetQuestId(), obj.ID, uint32(obj.ObjectID));
                     break;
@@ -5222,7 +5227,7 @@ void ObjectMgr::LoadQuests()
             uint32 id = qinfo->ItemDrop[j];
             if (id)
             {
-                if (!sObjectMgr->GetItemTemplate(id))
+                if (!GetItemTemplate(id))
                 {
                     TC_LOG_ERROR("sql.sql", "Quest %u has `ItemDrop%d` = %u but item with entry %u does not exist, quest can't be done.",
                         qinfo->GetQuestId(), j+1, id, id);
@@ -5247,7 +5252,7 @@ void ObjectMgr::LoadQuests()
                 switch (qinfo->RewardChoiceItemType[j])
                 {
                     case LootItemType::Item:
-                        if (!sObjectMgr->GetItemTemplate(id))
+                        if (!GetItemTemplate(id))
                         {
                             TC_LOG_ERROR("sql.sql", "Quest %u has `RewardChoiceItemId%d` = %u but item with entry %u does not exist, quest will not reward this item.",
                                 qinfo->GetQuestId(), j + 1, id, id);
@@ -5288,7 +5293,7 @@ void ObjectMgr::LoadQuests()
             uint32 id = qinfo->RewardItemId[j];
             if (id)
             {
-                if (!sObjectMgr->GetItemTemplate(id))
+                if (!GetItemTemplate(id))
                 {
                     TC_LOG_ERROR("sql.sql", "Quest %u has `RewardItemId%d` = %u but item with entry %u does not exist, quest will not reward this item.",
                         qinfo->GetQuestId(), j+1, id, id);
@@ -5519,7 +5524,7 @@ void ObjectMgr::LoadQuests()
                 break;
             }
 
-            qinfo = const_cast<Quest*>(sObjectMgr->GetQuestTemplate(breadcrumbForQuestId));
+            qinfo = const_cast<Quest*>(GetQuestTemplate(breadcrumbForQuestId));
 
             //every quest has a list of every breadcrumb towards it
             qinfo->DependentBreadcrumbQuests.push_back(qid);
@@ -5668,14 +5673,14 @@ void ObjectMgr::LoadQuestGreetingLocales()
         switch (type)
         {
             case 0: // Creature
-                if (!sObjectMgr->GetCreatureTemplate(id))
+                if (!GetCreatureTemplate(id))
                 {
                     TC_LOG_ERROR("sql.sql", "Table `quest_greeting_locale`: creature template entry %u does not exist.", id);
                     continue;
                 }
                 break;
             case 1: // GameObject
-                if (!sObjectMgr->GetGameObjectTemplate(id))
+                if (!GetGameObjectTemplate(id))
                 {
                     TC_LOG_ERROR("sql.sql", "Table `quest_greeting_locale`: gameobject template entry %u does not exist.", id);
                     continue;
@@ -6438,7 +6443,7 @@ void ObjectMgr::LoadInstanceTemplate()
         InstanceTemplate instanceTemplate;
 
         instanceTemplate.Parent     = uint32(fields[1].GetUInt16());
-        instanceTemplate.ScriptId   = sObjectMgr->GetScriptId(fields[2].GetString());
+        instanceTemplate.ScriptId   = GetScriptId(fields[2].GetString());
 
         _instanceTemplateStore[mapID] = instanceTemplate;
 
@@ -6886,14 +6891,14 @@ void ObjectMgr::LoadQuestGreetings()
         switch (type)
         {
             case 0: // Creature
-                if (!sObjectMgr->GetCreatureTemplate(id))
+                if (!GetCreatureTemplate(id))
                 {
                     TC_LOG_ERROR("sql.sql", "Table `quest_greeting`: creature template entry %u does not exist.", id);
                     continue;
                 }
                 break;
             case 1: // GameObject
-                if (!sObjectMgr->GetGameObjectTemplate(id))
+                if (!GetGameObjectTemplate(id))
                 {
                     TC_LOG_ERROR("sql.sql", "Table `quest_greeting`: gameobject template entry %u does not exist.", id);
                     continue;
@@ -7608,7 +7613,7 @@ AreaTriggerStruct const* ObjectMgr::GetGoBackTrigger(uint32 Map) const
         return nullptr;
 
     if (mapEntry->IsDungeon())
-        if (InstanceTemplate const* iTemplate = sObjectMgr->GetInstanceTemplate(Map))
+        if (InstanceTemplate const* iTemplate = GetInstanceTemplate(Map))
             parentId = iTemplate->Parent;
 
     uint32 entrance_map = parentId.value_or(mapEntry->CorpseMapID);
@@ -8111,7 +8116,7 @@ void ObjectMgr::LoadGameObjectTemplateAddons()
 
         uint32 entry = fields[0].GetUInt32();
 
-        GameObjectTemplate const* got = sObjectMgr->GetGameObjectTemplate(entry);
+        GameObjectTemplate const* got = GetGameObjectTemplate(entry);
         if (!got)
         {
             TC_LOG_ERROR("sql.sql", "GameObject template (Entry: %u) does not exist but has a record in `gameobject_template_addon`", entry);
@@ -8677,7 +8682,7 @@ void ObjectMgr::LoadQuestPOI()
         int32 spawnTrackingID       = fields[13].GetInt32();
         bool alwaysAllowMergingBlobs = fields[14].GetBool();
 
-        if (!sObjectMgr->GetQuestTemplate(questID))
+        if (!GetQuestTemplate(questID))
             TC_LOG_ERROR("sql.sql", "`quest_poi` quest id (%u) Idx1 (%u) does not exist in `quest_template`", questID, idx1);
 
         if (std::map<int32, std::vector<QuestPOIBlobPoint>>* blobs = Trinity::Containers::MapGetValuePtr(allPoints, questID))
@@ -9864,8 +9869,8 @@ void ObjectMgr::LoadGossipMenuItems()
     _gossipMenuItemsStore.clear();
 
     QueryResult result = WorldDatabase.Query(
-        //      0       1         2           3           4                      5           6              7         8             9            10        11        12       13
-        "SELECT MenuID, OptionID, OptionIcon, OptionText, OptionBroadcastTextID, OptionType, OptionNpcFlag, Language, ActionMenuID, ActionPoiID, BoxCoded, BoxMoney, BoxText, BoxBroadcastTextID "
+        //      0       1         2           3           4                      5              6         7             8            9         10        11       12
+        "SELECT MenuID, OptionID, OptionNpc, OptionText, OptionBroadcastTextID, OptionNpcFlag, Language, ActionMenuID, ActionPoiID, BoxCoded, BoxMoney, BoxText, BoxBroadcastTextID "
         "FROM gossip_menu_option ORDER BY MenuID, OptionID");
 
     if (!result)
@@ -9882,23 +9887,22 @@ void ObjectMgr::LoadGossipMenuItems()
 
         gMenuItem.MenuID                = fields[0].GetUInt32();
         gMenuItem.OptionID              = fields[1].GetUInt32();
-        gMenuItem.OptionIcon            = GossipOptionIcon(fields[2].GetUInt8());
+        gMenuItem.OptionNpc             = GossipOptionNpc(fields[2].GetUInt8());
         gMenuItem.OptionText            = fields[3].GetString();
         gMenuItem.OptionBroadcastTextID = fields[4].GetUInt32();
-        gMenuItem.OptionType            = fields[5].GetUInt32();
-        gMenuItem.OptionNpcFlag         = fields[6].GetUInt64();
-        gMenuItem.Language              = fields[7].GetUInt32();
-        gMenuItem.ActionMenuID          = fields[8].GetUInt32();
-        gMenuItem.ActionPoiID           = fields[9].GetUInt32();
-        gMenuItem.BoxCoded              = fields[10].GetBool();
-        gMenuItem.BoxMoney              = fields[11].GetUInt32();
-        gMenuItem.BoxText               = fields[12].GetString();
-        gMenuItem.BoxBroadcastTextID    = fields[13].GetUInt32();
+        gMenuItem.OptionNpcFlag         = fields[5].GetUInt64();
+        gMenuItem.Language              = fields[6].GetUInt32();
+        gMenuItem.ActionMenuID          = fields[7].GetUInt32();
+        gMenuItem.ActionPoiID           = fields[8].GetUInt32();
+        gMenuItem.BoxCoded              = fields[9].GetBool();
+        gMenuItem.BoxMoney              = fields[10].GetUInt32();
+        gMenuItem.BoxText               = fields[11].GetString();
+        gMenuItem.BoxBroadcastTextID    = fields[12].GetUInt32();
 
-        if (gMenuItem.OptionIcon >= GossipOptionIcon::Count)
+        if (gMenuItem.OptionNpc >= GossipOptionNpc::Count)
         {
-            TC_LOG_ERROR("sql.sql", "Table `gossip_menu_option` for menu %u, id %u has unknown icon id %u. Replacing with GossipOptionIcon::None", gMenuItem.MenuID, gMenuItem.OptionID, uint32(gMenuItem.OptionIcon));
-            gMenuItem.OptionIcon = GossipOptionIcon::None;
+            TC_LOG_ERROR("sql.sql", "Table `gossip_menu_option` for menu %u, id %u has unknown NPC option id %u. Replacing with GossipOptionNpc::None", gMenuItem.MenuID, gMenuItem.OptionID, AsUnderlyingType(gMenuItem.OptionNpc));
+            gMenuItem.OptionNpc = GossipOptionNpc::None;
         }
 
         if (gMenuItem.OptionBroadcastTextID)
@@ -9910,19 +9914,30 @@ void ObjectMgr::LoadGossipMenuItems()
             }
         }
 
-        if (gMenuItem.OptionType >= GOSSIP_OPTION_MAX)
-            TC_LOG_ERROR("sql.sql", "Table `gossip_menu_option` for menu %u, id %u has unknown option id %u. Option will not be used", gMenuItem.MenuID, gMenuItem.OptionID, gMenuItem.OptionType);
-
         if (gMenuItem.Language && !sLanguagesStore.LookupEntry(gMenuItem.Language))
         {
             TC_LOG_ERROR("sql.sql", "Table `gossip_menu_option` for menu %u, id %u use non-existing Language %u, ignoring", gMenuItem.MenuID, gMenuItem.OptionID, gMenuItem.Language);
             gMenuItem.Language = 0;
         }
 
-        if (gMenuItem.ActionPoiID && !GetPointOfInterest(gMenuItem.ActionPoiID))
+        if (gMenuItem.ActionMenuID && gMenuItem.OptionNpc != GossipOptionNpc::None)
         {
-            TC_LOG_ERROR("sql.sql", "Table `gossip_menu_option` for menu %u, id %u use non-existing ActionPoiID %u, ignoring", gMenuItem.MenuID, gMenuItem.OptionID, gMenuItem.ActionPoiID);
-            gMenuItem.ActionPoiID = 0;
+            TC_LOG_ERROR("sql.sql", "Table `gossip_menu_option` for menu %u, id %u can not use ActionMenuID for GossipOptionNpc different from GossipOptionNpc::None, ignoring", gMenuItem.MenuID, gMenuItem.OptionID);
+            gMenuItem.ActionMenuID = 0;
+        }
+
+        if (gMenuItem.ActionPoiID)
+        {
+            if (gMenuItem.OptionNpc != GossipOptionNpc::None)
+            {
+                TC_LOG_ERROR("sql.sql", "Table `gossip_menu_option` for menu %u, id %u can not use ActionPoiID for GossipOptionNpc different from GossipOptionNpc::None, ignoring", gMenuItem.MenuID, gMenuItem.OptionID);
+                gMenuItem.ActionPoiID = 0;
+            }
+            else if (!GetPointOfInterest(gMenuItem.ActionPoiID))
+            {
+                TC_LOG_ERROR("sql.sql", "Table `gossip_menu_option` for menu %u, id %u use non-existing ActionPoiID %u, ignoring", gMenuItem.MenuID, gMenuItem.OptionID, gMenuItem.ActionPoiID);
+                gMenuItem.ActionPoiID = 0;
+            }
         }
 
         if (gMenuItem.BoxBroadcastTextID)
@@ -10043,7 +10058,7 @@ bool ObjectMgr::RemoveVendorItem(uint32 entry, uint32 item, uint8 type, bool per
 bool ObjectMgr::IsVendorItemValid(uint32 vendor_entry, VendorItem const& vItem, Player* player, std::set<uint32>* /*skip_vendors*/, uint32 /*ORnpcflag*/) const
 {
     /*
-    CreatureTemplate const* cInfo = sObjectMgr->GetCreatureTemplate(vendor_entry);
+    CreatureTemplate const* cInfo = GetCreatureTemplate(vendor_entry);
     if (!cInfo)
     {
         if (player)
@@ -10069,7 +10084,7 @@ bool ObjectMgr::IsVendorItemValid(uint32 vendor_entry, VendorItem const& vItem, 
     }
     */
 
-    if ((vItem.Type == ITEM_VENDOR_TYPE_ITEM && !sObjectMgr->GetItemTemplate(vItem.item)) ||
+    if ((vItem.Type == ITEM_VENDOR_TYPE_ITEM && !GetItemTemplate(vItem.item)) ||
         (vItem.Type == ITEM_VENDOR_TYPE_CURRENCY && !sCurrencyTypesStore.LookupEntry(vItem.item)))
     {
         if (player)
@@ -10394,9 +10409,9 @@ void ObjectMgr::LoadFactionChangeQuests()
         uint32 alliance = fields[0].GetUInt32();
         uint32 horde = fields[1].GetUInt32();
 
-        if (!sObjectMgr->GetQuestTemplate(alliance))
+        if (!GetQuestTemplate(alliance))
             TC_LOG_ERROR("sql.sql", "Quest %u (alliance_id) referenced in `player_factionchange_quests` does not exist, pair skipped!", alliance);
-        else if (!sObjectMgr->GetQuestTemplate(horde))
+        else if (!GetQuestTemplate(horde))
             TC_LOG_ERROR("sql.sql", "Quest %u (horde_id) referenced in `player_factionchange_quests` does not exist, pair skipped!", horde);
         else
             FactionChangeQuests[alliance] = horde;
@@ -11197,7 +11212,7 @@ void ObjectMgr::LoadSceneTemplates()
         sceneTemplate.PlaybackFlags     = static_cast<SceneFlag>(fields[1].GetUInt32());
         sceneTemplate.ScenePackageId    = fields[2].GetUInt32();
         sceneTemplate.Encrypted         = fields[3].GetUInt8() != 0;
-        sceneTemplate.ScriptId          = sObjectMgr->GetScriptId(fields[4].GetCString());
+        sceneTemplate.ScriptId          = GetScriptId(fields[4].GetCString());
 
     } while (templates->NextRow());
 

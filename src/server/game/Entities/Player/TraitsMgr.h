@@ -45,14 +45,39 @@ enum class TalentLearnResult
     RestArea                      = 8,
 };
 
-enum class TraitTrees
+// TraitConfigType
+enum class TraitType : int32
 {
-    Unk        = 0,
-    HunterMain = 127,
-    DHAllAlpha = 732,
+    Invalid    = 0,
+    Combat     = 1,
+    Profession = 2,
+    Generic    = 3,
 };
 
-inline TraitTrees GetTraitTreeForClass(uint8 classId);
+enum class TraitTreeFlag : int32
+{
+    None                  = 0x0,
+    CannotRefund          = 0x1,
+    HideSingleRankNumbers = 0x2,
+};
+
+DEFINE_ENUM_FLAG(TraitTreeFlag);
+
+enum class TraitCombatConfigFlags : int32
+{
+    None              = 0x0,
+    ActiveForSpec     = 0x1,
+    StarterBuild      = 0x2,
+    SharedActionBVars = 0x4,
+};
+
+DEFINE_ENUM_FLAG(TraitCombatConfigFlags);
+
+constexpr uint32 DragonridingSystemID = 1;
+
+/// TraitConsts
+constexpr uint32 MAX_COMBAT_TRAIT_CONFIGS = 10;
+constexpr uint32 COMMIT_COMBAT_TRAIT_CONFIG_CHANGES_SPELL_ID = 384255;
 
 class TC_GAME_API Specialization
 {
@@ -79,20 +104,22 @@ class TC_GAME_API Specialization
         uint32 _specId;
         uint16 _pvpTalents[MAX_PVP_TALENT_SLOTS];
         std::vector<uint32> _glyphs;
+        std::vector<Trait*> _traits;
         Trait* _trait;
         uint32 _activeLoadoutId;
 };
 
 struct TC_GAME_API TraitTalent
 {
-    TraitTalent(Player* player, Trait* trait, uint32 TraitNode, uint32 TraitNodeEntryID, uint32 Rank, uint32 Unk, bool isDefault = false);
+    TraitTalent(Player* player, Trait* trait, uint32 TraitNode, uint32 TraitNodeEntryID, uint32 Rank, EnumFlag<TraitTreeFlag> treeFlags, bool isDefault = false);
 
     void Initialize();
 
-    uint32 TraitNode;
+    uint32 TraitNodeID;
     uint32 TraitNodeEntryID;
     uint32 Rank;
-    uint32 Unk;
+    EnumFlag<TraitTreeFlag> TreeFlags;
+
     bool IsDefault;
     bool IsChanged = true;
 
@@ -109,29 +136,34 @@ struct TC_GAME_API TraitTalent
     bool operator!=(TraitTalent const& right) const { return !(*this == right); }
 };
 
-// TraitConfigType
-enum class TraitType
-{
-    Invalid      = 0,
-    Talents      = 1, ///< Combat
-    Skill        = 2, ///< Profession
-    DragonRiding = 3, ///< Generic
-};
-
 class TC_GAME_API Trait
 {
     public:
-        Trait(Player* player, uint32 configId, uint32 specId, TraitType type, uint32 index, uint32 talentGroup = 0);
+        Trait(Player* player, uint32 configId, TraitType type);
         ~Trait();
 
-        void SetConfigName(std::string_view configName);
-        std::string const& GetConfigName() { return _configName; }
-
-        uint32 GetIndex() const { return _index; }
-        uint32 GetTalentGroup() const { return _talentGroup; }
         uint32 GetConfigID() const { return _configID; }
-        uint32 GetSpecializationID() const { return _specializationID; }
         TraitType GetType() const { return _type; }
+
+        void SetSkillLineID(uint32 skillLineID) { _skillLineID = skillLineID; }
+        uint32 GetSkillLineID() const { return _skillLineID; }
+
+        void SetSpecializationID(uint32 specializationID) { _specializationID = specializationID; }
+        uint32 GetSpecializationID() const { return _specializationID; }
+
+        void SetCombatConfigFlags(TraitCombatConfigFlags flags) { _combatConfigFlags = flags; }
+        void AddCombatConfigFlags(TraitCombatConfigFlags flags) { _combatConfigFlags.AddFlag(flags); }
+        void RemoveCombatConfigFlags(TraitCombatConfigFlags flags) { _combatConfigFlags.RemoveFlag(flags); }
+        EnumFlag<TraitCombatConfigFlags> GetCombatConfigFlags() const { return _combatConfigFlags; }
+
+        void SetLoadoutIndex(uint32 index) { _loadoutIndex = index; }
+        uint32 GetLoadoutIndex() const { return _loadoutIndex; }
+
+        void SetSystemID(uint32 systemID) { _systemID = systemID; }
+        uint32 GetSystemID() const { return _systemID; }
+
+        void SetConfigName(std::string_view loadoutName);
+        std::string const& GetConfigName() { return _loadoutName; }
 
         void AddTraitTalent(TraitTalent* talent);
         bool RemoveTraitTalent(uint32 traitNode);
@@ -146,14 +178,28 @@ class TC_GAME_API Trait
 
         void SaveToDB(CharacterDatabaseTransaction trans);
 
+        void SetIndex(uint32 index) { _index = index; }
+        uint32 GetIndex() const { return _index; }
+
     private:
         Player* _player;
-        uint32 _index;
-        uint32 _talentGroup;
+
         uint32 _configID;
-        uint32 _specializationID;
         TraitType _type;
-        std::string _configName;
+
+        /// This works a certain way - values are only used by certain types.
+        /// TraitType::Profession
+        uint32 _skillLineID;
+        /// TraitType::Combat
+        uint32 _specializationID;
+        EnumFlag<TraitCombatConfigFlags> _combatConfigFlags;
+        uint32 _loadoutIndex;
+        /// TraitType::Generic
+        uint32 _systemID;
+
+        uint32 _index; ///< The index stored in the update field
+
+        std::string _loadoutName;
         std::unordered_map<uint32, TraitTalent*> _talents;
 };
 
@@ -175,11 +221,13 @@ class TC_GAME_API TraitsMgr
         void SendUpdateTalentData();
 
         /// Specialization
-        int8 GetActiveTalentGroup() const { return _activeTalentGroup; }
-        int8 GetActiveTalentGroupSafe() const { return _activeTalentGroup == -1 ? 0 : _activeTalentGroup; }
-        void SetActiveTalentGroup(int8 orderIndex, bool force = false);
         Specialization* GetActiveSpecialization();
         Specialization* GetSpecialization(int8 orderIndex);
+
+        void SetActiveTalentGroup(int8 orderIndex, bool force = false);
+
+        int8 GetActiveTalentGroup() const { return _activeTalentGroup; }
+        int8 GetActiveTalentGroupSafe() const { return _activeTalentGroup == -1 ? 0 : _activeTalentGroup; }
 
         /// Traits
         Trait* GetActiveTrait();
@@ -187,12 +235,15 @@ class TC_GAME_API TraitsMgr
         Trait* GetTraitByConfigID(uint32 configID);
         Trait* CreateDefaultTraitForSpec(ChrSpecializationEntry const* specEntry, bool activeSpec = false);
         Trait* GetTraitByLoadoutID(uint32 loadoutId);
+
         void LearnTraits(WorldPackets::Talent::LearnTraits& learnTraits);
         void CreateNewLoadout(WorldPackets::Talent::CreateNewLoadout& createNewLoadout);
         void SwapLoadout(uint32 loadoutId, std::vector<WorldPackets::Talent::TraitConfigEntry> traits);
         void SwapLoadout(uint32 loadout);
         void RenameLoadout(uint32 configId, std::string const& newName);
         void RemoveLoadout(uint32 configId);
+
+        uint32 GetNextTraitLoadoutIndex() const;
 
         /// Glyphs
         void SendActiveGlyphs(bool fullUpdate = false);
@@ -208,6 +259,6 @@ class TC_GAME_API TraitsMgr
         Trait* _activeTrait = nullptr;
         std::vector<Specialization*> _specializations;
         std::unordered_map<uint32, Trait*> _traits; ///< Key: ConfigID, Value: Trait*
-        uint32 _nextConfigId = 700050;
+        uint32 _nextConfigId = 700100;
         bool _hasDragonriding = false;
 };
