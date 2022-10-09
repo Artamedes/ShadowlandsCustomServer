@@ -201,7 +201,7 @@ void TraitsMgr::LoadFromDB(CharacterDatabaseQueryHolder const& holder)
             uint32 combatConfigFlags         = fields[4].GetUInt32();
             uint32 loadoutIndex              = fields[5].GetUInt32();
             uint32 systemID                  = fields[6].GetUInt32();
-            std::string loadoutName          = fields[7].GetString();
+            std::string_view loadoutName     = fields[7].GetStringView();
 
             if (configId < DeleteConfigIDBefore)
             {
