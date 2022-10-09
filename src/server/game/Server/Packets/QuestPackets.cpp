@@ -416,14 +416,14 @@ WorldPacket const* QuestGiverQuestDetails::Write()
     _worldPacket << int32(PortraitTurnIn);
     _worldPacket << uint32(QuestFlags[0]); // Flags
     _worldPacket << uint32(QuestFlags[1]); // FlagsEx
-    _worldPacket << uint32(QuestFlags[3]); // FlagsEx
+    _worldPacket << uint32(QuestFlags[2]); // FlagsEx
     _worldPacket << int32(SuggestedPartyMembers);
     _worldPacket << uint32(LearnSpells.size());
     _worldPacket << uint32(DescEmotes.size());
     _worldPacket << uint32(Objectives.size());
     _worldPacket << int32(QuestStartItemID);
     _worldPacket << int32(QuestSessionBonus);
-    _worldPacket << uint32(0);
+    _worldPacket << uint32(QuestGiverEntry);
     _worldPacket << uint32(0);
 
     for (int32 spell : LearnSpells)
@@ -790,43 +790,115 @@ void ChoiceResponse::Read()
     IsReroll = _worldPacket.ReadBit();
 }
 
+ByteBuffer& operator<<(ByteBuffer& data, TreasurePickerItem const& item)
+{
+    data << uint32(item.ItemId);
+
+    uint32 modificationCount = 0;
+    for (uint32 modifier : item.ModifierId)
+        if (modifier != 0)
+            modificationCount++;
+
+    uint32 bonusCount = 0;
+    for (uint32 bonus : item.BonusIds)
+        if (bonus != 0)
+            bonusCount++;
+
+    bool hasBonus = bonusCount != 0;
+
+    data.WriteBit(hasBonus); // has bonus
+
+    data.WriteBits(6, modificationCount);
+
+    for (int modificationIndex = 0; modificationIndex < modificationCount; modificationIndex++)
+    {
+        data << (uint32)item.ModifierValue[modificationIndex];
+        data.WriteBits(8, item.ModifierId[modificationIndex]);
+    }
+
+    if (hasBonus)
+        for (int bonusIndex = 0; bonusIndex < TREASURE_PICKER_MAX_BONUS_COUNT; bonusIndex)
+        {
+            data << (uint32)item.BonusIds[bonusIndex];
+        }
+
+    return data;
+}
+
+ByteBuffer& operator<<(ByteBuffer& data, TreasurePickerBonus const& bonus)
+{
+    uint32 itemCount = 0;
+    for (TreasurePickerItem item : bonus.TresaurePickerItems)
+        if (item.ItemId = 0)
+            itemCount++;
+
+    uint32 currencyCount = 0;
+    for (TreasurePickerCurrency currency : bonus.TresaurePickerCurrencies)
+        if (currency.CurrencyId = 0)
+            currencyCount++;
+
+    data << (uint32)itemCount;
+    data << (uint32)currencyCount;
+    data << (uint64)bonus.BonusMoney;
+
+    for (int index = 0; index < currencyCount; index++)
+    {
+        data << bonus.TresaurePickerCurrencies[index].CurrencyId;
+        data << bonus.TresaurePickerCurrencies[index].CurrencyValue;
+    }
+
+    data.WriteBit(true); // unk
+
+    for (int index = 0; index < itemCount; index++)
+    {
+        data << bonus.TresaurePickerItems[index];
+    }
+
+    return data;
+}
+
 WorldPacket const* TreasurePickerResponse::Write()
 {
     _worldPacket << QuestID;
-    _worldPacket << TreasurePickerID;
+    _worldPacket << Picker.Id;
 
-    _worldPacket << uint32(Items.size()); // ItemCount
-    _worldPacket << uint32(0); // CurrencyCount
-    _worldPacket << uint64(MoneyReward);
-    _worldPacket << uint32(0); // BonusCount
-    _worldPacket << Flags;
+    int itemsCount = 0;
+    for (TreasurePickerItem item : Picker.TresaurePickerItems)
+        if (item.ItemId != 0)
+            itemsCount++;
 
-    //for (int i = 0; i < currencyCount; i++)
-    //    ReadTreasurePickCurrency(packet, i);
+    int currencyCount = 0;
+    for (TreasurePickerCurrency currency : Picker.TresaurePickerCurrencies)
+        if (currency.CurrencyId != 0)
+            currencyCount++;
 
-    //for (var i = 0; i < itemCount; ++i)
-    //    ReadTreasurePickItem(packet, i);
+    int bonusCount = 0;
+    for (TreasurePickerBonus bonus : Picker.TreasurePickerBonuses)
+        if (bonus.Exists)
+            bonusCount++;
 
-    for (auto const& l_Item : Items)
+    _worldPacket << uint32(itemsCount); // ItemCount
+    _worldPacket << uint32(currencyCount); // CurrencyCount
+    _worldPacket << uint64(Picker.MoneyReward);
+    _worldPacket << uint32(bonusCount); // BonusCount
+    _worldPacket << uint32(Picker.Flags);
+
+    for (int i = 0; i < currencyCount; i++)
     {
-        _worldPacket << l_Item.Item;
-        _worldPacket << l_Item.Quantity;
+        _worldPacket << uint32(Picker.TresaurePickerCurrencies[i].CurrencyId);
+        _worldPacket << uint32(Picker.TresaurePickerCurrencies[i].CurrencyValue);
     }
 
-    //for (var i = 0; i < bonusCount; ++i)
-    //{
-    //    var bonusItemCount = packet.ReadUInt32("BonusItemCount", i);
-    //    var bonusCurrencyCount = packet.ReadUInt32("BonusCurrencyCount", i);
-    //    packet.ReadUInt64("BonusMoney", i);
-    //
-    //    for (var z = 0; z < bonusCurrencyCount; ++z)
-    //        ReadTreasurePickCurrency(packet, i, z);
-    //
-    //    packet.ReadBit("UnkBit", i);
-    //
-    //    for (int z = 0; z < bonusItemCount; ++z)
-    //        ReadTreasurePickItem(packet, i, z);
-    //}
+    for (int i = 0; i < itemsCount; ++i)
+    {
+        const TreasurePickerItem& item = Picker.TresaurePickerItems[i];
+        _worldPacket << item;
+    }
+
+    for (int i = 0; i < bonusCount; ++i)
+    {
+        _worldPacket << Picker.TreasurePickerBonuses[i];
+    }
 
     return &_worldPacket;
 }

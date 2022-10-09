@@ -492,7 +492,7 @@ class item_upgrader : public ItemScript
 
         bool OnQueryTreasurePicker(Player* p_Player, Item* p_Item) override
         {
-            auto l_Itr = m_PlayerItemTargets.find(p_Player->GetGUID());
+            /*auto l_Itr = m_PlayerItemTargets.find(p_Player->GetGUID());
             if (l_Itr == m_PlayerItemTargets.end())
                 return true;
 
@@ -540,6 +540,9 @@ class item_upgrader : public ItemScript
             l_Packet2.Items.push_back(l_Item);
 
             p_Player->GetSession()->SendPacket(l_Packet2.Write());
+            return true;
+            */
+
             return true;
         }
 

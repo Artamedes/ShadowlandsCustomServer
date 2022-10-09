@@ -255,7 +255,21 @@ void WorldSession::HandleQuestQueryOpcode(WorldPackets::Quest::QueryQuestInfo& p
     TC_LOG_DEBUG("network", "WORLD: Received CMSG_QUEST_QUERY quest = %u", packet.QuestID);
 
     if (Quest const* quest = sObjectMgr->GetQuestTemplate(packet.QuestID))
+    {
+        if (int32 treasurePickerId = quest->GetTreasurePickerId())
+        {
+            if (TreasurePicker* picker = ObjectMgr::instance()->GetTreasurePicker(treasurePickerId))
+            {
+                WorldPackets::Quest::TreasurePickerResponse response;
+                response.Picker = *picker;
+                response.QuestID = packet.QuestID;
+
+                SendPacket(response.Write());
+            }
+        }
+
         _player->PlayerTalkClass->SendQuestQueryResponse(quest);
+    }
     else
     {
         if (packet.QuestID == 591918)

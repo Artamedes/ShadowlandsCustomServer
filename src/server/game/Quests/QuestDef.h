@@ -785,4 +785,72 @@ struct QuestStatusData
     bool Explored = false;
 };
 
+#define TREASURE_PICKER_MAX_ITEM_COUNT 5
+#define TREASURE_PICKER_MAX_CURRENCY_COUNT 5
+#define TREASURE_PICKER_MAX_BONUS_COUNT 5
+#define TREASURE_PICKER_ITEM_MAX_BONUSES 5
+#define TREASURE_PICKER_ITEM_MAX_MODIFIERS 5
+
+struct TreasurePickerItem
+{
+    TreasurePickerItem(uint32 currencyId = 0, uint32 quantity = 0)
+    {
+        ItemId = currencyId;
+        Quantity = quantity;
+    }
+
+    uint32 ItemId;
+    uint32 Quantity;
+    uint32 BonusIds[TREASURE_PICKER_MAX_BONUS_COUNT];
+    uint32 ModifierId[TREASURE_PICKER_ITEM_MAX_MODIFIERS];
+    uint32 ModifierValue[TREASURE_PICKER_ITEM_MAX_MODIFIERS];
+};
+
+struct TreasurePickerCurrency
+{
+    TreasurePickerCurrency(uint32 currencyId = 0, uint32 currencyValue = 0)
+    {
+        CurrencyId = currencyId;
+        CurrencyValue = currencyValue;
+    }
+
+    uint32 CurrencyId = 0;
+    uint32 CurrencyValue = 0;
+};
+
+struct TreasurePickerBonus
+{
+    TreasurePickerBonus(bool exists = false, uint32 bonusMoney = 0, bool unkBit = false)
+    {
+        Exists = exists;
+        BonusMoney = bonusMoney;
+        UnkBit = unkBit;
+    }
+
+    bool Exists = false;
+    uint32 BonusMoney = 0;
+    bool UnkBit = false;
+
+    TreasurePickerCurrency TresaurePickerCurrencies[TREASURE_PICKER_MAX_CURRENCY_COUNT];
+    TreasurePickerItem TresaurePickerItems[TREASURE_PICKER_MAX_ITEM_COUNT];
+};
+
+struct TreasurePicker
+{
+    TreasurePicker(uint32 id = 0, uint64 moneyReward = 0, uint32 flags = 0)
+    {
+        Id = id;
+        MoneyReward = moneyReward;
+        Flags = flags;
+    }
+
+    uint32 Id = 0;
+    uint64 MoneyReward = 0;
+    uint32 Flags = 0;
+
+    TreasurePickerCurrency TresaurePickerCurrencies[TREASURE_PICKER_MAX_CURRENCY_COUNT];
+    TreasurePickerItem TresaurePickerItems[TREASURE_PICKER_MAX_ITEM_COUNT];
+    TreasurePickerBonus TreasurePickerBonuses[TREASURE_PICKER_ITEM_MAX_BONUSES];
+};
+
 #endif

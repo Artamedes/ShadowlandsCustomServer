@@ -525,6 +525,7 @@ typedef std::unordered_map<uint32, QuestRequestItemsLocale> QuestRequestItemsLoc
 typedef std::unordered_map<uint32, PageTextLocale> PageTextLocaleContainer;
 typedef std::unordered_map<uint32, VehicleSeatAddon> VehicleSeatAddonContainer;
 typedef std::unordered_map<uint32, float /*SparringHealthLimit*/> CreatureSparringTemplateMap;
+typedef std::unordered_map<uint32, TreasurePicker> TreasurePickerMap;
 
 struct GossipMenuItemsLocale
 {
@@ -1808,6 +1809,8 @@ class TC_GAME_API ObjectMgr
 
         std::string GetPhaseName(uint32 phaseId) const;
 
+        TreasurePicker* GetTreasurePicker(uint32 id);
+
         std::unordered_map<uint8, RaceUnlockRequirement> const& GetRaceUnlockRequirements() const { return _raceUnlockRequirementStore; }
         RaceUnlockRequirement const* GetRaceUnlockRequirement(uint8 race) const
         {
@@ -1847,6 +1850,8 @@ class TC_GAME_API ObjectMgr
 
             return &l_Itr->second;
         }
+
+        void LoadTreasurePicker();
 
     private:
         // first free id for selected id type
@@ -2047,6 +2052,8 @@ class TC_GAME_API ObjectMgr
 
         std::set<uint32> _transportMaps; // Helper container storing map ids that are for transports only, loaded from gameobject_template
         VehicleSeatAddonContainer _vehicleSeatAddonStore;
+
+        TreasurePickerMap _treasurePickerMap;
 };
 
 #define sObjectMgr ObjectMgr::instance()

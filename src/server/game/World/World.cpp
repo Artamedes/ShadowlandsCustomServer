@@ -2559,6 +2559,9 @@ void World::SetInitialWorldSettings()
     TC_LOG_INFO("server.loading", "Loading phase names...");
     sObjectMgr->LoadPhaseNames();
 
+    TC_LOG_INFO("server.loading", "Loading treasure picker data...");
+    sObjectMgr->LoadTreasurePicker();
+
     sBattlePayMgr->LoadFromDB();
 
     sCustomInstanceRespawn->LoadFromDB();

@@ -11783,3 +11783,148 @@ std::string ObjectMgr::GetPhaseName(uint32 phaseId) const
     PhaseNameContainer::const_iterator iter = _phaseNameStore.find(phaseId);
     return iter != _phaseNameStore.end() ? iter->second : "Unknown Name";
 }
+
+
+
+void ObjectMgr::LoadTreasurePicker()
+{
+    uint32 oldMSTime = getMSTime();
+
+    _treasurePickerMap.clear(); // need for reload case
+
+    QueryResult resultEntry = WorldDatabase.Query("SELECT id, money_reward, flags FROM treasure_picker_entry");
+    QueryResult resultBonus = WorldDatabase.Query("SELECT treasure_picker, id, bonus_money, unkbit FROM treasure_picker_bonus");
+    QueryResult resultCurrency = WorldDatabase.Query("SELECT treasure_picker, bonus_id, idx, currency, amount, money_reward FROM treasure_picker_currency");
+    QueryResult resultItem = WorldDatabase.Query("SELECT treasure_picker, bonus_id, idx, item, quantity, modifier_list, modifier_value_list, bonus_list FROM treasure_picker_item");
+
+    if (resultEntry)
+        do
+        {
+            Field* fields = resultEntry->Fetch();
+            uint32 id = fields[0].GetUInt32();
+            uint64 moneyReward = fields[1].GetUInt64();
+            uint32 flags = fields[2].GetUInt32();
+
+            TreasurePicker treasurePicker = TreasurePicker(id, moneyReward, flags);
+
+            _treasurePickerMap.insert({ id, treasurePicker });
+
+        } while (resultEntry->NextRow());
+
+        if (resultBonus)
+        {
+            do
+            {
+                Field* fields = resultBonus->Fetch();
+                uint32 treasureId = fields[0].GetUInt32();
+                uint32 id = fields[1].GetUInt32();
+                uint64 bonusMoney = fields[2].GetUInt64();
+                bool unkBit = fields[3].GetBool();
+
+                TreasurePickerBonus treasurePickerBonus = TreasurePickerBonus(bonusMoney, unkBit);
+
+                _treasurePickerMap[treasureId].TreasurePickerBonuses[id] = treasurePickerBonus;
+
+            } while (resultBonus->NextRow());
+        }
+
+        if (resultCurrency)
+        {
+            do
+            {
+                Field* fields = resultCurrency->Fetch();
+                uint32 treasureId = fields[0].GetUInt32();
+                uint32 bonusId = fields[1].GetUInt32();
+                uint32 index = fields[2].GetUInt32();
+                uint32 currency = fields[3].GetUInt32();
+                uint32 amount = fields[4].GetUInt32();
+
+                if (_treasurePickerMap.find(treasureId) == _treasurePickerMap.end())
+                    continue;
+
+                TreasurePickerCurrency treasureCurrency = TreasurePickerCurrency(currency, amount);
+                if (bonusId)
+                {
+                    _treasurePickerMap[treasureId].TreasurePickerBonuses[bonusId].TresaurePickerCurrencies[index] = treasureCurrency;
+                }
+                else
+                    _treasurePickerMap[treasureId].TresaurePickerCurrencies[index] = treasureCurrency;
+
+            } while (resultCurrency->NextRow());
+        }
+
+        if (resultItem)
+        {
+            do
+            {
+                Field* fields = resultItem->Fetch();
+                uint32 treasureId = fields[0].GetUInt32();
+                uint32 bonusId = fields[1].GetUInt32();
+                uint32 index = fields[2].GetUInt32();
+                uint32 item = fields[3].GetUInt32();
+                uint32 quantity = fields[4].GetUInt32();
+
+                TreasurePickerItem treasurePickerItem = TreasurePickerItem(item, quantity);
+
+                for (int i = 0; i < TREASURE_PICKER_MAX_BONUS_COUNT; i++)
+                    treasurePickerItem.BonusIds[i] = 0;
+
+                for (int i = 0; i < TREASURE_PICKER_ITEM_MAX_MODIFIERS; i++)
+                {
+                    treasurePickerItem.ModifierId[i] = 0;
+                    treasurePickerItem.ModifierValue[i] = 0;
+                }
+
+                int i = 0;
+
+                for (std::string_view modifier : Trinity::Tokenize(fields[5].GetStringView(), ' ', false))
+                {
+                    if (Optional<uint32> modifierId = Trinity::StringTo<uint32>(modifier))
+                        treasurePickerItem.ModifierId[i] = modifierId.value();
+
+                    i++;
+                }
+
+                i = 0;
+
+                for (std::string_view modifierValue : Trinity::Tokenize(fields[6].GetStringView(), ' ', false))
+                {
+                    if (Optional<uint32> modifierValueValue = Trinity::StringTo<uint32>(modifierValue))
+                        treasurePickerItem.ModifierValue[i] = modifierValueValue.value();
+
+                    index++;
+                }
+
+                i = 0;
+
+                for (std::string_view bonus : Trinity::Tokenize(fields[7].GetStringView(), ' ', false))
+                {
+                    if (Optional<uint32> bonusId = Trinity::StringTo<uint32>(bonus))
+                        treasurePickerItem.BonusIds[index] = bonusId.value();
+
+                    i++;
+                }
+
+                if (_treasurePickerMap.find(treasureId) == _treasurePickerMap.end())
+                    continue;
+               
+                if (bonusId)
+                {
+                    _treasurePickerMap[treasureId].TreasurePickerBonuses[bonusId].TresaurePickerItems[index] = treasurePickerItem;
+                }
+                else
+                    _treasurePickerMap[treasureId].TresaurePickerItems[index] = treasurePickerItem;
+
+            } while (resultItem->NextRow());
+        }
+
+        TC_LOG_INFO("server.loading", ">> Loaded %u treasure picks in %u ms", uint32(_treasurePickerMap.size()), GetMSTimeDiffToNow(oldMSTime));
+}
+
+TreasurePicker* ObjectMgr::GetTreasurePicker(uint32 id)
+{
+    if (_treasurePickerMap.find(id) == _treasurePickerMap.end())
+        return nullptr;
+
+    return &_treasurePickerMap[id];
+}

@@ -384,6 +384,7 @@ namespace WorldPackets
             int32 QuestID           = 0;
             int32 QuestPackageID    = 0;
             uint32 QuestFlags[3]    = { };
+            uint32 QuestGiverEntry = 0;
             int32 SuggestedPartyMembers = 0;
             QuestRewards Rewards;
             std::vector<QuestObjectiveSimple> Objectives;
@@ -743,13 +744,8 @@ namespace WorldPackets
             WorldPacket const* Write() override;
 
             uint32 QuestID = 0;
-            uint32 TreasurePickerID = 0;
 
-            uint64 MoneyReward = 0;
-            int32 Flags = 0;
-
-            std::vector<TreasurePickItem> Items;
-
+            TreasurePicker Picker;
         };
 
         class ChoiceResponse final : public ClientPacket
