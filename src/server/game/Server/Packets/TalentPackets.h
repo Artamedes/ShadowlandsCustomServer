@@ -23,6 +23,10 @@
 #include "ObjectGuid.h"
 #include "PacketUtilities.h"
 
+enum class TraitType : int32;
+enum class TraitTreeFlag : int32;
+enum class TraitCombatConfigFlags : int32;
+
 namespace WorldPackets
 {
     namespace Talent
@@ -144,27 +148,27 @@ namespace WorldPackets
 
         struct TraitConfigEntry
         {
-            uint32 TraitNode = 0;
-            uint32 TraitNodeEntryID = 0;
-            uint32 Rank = 0;
-            uint32 Unk = 0;
+            int32 TraitNode         = 0;
+            int32 TraitNodeEntryID  = 0;
+            int32 Rank              = 0;
+            TraitTreeFlag TreeFlags;
         };
 
         struct TraitConfigInfo
         {
-            uint32 ConfigID = 0;
-            uint32 Result = 0;
+            int32 ConfigID         = 0;
+            TraitType Type ;
             std::vector<TraitConfigEntry> Talents;
 
-            uint32 Res2Int = 0;
+            int32 SkillLineID      = 0;
 
-            uint32 Res1Int_1 = 0;
-            uint32 Res1Int_2 = 0;
-            uint32 Res1Int_3 = 0;
+            int32 SpecializationID  = 0;
+            TraitCombatConfigFlags CombatConfigFlags;
+            int32 LoadoutIndex      = 0;
 
-            uint32 Res3Int = 0;
+            int32 SystemID          = 0;
 
-            std::string ConfigName;
+            std::string LoadoutName;
         };
 
         class LearnTraits final : public ClientPacket
@@ -175,8 +179,8 @@ namespace WorldPackets
             void Read() override;
 
             TraitConfigInfo Trait;
-            uint32 EditingConfigID = 0;
-            uint32 Loadout = 0;
+            int32 EditingConfigID = 0;
+            int32 Loadout = 0;
         };
 
         class CreateNewLoadout final : public ClientPacket

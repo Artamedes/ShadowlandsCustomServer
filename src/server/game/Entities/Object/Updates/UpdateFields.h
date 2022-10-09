@@ -679,10 +679,10 @@ struct ReplayedQuest : public IsUpdateFieldStructureTag, public HasChangesMask<3
 
 struct TraitEntry : public IsUpdateFieldStructureTag
 {
-    int32 TraitNode;
+    int32 TraitNodeID;
     int32 TraitNodeEntryID;
     int32 Rank;
-    int32 UnkDF; // might be related to swap 0/1
+    int32 TreeFlags;
 
     void WriteCreate(ByteBuffer& data, Player const* owner, Player const* receiver) const;
     void WriteUpdate(ByteBuffer& data, bool ignoreChangesMask, Player const* owner, Player const* receiver) const;
@@ -697,9 +697,9 @@ struct TraitConfig : public IsUpdateFieldStructureTag, public HasChangesMask<12>
     UpdateField<int32, 3, 4> Type;
     UpdateField<int32, 3, 5> SkillLineID;
     UpdateField<int32, 3, 6> SpecializationID;
-    UpdateField<int32, 7, 8> Dword150;
+    UpdateField<int32, 7, 8> CombatConfigFlags;
     UpdateField<int32, 7, 9> LoadoutIndex;
-    UpdateField<int32, 7, 10> Dword158;
+    UpdateField<int32, 7, 10> SystemID;
     UpdateField<std::string, 0, 11> LoadoutName;
 
     void WriteCreate(ByteBuffer& data, Player const* owner, Player const* receiver) const;

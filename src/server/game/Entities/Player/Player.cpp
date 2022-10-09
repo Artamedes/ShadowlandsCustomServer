@@ -29140,9 +29140,9 @@ void Player::AddOrSetTrait(Trait* trait)
         ForceUpdateFieldChange(traitUF.ModifyValue(&UF::TraitConfig::Type));
         ForceUpdateFieldChange(traitUF.ModifyValue(&UF::TraitConfig::SkillLineID));
         ForceUpdateFieldChange(traitUF.ModifyValue(&UF::TraitConfig::SpecializationID));
-        ForceUpdateFieldChange(traitUF.ModifyValue(&UF::TraitConfig::Dword150));
+        ForceUpdateFieldChange(traitUF.ModifyValue(&UF::TraitConfig::CombatConfigFlags));
         ForceUpdateFieldChange(traitUF.ModifyValue(&UF::TraitConfig::LoadoutIndex));
-        ForceUpdateFieldChange(traitUF.ModifyValue(&UF::TraitConfig::Dword158));
+        ForceUpdateFieldChange(traitUF.ModifyValue(&UF::TraitConfig::SystemID));
         ForceUpdateFieldChange(traitUF.ModifyValue(&UF::TraitConfig::LoadoutName));
     }
 
@@ -29153,15 +29153,15 @@ void Player::AddOrSetTrait(Trait* trait)
 
         switch (trait->GetType())
         {
-            case TraitType::DragonRiding:
-                SetUpdateFieldValue(traitUF.ModifyValue(&UF::TraitConfig::Dword158), 1);
+            case TraitType::Generic:
+                SetUpdateFieldValue(traitUF.ModifyValue(&UF::TraitConfig::SystemID), trait->GetSystemID());
                 break;
-            case TraitType::Talents:
-                SetUpdateFieldValue(traitUF.ModifyValue(&UF::TraitConfig::SpecializationID), trait->GetSpecializationID());
-                SetUpdateFieldValue(traitUF.ModifyValue(&UF::TraitConfig::Dword150), trait->GetIndex() <= 3 ? 1 : 0); ///< IsDefault? 1 : 0 - unsure about this atm
-                SetUpdateFieldValue(traitUF.ModifyValue(&UF::TraitConfig::LoadoutIndex), trait->GetIndex());// - LoadoutIndex
+            case TraitType::Combat:
+                SetUpdateFieldValue(traitUF.ModifyValue(&UF::TraitConfig::SpecializationID),  trait->GetSpecializationID());
+                SetUpdateFieldValue(traitUF.ModifyValue(&UF::TraitConfig::CombatConfigFlags), trait->GetCombatConfigFlags().AsUnderlyingType());
+                SetUpdateFieldValue(traitUF.ModifyValue(&UF::TraitConfig::LoadoutIndex),      trait->GetLoadoutIndex());
                 break;
-            case TraitType::Skill:
+            case TraitType::Profession:
                 SetUpdateFieldValue(traitUF.ModifyValue(&UF::TraitConfig::SkillLineID), 1);
                 break;
             default:
@@ -29184,7 +29184,8 @@ void Player::AddOrSetTrait(Trait* trait)
 
         int32 foundIndex = m_activePlayerData->TraitConfigs[trait->GetIndex()].Entries.FindIndexIf([talent](UF::TraitEntry ufTalent)
         {
-            return ufTalent.TraitNode == talent->TraitNode && ufTalent.TraitNodeEntryID == talent->TraitNodeEntryID;
+            return ufTalent.TraitNodeID == talent->TraitNodeID
+                && ufTalent.TraitNodeEntryID == talent->TraitNodeEntryID;
         });
 
         if (isRemove)
@@ -29200,22 +29201,25 @@ void Player::AddOrSetTrait(Trait* trait)
         if (foundIndex == -1)
         {
             UF::TraitEntry& mod = AddDynamicUpdateFieldValue(traitUF.ModifyValue(&UF::TraitConfig::Entries));
-            mod.TraitNode        = talent->TraitNode;
+            mod.TraitNodeID      = talent->TraitNodeID;
             mod.TraitNodeEntryID = talent->TraitNodeEntryID;
-            mod.UnkDF            = talent->Unk;
+            mod.TreeFlags        = talent->TreeFlags.AsUnderlyingType();
             mod.Rank             = talent->Rank;
         }
         else
         {
             auto const& oldTalent = currTrait.Entries[foundIndex];
 
-            if (oldTalent.TraitNode != talent->TraitNode || oldTalent.TraitNodeEntryID != talent->TraitNodeEntryID || oldTalent.UnkDF != talent->Unk || oldTalent.Rank != talent->Rank)
+            if (oldTalent.TraitNodeID != talent->TraitNodeID
+                || oldTalent.TraitNodeEntryID != talent->TraitNodeEntryID
+                || oldTalent.TreeFlags != talent->TreeFlags.AsUnderlyingType()
+                || oldTalent.Rank != talent->Rank)
             {
                 auto mod = traitUF.ModifyValue(&UF::TraitConfig::Entries, foundIndex);
 
-                SetUpdateFieldValue(mod.ModifyValue(&UF::TraitEntry::TraitNode),        talent->TraitNode);
+                SetUpdateFieldValue(mod.ModifyValue(&UF::TraitEntry::TraitNodeID),      talent->TraitNodeID);
                 SetUpdateFieldValue(mod.ModifyValue(&UF::TraitEntry::TraitNodeEntryID), talent->TraitNodeEntryID);
-                SetUpdateFieldValue(mod.ModifyValue(&UF::TraitEntry::UnkDF),            talent->Unk);
+                SetUpdateFieldValue(mod.ModifyValue(&UF::TraitEntry::TreeFlags),        talent->TreeFlags.AsUnderlyingType());
                 SetUpdateFieldValue(mod.ModifyValue(&UF::TraitEntry::Rank),             talent->Rank);
             }
         }
@@ -29246,9 +29250,9 @@ void Player::RemoveTrait(Trait* trait)
         ForceUpdateFieldChange(traitUF.ModifyValue(&UF::TraitConfig::Type));
         ForceUpdateFieldChange(traitUF.ModifyValue(&UF::TraitConfig::SkillLineID));
         ForceUpdateFieldChange(traitUF.ModifyValue(&UF::TraitConfig::SpecializationID));
-        ForceUpdateFieldChange(traitUF.ModifyValue(&UF::TraitConfig::Dword150));
+        ForceUpdateFieldChange(traitUF.ModifyValue(&UF::TraitConfig::CombatConfigFlags));
         ForceUpdateFieldChange(traitUF.ModifyValue(&UF::TraitConfig::LoadoutIndex));
-        ForceUpdateFieldChange(traitUF.ModifyValue(&UF::TraitConfig::Dword158));
+        ForceUpdateFieldChange(traitUF.ModifyValue(&UF::TraitConfig::SystemID));
         ForceUpdateFieldChange(traitUF.ModifyValue(&UF::TraitConfig::LoadoutName));
     }
 }
@@ -29268,7 +29272,8 @@ void Player::RemoveTraitTalent(Trait* trait, TraitTalent* talent)
 
     int32 foundIndex = m_activePlayerData->TraitConfigs[trait->GetIndex()].Entries.FindIndexIf([talent](UF::TraitEntry ufTalent)
     {
-        return ufTalent.TraitNode == talent->TraitNode && ufTalent.TraitNodeEntryID == talent->TraitNodeEntryID;
+        return ufTalent.TraitNodeID == talent->TraitNodeID
+            && ufTalent.TraitNodeEntryID == talent->TraitNodeEntryID;
     });
 
     if (foundIndex == -1)
