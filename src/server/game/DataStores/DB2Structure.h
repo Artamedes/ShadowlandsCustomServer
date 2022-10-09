@@ -3262,6 +3262,8 @@ struct SkillLineEntry
     int32 ParentTierIndex;
     uint16 Flags;
     int32 SpellBookSpellID;
+    int32 AllianceSharedStringID;
+    int32 HordeSharedStringID;
 
     EnumFlag<SkillLineFlags> GetFlags() const { return static_cast<SkillLineFlags>(Flags); }
 };
@@ -3675,17 +3677,18 @@ struct SpellNameEntry
 struct SpellPowerEntry
 {
     uint32 ID;
-    uint8 OrderIndex;
-    int32 ManaCost;
-    int32 ManaCostPerLevel;
-    int32 ManaPerSecond;
+    uint8  OrderIndex;
+    int32  ManaCost;
+    int32  ManaCostPerLevel;
+    int32  ManaPerSecond;
     uint32 PowerDisplayID;
-    int32 AltPowerBarID;
-    float PowerCostPct;
-    float PowerCostMaxPct;
-    float PowerPctPerSecond;
-    int8 PowerType;
-    int32 RequiredAuraSpellID;
+    int32  AltPowerBarID;
+    float  PowerCostPct;
+    float  PowerCostMaxPct;
+    float  Field_10_0_2_45969_009;
+    float  PowerPctPerSecond;
+    int8   PowerType;
+    int32  RequiredAuraSpellID;
     uint32 OptionalCost;                                            // Spell uses [ManaCost, ManaCost+ManaCostAdditional] power - affects tooltip parsing as multiplier on SpellEffectEntry::EffectPointsPerResource
                                                                    //   only SPELL_EFFECT_WEAPON_DAMAGE_NOSCHOOL, SPELL_EFFECT_WEAPON_PERCENT_DAMAGE, SPELL_EFFECT_WEAPON_DAMAGE, SPELL_EFFECT_NORMALIZED_WEAPON_DMG
     uint32 SpellID;
@@ -4107,6 +4110,7 @@ struct UiMapLinkEntry
     int32 ParentUiMapID;
     int32 OrderIndex;
     int32 ChildUiMapID;
+    int32 Field_10_0_2_45969_006;
     int32 OverrideHighlightFileDataID;
     int32 OverrideHighlightAtlasID;
     int32 Flags;
@@ -4356,12 +4360,12 @@ struct TraitEdgeEntry
 };
 struct TraitNodeEntry
 {
-    int32 ID;
-    int32 TraitTreeID;
-    int32 PosX;
-    int32 PosY;
-    int32 Type;
-    int32 Flags;
+    int32  ID;                  // ID
+    int32  TraitTreeID;         // Relation
+    int32  PosX;
+    int32  PosY;
+    uint8  Type;
+    int32  Flags;
 };
 struct TraitNodeEntryEntry
 {
@@ -4458,6 +4462,25 @@ struct TraitDefinitionEntry
     int32 OverrideIcon;
     int32 OverridesSpellID;
     int32 Field_10_0_0_45232_007;
+};
+
+struct TraitCondEntry
+{
+    int32  ID;                    // ID
+    int32  CondType;
+    int32  TraitTreeID;           // Relation
+    int32  Field_10_0_0_44649_003;
+    int32  Field_10_0_0_44649_004;
+    int32  AchievementID;
+    int32  SpecSetID;
+    int32  TraitNodeGroupID;
+    int32  TraitNodeID;
+    int32  TraitCurrencyID;
+    int32  SpentAmountRequired;
+    int32  Flags;
+    int32  RequiredLevel;
+    int32  FreeSharedStringID;
+    int32  SpendMoreSharedStringID;
 };
 
 #pragma pack(pop)

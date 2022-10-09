@@ -367,6 +367,7 @@ DB2Storage<TraitTreeLoadoutEntry>               sTraitTreeLoadoutStore("TraitTre
 DB2Storage<TraitTreeLoadoutEntryEntry>          sTraitTreeLoadoutEntryStore("TraitTreeLoadoutEntry.db2", TraitTreeLoadoutEntryLoadInfo::Instance());
 DB2Storage<TraitTreeXTraitCurrencyEntry>        sTraitTreeXTraitCurrencyStore("TraitTreeXTraitCurrency.db2", TraitTreeXTraitCurrencyLoadInfo::Instance());
 DB2Storage<TraitDefinitionEntry>                sTraitDefinitionStore("TraitDefinition.db2", TraitDefinitionLoadInfo::Instance());
+DB2Storage<TraitCondEntry>                      sTraitCondStore("TraitCond.db2", TraitCondLoadInfo::Instance());
 
 TaxiMask                                        sTaxiNodesMask;
 TaxiMask                                        sOldContinentsNodesMask;
@@ -988,6 +989,7 @@ uint32 DB2Manager::LoadStores(std::string const& dataPath, LocaleConstant defaul
     LOAD_DB2(sTraitTreeLoadoutEntryStore);
     LOAD_DB2(sTraitTreeXTraitCurrencyStore);
     LOAD_DB2(sTraitDefinitionStore);
+    LOAD_DB2(sTraitCondStore);
 
 #undef LOAD_DB2
 

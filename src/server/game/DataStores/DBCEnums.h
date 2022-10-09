@@ -612,6 +612,8 @@ enum class CriteriaType : uint8
     UnkNewDFCriteria2                              = 243, // Reputation earned throughout Dragon Isles
     UnkNewDFCriteria3                              = 244, // Unk
     UnkNewDFCriteria4                              = 245, // [test] Player has spent talent point (mainline)
+    UnkNewDFCriteria5                              = 246, // unk
+    UnkNewDFCriteria6                              = 247, // unk
     Count
 };
 
