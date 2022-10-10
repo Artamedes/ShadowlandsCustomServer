@@ -1145,11 +1145,13 @@ void Trait::SaveToDB(CharacterDatabaseTransaction trans)
 
     stmt->setUInt64(0, _player->GetGUID().GetCounter());
     stmt->setUInt32(1, GetConfigID());
-    stmt->setUInt32(2, GetSpecializationID());
-    stmt->setUInt32(3, static_cast<uint32>(GetType()));
-    stmt->setUInt32(4, GetLoadoutIndex());
-    stmt->setUInt32(5, 0);
-    stmt->setString(6, GetConfigName());
+    stmt->setUInt32(2, static_cast<uint32>(GetType()));
+    stmt->setUInt32(3, GetSkillLineID());
+    stmt->setUInt32(4, GetSpecializationID());
+    stmt->setUInt32(5, GetCombatConfigFlags().AsUnderlyingType());
+    stmt->setUInt32(6, GetLoadoutIndex());
+    stmt->setUInt32(7, GetSystemID());
+    stmt->setString(8, GetConfigName());
 
     trans->Append(stmt);
 
