@@ -287,18 +287,17 @@ Map* MapManager::CreateMap(uint32 mapId, Player* player, uint32 zoneId /*= 0*/, 
 
         uint32 l_MaxZonePlayerCount = p_CustomInstanceZone ? p_CustomInstanceZone->MaxPlayerCount : 150;
 
+        if (mapId == 1191 || mapId == 1502) ///< Ashran, DalaranUnderbelly
+            l_MaxZonePlayerCount = 9999999;
+        if (zoneId == 1617 || zoneId == 1519)
+            l_MaxZonePlayerCount = 9999999;
+
+
         for (uint32 l_ZoneInstanceId = 0; l_ZoneInstanceId < 0xFFFFFFFF; l_ZoneInstanceId++)
         {
             Map* l_Map = FindMap_i(mapId, l_ZoneInstanceId << 16 | zoneId);
             if (!l_Map)
                 l_Map = CreateWorldMap(mapId, l_ZoneInstanceId << 16 | zoneId);
-
-            if (mapId == 1191 || mapId == 1502) ///< Ashran, DalaranUnderbelly
-                return l_Map;
-
-            ///  Orgrimmar & Stormwind
-            if (zoneId == 1617 || zoneId == 1519)
-                return l_Map;
 
             if (l_Map->GetPlayerCount() > l_MaxZonePlayerCount)
             {
