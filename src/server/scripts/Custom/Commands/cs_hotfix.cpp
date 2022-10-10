@@ -70,6 +70,7 @@ public:
 
                     for (uint32 hotfixRecord : diff)
                     {
+                        handler->PSendSysMessage("Detected new record for %u, sending hotfix packet", hotfixRecord);
                         auto const& result = sDB2Manager.AddHotfixData(hotfixRecord, db2StorageBase->GetTableHash());
                         hotfixes[result.ID.PushID].push_back(result);
                     }
