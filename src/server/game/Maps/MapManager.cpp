@@ -161,8 +161,30 @@ Map* MapManager::CreateMap(uint32 mapId, Player* player, uint32 zoneId /*= 0*/, 
         return nullptr;
 
     /// Instanced map aren't zone-instanced
-    if (entry->Instanceable()
-        || mapId == 1191 || mapId == 1502 || mapId == 2570)  ///< Ashran can't be splitted
+    bool shouldResetZone = [&]() -> bool
+    {
+        if (entry->Instanceable())
+            return true;
+
+        switch (mapId)
+        {
+            case 0: ///< Azeroth
+            case 1: ///< Kalimdor
+            case 530: ///< Outland
+            case 870: ///< Pandaria
+            case 571: ///< Northrend
+            case 1220: ///< Broken Isles
+            case 2222: ///< The shadowlands
+            case 2444: ///< Dragon Isles
+            case 1643: ///< Kul Tiras
+            case 1642: ///< Zandalar
+                return false;
+            default: // All maps are ignored except the ones above
+                return true;
+        }
+    }();
+
+    if (shouldResetZone)
         zoneId = 0;
 
     std::unique_lock<std::shared_mutex> lock(_mapsLock);
