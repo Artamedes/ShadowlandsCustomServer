@@ -802,7 +802,7 @@ void CharacterDatabaseConnection::DoPrepareStatements()
     PrepareStatement(CHAR_DEL_CHALLENGE_OPLOTE_LOOT_BY_GUID, "DELETE FROM challenge_oplote_loot WHERE guid = ?", CONNECTION_ASYNC);
 
     /// Traits
-    PrepareStatement(CHAR_SEL_TRAITS,            "SELECT `ConfigID`, `Type`, `SkillLineID`, `SpecializationID`, `CombatConfigFlags`, `LoadoutIndex`, `SystemID` `LoadoutName` FROM character_traits WHERE Guid = ?", CONNECTION_ASYNC);
+    PrepareStatement(CHAR_SEL_TRAITS,            "SELECT `ConfigID`, `Type`, `SkillLineID`, `SpecializationID`, `CombatConfigFlags`, `LoadoutIndex`, `SystemID`, `LoadoutName` FROM character_traits WHERE Guid = ?", CONNECTION_ASYNC);
     PrepareStatement(CHAR_SEL_TRAIT_TALENTS,     "SELECT `ConfigID`, `TraitNode`, TraitNodeEntryID, `Rank`, `TreeFlags` FROM character_traits_talents WHERE Guid = ?", CONNECTION_ASYNC);
     PrepareStatement(CHAR_SEL_SPEC_INFO,         "SELECT `SpecId`, `LoadoutID` FROM character_spec_info WHERE Guid = ?", CONNECTION_ASYNC);
     PrepareStatement(CHAR_REP_TRAIT,             "REPLACE INTO character_traits (`Guid`, `ConfigID`, `Type`, `SkillLineID`, `SpecializationID`, `CombatConfigFlags`, `LoadoutIndex`, `SystemID`, `LoadoutName`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", CONNECTION_ASYNC);

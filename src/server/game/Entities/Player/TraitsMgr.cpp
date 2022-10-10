@@ -201,7 +201,7 @@ void TraitsMgr::LoadFromDB(CharacterDatabaseQueryHolder const& holder)
             uint32 combatConfigFlags         = fields[4].GetUInt32();
             uint32 loadoutIndex              = fields[5].GetUInt32();
             uint32 systemID                  = fields[6].GetUInt32();
-            std::string      loadoutName;/// = fields[7].GetString();
+            std::string_view loadoutName     = fields[7].GetStringView();
 
             if (configId < DeleteConfigIDBefore)
             {
@@ -225,7 +225,7 @@ void TraitsMgr::LoadFromDB(CharacterDatabaseQueryHolder const& holder)
             if (it != _traits.end())
             {
                 auto trait = it->second;
-             //   trait->SetConfigName(loadoutName);
+                trait->SetConfigName(loadoutName);
             }
             else
             {
@@ -237,7 +237,7 @@ void TraitsMgr::LoadFromDB(CharacterDatabaseQueryHolder const& holder)
                 trait->SetCombatConfigFlags(static_cast<TraitCombatConfigFlags>(combatConfigFlags));
                 trait->SetSystemID(systemID);
                 trait->SetIndex(_traits.size());
-                // trait->SetConfigName(loadoutName);
+                trait->SetConfigName(loadoutName);
                 _traits[configId] = trait;
             }
 
@@ -1039,7 +1039,7 @@ Trait::~Trait()
         delete itr->second;
 }
 
-void Trait::SetConfigName(std::string const& configName)
+void Trait::SetConfigName(std::string_view configName)
 {
     _loadoutName = configName;
 }

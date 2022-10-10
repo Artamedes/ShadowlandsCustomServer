@@ -29133,7 +29133,7 @@ void Player::AddOrSetTrait(Trait* trait)
 
     if (trait->GetConfigName() != *currTrait.LoadoutName)
     {
-        SetUpdateFieldValue(traitUF.ModifyValue(&UF::TraitConfig::LoadoutName), trait->GetConfigName());
+        SetUpdateFieldValue(traitUF.ModifyValue(&UF::TraitConfig::LoadoutName), std::string{ trait->GetConfigName() });
 
         // horrible really..
         ForceUpdateFieldChange(traitUF.ModifyValue(&UF::TraitConfig::ConfigID));
