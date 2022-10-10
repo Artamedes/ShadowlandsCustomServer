@@ -809,18 +809,21 @@ ByteBuffer& operator<<(ByteBuffer& data, TreasurePickerItem const& item)
     data.WriteBit(hasBonus); // has bonus
 
     data.WriteBits(6, modificationCount);
+    data.FlushBits();
 
     for (int modificationIndex = 0; modificationIndex < modificationCount; modificationIndex++)
     {
         data << (uint32)item.ModifierValue[modificationIndex];
-        data.WriteBits(8, item.ModifierId[modificationIndex]);
+        data.WriteBits(8, (uint8)item.ModifierId[modificationIndex]);
     }
 
     if (hasBonus)
-        for (int bonusIndex = 0; bonusIndex < TREASURE_PICKER_MAX_BONUS_COUNT; bonusIndex)
+        for (int bonusIndex = 0; bonusIndex < bonusCount; bonusIndex++)
         {
             data << (uint32)item.BonusIds[bonusIndex];
         }
+
+    data << (uint32)item.Quantity;
 
     return data;
 }

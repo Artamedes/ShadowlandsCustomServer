@@ -797,6 +797,15 @@ struct TreasurePickerItem
     {
         ItemId = currencyId;
         Quantity = quantity;
+
+        for (int i = 0; i < TREASURE_PICKER_ITEM_MAX_BONUSES; i++)
+            BonusIds[i] = 0;
+
+        for (int i = 0; i < TREASURE_PICKER_ITEM_MAX_MODIFIERS; i++)
+        {
+            ModifierId[i] = 0;
+            ModifierValue[i] = 0;
+        }
     }
 
     uint32 ItemId;

@@ -11881,15 +11881,6 @@ void ObjectMgr::LoadTreasurePicker()
 
                 TreasurePickerItem treasurePickerItem = TreasurePickerItem(item, quantity);
 
-                for (int i = 0; i < TREASURE_PICKER_MAX_BONUS_COUNT; i++)
-                    treasurePickerItem.BonusIds[i] = 0;
-
-                for (int i = 0; i < TREASURE_PICKER_ITEM_MAX_MODIFIERS; i++)
-                {
-                    treasurePickerItem.ModifierId[i] = 0;
-                    treasurePickerItem.ModifierValue[i] = 0;
-                }
-
                 int i = 0;
 
                 for (std::string_view modifier : Trinity::Tokenize(fields[5].GetStringView(), ' ', false))
@@ -11907,7 +11898,7 @@ void ObjectMgr::LoadTreasurePicker()
                     if (Optional<uint32> modifierValueValue = Trinity::StringTo<uint32>(modifierValue))
                         treasurePickerItem.ModifierValue[i] = modifierValueValue.value();
 
-                    index++;
+                    i++;
                 }
 
                 i = 0;
@@ -11915,7 +11906,7 @@ void ObjectMgr::LoadTreasurePicker()
                 for (std::string_view bonus : Trinity::Tokenize(fields[7].GetStringView(), ' ', false))
                 {
                     if (Optional<uint32> bonusId = Trinity::StringTo<uint32>(bonus))
-                        treasurePickerItem.BonusIds[index] = bonusId.value();
+                        treasurePickerItem.BonusIds[i] = bonusId.value();
 
                     i++;
                 }
