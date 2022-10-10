@@ -393,6 +393,7 @@ public:
     uint32 LoadStores(std::string const& dataPath, LocaleConstant defaultLocale);
     DB2StorageBase const* GetStorage(uint32 type) const;
 
+    HotfixRecord AddHotfixData(uint32 recordId, uint32 hash);
     void LoadHotfixData();
     void LoadHotfixBlob(uint32 localeMask);
     void LoadHotfixOptionalData(uint32 localeMask);
@@ -519,6 +520,7 @@ public:
     std::vector<GarrTalentCostEntry const*> const* GetGarrTalentCostEntriesByGarrTalentId(uint32 garrTalentId) const;
     std::vector<MawPowerEntry const*>* GetMawPowerEntriesBySpellId(uint32 spellId) const;
     GossipNPCOptionEntry const* GetGossipNPCOptionEntryByGossipIndex(uint32 gossipIndex) const;
+    DB2StorageBase* GetDB2StorageBaseByName(std::string const& name);
 private:
     friend class DB2HotfixGeneratorBase;
     int32 _maxHotfixId = 0;

@@ -35,6 +35,7 @@
 #include <sstream>
 #include <cctype>
 #include "ChallengeMode.h"
+#include <boost/algorithm/string.hpp>
 
 // temporary hack until includes are sorted out (don't want to pull in Windows.h)
 #ifdef GetClassName
@@ -541,6 +542,9 @@ namespace
     std::unordered_map<uint32, std::vector<MawPowerEntry const*>> _mawPowerEntriesBySpellID;
     std::unordered_map<uint32, GossipNPCOptionEntry const*> _gossipNPCOptionsByIndex;
     WMOAreaTableLookupContainer _wmoAreaTableLookup;
+
+    // Reloading
+    std::unordered_map<std::string, DB2StorageBase*> _db2StoragesByName;
 }
 
 template<typename T>
@@ -583,6 +587,10 @@ void LoadDB2(std::bitset<TOTAL_LOCALES>& availableDb2Locales, std::vector<std::s
     try
     {
         storage->Load(db2Path + localeNames[defaultLocale] + '/', defaultLocale);
+
+        std::string lowerName = storage->GetFileName();
+        boost::algorithm::to_lower(lowerName);
+        _db2StoragesByName[lowerName] = storage;
     }
     catch (std::system_error const& e)
     {
@@ -601,6 +609,9 @@ void LoadDB2(std::bitset<TOTAL_LOCALES>& availableDb2Locales, std::vector<std::s
 
     // load additional data and enUS strings from db
     storage->LoadFromDB();
+
+    for (uint32 hotfixRecord : loadInfo->Hotfixes)
+        sDB2Manager.AddHotfixData(hotfixRecord, storage->GetTableHash());
 
     for (LocaleConstant i = LOCALE_enUS; i < TOTAL_LOCALES; i = LocaleConstant(i + 1))
     {
@@ -1739,6 +1750,21 @@ void DB2Manager::LoadHotfixData()
                 store->EraseRecord(itr->first.second);
 
     TC_LOG_INFO("server.loading", ">> Loaded " SZFMTD " hotfix records in %u ms", _hotfixData.size(), GetMSTimeDiffToNow(oldMSTime));
+}
+
+DB2Manager::HotfixRecord DB2Manager::AddHotfixData(uint32 recordId, uint32 hash)
+{
+    int32 id = _hotfixData.size();
+
+    _maxHotfixId = std::max(_maxHotfixId, id);
+    HotfixRecord hotfixRecord;
+    hotfixRecord.TableHash = hash;
+    hotfixRecord.RecordID = recordId;
+    hotfixRecord.ID.PushID = id;
+    hotfixRecord.ID.UniqueID = _maxHotfixId;
+    hotfixRecord.HotfixStatus = HotfixRecord::Status::Valid;
+    _hotfixData[id].push_back(hotfixRecord);
+    return hotfixRecord;
 }
 
 void DB2Manager::LoadHotfixBlob(uint32 localeMask)
@@ -3679,6 +3705,15 @@ GossipNPCOptionEntry const* DB2Manager::GetGossipNPCOptionEntryByGossipIndex(uin
 {
     auto it = _gossipNPCOptionsByIndex.find(gossipIndex);
     if (it != _gossipNPCOptionsByIndex.end())
+        return it->second;
+
+    return nullptr;
+}
+
+DB2StorageBase* DB2Manager::GetDB2StorageBaseByName(std::string const& name)
+{
+    auto it = _db2StoragesByName.find(name + ".db2");
+    if (it != _db2StoragesByName.end())
         return it->second;
 
     return nullptr;
