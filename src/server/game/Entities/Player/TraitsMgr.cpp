@@ -1151,7 +1151,7 @@ void Trait::SaveToDB(CharacterDatabaseTransaction trans)
     stmt->setUInt32(5, GetCombatConfigFlags().AsUnderlyingType());
     stmt->setUInt32(6, GetLoadoutIndex());
     stmt->setUInt32(7, GetSystemID());
-    stmt->setString(8, GetConfigName());
+    stmt->setStringView(8, GetConfigName());
 
     trans->Append(stmt);
 

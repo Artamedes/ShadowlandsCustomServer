@@ -163,7 +163,7 @@ class TC_GAME_API Trait
         uint32 GetSystemID() const { return _systemID; }
 
         void SetConfigName(std::string_view loadoutName);
-        std::string const& GetConfigName() { return _loadoutName; }
+        std::string_view GetConfigName() { return _loadoutName; }
 
         void AddTraitTalent(TraitTalent* talent);
         bool RemoveTraitTalent(uint32 traitNode);
@@ -199,7 +199,7 @@ class TC_GAME_API Trait
 
         uint32 _index; ///< The index stored in the update field
 
-        std::string _loadoutName;
+        std::string_view _loadoutName;
         std::unordered_map<uint32, TraitTalent*> _talents;
 };
 
