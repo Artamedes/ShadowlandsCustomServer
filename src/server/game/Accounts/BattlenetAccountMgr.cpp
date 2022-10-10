@@ -43,7 +43,8 @@ AccountOpResult Battlenet::AccountMgr::CreateBattlenetAccount(std::string email,
     LoginDatabase.DirectExecute(stmt);
 
     uint32 newAccountId = GetId(email);
-    ASSERT(newAccountId);
+    if (!newAccountId)
+        return AccountOpResult::AOR_DB_INTERNAL_ERROR;
 
     if (withGameAccount)
     {
