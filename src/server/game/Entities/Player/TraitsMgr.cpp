@@ -201,7 +201,7 @@ void TraitsMgr::LoadFromDB(CharacterDatabaseQueryHolder const& holder)
             uint32 combatConfigFlags         = fields[4].GetUInt32();
             uint32 loadoutIndex              = fields[5].GetUInt32();
             uint32 systemID                  = fields[6].GetUInt32();
-            std::string_view loadoutName     = fields[7].GetStringView();
+            std::string      loadoutName     = fields[7].GetString();
 
             if (configId < DeleteConfigIDBefore)
             {
@@ -1039,7 +1039,7 @@ Trait::~Trait()
         delete itr->second;
 }
 
-void Trait::SetConfigName(std::string_view configName)
+void Trait::SetConfigName(std::string configName)
 {
     _loadoutName = configName;
 }
@@ -1145,11 +1145,13 @@ void Trait::SaveToDB(CharacterDatabaseTransaction trans)
 
     stmt->setUInt64(0, _player->GetGUID().GetCounter());
     stmt->setUInt32(1, GetConfigID());
-    stmt->setUInt32(2, GetSpecializationID());
-    stmt->setUInt32(3, static_cast<uint32>(GetType()));
-    stmt->setUInt32(4, GetLoadoutIndex());
-    stmt->setUInt32(5, 0);
-    stmt->setString(6, GetConfigName());
+    stmt->setUInt32(2, static_cast<uint32>(GetType()));
+    stmt->setUInt32(3, GetSkillLineID());
+    stmt->setUInt32(4, GetSpecializationID());
+    stmt->setUInt32(5, GetCombatConfigFlags().AsUnderlyingType());
+    stmt->setUInt32(6, GetLoadoutIndex());
+    stmt->setUInt32(7, GetSystemID());
+    stmt->setStringView(8, GetConfigName());
 
     trans->Append(stmt);
 

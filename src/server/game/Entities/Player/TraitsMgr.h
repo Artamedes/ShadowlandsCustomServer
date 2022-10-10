@@ -162,7 +162,7 @@ class TC_GAME_API Trait
         void SetSystemID(uint32 systemID) { _systemID = systemID; }
         uint32 GetSystemID() const { return _systemID; }
 
-        void SetConfigName(std::string_view loadoutName);
+        void SetConfigName(std::string loadoutName);
         std::string const& GetConfigName() { return _loadoutName; }
 
         void AddTraitTalent(TraitTalent* talent);
