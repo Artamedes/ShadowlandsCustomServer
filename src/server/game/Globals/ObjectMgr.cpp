@@ -3432,14 +3432,6 @@ void ObjectMgr::LoadItemTemplates()
         itemTemplate.ExtendedData = sparse;
 
         itemTemplate.MaxDurability = FillMaxDurability(db2Data->ClassID, db2Data->SubclassID, sparse->InventoryType, sparse->OverallQualityID, sparse->ItemLevel);
-        itemTemplate.ScriptId = 0;
-        itemTemplate.FoodType = 0;
-        itemTemplate.MinMoneyLoot = 0;
-        itemTemplate.MaxMoneyLoot = 0;
-        itemTemplate.FlagsCu = 0;
-        itemTemplate.SpellPPMRate = 0.0f;
-        itemTemplate.RandomBonusListTemplateId = 0;
-        itemTemplate.ItemSpecClassMask = 0;
 
         if (std::vector<ItemSpecOverrideEntry const*> const* itemSpecOverrides = sDB2Manager.GetItemSpecOverrides(sparse->ID))
         {
