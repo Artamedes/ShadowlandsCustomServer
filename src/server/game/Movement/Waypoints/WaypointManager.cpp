@@ -118,8 +118,8 @@ void WaypointMgr::LoadWaypointAddons()
         }
 
         WaypointPath& path = it->second;
-        uint32 pointId = fields[1].GetUInt32();
-
+        uint32 pointId          = fields[1].GetUInt32();
+        uint32 SplinePointIndex = fields[2].GetUInt32();
 
         std::vector<WaypointNode>::iterator itr = std::find_if(path.Nodes.begin(), path.Nodes.end(), [pointId](WaypointNode const& node)
         {
@@ -139,7 +139,10 @@ void WaypointMgr::LoadWaypointAddons()
         Trinity::NormalizeMapCoord(x);
         Trinity::NormalizeMapCoord(y);
 
-        itr->SplinePoints.push_back(G3D::Vector3(x, y, z));
+        if (itr->SplinePoints.size() >= SplinePointIndex)
+            itr->SplinePoints.push_back(G3D::Vector3(x, y, z));
+        else
+            itr->SplinePoints[SplinePointIndex] = G3D::Vector3(x, y, z);
 
         ++count;
     } while (result->NextRow());

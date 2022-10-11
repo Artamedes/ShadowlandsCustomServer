@@ -982,6 +982,7 @@ public:
             TC_LOG_INFO("misc", "Re-Loading Waypoints data from 'waypoints_data'");
 
         sWaypointMgr->Load();
+        sWaypointMgr->LoadWaypointAddons();
 
         if (*args != 'a')
             handler->SendGlobalGMSysMessage("DB Table 'waypoint_data' reloaded.");
