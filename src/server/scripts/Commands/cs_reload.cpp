@@ -188,7 +188,9 @@ public:
     static bool HandleReloadPhaseAreaCommand(ChatHandler* handler)
     {
         sObjectMgr->LoadAreaPhases();
+        PhasingHandler::ResetPhaseShift(handler->GetPlayer());
         PhasingHandler::OnAreaChange(handler->GetPlayer());
+        PhasingHandler::OnConditionChange(handler->GetPlayer());
         handler->PSendSysMessage("Reloaded and updated your phases!");
         return true;
     }
