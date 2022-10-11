@@ -286,6 +286,9 @@ TC_GAME_API extern DB2Storage<TraitTreeLoadoutEntryEntry>           sTraitTreeLo
 TC_GAME_API extern DB2Storage<TraitTreeXTraitCurrencyEntry>         sTraitTreeXTraitCurrencyStore;
 TC_GAME_API extern DB2Storage<TraitDefinitionEntry>                 sTraitDefinitionStore;
 TC_GAME_API extern DB2Storage<TraitCondEntry>                       sTraitCondStore;
+TC_GAME_API extern DB2Storage<SpellEntry>                           sSpellStore;
+TC_GAME_API extern DB2Storage<CharStartOutfitEntry>                 sCharStartOutfitStore;
+
 
 
 struct ContentTuningLevels
