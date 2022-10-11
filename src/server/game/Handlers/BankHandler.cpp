@@ -22,6 +22,7 @@
 #include "NPCPackets.h"
 #include "Player.h"
 #include "WorldSession.h"
+#include "GossipDef.h"
 
 void WorldSession::HandleAutoBankItemOpcode(WorldPackets::Bank::AutoBankItem& packet)
 {
@@ -299,7 +300,9 @@ void WorldSession::HandleAutoStoreBankReagentOpcode(WorldPackets::Bank::AutoStor
 void WorldSession::SendShowBank(ObjectGuid guid)
 {
     m_currentBankerGUID = guid;
-    WorldPackets::NPC::ShowBank packet;
-    packet.Guid = guid;
+    WorldPackets::NPC::GossipNpcInteraction packet;
+    packet.Gossip           = guid;
+    packet.IsInteraction    = true;
+    packet.InteractionType  = PlayerInteractionType::Banker;
     SendPacket(packet.Write());
 }
