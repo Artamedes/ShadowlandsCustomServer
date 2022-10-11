@@ -4040,7 +4040,7 @@ void Player::BuildValuesUpdateForPlayerWithMask(UpdateData* data, UF::ObjectData
     if (target == this && requestedActivePlayerMask.IsAnySet())
         valuesMask.Set(TYPEID_ACTIVE_PLAYER);
 
-    ByteBuffer buffer = PrepareValuesUpdateBuffer();
+    ByteBuffer& buffer = PrepareValuesUpdateBuffer(data);
     std::size_t sizePos = buffer.wpos();
     buffer << uint32(0);
     buffer << uint32(valuesMask.GetBlock(0));
@@ -4059,7 +4059,7 @@ void Player::BuildValuesUpdateForPlayerWithMask(UpdateData* data, UF::ObjectData
 
     buffer.put<uint32>(sizePos, buffer.wpos() - sizePos - 4);
 
-    data->AddUpdateBlock(buffer);
+    data->AddUpdateBlock();
 }
 
 void Player::ValuesUpdateForPlayerWithMaskSender::operator()(Player const* player) const
