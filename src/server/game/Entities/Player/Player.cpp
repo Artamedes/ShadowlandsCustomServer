@@ -14204,7 +14204,7 @@ void Player::SendNewItem(Item* item, uint32 quantity, bool pushed, bool created,
             case Keystones::Timewalking:
                 return WorldPackets::Item::ItemPushResult::DisplayType::DISPLAY_TYPE_HIDDEN;
             default:
-                return WorldPackets::Item::ItemPushResult::DisplayType::DISPLAY_TYPE_NORMAL;
+                return dungeonEncounterId == 999999999 ? WorldPackets::Item::ItemPushResult::DisplayType::DISPLAY_TYPE_HIDDEN : WorldPackets::Item::ItemPushResult::DisplayType::DISPLAY_TYPE_NORMAL;
         }
     }();
     packet.Created = created;
