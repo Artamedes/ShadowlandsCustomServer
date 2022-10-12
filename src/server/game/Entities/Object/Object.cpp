@@ -190,7 +190,7 @@ void Object::BuildCreateUpdateBlockForPlayer(UpdateData* data, Player* target) c
     data->AddUpdateBlock(buf);
 
     //if (GetTypeId() == TYPEID_ITEM)
-    //    target->SendNewItem((Item*)this, 0, false, false);
+    //    target->SendNewItem((Item*)this, 0, false, false, false, 999999999);
 
     if (GameObject const* go = ToGameObject())
     {

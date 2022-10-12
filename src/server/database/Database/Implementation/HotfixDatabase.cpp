@@ -1918,6 +1918,18 @@ void HotfixDatabaseConnection::DoPrepareStatements()
         "SpecSetID, TraitNodeGroupID, TraitNodeID, TraitCurrencyID, SpentAmountRequired, Flags, RequiredLevel, FreeSharedStringID, "
         "SpendMoreSharedStringID FROM trait_cond WHERE (`VerifiedBuild` > 0) = ?", CONNECTION_SYNCH);
     PREPARE_MAX_ID_STMT(HOTFIX_SEL_TRAIT_COND, "SELECT MAX(ID) + 1 FROM trait_cond", CONNECTION_SYNCH);
+
+    // Spell.db2
+    PrepareStatement(HOTFIX_SEL_SPELL, "SELECT ID, NameSubtext, Description, AuraDescription FROM spell WHERE (`VerifiedBuild` > 0) = ?", CONNECTION_SYNCH);
+    PREPARE_MAX_ID_STMT(HOTFIX_SEL_SPELL, "SELECT MAX(ID) + 1 FROM spell", CONNECTION_SYNCH);
+    PREPARE_LOCALE_STMT(HOTFIX_SEL_SPELL, "SELECT ID, NameSubtext_lang, Description_lang, AuraDescription_lang FROM spell_locale"
+        " WHERE (`VerifiedBuild` > 0) = ? AND locale = ?", CONNECTION_SYNCH);
+
+    // CharStartOutfit.db2
+    PrepareStatement(HOTFIX_SEL_CHAR_START_OUTFIT, "SELECT ID, ClassID, SexID, OutfitID, PetDisplayID, PetFamilyID, ItemID1, ItemID2, ItemID3, "
+        "ItemID4, ItemID5, ItemID6, ItemID7, ItemID8, ItemID9, ItemID10, ItemID11, ItemID12, ItemID13, ItemID14, ItemID15, ItemID16, ItemID17, "
+        "ItemID18, ItemID19, ItemID20, ItemID21, ItemID22, ItemID23, ItemID24, RaceID FROM char_start_outfit WHERE (`VerifiedBuild` > 0) = ?", CONNECTION_SYNCH);
+    PREPARE_MAX_ID_STMT(HOTFIX_SEL_CHAR_START_OUTFIT, "SELECT MAX(ID) + 1 FROM char_start_outfit", CONNECTION_SYNCH);
 }
 
 HotfixDatabaseConnection::HotfixDatabaseConnection(MySQLConnectionInfo& connInfo) : MySQLConnection(connInfo)

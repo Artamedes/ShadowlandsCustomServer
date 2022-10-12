@@ -267,6 +267,7 @@ WorldPacket const* WorldPackets::Item::ItemPushResult::Write()
     _worldPacket.WriteBit(IsEncounterLoot);
     bool unkBitDragonFlight = false;
     _worldPacket.WriteBit(unkBitDragonFlight);
+    _worldPacket.WriteBit(false); ///< Added in 45969
     _worldPacket.FlushBits();
     _worldPacket << Item;
 

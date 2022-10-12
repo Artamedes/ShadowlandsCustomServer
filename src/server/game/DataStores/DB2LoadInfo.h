@@ -7381,4 +7381,63 @@ struct TraitCondLoadInfo
     }
 };
 
+struct SpellLoadInfo
+{
+    static DB2LoadInfo const* Instance()
+    {
+        static constexpr DB2FieldMeta fields[] =
+        {
+            { false, FT_INT, "ID" },
+            { false, FT_STRING, "NameSubtext" },
+            { false, FT_STRING, "Description" },
+            { false, FT_STRING, "AuraDescription" },
+        };
+        static DB2LoadInfo const loadInfo(&fields[0], std::size(fields), SpellMeta::Instance(), HOTFIX_SEL_SPELL);
+        return &loadInfo;
+    }
+};
+
+struct CharStartOutfitLoadInfo
+{
+    static DB2LoadInfo const* Instance()
+    {
+        static constexpr DB2FieldMeta fields[] =
+        {
+            { false, FT_INT, "ID" },
+            { false, FT_BYTE, "ClassID" },
+            { false, FT_BYTE, "SexID" },
+            { false, FT_BYTE, "OutfitID" },
+            { false, FT_INT, "PetDisplayID" },
+            { false, FT_BYTE, "PetFamilyID" },
+            { true, FT_INT, "ItemID1" },
+            { true, FT_INT, "ItemID2" },
+            { true, FT_INT, "ItemID3" },
+            { true, FT_INT, "ItemID4" },
+            { true, FT_INT, "ItemID5" },
+            { true, FT_INT, "ItemID6" },
+            { true, FT_INT, "ItemID7" },
+            { true, FT_INT, "ItemID8" },
+            { true, FT_INT, "ItemID9" },
+            { true, FT_INT, "ItemID10" },
+            { true, FT_INT, "ItemID11" },
+            { true, FT_INT, "ItemID12" },
+            { true, FT_INT, "ItemID13" },
+            { true, FT_INT, "ItemID14" },
+            { true, FT_INT, "ItemID15" },
+            { true, FT_INT, "ItemID16" },
+            { true, FT_INT, "ItemID17" },
+            { true, FT_INT, "ItemID18" },
+            { true, FT_INT, "ItemID19" },
+            { true, FT_INT, "ItemID20" },
+            { true, FT_INT, "ItemID21" },
+            { true, FT_INT, "ItemID22" },
+            { true, FT_INT, "ItemID23" },
+            { true, FT_INT, "ItemID24" },
+            { true, FT_INT, "RaceID" },
+        };
+        static DB2LoadInfo const loadInfo(&fields[0], std::size(fields), CharStartOutfitMeta::Instance(), HOTFIX_SEL_CHAR_START_OUTFIT);
+        return &loadInfo;
+    }
+};
+
 #endif // DB2LoadInfo_h__

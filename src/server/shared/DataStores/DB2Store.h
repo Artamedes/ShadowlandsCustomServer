@@ -49,6 +49,8 @@ public:
     virtual void LoadStringsFrom(std::string const& path, LocaleConstant locale) = 0;
     virtual void LoadFromDB() = 0;
     virtual void LoadStringsFromDB(LocaleConstant locale) = 0;
+    std::string _path;
+    LocaleConstant _locale = LocaleConstant::LOCALE_enUS;
 
 protected:
     void Load(std::string const& path, LocaleConstant locale, char**& indexTable);

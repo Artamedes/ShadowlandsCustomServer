@@ -85,6 +85,7 @@ struct TC_COMMON_API DB2FileLoadInfo
     std::size_t FieldCount;
     DB2Meta const* Meta;
     std::string TypesString;
+    std::vector<uint32> Hotfixes;
 };
 
 enum class DB2EncryptedSectionHandling

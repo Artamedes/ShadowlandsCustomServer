@@ -72,7 +72,7 @@ char* DB2DatabaseLoader::Load(bool custom, uint32& records, char**& indexTable, 
 
     uint32 rec = 0;
     uint32 newRecords = 0;
-
+    const_cast<DB2LoadInfo*>(_loadInfo)->Hotfixes.clear();
     do
     {
         Field* fields = result->Fetch();
@@ -97,6 +97,8 @@ char* DB2DatabaseLoader::Load(bool custom, uint32& records, char**& indexTable, 
             offset += 4;
             ++f;
         }
+
+        const_cast<DB2LoadInfo*>(_loadInfo)->Hotfixes.push_back(indexValue);
 
         for (uint32 x = 0; x < _loadInfo->Meta->FieldCount; ++x)
         {

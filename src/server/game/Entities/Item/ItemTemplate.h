@@ -797,15 +797,15 @@ struct TC_GAME_API ItemTemplate
     std::vector<ItemEffectEntry const*> Effects;
 
     // extra fields, not part of db2 files
-    uint32 ScriptId;
-    uint32 FoodType;
-    uint32 MinMoneyLoot;
-    uint32 MaxMoneyLoot;
-    uint32 FlagsCu;
-    float SpellPPMRate;
-    uint32 RandomBonusListTemplateId;
+    uint32 ScriptId = 0;
+    uint32 FoodType = 0;
+    uint32 MinMoneyLoot = 0;
+    uint32 MaxMoneyLoot = 0;
+    uint32 FlagsCu = 0;
+    float SpellPPMRate = 0.0f;
+    uint32 RandomBonusListTemplateId = 0;
     std::bitset<MAX_CLASSES * MAX_SPECIALIZATIONS> Specializations[3];  // one set for 1-40 level range and another for 41-109 and one for 110
-    uint32 ItemSpecClassMask;
+    uint32 ItemSpecClassMask = 0;
 
     // helpers
     bool CanChangeEquipStateInCombat() const;

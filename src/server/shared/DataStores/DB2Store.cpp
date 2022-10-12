@@ -97,6 +97,8 @@ void DB2StorageBase::Load(std::string const& path, LocaleConstant locale, char**
     _fieldCount = db2.GetCols();
     _tableHash = db2.GetTableHash();
     _layoutHash = db2.GetLayoutHash();
+    _path = path;
+    _locale = locale;
 
     //HotfixDatabase.PQuery("REPLACE INTO hotfix_table_hashes (Hash, Name) VALUE (%u, '%s')", _tableHash, _fileName);
 

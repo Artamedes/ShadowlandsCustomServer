@@ -15485,4 +15485,22 @@ struct TraitCondMeta
 };
 
 
+struct CharStartOutfitMeta
+{
+    static DB2Meta const* Instance()
+    {
+        static constexpr DB2MetaField fields[7] =
+        {
+            { FT_BYTE, 1, false },
+            { FT_BYTE, 1, false },
+            { FT_BYTE, 1, false },
+            { FT_INT, 1, false },
+            { FT_BYTE, 1, false },
+            { FT_INT, 24, true },
+            { FT_INT, 1, false },
+        };
+        static constexpr DB2Meta instance(0, -1, 7, 6, 0x3CF88584, fields, 6);
+        return &instance;
+    }
+};
 #endif // DB2Metadata_h__

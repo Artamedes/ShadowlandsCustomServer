@@ -577,6 +577,16 @@ bool Player::Create(ObjectGuid::LowType guidlow, WorldPackets::Character::Charac
     // for (PlayerCreateInfoItem initialItem : info->item)
     //     StoreNewItemInBestSlots(initialItem.item_id, initialItem.item_amount);
 
+    for (auto entry : sCharStartOutfitStore)
+    {
+        if (entry->ClassID == GetClass() && entry->SexID == m_unitData->Sex && entry->RaceID == GetRace())
+        {
+            for (int32 itemId : entry->ItemID)
+                if (itemId)
+                    StoreNewItemInBestSlots(itemId, 1);
+        }
+    }
+
     // bags and main-hand weapon must equipped at this moment
     // now second pass for not equipped (offhand weapon/shield if it attempt equipped before main-hand weapon)
     // or ammo not equipped in special bag
@@ -14204,7 +14214,7 @@ void Player::SendNewItem(Item* item, uint32 quantity, bool pushed, bool created,
             case Keystones::Timewalking:
                 return WorldPackets::Item::ItemPushResult::DisplayType::DISPLAY_TYPE_HIDDEN;
             default:
-                return WorldPackets::Item::ItemPushResult::DisplayType::DISPLAY_TYPE_NORMAL;
+                return dungeonEncounterId == 999999999 ? WorldPackets::Item::ItemPushResult::DisplayType::DISPLAY_TYPE_HIDDEN : WorldPackets::Item::ItemPushResult::DisplayType::DISPLAY_TYPE_NORMAL;
         }
     }();
     packet.Created = created;

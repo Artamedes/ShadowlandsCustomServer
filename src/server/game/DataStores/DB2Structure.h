@@ -4483,5 +4483,25 @@ struct TraitCondEntry
     int32  SpendMoreSharedStringID;
 };
 
+struct SpellEntry
+{
+    uint32            ID;                                 // ID Non-inline 
+    LocalizedString  NameSubtext_lang;
+    LocalizedString  Description_lang;
+    LocalizedString  AuraDescription_lang;
+};
+
+struct CharStartOutfitEntry
+{
+    int32                  ID;                                       // ID Non-inline 
+    uint8                  ClassID;
+    uint8                  SexID;
+    uint8                  OutfitID;
+    uint32                 PetDisplayID;
+    uint8                  PetFamilyID;
+    std::array<int32, 24>  ItemID;
+    int32                  RaceID;                                   // Relation Non-inline 
+};
+
 #pragma pack(pop)
 #endif

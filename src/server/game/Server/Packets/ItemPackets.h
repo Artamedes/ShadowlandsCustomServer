@@ -330,7 +330,8 @@ namespace WorldPackets
             {
                 DISPLAY_TYPE_HIDDEN = 0,
                 DISPLAY_TYPE_NORMAL = 1,
-                DISPLAY_TYPE_ENCOUNTER_LOOT = 2
+                DISPLAY_TYPE_ENCOUNTER_LOOT = 2,
+                DISPLAY_TYPE_UNK = 3,
             };
 
             ItemPushResult() : ServerPacket(SMSG_ITEM_PUSH_RESULT, 16 + 1 + 4 + 4 + 4 + 4 + 4 + 4 + 4 + 4 + 16 + 1 + 1 + 1 + 1) { }

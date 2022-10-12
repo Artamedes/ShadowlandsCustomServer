@@ -1492,7 +1492,7 @@ public:
 
         if (count > 0 && item)
         {
-            player->SendNewItem(item, count, false, true);
+            player->SendNewItem(item, count, false, false);
             handler->PSendSysMessage(LANG_ADDITEM, itemId, count, handler->GetNameLink(playerTarget).c_str());
             if (player != playerTarget)
                 playerTarget->SendNewItem(item, count, true, false);
