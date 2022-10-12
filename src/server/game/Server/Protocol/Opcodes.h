@@ -283,7 +283,7 @@ enum OpcodeClient : uint16
     CMSG_ADVENTURE_MAP_START_QUEST                         = 0x3361,
     CMSG_GARRISON_GET_MISSION_REWARD                       = 0x3365,
     CMSG_TRADE_SKILL_SET_FAVORITE                          = 0x3367,
-    CMSG_QUERY_TREASURE_PICKER                             = 0x3368,
+    CMSG_QUERY_TREASURE_PICKER                             = 0x3370,
     CMSG_REQUEST_WORLD_QUEST_UPDATE                        = 0x3369,
     CMSG_REQUEST_AREA_POI_UPDATE                           = 0x336A,
     CMSG_REMOVE_NEW_ITEM                                   = 0x336B,

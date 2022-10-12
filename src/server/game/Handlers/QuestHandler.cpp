@@ -256,18 +256,6 @@ void WorldSession::HandleQuestQueryOpcode(WorldPackets::Quest::QueryQuestInfo& p
 
     if (Quest const* quest = sObjectMgr->GetQuestTemplate(packet.QuestID))
     {
-        if (int32 treasurePickerId = quest->GetTreasurePickerId())
-        {
-            if (TreasurePicker* picker = ObjectMgr::instance()->GetTreasurePicker(treasurePickerId))
-            {
-                WorldPackets::Quest::TreasurePickerResponse response;
-                response.Picker = *picker;
-                response.QuestID = packet.QuestID;
-
-                SendPacket(response.Write());
-            }
-        }
-
         _player->PlayerTalkClass->SendQuestQueryResponse(quest);
     }
     else
@@ -289,13 +277,18 @@ void WorldSession::HandleQuestQueryOpcode(WorldPackets::Quest::QueryQuestInfo& p
 
 void WorldSession::HandleQueryTreasurePicker(WorldPackets::Quest::QueryTreasurePicker& packet)
 {
-    if (packet.QuestId == 591918)
-    {
-        auto item = _player->GetItemByEntry(700000);
-        if (item != nullptr)
-            sScriptMgr->OnQueryTreasurePicker(_player, item);
-        return;
-    }
+    if (Quest const* quest = sObjectMgr->GetQuestTemplate(packet.QuestId))
+        if (int32 treasurePickerId = quest->GetTreasurePickerId())
+        {
+            if (TreasurePicker* picker = ObjectMgr::instance()->GetTreasurePicker(treasurePickerId))
+            {
+                WorldPackets::Quest::TreasurePickerResponse response;
+                response.Picker = *picker;
+                response.QuestID = packet.QuestId;
+
+                SendPacket(response.Write());
+            }
+        }
 }
 
 void WorldSession::HandleQuestgiverChooseRewardOpcode(WorldPackets::Quest::QuestGiverChooseReward& packet)
