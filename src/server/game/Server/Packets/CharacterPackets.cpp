@@ -287,7 +287,7 @@ WorldPacket const* EnumCharactersResult::Write()
     _worldPacket << int32(MaxCharacterLevel);
     _worldPacket << uint32(RaceUnlockData.size());
     _worldPacket << uint32(UnlockedConditionalAppearances.size());
-    _worldPacket << uint32(0); ///< added in 45779
+    _worldPacket << uint32(0); ///< added in 46092 - counter
 
     if (DisabledClassesMask)
         _worldPacket << uint32(*DisabledClassesMask);
