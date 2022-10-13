@@ -1719,6 +1719,8 @@ struct CurrencyTypesLoadInfo
             { true, FT_INT, "XpQuestDifficulty" },
             { true, FT_INT, "AwardConditionID" },
             { true, FT_INT, "MaxQtyWorldStateID" },
+            { false, FT_INT, "Field_10_0_2_46091_014" },
+            { false, FT_INT, "Field_10_0_2_46091_015" },
             { true, FT_INT, "Flags1" },
             { true, FT_INT, "Flags2" },
         };
@@ -6095,6 +6097,14 @@ struct SpellReagentsLoadInfo
             { true, FT_SHORT, "RequiredQuality6" },
             { true, FT_SHORT, "RequiredQuality7" },
             { true, FT_SHORT, "RequiredQuality8" },
+            { false, FT_BYTE, "Field_10_0_2_46091_0041" },
+            { false, FT_BYTE, "Field_10_0_2_46091_0042" },
+            { false, FT_BYTE, "Field_10_0_2_46091_0043" },
+            { false, FT_BYTE, "Field_10_0_2_46091_0044" },
+            { false, FT_BYTE, "Field_10_0_2_46091_0045" },
+            { false, FT_BYTE, "Field_10_0_2_46091_0046" },
+            { false, FT_BYTE, "Field_10_0_2_46091_0047" },
+            { false, FT_BYTE, "Field_10_0_2_46091_0048" },
         };
         static DB2LoadInfo const loadInfo(&fields[0], std::size(fields), SpellReagentsMeta::Instance(), HOTFIX_SEL_SPELL_REAGENTS);
         return &loadInfo;

@@ -1289,6 +1289,8 @@ struct CurrencyTypesEntry
     int32 XpQuestDifficulty;
     int32 AwardConditionID;
     int32 MaxQtyWorldStateID;
+    uint32 Field_10_0_2_46091_014;
+    uint32 Field_10_0_2_46091_015;
     std::array<int32, 2> Flags;
 };
 
@@ -3745,6 +3747,7 @@ struct SpellReagentsEntry
     std::array<int32, MAX_SPELL_REAGENTS> Reagent;
     std::array<int16, MAX_SPELL_REAGENTS> ReagentCount;
     std::array<int16, MAX_SPELL_REAGENTS> RequiredQuality;
+    std::array<uint8, MAX_SPELL_REAGENTS>  Field_10_0_2_46091_004;
 };
 
 struct SpellReagentsCurrencyEntry

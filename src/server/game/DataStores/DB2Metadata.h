@@ -3788,10 +3788,10 @@ struct CurrencyTypesMeta
 {
     static DB2Meta const* Instance()
     {
-        static constexpr DB2MetaField fields[15] =
+        static constexpr DB2MetaField fields[17] =
         {
-            { FT_STRING, 1, true },
-            { FT_STRING, 1, true },
+            { FT_STRING, 1, false },
+            { FT_STRING, 1, false },
             { FT_INT, 1, true },
             { FT_INT, 1, true },
             { FT_INT, 1, false },
@@ -3804,9 +3804,11 @@ struct CurrencyTypesMeta
             { FT_INT, 1, true },
             { FT_INT, 1, true },
             { FT_INT, 1, true },
+            { FT_INT, 1, false },
+            { FT_INT, 1, false },
             { FT_INT, 2, true },
         };
-        static constexpr DB2Meta instance(1095531, -1, 15, 15, 0x9DB809D5, fields, -1);
+        static constexpr DB2Meta instance(1095531, -1, 17, 17, 0x2085AB84, fields, -1);
         return &instance;
     }
 };
@@ -12417,14 +12419,15 @@ struct SpellReagentsMeta
 {
     static DB2Meta const* Instance()
     {
-        static constexpr DB2MetaField fields[4] =
+        static constexpr DB2MetaField fields[5] =
         {
             { FT_INT, 1, true },
             { FT_INT, 8, true },
             { FT_SHORT, 8, true },
             { FT_SHORT, 8, true },
+            { FT_BYTE, 8, false },
         };
-        static constexpr DB2Meta instance(841946, -1, 4, 4, 0x631FF432, fields, -1);
+        static constexpr DB2Meta instance(841946, -1, 5, 5, 0xB40074F0, fields, -1);
         return &instance;
     }
 };

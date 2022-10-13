@@ -498,8 +498,8 @@ void HotfixDatabaseConnection::DoPrepareStatements()
 
     // CurrencyTypes.db2
     PrepareStatement(HOTFIX_SEL_CURRENCY_TYPES, "SELECT ID, Name, Description, CategoryID, InventoryIconFileID, SpellWeight, SpellCategory, MaxQty, "
-        "MaxEarnablePerWeek, Quality, FactionID, ItemGroupSoundsID, XpQuestDifficulty, AwardConditionID, MaxQtyWorldStateID, Flags1, Flags2"
-        " FROM currency_types WHERE (`VerifiedBuild` > 0) = ?", CONNECTION_SYNCH);
+        "MaxEarnablePerWeek, Quality, FactionID, ItemGroupSoundsID, XpQuestDifficulty, AwardConditionID, MaxQtyWorldStateID, Field_10_0_2_46091_014, "
+        "Field_10_0_2_46091_015, Flags1, Flags2 FROM currency_types WHERE (`VerifiedBuild` > 0) = ?", CONNECTION_SYNCH);
     PREPARE_MAX_ID_STMT(HOTFIX_SEL_CURRENCY_TYPES, "SELECT MAX(ID) + 1 FROM currency_types", CONNECTION_SYNCH);
     PREPARE_LOCALE_STMT(HOTFIX_SEL_CURRENCY_TYPES, "SELECT ID, Name_lang, Description_lang FROM currency_types_locale WHERE (`VerifiedBuild` > 0) = ?"
         " AND locale = ?", CONNECTION_SYNCH);
@@ -1593,8 +1593,9 @@ void HotfixDatabaseConnection::DoPrepareStatements()
     // SpellReagents.db2
     PrepareStatement(HOTFIX_SEL_SPELL_REAGENTS, "SELECT ID, SpellID, Reagent1, Reagent2, Reagent3, Reagent4, Reagent5, Reagent6, Reagent7, Reagent8, "
         "ReagentCount1, ReagentCount2, ReagentCount3, ReagentCount4, ReagentCount5, ReagentCount6, ReagentCount7, ReagentCount8, RequiredQuality1, "
-        "RequiredQuality2, RequiredQuality3, RequiredQuality4, RequiredQuality5, RequiredQuality6, RequiredQuality7, RequiredQuality8"
-        " FROM spell_reagents WHERE (`VerifiedBuild` > 0) = ?", CONNECTION_SYNCH);
+        "RequiredQuality2, RequiredQuality3, RequiredQuality4, RequiredQuality5, RequiredQuality6, RequiredQuality7, RequiredQuality8, "
+        "Field_10_0_2_46091_0041, Field_10_0_2_46091_0042, Field_10_0_2_46091_0043, Field_10_0_2_46091_0044, Field_10_0_2_46091_0045, "
+        "Field_10_0_2_46091_0046, Field_10_0_2_46091_0047, Field_10_0_2_46091_0048 FROM spell_reagents WHERE (`VerifiedBuild` > 0) = ?", CONNECTION_SYNCH);
     PREPARE_MAX_ID_STMT(HOTFIX_SEL_SPELL_REAGENTS, "SELECT MAX(ID) + 1 FROM spell_reagents", CONNECTION_SYNCH);
 
     // SpellReagentsCurrency.db2
