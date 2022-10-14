@@ -2347,7 +2347,8 @@ void GameObject::Use(Unit* user)
 
             // cast this spell later if provided
             spellId = info->goober.spell;
-            spellCaster = info->goober.playerCast ? user : nullptr;
+            if (!info->goober.playerCast)
+                spellCaster = nullptr;
 
             break;
         }
