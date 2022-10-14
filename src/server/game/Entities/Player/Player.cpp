@@ -18704,7 +18704,7 @@ void Player::_LoadActions(PreparedQueryResult result)
         {
             Field* fields = result->Fetch();
             uint8 button = fields[0].GetUInt8();
-            uint64 action = fields[1].GetUInt64();
+            uint64 action = fields[1].GetUInt32();
             uint8 type = fields[2].GetUInt8();
 
             if (ActionButton* ab = AddActionButton(button, action, type))
@@ -20496,7 +20496,7 @@ void Player::_SaveActions(CharacterDatabaseTransaction trans)
                 stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_CHAR_ACTION);
                 stmt->setUInt64(0, GetGUID().GetCounter());
                 // @TODO: this should be configID!
-                stmt->setUInt8(1, _traitMgr->GetActiveTalentGroup());
+                stmt->setUInt8(1, _traitMgr->GetActiveTalentGroupSafe());
                 stmt->setUInt8(2, itr->first);
                 stmt->setUInt64(3, itr->second.GetAction());
                 stmt->setUInt8(4, uint8(itr->second.GetType()));
@@ -20512,7 +20512,7 @@ void Player::_SaveActions(CharacterDatabaseTransaction trans)
                 stmt->setUInt64(2, GetGUID().GetCounter());
                 stmt->setUInt8(3, itr->first);
                 // @TODO: this should be configID!
-                stmt->setUInt8(4, _traitMgr->GetActiveTalentGroup());
+                stmt->setUInt8(4, _traitMgr->GetActiveTalentGroupSafe());
                 trans->Append(stmt);
 
                 itr->second.uState = ACTIONBUTTON_UNCHANGED;
@@ -20522,7 +20522,7 @@ void Player::_SaveActions(CharacterDatabaseTransaction trans)
                 stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHAR_ACTION_BY_BUTTON_SPEC);
                 stmt->setUInt64(0, GetGUID().GetCounter());
                 stmt->setUInt8(1, itr->first);
-                stmt->setUInt8(2, GetTraitsMgr()->GetActiveTalentGroup());
+                stmt->setUInt8(2, GetTraitsMgr()->GetActiveTalentGroupSafe());
                 trans->Append(stmt);
 
                 m_actionButtons.erase(itr++);
