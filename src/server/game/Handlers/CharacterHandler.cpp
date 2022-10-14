@@ -1253,8 +1253,6 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder const& holder)
 
         pCurrChar->SendInitialPacketsAfterAddToMap();
 
-        pCurrChar->UpdateReviveBattlePetCooldown();
-
         pCurrChar->SetInGameTime(GameTime::GetGameTimeMS());
 
         // announce group about member online (must be after add to player list to receive announce to self)
