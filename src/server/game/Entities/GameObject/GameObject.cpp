@@ -172,6 +172,12 @@ public:
             }
         }
 
+        if (!_stopFrames.empty())
+        {
+            _pathProgress = 0;
+            _stateChangeProgress = 0;
+        }
+
         _positionUpdateTimer.Reset(PositionUpdateInterval);
     }
 
@@ -378,7 +384,11 @@ public:
         if (oldToNewStateDelta < 0)
             oldToNewStateDelta += pauseTimesCount + 1;
 
-        if (oldToNewStateDelta < newToOldStateDelta)
+        // this additional check is neccessary because client doesn't check dynamic flags on progress update
+        // instead it multiplies progress from dynamicflags field by -1 and then compares that against 0
+        // when calculating path progress while we simply check the flag if (!_owner.HasDynamicFlag(GO_DYNFLAG_LO_INVERTED_MOVEMENT))
+        bool isAtStartOfPath = _stateChangeProgress == 0;
+        if (oldToNewStateDelta < newToOldStateDelta && !isAtStartOfPath)
             _owner.SetDynamicFlag(GO_DYNFLAG_LO_INVERTED_MOVEMENT);
         else
             _owner.RemoveDynamicFlag(GO_DYNFLAG_LO_INVERTED_MOVEMENT);
@@ -761,18 +771,18 @@ bool GameObject::Create(uint32 entry, Map* map, Position const& pos, QuaternionD
             SetUpdateFieldValue(m_values.ModifyValue(&GameObject::m_gameObjectData).ModifyValue(&UF::GameObjectData::ParentRotation), reinterpretId);
             break;
         }
-        //case GAMEOBJECT_TYPE_TRANSPORT:
-        //{
-        //    m_goTypeImpl = std::make_unique<GameObjectType::Transport>(*this);
-        //    if (goInfo->transport.startOpen)
-        //        SetGoState(GO_STATE_TRANSPORT_STOPPED);
-        //    else
-        //        SetGoState(GO_STATE_TRANSPORT_ACTIVE);
-        //
-        //    SetGoAnimProgress(animProgress);
-        //    setActive(true);
-        //    break;
-        //}
+        case GAMEOBJECT_TYPE_TRANSPORT:
+        {
+            m_goTypeImpl = std::make_unique<GameObjectType::Transport>(*this);
+            if (goInfo->transport.startOpen)
+                SetGoState(GO_STATE_TRANSPORT_STOPPED);
+            else
+                SetGoState(GO_STATE_TRANSPORT_ACTIVE);
+        
+            SetGoAnimProgress(animProgress);
+            setActive(true);
+            break;
+        }
         case GAMEOBJECT_TYPE_FISHINGNODE:
             SetLevel(1);
             SetGoAnimProgress(255);
@@ -963,7 +973,10 @@ void GameObject::Update(uint32 diff)
                 case GAMEOBJECT_TYPE_CHEST:
                     if (m_restockTime > GameTime::GetGameTime())
                         return;
-                    
+
+                    // If there is no restock timer, or if the restock timer passed, the chest becomes ready to loot
+                    m_restockTime = 0;
+                    m_lootState = GO_READY;
                     m_loot = nullptr;
                     m_personalLoot.clear();
                     AddToObjectUpdateIfNeeded();
