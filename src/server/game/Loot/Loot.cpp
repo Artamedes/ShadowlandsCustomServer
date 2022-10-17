@@ -643,7 +643,7 @@ void LootRoll::Finish(RollVoteMap::const_iterator winnerItr)
 // --------- Loot ---------
 //
 
-Loot::Loot(Map* map, ObjectGuid owner, LootType type, Group const* group) : gold(0), unlootedCount(0), roundRobinPlayer(), loot_type(LOOT_NONE), maxDuplicates(1),
+Loot::Loot(Map* map, ObjectGuid owner, LootType type, Group const* group) : gold(0), unlootedCount(0), roundRobinPlayer(), loot_type(LOOT_NONE),
     _guid(map ? ObjectGuid::Create<HighGuid::LootObject>(map->GetId(), 0, map->GenerateLowGuid<HighGuid::LootObject>()) : ObjectGuid::Empty),
     _owner(owner), _itemContext(ItemContext::NONE), _lootMethod(group ? group->GetLootMethod() : FREE_FOR_ALL),
     _lootMaster(group ? group->GetMasterLooterGuid() : ObjectGuid::Empty), _wasOpened(false), _dungeonEncounterId(0),
@@ -652,11 +652,6 @@ Loot::Loot(Map* map, ObjectGuid owner, LootType type, Group const* group) : gold
 }
 
 Loot::~Loot()
-{
-    clear();
-}
-
-void Loot::clear()
 {
     PlayerFFAItems.clear();
 

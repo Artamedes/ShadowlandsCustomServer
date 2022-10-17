@@ -316,6 +316,7 @@ struct UnitData : public IsUpdateFieldStructureTag, public HasChangesMask<196>
     struct FlagsTag : ViewerDependentValueTag<uint32> {};
     UpdateField<uint32, 32, 45> Flags2;
     UpdateField<uint32, 32, 46> Flags3;
+    struct Flags3Tag : ViewerDependentValueTag<uint32> {};
     UpdateField<uint32, 32, 47> AuraState;
     struct AuraStateTag : ViewerDependentValueTag<uint32> {};
     UpdateField<uint32, 32, 48> RangedAttackRoundBaseTime;

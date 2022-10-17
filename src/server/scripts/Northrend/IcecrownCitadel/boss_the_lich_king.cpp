@@ -535,7 +535,7 @@ struct boss_the_lich_king : public BossAI
         me->GetMap()->SetZoneWeather(AREA_ICECROWN_CITADEL, WEATHER_STATE_FOG, 0.0f);
 
         if (Is25ManRaid())
-            if (Player* player = me->GetLootRecipient())
+            if (Player* player = Object::ToPlayer(killer))
                 player->RewardPlayerAndGroupAtEvent(NPC_THE_LICH_KING_QUEST, player);
     }
 

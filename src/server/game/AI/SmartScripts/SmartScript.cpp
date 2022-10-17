@@ -959,11 +959,14 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                 if (!me)
                     break;
 
-                if (Player* player = me->GetLootRecipient())
+                for (ObjectGuid tapperGuid : me->GetTapList())
                 {
-                    player->RewardPlayerAndGroupAtEvent(e.action.questCredit.creditId, player); // todo other types?
-                    TC_LOG_DEBUG("scripts.ai", "SmartScript::ProcessAction: SMART_ACTION_CALL_KILLEDMONSTER: Player %s, Killcredit: %u",
-                        player->GetGUID().ToString().c_str(), e.action.questCredit.creditId);
+                    if (Player* tapper = ObjectAccessor::GetPlayer(*me, tapperGuid))
+                    {
+                        tapper->KilledMonsterCredit(e.action.questCredit.creditId, me->GetGUID());
+                        TC_LOG_DEBUG("scripts.ai", "SmartScript::ProcessAction: SMART_ACTION_CALL_KILLEDMONSTER: Player %s, Killcredit: %u",
+                            tapper->GetGUID().ToString().c_str(), e.action.questCredit.creditId);
+                    }
                 }
             }
             else // Specific target type
@@ -2995,20 +2998,10 @@ void SmartScript::GetTargets(ObjectVector& targets, SmartScriptHolder const& e, 
         case SMART_TARGET_LOOT_RECIPIENTS:
         {
             if (me)
-            {
-                if (Group* lootGroup = me->GetLootRecipientGroup())
-                {
-                    for (GroupReference* it = lootGroup->GetFirstMember(); it != nullptr; it = it->next())
-                        if (Player* recipient = it->GetSource())
-                            if (recipient->IsInMap(me))
-                                targets.push_back(recipient);
-                }
-                else
-                {
-                    if (Player* recipient = me->GetLootRecipient())
-                        targets.push_back(recipient);
-                }
-            }
+                for (ObjectGuid tapperGuid : me->GetTapList())
+                    if (Player* tapper = ObjectAccessor::GetPlayer(*me, tapperGuid))
+                        targets.push_back(tapper);
+
             break;
         }
         case SMART_TARGET_VEHICLE_PASSENGER:

@@ -29,7 +29,6 @@
 
 class CreatureAI;
 class CreatureGroup;
-class Group;
 class Quest;
 class Player;
 class SpellInfo;
@@ -62,6 +61,7 @@ enum class VendorInventoryReason : uint8
 };
 
 static constexpr uint8 WILD_BATTLE_PET_DEFAULT_LEVEL = 1;
+static constexpr size_t CREATURE_TAPPERS_SOFT_CAP = 5;
 
 //used for handling non-repeatable random texts
 typedef std::vector<uint8> CreatureTextRepeatIds;
@@ -231,25 +231,19 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         bool IsAllLooted() const;
 
         std::unique_ptr<Loot> m_loot;
-        std::unordered_map<ObjectGuid, std::unique_ptr<Loot>> m_PersonalLoots;
+        std::unordered_map<ObjectGuid, std::unique_ptr<Loot>> m_personalLoot;
         void StartPickPocketRefillTimer();
         void ResetPickPocketRefillTimer() { _pickpocketLootRestore = 0; }
         bool CanGeneratePickPocketLoot() const;
-        ObjectGuid GetLootRecipientGUID() const { return m_lootRecipient; }
-        Player* GetLootRecipient() const;
-        Group* GetLootRecipientGroup() const;
-        bool hasLootRecipient() const { return !m_lootRecipient.IsEmpty() || !m_lootRecipientGroup.IsEmpty() || !m_lootRecipientsPersonal.empty(); }
+        GuidUnorderedSet const& GetTapList() const { return m_tapList; }
+        void SetTapList(GuidUnorderedSet tapList) { m_tapList = std::move(tapList); }
+        bool hasLootRecipient() const { return !m_tapList.empty(); }
         bool isTappedBy(Player const* player) const;                          // return true if the creature is tapped by the player or a member of his party.
-        Loot* GetLootForPlayer(Player const* /*player*/) const override { return m_loot.get(); }
-        // Personal Loot system
-        bool CanHavePersonalLoot() const { return m_canBePersonalLooted; }
-        void AddPersonalLooter(Player* who);
-        
-        bool m_canBePersonalLooted = true;
-        GuidSet m_lootRecipientsPersonal;
+        Loot* GetLootForPlayer(Player const* player) const override;
+        bool IsFullyLooted() const;
+        bool IsSkinnedBy(Player const* player) const;
 
-        void SetLootRecipient (Unit* unit, bool withGroup = true);
-        bool wasSkinned = false; // PIGPIG
+        void SetTappedBy(Unit const* unit, bool withGroup = true);
         void AllLootRemovedFromCorpse();
 
         uint16 GetLootMode() const { return m_LootMode; }
@@ -348,7 +342,6 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
 
         void SetDisableReputationGain(bool disable) { DisableReputationGain = disable; }
         bool IsReputationGainDisabled() const { return DisableReputationGain; }
-        bool IsDamageEnoughForLootingAndReward() const { return (m_creatureInfo->flags_extra & CREATURE_FLAG_EXTRA_NO_PLAYER_DAMAGE_REQ) || (m_PlayerDamageReq == 0); }
         void LowerPlayerDamageReq(uint64 unDamage);
         void ResetPlayerDamageReq() { m_PlayerDamageReq = GetHealth() / 2; }
         uint64 m_PlayerDamageReq;
@@ -418,8 +411,7 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
 
         static float _GetHealthMod(int32 Rank);
 
-        ObjectGuid m_lootRecipient;
-        ObjectGuid m_lootRecipientGroup;
+        GuidUnorderedSet m_tapList;
 
         /// Timers
         time_t _pickpocketLootRestore;

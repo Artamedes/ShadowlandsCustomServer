@@ -60,7 +60,7 @@ LootStore LootTemplates_Spell("spell_loot_template",                 "spell id (
 // Selects invalid loot items to be removed from group possible entries (before rolling)
 struct LootGroupInvalidSelector
 {
-    explicit LootGroupInvalidSelector(Loot const& loot, uint16 lootMode, Difficulty difficulty, Player const* playerLooter, bool checkSpec) : _loot(loot), _lootMode(lootMode), _difficulty(difficulty), _playerLooter(playerLooter), _checkSpec(checkSpec) { }
+    explicit LootGroupInvalidSelector(Loot const& loot, uint16 lootMode, Difficulty difficulty, Player const* playerLooter, bool checkSpec) : /*_loot(loot),*/ _lootMode(lootMode), _difficulty(difficulty), _playerLooter(playerLooter), _checkSpec(checkSpec) { }
 
     bool operator()(LootStoreItem* item) const
     {
@@ -75,17 +75,11 @@ struct LootGroupInvalidSelector
                 if (!_playerLooter->CheckItemCompatibility(itemTemplate, _checkSpec))
                     return true;
 
-        uint8 foundDuplicates = 0;
-        for (std::vector<LootItem>::const_iterator itr = _loot.items.begin(); itr != _loot.items.end(); ++itr)
-            if (itr->itemid == item->itemid)
-                if (++foundDuplicates == _loot.maxDuplicates)
-                    return true;
-
         return false;
     }
 
 private:
-    Loot const& _loot;
+    //Loot const& _loot;
     uint16 _lootMode;
     Difficulty _difficulty;
     Player const* _playerLooter;
