@@ -453,7 +453,7 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         uint16 m_LootMode;                                  // Bitmask (default: LOOT_MODE_DEFAULT) that determines what loot will be lootable
         uint8 m_spawnMode;
 
-        bool IsInvisibleDueToDespawn() const override;
+        bool IsInvisibleDueToDespawn(WorldObject const* seer) const override;
         bool CanAlwaysSee(WorldObject const* obj) const override;
 
     private:

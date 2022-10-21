@@ -434,7 +434,6 @@ void Creature::RemoveCorpse(bool setSpawnTime, bool destroyForNearbyPlayers)
         setDeathState(DEAD);
         RemoveAllAuras();
         m_loot = nullptr;
-        m_PersonalLoots.clear();
         uint32 respawnDelay = m_respawnDelay;
         if (CreatureAI* ai = AI())
             ai->CorpseRemoved(respawnDelay);
@@ -2009,14 +2008,11 @@ bool Creature::hasInvolvedQuest(uint32 quest_id) const
 
 bool Creature::IsAllLooted() const
 {
-    for (auto const& personal : m_PersonalLoots)
+    for (auto const& personal : m_personalLoot)
     {
         if (!personal.second->isLooted())
             return false;
     }
-
-    if (m_canBePersonalLooted)
-        return true;
 
     if (!m_loot)
         return true;
@@ -2024,9 +2020,9 @@ bool Creature::IsAllLooted() const
     return m_loot->isLooted();
 }
 
-bool Creature::IsInvisibleDueToDespawn() const
+bool Creature::IsInvisibleDueToDespawn(WorldObject const* seer) const
 {
-    if (Unit::IsInvisibleDueToDespawn())
+    if (Unit::IsInvisibleDueToDespawn(seer))
         return true;
 
     if (IsAlive() || isDying() || m_corpseRemoveTime > GameTime::GetGameTime())

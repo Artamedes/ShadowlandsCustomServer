@@ -862,6 +862,7 @@ struct GameObjectData : public IsUpdateFieldStructureTag, public HasChangesMask<
     UpdateField<QuaternionData, 0, 13> ParentRotation;
     UpdateField<int32, 0, 14> FactionTemplate;
     UpdateField<int8, 0, 15> State;
+    struct StateTag : ViewerDependentValueTag<int8> {};
     UpdateField<int8, 0, 16> TypeID;
     UpdateField<uint8, 0, 17> PercentHealth;
     UpdateField<uint32, 0, 18> ArtKit;
