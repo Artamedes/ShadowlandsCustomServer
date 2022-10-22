@@ -139,11 +139,20 @@ public:
                     if (const_cast<Player*>(receiver)->ConsumedAnimaPowers.count(gameObject->GetGUID()))
                         dynFlags |= GO_DYNFLAG_LO_DEPLETED;
                     break;
+                case GAMEOBJECT_TYPE_GATHERING_NODE:
+                    if (gameObject->ActivateToQuest(receiver))
+                        dynFlags |= GO_DYNFLAG_LO_ACTIVATE | GO_DYNFLAG_LO_SPARKLE | GO_DYNFLAG_LO_HIGHLIGHT;
+                    if (gameObject->GetGoStateFor(receiver->GetGUID()) == GO_STATE_ACTIVE)
+                        dynFlags |= GO_DYNFLAG_LO_DEPLETED;
+                    break;
                 default:
                     break;
             }
+            
+            if (!gameObject->MeetsInteractCondition(receiver))
+                dynFlags |= GO_DYNFLAG_LO_NO_INTERACT;
 
-            dynamicFlags = (pathProgress << 16) | dynFlags;
+            dynamicFlags = (uint32(pathProgress) << 16) | uint32(dynFlags);
         }
 
         return dynamicFlags;
