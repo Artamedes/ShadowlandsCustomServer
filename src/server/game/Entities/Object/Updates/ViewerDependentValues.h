@@ -97,15 +97,18 @@ public:
                         dynFlags |= GO_DYNFLAG_LO_ACTIVATE;
                     break;
                 case GAMEOBJECT_TYPE_CHEST:
-                case GAMEOBJECT_TYPE_GOOBER:
-                    if (gameObject->GetEntry() == 1200005)
-                    {
-                        if (gameObject->GetLootForPlayer(receiver)->empty())
-                            dynFlags |= GO_DYNFLAG_LO_NO_INTERACT | GO_DYNFLAG_LO_DEPLETED;
-                    }
-
                     if (gameObject->ActivateToQuest(receiver))
                         dynFlags |= GO_DYNFLAG_LO_ACTIVATE | GO_DYNFLAG_LO_SPARKLE | GO_DYNFLAG_LO_HIGHLIGHT;
+                    else if (receiver->IsGameMaster())
+                        dynFlags |= GO_DYNFLAG_LO_ACTIVATE;
+                    break;
+                case GAMEOBJECT_TYPE_GOOBER:
+                    if (gameObject->ActivateToQuest(receiver))
+                    {
+                        dynFlags |= GO_DYNFLAG_LO_HIGHLIGHT;
+                        if (gameObject->GetGoStateFor(receiver->GetGUID()) != GO_STATE_ACTIVE)
+                            dynFlags |= GO_DYNFLAG_LO_ACTIVATE;
+                    }
                     else if (receiver->IsGameMaster())
                         dynFlags |= GO_DYNFLAG_LO_ACTIVATE;
                     break;
