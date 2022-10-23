@@ -82,7 +82,7 @@ bool LootItem::AllowedForPlayer(Player const* player, Loot const& loot) const
         return false;
 
     // DB conditions check
-    if (!sConditionMgr->IsObjectMeetToConditions(const_cast<Player*>(player), conditions))
+    if (!sConditionMgr->IsObjectMeetToConditions(player, conditions))
         return false;
 
     if (type == LootItemType::Currency)
