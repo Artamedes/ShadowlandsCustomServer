@@ -1194,6 +1194,40 @@ bool LootTemplate::isReference(uint32 id)
     return false;//not found or not reference
 }
 
+std::unordered_map<ObjectGuid, std::unique_ptr<Loot>> GenerateDungeonEncounterPersonalLoot(uint32 dungeonEncounterId, uint32 lootId, LootStore const& store,
+    LootType type, WorldObject const* lootOwner, uint32 minMoney, uint32 maxMoney, uint16 lootMode, ItemContext context, std::vector<Player*> const& tappers)
+{
+    std::unordered_map<Player*, std::unique_ptr<Loot>> tempLoot;
+
+    for (Player* tapper : tappers)
+    {
+        if (tapper->IsLockedToDungeonEncounter(dungeonEncounterId))
+            continue;
+
+        std::unique_ptr<Loot>& loot = tempLoot[tapper];
+        loot.reset(new Loot(lootOwner->GetMap(), lootOwner->GetGUID(), type, nullptr));
+        loot->SetItemContext(context);
+        loot->SetDungeonEncounterId(dungeonEncounterId);
+        loot->generateMoneyLoot(minMoney, maxMoney);
+    }
+
+    if (LootTemplate const* tab = store.GetLootFor(lootId))
+        tab->ProcessPersonalLoot(tempLoot, store.IsRatesAllowed(), lootMode);
+
+    std::unordered_map<ObjectGuid, std::unique_ptr<Loot>> personalLoot;
+    for (auto&& [looter, loot] : tempLoot)
+    {
+        loot->FillNotNormalLootFor(looter);
+
+        if (loot->isLooted())
+            continue;
+
+        personalLoot[looter->GetGUID()] = std::move(loot);
+    }
+
+    return personalLoot;
+}
+
 void LoadLootTemplates_Creature()
 {
     TC_LOG_INFO("server.loading", "Loading creature loot templates...");

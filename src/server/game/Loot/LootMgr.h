@@ -20,7 +20,9 @@
 
 #include "Define.h"
 #include "ConditionMgr.h"
+#include "ObjectGuid.h"
 #include <list>
+#include <memory>
 #include <set>
 #include <unordered_map>
 #include <vector>
@@ -115,12 +117,15 @@ class TC_GAME_API LootTemplate
         void AddEntry(LootStoreItem* item);
         // Rolls for every item in the template and adds the rolled items the the loot
         void Process(Loot& loot, bool rate, uint16 lootMode, Difficulty difficulty, uint8 groupId, Player const* player, bool specOnly = false, bool personalLoot = false, bool fishing = false) const;
+        void ProcessPersonalLoot(std::unordered_map<Player*, std::unique_ptr<Loot>>& personalLoot, bool rate, uint16 lootMode) const;
         void ProcessOploteChest(Loot& loot) const;
         void ProcessChallengeChest(Loot& loot, uint32 lootId, Challenge* _challenge, bool rate, uint16 lootMode, Difficulty difficulty) const;
         void CopyConditions(ConditionContainer const& conditions);
         void CopyConditions(LootItem* li) const;
         void FillAutoAssignationLoot(std::list<const ItemTemplate*>& itemList, Player* player, bool checkSpec = true, bool checkChance = true, bool challengeCheck = false) const;
-
+        
+        // True if template includes at least 1 drop for the player
+        bool HasDropForPlayer(Player const* player, uint8 groupId = 0, bool strictUsabilityCheck = false) const;
         // True if template includes at least 1 quest drop entry
         bool HasQuestDrop(LootTemplateMap const& store, uint8 groupId = 0) const;
         // True if template includes at least 1 quest drop for an active quest of the player
@@ -140,6 +145,12 @@ class TC_GAME_API LootTemplate
         LootTemplate(LootTemplate const&) = delete;
         LootTemplate& operator=(LootTemplate const&) = delete;
 };
+
+std::unordered_map<ObjectGuid, std::unique_ptr<Loot>> GenerateDungeonEncounterPersonalLoot(uint32 dungeonEncounterId,
+    uint32 lootId, LootStore const& store, LootType type, WorldObject const* lootOwner,
+    uint32 minMoney, uint32 maxMoney,
+    uint16 lootMode, ItemContext context,
+    std::vector<Player*> const& tappers);
 
 //=====================================================
 

@@ -35,11 +35,8 @@
 #include "ObjectMgr.h"
 #include "PartyPackets.h"
 #include "Pet.h"
-#include "PhasingHandler.h"
 #include "Player.h"
-#include "TerrainMgr.h"
 #include "UpdateData.h"
-#include "World.h"
 #include "WorldSession.h"
 
 Group::Group() : m_leaderGuid(), m_leaderName(""), m_groupFlags(GROUP_FLAG_NONE), m_groupCategory(GROUP_CATEGORY_HOME),
