@@ -25,7 +25,7 @@ Specialization::Specialization(Player* player, ChrSpecializationEntry const* spe
 
     // Create default trait for this spec
     auto traitMgr = _player->GetTraitsMgr();
-    _trait = traitMgr->CreateDefaultTraitForSpec(specEntry);
+    _trait = traitMgr->CreateDefaultTraitForSpec(specEntry, false, TraitCombatConfigFlags::ActiveForSpec);
 }
 
 void Specialization::BuildUpdateTalentDataPacket(WorldPackets::Talent::TalentGroupInfo& info)
@@ -117,7 +117,7 @@ TraitsMgr::~TraitsMgr()
 
 void TraitsMgr::Setup()
 {
-    SetupDragonRiding();
+    //SetupDragonRiding();
     _specializations.reserve(MAX_SPECIALIZATIONS);
 
     int8 activeTalentGroup = -1;
@@ -318,6 +318,7 @@ void TraitsMgr::LoadFromDB(CharacterDatabaseQueryHolder const& holder)
         {
             _player->SetCurrentConfigID(trait->GetConfigID());
             trait->LearnTraitSpells();
+            trait->AddCombatConfigFlags(TraitCombatConfigFlags::ActiveForSpec);
             _activeTrait = trait;
         }
 
@@ -341,6 +342,7 @@ void TraitsMgr::LoadFromDB(CharacterDatabaseQueryHolder const& holder)
     {
         _activeTrait = GetActiveSpecialization()->GetDefaultTrait();
         _activeTrait->LearnTraitSpells();
+        _activeTrait->AddCombatConfigFlags(TraitCombatConfigFlags::ActiveForSpec);
         _player->SetCurrentConfigID(_activeTrait->GetConfigID());
     }
 }
@@ -452,6 +454,7 @@ void TraitsMgr::SetActiveTalentGroup(int8 orderIndex, bool force /*= false*/)
             swappedTrait->LearnTraitSpells();
             configId = swappedTrait->GetConfigID();
             _player->SetCurrentConfigID(configId);
+            swappedTrait->AddCombatConfigFlags(TraitCombatConfigFlags::ActiveForSpec);
             _activeTrait = swappedTrait;
         }
         else
@@ -503,16 +506,17 @@ Trait* TraitsMgr::GetTraitForSpec(uint32 specId)
     return defaultTrait;
 }
 
-Trait* TraitsMgr::CreateDefaultTraitForSpec(ChrSpecializationEntry const* specEntry, bool activeSpec /*= false*/)
+Trait* TraitsMgr::CreateDefaultTraitForSpec(ChrSpecializationEntry const* specEntry, bool activeSpec /*= false*/, TraitCombatConfigFlags combatFlags /*= TraitCombatConfigFlags::None*/)
 {
     uint32 talentConfigId = _nextConfigId;
 
     // Learn default traits for spec
     Trait* trait = new Trait(_player, talentConfigId, TraitType::Combat);
     trait->SetSpecializationID(specEntry->ID);
-    trait->SetLoadoutIndex(0);
+    trait->SetLoadoutIndex(GetNextTraitLoadoutIndex());
     trait->SetIndex(_traits.size());
     trait->SetConfigName(specEntry->Name.Str[_player->GetSession()->GetSessionDbcLocale()]);
+    trait->SetCombatConfigFlags(combatFlags);
     _traits[talentConfigId] = trait;
 
     std::set<int32> traitTreeIds;
@@ -715,7 +719,11 @@ void TraitsMgr::LearnTraits(WorldPackets::Talent::LearnTraits& learnTraits)
 
     UpdateTrait(trait);
     _player->AddOrSetTrait(trait);
+    if (_activeTrait)
+        _activeTrait->RemoveCombatConfigFlags(TraitCombatConfigFlags::ActiveForSpec);
+
     _activeTrait = trait;
+    trait->AddCombatConfigFlags(TraitCombatConfigFlags::ActiveForSpec);
 }
 
 Trait* TraitsMgr::GetTraitByConfigID(uint32 configID)
@@ -789,8 +797,13 @@ void TraitsMgr::CreateNewLoadout(WorldPackets::Talent::CreateNewLoadout& createN
 
     UpdateTrait(trait);
     _player->AddOrSetTrait(trait);
+
+    if (_activeTrait)
+        _activeTrait->RemoveCombatConfigFlags(TraitCombatConfigFlags::ActiveForSpec);
+
     _activeTrait = trait;
-   // _player->SetCurrentConfigID(trait->GetConfigID());
+    trait->AddCombatConfigFlags(TraitCombatConfigFlags::ActiveForSpec);
+    // _player->SetCurrentConfigID(trait->GetConfigID());
 }
 
 void TraitsMgr::SwapLoadout(uint32 loadoutId, std::vector<WorldPackets::Talent::TraitConfigEntry> traits)
@@ -870,7 +883,11 @@ void TraitsMgr::SwapLoadout(uint32 loadout)
                 GetActiveTrait()->UnlearnTraitSpells();
 
             trait->LearnTraitSpells();
+            if (_activeTrait)
+                _activeTrait->RemoveCombatConfigFlags(TraitCombatConfigFlags::ActiveForSpec);
+
             _activeTrait = trait;
+            trait->AddCombatConfigFlags(TraitCombatConfigFlags::ActiveForSpec);
             GetActiveSpecialization()->SetActiveLoadoutId(trait->GetLoadoutIndex());
             _player->SetCurrentConfigID(trait->GetConfigID());
             break;
@@ -924,7 +941,12 @@ void TraitsMgr::RemoveLoadout(uint32 configId)
                 DeleteTrait();
 
                 auto swappedTrait = itr->second;
+
+                if (_activeTrait)
+                    _activeTrait->RemoveCombatConfigFlags(TraitCombatConfigFlags::ActiveForSpec);
+
                 _activeTrait = swappedTrait;
+                swappedTrait->AddCombatConfigFlags(TraitCombatConfigFlags::ActiveForSpec);
                 swappedTrait->LearnTraitSpells();
                 configId = swappedTrait->GetConfigID();
                 _player->SetCurrentConfigID(configId);
@@ -945,12 +967,12 @@ uint32 TraitsMgr::GetNextTraitLoadoutIndex() const
 
     for (auto const& [configId, trait] : _traits)
     {
-        if (trait->GetSpecializationID() == _player->GetSpecializationId())
+        //if (trait->GetSpecializationID() == _player->GetSpecializationId())
             if (nextLoadoutIndex < trait->GetLoadoutIndex())
                 nextLoadoutIndex = trait->GetLoadoutIndex();
     }
 
-    return nextLoadoutIndex;
+    return nextLoadoutIndex + 1;
 }
 
 void TraitsMgr::SendActiveGlyphs(bool fullUpdate /*= false*/)

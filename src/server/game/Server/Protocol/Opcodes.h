@@ -318,6 +318,7 @@ enum OpcodeClient : uint16
     CMSG_CREATE_NEW_LOADOUT                                = 0x3405,
     CMSG_RENAME_LOADOUT                                    = 0x3406,
     CMSG_REMOVE_LOADOUT                                    = 0x3407,
+    CMSG_ACTIVATE_STARTER_BUILD                            = 0x340A,
     CMSG_SEND_TEXT_EMOTE                                   = 0x348E,
     CMSG_SET_SHEATHED                                      = 0x348F,
     CMSG_PET_SET_ACTION                                    = 0x3490,

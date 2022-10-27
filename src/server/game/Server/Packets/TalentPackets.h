@@ -223,6 +223,17 @@ namespace WorldPackets
             uint32 ConfigID = 0;
             std::string ConfigName;
         };
+
+        class ActiveStarterBuild final : public ClientPacket
+        {
+        public:
+            ActiveStarterBuild(WorldPacket&& packet) : ClientPacket(CMSG_ACTIVATE_STARTER_BUILD, std::move(packet)) { }
+
+            void Read() override;
+
+            uint32 ConfigID = 0;
+            bool IsActive = false;
+        };
     }
 }
 

@@ -188,3 +188,9 @@ void WorldPackets::Talent::RenameLoadout::Read()
     uint32 configNameLen = _worldPacket.ReadBits(9);
     ConfigName = _worldPacket.ReadString(configNameLen);
 }
+
+void WorldPackets::Talent::ActiveStarterBuild::Read()
+{
+    _worldPacket >> ConfigID;
+    IsActive = _worldPacket.ReadBit();
+}

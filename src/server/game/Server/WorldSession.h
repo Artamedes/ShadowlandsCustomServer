@@ -778,6 +778,7 @@ namespace WorldPackets
         class SwapLoadout;
         class RenameLoadout;
         class RemoveLoadout;
+        class ActiveStarterBuild;
     }
 
     namespace Taxi
@@ -1590,6 +1591,7 @@ class TC_GAME_API WorldSession
         void HandleSwapLoadoutOpcode(WorldPackets::Talent::SwapLoadout& swapLoadout);
         void HandleRenameLoadout(WorldPackets::Talent::RenameLoadout& renameLoadout);
         void HandleRemoveLoadout(WorldPackets::Talent::RemoveLoadout& removeLoadout);
+        void HandleActivateStarterBuild(WorldPackets::Talent::ActiveStarterBuild& setStarterBuild);
 
         void HandleQuestgiverStatusQueryOpcode(WorldPackets::Quest::QuestGiverStatusQuery& packet);
         void HandleQuestgiverStatusMultipleQuery(WorldPackets::Quest::QuestGiverStatusMultipleQuery& packet);

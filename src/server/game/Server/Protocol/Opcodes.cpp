@@ -436,6 +436,7 @@ void OpcodeTable::Initialize()
     DEFINE_HANDLER(CMSG_CREATE_NEW_LOADOUT,                                 STATUS_LOGGEDIN,  PROCESS_THREADSAFE,   &WorldSession::HandleCreateNewLoadoutOpcode);
     DEFINE_HANDLER(CMSG_RENAME_LOADOUT,                                     STATUS_LOGGEDIN,  PROCESS_THREADSAFE,   &WorldSession::HandleRenameLoadout);
     DEFINE_HANDLER(CMSG_REMOVE_LOADOUT,                                     STATUS_LOGGEDIN,  PROCESS_THREADSAFE,   &WorldSession::HandleRemoveLoadout);
+    DEFINE_HANDLER(CMSG_ACTIVATE_STARTER_BUILD,                             STATUS_LOGGEDIN,  PROCESS_THREADSAFE,   &WorldSession::HandleActivateStarterBuild);
     DEFINE_HANDLER(CMSG_GARRISON_SWAP_BUILDINGS,                            STATUS_UNHANDLED, PROCESS_INPLACE,      &WorldSession::Handle_NULL);
     DEFINE_HANDLER(CMSG_GENERATE_RANDOM_CHARACTER_NAME,                     STATUS_AUTHED,    PROCESS_THREADUNSAFE, &WorldSession::HandleRandomizeCharNameOpcode);
     DEFINE_HANDLER(CMSG_GET_ACCOUNT_CHARACTER_LIST,                         STATUS_UNHANDLED, PROCESS_THREADUNSAFE, &WorldSession::Handle_NULL);

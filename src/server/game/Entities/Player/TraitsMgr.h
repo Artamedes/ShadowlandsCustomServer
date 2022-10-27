@@ -233,7 +233,7 @@ class TC_GAME_API TraitsMgr
         Trait* GetActiveTrait();
         Trait* GetTraitForSpec(uint32 specId);
         Trait* GetTraitByConfigID(uint32 configID);
-        Trait* CreateDefaultTraitForSpec(ChrSpecializationEntry const* specEntry, bool activeSpec = false);
+        Trait* CreateDefaultTraitForSpec(ChrSpecializationEntry const* specEntry, bool activeSpec = false, TraitCombatConfigFlags combatFlags = TraitCombatConfigFlags::None);
         Trait* GetTraitByLoadoutID(uint32 loadoutId);
 
         void LearnTraits(WorldPackets::Talent::LearnTraits& learnTraits);

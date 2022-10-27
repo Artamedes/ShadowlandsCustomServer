@@ -100,3 +100,8 @@ void WorldSession::HandleRemoveLoadout(WorldPackets::Talent::RemoveLoadout& remo
 {
     _player->GetTraitsMgr()->RemoveLoadout(removeLoadout.ConfigID);
 }
+
+void WorldSession::HandleActivateStarterBuild(WorldPackets::Talent::ActiveStarterBuild& setStarterBuild)
+{
+
+}
