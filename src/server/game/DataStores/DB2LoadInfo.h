@@ -791,7 +791,7 @@ struct BattlePetSpeciesLoadInfo
             { true, FT_INT, "SummonSpellID" },
             { true, FT_INT, "IconFileDataID" },
             { true, FT_BYTE, "PetTypeEnum" },
-            { false, FT_SHORT, "Flags" },
+            { false, FT_INT, "Flags" },
             { true, FT_BYTE, "SourceTypeEnum" },
             { true, FT_INT, "CardUIModelSceneID" },
             { true, FT_INT, "LoadoutUIModelSceneID" },
@@ -2608,6 +2608,7 @@ struct GossipNPCOptionLoadInfo
             { false, FT_INT, "GossipIndex" },
             { false, FT_INT, "TraitTreeID" },
             { false, FT_INT, "ProfessionID" },
+            { false, FT_INT, "Field_10_0_2_46144_014" },
         };
         static DB2LoadInfo const loadInfo(&fields[0], std::size(fields), GossipNPCOptionMeta::Instance(), HOTFIX_SEL_GOSSIP_N_P_C_OPTION);
         return &loadInfo;

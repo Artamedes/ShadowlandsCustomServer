@@ -473,7 +473,7 @@ struct BattlePetSpeciesEntry
     int32 SummonSpellID;
     int32 IconFileDataID;
     int8 PetTypeEnum;
-    uint16 Flags;
+    int32 Flags;
     int8 SourceTypeEnum;
     int32 CardUIModelSceneID;
     int32 LoadoutUIModelSceneID;
@@ -1866,6 +1866,7 @@ struct GossipNPCOptionEntry
     uint32 GossipIndex;
     uint32 TraitTreeID;
     uint32 ProfessionID;
+    int32  Field_10_0_2_46144_014;
 };
 
 struct GemPropertiesEntry

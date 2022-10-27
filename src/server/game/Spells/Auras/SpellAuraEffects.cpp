@@ -601,6 +601,9 @@ NonDefaultConstructible<pAuraEffectHandler> AuraEffectHandler[TOTAL_AURAS]=
     &AuraEffect::HandleNULL,                                      //529
     &AuraEffect::HandleNULL,                                      //530
     &AuraEffect::HandleNULL,                                      //531
+    &AuraEffect::HandleNULL,                                      //532
+    &AuraEffect::HandleNULL,                                      //533
+    &AuraEffect::HandleNULL,                                      //534
 };
 
 AuraEffect::AuraEffect(Aura* base, SpellEffectInfo const& spellEfffectInfo, int32 const* baseAmount, Unit* caster) :

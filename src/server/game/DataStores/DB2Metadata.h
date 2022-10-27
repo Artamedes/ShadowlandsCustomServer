@@ -1369,13 +1369,13 @@ struct BattlePetSpeciesMeta
             { FT_INT, 1, true },
             { FT_INT, 1, true },
             { FT_BYTE, 1, true },
-            { FT_SHORT, 1, false },
+            { FT_INT, 1, false },
             { FT_BYTE, 1, true },
             { FT_INT, 1, true },
             { FT_INT, 1, true },
             { FT_INT, 1, true },
         };
-        static constexpr DB2Meta instance(841622, 2, 12, 12, 0x48CF80A3, fields, -1);
+        static constexpr DB2Meta instance(841622, 2, 12, 12, 0x7E3C11F2, fields, -1);
         return &instance;
     }
 };
@@ -15438,7 +15438,7 @@ struct GossipNPCOptionMeta
 {
     static DB2Meta const* Instance()
     {
-        static constexpr DB2MetaField fields[14] =
+        static constexpr DB2MetaField fields[15] =
         {
             { FT_INT, 1, false },
             { FT_INT, 1, false },
@@ -15454,8 +15454,9 @@ struct GossipNPCOptionMeta
             { FT_INT, 1, false },
             { FT_INT, 1, false },
             { FT_INT, 1, false },
+            { FT_INT, 1, false },
         };
-        static constexpr DB2Meta const instance(0, -1, 14, 15, 0x238BCF2B, fields, -1);
+        static constexpr DB2Meta const instance(0, -1, 15, 16, 0x9170AADA, fields, -1);
         return &instance;
     };
 };
