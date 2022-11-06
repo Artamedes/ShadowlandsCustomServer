@@ -516,7 +516,7 @@ public:
     }
 
     // Move assign
-    TaskContext& operator= (TaskContext&& right)
+    TaskContext& operator= (TaskContext&& right) noexcept
     {
         _task = std::move(right._task);
         _owner = std::move(right._owner);

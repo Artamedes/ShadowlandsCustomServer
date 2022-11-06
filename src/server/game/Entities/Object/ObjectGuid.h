@@ -432,7 +432,7 @@ namespace std
     struct hash<ObjectGuid>
     {
     public:
-        size_t operator()(ObjectGuid const& key) const
+        size_t operator()(ObjectGuid const& key) const noexcept
         {
             return key.GetHash();
         }
