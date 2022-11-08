@@ -293,8 +293,7 @@ ByteBuffer& operator<<(ByteBuffer& data, WorldPackets::Movement::MonsterSplineUn
     for (WorldPackets::Movement::MonsterSplineUnknown901::Inner const& unkInner : unk.Data)
     {
         data << int32(unkInner.Unknown_1);
-        data << int32(unkInner.Unknown_2);
-        data << int32(unkInner.Unknown_3);
+        data << unkInner.Visual;
         data << uint32(unkInner.Unknown_4);
     }
 
