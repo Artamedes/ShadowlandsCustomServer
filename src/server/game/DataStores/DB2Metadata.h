@@ -1687,31 +1687,6 @@ struct CameraModeMeta
         return &instance;
     }
 };
-
-struct CampaignMeta
-{
-    static DB2Meta const* Instance()
-    {
-        static constexpr DB2MetaField fields[12] =
-        {
-            { FT_STRING, 1, true },
-            { FT_STRING_NOT_LOCALIZED, 1, true },
-            { FT_STRING, 1, true },
-            { FT_INT, 1, true },
-            { FT_INT, 1, true },
-            { FT_INT, 1, true },
-            { FT_INT, 1, true },
-            { FT_INT, 1, true },
-            { FT_INT, 1, true },
-            { FT_INT, 1, true },
-            { FT_INT, 1, false },
-            { FT_INT, 1, true },
-        };
-        static constexpr DB2Meta instance(2031607, -1, 12, 12, 0x345FBC23, fields, -1);
-        return &instance;
-    }
-};
-
 struct CampaignXConditionMeta
 {
     static DB2Meta const* Instance()
@@ -1725,21 +1700,6 @@ struct CampaignXConditionMeta
             { FT_INT, 1, true },
         };
         static constexpr DB2Meta instance(2031611, -1, 5, 4, 0x3B0D3F8C, fields, 4);
-        return &instance;
-    }
-};
-
-struct CampaignXQuestLineMeta
-{
-    static DB2Meta const* Instance()
-    {
-        static constexpr DB2MetaField fields[3] =
-        {
-            { FT_INT, 1, false },
-            { FT_INT, 1, false },
-            { FT_INT, 1, false },
-        };
-        static constexpr DB2Meta instance(2036722, -1, 3, 3, 0x10BF2FCD, fields, 0);
         return &instance;
     }
 };
@@ -9957,22 +9917,6 @@ struct QuestInfoMeta
     }
 };
 
-struct QuestLineMeta
-{
-    static DB2Meta const* Instance()
-    {
-        static constexpr DB2MetaField fields[4] =
-        {
-            { FT_STRING, 1, true },
-            { FT_STRING, 1, true },
-            { FT_INT, 1, false },
-            { FT_INT, 1, true },
-        };
-        static constexpr DB2Meta instance(973430, -1, 4, 4, 0x8972E620, fields, -1);
-        return &instance;
-    }
-};
-
 struct QuestLineXQuestMeta
 {
     static DB2Meta const* Instance()
@@ -15507,4 +15451,61 @@ struct CharStartOutfitMeta
         return &instance;
     }
 };
+
+struct CampaignMeta
+{
+    static DB2Meta const* Instance()
+    {
+        static constexpr DB2MetaField fields[13] =
+        {
+            { FT_STRING, 1, true },
+            { FT_STRING_NOT_LOCALIZED, 1, true },
+            { FT_STRING, 1, true },
+            { FT_INT, 1, true },
+            { FT_INT, 1, true },
+            { FT_INT, 1, true },
+            { FT_INT, 1, true },
+            { FT_INT, 1, true },
+            { FT_INT, 1, true },
+            { FT_INT, 1, true },
+            { FT_INT, 1, false },
+            { FT_INT, 1, true },
+            { FT_INT, 1, true },
+        };
+        static constexpr DB2Meta instance(2031607, -1, 13, 13, 0x056660B0, fields, -1);
+        return &instance;
+    }
+};
+
+struct CampaignXQuestLineMeta
+{
+    static DB2Meta const* Instance()
+    {
+        static constexpr DB2MetaField fields[3] =
+        {
+            { FT_INT, 1, false },
+            { FT_INT, 1, false },
+            { FT_INT, 1, false },
+        };
+        static constexpr DB2Meta instance(2036722, -1, 3, 3, 0x10BF2FCD, fields, 0);
+        return &instance;
+    }
+};
+
+struct QuestLineMeta
+{
+    static DB2Meta const* Instance()
+    {
+        static constexpr DB2MetaField fields[4] =
+        {
+            { FT_STRING, 1, true },
+            { FT_STRING, 1, true },
+            { FT_INT, 1, false },
+            { FT_INT, 1, true },
+        };
+        static constexpr DB2Meta instance(973430, -1, 4, 4, 0x8972E620, fields, -1);
+        return &instance;
+    }
+};
+
 #endif // DB2Metadata_h__

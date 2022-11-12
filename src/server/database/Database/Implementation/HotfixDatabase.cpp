@@ -1931,6 +1931,25 @@ void HotfixDatabaseConnection::DoPrepareStatements()
         "ItemID4, ItemID5, ItemID6, ItemID7, ItemID8, ItemID9, ItemID10, ItemID11, ItemID12, ItemID13, ItemID14, ItemID15, ItemID16, ItemID17, "
         "ItemID18, ItemID19, ItemID20, ItemID21, ItemID22, ItemID23, ItemID24, RaceID FROM char_start_outfit WHERE (`VerifiedBuild` > 0) = ?", CONNECTION_SYNCH);
     PREPARE_MAX_ID_STMT(HOTFIX_SEL_CHAR_START_OUTFIT, "SELECT MAX(ID) + 1 FROM char_start_outfit", CONNECTION_SYNCH);
+
+    // Campaign.db2
+    PrepareStatement(HOTFIX_SEL_CAMPAIGN, "SELECT ID, Title, InternalTitle, Description, UiTextureKitID, RewardQuestID, Prerequisite, "
+        "Field90135755007, Completed, OnlyStallIf, UiQuestDetailsThemeID, Flags, DisplayPriority, Field100245779012 FROM campaign"
+        " WHERE (`VerifiedBuild` > 0) = ?", CONNECTION_SYNCH);
+    PREPARE_MAX_ID_STMT(HOTFIX_SEL_CAMPAIGN, "SELECT MAX(ID) + 1 FROM campaign", CONNECTION_SYNCH);
+    PREPARE_LOCALE_STMT(HOTFIX_SEL_CAMPAIGN, "SELECT ID, Title_lang, Description_lang FROM campaign_locale WHERE (`VerifiedBuild` > 0) = ?"
+        " AND locale = ?", CONNECTION_SYNCH);
+
+    // CampaignXQuestLine.db2
+    PrepareStatement(HOTFIX_SEL_CAMPAIGN_X_QUEST_LINE, "SELECT ID, CampaignID, QuestLineID, OrderIndex FROM campaign_x_quest_line"
+        " WHERE (`VerifiedBuild` > 0) = ?", CONNECTION_SYNCH);
+    PREPARE_MAX_ID_STMT(HOTFIX_SEL_CAMPAIGN_X_QUEST_LINE, "SELECT MAX(ID) + 1 FROM campaign_x_quest_line", CONNECTION_SYNCH);
+
+    // QuestLine.db2
+    PrepareStatement(HOTFIX_SEL_QUEST_LINE, "SELECT ID, Name, Description, QuestID, PlayerConditionID FROM quest_line WHERE (`VerifiedBuild` > 0) = ?", CONNECTION_SYNCH);
+    PREPARE_MAX_ID_STMT(HOTFIX_SEL_QUEST_LINE, "SELECT MAX(ID) + 1 FROM quest_line", CONNECTION_SYNCH);
+    PREPARE_LOCALE_STMT(HOTFIX_SEL_QUEST_LINE, "SELECT ID, Name_lang, Description_lang FROM quest_line_locale WHERE (`VerifiedBuild` > 0) = ?"
+        " AND locale = ?", CONNECTION_SYNCH);
 }
 
 HotfixDatabaseConnection::HotfixDatabaseConnection(MySQLConnectionInfo& connInfo) : MySQLConnection(connInfo)

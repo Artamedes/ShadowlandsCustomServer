@@ -288,8 +288,9 @@ TC_GAME_API extern DB2Storage<TraitDefinitionEntry>                 sTraitDefini
 TC_GAME_API extern DB2Storage<TraitCondEntry>                       sTraitCondStore;
 TC_GAME_API extern DB2Storage<SpellEntry>                           sSpellStore;
 TC_GAME_API extern DB2Storage<CharStartOutfitEntry>                 sCharStartOutfitStore;
-
-
+TC_GAME_API extern DB2Storage<CampaignEntry>                        sCampaignEntry;
+TC_GAME_API extern DB2Storage<CampaignXQuestLineEntry>              sCampaignXQuestLineEntry;
+TC_GAME_API extern DB2Storage<QuestLineEntry>                       sQuestLineEntry;
 
 struct ContentTuningLevels
 {

@@ -4507,5 +4507,40 @@ struct CharStartOutfitEntry
     int32                  RaceID;                                   // Relation Non-inline 
 };
 
+struct CampaignEntry
+{
+    int32 ID;
+    LocalizedString Title;
+    char const* InternalTitle;
+    LocalizedString Description;
+    int32 UiTextureKitID;
+    int32 RewardQuestID;
+    int32 Prerequisite;
+    int32 Field90135755007;
+    int32 Completed;
+    int32 OnlyStallIf;
+    int32 UiQuestDetailsThemeID;
+    uint32 Flags;
+    int32 DisplayPriority;
+    int32 Field100245779012;
+};
+
+struct CampaignXQuestLineEntry
+{
+    int32 ID;
+    uint32 CampaignID;
+    uint32 QuestLineID;
+    uint32 OrderIndex;
+};
+
+struct QuestLineEntry
+{
+    int32 ID;
+    LocalizedString Name;
+    LocalizedString Description;
+    uint32 QuestID;
+    int32 PlayerConditionID;
+};
+
 #pragma pack(pop)
 #endif

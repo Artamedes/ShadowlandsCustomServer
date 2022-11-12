@@ -371,6 +371,9 @@ DB2Storage<TraitDefinitionEntry>                sTraitDefinitionStore("TraitDefi
 DB2Storage<TraitCondEntry>                      sTraitCondStore("TraitCond.db2", TraitCondLoadInfo::Instance());
 DB2Storage<SpellEntry>                          sSpellStore("Spell.db2", SpellLoadInfo::Instance());
 DB2Storage<CharStartOutfitEntry>                sCharStartOutfitStore("CharStartOutfit.db2", CharStartOutfitLoadInfo::Instance());
+DB2Storage<CampaignEntry>                       sCampaignEntry("Campaign.db2", CampaignLoadInfo::Instance());
+DB2Storage<CampaignXQuestLineEntry>             sCampaignXQuestLineEntry("CampaignXQuestLine.db2", CampaignXQuestLineLoadInfo::Instance());
+DB2Storage<QuestLineEntry>                      sQuestLineEntry("QuestLine.db2", QuestLineLoadInfo::Instance());
 
 
 TaxiMask                                        sTaxiNodesMask;
@@ -1006,6 +1009,9 @@ uint32 DB2Manager::LoadStores(std::string const& dataPath, LocaleConstant defaul
     LOAD_DB2(sTraitCondStore);
     LOAD_DB2(sSpellStore);
     LOAD_DB2(sCharStartOutfitStore);
+    LOAD_DB2(sCampaignEntry);
+    LOAD_DB2(sCampaignXQuestLineEntry);
+    LOAD_DB2(sQuestLineEntry);
 
 #undef LOAD_DB2
 

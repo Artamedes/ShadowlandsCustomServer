@@ -791,7 +791,7 @@ struct BattlePetSpeciesLoadInfo
             { true, FT_INT, "SummonSpellID" },
             { true, FT_INT, "IconFileDataID" },
             { true, FT_BYTE, "PetTypeEnum" },
-            { false, FT_INT, "Flags" },
+            { true, FT_INT, "Flags" },
             { true, FT_BYTE, "SourceTypeEnum" },
             { true, FT_INT, "CardUIModelSceneID" },
             { true, FT_INT, "LoadoutUIModelSceneID" },
@@ -2608,11 +2608,11 @@ struct GossipNPCOptionLoadInfo
             { false, FT_INT, "GossipIndex" },
             { false, FT_INT, "TraitTreeID" },
             { false, FT_INT, "ProfessionID" },
-            { false, FT_INT, "Field_10_0_2_46144_014" },
+            { true, FT_INT, "Field_10_0_2_46144_014" },
         };
         static DB2LoadInfo const loadInfo(&fields[0], std::size(fields), GossipNPCOptionMeta::Instance(), HOTFIX_SEL_GOSSIP_N_P_C_OPTION);
         return &loadInfo;
-    };
+    }
 };
 
 struct GemPropertiesLoadInfo
@@ -7447,6 +7447,65 @@ struct CharStartOutfitLoadInfo
             { true, FT_INT, "RaceID" },
         };
         static DB2LoadInfo const loadInfo(&fields[0], std::size(fields), CharStartOutfitMeta::Instance(), HOTFIX_SEL_CHAR_START_OUTFIT);
+        return &loadInfo;
+    }
+};
+
+struct CampaignLoadInfo
+{
+    static DB2LoadInfo const* Instance()
+    {
+        static constexpr DB2FieldMeta fields[] =
+        {
+            { false, FT_INT, "ID" },
+            { false, FT_STRING, "Title" },
+            { false, FT_STRING_NOT_LOCALIZED, "InternalTitle" },
+            { false, FT_STRING, "Description" },
+            { true, FT_INT, "UiTextureKitID" },
+            { true, FT_INT, "RewardQuestID" },
+            { true, FT_INT, "Prerequisite" },
+            { true, FT_INT, "Field90135755007" },
+            { true, FT_INT, "Completed" },
+            { true, FT_INT, "OnlyStallIf" },
+            { true, FT_INT, "UiQuestDetailsThemeID" },
+            { false, FT_INT, "Flags" },
+            { true, FT_INT, "DisplayPriority" },
+            { true, FT_INT, "Field100245779012" },
+        };
+        static DB2LoadInfo const loadInfo(&fields[0], std::size(fields), CampaignMeta::Instance(), HOTFIX_SEL_CAMPAIGN);
+        return &loadInfo;
+    }
+};
+
+struct CampaignXQuestLineLoadInfo
+{
+    static DB2LoadInfo const* Instance()
+    {
+        static constexpr DB2FieldMeta fields[] =
+        {
+            { false, FT_INT, "ID" },
+            { false, FT_INT, "CampaignID" },
+            { false, FT_INT, "QuestLineID" },
+            { false, FT_INT, "OrderIndex" },
+        };
+        static DB2LoadInfo const loadInfo(&fields[0], std::size(fields), CampaignXQuestLineMeta::Instance(), HOTFIX_SEL_CAMPAIGN_X_QUEST_LINE);
+        return &loadInfo;
+    }
+};
+
+struct QuestLineLoadInfo
+{
+    static DB2LoadInfo const* Instance()
+    {
+        static constexpr DB2FieldMeta fields[] =
+        {
+            { false, FT_INT, "ID" },
+            { false, FT_STRING, "Name" },
+            { false, FT_STRING, "Description" },
+            { false, FT_INT, "QuestID" },
+            { true, FT_INT, "PlayerConditionID" },
+        };
+        static DB2LoadInfo const loadInfo(&fields[0], std::size(fields), QuestLineMeta::Instance(), HOTFIX_SEL_QUEST_LINE);
         return &loadInfo;
     }
 };
