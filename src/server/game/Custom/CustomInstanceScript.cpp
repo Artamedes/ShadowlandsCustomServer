@@ -105,56 +105,56 @@ void CustomInstanceScript::OnPlayerLeave(Player* player)
 {
     InstanceScript::OnPlayerLeave(player);
 
-    if (auto chest = instance->GetGameObject(ChestGuid))
-    {
-        auto loot = chest->GetLootForPlayer(player);
-        if (loot && !loot->empty())
-        {
-            bool hasLoot = false;
-
-            for (auto item : loot->items)
-            {
-                if (item.is_looted)
-                    continue;
-
-                hasLoot = true;
-                break;
-            }
-
-            if (hasLoot)
-            {
-                MailSender sender(MAIL_CREATURE, UI64LIT(34337) /* The Postmaster */);
-                MailDraft draft("Recovered Item", "You left a completed M+ without fully looting the end chest. We recovered the items for you.");
-                CharacterDatabaseTransaction trans = CharacterDatabase.BeginTransaction();
-
-                for (auto item : loot->items)
-                {
-                    if (item.is_looted)
-                        continue;
-
-                    if (item.type == LootItemType::Currency)
-                    {
-                        player->ModifyCurrency(item.itemid, item.count);
-                    }
-                    else if (item.type == LootItemType::Item)
-                    {
-                        if (Item* itemObj = Item::CreateItem(item.itemid, item.count, item.context, player))
-                        {
-                            itemObj->SetBonuses(item.BonusListIDs);
-                            itemObj->SaveToDB(trans);
-                            draft.AddItem(itemObj);
-                        }
-                    }
-                }
-
-                draft.SendMailTo(trans, MailReceiver(player, player->GetGUID().GetCounter()), sender);
-                CharacterDatabase.CommitTransaction(trans);
-
-                ChatHandler(player).SendSysMessage("|cff00B9FFM+ Items sent to mailbox!");
-                loot->clear();
-            }
-        }
-    }
+    //if (auto chest = instance->GetGameObject(ChestGuid))
+    //{
+    //    auto loot = chest->GetLootForPlayer(player);
+    //    if (loot && !loot->isLooted())
+    //    {
+    //        bool hasLoot = false;
+    //
+    //        for (auto item : loot->items)
+    //        {
+    //            if (item.is_looted)
+    //                continue;
+    //
+    //            hasLoot = true;
+    //            break;
+    //        }
+    //
+    //        if (hasLoot)
+    //        {
+    //            MailSender sender(MAIL_CREATURE, UI64LIT(34337) /* The Postmaster */);
+    //            MailDraft draft("Recovered Item", "You left a completed M+ without fully looting the end chest. We recovered the items for you.");
+    //            CharacterDatabaseTransaction trans = CharacterDatabase.BeginTransaction();
+    //
+    //            for (auto item : loot->items)
+    //            {
+    //                if (item.is_looted)
+    //                    continue;
+    //
+    //                if (item.type == LootItemType::Currency)
+    //                {
+    //                    player->ModifyCurrency(item.itemid, item.count);
+    //                }
+    //                else if (item.type == LootItemType::Item)
+    //                {
+    //                    if (Item* itemObj = Item::CreateItem(item.itemid, item.count, item.context, player))
+    //                    {
+    //                        itemObj->SetBonuses(item.BonusListIDs);
+    //                        itemObj->SaveToDB(trans);
+    //                        draft.AddItem(itemObj);
+    //                    }
+    //                }
+    //            }
+    //
+    //            draft.SendMailTo(trans, MailReceiver(player, player->GetGUID().GetCounter()), sender);
+    //            CharacterDatabase.CommitTransaction(trans);
+    //
+    //            ChatHandler(player).SendSysMessage("|cff00B9FFM+ Items sent to mailbox!");
+    //            loot->();
+    //        }
+    //    }
+    //}
 
     player->RemoveAurasDueToSpell(340880); ///< Prideful buff
 }

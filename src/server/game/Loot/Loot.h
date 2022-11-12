@@ -197,16 +197,15 @@ struct TC_GAME_API LootItem
     LootItem& operator=(LootItem const&);
     LootItem& operator=(LootItem&&) noexcept;
     ~LootItem();
-    
+
     // Basic checks for player/item compatibility - if false no chance to see the item in the loot - used only for loot generation
-    bool AllowedForPlayer(Player const* player, Loot const& loot) const;
+    bool AllowedForPlayer(Player const* player, Loot const* loot) const;
+    static bool AllowedForPlayer(Player const* player, Loot const* loot, uint32 itemid, bool needs_quest, bool follow_loot_rules, bool strictUsabilityCheck,
+        ConditionContainer const& conditions, LootItemType type);
     void AddAllowedLooter(Player const* player);
     GuidSet const& GetAllowedLooters() const { return allowedGUIDs; }
     bool HasAllowedLooter(ObjectGuid const& looter) const;
     Optional<LootSlotType> GetUiTypeForPlayer(Player const* player, Loot const& loot) const;
-
-    void SetPersonalLooter(Player const* player);
-    bool IsPersonalLootFor(Player const* player) const;
 };
 
 struct NotNormalLootItem
@@ -280,7 +279,6 @@ struct TC_GAME_API Loot
     uint8 unlootedCount;
     ObjectGuid roundRobinPlayer;                            // GUID of the player having the Round-Robin ownership for the loot. If 0, round robin owner has released.
     LootType loot_type;                                     // required for achievement system
-    ObjectGuid _sourceLoot;
 
     explicit Loot(Map* map, ObjectGuid owner, LootType type, Group const* group);
     ~Loot();
@@ -292,11 +290,9 @@ struct TC_GAME_API Loot
 
     ObjectGuid const& GetGUID() const { return _guid; }
     ObjectGuid const& GetOwnerGUID() const { return _owner; }
+    ItemContext GetItemContext() const { return _itemContext; }
+    void SetItemContext(ItemContext context) { _itemContext = context; }
     LootMethod GetLootMethod() const { return _lootMethod; }
-
-    ObjectGuid const& GetSourceLoot() const { return _sourceLoot; }
-    void SetSourceLoot(ObjectGuid sourceLoot) { _sourceLoot = sourceLoot; }
-
     ObjectGuid const& GetLootMasterGUID() const { return _lootMaster; }
     uint32 GetDungeonEncounterId() const { return _dungeonEncounterId; }
     void SetDungeonEncounterId(uint32 dungeonEncounterId) { _dungeonEncounterId = dungeonEncounterId; }

@@ -169,7 +169,7 @@ struct npc_mithaka : ScriptedAI
 
     bool OnGossipHello(Player* player) override
     {
-        InitGossipMenuFor(player, GOSSIP_MENU_MITHAKA);
+        //InitGossipMenuFor(player, GOSSIP_MENU_MITHAKA);
         if (!_shipInPort)
             AddGossipItemFor(player, GOSSIP_MENU_MITHAKA, 0, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
         SendGossipMenuFor(player, GOSSIP_TEXT_MITHAKA, me->GetGUID());

@@ -78,15 +78,12 @@ LootItem::~LootItem() = default;
 // Basic checks for player/item compatibility - if false no chance to see the item in the loot
 bool LootItem::AllowedForPlayer(Player const* player, Loot const* loot) const
 {
-    return AllowedForPlayer(player, loot, itemid, needs_quest, follow_loot_rules, false, conditions);
+    return AllowedForPlayer(player, loot, itemid, needs_quest, follow_loot_rules, false, conditions, type);
 }
 
 bool LootItem::AllowedForPlayer(Player const* player, Loot const* loot, uint32 itemid, bool needs_quest, bool follow_loot_rules, bool strictUsabilityCheck,
-    ConditionContainer const& conditions)
+    ConditionContainer const& conditions, LootItemType type)
 {
-    if (!IsPersonalLootFor(player))
-        return false;
-
     // DB conditions check
     if (!sConditionMgr->IsObjectMeetToConditions(player, conditions))
         return false;
@@ -144,22 +141,6 @@ bool LootItem::AllowedForPlayer(Player const* player, Loot const* loot, uint32 i
 void LootItem::AddAllowedLooter(const Player* player)
 {
     allowedGUIDs.insert(player->GetGUID());
-}
-
-void LootItem::SetPersonalLooter(Player const* player)
-{
-    personalLooter = player->GetGUID();
-}
-
-bool LootItem::IsPersonalLootFor(Player const* player) const
-{
-    // No personal looter specified, anyone can loot
-    if (personalLooter.IsEmpty())
-        return true;
-    else if (personalLooter == player->GetGUID())
-        return true;
-
-    return false;
 }
 
 bool LootItem::HasAllowedLooter(ObjectGuid const& looter) const
@@ -973,7 +954,6 @@ void Loot::AddItem(LootStoreItem const& item, Player const* player, bool persona
 
                 if (personalLoot)
                 {
-                    generatedLoot.SetPersonalLooter(player);
                     generatedLoot.freeforall = false;
                     generatedLoot.personal = true;
                 }

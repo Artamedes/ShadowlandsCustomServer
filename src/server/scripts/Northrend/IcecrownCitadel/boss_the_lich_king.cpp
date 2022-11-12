@@ -523,7 +523,7 @@ struct boss_the_lich_king : public BossAI
             me->SummonCreature(NPC_HIGHLORD_TIRION_FORDRING_LK, TirionSpawn, TEMPSUMMON_MANUAL_DESPAWN, 0);
     }
 
-    void JustDied(Unit* /*killer*/) override
+    void JustDied(Unit* killer) override
     {
         _JustDied();
         DoCastAOE(SPELL_PLAY_MOVIE, false);

@@ -93,6 +93,7 @@ class LootTemplate::LootGroup                               // A set of loot def
         ~LootGroup();
 
         void AddEntry(LootStoreItem* item);                 // Adds an entry to the group (at loading stage)
+        bool HasDropForPlayer(Player const* player, bool strictUsabilityCheck) const;
         bool HasQuestDrop() const;                          // True if group includes at least 1 quest drop entry
         bool HasQuestDropForPlayer(Player const* player) const;
                                                             // The same for active quests of the player
@@ -432,6 +433,23 @@ LootStoreItem const* LootTemplate::LootGroup::Roll(Loot& loot, uint16 lootMode, 
         return Trinity::Containers::SelectRandomContainerElement(possibleLoot);
 
     return NULL;                                            // Empty drop from the group
+}
+
+bool LootTemplate::LootGroup::HasDropForPlayer(Player const* player, bool strictUsabilityCheck) const
+{
+    for (LootStoreItem const* lootStoreItem : ExplicitlyChanced)
+        if (LootItem::AllowedForPlayer(player, nullptr, lootStoreItem->itemid, lootStoreItem->needs_quest,
+            !lootStoreItem->needs_quest || ASSERT_NOTNULL(sObjectMgr->GetItemTemplate(lootStoreItem->itemid))->HasFlag(ITEM_FLAGS_CU_FOLLOW_LOOT_RULES),
+            strictUsabilityCheck, lootStoreItem->conditions, lootStoreItem->type))
+            return true;
+
+    for (LootStoreItem const* lootStoreItem : EqualChanced)
+        if (LootItem::AllowedForPlayer(player, nullptr, lootStoreItem->itemid, lootStoreItem->needs_quest,
+            !lootStoreItem->needs_quest || ASSERT_NOTNULL(sObjectMgr->GetItemTemplate(lootStoreItem->itemid))->HasFlag(ITEM_FLAGS_CU_FOLLOW_LOOT_RULES),
+            strictUsabilityCheck, lootStoreItem->conditions, lootStoreItem->type))
+            return true;
+
+    return false;
 }
 
 // True if group includes at least 1 quest drop entry
@@ -858,6 +876,105 @@ void LootTemplate::Process(Loot& loot, bool rate, uint16 lootMode, Difficulty di
             group->Process(loot, lootMode, difficulty, player, specOnly, personaLoot);
 }
 
+
+void LootTemplate::ProcessPersonalLoot(std::unordered_map<Player*, std::unique_ptr<Loot>>& personalLoot, bool rate, uint16 lootMode) const
+{
+    auto getLootersForItem = [&personalLoot](auto&& predicate)
+    {
+        std::vector<Player*> lootersForItem;
+        for (auto&& [looter, loot] : personalLoot)
+        {
+            if (predicate(looter))
+                lootersForItem.push_back(looter);
+        }
+        return lootersForItem;
+    };
+
+    // Rolling non-grouped items
+    for (LootStoreItem const* item : Entries)
+    {
+        if (!(item->lootmode & lootMode))                       // Do not add if mode mismatch
+            continue;
+
+        if (!item->Roll(rate))
+            continue;                                           // Bad luck for the entry
+
+        if (item->reference > 0)                                // References processing
+        {
+            LootTemplate const* referenced = LootTemplates_Reference.GetLootFor(item->reference);
+            if (!referenced)
+                continue;                                       // Error message already printed at loading stage
+
+            uint32 maxcount = uint32(float(item->maxcount) * sWorld->getRate(RATE_DROP_ITEM_REFERENCED_AMOUNT));
+            std::vector<Player*> gotLoot;
+            for (uint32 loop = 0; loop < maxcount; ++loop)      // Ref multiplicator
+            {
+                std::vector<Player*> lootersForItem = getLootersForItem([&](Player const* looter)
+                {
+                    return referenced->HasDropForPlayer(looter, item->groupid, true);
+                });
+
+                // nobody can loot this, skip it
+                if (lootersForItem.empty())
+                    break;
+
+                auto newEnd = std::remove_if(lootersForItem.begin(), lootersForItem.end(), [&](Player const* looter)
+                {
+                    return std::find(gotLoot.begin(), gotLoot.end(), looter) != gotLoot.end();
+                });
+
+                if (lootersForItem.begin() == newEnd)
+                {
+                    // if we run out of looters this means that there are more items dropped than players
+                    // start a new cycle adding one item to everyone
+                    gotLoot.clear();
+                }
+                else
+                    lootersForItem.erase(newEnd, lootersForItem.end());
+
+                Player* chosenLooter = Trinity::Containers::SelectRandomContainerElement(lootersForItem);
+                referenced->Process(*personalLoot[chosenLooter], rate, lootMode, chosenLooter->GetMap()->GetDifficultyID(), item->groupid, chosenLooter);
+                gotLoot.push_back(chosenLooter);
+            }
+        }
+        else
+        {
+            // Plain entries (not a reference, not grouped)
+            // Chance is already checked, just add
+            std::vector<Player*> lootersForItem = getLootersForItem([&](Player const* looter)
+            {
+                return LootItem::AllowedForPlayer(looter, nullptr, item->itemid, item->needs_quest,
+                    !item->needs_quest || ASSERT_NOTNULL(sObjectMgr->GetItemTemplate(item->itemid))->HasFlag(ITEM_FLAGS_CU_FOLLOW_LOOT_RULES),
+                    true, item->conditions, item->type);
+            });
+
+            if (!lootersForItem.empty())
+            {
+                Player* chosenLooter = Trinity::Containers::SelectRandomContainerElement(lootersForItem);
+                personalLoot[chosenLooter]->AddItem(*item, chosenLooter, true);
+            }
+        }
+    }
+
+    // Now processing groups
+    for (LootGroup const* group : Groups)
+    {
+        if (group)
+        {
+            std::vector<Player*> lootersForGroup = getLootersForItem([&](Player const* looter)
+            {
+                return group->HasDropForPlayer(looter, true);
+            });
+
+            if (!lootersForGroup.empty())
+            {
+                Player* chosenLooter = Trinity::Containers::SelectRandomContainerElement(lootersForGroup);
+                group->Process(*personalLoot[chosenLooter], lootMode, chosenLooter->GetMap()->GetDifficultyID(), chosenLooter);
+            }
+        }
+    }
+}
+
 void LootTemplate::ProcessOploteChest(Loot& loot) const
 {
     Player const* lootOwner = ObjectAccessor::FindPlayer(loot.GetLootOwnerGuid());
@@ -1018,6 +1135,47 @@ void LootTemplate::ProcessChallengeChest(Loot& loot, uint32 lootId, Challenge* _
     //    const_cast<Player*>(lootOwner)->m_challengeKeyInfo.Level = _challenge->GetChallengeLevel() - MYTHIC_LEVEL_1;
     //    loot.AddItem(LootStoreItem(ITEM_MYTHIC_KEYSTONE, LOOT_ITEM_TYPE_ITEM, 0, 100.0f, 0, LOOT_MODE_DEFAULT, 1, 1, 1), lootOwner, true);
     //}
+}
+
+
+// True if template includes at least 1 drop for the player
+bool LootTemplate::HasDropForPlayer(Player const* player, uint8 groupId, bool strictUsabilityCheck) const
+{
+    if (groupId)                                            // Group reference
+    {
+        if (groupId > Groups.size())
+            return false;                                   // Error message already printed at loading stage
+
+        if (!Groups[groupId - 1])
+            return false;
+
+        return Groups[groupId - 1]->HasDropForPlayer(player, strictUsabilityCheck);
+    }
+
+    // Checking non-grouped entries
+    for (LootStoreItem* lootStoreItem : Entries)
+    {
+        if (lootStoreItem->reference > 0)                   // References processing
+        {
+            LootTemplate const* referenced = LootTemplates_Reference.GetLootFor(lootStoreItem->reference);
+            if (!referenced)
+                continue;                                   // Error message already printed at loading stage
+            if (referenced->HasDropForPlayer(player, lootStoreItem->groupid, strictUsabilityCheck))
+                return true;
+        }
+        else if (LootItem::AllowedForPlayer(player, nullptr, lootStoreItem->itemid, lootStoreItem->needs_quest,
+            !lootStoreItem->needs_quest || ASSERT_NOTNULL(sObjectMgr->GetItemTemplate(lootStoreItem->itemid))->HasFlag(ITEM_FLAGS_CU_FOLLOW_LOOT_RULES),
+            strictUsabilityCheck, lootStoreItem->conditions, lootStoreItem->type))
+            return true;                                    // active quest drop found
+    }
+
+    // Now checking groups
+    for (LootGroup* group : Groups)
+        if (group)
+            if (group->HasDropForPlayer(player, strictUsabilityCheck))
+                return true;
+
+    return false;
 }
 
 // True if template includes at least 1 quest drop entry

@@ -3852,7 +3852,7 @@ class spell_silverpine_free_webbed_victim_random : public SpellScript
 
             if (randomCreature != 0)
             {
-                if (Creature* randomAggresiveCreature = caster->SummonCreature(randomCreature, GetHitUnit()->GetPosition()))
+                if (Creature* randomAggresiveCreature = caster->SummonCreature(randomCreature, GetHitUnit()->GetPosition(), TEMPSUMMON_MANUAL_DESPAWN, 0, 0, 0))
                     randomAggresiveCreature->Attack(caster, true);
             }
         }

@@ -632,7 +632,7 @@ bool Condition::Meets(ConditionSourceInfo& sourceInfo) const
         }
         case CONDITION_ACCOUNT_LEVEL:
         {
-            if (Player* player = object->ToPlayer())
+            if (Player const* player = object->ToPlayer())
                 if (WorldSession* sess = player->GetSession())
                     condMeets = static_cast<uint32>(sess->GetSecurity()) >= ConditionValue1 && player->IsGameMaster();
             break;
