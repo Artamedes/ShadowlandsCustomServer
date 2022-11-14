@@ -67,30 +67,30 @@ WorldPacket const* GossipMessage::Write()
     _worldPacket << GossipGUID;
     _worldPacket << int32(GossipID);
     _worldPacket << int32(FriendshipFactionID);
-    //_worldPacket << int32(TextID);
+    //_worldPacket << int32(TextID); - removed in dragonflight
     _worldPacket << uint32(GossipOptions.size());
     _worldPacket << uint32(GossipText.size());
 
-    _worldPacket.WriteBit(TextID);
     _worldPacket.WriteBit(0);
+    _worldPacket.WriteBit(TextID);
     _worldPacket.FlushBits();
 
     uint32 index = 0;
 
     for (ClientGossipOptions const& options : GossipOptions)
     {
-        _worldPacket << int32(options.ClientOption);
-        _worldPacket << uint8(options.OptionNPC);
-        _worldPacket << int8(options.OptionFlags);
-        _worldPacket << int32(options.OptionCost);
-        _worldPacket << uint32(options.OptionLanguage);
-        _worldPacket << uint32(0);
-        _worldPacket << uint32(index++); // ordering
+        _worldPacket << int32(options.ClientOption); //optionid option index
+        _worldPacket << uint8(options.OptionNPC); // option npc
+        _worldPacket << int8(options.OptionFlags); // flags
+        _worldPacket << int32(options.OptionCost); // cost
+        _worldPacket << uint32(options.OptionLanguage); // language
+        _worldPacket << uint32(0); // flags
+        _worldPacket << uint32(index++); // optionid
         _worldPacket.WriteBits(options.Text.size(), 12);
         _worldPacket.WriteBits(options.Confirm.size(), 12);
         _worldPacket.WriteBits(AsUnderlyingType(options.Status), 2);
-        _worldPacket.WriteBit(0); // unk uint
         _worldPacket.WriteBit(options.SpellID.has_value());
+        _worldPacket.WriteBit(0); // uint overrideIconId
         _worldPacket.FlushBits();
 
         _worldPacket << options.Treasure;
@@ -100,10 +100,17 @@ WorldPacket const* GossipMessage::Write()
 
         if (options.SpellID)
             _worldPacket << int32(*options.SpellID);
+
+        // override iconid
     }
+
+    //if (TextID) /// BroadcastTextID
+    //    _worldPacket << TextID;
 
     if (TextID) /// BroadcastTextID
         _worldPacket << TextID;
+
+    // broadcast text 2 if bit
 
     for (ClientGossipText const& text : GossipText)
         _worldPacket << text;

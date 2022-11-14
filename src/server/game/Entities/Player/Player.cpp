@@ -14400,7 +14400,12 @@ void Player::SendPreparedGossip(WorldObject* source)
     uint32 textId = GetGossipTextId(source);
 
     if (uint32 menuId = PlayerTalkClass->GetGossipMenu().GetMenuId())
+    {
         textId = GetGossipTextId(menuId, source);
+        if (textId == DEFAULT_GOSSIP_MESSAGE)
+            textId = menuId;
+    }
+
 
     PlayerTalkClass->SendGossipMenu(textId, source->GetGUID());
 }
