@@ -1259,7 +1259,7 @@ enum OpcodeServer : uint16
     SMSG_LIVE_REGION_KEY_BINDINGS_COPY_RESULT                     = 0x2768,
     SMSG_SHOW_TRADE_SKILL_RESPONSE                                = 0x2769,
     SMSG_BATTLE_PAY_GET_PRODUCT_LIST_RESPONSE                     = 0x276A,
-    SMSG_BATTLE_PAY_GET_PURCHASE_LIST_RESPONSE                    = 0x276B,
+    SMSG_BATTLE_PAY_GET_PURCHASE_LIST_RESPONSE                    = 0x276C,
     SMSG_BATTLE_PAY_DISTRIBUTION_UNREVOKED                        = 0x276D,
     SMSG_BATTLE_PAY_DELIVERY_STARTED                              = 0x276F,
     SMSG_BATTLE_PAY_DELIVERY_ENDED                                = 0x2770,
