@@ -182,7 +182,7 @@ public:
         {
             if (player)
             {
-                AddGossipItemFor(player, GossipOptionNpc::None, GOSSIP_MALFURION_OUTRO, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+                AddGossipItemFor(player, GossipOptionIcon::None, GOSSIP_MALFURION_OUTRO, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
                 SendGossipMenuFor(player, DEFAULT_GOSSIP_MESSAGE, me->GetGUID());
             }
             return true;

@@ -44,7 +44,7 @@ class Item;
 class Unit;
 class Vehicle;
 class Map;
-enum class GossipOptionNpc : uint8;
+enum class GossipOptionIcon : int8;
 struct AccessRequirement;
 struct DeclinedName;
 struct DungeonEncounterEntry;
@@ -764,9 +764,11 @@ struct GossipMenuItems
 {
     uint32              MenuID;
     uint32              OptionID;
-    GossipOptionNpc     OptionNpc;
+    GossipOptionIcon    OptionIcon;
     std::string         OptionText;
     uint32              OptionBroadcastTextID;
+    uint32              OptionType;
+    uint32              OptionNpcFlag;
     uint32              Language;
     uint32              ActionMenuID;
     uint32              ActionPoiID;

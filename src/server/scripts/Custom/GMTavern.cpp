@@ -14,7 +14,7 @@ public:
     {
         ClearGossipMenuFor(player);
 
-        AddGossipItemFor(player, GossipOptionNpc::None, "I need a set of GM clothes.", 0, 1);
+        AddGossipItemFor(player, GossipOptionIcon::None, "I need a set of GM clothes.", 0, 1);
 
         SendGossipMenuFor(player, 802000, me);
 
@@ -48,9 +48,9 @@ public:
     {
         ClearGossipMenuFor(player);
 
-        AddGossipItemFor(player, GossipOptionNpc::None, "I want to join the GM Guild.", 0, 1, "Warning! This will remove you from any existing guilds!", 0, false);
-        AddGossipItemFor(player, GossipOptionNpc::None, "Set my hearthstone here.", 0, 2);
-        AddGossipItemFor(player, GossipOptionNpc::None, "Teleport me to the mall.", 0, 3);
+        AddGossipItemFor(player, GossipOptionIcon::None, "I want to join the GM Guild.", 0, 1, "Warning! This will remove you from any existing guilds!", 0, false);
+        AddGossipItemFor(player, GossipOptionIcon::None, "Set my hearthstone here.", 0, 2);
+        AddGossipItemFor(player, GossipOptionIcon::None, "Teleport me to the mall.", 0, 3);
 
         SendGossipMenuFor(player, 802001, me);
 

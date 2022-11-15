@@ -163,7 +163,7 @@ struct npc_bob_700099 : public ScriptedAI
      bool OnGossipHello(Player* player) override
      {
          ClearGossipMenuFor(player);
-         AddGossipItemFor(player,GossipOptionNpc::None, "I see", 0, 0);
+         AddGossipItemFor(player,GossipOptionIcon::None, "I see", 0, 0);
          SendGossipMenuFor(player, 700099, me);
          return true;
      }

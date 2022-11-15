@@ -54,7 +54,7 @@ public:
     bool OnGossipHello(Player* player) override
     {
         ClearGossipMenuFor(player);
-        AddGossipItemFor(player, GossipOptionNpc::None, "Let's get out of here!", 0, 0, "Are you sure? This will start the encounter.", 0, false, [this](std::string /*callback*/)
+        AddGossipItemFor(player, GossipOptionIcon::None, "Let's get out of here!", 0, 0, "Are you sure? This will start the encounter.", 0, false, [this](std::string /*callback*/)
         {
             me->RemoveNpcFlag(NPCFlags::UNIT_NPC_FLAG_GOSSIP);
             StartEncounter();

@@ -13,9 +13,9 @@ struct npc_currency_exchange : public ScriptedAI
         {
             ClearGossipMenuFor(p_Player);
             p_Player->PrepareQuestMenu(me->GetGUID());
-            AddGossipItemFor(p_Player, GossipOptionNpc::None, "|TInterface\\ICONS\\inv_inscription_talenttome01.BLP:30:30:-28:0|tExchange 1.", 0, 1, "", 0, true);
-            AddGossipItemFor(p_Player, GossipOptionNpc::None, "|TInterface\\ICONS\\inv_inscription_talenttome01.BLP:30:30:-28:0|tExchange 2.", 0, 1, "", 0, true);
-            AddGossipItemFor(p_Player, GossipOptionNpc::None, "|TInterface\\ICONS\\inv_inscription_talenttome01.BLP:30:30:-28:0|tExchange 3.", 0, 1, "", 0, true);
+            AddGossipItemFor(p_Player, GossipOptionIcon::None, "|TInterface\\ICONS\\inv_inscription_talenttome01.BLP:30:30:-28:0|tExchange 1.", 0, 1, "", 0, true);
+            AddGossipItemFor(p_Player, GossipOptionIcon::None, "|TInterface\\ICONS\\inv_inscription_talenttome01.BLP:30:30:-28:0|tExchange 2.", 0, 1, "", 0, true);
+            AddGossipItemFor(p_Player, GossipOptionIcon::None, "|TInterface\\ICONS\\inv_inscription_talenttome01.BLP:30:30:-28:0|tExchange 3.", 0, 1, "", 0, true);
             SendGossipMenuFor(p_Player, me->GetEntry(), me);
             return true;
         }

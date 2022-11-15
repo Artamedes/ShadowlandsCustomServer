@@ -88,11 +88,11 @@ public:
         {
             if (!CurrentDummy.IsEmpty())
             {
-                AddGossipItemFor(player, GossipOptionNpc::None, "I'm done testing.", 0, 1);
+                AddGossipItemFor(player, GossipOptionIcon::None, "I'm done testing.", 0, 1);
             }
             else
             {
-                AddGossipItemFor(player, GossipOptionNpc::None, "Summon the bot.", 0, 2);
+                AddGossipItemFor(player, GossipOptionIcon::None, "Summon the bot.", 0, 2);
             }
             SendGossipMenuFor(player, 802002, me);
         }

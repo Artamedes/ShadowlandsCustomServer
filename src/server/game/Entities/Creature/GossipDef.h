@@ -31,55 +31,56 @@ enum class QuestGiverStatus : uint32;
 #define GOSSIP_MAX_MENU_ITEMS               32
 #define DEFAULT_GOSSIP_MESSAGE              0xffffff
 
-enum class GossipOptionNpc : uint8
+enum class GossipOptionIcon : int8
 {
-    None                       = 0,    // White chat bubble. Default
-    Vendor                     = 1,    // Brown bag
-    TaxiNode                   = 2,    // White wing
-    Trainer                    = 3,    // Brown book
-    SpiritHealer               = 4,    // Golden interaction wheel (with red center)
-    Binder                     = 5,    // Golden interaction wheel
-    Banker                     = 6,    // Brown bag (with gold coin in lower corner)
-    PetitionVendor             = 7,    // White chat bubble (with "..." inside)
-    TabardVendor               = 8,    // White tabard
-    BattleMaster               = 9,    // Two crossed swords
-    Auctioneer                 = 10,   // Stack of gold coins
-    TalentMaster               = 11,   // White chat bubble
-    StableMaster               = 12,   // White chat bubble
-    PetSpecializationMaster    = 13,   /*DEPRECATED*/ // White chat bubble
-    GuildBanker                = 14,   /*NYI*/ // White chat bubble
-    SpellClick                 = 15,   /*NYI*/ // White chat bubble
-    DisableXPGain              = 16,   // White chat bubble
-    EnableXPGain               = 17,   // White chat bubble
-    Mailbox                    = 18,   // White chat bubble
-    WorldPVPQueue              = 19,   /*NYI*/ // White chat bubble
-    LFGDungeon                 = 20,   /*NYI*/ // White chat bubble
-    ArtifactRespec             = 21,   /*NYI*/ // White chat bubble
-    CemeterySelect             = 22,   /*DEPRECATED*/ // White chat bubble
-    SpecializationMaster       = 23,   /*DEPRECATED*/ // White chat bubble
-    GlyphMaster                = 24,   /*DEPRECATED*/ // White chat bubble
-    QueueScenario              = 25,   /*NYI*/ // White chat bubble
-    GarrisonArchitect          = 26,   /*NYI*/ // White chat bubble
-    GarrisonMission            = 27,   /*NYI*/ // White chat bubble
-    ShipmentCrafter            = 28,   /*NYI*/ // Brown document
-    GarrisonTradeskill         = 29,   /*NYI*/ // White chat bubble
-    GarrisonRecruitment        = 30,   /*NYI*/ // White chat bubble
-    AdventureMap               = 31,   /*NYI*/ // White chat bubble
-    GarrisonTalent             = 32,   /*NYI*/ // White chat bubble
-    ContributionCollector      = 33,   /*NYI*/ // White chat bubble
-    Transmogrify               = 34,   // Purple helm
-    AzeriteRespec              = 35,   // White chat bubble
-    IslandsMission             = 36,   /*NYI*/ // White chat bubble
-    UIItemInteraction          = 37,   /*NYI*/ // White chat bubble
-    WorldMap                   = 38,   /*NYI*/ // White chat bubble
-    Soulbind                   = 39,   /*NYI*/ // White chat bubble
-    ChromieTime                = 40,   /*NYI*/ // White chat bubble
-    CovenantPreview            = 41,   /*NYI*/ // White chat bubble
-    RuneforgeLegendaryCrafting = 42,   /*NYI*/ // White chat bubble
-    NewPlayerGuide             = 43,   /*NYI*/ // White chat bubble
-    RuneforgeLegendaryUpgrade  = 44,   /*NYI*/ // White chat bubble
-    CovenantRenown             = 45,   /*NYI*/ // White chat bubble
-    Count
+    Anti                    = -1,
+    None                    = 0,    // White chat bubble. Default
+    Vendor                  = 1,    // Brown bag
+    TaxiNode                = 2,    // White wing
+    Trainer                 = 3,    // Brown book
+    SpiritHealer            = 4,    // Golden interaction wheel (with red center)
+    Binder                  = 5,    // Golden interaction wheel
+    Banker                  = 6,    // Brown bag (with gold coin in lower corner)
+    PetitionVendor          = 7,    // White chat bubble (with "..." inside)
+    TabardVendor            = 8,    // White tabard
+    BattleMaster            = 9,    // Two crossed swords
+    Auctioneer              = 10,   // Stack of gold coins
+    TalentMaster            = 11,   // White chat bubble
+    StableMaster            = 12,   // White chat bubble
+    PetSpecializationMaster = 13,   // White chat bubble
+    GuildBanker             = 14,   // White chat bubble
+    SpellClick              = 15,   // White chat bubble
+    DisableXPGain           = 16,   // White chat bubble
+    EnableXPGain            = 17,   // White chat bubble
+    Mailbox                 = 18,   // White chat bubble
+    WorldPVPQueue           = 19,   // White chat bubble
+    DungeonFinder           = 20,   // White chat bubble
+    ArtifactRespec          = 21,   // White chat bubble
+    CemeterySelect          = 22,   // White chat bubble
+    SpecializationMaster    = 23,   // White chat bubble
+    GlyphMaster             = 24,   // White chat bubble
+    ScenarioQueue           = 25,   // White chat bubble
+    GarrisonArchitect       = 26,   // White chat bubble
+    GarrisonMission         = 27,   // White chat bubble
+    GarrisonShipment        = 28,   // Brown document
+    GarrisonTradeskill      = 29,   // White chat bubble
+    GarrisonRecruitment     = 30,   // White chat bubble
+    AdventureMap            = 31,   // White chat bubble
+    GarrisonTalent          = 32,   // White chat bubble
+    ContributionCollector   = 33,   // White chat bubble
+    Transmogrify            = 34,   // Purple helm
+    AzeriteRespec           = 35,   // White chat bubble
+    IslandsQueue            = 36,   // White chat bubble
+    UIItemInteraction       = 37,   // White chat bubble
+    WorldMap                = 38,   // White chat bubble
+    Unk39                   = 39,   //
+    ChromieTime             = 40,   // White chat bubble
+    Unk41                   = 41,   //
+    RuneforgeCrafting       = 42,   // White chat bubble
+    GuideRecruiter          = 43,   // White chat bubble
+    RuneforgeUpgrading      = 44,   // White chat bubble
+    CovenantRenown          = 45,   // White chat bubble
+    Count,
 };
 
 enum class PlayerInteractionType : uint32
@@ -167,12 +168,12 @@ enum class GossipOptionRewardType : uint8
 
 struct GossipMenuItem
 {
-    GossipOptionNpc  OptionNpc;
+    GossipOptionIcon MenuItemIcon;
     uint32           ClientOption;
     bool             IsCoded;
     std::string      Message;
     uint32           Sender;
-    uint32           Action;
+    uint32           OptionType;
     std::string      BoxMessage;
     uint32           BoxMoney;
     uint32           Language;
@@ -205,7 +206,7 @@ class TC_GAME_API GossipMenu
         GossipMenu();
         ~GossipMenu();
 
-        uint32 AddMenuItem(int32 menuItemId, GossipOptionNpc optionNpc, std::string const& message, uint32 sender, uint32 action, std::string const& boxMessage, uint32 boxMoney, bool coded = false, std::function<void(std::string)> callback = nullptr);
+        uint32 AddMenuItem(int32 menuItemId, GossipOptionIcon icon, std::string const& message, uint32 sender, uint32 action, std::string const& boxMessage, uint32 boxMoney, bool coded = false, std::function<void(std::string)> callback = nullptr);
         void AddMenuItem(uint32 menuId, uint32 menuItemId, uint32 sender, uint32 action);
 
         void SetMenuId(uint32 menu_id) { _menuId = menu_id; }
@@ -246,6 +247,7 @@ class TC_GAME_API GossipMenu
         uint32 GetMenuItemSender(uint32 menuItemId) const;
         uint32 GetMenuItemAction(uint32 menuItemId) const;
         bool IsMenuItemCoded(uint32 menuItemId) const;
+        bool HasMenuItemType(uint32 optionType) const;
 
         void ClearMenu();
 
