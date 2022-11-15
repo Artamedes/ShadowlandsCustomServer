@@ -318,6 +318,8 @@ class DailyRewardsSystem_player_script : public PlayerScript
             }
 
             auto quest = sObjectMgr->GetQuestTemplate(719999);
+            if (!quest)
+                return;
             if (player->CanTakeQuest(quest, false) && player->CanAddQuest(quest, false))
             {
                 player->AddQuestAndCheckCompletion(quest, player);
