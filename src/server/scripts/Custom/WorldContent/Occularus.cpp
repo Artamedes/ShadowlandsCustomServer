@@ -5,6 +5,10 @@
 #include "GossipDef.h"
 #include "SpellAuras.h"
 #include "MotionMaster.h"
+#include "Cell.h"
+#include "CellImpl.h"
+#include "GridNotifiers.h"
+#include "GridLoader.h"
 
 const std::vector<Position> EnemySpawnPoints
 {

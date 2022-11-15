@@ -5,6 +5,10 @@
 #include "CustomInstanceScript.h"
 #include "InstanceScenario.h"
 #include "Scenario.h"
+#include "Cell.h"
+#include "CellImpl.h"
+#include "GridNotifiers.h"
+#include "GridLoader.h"
 
 // 700704 - npc_portal_of_light_700704
 struct npc_portal_of_light_700704 : public ScriptedAI
