@@ -14241,7 +14241,7 @@ void Player::PrepareGossipMenu(WorldObject* source, uint32 menuId, bool showQues
         bool canTalk = true;
         if (Creature* creature = source->ToCreature())
         {
-            if (!(gossipMenuItem.OptionNpcFlag & npcflags))
+            if (gossipMenuItem.OptionNpcFlag && !(gossipMenuItem.OptionNpcFlag & npcflags))
                 continue;
 
             if (gossipMenuItem.OptionNpcFlag == 2)
