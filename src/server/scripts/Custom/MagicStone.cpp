@@ -163,7 +163,7 @@ class MagicStone : public ItemScript
 
                         if (tele->mapId != player->GetMapId() || player->GetDistance2d(tele->position_x, tele->position_y) >= 200.0f)
                         {
-                            player->CastSpell(player, 367044, true);
+                            player->CastSpell(player, 253303, true);
                             player->GetScheduler().Schedule(800ms, 700000, [tele](TaskContext context)
                             {
                                 auto player = GetContextPlayer();
