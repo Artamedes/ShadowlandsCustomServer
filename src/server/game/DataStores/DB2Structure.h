@@ -2192,17 +2192,17 @@ struct ItemEffectEntry
 
 struct ItemExtendedCostEntry
 {
-    uint32 ID;
+    int32 ID;
     uint16 RequiredArenaRating;
-    int8 ArenaBracket;                                             // arena slot restrictions (min slot value)
+    int8 ArenaBracket;
     uint8 Flags;
     uint8 MinFactionID;
-    uint8 MinReputation;
-    uint8 RequiredAchievement;                                      // required personal arena rating
-    std::array<int32, MAX_ITEM_EXT_COST_ITEMS> ItemID;              // required item id
-    std::array<uint16, MAX_ITEM_EXT_COST_ITEMS> ItemCount;          // required count of 1st item
-    std::array<uint16, MAX_ITEM_EXT_COST_CURRENCIES> CurrencyID;    // required curency id
-    std::array<uint32, MAX_ITEM_EXT_COST_CURRENCIES> CurrencyCount; // required curency count
+    int32 MinReputation;
+    uint8 RequiredAchievement;
+    std::array<int32, 5> ItemID;
+    std::array<uint16, 5> ItemCount;
+    std::array<uint16, 5> CurrencyID;
+    std::array<uint32, 5> CurrencyCount;
 };
 
 struct ItemLevelSelectorEntry
@@ -2457,7 +2457,7 @@ struct JournalEncounterSectionEntry
 
 struct JournalInstanceEntry
 {
-    uint32 ID;
+    int32 ID;
     LocalizedString Name;
     LocalizedString Description;
     uint16 MapID;
@@ -2465,7 +2465,6 @@ struct JournalInstanceEntry
     int32 ButtonFileDataID;
     int32 ButtonSmallFileDataID;
     int32 LoreFileDataID;
-    uint8 OrderIndex;
     int32 Flags;
     uint16 AreaID;
 };
@@ -3035,7 +3034,7 @@ struct PVPItemEntry
 struct PvpTalentEntry
 {
     LocalizedString Description;
-    uint32 ID;
+    int32 ID;
     int32 SpecID;
     int32 SpellID;
     int32 OverridesSpellID;
@@ -3043,6 +3042,7 @@ struct PvpTalentEntry
     int32 ActionBarSpellID;
     int32 PvpTalentCategoryID;
     int32 LevelRequired;
+    int32 Field100246420009;
 };
 
 struct PvpTalentCategoryEntry
@@ -4523,6 +4523,7 @@ struct CampaignEntry
     uint32 Flags;
     int32 DisplayPriority;
     int32 Field100245779012;
+    int32 Field100246144013;
 };
 
 struct CampaignXQuestLineEntry

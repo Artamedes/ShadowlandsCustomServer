@@ -485,12 +485,6 @@ public:
         //
         //handler->GetSession()->SendPacket(result.Write());
 
-        WorldPacket data(SMSG_UNK_DF);
-        data << uint32(unk1);
-        data << uint32(unk2);
-        data.WriteBits(unk3, 4);
-        data.FlushBits();
-        handler->GetSession()->SendPacket(&data);
         return true;
     }
 

@@ -174,7 +174,7 @@ namespace WorldPackets
         class LearnTraits final : public ClientPacket
         {
         public:
-            LearnTraits(WorldPacket&& packet) : ClientPacket(CMSG_LEARN_TRAITS, std::move(packet)) { }
+            LearnTraits(WorldPacket&& packet) : ClientPacket(CMSG_TRAITS_COMMIT_CONFIG, std::move(packet)) { }
 
             void Read() override;
 
@@ -186,7 +186,7 @@ namespace WorldPackets
         class CreateNewLoadout final : public ClientPacket
         {
         public:
-            CreateNewLoadout(WorldPacket&& packet) : ClientPacket(CMSG_CREATE_NEW_LOADOUT, std::move(packet)) { }
+            CreateNewLoadout(WorldPacket&& packet) : ClientPacket(CMSG_CLASS_TALENTS_REQUEST_NEW_CONFIG, std::move(packet)) { }
 
             void Read() override;
 
@@ -196,7 +196,7 @@ namespace WorldPackets
         class SwapLoadout final : public ClientPacket
         {
         public:
-            SwapLoadout(WorldPacket&& packet) : ClientPacket(CMSG_SWAP_TRAIT_LOADOUT, std::move(packet)) { }
+            SwapLoadout(WorldPacket&& packet) : ClientPacket(CMSG_CLASS_TALENTS_NOTIFY_EMPTY_CONFIG, std::move(packet)) { }
 
             void Read() override;
 
@@ -206,7 +206,7 @@ namespace WorldPackets
         class RemoveLoadout final : public ClientPacket
         {
         public:
-            RemoveLoadout(WorldPacket&& packet) : ClientPacket(CMSG_REMOVE_LOADOUT, std::move(packet)) { }
+            RemoveLoadout(WorldPacket&& packet) : ClientPacket(CMSG_CLASS_TALENTS_DELETE_CONFIG, std::move(packet)) { }
 
             void Read() override;
 
@@ -216,7 +216,7 @@ namespace WorldPackets
         class RenameLoadout final : public ClientPacket
         {
         public:
-            RenameLoadout(WorldPacket&& packet) : ClientPacket(CMSG_RENAME_LOADOUT, std::move(packet)) { }
+            RenameLoadout(WorldPacket&& packet) : ClientPacket(CMSG_CLASS_TALENTS_RENAME_CONFIG, std::move(packet)) { }
 
             void Read() override;
 
@@ -227,7 +227,7 @@ namespace WorldPackets
         class ActiveStarterBuild final : public ClientPacket
         {
         public:
-            ActiveStarterBuild(WorldPacket&& packet) : ClientPacket(CMSG_ACTIVATE_STARTER_BUILD, std::move(packet)) { }
+            ActiveStarterBuild(WorldPacket&& packet) : ClientPacket(CMSG_CLASS_TALENTS_SET_STARTER_BUILD_ACTIVE, std::move(packet)) { }
 
             void Read() override;
 

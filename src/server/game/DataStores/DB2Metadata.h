@@ -6895,7 +6895,7 @@ struct ItemExtendedCostMeta
             { FT_BYTE, 1, true },
             { FT_BYTE, 1, false },
             { FT_BYTE, 1, false },
-            { FT_BYTE, 1, false },
+            { FT_INT, 1, true },
             { FT_BYTE, 1, false },
             { FT_INT, 5, true },
             { FT_SHORT, 5, false },
@@ -7506,7 +7506,7 @@ struct JournalInstanceMeta
 {
     static DB2Meta const* Instance()
     {
-        static constexpr DB2MetaField fields[10] =
+        static constexpr DB2MetaField fields[9] =
         {
             { FT_STRING, 1, true },
             { FT_STRING, 1, true },
@@ -7515,11 +7515,10 @@ struct JournalInstanceMeta
             { FT_INT, 1, true },
             { FT_INT, 1, true },
             { FT_INT, 1, true },
-            { FT_BYTE, 1, false },
             { FT_INT, 1, true },
             { FT_SHORT, 1, false },
         };
-        static constexpr DB2Meta instance(1237438, -1, 10, 10, 0xCBFE4A96, fields, -1);
+        static constexpr DB2Meta instance(1237438, -1, 9, 9, 0xE213FF3B, fields, -1);
         return &instance;
     }
 };
@@ -9801,7 +9800,7 @@ struct PvpTalentMeta
 {
     static DB2Meta const* Instance()
     {
-        static constexpr DB2MetaField fields[9] =
+        static constexpr DB2MetaField fields[10] =
         {
             { FT_STRING, 1, true },
             { FT_INT, 1, false },
@@ -9812,8 +9811,9 @@ struct PvpTalentMeta
             { FT_INT, 1, true },
             { FT_INT, 1, true },
             { FT_INT, 1, true },
+            { FT_INT, 1, true },
         };
-        static constexpr DB2Meta instance(1302853, 1, 9, 9, 0x7150D804, fields, 2);
+        static constexpr DB2Meta instance(1302853, 1, 10, 10, 0xEC6943FA, fields, 2);
         return &instance;
     }
 };
@@ -15456,7 +15456,7 @@ struct CampaignMeta
 {
     static DB2Meta const* Instance()
     {
-        static constexpr DB2MetaField fields[13] =
+        static constexpr DB2MetaField fields[14] =
         {
             { FT_STRING, 1, true },
             { FT_STRING_NOT_LOCALIZED, 1, true },
@@ -15471,8 +15471,9 @@ struct CampaignMeta
             { FT_INT, 1, false },
             { FT_INT, 1, true },
             { FT_INT, 1, true },
+            { FT_INT, 1, true },
         };
-        static constexpr DB2Meta instance(2031607, -1, 13, 13, 0x056660B0, fields, -1);
+        static constexpr DB2Meta instance(2031607, -1, 14, 14, 0xAD30B727, fields, -1);
         return &instance;
     }
 };

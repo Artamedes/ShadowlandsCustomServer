@@ -3301,7 +3301,7 @@ struct ItemExtendedCostLoadInfo
             { true, FT_BYTE, "ArenaBracket" },
             { false, FT_BYTE, "Flags" },
             { false, FT_BYTE, "MinFactionID" },
-            { false, FT_BYTE, "MinReputation" },
+            { false, FT_INT, "MinReputation" },
             { false, FT_BYTE, "RequiredAchievement" },
             { true, FT_INT, "ItemID1" },
             { true, FT_INT, "ItemID2" },
@@ -3788,7 +3788,7 @@ struct JournalInstanceLoadInfo
     {
         static constexpr DB2FieldMeta fields[] =
         {
-            { false, FT_INT, "ID" },
+            { true, FT_INT, "ID" },
             { false, FT_STRING, "Name" },
             { false, FT_STRING, "Description" },
             { false, FT_SHORT, "MapID" },
@@ -3796,7 +3796,6 @@ struct JournalInstanceLoadInfo
             { true, FT_INT, "ButtonFileDataID" },
             { true, FT_INT, "ButtonSmallFileDataID" },
             { true, FT_INT, "LoreFileDataID" },
-            { false, FT_BYTE, "OrderIndex" },
             { true, FT_INT, "Flags" },
             { false, FT_SHORT, "AreaID" },
         };
@@ -4776,7 +4775,7 @@ struct PvpTalentLoadInfo
         static constexpr DB2FieldMeta fields[] =
         {
             { false, FT_STRING, "Description" },
-            { false, FT_INT, "ID" },
+            { true, FT_INT, "ID" },
             { true, FT_INT, "SpecID" },
             { true, FT_INT, "SpellID" },
             { true, FT_INT, "OverridesSpellID" },
@@ -4784,6 +4783,7 @@ struct PvpTalentLoadInfo
             { true, FT_INT, "ActionBarSpellID" },
             { true, FT_INT, "PvpTalentCategoryID" },
             { true, FT_INT, "LevelRequired" },
+            { true, FT_INT, "Field100246420009" },
         };
         static DB2LoadInfo const loadInfo(&fields[0], std::size(fields), PvpTalentMeta::Instance(), HOTFIX_SEL_PVP_TALENT);
         return &loadInfo;
@@ -7414,7 +7414,7 @@ struct CharStartOutfitLoadInfo
     {
         static constexpr DB2FieldMeta fields[] =
         {
-            { false, FT_INT, "ID" },
+            { true, FT_INT, "ID" },
             { false, FT_BYTE, "ClassID" },
             { false, FT_BYTE, "SexID" },
             { false, FT_BYTE, "OutfitID" },
@@ -7457,7 +7457,7 @@ struct CampaignLoadInfo
     {
         static constexpr DB2FieldMeta fields[] =
         {
-            { false, FT_INT, "ID" },
+            { true, FT_INT, "ID" },
             { false, FT_STRING, "Title" },
             { false, FT_STRING_NOT_LOCALIZED, "InternalTitle" },
             { false, FT_STRING, "Description" },
@@ -7471,6 +7471,7 @@ struct CampaignLoadInfo
             { false, FT_INT, "Flags" },
             { true, FT_INT, "DisplayPriority" },
             { true, FT_INT, "Field100245779012" },
+            { true, FT_INT, "Field100246144013" },
         };
         static DB2LoadInfo const loadInfo(&fields[0], std::size(fields), CampaignMeta::Instance(), HOTFIX_SEL_CAMPAIGN);
         return &loadInfo;
@@ -7483,7 +7484,7 @@ struct CampaignXQuestLineLoadInfo
     {
         static constexpr DB2FieldMeta fields[] =
         {
-            { false, FT_INT, "ID" },
+            { true, FT_INT, "ID" },
             { false, FT_INT, "CampaignID" },
             { false, FT_INT, "QuestLineID" },
             { false, FT_INT, "OrderIndex" },
@@ -7499,7 +7500,7 @@ struct QuestLineLoadInfo
     {
         static constexpr DB2FieldMeta fields[] =
         {
-            { false, FT_INT, "ID" },
+            { true, FT_INT, "ID" },
             { false, FT_STRING, "Name" },
             { false, FT_STRING, "Description" },
             { false, FT_INT, "QuestID" },

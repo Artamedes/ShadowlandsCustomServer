@@ -1313,97 +1313,9 @@ void WorldSession::HandleKeyboundOverride(WorldPackets::Misc::KeyboundOverride& 
                 // collosion height
                 player->SetCanFly(true);
 
-                WorldPacket data(SMSG_MOVE_UNK_2E34, 16 + 4);
-                data << playerGuid;
-                data << uint32(player->m_movementCounter++);
-                player->SendDirectMessage(&data);
-
-                data.Initialize(SMSG_MOVE_UNK_2E36, 16 + 4);
-                data << playerGuid;
-                data << uint32(player->m_movementCounter++);
-                data << float(1.5f); // air friction
-                player->SendDirectMessage(&data);
-
-                data.Initialize(SMSG_MOVE_UNK_2E37, 16 + 4);
-                data << playerGuid;
-                data << uint32(player->m_movementCounter++);
-                data << float(45.0f);
-                player->SendDirectMessage(&data);
-
-                data.Initialize(SMSG_MOVE_UNK_2E38, 16 + 4);
-                data << playerGuid;
-                data << uint32(player->m_movementCounter++);
-                data << float(0.070000000298023223f); // adv flying lift coeff
-                player->SendDirectMessage(&data);
-
-                data.Initialize(SMSG_MOVE_UNK_2E39, 16 + 4);
-                data << playerGuid;
-                data << uint32(player->m_movementCounter++);
-                data << float(5.0f); // double jump mod
-                player->SendDirectMessage(&data);
-
-                data.Initialize(SMSG_MOVE_UNK_2E3A, 16 + 4);
-                data << playerGuid;
-                data << uint32(player->m_movementCounter++);
-                data << float(7.5f); // flyingGlideStartMinHeight
-                player->SendDirectMessage(&data);
-
-                data.Initialize(SMSG_MOVE_UNK_2E3B, 16 + 4);
-                data << playerGuid;
-                data << uint32(player->m_movementCounter++);
-                data << float(100.0f); // addImpulseMaxSpeed
-                player->SendDirectMessage(&data);
-
-                // unsure but maybe maxBankingRate and maxPitchingRateUp
-                data.Initialize(SMSG_MOVE_UNK_2E3C, 16 + 4);
-                data << playerGuid;
-                data << uint32(player->m_movementCounter++);
-                data << float(140.0f);
-                data << float(270.0f);
-                player->SendDirectMessage(&data);
-
-                data.Initialize(SMSG_MOVE_UNK_2E3D, 16 + 4);
-                data << playerGuid;
-                data << uint32(player->m_movementCounter++);
-                data << float(180.0f);
-                data << float(360.0f);
-                player->SendDirectMessage(&data);
-
-                data.Initialize(SMSG_MOVE_UNK_2E3E, 16 + 4);
-                data << playerGuid;
-                data << uint32(player->m_movementCounter++);
-                data << float(180.0f);
-                data << float(360.0f);
-                player->SendDirectMessage(&data);
-
-                data.Initialize(SMSG_MOVE_UNK_2E3F, 16 + 4);
-                data << playerGuid;
-                data << uint32(player->m_movementCounter++);
-                data << float(45.0f);
-                data << float(65.0f);
-                player->SendDirectMessage(&data);
-
-                data.Initialize(SMSG_MOVE_UNK_2E40, 16 + 4);
-                data << playerGuid;
-                data << uint32(player->m_movementCounter++);
-                data << float(2.75f);
-                player->SendDirectMessage(&data);
-
-                data.Initialize(SMSG_MOVE_UNK_2E41, 16 + 4);
-                data << playerGuid;
-                data << uint32(player->m_movementCounter++);
-                data << float(7.0f);
-                player->SendDirectMessage(&data);
-
-                data.Initialize(SMSG_MOVE_UNK_2E42, 16 + 4);
-                data << playerGuid;
-                data << uint32(player->m_movementCounter++);
-                data << float(0.400000005960464477f);
-                player->SendDirectMessage(&data);
-
 
                 // ServerToClient: SMSG_MOVE_UNK_2E32(0x2E32) Length : 24 ConnIdx : 1 Time : 09 / 13 / 2022 01:23 : 19.653 Number : 571
-                data.Initialize(SMSG_MOVE_UPDATE_APPLY_IMPULSE, 16 + 4 + 4 + 4 + 4);
+                WorldPacket data(SMSG_MOVE_UPDATE_ADD_IMPULSE, 16 + 4 + 4 + 4 + 4);
                 data << playerGuid;
                 data << uint32(_player->m_movementCounter++);
                 data << float(0.0f);
@@ -1420,7 +1332,7 @@ void WorldSession::HandleKeyboundOverride(WorldPackets::Misc::KeyboundOverride& 
                 {
                     float vcos = std::cos(_player->GetOrientation());
                     float vsin = std::sin(_player->GetOrientation());
-                    WorldPacket data(SMSG_MOVE_UPDATE_APPLY_IMPULSE, 16 + 4 + 4 + 4 + 4);
+                    WorldPacket data(SMSG_MOVE_UPDATE_ADD_IMPULSE, 16 + 4 + 4 + 4 + 4);
                     data << playerGuid;
                     data << uint32(_player->m_movementCounter++);
                     data << float(vcos * 10.0f);

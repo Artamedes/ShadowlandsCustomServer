@@ -129,7 +129,7 @@ namespace WorldPackets
         class PerformPlayerInteraction final : public ServerPacket
         {
         public:
-            PerformPlayerInteraction() : ServerPacket(SMSG_PERFORM_PLAYER_INTERACTION, 20) { }
+            PerformPlayerInteraction() : ServerPacket(SMSG_GAME_OBJECT_INTERACTION, 20) { }
 
             WorldPacket const* Write() override;
 
@@ -140,7 +140,7 @@ namespace WorldPackets
         class GossipNpcInteraction final : public ServerPacket
         {
         public:
-            GossipNpcInteraction() : ServerPacket(SMSG_GOSSIP_NPC_INTERACTION, 21) { }
+            GossipNpcInteraction() : ServerPacket(SMSG_NPC_INTERACTION_OPEN_RESULT, 21) { }
 
             WorldPacket const* Write() override;
 

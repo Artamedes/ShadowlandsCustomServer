@@ -9,7 +9,7 @@ class spell_dragonriding_surge_forward : public SpellScript
     {
         if (auto player = GetCaster()->ToPlayer())
         {
-            WorldPacket data(SMSG_MOVE_UPDATE_APPLY_IMPULSE, 16 + 4 + 4 + 4 + 4);
+            WorldPacket data(SMSG_MOVE_UPDATE_ADD_IMPULSE, 16 + 4 + 4 + 4 + 4);
             data << player->GetGUID();
             data << uint32(player->m_movementCounter++);
             float vcos = std::cos(player->GetOrientation());
@@ -38,7 +38,7 @@ class spell_dragonriding_skyward_ascent : public SpellScript
     {
         if (auto player = GetCaster()->ToPlayer())
         {
-            WorldPacket data(SMSG_MOVE_UPDATE_APPLY_IMPULSE, 16 + 4 + 4 + 4 + 4);
+            WorldPacket data(SMSG_MOVE_UPDATE_ADD_IMPULSE, 16 + 4 + 4 + 4 + 4);
             data << player->GetGUID();
             data << uint32(player->m_movementCounter++);
             float vcos = std::cos(player->GetOrientation());
