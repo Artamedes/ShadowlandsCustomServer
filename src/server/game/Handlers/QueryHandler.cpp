@@ -40,7 +40,10 @@ void WorldSession::BuildNameQueryData(ObjectGuid guid, WorldPackets::Query::Name
 
     lookupData.Data.emplace();
     if (lookupData.Data->Initialize(guid, player))
+    {
+        lookupData.Data->GuildClubMemberID = guid.GetCounter();
         lookupData.Result = RESPONSE_SUCCESS; // name known
+    }
     else
         lookupData.Result = RESPONSE_FAILURE; // name unknown
 }

@@ -630,6 +630,8 @@ bool Player::Create(ObjectGuid::LowType guidlow, WorldPackets::Character::Charac
 
     GetThreatManager().Initialize();
 
+    SetUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::GuildClubMemberID), GetGUID().GetCounter());
+
     return true;
 }
 
