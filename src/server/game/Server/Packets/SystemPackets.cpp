@@ -153,8 +153,6 @@ WorldPacket const* FeatureSystemStatus::Write()
         _worldPacket << float(QuickJoinConfig.ThrottleRfIlvlScalingAbove);
         _worldPacket << float(QuickJoinConfig.ThrottleDfMaxItemLevel);
         _worldPacket << float(QuickJoinConfig.ThrottleDfBestPriority);
-        // WRONG
-        //_worldPacket << uint32(0); ///< Unk DF, above are 2 uint16 in 9.2.7 as well and df, but i guess 1 float ? WTF
     }
 
     if (SessionAlert)
@@ -178,44 +176,46 @@ WorldPacket const* FeatureSystemStatus::Write()
 
 WorldPacket const* FeatureSystemStatusGlueScreen::Write()
 {
-    _worldPacket.WriteBit(false);
-    _worldPacket.WriteBit(true);
-    _worldPacket.WriteBit(false);
-    _worldPacket.WriteBit(true);
-    _worldPacket.WriteBit(true);
-    _worldPacket.WriteBit(true);
-    _worldPacket.WriteBit(false);
-    _worldPacket.WriteBit(false);
-    _worldPacket.WriteBit(false);
-    _worldPacket.WriteBit(false);
     _worldPacket.WriteBit(true);
     _worldPacket.WriteBit(true);
     _worldPacket.WriteBit(false);
     _worldPacket.WriteBit(true);
     _worldPacket.WriteBit(true);
     _worldPacket.WriteBit(true);
+    _worldPacket.WriteBit(false);
+    _worldPacket.WriteBit(false);
+    _worldPacket.WriteBit(false);
+    _worldPacket.WriteBit(false);
     _worldPacket.WriteBit(true);
-    _worldPacket.WriteBit(EuropaTicketSystemStatus.has_value());
-    _worldPacket.WriteBit(LaunchETA.has_value());
-    _worldPacket.WriteBit(0); ///< Unk DF
-    _worldPacket.WriteBit(1); ///< Unk DF
+    _worldPacket.WriteBit(true);
+    _worldPacket.WriteBit(true);
+    _worldPacket.WriteBit(false);
+    _worldPacket.WriteBit(false);
+    _worldPacket.WriteBit(false);
+    _worldPacket.WriteBit(false);
+    _worldPacket.WriteBit(true);
+    _worldPacket.WriteBit(false);
+    _worldPacket.WriteBit(true);
+    _worldPacket.WriteBit(false);
+    _worldPacket.WriteBit(false);
+    _worldPacket.WriteBit(false);
     _worldPacket.FlushBits();
 
     if (EuropaTicketSystemStatus)
         _worldPacket << *EuropaTicketSystemStatus;
 
-    _worldPacket << uint32(TokenPollTimeSeconds);
-    _worldPacket << uint32(KioskSessionMinutes);
-    _worldPacket << int64(TokenBalanceAmount);
-    _worldPacket << int32(MaxCharactersPerRealm);
+    _worldPacket << uint32(300);
+    _worldPacket << uint32(30);
+    _worldPacket << int64(150000);
+    _worldPacket << int32(50);
     _worldPacket << uint32(LiveRegionCharacterCopySourceRegions.size());
-    _worldPacket << uint32(BpayStoreProductDeliveryDelay);
-    _worldPacket << int32(ActiveCharacterUpgradeBoostType);
-    _worldPacket << int32(ActiveClassTrialBoostType);
-    _worldPacket << int32(MinimumExpansionLevel);
-    _worldPacket << int32(MaximumExpansionLevel);
-    _worldPacket << int32(ActiveSeason);
-    _worldPacket << uint32(GameRuleValues.size());
+    _worldPacket << uint32(30);
+    _worldPacket << int32(6);
+    _worldPacket << int32(4);
+    _worldPacket << int32(8);
+    _worldPacket << int32(9);
+    _worldPacket << int32(0);
+    _worldPacket << uint32(0);
     _worldPacket << int16(MaxPlayerNameQueriesPerPacket);
     _worldPacket << int16(PlayerNameQueryTelemetryInterval);
     _worldPacket << uint32(10); ///< Unk DF
@@ -252,12 +252,12 @@ WorldPacket const* SetTimeZoneInformation::Write()
 {
     _worldPacket.WriteBits(ServerTimeTZ.length(), 7);
     _worldPacket.WriteBits(GameTimeTZ.length(), 7);
-    _worldPacket.WriteBits(GameTimeTZ.length(), 7);
+    _worldPacket.WriteBits(ServerTimeTZ.length(), 7);
     _worldPacket.FlushBits();
 
     _worldPacket.WriteString(ServerTimeTZ);
     _worldPacket.WriteString(GameTimeTZ);
-    _worldPacket.WriteString(GameTimeTZ);
+    _worldPacket.WriteString(ServerTimeTZ);
 
     return &_worldPacket;
 }

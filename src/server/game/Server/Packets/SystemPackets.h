@@ -129,8 +129,8 @@ namespace WorldPackets
             uint32 HiddenUIClubsPresenceUpdateTimer      = 0; ///< Timer for updating club presence when communities ui frame is hidden
             uint32 KioskSessionMinutes                   = 30;
             int32 ActiveSeason                           = 0; ///< Currently active Classic season
-            int16 MaxPlayerNameQueriesPerPacket          = 50;
-            int16 PlayerNameQueryTelemetryInterval       = 600;
+            int16 MaxPlayerNameQueriesPerPacket          = 32;
+            int16 PlayerNameQueryTelemetryInterval       = 32;
             bool ItemRestorationButtonEnabled        = false;
             bool CharUndeleteEnabled                 = false; ///< Implemented
             bool BpayStoreDisabledByParentalControls = false;

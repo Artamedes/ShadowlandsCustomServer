@@ -241,13 +241,19 @@ ByteBuffer& operator>>(ByteBuffer& buffer, WorldPackets::Spells::SpellCastReques
     for (WorldPackets::Spells::SpellOptionalReagent& optionalReagent : request.OptionalReagents)
         buffer >> optionalReagent;
 
-    for (WorldPackets::Spells::SpellExtraCurrencyCost& optionalCurrency : request.OptionalCurrencies)
-        buffer >> optionalCurrency;
-
     request.SendCastFlags = buffer.ReadBits(5);
     bool hasMoveUpdate = buffer.ReadBit();
     request.Weight.resize(buffer.ReadBits(2));
+    bool hasUnkDF = buffer.ReadBit();
     buffer >> request.Target;
+    if (hasUnkDF)
+    {
+        // added in 46092
+        buffer.read<uint64>();
+    }
+
+    for (WorldPackets::Spells::SpellExtraCurrencyCost& optionalCurrency : request.OptionalCurrencies)
+        buffer >> optionalCurrency;
 
     if (hasMoveUpdate)
     {

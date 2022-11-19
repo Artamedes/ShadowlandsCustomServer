@@ -92,7 +92,7 @@ void WorldSession::SendSetTimeZoneInformation()
     /// @todo: replace dummy values
     WorldPackets::System::SetTimeZoneInformation packet;
     packet.ServerTimeTZ = "America/Los_Angeles";
-    packet.GameTimeTZ = "America/Los_Angeles";
+    packet.GameTimeTZ = "America/Chicago";
 
     SendPacket(packet.Write());
 }
@@ -110,10 +110,10 @@ void WorldSession::SendFeatureSystemStatusGlueScreen()
     features.EuropaTicketSystemStatus->ThrottleState.MaxTries = 10;
     features.EuropaTicketSystemStatus->ThrottleState.PerMilliseconds = 60000;
     features.EuropaTicketSystemStatus->ThrottleState.TryCount = 0;
-    features.EuropaTicketSystemStatus->ThrottleState.LastResetTimeBeforeNow = 171418;
-    features.EuropaTicketSystemStatus->TicketsEnabled     = false;
+    features.EuropaTicketSystemStatus->ThrottleState.LastResetTimeBeforeNow = 25192;
+    features.EuropaTicketSystemStatus->TicketsEnabled     = true;
     features.EuropaTicketSystemStatus->BugsEnabled        = true;
-    features.EuropaTicketSystemStatus->ComplaintsEnabled  = false;
+    features.EuropaTicketSystemStatus->ComplaintsEnabled  = true;
     features.EuropaTicketSystemStatus->SuggestionsEnabled = true;
 
     SendPacket(features.Write());

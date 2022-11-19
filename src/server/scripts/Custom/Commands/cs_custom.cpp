@@ -472,19 +472,12 @@ public:
         handler->GetSession()->SendPacket(displayPlayerChoice.Write());
         return true;
     }
-    static bool HandleTest5Command(ChatHandler* handler, uint32 unk1, uint32 unk2, uint32 unk3)
-    {   //
-        //WorldPackets::Garrison::GarrisonResearchTalentResult result;
-        //result.GarrTypeID = CovenantMgr::TheShadowlands;
-        //result.UnkBit = true;
-        //result.UnkInt1 = 0;
-        //result.talent.GarrTalentID = 2078;
-        //result.talent.Rank = 1;
-        //result.talent.ResearchStartTime = 1662496826;
-        //result.talent.Flags = 1;
-        //
-        //handler->GetSession()->SendPacket(result.Write());
+    static bool HandleTest5Command(ChatHandler* handler)
+    {
+        WorldPackets::Query::QueryPlayerNamesResponse response;
+        handler->GetSession()->BuildNameQueryData(handler->GetPlayer()->GetGUID(), response.Players.emplace_back());
 
+        handler->GetSession()->SendPacket(response.Write());
         return true;
     }
 

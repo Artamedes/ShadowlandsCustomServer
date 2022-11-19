@@ -1217,7 +1217,7 @@ void WorldSession::InitializeSessionCallback(LoginDatabaseQueryHolder const& hol
     SendAvailableHotfixes();
 
     // send battlepay here
-    WorldPacket data(SMSG_BATTLE_PAY_GET_PURCHASE_LIST_RESPONSE);
+    WorldPacket data(SMSG_BATTLE_PAY_GET_DISTRIBUTION_LIST_RESPONSE);
     data << uint32(0);
     data.WriteBits(0, 11);
     SendPacket(&data);

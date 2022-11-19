@@ -129,7 +129,7 @@ namespace WorldPackets
             uint8 Sex = GENDER_NONE;
             uint8 ClassID = CLASS_NONE;
             uint8 Level = 0;
-            uint8 Unused915 = 0;
+            uint8 Unused915 = 1;
             DeclinedName DeclinedNames;
         };
 
