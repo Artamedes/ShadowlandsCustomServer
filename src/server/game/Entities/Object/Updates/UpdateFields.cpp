@@ -3349,8 +3349,8 @@ void ActivePlayerData::WriteCreate(ByteBuffer& data, EnumFlag<UpdateFieldFlag> f
     data << uint32(WeeklyRewardsPeriodSinceOrigin);
     data << int16(DEBUGSoulbindConduitRank);
     data << uint32(TraitConfigs.size());
-    data << uint32(CraftingOrder.size());
     data << uint32(ActiveTraitConfigID);
+    data << uint32(CraftingOrder.size());
     for (uint32 i = 0; i < KnownTitles.size(); ++i)
     {
         data << uint64(KnownTitles[i]);
@@ -3435,10 +3435,6 @@ void ActivePlayerData::WriteCreate(ByteBuffer& data, EnumFlag<UpdateFieldFlag> f
     {
         data << int32(DisabledSpells[i]);
     }
-    for (uint32 i = 0; i < CraftingOrder.size(); ++i)
-    {
-        data << int32(CraftingOrder[i]);
-    }
     data.WriteBit(BackpackAutoSortDisabled);
     data.WriteBit(BankAutoSortDisabled);
     data.WriteBit(SortBagsRightToLeft);
@@ -3457,6 +3453,10 @@ void ActivePlayerData::WriteCreate(ByteBuffer& data, EnumFlag<UpdateFieldFlag> f
     for (uint32 i = 0; i < CharacterRestrictions.size(); ++i)
     {
         CharacterRestrictions[i].WriteCreate(data, owner, receiver);
+    }
+    for (uint32 i = 0; i < CraftingOrder.size(); ++i)
+    {
+        data << int32(CraftingOrder[i]);
     }
     for (uint32 i = 0; i < TraitConfigs.size(); ++i)
     {
