@@ -31,6 +31,7 @@
 #include "Realm.h"
 #include "TerrainMgr.h"
 #include "World.h"
+#include "MiscPackets.h"
 
 void WorldSession::BuildNameQueryData(ObjectGuid guid, WorldPackets::Query::NameCacheLookupResult& lookupData)
 {
@@ -50,11 +51,41 @@ void WorldSession::BuildNameQueryData(ObjectGuid guid, WorldPackets::Query::Name
 
 void WorldSession::HandleQueryPlayerNames(WorldPackets::Query::QueryPlayerNames& queryPlayerNames)
 {
+    WorldPackets::Query::PrepopulateNameCache packet;
+    packet.CommunityID = 1;
+    for (ObjectGuid guid : queryPlayerNames.Players)
+    {
+        Player* player = ObjectAccessor::FindConnectedPlayer(guid);
+
+        packet.Players.emplace_back();
+        if (packet.Players.back().Initialize(guid, player))
+        {
+            packet.Players.back().GuildClubMemberID = guid.GetCounter();
+        }
+    }
+
+    SendPacket(packet.Write());
+
+     
     WorldPackets::Query::QueryPlayerNamesResponse response;
     for (ObjectGuid guid : queryPlayerNames.Players)
         BuildNameQueryData(guid, response.Players.emplace_back());
-
+    
     SendPacket(response.Write());
+    //
+    //for (ObjectGuid guid : queryPlayerNames.Players)
+    //{
+    //    WorldPackets::Query::QueryPlayerNameByCommunityIDResponse testPacket;
+    //
+    //    Player* player = ObjectAccessor::FindConnectedPlayer(guid);
+    //
+    //    testPacket.Data.Initialize(guid, player);
+    //    testPacket.CommunityID = guid.GetCounter();
+    //    testPacket.Result = RESPONSE_SUCCESS;
+    //    testPacket.Player = guid;
+    //
+    //    SendPacket(testPacket.Write());
+    //}
 }
 
 void WorldSession::HandleQueryTimeOpcode(WorldPackets::Query::QueryTime& /*queryTime*/)

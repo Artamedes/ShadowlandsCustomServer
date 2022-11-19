@@ -129,7 +129,7 @@ namespace WorldPackets
             uint8 Sex = GENDER_NONE;
             uint8 ClassID = CLASS_NONE;
             uint8 Level = 0;
-            uint8 Unused915 = 1;
+            uint8 Unused915 = 0;
             DeclinedName DeclinedNames;
         };
 
@@ -156,6 +156,31 @@ namespace WorldPackets
             WorldPacket const* Write() override;
 
             std::vector<NameCacheLookupResult> Players;
+        };
+
+        // SMSG_QUERY_PLAYER_NAME_BY_COMMUNITY_ID_RESPONSE
+        class QueryPlayerNameByCommunityIDResponse final : public ServerPacket
+        {
+        public:
+            QueryPlayerNameByCommunityIDResponse() : ServerPacket(SMSG_QUERY_PLAYER_NAME_BY_COMMUNITY_ID_RESPONSE, 60) { }
+
+            WorldPacket const* Write() override;
+
+            uint8 Result = 0; // 0 - full packet, != 0 - only guid
+            ObjectGuid Player;
+            uint64 CommunityID = 0;
+            PlayerGuidLookupData Data;
+        };
+        // SMSG_QUERY_PLAYER_NAME_BY_COMMUNITY_ID_RESPONSE
+        class PrepopulateNameCache final : public ServerPacket
+        {
+        public:
+            PrepopulateNameCache() : ServerPacket(SMSG_PREPOPULATE_NAME_CACHE, 60) { }
+
+            WorldPacket const* Write() override;
+
+            uint64 CommunityID = 0;
+            std::vector<PlayerGuidLookupData> Players;
         };
 
         class QueryPageText final : public ClientPacket

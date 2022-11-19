@@ -228,6 +228,28 @@ WorldPacket const* WorldPackets::Query::QueryPlayerNamesResponse::Write()
     return &_worldPacket;
 }
 
+WorldPacket const* WorldPackets::Query::PrepopulateNameCache::Write()
+{
+    _worldPacket << uint64(CommunityID);
+    _worldPacket << uint32(Players.size());
+    for (PlayerGuidLookupData const& lookupResult : Players)
+        _worldPacket << lookupResult;
+
+    return &_worldPacket;
+}
+
+WorldPacket const* WorldPackets::Query::QueryPlayerNameByCommunityIDResponse::Write()
+{
+    _worldPacket << uint8(Result);
+    _worldPacket << Player;
+    _worldPacket << uint64(CommunityID);
+    if (!Result)
+        _worldPacket << Data;
+
+    return &_worldPacket;
+}
+
+
 void WorldPackets::Query::QueryPageText::Read()
 {
     _worldPacket >> PageTextID;
