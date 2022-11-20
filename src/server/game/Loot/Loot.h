@@ -163,7 +163,7 @@ enum LootSlotType
 struct TC_GAME_API LootItem
 {
     Loot* currentLoot;
-    LootItemType type = LootItemType::Currency;
+    LootItemType type = LootItemType::Item;
     uint32  itemid;
     uint32  LootListId;
     ItemRandomBonusListId randomBonusListId;
