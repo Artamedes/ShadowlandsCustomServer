@@ -1400,6 +1400,18 @@ void Spell::SelectImplicitAreaTargets(SpellEffectInfo const& spellEffectInfo, Sp
 
     CallScriptObjectAreaTargetSelectHandlers(targets, spellEffectInfo.EffectIndex, targetType);
 
+    if (targetType.GetTarget() == TARGET_GAMEOBJECT_DEST_AREA)
+    {
+        if (Variables.Exist("GoTarget"))
+        {
+            ObjectGuid GoTarget = Variables.GetValue<ObjectGuid>("GoTarget");
+            targets.remove_if([&](WorldObject* obj)
+            {
+                return obj->GetGUID() == GoTarget;
+            });
+        }
+    }
+
     if (targetType.GetTarget() == TARGET_UNIT_SRC_AREA_FURTHEST_ENEMY)
         targets.sort(Trinity::ObjectDistanceOrderPred(referer, false));
 

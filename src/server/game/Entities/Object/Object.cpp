@@ -3157,6 +3157,38 @@ Spell* WorldObject::CastAndGetSpell(CastSpellTargetArg const& targets, uint32 sp
     return spell;
 }
 
+Spell* WorldObject::CastAndGetSpellWithoutPrepare(uint32 spellId, CastSpellExtraArgs const& args)
+{
+    SpellInfo const* info = sSpellMgr->GetSpellInfo(spellId, args.CastDifficulty != DIFFICULTY_NONE ? args.CastDifficulty : GetMap()->GetDifficultyID());
+    Spell* spell = new Spell(this, info, args.TriggerFlags, args.OriginalCaster, args.OriginalCastId);
+    for (auto const& pair : args.SpellValueOverrides)
+        spell->SetSpellValue(pair.first, pair.second);
+
+    spell->m_CastItem = args.CastItem;
+    if (args.OriginalCastItemLevel)
+        spell->m_castItemLevel = *args.OriginalCastItemLevel;
+
+    spell->m_SpecialDuration = args.SpecialDuration;
+
+    if (!spell->m_CastItem && info->HasAttribute(SPELL_ATTR2_RETAIN_ITEM_CAST))
+    {
+        if (args.TriggeringSpell)
+            spell->m_CastItem = args.TriggeringSpell->m_CastItem;
+        else if (args.TriggeringAura && !args.TriggeringAura->GetBase()->GetCastItemGUID().IsEmpty())
+            if (Player const* triggeringAuraCaster = Object::ToPlayer(args.TriggeringAura->GetCaster()))
+                spell->m_CastItem = triggeringAuraCaster->GetItemByGuid(args.TriggeringAura->GetBase()->GetCastItemGUID());
+
+        // check venthyr
+        if (auto player = ToPlayer())
+        {
+            if (player->HasAura(351748)) ///< Life is but an appetizer
+                player->CastSpell(player, 353365, true);
+        }
+    }
+
+    return spell;
+}
+
 SpellCastResult WorldObject::CastSpell(CastSpellTargetArg const& targets, uint32 spellId, CastSpellExtraArgs const& args /*= { }*/)
 {
     SpellInfo const* info = sSpellMgr->GetSpellInfo(spellId, args.CastDifficulty != DIFFICULTY_NONE ? args.CastDifficulty : GetMap()->GetDifficultyID());

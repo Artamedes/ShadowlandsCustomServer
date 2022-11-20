@@ -3082,9 +3082,21 @@ void GameObject::Use(Unit* user)
         sOutdoorPvPMgr->HandleCustomSpell(player, spellId, this);
 
     if (spellCaster)
-        spellCaster->CastSpell(user, spellId, triggered);
+    {
+        if (auto spell = spellCaster->CastAndGetSpellWithoutPrepare(spellId, triggered))
+        {
+            spell->Variables.Set<ObjectGuid>("GoTarget", GetGUID());
+            spell->prepare(*CastSpellTargetArg(user).Targets, nullptr);
+        }
+    }
     else
-        CastSpell(user, spellId);
+    {
+        if (auto spell = CastAndGetSpellWithoutPrepare(spellId))
+        {
+            spell->Variables.Set<ObjectGuid>("GoTarget", GetGUID());
+            spell->prepare(*CastSpellTargetArg(user).Targets, nullptr);
+        }
+    }
 }
 
 void GameObject::SendCustomAnim(uint32 anim)
