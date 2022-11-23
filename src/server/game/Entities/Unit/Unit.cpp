@@ -4085,6 +4085,7 @@ void Unit::RemoveAppliedAuras(std::function<bool(AuraApplication const*)> const&
         if (check(iter->second))
         {
             RemoveAura(iter, removeMode);
+            iter = m_appliedAuras.lower_bound(spellId);
             continue;
         }
         ++iter;
@@ -4098,6 +4099,7 @@ void Unit::RemoveOwnedAuras(std::function<bool(Aura const*)> const& check, AuraR
         if (check(iter->second))
         {
             RemoveOwnedAura(iter, removeMode);
+            iter = m_ownedAuras.lower_bound(spellId);
             continue;
         }
         ++iter;
