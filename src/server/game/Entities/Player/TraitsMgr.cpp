@@ -1126,7 +1126,7 @@ void Trait::LearnTraitSpells()
 
 void Trait::LearnTraitSpell(TraitTalent* talent)
 {
-    if (!talent->TreeFlags.HasFlag(TraitTreeFlag::CannotRefund) && talent->TraitDefinitionEntry)
+    if (talent->TraitDefinitionEntry)
     {
         auto spellInfo = sSpellMgr->GetSpellInfo(talent->TraitDefinitionEntry->SpellID);
 
