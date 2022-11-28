@@ -6459,7 +6459,12 @@ void AuraEffect::HandleCreateAreaTrigger(AuraApplication const* aurApp, uint8 mo
 
     if (apply)
     {
-        AreaTrigger::CreateAreaTrigger(GetMiscValue(), GetCaster(), target, GetSpellInfo(), *target, GetBase()->GetDuration(), GetBase()->GetSpellVisual(), ObjectGuid::Empty, this);
+        ObjectGuid guid;
+        if (m_spellInfo->Id == 202770)
+            if (Unit* caster = GetCaster())
+                guid = caster->GetVictim() ? caster->GetVictim()->GetGUID() : ObjectGuid::Empty;
+
+        AreaTrigger::CreateAreaTrigger(GetMiscValue(), GetCaster(), target, GetSpellInfo(), *target, GetBase()->GetDuration(), GetBase()->GetSpellVisual(), guid, this);
     }
     else
     {

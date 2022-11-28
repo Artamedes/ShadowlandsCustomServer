@@ -2420,7 +2420,7 @@ struct at_dru_fury_of_elune : AreaTriggerAI
 {
 	at_dru_fury_of_elune(AreaTrigger* areatrigger) : AreaTriggerAI(areatrigger)
 	{
-		areatrigger->SetPeriodicProcTimer(50);
+		areatrigger->SetPeriodicProcTimer(750);
 	}
 
 	void OnPeriodicProc() override
@@ -2440,7 +2440,6 @@ struct at_dru_fury_of_elune : AreaTriggerAI
                 {
                     lastTargetPosition = target->GetPosition();
                     at->SetDestination(*target, 200, true);
-                    at->SetTargetGUID(target->GetGUID());
                 }
 
             caster->CastSpell(at->GetPosition(), SPELL_DRUID_FURY_OF_ELUNE_DAMAGE, true);
