@@ -140,6 +140,8 @@ void WorldSession::HandleAutostoreLootItemOpcode(WorldPackets::Loot::LootItem& p
 
 void WorldSession::HandleLootMoneyOpcode(WorldPackets::Loot::LootMoney& /*packet*/)
 {
+    std::vector<Loot*> lootsToRelease;
+
     Player* player = GetPlayer();
     for (std::pair<ObjectGuid const, Loot*> const& lootView : player->GetAELootView())
     {
@@ -204,8 +206,11 @@ void WorldSession::HandleLootMoneyOpcode(WorldPackets::Loot::LootMoney& /*packet
 
         // Delete container if empty
         if (loot->isLooted() && guid.IsItem())
-            player->GetSession()->DoLootRelease(loot);
+            lootsToRelease.push_back(loot);
     }
+
+    for (auto loot : lootsToRelease)
+        player->GetSession()->DoLootRelease(loot);
 }
 
 void WorldSession::HandleLootOpcode(WorldPackets::Loot::LootUnit& packet)
