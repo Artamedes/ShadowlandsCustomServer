@@ -346,7 +346,7 @@ void Object::BuildMovementUpdate(ByteBuffer* data, CreateObjectBits flags, Playe
 
         if (HasInertia)
         {
-            *data << (uint32)unit->m_movementInfo.inertia->guid.GetCounter();
+            *data << unit->m_movementInfo.inertia->guid;
             *data << unit->m_movementInfo.inertia->force.PositionXYZStream();
             *data << uint32(unit->m_movementInfo.inertia->lifetime);
         }
@@ -495,6 +495,7 @@ void Object::BuildMovementUpdate(ByteBuffer* data, CreateObjectBits flags, Playe
         bool hasAreaTriggerSpline   = areaTrigger->HasSplines();
         bool hasOrbit               = areaTrigger->HasOrbit();
         bool hasMovementScript      = false;
+        bool HasAreaTriggerBoundedPlane = false;
 
         data->WriteBit(hasAbsoluteOrientation);
         data->WriteBit(hasDynamicShape);
@@ -513,10 +514,11 @@ void Object::BuildMovementUpdate(ByteBuffer* data, CreateObjectBits flags, Playe
         data->WriteBit(hasAreaTriggerPolygon);
         data->WriteBit(hasAreaTriggerCylinder);
         data->WriteBit(hasDisk);
+        data->WriteBit(HasAreaTriggerBoundedPlane);
         data->WriteBit(hasAreaTriggerSpline);
         data->WriteBit(hasOrbit);
         data->WriteBit(hasMovementScript);
-        data->WriteBit(false); ///< Unk DF
+        // data->WriteBit(false); ///< Unk DF - removed in 46181
 
         data->FlushBits();
 

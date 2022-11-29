@@ -5105,10 +5105,10 @@ void AreaTriggerData::WriteCreate(ByteBuffer& data, EnumFlag<UpdateFieldFlag> fi
     OverrideScaleCurve->WriteCreate(data, owner, receiver);
     data << Caster;
     data << uint32(Duration);
-    data << int32(UnkAreaTriggerDF);
     data << uint32(TimeToTarget);
     data << uint32(TimeToTargetScale);
     data << uint32(TimeToTargetExtraScale);
+    data << int32(UnkAreaTriggerDF);
     data << int32(SpellID);
     data << int32(SpellForVisuals);
     SpellVisual->WriteCreate(data, owner, receiver);
@@ -5166,19 +5166,19 @@ void AreaTriggerData::WriteUpdate(ByteBuffer& data, Mask const& changesMask, boo
         }
         if (changesMask[8])
         {
-            data << int32(UnkAreaTriggerDF);
+            data << uint32(TimeToTarget);
         }
         if (changesMask[9])
         {
-            data << uint32(TimeToTarget);
+            data << uint32(TimeToTargetScale);
         }
         if (changesMask[10])
         {
-            data << uint32(TimeToTargetScale);
+            data << uint32(TimeToTargetExtraScale);
         }
         if (changesMask[11])
         {
-            data << uint32(TimeToTargetExtraScale);
+            data << int32(UnkAreaTriggerDF);
         }
         if (changesMask[12])
         {
@@ -5248,10 +5248,10 @@ void AreaTriggerData::ClearChangesMask()
     Base::ClearChangesMask(ExtraScaleCurve4);
     Base::ClearChangesMask(Caster);
     Base::ClearChangesMask(Duration);
-    Base::ClearChangesMask(UnkAreaTriggerDF);
     Base::ClearChangesMask(TimeToTarget);
     Base::ClearChangesMask(TimeToTargetScale);
     Base::ClearChangesMask(TimeToTargetExtraScale);
+    Base::ClearChangesMask(UnkAreaTriggerDF);
     Base::ClearChangesMask(SpellID);
     Base::ClearChangesMask(SpellForVisuals);
     Base::ClearChangesMask(SpellVisual);

@@ -950,10 +950,10 @@ struct AreaTriggerData : public IsUpdateFieldStructureTag, public HasChangesMask
     UpdateField<UF::ScaleCurve, 0, 5> ExtraScaleCurve4;
     UpdateField<ObjectGuid, 0, 6> Caster;
     UpdateField<uint32, 0, 7> Duration;
-    UpdateField<int32, 0, 8> UnkAreaTriggerDF;
-    UpdateField<uint32, 0, 9> TimeToTarget;
-    UpdateField<uint32, 0, 10> TimeToTargetScale;
-    UpdateField<uint32, 0, 11> TimeToTargetExtraScale;
+    UpdateField<uint32, 0, 8> TimeToTarget;
+    UpdateField<uint32, 0, 9> TimeToTargetScale;
+    UpdateField<uint32, 0, 10> TimeToTargetExtraScale;
+    UpdateField<int32, 0, 11> UnkAreaTriggerDF;
     UpdateField<int32, 0, 12> SpellID;
     UpdateField<int32, 0, 13> SpellForVisuals;
     UpdateField<UF::SpellCastVisual, 0, 14> SpellVisual;

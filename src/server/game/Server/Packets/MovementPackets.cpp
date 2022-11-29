@@ -516,11 +516,6 @@ void WorldPackets::Movement::CommonMovement::WriteMovementForceWithDirection(Mov
     else
         data << movementForce.Direction;
 
-    // 3 unk floats df
-    data << float(0.0f);
-    data << float(0.0f);
-    data << float(0.0f);
-
     data << uint32(movementForce.TransportID);
     data << float(movementForce.Magnitude);
     data << int32(movementForce.Unused910);
