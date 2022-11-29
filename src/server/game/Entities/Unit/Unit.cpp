@@ -11096,8 +11096,10 @@ void Unit::GetProcAurasTriggeredOnEvent(AuraApplicationProcContainer& aurasTrigg
     // or generate one on our own
     else
     {
-        for (AuraApplicationMap::iterator itr = GetAppliedAuras().begin(); itr != GetAppliedAuras().end(); ++itr)
-            processAuraApplication(itr->second);
+        AuraApplicationMap appliedAuras = m_appliedAuras;
+        for (AuraApplicationMap::iterator itr = appliedAuras.begin(); itr != appliedAuras.end(); ++itr)
+            if (itr->second)
+                processAuraApplication(itr->second);
     }
 }
 
