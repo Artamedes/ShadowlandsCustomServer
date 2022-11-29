@@ -7479,12 +7479,6 @@ float Unit::SpellDamagePctDone(Unit* victim, SpellInfo const* spellProto, Damage
     // Custom scripted damage
     switch (spellProto->SpellFamilyName)
     {
-        case SPELLFAMILY_MAGE:
-            // Ice Lance (no unique family flag)
-            if (spellProto->Id == 228598)
-                if (victim->HasAuraState(AURA_STATE_FROZEN, spellProto, this))
-                    DoneTotalMod *= 3.0f;
-            break;
         case SPELLFAMILY_WARLOCK:
             // Shadow Bite (30% increase from each dot)
             if (spellProto->SpellFamilyFlags[1] & 0x00400000 && IsPet())
