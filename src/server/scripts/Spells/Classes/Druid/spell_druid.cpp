@@ -2709,12 +2709,12 @@ class spell_dru_shred : public SpellScript
         // Shred Rank 2
         // Shred deals increased damage against bleeding targets.
         if (caster->HasAura(SPELL_DRUID_SHRED_RANK_2) && target->HasAuraState(AURA_STATE_BLEED))
-            AddPct(damage, sSpellMgr->GetSpellInfo(SPELL_DRUID_SHRED)->GetEffect(EFFECT_3).BasePoints);
+            AddPct(damage, sSpellMgr->GetSpellInfo(SPELL_DRUID_SHRED)->GetEffect(EFFECT_2).BasePoints);
 
         // Shred Rank 3
         // While stealthed, Shred deals increased damage, and has double the chance to critically strike.
         if (caster->HasAura(SPELL_DRUID_SHRED_RANK_3) && (stealthed || incarnation))
-            AddPct(damage, sSpellMgr->GetSpellInfo(SPELL_DRUID_SHRED)->GetEffect(EFFECT_3).BasePoints);
+            AddPct(damage, sSpellMgr->GetSpellInfo(SPELL_DRUID_SHRED)->GetEffect(EFFECT_2).BasePoints);
 
         SetHitDamage(damage);
     }
