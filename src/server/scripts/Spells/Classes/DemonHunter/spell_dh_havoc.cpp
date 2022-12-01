@@ -193,6 +193,7 @@ class spell_shattered_destiny_388116 : public AuraScript
                     while (_prevFury >= furyReq)
                     {
                         duration += newDuration;
+                        _prevFury -= furyReq;
                     }
 
                     if (duration > 0)
