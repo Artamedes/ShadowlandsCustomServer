@@ -177,6 +177,8 @@ class spell_shattered_destiny_388116 : public AuraScript
         if (auto procSpell = eventInfo.GetProcSpell())
             if (auto powerCost = procSpell->GetPowerCost(Powers::POWER_FURY))
                 return powerCost->Amount > 0;
+
+        return false;
     }
 
     void HandleProc(ProcEventInfo& eventInfo)
