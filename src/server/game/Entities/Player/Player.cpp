@@ -5198,6 +5198,13 @@ void Player::RepopAtGraveyard()
         }
     }
 
+    // Custom always rez at mall
+    {
+        TeleportTo(2444, { 334.219f, -1096.45f, 895.761f, 2.53389f }, TELE_REVIVE_AT_TELEPORT);
+        RemovePlayerFlag(PLAYER_FLAGS_IS_OUT_OF_BOUNDS);
+        return;
+    }
+
     // note: this can be called also when the player is alive
     // for example from WorldSession::HandleMovementOpcodes
 
