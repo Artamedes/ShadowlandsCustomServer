@@ -232,7 +232,7 @@ class item_enhancement_system : public ItemScript
             }
 
             ClearGossipMenuFor(player);
-            AddGossipItemFor(player, GossipOptionIcon::AdventureMap, "", 0, 1, ss.str().c_str(), 0, false);
+            AddGossipItemFor(player, GossipOptionNpc::AdventureMap, "", 0, 1, ss.str().c_str(), 0, false);
             SendGossipMenuFor(player, 1, upgrader->GetGUID());
             m_ItemTargets[player->GetGUID().GetCounter()] = item->GetGUID();
             return true;
@@ -270,7 +270,7 @@ class item_enhancement_system : public ItemScript
 
                 if (success)
                 {
-                    std::vector<int32> bonusListIDs = itemTarget->m_itemData->Bonuses->BonusListIDs;
+                    std::vector<int32> bonusListIDs = itemTarget->GetBonusListIDs();
 
                     std::set<int32> corruptionsToRemove;
                     for (auto bonusId : bonusListIDs)
@@ -331,9 +331,9 @@ struct npc_mother_700013 : public ScriptedAI
         bool OnGossipHello(Player* player) override
         {
             ClearGossipMenuFor(player);
-            AddGossipItemFor(player, GossipOptionIcon::None, "|TInterface/Icons/spell_fire_twilightfire.blp:30:30:-30:0|tShadow Essence Enhancements", 0, 1);
-            AddGossipItemFor(player, GossipOptionIcon::None, "|TInterface/Icons/ability_paladin_toweroflight.blp:30:30:-30:0|tLight Essence Enhancements", 0, 2);
-            AddGossipItemFor(player, GossipOptionIcon::None, "|TInterface/Icons/inv_maweye_black.blp:30:30:-30:0|tMaw Essence Enhancements", 0, 3);
+            AddGossipItemFor(player, GossipOptionNpc::None, "|TInterface/Icons/spell_fire_twilightfire.blp:30:30:-30:0|tShadow Essence Enhancements", 0, 1);
+            AddGossipItemFor(player, GossipOptionNpc::None, "|TInterface/Icons/ability_paladin_toweroflight.blp:30:30:-30:0|tLight Essence Enhancements", 0, 2);
+            AddGossipItemFor(player, GossipOptionNpc::None, "|TInterface/Icons/inv_maweye_black.blp:30:30:-30:0|tMaw Essence Enhancements", 0, 3);
             SendGossipMenuFor(player, 700013, me);
             return true;
         }
@@ -428,7 +428,7 @@ public:
 
                     ObjectGuid itemGuid = item->GetGUID();
 
-                    AddGossipItemFor(player, GossipOptionIcon::None, ss.str(), 0, 0, ss2.str(), 0, false, [this, player, upgrader, targets, corruption, bonusToRemove, itemGuid, currencyId, refundAmount](std::string /*callback*/)
+                    AddGossipItemFor(player, GossipOptionNpc::None, ss.str(), 0, 0, ss2.str(), 0, false, [this, player, upgrader, targets, corruption, bonusToRemove, itemGuid, currencyId, refundAmount](std::string /*callback*/)
                     {
                         if (auto item = player->GetItemByGuid(itemGuid))
                         {

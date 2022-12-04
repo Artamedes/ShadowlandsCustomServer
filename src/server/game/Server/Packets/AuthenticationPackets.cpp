@@ -138,7 +138,7 @@ WorldPacket const* WorldPackets::Auth::AuthResponse::Write()
                 _worldPacket << uint8(classAvailability.ClassID);
                 _worldPacket << uint8(classAvailability.ActiveExpansionLevel);
                 _worldPacket << uint8(classAvailability.AccountExpansionLevel);
-                _worldPacket << uint8(0); // unk
+                _worldPacket << uint8(classAvailability.MinActiveExpansionLevel);
             }
         }
 
@@ -167,7 +167,7 @@ WorldPacket const* WorldPackets::Auth::AuthResponse::Write()
             _worldPacket << uint16(*SuccessInfo->NumPlayersAlliance);
 
         if (SuccessInfo->ExpansionTrialExpiration)
-            _worldPacket << uint64(*SuccessInfo->ExpansionTrialExpiration);
+            _worldPacket << *SuccessInfo->ExpansionTrialExpiration;
 
         for (VirtualRealmInfo const& virtualRealm : SuccessInfo->VirtualRealms)
             _worldPacket << virtualRealm;

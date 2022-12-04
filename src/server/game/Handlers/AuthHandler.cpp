@@ -93,12 +93,9 @@ void WorldSession::SendSetTimeZoneInformation()
     WorldPackets::System::SetTimeZoneInformation packet;
     packet.ServerTimeTZ = "America/Los_Angeles";
     packet.GameTimeTZ = "America/Chicago";
+    packet.ServerRegionalTZ = "America/Los_Angeles";
 
     SendPacket(packet.Write());
-
-    WorldPacket data(SMSG_REALM_LOOKUP_INFO, 8);
-    data << uint64(0);
-    SendPacket(&data);
 }
 
 void WorldSession::SendFeatureSystemStatusGlueScreen()

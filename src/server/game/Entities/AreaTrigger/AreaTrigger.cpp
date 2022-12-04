@@ -185,7 +185,7 @@ bool AreaTrigger::Create(uint32 areaTriggerCreatePropertiesId, Unit* caster, Uni
     auto areaTriggerData = m_values.ModifyValue(&AreaTrigger::m_areaTriggerData);
     m_Caster = caster;
     SetUpdateFieldValue(areaTriggerData.ModifyValue(&UF::AreaTriggerData::Caster), caster->GetGUID());
-    SetUpdateFieldValue(areaTriggerData.ModifyValue(&UF::AreaTriggerData::TargetGUID), TargetGUID);
+    SetUpdateFieldValue(areaTriggerData.ModifyValue(&UF::AreaTriggerData::Field_88), TargetGUID);
     SetUpdateFieldValue(areaTriggerData.ModifyValue(&UF::AreaTriggerData::CreatingEffectGUID), castId);
 
     SetUpdateFieldValue(areaTriggerData.ModifyValue(&UF::AreaTriggerData::SpellID), spell->Id);
@@ -266,7 +266,7 @@ bool AreaTrigger::Create(uint32 areaTriggerCreatePropertiesId, Unit* caster, Uni
     }
     else if (m_areaTriggerData->SpellID == 202770)
     {
-        if (auto target = ObjectAccessor::GetUnit(*this, m_areaTriggerData->TargetGUID))
+        if (auto target = ObjectAccessor::GetUnit(*this, m_areaTriggerData->Field_88))
         {
             Relocate(*target);
             SetDestination(*target, timeToTarget, true);
@@ -433,8 +433,8 @@ void AreaTrigger::SetDuration(int32 newDuration)
 
 void AreaTrigger::SetTargetGUID(ObjectGuid const& guid)
 {
-    SetUpdateFieldValue(m_values.ModifyValue(&AreaTrigger::m_areaTriggerData).ModifyValue(&UF::AreaTriggerData::TargetGUID), guid);
-    const_cast<UF::AreaTriggerData&>(*m_areaTriggerData).MarkChanged(&UF::AreaTriggerData::TargetGUID);
+    SetUpdateFieldValue(m_values.ModifyValue(&AreaTrigger::m_areaTriggerData).ModifyValue(&UF::AreaTriggerData::Field_88), guid);
+    const_cast<UF::AreaTriggerData&>(*m_areaTriggerData).MarkChanged(&UF::AreaTriggerData::Field_88);
 }
 
 void AreaTrigger::_UpdateDuration(int32 newDuration)
@@ -992,7 +992,7 @@ void AreaTrigger::InitSplineOffsets(std::vector<Position> const& offsets, uint32
         // Hack for Fury of Elune
         if (m_areaTriggerData->SpellID == 202770)
         {
-            if (auto target = ObjectAccessor::GetUnit(*this, m_areaTriggerData->TargetGUID))
+            if (auto target = ObjectAccessor::GetUnit(*this, m_areaTriggerData->Field_88))
                 SetDestination(*target, timeToTarget, true);
             return;
         }

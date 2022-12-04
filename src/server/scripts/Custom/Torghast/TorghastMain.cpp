@@ -100,11 +100,11 @@ public:
 
     bool OnGossipHello(Player* player) override
     {
-        WorldPacket data(SMSG_GARRISON_OPEN_TALENT_NPC, 23);
-        data << me->GetGUID();
-        data << uint32(461);
-        data << uint32(0);
-        player->SendDirectMessage(&data);
+       //WorldPacket data(SMSG_GARRISON_OPEN_TALENT_NPC, 23);
+       //data << me->GetGUID();
+       //data << uint32(461);
+       //data << uint32(0);
+       //player->SendDirectMessage(&data);
         return true;
     }
 };

@@ -1441,8 +1441,8 @@ void InstanceScript::BuildPlayerDatas(WorldPackets::Instance::EncounterStart& pa
                 {
                     packet.PlayerDatas[count].EncounterItemInfos[secondCount].ItemID = item->GetEntry();
                     packet.PlayerDatas[count].EncounterItemInfos[secondCount].ItemLevel = item->GetItemLevel(player);
-                    packet.PlayerDatas[count].EncounterItemInfos[secondCount].ItemBonusListIDs.reserve(item->m_itemData->Bonuses->BonusListIDs.size());
-                    for (int32 bonusId : item->m_itemData->Bonuses->BonusListIDs)
+                    packet.PlayerDatas[count].EncounterItemInfos[secondCount].ItemBonusListIDs.reserve(item->GetBonusListIDs().size());
+                    for (int32 bonusId : item->GetBonusListIDs())
                         packet.PlayerDatas[count].EncounterItemInfos[secondCount].ItemBonusListIDs.emplace_back(bonusId);
 
                     for (uint32 enchant_slot = PERM_ENCHANTMENT_SLOT; enchant_slot < MAX_ENCHANTMENT_SLOT; ++enchant_slot)

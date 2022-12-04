@@ -630,51 +630,49 @@ bool Player::Create(ObjectGuid::LowType guidlow, WorldPackets::Character::Charac
 
     GetThreatManager().Initialize();
 
-    SetUpdateFieldValue(m_values.ModifyValue(&Player::m_playerData).ModifyValue(&UF::PlayerData::UnkDF64), 1668823125);
     SetUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::GuildClubMemberID), GetGUID().GetCounter());
 
     return true;
 }
 
-bool Player::StoreNewItemInBestSlots(uint32 titem_id, uint32 titem_amount, ItemContext context /*= ItemContext::NONE*/, std::vector<int32> bonusListIds /*= nullptr*/)
+bool Player::StoreNewItemInBestSlots(uint32 itemId, uint32 amount, ItemContext context /*= ItemContext::NONE*/, std::vector<int32> bonusListIds /*= nullptr*/)
 {
     TC_LOG_DEBUG("entities.player.items", "Player::StoreNewItemInBestSlots: Player '%s' (%s) creates initial item (ItemID: %u, Count: %u)",
-        GetName().c_str(), GetGUID().ToString().c_str(), titem_id, titem_amount);
+        GetName().c_str(), GetGUID().ToString().c_str(), itemId, amount);
 
-    ItemContext itemContext = ItemContext::New_Character;
     std::vector<int32> bonusListIDs;
-    std::set<uint32> contextBonuses = sDB2Manager.GetDefaultItemBonusTree(titem_id, itemContext);
+    std::set<uint32> contextBonuses = sDB2Manager.GetDefaultItemBonusTree(itemId, context);
     bonusListIDs.insert(bonusListIDs.begin(), contextBonuses.begin(), contextBonuses.end());
 
     // attempt equip by one
-    while (titem_amount > 0)
+    while (amount > 0)
     {
         uint16 eDest;
-        InventoryResult msg = CanEquipNewItem(NULL_SLOT, eDest, titem_id, false);
+        InventoryResult msg = CanEquipNewItem(NULL_SLOT, eDest, itemId, false);
         if (msg != EQUIP_ERR_OK)
             break;
 
-        EquipNewItem(eDest, titem_id, context, true, bonusListIds);
+        EquipNewItem(eDest, itemId, context, true, bonusListIds);
         AutoUnequipOffhandIfNeed();
-        --titem_amount;
+        --amount;
     }
 
-    if (titem_amount == 0)
+    if (amount == 0)
         return true;                                        // equipped
 
     // attempt store
     ItemPosCountVec sDest;
     // store in main bag to simplify second pass (special bags can be not equipped yet at this moment)
-    InventoryResult msg = CanStoreNewItem(INVENTORY_SLOT_BAG_0, NULL_SLOT, sDest, titem_id, titem_amount);
+    InventoryResult msg = CanStoreNewItem(INVENTORY_SLOT_BAG_0, NULL_SLOT, sDest, itemId, amount);
     if (msg == EQUIP_ERR_OK)
     {
-        StoreNewItem(sDest, titem_id, true, GenerateItemRandomBonusListId(titem_id), GuidSet(), ItemContext::NONE, bonusListIds);
+        StoreNewItem(sDest, itemId, true, GenerateItemRandomBonusListId(itemId), GuidSet(), ItemContext::NONE, bonusListIds);
         return true;                                        // stored
     }
 
     // item can't be added
     TC_LOG_ERROR("entities.player.items", "Player::StoreNewItemInBestSlots: Player '%s' (%s) can't equip or store initial item (ItemID: %u, Race: %u, Class: %u, InventoryResult: %u)",
-        GetName().c_str(), GetGUID().ToString().c_str(), titem_id, GetRace(), GetClass(), msg);
+        GetName().c_str(), GetGUID().ToString().c_str(), itemId, GetRace(), GetClass(), msg);
     return false;
 }
 
@@ -2884,7 +2882,6 @@ void Player::GiveXP(uint32 xp, Unit* victim, float group_rate)
     packet.Reason = victim ? LOG_XP_REASON_KILL : LOG_XP_REASON_NO_KILL;
     packet.Amount = xp;
     packet.GroupBonus = group_rate;
-    packet.ReferAFriendBonusType = recruitAFriend ? 1 : 0;
     SendDirectMessage(packet.Write());
 
     uint32 nextLvlXP = GetXPForNextLevel();
@@ -3686,13 +3683,11 @@ void Player::LearnSpell(uint32 spell_id, bool dependent, int32 fromSkill /*= 0*/
     // prevent duplicated entires in spell book, also not send if not in world (loading)
     if (learning && IsInWorld())
     {
-        WorldPackets::Spells::LearnedSpells packet;
-        packet.Spells.resize(1);
-        packet.Spells[0].SpellID = spell_id;
-        if (traitDefinitionId)
-            packet.Spells[0].TraitDefinitionID = traitDefinitionId;
-        packet.SuppressMessaging = suppressMessaging;
-        SendDirectMessage(packet.Write());
+        WorldPackets::Spells::LearnedSpells learnedSpells;
+        WorldPackets::Spells::LearnedSpellInfo& learnedSpellInfo = learnedSpells.ClientLearnedSpellData.emplace_back();
+        learnedSpellInfo.SpellID = spell_id;
+        learnedSpells.SuppressMessaging = suppressMessaging;
+        SendDirectMessage(learnedSpells.Write());
 
         sScriptMgr->OnPlayerSpellLearned(this, spell_id);
     }
@@ -3922,7 +3917,7 @@ void Player::BuildCreateUpdateBlockForPlayer(UpdateData* data, Player* target) c
 {
     if (target == this)
     {
-        for (uint8 i = 0; i < EQUIPMENT_SLOT_END; ++i)
+        for (uint8 i = EQUIPMENT_SLOT_START; i < BANK_SLOT_BAG_END; ++i)
         {
             if (m_items[i] == nullptr)
                 continue;
@@ -3930,23 +3925,7 @@ void Player::BuildCreateUpdateBlockForPlayer(UpdateData* data, Player* target) c
             m_items[i]->BuildCreateUpdateBlockForPlayer(data, target);
         }
 
-        for (uint8 i = INVENTORY_SLOT_BAG_START; i < BANK_SLOT_BAG_END; ++i)
-        {
-            if (m_items[i] == nullptr)
-                continue;
-
-            m_items[i]->BuildCreateUpdateBlockForPlayer(data, target);
-        }
-
-        for (uint8 i = REAGENT_SLOT_START; i < REAGENT_SLOT_END; ++i)
-        {
-            if (m_items[i] == nullptr)
-                continue;
-
-            m_items[i]->BuildCreateUpdateBlockForPlayer(data, target);
-        }
-
-        for (uint8 i = CHILD_EQUIPMENT_SLOT_START; i < CHILD_EQUIPMENT_SLOT_END; ++i)
+        for (uint8 i = REAGENT_SLOT_START; i < CHILD_EQUIPMENT_SLOT_END; ++i)
         {
             if (m_items[i] == nullptr)
                 continue;
@@ -4087,7 +4066,7 @@ void Player::DestroyForPlayer(Player* target) const
 
     if (target == this)
     {
-        for (uint8 i = 0; i < EQUIPMENT_SLOT_END; ++i)
+        for (uint8 i = EQUIPMENT_SLOT_START; i < BANK_SLOT_BAG_END; ++i)
         {
             if (m_items[i] == nullptr)
                 continue;
@@ -4095,23 +4074,7 @@ void Player::DestroyForPlayer(Player* target) const
             m_items[i]->DestroyForPlayer(target);
         }
 
-        for (uint8 i = INVENTORY_SLOT_BAG_START; i < BANK_SLOT_BAG_END; ++i)
-        {
-            if (m_items[i] == nullptr)
-                continue;
-
-            m_items[i]->DestroyForPlayer(target);
-        }
-
-        for (uint8 i = REAGENT_SLOT_START; i < REAGENT_SLOT_END; ++i)
-        {
-            if (m_items[i] == nullptr)
-                continue;
-
-            m_items[i]->DestroyForPlayer(target);
-        }
-
-        for (uint8 i = CHILD_EQUIPMENT_SLOT_START; i < CHILD_EQUIPMENT_SLOT_END; ++i)
+        for (uint8 i = REAGENT_SLOT_START; i < CHILD_EQUIPMENT_SLOT_END; ++i)
         {
             if (m_items[i] == nullptr)
                 continue;
@@ -4922,7 +4885,7 @@ Corpse* Player::CreateCorpse()
     corpse->SetDisplayId(GetNativeDisplayId());
     corpse->SetFactionTemplate(sChrRacesStore.AssertEntry(GetRace())->FactionID);
 
-    for (uint8 i = 0; i < EQUIPMENT_SLOT_END; i++)
+    for (uint8 i = EQUIPMENT_SLOT_START; i < EQUIPMENT_SLOT_END; i++)
     {
         if (m_items[i])
         {
@@ -8744,9 +8707,9 @@ void Player::ApplyArtifactPowerRank(Item* artifact, ArtifactPowerRankEntry const
         {
             AddTemporarySpell(artifactPowerRank->SpellID);
             WorldPackets::Spells::LearnedSpells learnedSpells;
+            WorldPackets::Spells::LearnedSpellInfo& learnedSpellInfo = learnedSpells.ClientLearnedSpellData.emplace_back();
+            learnedSpellInfo.SpellID = artifactPowerRank->SpellID;
             learnedSpells.SuppressMessaging = true;
-            learnedSpells.Spells.resize(1);
-            learnedSpells.Spells[0].SpellID = artifactPowerRank->SpellID;
             SendDirectMessage(learnedSpells.Write());
         }
         else if (!apply)
@@ -9474,8 +9437,11 @@ void Player::SendInitWorldStates(uint32 zoneId, uint32 areaId)
 
 void Player::SetBindPoint(ObjectGuid guid) const
 {
-    WorldPackets::Misc::BinderConfirm packet(guid);
-    SendDirectMessage(packet.Write());
+    WorldPackets::NPC::NPCInteractionOpenResult npcInteraction;
+    npcInteraction.Npc = guid;
+    npcInteraction.InteractionType = PlayerInteractionType::Binder;
+    npcInteraction.Success = true;
+    SendDirectMessage(npcInteraction.Write());
 }
 
 /*********************************************************/
@@ -9633,9 +9599,15 @@ uint32 Player::GetFreeInventorySlotCount(EnumFlag<ItemSearchLocation> location /
     uint32 freeSlotCount = 0;
 
     if (location.HasFlag(ItemSearchLocation::Equipment))
+    {
         for (uint8 i = EQUIPMENT_SLOT_START; i < EQUIPMENT_SLOT_END; ++i)
             if (!GetItemByPos(INVENTORY_SLOT_BAG_0, i))
                 ++freeSlotCount;
+
+        for (uint8 i = PROFESSION_SLOT_START; i < PROFESSION_SLOT_END; ++i)
+            if (!GetItemByPos(INVENTORY_SLOT_BAG_0, i))
+                ++freeSlotCount;
+    }
 
     if (location.HasFlag(ItemSearchLocation::Inventory))
     {
@@ -9665,9 +9637,17 @@ uint32 Player::GetFreeInventorySlotCount(EnumFlag<ItemSearchLocation> location /
     }
 
     if (location.HasFlag(ItemSearchLocation::ReagentBank))
+    {
+        for (uint8 i = REAGENT_BAG_SLOT_START; i < REAGENT_BAG_SLOT_END; ++i)
+            if (Bag* bag = GetBagByPos(i))
+                for (uint32 j = 0; j < GetBagSize(bag); ++j)
+                    if (!GetItemInBag(bag, j))
+                        ++freeSlotCount;
+
         for (uint8 i = REAGENT_SLOT_START; i < REAGENT_SLOT_END; ++i)
             if (!GetItemByPos(INVENTORY_SLOT_BAG_0, i))
                 ++freeSlotCount;
+    }
 
     return freeSlotCount;
 }
@@ -9807,7 +9787,8 @@ Item* Player::GetUseableItemByPos(uint8 bag, uint8 slot) const
 Bag* Player::GetBagByPos(uint8 bag) const
 {
     if ((bag >= INVENTORY_SLOT_BAG_START && bag < INVENTORY_SLOT_BAG_END)
-        || (bag >= BANK_SLOT_BAG_START && bag < BANK_SLOT_BAG_END))
+        || (bag >= BANK_SLOT_BAG_START && bag < BANK_SLOT_BAG_END)
+        || (bag >= REAGENT_BAG_SLOT_START && bag < REAGENT_BAG_SLOT_END))
         if (Item* item = GetItemByPos(INVENTORY_SLOT_BAG_0, bag))
             return item->ToBag();
     return nullptr;
@@ -9929,7 +9910,11 @@ bool Player::IsEquipmentPos(uint8 bag, uint8 slot)
 {
     if (bag == INVENTORY_SLOT_BAG_0 && (slot < EQUIPMENT_SLOT_END))
         return true;
+    if (bag == INVENTORY_SLOT_BAG_0 && (slot >= PROFESSION_SLOT_START && slot < PROFESSION_SLOT_END))
+        return true;
     if (bag == INVENTORY_SLOT_BAG_0 && (slot >= INVENTORY_SLOT_BAG_START && slot < INVENTORY_SLOT_BAG_END))
+        return true;
+    if (bag == INVENTORY_SLOT_BAG_0 && (slot >= REAGENT_BAG_SLOT_START && slot < REAGENT_BAG_SLOT_END))
         return true;
     return false;
 }
@@ -9962,6 +9947,8 @@ bool Player::IsBagPos(uint16 pos)
         return true;
     if (bag == INVENTORY_SLOT_BAG_0 && (slot >= BANK_SLOT_BAG_START && slot < BANK_SLOT_BAG_END))
         return true;
+    if (bag == INVENTORY_SLOT_BAG_0 && (slot >= REAGENT_BAG_SLOT_START && slot < REAGENT_BAG_SLOT_END))
+        return true;
     return false;
 }
 
@@ -9986,8 +9973,16 @@ bool Player::IsValidPos(uint8 bag, uint8 slot, bool explicit_pos) const
         if (slot < EQUIPMENT_SLOT_END)
             return true;
 
+        // profession equipment
+        if (slot >= PROFESSION_SLOT_START && slot < PROFESSION_SLOT_END)
+            return true;
+
         // bag equip slots
         if (slot >= INVENTORY_SLOT_BAG_START && slot < INVENTORY_SLOT_BAG_END)
+            return true;
+
+        // reagent bag equip slots
+        if (slot >= REAGENT_BAG_SLOT_START && slot < REAGENT_BAG_SLOT_END)
             return true;
 
         // backpack slots
@@ -12251,7 +12246,7 @@ void Player::RemoveItem(uint8 bag, uint8 slot, bool update)
                 pItem->RemoveItemFlag2(ITEM_FIELD_FLAG2_EQUIPPED);
 
                 // remove item dependent auras and casts (only weapon and armor slots)
-                if (slot < EQUIPMENT_SLOT_END)
+                if (slot < PROFESSION_SLOT_END)
                 {
                     // update expertise
                     if (slot == EQUIPMENT_SLOT_MAINHAND)
@@ -14259,47 +14254,46 @@ void Player::PrepareGossipMenu(WorldObject* source, uint32 menuId, bool showQues
 
             switch (gossipMenuItem.OptionIcon)
             {
-                case GossipOptionIcon::DisableXPGain:
+                case GossipOptionNpc::DisableXPGain:
                     if (HasPlayerFlag(PLAYER_FLAGS_NO_XP_GAIN) || IsMaxLevel())
                         canTalk = false;
                     break;
-                case GossipOptionIcon::EnableXPGain:
+                case GossipOptionNpc::EnableXPGain:
                     if (!HasPlayerFlag(PLAYER_FLAGS_NO_XP_GAIN) || IsMaxLevel())
                         canTalk = false;
                     break;
-                case GossipOptionIcon::None:
-                case GossipOptionIcon::Vendor:
-                case GossipOptionIcon::Trainer:
-                case GossipOptionIcon::Binder:
-                case GossipOptionIcon::Banker:
-                case GossipOptionIcon::PetitionVendor:
-                case GossipOptionIcon::TabardVendor:
-                case GossipOptionIcon::Auctioneer:
-                case GossipOptionIcon::Mailbox:
-                case GossipOptionIcon::Transmogrify:
-                case GossipOptionIcon::AzeriteRespec:
+                case GossipOptionNpc::None:
+                case GossipOptionNpc::Vendor:
+                case GossipOptionNpc::Trainer:
+                case GossipOptionNpc::Binder:
+                case GossipOptionNpc::Banker:
+                case GossipOptionNpc::PetitionVendor:
+                case GossipOptionNpc::TabardVendor:
+                case GossipOptionNpc::Auctioneer:
+                case GossipOptionNpc::Mailbox:
+                case GossipOptionNpc::Transmogrify:
+                case GossipOptionNpc::AzeriteRespec:
                     break;                                         // No checks
-                case GossipOptionIcon::CemeterySelect:
+                case GossipOptionNpc::CemeterySelect:
                     canTalk = false;                               // Deprecated
                     break;
-                case GossipOptionIcon::GuildBanker:
-                case GossipOptionIcon::SpellClick:
-                case GossipOptionIcon::WorldPVPQueue:
-                case GossipOptionIcon::DungeonFinder:
-                case GossipOptionIcon::ArtifactRespec:
-                case GossipOptionIcon::GarrisonArchitect:
-                case GossipOptionIcon::GarrisonMission:
-                case GossipOptionIcon::GarrisonShipment:
-                case GossipOptionIcon::GarrisonTradeskill:
-                case GossipOptionIcon::GarrisonRecruitment:
-                case GossipOptionIcon::AdventureMap:
-                case GossipOptionIcon::GarrisonTalent:
-                case GossipOptionIcon::ContributionCollector:
-                case GossipOptionIcon::IslandsQueue:
-                case GossipOptionIcon::UIItemInteraction:
-                case GossipOptionIcon::WorldMap:
-                case GossipOptionIcon::ChromieTime:
-                case GossipOptionIcon::CovenantRenown:
+                case GossipOptionNpc::GuildBanker:
+                case GossipOptionNpc::Spellclick:
+                case GossipOptionNpc::WorldPvPQueue:
+                case GossipOptionNpc::LFGDungeon:
+                case GossipOptionNpc::ArtifactRespec:
+                case GossipOptionNpc::GarrisonArchitect:
+                case GossipOptionNpc::GarrisonMissionNpc:
+                case GossipOptionNpc::GarrisonTradeskillNpc:
+                case GossipOptionNpc::GarrisonRecruitment:
+                case GossipOptionNpc::AdventureMap:
+                case GossipOptionNpc::GarrisonTalent:
+                case GossipOptionNpc::ContributionCollector:
+                case GossipOptionNpc::IslandsMissionNpc:
+                case GossipOptionNpc::UIItemInteraction:
+                case GossipOptionNpc::WorldMap:
+                case GossipOptionNpc::ChromieTimeNpc:
+                case GossipOptionNpc::CovenantPreviewNpc:
                     break;                                         // NYI
                 default:
                     break;
@@ -14309,7 +14303,7 @@ void Player::PrepareGossipMenu(WorldObject* source, uint32 menuId, bool showQues
         {
             switch (gossipMenuItem.OptionIcon)
             {
-                case GossipOptionIcon::None:
+                case GossipOptionNpc::None:
                     if (go->GetGoType() != GAMEOBJECT_TYPE_QUESTGIVER && go->GetGoType() != GAMEOBJECT_TYPE_GOOBER)
                         canTalk = false;
                     break;
@@ -14320,42 +14314,7 @@ void Player::PrepareGossipMenu(WorldObject* source, uint32 menuId, bool showQues
         }
 
         if (canTalk)
-        {
-            std::string strOptionText, strBoxText;
-            BroadcastTextEntry const* optionBroadcastText = sBroadcastTextStore.LookupEntry(gossipMenuItem.OptionBroadcastTextID);
-            BroadcastTextEntry const* boxBroadcastText = sBroadcastTextStore.LookupEntry(gossipMenuItem.BoxBroadcastTextID);
-            LocaleConstant locale = GetSession()->GetSessionDbLocaleIndex();
-
-            if (optionBroadcastText)
-                strOptionText = DB2Manager::GetBroadcastTextValue(optionBroadcastText, locale, GetGender());
-            else
-                strOptionText = gossipMenuItem.OptionText;
-
-            if (boxBroadcastText)
-                strBoxText = DB2Manager::GetBroadcastTextValue(boxBroadcastText, locale, GetGender());
-            else
-                strBoxText = gossipMenuItem.BoxText;
-
-            if (locale != DEFAULT_LOCALE)
-            {
-                if (!optionBroadcastText)
-                {
-                    /// Find localizations from database.
-                    if (GossipMenuItemsLocale const* gossipMenuLocale = sObjectMgr->GetGossipMenuItemsLocale(menuId, gossipMenuItem.OptionID))
-                        ObjectMgr::GetLocaleString(gossipMenuLocale->OptionText, locale, strOptionText);
-                }
-
-                if (!boxBroadcastText)
-                {
-                    /// Find localizations from database.
-                    if (GossipMenuItemsLocale const* gossipMenuLocale = sObjectMgr->GetGossipMenuItemsLocale(menuId, gossipMenuItem.OptionID))
-                        ObjectMgr::GetLocaleString(gossipMenuLocale->BoxText, locale, strBoxText);
-                }
-            }
-
-            menu->GetGossipMenu().AddMenuItem(gossipMenuItem.OptionID, gossipMenuItem.OptionIcon, strOptionText, 0, AsUnderlyingType(gossipMenuItem.OptionIcon), strBoxText, gossipMenuItem.BoxMoney, gossipMenuItem.BoxCoded);
-            menu->GetGossipMenu().AddGossipMenuItemData(gossipMenuItem.OptionID, gossipMenuItem.ActionMenuID, gossipMenuItem.ActionPoiID);
-        }
+            menu->GetGossipMenu().AddMenuItem(gossipMenuItem, gossipMenuItem.MenuID, gossipMenuItem.OrderIndex);
     }
 }
 
@@ -14389,7 +14348,7 @@ void Player::SendPreparedGossip(WorldObject* source)
     PlayerTalkClass->SendGossipMenu(textId, source->GetGUID());
 }
 
-void Player::OnGossipSelect(WorldObject* source, uint32 gossipListId, uint32 menuId)
+void Player::OnGossipSelect(WorldObject* source, int32 gossipOptionId, uint32 menuId)
 {
     GossipMenu& gossipMenu = PlayerTalkClass->GetGossipMenu();
 
@@ -14397,20 +14356,12 @@ void Player::OnGossipSelect(WorldObject* source, uint32 gossipListId, uint32 men
     if (menuId != gossipMenu.GetMenuId())
         return;
 
-    GossipMenuItem const* item = gossipMenu.GetItem(gossipListId);
+    GossipMenuItem const* item = gossipMenu.GetItem(gossipOptionId);
     if (!item)
         return;
 
-    auto gossipOptionType = item->MenuItemIcon;
+    auto gossipOptionType = item->OptionNpc;
     ObjectGuid guid = source->GetGUID();
-
-    if (source->GetTypeId() == TYPEID_GAMEOBJECT)
-    {
-    }
-
-    GossipMenuItemData const* menuItemData = gossipMenu.GetItemData(gossipListId);
-    if (!menuItemData)
-        return;
 
     int64 cost = int64(item->BoxMoney);
     if (!HasEnoughMoney(cost))
@@ -14422,44 +14373,44 @@ void Player::OnGossipSelect(WorldObject* source, uint32 gossipListId, uint32 men
 
     switch (gossipOptionType)
     {
-        case GossipOptionIcon::Vendor:
+        case GossipOptionNpc::Vendor:
             GetSession()->SendListInventory(guid);
             break;
-        case GossipOptionIcon::Auctioneer:
+        case GossipOptionNpc::Auctioneer:
             GetSession()->SendAuctionHello(guid, source->ToCreature());
             break;
-        case GossipOptionIcon::TalentMaster:
+        case GossipOptionNpc::TalentMaster:
             PlayerTalkClass->SendCloseGossip();
             break;
-        case GossipOptionIcon::StableMaster:
+        case GossipOptionNpc::Stablemaster:
             GetSession()->SendStablePet(guid);
             break;
-        case GossipOptionIcon::PetSpecializationMaster:
+        case GossipOptionNpc::PetSpecializationMaster:
             PlayerTalkClass->SendCloseGossip();
             break;
-        case GossipOptionIcon::DisableXPGain:
+        case GossipOptionNpc::DisableXPGain:
             PlayerTalkClass->SendCloseGossip();
             CastSpell(nullptr, SPELL_EXPERIENCE_ELIMINATED, true);
             SetPlayerFlag(PLAYER_FLAGS_NO_XP_GAIN);
             break;
-        case GossipOptionIcon::EnableXPGain:
+        case GossipOptionNpc::EnableXPGain:
             PlayerTalkClass->SendCloseGossip();
             RemoveAurasDueToSpell(SPELL_EXPERIENCE_ELIMINATED);
             RemovePlayerFlag(PLAYER_FLAGS_NO_XP_GAIN);
             break;
-        case GossipOptionIcon::Mailbox:
+        case GossipOptionNpc::Mailbox:
             GetSession()->SendShowMailBox(guid);
             break;
-        case GossipOptionIcon::SpecializationMaster:
+        case GossipOptionNpc::SpecializationMaster:
             PlayerTalkClass->SendCloseGossip();
             break;
-        case GossipOptionIcon::GlyphMaster:
+        case GossipOptionNpc::GlyphMaster:
             PlayerTalkClass->SendCloseGossip();
             break;
-        case GossipOptionIcon::Transmogrify:
+        case GossipOptionNpc::Transmogrify:
             GetSession()->SendOpenTransmogrifier(guid);
             break;
-        case GossipOptionIcon::AzeriteRespec:
+        case GossipOptionNpc::AzeriteRespec:
             PlayerTalkClass->SendCloseGossip();
             GetSession()->SendAzeriteRespecNPC(guid);
             break;
@@ -17377,7 +17328,7 @@ void Player::_LoadEquipmentSets(PreparedQueryResult result)
         eqSet.Data.AssignedSpecIndex = fields[5].GetInt32();
         eqSet.State           = EQUIPMENT_SET_UNCHANGED;
 
-        for (uint32 i = 0; i < EQUIPMENT_SLOT_END; ++i)
+        for (uint32 i = EQUIPMENT_SLOT_START; i < EQUIPMENT_SLOT_END; ++i)
             if (ObjectGuid::LowType guid = fields[6 + i].GetUInt64())
                 eqSet.Data.Pieces[i] = ObjectGuid::Create<HighGuid::Item>(guid);
 
@@ -17416,7 +17367,7 @@ void Player::_LoadTransmogOutfits(PreparedQueryResult result)
         eqSet.State = EQUIPMENT_SET_UNCHANGED;
         eqSet.Data.Pieces.fill(ObjectGuid::Empty);
 
-        for (uint32 i = 0; i < EQUIPMENT_SLOT_END; ++i)
+        for (uint32 i = EQUIPMENT_SLOT_START; i < EQUIPMENT_SLOT_END; ++i)
             eqSet.Data.Appearances[i] = fields[5 + i].GetInt32();
 
         for (std::size_t i = 0; i < eqSet.Data.Enchants.size(); ++i)
@@ -17787,16 +17738,6 @@ bool Player::LoadFromDB(ObjectGuid guid, CharacterDatabaseQueryHolder const& hol
     m_fishingSteps = fields.fishingSteps;
 
     InitDisplayIds();
-
-    // cleanup inventory related item value fields (it will be filled correctly in _LoadInventory)
-    for (uint8 slot = EQUIPMENT_SLOT_START; slot < EQUIPMENT_SLOT_END; ++slot)
-    {
-        SetInvSlot(slot, ObjectGuid::Empty);
-        SetVisibleItemSlot(slot, nullptr);
-
-        delete m_items[slot];
-        m_items[slot] = nullptr;
-    }
 
     TC_LOG_DEBUG("entities.player.loading", "Player::LoadFromDB: Load Basic value of player '%s' is: ", m_name.c_str());
     outDebugValues();
@@ -18412,7 +18353,7 @@ bool Player::LoadFromDB(ObjectGuid guid, CharacterDatabaseQueryHolder const& hol
    // SetUpdateFieldValue(m_values.ModifyValue(&Player::m_unitData).ModifyValue(&UF::UnitData::ScaleDuration), 100);
    // SetUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::ScalingPlayerLevelDelta), -1);
    // SetUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::LocalFlags), 4104);
-  ////  SetUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::ActiveTraitConfigID), 4000); // ActiveTraitConfigID?
+  ////  SetUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::ActiveCombatTraitConfigID), 4000); // ActiveCombatTraitConfigID?
    // SetUpdateFieldValue(m_values.ModifyValue(&Player::m_playerData)
    //     .ModifyValue(&UF::PlayerData::CtrOptions)
    //     .ModifyValue(&UF::CTROptions::Field_4), 5);
@@ -20036,7 +19977,7 @@ void Player::SaveToDB(LoginDatabaseTransaction loginTransaction, CharacterDataba
 
         ss.str("");
         // cache equipment...
-        for (uint32 i = 0; i < INVENTORY_SLOT_BAG_END; ++i)
+        for (uint32 i = 0; i < REAGENT_BAG_SLOT_END; ++i)
         {
             if (Item* item = GetItemByPos(INVENTORY_SLOT_BAG_0, i))
             {
@@ -20185,7 +20126,7 @@ void Player::SaveToDB(LoginDatabaseTransaction loginTransaction, CharacterDataba
 
         ss.str("");
         // cache equipment...
-        for (uint32 i = 0; i < INVENTORY_SLOT_BAG_END; ++i)
+        for (uint32 i = 0; i < REAGENT_BAG_SLOT_END; ++i)
         {
             if (Item* item = GetItemByPos(INVENTORY_SLOT_BAG_0, i))
             {
@@ -20221,7 +20162,7 @@ void Player::SaveToDB(LoginDatabaseTransaction loginTransaction, CharacterDataba
         stmt->setUInt8(index++, m_activePlayerData->RestInfo[REST_TYPE_HONOR].StateID);
         stmt->setFloat(index++, finiteAlways(_restMgr->GetRestBonus(REST_TYPE_HONOR)));
         stmt->setInt32(index++, m_playerData->CovenantID);
-        stmt->setUInt32(index++, m_activePlayerData->ActiveTraitConfigID);
+        stmt->setUInt32(index++, m_activePlayerData->ActiveCombatTraitConfigID);
         stmt->setUInt32(index++, sRealmList->GetMinorMajorBugfixVersionForBuild(realm.Build));
 
         // Index
@@ -23079,7 +23020,7 @@ bool Player::BuyItemFromVendorSlot(ObjectGuid vendorguid, uint32 vendorslot, uin
             return false;
         }
 
-        if (iece->MinFactionID && uint32(GetReputationRank(iece->MinFactionID)) < iece->MinReputation)
+        if (iece->MinFactionID && int32(GetReputationRank(iece->MinFactionID)) < iece->MinReputation)
         {
             SendBuyError(BUY_ERR_REPUTATION_REQUIRE, creature, item, 0);
             return false;
@@ -26834,7 +26775,7 @@ void Player::_SaveEquipmentSets(CharacterDatabaseTransaction trans)
                     stmt->setString(j++, eqSet.Data.SetIcon);
                     stmt->setUInt32(j++, eqSet.Data.IgnoreMask);
                     stmt->setInt32(j++, eqSet.Data.AssignedSpecIndex);
-                    for (uint8 i = 0; i < EQUIPMENT_SLOT_END; ++i)
+                    for (uint8 i = EQUIPMENT_SLOT_START; i < EQUIPMENT_SLOT_END; ++i)
                         stmt->setUInt64(j++, eqSet.Data.Pieces[i].GetCounter());
                     stmt->setUInt64(j++, GetGUID().GetCounter());
                     stmt->setUInt64(j++, eqSet.Data.Guid);
@@ -26846,7 +26787,7 @@ void Player::_SaveEquipmentSets(CharacterDatabaseTransaction trans)
                     stmt->setString(j++, eqSet.Data.SetName);
                     stmt->setString(j++, eqSet.Data.SetIcon);
                     stmt->setUInt32(j++, eqSet.Data.IgnoreMask);
-                    for (uint8 i = 0; i < EQUIPMENT_SLOT_END; ++i)
+                    for (uint8 i = EQUIPMENT_SLOT_START; i < EQUIPMENT_SLOT_END; ++i)
                         stmt->setInt32(j++, eqSet.Data.Appearances[i]);
                     for (std::size_t i = 0; i < eqSet.Data.Enchants.size(); ++i)
                         stmt->setInt32(j++, eqSet.Data.Enchants[i]);
@@ -26871,7 +26812,7 @@ void Player::_SaveEquipmentSets(CharacterDatabaseTransaction trans)
                     stmt->setString(j++, eqSet.Data.SetIcon);
                     stmt->setUInt32(j++, eqSet.Data.IgnoreMask);
                     stmt->setInt32(j++, eqSet.Data.AssignedSpecIndex);
-                    for (uint8 i = 0; i < EQUIPMENT_SLOT_END; ++i)
+                    for (uint8 i = EQUIPMENT_SLOT_START; i < EQUIPMENT_SLOT_END; ++i)
                         stmt->setUInt64(j++, eqSet.Data.Pieces[i].GetCounter());
                 }
                 else
@@ -26883,7 +26824,7 @@ void Player::_SaveEquipmentSets(CharacterDatabaseTransaction trans)
                     stmt->setString(j++, eqSet.Data.SetName);
                     stmt->setString(j++, eqSet.Data.SetIcon);
                     stmt->setUInt32(j++, eqSet.Data.IgnoreMask);
-                    for (uint8 i = 0; i < EQUIPMENT_SLOT_END; ++i)
+                    for (uint8 i = EQUIPMENT_SLOT_START; i < EQUIPMENT_SLOT_END; ++i)
                         stmt->setInt32(j++, eqSet.Data.Appearances[i]);
                     for (std::size_t i = 0; i < eqSet.Data.Enchants.size(); ++i)
                         stmt->setInt32(j++, eqSet.Data.Enchants[i]);
@@ -28136,8 +28077,9 @@ void Player::ValidateMovementInfo(MovementInfo* mi)
 void Player::SendSupercededSpell(uint32 oldSpell, uint32 newSpell) const
 {
     WorldPackets::Spells::SupercededSpells supercededSpells;
-    supercededSpells.SpellID.push_back(newSpell);
-    supercededSpells.Superceded.push_back(oldSpell);
+    WorldPackets::Spells::LearnedSpellInfo& learnedSpellInfo = supercededSpells.ClientLearnedSpellData.emplace_back();
+    learnedSpellInfo.SpellID = newSpell;
+    learnedSpellInfo.Superceded = oldSpell;
     SendDirectMessage(supercededSpells.Write());
 }
 
@@ -28537,7 +28479,7 @@ void Player::UpdateAverageItemLevelTotal()
     ForEachItem(ItemSearchLocation::Everywhere, [this, &bestItemLevels, &sum](Item* item)
     {
         ItemTemplate const* itemTemplate = item->GetTemplate();
-        if (itemTemplate)
+        if (itemTemplate && itemTemplate->GetInventoryType() < INVTYPE_PROFESSION_TOOL)
         {
             uint16 dest;
             if (item->IsEquipped())
@@ -28982,116 +28924,13 @@ TraitsMgr const* Player::GetTraitsMgr() const
 
 void Player::AddOrSetTrait(Trait* trait)
 {
-    int32 foundIndexTrait = m_activePlayerData->TraitConfigs.FindIndexIf([trait](UF::TraitConfig ufTrait)
-    {
-        return ufTrait.ConfigID == trait->GetConfigID();
-    });
-
-    auto traitUF = m_values.ModifyValue(&Player::m_activePlayerData)
-        .ModifyValue(&UF::ActivePlayerData::TraitConfigs, foundIndexTrait == -1 ? trait->GetIndex() : foundIndexTrait);
-
-    auto const& currTrait = m_activePlayerData->TraitConfigs[foundIndexTrait == -1 ? trait->GetIndex() : foundIndexTrait];
-
-    if (trait->GetConfigName() != *currTrait.LoadoutName)
-    {
-        SetUpdateFieldValue(traitUF.ModifyValue(&UF::TraitConfig::LoadoutName), trait->GetConfigName());
-
-        // horrible really..
-        ForceUpdateFieldChange(traitUF.ModifyValue(&UF::TraitConfig::ConfigID));
-        ForceUpdateFieldChange(traitUF.ModifyValue(&UF::TraitConfig::Type));
-        ForceUpdateFieldChange(traitUF.ModifyValue(&UF::TraitConfig::SkillLineID));
-        ForceUpdateFieldChange(traitUF.ModifyValue(&UF::TraitConfig::SpecializationID));
-        ForceUpdateFieldChange(traitUF.ModifyValue(&UF::TraitConfig::CombatConfigFlags));
-        ForceUpdateFieldChange(traitUF.ModifyValue(&UF::TraitConfig::LoadoutIndex));
-        ForceUpdateFieldChange(traitUF.ModifyValue(&UF::TraitConfig::SystemID));
-        ForceUpdateFieldChange(traitUF.ModifyValue(&UF::TraitConfig::LoadoutName));
-    }
-
-    if (foundIndexTrait == -1)
-    {
-        SetUpdateFieldValue(traitUF.ModifyValue(&UF::TraitConfig::ConfigID), trait->GetConfigID());
-        SetUpdateFieldValue(traitUF.ModifyValue(&UF::TraitConfig::Type), static_cast<uint32>(trait->GetType()));
-
-        switch (trait->GetType())
-        {
-            case TraitType::Generic:
-                SetUpdateFieldValue(traitUF.ModifyValue(&UF::TraitConfig::SystemID), trait->GetSystemID());
-                break;
-            case TraitType::Combat:
-                SetUpdateFieldValue(traitUF.ModifyValue(&UF::TraitConfig::SpecializationID),  trait->GetSpecializationID());
-                SetUpdateFieldValue(traitUF.ModifyValue(&UF::TraitConfig::CombatConfigFlags), trait->GetCombatConfigFlags().AsUnderlyingType());
-                SetUpdateFieldValue(traitUF.ModifyValue(&UF::TraitConfig::LoadoutIndex),      trait->GetLoadoutIndex());
-                break;
-            case TraitType::Profession:
-                SetUpdateFieldValue(traitUF.ModifyValue(&UF::TraitConfig::SkillLineID), 1);
-                break;
-            default:
-                break;
-        }
-    }
-
-    auto map = trait->GetTalents();
-
-    for (auto itr = map->begin(); itr != map->end(); ++itr)
-    {
-        auto talent = itr->second;
-
-        if (!talent->IsChanged)
-            continue;
-
-        talent->IsChanged = false;
-
-        bool isRemove = !talent->IsDefault && talent->Rank == 0;
-
-        int32 foundIndex = m_activePlayerData->TraitConfigs[trait->GetIndex()].Entries.FindIndexIf([talent](UF::TraitEntry ufTalent)
-        {
-            return ufTalent.TraitNodeID == talent->TraitNodeID
-                && ufTalent.TraitNodeEntryID == talent->TraitNodeEntryID;
-        });
-
-        if (isRemove)
-        {
-            /// Check if index exists in update fields already
-            if (foundIndex == -1)
-                continue;
-
-            RemoveDynamicUpdateFieldValue(traitUF.ModifyValue(&UF::TraitConfig::Entries), foundIndex);
-            continue;
-        }
-
-        if (foundIndex == -1)
-        {
-            UF::TraitEntry& mod = AddDynamicUpdateFieldValue(traitUF.ModifyValue(&UF::TraitConfig::Entries));
-            mod.TraitNodeID      = talent->TraitNodeID;
-            mod.TraitNodeEntryID = talent->TraitNodeEntryID;
-            mod.TreeFlags        = talent->TreeFlags.AsUnderlyingType();
-            mod.Rank             = talent->Rank;
-        }
-        else
-        {
-            auto const& oldTalent = currTrait.Entries[foundIndex];
-
-            if (oldTalent.TraitNodeID != talent->TraitNodeID
-                || oldTalent.TraitNodeEntryID != talent->TraitNodeEntryID
-                || oldTalent.TreeFlags != talent->TreeFlags.AsUnderlyingType()
-                || oldTalent.Rank != talent->Rank)
-            {
-                auto mod = traitUF.ModifyValue(&UF::TraitConfig::Entries, foundIndex);
-
-                SetUpdateFieldValue(mod.ModifyValue(&UF::TraitEntry::TraitNodeID),      talent->TraitNodeID);
-                SetUpdateFieldValue(mod.ModifyValue(&UF::TraitEntry::TraitNodeEntryID), talent->TraitNodeEntryID);
-                SetUpdateFieldValue(mod.ModifyValue(&UF::TraitEntry::TreeFlags),        talent->TreeFlags.AsUnderlyingType());
-                SetUpdateFieldValue(mod.ModifyValue(&UF::TraitEntry::Rank),             talent->Rank);
-            }
-        }
-    }
 }
 
 void Player::RemoveTrait(Trait* trait)
 {
     int32 foundIndexTrait = m_activePlayerData->TraitConfigs.FindIndexIf([trait](UF::TraitConfig ufTrait)
     {
-        return ufTrait.ConfigID == trait->GetConfigID();
+        return ufTrait.ID == trait->GetConfigID();
     });
 
     if (foundIndexTrait == -1)
@@ -29107,14 +28946,14 @@ void Player::RemoveTrait(Trait* trait)
         auto traitUF = m_values.ModifyValue(&Player::m_activePlayerData)
             .ModifyValue(&UF::ActivePlayerData::TraitConfigs, i);
 
-        ForceUpdateFieldChange(traitUF.ModifyValue(&UF::TraitConfig::ConfigID));
+        ForceUpdateFieldChange(traitUF.ModifyValue(&UF::TraitConfig::ID));
         ForceUpdateFieldChange(traitUF.ModifyValue(&UF::TraitConfig::Type));
         ForceUpdateFieldChange(traitUF.ModifyValue(&UF::TraitConfig::SkillLineID));
-        ForceUpdateFieldChange(traitUF.ModifyValue(&UF::TraitConfig::SpecializationID));
+        ForceUpdateFieldChange(traitUF.ModifyValue(&UF::TraitConfig::ChrSpecializationID));
         ForceUpdateFieldChange(traitUF.ModifyValue(&UF::TraitConfig::CombatConfigFlags));
-        ForceUpdateFieldChange(traitUF.ModifyValue(&UF::TraitConfig::LoadoutIndex));
-        ForceUpdateFieldChange(traitUF.ModifyValue(&UF::TraitConfig::SystemID));
-        ForceUpdateFieldChange(traitUF.ModifyValue(&UF::TraitConfig::LoadoutName));
+        ForceUpdateFieldChange(traitUF.ModifyValue(&UF::TraitConfig::LocalIdentifier));
+        ForceUpdateFieldChange(traitUF.ModifyValue(&UF::TraitConfig::TraitSystemID));
+        ForceUpdateFieldChange(traitUF.ModifyValue(&UF::TraitConfig::Name));
     }
 }
 
@@ -29122,7 +28961,7 @@ void Player::RemoveTraitTalent(Trait* trait, TraitTalent* talent)
 {
     int32 foundIndexTrait = m_activePlayerData->TraitConfigs.FindIndexIf([trait](UF::TraitConfig ufTrait)
     {
-        return ufTrait.ConfigID == trait->GetConfigID();
+        return ufTrait.ID == trait->GetConfigID();
     });
 
     if (foundIndexTrait == -1)
@@ -29149,14 +28988,14 @@ void Player::SetCurrentConfigID(uint32 configId, bool suppressed /*= false*/)
     {
         DoWithSuppressingObjectUpdates([&]()
         {
-            SetUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::ActiveTraitConfigID), configId);
-            const_cast<UF::ActivePlayerData&>(*m_activePlayerData).ClearChanged(&UF::ActivePlayerData::ActiveTraitConfigID);
+            SetUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::ActiveCombatTraitConfigID), configId);
+            const_cast<UF::ActivePlayerData&>(*m_activePlayerData).ClearChanged(&UF::ActivePlayerData::ActiveCombatTraitConfigID);
         });
     }
     else
     {
-        SetUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::ActiveTraitConfigID), configId);
-        ForceUpdateFieldChange(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::ActiveTraitConfigID));
+        SetUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::ActiveCombatTraitConfigID), configId);
+        ForceUpdateFieldChange(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::ActiveCombatTraitConfigID));
     }
 }
 

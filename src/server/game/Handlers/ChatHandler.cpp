@@ -218,7 +218,7 @@ void WorldSession::HandleChatMessage(ChatMsg type, Language lang, std::string ms
         return;
     }
 
-    if (msg.size() > 255)
+    if (msg.size() > 511)
         return;
 
     if (msg.empty())
@@ -579,7 +579,7 @@ void WorldSession::HandleChatMessageAFKOpcode(WorldPackets::Chat::ChatMessageAFK
     if (sender->IsInCombat())
         return;
 
-    if (chatMessageAFK.Text.length() > 255)
+    if (chatMessageAFK.Text.length() > 511)
         return;
 
     // do message validity checks
@@ -625,7 +625,7 @@ void WorldSession::HandleChatMessageDNDOpcode(WorldPackets::Chat::ChatMessageDND
     if (sender->IsInCombat())
         return;
 
-    if (chatMessageDND.Text.length() > 255)
+    if (chatMessageDND.Text.length() > 511)
         return;
 
     // do message validity checks

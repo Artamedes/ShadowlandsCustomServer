@@ -29,7 +29,6 @@
 #include "Item.h"
 #include "ItemPackets.h"
 #include "Log.h"
-#include "MailPackets.h"
 #include "Map.h"
 #include "NPCPackets.h"
 #include "ObjectMgr.h"
@@ -39,7 +38,6 @@
 #include "ReputationMgr.h"
 #include "SpellInfo.h"
 #include "Trainer.h"
-#include "World.h"
 #include "WorldPacket.h"
 #include "ScriptMgr.h"
 #include "GameTime.h"
@@ -74,16 +72,20 @@ void WorldSession::HandleTabardVendorActivateOpcode(WorldPackets::NPC::Hello& pa
 
 void WorldSession::SendTabardVendorActivate(ObjectGuid guid)
 {
-    WorldPackets::NPC::PlayerTabardVendorActivate packet;
-    packet.Vendor = guid;
-    SendPacket(packet.Write());
+    WorldPackets::NPC::NPCInteractionOpenResult npcInteraction;
+    npcInteraction.Npc = guid;
+    npcInteraction.InteractionType = PlayerInteractionType::TabardVendor;
+    npcInteraction.Success = true;
+    SendPacket(npcInteraction.Write());
 }
 
 void WorldSession::SendShowMailBox(ObjectGuid guid)
 {
-    WorldPackets::Mail::ShowMailbox packet;
-    packet.PostmasterGUID = guid;
-    SendPacket(packet.Write());
+    WorldPackets::NPC::NPCInteractionOpenResult npcInteraction;
+    npcInteraction.Npc = guid;
+    npcInteraction.InteractionType = PlayerInteractionType::MailInfo;
+    npcInteraction.Success = true;
+    SendPacket(npcInteraction.Write());
 }
 
 void WorldSession::HandleTrainerListOpcode(WorldPackets::NPC::Hello& packet)
@@ -195,7 +197,8 @@ void WorldSession::HandleGossipHelloOpcode(WorldPackets::NPC::Hello& packet)
 
 void WorldSession::HandleGossipSelectOptionOpcode(WorldPackets::NPC::GossipSelectOption& packet)
 {
-    if (!_player->PlayerTalkClass->GetGossipMenu().GetItem(packet.GossipIndex))
+    GossipMenuItem const* gossipMenuItem = _player->PlayerTalkClass->GetGossipMenu().GetItem(packet.GossipOptionID);
+    if (!gossipMenuItem)
         return;
 
     // Prevent cheating on C++ scripted menus
@@ -248,9 +251,9 @@ void WorldSession::HandleGossipSelectOptionOpcode(WorldPackets::NPC::GossipSelec
     }
 
     /// New in dragonflight, GossipIndex with GossipNPCOption
-    if (packet.GossipIndex)
+    if (packet.GossipOptionID)
     {
-        if (auto entry = sDB2Manager.GetGossipNPCOptionEntryByGossipIndex(packet.GossipIndex))
+        if (auto entry = sDB2Manager.GetGossipNPCOptionEntryByGossipIndex(packet.GossipOptionID))
         {
             WorldPackets::NPC::GossipNpcInteraction interaction;
             interaction.Gossip = packet.GossipUnit;
@@ -276,7 +279,7 @@ void WorldSession::HandleGossipSelectOptionOpcode(WorldPackets::NPC::GossipSelec
         return;
     }
 
-    if (auto menu = _player->PlayerTalkClass->GetGossipMenu().GetItem(packet.GossipIndex))
+    if (auto menu = _player->PlayerTalkClass->GetGossipMenu().GetItem(packet.GossipOptionID))
     {
         if (menu->_callback)
         {
@@ -297,42 +300,42 @@ void WorldSession::HandleGossipSelectOptionOpcode(WorldPackets::NPC::GossipSelec
     {
         if (unit)
         {
-            if (!unit->AI()->OnGossipSelectCode(_player, packet.GossipID, packet.GossipIndex, packet.PromotionCode.c_str()))
-                _player->OnGossipSelect(unit, packet.GossipIndex, packet.GossipID);
+            if (!unit->AI()->OnGossipSelectCode(_player, packet.GossipID, gossipMenuItem->OrderIndex, packet.PromotionCode.c_str()))
+                _player->OnGossipSelect(unit, packet.GossipOptionID, packet.GossipID);
         }
         else if (go)
         {
-            if (!go->AI()->OnGossipSelectCode(_player, packet.GossipID, packet.GossipIndex, packet.PromotionCode.c_str()))
-                _player->OnGossipSelect(go, packet.GossipIndex, packet.GossipID);
+            if (!go->AI()->OnGossipSelectCode(_player, packet.GossipID, gossipMenuItem->OrderIndex, packet.PromotionCode.c_str()))
+                _player->OnGossipSelect(go, packet.GossipOptionID, packet.GossipID);
         }
         else if (item)
         {
-            sScriptMgr->OnGossipSelectCode(_player, item, _player->PlayerTalkClass->GetGossipOptionSender(packet.GossipIndex), _player->PlayerTalkClass->GetGossipOptionAction(packet.GossipIndex), packet.PromotionCode.c_str());
+            sScriptMgr->OnGossipSelectCode(_player, item, _player->PlayerTalkClass->GetGossipOptionSender(packet.GossipOptionID), _player->PlayerTalkClass->GetGossipOptionAction(packet.GossipOptionID), packet.PromotionCode.c_str());
         }
         else
         {
-            sScriptMgr->OnGossipSelectCode(_player, packet.GossipID, _player->PlayerTalkClass->GetGossipOptionSender(packet.GossipIndex), _player->PlayerTalkClass->GetGossipOptionAction(packet.GossipIndex), packet.PromotionCode.c_str());
+            sScriptMgr->OnGossipSelectCode(_player, packet.GossipID, _player->PlayerTalkClass->GetGossipOptionSender(packet.GossipOptionID), _player->PlayerTalkClass->GetGossipOptionAction(packet.GossipOptionID), packet.PromotionCode.c_str());
         }
     }
     else
     {
         if (unit)
         {
-            if (!unit->AI()->OnGossipSelect(_player, packet.GossipID, packet.GossipIndex))
-                _player->OnGossipSelect(unit, packet.GossipIndex, packet.GossipID);
+            if (!unit->AI()->OnGossipSelect(_player, packet.GossipID, gossipMenuItem->OrderIndex))
+                _player->OnGossipSelect(unit, packet.GossipOptionID, packet.GossipID);
         }
         else if (go)
         {
-            if (!go->AI()->OnGossipSelect(_player, packet.GossipID, packet.GossipIndex))
-                _player->OnGossipSelect(go, packet.GossipIndex, packet.GossipID);
+            if (!go->AI()->OnGossipSelect(_player, packet.GossipID, gossipMenuItem->OrderIndex))
+                _player->OnGossipSelect(go, packet.GossipOptionID, packet.GossipID);
         }
         else if (item)
         {
-            sScriptMgr->OnGossipSelect(_player, item, _player->PlayerTalkClass->GetGossipOptionSender(packet.GossipIndex), _player->PlayerTalkClass->GetGossipOptionAction(packet.GossipIndex));
+            sScriptMgr->OnGossipSelect(_player, item, _player->PlayerTalkClass->GetGossipOptionSender(packet.GossipOptionID), _player->PlayerTalkClass->GetGossipOptionAction(packet.GossipOptionID));
         }
         else
         {
-            sScriptMgr->OnGossipSelect(_player, packet.GossipID, _player->PlayerTalkClass->GetGossipOptionSender(packet.GossipIndex), _player->PlayerTalkClass->GetGossipOptionAction(packet.GossipIndex));
+            sScriptMgr->OnGossipSelect(_player, packet.GossipID, _player->PlayerTalkClass->GetGossipOptionSender(packet.GossipOptionID), _player->PlayerTalkClass->GetGossipOptionAction(packet.GossipOptionID));
         }
     }
 }

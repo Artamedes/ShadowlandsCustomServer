@@ -834,7 +834,7 @@ struct BattlemasterListLoadInfo
             { true, FT_BYTE, "MaxLevel" },
             { true, FT_BYTE, "RatedPlayers" },
             { true, FT_BYTE, "MinPlayers" },
-            { true, FT_BYTE, "MaxPlayers" },
+            { true, FT_INT, "MaxPlayers" },
             { true, FT_BYTE, "GroupsAllowed" },
             { true, FT_BYTE, "MaxGroupSize" },
             { true, FT_SHORT, "HolidayWorldState" },
@@ -968,8 +968,8 @@ struct CharacterLoadoutLoadInfo
             { false, FT_INT, "ID" },
             { true, FT_LONG, "RaceMask" },
             { true, FT_BYTE, "ChrClassID" },
-            { true, FT_BYTE, "Purpose" },
-            { true, FT_BYTE, "Unused910" },
+            { true, FT_INT, "Purpose" },
+            { true, FT_BYTE, "ItemContext" },
         };
         static DB2LoadInfo const loadInfo(&fields[0], std::size(fields), CharacterLoadoutMeta::Instance(), HOTFIX_SEL_CHARACTER_LOADOUT);
         return &loadInfo;
@@ -1378,7 +1378,7 @@ struct CinematicCameraLoadInfo
             { false, FT_INT, "SoundID" },
             { false, FT_FLOAT, "OriginFacing" },
             { false, FT_INT, "FileDataID" },
-            { true, FT_INT, "Unknown915" },
+            { false, FT_INT, "ConversationID" },
         };
         static DB2LoadInfo const loadInfo(&fields[0], std::size(fields), CinematicCameraMeta::Instance(), HOTFIX_SEL_CINEMATIC_CAMERA);
         return &loadInfo;
@@ -2066,10 +2066,18 @@ struct FactionTemplateLoadInfo
             { false, FT_SHORT, "Enemies2" },
             { false, FT_SHORT, "Enemies3" },
             { false, FT_SHORT, "Enemies4" },
+            { false, FT_SHORT, "Enemies5" },
+            { false, FT_SHORT, "Enemies6" },
+            { false, FT_SHORT, "Enemies7" },
+            { false, FT_SHORT, "Enemies8" },
             { false, FT_SHORT, "Friend1" },
             { false, FT_SHORT, "Friend2" },
             { false, FT_SHORT, "Friend3" },
             { false, FT_SHORT, "Friend4" },
+            { false, FT_SHORT, "Friend5" },
+            { false, FT_SHORT, "Friend6" },
+            { false, FT_SHORT, "Friend7" },
+            { false, FT_SHORT, "Friend8" },
         };
         static DB2LoadInfo const loadInfo(&fields[0], std::size(fields), FactionTemplateMeta::Instance(), HOTFIX_SEL_FACTION_TEMPLATE);
         return &loadInfo;
@@ -2688,6 +2696,34 @@ struct GlyphRequiredSpecLoadInfo
             { false, FT_INT, "GlyphPropertiesID" },
         };
         static DB2LoadInfo const loadInfo(&fields[0], std::size(fields), GlyphRequiredSpecMeta::Instance(), HOTFIX_SEL_GLYPH_REQUIRED_SPEC);
+        return &loadInfo;
+    }
+};
+
+struct GossipNpcOptionLoadInfo
+{
+    static DB2LoadInfo const* Instance()
+    {
+        static constexpr DB2FieldMeta fields[] =
+        {
+            { false, FT_INT, "ID" },
+            { true, FT_INT, "GossipNpcOption" },
+            { true, FT_INT, "LFGDungeonsID" },
+            { true, FT_INT, "TrainerID" },
+            { true, FT_INT, "GarrFollowerTypeID" },
+            { true, FT_INT, "CharShipmentID" },
+            { true, FT_INT, "GarrTalentTreeID" },
+            { true, FT_INT, "UiMapID" },
+            { true, FT_INT, "UiItemInteractionID" },
+            { true, FT_INT, "Unknown_1000_8" },
+            { true, FT_INT, "Unknown_1000_9" },
+            { true, FT_INT, "CovenantID" },
+            { true, FT_INT, "GossipOptionID" },
+            { true, FT_INT, "TraitTreeID" },
+            { true, FT_INT, "ProfessionID" },
+            { true, FT_INT, "Unknown_1002_14" },
+        };
+        static DB2LoadInfo const loadInfo(&fields[0], std::size(fields), GossipNPCOptionMeta::Instance(), HOTFIX_SEL_GOSSIP_NPC_OPTION);
         return &loadInfo;
     }
 };
@@ -4703,12 +4739,12 @@ struct PowerTypeLoadInfo
             { false, FT_STRING_NOT_LOCALIZED, "CostGlobalStringTag" },
             { false, FT_INT, "ID" },
             { true, FT_BYTE, "PowerTypeEnum" },
-            { true, FT_BYTE, "MinPower" },
-            { true, FT_SHORT, "MaxBasePower" },
-            { true, FT_BYTE, "CenterPower" },
-            { true, FT_BYTE, "DefaultPower" },
-            { true, FT_BYTE, "DisplayModifier" },
-            { true, FT_SHORT, "RegenInterruptTimeMS" },
+            { true, FT_INT, "MinPower" },
+            { true, FT_INT, "MaxBasePower" },
+            { true, FT_INT, "CenterPower" },
+            { true, FT_INT, "DefaultPower" },
+            { true, FT_INT, "DisplayModifier" },
+            { true, FT_INT, "RegenInterruptTimeMS" },
             { false, FT_FLOAT, "RegenPeace" },
             { false, FT_FLOAT, "RegenCombat" },
             { true, FT_SHORT, "Flags" },
@@ -4875,7 +4911,7 @@ struct QuestInfoLoadInfo
             { false, FT_STRING, "InfoName" },
             { true, FT_BYTE, "Type" },
             { true, FT_INT, "Modifiers" },
-            { false, FT_SHORT, "Profession" },
+            { true, FT_INT, "Profession" },
         };
         static DB2LoadInfo const loadInfo(&fields[0], std::size(fields), QuestInfoMeta::Instance(), HOTFIX_SEL_QUEST_INFO);
         return &loadInfo;
@@ -5431,7 +5467,7 @@ struct SoundKitLoadInfo
             { false, FT_INT, "ID" },
             { true, FT_INT, "SoundType" },
             { false, FT_FLOAT, "VolumeFloat" },
-            { false, FT_SHORT, "Flags" },
+            { true, FT_INT, "Flags" },
             { false, FT_FLOAT, "MinDistance" },
             { false, FT_FLOAT, "DistanceCutoff" },
             { false, FT_BYTE, "EAXDef" },
@@ -5558,7 +5594,7 @@ struct SpellCastingRequirementsLoadInfo
             { true, FT_INT, "SpellID" },
             { false, FT_BYTE, "FacingCasterFlags" },
             { false, FT_SHORT, "MinFactionID" },
-            { true, FT_BYTE, "MinReputation" },
+            { true, FT_INT, "MinReputation" },
             { false, FT_SHORT, "RequiredAreasID" },
             { false, FT_BYTE, "RequiredAuraVision" },
             { false, FT_SHORT, "RequiresSpellFocus" },
@@ -5640,6 +5676,7 @@ struct SpellCooldownsLoadInfo
             { true, FT_INT, "CategoryRecoveryTime" },
             { true, FT_INT, "RecoveryTime" },
             { true, FT_INT, "StartRecoveryTime" },
+            { true, FT_INT, "AuraSpellID" },
             { false, FT_INT, "SpellID" },
         };
         static DB2LoadInfo const loadInfo(&fields[0], std::size(fields), SpellCooldownsMeta::Instance(), HOTFIX_SEL_SPELL_COOLDOWNS);
@@ -6360,6 +6397,7 @@ struct SpellXSpellVisualLoadInfo
             { false, FT_BYTE, "DifficultyID" },
             { false, FT_INT, "SpellVisualID" },
             { false, FT_FLOAT, "Probability" },
+            { true, FT_INT, "Flags" },
             { true, FT_INT, "Priority" },
             { true, FT_INT, "SpellIconFileID" },
             { true, FT_INT, "ActiveIconFileID" },

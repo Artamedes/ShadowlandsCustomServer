@@ -230,6 +230,7 @@ class TC_GAME_API Item : public Object
         bool HasBonusId(uint32 bonusId);
         bool AddBonusesToFront(uint32 bonusListID, bool checkExists = true);
         bool AddBonuses(uint32 bonusListID, bool checkExists = true);
+        std::vector<int32> const& GetBonusListIDs() const { return m_itemData->ItemBonusKey->BonusListIDs; }
         bool RemoveBonus(uint32 bonusListID);
         void SetBonuses(std::vector<int32> bonusListIDs);
         void ClearBonuses();

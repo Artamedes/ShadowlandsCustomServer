@@ -2435,7 +2435,7 @@ struct at_dru_fury_of_elune : AreaTriggerAI
 
         if (Unit* caster = at->GetCaster())
         {
-            if (auto target = ObjectAccessor::GetUnit(*caster, at->m_areaTriggerData->TargetGUID))
+            if (auto target = ObjectAccessor::GetUnit(*caster, at->m_areaTriggerData->Field_88))
                 if (lastTargetPosition != target->GetPosition())
                 {
                     lastTargetPosition = target->GetPosition();

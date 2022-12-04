@@ -49,8 +49,8 @@ struct npc_battle_training : public ScriptedAI
             ClearGossipMenuFor(p_Player);
             p_Player->PrepareQuestMenu(me->GetGUID());
             if (p_Player->GetQuestStatus(700001) == QUEST_STATUS_INCOMPLETE)
-                AddGossipItemFor(p_Player, GossipOptionIcon::BattleMaster, "Battle!", 0, 1);
-            //AddGossipItemFor(p_Player, GossipOptionIcon::None, "Nevermind", 0, 0);
+                AddGossipItemFor(p_Player, GossipOptionNpc::Battlemaster, "Battle!", 0, 1);
+            //AddGossipItemFor(p_Player, GossipOptionNpc::None, "Nevermind", 0, 0);
             SendGossipMenuFor(p_Player, me->GetEntry(), me);
             return true;
         }
@@ -109,8 +109,8 @@ struct npc_item_upgrade_tutorial : public ScriptedAI
             ClearGossipMenuFor(p_Player);
             p_Player->PrepareQuestMenu(me->GetGUID());
             if (p_Player->GetQuestStatus(700002) == QUEST_STATUS_INCOMPLETE)
-                AddGossipItemFor(p_Player, GossipOptionIcon::BattleMaster, "How do you upgrade?", 0, 1);
-          //  AddGossipItemFor(p_Player, GossipOptionIcon::None, "Nevermind", 0, 0);
+                AddGossipItemFor(p_Player, GossipOptionNpc::Battlemaster, "How do you upgrade?", 0, 1);
+          //  AddGossipItemFor(p_Player, GossipOptionNpc::None, "Nevermind", 0, 0);
             SendGossipMenuFor(p_Player, me->GetEntry(), me);
             return true;
         }
@@ -205,7 +205,7 @@ struct npc_skipbot_3000 : public ScriptedAI
             ClearGossipMenuFor(p_Player);
             p_Player->PrepareQuestMenu(me->GetGUID());
             if (DidNotCompleteTutorialQuests(p_Player))
-                AddGossipItemFor(p_Player, GossipOptionIcon::None, "Skip tutorial.", 0, 1, "Are you sure you want to skip these tutorial quests?", 0, false);
+                AddGossipItemFor(p_Player, GossipOptionNpc::None, "Skip tutorial.", 0, 1, "Are you sure you want to skip these tutorial quests?", 0, false);
             SendGossipMenuFor(p_Player, me->GetEntry(), me);
             return true;
         }
@@ -346,8 +346,8 @@ struct npc_currency_guy : public ScriptedAI
             p_Player->PrepareQuestMenu(me->GetGUID());
 
             if (p_Player->GetQuestStatus(700005) == QUEST_STATUS_REWARDED)
-                AddGossipItemFor(p_Player, GossipOptionIcon::None, "Can you explain currencies again?", 0, 1);
-           // AddGossipItemFor(p_Player, GossipOptionIcon::None, "Nevermind", 0, 0);
+                AddGossipItemFor(p_Player, GossipOptionNpc::None, "Can you explain currencies again?", 0, 1);
+           // AddGossipItemFor(p_Player, GossipOptionNpc::None, "Nevermind", 0, 0);
             SendGossipMenuFor(p_Player, me->GetEntry(), me);
             return true;
         }
@@ -390,27 +390,27 @@ struct npc_char_services : public ScriptedAI
         {
             ClearGossipMenuFor(p_Player);
             p_Player->PrepareQuestMenu(me->GetGUID());
-           // AddGossipItemFor(p_Player, GossipOptionIcon::None, "|TInterface\\ICONS\\achievement_general.BLP:30:30:-28:0|tReset my talents.", 0, 0, [this, p_Player](std::string /*callback*/)
+           // AddGossipItemFor(p_Player, GossipOptionNpc::None, "|TInterface\\ICONS\\achievement_general.BLP:30:30:-28:0|tReset my talents.", 0, 0, [this, p_Player](std::string /*callback*/)
            // {
            //     p_Player->ResetTalents(true);
            //     CloseGossipMenuFor(p_Player);
            // });
-            AddGossipItemFor(p_Player, GossipOptionIcon::None, "|TInterface\\ICONS\\inv_inscription_talenttome01.BLP:30:30:-28:0|tGive me 5 tomes.", 0, 0, [this, p_Player](std::string /*callback*/)
+            AddGossipItemFor(p_Player, GossipOptionNpc::None, "|TInterface\\ICONS\\inv_inscription_talenttome01.BLP:30:30:-28:0|tGive me 5 tomes.", 0, 0, [this, p_Player](std::string /*callback*/)
             {
                 p_Player->AddItem(173049, 5);
                 CloseGossipMenuFor(p_Player);
             });
-            AddGossipItemFor(p_Player, GossipOptionIcon::None, "|TInterface\\ICONS\\inv_misc_enggizmos_32.BLP:30:30:-28:0|tGive me the Magic Stone.", 0, 0, [this, p_Player](std::string /*callback*/)
+            AddGossipItemFor(p_Player, GossipOptionNpc::None, "|TInterface\\ICONS\\inv_misc_enggizmos_32.BLP:30:30:-28:0|tGive me the Magic Stone.", 0, 0, [this, p_Player](std::string /*callback*/)
             {
                 p_Player->AddItem(700001, 1);
                 CloseGossipMenuFor(p_Player);
             });
-            AddGossipItemFor(p_Player, GossipOptionIcon::None, "|TInterface\\ICONS\\inv_offhand_1h_ulduarraid_d_01.BLP:30:30:-28:0|tGive me the Item Upgrader.", 0, 0, [this, p_Player](std::string /*callback*/)
+            AddGossipItemFor(p_Player, GossipOptionNpc::None, "|TInterface\\ICONS\\inv_offhand_1h_ulduarraid_d_01.BLP:30:30:-28:0|tGive me the Item Upgrader.", 0, 0, [this, p_Player](std::string /*callback*/)
             {
                 p_Player->AddItem(700000, 1);
                 CloseGossipMenuFor(p_Player);
             });
-            AddGossipItemFor(p_Player, GossipOptionIcon::None, "|TInterface\\ICONS\\inv_gizmo_manasyphon.BLP:30:30:-28:0|tGive me the Corruption Chisel.", 0, 0, [this, p_Player](std::string /*callback*/)
+            AddGossipItemFor(p_Player, GossipOptionNpc::None, "|TInterface\\ICONS\\inv_gizmo_manasyphon.BLP:30:30:-28:0|tGive me the Corruption Chisel.", 0, 0, [this, p_Player](std::string /*callback*/)
             {
                 p_Player->AddItem(699998, 1);
                 CloseGossipMenuFor(p_Player);
@@ -464,7 +464,7 @@ struct npc_juno_700006 : public ScriptedAI
 
             if (p_Player->HasAchieved(700000) && p_Player->GetQuestStatus(700006) == QUEST_STATUS_REWARDED)
             {
-                AddGossipItemFor(p_Player, GossipOptionIcon::None, "I've heard this tale before.\n|cffFF0000<Skip to Thrall>", 0, 0, "Are you sure? This action cannot be undone.", 0, false, [p_Player, this](std::string /*callback*/)
+                AddGossipItemFor(p_Player, GossipOptionNpc::None, "I've heard this tale before.\n|cffFF0000<Skip to Thrall>", 0, 0, "Are you sure? This action cannot be undone.", 0, false, [p_Player, this](std::string /*callback*/)
                 {
                     if (p_Player->HasAchieved(700000))
                     {
@@ -631,17 +631,17 @@ struct npc_morpher_admin : public ScriptedAI
         bool OnGossipHello(Player* player) override
         {
             ClearGossipMenuFor(player);
-            AddGossipItemFor(player, GossipOptionIcon::None, "Set start display id " + std::to_string(startEntryId), 0, 1, "", 0, true);
-            AddGossipItemFor(player, GossipOptionIcon::None, "Set max " + std::to_string(max), 0, 8, "", 0, true);
-            AddGossipItemFor(player, GossipOptionIcon::None, "Set iterate " + std::to_string(iterate), 0, 9, "", 0, true);
-            AddGossipItemFor(player, GossipOptionIcon::None, "Set time " + std::to_string(time), 0, 2, "", 0, true);
-            AddGossipItemFor(player, GossipOptionIcon::None, "pause: " + std::string((pause ? "true" : "false")), 0, 3);
-            AddGossipItemFor(player, GossipOptionIcon::None, "back: " + std::to_string(startEntryId - 1), 0, 4);
-            AddGossipItemFor(player, GossipOptionIcon::None, "next: " + std::to_string(startEntryId + 1), 0, 5);
-            AddGossipItemFor(player, GossipOptionIcon::None, "spiral: " + std::to_string(startEntryId + 1), 0, 7);
-            AddGossipItemFor(player, GossipOptionIcon::None, "nameLike: " + nameLike, 0, 10, "", 0, true);
-            AddGossipItemFor(player, GossipOptionIcon::None, "DESPAWN: ", 0, 9);
-            AddGossipItemFor(player, GossipOptionIcon::None, "go ", 0, 6);
+            AddGossipItemFor(player, GossipOptionNpc::None, "Set start display id " + std::to_string(startEntryId), 0, 1, "", 0, true);
+            AddGossipItemFor(player, GossipOptionNpc::None, "Set max " + std::to_string(max), 0, 8, "", 0, true);
+            AddGossipItemFor(player, GossipOptionNpc::None, "Set iterate " + std::to_string(iterate), 0, 9, "", 0, true);
+            AddGossipItemFor(player, GossipOptionNpc::None, "Set time " + std::to_string(time), 0, 2, "", 0, true);
+            AddGossipItemFor(player, GossipOptionNpc::None, "pause: " + std::string((pause ? "true" : "false")), 0, 3);
+            AddGossipItemFor(player, GossipOptionNpc::None, "back: " + std::to_string(startEntryId - 1), 0, 4);
+            AddGossipItemFor(player, GossipOptionNpc::None, "next: " + std::to_string(startEntryId + 1), 0, 5);
+            AddGossipItemFor(player, GossipOptionNpc::None, "spiral: " + std::to_string(startEntryId + 1), 0, 7);
+            AddGossipItemFor(player, GossipOptionNpc::None, "nameLike: " + nameLike, 0, 10, "", 0, true);
+            AddGossipItemFor(player, GossipOptionNpc::None, "DESPAWN: ", 0, 9);
+            AddGossipItemFor(player, GossipOptionNpc::None, "go ", 0, 6);
             SendGossipMenuFor(player, 5555, me);
             return true;
         }
@@ -871,7 +871,7 @@ struct npc_kazzik_t3_transmogs : public ScriptedAI
         bool OnGossipHello(Player* player) override
         {
             ClearGossipMenuFor(player);
-            AddGossipItemFor(player, GossipOptionIcon::None, "Give me my tier 3", 0, 0);
+            AddGossipItemFor(player, GossipOptionNpc::None, "Give me my tier 3", 0, 0);
             SendGossipMenuFor(player, 1, me);
             return true;
         }
@@ -909,11 +909,11 @@ struct npc_sturzah_800005 : public ScriptedAI
         bool OnGossipHello(Player* player) override
         {
             ClearGossipMenuFor(player);
-            AddGossipItemFor(player, GossipOptionIcon::None, "|TInterface/Icons/achievement_pvp_h_01.blp:30:30:-28:0|tTier 1", 0, 1);
-            AddGossipItemFor(player, GossipOptionIcon::None, "|TInterface/Icons/achievement_pvp_h_02.blp:30:30:-28:0|tTier 2", 0, 2);
-            AddGossipItemFor(player, GossipOptionIcon::None, "|TInterface/Icons/achievement_pvp_h_03.blp:30:30:-28:0|tTier 3", 0, 3);
-            AddGossipItemFor(player, GossipOptionIcon::None, "|TInterface/Icons/achievement_pvp_h_05.blp:30:30:-28:0|tTier 4", 0, 4);
-            //AddGossipItemFor(player, GossipOptionIcon::None, "|TInterface/Icons/achievement_pvp_h_05.blp:30:30:-28:0|tTier 5", 0, 5);
+            AddGossipItemFor(player, GossipOptionNpc::None, "|TInterface/Icons/achievement_pvp_h_01.blp:30:30:-28:0|tTier 1", 0, 1);
+            AddGossipItemFor(player, GossipOptionNpc::None, "|TInterface/Icons/achievement_pvp_h_02.blp:30:30:-28:0|tTier 2", 0, 2);
+            AddGossipItemFor(player, GossipOptionNpc::None, "|TInterface/Icons/achievement_pvp_h_03.blp:30:30:-28:0|tTier 3", 0, 3);
+            AddGossipItemFor(player, GossipOptionNpc::None, "|TInterface/Icons/achievement_pvp_h_05.blp:30:30:-28:0|tTier 4", 0, 4);
+            //AddGossipItemFor(player, GossipOptionNpc::None, "|TInterface/Icons/achievement_pvp_h_05.blp:30:30:-28:0|tTier 5", 0, 5);
             SendGossipMenuFor(player, 800005, me);
             return true;
         }
@@ -977,35 +977,35 @@ struct npc_soulshape_picker : public ScriptedAI
 
             if (covenant->GetCovenantID() == CovenantID::NightFae)
             {
-                AddGossipItemFor(player, GossipOptionIcon::None, "Vulpin", 0, 0);
-                AddGossipItemFor(player, GossipOptionIcon::None, "Toad", 0, 333206);
-                AddGossipItemFor(player, GossipOptionIcon::None, "Wyvern", 0, 326215);
-                AddGossipItemFor(player, GossipOptionIcon::None, "Gryphon", 0, 326212);
-                AddGossipItemFor(player, GossipOptionIcon::None, "Hippogryph", 0, 326209);
-                AddGossipItemFor(player, GossipOptionIcon::None, "Wolfhawk", 0, 326207);
-                AddGossipItemFor(player, GossipOptionIcon::None, "Feathered Drake", 0, 326204);
-                AddGossipItemFor(player, GossipOptionIcon::None, "Wolf", 0, 326202);
-                AddGossipItemFor(player, GossipOptionIcon::None, "Moose", 0, 326200);
-                AddGossipItemFor(player, GossipOptionIcon::None, "Bear", 0, 326197);
-                AddGossipItemFor(player, GossipOptionIcon::None, "Raptor", 0, 326195);
-                AddGossipItemFor(player, GossipOptionIcon::None, "Shadowstalker", 0, 326191);
-                AddGossipItemFor(player, GossipOptionIcon::None, "Stag", 0, 326184);
-                AddGossipItemFor(player, GossipOptionIcon::None, "Dragon Turtle", 0, 326181);
-                AddGossipItemFor(player, GossipOptionIcon::None, "Tiger", 0, 326168);
-                AddGossipItemFor(player, GossipOptionIcon::None, "Lion", 0, 326165);
-                AddGossipItemFor(player, GossipOptionIcon::None, "Crane", 0, 326161);
-                AddGossipItemFor(player, GossipOptionIcon::None, "Shrieker", 0, 326157);
-                AddGossipItemFor(player, GossipOptionIcon::None, "Horned Horse", 0, 326153);
-                AddGossipItemFor(player, GossipOptionIcon::None, "Moth", 0, 326152);
-                AddGossipItemFor(player, GossipOptionIcon::None, "Direhorn", 0, 349209);
-                AddGossipItemFor(player, GossipOptionIcon::None, "Hippo", 0, 349213);
-                AddGossipItemFor(player, GossipOptionIcon::None, "Kodo", 0, 349215);
-                AddGossipItemFor(player, GossipOptionIcon::None, "Mammoth", 0, 249217);
-                AddGossipItemFor(player, GossipOptionIcon::None, "Saurolisk", 0, 349219);
-                AddGossipItemFor(player, GossipOptionIcon::None, "Shoveltusk", 0, 349221);
-                AddGossipItemFor(player, GossipOptionIcon::None, "Spider", 0, 349222);
-                AddGossipItemFor(player, GossipOptionIcon::None, "Yak", 0, 349225);
-                AddGossipItemFor(player, GossipOptionIcon::None, "Runestag", 0, 321080);
+                AddGossipItemFor(player, GossipOptionNpc::None, "Vulpin", 0, 0);
+                AddGossipItemFor(player, GossipOptionNpc::None, "Toad", 0, 333206);
+                AddGossipItemFor(player, GossipOptionNpc::None, "Wyvern", 0, 326215);
+                AddGossipItemFor(player, GossipOptionNpc::None, "Gryphon", 0, 326212);
+                AddGossipItemFor(player, GossipOptionNpc::None, "Hippogryph", 0, 326209);
+                AddGossipItemFor(player, GossipOptionNpc::None, "Wolfhawk", 0, 326207);
+                AddGossipItemFor(player, GossipOptionNpc::None, "Feathered Drake", 0, 326204);
+                AddGossipItemFor(player, GossipOptionNpc::None, "Wolf", 0, 326202);
+                AddGossipItemFor(player, GossipOptionNpc::None, "Moose", 0, 326200);
+                AddGossipItemFor(player, GossipOptionNpc::None, "Bear", 0, 326197);
+                AddGossipItemFor(player, GossipOptionNpc::None, "Raptor", 0, 326195);
+                AddGossipItemFor(player, GossipOptionNpc::None, "Shadowstalker", 0, 326191);
+                AddGossipItemFor(player, GossipOptionNpc::None, "Stag", 0, 326184);
+                AddGossipItemFor(player, GossipOptionNpc::None, "Dragon Turtle", 0, 326181);
+                AddGossipItemFor(player, GossipOptionNpc::None, "Tiger", 0, 326168);
+                AddGossipItemFor(player, GossipOptionNpc::None, "Lion", 0, 326165);
+                AddGossipItemFor(player, GossipOptionNpc::None, "Crane", 0, 326161);
+                AddGossipItemFor(player, GossipOptionNpc::None, "Shrieker", 0, 326157);
+                AddGossipItemFor(player, GossipOptionNpc::None, "Horned Horse", 0, 326153);
+                AddGossipItemFor(player, GossipOptionNpc::None, "Moth", 0, 326152);
+                AddGossipItemFor(player, GossipOptionNpc::None, "Direhorn", 0, 349209);
+                AddGossipItemFor(player, GossipOptionNpc::None, "Hippo", 0, 349213);
+                AddGossipItemFor(player, GossipOptionNpc::None, "Kodo", 0, 349215);
+                AddGossipItemFor(player, GossipOptionNpc::None, "Mammoth", 0, 249217);
+                AddGossipItemFor(player, GossipOptionNpc::None, "Saurolisk", 0, 349219);
+                AddGossipItemFor(player, GossipOptionNpc::None, "Shoveltusk", 0, 349221);
+                AddGossipItemFor(player, GossipOptionNpc::None, "Spider", 0, 349222);
+                AddGossipItemFor(player, GossipOptionNpc::None, "Yak", 0, 349225);
+                AddGossipItemFor(player, GossipOptionNpc::None, "Runestag", 0, 321080);
             }
 
             SendGossipMenuFor(player, me->GetEntry(), me);
@@ -1128,7 +1128,7 @@ public:
         player->PrepareQuestMenu(me->GetGUID());
         if (player->GetQuestStatus(700000) == QUEST_STATUS_INCOMPLETE && !me->IsSummon() && me->HasNpcFlag(NPCFlags::UNIT_NPC_FLAG_QUESTGIVER))
         {
-            AddGossipItemFor(player, GossipOptionIcon::None, "I'm ready", 0, 0, [this, player](std::string /*callback*/)
+            AddGossipItemFor(player, GossipOptionNpc::None, "I'm ready", 0, 0, [this, player](std::string /*callback*/)
             {
                 CloseGossipMenuFor(player);
                 StartQuestEvent(player);
@@ -1306,7 +1306,7 @@ public:
             {
                 auto counter = player->GetQuestSlotCounter(objective->QuestStatusItr->second.Slot, objective->Objective->StorageIndex);
                 if (counter > 0)
-                    AddGossipItemFor(player, GossipOptionIcon::None, "|cffFF0000<Quest>|R Enter Incursion", 0, 1);
+                    AddGossipItemFor(player, GossipOptionNpc::None, "|cffFF0000<Quest>|R Enter Incursion", 0, 1);
             }
         }
         SendGossipMenuFor(player, me->GetEntry(), me);
@@ -1339,7 +1339,7 @@ public:
     {
         ClearGossipMenuFor(player);
 
-        AddGossipItemFor(player, GossipOptionIcon::None, "Resurrect me, please.", 0, 1);
+        AddGossipItemFor(player, GossipOptionNpc::None, "Resurrect me, please.", 0, 1);
 
         SendGossipMenuFor(player, me->GetEntry(), me);
         return true;
@@ -2864,7 +2864,7 @@ public:
         player->PrepareQuestMenu(me->GetGUID());
         if (player->GetQuestStatus(700001) == QUEST_STATUS_INCOMPLETE && !me->IsSummon() && me->HasNpcFlag(NPCFlags::UNIT_NPC_FLAG_QUESTGIVER))
         {
-            AddGossipItemFor(player, GossipOptionIcon::None, "I'm ready", 0, 0, [this, player](std::string /*callback*/)
+            AddGossipItemFor(player, GossipOptionNpc::None, "I'm ready", 0, 0, [this, player](std::string /*callback*/)
             {
                 CloseGossipMenuFor(player);
                 StartQuestEvent(player);
@@ -2933,7 +2933,7 @@ public:
         }
 
         if (player->GetQuestStatus(700006) == QUEST_STATUS_INCOMPLETE && !player->HasItemCount(700001))
-            AddGossipItemFor(player, GossipOptionIcon::None, "I'll test the Magic Stone!", 0, 1);
+            AddGossipItemFor(player, GossipOptionNpc::None, "I'll test the Magic Stone!", 0, 1);
         else if (player->GetQuestStatus(700006) == QUEST_STATUS_INCOMPLETE)
         {
             CloseGossipMenuFor(player);
@@ -3059,16 +3059,16 @@ public:
         //if (status == QUEST_STATUS_REWARDED || status == QUEST_STATUS_COMPLETE)
         {
             if (!player->HasItemCount(158923, 1, true))
-                AddGossipItemFor(player, GossipOptionIcon::None, "I need a Group Keystone.", 0, 1);
+                AddGossipItemFor(player, GossipOptionNpc::None, "I need a Group Keystone.", 0, 1);
             else
-                AddGossipItemFor(player, GossipOptionIcon::None, "Can you lower my Group Keystone level?", 0, 5);
+                AddGossipItemFor(player, GossipOptionNpc::None, "Can you lower my Group Keystone level?", 0, 5);
             if (!player->HasItemCount(180653, 1, true))
-                AddGossipItemFor(player, GossipOptionIcon::None, "I need a Solo Keystone", 0, 2);
+                AddGossipItemFor(player, GossipOptionNpc::None, "I need a Solo Keystone", 0, 2);
             else
-                AddGossipItemFor(player, GossipOptionIcon::None, "Can you lower my Solo Keystone level?", 0, 6);
+                AddGossipItemFor(player, GossipOptionNpc::None, "Can you lower my Solo Keystone level?", 0, 6);
             if (!player->HasItemCount(700019, 1, true))
             {
-                AddGossipItemFor(player, GossipOptionIcon::None, "I need a Timewalking Keystone", 0, 0, [player, this](std::string /*callback*/)
+                AddGossipItemFor(player, GossipOptionNpc::None, "I need a Timewalking Keystone", 0, 0, [player, this](std::string /*callback*/)
                 {
                     player->AddItem(700019, 1);
                     OnGossipHello(player);
@@ -3076,14 +3076,14 @@ public:
             }
             else
             {
-                AddGossipItemFor(player, GossipOptionIcon::None, "Can you lower my Timewalking Keystone level?", 0, 6, [this, player](std::string /*callback*/)
+                AddGossipItemFor(player, GossipOptionNpc::None, "Can you lower my Timewalking Keystone level?", 0, 6, [this, player](std::string /*callback*/)
                 {
                     DropKeystoneAndSendPacket(player, 700019);
                     OnGossipHello(player);
                 });
             }
 
-            AddGossipItemFor(player, GossipOptionIcon::None, "Can you tell me about Keystones again?", 0, 3);
+            AddGossipItemFor(player, GossipOptionNpc::None, "Can you tell me about Keystones again?", 0, 3);
         }
         SendGossipMenuFor(player, me->GetEntry(), me);
         return true;
@@ -3102,7 +3102,7 @@ public:
                 return OnGossipHello(player);
             case 3:
                 ClearGossipMenuFor(player);
-                AddGossipItemFor(player, GossipOptionIcon::None, "Okay", 0, 4);
+                AddGossipItemFor(player, GossipOptionNpc::None, "Okay", 0, 4);
                 SendGossipMenuFor(player, 8000031, me);
                 player->KilledMonsterCredit(me->GetEntry(), me->GetGUID());
                 return true;
@@ -3178,7 +3178,7 @@ public:
     {
         ClearGossipMenuFor(player);
         player->PrepareQuestMenu(me->GetGUID());
-        AddGossipItemFor(player, GossipOptionIcon::None, "Reset all Instances", 0, 0, [this, player](std::string /*callback*/)
+        AddGossipItemFor(player, GossipOptionNpc::None, "Reset all Instances", 0, 0, [this, player](std::string /*callback*/)
         {
             //@todo: custom
             //uint32 mapId = 0;
@@ -3227,7 +3227,7 @@ public:
     {
         ClearGossipMenuFor(player);
         player->PrepareQuestMenu(me->GetGUID());
-        AddGossipItemFor(player, GossipOptionIcon::None, "Enter a code", 0, 0, "", 0, true, [this, player](std::string callback)
+        AddGossipItemFor(player, GossipOptionNpc::None, "Enter a code", 0, 0, "", 0, true, [this, player](std::string callback)
         {
             Talk(1, player);
             CloseGossipMenuFor(player);
@@ -3331,75 +3331,75 @@ public:
         {
             case 1215:
             {
-                AddGossipItemFor(player, GossipOptionIcon::None, "|TInterface\\icons\\Ability_Hunter_Pet_Chimera:25|t Chimera", GOSSIP_SENDER_MAIN, 1241);
-                AddGossipItemFor(player, GossipOptionIcon::None, "|TInterface\\icons\\Ability_Hunter_Pet_CoreHound:25|t Core Hound", GOSSIP_SENDER_MAIN, 1243);
-                AddGossipItemFor(player, GossipOptionIcon::None, "|TInterface\\icons\\Ability_Hunter_Pet_Devilsaur:25|t Devilsaur", GOSSIP_SENDER_MAIN, 1246);
-                AddGossipItemFor(player, GossipOptionIcon::None, "|TInterface\\icons\\Spell_shaman_astralshift:25|t Spirit Beast", GOSSIP_SENDER_MAIN, 1247);
-                AddGossipItemFor(player, GossipOptionIcon::None, "|TInterface\\icons\\Ability_Hunter_Pet_Rhino:25|t Rhino", GOSSIP_SENDER_MAIN, 1248);
-                AddGossipItemFor(player, GossipOptionIcon::None, "|TInterface\\icons\\Ability_Hunter_Pet_Worm:25|t Worm", GOSSIP_SENDER_MAIN, 1249);
-                AddGossipItemFor(player, GossipOptionIcon::None, "|TInterface\\icons\\Ability_Hunter_Pet_Silithid:25|t Silithid", GOSSIP_SENDER_MAIN, 1250);
-                AddGossipItemFor(player, GossipOptionIcon::None, "|TInterface\\icons\\inv_pet_waterstrider:25|t Water Strider", GOSSIP_SENDER_MAIN, 1251);
-                AddGossipItemFor(player, GossipOptionIcon::None, "|TInterface\\icons\\achievement_moguraid_01:25|t Quilen", GOSSIP_SENDER_MAIN, 1262);
-                AddGossipItemFor(player, GossipOptionIcon::None, "|TInterface\\icons\\ability_hunter_pet_rhino:25|t Clefthoof", GOSSIP_SENDER_MAIN, 1263);
-                AddGossipItemFor(player, GossipOptionIcon::None, "|TInterface\\icons\\inv_pet_waterstrider:25|t Water Strider", GOSSIP_SENDER_MAIN, 1264);
-                AddGossipItemFor(player, GossipOptionIcon::None, "|TInterface\\icons\\Ability_Hunter_Pet_Spider:25|t Shale Spider", GOSSIP_SENDER_MAIN, 1265);
+                AddGossipItemFor(player, GossipOptionNpc::None, "|TInterface\\icons\\Ability_Hunter_Pet_Chimera:25|t Chimera", GOSSIP_SENDER_MAIN, 1241);
+                AddGossipItemFor(player, GossipOptionNpc::None, "|TInterface\\icons\\Ability_Hunter_Pet_CoreHound:25|t Core Hound", GOSSIP_SENDER_MAIN, 1243);
+                AddGossipItemFor(player, GossipOptionNpc::None, "|TInterface\\icons\\Ability_Hunter_Pet_Devilsaur:25|t Devilsaur", GOSSIP_SENDER_MAIN, 1246);
+                AddGossipItemFor(player, GossipOptionNpc::None, "|TInterface\\icons\\Spell_shaman_astralshift:25|t Spirit Beast", GOSSIP_SENDER_MAIN, 1247);
+                AddGossipItemFor(player, GossipOptionNpc::None, "|TInterface\\icons\\Ability_Hunter_Pet_Rhino:25|t Rhino", GOSSIP_SENDER_MAIN, 1248);
+                AddGossipItemFor(player, GossipOptionNpc::None, "|TInterface\\icons\\Ability_Hunter_Pet_Worm:25|t Worm", GOSSIP_SENDER_MAIN, 1249);
+                AddGossipItemFor(player, GossipOptionNpc::None, "|TInterface\\icons\\Ability_Hunter_Pet_Silithid:25|t Silithid", GOSSIP_SENDER_MAIN, 1250);
+                AddGossipItemFor(player, GossipOptionNpc::None, "|TInterface\\icons\\inv_pet_waterstrider:25|t Water Strider", GOSSIP_SENDER_MAIN, 1251);
+                AddGossipItemFor(player, GossipOptionNpc::None, "|TInterface\\icons\\achievement_moguraid_01:25|t Quilen", GOSSIP_SENDER_MAIN, 1262);
+                AddGossipItemFor(player, GossipOptionNpc::None, "|TInterface\\icons\\ability_hunter_pet_rhino:25|t Clefthoof", GOSSIP_SENDER_MAIN, 1263);
+                AddGossipItemFor(player, GossipOptionNpc::None, "|TInterface\\icons\\inv_pet_waterstrider:25|t Water Strider", GOSSIP_SENDER_MAIN, 1264);
+                AddGossipItemFor(player, GossipOptionNpc::None, "|TInterface\\icons\\Ability_Hunter_Pet_Spider:25|t Shale Spider", GOSSIP_SENDER_MAIN, 1265);
                 SendGossipMenuFor(player, 1, me);
                 break;
             }
             case 1216:
             {
-                AddGossipItemFor(player, GossipOptionIcon::None, "|TInterface\\icons\\Ability_Hunter_Pet_Bat:25|t Bat", GOSSIP_SENDER_MAIN, 1217);
-                AddGossipItemFor(player, GossipOptionIcon::None, "|TInterface\\icons\\Ability_Hunter_Pet_Owl:25|t Owl", GOSSIP_SENDER_MAIN, 1218);
+                AddGossipItemFor(player, GossipOptionNpc::None, "|TInterface\\icons\\Ability_Hunter_Pet_Bat:25|t Bat", GOSSIP_SENDER_MAIN, 1217);
+                AddGossipItemFor(player, GossipOptionNpc::None, "|TInterface\\icons\\Ability_Hunter_Pet_Owl:25|t Owl", GOSSIP_SENDER_MAIN, 1218);
                 // exotic       AddGossipItemFor(player,  9, "Chimera", GOSSIP_SENDER_MAIN, 1216);
-                AddGossipItemFor(player, GossipOptionIcon::None, "|TInterface\\icons\\Ability_Hunter_Pet_Dragonhawk:25|t Dragonhawk", GOSSIP_SENDER_MAIN, 1219);
-                AddGossipItemFor(player, GossipOptionIcon::None, "|TInterface\\icons\\Ability_Hunter_Pet_NetherRay:25|t Nether ray", GOSSIP_SENDER_MAIN, 1220);
-                AddGossipItemFor(player, GossipOptionIcon::None, "|TInterface\\icons\\Ability_Hunter_Pet_Ravager:25|t Ravager", GOSSIP_SENDER_MAIN, 1221);
+                AddGossipItemFor(player, GossipOptionNpc::None, "|TInterface\\icons\\Ability_Hunter_Pet_Dragonhawk:25|t Dragonhawk", GOSSIP_SENDER_MAIN, 1219);
+                AddGossipItemFor(player, GossipOptionNpc::None, "|TInterface\\icons\\Ability_Hunter_Pet_NetherRay:25|t Nether ray", GOSSIP_SENDER_MAIN, 1220);
+                AddGossipItemFor(player, GossipOptionNpc::None, "|TInterface\\icons\\Ability_Hunter_Pet_Ravager:25|t Ravager", GOSSIP_SENDER_MAIN, 1221);
                 // exotic       AddGossipItemFor(player,  9, "Silitid", GOSSIP_SENDER_MAIN, 1216);
-                AddGossipItemFor(player, GossipOptionIcon::None, "|TInterface\\icons\\Ability_Hunter_Pet_Spider:25|t Spider", GOSSIP_SENDER_MAIN, 1223);
-                AddGossipItemFor(player, GossipOptionIcon::None, "|TInterface\\icons\\Ability_Hunter_Pet_Sporebat:25|t Sporebat", GOSSIP_SENDER_MAIN, 1242);
-                AddGossipItemFor(player, GossipOptionIcon::None, "|TInterface\\icons\\Ability_Hunter_Pet_WindSerpent:25|t Wind serpent", GOSSIP_SENDER_MAIN, 1225);
-                AddGossipItemFor(player, GossipOptionIcon::None, "|TInterface\\icons\\Ability_Hunter_Pet_Cat:25|t Cat", GOSSIP_SENDER_MAIN, 1227);
+                AddGossipItemFor(player, GossipOptionNpc::None, "|TInterface\\icons\\Ability_Hunter_Pet_Spider:25|t Spider", GOSSIP_SENDER_MAIN, 1223);
+                AddGossipItemFor(player, GossipOptionNpc::None, "|TInterface\\icons\\Ability_Hunter_Pet_Sporebat:25|t Sporebat", GOSSIP_SENDER_MAIN, 1242);
+                AddGossipItemFor(player, GossipOptionNpc::None, "|TInterface\\icons\\Ability_Hunter_Pet_WindSerpent:25|t Wind serpent", GOSSIP_SENDER_MAIN, 1225);
+                AddGossipItemFor(player, GossipOptionNpc::None, "|TInterface\\icons\\Ability_Hunter_Pet_Cat:25|t Cat", GOSSIP_SENDER_MAIN, 1227);
                 // exotic       AddGossipItemFor(player,  9, "Core Hound", GOSSIP_SENDER_MAIN, 1216);
-                AddGossipItemFor(player, GossipOptionIcon::None, "|TInterface\\icons\\Ability_Hunter_Pet_Hyena:25|t Hyena", GOSSIP_SENDER_MAIN, 1228);
+                AddGossipItemFor(player, GossipOptionNpc::None, "|TInterface\\icons\\Ability_Hunter_Pet_Hyena:25|t Hyena", GOSSIP_SENDER_MAIN, 1228);
                 // exotic       AddGossipItemFor(player,  11, "Moth", GOSSIP_SENDER_MAIN, 1229);
-                AddGossipItemFor(player, GossipOptionIcon::None, "|TInterface\\icons\\Ability_Hunter_Pet_Raptor:25|t Raptor", GOSSIP_SENDER_MAIN, 1229);
-                AddGossipItemFor(player, GossipOptionIcon::None, "More pets?", GOSSIP_SENDER_MAIN, 1300);
+                AddGossipItemFor(player, GossipOptionNpc::None, "|TInterface\\icons\\Ability_Hunter_Pet_Raptor:25|t Raptor", GOSSIP_SENDER_MAIN, 1229);
+                AddGossipItemFor(player, GossipOptionNpc::None, "More pets?", GOSSIP_SENDER_MAIN, 1300);
                 SendGossipMenuFor(player, 1, me);
                 break;
             }
             case 1300:
             {
-                AddGossipItemFor(player, GossipOptionIcon::None, "|TInterface\\icons\\Ability_Hunter_Pet_TallStrider:25|t Tallstrider", GOSSIP_SENDER_MAIN, 1230);
+                AddGossipItemFor(player, GossipOptionNpc::None, "|TInterface\\icons\\Ability_Hunter_Pet_TallStrider:25|t Tallstrider", GOSSIP_SENDER_MAIN, 1230);
                 // AddGossipItemFor(player,  11, "Wasp", GOSSIP_SENDER_MAIN, 1231);
-                AddGossipItemFor(player, GossipOptionIcon::None, "|TInterface\\icons\\Ability_Hunter_Pet_Wolf:25|t Wolf", GOSSIP_SENDER_MAIN, 1232);
-                AddGossipItemFor(player, GossipOptionIcon::None, "|TInterface\\icons\\Ability_Hunter_Pet_Bear:25|t Bear", GOSSIP_SENDER_MAIN, 1233);
-                AddGossipItemFor(player, GossipOptionIcon::None, "|TInterface\\icons\\Ability_Hunter_Pet_Boar:25|t Boar", GOSSIP_SENDER_MAIN, 1234);
-                AddGossipItemFor(player, GossipOptionIcon::None, "|TInterface\\icons\\Ability_Hunter_Pet_Crab:25|t Crab", GOSSIP_SENDER_MAIN, 1235);
-                AddGossipItemFor(player, GossipOptionIcon::None, "|TInterface\\icons\\Ability_Hunter_Pet_Crocolisk:25|t Crocolisk", GOSSIP_SENDER_MAIN, 1236);
-                AddGossipItemFor(player, GossipOptionIcon::None, "|TInterface\\icons\\Ability_Hunter_Pet_Gorilla:25|t Gorilla", GOSSIP_SENDER_MAIN, 1237);
-                AddGossipItemFor(player, GossipOptionIcon::None, "|TInterface\\icons\\Ability_Hunter_Pet_Scorpid:25|t Scorpid", GOSSIP_SENDER_MAIN, 1238);
-                AddGossipItemFor(player, GossipOptionIcon::None, "|TInterface\\icons\\Ability_Hunter_Pet_Turtle:25|t Turtle", GOSSIP_SENDER_MAIN, 1239);
-                AddGossipItemFor(player, GossipOptionIcon::None, "|TInterface\\icons\\Ability_Hunter_Pet_WarpStalker:25|t Warp stalker", GOSSIP_SENDER_MAIN, 1240);
-                AddGossipItemFor(player, GossipOptionIcon::None, "|TInterface\\icons\\Ability_Hunter_Pet_Moth:25|t Moth", GOSSIP_SENDER_MAIN, 1244);
-                AddGossipItemFor(player, GossipOptionIcon::None, "|TInterface\\icons\\Ability_Hunter_Pet_Wasp:25|t Wasp", GOSSIP_SENDER_MAIN, 1251);
-                AddGossipItemFor(player, GossipOptionIcon::None, "|TInterface\\icons\\Spell_Nature_GuardianWard:25|t Serpent", GOSSIP_SENDER_MAIN, 1252);
-                AddGossipItemFor(player, GossipOptionIcon::None, "|TInterface\\icons\\Ability_Hunter_Pet_Worm:25|t Snowdrift Jormungar", GOSSIP_SENDER_MAIN, 1253);
-                AddGossipItemFor(player, GossipOptionIcon::None, "More pets?", GOSSIP_SENDER_MAIN, 1301);
-                AddGossipItemFor(player, GossipOptionIcon::None, "Back", GOSSIP_SENDER_MAIN, 1216);
+                AddGossipItemFor(player, GossipOptionNpc::None, "|TInterface\\icons\\Ability_Hunter_Pet_Wolf:25|t Wolf", GOSSIP_SENDER_MAIN, 1232);
+                AddGossipItemFor(player, GossipOptionNpc::None, "|TInterface\\icons\\Ability_Hunter_Pet_Bear:25|t Bear", GOSSIP_SENDER_MAIN, 1233);
+                AddGossipItemFor(player, GossipOptionNpc::None, "|TInterface\\icons\\Ability_Hunter_Pet_Boar:25|t Boar", GOSSIP_SENDER_MAIN, 1234);
+                AddGossipItemFor(player, GossipOptionNpc::None, "|TInterface\\icons\\Ability_Hunter_Pet_Crab:25|t Crab", GOSSIP_SENDER_MAIN, 1235);
+                AddGossipItemFor(player, GossipOptionNpc::None, "|TInterface\\icons\\Ability_Hunter_Pet_Crocolisk:25|t Crocolisk", GOSSIP_SENDER_MAIN, 1236);
+                AddGossipItemFor(player, GossipOptionNpc::None, "|TInterface\\icons\\Ability_Hunter_Pet_Gorilla:25|t Gorilla", GOSSIP_SENDER_MAIN, 1237);
+                AddGossipItemFor(player, GossipOptionNpc::None, "|TInterface\\icons\\Ability_Hunter_Pet_Scorpid:25|t Scorpid", GOSSIP_SENDER_MAIN, 1238);
+                AddGossipItemFor(player, GossipOptionNpc::None, "|TInterface\\icons\\Ability_Hunter_Pet_Turtle:25|t Turtle", GOSSIP_SENDER_MAIN, 1239);
+                AddGossipItemFor(player, GossipOptionNpc::None, "|TInterface\\icons\\Ability_Hunter_Pet_WarpStalker:25|t Warp stalker", GOSSIP_SENDER_MAIN, 1240);
+                AddGossipItemFor(player, GossipOptionNpc::None, "|TInterface\\icons\\Ability_Hunter_Pet_Moth:25|t Moth", GOSSIP_SENDER_MAIN, 1244);
+                AddGossipItemFor(player, GossipOptionNpc::None, "|TInterface\\icons\\Ability_Hunter_Pet_Wasp:25|t Wasp", GOSSIP_SENDER_MAIN, 1251);
+                AddGossipItemFor(player, GossipOptionNpc::None, "|TInterface\\icons\\Spell_Nature_GuardianWard:25|t Serpent", GOSSIP_SENDER_MAIN, 1252);
+                AddGossipItemFor(player, GossipOptionNpc::None, "|TInterface\\icons\\Ability_Hunter_Pet_Worm:25|t Snowdrift Jormungar", GOSSIP_SENDER_MAIN, 1253);
+                AddGossipItemFor(player, GossipOptionNpc::None, "More pets?", GOSSIP_SENDER_MAIN, 1301);
+                AddGossipItemFor(player, GossipOptionNpc::None, "Back", GOSSIP_SENDER_MAIN, 1216);
                 SendGossipMenuFor(player, 1, me);
                 break;
             }
             case 1301:
             {
-                AddGossipItemFor(player, GossipOptionIcon::None, "|TInterface\\icons\\inv_pet_direhorn:25|t Direhorn", GOSSIP_SENDER_MAIN, 1254);
-                AddGossipItemFor(player, GossipOptionIcon::None, "|TInterface\\icons\\ability_mount_goatmountwhite:25|t Goat", GOSSIP_SENDER_MAIN, 1255);
-                AddGossipItemFor(player, GossipOptionIcon::None, "|TInterface\\icons\\inv_pet_porcupine:25|t Porcupine", GOSSIP_SENDER_MAIN, 1256);
-                AddGossipItemFor(player, GossipOptionIcon::None, "|TInterface\\icons\\Ability_Hunter_Pet_Crocolisk:25|t Gorgonite", GOSSIP_SENDER_MAIN, 1257);
-                AddGossipItemFor(player, GossipOptionIcon::None, "|TInterface\\icons\\inv_misc_ahnqirajtrinket_01:25|t Beetle", GOSSIP_SENDER_MAIN, 1258);
-                AddGossipItemFor(player, GossipOptionIcon::None, "|TInterface\\icons\\inv_pet_monkey:25|t Monkey", GOSSIP_SENDER_MAIN, 1259);
-                AddGossipItemFor(player, GossipOptionIcon::None, "|TInterface\\icons\\ability_hunter_aspectofthefox:25|t Fox", GOSSIP_SENDER_MAIN, 1260);
-                AddGossipItemFor(player, GossipOptionIcon::None, "|TInterface\\icons\\inv_pet_mastiff:25|t Dog", GOSSIP_SENDER_MAIN, 1261);
-                AddGossipItemFor(player, GossipOptionIcon::None, "Back", GOSSIP_SENDER_MAIN, 1300);
+                AddGossipItemFor(player, GossipOptionNpc::None, "|TInterface\\icons\\inv_pet_direhorn:25|t Direhorn", GOSSIP_SENDER_MAIN, 1254);
+                AddGossipItemFor(player, GossipOptionNpc::None, "|TInterface\\icons\\ability_mount_goatmountwhite:25|t Goat", GOSSIP_SENDER_MAIN, 1255);
+                AddGossipItemFor(player, GossipOptionNpc::None, "|TInterface\\icons\\inv_pet_porcupine:25|t Porcupine", GOSSIP_SENDER_MAIN, 1256);
+                AddGossipItemFor(player, GossipOptionNpc::None, "|TInterface\\icons\\Ability_Hunter_Pet_Crocolisk:25|t Gorgonite", GOSSIP_SENDER_MAIN, 1257);
+                AddGossipItemFor(player, GossipOptionNpc::None, "|TInterface\\icons\\inv_misc_ahnqirajtrinket_01:25|t Beetle", GOSSIP_SENDER_MAIN, 1258);
+                AddGossipItemFor(player, GossipOptionNpc::None, "|TInterface\\icons\\inv_pet_monkey:25|t Monkey", GOSSIP_SENDER_MAIN, 1259);
+                AddGossipItemFor(player, GossipOptionNpc::None, "|TInterface\\icons\\ability_hunter_aspectofthefox:25|t Fox", GOSSIP_SENDER_MAIN, 1260);
+                AddGossipItemFor(player, GossipOptionNpc::None, "|TInterface\\icons\\inv_pet_mastiff:25|t Dog", GOSSIP_SENDER_MAIN, 1261);
+                AddGossipItemFor(player, GossipOptionNpc::None, "Back", GOSSIP_SENDER_MAIN, 1300);
                 SendGossipMenuFor(player, 1, me);
                 break;
             }
@@ -3713,9 +3713,9 @@ public:
                 return;
             }
 
-            AddGossipItemFor(player, GossipOptionIcon::None, "|TInterface\\icons\\Ability_Hunter_BeastSoothe:25|t [Pets] ->", GOSSIP_SENDER_MAIN, 1216);
+            AddGossipItemFor(player, GossipOptionNpc::None, "|TInterface\\icons\\Ability_Hunter_BeastSoothe:25|t [Pets] ->", GOSSIP_SENDER_MAIN, 1216);
             if (player->GetSpecializationId() == TALENT_SPEC_HUNTER_BEASTMASTER)
-                AddGossipItemFor(player, GossipOptionIcon::None, "|TInterface\\icons\\Ability_Hunter_BeastMastery:25|t [Exotic pets] ->", GOSSIP_SENDER_MAIN, 1215);
+                AddGossipItemFor(player, GossipOptionNpc::None, "|TInterface\\icons\\Ability_Hunter_BeastMastery:25|t [Exotic pets] ->", GOSSIP_SENDER_MAIN, 1215);
             SendGossipMenuFor(player, 700016, me);
             return;
         }
@@ -3866,7 +3866,7 @@ public:
             int32 tokenCost = static_cast<int32>(itr->second.TransmogTokenCost);
             costSS << "This will cost " << tokenCost << " Transmog Tokens";
 
-            AddGossipItemFor(player, GossipOptionIcon::None, ss.str(), 0, 0, costSS.str(), 0, false, [this, player, transmogSet, tokenCost](std::string /*callback*/)
+            AddGossipItemFor(player, GossipOptionNpc::None, ss.str(), 0, 0, costSS.str(), 0, false, [this, player, transmogSet, tokenCost](std::string /*callback*/)
             {
                 if (!player->GetSession()->GetCollectionMgr()->IsSetCompleted(transmogSet->ID))
                 {
@@ -3928,7 +3928,7 @@ public:
             if (!player->GetSession()->GetCollectionMgr()->HasRuneforgeMemory(legendary))
                 player->GetSession()->GetCollectionMgr()->AddRuneforgeMemory(legendary);
 
-        AddGossipItemFor(player, GossipOptionIcon::None, "I'd like to craft a legendary item.", 0, 0, [this, player](std::string /*callback*/)
+        AddGossipItemFor(player, GossipOptionNpc::None, "I'd like to craft a legendary item.", 0, 0, [this, player](std::string /*callback*/)
         {
             /// MOVE TO WORLDPACKETS CLASS
             WorldPacket data(SMSG_RUNEFORGE_LEGENDARY_CRAFTING_OPEN_NPC, 17);
@@ -3937,7 +3937,7 @@ public:
             data.FlushBits();
             player->GetSession()->SendPacket(&data);
         });
-        AddGossipItemFor(player, GossipOptionIcon::None, "I'd like to upgrade my legendary item.", 0, 0, [this, player](std::string /*callback*/ )
+        AddGossipItemFor(player, GossipOptionNpc::None, "I'd like to upgrade my legendary item.", 0, 0, [this, player](std::string /*callback*/ )
         {
             WorldPacket data(SMSG_RUNEFORGE_LEGENDARY_CRAFTING_OPEN_NPC, 17);
             data << me->GetGUID();
@@ -3945,11 +3945,11 @@ public:
             data.FlushBits();
             player->GetSession()->SendPacket(&data);
         });
-        AddGossipItemFor(player, GossipOptionIcon::Vendor, "I'd like to browse your items", 0, 0, [this, player](std::string /*callback*/)
+        AddGossipItemFor(player, GossipOptionNpc::Vendor, "I'd like to browse your items", 0, 0, [this, player](std::string /*callback*/)
         {
             player->GetSession()->SendListInventory(me->GetGUID());
         });
-        AddGossipItemFor(player, GossipOptionIcon::Vendor, "I'd like to purchase a base item", 0, 0, [this, player](std::string /*callback*/)
+        AddGossipItemFor(player, GossipOptionNpc::Vendor, "I'd like to purchase a base item", 0, 0, [this, player](std::string /*callback*/)
         {
             player->GetSession()->SendListInventory(me->GetGUID(), 1805090);
         });

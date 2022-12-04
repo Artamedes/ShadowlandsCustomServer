@@ -63,16 +63,6 @@ enum class TraitTreeFlag : int32
 
 DEFINE_ENUM_FLAG(TraitTreeFlag);
 
-enum class TraitCombatConfigFlags : int32
-{
-    None              = 0x0,
-    ActiveForSpec     = 0x1,
-    StarterBuild      = 0x2,
-    SharedActionBVars = 0x4,
-};
-
-DEFINE_ENUM_FLAG(TraitCombatConfigFlags);
-
 constexpr uint32 DragonridingSystemID = 1;
 
 /// TraitConsts

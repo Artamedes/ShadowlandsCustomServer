@@ -132,7 +132,7 @@ class ItemUpgradeStorage
                     uint32 RequiredBonusID = l_I->second.RequiredID;
                     uint32 RequiredAmount = l_I->second.RequiredAmount;
 
-                    for (uint32 bonusId : p_TargetItem->m_itemData->Bonuses->BonusListIDs)
+                    for (uint32 bonusId : p_TargetItem->GetBonusListIDs())
                     {
                         if (bonusId == RequiredBonusID)
                         {

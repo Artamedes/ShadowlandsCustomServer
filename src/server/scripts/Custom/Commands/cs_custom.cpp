@@ -386,10 +386,10 @@ public:
     }
     static bool HandleTest2Command(ChatHandler* handler, Optional<uint32> CovenantID)
     {
-        WorldPacket data(SMSG_WORLD_MAP_OPEN_NPC, 20);
-        data << handler->GetPlayer()->GetGUID();
-        data << uint32(CovenantID.value_or(0));
-        handler->GetSession()->SendPacket(&data);
+       //WorldPacket data(SMSG_WORLD_MAP_OPEN_NPC, 20);
+       //data << handler->GetPlayer()->GetGUID();
+       //data << uint32(CovenantID.value_or(0));
+       //handler->GetSession()->SendPacket(&data);
         return true;
     }
     static bool HandleTest3Command(ChatHandler* handler, uint32 CovenantID)

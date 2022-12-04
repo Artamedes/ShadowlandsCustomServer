@@ -157,6 +157,7 @@ struct GtSpellScalingEntry
     float Health = 0.0f;
     float DamageReplaceStat = 0.0f;
     float DamageSecondary = 0.0f;
+    float ManaConsumable = 0.0f;
 };
 
 struct GtStaminaMultByILvl
@@ -303,6 +304,8 @@ inline float GetSpellScalingColumnForClass(GtSpellScalingEntry const* row, int32
             return row->DamageReplaceStat;
         case -9:
             return row->DamageSecondary;
+        case -10:
+            return row->ManaConsumable;
         default:
             break;
     }

@@ -25,8 +25,7 @@
 void WorldPackets::Chat::ChatMessage::Read()
 {
     _worldPacket >> Language;
-    _worldPacket.ReadBits(3); // unk
-    uint32 len = _worldPacket.ReadBits(8);
+    uint32 len = _worldPacket.ReadBits(11);
     Text = _worldPacket.ReadString(len);
 }
 
@@ -34,7 +33,7 @@ void WorldPackets::Chat::ChatMessageWhisper::Read()
 {
     _worldPacket >> Language;
     uint32 targetLen = _worldPacket.ReadBits(9);
-    uint32 textLen = _worldPacket.ReadBits(9);
+    uint32 textLen = _worldPacket.ReadBits(11);
     Target = _worldPacket.ReadString(targetLen);
     Text = _worldPacket.ReadString(textLen);
 }
@@ -44,7 +43,7 @@ void WorldPackets::Chat::ChatMessageChannel::Read()
     _worldPacket >> Language;
     _worldPacket >> ChannelGUID;
     uint32 targetLen = _worldPacket.ReadBits(9);
-    uint32 textLen = _worldPacket.ReadBits(9);
+    uint32 textLen = _worldPacket.ReadBits(11);
     Target = _worldPacket.ReadString(targetLen);
     Text = _worldPacket.ReadString(textLen);
 }
@@ -78,19 +77,19 @@ void WorldPackets::Chat::ChatAddonMessageTargeted::Read()
 
 void WorldPackets::Chat::ChatMessageDND::Read()
 {
-    uint32 len = _worldPacket.ReadBits(9);
+    uint32 len = _worldPacket.ReadBits(11);
     Text = _worldPacket.ReadString(len);
 }
 
 void WorldPackets::Chat::ChatMessageAFK::Read()
 {
-    uint32 len = _worldPacket.ReadBits(9);
+    uint32 len = _worldPacket.ReadBits(11);
     Text = _worldPacket.ReadString(len);
 }
 
 void WorldPackets::Chat::ChatMessageEmote::Read()
 {
-    uint32 len = _worldPacket.ReadBits(9);
+    uint32 len = _worldPacket.ReadBits(11);
     Text = _worldPacket.ReadString(len);
 }
 

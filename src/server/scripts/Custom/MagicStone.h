@@ -4,11 +4,11 @@
 
 #include <map>
 
-enum class GossipOptionIcon : int8;
+enum class GossipOptionNpc : uint8;
 
 struct MagicStoneMenu
 {
-    GossipOptionIcon Icon;
+    GossipOptionNpc Icon;
     std::string Text;
     std::string ExtraText;
     uint32 ActionID;

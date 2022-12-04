@@ -44,7 +44,8 @@ class Item;
 class Unit;
 class Vehicle;
 class Map;
-enum class GossipOptionIcon : int8;
+enum class GossipOptionFlags : int32;
+enum class GossipOptionNpc : uint8;
 struct AccessRequirement;
 struct DeclinedName;
 struct DungeonEncounterEntry;
@@ -664,6 +665,7 @@ struct PlayerInfo
     CreatePosition createPosition;
     Optional<CreatePosition> createPositionNPE;
 
+    ItemContext itemContext;
     PlayerCreateInfoItems item;
     PlayerCreateInfoSpells customSpells;
     PlayerCreateInfoSpells castSpells[size_t(PlayerCreateMode::Max)];
@@ -763,19 +765,24 @@ struct PointOfInterest
 struct GossipMenuItems
 {
     uint32              MenuID;
-    uint32              OptionID;
-    GossipOptionIcon    OptionIcon;
+    int32               GossipOptionID;
+    uint32              OrderIndex;
+    GossipOptionNpc    OptionIcon;
     std::string         OptionText;
     uint32              OptionBroadcastTextID;
     uint32              OptionType;
     uint32              OptionNpcFlag;
     uint32              Language;
+    GossipOptionFlags   Flags;
     uint32              ActionMenuID;
     uint32              ActionPoiID;
+    Optional<int32>     GossipNpcOptionID;
     bool                BoxCoded;
     uint32              BoxMoney;
     std::string         BoxText;
     uint32              BoxBroadcastTextID;
+    Optional<int32>     SpellID;
+    Optional<int32>     OverrideIconID;
     ConditionContainer  Conditions;
 };
 
@@ -1059,6 +1066,7 @@ struct ClassAvailability
     uint8 ClassID = 0;
     uint8 ActiveExpansionLevel = 0;
     uint8 AccountExpansionLevel = 0;
+    uint8 MinActiveExpansionLevel = 0;
 };
 
 struct RaceClassAvailability
@@ -1820,6 +1828,7 @@ class TC_GAME_API ObjectMgr
 
         std::vector<RaceClassAvailability> const& GetClassExpansionRequirements() const { return _classExpansionRequirementStore; }
         ClassAvailability const* GetClassExpansionRequirement(uint8 raceId, uint8 classId) const;
+        ClassAvailability const* GetClassExpansionRequirementFallback(uint8 classId) const;
 
         SceneTemplate const* GetSceneTemplate(uint32 sceneId) const
         {
@@ -1973,7 +1982,7 @@ class TC_GAME_API ObjectMgr
 
         void BuildPlayerLevelInfo(uint8 race, uint8 class_, uint8 level, PlayerLevelInfo* plinfo) const;
 
-        std::unique_ptr<PlayerInfo> _playerInfo[MAX_RACES][MAX_CLASSES];
+        std::unordered_map<std::pair<Races, Classes>, std::unique_ptr<PlayerInfo>> _playerInfo;
 
         typedef std::vector<uint32> PlayerXPperLevel;       // [level]
         PlayerXPperLevel _playerXPperLevel;

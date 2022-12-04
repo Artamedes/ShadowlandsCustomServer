@@ -219,9 +219,9 @@ ByteBuffer& operator<<(ByteBuffer& data, EnumCharactersResult::CharacterInfo con
         data << visualItem;
 
     data << charInfo.LastPlayedTime;
-    data << uint16(charInfo.SpecID);
-    data << uint32(charInfo.Unknown703);
-    data << uint32(charInfo.LastLoginVersion);
+    data << int16(charInfo.SpecID);
+    data << int32(charInfo.Unknown703);
+    data << int32(charInfo.LastLoginVersion);
     data << uint32(charInfo.Flags4);
     data << uint32(charInfo.MailSenders.size());
     data << uint32(charInfo.MailSenderTypes.size());
@@ -272,6 +272,14 @@ ByteBuffer& operator<<(ByteBuffer& data, EnumCharactersResult::UnlockedCondition
     return data;
 }
 
+ByteBuffer& operator<<(ByteBuffer& data, EnumCharactersResult::RaceLimitDisableInfo const& raceLimitDisableInfo)
+{
+    data << int32(raceLimitDisableInfo.RaceID);
+    data << int32(raceLimitDisableInfo.BlockReason);
+
+    return data;
+}
+
 WorldPacket const* EnumCharactersResult::Write()
 {
     _worldPacket.reserve(9 + Characters.size() * sizeof(CharacterInfo) + RaceUnlockData.size() * sizeof(RaceUnlock));
@@ -281,19 +289,23 @@ WorldPacket const* EnumCharactersResult::Write()
     _worldPacket.WriteBit(IsNewPlayerRestrictionSkipped);
     _worldPacket.WriteBit(IsNewPlayerRestricted);
     _worldPacket.WriteBit(IsNewPlayer);
+    _worldPacket.WriteBit(IsTrialAccountRestricted);
     _worldPacket.WriteBit(DisabledClassesMask.has_value());
     _worldPacket.WriteBit(IsAlliedRacesCreationAllowed);
     _worldPacket << uint32(Characters.size());
     _worldPacket << int32(MaxCharacterLevel);
     _worldPacket << uint32(RaceUnlockData.size());
     _worldPacket << uint32(UnlockedConditionalAppearances.size());
-    _worldPacket << uint32(0); ///< added in 46092 - counter
+    _worldPacket << uint32(RaceLimitDisables.size());
 
     if (DisabledClassesMask)
         _worldPacket << uint32(*DisabledClassesMask);
 
     for (UnlockedConditionalAppearance const& unlockedConditionalAppearance : UnlockedConditionalAppearances)
         _worldPacket << unlockedConditionalAppearance;
+
+    for (RaceLimitDisableInfo const& raceLimitDisableInfo : RaceLimitDisables)
+        _worldPacket << raceLimitDisableInfo;
 
     for (CharacterInfo const& charInfo : Characters)
         _worldPacket << charInfo;
@@ -405,6 +417,7 @@ void CharRaceOrFactionChange::Read()
     _worldPacket >> RaceOrFactionChangeInfo->Guid;
     _worldPacket >> RaceOrFactionChangeInfo->SexID;
     _worldPacket >> RaceOrFactionChangeInfo->RaceID;
+    _worldPacket >> RaceOrFactionChangeInfo->InitialRaceID;
     RaceOrFactionChangeInfo->Customizations.resize(_worldPacket.read<uint32>());
     RaceOrFactionChangeInfo->Name = _worldPacket.ReadString(nameLength);
     for (ChrCustomizationChoice& customization : RaceOrFactionChangeInfo->Customizations)
@@ -565,6 +578,7 @@ void AlterApperance::Read()
 {
     Customizations.resize(_worldPacket.read<uint32>());
     _worldPacket >> NewSex;
+    _worldPacket >> CustomizedRace;
     for (ChrCustomizationChoice& customization : Customizations)
         _worldPacket >> customization;
 

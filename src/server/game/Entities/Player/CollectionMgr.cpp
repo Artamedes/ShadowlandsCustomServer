@@ -340,7 +340,7 @@ void CollectionMgr::CheckHeirloomUpgrades(Item* item)
             return;
         }
 
-        auto const& bonusListIDs = item->m_itemData->Bonuses->BonusListIDs;
+        std::vector<int32> const& bonusListIDs = item->GetBonusListIDs();
 
         for (uint32 bonusId : bonusListIDs)
         {

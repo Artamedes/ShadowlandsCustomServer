@@ -104,7 +104,7 @@ public:
         //        return true;
         //}
 
-        AddGossipItemFor(player, GossipOptionIcon::None, "|TInterface/ICONS/achievement_arena_5v5_7.png:28:28:-16|tJoin The 1v1 Arena Queue", GOSSIP_SENDER_MAIN, 20);
+        AddGossipItemFor(player, GossipOptionNpc::None, "|TInterface/ICONS/achievement_arena_5v5_7.png:28:28:-16|tJoin The 1v1 Arena Queue", GOSSIP_SENDER_MAIN, 20);
         SendGossipMenuFor(player, 1, me);
         return true;
     }

@@ -83,7 +83,7 @@ class npc_playerscript : public PlayerScript
                 ss.str("");
                 ss.clear();
                 ss << p_Name << ": " << p_Value;
-                AddGossipItemFor(player, GossipOptionIcon::None, ss.str(), 0, p_ActionId, "", 0, true);
+                AddGossipItemFor(player, GossipOptionNpc::None, ss.str(), 0, p_ActionId, "", 0, true);
             });
 
             CreateMenuOptionWithAction(1, "EntryId", std::to_string(l_Menu.EntryID));
@@ -94,8 +94,8 @@ class npc_playerscript : public PlayerScript
             CreateMenuOptionWithAction(6, "Scale", std::to_string(l_Menu.Scale));
             CreateMenuOptionWithAction(9, "MinLevel", std::to_string(l_Menu.MinLevel));
             CreateMenuOptionWithAction(10, "MaxLevel", std::to_string(l_Menu.MaxLevel));
-            AddGossipItemFor(player, GossipOptionIcon::None, "Create", 0, 7);
-            AddGossipItemFor(player, GossipOptionIcon::None, "Create and Spawn", 0, 8);
+            AddGossipItemFor(player, GossipOptionNpc::None, "Create", 0, 7);
+            AddGossipItemFor(player, GossipOptionNpc::None, "Create and Spawn", 0, 8);
 
             player->PlayerTalkClass->GetGossipMenu().SetMenuId(56818);
             SendGossipMenuFor(player, 1, player->GetGUID());

@@ -258,27 +258,24 @@ WorldPacket const* WorldPackets::Item::ItemPushResult::Write()
     _worldPacket << uint32(BattlePetBreedQuality);
     _worldPacket << int32(BattlePetLevel);
     _worldPacket << ItemGUID;
-    _worldPacket << uint32(0); ///< Unk Coounter
-    // For unk counter, Write int32, int32
+    _worldPacket << uint32(Toasts.size());
+    for (UiEventToast const& uiEventToast : Toasts)
+        _worldPacket << uiEventToast;
     _worldPacket.WriteBit(Pushed);
     _worldPacket.WriteBit(Created);
     _worldPacket.WriteBits(DisplayText, 3);
     _worldPacket.WriteBit(IsBonusRoll);
     _worldPacket.WriteBit(IsEncounterLoot);
-    bool unkBitDragonFlight = false;
-    _worldPacket.WriteBit(unkBitDragonFlight);
-    _worldPacket.WriteBit(false); ///< Added in 45969
+    _worldPacket.WriteBit(CraftingData.has_value());
+    _worldPacket.WriteBit(FirstCraftOperationID.has_value());
     _worldPacket.FlushBits();
     _worldPacket << Item;
+    
+    if (FirstCraftOperationID)
+        _worldPacket << uint32(*FirstCraftOperationID);
 
-    if (unkBitDragonFlight)
-    {
-        // 9 ints
-        // float
-        // For unk counter, Write uint32, uint32
-        // bit
-        // bit
-    }
+    if (CraftingData)
+        _worldPacket << *CraftingData;
 
     return &_worldPacket;
 }

@@ -63,25 +63,23 @@ struct MovementInfo
 
     struct Inertia
     {
-        Inertia() : lifetime(0) { }
+        Inertia() : id(0), lifetime(0) { }
 
-        ObjectGuid guid;
+        int32 id;
         Position force;
         uint32 lifetime;
     };
 
     Optional<Inertia> inertia;
-
-    // @todo: research this more
-    struct UnkDFMovement
+    
+    // advflying
+    struct AdvFlying
     {
-        UnkDFMovement() { }
-
-        float upVelocity = 0.0f;
-        float forwardVelocity = 0.0f;
+        float forwardVelocity;
+        float upVelocity;
     };
 
-    Optional<UnkDFMovement> dragonRiding;
+    Optional<AdvFlying> advFlying;
 
     // jumping
     struct JumpInfo

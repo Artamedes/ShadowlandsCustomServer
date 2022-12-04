@@ -2608,23 +2608,23 @@ TC_API_EXPORT EnumText EnumUtils<SpellEffectName>::ToString(SpellEffectName valu
         case SPELL_EFFECT_MODIFY_KEYSTONE_2: return { "SPELL_EFFECT_MODIFY_KEYSTONE_2", "SPELL_EFFECT_MODIFY_KEYSTONE_2", "" };
         case SPELL_EFFECT_GRANT_BATTLEPET_EXPERIENCE: return { "SPELL_EFFECT_GRANT_BATTLEPET_EXPERIENCE", "SPELL_EFFECT_GRANT_BATTLEPET_EXPERIENCE", "" };
         case SPELL_EFFECT_SET_GARRISON_FOLLOWER_LEVEL: return { "SPELL_EFFECT_SET_GARRISON_FOLLOWER_LEVEL", "SPELL_EFFECT_SET_GARRISON_FOLLOWER_LEVEL", "" };
-        case SPELL_EFFECT_288: return { "SPELL_EFFECT_288", "SPELL_EFFECT_288", "" };
-        case SPELL_EFFECT_289: return { "SPELL_EFFECT_289", "SPELL_EFFECT_289", "" };
-        case SPELL_EFFECT_290: return { "SPELL_EFFECT_290", "SPELL_EFFECT_290", "" };
-        case SPELL_EFFECT_291: return { "SPELL_EFFECT_291", "SPELL_EFFECT_291", "" };
-        case SPELL_EFFECT_292: return { "SPELL_EFFECT_292", "SPELL_EFFECT_292", "" };
-        case SPELL_EFFECT_293: return { "SPELL_EFFECT_293", "SPELL_EFFECT_293", "" };
-        case SPELL_EFFECT_294: return { "SPELL_EFFECT_294", "SPELL_EFFECT_294", "" };
-        case SPELL_EFFECT_295: return { "SPELL_EFFECT_295", "SPELL_EFFECT_295", "" };
-        case SPELL_EFFECT_296: return { "SPELL_EFFECT_296", "SPELL_EFFECT_296", "" };
-        case SPELL_EFFECT_297: return { "SPELL_EFFECT_297", "SPELL_EFFECT_297", "" };
-        case SPELL_EFFECT_298: return { "SPELL_EFFECT_298", "SPELL_EFFECT_298", "" };
-        case SPELL_EFFECT_299: return { "SPELL_EFFECT_299", "SPELL_EFFECT_299", "" };
+        case SPELL_EFFECT_CRAFT_ITEM: return { "SPELL_EFFECT_CRAFT_ITEM", "SPELL_EFFECT_CRAFT_ITEM", "MiscValue[0] = CraftingDataID" };
+        case SPELL_EFFECT_MODIFY_AURA_STACKS: return { "SPELL_EFFECT_MODIFY_AURA_STACKS", "SPELL_EFFECT_MODIFY_AURA_STACKS", "MiscValue[0] = 0 means add, = 1 means set" };
+        case SPELL_EFFECT_MODIFY_COOLDOWN: return { "SPELL_EFFECT_MODIFY_COOLDOWN", "SPELL_EFFECT_MODIFY_COOLDOWN", "" };
+        case SPELL_EFFECT_MODIFY_COOLDOWNS: return { "SPELL_EFFECT_MODIFY_COOLDOWNS", "SPELL_EFFECT_MODIFY_COOLDOWNS", "MiscValue[0] = SpellFamily, MiscValue[1] = maybe bit index for family flags? off by 1 for the only spell using this effect" };
+        case SPELL_EFFECT_MODIFY_COOLDOWNS_BY_CATEGORY: return { "SPELL_EFFECT_MODIFY_COOLDOWNS_BY_CATEGORY", "SPELL_EFFECT_MODIFY_COOLDOWNS_BY_CATEGORY", "MiscValue[0] = category" };
+        case SPELL_EFFECT_MODIFY_CHARGES: return { "SPELL_EFFECT_MODIFY_CHARGES", "SPELL_EFFECT_MODIFY_CHARGES", "MiscValue[0] = charge category" };
+        case SPELL_EFFECT_CRAFT_LOOT: return { "SPELL_EFFECT_CRAFT_LOOT", "SPELL_EFFECT_CRAFT_LOOT", "MiscValue[0] = CraftingDataID" };
+        case SPELL_EFFECT_SALVAGE_ITEM: return { "SPELL_EFFECT_SALVAGE_ITEM", "SPELL_EFFECT_SALVAGE_ITEM", "MiscValue[0] = ItemSalvageID" };
+        case SPELL_EFFECT_CRAFT_SALVAGE_ITEM: return { "SPELL_EFFECT_CRAFT_SALVAGE_ITEM", "SPELL_EFFECT_CRAFT_SALVAGE_ITEM", "MiscValue[0] = ItemSalvageID, MiscValue[1] = CraftingDataID" };
+        case SPELL_EFFECT_RECRAFT_ITEM: return { "SPELL_EFFECT_RECRAFT_ITEM", "SPELL_EFFECT_RECRAFT_ITEM", "" };
+        case SPELL_EFFECT_CANCEL_ALL_PRIVATE_CONVERSATIONS: return { "SPELL_EFFECT_CANCEL_ALL_PRIVATE_CONVERSATIONS", "SPELL_EFFECT_CANCEL_ALL_PRIVATE_CONVERSATIONS", "" };
+        case SPELL_EFFECT_299: return { "SPELL_EFFECT_299", "SPELL_EFFECT_299", "something with items, as of 10.0.2 all spells are named \042Downgrading\042" };
         case SPELL_EFFECT_300: return { "SPELL_EFFECT_300", "SPELL_EFFECT_300", "" };
-        case SPELL_EFFECT_301: return { "SPELL_EFFECT_301", "SPELL_EFFECT_301", "" };
-        case SPELL_EFFECT_302: return { "SPELL_EFFECT_302", "SPELL_EFFECT_302", "" };
-        case SPELL_EFFECT_303: return { "SPELL_EFFECT_303", "SPELL_EFFECT_303", "" };
-        case SPELL_EFFECT_304: return { "SPELL_EFFECT_304", "SPELL_EFFECT_304", "" };
+        case SPELL_EFFECT_CRAFT_ENCHANT: return { "SPELL_EFFECT_CRAFT_ENCHANT", "SPELL_EFFECT_CRAFT_ENCHANT", "MiscValue[0] = CraftingDataID, MiscValue[1] = ?" };
+        case SPELL_EFFECT_GATHERING: return { "SPELL_EFFECT_GATHERING", "SPELL_EFFECT_GATHERING", "" };
+        case SPELL_EFFECT_CREATE_TRAIT_TREE_CONFIG: return { "SPELL_EFFECT_CREATE_TRAIT_TREE_CONFIG", "SPELL_EFFECT_CREATE_TRAIT_TREE_CONFIG", "MiscValue[0] = TraitTreeID" };
+        case SPELL_EFFECT_CHANGE_ACTIVE_COMBAT_TRAIT_CONFIG: return { "SPELL_EFFECT_CHANGE_ACTIVE_COMBAT_TRAIT_CONFIG", "SPELL_EFFECT_CHANGE_ACTIVE_COMBAT_TRAIT_CONFIG", "" };
         case TOTAL_SPELL_EFFECTS: return { "TOTAL_SPELL_EFFECTS", "TOTAL_SPELL_EFFECTS", "" };
         default: throw std::out_of_range("value");
     }
@@ -2926,23 +2926,23 @@ TC_API_EXPORT SpellEffectName EnumUtils<SpellEffectName>::FromIndex(size_t index
         case 285: return SPELL_EFFECT_MODIFY_KEYSTONE_2;
         case 286: return SPELL_EFFECT_GRANT_BATTLEPET_EXPERIENCE;
         case 287: return SPELL_EFFECT_SET_GARRISON_FOLLOWER_LEVEL;
-        case 288: return SPELL_EFFECT_288;
-        case 289: return SPELL_EFFECT_289;
-        case 290: return SPELL_EFFECT_290;
-        case 291: return SPELL_EFFECT_291;
-        case 292: return SPELL_EFFECT_292;
-        case 293: return SPELL_EFFECT_293;
-        case 294: return SPELL_EFFECT_294;
-        case 295: return SPELL_EFFECT_295;
-        case 296: return SPELL_EFFECT_296;
-        case 297: return SPELL_EFFECT_297;
-        case 298: return SPELL_EFFECT_298;
+        case 288: return SPELL_EFFECT_CRAFT_ITEM;
+        case 289: return SPELL_EFFECT_MODIFY_AURA_STACKS;
+        case 290: return SPELL_EFFECT_MODIFY_COOLDOWN;
+        case 291: return SPELL_EFFECT_MODIFY_COOLDOWNS;
+        case 292: return SPELL_EFFECT_MODIFY_COOLDOWNS_BY_CATEGORY;
+        case 293: return SPELL_EFFECT_MODIFY_CHARGES;
+        case 294: return SPELL_EFFECT_CRAFT_LOOT;
+        case 295: return SPELL_EFFECT_SALVAGE_ITEM;
+        case 296: return SPELL_EFFECT_CRAFT_SALVAGE_ITEM;
+        case 297: return SPELL_EFFECT_RECRAFT_ITEM;
+        case 298: return SPELL_EFFECT_CANCEL_ALL_PRIVATE_CONVERSATIONS;
         case 299: return SPELL_EFFECT_299;
         case 300: return SPELL_EFFECT_300;
-        case 301: return SPELL_EFFECT_301;
-        case 302: return SPELL_EFFECT_302;
-        case 303: return SPELL_EFFECT_303;
-        case 304: return SPELL_EFFECT_304;
+        case 301: return SPELL_EFFECT_CRAFT_ENCHANT;
+        case 302: return SPELL_EFFECT_GATHERING;
+        case 303: return SPELL_EFFECT_CREATE_TRAIT_TREE_CONFIG;
+        case 304: return SPELL_EFFECT_CHANGE_ACTIVE_COMBAT_TRAIT_CONFIG;
         case 305: return TOTAL_SPELL_EFFECTS;
         default: throw std::out_of_range("index");
     }
@@ -3241,23 +3241,23 @@ TC_API_EXPORT size_t EnumUtils<SpellEffectName>::ToIndex(SpellEffectName value)
         case SPELL_EFFECT_MODIFY_KEYSTONE_2: return 285;
         case SPELL_EFFECT_GRANT_BATTLEPET_EXPERIENCE: return 286;
         case SPELL_EFFECT_SET_GARRISON_FOLLOWER_LEVEL: return 287;
-        case SPELL_EFFECT_288: return 288;
-        case SPELL_EFFECT_289: return 289;
-        case SPELL_EFFECT_290: return 290;
-        case SPELL_EFFECT_291: return 291;
-        case SPELL_EFFECT_292: return 292;
-        case SPELL_EFFECT_293: return 293;
-        case SPELL_EFFECT_294: return 294;
-        case SPELL_EFFECT_295: return 295;
-        case SPELL_EFFECT_296: return 296;
-        case SPELL_EFFECT_297: return 297;
-        case SPELL_EFFECT_298: return 298;
+        case SPELL_EFFECT_CRAFT_ITEM: return 288;
+        case SPELL_EFFECT_MODIFY_AURA_STACKS: return 289;
+        case SPELL_EFFECT_MODIFY_COOLDOWN: return 290;
+        case SPELL_EFFECT_MODIFY_COOLDOWNS: return 291;
+        case SPELL_EFFECT_MODIFY_COOLDOWNS_BY_CATEGORY: return 292;
+        case SPELL_EFFECT_MODIFY_CHARGES: return 293;
+        case SPELL_EFFECT_CRAFT_LOOT: return 294;
+        case SPELL_EFFECT_SALVAGE_ITEM: return 295;
+        case SPELL_EFFECT_CRAFT_SALVAGE_ITEM: return 296;
+        case SPELL_EFFECT_RECRAFT_ITEM: return 297;
+        case SPELL_EFFECT_CANCEL_ALL_PRIVATE_CONVERSATIONS: return 298;
         case SPELL_EFFECT_299: return 299;
         case SPELL_EFFECT_300: return 300;
-        case SPELL_EFFECT_301: return 301;
-        case SPELL_EFFECT_302: return 302;
-        case SPELL_EFFECT_303: return 303;
-        case SPELL_EFFECT_304: return 304;
+        case SPELL_EFFECT_CRAFT_ENCHANT: return 301;
+        case SPELL_EFFECT_GATHERING: return 302;
+        case SPELL_EFFECT_CREATE_TRAIT_TREE_CONFIG: return 303;
+        case SPELL_EFFECT_CHANGE_ACTIVE_COMBAT_TRAIT_CONFIG: return 304;
         case TOTAL_SPELL_EFFECTS: return 305;
         default: throw std::out_of_range("value");
     }
@@ -3589,13 +3589,14 @@ TC_API_EXPORT EnumText EnumUtils<SpellCastResult>::ToString(SpellCastResult valu
         case SPELL_FAILED_GARRISON_FOLLOWER_AT_MIN_LEVEL: return { "SPELL_FAILED_GARRISON_FOLLOWER_AT_MIN_LEVEL", "SPELL_FAILED_GARRISON_FOLLOWER_AT_MIN_LEVEL", "" };
         case SPELL_FAILED_CANT_BE_RECRAFTED: return { "SPELL_FAILED_CANT_BE_RECRAFTED", "SPELL_FAILED_CANT_BE_RECRAFTED", "" };
         case SPELL_FAILED_PASSIVE_REPLACED: return { "SPELL_FAILED_PASSIVE_REPLACED", "SPELL_FAILED_PASSIVE_REPLACED", "" };
+        case SPELL_FAILED_CANT_FLY_HERE: return { "SPELL_FAILED_CANT_FLY_HERE", "SPELL_FAILED_CANT_FLY_HERE", "" };
         case SPELL_FAILED_UNKNOWN: return { "SPELL_FAILED_UNKNOWN", "SPELL_FAILED_UNKNOWN", "" };
         default: throw std::out_of_range("value");
     }
 }
 
 template <>
-TC_API_EXPORT size_t EnumUtils<SpellCastResult>::Count() { return 319; }
+TC_API_EXPORT size_t EnumUtils<SpellCastResult>::Count() { return 320; }
 
 template <>
 TC_API_EXPORT SpellCastResult EnumUtils<SpellCastResult>::FromIndex(size_t index)
@@ -3920,7 +3921,8 @@ TC_API_EXPORT SpellCastResult EnumUtils<SpellCastResult>::FromIndex(size_t index
         case 315: return SPELL_FAILED_GARRISON_FOLLOWER_AT_MIN_LEVEL;
         case 316: return SPELL_FAILED_CANT_BE_RECRAFTED;
         case 317: return SPELL_FAILED_PASSIVE_REPLACED;
-        case 318: return SPELL_FAILED_UNKNOWN;
+        case 318: return SPELL_FAILED_CANT_FLY_HERE;
+        case 319: return SPELL_FAILED_UNKNOWN;
         default: throw std::out_of_range("index");
     }
 }
@@ -4248,7 +4250,8 @@ TC_API_EXPORT size_t EnumUtils<SpellCastResult>::ToIndex(SpellCastResult value)
         case SPELL_FAILED_GARRISON_FOLLOWER_AT_MIN_LEVEL: return 315;
         case SPELL_FAILED_CANT_BE_RECRAFTED: return 316;
         case SPELL_FAILED_PASSIVE_REPLACED: return 317;
-        case SPELL_FAILED_UNKNOWN: return 318;
+        case SPELL_FAILED_CANT_FLY_HERE: return 318;
+        case SPELL_FAILED_UNKNOWN: return 319;
         default: throw std::out_of_range("value");
     }
 }
@@ -5007,12 +5010,18 @@ TC_API_EXPORT EnumText EnumUtils<Emote>::ToString(Emote value)
         case EMOTE_ONESHOT_FLYCUSTOMSPELL01: return { "EMOTE_ONESHOT_FLYCUSTOMSPELL01", "EMOTE_ONESHOT_FLYCUSTOMSPELL01", "" };
         case EMOTE_ONESHOT_SPELLEFFECT_DECAY: return { "EMOTE_ONESHOT_SPELLEFFECT_DECAY", "EMOTE_ONESHOT_SPELLEFFECT_DECAY", "" };
         case EMOTE_STATE_CREATURE_SPECIAL: return { "EMOTE_STATE_CREATURE_SPECIAL", "EMOTE_STATE_CREATURE_SPECIAL", "" };
+        case EMOTE_ONESHOT_WAREACT01: return { "EMOTE_ONESHOT_WAREACT01", "EMOTE_ONESHOT_WAREACT01", "" };
+        case EMOTE_ONESHOT_FLYCUSTOMSPELL04: return { "EMOTE_ONESHOT_FLYCUSTOMSPELL04", "EMOTE_ONESHOT_FLYCUSTOMSPELL04", "" };
+        case EMOTE_ONESHOT_TALK_SUBDUED: return { "EMOTE_ONESHOT_TALK_SUBDUED", "EMOTE_ONESHOT_TALK_SUBDUED", "" };
+        case EMOTE_STATE_EMOTETALK: return { "EMOTE_STATE_EMOTETALK", "EMOTE_STATE_EMOTETALK", "" };
+        case EMOTE_STATE_WAINTERACTION: return { "EMOTE_STATE_WAINTERACTION", "EMOTE_STATE_WAINTERACTION", "" };
+        case EMOTE_ONESHOT_TAKE_OFF_START: return { "EMOTE_ONESHOT_TAKE_OFF_START", "EMOTE_ONESHOT_TAKE_OFF_START", "" };
         default: throw std::out_of_range("value");
     }
 }
 
 template <>
-TC_API_EXPORT size_t EnumUtils<Emote>::Count() { return 404; }
+TC_API_EXPORT size_t EnumUtils<Emote>::Count() { return 410; }
 
 template <>
 TC_API_EXPORT Emote EnumUtils<Emote>::FromIndex(size_t index)
@@ -5423,6 +5432,12 @@ TC_API_EXPORT Emote EnumUtils<Emote>::FromIndex(size_t index)
         case 401: return EMOTE_ONESHOT_FLYCUSTOMSPELL01;
         case 402: return EMOTE_ONESHOT_SPELLEFFECT_DECAY;
         case 403: return EMOTE_STATE_CREATURE_SPECIAL;
+        case 404: return EMOTE_ONESHOT_WAREACT01;
+        case 405: return EMOTE_ONESHOT_FLYCUSTOMSPELL04;
+        case 406: return EMOTE_ONESHOT_TALK_SUBDUED;
+        case 407: return EMOTE_STATE_EMOTETALK;
+        case 408: return EMOTE_STATE_WAINTERACTION;
+        case 409: return EMOTE_ONESHOT_TAKE_OFF_START;
         default: throw std::out_of_range("index");
     }
 }
@@ -5836,6 +5851,12 @@ TC_API_EXPORT size_t EnumUtils<Emote>::ToIndex(Emote value)
         case EMOTE_ONESHOT_FLYCUSTOMSPELL01: return 401;
         case EMOTE_ONESHOT_SPELLEFFECT_DECAY: return 402;
         case EMOTE_STATE_CREATURE_SPECIAL: return 403;
+        case EMOTE_ONESHOT_WAREACT01: return 404;
+        case EMOTE_ONESHOT_FLYCUSTOMSPELL04: return 405;
+        case EMOTE_ONESHOT_TALK_SUBDUED: return 406;
+        case EMOTE_STATE_EMOTETALK: return 407;
+        case EMOTE_STATE_WAINTERACTION: return 408;
+        case EMOTE_ONESHOT_TAKE_OFF_START: return 409;
         default: throw std::out_of_range("value");
     }
 }
@@ -6163,12 +6184,13 @@ TC_API_EXPORT EnumText EnumUtils<SpellFamilyNames>::ToString(SpellFamilyNames va
         case SPELLFAMILY_UNK91: return { "SPELLFAMILY_UNK91", "SPELLFAMILY_UNK91", "" };
         case SPELLFAMILY_UNK100: return { "SPELLFAMILY_UNK100", "SPELLFAMILY_UNK100", "" };
         case SPELLFAMILY_DEMON_HUNTER: return { "SPELLFAMILY_DEMON_HUNTER", "SPELLFAMILY_DEMON_HUNTER", "" };
+        case SPELLFAMILY_EVOKER: return { "SPELLFAMILY_EVOKER", "SPELLFAMILY_EVOKER", "" };
         default: throw std::out_of_range("value");
     }
 }
 
 template <>
-TC_API_EXPORT size_t EnumUtils<SpellFamilyNames>::Count() { return 24; }
+TC_API_EXPORT size_t EnumUtils<SpellFamilyNames>::Count() { return 25; }
 
 template <>
 TC_API_EXPORT SpellFamilyNames EnumUtils<SpellFamilyNames>::FromIndex(size_t index)
@@ -6199,6 +6221,7 @@ TC_API_EXPORT SpellFamilyNames EnumUtils<SpellFamilyNames>::FromIndex(size_t ind
         case 21: return SPELLFAMILY_UNK91;
         case 22: return SPELLFAMILY_UNK100;
         case 23: return SPELLFAMILY_DEMON_HUNTER;
+        case 24: return SPELLFAMILY_EVOKER;
         default: throw std::out_of_range("index");
     }
 }
@@ -6232,6 +6255,7 @@ TC_API_EXPORT size_t EnumUtils<SpellFamilyNames>::ToIndex(SpellFamilyNames value
         case SPELLFAMILY_UNK91: return 21;
         case SPELLFAMILY_UNK100: return 22;
         case SPELLFAMILY_DEMON_HUNTER: return 23;
+        case SPELLFAMILY_EVOKER: return 24;
         default: throw std::out_of_range("value");
     }
 }
