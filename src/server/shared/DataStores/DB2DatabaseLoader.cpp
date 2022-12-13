@@ -23,11 +23,6 @@
 #include "Log.h"
 #include <cstring>
 
-DB2LoadInfo::DB2LoadInfo(DB2FieldMeta const* fields, std::size_t fieldCount, DB2Meta const* meta, HotfixDatabaseStatements statement)
-    : DB2FileLoadInfo(fields, fieldCount, meta), Statement(statement)
-{
-}
-
 static char const* nullStr = "";
 
 char* DB2DatabaseLoader::Load(bool custom, uint32& records, char**& indexTable, std::vector<char*>& stringPool)
@@ -104,7 +99,7 @@ char* DB2DatabaseLoader::Load(bool custom, uint32& records, char**& indexTable, 
         {
             for (uint32 z = 0; z < _loadInfo->Meta->Fields[x].ArraySize; ++z)
             {
-                switch (_loadInfo->TypesString[f])
+                switch (_loadInfo->Fields[f].Type)
                 {
                     case FT_FLOAT:
                         *((float*)(&dataValue[offset])) = fields[f].GetFloat();
@@ -155,7 +150,7 @@ char* DB2DatabaseLoader::Load(bool custom, uint32& records, char**& indexTable, 
                     }
                     default:
                         ABORT_MSG("Unknown format character '%c' found in %s meta for field %s",
-                            _loadInfo->TypesString[f], _storageName.c_str(), _loadInfo->Fields[f].Name);
+                            _loadInfo->Fields[f].Type, _storageName.c_str(), _loadInfo->Fields[f].Name);
                         break;
                 }
                 ++f;
@@ -231,7 +226,7 @@ void DB2DatabaseLoader::LoadStrings(bool custom, LocaleConstant locale, uint32 r
             {
                 for (uint32 z = 0; z < _loadInfo->Meta->Fields[x].ArraySize; ++z)
                 {
-                    switch (_loadInfo->TypesString[fieldIndex])
+                    switch (_loadInfo->Fields[fieldIndex].Type)
                     {
                         case FT_FLOAT:
                         case FT_INT:
@@ -262,7 +257,7 @@ void DB2DatabaseLoader::LoadStrings(bool custom, LocaleConstant locale, uint32 r
                             break;
                         default:
                             ABORT_MSG("Unknown format character '%c' found in %s meta for field %s",
-                                _loadInfo->TypesString[fieldIndex], _storageName.c_str(), _loadInfo->Fields[fieldIndex].Name);
+                                _loadInfo->Fields[fieldIndex].Type, _storageName.c_str(), _loadInfo->Fields[fieldIndex].Name);
                             break;
                     }
                     ++fieldIndex;
