@@ -24,6 +24,7 @@
 #include "ObjectGuid.h"
 #include "Optional.h"
 #include "Position.h"
+#include <any>
 #include <vector>
 
 class AuraEffect;
@@ -469,6 +470,7 @@ struct TC_GAME_API CastSpellExtraArgs
     CastSpellExtraArgs& AddSpellBP1(int32 val) { return AddSpellMod(SPELLVALUE_BASE_POINT1, val); } // because i don't want to type SPELLVALUE_BASE_POINT0 300 times
     CastSpellExtraArgs& AddSpellBP2(int32 val) { return AddSpellMod(SPELLVALUE_BASE_POINT2, val); } // because i don't want to type SPELLVALUE_BASE_POINT0 300 times
     CastSpellExtraArgs& AddSpellBP3(int32 val) { return AddSpellMod(SPELLVALUE_BASE_POINT3, val); } // because i don't want to type SPELLVALUE_BASE_POINT0 300 times
+    CastSpellExtraArgs& SetCustomArg(std::any customArg) { CustomArg = std::move(customArg); return *this; }
 
     TriggerCastFlags TriggerFlags = TRIGGERED_NONE;
     Item* CastItem = nullptr;
@@ -492,6 +494,7 @@ struct TC_GAME_API CastSpellExtraArgs
 
         std::vector<std::pair<SpellValueMod, int32>> data;
     } SpellValueOverrides;
+    std::any CustomArg;
 
     CastSpellExtraArgs(CastSpellExtraArgs const&) = delete;
     CastSpellExtraArgs(CastSpellExtraArgs&&) = delete;

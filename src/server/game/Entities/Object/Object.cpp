@@ -3165,6 +3165,8 @@ Spell* WorldObject::CastAndGetSpell(CastSpellTargetArg const& targets, uint32 sp
         }
     }
 
+    spell->m_customArg = args.CustomArg;
+
     spell->prepare(*targets.Targets, args.TriggeringAura);
     return spell;
 }
@@ -3197,6 +3199,8 @@ Spell* WorldObject::CastAndGetSpellWithoutPrepare(uint32 spellId, CastSpellExtra
                 player->CastSpell(player, 353365, true);
         }
     }
+
+    spell->m_customArg = args.CustomArg;
 
     return spell;
 }
