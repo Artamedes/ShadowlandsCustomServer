@@ -627,7 +627,7 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
         float GetSpellMaxRangeForTarget(Unit const* target, SpellInfo const* spellInfo) const;
         float GetSpellMinRangeForTarget(Unit const* target, SpellInfo const* spellInfo) const;
 
-        float ApplyEffectModifiers(SpellInfo const* spellInfo, uint8 effIndex, float value) const;
+        double ApplyEffectModifiers(SpellInfo const* spellInfo, uint8 effIndex, double value) const;
         int32 CalcSpellDuration(SpellInfo const* spellInfo, bool refresh, Spell* spell = nullptr, int32 oldDuration = 0, bool useComboPoints = true) const;
         int32 ModSpellDuration(SpellInfo const* spellInfo, WorldObject const* target, int32 duration, bool positive, uint32 effectMask) const;
         void ModSpellCastTime(SpellInfo const* spellInfo, int32& castTime, Spell* spell = nullptr) const;
