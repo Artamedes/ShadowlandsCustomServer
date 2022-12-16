@@ -3297,6 +3297,14 @@ struct SkillLineAbilityEntry
     EnumFlag<SkillLineAbilityFlags> GetFlags() const { return static_cast<SkillLineAbilityFlags>(Flags); }
 };
 
+struct SkillLineXTraitTreeEntry
+{
+    uint32 ID;
+    int32 SkillLineID;
+    int32 TraitTreeID;
+    int32 OrderIndex;
+};
+
 struct SkillRaceClassInfoEntry
 {
     uint32 ID;
@@ -4010,6 +4018,222 @@ struct TransmogHolidayEntry
     int32 RequiredTransmogHoliday;
 };
 
+struct TraitCondEntry
+{
+    uint32 ID;
+    int32 CondType;
+    int32 TraitTreeID;
+    int32 GrantedRanks;
+    int32 QuestID;
+    int32 AchievementID;
+    int32 SpecSetID;
+    int32 TraitNodeGroupID;
+    int32 TraitNodeID;
+    int32 TraitCurrencyID;
+    int32 SpentAmountRequired;
+    int32 Flags;
+    int32 RequiredLevel;
+    int32 FreeSharedStringID;
+    int32 SpendMoreSharedStringID;
+
+    TraitConditionType GetCondType() const { return static_cast<TraitConditionType>(CondType); }
+};
+
+struct TraitCostEntry
+{
+    char const* InternalName;
+    uint32 ID;
+    int32 Amount;
+    int32 TraitCurrencyID;
+};
+
+struct TraitCurrencyEntry
+{
+    uint32 ID;
+    int32 Type;
+    int32 CurrencyTypesID;
+    int32 Flags;
+    int32 Icon;
+
+    TraitCurrencyType GetType() const { return static_cast<TraitCurrencyType>(Type); }
+};
+
+struct TraitCurrencySourceEntry
+{
+    LocalizedString Requirement;
+    uint32 ID;
+    int32 TraitCurrencyID;
+    int32 Amount;
+    int32 QuestID;
+    int32 AchievementID;
+    int32 PlayerLevel;
+    int32 TraitNodeEntryID;
+    int32 OrderIndex;
+};
+
+struct TraitDefinitionEntry
+{
+    LocalizedString OverrideName;
+    LocalizedString OverrideSubtext;
+    LocalizedString OverrideDescription;
+    uint32 ID;
+    int32 SpellID;
+    int32 OverrideIcon;
+    int32 OverridesSpellID;
+    int32 VisibleSpellID;
+};
+
+struct TraitDefinitionEffectPointsEntry
+{
+    uint32 ID;
+    int32 TraitDefinitionID;
+    int32 EffectIndex;
+    int32 OperationType;
+    int32 CurveID;
+
+    TraitPointsOperationType GetOperationType() const { return static_cast<TraitPointsOperationType>(OperationType); }
+};
+
+struct TraitEdgeEntry
+{
+    uint32 ID;
+    int32 VisualStyle;
+    int32 LeftTraitNodeID;
+    int32 RightTraitNodeID;
+    int32 Type;
+};
+
+struct TraitNodeEntry
+{
+    uint32 ID;
+    int32 TraitTreeID;
+    int32 PosX;
+    int32 PosY;
+    int8 Type;
+    int32 Flags;
+
+    TraitNodeType GetType() const { return static_cast<TraitNodeType>(Type); }
+};
+
+struct TraitNodeEntryEntry
+{
+    uint32 ID;
+    int32 TraitDefinitionID;
+    int32 MaxRanks;
+    uint8 NodeEntryType;
+};
+
+struct TraitNodeEntryXTraitCondEntry
+{
+    uint32 ID;
+    int32 TraitCondID;
+    uint32 TraitNodeEntryID;
+};
+
+struct TraitNodeEntryXTraitCostEntry
+{
+    uint32 ID;
+    int32 TraitNodeEntryID;
+    int32 TraitCostID;
+};
+
+struct TraitNodeGroupEntry
+{
+    uint32 ID;
+    int32 TraitTreeID;
+    int32 Flags;
+};
+
+struct TraitNodeGroupXTraitCondEntry
+{
+    uint32 ID;
+    int32 TraitCondID;
+    int32 TraitNodeGroupID;
+};
+
+struct TraitNodeGroupXTraitCostEntry
+{
+    uint32 ID;
+    int32 TraitNodeGroupID;
+    int32 TraitCostID;
+};
+
+struct TraitNodeGroupXTraitNodeEntry
+{
+    uint32 ID;
+    int32 TraitNodeGroupID;
+    int32 TraitNodeID;
+    int32 Index;
+};
+
+struct TraitNodeXTraitCondEntry
+{
+    uint32 ID;
+    int32 TraitCondID;
+    int32 TraitNodeID;
+};
+
+struct TraitNodeXTraitCostEntry
+{
+    uint32 ID;
+    uint32 TraitNodeID;
+    int32 TraitCostID;
+};
+
+struct TraitNodeXTraitNodeEntryEntry
+{
+    uint32 ID;
+    int32 TraitNodeID;
+    int32 TraitNodeEntryID;
+    int32 Index;
+};
+
+struct TraitTreeEntry
+{
+    uint32 ID;
+    int32 TraitSystemID;
+    int32 Unused1000_1;
+    int32 FirstTraitNodeID;
+    int32 PlayerConditionID;
+    int32 Flags;
+    float Unused1000_2;
+    float Unused1000_3;
+
+    EnumFlag<TraitTreeFlag> GetFlags() const { return static_cast<TraitTreeFlag>(Flags); }
+};
+
+struct TraitTreeLoadoutEntry
+{
+    uint32 ID;
+    int32 TraitTreeID;
+    int32 ChrSpecializationID;
+};
+
+struct TraitTreeLoadoutEntryEntry
+{
+    uint32 ID;
+    int32 TraitTreeLoadoutID;
+    int32 SelectedTraitNodeID;
+    int32 SelectedTraitNodeEntryID;
+    int32 NumPoints;
+    int32 OrderIndex;
+};
+
+struct TraitTreeXTraitCostEntry
+{
+    uint32 ID;
+    uint32 TraitTreeID;
+    int32 TraitCostID;
+};
+
+struct TraitTreeXTraitCurrencyEntry
+{
+    uint32 ID;
+    int32 Index;
+    int32 TraitTreeID;
+    int32 TraitCurrencyID;
+};
+
 struct TransmogIllusionEntry
 {
     uint32 ID;
@@ -4358,138 +4582,6 @@ struct WorldStateExpressionEntry
 {
     uint32 ID;
     char const* Expression;
-};
-struct TraitEdgeEntry
-{
-    int32 ID;
-    int32 VisualStyle;
-    int32 LeftTraitNodeID;
-    int32 RightTraitNodeID;
-    int32 Type;
-};
-struct TraitNodeEntry
-{
-    int32  ID;                  // ID
-    int32  TraitTreeID;         // Relation
-    int32  PosX;
-    int32  PosY;
-    uint8  Type;
-    int32  Flags;
-};
-struct TraitNodeEntryEntry
-{
-    int32 ID;
-    int32 TraitDefinitionID;
-    int32 MaxRanks;
-    int32 NodeEntryType;
-};
-struct TraitNodeEntryXTraitCostEntry
-{
-    int32 ID;
-    int32 TraitNodeEntryID;
-    int32 TraitCostID;
-};
-struct TraitNodeGroupEntry
-{
-    int32 ID;
-    int32 TraitTreeID;
-    int32 Flags;
-};
-struct TraitNodeGroupXTraitCondEntry
-{
-    int32 ID;
-    int32 TraitCondID;
-    int32 TraitNodeGroupID;
-};
-struct TraitNodeGroupXTraitCostEntry
-{
-    int32 ID;
-    int32 TraitNodeGroupID;
-    int32 TraitCostID;
-};
-struct TraitNodeGroupXTraitNodeEntry
-{
-    int32 ID;
-    int32 TraitNodeGroupID;
-    int32 TraitNodeID;
-    int32 Index;
-};
-struct TraitNodeXTraitCondEntry
-{
-    int32 ID;
-    int32 TraitCondID;
-    int32 TraitNodeID;
-};
-struct TraitNodeXTraitNodeEntryEntry
-{
-    int32 ID;
-    int32 TraitNodeID;
-    int32 TraitNodeEntryID;
-    int32 Index;
-};
-struct TraitTreeEntry
-{
-    int32 ID;
-    int32 Field_10_0_0_44707_002;
-    int32 TraitTreeID;
-    int32 FirstTraitNodeID;
-    int32 PlayerConditionID;
-    int32 Flags;
-    int32 Field_10_0_0_45697_006;
-    int32 Field_10_0_0_45697_007;
-};
-struct TraitTreeLoadoutEntry
-{
-    int32 ID;
-    int32 TraitTreeID;
-    int32 Field_10_0_0_45232_002;
-};
-struct TraitTreeLoadoutEntryEntry
-{
-    int32 ID;
-    int32 TraitTreeLoadoutID;
-    int32 SelectedTraitNodeID;
-    int32 SelectedTraitNodeEntryID;
-    int32 NumPoints;
-    int32 OrderIndex;
-};
-struct TraitTreeXTraitCurrencyEntry
-{
-    int32 ID;
-    int32 Index;
-    int32 TraitTreeID;
-    int32 TraitCurrencyID;
-};
-
-struct TraitDefinitionEntry
-{
-    LocalizedString OverrideName_lang;
-    LocalizedString OverrideSubtext_lang;
-    LocalizedString OverrideDescription_lang;
-    int32 ID;
-    int32 SpellID;
-    int32 OverrideIcon;
-    int32 OverridesSpellID;
-    int32 Field_10_0_0_45232_007;
-};
-
-struct TraitCondEntry
-{
-    int32  ID;                    // ID
-    int32  CondType;
-    int32  TraitTreeID;           // Relation
-    int32  Field_10_0_0_44649_003;
-    int32  Field_10_0_0_44649_004;
-    int32  AchievementID;
-    int32  SpecSetID;
-    int32  TraitNodeGroupID;
-    int32  TraitNodeID;
-    int32  TraitCurrencyID;
-    int32  SpentAmountRequired;
-    int32  Flags;
-    int32  RequiredLevel;
-    int32  FreeSharedStringID;
-    int32  SpendMoreSharedStringID;
 };
 
 struct SpellEntry

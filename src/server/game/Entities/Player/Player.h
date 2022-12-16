@@ -98,9 +98,6 @@ class ReputationMgr;
 class RestMgr;
 class SpellCastTargets;
 class TradeData;
-class Trait;
-struct TraitTalent;
-class TraitsMgr;
 struct MythicKeystoneInfo;
 class PlayerChallenge;
 
@@ -131,6 +128,12 @@ namespace WorldPackets
     namespace Movement
     {
         enum class UpdateCollisionHeightReason : uint8;
+    }
+
+    namespace Traits
+    {
+        struct TraitConfig;
+        struct TraitEntry;
     }
 }
 
@@ -190,10 +193,11 @@ enum PlayerSpellState : uint8
 
 struct PlayerSpell
 {
-    PlayerSpellState state : 8;
+    PlayerSpellState state;
     bool active            : 1;                             // show in spellbook
     bool dependent         : 1;                             // learned as result another spell learn, skill grow, quest reward, etc
     bool disabled          : 1;                             // first rank has been learned in result talent learn but currently talent unlearned, save max learned ranks
+    Optional<int32> TraitDefinitionId;
 };
 
 struct StoredAuraTeleportLocation
@@ -315,6 +319,8 @@ struct PlayerCurrency
     uint8 Flags;
 };
 
+typedef std::unordered_map<uint32, PlayerSpellState> PlayerTalentMap;
+typedef std::array<uint32, MAX_PVP_TALENT_SLOTS> PlayerPvpTalentMap;
 typedef std::unordered_map<uint32, PlayerSpell> PlayerSpellMap;
 typedef std::unordered_set<SpellModifier*> SpellModContainer;
 typedef std::unordered_map<uint32, PlayerCurrency> PlayerCurrenciesMap;
@@ -883,7 +889,6 @@ enum PlayerLoginQueryIndex
     PLAYER_LOGIN_QUERY_LOAD_AZERITE_MILESTONE_POWERS,
     PLAYER_LOGIN_QUERY_LOAD_AZERITE_UNLOCKED_ESSENCES,
     PLAYER_LOGIN_QUERY_LOAD_AZERITE_EMPOWERED,
-    PLAYER_LOGIN_QUERY_LOAD_ACTIONS,
     PLAYER_LOGIN_QUERY_LOAD_MAILS,
     PLAYER_LOGIN_QUERY_LOAD_MAIL_ITEMS,
     PLAYER_LOGIN_QUERY_LOAD_MAIL_ITEMS_ARTIFACT,
@@ -926,14 +931,13 @@ enum PlayerLoginQueryIndex
     PLAYER_LOGIN_QUERY_LOAD_GARRISON_BUILDINGS,
     PLAYER_LOGIN_QUERY_LOAD_GARRISON_FOLLOWERS,
     PLAYER_LOGIN_QUERY_LOAD_GARRISON_FOLLOWER_ABILITIES,
+    PLAYER_LOGIN_QUERY_LOAD_TRAIT_ENTRIES,
+    PLAYER_LOGIN_QUERY_LOAD_TRAIT_CONFIGS,
     PLAYER_LOGIN_QUERY_LOAD_CHARACTER_COVENANT_COLLECTIONS,
     PLAYER_LOGIN_QUERY_LOAD_CHARACTER_COVENANT_CONDUITS,
     PLAYER_LOGIN_QUERY_LOAD_CHARACTER_COVENANT,
     PLAYER_LOGIN_QUERY_LOAD_CHARACTER_COVENANT_SOULBIND,
     PLAYER_LOGIN_QUERY_LOAD_CHARACTER_COVENANT_CLAIMED_RENOWN_REWARDS,
-    PLAYER_LOGIN_QUERY_LOAD_SEL_TRAITS,
-    PLAYER_LOGIN_QUERY_LOAD_SEL_TRAIT_TALENTS,
-    PLAYER_LOGIN_QUERY_LOAD_SEL_SPEC_INFO,
     PLAYER_LOGIN_QUERY_LOAD_CHARACTER_CUSTOM,
     PLAYER_LOGIN_QUERY_LOAD_CHARACTER_DAILY_REWARDS,
     MAX_PLAYER_LOGIN_QUERY
@@ -1094,6 +1098,41 @@ struct GroupUpdateCounter
 {
     ObjectGuid GroupGuid;
     int32 UpdateSequenceNumber;
+};
+
+enum TalentLearnResult : int32
+{
+    TALENT_LEARN_OK                                     = 0,
+    TALENT_FAILED_UNKNOWN                               = 1,
+    TALENT_FAILED_NOT_ENOUGH_TALENTS_IN_PRIMARY_TREE    = 2,
+    TALENT_FAILED_NO_PRIMARY_TREE_SELECTED              = 3,
+    TALENT_FAILED_CANT_DO_THAT_RIGHT_NOW                = 4,
+    TALENT_FAILED_AFFECTING_COMBAT                      = 5,
+    TALENT_FAILED_CANT_REMOVE_TALENT                    = 6,
+    TALENT_FAILED_CANT_DO_THAT_CHALLENGE_MODE_ACTIVE    = 7,
+    TALENT_FAILED_REST_AREA                             = 8,
+    TALENT_FAILED_UNSPENT_TALENT_POINTS                 = 9,
+    TALENT_FAILED_IN_PVP_MATCH                          = 10
+};
+
+struct TC_GAME_API SpecializationInfo
+{
+    SpecializationInfo() : PvpTalents(), ResetTalentsCost(0), ResetTalentsTime(0), ActiveGroup(0)
+    {
+        for (PlayerPvpTalentMap& pvpTalents : PvpTalents)
+            pvpTalents.fill(0);
+    }
+
+    PlayerTalentMap Talents[MAX_SPECIALIZATIONS];
+    PlayerPvpTalentMap PvpTalents[MAX_SPECIALIZATIONS];
+    std::vector<uint32> Glyphs[MAX_SPECIALIZATIONS];
+    uint32 ResetTalentsCost;
+    time_t ResetTalentsTime;
+    uint8 ActiveGroup;
+
+private:
+    SpecializationInfo(SpecializationInfo const&) = delete;
+    SpecializationInfo& operator=(SpecializationInfo const&) = delete;
 };
 
 uint32 constexpr PLAYER_MAX_HONOR_LEVEL = 500;
@@ -1818,8 +1857,8 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void SendProficiency(ItemClass itemClass, uint32 itemSubclassMask) const;
         void SendKnownSpells();
         void SendUnlearnSpells();
-        bool AddSpell(uint32 spellId, bool active, bool learning, bool dependent, bool disabled, bool loading = false, int32 fromSkill = 0, std::function<void()> callback = []() {});
-        void LearnSpell(uint32 spell_id, bool dependent, int32 fromSkill = 0, bool suppressMessaging = false, int32 traitDefinitionId = 0, std::function<void()> callback = []() {});
+        bool AddSpell(uint32 spellId, bool active, bool learning, bool dependent, bool disabled, bool loading = false, int32 fromSkill = 0, Optional<int32> traitDefinitionId = {});
+        void LearnSpell(uint32 spell_id, bool dependent, int32 fromSkill = 0, bool suppressMessaging = false, Optional<int32> traitDefinitionId = {});
         void RemoveSpell(uint32 spell_id, bool disabled = false, bool learn_low_rank = true, bool suppressMessaging = false);
         void ResetSpells(bool myClassOnly = false);
         void LearnCustomSpells();
@@ -1851,10 +1890,40 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         ZonePVPTypeOverride GetOverrideZonePVPType() const { return ZonePVPTypeOverride(*m_activePlayerData->OverrideZonePVPType); }
         void SetOverrideZonePVPType(ZonePVPTypeOverride type) { SetUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::OverrideZonePVPType), uint32(type)); }
 
+        // Talents
+        uint32 GetTalentResetCost() const { return _specializationInfo.ResetTalentsCost; }
+        void SetTalentResetCost(uint32 cost) { _specializationInfo.ResetTalentsCost = cost; }
+        time_t GetTalentResetTime() const { return _specializationInfo.ResetTalentsTime; }
+        void SetTalentResetTime(time_t time_) { _specializationInfo.ResetTalentsTime = time_; }
         uint32 GetPrimarySpecialization() const { return m_playerData->CurrentSpecID; }
         uint32 GetSpecializationId() const { return GetPrimarySpecialization(); }
         void SetPrimarySpecialization(uint32 spec);
+        uint8 GetActiveTalentGroup() const { return _specializationInfo.ActiveGroup; }
+        void SetActiveTalentGroup(uint8 group) { _specializationInfo.ActiveGroup = group; }
         uint32 GetDefaultSpecId() const;
+
+        bool ResetTalents(bool noCost = false);
+        void ResetPvpTalents();
+        uint32 GetNextResetTalentsCost() const;
+        void InitTalentForLevel();
+        void SendTalentsInfoData();
+        TalentLearnResult LearnTalent(uint32 talentId, int32* spellOnCooldown);
+        bool AddTalent(TalentEntry const* talent, uint8 spec, bool learning);
+        bool HasTalent(uint32 spell_id, uint8 spec) const;
+        void RemoveTalent(TalentEntry const* talent);
+        void ResetTalentSpecialization();
+
+        TalentLearnResult LearnPvpTalent(uint32 talentID, uint8 slot, int32* spellOnCooldown);
+        bool AddPvpTalent(PvpTalentEntry const* talent, uint8 activeTalentGroup, uint8 slot);
+        void RemovePvpTalent(PvpTalentEntry const* talent, uint8 activeTalentGroup);
+        void TogglePvpTalents(bool enable);
+        bool HasPvpTalent(uint32 talentID, uint8 activeTalentGroup) const;
+        void EnablePvpRules(bool dueToCombat = false);
+        void DisablePvpRules();
+        bool HasPvpRulesEnabled() const;
+        bool IsInAreaThatActivatesPvpTalents() const;
+        bool IsAreaThatActivatesPvpTalents(uint32 areaID) const;
+        bool IsInWarMode() const { return HasPlayerLocalFlag(PLAYER_LOCAL_FLAG_WAR_MODE); }
 
         static uint32 GetRoleBySpecializationId(uint32 specializationId);
         uint32 GetRoleForGroup() const;
@@ -1865,21 +1934,35 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         uint8 GetRole() const;
         static uint8 _GetRole(uint32 spec);
 
-        void EnablePvpRules(bool dueToCombat = false);
-        void DisablePvpRules();
-        bool HasPvpRulesEnabled() const;
-        bool IsInAreaThatActivatesPvpTalents() const;
-        bool IsAreaThatActivatesPvpTalents(uint32 areaID) const;
-        bool IsInWarMode() const { return HasPlayerLocalFlag(PLAYER_LOCAL_FLAG_WAR_MODE); }
-
         // Dual Spec
-        void ActivateSpecialization(ChrSpecializationEntry const* spec);
+        void ActivateTalentGroup(ChrSpecializationEntry const* spec);
 
+        PlayerTalentMap const* GetTalentMap(uint8 spec) const { return &_specializationInfo.Talents[spec]; }
+        PlayerTalentMap* GetTalentMap(uint8 spec) { return &_specializationInfo.Talents[spec]; }
+        PlayerPvpTalentMap const& GetPvpTalentMap(uint8 spec) const { return _specializationInfo.PvpTalents[spec]; }
+        PlayerPvpTalentMap& GetPvpTalentMap(uint8 spec) { return _specializationInfo.PvpTalents[spec]; }
+        std::vector<uint32> const& GetGlyphs(uint8 spec) const { return _specializationInfo.Glyphs[spec]; }
+        std::vector<uint32>& GetGlyphs(uint8 spec) { return _specializationInfo.Glyphs[spec]; }
         ActionButtonList const& GetActionButtons() const { return m_actionButtons; }
+        void StartLoadingActionButtons(std::function<void()>&& callback = nullptr);
         void LoadActions(PreparedQueryResult result);
 
+        // Traits
+        void CreateTraitConfig(WorldPackets::Traits::TraitConfig& traitConfig);
+        void AddTraitConfig(WorldPackets::Traits::TraitConfig const& traitConfig);
+        UF::TraitConfig const* GetTraitConfig(int32 configId) const;
+        void UpdateTraitConfig(WorldPackets::Traits::TraitConfig&& newConfig, int32 savedConfigId, bool withCastTime);
+        void ApplyTraitEntryChanges(int32 editedConfigId, WorldPackets::Traits::TraitConfig const& newConfig, bool applyTraits, bool consumeCurrencies);
+        void RenameTraitConfig(int32 editedConfigId, std::string&& newName);
+        void DeleteTraitConfig(int32 deletedConfigId);
+        void ApplyTraitConfig(int32 configId, bool apply);
+        void ApplyTraitEntry(int32 traitNodeEntryId, int32 rank, int32 grantedRanks, bool apply);
+        void SetActiveCombatTraitConfigID(int32 traitConfigId) { SetUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::ActiveCombatTraitConfigID), traitConfigId); }
+        void SetTraitConfigUseStarterBuild(int32 traitConfigId, bool useStarterBuild);
+        void SetTraitConfigUseSharedActionBars(int32 traitConfigId, bool usesSharedActionBars, bool isLastSelectedSavedConfig);
+
         uint32 GetFreePrimaryProfessionPoints() const { return m_activePlayerData->CharacterPoints; }
-        void SetFreePrimaryProfessions(uint32 profs) { SetUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::CharacterPoints), profs); }
+        void SetFreePrimaryProfessions(uint16 profs) { SetUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::CharacterPoints), profs); }
         void InitPrimaryProfessions();
 
         PlayerSpellMap const& GetSpellMap() const { return m_spells; }
@@ -2787,14 +2870,6 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
 
         void SetCharacterPoints(uint32 points) { SetUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::CharacterPoints), points); }
 
-        TraitsMgr* GetTraitsMgr();
-        TraitsMgr const* GetTraitsMgr() const;
-        void AddOrSetTrait(Trait* trait);
-        void RemoveTrait(Trait* trait);
-        void RemoveTraitTalent(Trait* trait, TraitTalent* talent);
-
-        void SetCurrentConfigID(uint32 configId, bool suppressed = false);
-
         void SetModPetHaste(float petHaste) { SetUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::ModPetHaste), petHaste); }
 
         void SendPetTameFailure(PetTameFailureReason reason);
@@ -3035,6 +3110,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void _LoadGlyphs(PreparedQueryResult result);
         void _LoadTalents(PreparedQueryResult result);
         void _LoadPvpTalents(PreparedQueryResult result);
+        void _LoadTraits(PreparedQueryResult configsResult, PreparedQueryResult entriesResult);
         void _LoadInstanceTimeRestrictions(PreparedQueryResult result);
         void _LoadPetStable(uint32 summonedPetNumber, PreparedQueryResult result);
         void _LoadCurrency(PreparedQueryResult result);
@@ -3063,6 +3139,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void _SaveBGData(CharacterDatabaseTransaction trans);
         void _SaveGlyphs(CharacterDatabaseTransaction trans) const;
         void _SaveTalents(CharacterDatabaseTransaction trans);
+        void _SaveTraits(CharacterDatabaseTransaction trans);
         void _SaveStats(CharacterDatabaseTransaction trans) const;
         void _SaveInstanceTimeRestrictions(CharacterDatabaseTransaction trans);
         void _SaveCurrency(CharacterDatabaseTransaction trans);
@@ -3143,6 +3220,10 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
     private:
         uint32 m_lastPotionId;                              // last used health/mana potion in combat, that block next potion use
         std::unordered_map<uint32, StoredAuraTeleportLocation> m_storedAuraTeleportLocations;
+
+        SpecializationInfo _specializationInfo;
+
+        std::unordered_map<int32, PlayerSpellState> m_traitConfigStates;
 
         ActionButtonList m_actionButtons;
 
@@ -3333,9 +3414,6 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         std::unique_ptr<CovenantMgr> _covenantMgr;
         std::unique_ptr<PlayerChallenge> m_playerChallenge;
         std::unique_ptr<AnimaPowerChoice> _animaPowerChoice;
-
-        /// Traits!
-        std::unique_ptr<TraitsMgr> _traitMgr;
 
         bool _usePvpItemLevels;
 

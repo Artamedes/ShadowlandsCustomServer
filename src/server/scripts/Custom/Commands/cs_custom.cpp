@@ -394,7 +394,7 @@ public:
     }
     static bool HandleTest3Command(ChatHandler* handler, uint32 CovenantID)
     {
-        handler->GetPlayer()->SetCurrentConfigID(CovenantID);
+        //handler->GetPlayer()->SetCurrentConfigID(CovenantID);
         return true;
     }
     static bool HandleTest4Command(ChatHandler* handler, Optional<uint32> flag)

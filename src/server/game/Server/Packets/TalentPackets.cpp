@@ -16,7 +16,6 @@
  */
 
 #include "TalentPackets.h"
-#include "TraitsMgr.h"
 
 ByteBuffer& operator>>(ByteBuffer& data, WorldPackets::Talent::PvPTalent& pvpTalent)
 {
@@ -121,76 +120,4 @@ WorldPacket const* WorldPackets::Talent::LearnPvpTalentFailed::Write()
         _worldPacket << pvpTalent;
 
     return &_worldPacket;
-}
-
-ByteBuffer& operator>>(ByteBuffer& data, WorldPackets::Talent::TraitConfigEntry& entry)
-{
-    data >> entry.TraitNode;
-    data >> entry.TraitNodeEntryID;
-    data >> entry.Rank;
-    entry.TreeFlags = data.read<TraitTreeFlag>();
-    return data;
-}
-
-ByteBuffer& operator>>(ByteBuffer& data, WorldPackets::Talent::TraitConfigInfo& traitInfo)
-{
-    data >> traitInfo.ConfigID;
-    traitInfo.Type = data.read<TraitType>();
-    traitInfo.Talents.resize(data.read<uint32>());
-
-    if (traitInfo.Type == TraitType::Profession)
-        data >> traitInfo.SkillLineID;
-    else if (traitInfo.Type == TraitType::Combat)
-    {
-        data >> traitInfo.SpecializationID;
-        traitInfo.CombatConfigFlags = data.read<TraitCombatConfigFlags>();
-        data >> traitInfo.LoadoutIndex;
-    }
-    else if (traitInfo.Type == TraitType::Generic)
-        data >> traitInfo.SystemID;
-
-    for (uint32 i = 0; i < traitInfo.Talents.size(); ++i)
-    {
-        data >> traitInfo.Talents[i];
-    }
-
-    uint32 configNameLen = data.ReadBits(9);
-    traitInfo.LoadoutName = data.ReadString(configNameLen);
-
-    return data;
-}
-
-void WorldPackets::Talent::LearnTraits::Read()
-{
-    _worldPacket >> Trait;
-    _worldPacket >> EditingConfigID;
-    _worldPacket >> Loadout;
-}
-
-void WorldPackets::Talent::CreateNewLoadout::Read()
-{
-    _worldPacket >> Trait;
-}
-
-void WorldPackets::Talent::SwapLoadout::Read()
-{
-    _worldPacket >> Loadout;
-}
-
-void WorldPackets::Talent::RemoveLoadout::Read()
-{
-    _worldPacket >> ConfigID;
-}
-
-void WorldPackets::Talent::RenameLoadout::Read()
-{
-    _worldPacket >> ConfigID;
-    uint32 configNameLen = _worldPacket.ReadBits(9);
-    ConfigName = _worldPacket.ReadString(configNameLen);
-}
-
-void WorldPackets::Talent::ActiveStarterBuild::Read()
-{
-    _worldPacket >> ConfigID;
-    IsActive = _worldPacket.ReadBit();
 }

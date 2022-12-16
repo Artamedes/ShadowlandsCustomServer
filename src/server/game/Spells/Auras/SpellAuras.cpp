@@ -31,7 +31,6 @@
 #include "SpellMgr.h"
 #include "SpellPackets.h"
 #include "SpellScript.h"
-#include "TraitsMgr.h"
 #include "Unit.h"
 #include "Util.h"
 #include "Vehicle.h"
@@ -529,16 +528,6 @@ m_lastProcAttemptTime(GameTime::Now() - Seconds(10)), m_lastProcSuccessTime(Game
     m_procCharges = CalcMaxCharges(createInfo.Caster);
     m_isUsingCharges = m_procCharges != 0;
     // m_casterLevel = cast item level/caster level, caster level should be saved to db, confirmed with sniffs
-}
-
-void Aura::SetTraitTalent(TraitTalent* talent)
-{
-    _traitTalent = talent;
-}
-
-TraitTalent const* Aura::GetTraitTalent()
-{
-    return _traitTalent;
 }
 
 AuraScript* Aura::GetScriptByType(std::type_info const& type) const

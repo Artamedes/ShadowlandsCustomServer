@@ -24,7 +24,6 @@
 #include "ObjectMgr.h"
 #include "Player.h"
 #include "TransmogrificationPackets.h"
-#include "TraitsMgr.h"
 
 void WorldSession::HandleTransmogrifyItems(WorldPackets::Transmogrification::TransmogrifyItems& transmogrifyItems)
 {
@@ -199,8 +198,8 @@ void WorldSession::HandleTransmogrifyItems(WorldPackets::Transmogrification::Tra
             if (!transmogrified->GetModifier(ITEM_MODIFIER_TRANSMOG_SECONDARY_APPEARANCE_SPEC_4))
                 transmogrified->SetModifier(ITEM_MODIFIER_TRANSMOG_SECONDARY_APPEARANCE_SPEC_4, transmogrified->GetModifier(ITEM_MODIFIER_TRANSMOG_SECONDARY_APPEARANCE_ALL_SPECS));
 
-            transmogrified->SetModifier(AppearanceModifierSlotBySpec[player->GetTraitsMgr()->GetActiveTalentGroupSafe()], transmogPair.second.first);
-            transmogrified->SetModifier(SecondaryAppearanceModifierSlotBySpec[player->GetTraitsMgr()->GetActiveTalentGroupSafe()], transmogPair.second.second);
+            transmogrified->SetModifier(AppearanceModifierSlotBySpec[player->GetActiveTalentGroup()], transmogPair.second.first);
+            transmogrified->SetModifier(SecondaryAppearanceModifierSlotBySpec[player->GetActiveTalentGroup()], transmogPair.second.second);
         }
 
         player->SetVisibleItemSlot(transmogrified->GetSlot(), transmogrified);
@@ -232,7 +231,7 @@ void WorldSession::HandleTransmogrifyItems(WorldPackets::Transmogrification::Tra
                 transmogrified->SetModifier(ITEM_MODIFIER_ENCHANT_ILLUSION_SPEC_3, transmogrified->GetModifier(ITEM_MODIFIER_ENCHANT_ILLUSION_ALL_SPECS));
             if (!transmogrified->GetModifier(ITEM_MODIFIER_ENCHANT_ILLUSION_SPEC_4))
                 transmogrified->SetModifier(ITEM_MODIFIER_ENCHANT_ILLUSION_SPEC_4, transmogrified->GetModifier(ITEM_MODIFIER_ENCHANT_ILLUSION_ALL_SPECS));
-            transmogrified->SetModifier(IllusionModifierSlotBySpec[player->GetTraitsMgr()->GetActiveTalentGroupSafe()], illusionPair.second);
+            transmogrified->SetModifier(IllusionModifierSlotBySpec[player->GetActiveTalentGroup()], illusionPair.second);
         }
 
         player->SetVisibleItemSlot(transmogrified->GetSlot(), transmogrified);
@@ -278,8 +277,8 @@ void WorldSession::HandleTransmogrifyItems(WorldPackets::Transmogrification::Tra
             if (!item->GetModifier(ITEM_MODIFIER_TRANSMOG_SECONDARY_APPEARANCE_SPEC_4))
                 item->SetModifier(ITEM_MODIFIER_TRANSMOG_SECONDARY_APPEARANCE_SPEC_4, item->GetModifier(ITEM_MODIFIER_TRANSMOG_SECONDARY_APPEARANCE_ALL_SPECS));
 
-            item->SetModifier(AppearanceModifierSlotBySpec[player->GetTraitsMgr()->GetActiveTalentGroupSafe()], 0);
-            item->SetModifier(SecondaryAppearanceModifierSlotBySpec[player->GetTraitsMgr()->GetActiveTalentGroupSafe()], 0);
+            item->SetModifier(AppearanceModifierSlotBySpec[player->GetActiveTalentGroup()], 0);
+            item->SetModifier(SecondaryAppearanceModifierSlotBySpec[player->GetActiveTalentGroup()], 0);
             item->SetModifier(ITEM_MODIFIER_ENCHANT_ILLUSION_ALL_SPECS, 0);
         }
 
@@ -308,7 +307,7 @@ void WorldSession::HandleTransmogrifyItems(WorldPackets::Transmogrification::Tra
             if (!item->GetModifier(ITEM_MODIFIER_ENCHANT_ILLUSION_SPEC_4))
                 item->SetModifier(ITEM_MODIFIER_ENCHANT_ILLUSION_SPEC_4, item->GetModifier(ITEM_MODIFIER_ENCHANT_ILLUSION_ALL_SPECS));
 
-            item->SetModifier(IllusionModifierSlotBySpec[player->GetTraitsMgr()->GetActiveTalentGroupSafe()], 0);
+            item->SetModifier(IllusionModifierSlotBySpec[player->GetActiveTalentGroup()], 0);
             item->SetModifier(ITEM_MODIFIER_TRANSMOG_APPEARANCE_ALL_SPECS, 0);
         }
 

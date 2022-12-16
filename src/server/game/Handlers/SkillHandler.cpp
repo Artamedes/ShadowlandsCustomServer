@@ -25,92 +25,17 @@
 #include "Player.h"
 #include "SpellPackets.h"
 #include "TalentPackets.h"
-#include "TraitsMgr.h"
 
 void WorldSession::HandleLearnTalentsOpcode(WorldPackets::Talent::LearnTalents& packet)
 {
-    // Removed in DF
-    //WorldPackets::Talent::LearnTalentFailed learnTalentFailed;
-    //bool anythingLearned = false;
-    //for (uint32 talentId : packet.Talents)
-    //{
-    //    if (TalentLearnResult result = _player->LearnTalent(talentId, &learnTalentFailed.SpellID))
-    //    {
-    //        if (!learnTalentFailed.Reason)
-    //            learnTalentFailed.Reason = result;
-    //
-    //        learnTalentFailed.Talents.push_back(talentId);
-    //    }
-    //    else
-    //        anythingLearned = true;
-    //}
-    //
-    //if (learnTalentFailed.Reason)
-    //    SendPacket(learnTalentFailed.Write());
-    //
-    //if (anythingLearned)
-    //    _player->SendTalentsInfoData();
 }
 
 void WorldSession::HandleLearnPvpTalentsOpcode(WorldPackets::Talent::LearnPvpTalents& packet)
 {
-    WorldPackets::Talent::LearnPvpTalentFailed learnPvpTalentFailed;
-    bool anythingLearned = false;
-    for (WorldPackets::Talent::PvPTalent pvpTalent : packet.Talents)
-    {
-        TalentLearnResult result = _player->GetTraitsMgr()->LearnPVPTalent(pvpTalent.PvPTalentID, pvpTalent.Slot, &learnPvpTalentFailed.SpellID);
-        if (result != TalentLearnResult::Ok)
-        {
-            if (!learnPvpTalentFailed.Reason)
-                learnPvpTalentFailed.Reason = static_cast<uint32>(result);
-
-            learnPvpTalentFailed.Talents.push_back(pvpTalent);
-        }
-        else
-            anythingLearned = true;
-    }
-
-    if (learnPvpTalentFailed.Reason)
-        SendPacket(learnPvpTalentFailed.Write());
-
-    // always sent
-    _player->GetTraitsMgr()->SendUpdateTalentData();
 }
 
 void WorldSession::HandleConfirmRespecWipeOpcode(WorldPackets::Talent::ConfirmRespecWipe& confirmRespecWipe)
 {
-    // Removed in DF
-    //Creature* unit = GetPlayer()->GetNPCIfCanInteractWith(confirmRespecWipe.RespecMaster, UNIT_NPC_FLAG_TRAINER, UNIT_NPC_FLAG_2_NONE);
-    //if (!unit)
-    //{
-    //    TC_LOG_DEBUG("network", "WORLD: HandleConfirmRespecWipeOpcode - %s not found or you can't interact with him.", confirmRespecWipe.RespecMaster.ToString().c_str());
-    //    return;
-    //}
-    //
-    //if (confirmRespecWipe.RespecType != SPEC_RESET_TALENTS)
-    //{
-    //    TC_LOG_DEBUG("network", "WORLD: HandleConfirmRespecWipeOpcode - reset type %d is not implemented.", confirmRespecWipe.RespecType);
-    //    return;
-    //}
-    //
-    //if (!unit->CanResetTalents(_player))
-    //    return;
-    //
-    //if (!_player->PlayerTalkClass->GetGossipMenu().HasMenuItemType(GOSSIP_OPTION_UNLEARNTALENTS))
-    //    return;
-    //
-    //// remove fake death
-    //if (GetPlayer()->HasUnitState(UNIT_STATE_DIED))
-    //    GetPlayer()->RemoveAurasByType(SPELL_AURA_FEIGN_DEATH);
-    //
-    //if (!_player->ResetTalents())
-    //{
-    //    GetPlayer()->SendRespecWipeConfirm(ObjectGuid::Empty, 0);
-    //    return;
-    //}
-    //
-    //_player->SendTalentsInfoData();
-    //unit->CastSpell(_player, 14867, true);                  //spell: "Untalent Visual Effect"
 }
 
 void WorldSession::HandleUnlearnSkillOpcode(WorldPackets::Spells::UnlearnSkill& packet)

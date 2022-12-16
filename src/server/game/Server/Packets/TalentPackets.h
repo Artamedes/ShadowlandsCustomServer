@@ -23,10 +23,6 @@
 #include "ObjectGuid.h"
 #include "PacketUtilities.h"
 
-enum class TraitType : int32;
-enum class TraitTreeFlag : int32;
-enum class TraitCombatConfigFlags : int32;
-
 namespace WorldPackets
 {
     namespace Talent
@@ -54,7 +50,7 @@ namespace WorldPackets
         class UpdateTalentData final : public ServerPacket
         {
         public:
-            UpdateTalentData() : ServerPacket(SMSG_UPDATE_TALENT_DATA, 2+4+4+4+12) { }
+            UpdateTalentData() : ServerPacket(SMSG_UPDATE_TALENT_DATA, 2 + 4 + 4 + 4 + 12) { }
 
             WorldPacket const* Write() override;
 
@@ -73,7 +69,7 @@ namespace WorldPackets
         class RespecWipeConfirm final : public ServerPacket
         {
         public:
-            RespecWipeConfirm() : ServerPacket(SMSG_RESPEC_WIPE_CONFIRM, 16 + 4 +1) { }
+            RespecWipeConfirm() : ServerPacket(SMSG_RESPEC_WIPE_CONFIRM, 16 + 4 + 1) { }
 
             WorldPacket const* Write() override;
 
@@ -144,95 +140,6 @@ namespace WorldPackets
             uint32 Reason = 0;
             int32 SpellID = 0;
             std::vector<PvPTalent> Talents;
-        };
-
-        struct TraitConfigEntry
-        {
-            int32 TraitNode         = 0;
-            int32 TraitNodeEntryID  = 0;
-            int32 Rank              = 0;
-            TraitTreeFlag TreeFlags;
-        };
-
-        struct TraitConfigInfo
-        {
-            int32 ConfigID         = 0;
-            TraitType Type ;
-            std::vector<TraitConfigEntry> Talents;
-
-            int32 SkillLineID      = 0;
-
-            int32 SpecializationID  = 0;
-            TraitCombatConfigFlags CombatConfigFlags;
-            int32 LoadoutIndex      = 0;
-
-            int32 SystemID          = 0;
-
-            std::string LoadoutName;
-        };
-
-        class LearnTraits final : public ClientPacket
-        {
-        public:
-            LearnTraits(WorldPacket&& packet) : ClientPacket(CMSG_TRAITS_COMMIT_CONFIG, std::move(packet)) { }
-
-            void Read() override;
-
-            TraitConfigInfo Trait;
-            int32 EditingConfigID = 0;
-            int32 Loadout = 0;
-        };
-
-        class CreateNewLoadout final : public ClientPacket
-        {
-        public:
-            CreateNewLoadout(WorldPacket&& packet) : ClientPacket(CMSG_CLASS_TALENTS_REQUEST_NEW_CONFIG, std::move(packet)) { }
-
-            void Read() override;
-
-            TraitConfigInfo Trait;
-        };
-
-        class SwapLoadout final : public ClientPacket
-        {
-        public:
-            SwapLoadout(WorldPacket&& packet) : ClientPacket(CMSG_CLASS_TALENTS_NOTIFY_EMPTY_CONFIG, std::move(packet)) { }
-
-            void Read() override;
-
-            uint32 Loadout = 0;
-        };
-
-        class RemoveLoadout final : public ClientPacket
-        {
-        public:
-            RemoveLoadout(WorldPacket&& packet) : ClientPacket(CMSG_CLASS_TALENTS_DELETE_CONFIG, std::move(packet)) { }
-
-            void Read() override;
-
-            uint32 ConfigID = 0;
-        };
-
-        class RenameLoadout final : public ClientPacket
-        {
-        public:
-            RenameLoadout(WorldPacket&& packet) : ClientPacket(CMSG_CLASS_TALENTS_RENAME_CONFIG, std::move(packet)) { }
-
-            void Read() override;
-
-            uint32 ConfigID = 0;
-            std::string ConfigName;
-        };
-
-        class ActiveStarterBuild final : public ClientPacket
-        {
-        public:
-            ActiveStarterBuild(WorldPacket&& packet) : ClientPacket(CMSG_CLASS_TALENTS_SET_STARTER_BUILD_ACTIVE, std::move(packet)) { }
-
-            void Read() override;
-
-            uint32 ConfigID = 0;
-            bool IsActive = false;
         };
     }
 }

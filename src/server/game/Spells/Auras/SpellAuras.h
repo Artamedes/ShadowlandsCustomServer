@@ -47,7 +47,6 @@ class DynamicObject;
 class ProcEventInfo;
 class Unit;
 class UnitAura;
-struct TraitTalent;
 
 // update aura target map every 500 ms instead of every update - reduce amount of grid searcher calls
 #define UPDATE_TARGET_MAP_INTERVAL 500
@@ -332,9 +331,6 @@ class TC_GAME_API Aura
 
         float TimeMod;
 
-        void SetTraitTalent(TraitTalent* talent);
-        TraitTalent const* GetTraitTalent();
-
     private:
         AuraScript* GetScriptByType(std::type_info const& type) const;
         void _DeleteRemovedApplications();
@@ -378,7 +374,6 @@ class TC_GAME_API Aura
         std::vector<AuraApplication*> _removedApplications;
 
         AuraEffectVector _effects;
-        TraitTalent* _traitTalent = nullptr;
 };
 
 class TC_GAME_API UnitAura : public Aura
