@@ -1223,15 +1223,7 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder const& holder)
             chH.PSendSysMessage("%s", sWorld->GetNewCharString().c_str());
     }
 
-    bool needLoad = false;
-
-    if (!pCurrChar->GetMap()->IsGridLoaded(*pCurrChar))
-    {
-        chH.PSendSysMessage("%s", "Map is currently being loaded");
-        needLoad = true;
-    }
-
-    pCurrChar->GetMap()->AddTask([pCurrChar, needLoad]()
+    pCurrChar->GetMap()->AddTask([pCurrChar]()
     {
         if (!pCurrChar->GetMap()->AddPlayerToMap(pCurrChar))
         {
@@ -1242,9 +1234,6 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder const& holder)
             else
                 pCurrChar->TeleportTo(pCurrChar->m_homebind);
         }
-        else if (needLoad)
-            ChatHandler(pCurrChar).PSendSysMessage("%s", "Map at this point loaded");
-
 
         ObjectAccessor::AddObject(pCurrChar);
         //TC_LOG_DEBUG("Player %s added to Map.", pCurrChar->GetName().c_str());
