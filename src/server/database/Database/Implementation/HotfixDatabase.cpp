@@ -1934,7 +1934,7 @@ void HotfixDatabaseConnection::DoPrepareStatements()
 
     // Campaign.db2
     PrepareStatement(HOTFIX_SEL_CAMPAIGN, "SELECT ID, Title, InternalTitle, Description, UiTextureKitID, RewardQuestID, Prerequisite, "
-        "Field90135755007, Completed, OnlyStallIf, UiQuestDetailsThemeID, Flags, DisplayPriority, Field100245779012, Field1002 FROM campaign"
+        "Field90135755007, Completed, OnlyStallIf, UiQuestDetailsThemeID, Flags, DisplayPriority, Field100245779012, Field100246144013 FROM campaign"
         " WHERE (`VerifiedBuild` > 0) = ?", CONNECTION_SYNCH);
     PREPARE_MAX_ID_STMT(HOTFIX_SEL_CAMPAIGN, "SELECT MAX(ID) + 1 FROM campaign", CONNECTION_SYNCH);
     PREPARE_LOCALE_STMT(HOTFIX_SEL_CAMPAIGN, "SELECT ID, Title_lang, Description_lang FROM campaign_locale WHERE (`VerifiedBuild` > 0) = ?"
