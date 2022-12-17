@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 8.0.26, for Linux (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.31, for Linux (x86_64)
 --
 -- Host: localhost    Database: characters
 -- ------------------------------------------------------
--- Server version	8.0.26
+-- Server version	8.0.31-0ubuntu0.20.04.1
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -1107,7 +1107,7 @@ CREATE TABLE `character_instance_lock` (
   `lockId` int unsigned NOT NULL,
   `instanceId` int unsigned DEFAULT NULL,
   `difficulty` tinyint unsigned DEFAULT NULL,
-  `data` text COLLATE utf8mb4_unicode_ci,
+  `data` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `completedEncountersMask` int unsigned DEFAULT NULL,
   `entranceWorldSafeLocId` int unsigned DEFAULT NULL,
   `expiryTime` bigint unsigned DEFAULT NULL,
@@ -1623,6 +1623,30 @@ CREATE TABLE `character_spell_cooldown` (
 LOCK TABLES `character_spell_cooldown` WRITE;
 /*!40000 ALTER TABLE `character_spell_cooldown` DISABLE KEYS */;
 /*!40000 ALTER TABLE `character_spell_cooldown` ENABLE KEYS */;
+UNLOCK TABLES;
+
+
+--
+-- Table structure for table `character_spell_favorite`
+--
+
+DROP TABLE IF EXISTS `character_spell_favorite`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `character_spell_favorite` (
+  `guid` bigint unsigned NOT NULL DEFAULT '0' COMMENT 'Global Unique Identifier',
+  `spell` int unsigned NOT NULL DEFAULT '0' COMMENT 'Spell Identifier',
+  PRIMARY KEY (`guid`,`spell`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Player System';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `character_spell_favorite`
+--
+
+LOCK TABLES `character_spell_favorite` WRITE;
+/*!40000 ALTER TABLE `character_spell_favorite` DISABLE KEYS */;
+/*!40000 ALTER TABLE `character_spell_favorite` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -2628,7 +2652,7 @@ DROP TABLE IF EXISTS `instance`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `instance` (
   `instanceId` int unsigned NOT NULL,
-  `data` text COLLATE utf8mb4_unicode_ci,
+  `data` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `completedEncountersMask` int unsigned DEFAULT NULL,
   `entranceWorldSafeLocId` int unsigned DEFAULT NULL,
   PRIMARY KEY (`instanceId`)
@@ -2965,7 +2989,7 @@ CREATE TABLE `item_loot_items` (
   `container_id` bigint unsigned NOT NULL DEFAULT '0' COMMENT 'guid of container (item_instance.guid)',
   `item_id` int unsigned NOT NULL DEFAULT '0' COMMENT 'loot item entry (item_instance.itemEntry)',
   `item_count` int NOT NULL DEFAULT '0' COMMENT 'stack size',
-  `item_index` int(10) unsigned NOT NULL DEFAULT '0',
+  `item_index` int unsigned NOT NULL DEFAULT '0',
   `follow_rules` tinyint(1) NOT NULL DEFAULT '0' COMMENT 'follow loot rules',
   `ffa` tinyint(1) NOT NULL DEFAULT '0' COMMENT 'free-for-all',
   `blocked` tinyint(1) NOT NULL DEFAULT '0',
@@ -3653,10 +3677,20 @@ INSERT INTO `updates` VALUES
 ('2022_01_31_02_characters.sql','6E3A3F02276287DD540BC4C17E246DFB850260D8','ARCHIVED','2022-01-31 21:43:38',0),
 ('2022_02_28_00_characters_2020_09_27_00_characters.sql','2292A1ED0E7F46DEC41384F75FA6D9461464EEB8','ARCHIVED','2022-02-28 12:43:58',0),
 ('2022_03_06_00_characters.sql','474AAF9D03E6A56017899C968DC9875368301934','ARCHIVED','2022-03-06 15:12:24',0),
-('2022_03_11_00_characters_2021_07_18_00_characters.sql','0BA579ED21F4E75AC2B4797421B5029568B3F6E2','RELEASED','2022-03-11 18:56:07',0),
-('2022_06_01_00_characters.sql','582AC6E256F8365F83AB70BA165CCC8B218E19FF','RELEASED','2022-06-01 21:16:56',0),
-('2022_07_03_00_characters.sql','D3F04078C0846BCF7C8330AC20C39B8C3AEE7002','RELEASED','2022-07-03 23:37:24',0),
-('2022_07_14_00_characters.sql','2EAD57D77FC39F6678F2D2A7D9C24046E6B836D8','RELEASED','2022-07-14 21:44:35',0);
+('2022_03_11_00_characters_2021_07_18_00_characters.sql','0BA579ED21F4E75AC2B4797421B5029568B3F6E2','ARCHIVED','2022-03-11 18:56:07',0),
+('2022_06_01_00_characters.sql','582AC6E256F8365F83AB70BA165CCC8B218E19FF','ARCHIVED','2022-06-01 21:16:56',0),
+('2022_07_03_00_characters.sql','D3F04078C0846BCF7C8330AC20C39B8C3AEE7002','ARCHIVED','2022-07-03 23:37:24',0),
+('2022_07_14_00_characters.sql','2EAD57D77FC39F6678F2D2A7D9C24046E6B836D8','ARCHIVED','2022-07-14 21:44:35',0),
+('2022_07_25_00_characters.sql','3159BB2F3C346A7881920AB2B1F8108247CF13EE','ARCHIVED','2022-07-25 18:44:10',0),
+('2022_08_19_00_characters.sql','1C076A24F2B48F32E8EF835C01F8907CA9E86491','ARCHIVED','2022-08-19 23:43:01',0),
+('2022_08_21_00_characters.sql','1D75688392FBDA18CD8494F32CF682DCB49642EC','ARCHIVED','2022-08-21 00:02:03',0),
+('2022_09_18_00_characters.sql','A7DF0C1F0E074F3E63A6CDD0AF873A1F3DC33B29','ARCHIVED','2022-09-18 21:48:42',0),
+('2022_10_03_00_characters.sql','7B062787230D9158A622EB4AFE7FA6D18AB47BB3','ARCHIVED','2022-10-03 22:32:58',0),
+('2022_10_03_01_characters.sql','7CF58BD9CC366301CC992017028568C8774C4BC2','ARCHIVED','2022-10-03 22:36:38',0),
+('2022_10_03_02_characters.sql','33135AB3132943F15F4849A16EC5EFEA402F24F6','ARCHIVED','2022-10-03 22:38:27',0),
+('2022_11_20_00_characters.sql','4EB8BB24CAF16B0962DF3EF92C77BE05E234CFA6','ARCHIVED','2022-11-20 11:05:20',0),
+('2022_12_16_00_characters.sql','ABD1E101FE6629E0520C91E98942E55067EDD492','RELEASED','2022-12-16 22:52:19',0),
+('2022_12_17_00_characters.sql','3E005BD6B9C60653749B0B3C19CBC497092B9CCB','RELEASED','2022-12-17 18:26:43',0);
 /*!40000 ALTER TABLE `updates` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -3757,15 +3791,15 @@ CREATE TABLE `world_variable` (
 LOCK TABLES `world_variable` WRITE;
 /*!40000 ALTER TABLE `world_variable` DISABLE KEYS */;
 INSERT INTO `world_variable` VALUES
-('NextCurrencyResetTime',0),
-('NextWeeklyQuestResetTime',0),
 ('NextBGRandomDailyResetTime',0),
-('PersistentCharacterCleanFlags',0),
-('NextGuildDailyResetTime',0),
-('NextMonthlyQuestResetTime',0),
+('NextCurrencyResetTime',0),
 ('NextDailyQuestResetTime',0),
+('NextGuildDailyResetTime',0),
+('NextGuildWeeklyResetTime',0),
+('NextMonthlyQuestResetTime',0),
 ('NextOldCalendarEventDeletionTime',0),
-('NextGuildWeeklyResetTime',0);
+('NextWeeklyQuestResetTime',0),
+('PersistentCharacterCleanFlags',0);
 /*!40000 ALTER TABLE `world_variable` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -3782,4 +3816,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2022-03-06 15:12:27
+-- Dump completed on 2022-11-20 11:05:23

@@ -1088,6 +1088,16 @@ namespace WorldPackets
             int32 SpellID = 0;
         };
 
+        class TradeSkillSetFavorite final : public ClientPacket
+        {
+        public:
+            TradeSkillSetFavorite(WorldPacket&& packet) : ClientPacket(CMSG_TRADE_SKILL_SET_FAVORITE, std::move(packet)) { }
+
+            void Read() override;
+
+            int32 RecipeID = 0;
+            bool IsFavorite = false;
+        };
 
         class LossControlAuraUpdate final : public ServerPacket
         {

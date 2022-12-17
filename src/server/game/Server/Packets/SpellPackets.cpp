@@ -1126,4 +1126,10 @@ WorldPacket const* WorldPackets::Spells::ModifyChargeRecoverySpeed::Write()
 
     return &_worldPacket;
 }
+
+void TradeSkillSetFavorite::Read()
+{
+    _worldPacket >> RecipeID;
+    IsFavorite = _worldPacket.ReadBit();
+}
 }
