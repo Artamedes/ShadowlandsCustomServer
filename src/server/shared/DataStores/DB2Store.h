@@ -67,6 +67,8 @@ protected:
     std::vector<char*> _stringPool;
     char** _indexTable;
     uint32 _indexTableSize;
+
+    friend class UnitTestDataLoader;
 };
 
 template<class T>
@@ -84,8 +86,6 @@ public:
 
     iterator begin() const { return iterator(reinterpret_cast<T const* const*>(_indexTable), _indexTableSize); }
     iterator end() const { return iterator(reinterpret_cast<T const* const*>(_indexTable), _indexTableSize, _indexTableSize); }
-
-    friend class UnitTestDataLoader;
 };
 
 #endif
