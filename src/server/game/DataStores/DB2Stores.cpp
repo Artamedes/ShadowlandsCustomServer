@@ -1765,16 +1765,16 @@ void DB2Manager::LoadHotfixData()
 
 DB2Manager::HotfixRecord DB2Manager::AddHotfixData(uint32 recordId, uint32 hash)
 {
-    int32 id = _hotfixData.size();
+    if (_maxHotfixId < 9999999)
+        _maxHotfixId = 9999999;
 
-    _maxHotfixId = std::max(_maxHotfixId, id);
     HotfixRecord hotfixRecord;
     hotfixRecord.TableHash = hash;
     hotfixRecord.RecordID = recordId;
-    hotfixRecord.ID.PushID = id;
-    hotfixRecord.ID.UniqueID = _maxHotfixId;
     hotfixRecord.HotfixStatus = HotfixRecord::Status::Valid;
-    _hotfixData[id].push_back(hotfixRecord);
+    hotfixRecord.ID.PushID = ++_maxHotfixId;
+    hotfixRecord.ID.UniqueID = rand32();
+    _hotfixData[hotfixRecord.ID.PushID].push_back(hotfixRecord);
     return hotfixRecord;
 }
 
