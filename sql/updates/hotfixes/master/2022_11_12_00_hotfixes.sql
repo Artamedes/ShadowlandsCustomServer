@@ -202,3 +202,29 @@ LOCK TABLES `quest_line_locale` WRITE;
 /*!40000 ALTER TABLE `quest_line_locale` ENABLE KEYS */;
 UNLOCK TABLES;
 
+
+
+
+DROP TABLE IF EXISTS `campaign`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `campaign` (
+  `ID` int(11) NOT NULL DEFAULT '0',
+  `Title` text,
+  `InternalTitle` text,
+  `Description` text,
+  `UiTextureKitID` int(11) NOT NULL DEFAULT '0',
+  `RewardQuestID` int(11) NOT NULL DEFAULT '0',
+  `Prerequisite` int(11) NOT NULL DEFAULT '0',
+  `Field90135755007` int(11) NOT NULL DEFAULT '0',
+  `Completed` int(11) NOT NULL DEFAULT '0',
+  `OnlyStallIf` int(11) NOT NULL DEFAULT '0',
+  `UiQuestDetailsThemeID` int(11) NOT NULL DEFAULT '0',
+  `Flags` int(10) unsigned NOT NULL DEFAULT '0',
+  `DisplayPriority` int(11) NOT NULL DEFAULT '0',
+  `Field100245779012` int(11) NOT NULL DEFAULT '0',
+  `Field100246144013` int(11) NOT NULL DEFAULT '0',
+  `VerifiedBuild` int(11) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`ID`,`VerifiedBuild`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;

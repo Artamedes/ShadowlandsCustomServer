@@ -1,7 +1,3 @@
-ALTER TABLE `campaign`
-	ADD COLUMN `Field1002` INT(10) NOT NULL DEFAULT '0' AFTER `Field100245779012`;
-
-
 DROP TABLE IF EXISTS `pvp_talent`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;

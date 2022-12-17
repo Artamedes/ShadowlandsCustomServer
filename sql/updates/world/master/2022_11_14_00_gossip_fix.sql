@@ -1,6 +1,5 @@
 ALTER TABLE `gossip_menu_option`
-	ADD COLUMN `OptionType` INT(10) UNSIGNED NOT NULL DEFAULT '0' AFTER `OptionBroadcastTextID`,
-	ADD COLUMN `OptionNpcFlag` BIGINT UNSIGNED NOT NULL DEFAULT 0 AFTER `OptionType`;
+	ADD COLUMN `OptionType` INT(10) UNSIGNED NOT NULL DEFAULT '0' AFTER `OptionBroadcastTextID`;
 
 
 REPLACE INTO `gossip_menu_option` (`menuid`, `optionid`, `optionnpc`, `optiontext`, `optionbroadcasttextid`, `optiontype`, `optionnpcflag`, `LANGUAGE`, `actionmenuid`, `actionpoiid`, `boxcoded`, `boxmoney`, `boxtext`, `boxbroadcasttextid`, `verifiedbuild`) VALUES (0, 0, 0, 'GOSSIP_OPTION_QUESTGIVER', 0, 2, 2, 0, 0, 0, 0, 0, NULL, 0, 0);
