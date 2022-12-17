@@ -146,7 +146,7 @@ UPDATE `creature_model_info` SET `BoundingRadius`=0.60000002384185791, `CombatRe
 UPDATE `creature_model_info` SET `BoundingRadius`=0.733282029628753662, `CombatReach`=1.60000002384185791 WHERE `DisplayID`=101442;
 
 DELETE FROM `gossip_menu_option` WHERE (`MenuID`=28259 AND `OptionID` IN (54946,54948,54947)) OR (`MenuID`=28327 AND `OptionID` IN (56432,56431));
-INSERT INTO `gossip_menu_option` (`MenuID`, `OptionID`, `OptionIcon`, `OptionText`, `OptionBroadcastTextId`, `OptionNpcFlag`, `Language`, `ActionMenuID`, `ActionPoiID`, `BoxCoded`, `BoxMoney`, `BoxText`, `BoxBroadcastTextID`, `VerifiedBuild`) VALUES
+INSERT INTO `gossip_menu_option` (`MenuID`, `OptionID`, `OptionNpc`, `OptionText`, `OptionBroadcastTextId`, `OptionNpcFlag`, `Language`, `ActionMenuID`, `ActionPoiID`, `BoxCoded`, `BoxMoney`, `BoxText`, `BoxBroadcastTextID`, `VerifiedBuild`) VALUES
 (28259, 54946, 0, '<Suggest she offer a child.>', 0, 1, 0, 0, 0, 0, 0, NULL, 0, 45505),
 (28259, 54948, 0, '<Suggest she offer blood.>', 0, 1, 0, 0, 0, 0, 0, NULL, 0, 45505),
 (28259, 54947, 0, '<Suggest she offer a verse.>', 0, 1, 0, 0, 0, 0, 0, NULL, 0, 45505),

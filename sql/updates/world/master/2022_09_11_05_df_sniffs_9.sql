@@ -2009,7 +2009,7 @@ INSERT INTO `npc_vendor` (`entry`, `slot`, `item`, `maxcount`, `ExtendedCost`, `
 
 
 DELETE FROM `gossip_menu_option` WHERE (`MenuID`=28234 AND `OptionID`=54977) OR (`MenuID`=28081 AND `OptionID`=55182) OR (`MenuID`=27996 AND `OptionID`=54821) OR (`MenuID`=28103 AND `OptionID`=55419) OR (`MenuID`=28233 AND `OptionID`=54976) OR (`MenuID`=28083 AND `OptionID`=55184) OR (`MenuID`=28105 AND `OptionID`=54825) OR (`MenuID`=27998 AND `OptionID`=54935) OR (`MenuID`=28489 AND `OptionID`=55247) OR (`MenuID`=28082 AND `OptionID`=55183) OR (`MenuID`=27942 AND `OptionID`=55697) OR (`MenuID`=28102 AND `OptionID`=55418) OR (`MenuID`=28101 AND `OptionID`=55417) OR (`MenuID`=28077 AND `OptionID`=54980) OR (`MenuID`=27585 AND `OptionID`=54965);
-INSERT INTO `gossip_menu_option` (`MenuID`, `OptionID`, `OptionIcon`, `OptionText`, `OptionBroadcastTextId`, `OptionNpcFlag`, `Language`, `ActionMenuID`, `ActionPoiID`, `BoxCoded`, `BoxMoney`, `BoxText`, `BoxBroadcastTextID`, `VerifiedBuild`) VALUES
+INSERT INTO `gossip_menu_option` (`MenuID`, `OptionID`, `OptionNpc`, `OptionText`, `OptionBroadcastTextId`, `OptionNpcFlag`, `Language`, `ActionMenuID`, `ActionPoiID`, `BoxCoded`, `BoxMoney`, `BoxText`, `BoxBroadcastTextID`, `VerifiedBuild`) VALUES
 (28234, 54977, 0, 'Why can\'t you rest?', 0, 1, 0, 0, 0, 0, 0, NULL, 0, 45505),
 (28081, 55182, 0, 'Close your eyes and listen', 0, 0, 0, 0, 0, 0, 0, NULL, 0, 45505),
 (27996, 54821, 0, 'I\'m ready to see you reclaim the Azure Oathstone.', 0, 1, 0, 0, 0, 0, 0, NULL, 0, 45505),

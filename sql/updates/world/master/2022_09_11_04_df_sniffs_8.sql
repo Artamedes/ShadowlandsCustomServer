@@ -9014,7 +9014,7 @@ INSERT INTO `creature_trainer` (`CreatureID`, `TrainerID`, `MenuID`, `OptionID`)
 
 
 DELETE FROM `gossip_menu_option` WHERE (`MenuID`=27942 AND `OptionID`=55328) OR (`MenuID`=28275 AND `OptionID`=54907) OR (`MenuID`=27893 AND `OptionID`=55437) OR (`MenuID`=28259 AND `OptionID`=63841);
-INSERT INTO `gossip_menu_option` (`MenuID`, `OptionID`, `OptionIcon`, `OptionText`, `OptionBroadcastTextId`, `OptionNpcFlag`, `Language`, `ActionMenuID`, `ActionPoiID`, `BoxCoded`, `BoxMoney`, `BoxText`, `BoxBroadcastTextID`, `VerifiedBuild`) VALUES
+INSERT INTO `gossip_menu_option` (`MenuID`, `OptionID`, `OptionNpc`, `OptionText`, `OptionBroadcastTextId`, `OptionNpcFlag`, `Language`, `ActionMenuID`, `ActionPoiID`, `BoxCoded`, `BoxMoney`, `BoxText`, `BoxBroadcastTextID`, `VerifiedBuild`) VALUES
 (27942, 55328, 0, 'I need a \"Bag of Helpful Goods\" for Kalecgos.', 0, 1, 0, 0, 0, 0, 0, NULL, 0, 45505),
 (28275, 54907, 0, 'So you\'re not here to hunt?', 0, 1, 0, 0, 0, 0, 0, NULL, 0, 45505),
 (27893, 55437, 3, 'Please teach me how to fish.', 0, 16, 0, 0, 0, 0, 0, NULL, 0, 45505),

@@ -14998,7 +14998,7 @@ INSERT INTO `gossip_menu_addon` (`MenuID`, `FriendshipFactionID`, `VerifiedBuild
 (24872, 2464, 45745); -- 173277 (Teendynneetll)
 
 DELETE FROM `gossip_menu_option` WHERE (`OptionID`=0 AND `MenuID` IN (24702,24842,24703,24704,26642,24872,25680,26021)) OR (`OptionID`=2 AND `MenuID` IN (9821,26021)) OR (`OptionID`=1 AND `MenuID` IN (24842,25680,26021));
-INSERT INTO `gossip_menu_option` (`MenuID`, `OptionID`, `OptionIcon`, `OptionText`, `OptionBroadcastTextId`, `OptionNpcFlag`, `Language`, `ActionMenuID`, `ActionPoiID`, `BoxCoded`, `BoxMoney`, `BoxText`, `BoxBroadcastTextID`, `VerifiedBuild`) VALUES
+INSERT INTO `gossip_menu_option` (`MenuID`, `OptionID`, `OptionNpc`, `OptionText`, `OptionBroadcastTextId`, `OptionNpcFlag`, `Language`, `ActionMenuID`, `ActionPoiID`, `BoxCoded`, `BoxMoney`, `BoxText`, `BoxBroadcastTextID`, `VerifiedBuild`) VALUES
 (24702, 0, 0, 'Who are you?', 25092, 1, 0, 24703, 0, 0, 0, NULL, 0, 45745), -- OptionBroadcastTextID: 25092 - 38470 - 47091 - 47632 - 62792 - 65124 - 79414 - 97339 - 153888 - 161428 - 166571 - 176081 - 185133
 (24842, 0, 1, 'I would like to buy from you.', 2583, 128, 0, 0, 0, 0, 0, NULL, 0, 45745), -- OptionBroadcastTextID: 2583 - 6399 - 7142 - 9992 - 14967
 (24703, 0, 0, 'What happened?', 38334, 1, 0, 24704, 0, 0, 0, NULL, 0, 45745), -- OptionBroadcastTextID: 38334 - 43416 - 78944 - 141209 - 176470 - 197765

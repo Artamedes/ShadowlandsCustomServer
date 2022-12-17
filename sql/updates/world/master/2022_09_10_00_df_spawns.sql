@@ -2298,7 +2298,7 @@ UPDATE `creature_model_info` SET `BoundingRadius`=0.800000011920928955, `Verifie
 
 
 DELETE FROM `gossip_menu_option` WHERE (`MenuID`=27579 AND `OptionID`=53883) OR (`MenuID`=28626 AND `OptionID`=55626) OR (`MenuID`=21043 AND `OptionID` IN (46950,46949)) OR (`MenuID`=27578 AND `OptionID`=53882) OR (`MenuID`=28582 AND `OptionID`=55582) OR (`MenuID`=27576 AND `OptionID`=54035);
-INSERT INTO `gossip_menu_option` (`MenuID`, `OptionID`, `OptionIcon`, `OptionText`, `OptionBroadcastTextId`, `OptionNpcFlag`, `Language`, `ActionMenuID`, `ActionPoiID`, `BoxCoded`, `BoxMoney`, `BoxText`, `BoxBroadcastTextID`, `VerifiedBuild`) VALUES
+INSERT INTO `gossip_menu_option` (`MenuID`, `OptionID`, `OptionNpc`, `OptionText`, `OptionBroadcastTextId`, `OptionNpcFlag`, `Language`, `ActionMenuID`, `ActionPoiID`, `BoxCoded`, `BoxMoney`, `BoxText`, `BoxBroadcastTextID`, `VerifiedBuild`) VALUES
 (27579, 53883, 0, 'We need artisans for an expedition to the Dragon Isles. Will you join us?', 0, 1, 0, 0, 0, 0, 0, NULL, 0, 45505),
 (28626, 55626, 0, '<Ask Khadgar what happened.>', 0, 1, 0, 0, 0, 0, 0, NULL, 0, 45505),
 (21043, 46950, 1, 'I would like to buy from you.', 2583, 128, 0, 0, 0, 0, 0, NULL, 0, 45505), -- OptionBroadcastTextID: 2583 - 6399 - 7142 - 9992 - 14967

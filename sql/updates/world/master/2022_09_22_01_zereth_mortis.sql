@@ -9445,7 +9445,7 @@ INSERT INTO `gossip_menu` (`MenuID`, `TextID`, `VerifiedBuild`) VALUES
 
 UPDATE `gossip_menu` SET `VerifiedBuild`=45338 WHERE (`TextID`=43662 AND `MenuID` IN (27680,27370));
 DELETE FROM `gossip_menu_option` WHERE (`OptionID`=0 AND `MenuID` IN (27680,27370));
-INSERT INTO `gossip_menu_option` (`MenuID`, `OptionID`, `OptionIcon`, `OptionText`, `OptionBroadcastTextId`, `OptionNpcFlag`, `Language`, `ActionMenuID`, `ActionPoiID`, `BoxCoded`, `BoxMoney`, `BoxText`, `BoxBroadcastTextID`, `VerifiedBuild`) VALUES
+INSERT INTO `gossip_menu_option` (`MenuID`, `OptionID`, `OptionNpc`, `OptionText`, `OptionBroadcastTextId`, `OptionNpcFlag`, `Language`, `ActionMenuID`, `ActionPoiID`, `BoxCoded`, `BoxMoney`, `BoxText`, `BoxBroadcastTextID`, `VerifiedBuild`) VALUES
 (27680, 0, 1, 'How may I help you?', 30864, 128, 0, 0, 0, 0, 0, NULL, 0, 45338), -- OptionBroadcastTextID: 30864 - 32778 - 32779 - 32780 - 53142 - 53144 - 58309 - 61023 - 61839 - 62303 - 98955 - 113783
 (27370, 0, 1, 'How may I help you?', 30864, 128, 0, 0, 0, 0, 0, NULL, 0, 45338); -- OptionBroadcastTextID: 30864 - 32778 - 32779 - 32780 - 53142 - 53144 - 58309 - 61023 - 61839 - 62303 - 98955 - 113783
 
