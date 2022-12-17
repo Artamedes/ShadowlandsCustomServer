@@ -669,9 +669,6 @@ struct VendorItem
     uint32 PlayerConditionId;
     bool IgnoreFiltering;
     ItemContext Context = ItemContext::Vendor;
-
-    //helpers
-    bool IsGoldRequired(ItemTemplate const* pProto) const;
 };
 
 struct VendorItemData
