@@ -2065,7 +2065,7 @@ struct CharStartOutfitMeta
             { FT_INT, 24, true },
             { FT_INT, 1, false },
         };
-        static constexpr DB2Meta instance(0, -1, 7, 6, 0x3CF88584, fields, 6);
+        static constexpr DB2Meta instance(1237591, -1, 7, 6, 0x3CF88584, fields, 6);
         return &instance;
     }
 };

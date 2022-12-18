@@ -136,6 +136,7 @@ DB2FileInfo const DBFilesClientList[] =
     { 972425, "CharShipment.db2" },
     { 972405, "CharShipmentContainer.db2" },
     { 3055696, "CharStartKit.db2" },
+    { 1237591, "CharStartOutfit.db2" },
     { 1349054, "CharTitles.db2" },
     { 1369752, "CharacterFacialHairStyles.db2" },
     { 1344281, "CharacterLoadout.db2" },

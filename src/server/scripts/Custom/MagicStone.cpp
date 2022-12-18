@@ -20,7 +20,7 @@ void MagicStoneMgr::LoadFromDB()
     m_MagicStoneActions.clear();
     m_MagicStoneMenuTexts.clear();
 
-    QueryResult result = WorldDatabase.Query("SELECT MenuID, `Text`, ExtraText, ActionID, GossipOptionNpc, ConditionID FROM z_magicstone_menus ORDER by ordering;");
+    QueryResult result = WorldDatabase.Query("SELECT MenuID, `Text`, ExtraText, ActionID, GossipOptionIcon, ConditionID FROM z_magicstone_menus ORDER by ordering;");
     if (result)
     {
         do

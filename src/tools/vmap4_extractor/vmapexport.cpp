@@ -62,7 +62,7 @@ std::vector<MapEntry> map_ids; // partitioned by parent maps first
 std::unordered_set<uint32> maps_that_are_parents;
 boost::filesystem::path input_path;
 bool preciseVectorData = true;
-char const* CascProduct = "wow_beta";
+char const* CascProduct = "wow";
 char const* CascRegion = "us";
 bool UseRemoteCasc = false;
 uint32 DbcLocale = 0;

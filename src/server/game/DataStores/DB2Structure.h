@@ -1453,10 +1453,10 @@ struct FactionEntry
     uint16 ParentFactionID;
     uint8 Expansion;
     uint32 FriendshipRepID;
-    uint8 Flags;
+    int32 Flags;
     uint16 ParagonFactionID;
-    uint32 RenownFactionID;
-    uint32 RenownCurrencyID;
+    int32 RenownFactionID;
+    int32 RenownCurrencyID;
     std::array<int16, 4> ReputationClassMask;
     std::array<uint16, 4> ReputationFlags;
     std::array<int32, 4> ReputationBase;
