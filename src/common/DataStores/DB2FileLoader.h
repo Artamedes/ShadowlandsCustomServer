@@ -75,7 +75,7 @@ struct DB2FieldMeta
 
 struct TC_COMMON_API DB2FileLoadInfo
 {
-    constexpr explicit DB2FileLoadInfo(DB2FieldMeta const* fields, std::size_t fieldCount, DB2Meta const* meta)
+    DB2FileLoadInfo(DB2FieldMeta const* fields, std::size_t fieldCount, DB2Meta const* meta)
         : Fields(fields), FieldCount(fieldCount), Meta(meta) { }
 
     uint32 GetStringFieldCount(bool localizedOnly) const;
