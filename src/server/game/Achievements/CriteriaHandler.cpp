@@ -488,6 +488,9 @@ void CriteriaHandler::UpdateCriteria(CriteriaType type, uint64 miscValue1 /*= 0*
     CriteriaList const& criteriaList = GetCriteriaByType(type, uint32(miscValue1));
     for (Criteria const* criteria : criteriaList)
     {
+        if (!criteria)
+            continue;
+
         CriteriaTreeList const* trees = sCriteriaMgr->GetCriteriaTreesByCriteria(criteria->ID);
         if (!CanUpdateCriteria(criteria, trees, miscValue1, miscValue2, miscValue3, ref, referencePlayer))
             continue;
