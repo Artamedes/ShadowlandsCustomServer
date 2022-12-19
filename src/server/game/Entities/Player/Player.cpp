@@ -18380,8 +18380,8 @@ bool Player::LoadFromDB(ObjectGuid guid, CharacterDatabaseQueryHolder const& hol
             SetLootSpecId(lootSpecId);
 
     UpdateDisplayPower();
-    //_LoadTalents(holder.GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_TALENTS));
-    //_LoadPvpTalents(holder.GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_PVP_TALENTS));
+    _LoadTalents(holder.GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_TALENTS));
+    _LoadPvpTalents(holder.GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_PVP_TALENTS));
     _LoadSpells(holder.GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_SPELLS), holder.GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_SPELL_FAVORITES));
     GetSession()->GetCollectionMgr()->LoadToys();
     GetSession()->GetCollectionMgr()->LoadHeirlooms();
@@ -27571,6 +27571,22 @@ void Player::_LoadGlyphs(PreparedQueryResult result)
     // SELECT talentGroup, glyphId from character_glyphs WHERE guid = ?
     if (!result)
         return;
+
+    do
+    {
+        Field* fields = result->Fetch();
+
+        uint8 spec = fields[0].GetUInt8();
+        if (spec >= MAX_SPECIALIZATIONS || !sDB2Manager.GetChrSpecializationByIndex(GetClass(), spec))
+            continue;
+
+        uint16 glyphId = fields[1].GetUInt16();
+        if (!sGlyphPropertiesStore.LookupEntry(glyphId))
+            continue;
+
+        GetGlyphs(spec).push_back(glyphId);
+
+    } while (result->NextRow());
 }
 
 void Player::_SaveGlyphs(CharacterDatabaseTransaction trans) const
@@ -27578,6 +27594,21 @@ void Player::_SaveGlyphs(CharacterDatabaseTransaction trans) const
     CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHAR_GLYPHS);
     stmt->setUInt64(0, GetGUID().GetCounter());
     trans->Append(stmt);
+
+    for (uint8 spec = 0; spec < MAX_SPECIALIZATIONS; ++spec)
+    {
+        for (uint32 glyphId : GetGlyphs(spec))
+        {
+            uint8 index = 0;
+
+            stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_CHAR_GLYPHS);
+            stmt->setUInt64(index++, GetGUID().GetCounter());
+            stmt->setUInt8(index++, spec);
+            stmt->setUInt16(index++, uint16(glyphId));
+
+            trans->Append(stmt);
+        }
+    }
 }
 
 void Player::_LoadTalents(PreparedQueryResult result)
