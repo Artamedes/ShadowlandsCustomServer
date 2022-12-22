@@ -736,6 +736,8 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
         typedef std::function<void(Map*)> FarSpellCallback;
         void AddFarSpellCallback(FarSpellCallback&& callback);
 
+        void UpdateSpawnGroupConditions();
+
     private:
         // Type specific code for add/remove to/from grid
         template<class T>
@@ -798,7 +800,6 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
         }
 
         void SetSpawnGroupActive(uint32 groupId, bool state);
-        void UpdateSpawnGroupConditions();
         std::unordered_set<uint32> _toggledSpawnGroupIds;
 
         uint32 _respawnCheckTimer;
