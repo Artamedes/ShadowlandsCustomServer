@@ -5979,9 +5979,16 @@ void Player::ApplyRatingMod(CombatRating combatRating, int32 value, bool apply)
     UpdateRating(combatRating);
 }
 
+void ApplyPercentModFloatVar_(float& var, float val, bool apply)
+{
+    if (val == -100.0f)     // prevent set var to zero
+        val = -99.99f;
+    var *= (apply ? (100.0f + val) / 100.0f : 100.0f / (100.0f + val));
+}
+
 void Player::UpdateRating(CombatRating cr)
 {
-    int32 amount = m_baseRatingValue[cr];
+    float amount = m_baseRatingValue[cr];
     for (AuraEffect const* aurEff : GetAuraEffectsByType(SPELL_AURA_MOD_COMBAT_RATING_FROM_COMBAT_RATING))
     {
         if (aurEff->GetMiscValueB() & (1 << cr))
@@ -6048,6 +6055,67 @@ void Player::UpdateRating(CombatRating cr)
         //UpdateEnergyRegen();
         //UpdateFocusRegen();
         UpdateAllRunesRegen();
+
+        /// Haste cap handling
+        auto GetItemDelayBySlot([&](EquipmentSlots slot) -> uint32
+        {
+            auto item = GetItemByPos(INVENTORY_SLOT_BAG_0, slot);
+            return item ? item->GetTemplate()->GetDelay() : 2000u;
+        });
+
+        // SPELL_AURA_MOD_MELEE_RANGED_HASTE
+        // SPELL_AURA_MELEE_SLOW
+        // SPELL_AURA_MOD_ATTACKSPEED
+        // SPELL_AURA_MOD_MELEE_HASTE
+        // SPELL_AURA_MOD_RANGED_HASTE
+        // SPELL_AURA_MOD_RANGED_AMMO_HASTE
+        auto ApplyHasteAuraIfNeed([&](AuraType aura)
+        {
+            std::map<SpellGroup, int32> SameEffectSpellGroup2;
+            auto const& hasteAuras = ToPlayer()->GetAuraEffectsByType(aura);
+            for (auto iter = hasteAuras.begin(); iter != hasteAuras.end(); ++iter)
+            {
+                if (!sSpellMgr->AddSameEffectStackRuleSpellGroups((*iter)->GetSpellInfo(), aura, (*iter)->GetAmount(), SameEffectSpellGroup2))
+                {
+                  //  ChatHandler(GetSession()).PSendSysMessage("Applying %s before haste %f", (*iter)->GetSpellInfo()->SpellName[0], amount);
+                    ApplyPercentModFloatVar_(amount, (*iter)->GetAmount(), true);
+                 //   ChatHandler(GetSession()).PSendSysMessage("Applying %s after haste %f", (*iter)->GetSpellInfo()->SpellName[0], amount);
+                }
+            }
+        });
+
+        ApplyHasteAuraIfNeed(SPELL_AURA_MOD_MELEE_RANGED_HASTE);
+        ApplyHasteAuraIfNeed(SPELL_AURA_MELEE_SLOW);
+        ApplyHasteAuraIfNeed(SPELL_AURA_MOD_ATTACKSPEED);
+        ApplyHasteAuraIfNeed(SPELL_AURA_MOD_MELEE_HASTE);
+        ApplyHasteAuraIfNeed(SPELL_AURA_MOD_RANGED_HASTE);
+
+        if (amount == 0)
+            amount = 1;
+
+        const uint32 HasteCap = 15000;
+
+        auto GetNewWeaponSpeedFromDelay([&](EquipmentSlots slot) -> float
+        {
+            return std::max(10.0f, GetItemDelayBySlot(slot) * (1.0f - (amount / HasteCap)));
+        });
+
+        switch (cr)
+        {
+            case CR_HASTE_MELEE:
+            {
+                SetBaseAttackTime(BASE_ATTACK, GetNewWeaponSpeedFromDelay(EquipmentSlots::EQUIPMENT_SLOT_MAINHAND));
+                SetBaseAttackTime(OFF_ATTACK, GetNewWeaponSpeedFromDelay(EquipmentSlots::EQUIPMENT_SLOT_MAINHAND));
+                break;
+            }
+            case CR_HASTE_RANGED:
+            {
+                SetBaseAttackTime(RANGED_ATTACK, GetNewWeaponSpeedFromDelay(EquipmentSlots::EQUIPMENT_SLOT_MAINHAND));
+                break;
+            }
+            default:
+                break;
+        }
     }
 
     bool affectStats = CanModifyStats();
