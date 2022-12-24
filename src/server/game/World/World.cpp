@@ -1156,6 +1156,7 @@ void World::LoadConfigSettings(bool reload)
     m_int_configs[CONFIG_CHALLENGE_MANUAL_AFFIX3] = sConfigMgr->GetIntDefault("Challenge.Manual.Affix3", 0);
     m_int_configs[CONFIG_CHALLENGE_MANUAL_AFFIX4] = sConfigMgr->GetIntDefault("Challenge.Manual.Affix4", 0);
     m_int_configs[CONFIG_CHALLENGE_SEASON_ID] = sConfigMgr->GetIntDefault("Challenge.Season", -1);
+    m_int_configs[CONFIG_HASTE_CAP] = sConfigMgr->GetIntDefault("HasteCap", 0);
 
     m_int_configs[CONFIG_DAILY_QUEST_RESET_TIME_HOUR] = sConfigMgr->GetIntDefault("Quests.DailyResetTime", 3);
     if (m_int_configs[CONFIG_DAILY_QUEST_RESET_TIME_HOUR] > 23)

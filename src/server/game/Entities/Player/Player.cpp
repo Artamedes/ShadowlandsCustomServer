@@ -6093,7 +6093,7 @@ void Player::UpdateRating(CombatRating cr)
         if (amount == 0)
             amount = 1;
 
-        const uint32 HasteCap = 15000;
+        const uint32 HasteCap = sWorld->getIntConfig(WorldIntConfigs::CONFIG_HASTE_CAP);
 
         auto GetNewWeaponSpeedFromDelay([&](EquipmentSlots slot) -> float
         {

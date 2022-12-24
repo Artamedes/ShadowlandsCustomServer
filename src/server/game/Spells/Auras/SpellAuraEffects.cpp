@@ -815,8 +815,13 @@ void AuraEffect::CalculatePeriodic(Unit* caster, bool resetPeriodicTimer /*= tru
 
         if (caster)
         {
+            uint32 hasteCap = sWorld->getIntConfig(WorldIntConfigs::CONFIG_HASTE_CAP);
+
+            bool isPlayer = modOwner;
+            bool ignoreChanneledSpellHastes = hasteCap > 0;
+
             // Haste modifies periodic time of channeled spells
-            if (m_spellInfo->IsChanneled() && !modOwner) // modOwner added customly!
+            if (m_spellInfo->IsChanneled() && (!ignoreChanneledSpellHastes || !modOwner)) // modOwner added customly!
             {
                 if (m_spellInfo->HasAttribute(SPELL_ATTR5_SPELL_HASTE_AFFECTS_PERIODIC))
                     caster->ModSpellDurationTime(m_spellInfo, _period);
@@ -828,19 +833,38 @@ void AuraEffect::CalculatePeriodic(Unit* caster, bool resetPeriodicTimer /*= tru
             {
                 float ModCastingSpeed = *caster->m_unitData->ModCastingSpeed;
 
-                if (m_spellInfo->HasAttribute(SPELL_ATTR5_SPELL_HASTE_AFFECTS_PERIODIC))
-                    _period = int32(_period * ModCastingSpeed);
-
-                if (m_spellInfo->HasAttribute(SPELL_ATTR8_HASTE_AFFECTS_DURATION))
+                if (!hasteCap || !modOwner)
                 {
-                    int32 _duration = GetBase()->GetMaxDuration() * ModCastingSpeed;
-                    GetBase()->SetMaxDuration(_duration);
-                    GetBase()->SetDuration(_duration);
+                    if (m_spellInfo->HasAttribute(SPELL_ATTR5_SPELL_HASTE_AFFECTS_PERIODIC))
+                        _period = int32(_period * ModCastingSpeed);
+
+                    if (m_spellInfo->HasAttribute(SPELL_ATTR8_HASTE_AFFECTS_DURATION))
+                    {
+                        int32 _duration = GetBase()->GetMaxDuration() * ModCastingSpeed;
+                        GetBase()->SetMaxDuration(_duration);
+                        GetBase()->SetDuration(_duration);
+                    }
+
+                    if (m_spellInfo->HasAttribute(SPELL_ATTR8_MELEE_HASTE_AFFECTS_PERIODIC)) // SPELL_ATTR8_MELEE_HASTE_AFFECTS_PERIODIC
+                        _period = int32(_period * ModCastingSpeed);
+                }
+                else if (modOwner && _period > 0)
+                {
+                    uint32 currHaste = modOwner->m_activePlayerData->CombatRatings[CR_HASTE_SPELL];
+
+                    // The below code takes our haste and divides it by the haste cap, then multiplies it by the period.
+                    if (m_spellInfo->HasAttribute(SPELL_ATTR5_SPELL_HASTE_AFFECTS_PERIODIC))
+                        _period = (int32)std::max(100.0f, _period * (1.0f - (currHaste / hasteCap)));
+                    else if (m_spellInfo->HasAttribute(SPELL_ATTR8_MELEE_HASTE_AFFECTS_PERIODIC))
+                    {
+                        currHaste = modOwner->m_activePlayerData->CombatRatings[CR_HASTE_MELEE];
+                        _period = (int32)std::max(100.0f, _period * (1.0f - (currHaste / hasteCap)));
+                    }
+
+                    // With haste cap we don't want to affect dot durations. so SPELL_ATTR8_HASTE_AFFECTS_DURATION is not handled anymore.
                 }
 
-                if (m_spellInfo->HasAttribute(SPELL_ATTR8_MELEE_HASTE_AFFECTS_PERIODIC)) // SPELL_ATTR8_MELEE_HASTE_AFFECTS_PERIODIC
-                    _period = int32(_period * ModCastingSpeed);
-
+                
                 if (IsDoublProcced)
                     _period /= 2.0f;
             }
