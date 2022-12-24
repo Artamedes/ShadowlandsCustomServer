@@ -75,7 +75,7 @@ uint32 GossipMenu::AddMenuItem(int32 gossipOptionId, int32 orderIndex, GossipOpt
     }
 
     if (!gossipOptionId)
-        gossipOptionId = -(int32(_menuId) * 100 + orderIndex);
+        gossipOptionId = (int32(_menuId) * 100 + orderIndex);
 
     auto where = std::lower_bound(_menuItems.begin(), _menuItems.end(), orderIndex, [](GossipMenuItem const& item, int32 index)
     {
