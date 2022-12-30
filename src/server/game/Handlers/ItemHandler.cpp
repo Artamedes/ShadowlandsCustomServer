@@ -21,6 +21,7 @@
 #include "Creature.h"
 #include "DatabaseEnv.h"
 #include "DB2Stores.h"
+#include "GossipDef.h"
 #include "Item.h"
 #include "ItemPackets.h"
 #include "Log.h"
@@ -97,13 +98,13 @@ void WorldSession::HandleSwapInvItemOpcode(WorldPackets::Item::SwapInvItem& swap
 
     if (_player->IsBankPos(INVENTORY_SLOT_BAG_0, swapInvItem.Slot1) && !CanUseBank())
     {
-        TC_LOG_DEBUG("network", "HandleSwapInvItemOpcode - Unit (%s) not found or you can't interact with him.", m_currentBankerGUID.ToString().c_str());
+        TC_LOG_DEBUG("network", "HandleSwapInvItemOpcode - Unit (%s) not found or you can't interact with him.", _player->PlayerTalkClass->GetInteractionData().SourceGuid.ToString().c_str());
         return;
     }
 
     if (_player->IsBankPos(INVENTORY_SLOT_BAG_0, swapInvItem.Slot2) && !CanUseBank())
     {
-        TC_LOG_DEBUG("network", "HandleSwapInvItemOpcode - Unit (%s) not found or you can't interact with him.", m_currentBankerGUID.ToString().c_str());
+        TC_LOG_DEBUG("network", "HandleSwapInvItemOpcode - Unit (%s) not found or you can't interact with him.", _player->PlayerTalkClass->GetInteractionData().SourceGuid.ToString().c_str());
         return;
     }
 
@@ -161,13 +162,13 @@ void WorldSession::HandleSwapItem(WorldPackets::Item::SwapItem& swapItem)
 
     if (_player->IsBankPos(swapItem.ContainerSlotA, swapItem.SlotA) && !CanUseBank())
     {
-        TC_LOG_DEBUG("network", "HandleSwapItem - Unit (%s) not found or you can't interact with him.", m_currentBankerGUID.ToString().c_str());
+        TC_LOG_DEBUG("network", "HandleSwapItem - Unit (%s) not found or you can't interact with him.", _player->PlayerTalkClass->GetInteractionData().SourceGuid.ToString().c_str());
         return;
     }
 
     if (_player->IsBankPos(swapItem.ContainerSlotB, swapItem.SlotB) && !CanUseBank())
     {
-        TC_LOG_DEBUG("network", "HandleSwapItem - Unit (%s) not found or you can't interact with him.", m_currentBankerGUID.ToString().c_str());
+        TC_LOG_DEBUG("network", "HandleSwapItem - Unit (%s) not found or you can't interact with him.", _player->PlayerTalkClass->GetInteractionData().SourceGuid.ToString().c_str());
         return;
     }
 
@@ -1195,9 +1196,9 @@ bool WorldSession::CanUseBank(ObjectGuid bankerGUID) const
 {
     // bankerGUID parameter is optional, set to 0 by default.
     if (!bankerGUID)
-        bankerGUID = m_currentBankerGUID;
+        bankerGUID = _player->PlayerTalkClass->GetInteractionData().SourceGuid;
 
-    bool isUsingBankCommand = (bankerGUID == GetPlayer()->GetGUID() && bankerGUID == m_currentBankerGUID);
+    bool isUsingBankCommand = (bankerGUID == GetPlayer()->GetGUID() && bankerGUID == _player->PlayerTalkClass->GetInteractionData().SourceGuid);
 
     if (!isUsingBankCommand)
     {
