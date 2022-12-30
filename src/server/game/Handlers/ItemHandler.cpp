@@ -571,7 +571,7 @@ void WorldSession::HandleBuyItemOpcode(WorldPackets::Item::BuyItem& packet)
                 bag = INVENTORY_SLOT_BAG_0;
 
             GetPlayer()->BuyItemFromVendorSlot(packet.VendorGUID, packet.Muid, packet.Item.ItemID,
-                packet.Quantity, bag, packet.Slot);
+                packet.Quantity == -1 ? 1 : packet.Quantity, bag, packet.Slot);
             break;
         }
         case ITEM_VENDOR_TYPE_CURRENCY:
