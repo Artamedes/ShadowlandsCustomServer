@@ -141,40 +141,14 @@ EnumCharactersResult::CharacterInfo::CharacterInfo(Field* fields)
 
     LastLoginVersion = fields[22].GetUInt32();
 
-    uint32 size = equipment.size();
-
-    uint32 retardedInt = 0;
-    uint32 index = 0;
-    for (uint8 slot = 0; slot < equipment.size(); ++slot)
+    for (uint8 slot = 0; slot < REAGENT_BAG_SLOT_END; ++slot)
     {
-        auto data = Trinity::StringTo<uint32>(equipment[slot]).value_or(0);
-
-        // FFS
-        switch (retardedInt)
-        {
-            case 0:
-                VisualItems[index].InvType = data;
-                retardedInt++;
-                break;
-            case 1:
-                VisualItems[index].DisplayID = data;
-                retardedInt++;
-                break;
-            case 2:
-                VisualItems[index].DisplayEnchantID = data;
-                retardedInt++;
-                break;
-            case 3:
-                VisualItems[index].Subclass = data;
-                retardedInt++;
-                break;
-            case 4:
-                VisualItems[index].SecondaryItemModifiedAppearanceID = data;
-                retardedInt = 0;
-                ++index;
-                break;
-        }
-
+        uint32 visualBase = slot * 5;
+        VisualItems[slot].InvType = Trinity::StringTo<uint8>(equipment[visualBase + 0]).value_or(0);
+        VisualItems[slot].DisplayID = Trinity::StringTo<uint32>(equipment[visualBase + 1]).value_or(0);
+        VisualItems[slot].DisplayEnchantID = Trinity::StringTo<uint32>(equipment[visualBase + 2]).value_or(0);
+        VisualItems[slot].Subclass = Trinity::StringTo<uint8>(equipment[visualBase + 3]).value_or(0);
+        VisualItems[slot].SecondaryItemModifiedAppearanceID = Trinity::StringTo<int32>(equipment[visualBase + 4]).value_or(0);
     }
 }
 
