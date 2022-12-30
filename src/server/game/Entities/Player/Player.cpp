@@ -27776,12 +27776,13 @@ void Player::_LoadTraits(PreparedQueryResult configsResult, PreparedQueryResult 
             for (auto&& [_, traitEntry] : Trinity::Containers::MapEqualRange(traitEntriesByConfig, traitConfig.ID))
                 traitConfig.Entries.emplace_back() = traitEntry;
 
-            if (TraitMgr::ValidateConfig(traitConfig, this) != TALENT_LEARN_OK)
-            {
-                traitConfig.Entries.clear();
-                for (UF::TraitEntry const& grantedEntry : TraitMgr::GetGrantedTraitEntriesForConfig(traitConfig, this))
-                    traitConfig.Entries.emplace_back(grantedEntry);
-            }
+            // cba debugging
+            //if (TraitMgr::ValidateConfig(traitConfig, this) != TALENT_LEARN_OK)
+            //{
+            //    traitConfig.Entries.clear();
+            //    for (UF::TraitEntry const& grantedEntry : TraitMgr::GetGrantedTraitEntriesForConfig(traitConfig, this))
+            //        traitConfig.Entries.emplace_back(grantedEntry);
+            //}
 
             AddTraitConfig(traitConfig);
 

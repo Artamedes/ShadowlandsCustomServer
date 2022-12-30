@@ -293,9 +293,26 @@ std::vector<Tree const*> const* GetTreesForConfig(WorldPackets::Traits::TraitCon
     switch (traitConfig.Type)
     {
         case TraitConfigType::Combat:
-            if (ChrSpecializationEntry const* chrSpecializationEntry = sChrSpecializationStore.LookupEntry(traitConfig.ChrSpecializationID))
-                return Trinity::Containers::MapGetValuePtr(_traitTreesBySkillLine, _skillLinesByClass[chrSpecializationEntry->ClassID]);
-            break;
+        {
+            std::set<int32> traitTreeIds;
+
+            for (auto traitTreeLoadoutEntry : sTraitTreeLoadoutEntryStore)
+                if (auto traitTreeLoadout = sTraitTreeLoadoutStore.LookupEntry(traitTreeLoadoutEntry->TraitTreeLoadoutID))
+                    if (traitTreeLoadout->ChrSpecializationID == traitConfig.ChrSpecializationID)
+                        traitTreeIds.insert(traitTreeLoadout->TraitTreeID);
+                
+            std::vector<Tree const*> trees;
+
+            for (auto traitTreeId : traitTreeIds)
+                if (auto tree = Trinity::Containers::MapGetValuePtr(_traitTrees, traitTreeId))
+                    trees.push_back(tree);
+
+            return &trees;
+
+            //if (ChrSpecializationEntry const* chrSpecializationEntry = sChrSpecializationStore.LookupEntry(traitConfig.ChrSpecializationID))
+            //    return Trinity::Containers::MapGetValuePtr(_traitTreesBySkillLine, _skillLinesByClass[chrSpecializationEntry->ClassID]);
+            //break;
+        }
         case TraitConfigType::Profession:
             return Trinity::Containers::MapGetValuePtr(_traitTreesBySkillLine, traitConfig.SkillLineID);
         case TraitConfigType::Generic:

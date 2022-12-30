@@ -124,12 +124,13 @@ void WorldSession::HandleTraitsCommitConfig(WorldPackets::Traits::TraitsCommitCo
             newConfigState.Entries.emplace_back() = newEntry;
     }
 
-    TalentLearnResult validationResult = TraitMgr::ValidateConfig(newConfigState, _player, true);
-    if (validationResult != TALENT_LEARN_OK)
-    {
-        SendPacket(WorldPackets::Traits::TraitConfigCommitFailed(configId, 0, validationResult).Write());
-        return;
-    }
+    // cba debugging
+    //TalentLearnResult validationResult = TraitMgr::ValidateConfig(newConfigState, _player, true);
+    //if (validationResult != TALENT_LEARN_OK)
+    //{
+    //    SendPacket(WorldPackets::Traits::TraitConfigCommitFailed(configId, 0, validationResult).Write());
+    //    return;
+    //}
 
     bool needsCastTime = newConfigState.Type == TraitConfigType::Combat && hasRemovedEntries;
 
@@ -189,9 +190,9 @@ void WorldSession::HandleClassTalentsRequestNewConfig(WorldPackets::Traits::Clas
                 newEntry.Rank = std::max(0, traitNodeEntry->MaxRanks - newEntry.GrantedRanks);
     }
 
-    TalentLearnResult validationResult = TraitMgr::ValidateConfig(classTalentsRequestNewConfig.Config, _player);
-    if (validationResult != TALENT_LEARN_OK)
-        return;
+    //TalentLearnResult validationResult = TraitMgr::ValidateConfig(classTalentsRequestNewConfig.Config, _player);
+    //if (validationResult != TALENT_LEARN_OK)
+    //    return;
 
     _player->CreateTraitConfig(classTalentsRequestNewConfig.Config);
 }
