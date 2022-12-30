@@ -47,9 +47,11 @@ class Creature;
 class InstanceLock;
 class Item;
 class LoginQueryHolder;
+class MessageBuffer;
 class Player;
 class Unit;
 class Warden;
+class WorldPacket;
 class WorldSession;
 class WorldSocket;
 struct AuctionPosting;
@@ -887,14 +889,8 @@ namespace WorldPackets
         class ConsumableTokenCanVeteranBuy;
         class BattlePayAckFailedResponse;
     }
-
-    class Null final : public ClientPacket
-    {
-    public:
-        Null(WorldPacket&& packet) : ClientPacket(std::move(packet)) { }
-
-        void Read() override { _worldPacket.rfinish(); }
-    };
+    
+    class Null;
 }
 
 namespace google
@@ -1907,7 +1903,7 @@ class TC_GAME_API WorldSession
         void SendBattlenetRequest(uint32 serviceHash, uint32 methodId, pb::Message const* request);
 
         std::array<uint8, 32> const& GetRealmListSecret() const { return _realmListSecret; }
-        void SetRealmListSecret(std::array<uint8, 32> const& secret) { memcpy(_realmListSecret.data(), secret.data(), secret.size()); }
+        void SetRealmListSecret(std::array<uint8, 32> const& secret) { _realmListSecret = secret; }
 
         std::unordered_map<uint32, uint8> const& GetRealmCharacterCounts() const { return _realmCharacterCounts; }
 
