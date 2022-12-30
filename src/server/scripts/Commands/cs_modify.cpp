@@ -90,6 +90,7 @@ public:
             { "souls",        rbac::RBAC_PERM_COMMAND_MODIFY_POWER,        false, &HandleModifySoulsCommand,         "" },
             { "covenant",     rbac::RBAC_PERM_COMMAND_MODIFY_POWER,        false, &HandleModifyCovenantCommand,      "" },
             { "soulbind",     rbac::RBAC_PERM_COMMAND_MODIFY_POWER,        false, &HandleModifySoulbindCommand,      "" },
+            { "haste",        rbac::RBAC_PERM_COMMAND_MODIFY_POWER,        false, &HandleModifyHasteCommand,         "" },
         };
         static std::vector<ChatCommand> commandTable =
         {
@@ -98,6 +99,24 @@ public:
             { "modify",  rbac::RBAC_PERM_COMMAND_MODIFY,  false, nullptr,                 "", modifyCommandTable },
         };
         return commandTable;
+    }
+
+    static bool HandleModifyHasteCommand(ChatHandler* handler, float haste, Optional<bool> off)
+    {
+        auto player = handler->GetPlayer();
+
+        if (off.value_or(false))
+        {
+            player->Variables.Remove("GMHaste");
+            player->UpdateAllRatings();
+            handler->PSendSysMessage("Reset haste");
+            return true;
+        }
+
+        player->Variables.Set("GMHaste", haste);
+        player->UpdateAllRatings();
+        handler->PSendSysMessage("Updated your haste to %f", haste);
+        return true;
     }
 
     template<typename... Args>
