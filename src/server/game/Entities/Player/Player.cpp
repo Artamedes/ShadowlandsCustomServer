@@ -6110,7 +6110,7 @@ void Player::UpdateRating(CombatRating cr)
                 case CR_HASTE_MELEE:
                 {
                     SetBaseAttackTime(BASE_ATTACK, GetNewWeaponSpeedFromDelay(EquipmentSlots::EQUIPMENT_SLOT_MAINHAND));
-                    SetBaseAttackTime(OFF_ATTACK, GetNewWeaponSpeedFromDelay(EquipmentSlots::EQUIPMENT_SLOT_MAINHAND));
+                    SetBaseAttackTime(OFF_ATTACK, GetNewWeaponSpeedFromDelay(EquipmentSlots::EQUIPMENT_SLOT_OFFHAND));
                     break;
                 }
                 case CR_HASTE_RANGED:
