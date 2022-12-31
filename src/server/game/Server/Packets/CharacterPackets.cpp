@@ -141,6 +141,12 @@ EnumCharactersResult::CharacterInfo::CharacterInfo(Field* fields)
 
     LastLoginVersion = fields[22].GetUInt32();
 
+    if (equipment.empty())
+        return;
+
+    if (equipment.size() < REAGENT_BAG_SLOT_END * 5)
+        return;
+
     for (uint8 slot = 0; slot < REAGENT_BAG_SLOT_END; ++slot)
     {
         uint32 visualBase = slot * 5;
