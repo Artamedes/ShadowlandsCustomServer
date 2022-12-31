@@ -899,7 +899,12 @@ bool Unit::HasBreakableByDamageCrowdControlAura(Unit* excludeCasterChannel) cons
     // Rage from Damage made (only from direct weapon damage)
     if (attacker && cleanDamage && (cleanDamage->attackType == BASE_ATTACK || cleanDamage->attackType == OFF_ATTACK) && damagetype == DIRECT_DAMAGE && attacker != victim && attacker->GetPowerType() == POWER_RAGE)
     {
-        uint32 rage = uint32(attacker->GetBaseAttackTime(cleanDamage->attackType) / 1000.f * 1.75f);
+        bool isPlayer = attacker->IsPlayer();
+        uint32 attTime = attacker->GetBaseAttackTime(cleanDamage->attackType);
+
+        if (isPlayer && sWorld->getIntConfig(WorldIntConfigs::CONFIG_HASTE_CAP))
+            attTime = 1000;
+        uint32 rage = uint32(1000 / 1000.f * 1.75f);
         if (cleanDamage->attackType == OFF_ATTACK)
             rage /= 2;
 
