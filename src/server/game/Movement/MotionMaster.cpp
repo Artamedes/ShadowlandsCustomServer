@@ -706,7 +706,7 @@ void MotionMaster::MoveCloserAndStop(uint32 id, Unit* target, float distance)
     else
     {
         // We are already close enough. We just need to turn toward the target without changing position.
-        std::function<void(Movement::MoveSplineInit&)> initializer = [=, target = target->GetGUID()](Movement::MoveSplineInit& init)
+        std::function<void(Movement::MoveSplineInit&)> initializer = [=, this, target = target->GetGUID()](Movement::MoveSplineInit& init)
         {
             init.MoveTo(_owner->GetPositionX(), _owner->GetPositionY(), _owner->GetPositionZ());
             if (Unit const* refreshedTarget = ObjectAccessor::GetUnit(*_owner, target))
@@ -945,7 +945,7 @@ void MotionMaster::MoveJumpWithGravity(Position const& pos, float speedXY, float
 
 GenericMovementGenerator* MotionMaster::MoveCirclePath(float x, float y, float z, float radius, bool clockwise, uint8 stepCount, float velocity /*= 0.f*/)
 {
-    std::function<void(Movement::MoveSplineInit&)> initializer = [=](Movement::MoveSplineInit& init)
+    std::function<void(Movement::MoveSplineInit&)> initializer = [=, this](Movement::MoveSplineInit& init)
     {
         float step = 2 * float(M_PI) / stepCount * (clockwise ? -1.0f : 1.0f);
         Position const& pos = { x, y, z, 0.0f };
@@ -1118,7 +1118,7 @@ void MotionMaster::MoveFall(uint32 id/* = 0*/)
         return;
     }
 
-    std::function<void(Movement::MoveSplineInit&)> initializer = [=](Movement::MoveSplineInit& init)
+    std::function<void(Movement::MoveSplineInit&)> initializer = [=, this](Movement::MoveSplineInit& init)
     {
         init.MoveTo(_owner->GetPositionX(), _owner->GetPositionY(), tz + _owner->GetHoverOffset(), false);
         init.SetFall();
