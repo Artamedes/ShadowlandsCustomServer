@@ -27,6 +27,7 @@ void AddSC_spell_dh_legendary();
 void AddSC_spell_dh_vengeance();
 void AddSC_spell_dh_covenant();
 void AddSC_druid_spell_scripts();
+void AddSC_evoker_spell_scripts();
 void AddSC_spell_druid_feral();
 void AddSC_spell_druid_covenant();
 void AddSC_spell_druid_balance();
@@ -109,6 +110,7 @@ void AddSpellsScripts()
     AddSC_spell_dh_vengeance();
     AddSC_spell_dh_covenant();
     AddSC_druid_spell_scripts();
+    AddSC_evoker_spell_scripts();
     AddSC_spell_druid_feral();
     AddSC_spell_druid_covenant();
     AddSC_spell_druid_balance();
