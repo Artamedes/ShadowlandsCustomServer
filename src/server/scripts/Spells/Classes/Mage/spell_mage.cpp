@@ -2908,13 +2908,16 @@ class spell_mage_blink : public SpellScript
     {
         if (Unit* caster = GetCaster())
         {
-            if (caster->ToPlayer()->GetSpecializationId() == TALENT_SPEC_MAGE_ARCANE)
+            if (caster->IsPlayer())
             {
-                if (caster->HasSpell(SPELL_MAGE_DISPLACEMENT) || caster->HasSpell(SPELL_MAGE_DISPLACEMENT_ARCANE))
+                if (caster->ToPlayer()->GetSpecializationId() == TALENT_SPEC_MAGE_ARCANE)
                 {
-                    caster->ToPlayer()->SaveBlinkPosition();
-                    caster->ToPlayer()->GetSpellHistory()->ResetCooldown(SPELL_MAGE_DISPLACEMENT_BEACON, true);
-                    caster->CastSpell(caster, SPELL_MAGE_DISPLACEMENT_BEACON, true);
+                    if (caster->HasSpell(SPELL_MAGE_DISPLACEMENT) || caster->HasSpell(SPELL_MAGE_DISPLACEMENT_ARCANE))
+                    {
+                        caster->ToPlayer()->SaveBlinkPosition();
+                        caster->ToPlayer()->GetSpellHistory()->ResetCooldown(SPELL_MAGE_DISPLACEMENT_BEACON, true);
+                        caster->CastSpell(caster, SPELL_MAGE_DISPLACEMENT_BEACON, true);
+                    }
                 }
             }
             caster->RemoveAura(66); // Invisiblity
@@ -2954,7 +2957,8 @@ class spell_mage_displacement : public SpellScript
                 caster->GetSpellHistory()->ResetCharges(sSpellMgr->GetSpellInfo(SPELL_MAGE_SHIMMER)->ChargeCategoryId);
             else
                 caster->GetSpellHistory()->ResetCharges(sSpellMgr->GetSpellInfo(SPELL_MAGE_BLINK)->ChargeCategoryId);
-            caster->ToPlayer()->RecallBlink(); // recall back
+            if (caster->IsPlayer())
+                caster->ToPlayer()->RecallBlink(); // recall back
         }
     }
 

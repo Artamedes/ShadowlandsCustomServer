@@ -9541,19 +9541,19 @@ void Unit::setDeathState(DeathState s)
         SetPower(GetPowerType(), 0);
         SetEmoteState(EMOTE_ONESHOT_NONE);
 
-        DoOnSummons([this](Creature* creature)
-        {
-            if (auto tempSummon = creature->ToTempSummon())
-            {
-                if (tempSummon->m_Properties)
-                {
-                    if (tempSummon->m_Properties->GetFlags().HasFlag(SummonPropertiesFlags::DespawnOnSummonerDeath))
-                    {
-                        tempSummon->DespawnOrUnsummon();
-                    }
-                }
-            }
-        });
+        //DoOnSummons([this](Creature* creature)
+        //{
+        //    if (auto tempSummon = creature->ToTempSummon())
+        //    {
+        //        if (tempSummon->m_Properties)
+        //        {
+        //            if (tempSummon->m_Properties->GetFlags().HasFlag(SummonPropertiesFlags::DespawnOnSummonerDeath))
+        //            {
+        //                tempSummon->DespawnOrUnsummon();
+        //            }
+        //        }
+        //    }
+        //});
 
         // players in instance don't have ZoneScript, but they have InstanceScript
         if (ZoneScript* zoneScript = GetZoneScript() ? GetZoneScript() : GetInstanceScript())
