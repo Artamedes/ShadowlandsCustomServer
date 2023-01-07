@@ -27811,7 +27811,7 @@ void Player::_LoadTraits(PreparedQueryResult configsResult, PreparedQueryResult 
                 traitConfig.Entries.emplace_back() = traitEntry;
 
             // cba debugging
-            //if (TraitMgr::ValidateConfig(traitConfig, this) != TALENT_LEARN_OK)
+            //if (TraitMgr::ValidateConfig(traitConfig, this) != TraitMgr::LearnResult::Ok)
             //{
             //    traitConfig.Entries.clear();
             //    for (UF::TraitEntry const& grantedEntry : TraitMgr::GetGrantedTraitEntriesForConfig(traitConfig, this))
@@ -30219,6 +30219,36 @@ void Player::SendDisplayToast(uint32 entry, DisplayToastType type, bool isBonusR
     }
 
     SendDirectMessage(displayToast.Write());
+}
+
+uint64 TraitMgr::PlayerDataAccessor::GetMoney() const
+{
+    return _player->GetMoney();
+}
+
+int32 TraitMgr::PlayerDataAccessor::GetCurrency(int32 currencyId) const
+{
+    return _player->GetCurrency(currencyId);
+}
+
+int32 TraitMgr::PlayerDataAccessor::GetLevel() const
+{
+    return _player->GetLevel();
+}
+
+bool TraitMgr::PlayerDataAccessor::IsQuestRewarded(int32 questId) const
+{
+    return _player->IsQuestRewarded(questId);
+}
+
+bool TraitMgr::PlayerDataAccessor::HasAchieved(int32 achievementId) const
+{
+    return _player->HasAchieved(achievementId);
+}
+
+uint32 TraitMgr::PlayerDataAccessor::GetPrimarySpecialization() const
+{
+    return _player->GetPrimarySpecialization();
 }
 
 Covenant* Player::GetCovenant()

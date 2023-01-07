@@ -125,10 +125,10 @@ void WorldSession::HandleTraitsCommitConfig(WorldPackets::Traits::TraitsCommitCo
     }
 
     // cba debugging
-    //TalentLearnResult validationResult = TraitMgr::ValidateConfig(newConfigState, _player, true);
-    //if (validationResult != TALENT_LEARN_OK)
+    //TraitMgr::LearnResult validationResult = TraitMgr::ValidateConfig(newConfigState, _player, true);
+    //if (validationResult != TraitMgr::LearnResult::Ok)
     //{
-    //    SendPacket(WorldPackets::Traits::TraitConfigCommitFailed(configId, 0, validationResult).Write());
+    //    SendPacket(WorldPackets::Traits::TraitConfigCommitFailed(configId, 0, AsUnderlyingType(validationResult)).Write());
     //    return;
     //}
 
@@ -189,9 +189,9 @@ void WorldSession::HandleClassTalentsRequestNewConfig(WorldPackets::Traits::Clas
             if (newEntry.Rank + newEntry.GrantedRanks > traitNodeEntry->MaxRanks)
                 newEntry.Rank = std::max(0, traitNodeEntry->MaxRanks - newEntry.GrantedRanks);
     }
-
-    //TalentLearnResult validationResult = TraitMgr::ValidateConfig(classTalentsRequestNewConfig.Config, _player);
-    //if (validationResult != TALENT_LEARN_OK)
+    
+    //TraitMgr::LearnResult validationResult = TraitMgr::ValidateConfig(classTalentsRequestNewConfig.Config, _player);
+    //if (validationResult != TraitMgr::LearnResult::Ok)
     //    return;
 
     _player->CreateTraitConfig(classTalentsRequestNewConfig.Config);
