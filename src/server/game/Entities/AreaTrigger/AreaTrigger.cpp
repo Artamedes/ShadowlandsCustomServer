@@ -114,14 +114,14 @@ bool AreaTrigger::Create(uint32 areaTriggerCreatePropertiesId, Unit* caster, Uni
 
     if (!IsPositionValid())
     {
-        TC_LOG_ERROR("entities.areatrigger", "AreaTrigger (areaTriggerCreatePropertiesId %u) not created. Invalid coordinates (X: %f Y: %f)", areaTriggerCreatePropertiesId, GetPositionX(), GetPositionY());
+        TC_LOG_ERROR("entities.areatrigger", "AreaTrigger (areaTriggerCreatePropertiesId {}) not created. Invalid coordinates (X: {} Y: {})", areaTriggerCreatePropertiesId, GetPositionX(), GetPositionY());
         return false;
     }
 
     _areaTriggerCreateProperties = sAreaTriggerDataStore->GetAreaTriggerCreateProperties(areaTriggerCreatePropertiesId);
     if (!_areaTriggerCreateProperties)
     {
-        TC_LOG_ERROR("entities.areatrigger", "AreaTrigger (areaTriggerCreatePropertiesId %u) not created. Invalid areatrigger create properties id (%u)", areaTriggerCreatePropertiesId, areaTriggerCreatePropertiesId);
+        TC_LOG_ERROR("entities.areatrigger", "AreaTrigger (areaTriggerCreatePropertiesId {}) not created. Invalid areatrigger create properties id ({})", areaTriggerCreatePropertiesId, areaTriggerCreatePropertiesId);
         return false;
     }
 
@@ -333,7 +333,7 @@ bool AreaTrigger::CreateServer(Map* map, AreaTriggerTemplate const* areaTriggerT
     Relocate(position.spawnPoint);
     if (!IsPositionValid())
     {
-        TC_LOG_ERROR("entities.areatrigger", "AreaTriggerServer (id %u) not created. Invalid coordinates (X: %f Y: %f)",
+        TC_LOG_ERROR("entities.areatrigger", "AreaTriggerServer (id {}) not created. Invalid coordinates (X: {} Y: {})",
             areaTriggerTemplate->Id.Id, GetPositionX(), GetPositionY());
         return false;
     }

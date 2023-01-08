@@ -152,7 +152,7 @@ namespace MMAP
             mapID = (*itr).m_mapId;
 
             files.clear();
-            getDirContents(files, "vmaps", Trinity::StringFormat("%04u_*.vmtile", mapID));
+            getDirContents(files, "vmaps", Trinity::StringFormat("{:04}_*.vmtile", mapID));
             for (uint32 i = 0; i < files.size(); ++i)
             {
                 tileX = uint32(atoi(files[i].substr(8, 2).c_str()));
@@ -164,7 +164,7 @@ namespace MMAP
             }
 
             files.clear();
-            getDirContents(files, "maps", Trinity::StringFormat("%04u*", mapID));
+            getDirContents(files, "maps", Trinity::StringFormat("{:04}*", mapID));
             for (uint32 i = 0; i < files.size(); ++i)
             {
                 tileY = uint32(atoi(files[i].substr(5, 2).c_str()));
@@ -610,7 +610,7 @@ namespace MMAP
         dtNavMesh* navMesh)
     {
         // console output
-        std::string tileString = Trinity::StringFormat("[Map %04u] [%02i,%02i]: ", mapID, tileX, tileY);
+        std::string tileString = Trinity::StringFormat("[Map {:04}] [{:02},{:02}]: ", mapID, tileX, tileY);
         printf("%s Building movemap tiles...\n", tileString.c_str());
 
         IntermediateValues iv;
