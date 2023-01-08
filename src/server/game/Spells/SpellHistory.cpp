@@ -851,9 +851,6 @@ void SpellHistory::ModifySpellCooldown(CooldownStorageType::iterator& itr, Durat
             itr->second.CooldownEnd = itr->second.CategoryEnd;
     }
 
-    if (itr->second.CooldownEnd <= now)
-        itr = EraseCooldown(itr);
-
     if (Player* playerOwner = GetPlayerOwner())
     {
         WorldPackets::Spells::ModifyCooldown modifyCooldown;
@@ -863,6 +860,9 @@ void SpellHistory::ModifySpellCooldown(CooldownStorageType::iterator& itr, Durat
         modifyCooldown.WithoutCategoryCooldown = withoutCategoryCooldown;
         playerOwner->SendDirectMessage(modifyCooldown.Write());
     }
+
+    if (itr->second.CooldownEnd <= now)
+        itr = EraseCooldown(itr);
 }
 
 void SpellHistory::ModifyCooldown(uint32 spellId, int32 cooldownModMs)
