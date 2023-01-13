@@ -2002,7 +2002,7 @@ void ScriptMgr::OnTransportUpdate(Transport* transport, uint32 diff)
 void ScriptMgr::OnRelocate(Transport* transport, uint32 waypointId, uint32 mapId, float x, float y, float z)
 {
     GET_SCRIPT(TransportScript, transport->GetScriptId(), tmpscript);
-    tmpscript->OnRelocate(transport, waypointId, mapId, x, y, z);
+    tmpscript->OnRelocate(transport, mapId, x, y, z);
 }
 
 void ScriptMgr::OnStartup()
@@ -2434,7 +2434,7 @@ void ScriptMgr::OnHeal(Unit* healer, Unit* reciever, uint32& gain)
 
 void ScriptMgr::OnDamage(Unit* attacker, Unit* victim, uint32& damage, SpellInfo const* spellInfo)
 {
-    FOREACH_SCRIPT(UnitScript)->OnDamage(attacker, victim, damage, spellInfo);
+    FOREACH_SCRIPT(UnitScript)->OnDamage(attacker, victim, damage);
 }
 
 void ScriptMgr::ModifyPeriodicDamageAurasTick(Unit* target, Unit* attacker, uint32& damage)

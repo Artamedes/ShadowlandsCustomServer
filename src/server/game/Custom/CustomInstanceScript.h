@@ -19,6 +19,7 @@
 #include "ScriptMgr.h"
 #include "SpellAuras.h"
 #include "TemporarySummon.h"
+#include "Containers.h"
 
 struct CustomInstanceRespawnData
 {

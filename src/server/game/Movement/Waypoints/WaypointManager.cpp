@@ -113,7 +113,7 @@ void WaypointMgr::LoadWaypointAddons()
         std::unordered_map<uint32, WaypointPath>::iterator it = _waypointStore.find(pathId);
         if (it == _waypointStore.end())
         {
-            TC_LOG_ERROR("sql.sql", "Tried to load waypoint_data_addon data for PathID %u but there is no such path in waypoint_data. Ignoring.", pathId);
+            TC_LOG_ERROR("sql.sql", "Tried to load waypoint_data_addon data for PathID {} but there is no such path in waypoint_data. Ignoring.", pathId);
             continue;
         }
 
@@ -128,7 +128,7 @@ void WaypointMgr::LoadWaypointAddons()
 
         if (itr == path.Nodes.end())
         {
-            TC_LOG_ERROR("sql.sql", "Tried to load waypoint_data_addon data for PointID %u of PathID %u but there is no such point in waypoint_data. Ignoring.", pointId, pathId);
+            TC_LOG_ERROR("sql.sql", "Tried to load waypoint_data_addon data for PointID {} of PathID {} but there is no such point in waypoint_data. Ignoring.", pointId, pathId);
             continue;
         }
 
@@ -147,7 +147,7 @@ void WaypointMgr::LoadWaypointAddons()
         ++count;
     } while (result->NextRow());
 
-    TC_LOG_INFO("server.loading", ">> Loaded %u waypoint addon data in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
+    TC_LOG_INFO("server.loading", ">> Loaded {} waypoint addon data in {} ms", count, GetMSTimeDiffToNow(oldMSTime));
 }
 
 WaypointMgr* WaypointMgr::instance()
@@ -332,7 +332,7 @@ void WaypointNode::CreateMenuForPlayer(Player* player)
     AddGossipItemFor(player, GossipOptionNpc::None, "Velocity: " + std::to_string(Velocity), 0, 0, "", 0, true, [player, this](std::string callback)
     {
         Velocity = atof(callback.c_str());
-        ChatHandler(player).PSendSysMessage("Velocity updated to %f", Velocity);
+        ChatHandler(player).PSendSysMessage("Velocity updated to {}", Velocity);
         CreateMenuForPlayer(player);
     });
 
@@ -346,7 +346,7 @@ void WaypointNode::CreateMenuForPlayer(Player* player)
     AddGossipItemFor(player, GossipOptionNpc::None, "MoveType: " + MoveTypeToString(MoveType), 0, 0, "", 0, true, [player, this](std::string callback)
     {
         MoveType = static_cast<WaypointMoveType>(atol(callback.c_str()));
-        ChatHandler(player).PSendSysMessage("MoveType updated to %u", MoveType);
+        ChatHandler(player).PSendSysMessage("MoveType updated to {}", AsUnderlyingType(MoveType));
         CreateMenuForPlayer(player);
     });
 

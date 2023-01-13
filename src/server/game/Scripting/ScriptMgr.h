@@ -648,6 +648,8 @@ class TC_GAME_API DynamicObjectScript : public ScriptObject
     public:
 
         ~DynamicObjectScript();
+
+        virtual void OnUpdate(DynamicObject* obj, uint32 diff);
 };
 
 class TC_GAME_API TransportScript : public ScriptObject

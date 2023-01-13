@@ -20,6 +20,8 @@
 #include "Define.h"
 #include <map>
 #include <atomic>
+#include <functional>
+#include <mutex>
 
 typedef std::multimap<uint64, std::function<void()>> FunctionList;
 

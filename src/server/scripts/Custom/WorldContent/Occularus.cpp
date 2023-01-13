@@ -9,6 +9,7 @@
 #include "CellImpl.h"
 #include "GridNotifiers.h"
 #include "GridLoader.h"
+#include "Containers.h"
 
 const std::vector<Position> EnemySpawnPoints
 {

@@ -19,6 +19,7 @@
 #ifndef INSTANCE_BLOODMAUL_H
 #define INSTANCE_BLOODMAUL_H
 
+#include "Containers.h"
 #include "ChatCommand.h"
 #include "CreatureAIImpl.h"
 #include "DatabaseEnv.h"

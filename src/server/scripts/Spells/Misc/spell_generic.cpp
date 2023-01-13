@@ -52,6 +52,7 @@
 #include "AchievementPackets.h"
 #include "CollectionMgr.h"
 #include "WorldStateMgr.h"
+#include "Containers.h"
 
 class spell_gen_absorb0_hitlimit1 : public AuraScript
 {

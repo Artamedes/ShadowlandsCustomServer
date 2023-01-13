@@ -1141,7 +1141,7 @@ public:
     bool didMagicStoneSay = false;
     void OnUnitRelocation(Unit* p_Who) override
     {
-        if (p_Who->IsPlayer() && p_Who->GetDistance2d(me) <= 14.0f && !me->IsSummon() && me->IsInPhase(p_Who))
+        if (p_Who->IsPlayer() && p_Who->GetDistance2d(me) <= 14.0f && !me->IsSummon() && me->InSamePhase(p_Who))
         {
             auto l_Player = p_Who->ToPlayer();
             auto l_Itr = m_PlayerTalks.find(p_Who->GetGUID());
@@ -1156,7 +1156,7 @@ public:
                 }
             }
         }
-        if (p_Who->IsPlayer() && me->IsSummon() && !didMagicStoneSay && me->IsInPhase(p_Who) && p_Who->GetDistance2d(me) <= 14.0f && p_Who == me->GetOwner() && p_Who->ToPlayer()->GetQuestStatus(700006) == QUEST_STATUS_INCOMPLETE)
+        if (p_Who->IsPlayer() && me->IsSummon() && !didMagicStoneSay && me->InSamePhase(p_Who) && p_Who->GetDistance2d(me) <= 14.0f && p_Who == me->GetOwner() && p_Who->ToPlayer()->GetQuestStatus(700006) == QUEST_STATUS_INCOMPLETE)
         {
             didMagicStoneSay = true;
             Talk(4, me->GetOwner());
@@ -1955,7 +1955,7 @@ public:
 
     void OnUnitRelocation(Unit* who) override
     {
-        if (who->IsPlayer() && who->GetDistance2d(me) <= 25.0f && !me->isDead() && me->IsInPhase(who))
+        if (who->IsPlayer() && who->GetDistance2d(me) <= 25.0f && !me->isDead() && me->InSamePhase(who))
         {
             auto now = GameTime::Now();
             auto itr = m_playerRelocations.find(who->GetGUID().GetCounter());
@@ -2184,7 +2184,7 @@ public:
 
     void OnUnitRelocation(Unit* who) override
     {
-        if (who->IsPlayer() && who->GetDistance2d(me) <= 15.0f && !me->IsSummon() && me->IsInPhase(who))
+        if (who->IsPlayer() && who->GetDistance2d(me) <= 15.0f && !me->IsSummon() && me->InSamePhase(who))
         {
             if (!personals.count(who->GetGUID()))
             {
@@ -2311,7 +2311,7 @@ public:
 
     void OnUnitRelocation(Unit* who) override
     {
-        if (who->IsPlayer() && who->GetDistance2d(me) <= 15.0f && !personals.count(who->GetGUID()) && me->IsInPhase(who))
+        if (who->IsPlayer() && who->GetDistance2d(me) <= 15.0f && !personals.count(who->GetGUID()) && me->InSamePhase(who))
         {
             personals.insert(who->GetGUID());
             me->HandleEmoteCommand(Emote::EMOTE_ONESHOT_WAVE, who->ToPlayer());
@@ -2357,7 +2357,7 @@ public:
 
     void OnUnitRelocation(Unit* who) override
     {
-        if (who->IsPlayer() && who->GetDistance2d(me) <= 9.0f && !personals.count(who->GetGUID()) && me->IsInPhase(who))
+        if (who->IsPlayer() && who->GetDistance2d(me) <= 9.0f && !personals.count(who->GetGUID()) && me->InSamePhase(who))
         {
             personals.insert(who->GetGUID());
             Talk(0, who->ToPlayer());
@@ -2427,7 +2427,7 @@ public:
 
     void OnUnitRelocation(Unit* who) override
     {
-        if (who->IsPlayer() && !seers.count(who->GetGUID()) && who->GetDistance2d(me) <= 15.0f && !me->IsSummon() && me->IsInPhase(who))
+        if (who->IsPlayer() && !seers.count(who->GetGUID()) && who->GetDistance2d(me) <= 15.0f && !me->IsSummon() && me->InSamePhase(who))
         {
             seers.insert(who->GetGUID());
             ObjectGuid RecruitOne;

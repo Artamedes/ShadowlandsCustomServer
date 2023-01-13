@@ -48,6 +48,7 @@ EndScriptData */
 #include "WorldSession.h"
 #include "WaypointManager.h"
 #include "LootMgr.h"
+#include "Containers.h"
 
 #include "ScriptedGossip.h"
 

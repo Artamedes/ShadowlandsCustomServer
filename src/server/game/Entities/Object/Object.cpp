@@ -58,6 +58,7 @@
 #include "World.h"
 #include "CreatureAI.h"
 #include "ScriptMgr.h"
+#include "Containers.h"
 #include <G3D/Vector3.h>
 #include <sstream>
 
@@ -907,7 +908,7 @@ void MovementInfo::OutDebug()
     }
 
     if (flags & MOVEMENTFLAG_SPLINE_ELEVATION)
-        TC_LOG_DEBUG("misc", "stepUpStartElevation: {}", stepUpStartElevation);
+        TC_LOG_DEBUG("misc", "stepUpStartElevation: {}", splineElevation);
 }
 
 WorldObject::WorldObject(bool isWorldObject) : Object(), WorldLocation(), LastUsedScriptID(0),

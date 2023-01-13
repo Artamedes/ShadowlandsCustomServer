@@ -1867,7 +1867,7 @@ public:
 
             query << ") GROUP BY account ORDER BY RAND() LIMIT " << number;
 
-            QueryResult result = CharacterDatabase.PQuery(query.str().c_str());
+            QueryResult result = CharacterDatabase.Query(query.str().c_str());
 
             if (result)
             {

@@ -170,7 +170,7 @@ class spell_deep_breath_flight : public SpellScript
 // glide 358733
 // fire breath 382266
 
-void AddSC_evoker_spell_scripts()
+void AddSC_evoker_spell_scriptsSE()
 {
     RegisterSpellScript(spell_living_flame);
     RegisterAreaTriggerAI(aretrigger_emerald_blossom_27633);
