@@ -3017,7 +3017,7 @@ void BonusData::Initialize(ItemTemplate const* proto)
     {
         if (EffectCount >= 13)
         {
-            TC_LOG_ERROR("server.items", "Too many effects on item %u!", proto->GetId());
+            TC_LOG_ERROR("server.items", "Too many effects on item {}!", proto->GetId());
             break;
         }
         Effects[EffectCount++] = itemEffect;

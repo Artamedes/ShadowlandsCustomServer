@@ -162,7 +162,7 @@ bool SpellMgr::IsSpellValid(SpellInfo const* spellInfo, Player* player, bool msg
                         if (msg)
                         {
                             if (player)
-                                ChatHandler(player->GetSession()).PSendSysMessage("The craft spell %u does not have a create item entry.", spellInfo->Id);
+                                ChatHandler(player->GetSession()).PSendSysMessage("The craft spell {} does not have a create item entry.", spellInfo->Id);
                             else
                                 TC_LOG_ERROR("sql.sql", "The craft spell {} does not have a create item entry.", spellInfo->Id);
                         }
@@ -176,7 +176,7 @@ bool SpellMgr::IsSpellValid(SpellInfo const* spellInfo, Player* player, bool msg
                     if (msg)
                     {
                         if (player)
-                            ChatHandler(player->GetSession()).PSendSysMessage("Craft spell %u has created a non-existing in DB item (Entry: %u) and then...", spellInfo->Id, spellEffectInfo.ItemType);
+                            ChatHandler(player->GetSession()).PSendSysMessage("Craft spell {} has created a non-existing in DB item (Entry: {}) and then...", spellInfo->Id, spellEffectInfo.ItemType);
                         else
                             TC_LOG_ERROR("sql.sql", "Craft spell {} has created a non-existing item in DB item (Entry: {}) and then...", spellInfo->Id, spellEffectInfo.ItemType);
                     }
@@ -216,7 +216,7 @@ bool SpellMgr::IsSpellValid(SpellInfo const* spellInfo, Player* player, bool msg
                 if (msg)
                 {
                     if (player)
-                        ChatHandler(player->GetSession()).PSendSysMessage("Craft spell %u refers a non-existing reagent in DB item (Entry: %u) and then...", spellInfo->Id, spellInfo->Reagent[j]);
+                        ChatHandler(player->GetSession()).PSendSysMessage("Craft spell {} refers a non-existing reagent in DB item (Entry: {}) and then...", spellInfo->Id, spellInfo->Reagent[j]);
                     else
                         TC_LOG_ERROR("sql.sql", "Craft spell {} refers to a non-existing reagent in DB, item (Entry: {}) and then...", spellInfo->Id, spellInfo->Reagent[j]);
                 }

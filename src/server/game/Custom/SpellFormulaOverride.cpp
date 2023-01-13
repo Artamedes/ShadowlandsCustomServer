@@ -69,7 +69,7 @@ void SpellFormulaOverride::AddEntryToDB(uint32 SpellId, SpellEffIndex EffectInde
 
 void SpellFormulaOverride::DeleteEntryFromDB(uint32 SpellId, SpellEffIndex EffectIndex)
 {
-    WorldDatabase.PExecute("DELETE FROM z_spell_fixes WHERE SpellId = %u AND EffectIndex = %u",
+    WorldDatabase.PExecute("DELETE FROM z_spell_fixes WHERE SpellId = {} AND EffectIndex = {}",
         SpellId,
         static_cast<uint32>(EffectIndex));
 }
@@ -400,7 +400,7 @@ void SpellFormulaOverride::HandleInputSpellId(Player* player, std::string callba
     auto spellInfo = sSpellMgr->GetSpellInfo(spellId);
     if (!spellInfo)
     {
-        ChatHandler(player).PSendSysMessage("%u not found!", spellId);
+        ChatHandler(player).PSendSysMessage("{} not found!", spellId);
         CreateMenu(player);
         return;
     }

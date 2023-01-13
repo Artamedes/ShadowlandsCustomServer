@@ -186,7 +186,7 @@ void ChallengeModeMgr::LoadFromDB()
 
     for (auto v : _challengeMap)
         if (v.second->members.empty())
-            CharacterDatabase.PQuery("DELETE FROM `challenge` WHERE `ID` = '%u';", v.first);
+            CharacterDatabase.PQuery("DELETE FROM `challenge` WHERE `ID` = {};", v.first);
 
     if (QueryResult result = CharacterDatabase.Query("SELECT `guid`, `chestListID`, `date`, `ChallengeLevel`, `ChallengeID` FROM `challenge_oplote_loot`"))
     {
@@ -426,7 +426,7 @@ void ChallengeModeMgr::DeleteOploteLoot(ObjectGuid const& guid, CharacterDatabas
 
 void ChallengeModeMgr::GenerateOploteLoot(bool manual)
 {
-    TC_LOG_DEBUG("misc", "GenerateOploteLoot manual %u _challengeWeekList %u", manual, _challengeWeekList.size());
+    TC_LOG_DEBUG("misc", "GenerateOploteLoot manual {} _challengeWeekList {}", manual, _challengeWeekList.size());
 
     CharacterDatabase.Query("DELETE FROM challenge_oplote_loot WHERE date <= UNIX_TIMESTAMP()");
     _oploteWeekLoot.clear();

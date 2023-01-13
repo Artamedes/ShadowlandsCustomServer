@@ -53,7 +53,7 @@ void BattlePayMgr::LoadFromDB()
 
             if (uint32 visualId = fields[14].GetUInt32())
             {
-                auto result2 = LoginDatabase.PQuery("SELECT DisplayID, VisualId, TransmogSetID, Name FROM battlepay_visuals WHERE ID = %u", visualId);
+                auto result2 = LoginDatabase.PQuery("SELECT DisplayID, VisualId, TransmogSetID, Name FROM battlepay_visuals WHERE ID = {}", visualId);
                 if (result2)
                 {
                     do
@@ -148,7 +148,7 @@ void BattlePayMgr::LoadFromDB()
                 product.UnkBits = unkBits;
             if (uint32 itemGroup = fields[15].GetUInt32())
             {
-                auto result2 = LoginDatabase.PQuery("SELECT ItemGroupID, UnkByte, ItemID, Quantity, UnkInt1, UnkInt2, IsPet, PetResult, DisplayInfoID FROM battlepay_item_group WHERE ID = %u", itemGroup);
+                auto result2 = LoginDatabase.PQuery("SELECT ItemGroupID, UnkByte, ItemID, Quantity, UnkInt1, UnkInt2, IsPet, PetResult, DisplayInfoID FROM battlepay_item_group WHERE ID = {}", itemGroup);
                 if (result2)
                 {
                     do

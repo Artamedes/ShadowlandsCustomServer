@@ -456,7 +456,7 @@ WorldSocket::ReadDataHandlerResult WorldSocket::ReadDataHandler()
             LogOpcodeText(opcode, sessionGuard);
           //  uint32 disconnectReason = 0;
            // packet << disconnectReason;
-          //  TC_LOG_ERROR("network", "WorldSocket::ReadDataHandler(): CMSG_LOG_DISCONNECT disconnectReason: %u", disconnectReason);
+          //  TC_LOG_ERROR("network", "WorldSocket::ReadDataHandler(): CMSG_LOG_DISCONNECT disconnectReason: {}", disconnectReason);
             packet.rfinish();   // contains uint32 disconnectReason;
             break;
         }

@@ -1124,7 +1124,7 @@ bool SpellHistory::ConsumeCharge(uint32 chargeCategoryId, bool withPacket /*= fa
                 float addVal = 1.0f;
                 ApplyPercentModFloatVar(addVal, eff->GetAmount(), !true);
                 chargeRecovery *= addVal;
-                TC_LOG_INFO("server.spells", "SPELL_AURA_MOD_CHARGE_RECOVERY_RATE %u %u %f %d", eff->GetMiscValue(), eff->GetAmount(), addVal, chargeRecovery);
+                TC_LOG_INFO("server.spells", "SPELL_AURA_MOD_CHARGE_RECOVERY_RATE {} {} {} {}", eff->GetMiscValue(), eff->GetAmount(), addVal, chargeRecovery);
             }
         }
 

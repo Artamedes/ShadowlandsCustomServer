@@ -94,7 +94,7 @@ void CustomInstanceScript::OnPlayerEnter(Player* player)
     ///        {
     ///            if (auto criteria = sCriteriaStore.LookupEntry(criteriaProgress.first))
     ///            {
-    ///                ChatHandler(player).PSendSysMessage("%u, %u ModifierTreeId: %u", criteriaProgress.first, (uint32)criteriaProgress.second.Counter, criteria->ModifierTreeId);
+    ///                ChatHandler(player).PSendSysMessage("{}, {} ModifierTreeId: {}", criteriaProgress.first, (uint32)criteriaProgress.second.Counter, criteria->ModifierTreeId);
     ///            }
     ///        }
     ///    }
@@ -208,7 +208,7 @@ void CustomInstanceScript::OnChallengeStart()
         {
             instance->DoOnPlayers([effectiveness](Player* player)
             {
-                ChatHandler(player).PSendSysMessage("|cffFF0000Leech will only have %u%% effectiveness in this challenge!", effectiveness);
+                ChatHandler(player).PSendSysMessage("|cffFF0000Leech will only have {}%% effectiveness in this challenge!", effectiveness);
             });
         }
     }

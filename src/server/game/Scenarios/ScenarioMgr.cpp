@@ -104,7 +104,7 @@ void ScenarioMgr::LoadDBData()
         uint32 mapId = fields[0].GetUInt32();
         if (!sMapStore.LookupEntry(mapId))
         {
-            TC_LOG_ERROR("sql.sql", "Map %u defined in `scenarios` does not exist, skipped.", mapId);
+            TC_LOG_ERROR("sql.sql", "Map {} defined in `scenarios` does not exist, skipped.", mapId);
             continue;
         }
 
@@ -113,7 +113,7 @@ void ScenarioMgr::LoadDBData()
         {
             if (!sDB2Manager.GetMapDifficultyData(mapId, Difficulty(difficulty)))
             {
-                TC_LOG_ERROR("sql.sql", "Map %u referenced in `scenarios` does not have difficulty %u, skipped", mapId, difficulty);
+                TC_LOG_ERROR("sql.sql", "Map {} referenced in `scenarios` does not have difficulty %u, skipped", mapId, difficulty);
                 continue;
             }
         }
@@ -123,7 +123,7 @@ void ScenarioMgr::LoadDBData()
         {
             if (!sLFGDungeonsStore.LookupEntry(dungeonID))
             {
-                TC_LOG_ERROR("sql.sql", "dungeonID %u defined in `scenarios` does not exist, skipped.", dungeonID);
+                TC_LOG_ERROR("sql.sql", "dungeonID {} defined in `scenarios` does not exist, skipped.", dungeonID);
                 continue;
             }
         }

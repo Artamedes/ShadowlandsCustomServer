@@ -1035,7 +1035,7 @@ void InstanceScript::DoCompleteAchievement(uint32 achievement)
     AchievementEntry const* achievementEntry = sAchievementStore.LookupEntry(achievement);
     if (!achievementEntry)
     {
-        TC_LOG_ERROR("scripts", "DoCompleteAchievement called for not existing achievement %u", achievement);
+        TC_LOG_ERROR("scripts", "DoCompleteAchievement called for not existing achievement {}", achievement);
         return;
     }
 

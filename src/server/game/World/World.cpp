@@ -1063,7 +1063,7 @@ void World::LoadConfigSettings(bool reload)
     }
     else if (m_int_configs[CONFIG_START_ALLIED_RACE_LEVEL] > m_int_configs[CONFIG_MAX_PLAYER_LEVEL])
     {
-        TC_LOG_ERROR("server.loading", "StartAlliedRacePlayerLevel ({}) must be in range 1..MaxPlayerLevel({}). Set to %u.",
+        TC_LOG_ERROR("server.loading", "StartAlliedRacePlayerLevel ({}) must be in range 1..MaxPlayerLevel({}). Set to {}.",
             m_int_configs[CONFIG_START_ALLIED_RACE_LEVEL], m_int_configs[CONFIG_MAX_PLAYER_LEVEL], m_int_configs[CONFIG_MAX_PLAYER_LEVEL]);
         m_int_configs[CONFIG_START_ALLIED_RACE_LEVEL] = m_int_configs[CONFIG_MAX_PLAYER_LEVEL];
     }
@@ -1077,7 +1077,7 @@ void World::LoadConfigSettings(bool reload)
     }
     else if (m_int_configs[CONFIG_START_EVOKER_PLAYER_LEVEL] > m_int_configs[CONFIG_MAX_PLAYER_LEVEL])
     {
-        TC_LOG_ERROR("server.loading", "StartEvokerPlayerLevel ({}) must be in range 1..MaxPlayerLevel({}). Set to %u.",
+        TC_LOG_ERROR("server.loading", "StartEvokerPlayerLevel ({}) must be in range 1..MaxPlayerLevel({}). Set to {}.",
             m_int_configs[CONFIG_START_EVOKER_PLAYER_LEVEL], m_int_configs[CONFIG_MAX_PLAYER_LEVEL], m_int_configs[CONFIG_MAX_PLAYER_LEVEL]);
         m_int_configs[CONFIG_START_EVOKER_PLAYER_LEVEL] = m_int_configs[CONFIG_MAX_PLAYER_LEVEL];
     }
@@ -1961,7 +1961,7 @@ void World::SetInitialWorldSettings()
         sObjectMgr->LoadPageTextLocales();
         sObjectMgr->LoadGossipMenuItemsLocales();
         sObjectMgr->LoadPointOfInterestLocales();
-        TC_LOG_INFO("server.loading", ">> Localization strings loaded in %u ms", GetMSTimeDiffToNow(oldMSTime));
+        TC_LOG_INFO("server.loading", ">> Localization strings loaded in {} ms", GetMSTimeDiffToNow(oldMSTime));
     });
 
     sObjectMgr->SetDBCLocaleIndex(GetDefaultDbcLocale());        // Get once for all the locale index of DBC language (console/broadcasts)
@@ -4008,7 +4008,7 @@ void World::ChallengeKeyResetTime()
     sChallengeModeMgr->GenerateCurrentWeekAffixes();
     sChallengeModeMgr->GenerateOploteLoot();
 
-    CharacterDatabase.PQuery("DELETE FROM challenge_key WHERE timeReset < %u", m_NextChallengeKeyReset);
+    CharacterDatabase.PQuery("DELETE FROM challenge_key WHERE timeReset < {}", m_NextChallengeKeyReset);
     CharacterDatabase.Query("DELETE FROM item_instance WHERE itemEntry = 158923");
     CharacterDatabase.Query("DELETE FROM challenge_key");
 

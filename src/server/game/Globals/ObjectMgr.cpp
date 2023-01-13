@@ -664,7 +664,7 @@ void ObjectMgr::LoadCreatureTemplateModel(uint32 p_EntryId)
     uint32 oldMSTime = getMSTime();
 
     //                                               0           1                  2             3
-    QueryResult result = WorldDatabase.PQuery("SELECT CreatureID, CreatureDisplayID, DisplayScale, Probability FROM creature_template_model WHERE CreatureID = %u ORDER BY Idx ASC", p_EntryId);
+    QueryResult result = WorldDatabase.PQuery("SELECT CreatureID, CreatureDisplayID, DisplayScale, Probability FROM creature_template_model WHERE CreatureID = {} ORDER BY Idx ASC", p_EntryId);
 
     if (!result)
     {
@@ -692,13 +692,13 @@ void ObjectMgr::LoadCreatureTemplateModel(uint32 p_EntryId)
         CreatureDisplayInfoEntry const* displayEntry = sCreatureDisplayInfoStore.LookupEntry(creatureDisplayId);
         if (!displayEntry)
         {
-            TC_LOG_ERROR("sql.sql", "Creature (Entry: %u) lists non-existing CreatureDisplayID id (%u), this can crash the client.", creatureId, creatureDisplayId);
+            TC_LOG_ERROR("sql.sql", "Creature (Entry: {}) lists non-existing CreatureDisplayID id {}), this can crash the client.", creatureId, creatureDisplayId);
             continue;
         }
 
         CreatureModelInfo const* modelInfo = GetCreatureModelInfo(creatureDisplayId);
         if (!modelInfo)
-            TC_LOG_ERROR("sql.sql", "No model data exist for `CreatureDisplayID` = %u listed by creature (Entry: %u).", creatureDisplayId, creatureId);
+            TC_LOG_ERROR("sql.sql", "No model data exist for `CreatureDisplayID` = {} listed by creature (Entry: {}.", creatureDisplayId, creatureId);
 
         if (displayScale <= 0.0f)
             displayScale = 1.0f;
@@ -708,7 +708,7 @@ void ObjectMgr::LoadCreatureTemplateModel(uint32 p_EntryId)
         ++count;
     } while (result->NextRow());
 
-    TC_LOG_INFO("server.loading", ">> Loaded %u creature template models in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
+    TC_LOG_INFO("server.loading", ">> Loaded {} creature template models in {} ms", count, GetMSTimeDiffToNow(oldMSTime));
 }
 
 void ObjectMgr::LoadCreatureSummonedData()
@@ -10191,7 +10191,7 @@ bool ObjectMgr::IsVendorItemValid(uint32 vendor_entry, VendorItem const& vItem, 
         if (vItem.maxcount > 0 && vItem.incrtime == 0)
         {
             if (player)
-                ChatHandler(player->GetSession()).PSendSysMessage("MaxCount != 0 (%u) but IncrTime == 0", vItem.maxcount);
+                ChatHandler(player->GetSession()).PSendSysMessage("MaxCount != 0 ({}) but IncrTime == 0", vItem.maxcount);
             else
                 TC_LOG_ERROR("sql.sql", "Table `(game_event_)npc_vendor` has `maxcount` ({}) for item {} of vendor (Entry: {}) but `incrtime`=0, ignore", vItem.maxcount, vItem.item, vendor_entry);
             return false;

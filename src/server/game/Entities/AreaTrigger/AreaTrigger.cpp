@@ -1108,7 +1108,7 @@ void AreaTrigger::InitSplines(std::vector<G3D::Vector3> splinePoints, uint32 tim
 
         SendMessageToSet(reshape.Write(), true);
 
-        TC_LOG_TRACE("network.opcode", "AreaTriggerRePath %u %u", timeToTarget, GetElapsedTimeForMovement());
+        TC_LOG_TRACE("network.opcode", "AreaTriggerRePath {} {}", timeToTarget, GetElapsedTimeForMovement());
     }
 
     _reachedDestination = false;
