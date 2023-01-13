@@ -1951,6 +1951,9 @@ void Spell::EffectSummonType()
                 }
                 default:
                 {
+                    if (!unitCaster)
+                        return;
+
                     float radius = effectInfo->CalcRadius();
 
                     TempSummonType summonType = (duration == 0) ? TEMPSUMMON_DEAD_DESPAWN : TEMPSUMMON_TIMED_DESPAWN;
