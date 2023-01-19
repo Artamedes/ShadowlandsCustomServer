@@ -31,6 +31,7 @@
 #include "MotionMaster.h"
 #include "ObjectAccessor.h"
 #include "Player.h"
+#include "SmartEnum.h"
 #include "SpellHistory.h"
 #include "TemporarySummon.h"
 #include "Vehicle.h"
@@ -94,7 +95,7 @@ void CreatureAI::OnCharmed(bool isNew)
         me->LastCharmerGUID.Clear();
 
         if (!me->IsInCombat())
-            EnterEvadeMode(EVADE_REASON_NO_HOSTILES);
+            EnterEvadeMode(EvadeReason::NoHostiles);
     }
 
     UnitAI::OnCharmed(isNew);
@@ -245,7 +246,7 @@ void CreatureAI::EnterEvadeMode(EvadeReason why)
     if (!_EnterEvadeMode(why))
         return;
 
-    TC_LOG_DEBUG("scripts.ai", "CreatureAI::EnterEvadeMode: entering evade mode (why: {}) ({})", why, me->GetGUID().ToString());
+    TC_LOG_DEBUG("scripts.ai", "CreatureAI::EnterEvadeMode: entering evade mode (why: {}) ({})", EnumUtils::ToConstant(why), me->GetGUID().ToString());
 
     if (!me->GetVehicle()) // otherwise me will be in evade mode forever
     {
@@ -284,7 +285,7 @@ bool CreatureAI::UpdateVictim()
     }
     else if (!me->IsInCombat())
     {
-        EnterEvadeMode(EVADE_REASON_NO_HOSTILES);
+        EnterEvadeMode(EvadeReason::NoHostiles);
         return false;
     }
     else if (me->GetVictim())
@@ -462,7 +463,7 @@ bool CreatureAI::CheckInRoom()
         return true;
     else
     {
-        EnterEvadeMode(EVADE_REASON_BOUNDARY);
+        EnterEvadeMode(EvadeReason::Boundary);
         return false;
     }
 }

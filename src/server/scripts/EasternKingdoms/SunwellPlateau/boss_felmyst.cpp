@@ -302,7 +302,7 @@ struct boss_felmyst : public BossAI
 
                 if (!target)
                 {
-                    EnterEvadeMode(EVADE_REASON_NO_HOSTILES);
+                    EnterEvadeMode(EvadeReason::NoHostiles);
                     return;
                 }
 
@@ -328,7 +328,7 @@ struct boss_felmyst : public BossAI
 
                 if (!target)
                 {
-                    EnterEvadeMode(EVADE_REASON_NO_HOSTILES);
+                    EnterEvadeMode(EvadeReason::NoHostiles);
                     return;
                 }
 
@@ -357,7 +357,7 @@ struct boss_felmyst : public BossAI
 
                 if (!target)
                 {
-                    EnterEvadeMode(EVADE_REASON_NO_HOSTILES);
+                    EnterEvadeMode(EvadeReason::NoHostiles);
                     return;
                 }
 
@@ -397,7 +397,7 @@ struct boss_felmyst : public BossAI
                     DoStartMovement(target);
                 else
                 {
-                    EnterEvadeMode(EVADE_REASON_NO_HOSTILES);
+                    EnterEvadeMode(EvadeReason::NoHostiles);
                     return;
                 }
                 break;
@@ -416,7 +416,7 @@ struct boss_felmyst : public BossAI
         if (!UpdateVictim())
         {
             if (phase == PHASE_FLIGHT && !me->IsInEvadeMode())
-                EnterEvadeMode(EVADE_REASON_NO_HOSTILES);
+                EnterEvadeMode(EvadeReason::NoHostiles);
             return;
         }
 
