@@ -921,7 +921,6 @@ namespace WorldPackets
             void Read() override;
 
             ObjectGuid UnitGUID;
-            uint32 DisplayID = 0;
         };
 
         class MirrorImageComponentedData final : public ServerPacket
