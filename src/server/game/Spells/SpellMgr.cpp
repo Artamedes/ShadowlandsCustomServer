@@ -3328,6 +3328,17 @@ void SpellMgr::LoadSpellInfoCorrections()
 
     // Some spells have no amplitude set
     {
+        // Fire Cannon
+        ApplySpellFix({ 181593 }, [](SpellInfo* spellInfo)
+        {
+            ApplySpellEffectFix(spellInfo, EFFECT_0, [](SpellEffectInfo* spellEffectInfo)
+            {
+                // This spell never triggers, theory is that it was supposed to be only triggered until target reaches some health percentage
+                // but was broken and always caused visuals to break, then target was changed to immediately spawn with desired health
+                // leaving old data in db2
+                spellEffectInfo->TriggerSpell = 0;
+            });
+        });
         ApplySpellFix({ 46598 }, [](SpellInfo* info)
         {
             info->AttributesEx6 |= SPELL_ATTR6_IGNORE_PHASE_SHIFT;
