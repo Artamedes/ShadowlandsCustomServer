@@ -1,8 +1,0 @@
-DELETE FROM `creature_template` WHERE `entry`=802001;
-INSERT INTO `creature_template` (`entry`, `NAME`, `subname`, `gossip_menu_id`, `faction`, `npcflag`, `speed_walk`, `speed_run`, `baseattacktime`, `rangeattacktime`, `iconname`, `scriptname`) VALUES (802001, 'Game Master Bjorn', 'GM', 0, 35, 1, 1, 1.14286, 0, 0, NULL, 'npc_gm_commander');
-DELETE FROM `creature_template_model` WHERE `CreatureID`=802001 AND `Idx`=0;
-INSERT INTO `creature_template_model` (`CreatureID`, `Idx`, `CreatureDisplayID`, `DisplayScale`, `Probability`, `VerifiedBuild`) VALUES (802001, 0, 91754, 1.2, 1, 0);
-DELETE FROM `npc_text` WHERE `ID`=802001;
-INSERT INTO `npc_text` (`ID`, `Probability0`, `Probability1`, `Probability2`, `Probability3`, `Probability4`, `Probability5`, `Probability6`, `Probability7`, `BroadcastTextID0`, `BroadcastTextID1`, `BroadcastTextID2`, `BroadcastTextID3`, `BroadcastTextID4`, `BroadcastTextID5`, `BroadcastTextID6`, `BroadcastTextID7`, `VerifiedBuild`) VALUES (802001, 0, 0, 0, 0, 0, 0, 0, 0, 802001, 0, 0, 0, 0, 0, 0, 0, 0);
-DELETE FROM `creature` WHERE `guid`=1055864;
-INSERT INTO `creature` (`guid`, `id`, `map`, `zoneId`, `areaId`, `spawnDifficulties`, `phaseUseFlags`, `PhaseId`, `PhaseGroup`, `terrainSwapMap`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `wander_distance`, `currentwaypoint`, `curhealth`, `curmana`, `MovementType`, `npcflag`, `unit_flags`, `unit_flags2`, `unit_flags3`, `dynamicflags`, `ScriptName`, `VerifiedBuild`) VALUES (1055864, 802001, 2195, 0, 0, '0', 0, 0, 0, -1, 0, 0, 42.8205, 53.9968, 0.00271961, 3.15252, 300, 0, 0, 11791, 0, 0, 0, 0, 0, 0, 0, '', 0);

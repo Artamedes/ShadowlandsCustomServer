@@ -1,5 +1,0 @@
-UPDATE creature SET map = 10001 WHERE id BETWEEN 700000 AND 800000 AND map = 2162;
-UPDATE gameobject SET map = 10001 WHERE guid IN (600482, 600498, 600499, 600878);
-
-UPDATE `instance_template` SET `map`='10001' WHERE  `map`=2162;
-UPDATE game_tele SET map = 10001 WHERE id IN (1908, 1909, 1910, 1927, 1928, 1929);

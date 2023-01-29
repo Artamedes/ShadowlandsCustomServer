@@ -1,7 +1,0 @@
-REPLACE INTO `quest_poi` (`QuestID`, `BlobIndex`, `Idx1`, `ObjectiveIndex`, `QuestObjectiveID`, `QuestObjectID`, `MapID`, `UiMapID`, `Priority`, `Flags`, `WorldEffectID`, `PlayerConditionID`, `NavigationPlayerConditionID`, `SpawnTrackingID`, `AlwaysAllowMergingBlobs`, `VerifiedBuild`) VALUES (700037, 0, 0, 0, 7000370, 0, 2456, 1960, 0, 0, 0, 0, 0, 0, 0, 0);
-REPLACE INTO `quest_poi` (`QuestID`, `BlobIndex`, `Idx1`, `ObjectiveIndex`, `QuestObjectiveID`, `QuestObjectID`, `MapID`, `UiMapID`, `Priority`, `Flags`, `WorldEffectID`, `PlayerConditionID`, `NavigationPlayerConditionID`, `SpawnTrackingID`, `AlwaysAllowMergingBlobs`, `VerifiedBuild`) VALUES (700037, 0, 1, -1, 0, 0, 1116, 539, 0, 0, 0, 0, 0, 0, 0, 0);
-REPLACE INTO `quest_poi_points` (`QuestID`, `Idx1`, `Idx2`, `X`, `Y`, `Z`, `VerifiedBuild`) VALUES (700037, 0, 0, 4468, 6107, 4854, 0);
-REPLACE INTO `quest_poi_points` (`QuestID`, `Idx1`, `Idx2`, `X`, `Y`, `Z`, `VerifiedBuild`) VALUES (700037, 1, 0, 74, -2765, 62, 0);
-DELETE FROM reference_loot_template WHERE item IN (186430, 186434, 186423, 186424, 186432, 186437, 186433, 186429, 186550, 186433, 186427);
-
-UPDATE `creature_template` SET `HealthModifier`='60000' WHERE  `entry`=707028;

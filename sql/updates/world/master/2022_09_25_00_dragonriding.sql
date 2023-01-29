@@ -1,1 +1,0 @@
-REPLACE INTO spell_script_names (spell_id, scriptname) VALUES (372610, 'spell_dragonriding_skyward_ascent');

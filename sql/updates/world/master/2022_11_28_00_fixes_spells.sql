@@ -1,1 +1,0 @@
-UPDATE `creature_template` SET `ScriptName`='npc_druid_wild_mushroom' WHERE  `entry`=198051;
