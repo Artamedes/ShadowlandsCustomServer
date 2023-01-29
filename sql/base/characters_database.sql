@@ -720,6 +720,8 @@ CREATE TABLE `character_currency` (
   `Quantity` int unsigned NOT NULL,
   `WeeklyQuantity` int unsigned NOT NULL,
   `TrackedQuantity` int unsigned NOT NULL,
+  `IncreasedCapQuantity` INT UNSIGNED NOT NULL DEFAULT '0',
+  `EarnedQuantity` INT UNSIGNED NOT NULL DEFAULT '0',
   `Flags` tinyint unsigned NOT NULL,
   PRIMARY KEY (`CharacterGuid`,`Currency`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

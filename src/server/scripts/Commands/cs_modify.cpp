@@ -1033,7 +1033,7 @@ public:
         if (!amount)
             return false;
 
-        target->ModifyCurrency(currencyId, amount, true, true);
+        target->ModifyCurrency(currencyId, amount, CurrencyGainSource::Cheat, CurrencyDestroyReason::Cheat);
         handler->PSendSysMessage("Sent [%s]x%u to %s", currencyType->Name.Str[0], amount, target->GetName().c_str());
 
         return true;

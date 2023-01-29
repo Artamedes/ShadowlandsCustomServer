@@ -5844,7 +5844,7 @@ void Spell::TakeReagents()
     }
 
     for (SpellReagentsCurrencyEntry const* reagentsCurrency : m_spellInfo->ReagentsCurrency)
-        p_caster->ModifyCurrency(reagentsCurrency->CurrencyTypesID, -int32(reagentsCurrency->CurrencyCount), false, true);
+        p_caster->RemoveCurrency(reagentsCurrency->CurrencyTypesID, reagentsCurrency->CurrencyCount, CurrencyDestroyReason::Spell);
 }
 
 void Spell::HandleThreatSpells()
