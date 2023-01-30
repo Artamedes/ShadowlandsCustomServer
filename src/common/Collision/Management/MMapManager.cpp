@@ -25,8 +25,8 @@ namespace MMAP
     constexpr char MAP_FILE_NAME_FORMAT[] = "{}mmaps/{:04}.mmap";
     constexpr char TILE_FILE_NAME_FORMAT[] = "{}mmaps/{:04}{:02}{:02}.mmtile";
 
-    static char const* const TRANSPORT_MAP_FILE_NAME_FORMAT = "%smmaps/go%05i.mmap";
-    static char const* const TRANSPORT_TILE_FILE_NAME_FORMAT = "%smmaps/go%05i.mmtile";
+    static char const* const TRANSPORT_MAP_FILE_NAME_FORMAT = "{}mmaps/go%05i.mmap";
+    static char const* const TRANSPORT_TILE_FILE_NAME_FORMAT = "{}mmaps/go%05i.mmtile";
     // ######################## MMapManager ########################
     MMapManager::~MMapManager()
     {
