@@ -46,7 +46,7 @@ public:
             {
                 std::vector<uint32> oldHotfixes;
 
-                for (uint32 hotfix : db2StorageBase->GetLoadInfo()->Hotfixes)
+                for (uint32 hotfix : db2StorageBase->Hotfixes)
                     oldHotfixes.push_back(hotfix);
 
                 uint32 ms = getMSTime();
@@ -60,7 +60,7 @@ public:
                 handler->PSendSysMessage("Reloading %s in %ums", table.c_str(), GetMSTimeDiffToNow(ms));
                 std::vector<uint32> diff;
 
-                for (uint32 hotfix : db2StorageBase->GetLoadInfo()->Hotfixes)
+                for (uint32 hotfix : db2StorageBase->Hotfixes)
                     if (std::find(oldHotfixes.begin(), oldHotfixes.end(), hotfix) == oldHotfixes.end())
                         diff.push_back(hotfix);
 
