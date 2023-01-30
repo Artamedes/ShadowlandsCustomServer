@@ -814,7 +814,7 @@ void Trinity::AreaTriggerSearcher<Check>::Visit(AreaTriggerMapType& areaTriggerM
 {
     for (AreaTriggerMapType::iterator itr = areaTriggerMap.begin(); itr != areaTriggerMap.end(); ++itr)
     {
-        if (!itr->GetSource()->IsInPhase(i_searcher))
+        if (!itr->GetSource()->InSamePhase(i_searcher))
             continue;
 
         if (i_check(itr->GetSource()))
