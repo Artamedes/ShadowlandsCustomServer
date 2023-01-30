@@ -25,8 +25,8 @@ namespace MMAP
     constexpr char MAP_FILE_NAME_FORMAT[] = "{}mmaps/{:04}.mmap";
     constexpr char TILE_FILE_NAME_FORMAT[] = "{}mmaps/{:04}{:02}{:02}.mmtile";
 
-    static char const* const TRANSPORT_MAP_FILE_NAME_FORMAT = "{}mmaps/go{:05}.mmap";
-    static char const* const TRANSPORT_TILE_FILE_NAME_FORMAT = "{}mmaps/go{:05}.mmtile";
+    constexpr char TRANSPORT_MAP_FILE_NAME_FORMAT[] = "{}mmaps/go{:05}.mmap";
+    constexpr char TRANSPORT_TILE_FILE_NAME_FORMAT[] = "{}mmaps/go{:05}.mmtile";
     // ######################## MMapManager ########################
     MMapManager::~MMapManager()
     {
@@ -490,7 +490,7 @@ namespace MMAP
     TransportMMapData* MMapManager::loadTransportMapData(const std::string& basePath, uint32 modelID)
     {
         // load and init dtNavMesh - read parameters from file
-        std::string fileName = Trinity::StringFormat(TRANSPORT_MAP_FILE_NAME_FORMAT, basePath.c_str(), modelID);
+        std::string fileName = Trinity::StringFormat(TRANSPORT_MAP_FILE_NAME_FORMAT, basePath, modelID);
         FILE* file = fopen(fileName.c_str(), "rb");
         if (!file)
         {
