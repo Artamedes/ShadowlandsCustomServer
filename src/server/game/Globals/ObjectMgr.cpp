@@ -11892,8 +11892,6 @@ std::string ObjectMgr::GetPhaseName(uint32 phaseId) const
     return iter != _phaseNameStore.end() ? iter->second : "Unknown Name";
 }
 
-
-
 void ObjectMgr::LoadTreasurePicker()
 {
     uint32 oldMSTime = getMSTime();
@@ -12017,7 +12015,7 @@ void ObjectMgr::LoadTreasurePicker()
             } while (resultItem->NextRow());
         }
 
-        TC_LOG_INFO("server.loading", ">> Loaded %u treasure picks in %u ms", uint32(_treasurePickerMap.size()), GetMSTimeDiffToNow(oldMSTime));
+        TC_LOG_INFO("server.loading", ">> Loaded {} treasure picks in {} ms", uint32(_treasurePickerMap.size()), GetMSTimeDiffToNow(oldMSTime));
 }
 
 TreasurePicker* ObjectMgr::GetTreasurePicker(uint32 id)

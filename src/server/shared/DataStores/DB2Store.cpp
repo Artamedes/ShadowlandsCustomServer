@@ -73,9 +73,20 @@ void DB2StorageBase::WriteRecord(uint32 id, LocaleConstant locale, ByteBuffer& b
                     entry += 8;
                     break;
                 case FT_STRING:
-                    buffer << (*reinterpret_cast<LocalizedString const*>(entry))[locale];
+                {
+                    auto localizedString = reinterpret_cast<LocalizedString const*>(entry);
+
+                    if (const char* str = localizedString->Str[locale])
+                    {
+                        TC_LOG_INFO("network.opcode", "str: {}", str);
+                        buffer << str;
+                    }
+                    else
+                        buffer << "";
+                    
                     entry += sizeof(LocalizedString);
                     break;
+                }
                 case FT_STRING_NOT_LOCALIZED:
                     buffer << *reinterpret_cast<char const* const*>(entry);
                     entry += sizeof(char const*);

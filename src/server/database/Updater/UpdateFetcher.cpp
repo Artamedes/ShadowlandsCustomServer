@@ -302,14 +302,21 @@ UpdateResult UpdateFetcher::Update(bool const redundancyChecks,
         uint32 speed = 0;
         AppliedFileEntry const file = { availableQuery.first.filename().string(), hash, availableQuery.second, 0 };
 
-        switch (mode)
+        if (mode == MODE_APPLY)
         {
-            case MODE_APPLY:
+            try
+            {
                 speed = Apply(availableQuery.first);
-                [[fallthrough]];
-            case MODE_REHASH:
-                UpdateEntry(file, speed);
-                break;
+            }
+            catch (UpdateException&)
+            {
+                TC_LOG_ERROR("sql.sql", "Update may have already been applied {}", file.name);
+            }
+            UpdateEntry(file, speed);
+        }
+        else if (mode == MODE_REHASH)
+        {
+            UpdateEntry(file, speed);
         }
 
         if (iter != applied.end())
