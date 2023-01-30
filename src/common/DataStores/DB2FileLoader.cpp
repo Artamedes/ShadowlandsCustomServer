@@ -1792,7 +1792,7 @@ void DB2FileLoader::LoadHeaders(DB2FileSource* source, DB2FileLoadInfo const* lo
             sizeof(DB2Header) +
             sizeof(DB2SectionHeader) * _header.SectionCount +
             sizeof(DB2FieldEntry) * _header.FieldCount +
-            int64(_header.RecordSize) * _header.RecordCount  +
+            int64(_header.RecordSize) * _header.RecordCount +
             _header.StringTableSize +
             (loadInfo->Meta->IndexField == -1 ? sizeof(uint32) * _header.RecordCount : 0) +
             totalCopyTableSize +

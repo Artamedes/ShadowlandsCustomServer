@@ -1721,6 +1721,21 @@ struct CharStartKitMeta
     static constexpr DB2Meta Instance{ 3055696, -1, 16, 15, 0x00B44453, Fields, 15 };
 };
 
+struct CharStartOutfitMeta
+{
+    static constexpr DB2MetaField Fields[7] =
+    {
+        { FT_BYTE, 1, false },
+        { FT_BYTE, 1, false },
+        { FT_BYTE, 1, false },
+        { FT_INT, 1, false },
+        { FT_BYTE, 1, false },
+        { FT_INT, 24, true },
+        { FT_INT, 1, false },
+    };
+    static constexpr DB2Meta Instance{ 1237591, -1, 7, 6, 0x3CF88584, Fields, 6 };
+};
+
 struct CharTitlesMeta
 {
     static constexpr DB2MetaField Fields[4] =

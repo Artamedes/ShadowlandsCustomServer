@@ -21,7 +21,6 @@
 #include "DB2FileSystemSource.h"
 #include "DB2Meta.h"
 #include "StringFormat.h"
-#include "DatabaseEnv.h"
 
 DB2StorageBase::DB2StorageBase(char const* fileName, DB2LoadInfo const* loadInfo)
     : _tableHash(0), _layoutHash(0), _fileName(fileName), _fieldCount(0), _loadInfo(loadInfo), _dataTable(nullptr), _dataTableEx(),

@@ -68,6 +68,7 @@ char* DB2DatabaseLoader::Load(bool custom, uint32& records, char**& indexTable, 
     uint32 rec = 0;
     uint32 newRecords = 0;
     const_cast<DB2LoadInfo*>(_loadInfo)->Hotfixes.clear();
+
     do
     {
         Field* fields = result->Fetch();

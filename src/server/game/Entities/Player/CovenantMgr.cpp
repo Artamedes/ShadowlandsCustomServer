@@ -70,7 +70,8 @@ void Covenant::SetRenown(int32 renown, bool /*modCurr = true*/)
     if (!IsActiveCovenant())
         return;
 
-    _player->ModifyCurrency(1822, renown, false, false, true);
+    _player->SetCreateCurrency(1822, renown);
+    _player->SendCurrencies();
     UpdateRenownRewards();
 }
 
@@ -83,7 +84,8 @@ void Covenant::SetAnima(uint32 anima, bool modCurr /*= true*/, bool inital)
     {
         if (modCurr)
         {
-            _player->ModifyCurrency(1813, anima, false, false, true);
+            _player->SetCreateCurrency(1813, anima);
+            _player->SendCurrencies();
 
             if (!inital)
             {
@@ -108,7 +110,10 @@ void Covenant::SetSouls(uint32 souls, bool modCurr /*= true*/, bool inital)
     m_SaveFlags.AddFlag(eCovenantSaveFlags::SaveCovenant);
     _souls = souls;
     if (IsActiveCovenant() && modCurr)
-        _player->ModifyCurrency(1810, souls, !inital, false, true);
+    {
+        _player->SetCreateCurrency(1810, souls);
+        _player->SendCurrencies();
+    }
 }
 
 void Covenant::AddAnima(uint32 anima)

@@ -90,7 +90,7 @@ void WorldSession::HandleGarrisonResearchTalent(WorldPackets::Garrison::Garrison
                                 {
                                     if (rankEntry->Rank == Rank - 1)
                                     {
-                                        if (_player->GetCurrency(costEntry->CurrencyTypesID) < costEntry->CurrencyQuantity)
+                                        if (_player->GetCurrencyQuantity(costEntry->CurrencyTypesID) < costEntry->CurrencyQuantity)
                                         {
                                             ChatHandler(this).SendSysMessage("Not enough tower knowledge to research this!");
                                             return;

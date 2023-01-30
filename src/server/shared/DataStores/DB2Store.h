@@ -39,7 +39,7 @@ public:
 
     uint32 GetTableHash() const { return _tableHash; }
     uint32 GetLayoutHash() const { return _layoutHash; }
-    
+
     bool HasRecord(uint32 id) const { return id < _indexTableSize && _indexTable[id] != nullptr; }
     void WriteRecord(uint32 id, LocaleConstant locale, ByteBuffer& buffer) const;
     void EraseRecord(uint32 id) { if (id < _indexTableSize) _indexTable[id] = nullptr; }
@@ -48,7 +48,7 @@ public:
     uint32 GetFieldCount() const { return _fieldCount; }
     DB2LoadInfo const* GetLoadInfo() const { return _loadInfo; }
     uint32 GetNumRows() const { return _indexTableSize; }
-    
+
     void Load(std::string const& path, LocaleConstant locale);
     void LoadStringsFrom(std::string const& path, LocaleConstant locale);
     void LoadFromDB();
