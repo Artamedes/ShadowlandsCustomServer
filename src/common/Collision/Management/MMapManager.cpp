@@ -547,6 +547,7 @@ namespace MMAP
         ASSERT(mmap->GetNavMesh());
 
         // load this tile :: mmaps/MMMMM.mmtile
+        std::string fileName = Trinity::StringFormat(TRANSPORT_TILE_FILE_NAME_FORMAT, basePath, modelID);
         std::string fileName = Trinity::StringFormat(TRANSPORT_TILE_FILE_NAME_FORMAT, basePath.c_str(), modelID);
         FILE* file = fopen(fileName.c_str(), "rb");
         if (!file)
