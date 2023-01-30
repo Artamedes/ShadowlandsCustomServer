@@ -55,7 +55,7 @@ public:
     void LoadStringsFromDB(LocaleConstant locale);
     std::string _path;
     LocaleConstant _locale = LocaleConstant::LOCALE_enUS;
-
+    std::vector<uint32> Hotfixes;
 protected:
     uint32 _tableHash;
     uint32 _layoutHash;

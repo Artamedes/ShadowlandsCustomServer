@@ -142,8 +142,8 @@ void DB2StorageBase::LoadFromDB()
 {
     DB2DatabaseLoader loader(_fileName, _loadInfo);
 
-    _dataTableEx[0] = loader.Load(false, _indexTableSize, _indexTable, _stringPool);
-    _dataTableEx[1] = loader.Load(true, _indexTableSize, _indexTable, _stringPool);
+    _dataTableEx[0] = loader.Load(this, false, _indexTableSize, _indexTable, _stringPool);
+    _dataTableEx[1] = loader.Load(this, true, _indexTableSize, _indexTable, _stringPool);
     _stringPool.shrink_to_fit();
 }
 

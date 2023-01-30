@@ -625,7 +625,7 @@ void LoadDB2(std::bitset<TOTAL_LOCALES>& availableDb2Locales, std::vector<std::s
     // load additional data and enUS strings from db
     storage->LoadFromDB();
 
-    for (uint32 hotfixRecord : loadInfo->Hotfixes)
+    for (uint32 hotfixRecord : storage->Hotfixes)
         sDB2Manager.AddHotfixData(hotfixRecord, storage->GetTableHash());
 
     for (LocaleConstant i = LOCALE_enUS; i < TOTAL_LOCALES; i = LocaleConstant(i + 1))

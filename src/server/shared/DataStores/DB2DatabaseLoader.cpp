@@ -16,6 +16,7 @@
  */
 
 #include "DB2DatabaseLoader.h"
+#include "DB2Store.h"
 #include "Common.h"
 #include "DatabaseEnv.h"
 #include "DB2Meta.h"
@@ -25,7 +26,7 @@
 
 static char const* nullStr = "";
 
-char* DB2DatabaseLoader::Load(bool custom, uint32& records, char**& indexTable, std::vector<char*>& stringPool)
+char* DB2DatabaseLoader::Load(DB2StorageBase* storageBase, bool custom, uint32& records, char**& indexTable, std::vector<char*>& stringPool)
 {
     // Even though this query is executed only once, prepared statement is used to send data from mysql server in binary format
     HotfixDatabasePreparedStatement* stmt = HotfixDatabase.GetPreparedStatement(_loadInfo->Statement);
@@ -67,7 +68,7 @@ char* DB2DatabaseLoader::Load(bool custom, uint32& records, char**& indexTable, 
 
     uint32 rec = 0;
     uint32 newRecords = 0;
-    const_cast<DB2LoadInfo*>(_loadInfo)->Hotfixes.clear();
+    storageBase->Hotfixes.clear();
 
     do
     {
@@ -94,7 +95,7 @@ char* DB2DatabaseLoader::Load(bool custom, uint32& records, char**& indexTable, 
             ++f;
         }
 
-        const_cast<DB2LoadInfo*>(_loadInfo)->Hotfixes.push_back(indexValue);
+        storageBase->Hotfixes.push_back(indexValue);
 
         for (uint32 x = 0; x < _loadInfo->Meta->FieldCount; ++x)
         {
