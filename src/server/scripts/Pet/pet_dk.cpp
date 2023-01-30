@@ -82,7 +82,7 @@ public:
             return;
         }
 
-        EnterEvadeMode(EVADE_REASON_NO_HOSTILES);
+        EnterEvadeMode(EvadeReason::NoHostiles);
     }
 
     void EnterEvadeMode(EvadeReason /*reason*/) override

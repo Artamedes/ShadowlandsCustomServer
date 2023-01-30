@@ -228,7 +228,7 @@ public:
     void GiveRiftEnergyToPlayer(Player* player, uint32 reward)
     {
         auto instance = player->GetInstanceScript();
-        uint32 currCurrency = player->GetCurrency(RiftEnergy);
+        uint32 currCurrency = player->GetCurrencyQuantity(RiftEnergy);
         uint32 maxCurrency = instance->GetData(DataGetMaxEnergy);
         if (currCurrency <= maxCurrency)
         {

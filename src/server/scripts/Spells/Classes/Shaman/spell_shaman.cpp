@@ -4472,7 +4472,7 @@ struct npc_feral_spirit : public ScriptedAI
             return;
         }
 
-        EnterEvadeMode(EVADE_REASON_NO_HOSTILES);
+        EnterEvadeMode(EvadeReason::NoHostiles);
     }
 
     //void DamageDealt(Unit* /*victim*/, uint32& /*damage*/, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
@@ -4649,7 +4649,7 @@ public:
         }
 
         events.ScheduleEvent(EVENT_WIND, 1s);
-        EnterEvadeMode(EVADE_REASON_NO_HOSTILES);
+        EnterEvadeMode(EvadeReason::NoHostiles);
     }
 
     void EnterEvadeMode(EvadeReason /*reason*/) override

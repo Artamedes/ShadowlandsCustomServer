@@ -118,7 +118,7 @@ struct npc_crapopolis_ai_base : public ScriptedAI
             }
             else if (!me->IsInCombat())
             {
-                EnterEvadeMode(EVADE_REASON_NO_HOSTILES);
+                EnterEvadeMode(EvadeReason::NoHostiles);
                 return false;
             }
             else if (me->GetVictim())

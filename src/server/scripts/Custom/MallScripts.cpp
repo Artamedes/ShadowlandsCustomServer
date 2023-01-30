@@ -2559,7 +2559,7 @@ public:
         {
             me->RemoveAllAuras();
             m_Dueling = false;
-            EnterEvadeMode(EVADE_REASON_OTHER);
+            EnterEvadeMode(EvadeReason::Other);
 
             scheduler.Schedule(3s, [this](TaskContext context)
             {
@@ -2697,7 +2697,7 @@ public:
         {
             me->RemoveAllAuras();
             m_Dueling = false;
-            EnterEvadeMode(EVADE_REASON_OTHER);
+            EnterEvadeMode(EvadeReason::Other);
 
             scheduler.Schedule(3s, [this](TaskContext context)
             {
@@ -3870,7 +3870,7 @@ public:
             {
                 if (!player->GetSession()->GetCollectionMgr()->IsSetCompleted(transmogSet->ID))
                 {
-                    if (player->GetCurrency(TransmogToken) >= tokenCost)
+                    if (player->GetCurrencyQuantity(TransmogToken) >= tokenCost)
                     {
                         player->ModifyCurrency(TransmogToken, -tokenCost);
                         player->GetSession()->GetCollectionMgr()->AddTransmogSet(transmogSet->ID);

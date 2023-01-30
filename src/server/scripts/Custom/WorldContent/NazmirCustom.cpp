@@ -399,8 +399,8 @@ struct npc_nazmir_general_fighter : public ScriptedAI
         {
             switch (why)
             {
-                case EVADE_REASON_BOUNDARY:
-                case EVADE_REASON_NO_PATH:
+                case EvadeReason::Boundary:
+                case EvadeReason::NoPath:
                     me->DespawnOrUnsummon();
                     break;
             }
@@ -550,8 +550,8 @@ struct npc_nazmir_general_enemy : public ScriptedAI
         {
             switch (why)
             {
-                case EVADE_REASON_BOUNDARY:
-                case EVADE_REASON_NO_PATH:
+                case EvadeReason::Boundary:
+                case EvadeReason::NoPath:
                     me->DespawnOrUnsummon();
                     break;
             }

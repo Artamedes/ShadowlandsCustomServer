@@ -39,7 +39,7 @@ public:
             {
                 instance->DoOnPlayers([this](Player* player)
                 {
-                    player->ModifyCurrency(RiftEnergy, StartRiftEnergy, true, false, true);
+                    player->ModifyCurrency(RiftEnergy, StartRiftEnergy);
                 });
 
                 if (auto oldCrystal = instance->GetCreature(CrystalGuid))
@@ -65,8 +65,8 @@ public:
                     uint32 RewardRiftEssence = (uint32)(static_cast<float>(AwardRiftEssence) * (std::max(10.0f, oldCrystal->GetHealthPct()) / 100.0f));
                     instance->DoOnPlayers([RewardRiftEssence, oldCrystal](Player* player)
                     {
-                        uint32 riftEnergy = player->GetCurrency(RiftEnergy);
-                        player->ModifyCurrency(RiftEnergy, 0, true, false, true);
+                        uint32 riftEnergy = player->GetCurrencyQuantity(RiftEnergy);
+                        player->ModifyCurrency(RiftEnergy, 0);
 
                         ChatHandler(player).PSendSysMessage("|cffFFA600Crystal lived with %u%% HP! You've earned %u+(%u Bonus) Rift Essence!", (uint32)oldCrystal->GetHealthPct(), RewardRiftEssence, riftEnergy);
                         player->ModifyCurrency(RiftEssence, RewardRiftEssence + riftEnergy);
@@ -153,12 +153,12 @@ public:
 
     void OnPlayerEnter(Player* player) override
     {
-        player->ModifyCurrency(RiftEnergy, 0, true, false, true);
+        player->ModifyCurrency(RiftEnergy, 0);
     }
 
     void OnPlayerLeave(Player* player) override
     {
-        player->ModifyCurrency(RiftEnergy, 0, true, false, true);
+        player->ModifyCurrency(RiftEnergy, 0);
     }
 };
 

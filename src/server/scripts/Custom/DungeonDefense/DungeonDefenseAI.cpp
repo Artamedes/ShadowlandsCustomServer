@@ -809,7 +809,7 @@ struct npc_darkmaul_citadel_defender_ai : public dungeon_defense_base_ai
         if (auto instance = player->GetInstanceScript())
         {
             std::ostringstream ss;
-            ss << "Rift Energy: " << player->GetCurrency(RiftEnergy) << "/" << instance->GetData(DataGetMaxEnergy);
+            ss << "Rift Energy: " << player->GetCurrencyQuantity(RiftEnergy) << "/" << instance->GetData(DataGetMaxEnergy);
 
             AddGossipItemFor(player, GossipOptionNpc::None, ss.str(), 0, 0, [this, player](std::string /*callback*/)
             {
@@ -838,7 +838,7 @@ struct npc_darkmaul_citadel_defender_ai : public dungeon_defense_base_ai
                     ss.str("");
                     ss << "Heal (" << me->GetHealth() << "/" << me->GetMaxHealth() << ")";
 
-                    if (player->GetCurrency(RiftEnergy) >= cost)
+                    if (player->GetCurrencyQuantity(RiftEnergy) >= cost)
                         ss << " Cost: " << cost;
                     else
                         ss << " |cffFF0000Cost: " << cost;
@@ -848,7 +848,7 @@ struct npc_darkmaul_citadel_defender_ai : public dungeon_defense_base_ai
                         uint32 FullHealthCost = Invested / 2;
                         float costPerPct = FullHealthCost * (1.0f / 100.0f);
                         uint32 cost = costPerPct * (100.0f - me->GetHealthPct());
-                        uint32 energy = player->GetCurrency(RiftEnergy);
+                        uint32 energy = player->GetCurrencyQuantity(RiftEnergy);
                         if (energy >= cost)
                         {
                             player->ModifyCurrency(RiftEnergy, -static_cast<int32>(cost));
@@ -880,7 +880,7 @@ struct npc_darkmaul_citadel_defender_ai : public dungeon_defense_base_ai
                     ss << " MAX";
                 else
                 {
-                    if (player->GetCurrency(RiftEnergy) >= NextUpgradeCost)
+                    if (player->GetCurrencyQuantity(RiftEnergy) >= NextUpgradeCost)
                         ss << " Cost: " << NextUpgradeCost;
                     else
                         ss << " |cffFF0000Cost: " << NextUpgradeCost;
@@ -888,7 +888,7 @@ struct npc_darkmaul_citadel_defender_ai : public dungeon_defense_base_ai
 
                 AddGossipItemFor(player, GossipOptionNpc::None, ss.str(), 0, 0, [this, player](std::string /*callback*/)
                 {
-                    if (player->GetCurrency(RiftEnergy) >= NextUpgradeCost)
+                    if (player->GetCurrencyQuantity(RiftEnergy) >= NextUpgradeCost)
                     {
                         if (CurrUpgrade < MaxUpgrade)
                         {

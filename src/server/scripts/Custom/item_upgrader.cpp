@@ -677,8 +677,8 @@ class item_upgrader : public ItemScript
                                 "You don't have enough %s, Need %u but you only have %u. Need %u more",
                                 sCurrencyTypesStore.LookupEntry(l_I.RequiredID)->Name.Str[0],
                                 l_I.RequiredAmount,
-                                p_Player->GetCurrency(l_I.RequiredID),
-                                l_I.RequiredAmount - p_Player->GetCurrency(l_I.RequiredID)
+                                p_Player->GetCurrencyQuantity(l_I.RequiredID),
+                                l_I.RequiredAmount - p_Player->GetCurrencyQuantity(l_I.RequiredID)
                             );
                         }
                         break;

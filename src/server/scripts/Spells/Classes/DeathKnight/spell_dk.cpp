@@ -2981,7 +2981,7 @@ struct npc_dk_bloodworm : public CreatureAI
 		if (owner->GetVictim() && me->IsValidAttackTarget(owner->GetVictim()))
 			me->GetAI()->AttackStart(owner->GetVictim());
 		else
-			EnterEvadeMode(EVADE_REASON_NO_HOSTILES);
+			EnterEvadeMode(EvadeReason::NoHostiles);
 
 		DoMeleeAttackIfReady();
 	}
@@ -3122,7 +3122,7 @@ public:
 
 		if (attack && !owner->IsInCombat())
 		{
-            EnterEvadeMode(EVADE_REASON_NO_HOSTILES);
+            EnterEvadeMode(EvadeReason::NoHostiles);
 			return;
 		}
 

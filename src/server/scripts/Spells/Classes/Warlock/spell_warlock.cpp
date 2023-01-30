@@ -3613,7 +3613,7 @@ public:
             return;
         }
 
-        EnterEvadeMode(EVADE_REASON_NO_HOSTILES);
+        EnterEvadeMode(EvadeReason::NoHostiles);
     }
 
     void JustUnsummoned() override
@@ -3784,7 +3784,7 @@ public:
             return;
         }
 
-        EnterEvadeMode(EVADE_REASON_NO_HOSTILES);
+        EnterEvadeMode(EvadeReason::NoHostiles);
     }
 
     void JustUnsummoned() override
@@ -3906,7 +3906,7 @@ public:
             return;
         }
 
-        EnterEvadeMode(EVADE_REASON_NO_HOSTILES);
+        EnterEvadeMode(EvadeReason::NoHostiles);
     }
 
     void JustUnsummoned() override
@@ -4064,7 +4064,7 @@ public:
 					else
 					{
 						events.ScheduleEvent(EVENT_ATTACK, 1s);
-						EnterEvadeMode(EVADE_REASON_NO_HOSTILES);
+						EnterEvadeMode(EvadeReason::NoHostiles);
 					}
                     break;
                 case EVENT_JUMP:
@@ -4108,7 +4108,7 @@ public:
 			return;
     }
 
-        EnterEvadeMode(EVADE_REASON_NO_HOSTILES);
+        EnterEvadeMode(EvadeReason::NoHostiles);
     }
 
     void EnterEvadeMode(EvadeReason /*reason*/) override
@@ -4194,7 +4194,7 @@ public:
 			return;
     }
 
-        EnterEvadeMode(EVADE_REASON_NO_HOSTILES);
+        EnterEvadeMode(EvadeReason::NoHostiles);
     }
 
     void JustDied(Unit* /*killer*/) override
@@ -4306,7 +4306,7 @@ public:
 			return;
         }
 
-        EnterEvadeMode(EVADE_REASON_NO_HOSTILES);
+        EnterEvadeMode(EvadeReason::NoHostiles);
     }
 
     void JustDied(Unit* /*killer*/) override
@@ -4455,7 +4455,7 @@ public:
 			return;
         }
 
-        EnterEvadeMode(EVADE_REASON_NO_HOSTILES);
+        EnterEvadeMode(EvadeReason::NoHostiles);
     }
 
     void EnterEvadeMode(EvadeReason /*reason*/) override
@@ -4564,7 +4564,7 @@ public:
 			return;
     }
 
-        EnterEvadeMode(EVADE_REASON_NO_HOSTILES);
+        EnterEvadeMode(EvadeReason::NoHostiles);
     }
 
     void EnterEvadeMode(EvadeReason /*reason*/) override
@@ -4673,7 +4673,7 @@ public:
 			return;
     }
 
-        EnterEvadeMode(EVADE_REASON_NO_HOSTILES);
+        EnterEvadeMode(EvadeReason::NoHostiles);
     }
 
     void EnterEvadeMode(EvadeReason /*reason*/) override
@@ -4782,7 +4782,7 @@ public:
 			return;
     }
 
-        EnterEvadeMode(EVADE_REASON_NO_HOSTILES);
+        EnterEvadeMode(EvadeReason::NoHostiles);
     }
 
     void EnterEvadeMode(EvadeReason /*reason*/) override
@@ -4890,7 +4890,7 @@ public:
 			return;
     }
 
-        EnterEvadeMode(EVADE_REASON_NO_HOSTILES);
+        EnterEvadeMode(EvadeReason::NoHostiles);
     }
 
     void EnterEvadeMode(EvadeReason /*reason*/) override
@@ -4999,7 +4999,7 @@ public:
 			return;
     }
 
-        EnterEvadeMode(EVADE_REASON_NO_HOSTILES);
+        EnterEvadeMode(EvadeReason::NoHostiles);
     }
 
     void EnterEvadeMode(EvadeReason /*reason*/) override
@@ -5108,7 +5108,7 @@ public:
 			return;
     }
 
-        EnterEvadeMode(EVADE_REASON_NO_HOSTILES);
+        EnterEvadeMode(EvadeReason::NoHostiles);
     }
 
     void EnterEvadeMode(EvadeReason /*reason*/) override
@@ -5182,7 +5182,7 @@ public:
 			return;
     }
 
-        EnterEvadeMode(EVADE_REASON_NO_HOSTILES);
+        EnterEvadeMode(EvadeReason::NoHostiles);
     }
 
     void EnterEvadeMode(EvadeReason /*reason*/) override
@@ -5362,7 +5362,7 @@ class npc_pet_warlock_infernal : public ScriptedAI
                 return;
             }
 
-            EnterEvadeMode(EVADE_REASON_NO_HOSTILES);
+            EnterEvadeMode(EvadeReason::NoHostiles);
         }
 
     private:
@@ -5397,7 +5397,7 @@ public:
 
     void UpdateAI(uint32 /*diff*/) override
     {
-        EnterEvadeMode(EVADE_REASON_NO_HOSTILES);
+        EnterEvadeMode(EvadeReason::NoHostiles);
     }
 
     void EnterEvadeMode(EvadeReason /*reason*/) override
@@ -5454,7 +5454,7 @@ public:
             return;
         }
 
-        EnterEvadeMode(EVADE_REASON_NO_HOSTILES);
+        EnterEvadeMode(EvadeReason::NoHostiles);
     }
 
     void EnterEvadeMode(EvadeReason /*reason*/) override
@@ -5698,7 +5698,7 @@ public:
             return;
         }
 
-        EnterEvadeMode(EVADE_REASON_NO_HOSTILES);
+        EnterEvadeMode(EvadeReason::NoHostiles);
     }
 
     void DamageDealt(Unit* /*victim*/, uint32& damage, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override

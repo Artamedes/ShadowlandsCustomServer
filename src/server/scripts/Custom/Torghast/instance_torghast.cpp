@@ -84,7 +84,7 @@ public:
         player->SetJailerTowerLevel(0);
         player->SetJailerTowerLevelMax(0);
         /// Need to check if this is called on logout, we can reset phantasma here.
-        player->ModifyCurrency(eCurrencies::Phantasma, 0, true, true, true);
+        player->ModifyCurrency(eCurrencies::Phantasma, 0);
     }
 
     //void WriteSaveDataMore(std::ostringstream& data) override

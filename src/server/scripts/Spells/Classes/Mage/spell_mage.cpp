@@ -3396,7 +3396,7 @@ public:
                     if (me->HasUnitState(UNIT_STATE_CASTING))
                         me->CastStop();
 
-                    EnterEvadeMode(EvadeReason::EVADE_REASON_OTHER);
+                    EnterEvadeMode(EvadeReason::Other);
                 }
             }
             else

@@ -24,7 +24,7 @@ public:
             {
                 std::ostringstream ss;
 
-                ss << "Rift Energy: " << player->GetCurrency(RiftEnergy) << "/" << instance->GetData(DataGetMaxEnergy);
+                ss << "Rift Energy: " << player->GetCurrencyQuantity(RiftEnergy) << "/" << instance->GetData(DataGetMaxEnergy);
                 AddGossipItemFor(player, GossipOptionNpc::None, ss.str(), 0, 0, [this, player, item](std::string /*callback*/)
                 {
                     MainMenu(player, item);
@@ -55,7 +55,7 @@ public:
                     ss.str("");
                     ss << "Spawn " << creatureTemplate->Name;
 
-                    if (player->GetCurrency(RiftEnergy) >= cost)
+                    if (player->GetCurrencyQuantity(RiftEnergy) >= cost)
                         ss << " Cost: " << cost;
                     else
                         ss << " |cffFF0000Cost: " << cost;
@@ -71,7 +71,7 @@ public:
                         {
                             if (auto crystal = instance->GetCreature(BossCrystal))
                             {
-                                if (player->GetCurrency(RiftEnergy) >= cost && maxDefensePoints - currDefensePoints >= defensePoints)
+                                if (player->GetCurrencyQuantity(RiftEnergy) >= cost && maxDefensePoints - currDefensePoints >= defensePoints)
                                 {
                                     player->ModifyCurrency(RiftEnergy, -static_cast<int32>(cost));
                                     instance->SetData(SetAddDefensePoints, defensePoints);
