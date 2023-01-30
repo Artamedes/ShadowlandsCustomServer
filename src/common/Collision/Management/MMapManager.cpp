@@ -237,7 +237,7 @@ namespace MMAP
         FILE* file = fopen(fileName.c_str(), "rb");
         if (!file)
         {
-            TC_LOG_DEBUG("mmap", "MMAP:loadGameObject: Error: Could not open mmap file %s", fileName.c_str());
+            TC_LOG_DEBUG("mmap", "MMAP:loadGameObject: Error: Could not open mmap file {}", fileName);
             return false;
         }
 
@@ -246,15 +246,15 @@ namespace MMAP
 
         if (fileHeader.mmapMagic != MMAP_MAGIC)
         {
-            TC_LOG_ERROR("mmap", "MMAP:loadGameObject: Bad header in mmap %s", fileName.c_str());
+            TC_LOG_ERROR("mmap", "MMAP:loadGameObject: Bad header in mmap {}", fileName);
             fclose(file);
             return false;
         }
 
         if (fileHeader.mmapVersion != MMAP_VERSION)
         {
-            TC_LOG_ERROR("mmap", "MMAP:loadGameObject: %s was built with generator v%i, expected v%i",
-                fileName.c_str(), fileHeader.mmapVersion, MMAP_VERSION);
+            TC_LOG_ERROR("mmap", "MMAP:loadGameObject: {} was built with generator v%i, expected v%i",
+                fileName, fileHeader.mmapVersion, MMAP_VERSION);
             fclose(file);
             return false;
         }
@@ -264,7 +264,7 @@ namespace MMAP
         size_t result = fread(data, fileHeader.size, 1, file);
         if (!result)
         {
-            TC_LOG_ERROR("mmap", "MMAP:loadGameObject: Bad header or data in mmap %s", fileName.c_str());
+            TC_LOG_ERROR("mmap", "MMAP:loadGameObject: Bad header or data in mmap {}", fileName);
             fclose(file);
             return false;
         }
@@ -277,10 +277,10 @@ namespace MMAP
         if (dtStatusFailed(r))
         {
             dtFreeNavMesh(mesh);
-            TC_LOG_ERROR("mmap", "MMAP:loadGameObject: Failed to initialize dtNavMesh from file %s. Result 0x%x.", fileName.c_str(), r);
+            TC_LOG_ERROR("mmap", "MMAP:loadGameObject: Failed to initialize dtNavMesh from file {}. Result 0x%x.", fileName, r);
             return false;
         }
-        TC_LOG_INFO("mmap", "MMAP:loadGameObject: Loaded file %s [size=%u]", fileName.c_str(), fileHeader.size);
+        TC_LOG_INFO("mmap", "MMAP:loadGameObject: Loaded file {} [size={}]", fileName, fileHeader.size);
 
         MMapData* mmap_data = new MMapData(mesh);
         loadedModels.insert(std::pair<uint32, MMapData*>(displayId, mmap_data));
@@ -494,7 +494,7 @@ namespace MMAP
         FILE* file = fopen(fileName.c_str(), "rb");
         if (!file)
         {
-            TC_LOG_DEBUG("maps", "MMAP:loadMapData model: Error: Could not open model file '%s'", fileName.c_str());
+            TC_LOG_DEBUG("maps", "MMAP:loadMapData model: Error: Could not open model file '{}'", fileName);
             return nullptr;
         }
 
@@ -503,7 +503,7 @@ namespace MMAP
         fclose(file);
         if (count != 1)
         {
-            TC_LOG_DEBUG("maps", "MMAP:loadMapData model: Error: Could not read params from file '%s'", fileName.c_str());
+            TC_LOG_DEBUG("maps", "MMAP:loadMapData model: Error: Could not read params from file '{}'", fileName);
             return nullptr;
         }
 
@@ -512,7 +512,7 @@ namespace MMAP
         if (dtStatusFailed(mesh->init(&params)))
         {
             dtFreeNavMesh(mesh);
-            TC_LOG_ERROR("maps", "MMAP:loadMapData model: Failed to initialize dtNavMesh for model %05u from file %s", modelID, fileName.c_str());
+            TC_LOG_ERROR("maps", "MMAP:loadMapData model: Failed to initialize dtNavMesh for model %05u from file {}", modelID, fileName);
             return nullptr;
         }
 
@@ -548,11 +548,10 @@ namespace MMAP
 
         // load this tile :: mmaps/MMMMM.mmtile
         std::string fileName = Trinity::StringFormat(TRANSPORT_TILE_FILE_NAME_FORMAT, basePath, modelID);
-        std::string fileName = Trinity::StringFormat(TRANSPORT_TILE_FILE_NAME_FORMAT, basePath.c_str(), modelID);
         FILE* file = fopen(fileName.c_str(), "rb");
         if (!file)
         {
-            TC_LOG_DEBUG("maps", "MMAP:loadMap model: Could not open mmtile file '%s'", fileName.c_str());
+            TC_LOG_DEBUG("maps", "MMAP:loadMap model: Could not open mmtile file {}", fileName);
             return false;
         }
 
