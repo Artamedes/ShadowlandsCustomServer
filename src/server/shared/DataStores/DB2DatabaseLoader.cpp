@@ -66,7 +66,6 @@ char* DB2DatabaseLoader::Load(DB2StorageBase* storageBase, bool custom, uint32& 
     if (stringFields)
         stringPool.reserve(std::max<uint64>(stringPool.capacity(), stringPool.size() + stringFields * result->GetRowCount() + 1));
 
-    uint32 rec = 0;
     uint32 newRecords = 0;
     storageBase->Hotfixes.clear();
 
@@ -160,7 +159,6 @@ char* DB2DatabaseLoader::Load(DB2StorageBase* storageBase, bool custom, uint32& 
         }
 
         ASSERT(offset == recordSize);
-        ++rec;
     } while (result->NextRow());
 
     if (!newRecords)

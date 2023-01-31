@@ -3471,7 +3471,6 @@ struct ItemSpecStats
 void ObjectMgr::LoadItemTemplates()
 {
     uint32 oldMSTime = getMSTime();
-    uint32 sparseCount = 0;
 
     for (ItemSparseEntry const* sparse : sItemSparseStore)
     {
@@ -3541,8 +3540,6 @@ void ObjectMgr::LoadItemTemplates()
         for (auto& specs : itemTemplate.Specializations)
             if (specs.count() == 0)
                 specs.set();
-
-        ++sparseCount;
     }
 
     // Load item effects (spells)
@@ -10894,7 +10891,6 @@ void ObjectMgr::LoadRaceAndClassExpansionRequirements()
 
     if (result)
     {
-        uint32 count = 0;
         do
         {
             Field* fields = result->Fetch();
@@ -10925,8 +10921,6 @@ void ObjectMgr::LoadRaceAndClassExpansionRequirements()
             RaceUnlockRequirement& raceUnlockRequirement = _raceUnlockRequirementStore[raceID];
             raceUnlockRequirement.Expansion = expansion;
             raceUnlockRequirement.AchievementId = achievementId;
-
-            ++count;
         }
         while (result->NextRow());
         TC_LOG_INFO("server.loading", ">> Loaded {} race expansion requirements in {} ms.", _raceUnlockRequirementStore.size(), GetMSTimeDiffToNow(oldMSTime));
