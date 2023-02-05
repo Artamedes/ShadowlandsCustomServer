@@ -893,7 +893,6 @@ GameObject* GameObject::CreateGameObjectFromDB(ObjectGuid::LowType spawnId, Map*
 
 void GameObject::Update(uint32 diff)
 {
-    m_Events.Update(diff);
     _scheduler.Update(diff);
 
     WorldObject::Update(diff);
