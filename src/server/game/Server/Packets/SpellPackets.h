@@ -1097,6 +1097,16 @@ namespace WorldPackets
             int32 RecipeID = 0;
             bool IsFavorite = false;
         };
+        
+        class KeyboundOverride final : public ClientPacket
+        {
+        public:
+            KeyboundOverride(WorldPacket&& packet) : ClientPacket(CMSG_KEYBOUND_OVERRIDE,  std::move(packet)) { }
+
+            void Read() override;
+
+            uint16 OverrideID = 0;
+        };
 
         class LossControlAuraUpdate final : public ServerPacket
         {

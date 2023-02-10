@@ -1131,4 +1131,9 @@ void TradeSkillSetFavorite::Read()
     _worldPacket >> RecipeID;
     IsFavorite = _worldPacket.ReadBit();
 }
+
+void KeyboundOverride::Read()
+{
+    _worldPacket >> OverrideID;
+}
 }
