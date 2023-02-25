@@ -20,7 +20,7 @@ public:
     void CreateMenu(Player* player, uint32 lowerBounds = 0, uint32 upperBounds = 20);
     void CreateMenuForSpell(Player* player, SpellInfo const* spellInfo);
     void CreateMenuForEffect(Player* player, SpellEffectInfo const* eff, SpellInfo const* spellInfo);
-    void HandleInputSpellId(Player* player, std::string callback);
+    void HandleInputSpellId(Player* player, std::string_view callback);
 };
 
 #define sSpellFormulaOverride SpellFormulaOverride::instance()

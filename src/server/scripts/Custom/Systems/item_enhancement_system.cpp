@@ -428,7 +428,7 @@ public:
 
                     ObjectGuid itemGuid = item->GetGUID();
 
-                    AddGossipItemFor(player, GossipOptionNpc::None, ss.str(), 0, 0, ss2.str(), 0, false, [this, player, upgrader, targets, corruption, bonusToRemove, itemGuid, currencyId, refundAmount](std::string /*callback*/)
+                    AddGossipItemFor(player, GossipOptionNpc::None, ss.str(), 0, 0, ss2.str(), 0, false, [this, player, upgrader, targets, corruption, bonusToRemove, itemGuid, currencyId, refundAmount](std::string_view /*callback*/)
                     {
                         if (auto item = player->GetItemByGuid(itemGuid))
                         {

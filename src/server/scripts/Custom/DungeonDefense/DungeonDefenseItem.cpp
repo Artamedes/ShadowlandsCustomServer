@@ -25,7 +25,7 @@ public:
                 std::ostringstream ss;
 
                 ss << "Rift Energy: " << player->GetCurrencyQuantity(RiftEnergy) << "/" << instance->GetData(DataGetMaxEnergy);
-                AddGossipItemFor(player, GossipOptionNpc::None, ss.str(), 0, 0, [this, player, item](std::string /*callback*/)
+                AddGossipItemFor(player, GossipOptionNpc::None, ss.str(), 0, 0, [this, player, item](std::string_view /*callback*/)
                 {
                     MainMenu(player, item);
                 });
@@ -35,7 +35,7 @@ public:
                 auto currDefensePoints = instance->GetData(DataGetDefensePoints);
                 auto maxDefensePoints = instance->GetData(DataGetMaxDefensePoints);
                 ss << "Defense Points: " << currDefensePoints << "/" << maxDefensePoints;
-                AddGossipItemFor(player, GossipOptionNpc::None, ss.str(), 0, 0, [this, player, item](std::string /*callback*/)
+                AddGossipItemFor(player, GossipOptionNpc::None, ss.str(), 0, 0, [this, player, item](std::string_view /*callback*/)
                 {
                     MainMenu(player, item);
                 });
@@ -65,7 +65,7 @@ public:
                     else
                         ss << "\n|cffFF0000Defense Points: " << defensePoints;
 
-                    AddGossipItemFor(player, GossipOptionNpc::None, ss.str(), 0, 0, [this, player, item, creatureTemplate, cost, defensePoints, currDefensePoints, maxDefensePoints](std::string /*callback*/)
+                    AddGossipItemFor(player, GossipOptionNpc::None, ss.str(), 0, 0, [this, player, item, creatureTemplate, cost, defensePoints, currDefensePoints, maxDefensePoints](std::string_view /*callback*/)
                     {
                         if (auto instance = player->GetInstanceScript())
                         {

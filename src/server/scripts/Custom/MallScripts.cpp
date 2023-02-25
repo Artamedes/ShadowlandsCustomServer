@@ -390,27 +390,27 @@ struct npc_char_services : public ScriptedAI
         {
             ClearGossipMenuFor(p_Player);
             p_Player->PrepareQuestMenu(me->GetGUID());
-           // AddGossipItemFor(p_Player, GossipOptionNpc::None, "|TInterface\\ICONS\\achievement_general.BLP:30:30:-28:0|tReset my talents.", 0, 0, [this, p_Player](std::string /*callback*/)
+           // AddGossipItemFor(p_Player, GossipOptionNpc::None, "|TInterface\\ICONS\\achievement_general.BLP:30:30:-28:0|tReset my talents.", 0, 0, [this, p_Player](std::string_view /*callback*/)
            // {
            //     p_Player->ResetTalents(true);
            //     CloseGossipMenuFor(p_Player);
            // });
-            AddGossipItemFor(p_Player, GossipOptionNpc::None, "|TInterface\\ICONS\\inv_inscription_talenttome01.BLP:30:30:-28:0|tGive me 5 tomes.", 0, 0, [this, p_Player](std::string /*callback*/)
+            AddGossipItemFor(p_Player, GossipOptionNpc::None, "|TInterface\\ICONS\\inv_inscription_talenttome01.BLP:30:30:-28:0|tGive me 5 tomes.", 0, 0, [this, p_Player](std::string_view /*callback*/)
             {
                 p_Player->AddItem(173049, 5);
                 CloseGossipMenuFor(p_Player);
             });
-            AddGossipItemFor(p_Player, GossipOptionNpc::None, "|TInterface\\ICONS\\inv_misc_enggizmos_32.BLP:30:30:-28:0|tGive me the Magic Stone.", 0, 0, [this, p_Player](std::string /*callback*/)
+            AddGossipItemFor(p_Player, GossipOptionNpc::None, "|TInterface\\ICONS\\inv_misc_enggizmos_32.BLP:30:30:-28:0|tGive me the Magic Stone.", 0, 0, [this, p_Player](std::string_view /*callback*/)
             {
                 p_Player->AddItem(700001, 1);
                 CloseGossipMenuFor(p_Player);
             });
-            AddGossipItemFor(p_Player, GossipOptionNpc::None, "|TInterface\\ICONS\\inv_offhand_1h_ulduarraid_d_01.BLP:30:30:-28:0|tGive me the Item Upgrader.", 0, 0, [this, p_Player](std::string /*callback*/)
+            AddGossipItemFor(p_Player, GossipOptionNpc::None, "|TInterface\\ICONS\\inv_offhand_1h_ulduarraid_d_01.BLP:30:30:-28:0|tGive me the Item Upgrader.", 0, 0, [this, p_Player](std::string_view /*callback*/)
             {
                 p_Player->AddItem(700000, 1);
                 CloseGossipMenuFor(p_Player);
             });
-            AddGossipItemFor(p_Player, GossipOptionNpc::None, "|TInterface\\ICONS\\inv_gizmo_manasyphon.BLP:30:30:-28:0|tGive me the Corruption Chisel.", 0, 0, [this, p_Player](std::string /*callback*/)
+            AddGossipItemFor(p_Player, GossipOptionNpc::None, "|TInterface\\ICONS\\inv_gizmo_manasyphon.BLP:30:30:-28:0|tGive me the Corruption Chisel.", 0, 0, [this, p_Player](std::string_view /*callback*/)
             {
                 p_Player->AddItem(699998, 1);
                 CloseGossipMenuFor(p_Player);
@@ -464,7 +464,7 @@ struct npc_juno_700006 : public ScriptedAI
 
             if (p_Player->HasAchieved(700000) && p_Player->GetQuestStatus(700006) == QUEST_STATUS_REWARDED)
             {
-                AddGossipItemFor(p_Player, GossipOptionNpc::None, "I've heard this tale before.\n|cffFF0000<Skip to Thrall>", 0, 0, "Are you sure? This action cannot be undone.", 0, false, [p_Player, this](std::string /*callback*/)
+                AddGossipItemFor(p_Player, GossipOptionNpc::None, "I've heard this tale before.\n|cffFF0000<Skip to Thrall>", 0, 0, "Are you sure? This action cannot be undone.", 0, false, [p_Player, this](std::string_view /*callback*/)
                 {
                     if (p_Player->HasAchieved(700000))
                     {
@@ -1128,7 +1128,7 @@ public:
         player->PrepareQuestMenu(me->GetGUID());
         if (player->GetQuestStatus(700000) == QUEST_STATUS_INCOMPLETE && !me->IsSummon() && me->HasNpcFlag(NPCFlags::UNIT_NPC_FLAG_QUESTGIVER))
         {
-            AddGossipItemFor(player, GossipOptionNpc::None, "I'm ready", 0, 0, [this, player](std::string /*callback*/)
+            AddGossipItemFor(player, GossipOptionNpc::None, "I'm ready", 0, 0, [this, player](std::string_view /*callback*/)
             {
                 CloseGossipMenuFor(player);
                 StartQuestEvent(player);
@@ -2864,7 +2864,7 @@ public:
         player->PrepareQuestMenu(me->GetGUID());
         if (player->GetQuestStatus(700001) == QUEST_STATUS_INCOMPLETE && !me->IsSummon() && me->HasNpcFlag(NPCFlags::UNIT_NPC_FLAG_QUESTGIVER))
         {
-            AddGossipItemFor(player, GossipOptionNpc::None, "I'm ready", 0, 0, [this, player](std::string /*callback*/)
+            AddGossipItemFor(player, GossipOptionNpc::None, "I'm ready", 0, 0, [this, player](std::string_view /*callback*/)
             {
                 CloseGossipMenuFor(player);
                 StartQuestEvent(player);
@@ -3068,7 +3068,7 @@ public:
                 AddGossipItemFor(player, GossipOptionNpc::None, "Can you lower my Solo Keystone level?", 0, 6);
             if (!player->HasItemCount(700019, 1, true))
             {
-                AddGossipItemFor(player, GossipOptionNpc::None, "I need a Timewalking Keystone", 0, 0, [player, this](std::string /*callback*/)
+                AddGossipItemFor(player, GossipOptionNpc::None, "I need a Timewalking Keystone", 0, 0, [player, this](std::string_view /*callback*/)
                 {
                     player->AddItem(700019, 1);
                     OnGossipHello(player);
@@ -3076,7 +3076,7 @@ public:
             }
             else
             {
-                AddGossipItemFor(player, GossipOptionNpc::None, "Can you lower my Timewalking Keystone level?", 0, 6, [this, player](std::string /*callback*/)
+                AddGossipItemFor(player, GossipOptionNpc::None, "Can you lower my Timewalking Keystone level?", 0, 6, [this, player](std::string_view /*callback*/)
                 {
                     DropKeystoneAndSendPacket(player, 700019);
                     OnGossipHello(player);
@@ -3178,7 +3178,7 @@ public:
     {
         ClearGossipMenuFor(player);
         player->PrepareQuestMenu(me->GetGUID());
-        AddGossipItemFor(player, GossipOptionNpc::None, "Reset all Instances", 0, 0, [this, player](std::string /*callback*/)
+        AddGossipItemFor(player, GossipOptionNpc::None, "Reset all Instances", 0, 0, [this, player](std::string_view /*callback*/)
         {
             //@todo: custom
             //uint32 mapId = 0;
@@ -3227,7 +3227,7 @@ public:
     {
         ClearGossipMenuFor(player);
         player->PrepareQuestMenu(me->GetGUID());
-        AddGossipItemFor(player, GossipOptionNpc::None, "Enter a code", 0, 0, "", 0, true, [this, player](std::string callback)
+        AddGossipItemFor(player, GossipOptionNpc::None, "Enter a code", 0, 0, "", 0, true, [this, player](std::string_view /*callback*/)
         {
             Talk(1, player);
             CloseGossipMenuFor(player);
@@ -3866,7 +3866,7 @@ public:
             int32 tokenCost = static_cast<int32>(itr->second.TransmogTokenCost);
             costSS << "This will cost " << tokenCost << " Transmog Tokens";
 
-            AddGossipItemFor(player, GossipOptionNpc::None, ss.str(), 0, 0, costSS.str(), 0, false, [this, player, transmogSet, tokenCost](std::string /*callback*/)
+            AddGossipItemFor(player, GossipOptionNpc::None, ss.str(), 0, 0, costSS.str(), 0, false, [this, player, transmogSet, tokenCost](std::string_view /*callback*/)
             {
                 if (!player->GetSession()->GetCollectionMgr()->IsSetCompleted(transmogSet->ID))
                 {
@@ -3928,7 +3928,7 @@ public:
             if (!player->GetSession()->GetCollectionMgr()->HasRuneforgeMemory(legendary))
                 player->GetSession()->GetCollectionMgr()->AddRuneforgeMemory(legendary);
 
-        AddGossipItemFor(player, GossipOptionNpc::None, "I'd like to craft a legendary item.", 0, 0, [this, player](std::string /*callback*/)
+        AddGossipItemFor(player, GossipOptionNpc::None, "I'd like to craft a legendary item.", 0, 0, [this, player](std::string_view /*callback*/)
         {
             /// MOVE TO WORLDPACKETS CLASS
             WorldPacket data(SMSG_RUNEFORGE_LEGENDARY_CRAFTING_OPEN_NPC, 17);
@@ -3937,7 +3937,7 @@ public:
             data.FlushBits();
             player->GetSession()->SendPacket(&data);
         });
-        AddGossipItemFor(player, GossipOptionNpc::None, "I'd like to upgrade my legendary item.", 0, 0, [this, player](std::string /*callback*/ )
+        AddGossipItemFor(player, GossipOptionNpc::None, "I'd like to upgrade my legendary item.", 0, 0, [this, player](std::string_view /*callback*/ )
         {
             WorldPacket data(SMSG_RUNEFORGE_LEGENDARY_CRAFTING_OPEN_NPC, 17);
             data << me->GetGUID();
@@ -3945,11 +3945,11 @@ public:
             data.FlushBits();
             player->GetSession()->SendPacket(&data);
         });
-        AddGossipItemFor(player, GossipOptionNpc::Vendor, "I'd like to browse your items", 0, 0, [this, player](std::string /*callback*/)
+        AddGossipItemFor(player, GossipOptionNpc::Vendor, "I'd like to browse your items", 0, 0, [this, player](std::string_view /*callback*/)
         {
             player->GetSession()->SendListInventory(me->GetGUID());
         });
-        AddGossipItemFor(player, GossipOptionNpc::Vendor, "I'd like to purchase a base item", 0, 0, [this, player](std::string /*callback*/)
+        AddGossipItemFor(player, GossipOptionNpc::Vendor, "I'd like to purchase a base item", 0, 0, [this, player](std::string_view /*callback*/)
         {
             player->GetSession()->SendListInventory(me->GetGUID(), 1805090);
         });

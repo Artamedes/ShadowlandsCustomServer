@@ -113,7 +113,7 @@ enum class GossipOptionFlags : int32
     QuestLabelPrepend   = 0x1
 };
 
-struct GossipMenuItem
+struct TC_GAME_API GossipMenuItem
 {
     int32               GossipOptionID;
     uint32              OrderIndex;
@@ -136,11 +136,11 @@ struct GossipMenuItem
     uint32              Sender;
     uint32              Action;
 
-    std::function<void(std::string)> _callback = nullptr;
+    std::function<void(std::string_view)> Callback = nullptr;
 };
 
 // need an ordered container
-typedef std::vector<GossipMenuItem> GossipMenuItemContainer;
+typedef std::vector<GossipMenuItem*> GossipMenuItemContainer;
 
 struct QuestMenuItem
 {
@@ -160,11 +160,11 @@ class TC_GAME_API GossipMenu
         GossipMenu& operator=(GossipMenu&&) = delete;
         ~GossipMenu();
 
-        uint32 AddMenuItem(int32 gossipOptionId, int32 orderIndex, GossipOptionNpc optionNpc, std::string optionText, uint32 language, GossipOptionFlags flags,
+        GossipMenuItem* AddMenuItem(int32 gossipOptionId, int32 orderIndex, GossipOptionNpc optionNpc, std::string optionText, uint32 language, GossipOptionFlags flags,
                            Optional<int32> gossipNpcOptionId, uint32 actionMenuId, uint32 actionPoiId, bool boxCoded, uint32 boxMoney,
                            std::string boxText, Optional<int32> spellId, Optional<int32> overrideIconId, uint32 sender, uint32 action);
-        void AddMenuItem(uint32 menuId, uint32 menuItemId, uint32 sender, uint32 action);
-        void AddMenuItem(GossipMenuItems const& menuItem, uint32 sender, uint32 action);
+        GossipMenuItem* AddMenuItem(uint32 menuId, uint32 menuItemId, uint32 sender, uint32 action);
+        GossipMenuItem* AddMenuItem(GossipMenuItems const& menuItem, uint32 sender, uint32 action);
 
         void SetMenuId(uint32 menu_id) { _menuId = menu_id; }
         uint32 GetMenuId() const { return _menuId; }
