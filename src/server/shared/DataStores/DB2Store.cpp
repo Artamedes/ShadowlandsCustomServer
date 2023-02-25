@@ -78,7 +78,6 @@ void DB2StorageBase::WriteRecord(uint32 id, LocaleConstant locale, ByteBuffer& b
 
                     if (const char* str = localizedString->Str[locale])
                     {
-                        TC_LOG_INFO("network.opcode", "str: {}", str);
                         buffer << str;
                     }
                     else

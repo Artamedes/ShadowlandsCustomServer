@@ -7759,7 +7759,9 @@ void Player::ModifyCurrency(uint32 id, int32 amount, CurrencyGainSource gainSour
         return;
 
     CurrencyTypesEntry const* currency = sCurrencyTypesStore.LookupEntry(id);
-    ASSERT(currency);
+
+    if (!currency)
+        return;
 
     // Check faction
     if ((currency->IsAlliance() && GetTeam() != ALLIANCE) ||
