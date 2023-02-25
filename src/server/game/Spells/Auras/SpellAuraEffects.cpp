@@ -5489,7 +5489,13 @@ void AuraEffect::HandleTriggerSpellOnExpire(AuraApplication const* aurApp, uint8
     if (!(mode & AURA_EFFECT_HANDLE_REAL) || apply || aurApp->GetRemoveMode() != AURA_REMOVE_BY_EXPIRE)
         return;
 
-    aurApp->GetTarget()->CastSpell(aurApp->GetTarget(), GetSpellEffectInfo().TriggerSpell, this);
+    Unit* caster = aurApp->GetTarget();
+
+    if (GetSpellEffectInfo().MiscValue == 1)
+        caster = GetCaster();
+
+    if (caster)
+        caster->CastSpell(aurApp->GetTarget(), GetSpellEffectInfo().TriggerSpell, this);
 }
 
 void AuraEffect::HandleAuraOpenStable(AuraApplication const* aurApp, uint8 mode, bool apply) const
