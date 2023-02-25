@@ -1238,6 +1238,14 @@ class TC_GAME_API Unit : public WorldObject
         Aura* AddAura(uint32 spellId, Unit* target = nullptr);
         Aura* AddAura(SpellInfo const* spellInfo, uint32 effMask, Unit* target);
         void SetAuraStack(uint32 spellId, Unit* target, uint32 stack);
+        
+        void SendPlaySpellVisual(Unit* target, uint32 spellVisualId, uint16 missReason, uint16 reflectStatus, float travelSpeed, bool speedAsTime = false);
+        void SendPlaySpellVisual(Position const& targetPosition, float o, uint32 spellVisualId, uint16 missReason, uint16 reflectStatus, float travelSpeed, bool speedAsTime = false);
+        void SendCancelSpellVisual(uint32 id);
+
+        void SendPlaySpellVisualKit(uint32 id, uint32 type, uint32 duration) const;
+        void SendCancelSpellVisualKit(uint32 id);
+
 
         void CancelSpellMissiles(uint32 spellId, bool reverseMissile = false);
 
