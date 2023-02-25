@@ -212,6 +212,7 @@ class TC_GAME_API MotionMaster
         void MoveCyclicPath(uint32 pathId);
         GenericMovementGenerator* MoveCirclePath(float x, float y, float z, float radius, bool clockwise, uint8 stepCount, float velocity = 0.f);
         GenericMovementGenerator* MoveSmoothPath(uint32 pointId, Position const* pathPoints, size_t pathSize, bool walk = false, bool fly = false, Optional<float> velocity = {});
+        GenericMovementGenerator* MoveSmoothPath2(uint32 pointId, Position const* pathPoints, size_t pathSize, bool walk = false, bool fly = false, bool canSwim = false, bool catmullrom = false, Optional<float> velocity = {});
         // Walk along spline chain stored in DB (script_spline_chain_meta and script_spline_chain_waypoints)
         void MoveAlongSplineChain(uint32 pointId, uint16 dbChainId, bool walk);
         void MoveAlongSplineChain(uint32 pointId, std::vector<SplineChainLink> const& chain, bool walk);

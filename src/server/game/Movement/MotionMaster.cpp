@@ -1028,7 +1028,6 @@ void MotionMaster::MoveCyclicPath(uint32 pathId)
 
 GenericMovementGenerator* MotionMaster::MoveSmoothPath(uint32 pointId, Position const* pathPoints, size_t pathSize, bool walk, bool fly, Optional<float> velocity)
 {
-
     Movement::PointsArray path;
     path.reserve(pathSize);
     std::transform(pathPoints, pathPoints + pathSize, std::back_inserter(path), [](Position const& point)
@@ -1050,6 +1049,43 @@ GenericMovementGenerator* MotionMaster::MoveSmoothPath(uint32 pointId, Position 
             init.SetUnlimitedSpeed(true);
             init.SetVelocity(*velocity);
         }
+    };
+
+    // This code is not correct
+    // GenericMovementGenerator does not affect UNIT_STATE_ROAMING_MOVE
+    // need to call PointMovementGenerator with various pointIds
+    return Add(new GenericMovementGenerator(std::move(initializer), EFFECT_MOTION_TYPE, pointId));
+}
+
+GenericMovementGenerator* MotionMaster::MoveSmoothPath2(uint32 pointId, Position const* pathPoints, size_t pathSize, bool walk, bool fly, bool canSwim, bool catmullrom, Optional<float> velocity)
+{
+    Movement::PointsArray path;
+    path.reserve(pathSize);
+    std::transform(pathPoints, pathPoints + pathSize, std::back_inserter(path), [](Position const& point)
+    {
+        return G3D::Vector3(point.GetPositionX(), point.GetPositionY(), point.GetPositionZ());
+    });
+    std::function<void(Movement::MoveSplineInit&)> initializer = [=](Movement::MoveSplineInit& init)
+    {
+        init.MovebyPath(path);
+        init.SetWalk(walk);
+        init.SetUncompressed();
+        if (fly)
+        {
+            init.SetFly();
+        }
+        if (velocity)
+        {
+            init.SetUnlimitedSpeed(true);
+            init.SetVelocity(*velocity);
+        }
+        if (catmullrom)
+        {
+            init.SetSmooth();
+        }
+
+        if (canSwim)
+            init.SetCanSwim();
     };
 
     // This code is not correct
