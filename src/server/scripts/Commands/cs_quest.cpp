@@ -489,94 +489,94 @@ public:
     void DisplayObjectiveFlags(Player* player, QuestObjective* objective, size_t itr)
     {
         ClearGossipMenuFor(player);
-        AddGossipItemFor(player, GossipOptionNpc::None, GetTextFromAny("tracked_on_minimap        ", (objective->Flags & QUEST_OBJECTIVE_FLAG_TRACKED_ON_MINIMAP       ) != 0), 0, 0, [this, player, objective, itr](std::string /*callback*/) { if ((objective->Flags & QUEST_OBJECTIVE_FLAG_TRACKED_ON_MINIMAP       ) == 0) objective->Flags |= QUEST_OBJECTIVE_FLAG_TRACKED_ON_MINIMAP       ; else objective->Flags &= ~QUEST_OBJECTIVE_FLAG_TRACKED_ON_MINIMAP       ; DisplayObjectiveFlags(player, objective, itr);});
-        AddGossipItemFor(player, GossipOptionNpc::None, GetTextFromAny("sequenced                 ", (objective->Flags & QUEST_OBJECTIVE_FLAG_SEQUENCED                ) != 0), 0, 0, [this, player, objective, itr](std::string /*callback*/) { if ((objective->Flags & QUEST_OBJECTIVE_FLAG_SEQUENCED                ) == 0) objective->Flags |= QUEST_OBJECTIVE_FLAG_SEQUENCED                ; else objective->Flags &= ~QUEST_OBJECTIVE_FLAG_SEQUENCED                ; DisplayObjectiveFlags(player, objective, itr);});
-        AddGossipItemFor(player, GossipOptionNpc::None, GetTextFromAny("optional                  ", (objective->Flags & QUEST_OBJECTIVE_FLAG_OPTIONAL                 ) != 0), 0, 0, [this, player, objective, itr](std::string /*callback*/) { if ((objective->Flags & QUEST_OBJECTIVE_FLAG_OPTIONAL                 ) == 0) objective->Flags |= QUEST_OBJECTIVE_FLAG_OPTIONAL                 ; else objective->Flags &= ~QUEST_OBJECTIVE_FLAG_OPTIONAL                 ; DisplayObjectiveFlags(player, objective, itr);});
-        AddGossipItemFor(player, GossipOptionNpc::None, GetTextFromAny("hidden                    ", (objective->Flags & QUEST_OBJECTIVE_FLAG_HIDDEN                   ) != 0), 0, 0, [this, player, objective, itr](std::string /*callback*/) { if ((objective->Flags & QUEST_OBJECTIVE_FLAG_HIDDEN                   ) == 0) objective->Flags |= QUEST_OBJECTIVE_FLAG_HIDDEN                   ; else objective->Flags &= ~QUEST_OBJECTIVE_FLAG_HIDDEN                   ; DisplayObjectiveFlags(player, objective, itr);});
-        AddGossipItemFor(player, GossipOptionNpc::None, GetTextFromAny("hide_credit_msg           ", (objective->Flags & QUEST_OBJECTIVE_FLAG_HIDE_CREDIT_MSG          ) != 0), 0, 0, [this, player, objective, itr](std::string /*callback*/) { if ((objective->Flags & QUEST_OBJECTIVE_FLAG_HIDE_CREDIT_MSG          ) == 0) objective->Flags |= QUEST_OBJECTIVE_FLAG_HIDE_CREDIT_MSG          ; else objective->Flags &= ~QUEST_OBJECTIVE_FLAG_HIDE_CREDIT_MSG          ; DisplayObjectiveFlags(player, objective, itr);});
-        AddGossipItemFor(player, GossipOptionNpc::None, GetTextFromAny("preserve_quest_items      ", (objective->Flags & QUEST_OBJECTIVE_FLAG_PRESERVE_QUEST_ITEMS     ) != 0), 0, 0, [this, player, objective, itr](std::string /*callback*/) { if ((objective->Flags & QUEST_OBJECTIVE_FLAG_PRESERVE_QUEST_ITEMS     ) == 0) objective->Flags |= QUEST_OBJECTIVE_FLAG_PRESERVE_QUEST_ITEMS     ; else objective->Flags &= ~QUEST_OBJECTIVE_FLAG_PRESERVE_QUEST_ITEMS     ; DisplayObjectiveFlags(player, objective, itr);});
-        AddGossipItemFor(player, GossipOptionNpc::None, GetTextFromAny("part_of_progress_bar      ", (objective->Flags & QUEST_OBJECTIVE_FLAG_PART_OF_PROGRESS_BAR     ) != 0), 0, 0, [this, player, objective, itr](std::string /*callback*/) { if ((objective->Flags & QUEST_OBJECTIVE_FLAG_PART_OF_PROGRESS_BAR     ) == 0) objective->Flags |= QUEST_OBJECTIVE_FLAG_PART_OF_PROGRESS_BAR     ; else objective->Flags &= ~QUEST_OBJECTIVE_FLAG_PART_OF_PROGRESS_BAR     ; DisplayObjectiveFlags(player, objective, itr);});
-        AddGossipItemFor(player, GossipOptionNpc::None, GetTextFromAny("kill_players_same_faction ", (objective->Flags & QUEST_OBJECTIVE_FLAG_KILL_PLAYERS_SAME_FACTION) != 0), 0, 0, [this, player, objective, itr](std::string /*callback*/) { if ((objective->Flags & QUEST_OBJECTIVE_FLAG_KILL_PLAYERS_SAME_FACTION) == 0) objective->Flags |= QUEST_OBJECTIVE_FLAG_KILL_PLAYERS_SAME_FACTION; else objective->Flags &= ~QUEST_OBJECTIVE_FLAG_KILL_PLAYERS_SAME_FACTION; DisplayObjectiveFlags(player, objective, itr);});
-        AddGossipItemFor(player, GossipOptionNpc::None, "<-- return", 0, 0, [this, player, objective, itr](std::string /*callback*/) { ShowObjective(player, objective, itr); });
+        AddGossipItemFor(player, GossipOptionNpc::None, GetTextFromAny("tracked_on_minimap        ", (objective->Flags & QUEST_OBJECTIVE_FLAG_TRACKED_ON_MINIMAP       ) != 0), 0, 0, [this, player, objective, itr](std::string_view /*callback*/) { if ((objective->Flags & QUEST_OBJECTIVE_FLAG_TRACKED_ON_MINIMAP       ) == 0) objective->Flags |= QUEST_OBJECTIVE_FLAG_TRACKED_ON_MINIMAP       ; else objective->Flags &= ~QUEST_OBJECTIVE_FLAG_TRACKED_ON_MINIMAP       ; DisplayObjectiveFlags(player, objective, itr);});
+        AddGossipItemFor(player, GossipOptionNpc::None, GetTextFromAny("sequenced                 ", (objective->Flags & QUEST_OBJECTIVE_FLAG_SEQUENCED                ) != 0), 0, 0, [this, player, objective, itr](std::string_view /*callback*/) { if ((objective->Flags & QUEST_OBJECTIVE_FLAG_SEQUENCED                ) == 0) objective->Flags |= QUEST_OBJECTIVE_FLAG_SEQUENCED                ; else objective->Flags &= ~QUEST_OBJECTIVE_FLAG_SEQUENCED                ; DisplayObjectiveFlags(player, objective, itr);});
+        AddGossipItemFor(player, GossipOptionNpc::None, GetTextFromAny("optional                  ", (objective->Flags & QUEST_OBJECTIVE_FLAG_OPTIONAL                 ) != 0), 0, 0, [this, player, objective, itr](std::string_view /*callback*/) { if ((objective->Flags & QUEST_OBJECTIVE_FLAG_OPTIONAL                 ) == 0) objective->Flags |= QUEST_OBJECTIVE_FLAG_OPTIONAL                 ; else objective->Flags &= ~QUEST_OBJECTIVE_FLAG_OPTIONAL                 ; DisplayObjectiveFlags(player, objective, itr);});
+        AddGossipItemFor(player, GossipOptionNpc::None, GetTextFromAny("hidden                    ", (objective->Flags & QUEST_OBJECTIVE_FLAG_HIDDEN                   ) != 0), 0, 0, [this, player, objective, itr](std::string_view /*callback*/) { if ((objective->Flags & QUEST_OBJECTIVE_FLAG_HIDDEN                   ) == 0) objective->Flags |= QUEST_OBJECTIVE_FLAG_HIDDEN                   ; else objective->Flags &= ~QUEST_OBJECTIVE_FLAG_HIDDEN                   ; DisplayObjectiveFlags(player, objective, itr);});
+        AddGossipItemFor(player, GossipOptionNpc::None, GetTextFromAny("hide_credit_msg           ", (objective->Flags & QUEST_OBJECTIVE_FLAG_HIDE_CREDIT_MSG          ) != 0), 0, 0, [this, player, objective, itr](std::string_view /*callback*/) { if ((objective->Flags & QUEST_OBJECTIVE_FLAG_HIDE_CREDIT_MSG          ) == 0) objective->Flags |= QUEST_OBJECTIVE_FLAG_HIDE_CREDIT_MSG          ; else objective->Flags &= ~QUEST_OBJECTIVE_FLAG_HIDE_CREDIT_MSG          ; DisplayObjectiveFlags(player, objective, itr);});
+        AddGossipItemFor(player, GossipOptionNpc::None, GetTextFromAny("preserve_quest_items      ", (objective->Flags & QUEST_OBJECTIVE_FLAG_PRESERVE_QUEST_ITEMS     ) != 0), 0, 0, [this, player, objective, itr](std::string_view /*callback*/) { if ((objective->Flags & QUEST_OBJECTIVE_FLAG_PRESERVE_QUEST_ITEMS     ) == 0) objective->Flags |= QUEST_OBJECTIVE_FLAG_PRESERVE_QUEST_ITEMS     ; else objective->Flags &= ~QUEST_OBJECTIVE_FLAG_PRESERVE_QUEST_ITEMS     ; DisplayObjectiveFlags(player, objective, itr);});
+        AddGossipItemFor(player, GossipOptionNpc::None, GetTextFromAny("part_of_progress_bar      ", (objective->Flags & QUEST_OBJECTIVE_FLAG_PART_OF_PROGRESS_BAR     ) != 0), 0, 0, [this, player, objective, itr](std::string_view /*callback*/) { if ((objective->Flags & QUEST_OBJECTIVE_FLAG_PART_OF_PROGRESS_BAR     ) == 0) objective->Flags |= QUEST_OBJECTIVE_FLAG_PART_OF_PROGRESS_BAR     ; else objective->Flags &= ~QUEST_OBJECTIVE_FLAG_PART_OF_PROGRESS_BAR     ; DisplayObjectiveFlags(player, objective, itr);});
+        AddGossipItemFor(player, GossipOptionNpc::None, GetTextFromAny("kill_players_same_faction ", (objective->Flags & QUEST_OBJECTIVE_FLAG_KILL_PLAYERS_SAME_FACTION) != 0), 0, 0, [this, player, objective, itr](std::string_view /*callback*/) { if ((objective->Flags & QUEST_OBJECTIVE_FLAG_KILL_PLAYERS_SAME_FACTION) == 0) objective->Flags |= QUEST_OBJECTIVE_FLAG_KILL_PLAYERS_SAME_FACTION; else objective->Flags &= ~QUEST_OBJECTIVE_FLAG_KILL_PLAYERS_SAME_FACTION; DisplayObjectiveFlags(player, objective, itr);});
+        AddGossipItemFor(player, GossipOptionNpc::None, "<-- return", 0, 0, [this, player, objective, itr](std::string_view /*callback*/) { ShowObjective(player, objective, itr); });
         SendGossipMenuFor(player, 1, player);
     }
 
     void ShowObjective(Player* player, QuestObjective* objective, size_t itr)
     {
         ClearGossipMenuFor(player);
-        // AddGossipItemFor(player, GossipOptionNpc::None, GetTextFromAny("ID: ", objective.ID), 0, 0, "", 0, true, [this](std::string callback)
+        // AddGossipItemFor(player, GossipOptionNpc::None, GetTextFromAny("ID: ", objective.ID), 0, 0, "", 0, true, [this](std::string_view callback)
         // {
         //     objective.ID = atol(callback);
         //     ShowObjective(player, objective);
         // });
-        // AddGossipItemFor(player, GossipOptionNpc::None, GetTextFromAny("QuestID: ", objective.QuestID), 0, 0, "", 0, true, [this](std::string callback)
+        // AddGossipItemFor(player, GossipOptionNpc::None, GetTextFromAny("QuestID: ", objective.QuestID), 0, 0, "", 0, true, [this](std::string_view callback)
         // {
         //     objective.QuestID = atol(callback);
         //     ShowObjective(player, objective);
         // });
-        AddGossipItemFor(player, GossipOptionNpc::None, GetTextFromAny("Type: ", objective->TypeToString()), 0, 0, [this, player, objective, itr](std::string /*callback*/)
+        AddGossipItemFor(player, GossipOptionNpc::None, GetTextFromAny("Type: ", objective->TypeToString()), 0, 0, [this, player, objective, itr](std::string_view /*callback*/)
         {
             ClearGossipMenuFor(player);
-            AddGossipItemFor(player, GossipOptionNpc::None, "monster"               , 0, 0, [this, player, objective, itr](std::string /*callback*/)  {  objective->Type = QUEST_OBJECTIVE_MONSTER                 ; ShowObjective(player, objective, itr); });
-            AddGossipItemFor(player, GossipOptionNpc::None, "item"                  , 0, 0, [this, player, objective, itr](std::string /*callback*/)  {  objective->Type = QUEST_OBJECTIVE_ITEM                    ; ShowObjective(player, objective, itr); });
-            AddGossipItemFor(player, GossipOptionNpc::None, "gameobject"            , 0, 0, [this, player, objective, itr](std::string /*callback*/)  {  objective->Type = QUEST_OBJECTIVE_GAMEOBJECT              ; ShowObjective(player, objective, itr); });
-            AddGossipItemFor(player, GossipOptionNpc::None, "talkto"                , 0, 0, [this, player, objective, itr](std::string /*callback*/)  {  objective->Type = QUEST_OBJECTIVE_TALKTO                  ; ShowObjective(player, objective, itr); });
-            AddGossipItemFor(player, GossipOptionNpc::None, "currency"              , 0, 0, [this, player, objective, itr](std::string /*callback*/)  {  objective->Type = QUEST_OBJECTIVE_CURRENCY                ; ShowObjective(player, objective, itr); });
-            AddGossipItemFor(player, GossipOptionNpc::None, "learnspell"            , 0, 0, [this, player, objective, itr](std::string /*callback*/)  {  objective->Type = QUEST_OBJECTIVE_LEARNSPELL              ; ShowObjective(player, objective, itr); });
-            AddGossipItemFor(player, GossipOptionNpc::None, "min_reputation"        , 0, 0, [this, player, objective, itr](std::string /*callback*/)  {  objective->Type = QUEST_OBJECTIVE_MIN_REPUTATION          ; ShowObjective(player, objective, itr); });
-            AddGossipItemFor(player, GossipOptionNpc::None, "max_reputation"        , 0, 0, [this, player, objective, itr](std::string /*callback*/)  {  objective->Type = QUEST_OBJECTIVE_MAX_REPUTATION          ; ShowObjective(player, objective, itr); });
-            AddGossipItemFor(player, GossipOptionNpc::None, "money"                 , 0, 0, [this, player, objective, itr](std::string /*callback*/)  {  objective->Type = QUEST_OBJECTIVE_MONEY                   ; ShowObjective(player, objective, itr); });
-            AddGossipItemFor(player, GossipOptionNpc::None, "playerkills"           , 0, 0, [this, player, objective, itr](std::string /*callback*/)  {  objective->Type = QUEST_OBJECTIVE_PLAYERKILLS             ; ShowObjective(player, objective, itr); });
-            AddGossipItemFor(player, GossipOptionNpc::None, "areatrigger"           , 0, 0, [this, player, objective, itr](std::string /*callback*/)  {  objective->Type = QUEST_OBJECTIVE_AREATRIGGER             ; ShowObjective(player, objective, itr); });
-            AddGossipItemFor(player, GossipOptionNpc::None, "winpetbattleagainstnpc", 0, 0, [this, player, objective, itr](std::string /*callback*/)  {  objective->Type = QUEST_OBJECTIVE_WINPETBATTLEAGAINSTNPC  ; ShowObjective(player, objective, itr); });
-            AddGossipItemFor(player, GossipOptionNpc::None, "defeatbattlepet"       , 0, 0, [this, player, objective, itr](std::string /*callback*/)  {  objective->Type = QUEST_OBJECTIVE_DEFEATBATTLEPET         ; ShowObjective(player, objective, itr); });
-            AddGossipItemFor(player, GossipOptionNpc::None, "winpvppetbattles"      , 0, 0, [this, player, objective, itr](std::string /*callback*/)  {  objective->Type = QUEST_OBJECTIVE_WINPVPPETBATTLES        ; ShowObjective(player, objective, itr); });
-            AddGossipItemFor(player, GossipOptionNpc::None, "criteria_tree"         , 0, 0, [this, player, objective, itr](std::string /*callback*/)  {  objective->Type = QUEST_OBJECTIVE_CRITERIA_TREE           ; ShowObjective(player, objective, itr); });
-            AddGossipItemFor(player, GossipOptionNpc::None, "progress_bar"          , 0, 0, [this, player, objective, itr](std::string /*callback*/)  {  objective->Type = QUEST_OBJECTIVE_PROGRESS_BAR            ; ShowObjective(player, objective, itr); });
-            AddGossipItemFor(player, GossipOptionNpc::None, "have_currency"         , 0, 0, [this, player, objective, itr](std::string /*callback*/)  {  objective->Type = QUEST_OBJECTIVE_HAVE_CURRENCY           ; ShowObjective(player, objective, itr); });
-            AddGossipItemFor(player, GossipOptionNpc::None, "obtain_currency"       , 0, 0, [this, player, objective, itr](std::string /*callback*/)  {  objective->Type = QUEST_OBJECTIVE_OBTAIN_CURRENCY         ; ShowObjective(player, objective, itr); });
-            AddGossipItemFor(player, GossipOptionNpc::None, "increase_reputation"   , 0, 0, [this, player, objective, itr](std::string /*callback*/)  {  objective->Type = QUEST_OBJECTIVE_INCREASE_REPUTATION     ; ShowObjective(player, objective, itr); });
-            AddGossipItemFor(player, GossipOptionNpc::None, "area_trigger_enter"    , 0, 0, [this, player, objective, itr](std::string /*callback*/)  {  objective->Type = QUEST_OBJECTIVE_AREA_TRIGGER_ENTER      ; ShowObjective(player, objective, itr); });
-            AddGossipItemFor(player, GossipOptionNpc::None, "area_trigger_exit"     , 0, 0, [this, player, objective, itr](std::string /*callback*/)  {  objective->Type = QUEST_OBJECTIVE_AREA_TRIGGER_EXIT       ; ShowObjective(player, objective, itr); });
-            AddGossipItemFor(player, GossipOptionNpc::None, "<-- return"            , 0, 0, [this, player, objective, itr](std::string /*callback*/)  { ShowObjective(player, objective, itr); });
+            AddGossipItemFor(player, GossipOptionNpc::None, "monster"               , 0, 0, [this, player, objective, itr](std::string_view /*callback*/)  {  objective->Type = QUEST_OBJECTIVE_MONSTER                 ; ShowObjective(player, objective, itr); });
+            AddGossipItemFor(player, GossipOptionNpc::None, "item"                  , 0, 0, [this, player, objective, itr](std::string_view /*callback*/)  {  objective->Type = QUEST_OBJECTIVE_ITEM                    ; ShowObjective(player, objective, itr); });
+            AddGossipItemFor(player, GossipOptionNpc::None, "gameobject"            , 0, 0, [this, player, objective, itr](std::string_view /*callback*/)  {  objective->Type = QUEST_OBJECTIVE_GAMEOBJECT              ; ShowObjective(player, objective, itr); });
+            AddGossipItemFor(player, GossipOptionNpc::None, "talkto"                , 0, 0, [this, player, objective, itr](std::string_view /*callback*/)  {  objective->Type = QUEST_OBJECTIVE_TALKTO                  ; ShowObjective(player, objective, itr); });
+            AddGossipItemFor(player, GossipOptionNpc::None, "currency"              , 0, 0, [this, player, objective, itr](std::string_view /*callback*/)  {  objective->Type = QUEST_OBJECTIVE_CURRENCY                ; ShowObjective(player, objective, itr); });
+            AddGossipItemFor(player, GossipOptionNpc::None, "learnspell"            , 0, 0, [this, player, objective, itr](std::string_view /*callback*/)  {  objective->Type = QUEST_OBJECTIVE_LEARNSPELL              ; ShowObjective(player, objective, itr); });
+            AddGossipItemFor(player, GossipOptionNpc::None, "min_reputation"        , 0, 0, [this, player, objective, itr](std::string_view /*callback*/)  {  objective->Type = QUEST_OBJECTIVE_MIN_REPUTATION          ; ShowObjective(player, objective, itr); });
+            AddGossipItemFor(player, GossipOptionNpc::None, "max_reputation"        , 0, 0, [this, player, objective, itr](std::string_view /*callback*/)  {  objective->Type = QUEST_OBJECTIVE_MAX_REPUTATION          ; ShowObjective(player, objective, itr); });
+            AddGossipItemFor(player, GossipOptionNpc::None, "money"                 , 0, 0, [this, player, objective, itr](std::string_view /*callback*/)  {  objective->Type = QUEST_OBJECTIVE_MONEY                   ; ShowObjective(player, objective, itr); });
+            AddGossipItemFor(player, GossipOptionNpc::None, "playerkills"           , 0, 0, [this, player, objective, itr](std::string_view /*callback*/)  {  objective->Type = QUEST_OBJECTIVE_PLAYERKILLS             ; ShowObjective(player, objective, itr); });
+            AddGossipItemFor(player, GossipOptionNpc::None, "areatrigger"           , 0, 0, [this, player, objective, itr](std::string_view /*callback*/)  {  objective->Type = QUEST_OBJECTIVE_AREATRIGGER             ; ShowObjective(player, objective, itr); });
+            AddGossipItemFor(player, GossipOptionNpc::None, "winpetbattleagainstnpc", 0, 0, [this, player, objective, itr](std::string_view /*callback*/)  {  objective->Type = QUEST_OBJECTIVE_WINPETBATTLEAGAINSTNPC  ; ShowObjective(player, objective, itr); });
+            AddGossipItemFor(player, GossipOptionNpc::None, "defeatbattlepet"       , 0, 0, [this, player, objective, itr](std::string_view /*callback*/)  {  objective->Type = QUEST_OBJECTIVE_DEFEATBATTLEPET         ; ShowObjective(player, objective, itr); });
+            AddGossipItemFor(player, GossipOptionNpc::None, "winpvppetbattles"      , 0, 0, [this, player, objective, itr](std::string_view /*callback*/)  {  objective->Type = QUEST_OBJECTIVE_WINPVPPETBATTLES        ; ShowObjective(player, objective, itr); });
+            AddGossipItemFor(player, GossipOptionNpc::None, "criteria_tree"         , 0, 0, [this, player, objective, itr](std::string_view /*callback*/)  {  objective->Type = QUEST_OBJECTIVE_CRITERIA_TREE           ; ShowObjective(player, objective, itr); });
+            AddGossipItemFor(player, GossipOptionNpc::None, "progress_bar"          , 0, 0, [this, player, objective, itr](std::string_view /*callback*/)  {  objective->Type = QUEST_OBJECTIVE_PROGRESS_BAR            ; ShowObjective(player, objective, itr); });
+            AddGossipItemFor(player, GossipOptionNpc::None, "have_currency"         , 0, 0, [this, player, objective, itr](std::string_view /*callback*/)  {  objective->Type = QUEST_OBJECTIVE_HAVE_CURRENCY           ; ShowObjective(player, objective, itr); });
+            AddGossipItemFor(player, GossipOptionNpc::None, "obtain_currency"       , 0, 0, [this, player, objective, itr](std::string_view /*callback*/)  {  objective->Type = QUEST_OBJECTIVE_OBTAIN_CURRENCY         ; ShowObjective(player, objective, itr); });
+            AddGossipItemFor(player, GossipOptionNpc::None, "increase_reputation"   , 0, 0, [this, player, objective, itr](std::string_view /*callback*/)  {  objective->Type = QUEST_OBJECTIVE_INCREASE_REPUTATION     ; ShowObjective(player, objective, itr); });
+            AddGossipItemFor(player, GossipOptionNpc::None, "area_trigger_enter"    , 0, 0, [this, player, objective, itr](std::string_view /*callback*/)  {  objective->Type = QUEST_OBJECTIVE_AREA_TRIGGER_ENTER      ; ShowObjective(player, objective, itr); });
+            AddGossipItemFor(player, GossipOptionNpc::None, "area_trigger_exit"     , 0, 0, [this, player, objective, itr](std::string_view /*callback*/)  {  objective->Type = QUEST_OBJECTIVE_AREA_TRIGGER_EXIT       ; ShowObjective(player, objective, itr); });
+            AddGossipItemFor(player, GossipOptionNpc::None, "<-- return"            , 0, 0, [this, player, objective, itr](std::string_view /*callback*/)  { ShowObjective(player, objective, itr); });
             SendGossipMenuFor(player, 1, player);
         });
-        AddGossipItemFor(player, GossipOptionNpc::None, GetTextFromAny("StorageIndex: ", (int32)objective->StorageIndex), 0, 0, "", 0, true, [this, player, objective, itr](std::string callback)
+        AddGossipItemFor(player, GossipOptionNpc::None, GetTextFromAny("StorageIndex: ", (int32)objective->StorageIndex), 0, 0, "", 0, true, [this, player, objective, itr](std::string_view callback)
         {
-            objective->StorageIndex = (int8)std::stoi(callback);
+            objective->StorageIndex = (int8)std::stoi(callback.data());
             ShowObjective(player, objective, itr);
         });
-        AddGossipItemFor(player, GossipOptionNpc::None, GetTextFromAny("ObjectID: ", objective->ObjectID), 0, 0, "", 0, true, [this, player, objective, itr](std::string callback)
+        AddGossipItemFor(player, GossipOptionNpc::None, GetTextFromAny("ObjectID: ", objective->ObjectID), 0, 0, "", 0, true, [this, player, objective, itr](std::string_view callback)
         {
-            objective->ObjectID = std::stoi(callback);
+            objective->ObjectID = std::stoi(callback.data());
             ShowObjective(player, objective, itr);
         });
-        AddGossipItemFor(player, GossipOptionNpc::None, GetTextFromAny("Amount: ", objective->Amount), 0, 0, "", 0, true, [this, player, objective, itr](std::string callback)
+        AddGossipItemFor(player, GossipOptionNpc::None, GetTextFromAny("Amount: ", objective->Amount), 0, 0, "", 0, true, [this, player, objective, itr](std::string_view callback)
         {
-            objective->Amount = std::stoi(callback);
+            objective->Amount = std::stoi(callback.data());
             ShowObjective(player, objective, itr);
         });
-        AddGossipItemFor(player, GossipOptionNpc::None, GetTextFromAny("Flags: ", objective->Flags), 0, 0, [this, player, objective, itr](std::string callback)
+        AddGossipItemFor(player, GossipOptionNpc::None, GetTextFromAny("Flags: ", objective->Flags), 0, 0, [this, player, objective, itr](std::string_view callback)
         {
             DisplayObjectiveFlags(player, objective, itr);
         });
-        AddGossipItemFor(player, GossipOptionNpc::None, GetTextFromAny("Flags2: ", objective->Flags2), 0, 0, "", 0, true, [this, player, objective, itr](std::string callback)
+        AddGossipItemFor(player, GossipOptionNpc::None, GetTextFromAny("Flags2: ", objective->Flags2), 0, 0, "", 0, true, [this, player, objective, itr](std::string_view callback)
         {
-            objective->Flags2 = std::stoi(callback);
+            objective->Flags2 = std::stoi(callback.data());
             ShowObjective(player, objective, itr);
         });
-        AddGossipItemFor(player, GossipOptionNpc::None, GetTextFromAny("ProgressBarWeight: ", objective->ProgressBarWeight), 0, 0, "", 0, true, [this, player, objective, itr](std::string callback)
+        AddGossipItemFor(player, GossipOptionNpc::None, GetTextFromAny("ProgressBarWeight: ", objective->ProgressBarWeight), 0, 0, "", 0, true, [this, player, objective, itr](std::string_view callback)
         {
-            objective->ProgressBarWeight = std::stof(callback);
+            objective->ProgressBarWeight = std::stof(callback.data());
             ShowObjective(player, objective, itr);
         });
-        AddGossipItemFor(player, GossipOptionNpc::None, GetTextFromAny("Description: ", objective->Description), 0, 0, "", 0, true, [this, player, objective, itr](std::string callback)
+        AddGossipItemFor(player, GossipOptionNpc::None, GetTextFromAny("Description: ", objective->Description), 0, 0, "", 0, true, [this, player, objective, itr](std::string_view callback)
         {
             objective->Description = callback;
             ShowObjective(player, objective, itr);
         });
 
-        AddGossipItemFor(player, GossipOptionNpc::None, "Remove objective", 0, 0, [this, player, objective, itr](std::string /*callback*/)
+        AddGossipItemFor(player, GossipOptionNpc::None, "Remove objective", 0, 0, [this, player, objective, itr](std::string_view /*callback*/)
         {
             auto itr2 = questData.find(player->GetGUID().GetCounter());
             if (itr2 == questData.end())
@@ -589,7 +589,7 @@ public:
             OnGossipSelect(player, 62767263, SenderMenu, ObjectivesMenu);
         });
 
-        AddGossipItemFor(player, GossipOptionNpc::None, "<-- Return", SenderMenu, MainMenu, [this, player](std::string /*callback*/)
+        AddGossipItemFor(player, GossipOptionNpc::None, "<-- Return", SenderMenu, MainMenu, [this, player](std::string_view /*callback*/)
         {
             OnGossipSelect(player, 62767263, SenderMenu, ObjectivesMenu);
         });
@@ -606,9 +606,9 @@ public:
 
         ClearGossipMenuFor(player);
 
-        AddGossipItemFor(player, GossipOptionNpc::None, GetTextFromAny("Entry: ", data->ID), SenderUpdateAction, Entry, "", 0, true, [player, data](std::string callback)
+        AddGossipItemFor(player, GossipOptionNpc::None, GetTextFromAny("Entry: ", data->ID), SenderUpdateAction, Entry, "", 0, true, [player, data](std::string_view callback)
         {
-            data->ID = std::stoi(callback);
+            data->ID = std::stoi(callback.data());
             ShowMenu(player);
         });
         AddGossipItemFor(player, GossipOptionNpc::None, "Edit Flags", SenderMenu, FlagsMenu);
@@ -616,32 +616,32 @@ public:
         AddGossipItemFor(player, GossipOptionNpc::None, "Edit Flags", SenderMenu, FlagsMenu);
         AddGossipItemFor(player, GossipOptionNpc::None, "Edit Portraits", SenderMenu, PortraitsMenu);
         AddGossipItemFor(player, GossipOptionNpc::None, GetTextFromAny("Edit Objectives: ", data->Objectives.size()), SenderMenu, ObjectivesMenu);
-        AddGossipItemFor(player, GossipOptionNpc::None, GetTextFromAny("Quest Starter: ", data->QuestStarter), SenderUpdateAction, Starter, "", 0, true, [player, data](std::string callback)
+        AddGossipItemFor(player, GossipOptionNpc::None, GetTextFromAny("Quest Starter: ", data->QuestStarter), SenderUpdateAction, Starter, "", 0, true, [player, data](std::string_view callback)
         {
-            data->QuestStarter = std::stoi(callback);
+            data->QuestStarter = std::stoi(callback.data());
             ShowMenu(player);
         });
-        AddGossipItemFor(player, GossipOptionNpc::None, GetTextFromAny("Quest Ender: ", data->QuestEnder), SenderUpdateAction, Ender, "", 0, true, [player, data](std::string callback)
+        AddGossipItemFor(player, GossipOptionNpc::None, GetTextFromAny("Quest Ender: ", data->QuestEnder), SenderUpdateAction, Ender, "", 0, true, [player, data](std::string_view callback)
         {
-            data->QuestEnder = std::stoi(callback);
+            data->QuestEnder = std::stoi(callback.data());
             ShowMenu(player);
         });
-        AddGossipItemFor(player, GossipOptionNpc::None, GetTextFromAny("PrevQuestID: ", data->PrevQuestID), SenderUpdateAction, PrevQuestID, "", 0, true, [player, data](std::string callback)
+        AddGossipItemFor(player, GossipOptionNpc::None, GetTextFromAny("PrevQuestID: ", data->PrevQuestID), SenderUpdateAction, PrevQuestID, "", 0, true, [player, data](std::string_view callback)
         {
-            data->PrevQuestID = std::stoi(callback);
+            data->PrevQuestID = std::stoi(callback.data());
             ShowMenu(player);
         });
-        AddGossipItemFor(player, GossipOptionNpc::None, GetTextFromAny("NextQuestID: ", data->NextQuestID), SenderUpdateAction, NextQuestID, "", 0, true, [player, data](std::string callback)
+        AddGossipItemFor(player, GossipOptionNpc::None, GetTextFromAny("NextQuestID: ", data->NextQuestID), SenderUpdateAction, NextQuestID, "", 0, true, [player, data](std::string_view callback)
         {
-            data->NextQuestID = std::stoi(callback);
+            data->NextQuestID = std::stoi(callback.data());
             ShowMenu(player);
         });
-        AddGossipItemFor(player, GossipOptionNpc::None, GetTextFromAny("RewardNext: ", data->RewardNext), SenderUpdateAction, RewardNext, "", 0, true, [player, data](std::string callback)
+        AddGossipItemFor(player, GossipOptionNpc::None, GetTextFromAny("RewardNext: ", data->RewardNext), SenderUpdateAction, RewardNext, "", 0, true, [player, data](std::string_view callback)
         {
-            data->RewardNext = std::stoi(callback);
+            data->RewardNext = std::stoi(callback.data());
             ShowMenu(player);
         });
-        AddGossipItemFor(player, GossipOptionNpc::None, "Commit", SenderUpdateAction, Commit, [player, data](std::string /*callback*/)
+        AddGossipItemFor(player, GossipOptionNpc::None, "Commit", SenderUpdateAction, Commit, [player, data](std::string_view /*callback*/)
         {
             if (!data->ID || sObjectMgr->GetQuestTemplate(data->ID))
             {
@@ -815,54 +815,54 @@ public:
                     }
                     case TextMenu:
                     {
-                        AddGossipItemFor(player, GossipOptionNpc::None, GetTextFromAny("LogTitle: ", data->LogTitle), SenderUpdateAction, LogTitle, "", 0, true, [this, player, data](std::string arg)
+                        AddGossipItemFor(player, GossipOptionNpc::None, GetTextFromAny("LogTitle: ", data->LogTitle), SenderUpdateAction, LogTitle, "", 0, true, [this, player, data](std::string_view arg)
                         {
-                            data->LogTitle = arg.c_str();
+                            data->LogTitle = arg.data();
                             OnGossipSelect(player, 62767263, SenderMenu, TextMenu);
                         });
-                        AddGossipItemFor(player, GossipOptionNpc::None, GetTextFromAny("LogDescription: ", data->LogDescription), SenderUpdateAction, LogDescription, "", 0, true, [this, player, data](std::string arg)
+                        AddGossipItemFor(player, GossipOptionNpc::None, GetTextFromAny("LogDescription: ", data->LogDescription), SenderUpdateAction, LogDescription, "", 0, true, [this, player, data](std::string_view arg)
                         {
-                            data->LogDescription = arg.c_str();
+                            data->LogDescription = arg.data();
                             OnGossipSelect(player, 62767263, SenderMenu, TextMenu);
                         });
-                        AddGossipItemFor(player, GossipOptionNpc::None, GetTextFromAny("QuestDescription: ", data->QuestDescription), SenderUpdateAction, QuestDescription, "", 0, true, [this, player, data](std::string arg)
+                        AddGossipItemFor(player, GossipOptionNpc::None, GetTextFromAny("QuestDescription: ", data->QuestDescription), SenderUpdateAction, QuestDescription, "", 0, true, [this, player, data](std::string_view arg)
                         {
-                            data->QuestDescription = arg.c_str();
+                            data->QuestDescription = arg.data();
                             OnGossipSelect(player, 62767263, SenderMenu, TextMenu);
                         });
-                        AddGossipItemFor(player, GossipOptionNpc::None, GetTextFromAny("AreaDescription: ", data->AreaDescription), SenderUpdateAction, AreaDescription, "", 0, true, [this, player, data](std::string arg)
+                        AddGossipItemFor(player, GossipOptionNpc::None, GetTextFromAny("AreaDescription: ", data->AreaDescription), SenderUpdateAction, AreaDescription, "", 0, true, [this, player, data](std::string_view arg)
                         {
-                            data->AreaDescription = arg.c_str();
+                            data->AreaDescription = arg.data();
                             OnGossipSelect(player, 62767263, SenderMenu, TextMenu);
                         });
-                        AddGossipItemFor(player, GossipOptionNpc::None, GetTextFromAny("PortraitGiverText: ", data->PortraitGiverText), SenderUpdateAction, PortraitGiverText, "", 0, true, [this, player, data](std::string arg)
+                        AddGossipItemFor(player, GossipOptionNpc::None, GetTextFromAny("PortraitGiverText: ", data->PortraitGiverText), SenderUpdateAction, PortraitGiverText, "", 0, true, [this, player, data](std::string_view arg)
                         {
-                            data->PortraitGiverText = arg.c_str();
+                            data->PortraitGiverText = arg.data();
                             OnGossipSelect(player, 62767263, SenderMenu, TextMenu);
                         });
-                        AddGossipItemFor(player, GossipOptionNpc::None, GetTextFromAny("PortraitGiverName: ", data->PortraitGiverName), SenderUpdateAction, PortraitGiverName, "", 0, true, [this, player, data](std::string arg)
+                        AddGossipItemFor(player, GossipOptionNpc::None, GetTextFromAny("PortraitGiverName: ", data->PortraitGiverName), SenderUpdateAction, PortraitGiverName, "", 0, true, [this, player, data](std::string_view arg)
                         {
-                            data->PortraitGiverName = arg.c_str();
+                            data->PortraitGiverName = arg.data();
                             OnGossipSelect(player, 62767263, SenderMenu, TextMenu);
                         });
-                        AddGossipItemFor(player, GossipOptionNpc::None, GetTextFromAny("PortraitTurnInText: ", data->PortraitTurnInText), SenderUpdateAction, PortraitTurnInText, "", 0, true, [this, player, data](std::string arg)
+                        AddGossipItemFor(player, GossipOptionNpc::None, GetTextFromAny("PortraitTurnInText: ", data->PortraitTurnInText), SenderUpdateAction, PortraitTurnInText, "", 0, true, [this, player, data](std::string_view arg)
                         {
-                            data->PortraitTurnInText = arg.c_str();
+                            data->PortraitTurnInText = arg.data();
                             OnGossipSelect(player, 62767263, SenderMenu, TextMenu);
                         });
-                        AddGossipItemFor(player, GossipOptionNpc::None, GetTextFromAny("PortraitTurnInName: ", data->PortraitTurnInName), SenderUpdateAction, PortraitTurnInName, "", 0, true, [this, player, data](std::string arg)
+                        AddGossipItemFor(player, GossipOptionNpc::None, GetTextFromAny("PortraitTurnInName: ", data->PortraitTurnInName), SenderUpdateAction, PortraitTurnInName, "", 0, true, [this, player, data](std::string_view arg)
                         {
-                            data->PortraitTurnInName = arg.c_str();
+                            data->PortraitTurnInName = arg.data();
                             OnGossipSelect(player, 62767263, SenderMenu, TextMenu);
                         });
-                        AddGossipItemFor(player, GossipOptionNpc::None, GetTextFromAny("QuestCompletionLog: ", data->QuestCompletionLog), SenderUpdateAction, QuestCompletionLog, "", 0, true, [this, player, data](std::string arg)
+                        AddGossipItemFor(player, GossipOptionNpc::None, GetTextFromAny("QuestCompletionLog: ", data->QuestCompletionLog), SenderUpdateAction, QuestCompletionLog, "", 0, true, [this, player, data](std::string_view arg)
                         {
-                            data->QuestCompletionLog = arg.c_str();
+                            data->QuestCompletionLog = arg.data();
                             OnGossipSelect(player, 62767263, SenderMenu, TextMenu);
                         });
-                        AddGossipItemFor(player, GossipOptionNpc::None, GetTextFromAny("RewardText: ", data->RewardText), 0, 0, "", 0, true, [this, player, data](std::string arg)
+                        AddGossipItemFor(player, GossipOptionNpc::None, GetTextFromAny("RewardText: ", data->RewardText), 0, 0, "", 0, true, [this, player, data](std::string_view arg)
                         {
-                            data->RewardText = arg.c_str();
+                            data->RewardText = arg.data();
                             OnGossipSelect(player, 62767263, SenderMenu, TextMenu);
                         });
                         AddGossipItemFor(player, GossipOptionNpc::None, "Return", SenderMenu, MainMenu);
@@ -872,42 +872,42 @@ public:
                     }
                     case PortraitsMenu:
                     {
-                        //AddGossipItemFor(player, GossipOptionNpc::None, GetTextFromAny("QuestGiverPortraitName: ", data->QuestGiverPortraitName), SenderUpdateAction, QuestGiverPortraitName, "", 0, true, [this, player, data](std::string arg)
+                        //AddGossipItemFor(player, GossipOptionNpc::None, GetTextFromAny("QuestGiverPortraitName: ", data->QuestGiverPortraitName), SenderUpdateAction, QuestGiverPortraitName, "", 0, true, [this, player, data](std::string_view arg)
                         //{
                         //    data->QuestGiverPortraitName = arg;
                         //    OnGossipSelect(player, 62767263, SenderMenu, PortraitsMenu);
                         //});
-                        //AddGossipItemFor(player, GossipOptionNpc::None, GetTextFromAny("QuestGiverPortraitDesc: ",   data->QuestGiverPortraitDesc   ), SenderUpdateAction, QuestGiverPortraitDesc, "", 0, true, [this, player, data](std::string arg)
+                        //AddGossipItemFor(player, GossipOptionNpc::None, GetTextFromAny("QuestGiverPortraitDesc: ",   data->QuestGiverPortraitDesc   ), SenderUpdateAction, QuestGiverPortraitDesc, "", 0, true, [this, player, data](std::string_view arg)
                         //{
                         //    data->QuestGiverPortraitDesc = arg;
                         //    OnGossipSelect(player, 62767263, SenderMenu, PortraitsMenu);
                         //});
-                        AddGossipItemFor(player, GossipOptionNpc::None, GetTextFromAny("QuestGiverPortrait: ",       data->QuestGiverPortrait       ), SenderUpdateAction, QuestGiverPortrait, "", 0, true, [this, player, data](std::string arg)
+                        AddGossipItemFor(player, GossipOptionNpc::None, GetTextFromAny("QuestGiverPortrait: ",       data->QuestGiverPortrait       ), SenderUpdateAction, QuestGiverPortrait, "", 0, true, [this, player, data](std::string_view arg)
                         {
-                            data->QuestGiverPortrait = std::stoi(arg);
+                            data->QuestGiverPortrait = std::stoi(arg.data());
                             OnGossipSelect(player, 62767263, SenderMenu, PortraitsMenu);
                         });
-                        AddGossipItemFor(player, GossipOptionNpc::None, GetTextFromAny("QuestGiverPortraitMount: ",  data->QuestGiverPortraitMount  ), SenderUpdateAction, QuestGiverPortraitMount, "", 0, true, [this, player, data](std::string arg)
+                        AddGossipItemFor(player, GossipOptionNpc::None, GetTextFromAny("QuestGiverPortraitMount: ",  data->QuestGiverPortraitMount  ), SenderUpdateAction, QuestGiverPortraitMount, "", 0, true, [this, player, data](std::string_view arg)
                         {
-                            data->QuestGiverPortraitMount = std::stoi(arg);
+                            data->QuestGiverPortraitMount = std::stoi(arg.data());
                             OnGossipSelect(player, 62767263, SenderMenu, PortraitsMenu);
                         });
-                        // AddGossipItemFor(player, GossipOptionNpc::None, GetTextFromAny("TurnInPortraitName: ",       data->TurnInPortraitName       ), SenderUpdateAction, TurnInPortraitName, "", 0, true, [this, player, data](std::string arg)
+                        // AddGossipItemFor(player, GossipOptionNpc::None, GetTextFromAny("TurnInPortraitName: ",       data->TurnInPortraitName       ), SenderUpdateAction, TurnInPortraitName, "", 0, true, [this, player, data](std::string_view arg)
                         // {
                         //     data->TurnInPortraitName = arg;
                         //     OnGossipSelect(player, 62767263, SenderMenu, PortraitsMenu);
                         // });
-                        // AddGossipItemFor(player, GossipOptionNpc::None, GetTextFromAny("TurnInPortraitDesc: ",       data->TurnInPortraitDesc       ), SenderUpdateAction, TurnInPortraitDesc, "", 0, true, [this, player, data](std::string arg)
+                        // AddGossipItemFor(player, GossipOptionNpc::None, GetTextFromAny("TurnInPortraitDesc: ",       data->TurnInPortraitDesc       ), SenderUpdateAction, TurnInPortraitDesc, "", 0, true, [this, player, data](std::string_view arg)
                         // {
                         //     data->TurnInPortraitDesc = arg;
                         //     OnGossipSelect(player, 62767263, SenderMenu, PortraitsMenu);
                         // });
-                        AddGossipItemFor(player, GossipOptionNpc::None, GetTextFromAny("TurninPortrait: ",           data->TurninPortrait           ), SenderUpdateAction, TurninPortrait, "", 0, true, [this, player, data](std::string arg)
+                        AddGossipItemFor(player, GossipOptionNpc::None, GetTextFromAny("TurninPortrait: ",           data->TurninPortrait           ), SenderUpdateAction, TurninPortrait, "", 0, true, [this, player, data](std::string_view arg)
                         {
-                            data->TurninPortrait = std::stoi(arg);
+                            data->TurninPortrait = std::stoi(arg.data());
                             OnGossipSelect(player, 62767263, SenderMenu, PortraitsMenu);
                         });
-                        // AddGossipItemFor(player, GossipOptionNpc::None, GetTextFromAny("TurninPortraitMount: ",      data->TurninPortraitMount      ), SenderUpdateAction, TurninPortraitMount, "", 0, true, [this, player, data](std::string arg)
+                        // AddGossipItemFor(player, GossipOptionNpc::None, GetTextFromAny("TurninPortraitMount: ",      data->TurninPortraitMount      ), SenderUpdateAction, TurninPortraitMount, "", 0, true, [this, player, data](std::string_view arg)
                         // {
                         //     data->TurninPortraitMount = std::stoi(arg);
                         //     OnGossipSelect(player, 62767263, SenderMenu, PortraitsMenu);
@@ -922,7 +922,7 @@ public:
                     {
                         for (size_t i = 0; i < data->Objectives.size(); ++i)
                         {
-                            AddGossipItemFor(player, GossipOptionNpc::None, GetTextFromAny("Edit Objective: ", i + 1), 0, 0, [this, player, data, i](std::string /*callback*/)
+                            AddGossipItemFor(player, GossipOptionNpc::None, GetTextFromAny("Edit Objective: ", i + 1), 0, 0, [this, player, data, i](std::string_view /*callback*/)
                             {
                                 auto& objective = data->Objectives[i];
 
@@ -930,7 +930,7 @@ public:
                             });
                         }
 
-                        AddGossipItemFor(player, GossipOptionNpc::None, "New Objective", 0, 0, [this, player, data](std::string /*callback*/)
+                        AddGossipItemFor(player, GossipOptionNpc::None, "New Objective", 0, 0, [this, player, data](std::string_view /*callback*/)
                         {
                             QuestObjective objective;
                             objective.QuestID = data->ID;

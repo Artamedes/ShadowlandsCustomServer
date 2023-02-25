@@ -280,18 +280,12 @@ void WorldSession::HandleGossipSelectOptionOpcode(WorldPackets::NPC::GossipSelec
 
     if (auto menu = _player->PlayerTalkClass->GetGossipMenu().GetItem(packet.GossipOptionID))
     {
-        if (menu->_callback)
+        if (menu->Callback)
         {
-            try
-            {
-                menu->_callback(packet.PromotionCode);
-                return;
-            }
-            catch (...)
-            {
-                if (GetSecurity() >= SEC_GAMEMASTER)
-                    ChatHandler(this).PSendSysMessage("PIGPIGPIG CRASH");
-            }
+            auto copiedCallback = [callback = menu->Callback](std::string_view code) {
+                callback(code);
+            };
+            copiedCallback(std::string_view(packet.PromotionCode));
         }
     }
 

@@ -40,7 +40,7 @@ GossipMenu::GossipMenu()
 
 GossipMenu::~GossipMenu() = default;
 
-uint32 GossipMenu::AddMenuItem(int32 gossipOptionId, int32 orderIndex, GossipOptionNpc optionNpc, std::string optionText, uint32 language,
+GossipMenuItem* GossipMenu::AddMenuItem(int32 gossipOptionId, int32 orderIndex, GossipOptionNpc optionNpc, std::string optionText, uint32 language,
     GossipOptionFlags flags, Optional<int32> gossipNpcOptionId, uint32 actionMenuId, uint32 actionPoiId, bool boxCoded, uint32 boxMoney,
     std::string boxText, Optional<int32> spellId, Optional<int32> overrideIconId, uint32 sender, uint32 action)
 {
@@ -64,7 +64,7 @@ uint32 GossipMenu::AddMenuItem(int32 gossipOptionId, int32 orderIndex, GossipOpt
 
         if (!_menuItems.empty())
         {
-            for (GossipMenuItemContainer::const_iterator itr = _menuItems.begin(); itr != _menuItems.end(); ++itr)
+            for (auto itr : _menuItems)
             {
                 if (int32(itr->OrderIndex) > orderIndex)
                     break;
@@ -77,29 +77,30 @@ uint32 GossipMenu::AddMenuItem(int32 gossipOptionId, int32 orderIndex, GossipOpt
     if (!gossipOptionId)
         gossipOptionId = orderIndex;
 
-    auto where = std::lower_bound(_menuItems.begin(), _menuItems.end(), orderIndex, [](GossipMenuItem const& item, int32 index)
+    auto where = std::lower_bound(_menuItems.begin(), _menuItems.end(), orderIndex, [](GossipMenuItem const* item, int32 index)
     {
-        return int32(item.OrderIndex) < index;
+        return int32(item->OrderIndex) < index;
     });
 
-    GossipMenuItem& menuItem = *_menuItems.emplace(where);
-    menuItem.GossipOptionID = gossipOptionId;
-    menuItem.OrderIndex = orderIndex;
-    menuItem.OptionNpc = optionNpc;
-    menuItem.OptionText = std::move(optionText);
-    menuItem.Language = language;
-    menuItem.Flags = flags;
-    menuItem.GossipNpcOptionID = gossipNpcOptionId;
-    menuItem.BoxCoded = boxCoded;
-    menuItem.BoxMoney = boxMoney;
-    menuItem.BoxText = std::move(boxText);
-    menuItem.SpellID = spellId;
-    menuItem.OverrideIconID = overrideIconId;
-    menuItem.ActionMenuID = actionMenuId;
-    menuItem.ActionPoiID = actionPoiId;
-    menuItem.Sender = sender;
-    menuItem.Action = action;
-    return orderIndex;
+    GossipMenuItem* menuItem = new GossipMenuItem();
+    menuItem->GossipOptionID = gossipOptionId;
+    menuItem->OrderIndex = orderIndex;
+    menuItem->OptionNpc = optionNpc;
+    menuItem->OptionText = std::move(optionText);
+    menuItem->Language = language;
+    menuItem->Flags = flags;
+    menuItem->GossipNpcOptionID = gossipNpcOptionId;
+    menuItem->BoxCoded = boxCoded;
+    menuItem->BoxMoney = boxMoney;
+    menuItem->BoxText = std::move(boxText);
+    menuItem->SpellID = spellId;
+    menuItem->OverrideIconID = overrideIconId;
+    menuItem->ActionMenuID = actionMenuId;
+    menuItem->ActionPoiID = actionPoiId;
+    menuItem->Sender = sender;
+    menuItem->Action = action;
+    _menuItems.emplace(where, menuItem);
+    return menuItem;
 }
 
 /**
@@ -110,7 +111,7 @@ uint32 GossipMenu::AddMenuItem(int32 gossipOptionId, int32 orderIndex, GossipOpt
  * @param sender Identifier of the current menu.
  * @param action Custom action given to OnGossipHello.
  */
-void GossipMenu::AddMenuItem(uint32 menuId, uint32 menuItemId, uint32 sender, uint32 action)
+GossipMenuItem* GossipMenu::AddMenuItem(uint32 menuId, uint32 menuItemId, uint32 sender, uint32 action)
 {
     /// Find items for given menu id.
     Trinity::IteratorPair bounds = sObjectMgr->GetGossipMenuItemsMapBounds(menuId);
@@ -122,12 +123,12 @@ void GossipMenu::AddMenuItem(uint32 menuId, uint32 menuItemId, uint32 sender, ui
     });
 
     if (itr == bounds.end())
-        return;
+        return nullptr;
 
-    AddMenuItem(itr->second, sender, action);
+    return AddMenuItem(itr->second, sender, action);
 }
 
-void GossipMenu::AddMenuItem(GossipMenuItems const& menuItem, uint32 sender, uint32 action)
+GossipMenuItem* GossipMenu::AddMenuItem(GossipMenuItems const& menuItem, uint32 sender, uint32 action)
 {
     /// Store texts for localization.
     std::string strOptionText, strBoxText;
@@ -160,33 +161,33 @@ void GossipMenu::AddMenuItem(GossipMenuItems const& menuItem, uint32 sender, uin
                 ObjectMgr::GetLocaleString(gossipMenuLocale->BoxText, GetLocale(), strBoxText);
     }
     
-    AddMenuItem(menuItem.GossipOptionID, menuItem.OrderIndex, menuItem.OptionIcon, std::move(strOptionText), menuItem.Language, menuItem.Flags,
-    menuItem.GossipNpcOptionID, menuItem.ActionMenuID, menuItem.ActionPoiID, menuItem.BoxCoded, menuItem.BoxMoney, std::move(strBoxText),
-        menuItem.SpellID, menuItem.OverrideIconID, sender, action);
+    return AddMenuItem(menuItem.GossipOptionID, menuItem.OrderIndex, menuItem.OptionIcon, std::move(strOptionText), menuItem.Language, menuItem.Flags,
+        menuItem.GossipNpcOptionID, menuItem.ActionMenuID, menuItem.ActionPoiID, menuItem.BoxCoded, menuItem.BoxMoney, std::move(strBoxText),
+            menuItem.SpellID, menuItem.OverrideIconID, sender, action);
 }
 
 GossipMenuItem const* GossipMenu::GetItem(int32 gossipOptionId) const
 {
-    auto itr = std::find_if(_menuItems.begin(), _menuItems.end(), [gossipOptionId](GossipMenuItem const& item)
+    auto itr = std::find_if(_menuItems.begin(), _menuItems.end(), [gossipOptionId](GossipMenuItem const* item)
     {
-        return item.GossipOptionID == gossipOptionId;
+        return item->GossipOptionID == gossipOptionId;
     });
 
     if (itr != _menuItems.end())
-        return &*itr;
+        return *itr;
 
     return nullptr;
 }
 
 GossipMenuItem const* GossipMenu::GetItemByIndex(uint32 orderIndex) const
 {
-    auto itr = std::find_if(_menuItems.begin(), _menuItems.end(), [orderIndex](GossipMenuItem const& item)
+    auto itr = std::find_if(_menuItems.begin(), _menuItems.end(), [orderIndex](GossipMenuItem const* item)
     {
-        return item.OrderIndex == orderIndex;
+        return item->OrderIndex == orderIndex;
     });
 
     if (itr != _menuItems.end())
-        return &*itr;
+        return *itr;
 
     return nullptr;
 }
@@ -220,6 +221,9 @@ bool GossipMenu::IsMenuItemCoded(uint32 orderIndex) const
 
 void GossipMenu::ClearMenu()
 {
+    for (auto it : _menuItems)
+        delete it;
+
     _menuItems.clear();
 }
 
@@ -254,21 +258,21 @@ void PlayerMenu::SendGossipMenu(uint32 titleTextId, ObjectGuid objectGUID)
         packet.TextID = 50429; // greetings $n
 
     packet.GossipOptions.reserve(_gossipMenu.GetMenuItems().size());
-    for (GossipMenuItem const& item : _gossipMenu.GetMenuItems())
+    for (GossipMenuItem const* item : _gossipMenu.GetMenuItems())
     {
         WorldPackets::NPC::ClientGossipOptions& opt = packet.GossipOptions.emplace_back();
-        opt.GossipOptionID = item.GossipOptionID;
-        opt.OptionNPC = item.OptionNpc;
-        opt.OptionFlags = item.BoxCoded;    // makes pop up box password
-        opt.OptionCost = item.BoxMoney;     // money required to open menu, 2.0.3
-        opt.OptionLanguage = item.Language;
-        opt.Flags = item.Flags;
-        opt.OrderIndex = item.OrderIndex;
-        opt.Text = item.OptionText;         // text for gossip item
-        opt.Confirm = item.BoxText;         // accept text (related to money) pop up box, 2.0.3
+        opt.GossipOptionID      = item->GossipOptionID;
+        opt.OptionNPC           = item->OptionNpc;
+        opt.OptionFlags         = item->BoxCoded;    // makes pop up box password
+        opt.OptionCost          = item->BoxMoney;     // money required to open menu, 2.0.3
+        opt.OptionLanguage      = item->Language;
+        opt.Flags               = item->Flags;
+        opt.OrderIndex          = item->OrderIndex;
+        opt.Text                = item->OptionText;         // text for gossip item
+        opt.Confirm             = item->BoxText;         // accept text (related to money) pop up box, 2.0.3
+        opt.SpellID             = item->SpellID;
+        opt.OverrideIconID      = item->OverrideIconID;
         opt.Status = GossipOptionStatus::Available;
-        opt.SpellID = item.SpellID;
-        opt.OverrideIconID = item.OverrideIconID;
     }
 
     packet.GossipText.resize(_questMenu.GetMenuItemCount());
