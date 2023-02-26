@@ -276,6 +276,16 @@ bool AreaTrigger::Create(uint32 areaTriggerCreatePropertiesId, Unit* caster, Uni
 
     AI_Initialize();
 
+    // lets get script
+    if (AI())
+    {
+        std::vector<G3D::Vector3> splinePoints;
+        if (AI()->InitSplines(splinePoints, timeToTarget))
+        {
+            InitSplines(splinePoints, timeToTarget);
+        }
+    }
+
     // Relocate areatriggers with circular movement again
     if (HasOrbit())
         Relocate(CalculateOrbitPosition());

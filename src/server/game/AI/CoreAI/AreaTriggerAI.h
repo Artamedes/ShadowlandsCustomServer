@@ -63,6 +63,9 @@ class TC_GAME_API AreaTriggerAI
         // Called before areatrigger is added to remove list
         virtual void OnRegisterRemove() { }
 
+        virtual bool InitSplines(std::vector<G3D::Vector3>& /*splinePoints*/, uint32& /*timeToTarget*/) { return false; }
+
+
         // Gets the id of the AI (script id)
         uint32 GetId() { return _scriptId; }
 };
