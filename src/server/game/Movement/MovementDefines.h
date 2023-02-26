@@ -92,6 +92,7 @@ struct JumpArrivalCastArgs
 {
     uint32 SpellId = 0;
     ObjectGuid Target;
+    Optional<Position> OverridePos;
     std::queue<std::function<void()>> Callbacks;
 };
 

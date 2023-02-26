@@ -212,9 +212,9 @@ SpellCastResult UnitAI::DoCastVictim(uint32 spellId, CastSpellExtraArgs const& a
 SpellCastResult UnitAI::DoCastRandom(uint32 spellId, float dist, bool triggered, int32 aura, uint32 position)
 {
     if (me->HasUnitState(UNIT_STATE_CASTING) && !triggered)
-        return SpellCastResult::SPELL_FAILED_NOT_WHILE_CHROMIE_TIMED;
+        return SpellCastResult::SPELL_FAILED_SPELL_IN_PROGRESS;
 
-    if (Unit* target = SelectTarget(SelectTargetMethod::Random, position, dist, true, aura))
+    if (Unit* target = SelectTarget(SelectTargetMethod::Random, position, dist, true, true, aura))
         return me->CastSpell(target, spellId, triggered);
 
     return SpellCastResult::SPELL_FAILED_BAD_TARGETS;
