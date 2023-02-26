@@ -5818,10 +5818,6 @@ void Spell::EffectJumpCharge()
         if (Unit* target = m_targets.GetUnitTarget())
             pos = *target;
 
-    float speed = params->Speed;
-    if (params->TreatSpeedAsMoveTimeSeconds)
-        speed = unitCaster->GetExactDist(pos) / params->MoveTimeInSec;
-
     Optional<JumpArrivalCastArgs> arrivalCast;
     if (effectInfo->TriggerSpell)
     {
@@ -5837,6 +5833,13 @@ void Spell::EffectJumpCharge()
     }
 
     CallScriptOnJumpChargeHandlers(arrivalCast);
+
+    if (arrivalCast->OverridePos)
+        pos = *arrivalCast->OverridePos;
+
+    float speed = params->Speed;
+    if (params->TreatSpeedAsMoveTimeSeconds)
+        speed = unitCaster->GetExactDist(pos) / params->MoveTimeInSec;
 
     Optional<Movement::SpellEffectExtraData> effectExtra;
     if (params->SpellVisualId || params->ProgressCurveId || params->ParabolicCurveId)
