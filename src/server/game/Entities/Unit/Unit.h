@@ -2027,7 +2027,10 @@ class TC_GAME_API Unit : public WorldObject
         // enables / disables combat interaction of this unit
         void SetIsCombatDisallowed(bool apply) { _isCombatDisallowed = apply; }
 
+        bool IsInsideAreaTrigger(uint32 areaTriggerID) const;
+
         GuidUnorderedSet m_VolleyTargets;
+        GuidUnorderedSet InsideAreaTriggers;
 
         std::string GetDebugInfo() const override;
 

@@ -523,6 +523,11 @@ void AreaTrigger::SearchUnitInSphere(std::vector<Unit*>& targetList)
                 OverrideRadiusTarget,
                 sDB2Manager.GetCurveValueAt(GetCreateProperties()->MorphCurveId, GetProgress()));
         }
+
+        if (GetCreateProperties()->ScaleCurveId)
+        {
+            radius *= sDB2Manager.GetCurveValueAt(GetCreateProperties()->ScaleCurveId, GetProgress());
+        }
     }
 
     SearchUnits(targetList, radius, true);
@@ -638,7 +643,7 @@ void AreaTrigger::HandleUnitEnterExit(std::vector<Unit*> const& newTargetList)
         }
 
         DoActions(unit);
-
+        unit->InsideAreaTriggers.insert(GetGUID());
         _ai->OnUnitEnter(unit);
     }
 
@@ -655,7 +660,7 @@ void AreaTrigger::HandleUnitEnterExit(std::vector<Unit*> const& newTargetList)
             }
 
             UndoActions(leavingUnit);
-
+            leavingUnit->InsideAreaTriggers.erase(GetGUID());
             _ai->OnUnitExit(leavingUnit);
         }
     }

@@ -6237,6 +6237,19 @@ void Unit::UpdateDisplayPower()
                         displayPower = POWER_ENERGY;
                 }
             }
+
+            Unit::AuraEffectList const& overridePowerDisplays = GetAuraEffectsByType(SPELL_AURA_MOD_OVERRIDE_POWER_DISPLAY);
+
+            if (!overridePowerDisplays.empty())
+            {
+                AuraEffect const* powerTypeAura = overridePowerDisplays.front();
+
+                auto miscValueA = powerTypeAura->GetMiscValue();
+
+                if (auto powerDisplay = sPowerDisplayStore.LookupEntry(miscValueA))
+                    displayPower = Powers(powerDisplay->ActualType);
+            }
+
             break;
         }
     }
@@ -10577,6 +10590,7 @@ void Unit::RemoveFromWorld()
             }
         }
 
+        InsideAreaTriggers.clear();
         WorldObject::RemoveFromWorld();
         m_duringRemoveFromWorld = false;
     }
@@ -15466,6 +15480,20 @@ float Unit::GetCollisionHeight() const
 
     float const collisionHeight = scaleMod * modelData->CollisionHeight * modelData->ModelScale * displayInfo->CreatureModelScale;
     return collisionHeight == 0.0f ? DEFAULT_COLLISION_HEIGHT : collisionHeight;
+}
+
+bool Unit::IsInsideAreaTrigger(uint32 areaTriggerID) const
+{
+    for (auto const& guid : InsideAreaTriggers)
+    {
+        if (auto at = ObjectAccessor::GetAreaTrigger(*this, guid))
+        {
+            if (at->GetCreateProperties() && at->GetCreateProperties()->Id == areaTriggerID)
+                return true;
+        }
+    }
+
+    return false;
 }
 
 std::string Unit::GetDebugInfo() const
