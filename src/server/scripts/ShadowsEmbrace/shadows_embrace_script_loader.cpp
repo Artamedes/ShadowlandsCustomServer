@@ -88,6 +88,8 @@ void AddSC_AzureVaults_SE();
 void AddSC_instance_azure_vaults_SE();
 void AddSC_BossLeymor_SE();
 void AddSC_BossTelashGreywing_SE();
+void AddSC_Umbrelskul_SE();
+void AddSC_BossAzureBlade_SE();
 
 void AddShadowsEmbraceScripts()
 {
@@ -172,4 +174,6 @@ void AddShadowsEmbraceScripts()
     AddSC_instance_azure_vaults_SE();
     AddSC_BossLeymor_SE();
     AddSC_BossTelashGreywing_SE();
+    AddSC_Umbrelskul_SE();
+    AddSC_BossAzureBlade_SE();
 }

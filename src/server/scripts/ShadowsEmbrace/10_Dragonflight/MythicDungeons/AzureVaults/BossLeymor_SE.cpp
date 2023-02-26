@@ -22,6 +22,7 @@ enum eSpells : uint32
     EruptionFissure = 386660,
     ExplosiveBrand  = 374567,
     ConsumingStomp  = 374720,
+    Stasis          = 375729,
 
     LeyLineSproutsMissle = 374362,
 };
@@ -34,6 +35,14 @@ struct boss_se_leymor_186644 : public BossAI
         boss_se_leymor_186644(Creature* creature) : BossAI(creature, DATA_LEYMOR)
         {
             ApplyAllImmunities(true);
+        }
+
+        void Reset() override
+        {
+            BossAI::Reset();
+
+            if (instance && instance->GetBossState(DATA_LEYMOR) == NOT_STARTED)
+                DoCastSelf(Stasis);
         }
 
         void DoAction(int32 actionId) override
@@ -162,7 +171,6 @@ class spell_leyline_sprouts_374364 : public SpellScript
         OnEffectHit += SpellEffectFn(spell_leyline_sprouts_374364::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
     }
 };
-
 
 void AddSC_BossLeymor_SE()
 {

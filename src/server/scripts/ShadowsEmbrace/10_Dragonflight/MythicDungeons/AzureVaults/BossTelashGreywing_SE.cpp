@@ -70,6 +70,8 @@ struct boss_se_telash_greywing_186737 : public BossAI
         
         void Reset() override
         {
+            BossAI::Reset();
+
             DoCastSelf(IcePowerDNTAura);
             DoCastSelf(IcePowerDNTPeriodic);
 

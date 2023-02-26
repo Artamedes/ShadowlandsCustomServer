@@ -88,10 +88,23 @@ struct instance_azure_vaults : public InstanceScript
 
                     break;
 
+                case NPC_BOOK_OF_TRANSLOCATION_TELASH_BACK:
+                    _3rdBossBackBook = creature->GetGUID();
+
+                    if (GetBossState(DATA_TELASH_GREYWING) != DONE)
+                        creature->SetVisible(false);
+                    break;
+
                 case NPC_BOOK_OF_TRANSLOCATION_LAST:
                     if (GetBossState(DATA_TELASH_GREYWING) != DONE)
                         creature->SetVisible(false);
                     _3rdBossBooks.insert(creature->GetGUID());
+                    break;
+
+                case NPC_SINDRAGOSA_TELE:
+                    if (GetBossState(DATA_LEYMOR) != DONE)
+                        creature->SetVisible(false);
+                    _sindragosaTeleGUID = creature->GetGUID();
                     break;
             }
         }
@@ -172,7 +185,16 @@ struct instance_azure_vaults : public InstanceScript
                     for (auto const& guid : _3rdBossBooks)
                         if (auto creature = instance->GetCreature(guid))
                             creature->SetVisible(true);
+
+                    // activate the book to get back
+                    if (auto creature = instance->GetCreature(_3rdBossBackBook))
+                        creature->SetVisible(true);
                 }
+            }
+            else if (id == DATA_LEYMOR)
+            {
+                if (auto creature = instance->GetCreature(_sindragosaTeleGUID))
+                    creature->SetVisible(true);
             }
 
             return InstanceScript::SetBossState(id, state, set);
@@ -181,9 +203,12 @@ struct instance_azure_vaults : public InstanceScript
     private:
         GuidUnorderedSet _arcaneTenders;
         GuidUnorderedSet _3rdBossBooks;
+        ObjectGuid _3rdBossBackBook;
         uint32 _remainingArcaneTenders = 0;
         ObjectGuid _vaultRunes[3];
         uint8 _nextValueIndex = 0;
+
+        ObjectGuid _sindragosaTeleGUID;
 };
 
 void AddSC_instance_azure_vaults_SE()

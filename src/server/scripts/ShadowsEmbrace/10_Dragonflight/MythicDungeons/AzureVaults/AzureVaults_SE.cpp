@@ -10,6 +10,7 @@
 #include "GenericMovementGenerator.h"
 #include "AreaTrigger.h"
 #include "AreaTriggerAI.h"
+#include "AzureVaults_SE.h"
 
 /// NPC: Sindragosa - 197081
 struct npc_se_sindragosa_197081 : public ScriptedAI
@@ -28,21 +29,36 @@ struct npc_se_sindragosa_197081 : public ScriptedAI
         {
             ClearGossipMenuFor(player);
 
-            AddGossipItemFor(player, GossipOptionNpc::None, "Take me to the Arcane Conservatory.")->Callback = [player](std::string_view /*callback*/)
+            auto instance = me->GetInstanceScript();
+
+            bool leymorDone = instance && instance->GetBossState(DATA_LEYMOR) == DONE;
+            bool azurebladeDone = instance && instance->GetBossState(DATA_AZUREBLADE) == DONE;
+            bool telashDone = instance && instance->GetBossState(DATA_TELASH_GREYWING) == DONE;
+
+            if (leymorDone || player->IsGameMaster())
             {
-                player->CastSpell(player, eSindragosa::PortalToAzureBoss01, true);
-                CloseGossipMenuFor(player);
-            };
-            AddGossipItemFor(player, GossipOptionNpc::None, "Take me to the Mausoleum of Legends.")->Callback = [player](std::string_view /*callback*/)
+                AddGossipItemFor(player, GossipOptionNpc::None, "Take me to the Arcane Conservatory.")->Callback = [player](std::string_view /*callback*/)
+                {
+                    player->CastSpell(player, eSindragosa::PortalToAzureBoss01, true);
+                    CloseGossipMenuFor(player);
+                };
+            }
+            if (azurebladeDone || player->IsGameMaster())
             {
-                player->CastSpell(player, eSindragosa::PortalToAzureBoss02, true);
-                CloseGossipMenuFor(player);
-            };
-            AddGossipItemFor(player, GossipOptionNpc::None, "Take me to the Crystal Chambers.")->Callback = [player](std::string_view /*callback*/)
+                AddGossipItemFor(player, GossipOptionNpc::None, "Take me to the Mausoleum of Legends.")->Callback = [player](std::string_view /*callback*/)
+                {
+                    player->CastSpell(player, eSindragosa::PortalToAzureBoss02, true);
+                    CloseGossipMenuFor(player);
+                };
+            }
+            if (telashDone || player->IsGameMaster())
             {
-                player->CastSpell(player, eSindragosa::PortalToAzureBoss03, true);
-                CloseGossipMenuFor(player);
-            };
+                AddGossipItemFor(player, GossipOptionNpc::None, "Take me to the Crystal Chambers.")->Callback = [player](std::string_view /*callback*/)
+                {
+                    player->CastSpell(player, eSindragosa::PortalToAzureBoss03, true);
+                    CloseGossipMenuFor(player);
+                };
+            }
 
             SendGossipMenuFor(player, 590032, me); ///< Sindragosa TextID - Verified 48069
             return true;

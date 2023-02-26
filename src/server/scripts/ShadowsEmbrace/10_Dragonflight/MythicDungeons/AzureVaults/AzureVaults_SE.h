@@ -33,6 +33,10 @@ enum AVDFCreatureIds : uint32
     // Telash Boss
     NPC_VAULT_RUNE       = 197204,
     NPC_BOOK_OF_TRANSLOCATION_LAST = 194715,
+    NPC_BOOK_OF_TRANSLOCATION_TELASH_BACK = 199545,
+
+    // Sindragosa IDS
+    NPC_SINDRAGOSA_TELE  = 197081,
 };
 
 enum AVDFGameObjectIds : uint32
