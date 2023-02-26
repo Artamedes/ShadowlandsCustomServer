@@ -4237,13 +4237,14 @@ void AuraEffect::HandleAuraModOverridePowerDisplay(AuraApplication const* aurApp
         return;
 
     Unit* target = aurApp->GetTarget();
-    if (target->GetPowerIndex(Powers(powerDisplay->ActualType)) == MAX_POWERS)
-        return;
+    //if (target->GetPowerIndex(Powers(powerDisplay->ActualType)) == MAX_POWERS)
+    //    return;
 
     if (apply)
     {
         target->RemoveAurasByType(GetAuraType(), ObjectGuid::Empty, GetBase());
         target->SetOverrideDisplayPowerId(powerDisplay->ID);
+        target->UpdateDisplayPower();
     }
     else
         target->SetOverrideDisplayPowerId(0);
