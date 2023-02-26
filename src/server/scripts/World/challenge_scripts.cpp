@@ -336,6 +336,13 @@ class aura_challengers_might : public AuraScript
         if (!aurEff->GetAmount() || !GetCaster()->IsInCombat())
             return;
 
+        // check if this is challenge mode map..
+        if (!GetCaster()->GetMap()->IsChallengeMode())
+        {
+            Remove();
+            return;
+        }
+
         if (volcanicTimer == volcanicTick)
             volcanicTimer = 0;
         else
