@@ -85,6 +85,9 @@ void AddSC_TorghastSpells();
 // Mythic Dungeons
 // Azure Vaults
 void AddSC_AzureVaults_SE();
+void AddSC_instance_azure_vaults_SE();
+void AddSC_BossLeymor_SE();
+void AddSC_BossTelashGreywing_SE();
 
 void AddShadowsEmbraceScripts()
 {
@@ -166,4 +169,7 @@ void AddShadowsEmbraceScripts()
     AddSC_TorghastSpells();
 
     AddSC_AzureVaults_SE();
+    AddSC_instance_azure_vaults_SE();
+    AddSC_BossLeymor_SE();
+    AddSC_BossTelashGreywing_SE();
 }
