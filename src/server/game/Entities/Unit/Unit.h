@@ -1615,7 +1615,7 @@ class TC_GAME_API Unit : public WorldObject
 
         void SetCurrentCastSpell(Spell* pSpell);
         void InterruptSpell(CurrentSpellTypes spellType, bool withDelayed = true, bool withInstant = true, Spell* interruptingSpell = nullptr);
-        void FinishSpell(CurrentSpellTypes spellType, bool ok = true);
+        void FinishSpell(CurrentSpellTypes spellType, SpellCastResult result = SPELL_CAST_OK);
 
         void AddWorldEffect(int32 effectID) { AddDynamicUpdateFieldValue(m_values.ModifyValue(&Unit::m_unitData).ModifyValue(&UF::UnitData::WorldEffects)) = effectID; }
         void SetWorldEffect(uint32 slot, int32 effectID) { SetUpdateFieldValue(m_values.ModifyValue(&Unit::m_unitData).ModifyValue(&UF::UnitData::WorldEffects, slot), effectID); }

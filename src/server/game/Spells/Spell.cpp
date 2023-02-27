@@ -835,7 +835,7 @@ void Spell::SelectSpellTargets(bool checkDelay /*= false*/)
                 if (!anyNonImmuneTargetFound)
                 {
                     SendCastResult(SPELL_FAILED_IMMUNE);
-                    finish(false);
+                    finish(SPELL_FAILED_IMMUNE);
                     return;
                 }
             }
@@ -847,7 +847,7 @@ void Spell::SelectSpellTargets(bool checkDelay /*= false*/)
             if (!focusObject && m_UniqueTargetInfo.empty() && m_UniqueGOTargetInfo.empty() && m_UniqueItemInfo.empty() && !m_targets.HasDst())
             {
                 SendCastResult(SPELL_FAILED_BAD_IMPLICIT_TARGETS);
-                finish(false);
+                finish(SPELL_FAILED_BAD_IMPLICIT_TARGETS);
                 return;
             }
 
@@ -1138,7 +1138,7 @@ void Spell::SelectImplicitNearbyTargets(SpellEffectInfo const& spellEffectInfo, 
                     else
                     {
                         SendCastResult(SPELL_FAILED_BAD_IMPLICIT_TARGETS);
-                        finish(false);
+                        finish(SPELL_FAILED_BAD_IMPLICIT_TARGETS);
                     }
                     return;
                 }
@@ -1158,7 +1158,7 @@ void Spell::SelectImplicitNearbyTargets(SpellEffectInfo const& spellEffectInfo, 
                     else
                     {
                         SendCastResult(SPELL_FAILED_BAD_IMPLICIT_TARGETS);
-                        finish(false);
+                        finish(SPELL_FAILED_BAD_IMPLICIT_TARGETS);
                     }
                     return;
                 }
@@ -1177,7 +1177,7 @@ void Spell::SelectImplicitNearbyTargets(SpellEffectInfo const& spellEffectInfo, 
             return;
 
         SendCastResult(SPELL_FAILED_BAD_IMPLICIT_TARGETS);
-        finish(false);
+        finish(SPELL_FAILED_BAD_IMPLICIT_TARGETS);
         return;
     }
 
@@ -1186,7 +1186,7 @@ void Spell::SelectImplicitNearbyTargets(SpellEffectInfo const& spellEffectInfo, 
     {
         TC_LOG_DEBUG("spells", "Spell::SelectImplicitNearbyTargets: OnObjectTargetSelect script hook for spell Id {} set NULL target, effect {}", m_spellInfo->Id, uint32(spellEffectInfo.EffectIndex));
         SendCastResult(SPELL_FAILED_BAD_IMPLICIT_TARGETS);
-        finish(false);
+        finish(SPELL_FAILED_BAD_IMPLICIT_TARGETS);
         return;
     }
 
@@ -1199,7 +1199,7 @@ void Spell::SelectImplicitNearbyTargets(SpellEffectInfo const& spellEffectInfo, 
             {
                 TC_LOG_DEBUG("spells", "Spell::SelectImplicitNearbyTargets: OnObjectTargetSelect script hook for spell Id {} set object of wrong type, expected unit, got {}, effect {}", m_spellInfo->Id, target->GetGUID().GetTypeName(), effMask);
                 SendCastResult(SPELL_FAILED_BAD_IMPLICIT_TARGETS);
-                finish(false);
+                finish(SPELL_FAILED_BAD_IMPLICIT_TARGETS);
                 return;
             }
             break;
@@ -1210,7 +1210,7 @@ void Spell::SelectImplicitNearbyTargets(SpellEffectInfo const& spellEffectInfo, 
             {
                 TC_LOG_DEBUG("spells", "Spell::SelectImplicitNearbyTargets: OnObjectTargetSelect script hook for spell Id {} set object of wrong type, expected gameobject, got {}, effect {}", m_spellInfo->Id, target->GetGUID().GetTypeName(), effMask);
                 SendCastResult(SPELL_FAILED_BAD_IMPLICIT_TARGETS);
-                finish(false);
+                finish(SPELL_FAILED_BAD_IMPLICIT_TARGETS);
                 return;
             }
             break;
@@ -1221,7 +1221,7 @@ void Spell::SelectImplicitNearbyTargets(SpellEffectInfo const& spellEffectInfo, 
             {
                 TC_LOG_DEBUG("spells", "Spell::SelectImplicitNearbyTargets: OnObjectTargetSelect script hook for spell Id {} set object of wrong type, expected corpse, got {}, effect {}", m_spellInfo->Id, target->GetGUID().GetTypeName(), effMask);
                 SendCastResult(SPELL_FAILED_BAD_IMPLICIT_TARGETS);
-                finish(false);
+                finish(SPELL_FAILED_BAD_IMPLICIT_TARGETS);
                 return;
             }
             break;
@@ -1487,7 +1487,7 @@ void Spell::SelectImplicitCasterDestTargets(SpellEffectInfo const& spellEffectIn
             {
                 SendCastResult(SPELL_FAILED_NOT_HERE);
                 SendChannelUpdate(0);
-                finish(false);
+                finish(SPELL_FAILED_NOT_HERE);
                 return;
             }
 
@@ -1495,7 +1495,7 @@ void Spell::SelectImplicitCasterDestTargets(SpellEffectInfo const& spellEffectIn
             {
                 SendCastResult(SPELL_FAILED_TOO_SHALLOW);
                 SendChannelUpdate(0);
-                finish(false);
+                finish(SPELL_FAILED_TOO_SHALLOW);
                 return;
             }
 
@@ -3598,7 +3598,7 @@ SpellCastResult Spell::prepare(SpellCastTargets const& targets, AuraEffect const
         else
         {
             SendCastResult(SPELL_FAILED_EQUIPPED_ITEM);
-            finish(false);
+            finish(SPELL_FAILED_EQUIPPED_ITEM);
             return SPELL_FAILED_EQUIPPED_ITEM;
         }
     }
@@ -3621,7 +3621,7 @@ SpellCastResult Spell::prepare(SpellCastTargets const& targets, AuraEffect const
     if (DisableMgr::IsDisabledFor(DISABLE_TYPE_SPELL, m_spellInfo->Id, m_caster))
     {
         SendCastResult(SPELL_FAILED_SPELL_UNAVAILABLE);
-        finish(false);
+        finish(SPELL_FAILED_SPELL_UNAVAILABLE);
         return SPELL_FAILED_SPELL_UNAVAILABLE;
     }
 
@@ -3629,7 +3629,7 @@ SpellCastResult Spell::prepare(SpellCastTargets const& targets, AuraEffect const
     if (!(_triggeredCastFlags & TRIGGERED_IGNORE_CAST_IN_PROGRESS) && m_caster->ToUnit() && m_caster->ToUnit()->IsNonMeleeSpellCast(false, true, true, m_spellInfo->Id == 75) && !m_castId.IsEmpty())
     {
         SendCastResult(SPELL_FAILED_SPELL_IN_PROGRESS);
-        finish(false);
+        finish(SPELL_FAILED_SPELL_IN_PROGRESS);
         return SPELL_FAILED_SPELL_IN_PROGRESS;
     }
 
@@ -3672,7 +3672,7 @@ SpellCastResult Spell::prepare(SpellCastTargets const& targets, AuraEffect const
         if (GetCurrentContainer() == CURRENT_AUTOREPEAT_SPELL && m_caster->IsUnit())
             m_caster->ToUnit()->SetCurrentCastSpell(this);
 
-        finish(false);
+        finish(result);
         return result;
     }
 
@@ -3692,7 +3692,7 @@ SpellCastResult Spell::prepare(SpellCastTargets const& targets, AuraEffect const
         if (result != SPELL_CAST_OK)
         {
             SendCastResult(result);
-            finish(false); ///< Needed so door of shadow isnt instant
+            finish(result); ///< Needed so door of shadow isnt instant
             return result;
         }
     }
@@ -3858,7 +3858,7 @@ void Spell::cancel(bool sendInterrupted /*= true*/)
     if (m_caster && m_caster->IsPlayer())
         sScriptMgr->OnPlayerInterruptedSpellCast(m_caster->ToPlayer(), this);
 
-    finish(false);
+    finish(SPELL_FAILED_INTERRUPTED);
 }
 
 void Spell::cast(bool skipCheck)
@@ -3943,7 +3943,7 @@ void Spell::_cast(bool skipCheck)
             if (modOwner)
                 modOwner->SetSpellModTakingSpell(this, false);
 
-            finish(false);
+            finish(res);
             SetExecutedCurrently(false);
         };
 
@@ -4015,7 +4015,7 @@ void Spell::_cast(bool skipCheck)
         if (m_caster->GetTypeId() == TYPEID_PLAYER)
             m_caster->ToPlayer()->SetSpellModTakingSpell(this, false);
 
-        finish(false);
+        finish(SPELL_FAILED_INTERRUPTED);
         SetExecutedCurrently(false);
         return;
     }
@@ -4278,7 +4278,7 @@ void Spell::handle_immediate()
     TakeCastItem();
 
     if (m_spellState != SPELL_STATE_CASTING)
-        finish(true);                                       // successfully finish spell cast (not last in case autorepeat or channel spell)
+        finish();                                           // successfully finish spell cast (not last in case autorepeat or channel spell)
 }
 
 uint64 Spell::handle_delayed(uint64 t_offset)
@@ -4286,7 +4286,7 @@ uint64 Spell::handle_delayed(uint64 t_offset)
     if (!UpdatePointers())
     {
         // finish the spell if UpdatePointers() returned false, something wrong happened there
-        finish(false);
+        finish(SPELL_FAILED_NO_VALID_TARGETS);
         return 0;
     }
 
@@ -4381,7 +4381,7 @@ uint64 Spell::handle_delayed(uint64 t_offset)
         // spell is finished, perform some last features of the spell here
         _handle_finish_phase();
 
-        finish(true);                                       // successfully finish spell cast
+        finish();                                           // successfully finish spell cast
 
         // return zero, spell is finished now
         return 0;
@@ -4570,7 +4570,7 @@ void Spell::update(uint32 difftime)
     }
 }
 
-void Spell::finish(bool ok)
+void Spell::finish(SpellCastResult result)
 {
     if (m_spellState == SPELL_STATE_FINISHED)
         return;
@@ -4612,7 +4612,7 @@ void Spell::finish(bool ok)
     if (!m_spellInfo->HasAttribute(SPELL_ATTR3_SUPPRESS_CASTER_PROCS))
         Unit::ProcSkillsAndAuras(unitCaster, nullptr, PROC_FLAG_CAST_ENDED, PROC_FLAG_NONE, PROC_SPELL_TYPE_MASK_ALL, PROC_SPELL_PHASE_NONE, PROC_HIT_NONE, this, nullptr, nullptr);
 
-    if (!ok)
+    if (result != SPELL_CAST_OK)
     {
         // on failure (or manual cancel) send TraitConfigCommitFailed to revert talent UI saved config selection
         if (m_caster->IsPlayer() && m_spellInfo->HasEffect(SPELL_EFFECT_CHANGE_ACTIVE_COMBAT_TRAIT_CONFIG))

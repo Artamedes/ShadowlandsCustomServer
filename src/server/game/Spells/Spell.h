@@ -462,7 +462,7 @@ class TC_GAME_API Spell
         void cancel(bool sendInterrupted = true);
         void update(uint32 difftime);
         void cast(bool skipCheck = false);
-        void finish(bool ok = true);
+        void finish(SpellCastResult result = SPELL_CAST_OK);
         void TakePower();
 
         void TakeRunePower(bool didHit);
