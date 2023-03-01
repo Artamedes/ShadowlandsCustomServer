@@ -19,6 +19,7 @@
 #define MOTIONMASTER_H
 
 #include "Common.h"
+#include "Duration.h"
 #include "ObjectGuid.h"
 #include "Optional.h"
 #include "MovementDefines.h"
@@ -184,7 +185,7 @@ class TC_GAME_API MotionMaster
         void MoveIdle();
         void MoveTargetedHome();
         MovementGenerator* MoveTargetedHomeForce();
-        void MoveRandom(float wanderDistance = 0.0f);
+        void MoveRandom(float wanderDistance = 0.0f, Optional<Milliseconds> duration = {});
         void MoveFollow(Unit* target, float dist, float angle, bool joinFormation = false, bool catchUpToTarget = false, bool faceTarget = false, MovementSlot slot = MOTION_SLOT_DEFAULT);
         void MoveChase(Unit* target, float dist = 0.f, Optional<ChaseAngle> angle = {});
         void MoveChase(Unit* target, float dist, float angle) { MoveChase(target, dist, ChaseAngle(angle)); }
