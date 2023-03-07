@@ -297,9 +297,9 @@ bool MoveSplineInitArgs::Validate(Unit* unit) const
     if (!(exp))\
     {\
         if (unit)\
-            TC_LOG_ERROR("misc.movesplineinitargs", "MoveSplineInitArgs::Validate: expression '{}' failed for {}", #exp, (verbose ? unit->GetDebugInfo() : unit->GetGUID().ToString()));\
+            TC_LOG_DEBUG("misc.movesplineinitargs", "MoveSplineInitArgs::Validate: expression '{}' failed for {}", #exp, (verbose ? unit->GetDebugInfo() : unit->GetGUID().ToString()));\
         else\
-            TC_LOG_ERROR("misc.movesplineinitargs", "MoveSplineInitArgs::Validate: expression '{}' failed for cyclic spline continuation", #exp); \
+            TC_LOG_DEBUG("misc.movesplineinitargs", "MoveSplineInitArgs::Validate: expression '{}' failed for cyclic spline continuation", #exp); \
         return false;\
     }
     CHECK(path.size() > 1, true);
@@ -331,7 +331,7 @@ bool MoveSplineInitArgs::_checkPathBounds() const
             offset = path[i] - middle;
             if (std::fabs(offset.x) >= MAX_OFFSET || std::fabs(offset.y) >= MAX_OFFSET || std::fabs(offset.z) >= MAX_OFFSET)
             {
-                TC_LOG_ERROR("misc", "MoveSplineInitArgs::_checkPathBounds check failed");
+                TC_LOG_DEBUG("misc", "MoveSplineInitArgs::_checkPathBounds check failed");
                 return false;
             }
         }
