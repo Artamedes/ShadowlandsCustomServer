@@ -153,6 +153,8 @@ class TC_GAME_API AreaTrigger : public WorldObject, public GridObject<AreaTrigge
 
         uint32 CreateTimeMS = 0;
 
+        ObjectGuid const& GetTargetGUID() { return _targetGuid; };
+
     protected:
         Unit* m_Caster;
         void _UpdateDuration(int32 newDuration);
