@@ -21,6 +21,7 @@
 #include "MovementGenerator.h"
 #include "Position.h"
 #include "Timer.h"
+#include <G3DPosition.hpp>
 
 class PathGenerator;
 
@@ -44,13 +45,16 @@ class RandomMovementGenerator : public MovementGeneratorMedium<T, RandomMovement
         void UnitSpeedChanged() override { RandomMovementGenerator<T>::AddFlag(MOVEMENTGENERATOR_FLAG_SPEED_UPDATE_PENDING); }
 
     private:
-        void SetRandomLocation(T*);
+        void RebuildPath(T*);
 
-        std::unique_ptr<PathGenerator> _path;
+        std::map<uint8, std::vector<G3D::Vector3>> _pathPoints;
+        std::queue<std::vector<G3D::Vector3>> _pathQueue;
+        TimeTracker _pathRebuildTimer;
         TimeTracker _timer;
         Position _reference;
         float _wanderDistance;
         uint8 _wanderSteps;
+        uint8 _currWander = 0;
 };
 
 #endif
