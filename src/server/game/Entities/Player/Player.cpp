@@ -24292,7 +24292,7 @@ void Player::UpdateVisibilityOf(Trinity::IteratorPair<WorldObject**> targets)
                 UpdateVisibilityOf(target->ToCorpse(), udata, newVisibleUnits);
                 break;
             case TYPEID_AREATRIGGER:
-                UpdateVisibilityOf(target->ToAreaTrigger(), udata, newVisibleUnits);
+                UpdateVisibilityOfAreaTrigger(target->ToAreaTrigger(), udata, newVisibleUnits);
                 break;
             case TYPEID_SCENEOBJECT:
                 UpdateVisibilityOf(target->ToSceneObject(), udata, newVisibleUnits);
@@ -24447,12 +24447,41 @@ void Player::UpdateVisibilityOf(T* target, UpdateData& data, std::set<Unit*>& vi
     }
 }
 
+void Player::UpdateVisibilityOfAreaTrigger(AreaTrigger* target, UpdateData& data, std::set<Unit*>& visibleNow)
+{
+    if (HaveAtClient(target))
+    {
+        if (!CanSeeOrDetect(target, false, true))
+        {
+            BeforeVisibilityDestroy<AreaTrigger>(target, this);
+
+            if (!target->IsDestroyedObject())
+                target->BuildOutOfRangeUpdateBlock(&data);
+            else
+                target->BuildDestroyUpdateBlock(&data);
+
+            m_clientGUIDs.erase(target->GetGUID());
+        }
+    }
+    else
+    {
+        // check if we have visibility of the original target before showing the area trigger
+        if (target->GetAuraEffect() && !target->GetTargetGUID().IsEmpty() && m_clientGUIDs.find(target->GetTargetGUID()) == m_clientGUIDs.end())
+            return;
+
+        if (CanSeeOrDetect(target, false, true))
+        {
+            target->BuildCreateUpdateBlockForPlayer(&data, this);
+            UpdateVisibilityOf_helper(m_clientGUIDs, target, visibleNow);
+        }
+    }
+}
+
 template void Player::UpdateVisibilityOf(Player*        target, UpdateData& data, std::set<Unit*>& visibleNow);
 template void Player::UpdateVisibilityOf(Creature*      target, UpdateData& data, std::set<Unit*>& visibleNow);
 template void Player::UpdateVisibilityOf(Corpse*        target, UpdateData& data, std::set<Unit*>& visibleNow);
 template void Player::UpdateVisibilityOf(GameObject*    target, UpdateData& data, std::set<Unit*>& visibleNow);
 template void Player::UpdateVisibilityOf(DynamicObject* target, UpdateData& data, std::set<Unit*>& visibleNow);
-template void Player::UpdateVisibilityOf(AreaTrigger*   target, UpdateData& data, std::set<Unit*>& visibleNow);
 template void Player::UpdateVisibilityOf(SceneObject*   target, UpdateData& data, std::set<Unit*>& visibleNow);
 template void Player::UpdateVisibilityOf(Conversation*  target, UpdateData& data, std::set<Unit*>& visibleNow);
 

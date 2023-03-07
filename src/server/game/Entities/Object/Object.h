@@ -869,6 +869,8 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
 
         std::unique_ptr<SmoothPhasing> _smoothPhasing;
 
+        Position _lastTerrainUpdatePos = { };
+
         virtual bool _IsWithinDist(WorldObject const* obj, float dist2compare, bool is3D, bool incOwnRadius = true, bool incTargetRadius = true) const;
 
         bool CanDetect(WorldObject const* obj, bool ignoreStealth, bool checkAlert = false) const;

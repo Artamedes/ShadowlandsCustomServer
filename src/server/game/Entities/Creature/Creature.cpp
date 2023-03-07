@@ -2831,6 +2831,11 @@ void Creature::UpdateMovementFlags()
     if (GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_NO_MOVE_FLAGS_UPDATE)
         return;
 
+    if (_lastMovementFlagsUpdatePos == GetPosition())
+        return;
+
+    _lastMovementFlagsUpdatePos = GetPosition();
+
     // Set the movement flags if the creature is in that mode. (Only fly if actually in air, only swim if in water, etc)
     float ground = GetFloorZ();
 

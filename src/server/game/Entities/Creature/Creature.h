@@ -493,6 +493,8 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         bool _isMissingCanSwimFlagOutOfCombat;
 
         float _noNpcDamageBelowPctHealth;
+
+        Position _lastMovementFlagsUpdatePos = { };
 };
 
 class TC_GAME_API AssistDelayEvent : public BasicEvent
