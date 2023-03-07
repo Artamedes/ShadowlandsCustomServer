@@ -635,16 +635,21 @@ struct npc_se_shrieking_whelp_188100 : public ScriptedAI
             scheduler.CancelAll();
             _engaged = false;
 
-            scheduler.Schedule(1ms, [this](TaskContext context)
+            if (me->GetEntry() != 187159)
             {
-                DoCastSelf(RevealingGazeATAura);
-                context.Repeat(15s);
-            });
+                scheduler.Schedule(1ms, [this](TaskContext context)
+                {
+                    if (!me->HasAura(RevealingGazeATAura) && !IsEngaged())
+                        DoCastSelf(RevealingGazeATAura);
+                    context.Repeat(1s);
+                });
+            }
         }
 
         void JustEngagedWith(Unit* /*who*/) override
         {
             scheduler.CancelAll();
+            me->RemoveAurasDueToSpell(RevealingGazeATAura);
         }
 
         void UpdateAI(uint32 diff) override
@@ -685,7 +690,7 @@ struct npc_se_shrieking_whelp_188100 : public ScriptedAI
         bool _engaged = false;
 };
 
-// 24966, 28911
+// 24966, 24948
 struct at_revealing_gaze_28931 : public AreaTriggerAI
 {
     public:
@@ -837,7 +842,7 @@ struct npc_se_arcane_tender_191164 : public ScriptedAI
             }
         }
 
-        void JustEngagedWith(Unit* who) override
+        void JustEngagedWith(Unit* /*who*/) override
         {
             scheduler.CancelAll();
             me->RemoveAurasDueToSpell(SpellStasisRitual);
@@ -862,6 +867,9 @@ struct npc_se_arcane_tender_191164 : public ScriptedAI
             {
                 DoCastSelf(SpellStasisRitual);
             }
+
+            if (!UpdateVictim())
+                return;
 
             if (!me->HasUnitState(UNIT_STATE_CASTING))
                 scheduler.Update(diff);
@@ -949,7 +957,7 @@ struct npc_se_conjured_lashed_196102 : public ScriptedAI
             scheduler.Schedule(4s, [this](TaskContext context)
             {
                 DoCast(MysticVapors);
-                context.Repeat(8s);
+                context.Repeat(16s);
             });
         }
 
