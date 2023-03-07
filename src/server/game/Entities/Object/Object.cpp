@@ -1011,6 +1011,11 @@ void WorldObject::CleanupsBeforeDelete(bool /*finalCleanup*/)
 
 void WorldObject::UpdatePositionData()
 {
+    // Check if we made a position update
+    if (_lastTerrainUpdatePos == GetPosition())
+        return;
+
+    _lastTerrainUpdatePos = GetPosition();
     PositionFullTerrainStatus data;
     GetMap()->GetFullTerrainStatusForPosition(_phaseShift, GetPositionX(), GetPositionY(), GetPositionZ(), data, map_liquidHeaderTypeFlags::AllLiquids, GetCollisionHeight());
     ProcessPositionDataChanged(data);
