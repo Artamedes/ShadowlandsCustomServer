@@ -404,6 +404,9 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         uint8 GetSpawnMode() const { return m_spawnMode; }
 
         void ForcedDespawn(uint32 timeMSToDespawn = 0, Seconds forceRespawnTimer = 0s);
+        
+        uint32 GetTrainerId() const;
+        void SetTrainerId(Optional<uint32> trainerId);
 
     protected:
         bool CreateFromProto(ObjectGuid::LowType guidlow, uint32 entry, CreatureData const* data = nullptr, uint32 vehId = 0);
@@ -491,6 +494,8 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         bool _regenerateHealthLock; // Dynamically set
 
         bool _isMissingCanSwimFlagOutOfCombat;
+
+        Optional<uint32> _trainerId;
 
         float _noNpcDamageBelowPctHealth;
 
