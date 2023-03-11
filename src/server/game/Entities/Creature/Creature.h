@@ -415,6 +415,9 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
 
         void ForcedDespawn(uint32 timeMSToDespawn = 0, Seconds forceRespawnTimer = 0s);
         
+        uint32 GetGossipMenuId() const;
+        void SetGossipMenuId(Optional<uint32> gossipMenuId);
+
         uint32 GetTrainerId() const;
         void SetTrainerId(Optional<uint32> trainerId);
 
@@ -506,6 +509,7 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
 
         bool _isMissingCanSwimFlagOutOfCombat;
 
+        Optional<uint32> _gossipMenuId;
         Optional<uint32> _trainerId;
 
         float _noNpcDamageBelowPctHealth;
