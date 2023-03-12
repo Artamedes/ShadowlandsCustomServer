@@ -5495,7 +5495,12 @@ void AuraEffect::HandleTriggerSpellOnExpire(AuraApplication const* aurApp, uint8
 
     Unit* caster = aurApp->GetTarget();
 
-    if (GetSpellEffectInfo().MiscValue == 1)
+    // MiscValue (Caster):
+    // 0 - Aura target
+    // 1 - Aura caster
+    // 2 - ? Aura target is always TARGET_UNIT_CASTER so we consider the same behavior as MiscValue 1
+    uint32 casterType = uint32(GetMiscValue());
+    if (casterType > 0)
         caster = GetCaster();
 
     if (caster)
