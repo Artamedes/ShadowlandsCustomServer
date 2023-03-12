@@ -234,7 +234,9 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         static bool DeleteFromDB(ObjectGuid::LowType spawnId);
 
         bool IsAllLooted() const;
-
+        
+        bool CanHaveLoot() const { return !_staticFlags.HasFlag(CREATURE_STATIC_FLAG_NO_LOOT); }
+        void SetCanHaveLoot(bool canHaveLoot) { _staticFlags.ApplyFlag(CREATURE_STATIC_FLAG_NO_LOOT, !canHaveLoot); }
         std::unique_ptr<Loot> m_loot;
         std::unordered_map<ObjectGuid, std::unique_ptr<Loot>> m_personalLoot;
         void StartPickPocketRefillTimer();
