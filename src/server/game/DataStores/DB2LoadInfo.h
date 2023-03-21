@@ -216,7 +216,7 @@ struct AreaTriggerLoadInfo
         { false, FT_FLOAT, "BoxYaw" },
         { true, FT_BYTE, "ShapeType" },
         { true, FT_SHORT, "ShapeID" },
-        { true, FT_SHORT, "AreaTriggerActionSetID" },
+        { true, FT_INT, "AreaTriggerActionSetID" },
         { true, FT_BYTE, "Flags" },
     };
 
@@ -1459,7 +1459,7 @@ struct CurrencyContainerLoadInfo
         { true, FT_INT, "MinAmount" },
         { true, FT_INT, "MaxAmount" },
         { true, FT_INT, "ContainerIconID" },
-        { true, FT_INT, "ContainerQuality" },
+        { true, FT_BYTE, "ContainerQuality" },
         { true, FT_INT, "OnLootSpellVisualKitID" },
         { false, FT_INT, "CurrencyTypesID" },
     };
@@ -1570,9 +1570,9 @@ struct DifficultyLoadInfo
         { false, FT_SHORT, "Flags" },
         { false, FT_BYTE, "ItemContext" },
         { false, FT_BYTE, "ToggleDifficultyID" },
-        { false, FT_SHORT, "GroupSizeHealthCurveID" },
-        { false, FT_SHORT, "GroupSizeDmgCurveID" },
-        { false, FT_SHORT, "GroupSizeSpellPointsCurveID" },
+        { false, FT_INT, "GroupSizeHealthCurveID" },
+        { false, FT_INT, "GroupSizeDmgCurveID" },
+        { false, FT_INT, "GroupSizeSpellPointsCurveID" },
     };
 
     static constexpr DB2LoadInfo Instance{ Fields, 14, &DifficultyMeta::Instance, HOTFIX_SEL_DIFFICULTY };
@@ -1931,7 +1931,7 @@ struct GarrBuildingLoadInfo
         { false, FT_STRING, "AllianceName" },
         { false, FT_STRING, "Description" },
         { false, FT_STRING, "Tooltip" },
-        { false, FT_BYTE, "GarrTypeID" },
+        { true, FT_BYTE, "GarrTypeID" },
         { true, FT_BYTE, "BuildingType" },
         { true, FT_INT, "HordeGameObjectID" },
         { true, FT_INT, "AllianceGameObjectID" },
@@ -1996,7 +1996,7 @@ struct GarrFollowerLoadInfo
         { false, FT_STRING, "HordeSourceText" },
         { false, FT_STRING, "AllianceSourceText" },
         { false, FT_STRING, "TitleName" },
-        { false, FT_BYTE, "GarrTypeID" },
+        { true, FT_BYTE, "GarrTypeID" },
         { true, FT_BYTE, "GarrFollowerTypeID" },
         { true, FT_INT, "HordeCreatureID" },
         { true, FT_INT, "AllianceCreatureID" },
@@ -2057,7 +2057,7 @@ struct GarrMissionLoadInfo
         { false, FT_FLOAT, "MapPosY" },
         { false, FT_FLOAT, "WorldPosX" },
         { false, FT_FLOAT, "WorldPosY" },
-        { false, FT_BYTE, "GarrTypeID" },
+        { true, FT_BYTE, "GarrTypeID" },
         { false, FT_BYTE, "GarrMissionTypeID" },
         { true, FT_BYTE, "GarrFollowerTypeID" },
         { false, FT_BYTE, "MaxFollowers" },
@@ -2240,7 +2240,7 @@ struct GarrTalentTreeLoadInfo
     {
         { false, FT_INT, "ID" },
         { false, FT_STRING, "Name" },
-        { false, FT_BYTE, "GarrTypeID" },
+        { true, FT_BYTE, "GarrTypeID" },
         { false, FT_INT, "ClassID" },
         { false, FT_BYTE, "MaxTiers" },
         { false, FT_BYTE, "UiOrder" },
@@ -3383,16 +3383,17 @@ struct LanguageWordsLoadInfo
 
 struct LanguagesLoadInfo
 {
-    static constexpr DB2FieldMeta Fields[5] =
+    static constexpr DB2FieldMeta Fields[6] =
     {
-        { false, FT_INT, "ID" },
         { false, FT_STRING, "Name" },
+        { false, FT_INT, "ID" },
         { true, FT_INT, "Flags" },
         { true, FT_INT, "UiTextureKitID" },
         { true, FT_INT, "UiTextureKitElementCount" },
+        { true, FT_INT, "LearningCurveID" },
     };
 
-    static constexpr DB2LoadInfo Instance{ Fields, 5, &LanguagesMeta::Instance, HOTFIX_SEL_LANGUAGES };
+    static constexpr DB2LoadInfo Instance{ Fields, 6, &LanguagesMeta::Instance, HOTFIX_SEL_LANGUAGES };
 };
 
 struct LfgDungeonsLoadInfo
@@ -4245,7 +4246,7 @@ struct QuestInfoLoadInfo
         { false, FT_STRING, "InfoName" },
         { true, FT_BYTE, "Type" },
         { true, FT_INT, "Modifiers" },
-        { true, FT_INT, "Profession" },
+        { false, FT_SHORT, "Profession" },
     };
 
     static constexpr DB2LoadInfo Instance{ Fields, 5, &QuestInfoMeta::Instance, HOTFIX_SEL_QUEST_INFO };
@@ -5962,7 +5963,7 @@ struct TraitNodeXTraitCostLoadInfo
     static constexpr DB2FieldMeta Fields[3] =
     {
         { false, FT_INT, "ID" },
-        { false, FT_INT, "TraitNodeID" },
+        { true, FT_INT, "TraitNodeID" },
         { true, FT_INT, "TraitCostID" },
     };
 

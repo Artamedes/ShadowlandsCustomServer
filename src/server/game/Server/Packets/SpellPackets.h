@@ -964,7 +964,6 @@ namespace WorldPackets
 
             ObjectGuid SpellClickUnitGuid;
             bool TryAutoDismount = false;
-            bool IsSoftInteract = false;
         };
 
         class ResyncRunes final : public ServerPacket

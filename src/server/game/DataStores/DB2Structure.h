@@ -182,7 +182,7 @@ struct AreaTriggerEntry
     float BoxYaw;
     int8 ShapeType;
     int16 ShapeID;
-    int16 AreaTriggerActionSetID;
+    int32 AreaTriggerActionSetID;
     int8 Flags;
 };
 
@@ -1267,7 +1267,7 @@ struct CurrencyContainerEntry
     int32 MinAmount;
     int32 MaxAmount;
     int32 ContainerIconID;
-    int32 ContainerQuality;
+    int8 ContainerQuality;
     int32 OnLootSpellVisualKitID;
     uint32 CurrencyTypesID;
 };
@@ -1404,9 +1404,9 @@ struct DifficultyEntry
     uint16 Flags;
     uint8 ItemContext;
     uint8 ToggleDifficultyID;
-    uint16 GroupSizeHealthCurveID;
-    uint16 GroupSizeDmgCurveID;
-    uint16 GroupSizeSpellPointsCurveID;
+    uint32 GroupSizeHealthCurveID;
+    uint32 GroupSizeDmgCurveID;
+    uint32 GroupSizeSpellPointsCurveID;
 };
 
 struct DungeonEncounterEntry
@@ -1657,7 +1657,7 @@ struct GarrBuildingEntry
     LocalizedString AllianceName;
     LocalizedString Description;
     LocalizedString Tooltip;
-    uint8 GarrTypeID;
+    int8 GarrTypeID;
     int8 BuildingType;
     int32 HordeGameObjectID;
     int32 AllianceGameObjectID;
@@ -1706,7 +1706,7 @@ struct GarrFollowerEntry
     LocalizedString HordeSourceText;
     LocalizedString AllianceSourceText;
     LocalizedString TitleName;
-    uint8 GarrTypeID;
+    int8 GarrTypeID;
     int8 GarrFollowerTypeID;
     int32 HordeCreatureID;
     int32 AllianceCreatureID;
@@ -1755,7 +1755,7 @@ struct GarrMissionEntry
     LocalizedString Description;
     DBCPosition2D MapPos;
     DBCPosition2D WorldPos;
-    uint8 GarrTypeID;
+    int8 GarrTypeID;
     uint8 GarrMissionTypeID;
     int8 GarrFollowerTypeID;
     uint8 MaxFollowers;
@@ -1890,7 +1890,7 @@ struct GarrTalentTreeEntry
 {
     uint32 ID;
     LocalizedString Name;
-    uint8 GarrTypeID;
+    int8 GarrTypeID;
     uint32 ClassID;
     uint8 MaxTiers;
     uint8 UiOrder;
@@ -2557,11 +2557,12 @@ struct LanguageWordsEntry
 
 struct LanguagesEntry
 {
-    uint32 ID;
     LocalizedString Name;
+    uint32 ID;
     int32 Flags;
     int32 UiTextureKitID;
     int32 UiTextureKitElementCount;
+    int32 LearningCurveID;
 };
 
 struct LFGDungeonsEntry
@@ -3142,7 +3143,7 @@ struct QuestInfoEntry
     LocalizedString InfoName;
     int8 Type;
     int32 Modifiers;
-    int32 Profession;
+    uint16 Profession;
 };
 
 struct QuestLineXQuestEntry
@@ -4241,7 +4242,7 @@ struct TraitNodeXTraitCondEntry
 struct TraitNodeXTraitCostEntry
 {
     uint32 ID;
-    uint32 TraitNodeID;
+    int32 TraitNodeID;
     int32 TraitCostID;
 };
 

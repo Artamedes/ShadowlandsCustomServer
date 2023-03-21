@@ -953,7 +953,6 @@ void SpellClick::Read()
 {
     _worldPacket >> SpellClickUnitGuid;
     TryAutoDismount = _worldPacket.ReadBit();
-    IsSoftInteract = _worldPacket.ReadBit();
 }
 
 WorldPacket const* ResyncRunes::Write()
