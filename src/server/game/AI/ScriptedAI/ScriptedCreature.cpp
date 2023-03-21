@@ -54,7 +54,7 @@ void SummonList::DoZoneInCombat(uint32 entry)
         if (summon && summon->IsAIEnabled()
                 && (!entry || summon->GetEntry() == entry))
         {
-            summon->AI()->DoZoneInCombat(nullptr);
+            summon->AI()->DoZoneInCombat();
         }
     }
 }
