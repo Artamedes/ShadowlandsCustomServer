@@ -23332,13 +23332,11 @@ void Player::InitDisplayIds()
     if (!model)
     {
         TC_LOG_ERROR("entities.player", "Player::InitDisplayIds: Player '{}' ({}) has incorrect race/gender pair. Can't init display ids.", GetName(), GetGUID().ToString());
-        SetDisplayId(104597);
-        SetNativeDisplayId(104597);
+        SetDisplayId(104597, true);
         return;
     }
 
-    SetDisplayId(model->DisplayID);
-    SetNativeDisplayId(model->DisplayID);
+    SetDisplayId(model->DisplayID, true);
 }
 
 inline bool Player::_StoreOrEquipNewItem(uint32 vendorslot, uint32 item, uint8 count, uint8 bag, uint8 slot, int64 price, ItemTemplate const* pProto, Creature* pVendor, VendorItem const* crItem, bool bStore)

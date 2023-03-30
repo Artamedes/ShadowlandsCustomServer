@@ -544,15 +544,12 @@ public:
     //Edit Player or Creature Scale
     static bool HandleModifyScaleCommand(ChatHandler* handler, float speed)
     {
-        float Scale;
+        float scale;
         Unit* target = handler->getSelectedUnit();
-        if (CheckModifySpeed(handler, speed, target, Scale, 0.1f, 10.0f, false))
+        if (CheckModifySpeed(handler, speed, target, scale, 0.1f, 10.0f, false))
         {
-            NotifyModification(handler, target, LANG_YOU_CHANGE_SIZE, LANG_YOURS_SIZE_CHANGED, Scale);
-            if (Creature* creatureTarget = target->ToCreature())
-                creatureTarget->SetDisplayId(creatureTarget->GetDisplayId(), Scale);
-            else
-                target->SetObjectScale(Scale);
+            NotifyModification(handler, target, LANG_YOU_CHANGE_SIZE, LANG_YOURS_SIZE_CHANGED, scale);
+            target->SetObjectScale(scale);
             return true;
         }
         return false;

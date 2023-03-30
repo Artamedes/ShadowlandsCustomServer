@@ -1420,8 +1420,7 @@ public:
             return false;
         }
 
-        creature->SetDisplayId(displayId);
-        creature->SetNativeDisplayId(displayId);
+        creature->SetDisplayId(displayId, true);
 
         auto stmt = WorldDatabase.GetPreparedStatement(WORLD_UPD_CREATURE_TEMPLATE_MODEL);
         stmt->setUInt32(0, displayId);
