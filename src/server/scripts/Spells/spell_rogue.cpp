@@ -4762,6 +4762,82 @@ class spell_rog_pickpocket : public SpellScript
     }
 };
 
+// 32645 - Envenom
+class spell_rog_envenom : public SpellScript
+{
+    PrepareSpellScript(spell_rog_envenom);
+
+    void CalculateDamage(SpellEffIndex /*effIndex*/)
+    {
+        int32 damagePerCombo = GetHitDamage();
+        if (AuraEffect const* t5 = GetCaster()->GetAuraEffect(SPELL_ROGUE_T5_2P_SET_BONUS, EFFECT_0))
+            damagePerCombo += t5->GetAmount();
+
+        int32 finalDamage = damagePerCombo;
+        std::vector<SpellPowerCost> const& costs = GetSpell()->GetPowerCost();
+        auto c = std::find_if(costs.begin(), costs.end(), [](SpellPowerCost const& cost) { return cost.Power == POWER_COMBO_POINTS; });
+        if (c != costs.end())
+            finalDamage *= c->Amount;
+
+        SetHitDamage(finalDamage);
+    }
+
+    void Register() override
+    {
+        OnEffectHitTarget += SpellEffectFn(spell_rog_envenom::CalculateDamage, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
+    }
+};
+
+// 196819 - Eviscerate
+class spell_rog_eviscerate : public SpellScript
+{
+    PrepareSpellScript(spell_rog_eviscerate);
+
+    void CalculateDamage(SpellEffIndex /*effIndex*/)
+    {
+        int32 damagePerCombo = GetHitDamage();
+        if (AuraEffect const* t5 = GetCaster()->GetAuraEffect(SPELL_ROGUE_T5_2P_SET_BONUS, EFFECT_0))
+            damagePerCombo += t5->GetAmount();
+
+        int32 finalDamage = damagePerCombo;
+        std::vector<SpellPowerCost> const& costs = GetSpell()->GetPowerCost();
+        auto c = std::find_if(costs.begin(), costs.end(), [](SpellPowerCost const& cost) { return cost.Power == POWER_COMBO_POINTS; });
+        if (c != costs.end())
+            finalDamage *= c->Amount;
+
+        SetHitDamage(finalDamage);
+    }
+
+    void Register() override
+    {
+        OnEffectHitTarget += SpellEffectFn(spell_rog_eviscerate::CalculateDamage, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
+    }
+};
+
++// 198031 - Honor Among Thieves
++/// 7.1.5
++class spell_rog_honor_among_thieves : public AuraScript
++{
++    PrepareAuraScript(spell_rog_honor_among_thieves);
++
++    bool Validate(SpellInfo const* /*spellInfo*/) override
++    {
++        return ValidateSpellInfo({ SPELL_ROGUE_HONOR_AMONG_THIEVES_ENERGIZE });
++    }
++
++    void HandleProc(AuraEffect* aurEff, ProcEventInfo& /*eventInfo*/)
++    {
++        PreventDefaultAction();
++
++        Unit* target = GetTarget();
++        target->CastSpell(target, SPELL_ROGUE_HONOR_AMONG_THIEVES_ENERGIZE, aurEff);
++    }
++
++    void Register() override
++    {
++        OnEffectProc += AuraEffectProcFn(spell_rog_honor_among_thieves::HandleProc, EFFECT_0, SPELL_AURA_DUMMY);
++    }
++};
 void AddSC_rogue_spell_scripts()
 {
     // SpellScripts
