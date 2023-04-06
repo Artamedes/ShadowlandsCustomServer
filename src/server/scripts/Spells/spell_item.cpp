@@ -5017,4 +5017,5 @@ void AddSC_item_spell_scripts()
     RegisterSpellScript(spell_item_cache_of_acquired_treasures_use);
     RegisterSpellScript(spell_acquired_sword);
     RegisterSpellScript(spell_acquired_axe);
+    RegisterSpellScript(spell_gen_skinning);
 }
