@@ -85,6 +85,7 @@ void AddSC_spell_warrior_protection();
 void AddSC_spell_warrior_fury();
 void AddSC_quest_spell_scripts();
 void AddSC_item_spell_scripts();
+void AddSC_azerite_item_spell_scripts();
 void AddSC_spell_nightfae();
 void AddSC_spell_kyrian();
 void AddSC_spell_necrolord();
@@ -168,6 +169,7 @@ void AddSpellsScripts()
     AddSC_spell_warrior_fury();
     AddSC_quest_spell_scripts();
     AddSC_item_spell_scripts();
+    AddSC_azerite_item_spell_scripts();
     AddSC_spell_nightfae();
     AddSC_spell_kyrian();
     AddSC_spell_necrolord();
