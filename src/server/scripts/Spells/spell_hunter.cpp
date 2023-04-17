@@ -484,53 +484,6 @@ public:
     }
 };
 
-// 90355 - Ancient Hysteria
-class spell_hun_ancient_hysteria : public SpellScriptLoader
-{
-public:
-    spell_hun_ancient_hysteria() : SpellScriptLoader("spell_hun_ancient_hysteria") { }
-
-    class spell_hun_ancient_hysteria_SpellScript : public SpellScript
-    {
-        PrepareSpellScript(spell_hun_ancient_hysteria_SpellScript);
-
-        bool Validate(SpellInfo const* /*spellInfo*/) override
-        {
-            if (!sSpellMgr->GetSpellInfo(SPELL_HUNTER_INSANITY)
-                || !sSpellMgr->GetSpellInfo(SPELL_MAGE_TEMPORAL_DISPLACEMENT)
-                || !sSpellMgr->GetSpellInfo(SPELL_SHAMAN_EXHAUSTION)
-                || !sSpellMgr->GetSpellInfo(SPELL_SHAMAN_SATED))
-                return false;
-            return true;
-        }
-
-        void RemoveInvalidTargets(std::list<WorldObject*>& targets)
-        {
-            targets.remove_if(Trinity::UnitAuraCheck(true, SPELL_HUNTER_INSANITY));
-            targets.remove_if(Trinity::UnitAuraCheck(true, SPELL_MAGE_TEMPORAL_DISPLACEMENT));
-            targets.remove_if(Trinity::UnitAuraCheck(true, SPELL_SHAMAN_EXHAUSTION));
-            targets.remove_if(Trinity::UnitAuraCheck(true, SPELL_SHAMAN_SATED));
-        }
-
-        void ApplyDebuff()
-        {
-            if (Unit* target = GetHitUnit())
-                target->CastSpell(target, SPELL_HUNTER_INSANITY, true);
-        }
-
-        void Register() override
-        {
-            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_hun_ancient_hysteria_SpellScript::RemoveInvalidTargets, EFFECT_ALL, TARGET_UNIT_CASTER_AREA_RAID);
-            AfterHit += SpellHitFn(spell_hun_ancient_hysteria_SpellScript::ApplyDebuff);
-        }
-    };
-
-    SpellScript* GetSpellScript() const override
-    {
-        return new spell_hun_ancient_hysteria_SpellScript();
-    }
-};
-
 // 53412 - Invigoration
 class spell_hun_invigoration : public SpellScriptLoader
 {
@@ -5792,7 +5745,6 @@ void AddSC_hunter_spell_scripts()
     new spell_hun_snake_hunter();
     new spell_hun_way_of_the_moknathal();
     new spell_hun_mongoose_bite();
-    new spell_hun_ancient_hysteria();
     new spell_hun_invigoration();
     new spell_hun_masters_call();
     new spell_hun_misdirection();

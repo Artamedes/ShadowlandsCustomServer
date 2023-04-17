@@ -2329,98 +2329,6 @@ public:
     }
 };
 
-// Time Warp - 80353
-class spell_mage_time_warp : public SpellScriptLoader
-{
-    public:
-        spell_mage_time_warp() : SpellScriptLoader("spell_mage_time_warp") { }
-
-        class spell_mage_time_warp_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_mage_time_warp_SpellScript);
-
-            std::vector<uint32> spellIds
-            {
-                SPELL_MAGE_TEMPORAL_DISPLACEMENT,
-                SPELL_HUNTER_INSANITY,
-                SPELL_SHAMAN_EXHAUSTION,
-                SPELL_SHAMAN_SATED,
-                SPELL_PET_NETHERWINDS_FATIGUED
-            };
-
-            bool Validate(SpellInfo const* /*spellInfo*/) override
-            {
-                for (uint32 spell : spellIds)
-                {
-                    if (!sSpellMgr->GetSpellInfo(spell))
-                        return false;
-                }
-                return true;
-            }
-
-            SpellCastResult CheckCast()
-            {
-                if (GetCaster()->GetTypeId() != TYPEID_PLAYER)
-                    return SPELL_FAILED_DONT_REPORT;
-                Player* player = GetCaster()->ToPlayer();
-                Group* grp = player->GetGroup();
-                if (!grp)
-                {
-                    return HasSated(player) ? SPELL_FAILED_CANT_DO_THAT_RIGHT_NOW : SPELL_CAST_OK;
-                }
-                for (GroupReference* itr = grp->GetFirstMember(); itr != NULL; itr = itr->next())
-                {
-                    Player* member = itr->GetSource();
-
-                    if (!member || !member->GetSession())
-                        continue;
-
-                    if (!HasSated(member))
-                    {
-                        return SPELL_CAST_OK; // we have at least one valid target
-                    }
-                }
-                return SPELL_FAILED_CANT_DO_THAT_RIGHT_NOW;
-            }
-
-            bool HasSated(Unit* target)
-            {
-                for (uint32 spell : spellIds)
-                {
-                    if (target->HasAura(spell))
-                        return true;
-                }
-                return false;
-            }
-
-            void RemoveInvalidTargets(std::list<WorldObject*>& targets)
-            {
-                for (uint32 spell : spellIds)
-                {
-                    targets.remove_if(Trinity::UnitAuraCheck(true, spell));
-                }
-            }
-
-            void ApplyDebuff()
-            {
-                if (Unit* target = GetHitUnit())
-                    target->CastSpell(target, SPELL_MAGE_TEMPORAL_DISPLACEMENT, true);
-            }
-
-            void Register() override
-            {
-                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_mage_time_warp_SpellScript::RemoveInvalidTargets, EFFECT_ALL, TARGET_UNIT_CASTER_AREA_RAID);
-                AfterHit += SpellHitFn(spell_mage_time_warp_SpellScript::ApplyDebuff);
-                OnCheckCast += SpellCheckCastFn(spell_mage_time_warp_SpellScript::CheckCast);
-            }
-        };
-
-        SpellScript* GetSpellScript() const override
-        {
-            return new spell_mage_time_warp_SpellScript();
-        }
-};
-
 // Fire mage (passive) - 137019
 class spell_mage_fire_mage_passive : public SpellScriptLoader
 {
@@ -5417,7 +5325,6 @@ void AddSC_mage_spell_scripts()
     new spell_mage_combustion();
     new spell_mage_incanters_flow();
     RegisterSpellScript(spell_mage_polymorph);
-    new spell_mage_time_warp();
     new spell_mage_fire_mage_passive();
     new spell_mage_fire_on();
     RegisterSpellScript(spell_mage_mirror_image_summon);

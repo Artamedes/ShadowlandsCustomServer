@@ -691,61 +691,6 @@ public:
     }
 };
 
-// 2825 - Bloodlust
-class spell_sha_bloodlust : public SpellScriptLoader
-{
-public:
-    spell_sha_bloodlust() : SpellScriptLoader("spell_sha_bloodlust") { }
-
-    class spell_sha_bloodlust_SpellScript : public SpellScript
-    {
-        PrepareSpellScript(spell_sha_bloodlust_SpellScript);
-
-        bool Validate(SpellInfo const* /*spellInfo*/) override
-        {
-            if (!sSpellMgr->GetSpellInfo(SPELL_SHAMAN_SATED)
-                || !sSpellMgr->GetSpellInfo(SPELL_HUNTER_INSANITY)
-                || !sSpellMgr->GetSpellInfo(SPELL_MAGE_TEMPORAL_DISPLACEMENT)
-                || !sSpellMgr->GetSpellInfo(SPELL_PET_NETHERWINDS_FATIGUED))
-                return false;
-            return true;
-        }
-
-        void RemoveInvalidTargets(std::list<WorldObject*>& targets)
-        {
-            targets.remove_if(Trinity::UnitAuraCheck(true, SPELL_SHAMAN_SATED));
-            targets.remove_if(Trinity::UnitAuraCheck(true, SPELL_HUNTER_INSANITY));
-            targets.remove_if(Trinity::UnitAuraCheck(true, SPELL_MAGE_TEMPORAL_DISPLACEMENT));
-        }
-
-        void ApplyDebuff()
-        {
-            if (Unit* target = GetHitUnit())
-                target->CastSpell(target, SPELL_SHAMAN_SATED, true);
-        }
-
-        void HandleOnCast()
-        {
-            if (Unit* caster = GetCaster())
-                if (caster->HasAura(SPELL_SHAMAN_ANCESTRAL_RESONANCE_POWER))
-                    caster->CastSpell(caster, SPELL_SHAMAN_ANCESTRAL_RESONANCE_PERIODIC, true);
-        }
-
-        void Register() override
-        {
-            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_sha_bloodlust_SpellScript::RemoveInvalidTargets, EFFECT_0, TARGET_UNIT_CASTER_AREA_RAID);
-            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_sha_bloodlust_SpellScript::RemoveInvalidTargets, EFFECT_1, TARGET_UNIT_CASTER_AREA_RAID);
-            AfterHit += SpellHitFn(spell_sha_bloodlust_SpellScript::ApplyDebuff);
-            OnCast += SpellCastFn(spell_sha_bloodlust_SpellScript::HandleOnCast);
-        }
-    };
-
-    SpellScript* GetSpellScript() const override
-    {
-        return new spell_sha_bloodlust_SpellScript();
-    }
-};
-
 // 1064 - Chain Heal
 class spell_sha_chain_heal : public SpellScriptLoader
 {
@@ -7060,7 +7005,6 @@ void AddSC_shaman_spell_scripts()
     new spell_sha_ancestral_protection_totem_aura();
     new spell_sha_ascendance_water();
     new spell_sha_ascendance_water_heal();
-    new spell_sha_bloodlust();
     new spell_sha_chain_heal();
     RegisterSpellScript(spell_sha_cloudburst);
     RegisterSpellScript(spell_sha_cloudburst_effect);
