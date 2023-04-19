@@ -4959,8 +4959,36 @@ class spell_dk_rune_of_sanguination : public AuraScript
     }
 };
 
+// 207256 - Obliteration
+class spell_dk_obliteration : public AuraScript
+{
+    PrepareAuraScript(spell_dk_obliteration);
+
+    bool Validate(SpellInfo const* /*spellInfo*/) override
+    {
+        return ValidateSpellInfo({ SPELL_DK_OBLITERATION, SPELL_DK_OBLITERATION_RUNE_ENERGIZE, SPELL_DK_KILLING_MACHINE_PROC })
+            && sSpellMgr->AssertSpellInfo(SPELL_DK_OBLITERATION, DIFFICULTY_NONE)->GetEffects().size() > EFFECT_1;
+    }
+
+    void HandleProc(AuraEffect* aurEff, ProcEventInfo& /*eventInfo*/)
+    {
+        Unit* target = GetTarget();
+        target->CastSpell(target, SPELL_DK_KILLING_MACHINE_PROC, aurEff);
+
+        if (AuraEffect const* oblitaration = target->GetAuraEffect(SPELL_DK_OBLITERATION, EFFECT_1))
+            if (roll_chance_i(oblitaration->GetAmount()))
+                target->CastSpell(target, SPELL_DK_OBLITERATION_RUNE_ENERGIZE, aurEff);
+    }
+
+    void Register() override
+    {
+        AfterEffectProc += AuraEffectProcFn(spell_dk_obliteration::HandleProc, EFFECT_0, SPELL_AURA_DUMMY);
+    }
+};
+
 void AddSC_deathknight_spell_scripts()
 {
+    RegisterSpellScript(spell_dk_obliteration);
     new spell_dk_advantage_t10_4p();
     new spell_dk_anti_magic_barrier();
     RegisterSpellScript(spell_dk_anti_magic_shell_self);

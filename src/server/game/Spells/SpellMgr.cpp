@@ -4968,6 +4968,15 @@ void SpellMgr::LoadSpellInfoCorrections()
             spellEffectInfo->Effect = SPELL_EFFECT_APPLY_AURA;
         });
     });
+    
+    ApplySpellFix({ 265057 }, [](SpellInfo* spellInfo)
+    {
+        ApplySpellEffectFix(spellInfo, EFFECT_0, [](SpellEffectInfo* spellEffectInfo)
+        {
+            // Fix incorrect spell id (it has self in TriggerSpell)
+            spellEffectInfo->TriggerSpell = 16403;
+        });
+    });
 
     for (SpellInfo const& s : mSpellInfoMap)
     {
