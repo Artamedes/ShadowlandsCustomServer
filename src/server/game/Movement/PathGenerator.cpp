@@ -1036,6 +1036,15 @@ void PathGenerator::ReducePathLenghtByDist(float dist)
     }
 }
 
+float PathGenerator::GetPathLength() const
+{
+    float length = 0.0f;
+    for (std::size_t i = 0; i < _pathPoints.size() - 1; ++i)
+        length += (_pathPoints[i + 1] - _pathPoints[i]).length();
+
+    return length;
+}
+
 void PathGenerator::ShortenPathUntilDist(G3D::Vector3 const& target, float dist)
 {
     if (GetPathType() == PATHFIND_BLANK || _pathPoints.size() < 2)
