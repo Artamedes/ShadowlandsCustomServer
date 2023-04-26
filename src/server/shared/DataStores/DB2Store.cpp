@@ -24,7 +24,7 @@
 
 DB2StorageBase::DB2StorageBase(char const* fileName, DB2LoadInfo const* loadInfo)
     : _tableHash(0), _layoutHash(0), _fileName(fileName), _fieldCount(0), _loadInfo(loadInfo), _dataTable(nullptr), _dataTableEx(),
-    _indexTable(nullptr), _indexTableSize(0)
+    _indexTable(nullptr), _indexTableSize(0), _minId(0)
 {
 }
 
@@ -105,6 +105,7 @@ void DB2StorageBase::Load(std::string const& path, LocaleConstant locale)
     _fieldCount = db2.GetCols();
     _tableHash = db2.GetTableHash();
     _layoutHash = db2.GetLayoutHash();
+    _minId = db2.GetMinId();
     _path = path;
     _locale = locale;
 
@@ -140,9 +141,9 @@ void DB2StorageBase::LoadStringsFrom(std::string const& path, LocaleConstant loc
 void DB2StorageBase::LoadFromDB()
 {
     DB2DatabaseLoader loader(_fileName, _loadInfo);
-
-    _dataTableEx[0] = loader.Load(this, false, _indexTableSize, _indexTable, _stringPool);
-    _dataTableEx[1] = loader.Load(this, true, _indexTableSize, _indexTable, _stringPool);
+    
+    _dataTableEx[0] = loader.Load(this, false, _indexTableSize, _indexTable, _stringPool, _minId);
+    _dataTableEx[1] = loader.Load(this, true, _indexTableSize, _indexTable, _stringPool, _minId);
     _stringPool.shrink_to_fit();
 }
 
