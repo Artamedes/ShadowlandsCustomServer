@@ -416,7 +416,7 @@ void Quest::LoadConditionalConditionalQuestDescription(Field* fields)
     QuestConditionalText& text = itr != _conditionalQuestDescription.end() ? *itr : _conditionalQuestDescription.emplace_back();
     text.PlayerConditionId = fields[1].GetInt32();
     text.QuestgiverCreatureId = fields[2].GetInt32();
-    ObjectMgr::AddLocaleString(fields[3].GetString(), locale, text.Text);
+    ObjectMgr::AddLocaleString(fields[3].GetStringView(), locale, text.Text);
 }
 
 void Quest::LoadConditionalConditionalRequestItemsText(Field* fields)
@@ -436,7 +436,7 @@ void Quest::LoadConditionalConditionalRequestItemsText(Field* fields)
     QuestConditionalText& text = itr != _conditionalRequestItemsText.end() ? *itr : _conditionalRequestItemsText.emplace_back();
     text.PlayerConditionId = fields[1].GetInt32();
     text.QuestgiverCreatureId = fields[2].GetInt32();
-    ObjectMgr::AddLocaleString(fields[3].GetString(), locale, text.Text);
+    ObjectMgr::AddLocaleString(fields[3].GetStringView(), locale, text.Text);
 }
 
 void Quest::LoadConditionalConditionalOfferRewardText(Field* fields)
@@ -456,7 +456,7 @@ void Quest::LoadConditionalConditionalOfferRewardText(Field* fields)
     QuestConditionalText& text = itr != _conditionalOfferRewardText.end() ? *itr : _conditionalOfferRewardText.emplace_back();
     text.PlayerConditionId = fields[1].GetInt32();
     text.QuestgiverCreatureId = fields[2].GetInt32();
-    ObjectMgr::AddLocaleString(fields[3].GetString(), locale, text.Text);
+    ObjectMgr::AddLocaleString(fields[3].GetStringView(), locale, text.Text);
 }
 
 void Quest::LoadConditionalConditionalQuestCompletionLog(Field* fields)
@@ -476,7 +476,7 @@ void Quest::LoadConditionalConditionalQuestCompletionLog(Field* fields)
     QuestConditionalText& text = itr != _conditionalQuestCompletionLog.end() ? *itr : _conditionalQuestCompletionLog.emplace_back();
     text.PlayerConditionId = fields[1].GetInt32();
     text.QuestgiverCreatureId = fields[2].GetInt32();
-    ObjectMgr::AddLocaleString(fields[3].GetString(), locale, text.Text);
+    ObjectMgr::AddLocaleString(fields[3].GetStringView(), locale, text.Text);
 }
 
 uint32 Quest::XPValue(Player const* player) const
