@@ -30,6 +30,7 @@ ByteBuffer& operator<<(ByteBuffer& data, MovementInfo const& movementInfo)
     bool hasSpline = movementInfo.HasSpline;
     bool hasInertia = movementInfo.inertia.has_value();
     bool hasAdvFlying = movementInfo.advFlying.has_value();
+    bool hasStandingOnGameObjectGUID = movementInfo.standingOnGameObjectGUID.has_value();
 
     // TODO: Find if this is still needed.
     // if (movementInfo.HasExtraMovementFlag(MOVEMENTFLAG2_WATERWALKING_FULL_PITCH) && !movementInfo.jump.fallTime)
@@ -59,6 +60,7 @@ ByteBuffer& operator<<(ByteBuffer& data, MovementInfo const& movementInfo)
     }*/
     bool hasUnkDF = false;
 
+    data.WriteBit(hasStandingOnGameObjectGUID);
     data.WriteBit(hasTransportData);
     data.WriteBit(hasFallData);
     data.WriteBit(hasSpline);
@@ -72,6 +74,9 @@ ByteBuffer& operator<<(ByteBuffer& data, MovementInfo const& movementInfo)
 
     if (hasTransportData)
         data << movementInfo.transport;
+
+    if (hasStandingOnGameObjectGUID)
+        data << *movementInfo.standingOnGameObjectGUID;
 
     if (hasInertia)
     {
@@ -129,6 +134,7 @@ ByteBuffer& operator>>(ByteBuffer& data, MovementInfo& movementInfo)
         data >> guid;
     }
 
+    bool hasStandingOnGameObjectGUID = data.ReadBit();
     bool hasTransport = data.ReadBit();
     bool hasFall = data.ReadBit();
     movementInfo.HasSpline = data.ReadBit(); // todo 6.x read this infos
@@ -140,6 +146,9 @@ ByteBuffer& operator>>(ByteBuffer& data, MovementInfo& movementInfo)
 
     if (hasTransport)
         data >> movementInfo.transport;
+
+    if (hasStandingOnGameObjectGUID)
+        data >> movementInfo.standingOnGameObjectGUID.emplace();
 
     if (hasInertia)
     {
