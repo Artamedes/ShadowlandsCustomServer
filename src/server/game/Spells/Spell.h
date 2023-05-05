@@ -417,6 +417,7 @@ class TC_GAME_API Spell
         void EffectModifySpellCharges();
         void EffectCreateTraitTreeConfig();
         void EffectChangeActiveCombatTraitConfig();
+        void EffectTeleportGraveyard();
         void EffectScrapItem();
         void EffectSetCovenant();
         void EffectCraftRuneforgeLegendary();
