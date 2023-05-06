@@ -461,6 +461,9 @@ bool Map::AddPlayerToMap(Player* player, bool initPlayer /*= true*/)
     // Conditions need to be updated first, so we can't send phasing yet, otherwise client crashes at load invalid maps
     //PhasingHandler::SendToPlayer(player);
 
+    if (Instanceable())
+        player->RemoveAurasWithInterruptFlags(SpellAuraInterruptFlags2::EnteringInstance);
+
     if (player->IsAlive())
         ConvertCorpseToBones(player->GetGUID());
 
