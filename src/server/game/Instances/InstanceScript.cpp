@@ -478,6 +478,7 @@ bool InstanceScript::SetBossState(uint32 id, EncounterState state, bool forced /
                     break;
                 }
                 case DONE:
+                {
                     if (!IsChallenge())
                         ResetCombatResurrections();
 
@@ -511,7 +512,14 @@ bool InstanceScript::SetBossState(uint32 id, EncounterState state, bool forced /
                         DoRemoveSpellCooldownWithTimeOnPlayers(3 * TimeConstants::IN_MILLISECONDS * TimeConstants::MINUTE);
                         break;
                     }
+                    instance->DoOnPlayers([](Player* player)
+                    {
+                        player->AtEndOfEncounter();
+                    });
+                    break;
+                }
                 case FAIL:
+                {
                     if (!IsChallenge())
                         ResetCombatResurrections();
                     SendEncounterEnd();
@@ -526,7 +534,13 @@ bool InstanceScript::SetBossState(uint32 id, EncounterState state, bool forced /
 
                     // Remove all cooldowns with a recovery time equal or superior than 3 minutes
                     DoRemoveSpellCooldownWithTimeOnPlayers(3 * TimeConstants::IN_MILLISECONDS * TimeConstants::MINUTE);
+                    
+                    instance->DoOnPlayers([](Player* player)
+                    {
+                        player->AtEndOfEncounter();
+                    });
                     break;
+                }
                 default:
                     break;
             }
