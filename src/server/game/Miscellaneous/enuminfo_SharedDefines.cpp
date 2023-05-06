@@ -289,6 +289,12 @@ TC_API_EXPORT Powers EnumUtils<Powers>::FromIndex(size_t index)
         case 18: return POWER_FURY;
         case 19: return POWER_PAIN;
         case 20: return POWER_ESSENCE;
+        case 21: return POWER_RUNE_BLOOD;
+        case 22: return POWER_RUNE_FROST;
+        case 23: return POWER_RUNE_UNHOLY;
+        case 24: return POWER_ALTERNATE_QUEST;
+        case 25: return POWER_ALTERNATE_ENCOUNTER;
+        case 26: return POWER_ALTERNATE_MOUNT;
         default: throw std::out_of_range("index");
     }
 }
@@ -319,6 +325,12 @@ TC_API_EXPORT size_t EnumUtils<Powers>::ToIndex(Powers value)
         case POWER_FURY: return 18;
         case POWER_PAIN: return 19;
         case POWER_ESSENCE: return 20;
+        case POWER_RUNE_BLOOD: return 21;
+        case POWER_RUNE_FROST: return 22;
+        case POWER_RUNE_UNHOLY: return 23;
+        case POWER_ALTERNATE_QUEST: return 24;
+        case POWER_ALTERNATE_ENCOUNTER: return 25;
+        case POWER_ALTERNATE_MOUNT: return 26;
         default: throw std::out_of_range("value");
     }
 }
