@@ -2185,6 +2185,7 @@ class TC_GAME_API Unit : public WorldObject
 
     public:
         void AtStartOfEncounter();
+        void AtEndOfEncounter();
 
     private:
 
