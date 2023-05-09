@@ -1154,6 +1154,7 @@ private:
 uint32 constexpr PLAYER_MAX_HONOR_LEVEL = 500;
 uint8 constexpr PLAYER_LEVEL_MIN_HONOR = 10;
 uint32 constexpr SPELL_PVP_RULES_ENABLED = 134735;
+float constexpr MAX_AREA_SPIRIT_HEALER_RANGE = 20.0f;
 uint32 constexpr SPELL_ENLISTED          = 269083;
 uint32 constexpr SPELL_BG_DESERTER       = 26013;    // Battleground Deserter Spell
 uint32 constexpr SPELL_BG_CRAVEN         = 158263;   // Arena Deserter Spell
@@ -3045,6 +3046,12 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         UF::UpdateField<UF::PlayerData, 0, TYPEID_PLAYER> m_playerData;
         UF::UpdateField<UF::ActivePlayerData, 0, TYPEID_ACTIVE_PLAYER> m_activePlayerData;
 
+        void SetAreaSpiritHealer(Creature* creature);
+        ObjectGuid const& GetSpiritHealerGUID() const { return _areaSpiritHealerGUID; }
+        bool CanAcceptAreaSpiritHealFrom(Unit* spiritHealer) const { return spiritHealer->GetGUID() == _areaSpiritHealerGUID; }
+        void SendAreaSpiritHealerTime(Unit* spiritHealer) const;
+        void SendAreaSpiritHealerTime(ObjectGuid const& spiritHealerGUID, int32 timeLeft) const;
+
     protected:
         // Gamemaster whisper whitelist
         GuidList WhisperList;
@@ -3418,6 +3425,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         std::unique_ptr<AnimaPowerChoice> _animaPowerChoice;
 
         bool _usePvpItemLevels;
+        ObjectGuid _areaSpiritHealerGUID;
 
         uint32 _transportSpawnID;
 
