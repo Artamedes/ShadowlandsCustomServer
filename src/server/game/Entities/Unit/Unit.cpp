@@ -6221,7 +6221,7 @@ void Unit::SetPowerType(Powers new_powertype, bool sendUpdate/* = true*/)
     }
 }
 
-void Unit::UpdateDisplayPower()
+Powers Unit::CalculateDisplayPowerType() const
 {
     Powers displayPower = POWER_MANA;
     switch (GetShapeshiftForm())
@@ -6245,22 +6245,18 @@ void Unit::UpdateDisplayPower()
                 AuraEffect const* powerTypeAura = powerTypeAuras.front();
                 displayPower = Powers(powerTypeAura->GetMiscValue());
             }
-            else if (GetTypeId() == TYPEID_PLAYER)
+            else
             {
                 ChrClassesEntry const* cEntry = sChrClassesStore.LookupEntry(GetClass());
                 if (cEntry && cEntry->DisplayPower < MAX_POWERS)
                     displayPower = Powers(cEntry->DisplayPower);
-            }
-            else if (GetTypeId() == TYPEID_UNIT)
-            {
+
                 if (Vehicle* vehicle = GetVehicleKit())
                 {
                     if (PowerDisplayEntry const* powerDisplay = sPowerDisplayStore.LookupEntry(vehicle->GetVehicleInfo()->PowerDisplayID[0]))
                         displayPower = Powers(powerDisplay->ActualType);
-                    else if (GetClass() == CLASS_ROGUE)
-                        displayPower = POWER_ENERGY;
                 }
-                else if (Pet* pet = ToPet())
+                else if (Pet const* pet = ToPet())
                 {
                     if (pet->getPetType() == HUNTER_PET) // Hunter pets have focus
                         displayPower = POWER_FOCUS;
@@ -6285,7 +6281,12 @@ void Unit::UpdateDisplayPower()
         }
     }
 
-    SetPowerType(displayPower);
+    return displayPower;
+}
+
+void Unit::UpdateDisplayPower()
+{
+    SetPowerType(CalculateDisplayPowerType());
 }
 
 void Unit::SetSheath(SheathState sheathed)
@@ -7293,6 +7294,11 @@ void Unit::SendEnergizeSpellLog(Unit* victim, uint32 spellID, int32 damage, int3
 
 void Unit::EnergizeBySpell(Unit* victim, SpellInfo const* spellInfo, int32 damage, Powers powerType)
 {
+    if (Player* player = victim->ToPlayer())
+        if (PowerTypeEntry const* powerTypeEntry = sDB2Manager.GetPowerTypeEntry(powerType))
+            if (powerTypeEntry->GetFlags().HasFlag(PowerTypeFlags::UseRegenInterrupt))
+                player->InterruptPowerRegen(powerType);
+
     int32 overEnergize = 0;
     // Runes work different, they work as cooldowns.
     if (IsPlayer() && powerType == POWER_RUNES)
@@ -10483,17 +10489,6 @@ void Unit::TriggerOnPowerChangeAuras(Powers power, int32 oldVal, int32 newVal)
             CastSpell(this, triggerSpell, effect);
         }
     }
-}
-
-int32 Unit::GetCreatePowerValue(Powers power) const
-{
-    if (power == POWER_MANA)
-        return GetCreateMana();
-
-    if (PowerTypeEntry const* powerType = sDB2Manager.GetPowerTypeEntry(power))
-        return powerType->MaxBasePower;
-
-    return 0;
 }
 
 void Unit::AIUpdateTick(uint32 diff)
