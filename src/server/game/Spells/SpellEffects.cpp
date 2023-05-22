@@ -2212,6 +2212,8 @@ void Spell::EffectDispel()
 
     dispellSuccess = true;
     CallScriptSuccessfulDispel(SpellEffIndex(effectInfo->EffectIndex));
+
+    m_hitMask |= PROC_HIT_DISPEL;
 }
 
 void Spell::EffectDualWield()
@@ -4229,7 +4231,10 @@ void Spell::EffectDispelMechanic()
     }
 
     if (dispellSuccess)
+    {
         CallScriptSuccessfulDispel(effectInfo->EffectIndex);
+        m_hitMask |= PROC_HIT_DISPEL;
+    }
 }
 
 void Spell::EffectResurrectPet()
@@ -4769,6 +4774,8 @@ void Spell::EffectStealBeneficialBuff()
     }
 
     m_caster->SendMessageToSet(spellDispellLog.Write(), true);
+
+    m_hitMask |= PROC_HIT_DISPEL;
 }
 
 void Spell::EffectKillCreditPersonal()
