@@ -4928,42 +4928,6 @@ class spell_hun_volatile_bomb_explode : public SpellScript
     }
 };
 
-// 264667 Primal Rage
-//Last Update 8.0.1 Build 28153
-class spell_hun_primal_rage : public SpellScript
-{
-    PrepareSpellScript(spell_hun_primal_rage);
-
-    bool Validate(SpellInfo const* /*spellInfo*/) override
-    {
-        if (!sSpellMgr->GetSpellInfo(SPELL_HUNTER_INSANITY)
-            || !sSpellMgr->GetSpellInfo(SPELL_MAGE_TEMPORAL_DISPLACEMENT)
-            || !sSpellMgr->GetSpellInfo(SPELL_SHAMAN_EXHAUSTION)
-            || !sSpellMgr->GetSpellInfo(SPELL_SHAMAN_SATED))
-            return false;
-        return true;
-    }
-
-    void RemoveInvalidTargets(std::list<WorldObject*>& targets)
-    {
-        targets.remove_if(Trinity::UnitAuraCheck(true, SPELL_HUNTER_INSANITY));
-        targets.remove_if(Trinity::UnitAuraCheck(true, SPELL_MAGE_TEMPORAL_DISPLACEMENT));
-        targets.remove_if(Trinity::UnitAuraCheck(true, SPELL_SHAMAN_EXHAUSTION));
-        targets.remove_if(Trinity::UnitAuraCheck(true, SPELL_SHAMAN_SATED));
-    }
-
-    void ApplyDebuff()
-    {
-        if (Unit* target = GetHitUnit())
-            target->CastSpell(target, SPELL_SHAMAN_SATED, true);
-    }
-
-    void Register() override
-    {
-        OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_hun_primal_rage::RemoveInvalidTargets, EFFECT_ALL, TARGET_UNIT_CASTER_AREA_RAID);
-        AfterHit += SpellHitFn(spell_hun_primal_rage::ApplyDebuff);
-    }
-};
 // 263140 - Spirit Bond
 class spell_hun_spirit_bond : public SpellScript
 {

@@ -1232,61 +1232,6 @@ public:
     }
 };
 
-// 32182 - Heroism
-class spell_sha_heroism : public SpellScriptLoader
-{
-public:
-    spell_sha_heroism() : SpellScriptLoader("spell_sha_heroism") { }
-
-    class spell_sha_heroism_SpellScript : public SpellScript
-    {
-        PrepareSpellScript(spell_sha_heroism_SpellScript);
-
-        bool Validate(SpellInfo const* /*spellInfo*/) override
-        {
-            if (!sSpellMgr->GetSpellInfo(SPELL_SHAMAN_EXHAUSTION)
-                || !sSpellMgr->GetSpellInfo(SPELL_HUNTER_INSANITY)
-                || !sSpellMgr->GetSpellInfo(SPELL_MAGE_TEMPORAL_DISPLACEMENT)
-                || !sSpellMgr->GetSpellInfo(SPELL_PET_NETHERWINDS_FATIGUED))
-                return false;
-            return true;
-        }
-
-        void RemoveInvalidTargets(std::list<WorldObject*>& targets)
-        {
-            targets.remove_if(Trinity::UnitAuraCheck(true, SPELL_SHAMAN_EXHAUSTION));
-            targets.remove_if(Trinity::UnitAuraCheck(true, SPELL_HUNTER_INSANITY));
-            targets.remove_if(Trinity::UnitAuraCheck(true, SPELL_MAGE_TEMPORAL_DISPLACEMENT));
-        }
-
-        void ApplyDebuff()
-        {
-            if (Unit* target = GetHitUnit())
-                target->CastSpell(target, SPELL_SHAMAN_EXHAUSTION, true);
-        }
-
-        void HandleOnCast()
-        {
-            if (Unit* caster = GetCaster())
-                if (caster->HasAura(SPELL_SHAMAN_ANCESTRAL_RESONANCE_POWER))
-                    caster->CastSpell(caster, SPELL_SHAMAN_ANCESTRAL_RESONANCE_PERIODIC, true);
-        }
-
-        void Register() override
-        {
-            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_sha_heroism_SpellScript::RemoveInvalidTargets, EFFECT_0, TARGET_UNIT_CASTER_AREA_RAID);
-            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_sha_heroism_SpellScript::RemoveInvalidTargets, EFFECT_1, TARGET_UNIT_CASTER_AREA_RAID);
-            AfterHit += SpellHitFn(spell_sha_heroism_SpellScript::ApplyDebuff);
-            OnCast += SpellCastFn(spell_sha_heroism_SpellScript::HandleOnCast);
-        }
-    };
-
-    SpellScript* GetSpellScript() const override
-    {
-        return new spell_sha_heroism_SpellScript();
-    }
-};
-
 // 23551 - Lightning Shield
 class spell_sha_item_lightning_shield : public SpellScriptLoader
 {
@@ -7029,7 +6974,6 @@ void AddSC_shaman_spell_scripts()
     new spell_sha_healing_stream();
     new spell_sha_healing_stream_totem();
     new spell_sha_healing_stream_totem_heal();
-    new spell_sha_heroism();
     new spell_sha_item_lightning_shield();
     new spell_sha_item_lightning_shield_trigger();
     new spell_sha_item_mana_surge();

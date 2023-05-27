@@ -1031,9 +1031,9 @@ uint32 DB2Manager::LoadStores(std::string const& dataPath, LocaleConstant defaul
     LOAD_DB2(sWorldStateExpressionStore);
     LOAD_DB2(sSpellStore);
     LOAD_DB2(sCharStartOutfitStore);
-    LOAD_DB2(sCampaignEntry);
-    LOAD_DB2(sCampaignXQuestLineEntry);
-    LOAD_DB2(sQuestLineEntry);
+    //LOAD_DB2(sCampaignEntry);
+    //LOAD_DB2(sCampaignXQuestLineEntry);
+    //LOAD_DB2(sQuestLineEntry);
 
 #undef LOAD_DB2
 
