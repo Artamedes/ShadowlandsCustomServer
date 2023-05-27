@@ -1248,7 +1248,7 @@ public:
             char const* id = handler->extractKeyFromLink((char*)args, "Hitem");
             if (!id)
                 return false;
-            itemId = atoul(id);
+            itemId = std::atoi(id);
         }
 
         std::vector<int32> bonusListIDs;
@@ -1321,7 +1321,7 @@ public:
             char const* id = handler->extractKeyFromLink((char*)args, "Hitem");
             if (!id)
                 return false;
-            itemId = atoul(id);
+            itemId = std::atoi(id);
         }
 
         std::vector<int32> bonusListIDs;

@@ -34,7 +34,7 @@
 #include "Containers.h"
 #include "GridNotifiers.h"
 #include "TemporarySummon.h"
-#include "spell_dk.h"
+#include "Classes/DeathKnight/spell_dk.h"
 
 enum DeathKnightSpells
 {
@@ -295,6 +295,8 @@ enum DeathKnightSpells
     SPELL_DK_ETERNAL_RUNE_WEAPON_BUFF           = 278543,
     SPELL_DK_ETERNAL_RUNE_WEAPON_AURA           = 278479,
     SPELL_DK_DEATHS_ADVANCE_SPEED               = 124285,
+    SPELL_DK_OBLITERATION_RUNE_ENERGIZE         = 281327,
+    SPELL_DK_KILLING_MACHINE_PROC               = 51124,
 };
 
 // 70656 - Advantage (T10 4P Melee Bonus)

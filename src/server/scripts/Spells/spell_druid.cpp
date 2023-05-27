@@ -30,7 +30,7 @@
 #include "SpellPackets.h"
 #include "TemporarySummon.h"
 #include "AreaTriggerPackets.h"
-#include "spell_druid.h"
+#include "Classes/Druid/spell_druid.h"
 
 enum DruidSpells
 {

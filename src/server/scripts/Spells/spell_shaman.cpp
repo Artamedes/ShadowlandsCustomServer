@@ -41,7 +41,7 @@
 #include "TotemAI.h"
 #include "Group.h"
 #include "SpellPackets.h"
-#include "spell_shaman.h"
+#include "Classes/Shaman/spell_shaman.h"
 
 enum ShamanSpells
 {

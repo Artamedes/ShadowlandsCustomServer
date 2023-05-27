@@ -29,7 +29,7 @@
 #include "SpellScript.h"
 #include "TemporarySummon.h"
 #include "Util.h"
-#include "spell_monk.h"
+#include "Classes/Monk/spell_monk.h"
 
 enum MonkSpells
 {
@@ -705,7 +705,7 @@ public:
                     return SPELL_FAILED_NOT_HERE;
 
                 if (AreaTableEntry const* area = sAreaTableStore.LookupEntry(_player->GetAreaId()))
-                    if (area->Flags[0] & AREA_FLAG_NO_FLY_ZONE)
+                    if (area->GetFlags().HasFlag(AreaFlags::ForceIndoors))
                         return SPELL_FAILED_NOT_HERE;
 
                 if (_player->GetMap()->Instanceable())

@@ -38,7 +38,7 @@
 #include "SpellMgr.h"
 #include "TemporarySummon.h"
 #include "GridNotifiers.h"
-#include "spell_paladin.h"
+#include "Classes/Paladin/spell_paladin.h"
 
 enum PaladinSpells
 {

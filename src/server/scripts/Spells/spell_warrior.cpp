@@ -21,7 +21,7 @@
  * Scriptnames of files in this file should be prefixed with "spell_warr_".
  */
 
-#include "spell_warrior.h"
+#include "Classes/Warrior/spell_warrior.h"
 
 enum WarriorSpells
 {

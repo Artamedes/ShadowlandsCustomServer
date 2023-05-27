@@ -533,9 +533,9 @@ public:
 
     class spell_SummonSolarFlareSpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_SummonSolarFlareSpellScript)
+        PrepareSpellScript(spell_SummonSolarFlareSpellScript);
 
-            void HandleDummy(SpellEffIndex /*effIndex*/)
+        void HandleDummy(SpellEffIndex /*effIndex*/)
         {
             if (GetCaster())
             {
@@ -570,9 +570,9 @@ public:
 
     class spell_SunstrikeSpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_SunstrikeSpellScript)
+        PrepareSpellScript(spell_SunstrikeSpellScript);
 
-            void CheckTargetIn(std::list<WorldObject*>& unitList)
+        void CheckTargetIn(std::list<WorldObject*>& unitList)
         {
             Unit* caster = GetCaster();
             unitList.remove_if([caster](WorldObject* obj) {
@@ -617,9 +617,9 @@ public:
 
     class spell_QuillsSpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_QuillsSpellScript)
+        PrepareSpellScript(spell_QuillsSpellScript);
 
-            void HandleDummy(SpellEffIndex /*effIndex*/)
+        void HandleDummy(SpellEffIndex /*effIndex*/)
         {
             Unit* caster = GetCaster();
             if (caster)

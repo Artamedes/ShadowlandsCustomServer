@@ -37,7 +37,7 @@
 #include "Battleground.h"
 #include "AreaTrigger.h"
 #include "Containers.h"
-#include "spell_priest.h"
+#include "Classes/Priest/spell_priest.h"
 
 enum PriestSpells
 {
@@ -4681,7 +4681,7 @@ class aura_pri_sustained_sanity : public AuraScript
 	void HandlePeriodic(AuraEffect const* /*aurEff*/)
 	{
 		if (Unit* caster = GetCaster())
-            if (!caster->HasUnitState(UNIT_STATE_STUNNED) && !caster->HasUnitState(UNIT_STATE_FLEEING) && !caster->HasUnitFlag(UNIT_FLAG_SILENCED))
+            if (!caster->HasUnitState(UNIT_STATE_STUNNED) && !caster->HasUnitState(UNIT_STATE_FLEEING) && !caster->IsSilenced(SPELL_SCHOOL_MASK_ALL))
                 Remove();		
 	}
 

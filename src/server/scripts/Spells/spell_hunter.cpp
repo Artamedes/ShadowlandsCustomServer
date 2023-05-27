@@ -44,7 +44,7 @@
 #include "ThreatManager.h"
 #include "Unit.h"
 #include "Log.h"
-#include "spell_hunter.h"
+#include "Classes/Hunter/spell_hunter.h"
 
 enum HunterSpells
 {

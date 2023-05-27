@@ -40,7 +40,7 @@
 #include "SpellScript.h"
 #include "CellImpl.h"
 #include "TemporarySummon.h"
-#include "spell_mage.h"
+#include "Classes/Mage/spell_mage.h"
 
 enum MageSpells
 {

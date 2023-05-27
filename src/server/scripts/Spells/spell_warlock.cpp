@@ -22,7 +22,7 @@
 * Scriptnames of files in this file should be prefixed with "spell_warl_".
 */
 
-#include "spell_warlock.h"
+#include "Classes/Warlock/spell_warlock.h"
 
 enum WarlockSpells
 {

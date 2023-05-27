@@ -101,7 +101,7 @@ struct boss_cragmaw_the_infested : public BossAI
 
         DoCastSelf(SPELL_CRAWG_EATING);
         me->SetEmoteState(EMOTE_STATE_EAT);
-        if (TempSummon* summon = me->SummonCreature(NPC_FETID_MAGGOT, FetidMaggotSpawn))
+        if (TempSummon* summon = me->SummonCreature(NPC_FETID_MAGGOT, FetidMaggotSpawn, TEMPSUMMON_MANUAL_DESPAWN, 0, 0, 0))
         {
             _fetidMaggotGuid = summon->GetGUID();
             summon->CastSpell(nullptr, SPELL_FEIGN_DEATH, true);

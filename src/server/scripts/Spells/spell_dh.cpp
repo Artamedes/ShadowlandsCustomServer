@@ -22,7 +22,7 @@
  * Scriptnames of files in this file should be prefixed with "spell_dh_".
  */
 
-#include "spell_dh.h"
+#include "Classes/DemonHunter/spell_dh.h"
 #include <chrono>
 #include "AreaTrigger.h"
 #include "AreaTriggerAI.h"
