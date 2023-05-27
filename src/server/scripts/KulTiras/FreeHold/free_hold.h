@@ -37,6 +37,7 @@
 #include "SpellScript.h"
 #include "TemporarySummon.h"
 #include "Vehicle.h"
+#include "Containers.h"
 
 enum FreeholdCreature
 {

@@ -1,2 +1,0 @@
-
-UPDATE `item_sparse` SET `StatModifierBonusStat1`='72', `StatPercentEditor5`='	5259', `StatModifierBonusStat5`='5', `StatPercentEditor6`='	18121', `StatModifierBonusStat6`='5'  WHERE  `ID` IN (710054, 710060);

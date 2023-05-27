@@ -271,7 +271,7 @@ struct boss_sindragosa : public BossAI
     {
         if (!instance->CheckRequiredBosses(DATA_SINDRAGOSA, victim->ToPlayer()))
         {
-            EnterEvadeMode(EVADE_REASON_SEQUENCE_BREAK);
+            EnterEvadeMode(EvadeReason::SequenceBreak);
             instance->DoCastSpellOnPlayers(LIGHT_S_HAMMER_TELEPORT);
             return;
         }
@@ -288,7 +288,7 @@ struct boss_sindragosa : public BossAI
 
     void EnterEvadeMode(EvadeReason why) override
     {
-        if (_isInAirPhase && why == EVADE_REASON_BOUNDARY)
+        if (_isInAirPhase && why == EvadeReason::Boundary)
             return;
         BossAI::EnterEvadeMode(why);
     }
@@ -1501,9 +1501,6 @@ class at_sindragosa_lair : public AreaTriggerScript
 
                 if (!instance->GetData(DATA_SINDRAGOSA_FROSTWYRMS) && !instance->GetGuidData(DATA_SINDRAGOSA) && instance->GetBossState(DATA_SINDRAGOSA) != DONE)
                 {
-                    if (player->GetMap()->IsHeroic() && !instance->GetData(DATA_HEROIC_ATTEMPTS))
-                        return true;
-
                     player->GetMap()->LoadGrid(SindragosaSpawnPos.GetPositionX(), SindragosaSpawnPos.GetPositionY());
                     if (Creature* sindragosa = player->GetMap()->SummonCreature(NPC_SINDRAGOSA, SindragosaSpawnPos))
                         sindragosa->AI()->DoAction(ACTION_START_FROSTWYRM);

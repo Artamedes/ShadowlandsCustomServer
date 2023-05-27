@@ -187,6 +187,38 @@ class spell_celestial_pillar : public AuraScript
     }
 };
 
+/// 198051
+// 11-28-22 - 10.0.2-46741
+struct npc_druid_wild_mushroom : public ScriptedAI
+{
+    public:
+        npc_druid_wild_mushroom(Creature* creature) : ScriptedAI(creature) { }
+
+        enum eWildMushroom
+        {
+            WildMushroomDmg = 88751,
+        };
+
+        void JustUnsummoned()
+        {
+            if (auto caster = me->GetOwner())
+            {
+                if (auto spell = caster->CastAndGetSpell(*me, WildMushroomDmg, true))
+                {
+                    uint32 totalTargets = spell->m_UniqueTargetInfo.size();
+
+                    if (totalTargets > 0)
+                    {
+                        if (auto spellInfo = sSpellMgr->GetSpellInfo(WildMushroomDmg))
+                        {
+                            caster->EnergizeBySpell(me, spellInfo, spellInfo->GetEffect(EFFECT_1).BasePoints, Powers::POWER_LUNAR_POWER);
+                        }
+                    }
+                }
+            }
+        }
+};
+
 void AddSC_spell_druid_balance()
 {
     RegisterSpellScript(spell_eclipse);
@@ -194,4 +226,5 @@ void AddSC_spell_druid_balance()
     RegisterSpellScript(spell_eclipse_solar);
     RegisterSpellScript(spell_balance_of_all_things);
     RegisterSpellScript(spell_celestial_pillar);
+    RegisterCreatureAI(npc_druid_wild_mushroom);
 }

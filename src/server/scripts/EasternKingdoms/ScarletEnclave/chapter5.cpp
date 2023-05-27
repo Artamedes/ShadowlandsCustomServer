@@ -258,6 +258,8 @@ Position const LightofDawnLoc[] =
     {2273.972f, -5257.676f, 78.862f, 0},     // 29 Lich king moves forward
 };
 
+static constexpr uint32 PATH_ESCORT_MOGRAINE = 233386;
+
 class npc_highlord_darion_mograine : public CreatureScript
 {
 public:
@@ -1608,7 +1610,8 @@ public:
                 case GOSSIP_ACTION_INFO_DEF + 1:
                     CloseGossipMenuFor(player);
                     uiStep = 1;
-                    Start(true, true, player->GetGUID());
+                    //LoadPath(PATH_ESCORT_MOGRAINE);
+                    Start(true, player->GetGUID());
                     break;
             }
             return true;
@@ -1620,7 +1623,7 @@ public:
                 player->PrepareQuestMenu(me->GetGUID());
 
             if (player->GetQuestStatus(12801) == QUEST_STATUS_INCOMPLETE)
-                AddGossipItemFor(player, GossipOptionIcon::None, "I am ready.", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+                AddGossipItemFor(player, GossipOptionNpc::None, "I am ready.", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
 
             SendGossipMenuFor(player, player->GetGossipTextId(me), me->GetGUID());
 

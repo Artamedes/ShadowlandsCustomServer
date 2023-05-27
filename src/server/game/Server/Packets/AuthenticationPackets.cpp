@@ -138,20 +138,21 @@ WorldPacket const* WorldPackets::Auth::AuthResponse::Write()
                 _worldPacket << uint8(classAvailability.ClassID);
                 _worldPacket << uint8(classAvailability.ActiveExpansionLevel);
                 _worldPacket << uint8(classAvailability.AccountExpansionLevel);
+                _worldPacket << uint8(classAvailability.MinActiveExpansionLevel);
             }
         }
 
         _worldPacket.WriteBit(SuccessInfo->IsExpansionTrial);
-        _worldPacket.WriteBit(true);
+        _worldPacket.WriteBit(SuccessInfo->ForceCharacterTemplate);
         _worldPacket.WriteBit(SuccessInfo->NumPlayersHorde.has_value());
         _worldPacket.WriteBit(SuccessInfo->NumPlayersAlliance.has_value());
         _worldPacket.WriteBit(SuccessInfo->ExpansionTrialExpiration.has_value());
         _worldPacket.FlushBits();
 
         {
-            _worldPacket << uint32(SuccessInfo->GameTimeInfo.BillingPlan);
+            _worldPacket << uint32(2);
             _worldPacket << uint32(SuccessInfo->GameTimeInfo.TimeRemain);
-            _worldPacket << uint32(SuccessInfo->GameTimeInfo.Unknown735);
+            _worldPacket << uint32(2);
             // 3x same bit is not a mistake - preserves legacy client behavior of BillingPlanFlags::SESSION_IGR
             _worldPacket.WriteBit(SuccessInfo->GameTimeInfo.InGameRoom); // inGameRoom check in function checking which lua event to fire when remaining time is near end - BILLING_NAG_DIALOG vs IGR_BILLING_NAG_DIALOG
             _worldPacket.WriteBit(SuccessInfo->GameTimeInfo.InGameRoom); // inGameRoom lua return from Script_GetBillingPlan
@@ -166,7 +167,7 @@ WorldPacket const* WorldPackets::Auth::AuthResponse::Write()
             _worldPacket << uint16(*SuccessInfo->NumPlayersAlliance);
 
         if (SuccessInfo->ExpansionTrialExpiration)
-            _worldPacket << int32(*SuccessInfo->ExpansionTrialExpiration);
+            _worldPacket << *SuccessInfo->ExpansionTrialExpiration;
 
         for (VirtualRealmInfo const& virtualRealm : SuccessInfo->VirtualRealms)
             _worldPacket << virtualRealm;

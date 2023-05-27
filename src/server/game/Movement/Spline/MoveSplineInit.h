@@ -79,7 +79,7 @@ namespace Movement
         /* Plays animation after movement done
          * can't be combined with parabolic movement
          */
-        void SetAnimation(AnimTier anim);
+        void SetAnimation(AnimTier anim, uint32 tierTransitionId = 0, Milliseconds transitionStartTime = 0ms);
 
         /* Adds final facing animation
          * sets unit's facing to specified point/angle after all path done
@@ -87,6 +87,7 @@ namespace Movement
          */
         void SetFacing(float angle);
         void SetFacing(Vector3 const& point);
+        void SetFacing(float x, float y, float z);
         void SetFacing(Unit const* target);
 
         /* Initializes movement by path
@@ -151,6 +152,8 @@ namespace Movement
         */
         void SetUnlimitedSpeed(bool enable);
 
+        void SetCanSwim();
+
         /* Sets the velocity (in case you want to have custom movement velocity)
          * if no set, speed will be selected based on unit's speeds and current movement mode
          * Has no effect if falling mode enabled
@@ -182,10 +185,11 @@ namespace Movement
     inline void MoveSplineInit::SetTransportExit() { args.flags.EnableTransportExit(); }
     inline void MoveSplineInit::SetOrientationFixed(bool enable) { args.flags.orientationFixed = enable; }
     inline void MoveSplineInit::SetUnlimitedSpeed(bool enable) { args.flags.unlimitedSpeed = enable; }
+    inline void MoveSplineInit::SetCanSwim() { args.flags.canSwim = true; }
 
     inline void MoveSplineInit::SetParabolic(float amplitude, float time_shift)
     {
-        args.time_perc = time_shift;
+        args.effect_start_time_percent = time_shift;
         args.parabolic_amplitude = amplitude;
         args.vertical_acceleration = 0.0f;
         args.flags.EnableParabolic();
@@ -193,16 +197,18 @@ namespace Movement
 
     inline void MoveSplineInit::SetParabolicVerticalAcceleration(float vertical_acceleration, float time_shift)
     {
-        args.time_perc = time_shift;
+        args.effect_start_time_percent = time_shift;
         args.parabolic_amplitude = 0.0f;
         args.vertical_acceleration = vertical_acceleration;
         args.flags.EnableParabolic();
     }
 
-    inline void MoveSplineInit::SetAnimation(AnimTier anim)
+    inline void MoveSplineInit::SetAnimation(AnimTier anim, uint32 tierTransitionId /*= 0*/, Milliseconds transitionStartTime /*= 0ms*/)
     {
-        args.time_perc = 0.f;
+        args.effect_start_time_percent = 0.f;
+        args.effect_start_time = transitionStartTime;
         args.animTier.emplace();
+        args.animTier->TierTransitionId = tierTransitionId;
         args.animTier->AnimTier = anim;
         args.flags.EnableAnimation();
     }

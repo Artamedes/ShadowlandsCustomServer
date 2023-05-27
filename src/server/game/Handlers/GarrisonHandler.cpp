@@ -61,8 +61,8 @@ void WorldSession::HandleGarrisonGetMapData(WorldPackets::Garrison::GarrisonGetM
 
 void WorldSession::HandleGarrisonResearchTalent(WorldPackets::Garrison::GarrisonResearchTalent& researchResult)
 {
-    TC_LOG_TRACE("network.opcode", "HandleGarrisonResearchTalent GarrTalentID: %u %u %s",
-        researchResult.GarrTalentID, researchResult.Rank, researchResult.UnkGuid.ToString().c_str());
+    TC_LOG_TRACE("network.opcode", "HandleGarrisonResearchTalent GarrTalentID: {} {} {}",
+        researchResult.GarrTalentID, researchResult.Rank, researchResult.UnkGuid.ToString());
     if (auto talent = sGarrTalentStore.LookupEntry(researchResult.GarrTalentID))
     {
         if (auto tree = sGarrTalentTreeStore.LookupEntry(talent->GarrTalentTreeID))
@@ -75,7 +75,7 @@ void WorldSession::HandleGarrisonResearchTalent(WorldPackets::Garrison::Garrison
                     Rank = conduit->Rank + 1;
 
                 if (Rank != researchResult.Rank)
-                    TC_LOG_ERROR("network.opcode", "%s sent invalid rank %u in HandleGarrisonResearchTalent", GetPlayerInfo().c_str(), researchResult.Rank);
+                    TC_LOG_ERROR("network.opcode", "{} sent invalid rank {} in HandleGarrisonResearchTalent", GetPlayerInfo(), researchResult.Rank);
 
                 /// Handle cost for currency types
                 if (auto costEntries = sDB2Manager.GetGarrTalentCostEntriesByGarrTalentId(talent->ID))
@@ -90,7 +90,7 @@ void WorldSession::HandleGarrisonResearchTalent(WorldPackets::Garrison::Garrison
                                 {
                                     if (rankEntry->Rank == Rank - 1)
                                     {
-                                        if (_player->GetCurrency(costEntry->CurrencyTypesID) < costEntry->CurrencyQuantity)
+                                        if (_player->GetCurrencyQuantity(costEntry->CurrencyTypesID) < costEntry->CurrencyQuantity)
                                         {
                                             ChatHandler(this).SendSysMessage("Not enough tower knowledge to research this!");
                                             return;

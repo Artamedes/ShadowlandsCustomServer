@@ -39,6 +39,8 @@
 #include "PlayerChallenge.h"
 #include "CustomObjectMgr.h"
 #include "GameTime.h"
+#include "Group.h"
+#include "Containers.h"
 
 Challenge::Challenge(InstanceMap* map, Player* player, Scenario* scenario, MythicKeystoneInfo* mythicKeystone)
     : InstanceScript(map), _instanceScript(map->GetInstanceScript()),
@@ -379,10 +381,10 @@ void Challenge::Update(uint32 diff)
                 if (keystone = keyOwner->GetItemByGuid(m_itemGuid))
                     keyOwner->ChallengeKeyCharded(keystone, _challengeLevel);
                 else
-                    CharacterDatabase.PExecute("UPDATE challenge_key SET KeyIsCharded = 0, InstanceID = 0 WHERE guid = %u and itemid = %u", _keyOwner.GetCounter(), m_itemGuid.GetCounter());
+                    CharacterDatabase.PExecute("UPDATE challenge_key SET KeyIsCharded = 0, InstanceID = 0 WHERE guid = {} and itemid = {}", _keyOwner.GetCounter(), m_itemGuid.GetCounter());
             }
             else
-                CharacterDatabase.PExecute("UPDATE challenge_key SET KeyIsCharded = 0, InstanceID = 0 WHERE guid = %u and itemid = %u", _keyOwner.GetCounter(), m_itemGuid.GetCounter());
+                CharacterDatabase.PExecute("UPDATE challenge_key SET KeyIsCharded = 0, InstanceID = 0 WHERE guid = {} and itemid = {}", _keyOwner.GetCounter(), m_itemGuid.GetCounter());
         }
     }
 }
@@ -561,10 +563,10 @@ void Challenge::Complete()
             if (keystone = keyOwner->GetItemByGuid(m_itemGuid))
                 keyOwner->ChallengeKeyCharded(keystone, _challengeLevel);
             else
-                CharacterDatabase.PExecute("UPDATE challenge_key SET KeyIsCharded = 0, InstanceID = 0 WHERE guid = %u and itemid = %u", _keyOwner.GetCounter(), m_itemGuid.GetCounter());
+                CharacterDatabase.PExecute("UPDATE challenge_key SET KeyIsCharded = 0, InstanceID = 0 WHERE guid = {} and itemid = {}", _keyOwner.GetCounter(), m_itemGuid.GetCounter());
         }
         else
-            CharacterDatabase.PExecute("UPDATE challenge_key SET KeyIsCharded = 0, InstanceID = 0 WHERE guid = %u and itemid = %u", _keyOwner.GetCounter(), m_itemGuid.GetCounter());
+            CharacterDatabase.PExecute("UPDATE challenge_key SET KeyIsCharded = 0, InstanceID = 0 WHERE guid = {} and itemid = {}", _keyOwner.GetCounter(), m_itemGuid.GetCounter());
     }
 
     auto challengeData = new ChallengeData;

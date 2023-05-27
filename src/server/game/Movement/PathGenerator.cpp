@@ -39,23 +39,23 @@ PathGenerator::PathGenerator(const WorldObject* owner, bool transformTransportPa
 {
     memset(_pathPolyRefs, 0, sizeof(_pathPolyRefs));
 
-    TC_LOG_DEBUG("maps", "++ PathGenerator::PathGenerator for %u \n", _sourceObj->GetGUID().GetCounter());
+    TC_LOG_DEBUG("maps", "++ PathGenerator::PathGenerator for {} \n", _sourceObj->GetGUID().GetCounter());
 
     if (_sourceObj->GetTransport())
         _transport = dynamic_cast<Transport*>(_sourceObj->GetTransport());
 
     if (_transport)
     {
-        if (_transport->MMapsLoaded())
-        {
-            MMAP::MMapManager* mmap = MMAP::MMapFactory::createOrGetMMapManager();
-            _navMesh = mmap->GetTransportNavMesh(_transport->GetDisplayId());
-            _navMeshQuery = mmap->GetTransportNavMeshQuery(_transport->GetDisplayId());
-        }
+        //if (_transport->MMapsLoaded())
+        //{
+        //    MMAP::MMapManager* mmap = MMAP::MMapFactory::createOrGetMMapManager();
+        //    _navMesh = mmap->GetTransportNavMesh(_transport->GetDisplayId());
+        //    _navMeshQuery = mmap->GetTransportNavMeshQuery(_transport->GetDisplayId());
+        //}
     }
     else
     {
-        uint32 mapId = PhasingHandler::GetTerrainMapId(_sourceObj->GetPhaseShift(), _sourceObj->GetMap()->GetTerrain(), _sourceObj->GetPositionX(), _sourceObj->GetPositionY());
+        uint32 mapId = PhasingHandler::GetTerrainMapId(_sourceObj->GetPhaseShift(), _sourceObj->GetMapId(), _sourceObj->GetMap()->GetTerrain(), _sourceObj->GetPositionX(), _sourceObj->GetPositionY());
         if (DisableMgr::IsPathfindingEnabled(mapId))
         {
             MMAP::MMapManager* mmap = MMAP::MMapFactory::createOrGetMMapManager();
@@ -69,7 +69,7 @@ PathGenerator::PathGenerator(const WorldObject* owner, bool transformTransportPa
 
 PathGenerator::~PathGenerator()
 {
-    TC_LOG_DEBUG("maps", "++ PathGenerator::~PathGenerator() for %s", _sourceObj->GetGUID().ToString().c_str());
+    TC_LOG_DEBUG("maps", "++ PathGenerator::~PathGenerator() for {}", _sourceObj->GetGUID().ToString());
 }
 
 bool PathGenerator::CalculatePath(float destX, float destY, float destZ, bool forceDest, bool straightLine)
@@ -117,7 +117,7 @@ bool PathGenerator::CalculatePath(G3D::Vector3 start, G3D::Vector3 dest, bool fo
     _forceDestination = forceDest;
     _straightLine = straightLine;
 
-    TC_LOG_DEBUG("maps", "++ PathGenerator::CalculatePath() for %s", _sourceObj->GetGUID().ToString().c_str());
+    TC_LOG_DEBUG("maps", "++ PathGenerator::CalculatePath() for {}", _sourceObj->GetGUID().ToString());
 
     // make sure navMesh works - we can run on map w/o mmap
     // check if the start and end point have a .mmtile loaded (can we pass via not loaded tile on the way?)
@@ -275,7 +275,7 @@ void PathGenerator::BuildPolyPath(G3D::Vector3 const& startPos, G3D::Vector3 con
     bool farFromPoly = (distToStartPoly > 7.0f || distToEndPoly > 7.0f);
     if (farFromPoly)
     {
-        TC_LOG_DEBUG("maps", "++ BuildPolyPath :: farFromPoly distToStartPoly=%.3f distToEndPoly=%.3f\n", distToStartPoly, distToEndPoly);
+        TC_LOG_DEBUG("maps", "++ BuildPolyPath :: farFromPoly distToStartPoly={:.3f} distToEndPoly={:.3f}\n", distToStartPoly, distToEndPoly);
 
         bool buildShotrcut = false;
         if (_sourceObj->GetTypeId() == TYPEID_UNIT)
@@ -349,9 +349,9 @@ void PathGenerator::BuildPolyPath(G3D::Vector3 const& startPos, G3D::Vector3 con
             // here to catch few bugs
             if (_pathPolyRefs[pathStartIndex] == INVALID_POLYREF)
             {
-                TC_LOG_ERROR("maps", "Invalid poly ref in BuildPolyPath. _polyLength: %u, pathStartIndex: %u,"
-                                     " startPos: %s, endPos: %s, mapid: %u",
-                                     _polyLength, pathStartIndex, startPos.toString().c_str(), endPos.toString().c_str(),
+                TC_LOG_ERROR("maps", "Invalid poly ref in BuildPolyPath. _polyLength: {}, pathStartIndex: {},"
+                                     " startPos: {}, endPos: {}, mapid: {}",
+                                     _polyLength, pathStartIndex, startPos.toString(), endPos.toString(),
                                      _sourceObj->GetMapId());
 
                 break;
@@ -468,10 +468,10 @@ void PathGenerator::BuildPolyPath(G3D::Vector3 const& startPos, G3D::Vector3 con
             // this is probably an error state, but we'll leave it
             // and hopefully recover on the next Update
             // we still need to copy our preffix
-            TC_LOG_ERROR("maps", "%s's Path Build failed: 0 length path", _sourceObj->GetGUID().ToString().c_str());
+            TC_LOG_ERROR("maps", "{}'s Path Build failed: 0 length path", _sourceObj->GetGUID().ToString());
         }
 
-        TC_LOG_DEBUG("maps", "++  m_polyLength=%u prefixPolyLength=%u suffixPolyLength=%u \n", _polyLength, prefixPolyLength, suffixPolyLength);
+        TC_LOG_DEBUG("maps", "++  m_polyLength={} prefixPolyLength={} suffixPolyLength={} \n", _polyLength, prefixPolyLength, suffixPolyLength);
 
         // new path = prefix + suffix - overlap
         _polyLength = prefixPolyLength + suffixPolyLength - 1;
@@ -529,7 +529,7 @@ void PathGenerator::BuildPolyPath(G3D::Vector3 const& startPos, G3D::Vector3 con
         if (!_polyLength || dtStatusFailed(dtResult))
         {
             // only happens if we passed bad data to findPath(), or navmesh is messed up
-            TC_LOG_ERROR("maps", "%s's Path Build failed: 0 length path", _sourceObj->GetGUID().ToString().c_str());
+            TC_LOG_ERROR("maps", "{}'s Path Build failed: 0 length path", _sourceObj->GetGUID().ToString());
             BuildShortcut();
             _type = PATHFIND_NOPATH;
             return;
@@ -1036,6 +1036,15 @@ void PathGenerator::ReducePathLenghtByDist(float dist)
     }
 }
 
+float PathGenerator::GetPathLength() const
+{
+    float length = 0.0f;
+    for (std::size_t i = 0; i < _pathPoints.size() - 1; ++i)
+        length += (_pathPoints[i + 1] - _pathPoints[i]).length();
+
+    return length;
+}
+
 void PathGenerator::ShortenPathUntilDist(G3D::Vector3 const& target, float dist)
 {
     if (GetPathType() == PATHFIND_BLANK || _pathPoints.size() < 2)
@@ -1104,7 +1113,7 @@ bool PathGenerator::CalculatePathPig(G3D::Vector3 const& startPoint, G3D::Vector
 
     _forceDestination = forceDest;
 
-    TC_LOG_DEBUG("maps.mmaps", "++ PathGenerator::CalculatePath() for %u", _sourceObj->GetGUID().GetCounter());
+    TC_LOG_DEBUG("maps.mmaps", "++ PathGenerator::CalculatePath() for {}", _sourceObj->GetGUID().GetCounter());
 
     // make sure navMesh works - we can run on map w/o mmap
     // check if the start and end point have a .mmtile loaded (can we pass via not loaded tile on the way?)

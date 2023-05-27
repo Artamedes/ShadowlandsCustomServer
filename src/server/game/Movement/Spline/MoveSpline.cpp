@@ -87,7 +87,8 @@ Location MoveSpline::computePosition(int32 time_point, int32 point_index) const
         {
             Vector3 hermite;
             spline.evaluate_derivative(point_Idx, u, hermite);
-            c.orientation = std::atan2(hermite.y, hermite.x);
+            if (hermite.x != 0.f || hermite.y != 0.f)
+                c.orientation = std::atan2(hermite.y, hermite.x);
         }
 
         if (splineflags.backward)
@@ -263,12 +264,16 @@ void MoveSpline::Initialize(MoveSplineInitArgs const& args)
     // spline initialized, duration known and i able to compute parabolic acceleration
     if (args.flags & (MoveSplineFlag::Parabolic | MoveSplineFlag::Animation | MoveSplineFlag::FadeObject))
     {
-        effect_start_time = Duration() * args.time_perc;
-        if (args.flags.parabolic && effect_start_time < Duration())
+        int32 spline_duration = Duration();
+        effect_start_time = spline_duration * args.effect_start_time_percent + args.effect_start_time.count();
+        if (effect_start_time > spline_duration)
+            effect_start_time = spline_duration;
+
+        if (args.flags.parabolic && effect_start_time < spline_duration)
         {
             if (args.parabolic_amplitude != 0.0f)
             {
-                float f_duration = MSToSec(Duration() - effect_start_time);
+                float f_duration = MSToSec(spline_duration - effect_start_time);
                 vertical_acceleration = args.parabolic_amplitude * 8.f / (f_duration * f_duration);
             }
             else if (args.vertical_acceleration != 0.0f)
@@ -296,15 +301,15 @@ bool MoveSplineInitArgs::Validate(Unit* unit) const
     if (!(exp))\
     {\
         if (unit)\
-            TC_LOG_ERROR("misc.movesplineinitargs", "MoveSplineInitArgs::Validate: expression '%s' failed for %s", #exp, (verbose ? unit->GetDebugInfo() : unit->GetGUID().ToString()).c_str());\
+            TC_LOG_DEBUG("misc.movesplineinitargs", "MoveSplineInitArgs::Validate: expression '{}' failed for {}", #exp, (verbose ? unit->GetDebugInfo() : unit->GetGUID().ToString()));\
         else\
-            TC_LOG_ERROR("misc.movesplineinitargs", "MoveSplineInitArgs::Validate: expression '%s' failed for cyclic spline continuation", #exp); \
+            TC_LOG_DEBUG("misc.movesplineinitargs", "MoveSplineInitArgs::Validate: expression '{}' failed for cyclic spline continuation", #exp); \
         return false;\
     }
     CHECK(path.size() > 1, true);
     CHECK(velocity >= 0.01f, true);
-    CHECK(time_perc >= 0.f && time_perc <= 1.f, true);
-   // CHECK(_checkPathLengths(), false);
+    CHECK(effect_start_time_percent >= 0.f && effect_start_time_percent <= 1.f, true);
+    CHECK(_checkPathLengths(), false);
     if (spellEffectExtra)
     {
         CHECK(!spellEffectExtra->ProgressCurveId || sCurveStore.LookupEntry(spellEffectExtra->ProgressCurveId), true);
@@ -330,7 +335,7 @@ bool MoveSplineInitArgs::_checkPathBounds() const
             offset = path[i] - middle;
             if (std::fabs(offset.x) >= MAX_OFFSET || std::fabs(offset.y) >= MAX_OFFSET || std::fabs(offset.z) >= MAX_OFFSET)
             {
-                TC_LOG_ERROR("misc", "MoveSplineInitArgs::_checkPathBounds check failed");
+                TC_LOG_DEBUG("misc", "MoveSplineInitArgs::_checkPathBounds check failed");
                 return false;
             }
         }
@@ -343,19 +348,19 @@ bool MoveSplineInitArgs::_checkPathLengths() const
 {
     if (path.size() > 2 || facing.type == MONSTER_MOVE_NORMAL)
         for (uint32 i = 0; i < path.size() - 1; ++i)
-            if ((path[i + 1] - path[i]).length() < 0.1f)
+            if ((path[i + 1] - path[i]).length() < 0.00000023841858f) ///< FROM DF BETA CLIENT
                 return false;
     return true;
 }
 
 MoveSplineInitArgs::MoveSplineInitArgs(size_t path_capacity /*= 16*/) : path_Idx_offset(0), velocity(0.f),
-parabolic_amplitude(0.f), vertical_acceleration(0.0f), time_perc(0.f), splineId(0), initialOrientation(0.f),
+parabolic_amplitude(0.f), vertical_acceleration(0.0f), effect_start_time_percent(0.f), splineId(0), initialOrientation(0.f),
 walk(false), HasVelocity(false), TransformForTransport(true)
 {
     path.reserve(path_capacity);
 }
 
-MoveSplineInitArgs::MoveSplineInitArgs(MoveSplineInitArgs&& args) = default;
+MoveSplineInitArgs::MoveSplineInitArgs(MoveSplineInitArgs&& args) noexcept = default;
 
 MoveSplineInitArgs::~MoveSplineInitArgs() = default;
 

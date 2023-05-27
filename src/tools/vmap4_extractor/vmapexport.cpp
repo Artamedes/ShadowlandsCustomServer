@@ -21,6 +21,7 @@
 #include "cascfile.h"
 #include "DB2CascFileSource.h"
 #include "ExtractorDB2LoadInfo.h"
+#include "DB2FileSystemSource.h"
 #include "StringFormat.h"
 #include "VMapDefinitions.h"
 #include "vmapexport.h"
@@ -62,7 +63,7 @@ std::unordered_set<uint32> maps_that_are_parents;
 boost::filesystem::path input_path;
 bool preciseVectorData = true;
 char const* CascProduct = "wow";
-char const* CascRegion = "eu";
+char const* CascRegion = "us";
 bool UseRemoteCasc = false;
 uint32 DbcLocale = 0;
 std::unordered_map<std::string, WMODoodadData> WmoDoodads;
@@ -225,7 +226,7 @@ bool ExtractSingleWmo(std::string& fname)
     //printf("root has %d groups\n", froot->nGroups);
     for (std::size_t i = 0; i < froot.groupFileDataIDs.size(); ++i)
     {
-        std::string s = Trinity::StringFormat("FILE%08X.xxx", froot.groupFileDataIDs[i]);
+        std::string s = Trinity::StringFormat("FILE{:08X}.xxx", froot.groupFileDataIDs[i]);
         WMOGroup fgroup(s);
         if (!fgroup.open(&froot))
         {
@@ -282,7 +283,7 @@ void ParsMapFiles()
             if (!fileDataId)
                 return nullptr;
 
-            std::string description = Trinity::StringFormat("WDT for map %u - %s (FileDataID %u)", mapId, mapEntryItr->Name.c_str(), fileDataId);
+            std::string description = Trinity::StringFormat("WDT for map {} - {} (FileDataID {})", mapId, mapEntryItr->Name, fileDataId);
             std::string directory = mapEntryItr->Directory;
             itr = wdts.emplace(std::piecewise_construct, std::forward_as_tuple(mapId), std::forward_as_tuple(fileDataId, description, std::move(directory), maps_that_are_parents.count(mapId) > 0)).first;
             if (!itr->second.init(mapId))
@@ -477,7 +478,7 @@ int main(int argc, char ** argv)
     //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
     // Create the working directory
     if (mkdir(szWorkDirWmo
-#if defined(__linux__) || defined(__APPLE__)
+#if defined(__linux__) || defined(__APPLE__) || defined(__DragonFly__) || defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
                     , 0711
 #endif
                     ))
@@ -487,27 +488,29 @@ int main(int argc, char ** argv)
     int32 FirstLocale = -1;
     for (int i = 0; i < TOTAL_LOCALES; ++i)
     {
-        if (DbcLocale && !(DbcLocale & (1 << i)))
-            continue;
-
-        if (i == LOCALE_none)
-            continue;
-
-        if (!(installedLocalesMask & WowLocaleToCascLocaleFlags[i]))
-            continue;
+       //if (DbcLocale && !(DbcLocale & (1 << i)))
+       //    continue;
+       //
+       //if (i == LOCALE_none)
+       //    continue;
+        //
+        //if (!(installedLocalesMask & WowLocaleToCascLocaleFlags[i]))
+        //    continue;
 
         if (!OpenCascStorage(i))
             continue;
 
-        FirstLocale = i;
         uint32 build = CascStorage->GetBuildNumber();
+        printf("Detected client build %u for locale %s\n\n", build, localeNames[i]);
+
+        FirstLocale = i;
         if (!build)
         {
             CascStorage.reset();
             continue;
         }
 
-        printf("Detected client build %u for locale %s\n\n", build, localeNames[i]);
+        printf("DDDetected client build %u for locale %s\n\n", build, localeNames[i]);
         break;
     }
 
@@ -526,10 +529,17 @@ int main(int argc, char ** argv)
     {
         printf("Read Map.dbc file... ");
 
-        DB2CascFileSource source(CascStorage, MapLoadInfo::Instance()->Meta->FileDataId);
+       // DB2CascFileSource source(CascStorage, MapLoadInfo::Instance()->Meta->FileDataId);
         DB2FileLoader db2;
         try
         {
+            std::string dataPath = ".";
+            if (dataPath.empty() || (dataPath.at(dataPath.length() - 1) != '/' && dataPath.at(dataPath.length() - 1) != '\\'))
+                dataPath.push_back('/');
+
+            std::string db2Path = dataPath + "dbc/";
+            db2Path = db2Path + localeNames[0] + '/';
+            DB2FileSystemSource source(db2Path + std::string("Map.db2"));
             db2.Load(&source, MapLoadInfo::Instance());
         }
         catch (std::exception const& e)

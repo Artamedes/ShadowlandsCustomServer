@@ -17,6 +17,7 @@
 
 #include "icecrown_citadel.h"
 #include "CellImpl.h"
+#include "Containers.h"
 #include "CreatureTextMgr.h"
 #include "GridNotifiersImpl.h"
 #include "InstanceScript.h"
@@ -523,7 +524,7 @@ struct boss_the_lich_king : public BossAI
             me->SummonCreature(NPC_HIGHLORD_TIRION_FORDRING_LK, TirionSpawn, TEMPSUMMON_MANUAL_DESPAWN, 0);
     }
 
-    void JustDied(Unit* /*killer*/) override
+    void JustDied(Unit* killer) override
     {
         _JustDied();
         DoCastAOE(SPELL_PLAY_MOVIE, false);
@@ -535,7 +536,7 @@ struct boss_the_lich_king : public BossAI
         me->GetMap()->SetZoneWeather(AREA_ICECROWN_CITADEL, WEATHER_STATE_FOG, 0.0f);
 
         if (Is25ManRaid())
-            if (Player* player = me->GetLootRecipient())
+            if (Player* player = Object::ToPlayer(killer))
                 player->RewardPlayerAndGroupAtEvent(NPC_THE_LICH_KING_QUEST, player);
     }
 
@@ -543,7 +544,7 @@ struct boss_the_lich_king : public BossAI
     {
         if (!instance->CheckRequiredBosses(DATA_THE_LICH_KING, target->ToPlayer()))
         {
-            EnterEvadeMode(EVADE_REASON_OTHER);
+            EnterEvadeMode(EvadeReason::Other);
             instance->DoCastSpellOnPlayers(LIGHT_S_HAMMER_TELEPORT);
             return;
         }
@@ -1192,7 +1193,7 @@ struct npc_tirion_fordring_tft : public ScriptedAI
 
     bool OnGossipSelect(Player* /*player*/, uint32 menuId, uint32 gossipListId) override
     {
-        if (me->GetCreatureTemplate()->GossipMenuId == menuId && !gossipListId)
+        if (me->GetGossipMenuId() == menuId && !gossipListId)
         {
             _events.SetPhase(PHASE_INTRO);
             me->RemoveNpcFlag(UNIT_NPC_FLAG_GOSSIP);

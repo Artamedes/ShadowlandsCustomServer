@@ -70,6 +70,19 @@ enum MovementSlot : uint8
     MAX_MOTION_SLOT
 };
 
+enum class MovementWalkRunSpeedSelectionMode
+{
+    Default,
+    ForceRun,
+    ForceWalk
+};
+
+enum class MovementStopReason : uint8
+{
+    Finished,       // Movement finished either by arriving at location or successfully continuing it for requested duration
+    Interrupted
+};
+
 enum RotateDirection : uint8
 {
     ROTATE_DIRECTION_LEFT = 0,
@@ -92,6 +105,7 @@ struct JumpArrivalCastArgs
 {
     uint32 SpellId = 0;
     ObjectGuid Target;
+    Optional<Position> OverridePos;
     std::queue<std::function<void()>> Callbacks;
 };
 

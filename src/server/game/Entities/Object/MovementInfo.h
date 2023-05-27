@@ -63,14 +63,25 @@ struct MovementInfo
 
     struct Inertia
     {
-        Inertia() : lifetime(0) { }
+        Inertia() : id(0), lifetime(0) { }
 
-        ObjectGuid guid;
+        int32 id;
         Position force;
         uint32 lifetime;
     };
 
     Optional<Inertia> inertia;
+    
+    // advflying
+    struct AdvFlying
+    {
+        float forwardVelocity;
+        float upVelocity;
+    };
+
+    Optional<AdvFlying> advFlying;
+
+    Optional<ObjectGuid> standingOnGameObjectGUID;
 
     // jumping
     struct JumpInfo
@@ -89,6 +100,25 @@ struct MovementInfo
 
     // spline
     float splineElevation;
+
+    // @todo move it to unit speed system like - since movement info edited by cmsg packets
+    float advFlyingAirFriction              = 2.0f;
+    float advFlyingMaxVel                   = 65.0f;
+    float advFlyingLiftCoefficient          = 1.0f;
+    float advFlyingDoubleJumpVelMod         = 3.0f;
+    float advFlyingGlideStartMinHeight      = 10.0f;
+    float advFlyingAddImpulseMaxSpeed       = 100.0f;
+    float advFlyingMinBankingRate           = 90.0f;
+    float advFlyingMaxBankingRate           = 140.0f;
+    float advFlyingMinPitchingRateDown      = 180.0f;
+    float advFlyingMaxPitchingRateDown      = 360.0f;
+    float advFlyingMinPitchingRateUp        = 90.0f;
+    float advFlyingMaxPitchingRateUp        = 270.0f;
+    float advFlyingMinTurnVelocityThreshold = 30.0f;
+    float advFlyingMaxTurnVelocityThreshold = 80.0f;
+    float advFlyingSurfaceFriction          = 2.75f;
+    float advFlyingOverMaxDeceleration      = 7.0f;
+    float advFlyingLaunchSpeedCoefficient   = 0.400000005960464477f;
 
     MovementInfo() :
         flags(0), flags2(0), flags3(0), time(0), pitch(0.0f), splineElevation(0.0f)

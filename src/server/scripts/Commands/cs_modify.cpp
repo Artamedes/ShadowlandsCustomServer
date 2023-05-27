@@ -90,6 +90,7 @@ public:
             { "souls",        rbac::RBAC_PERM_COMMAND_MODIFY_POWER,        false, &HandleModifySoulsCommand,         "" },
             { "covenant",     rbac::RBAC_PERM_COMMAND_MODIFY_POWER,        false, &HandleModifyCovenantCommand,      "" },
             { "soulbind",     rbac::RBAC_PERM_COMMAND_MODIFY_POWER,        false, &HandleModifySoulbindCommand,      "" },
+            { "haste",        rbac::RBAC_PERM_COMMAND_MODIFY_POWER,        false, &HandleModifyHasteCommand,         "" },
         };
         static std::vector<ChatCommand> commandTable =
         {
@@ -98,6 +99,24 @@ public:
             { "modify",  rbac::RBAC_PERM_COMMAND_MODIFY,  false, nullptr,                 "", modifyCommandTable },
         };
         return commandTable;
+    }
+
+    static bool HandleModifyHasteCommand(ChatHandler* handler, float haste, Optional<bool> off)
+    {
+        auto player = handler->GetPlayer();
+
+        if (off.value_or(false))
+        {
+            player->Variables.Remove("GMHaste");
+            player->UpdateAllRatings();
+            handler->PSendSysMessage("Reset haste");
+            return true;
+        }
+
+        player->Variables.Set("GMHaste", haste);
+        player->UpdateAllRatings();
+        handler->PSendSysMessage("Updated your haste to %f", haste);
+        return true;
     }
 
     template<typename... Args>
@@ -227,10 +246,8 @@ public:
     }
 
     //Edit Player Faction
-    static bool HandleModifyFactionCommand(ChatHandler* handler, char const* args)
+    static bool HandleModifyFactionCommand(ChatHandler* handler, Optional<uint32> factionid, Optional<uint32> flag, Optional<uint64> npcflag, Optional<uint32> dyflag)
     {
-        char* pfactionid = handler->extractKeyFromLink((char*)args, "Hfaction");
-
         Creature* target = handler->getSelectedCreature();
         if (!target)
         {
@@ -239,56 +256,35 @@ public:
             return false;
         }
 
-        if (!pfactionid)
+        if (!flag)
+            flag = target->m_unitData->Flags;
+
+        if (!npcflag)
+            memcpy(&npcflag.emplace(), target->m_unitData->NpcFlags.begin(), sizeof(uint64));
+
+        if (!dyflag)
+            dyflag = target->m_objectData->DynamicFlags;
+
+        if (!factionid)
         {
-            uint32 factionid = target->GetFaction();
-            uint32 flag      = target->m_unitData->Flags;
-            uint64 npcflag;
-            memcpy(&npcflag, target->m_unitData->NpcFlags.begin(), sizeof(uint64));
-            uint32 dyflag    = target->m_objectData->DynamicFlags;
-            handler->PSendSysMessage(LANG_CURRENT_FACTION, target->GetGUID().ToString().c_str(), factionid, flag, std::to_string(npcflag).c_str(), dyflag);
+            handler->PSendSysMessage(LANG_CURRENT_FACTION, target->GetGUID().ToString().c_str(), *factionid, *flag, std::to_string(*npcflag).c_str(), *dyflag);
             return true;
         }
 
-        uint32 factionid = atoul(pfactionid);
-        uint32 flag;
-
-        char *pflag = strtok(nullptr, " ");
-        if (!pflag)
-            flag = target->m_unitData->Flags;
-        else
-            flag = atoul(pflag);
-
-        char* pnpcflag = strtok(nullptr, " ");
-
-        uint64 npcflag;
-        if (!pnpcflag)
-            memcpy(&npcflag, target->m_unitData->NpcFlags.begin(), sizeof(uint64));
-        else
-            npcflag = atoull(pnpcflag);
-
-        char* pdyflag = strtok(nullptr, " ");
-
-        uint32  dyflag;
-        if (!pdyflag)
-            dyflag = target->m_objectData->DynamicFlags;
-        else
-            dyflag = atoul(pdyflag);
-
-        if (!sFactionTemplateStore.LookupEntry(factionid))
+        if (!sFactionTemplateStore.LookupEntry(*factionid))
         {
-            handler->PSendSysMessage(LANG_WRONG_FACTION, factionid);
+            handler->PSendSysMessage(LANG_WRONG_FACTION, *factionid);
             handler->SetSentErrorMessage(true);
             return false;
         }
 
-        handler->PSendSysMessage(LANG_YOU_CHANGE_FACTION, target->GetGUID().ToString().c_str(), factionid, flag, std::to_string(npcflag).c_str(), dyflag);
+        handler->PSendSysMessage(LANG_YOU_CHANGE_FACTION, target->GetGUID().ToString().c_str(), *factionid, *flag, std::to_string(*npcflag).c_str(), *dyflag);
 
-        target->SetFaction(factionid);
-        target->ReplaceAllUnitFlags(UnitFlags(flag));
-        target->ReplaceAllNpcFlags(NPCFlags(npcflag & 0xFFFFFFFF));
-        target->ReplaceAllNpcFlags2(NPCFlags2(npcflag >> 32));
-        target->ReplaceAllDynamicFlags(dyflag);
+        target->SetFaction(*factionid);
+        target->ReplaceAllUnitFlags(UnitFlags(*flag));
+        target->ReplaceAllNpcFlags(NPCFlags(*npcflag & 0xFFFFFFFF));
+        target->ReplaceAllNpcFlags2(NPCFlags2(*npcflag >> 32));
+        target->ReplaceAllDynamicFlags(*dyflag);
 
         return true;
     }
@@ -399,12 +395,9 @@ public:
         return false;
     }
 
-    static bool CheckModifySpeed(ChatHandler* handler, char const* args, Unit* target, float& speed, float minimumBound, float maximumBound, bool checkInFlight = true)
+    static bool CheckModifySpeed(ChatHandler* handler, float speedCmd, Unit* target, float& speed, float minimumBound, float maximumBound, bool checkInFlight = true)
     {
-        if (!*args)
-            return false;
-
-        speed = (float)atof((char*)args);
+        speed = speedCmd;
 
         if (speed > maximumBound || speed < minimumBound)
         {
@@ -437,28 +430,44 @@ public:
     }
 
     //Edit Player Aspeed
-    static bool HandleModifyASpeedCommand(ChatHandler* handler, char const* args)
+    static bool HandleModifyASpeedCommand(ChatHandler* handler, float speed, Optional<float> reset)
     {
         float allSpeed;
         Player* target = handler->getSelectedPlayerOrSelf();
-        if (CheckModifySpeed(handler, args, target, allSpeed, 0.1f, 50.0f))
+
+        if (reset.has_value() && *reset)
         {
+            if (target->Variables.Exist("ModifySpeed"))
+                target->Variables.Remove("ModifySpeed");
+
+            target->UpdateSpeed(MOVE_WALK);
+            target->UpdateSpeed(MOVE_RUN);
+            target->UpdateSpeed(MOVE_SWIM);
+            target->UpdateSpeed(MOVE_FLIGHT);
+            return true;
+        }
+
+        if (CheckModifySpeed(handler, speed, target, allSpeed, 0.1f, 50.0f))
+        {
+            if (target->Variables.Exist("ModifySpeed"))
+                target->Variables.Remove("ModifySpeed");
             NotifyModification(handler, target, LANG_YOU_CHANGE_ASPEED, LANG_YOURS_ASPEED_CHANGED, allSpeed);
             target->SetSpeedRate(MOVE_WALK, allSpeed);
             target->SetSpeedRate(MOVE_RUN, allSpeed);
             target->SetSpeedRate(MOVE_SWIM, allSpeed);
             target->SetSpeedRate(MOVE_FLIGHT, allSpeed);
+            target->Variables.Set("ModifySpeed", true);
             return true;
         }
         return false;
     }
 
     //Edit Player Speed
-    static bool HandleModifySpeedCommand(ChatHandler* handler, char const* args)
+    static bool HandleModifySpeedCommand(ChatHandler* handler, float speed)
     {
         float Speed;
         Player* target = handler->getSelectedPlayerOrSelf();
-        if (CheckModifySpeed(handler, args, target, Speed, 0.1f, 50.0f))
+        if (CheckModifySpeed(handler, speed, target, Speed, 0.1f, 50.0f))
         {
             NotifyModification(handler, target, LANG_YOU_CHANGE_SPEED, LANG_YOURS_SPEED_CHANGED, Speed);
             target->SetSpeedRate(MOVE_RUN, Speed);
@@ -468,11 +477,11 @@ public:
     }
 
     //Edit Player Swim Speed
-    static bool HandleModifySwimCommand(ChatHandler* handler, char const* args)
+    static bool HandleModifySwimCommand(ChatHandler* handler, float speed)
     {
         float swimSpeed;
         Player* target = handler->getSelectedPlayerOrSelf();
-        if (CheckModifySpeed(handler, args, target, swimSpeed, 0.1f, 50.0f))
+        if (CheckModifySpeed(handler, speed, target, swimSpeed, 0.1f, 50.0f))
         {
             NotifyModification(handler, target, LANG_YOU_CHANGE_SWIM_SPEED, LANG_YOURS_SWIM_SPEED_CHANGED, swimSpeed);
             target->SetSpeedRate(MOVE_SWIM, swimSpeed);
@@ -482,11 +491,11 @@ public:
     }
 
     //Edit Player Backwards Walk Speed
-    static bool HandleModifyBWalkCommand(ChatHandler* handler, char const* args)
+    static bool HandleModifyBWalkCommand(ChatHandler* handler, float speed)
     {
         float backSpeed;
         Player* target = handler->getSelectedPlayerOrSelf();
-        if (CheckModifySpeed(handler, args, target, backSpeed, 0.1f, 50.0f))
+        if (CheckModifySpeed(handler, speed, target, backSpeed, 0.1f, 50.0f))
         {
             NotifyModification(handler, target, LANG_YOU_CHANGE_BACK_SPEED, LANG_YOURS_BACK_SPEED_CHANGED, backSpeed);
             target->SetSpeedRate(MOVE_RUN_BACK, backSpeed);
@@ -496,11 +505,11 @@ public:
     }
 
     //Edit Player Fly
-    static bool HandleModifyFlyCommand(ChatHandler* handler, char const* args)
+    static bool HandleModifyFlyCommand(ChatHandler* handler, float speed)
     {
         float flySpeed;
         Player* target = handler->getSelectedPlayerOrSelf();
-        if (CheckModifySpeed(handler, args, target, flySpeed, 0.1f, 50.0f, false))
+        if (CheckModifySpeed(handler, speed, target, flySpeed, 0.1f, 50.0f, false))
         {
             NotifyModification(handler, target, LANG_YOU_CHANGE_FLY_SPEED, LANG_YOURS_FLY_SPEED_CHANGED, flySpeed);
             target->SetSpeedRate(MOVE_FLIGHT, flySpeed);
@@ -510,36 +519,23 @@ public:
     }
 
     //Edit Player or Creature Scale
-    static bool HandleModifyScaleCommand(ChatHandler* handler, char const* args)
+    static bool HandleModifyScaleCommand(ChatHandler* handler, float speed)
     {
-        float Scale;
+        float scale;
         Unit* target = handler->getSelectedUnit();
-        if (CheckModifySpeed(handler, args, target, Scale, 0.1f, 10.0f, false))
+        if (CheckModifySpeed(handler, speed, target, scale, 0.1f, 10.0f, false))
         {
-            NotifyModification(handler, target, LANG_YOU_CHANGE_SIZE, LANG_YOURS_SIZE_CHANGED, Scale);
-            if (Creature* creatureTarget = target->ToCreature())
-                creatureTarget->SetDisplayId(creatureTarget->GetDisplayId(), Scale);
-            else
-                target->SetObjectScale(Scale);
+            NotifyModification(handler, target, LANG_YOU_CHANGE_SIZE, LANG_YOURS_SIZE_CHANGED, scale);
+            target->SetObjectScale(scale);
             return true;
         }
         return false;
     }
 
     //Enable Player mount
-    static bool HandleModifyMountCommand(ChatHandler* handler, char const* args)
+    static bool HandleModifyMountCommand(ChatHandler* handler, uint32 displayId, float speed)
     {
-        if (!*args)
-            return false;
-
-        char const* mount_cstr = strtok(const_cast<char*>(args), " ");
-        char const* speed_cstr = strtok(nullptr, " ");
-
-        if (!mount_cstr || !speed_cstr)
-            return false;
-
-        uint32 mount = atoul(mount_cstr);
-        if (!sCreatureDisplayInfoStore.HasRecord(mount))
+        if (!sCreatureDisplayInfoStore.HasRecord(displayId))
         {
             handler->SendSysMessage(LANG_NO_MOUNT);
             handler->SetSentErrorMessage(true);
@@ -558,12 +554,11 @@ public:
         if (handler->HasLowerSecurity(target, ObjectGuid::Empty))
             return false;
 
-        float speed;
-        if (!CheckModifySpeed(handler, speed_cstr, target, speed, 0.1f, 50.0f))
+        if (!CheckModifySpeed(handler, speed, target, speed, 0.1f, 50.0f))
             return false;
 
         NotifyModification(handler, target, LANG_YOU_GIVE_MOUNT, LANG_MOUNT_GIVED);
-        target->Mount(mount);
+        target->Mount(displayId);
         target->SetSpeedRate(MOVE_RUN, speed);
         target->SetSpeedRate(MOVE_FLIGHT, speed);
         return true;
@@ -604,7 +599,7 @@ public:
         {
             int64 newmoney = int64(targetMoney) + moneyToAdd;
 
-            TC_LOG_DEBUG("misc", handler->GetTrinityString(LANG_CURRENT_MONEY), std::to_string(targetMoney).c_str(), std::to_string(moneyToAdd).c_str(), std::to_string(newmoney).c_str());
+            TC_LOG_DEBUG("misc", "{}", handler->PGetParseString(LANG_CURRENT_MONEY, std::to_string(targetMoney), std::to_string(moneyToAdd), std::to_string(newmoney)));
             if (newmoney <= 0)
             {
                 NotifyModification(handler, target, LANG_YOU_TAKE_ALL_MONEY, LANG_YOURS_ALL_MONEY_GONE);
@@ -636,7 +631,7 @@ public:
             target->ModifyMoney(moneyToAdd);
         }
 
-        TC_LOG_DEBUG("misc", handler->GetTrinityString(LANG_NEW_MONEY), std::to_string(targetMoney).c_str(), std::to_string(moneyToAdd).c_str(), std::to_string(target->GetMoney()).c_str());
+        TC_LOG_DEBUG("misc", "{}", handler->PGetParseString(LANG_NEW_MONEY, std::to_string(targetMoney), std::to_string(moneyToAdd), std::to_string(target->GetMoney())));
 
         return true;
     }
@@ -795,13 +790,8 @@ public:
     }
 
     //morph creature or player
-    static bool HandleModifyMorphCommand(ChatHandler* handler, char const* args)
+    static bool HandleModifyMorphCommand(ChatHandler* handler, uint32 display_id)
     {
-        if (!*args)
-            return false;
-
-        uint32 display_id = atoul(args);
-
         Unit* target = handler->getSelectedUnit();
         if (!target)
             target = handler->GetSession()->GetPlayer();
@@ -816,22 +806,8 @@ public:
     }
 
     // Toggles a phaseid on a player
-    static bool HandleModifyPhaseCommand(ChatHandler* handler, char const* args)
+    static bool HandleModifyPhaseCommand(ChatHandler* handler, uint32 phaseId, Optional<uint32> visibleMapId)
     {
-        if (!*args)
-            return false;
-
-        char* phaseText = strtok((char*)args, " ");
-        if (!phaseText)
-            return false;
-
-        uint32 phaseId = uint32(strtoul(phaseText, nullptr, 10));
-        uint32 visibleMapId = 0;
-
-        char* visibleMapIdText = strtok(nullptr, " ");
-        if (visibleMapIdText)
-            visibleMapId = uint32(strtoul(visibleMapIdText, nullptr, 10));
-
         if (phaseId && !sPhaseStore.LookupEntry(phaseId))
         {
             handler->SendSysMessage(LANG_PHASE_NOTFOUND);
@@ -843,7 +819,7 @@ public:
 
         if (visibleMapId)
         {
-            MapEntry const* visibleMap = sMapStore.LookupEntry(visibleMapId);
+            MapEntry const* visibleMap = sMapStore.LookupEntry(*visibleMapId);
             if (!visibleMap || visibleMap->ParentMapID != int32(target->GetMapId()))
             {
                 handler->SendSysMessage(LANG_PHASE_NOTFOUND);
@@ -851,10 +827,10 @@ public:
                 return false;
             }
 
-            if (!target->GetPhaseShift().HasVisibleMapId(visibleMapId))
-                PhasingHandler::AddVisibleMapId(target, visibleMapId);
+            if (!target->GetPhaseShift().HasVisibleMapId(*visibleMapId))
+                PhasingHandler::AddVisibleMapId(target, *visibleMapId);
             else
-                PhasingHandler::RemoveVisibleMapId(target, visibleMapId);
+                PhasingHandler::RemoveVisibleMapId(target, *visibleMapId);
         }
 
         if (phaseId)
@@ -1012,7 +988,7 @@ public:
         if (!amount)
             return false;
 
-        target->ModifyCurrency(currencyId, amount, true, true);
+        target->ModifyCurrency(currencyId, amount, CurrencyGainSource::Cheat, CurrencyDestroyReason::Cheat);
         handler->PSendSysMessage("Sent [%s]x%u to %s", currencyType->Name.Str[0], amount, target->GetName().c_str());
 
         return true;
@@ -1097,11 +1073,11 @@ public:
         {
             if (upperCase)
             {
-                c = char(::toupper(c));
+                c = charToUpper(c);
                 upperCase = false;
             }
             else
-                c = char(::tolower(c));
+                c = charToLower(c);
 
             if (c == '_')
             {

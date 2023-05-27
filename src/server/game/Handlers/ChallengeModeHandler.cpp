@@ -45,13 +45,13 @@ void WorldSession::HandleChallengeModeStart(WorldPackets::ChallengeMode::StartRe
     Item* key = _player->GetItemByPos(start.Bag, start.Slot);
     if (!key)
     {
-        TC_LOG_DEBUG("network", "WORLD: HandleChallengeModeStart - item in Bag %u and Slot %u not found.", start.Bag, start.Slot);
+        TC_LOG_DEBUG("network", "WORLD: HandleChallengeModeStart - item in Bag {} and Slot {} not found.", start.Bag, start.Slot);
         return;
     }
 
     if (key->GetTemplate()->GetClass() != ITEM_CLASS_REAGENT || key->GetTemplate()->GetSubClass() != ITEM_SUBCLASS_KEYSTONE)
     {
-        TC_LOG_DEBUG("network", "WORLD: HandleChallengeModeStart - Tried to start a challenge with item %s which have class %u and subclass %u.",
+        TC_LOG_DEBUG("network", "WORLD: HandleChallengeModeStart - Tried to start a challenge with item %s which have class {} and subclass {}.",
             key->GetGUID().ToString().c_str(),
             key->GetTemplate()->GetClass(),
             key->GetTemplate()->GetSubClass());
@@ -64,7 +64,7 @@ void WorldSession::HandleChallengeModeStart(WorldPackets::ChallengeMode::StartRe
     MapChallengeModeEntry const* entry = sMapChallengeModeStore.LookupEntry(challengeModeId);
     if (!entry || !challengeModeLevel || entry->MapID != _player->GetMapId())
     {
-        TC_LOG_DEBUG("network", "WORLD: HandleChallengeModeStart - Tried to start a challenge with wrong challengeModeId %u and level %u.", challengeModeId, challengeModeLevel);
+        TC_LOG_DEBUG("network", "WORLD: HandleChallengeModeStart - Tried to start a challenge with wrong challengeModeId {} and level {}.", challengeModeId, challengeModeLevel);
         return;
     }
 

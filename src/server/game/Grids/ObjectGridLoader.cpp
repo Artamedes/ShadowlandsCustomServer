@@ -111,7 +111,7 @@ void LoadHelper(CellGuidSet const& guid_set, CellCoord& cell, GridRefManager<T>&
             continue;
 
         T* obj = new T;
-        //TC_LOG_INFO("misc", "DEBUG: LoadHelper from table: %s for (guid: " UI64FMTD ") Loading", table, guid);
+        //TC_LOG_INFO("misc", "DEBUG: LoadHelper from table: {} for (guid: {}) Loading", table, guid);
         if (!obj->LoadFromDB(guid, map, false, phaseOwner.has_value() /*allowDuplicate*/))
         {
             delete obj;
@@ -131,15 +131,17 @@ void LoadHelper(CellGuidSet const& guid_set, CellCoord& cell, GridRefManager<T>&
 void ObjectGridLoader::Visit(GameObjectMapType& m)
 {
     CellCoord cellCoord = i_cell.GetCellCoord();
-    CellObjectGuids const& cell_guids = sObjectMgr->GetCellObjectGuids(i_map->GetId(), i_map->GetDifficultyID(), cellCoord.GetId());
-    LoadHelper(cell_guids.gameobjects, cellCoord, m, i_gameObjects, i_map);
+    CellObjectGuids const* cell_guids = sObjectMgr->GetCellObjectGuids(i_map->GetId(), i_map->GetDifficultyID(), cellCoord.GetId());
+    if (cell_guids)
+        LoadHelper(cell_guids->gameobjects, cellCoord, m, i_gameObjects, i_map);
 }
 
 void ObjectGridLoader::Visit(CreatureMapType &m)
 {
     CellCoord cellCoord = i_cell.GetCellCoord();
-    CellObjectGuids const& cell_guids = sObjectMgr->GetCellObjectGuids(i_map->GetId(), i_map->GetDifficultyID(), cellCoord.GetId());
-    LoadHelper(cell_guids.creatures, cellCoord, m, i_creatures, i_map);
+    CellObjectGuids const* cell_guids = sObjectMgr->GetCellObjectGuids(i_map->GetId(), i_map->GetDifficultyID(), cellCoord.GetId());
+    if (cell_guids)
+        LoadHelper(cell_guids->creatures, cellCoord, m, i_creatures, i_map);
 }
 
 void ObjectGridLoader::Visit(AreaTriggerMapType& m)
@@ -194,7 +196,7 @@ void ObjectGridLoader::LoadN(void)
             }
         }
     }
-    TC_LOG_DEBUG("maps", "%u GameObjects, %u Creatures, %u AreaTrriggers, and %u Corpses/Bones loaded for grid %u on map %u",
+    TC_LOG_DEBUG("maps", "{} GameObjects, {} Creatures, {} AreaTrriggers, and {} Corpses/Bones loaded for grid {} on map {}",
         i_gameObjects, i_creatures, i_areaTriggers, i_corpses, i_grid.GetGridId(), i_map->GetId());
 }
 

@@ -54,6 +54,8 @@ struct GtBaseMPEntry
     float DeathKnight = 0.0f;
     float Monk = 0.0f;
     float DemonHunter = 0.0f;
+    float Evoker = 0.0f;
+    float Adventurer = 0.0f;
 };
 
 struct GtChallengeModeDamage
@@ -145,6 +147,8 @@ struct GtSpellScalingEntry
     float DeathKnight = 0.0f;
     float Monk = 0.0f;
     float DemonHunter = 0.0f;
+    float Evoker = 0.0f;
+    float Adventurer = 0.0f;
     float Item = 0.0f;
     float Consumable = 0.0f;
     float Gem1 = 0.0f;
@@ -153,6 +157,7 @@ struct GtSpellScalingEntry
     float Health = 0.0f;
     float DamageReplaceStat = 0.0f;
     float DamageSecondary = 0.0f;
+    float ManaConsumable = 0.0f;
 };
 
 struct GtStaminaMultByILvl
@@ -239,6 +244,10 @@ inline float GetGameTableColumnForClass(T const* row, int32 class_)
             return row->Druid;
         case CLASS_DEMON_HUNTER:
             return row->DemonHunter;
+        case CLASS_EVOKER:
+            return row->Evoker;
+        case CLASS_ADVENTURER:
+            return row->Adventurer;
         default:
             break;
     }
@@ -274,6 +283,10 @@ inline float GetSpellScalingColumnForClass(GtSpellScalingEntry const* row, int32
             return row->Druid;
         case CLASS_DEMON_HUNTER:
             return row->DemonHunter;
+        case CLASS_EVOKER:
+            return row->Evoker;
+        case CLASS_ADVENTURER:
+            return row->Adventurer;
         case -1:
         case -7:
             return row->Item;
@@ -291,6 +304,8 @@ inline float GetSpellScalingColumnForClass(GtSpellScalingEntry const* row, int32
             return row->DamageReplaceStat;
         case -9:
             return row->DamageSecondary;
+        case -10:
+            return row->ManaConsumable;
         default:
             break;
     }

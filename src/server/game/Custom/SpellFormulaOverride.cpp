@@ -69,7 +69,7 @@ void SpellFormulaOverride::AddEntryToDB(uint32 SpellId, SpellEffIndex EffectInde
 
 void SpellFormulaOverride::DeleteEntryFromDB(uint32 SpellId, SpellEffIndex EffectIndex)
 {
-    WorldDatabase.PExecute("DELETE FROM z_spell_fixes WHERE SpellId = %u AND EffectIndex = %u",
+    WorldDatabase.PExecute("DELETE FROM z_spell_fixes WHERE SpellId = {} AND EffectIndex = {}",
         SpellId,
         static_cast<uint32>(EffectIndex));
 }
@@ -155,7 +155,7 @@ void SpellFormulaOverride::DisplaySpellMap(Player* player, uint32 lowerBounds, u
 
                         ss << spellInfo->SpellName->Str[0] << " " << spellInfo->Id;
 
-                        AddGossipItemFor(player, GossipOptionIcon::None, ss.str(), 0, 0, [player, spellInfo](std::string /*callback*/)
+                        AddGossipItemFor(player, GossipOptionNpc::None, ss.str(), 0, 0, [player, spellInfo](std::string_view /*callback*/)
                         {
                             sSpellFormulaOverride->CreateMenuForSpell(player, spellInfo);
                         });
@@ -192,7 +192,7 @@ void SpellFormulaOverride::DisplaySpellMap(Player* player, uint32 lowerBounds, u
 
                                 ss << spellInfo2->SpellName->Str[0] << " " << spellInfo2->Id << " (Trigger)";
 
-                                AddGossipItemFor(player, GossipOptionIcon::None, ss.str(), 0, 0, [player, spellInfo2](std::string /*callback*/)
+                                AddGossipItemFor(player, GossipOptionNpc::None, ss.str(), 0, 0, [player, spellInfo2](std::string_view /*callback*/)
                                 {
                                     sSpellFormulaOverride->CreateMenuForSpell(player, spellInfo2);
                                 });
@@ -209,7 +209,7 @@ void SpellFormulaOverride::DisplaySpellMap(Player* player, uint32 lowerBounds, u
 
     if (lowerBounds > 0)
     {
-        AddGossipItemFor(player, GossipOptionIcon::None, "<-----", 0, 0, [player, lowerBounds, upperBounds](std::string /*callback*/)
+        AddGossipItemFor(player, GossipOptionNpc::None, "<-----", 0, 0, [player, lowerBounds, upperBounds](std::string_view /*callback*/)
         {
             sSpellFormulaOverride->CreateMenu(player, lowerBounds - 20, upperBounds - 20);
         });
@@ -217,7 +217,7 @@ void SpellFormulaOverride::DisplaySpellMap(Player* player, uint32 lowerBounds, u
 
     if (count > upperBounds)
     {
-        AddGossipItemFor(player, GossipOptionIcon::None, "----->", 0, 0, [player, lowerBounds, upperBounds](std::string /*callback*/)
+        AddGossipItemFor(player, GossipOptionNpc::None, "----->", 0, 0, [player, lowerBounds, upperBounds](std::string_view /*callback*/)
         {
             sSpellFormulaOverride->CreateMenu(player, lowerBounds + 20, upperBounds + 20);
         });
@@ -227,7 +227,7 @@ void SpellFormulaOverride::DisplaySpellMap(Player* player, uint32 lowerBounds, u
 void SpellFormulaOverride::CreateMenu(Player* player, uint32 lowerBounds /*= 0*/, uint32 upperBounds /*= 20*/)
 {
     ClearGossipMenuFor(player);
-    AddGossipItemFor(player, GossipOptionIcon::None, "Input SpellId", 0, 0, "", 0, true, [player](std::string callback)
+    AddGossipItemFor(player, GossipOptionNpc::None, "Input SpellId", 0, 0, "", 0, true, [player](std::string_view callback)
     {
         sSpellFormulaOverride->HandleInputSpellId(player, callback);
     });
@@ -239,7 +239,7 @@ void SpellFormulaOverride::CreateMenuForSpell(Player* player, SpellInfo const* s
 {
     ClearGossipMenuFor(player);
 
-    AddGossipItemFor(player, GossipOptionIcon::None, "Input SpellId", 0, 0, "", 0, true, [player](std::string callback)
+    AddGossipItemFor(player, GossipOptionNpc::None, "Input SpellId", 0, 0, "", 0, true, [player](std::string_view callback)
     {
         sSpellFormulaOverride->HandleInputSpellId(player, callback);
     });
@@ -252,7 +252,7 @@ void SpellFormulaOverride::CreateMenuForSpell(Player* player, SpellInfo const* s
 
     ss << spellInfo->SpellName->Str[0] << " |cffFF0000" << spellInfo->Id;
 
-    AddGossipItemFor(player, GossipOptionIcon::None, ss.str(), 0, 0, [player, spellInfo](std::string /*callback*/)
+    AddGossipItemFor(player, GossipOptionNpc::None, ss.str(), 0, 0, [player, spellInfo](std::string_view /*callback*/)
     {
         sSpellFormulaOverride->CreateMenuForSpell(player, spellInfo);
     });
@@ -282,7 +282,7 @@ void SpellFormulaOverride::CreateMenuForSpell(Player* player, SpellInfo const* s
 
     if (hasScripts)
     {
-        AddGossipItemFor(player, GossipOptionIcon::None, ss.str(), 0, 0, [player, spellInfo](std::string /*callback*/)
+        AddGossipItemFor(player, GossipOptionNpc::None, ss.str(), 0, 0, [player, spellInfo](std::string_view /*callback*/)
         {
             sSpellFormulaOverride->CreateMenuForSpell(player, spellInfo);
         });
@@ -302,7 +302,7 @@ void SpellFormulaOverride::CreateMenuForSpell(Player* player, SpellInfo const* s
             else
                 ss << "[" << EnumUtils::ToString(eff.Effect).Title << "] ";
 
-            AddGossipItemFor(player, GossipOptionIcon::None, ss.str(), 0, 0, [player, spellInfo, eff](std::string /*callback*/)
+            AddGossipItemFor(player, GossipOptionNpc::None, ss.str(), 0, 0, [player, spellInfo, eff](std::string_view /*callback*/)
             {
                 sSpellFormulaOverride->CreateMenuForEffect(player, spellInfo->GetEffectPtr(eff.EffectIndex), spellInfo);
             });
@@ -312,7 +312,7 @@ void SpellFormulaOverride::CreateMenuForSpell(Player* player, SpellInfo const* s
         }
     }
 
-    AddGossipItemFor(player, GossipOptionIcon::None, "Back", 0, 0, [player](std::string /*callback*/)
+    AddGossipItemFor(player, GossipOptionNpc::None, "Back", 0, 0, [player](std::string_view /*callback*/)
     {
         sSpellFormulaOverride->CreateMenu(player);
     });
@@ -334,7 +334,7 @@ void SpellFormulaOverride::CreateMenuForEffect(Player* player, SpellEffectInfo c
 
     auto spellId = spellInfo->Id;
 
-    AddGossipItemFor(player, GossipOptionIcon::None, ss.str(), 0, 0, [player, eff, spellInfo](std::string /*callback*/)
+    AddGossipItemFor(player, GossipOptionNpc::None, ss.str(), 0, 0, [player, eff, spellInfo](std::string_view /*callback*/)
     {
         sSpellFormulaOverride->CreateMenuForEffect(player, eff, spellInfo);
     });
@@ -349,7 +349,7 @@ void SpellFormulaOverride::CreateMenuForEffect(Player* player, SpellEffectInfo c
     else
         ss << "[" << EnumUtils::ToString(eff->Effect).Title << "] ";
 
-    AddGossipItemFor(player, GossipOptionIcon::None, ss.str(), 0, 0, [player, eff, spellInfo](std::string /*callback*/)
+    AddGossipItemFor(player, GossipOptionNpc::None, ss.str(), 0, 0, [player, eff, spellInfo](std::string_view /*callback*/)
     {
         sSpellFormulaOverride->CreateMenuForEffect(player, eff, spellInfo);
     });
@@ -358,9 +358,9 @@ void SpellFormulaOverride::CreateMenuForEffect(Player* player, SpellEffectInfo c
     ss.str("");
     ss << "BonusCoefficient: " << eff->BonusCoefficient;
 
-    AddGossipItemFor(player, GossipOptionIcon::None, ss.str(), 0, 0, "", 0, true, [player, eff, spellInfo](std::string callback)
+    AddGossipItemFor(player, GossipOptionNpc::None, ss.str(), 0, 0, "", 0, true, [player, eff, spellInfo](std::string_view callback)
     {
-        const_cast<SpellEffectInfo*>(eff)->BonusCoefficient = std::atof(callback.c_str());
+        const_cast<SpellEffectInfo*>(eff)->BonusCoefficient = std::atof(callback.data());
         sSpellFormulaOverride->AddEntryToDB(spellInfo->Id, eff->EffectIndex, player);
         sSpellFormulaOverride->CreateMenuForEffect(player, eff, spellInfo);
     });
@@ -369,9 +369,9 @@ void SpellFormulaOverride::CreateMenuForEffect(Player* player, SpellEffectInfo c
     ss.str("");
     ss << "BonusCoefficientFromAP: " << eff->BonusCoefficientFromAP;
 
-    AddGossipItemFor(player, GossipOptionIcon::None, ss.str(), 0, 0, "", 0, true, [player, eff, spellInfo](std::string callback)
+    AddGossipItemFor(player, GossipOptionNpc::None, ss.str(), 0, 0, "", 0, true, [player, eff, spellInfo](std::string_view callback)
     {
-        const_cast<SpellEffectInfo*>(eff)->BonusCoefficientFromAP = std::atof(callback.c_str());
+        const_cast<SpellEffectInfo*>(eff)->BonusCoefficientFromAP = std::atof(callback.data());
         sSpellFormulaOverride->AddEntryToDB(spellInfo->Id, eff->EffectIndex, player);
         sSpellFormulaOverride->CreateMenuForEffect(player, eff, spellInfo);
     });
@@ -380,27 +380,27 @@ void SpellFormulaOverride::CreateMenuForEffect(Player* player, SpellEffectInfo c
     ss.str("");
     ss << "PvpMultiplierMod: " << eff->PvpMultiplierMod;
 
-    AddGossipItemFor(player, GossipOptionIcon::None, ss.str(), 0, 0, "", 0, true, [player, eff, spellInfo](std::string callback)
+    AddGossipItemFor(player, GossipOptionNpc::None, ss.str(), 0, 0, "", 0, true, [player, eff, spellInfo](std::string_view callback)
     {
-        const_cast<SpellEffectInfo*>(eff)->PvpMultiplierMod = std::atof(callback.c_str());
+        const_cast<SpellEffectInfo*>(eff)->PvpMultiplierMod = std::atof(callback.data());
         sSpellFormulaOverride->AddEntryToDB(spellInfo->Id, eff->EffectIndex, player);
         sSpellFormulaOverride->CreateMenuForEffect(player, eff, spellInfo);
     });
 
-    AddGossipItemFor(player, GossipOptionIcon::None, "Back", 0, 0, [player, spellInfo](std::string /*callback*/)
+    AddGossipItemFor(player, GossipOptionNpc::None, "Back", 0, 0, [player, spellInfo](std::string_view /*callback*/)
     {
         sSpellFormulaOverride->CreateMenuForSpell(player, spellInfo);
     });
     SendGossipMenuFor(player, 1, player);
 }
 
-void SpellFormulaOverride::HandleInputSpellId(Player* player, std::string callback)
+void SpellFormulaOverride::HandleInputSpellId(Player* player, std::string_view callback)
 {
-    uint32 spellId = std::atoi(callback.c_str());
+    uint32 spellId = std::atoi(callback.data());
     auto spellInfo = sSpellMgr->GetSpellInfo(spellId);
     if (!spellInfo)
     {
-        ChatHandler(player).PSendSysMessage("%u not found!", spellId);
+        ChatHandler(player).PSendSysMessage("{} not found!", spellId);
         CreateMenu(player);
         return;
     }

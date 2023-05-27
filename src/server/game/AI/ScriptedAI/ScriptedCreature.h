@@ -254,6 +254,8 @@ class TC_GAME_API BossAI : public ScriptedAI
 
         bool CanAIAttack(Unit const* target) const override;
 
+        uint32 GetBossId() const { return _bossId; }
+
     protected:
         void _InitializeAI();
         void _Reset();
@@ -304,6 +306,11 @@ inline Creature* GetClosestCreatureWithEntry(WorldObject* source, uint32 entry, 
     return source->FindNearestCreature(entry, maxSearchRange, alive);
 }
 
+inline Creature* GetClosestCreatureWithOptions(WorldObject* source, float maxSearchRange, FindCreatureOptions const& options)
+{
+    return source->FindNearestCreatureWithOptions(maxSearchRange, options);
+}
+
 inline GameObject* GetClosestGameObjectWithEntry(WorldObject* source, uint32 entry, float maxSearchRange, bool spawnedOnly = true)
 {
     return source->FindNearestGameObject(entry, maxSearchRange, spawnedOnly);
@@ -313,6 +320,12 @@ template <typename Container>
 inline void GetCreatureListWithEntryInGrid(Container& container, WorldObject* source, uint32 entry, float maxSearchRange)
 {
     source->GetCreatureListWithEntryInGrid(container, entry, maxSearchRange);
+}
+
+template <typename Container>
+inline void GetCreatureListWithOptionsInGrid(Container& container, WorldObject* source, float maxSearchRange, FindCreatureOptions const& options)
+{
+    source->GetCreatureListWithOptionsInGrid(container, maxSearchRange, options);
 }
 
 template <typename Container>

@@ -312,7 +312,7 @@ namespace Instances { namespace Bloodmaul
                         case eEvents::EventCheckVictimDistance:
                         {
                             if (me->GetVictim() && me->GetVictim()->GetDistance(me) > 50.0f)
-                                EnterEvadeMode(EVADE_REASON_BOUNDARY);
+                                EnterEvadeMode(EvadeReason::Boundary);
 
                             m_Events.ScheduleEvent(eEvents::EventCheckVictimDistance, 2s);
                             break;

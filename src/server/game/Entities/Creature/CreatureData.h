@@ -20,6 +20,7 @@
 
 #include "Common.h"
 #include "DBCEnums.h"
+#include "EnumFlag.h"
 #include "Optional.h"
 #include "SharedDefines.h"
 #include "SpawnData.h"
@@ -54,7 +55,7 @@ enum CreatureStaticFlags
     CREATURE_STATIC_FLAG_COMBAT_PING                       = 0x00020000,
     CREATURE_STATIC_FLAG_AQUATIC                           = 0x00040000, // aka Water Only, creature_template_movement.Ground = 0
     CREATURE_STATIC_FLAG_AMPHIBIOUS                        = 0x00080000, // creature_template_movement.Swim = 1
-    CREATURE_STATIC_FLAG_NO_MELEE_FLEE                     = 0x00100000, // Prevents melee(does not prevent chasing, does not make creature passive). Not sure what 'Flee' means but another flag is named NO_MELEE_APPROACH
+    CREATURE_STATIC_FLAG_NO_MELEE                          = 0x00100000, // "No Melee (Flee)" Prevents melee(does not prevent chasing, does not make creature passive). Not sure what 'Flee' means but another flag is named NO_MELEE_APPROACH
     CREATURE_STATIC_FLAG_VISIBLE_TO_GHOSTS                 = 0x00200000, // CREATURE_TYPE_FLAG_VISIBLE_TO_GHOSTS
     CREATURE_STATIC_FLAG_PVP_ENABLING                      = 0x00400000, // Old UNIT_FLAG_PVP_ENABLING, now UNIT_BYTES_2_OFFSET_PVP_FLAG from UNIT_FIELD_BYTES_2
     CREATURE_STATIC_FLAG_DO_NOT_PLAY_WOUND_ANIM            = 0x00800000, // CREATURE_TYPE_FLAG_DO_NOT_PLAY_WOUND_ANIM
@@ -67,6 +68,8 @@ enum CreatureStaticFlags
     CREATURE_STATIC_FLAG_MORE_AUDIBLE                      = 0x40000000, // CREATURE_TYPE_FLAG_MORE_AUDIBLE
     CREATURE_STATIC_FLAG_LARGE_AOI                         = 0x80000000  // UnitFlags2 0x200000
 };
+
+DEFINE_ENUM_FLAG(CreatureStaticFlags);
 
 enum CreatureStaticFlags2
 {
@@ -87,7 +90,7 @@ enum CreatureStaticFlags2
     CREATURE_STATIC_FLAG_2_SKIN_WITH_HERBALISM             = 0x00004000, // CREATURE_TYPE_FLAG_SKIN_WITH_HERBALISM
     CREATURE_STATIC_FLAG_2_SKIN_WITH_MINING                = 0x00008000, // CREATURE_TYPE_FLAG_SKIN_WITH_MINING
     CREATURE_STATIC_FLAG_2_ALERT_CONTENT_TEAM_ON_DEATH     = 0x00010000,
-    CREATURE_STATIC_FLAG_2_ALERT_CONTENT_TEAM_AT_90PTC_HP  = 0x00020000,
+    CREATURE_STATIC_FLAG_2_ALERT_CONTENT_TEAM_AT_90_PCT_HP = 0x00020000,
     CREATURE_STATIC_FLAG_2_ALLOW_MOUNTED_COMBAT            = 0x00040000, // CREATURE_TYPE_FLAG_ALLOW_MOUNTED_COMBAT
     CREATURE_STATIC_FLAG_2_PVP_ENABLING_OOC                = 0x00080000,
     CREATURE_STATIC_FLAG_2_NO_DEATH_MESSAGE                = 0x00100000, // CREATURE_TYPE_FLAG_NO_DEATH_MESSAGE
@@ -103,6 +106,8 @@ enum CreatureStaticFlags2
     CREATURE_STATIC_FLAG_2_NO_SKILL_GAINS                  = 0x40000000, // CREATURE_FLAG_EXTRA_NO_SKILL_GAINS
     CREATURE_STATIC_FLAG_2_NO_PET_BAR                      = 0x80000000  // CREATURE_TYPE_FLAG_NO_PET_BAR
 };
+
+DEFINE_ENUM_FLAG(CreatureStaticFlags2);
 
 enum CreatureStaticFlags3
 {
@@ -140,6 +145,8 @@ enum CreatureStaticFlags3
     CREATURE_STATIC_FLAG_3_AI_CAN_AUTO_LAND_IN_COMBAT     = 0x80000000
 };
 
+DEFINE_ENUM_FLAG(CreatureStaticFlags3);
+
 enum CreatureStaticFlags4
 {
     CREATURE_STATIC_FLAG_4_NO_BIRTH_ANIM                       = 0x00000001, // SMSG_UPDATE_OBJECT's "NoBirthAnim"
@@ -176,84 +183,149 @@ enum CreatureStaticFlags4
     CREATURE_STATIC_FLAG_4_QUEST_BOSS                          = 0x80000000  // CREATURE_TYPE_FLAG_QUEST_BOSS
 };
 
-enum CreatureDifficultyFlags5
+DEFINE_ENUM_FLAG(CreatureStaticFlags4);
+
+enum CreatureStaticFlags5
 {
-    CREATURE_DIFFICULTYFLAGS_5_UNTARGETABLE_BY_CLIENT       = 0x00000001, // UnitFlags2 0x4000000 UNIT_FLAG2_UNTARGETABLE_BY_CLIENT
-    CREATURE_DIFFICULTYFLAGS_5_UNK1                         = 0x00000002,
-    CREATURE_DIFFICULTYFLAGS_5_UNINTERACTIBLE_IF_HOSTILE    = 0x00000004, // UnitFlags2 0x10000000
-    CREATURE_DIFFICULTYFLAGS_5_UNK2                         = 0x00000008,
-    CREATURE_DIFFICULTYFLAGS_5_UNK3                         = 0x00000010,
-    CREATURE_DIFFICULTYFLAGS_5_UNK4                         = 0x00000020,
-    CREATURE_DIFFICULTYFLAGS_5_UNK5                         = 0x00000040,
-    CREATURE_DIFFICULTYFLAGS_5_UNK6                         = 0x00000080,
-    CREATURE_DIFFICULTYFLAGS_5_INTERACT_WHILE_HOSTILE       = 0x00000100, // UnitFlags2 0x4000 UNIT_FLAG2_INTERACT_WHILE_HOSTILE
-    CREATURE_DIFFICULTYFLAGS_5_UNK7                         = 0x00000200,
-    CREATURE_DIFFICULTYFLAGS_5_TFLAG2_UNK1                  = 0x00000400, // CREATURE_TYPEFLAGS_2_UNK1
-    CREATURE_DIFFICULTYFLAGS_5_TFLAG2_UNK2                  = 0x00000800, // CREATURE_TYPEFLAGS_2_UNK2
-    CREATURE_DIFFICULTYFLAGS_5_TFLAG2_UNK3                  = 0x00001000, // CREATURE_TYPEFLAGS_2_UNK3
-    CREATURE_DIFFICULTYFLAGS_5_SUPPRESS_HIGHLIGHT_WHEN_TARGETED_OR_MOUSED_OVER = 0x00002000, // UnitFlags2 0x80000 141
-    CREATURE_DIFFICULTYFLAGS_5_UNK8                         = 0x00004000,
-    CREATURE_DIFFICULTYFLAGS_5_UNK9                         = 0x00008000,
-    CREATURE_DIFFICULTYFLAGS_5_UNK10                        = 0x00010000,
-    CREATURE_DIFFICULTYFLAGS_5_UNK11                        = 0x00020000,
-    CREATURE_DIFFICULTYFLAGS_5_UNK12                        = 0x00040000,
-    CREATURE_DIFFICULTYFLAGS_5_UNK13                        = 0x00080000,
-    CREATURE_DIFFICULTYFLAGS_5_TFLAG2_UNK4                  = 0x00100000, // CREATURE_TYPEFLAGS_2_UNK4
-    CREATURE_DIFFICULTYFLAGS_5_UNK14                        = 0x00200000,
-    CREATURE_DIFFICULTYFLAGS_5_UNK15                        = 0x00400000,
-    CREATURE_DIFFICULTYFLAGS_5_TFLAG2_UNK5                  = 0x00800000, // CREATURE_TYPEFLAGS_2_UNK5
-    CREATURE_DIFFICULTYFLAGS_5_UNK16                        = 0x01000000,
-    CREATURE_DIFFICULTYFLAGS_5_UNK17                        = 0x02000000,
-    CREATURE_DIFFICULTYFLAGS_5_UNK18                        = 0x04000000,
-    CREATURE_DIFFICULTYFLAGS_5_UNK19                        = 0x08000000,
-    CREATURE_DIFFICULTYFLAGS_5_UNK20                        = 0x10000000,
-    CREATURE_DIFFICULTYFLAGS_5_UNK21                        = 0x20000000,
-    CREATURE_DIFFICULTYFLAGS_5_TFLAG2_UNK6                  = 0x40000000, // CREATURE_TYPEFLAGS_2_UNK6
-    CREATURE_DIFFICULTYFLAGS_5_UNK22                        = 0x80000000
+    CREATURE_STATIC_FLAG_5_UNTARGETABLE_BY_CLIENT              = 0x00000001, // UnitFlags2 0x4000000 UNIT_FLAG2_UNTARGETABLE_BY_CLIENT
+    CREATURE_STATIC_FLAG_5_FORCE_SELF_MOUNTING                 = 0x00000002,
+    CREATURE_STATIC_FLAG_5_UNINTERACTIBLE_IF_HOSTILE           = 0x00000004, // UnitFlags2 0x10000000
+    CREATURE_STATIC_FLAG_5_DISABLES_XP_AWARD                   = 0x00000008,
+    CREATURE_STATIC_FLAG_5_DISABLE_AI_PREDICTION               = 0x00000010,
+    CREATURE_STATIC_FLAG_5_NO_LEAVECOMBAT_STATE_RESTORE        = 0x00000020,
+    CREATURE_STATIC_FLAG_5_BYPASS_INTERACT_INTERRUPTS          = 0x00000040,
+    CREATURE_STATIC_FLAG_5_240_DEGREE_BACK_ARC                 = 0x00000080,
+    CREATURE_STATIC_FLAG_5_INTERACT_WHILE_HOSTILE              = 0x00000100, // UnitFlags2 0x4000 UNIT_FLAG2_INTERACT_WHILE_HOSTILE
+    CREATURE_STATIC_FLAG_5_DONT_DISMISS_ON_FLYING_MOUNT        = 0x00000200,
+    CREATURE_STATIC_FLAG_5_PREDICTIVE_POWER_REGEN              = 0x00000400, // CREATURE_TYPEFLAGS_2_UNK1
+    CREATURE_STATIC_FLAG_5_HIDE_LEVEL_INFO_IN_TOOLTIP          = 0x00000800, // CREATURE_TYPEFLAGS_2_UNK2
+    CREATURE_STATIC_FLAG_5_HIDE_HEALTH_BAR_UNDER_TOOLTIP       = 0x00001000, // CREATURE_TYPEFLAGS_2_UNK3
+    CREATURE_STATIC_FLAG_5_SUPPRESS_HIGHLIGHT_WHEN_TARGETED_OR_MOUSED_OVER = 0x00002000, // UnitFlags2 0x80000
+    CREATURE_STATIC_FLAG_5_AI_PREFER_PATHABLE_TARGETS          = 0x00004000,
+    CREATURE_STATIC_FLAG_5_FREQUENT_AREA_TRIGGER_CHECKS        = 0x00008000,
+    CREATURE_STATIC_FLAG_5_ASSIGN_KILL_CREDIT_TO_ENCOUNTER_LIST= 0x00010000,
+    CREATURE_STATIC_FLAG_5_NEVER_EVADE                         = 0x00020000,
+    CREATURE_STATIC_FLAG_5_AI_CANT_PATH_ON_STEEP_SLOPES        = 0x00040000,
+    CREATURE_STATIC_FLAG_5_AI_IGNORE_LOS_TO_MELEE_TARGET       = 0x00080000,
+    CREATURE_STATIC_FLAG_5_NO_TEXT_IN_CHAT_BUBBLE              = 0x00100000, // "Never display emote or chat text in a chat bubble", CREATURE_TYPEFLAGS_2_UNK4
+    CREATURE_STATIC_FLAG_5_CLOSE_IN_ON_UNPATHABLE_TARGET       = 0x00200000, // "AI Pets close in on unpathable target"
+    CREATURE_STATIC_FLAG_5_DONT_GO_BEHIND_ME                   = 0x00400000, // "Pet/Guardian AI Don't Go Behind Me (use on target)"
+    CREATURE_STATIC_FLAG_5_NO_DEATH_THUD                       = 0x00800000, // CREATURE_TYPEFLAGS_2_UNK5
+    CREATURE_STATIC_FLAG_5_CLIENT_LOCAL_CREATURE               = 0x01000000,
+    CREATURE_STATIC_FLAG_5_CAN_DROP_LOOT_WHILE_IN_A_CHALLENGE_MODE_INSTANCE = 0x02000000,
+    CREATURE_STATIC_FLAG_5_HAS_SAFE_LOCATION                   = 0x04000000,
+    CREATURE_STATIC_FLAG_5_NO_HEALTH_REGEN                     = 0x08000000,
+    CREATURE_STATIC_FLAG_5_NO_POWER_REGEN                      = 0x10000000,
+    CREATURE_STATIC_FLAG_5_NO_PET_UNIT_FRAME                   = 0x20000000,
+    CREATURE_STATIC_FLAG_5_NO_INTERACT_ON_LEFT_CLICK           = 0x40000000, // CREATURE_TYPEFLAGS_2_UNK6
+    CREATURE_STATIC_FLAG_5_GIVE_CRITERIA_KILL_CREDIT_WHEN_CHARMED = 0x80000000
 };
 
-enum CreatureDifficultyFlags6
+DEFINE_ENUM_FLAG(CreatureStaticFlags5);
+
+enum CreatureStaticFlags6
 {
-    CREATURE_DIFFICULTYFLAGS_6_UNK1         = 0x00000001,
-    CREATURE_DIFFICULTYFLAGS_6_UNK2         = 0x00000002,
-    CREATURE_DIFFICULTYFLAGS_6_UNK3         = 0x00000004,
-    CREATURE_DIFFICULTYFLAGS_6_UNK4         = 0x00000008,
-    CREATURE_DIFFICULTYFLAGS_6_UNK5         = 0x00000010,
-    CREATURE_DIFFICULTYFLAGS_6_UNK6         = 0x00000020,
-    CREATURE_DIFFICULTYFLAGS_6_UNK7         = 0x00000040,
-    CREATURE_DIFFICULTYFLAGS_6_TFLAG2_UNK7  = 0x00000080,
-    CREATURE_DIFFICULTYFLAGS_6_UNK8         = 0x00000100,
-    CREATURE_DIFFICULTYFLAGS_6_UNK9         = 0x00000200,
-    CREATURE_DIFFICULTYFLAGS_6_UNK10        = 0x00000400,
-    CREATURE_DIFFICULTYFLAGS_6_UNK11        = 0x00000800,
-    CREATURE_DIFFICULTYFLAGS_6_UNK12        = 0x00001000,
-    CREATURE_DIFFICULTYFLAGS_6_UNK13        = 0x00002000,
-    CREATURE_DIFFICULTYFLAGS_6_UNK14        = 0x00004000,
-    CREATURE_DIFFICULTYFLAGS_6_UNK15        = 0x00008000,
-    CREATURE_DIFFICULTYFLAGS_6_UNK16        = 0x00010000,
-    CREATURE_DIFFICULTYFLAGS_6_UNK17        = 0x00020000,
-    CREATURE_DIFFICULTYFLAGS_6_UNK18        = 0x00040000,
-    CREATURE_DIFFICULTYFLAGS_6_UNK19        = 0x00080000,
-    CREATURE_DIFFICULTYFLAGS_6_UNK20        = 0x00100000,
-    CREATURE_DIFFICULTYFLAGS_6_UNK21        = 0x00200000,
-    CREATURE_DIFFICULTYFLAGS_6_UNK22        = 0x00400000,
-    CREATURE_DIFFICULTYFLAGS_6_UNK23        = 0x00800000,
-    CREATURE_DIFFICULTYFLAGS_6_UNK24        = 0x01000000,
-    CREATURE_DIFFICULTYFLAGS_6_UNK25        = 0x02000000,
-    CREATURE_DIFFICULTYFLAGS_6_UNK26        = 0x04000000,
-    CREATURE_DIFFICULTYFLAGS_6_UNK27        = 0x08000000,
-    CREATURE_DIFFICULTYFLAGS_6_UNK28        = 0x10000000,
-    CREATURE_DIFFICULTYFLAGS_6_UNK29        = 0x20000000,
-    CREATURE_DIFFICULTYFLAGS_6_UNK30        = 0x40000000,
-    CREATURE_DIFFICULTYFLAGS_6_TFLAG2_UNK14 = 0x80000000
+    CREATURE_STATIC_FLAG_6_DO_NOT_AUTO_RESUMMON                = 0x00000001, // "Do not auto-resummon this companion creature"
+    CREATURE_STATIC_FLAG_6_REPLACE_VISIBLE_UNIT_IF_AVAILABLE   = 0x00000002, // "Smooth Phasing: Replace visible unit if available"
+    CREATURE_STATIC_FLAG_6_IGNORE_REALM_COALESCING_HIDING_CODE = 0x00000004, // "Ignore the realm coalescing hiding code (always show)"
+    CREATURE_STATIC_FLAG_6_TAPS_TO_FACTION                     = 0x00000008,
+    CREATURE_STATIC_FLAG_6_ONLY_QUESTGIVER_FOR_SUMMONER        = 0x00000010,
+    CREATURE_STATIC_FLAG_6_AI_COMBAT_RETURN_PRECISE            = 0x00000020,
+    CREATURE_STATIC_FLAG_6_HOME_REALM_ONLY_LOOT                = 0x00000040,
+    CREATURE_STATIC_FLAG_6_NO_INTERACT_RESPONSE                = 0x00000080, // TFLAG2_UNK7
+    CREATURE_STATIC_FLAG_6_NO_INITIAL_POWER                    = 0x00000100,
+    CREATURE_STATIC_FLAG_6_DONT_CANCEL_CHANNEL_ON_MASTER_MOUNTING = 0x00000200,
+    CREATURE_STATIC_FLAG_6_CAN_TOGGLE_BETWEEN_DEATH_AND_PERSONAL_LOOT = 0x00000400,
+    CREATURE_STATIC_FLAG_6_ALWAYS_STAND_ON_TOP_OF_TARGET       = 0x00000800, // "Always, ALWAYS tries to stand right on top of his move to target. ALWAYS!!", toggleable by 'Set "Always Stand on Target" flag for unit(s)' or not same?
+    CREATURE_STATIC_FLAG_6_UNCONSCIOUS_ON_DEATH                = 0x00001000,
+    CREATURE_STATIC_FLAG_6_DONT_REPORT_TO_LOCAL_DEFENSE_CHANNEL_ON_DEATH = 0x00002000,
+    CREATURE_STATIC_FLAG_6_PREFER_UNENGAGED_MONSTERS           = 0x00004000, // "Prefer unengaged monsters when picking a target"
+    CREATURE_STATIC_FLAG_6_USE_PVP_POWER_AND_RESILIENCE        = 0x00008000, // "Use PVP power and resilience when players attack this creature"
+    CREATURE_STATIC_FLAG_6_DONT_CLEAR_DEBUFFS_ON_LEAVE_COMBAT  = 0x00010000,
+    CREATURE_STATIC_FLAG_6_PERSONAL_LOOT_HAS_FULL_SECURITY     = 0x00020000, // "Personal loot has full security (guaranteed push/mail delivery)"
+    CREATURE_STATIC_FLAG_6_TRIPLE_SPELL_VISUALS                = 0x00040000,
+    CREATURE_STATIC_FLAG_6_USE_GARRISON_OWNER_LEVEL            = 0x00080000,
+    CREATURE_STATIC_FLAG_6_IMMEDIATE_AOI_UPDATE_ON_SPAWN       = 0x00100000,
+    CREATURE_STATIC_FLAG_6_UI_CAN_GET_POSITION                 = 0x00200000,
+    CREATURE_STATIC_FLAG_6_SEAMLESS_TRANSFER_PROHIBITED        = 0x00400000,
+    CREATURE_STATIC_FLAG_6_ALWAYS_USE_GROUP_LOOT_METHOD        = 0x00800000,
+    CREATURE_STATIC_FLAG_6_NO_BOSS_KILL_BANNER                 = 0x01000000,
+    CREATURE_STATIC_FLAG_6_FORCE_TRIGGERING_PLAYER_LOOT_ONLY   = 0x02000000,
+    CREATURE_STATIC_FLAG_6_SHOW_BOSS_FRAME_WHILE_UNINTERACTABLE= 0x04000000,
+    CREATURE_STATIC_FLAG_6_SCALES_TO_PLAYER_LEVEL              = 0x08000000,
+    CREATURE_STATIC_FLAG_6_AI_DONT_LEAVE_MELEE_FOR_RANGED_WHEN_TARGET_GETS_ROOTED = 0x10000000,
+    CREATURE_STATIC_FLAG_6_DONT_USE_COMBAT_REACH_FOR_CHAINING  = 0x20000000,
+    CREATURE_STATIC_FLAG_6_DO_NOT_PLAY_PROCEDURAL_WOUND_ANIM   = 0x40000000,
+    CREATURE_STATIC_FLAG_6_APPLY_PROCEDURAL_WOUND_ANIM_TO_BASE = 0x80000000  // TFLAG2_UNK14
 };
 
-enum CreatureDifficultyFlags7
+DEFINE_ENUM_FLAG(CreatureStaticFlags6);
+
+enum CreatureStaticFlags7
 {
-    CREATURE_DIFFICULTYFLAGS_7_TFLAG2_UNK15 = 0x00000001,
-    CREATURE_DIFFICULTYFLAGS_7_TFLAG2_UNK16 = 0x00000002,
-    CREATURE_DIFFICULTYFLAGS_7_TFLAG2_UNK17 = 0x00000004,
-    CREATURE_DIFFICULTYFLAGS_7_UNK1         = 0x00000008
+    CREATURE_STATIC_FLAG_7_IMPORTANT_NPC                            = 0x00000001,
+    CREATURE_STATIC_FLAG_7_IMPORTANT_QUEST_NPC                      = 0x00000002,
+    CREATURE_STATIC_FLAG_7_LARGE_NAMEPLATE                          = 0x00000004,
+    CREATURE_STATIC_FLAG_7_TRIVIAL_PET                              = 0x00000008,
+    CREATURE_STATIC_FLAG_7_AI_ENEMIES_DONT_BACKUP_WHEN_I_GET_ROOTED = 0x00000010,
+    CREATURE_STATIC_FLAG_7_NO_AUTOMATIC_COMBAT_ANCHOR               = 0x00000020,
+    CREATURE_STATIC_FLAG_7_ONLY_TARGETABLE_BY_CREATOR               = 0x00000040,
+    CREATURE_STATIC_FLAG_7_TREAT_AS_PLAYER_FOR_ISPLAYERCONTROLLED   = 0x00000080,
+    CREATURE_STATIC_FLAG_7_GENERATE_NO_THREAT_OR_DAMAGE             = 0x00000100,
+    CREATURE_STATIC_FLAG_7_INTERACT_ONLY_ON_QUEST                   = 0x00000200,
+    CREATURE_STATIC_FLAG_7_DISABLE_KILL_CREDIT_FOR_OFFLINE_PLAYERS  = 0x00000400,
+    CREATURE_STATIC_FLAG_7_AI_ADDITIONAL_PATHING                    = 0x00080000,
+};
+
+DEFINE_ENUM_FLAG(CreatureStaticFlags7);
+
+enum CreatureStaticFlags8
+{
+    CREATURE_STATIC_FLAG_8_FORCE_CLOSE_IN_ON_PATH_FAIL_BEHAVIOR     = 0x00000002,
+    CREATURE_STATIC_FLAG_8_USE_2D_CHASING_CALCULATION               = 0x00000020,
+    CREATURE_STATIC_FLAG_8_USE_FAST_CLASSIC_HEARTBEAT               = 0x00000040,
+};
+
+DEFINE_ENUM_FLAG(CreatureStaticFlags8);
+
+class CreatureStaticFlagsHolder
+{
+public:
+    explicit CreatureStaticFlagsHolder(CreatureStaticFlags flags = CreatureStaticFlags(), CreatureStaticFlags2 flags2 = CreatureStaticFlags2(),
+        CreatureStaticFlags3 flags3 = CreatureStaticFlags3(), CreatureStaticFlags4 flags4 = CreatureStaticFlags4(),
+        CreatureStaticFlags5 flags5 = CreatureStaticFlags5(), CreatureStaticFlags6 flags6 = CreatureStaticFlags6(),
+        CreatureStaticFlags7 flags7 = CreatureStaticFlags7(), CreatureStaticFlags8 flags8 = CreatureStaticFlags8())
+            : _flags(flags), _flags2(flags2), _flags3(flags3), _flags4(flags4), _flags5(flags5), _flags6(flags6), _flags7(flags7), _flags8(flags8)
+    {
+    }
+
+    bool HasFlag(CreatureStaticFlags flag) const { return _flags.HasFlag(flag); }
+    bool HasFlag(CreatureStaticFlags2 flag) const { return _flags2.HasFlag(flag); }
+    bool HasFlag(CreatureStaticFlags3 flag) const { return _flags3.HasFlag(flag); }
+    bool HasFlag(CreatureStaticFlags4 flag) const { return _flags4.HasFlag(flag); }
+    bool HasFlag(CreatureStaticFlags5 flag) const { return _flags5.HasFlag(flag); }
+    bool HasFlag(CreatureStaticFlags6 flag) const { return _flags6.HasFlag(flag); }
+    bool HasFlag(CreatureStaticFlags7 flag) const { return _flags7.HasFlag(flag); }
+    bool HasFlag(CreatureStaticFlags8 flag) const { return _flags8.HasFlag(flag); }
+
+    void ApplyFlag(CreatureStaticFlags flag, bool apply) { if (apply) _flags |= flag; else _flags &= ~flag; }
+    void ApplyFlag(CreatureStaticFlags2 flag, bool apply) { if (apply) _flags2 |= flag; else _flags2 &= ~flag; }
+    void ApplyFlag(CreatureStaticFlags3 flag, bool apply) { if (apply) _flags3 |= flag; else _flags3 &= ~flag; }
+    void ApplyFlag(CreatureStaticFlags4 flag, bool apply) { if (apply) _flags4 |= flag; else _flags4 &= ~flag; }
+    void ApplyFlag(CreatureStaticFlags5 flag, bool apply) { if (apply) _flags5 |= flag; else _flags5 &= ~flag; }
+    void ApplyFlag(CreatureStaticFlags6 flag, bool apply) { if (apply) _flags6 |= flag; else _flags6 &= ~flag; }
+    void ApplyFlag(CreatureStaticFlags7 flag, bool apply) { if (apply) _flags7 |= flag; else _flags7 &= ~flag; }
+    void ApplyFlag(CreatureStaticFlags8 flag, bool apply) { if (apply) _flags8 |= flag; else _flags8 &= ~flag; }
+
+private:
+    EnumFlag<CreatureStaticFlags> _flags;
+    EnumFlag<CreatureStaticFlags2> _flags2;
+    EnumFlag<CreatureStaticFlags3> _flags3;
+    EnumFlag<CreatureStaticFlags4> _flags4;
+    EnumFlag<CreatureStaticFlags5> _flags5;
+    EnumFlag<CreatureStaticFlags6> _flags6;
+    EnumFlag<CreatureStaticFlags7> _flags7;
+    EnumFlag<CreatureStaticFlags8> _flags8;
 };
 
 // EnumUtils: DESCRIBE THIS
@@ -459,10 +531,11 @@ struct TC_GAME_API CreatureTemplate
     int32   WidgetSetID;
     int32   WidgetSetUnitConditionID;
     bool    RegenHealth;
-    uint32  MechanicImmuneMask;
+    uint64  MechanicImmuneMask;
     uint32  SpellSchoolImmuneMask;
     uint32  flags_extra;
     uint32  ScriptID;
+    std::string StringId;
     uint32 TrackingQuestID;
     WorldPacket QueryData[TOTAL_LOCALES];
     CreatureModel const* GetModelByIdx(uint32 idx) const;
@@ -548,15 +621,6 @@ struct TC_GAME_API CreatureBaseStats
     uint32 RangedAttackPower;
 
     // Helpers
-    uint32 GenerateMana(CreatureTemplate const* info) const
-    {
-        // Mana can be 0.
-        if (!BaseMana)
-            return 0;
-
-        return uint32(ceil(BaseMana * info->ModMana * info->ModManaExtra));
-    }
-
     static CreatureBaseStats const* GetBaseStats(uint8 level, uint8 unitClass);
 };
 
@@ -630,8 +694,11 @@ struct CreatureAddon
 {
     uint32 path_id;
     uint32 mount;
-    uint32 bytes1;
-    uint32 bytes2;
+    uint8 standState;
+    uint8 animTier;
+    uint8 sheathState;
+    uint8 pvpFlags;
+    uint8 visFlags;
     uint32 emote;
     uint16 aiAnimKit;
     uint16 movementAnimKit;
@@ -654,9 +721,6 @@ struct VendorItem
     uint32 PlayerConditionId;
     bool IgnoreFiltering;
     ItemContext Context = ItemContext::Vendor;
-
-    //helpers
-    bool IsGoldRequired(ItemTemplate const* pProto) const;
 };
 
 struct VendorItemData

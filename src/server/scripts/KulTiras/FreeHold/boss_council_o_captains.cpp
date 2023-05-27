@@ -494,7 +494,7 @@ struct CouncilOCaptainsBaseAI : public BossAI
         }
 
         if (!hasTarget)
-            EnterEvadeMode(EVADE_REASON_NO_HOSTILES);
+            EnterEvadeMode(EvadeReason::NoHostiles);
         
         return hasTarget;
     }

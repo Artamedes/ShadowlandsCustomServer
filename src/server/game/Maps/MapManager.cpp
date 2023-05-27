@@ -22,7 +22,7 @@
 #include "DB2Stores.h"
 #include "GarrisonMap.h"
 #include "Group.h"
-#include "InstanceSaveMgr.h"
+#include "InstanceLockMgr.h"
 #include "Log.h"
 #include "Map.h"
 #include "Player.h"
@@ -81,31 +81,32 @@ Map* MapManager::CreateWorldMap(uint32 mapId, uint32 instanceId)
     return map;
 }
 
-InstanceMap* MapManager::CreateInstance(uint32 mapId, uint32 instanceId, InstanceSave* save, Difficulty difficulty, TeamId team)
+InstanceMap* MapManager::CreateInstance(uint32 mapId, uint32 instanceId, InstanceLock* instanceLock, Difficulty difficulty, TeamId team, Group* group)
 {
     // make sure we have a valid map id
     MapEntry const* entry = sMapStore.LookupEntry(mapId);
     if (!entry)
     {
-        TC_LOG_ERROR("maps", "CreateInstance: no entry for map %d", mapId);
+        TC_LOG_ERROR("maps", "CreateInstance: no entry for map {}", mapId);
         ABORT();
     }
 
     // some instances only have one difficulty
     sDB2Manager.GetDownscaledMapDifficultyData(mapId, difficulty);
 
-    TC_LOG_DEBUG("maps", "MapInstanced::CreateInstance: %s map instance %d for %d created with difficulty %u", save ? "" : "new ", instanceId, mapId, static_cast<uint32>(difficulty));
-
-    InstanceMap* map = new InstanceMap(mapId, i_gridCleanUpDelay, instanceId, difficulty, team);
+    TC_LOG_DEBUG("maps", "MapInstanced::CreateInstance: {}map instance {} for {} created with difficulty {}",
+        instanceLock && instanceLock->IsNew() ? "" : "new ", instanceId, mapId, sDifficultyStore.AssertEntry(difficulty)->Name[sWorld->GetDefaultDbcLocale()]);
+ 
+    InstanceMap* map = new InstanceMap(mapId, i_gridCleanUpDelay, instanceId, difficulty, team, instanceLock);
     ASSERT(map->IsDungeon());
 
     map->LoadRespawnTimes();
     map->LoadCorpseData();
-
-    bool load_data = save != nullptr;
-    map->CreateInstanceData(load_data);
-    if (InstanceScenario* instanceScenario = sScenarioMgr->CreateInstanceScenario(map, team, nullptr))
-        map->SetInstanceScenario(instanceScenario);
+    if (group)
+        map->TrySetOwningGroup(group);
+    
+    map->CreateInstanceData();
+    map->SetInstanceScenario(sScenarioMgr->CreateInstanceScenario(map, team, nullptr)); // @todo: LFGDungeonsEntry
 
     if (sWorld->getBoolConfig(CONFIG_INSTANCEMAP_LOAD_GRIDS))
         map->LoadAllCells();
@@ -115,7 +116,7 @@ InstanceMap* MapManager::CreateInstance(uint32 mapId, uint32 instanceId, Instanc
 
 BattlegroundMap* MapManager::CreateBattleground(uint32 mapId, uint32 instanceId, Battleground* bg)
 {
-    TC_LOG_DEBUG("maps", "MapInstanced::CreateBattleground: map bg %d for %d created.", instanceId, mapId);
+    TC_LOG_DEBUG("maps", "MapInstanced::CreateBattleground: map bg {} for {} created.", instanceId, mapId);
 
     BattlegroundMap* map = new BattlegroundMap(mapId, i_gridCleanUpDelay, instanceId, DIFFICULTY_NONE);
     ASSERT(map->IsBattlegroundOrArena());
@@ -131,14 +132,60 @@ GarrisonMap* MapManager::CreateGarrison(uint32 mapId, uint32 instanceId, Player*
     return map;
 }
 
-Map* MapManager::CreateMap(uint32 mapId, Player* player, uint32 loginInstanceId /*= 0*/, bool createChallenge /*= false*/)
+Map* MapManager::CreateMap(uint32 mapId, Player* player, uint32 zoneId /*= 0*/, bool createChallenge /*= false*/, CustomInstanceZone const* p_CustomInstanceZone /*=nullptr*/)
 {
     if (!player)
         return nullptr;
 
+    if (p_CustomInstanceZone)
+        zoneId = p_CustomInstanceZone->CustomZoneID;
+
+    /// Try to find zone instance with group first
+    if (Group* l_Group = player->GetGroup())
+    {
+        for (GroupReference* l_GroupRef = l_Group->GetFirstMember(); l_GroupRef != nullptr; l_GroupRef = l_GroupRef->next())
+        {
+            Player* l_Member = l_GroupRef->GetSource();
+            if (!l_Member || !l_Member->FindMap() || (l_Member->GetMap()->GetInstanceZoneId() & 0xFFFF) != zoneId || l_Member == player)
+                continue;
+
+            zoneId = l_Member->GetMap()->GetInstanceZoneId();
+
+            Map* m = FindMap_i(mapId, zoneId);
+            return m;
+        }
+    }
+
     MapEntry const* entry = sMapStore.LookupEntry(mapId);
     if (!entry)
         return nullptr;
+
+    /// Instanced map aren't zone-instanced
+    bool shouldResetZone = [&]() -> bool
+    {
+        if (entry->Instanceable())
+            return true;
+
+        switch (mapId)
+        {
+            case 0: ///< Azeroth
+            case 1: ///< Kalimdor
+            case 530: ///< Outland
+            case 870: ///< Pandaria
+            case 571: ///< Northrend
+            case 1220: ///< Broken Isles
+            case 2222: ///< The shadowlands
+            case 2444: ///< Dragon Isles
+            case 1643: ///< Kul Tiras
+            case 1642: ///< Zandalar
+                return false;
+            default: // All maps are ignored except the ones above
+                return true;
+        }
+    }();
+
+    if (shouldResetZone)
+        zoneId = 0;
 
     std::unique_lock<std::shared_mutex> lock(_mapsLock);
 
@@ -167,92 +214,50 @@ Map* MapManager::CreateMap(uint32 mapId, Player* player, uint32 loginInstanceId 
     }
     else if (entry->IsDungeon())
     {
-        InstancePlayerBind* pBind = nullptr;
-        /// see if we can find challengeDungeon
-        auto difficultyId = player->GetDifficultyID(entry);
-        if (difficultyId == Difficulty::DIFFICULTY_MYTHIC)
-            pBind = player->GetBoundInstance(mapId, Difficulty::DIFFICULTY_MYTHIC_KEYSTONE);
-        if (!pBind)
-            pBind = player->GetBoundInstance(mapId, difficultyId);
-
-        InstanceSave* pSave = pBind ? pBind->save : nullptr;
-
-        // priority:
-        // 1. player's permanent bind
-        // 2. player's current instance id if this is at login
-        // 3. group's current bind
-        // 4. player's current bind
-        if (!pBind || !pBind->perm)
+        Group* group = player->GetGroup();
+        Difficulty difficulty = group ? group->GetDifficultyID(entry) : player->GetDifficultyID(entry);
+        MapDb2Entries entries{ entry, sDB2Manager.GetDownscaledMapDifficultyData(mapId, difficulty) };
+        ObjectGuid instanceOwnerGuid = group ? group->GetRecentInstanceOwner(mapId) : player->GetGUID();
+        InstanceLock* instanceLock = sInstanceLockMgr.FindActiveInstanceLock(instanceOwnerGuid, entries);
+        if (instanceLock)
         {
-            if (loginInstanceId) // if the player has a saved instance id on login, we either use this instance or relocate him out (return null)
-            {
-                map = FindMap_i(mapId, loginInstanceId);
-                if (!map && pSave && pSave->GetInstanceId() == loginInstanceId)
-                {
-                    map = CreateInstance(mapId, loginInstanceId, pSave, pSave->GetDifficultyID(), player->GetTeamId());
-                    // add this here to make sure it's in the map list
-                    i_maps[{ map->GetId(), map->GetInstanceId() }] = map;
-                }
+            newInstanceId = instanceLock->GetInstanceId();
 
-                return map;
-            }
-
-            InstanceGroupBind* groupBind = nullptr;
-            Group* group = player->GetGroup();
-            // use the player's difficulty setting (it may not be the same as the group's)
-            if (group)
-            {
-                groupBind = group->GetBoundInstance(entry);
-                if (groupBind)
-                {
-                    // solo saves should be reset when entering a group's instance
-                    player->UnbindInstance(mapId, player->GetDifficultyID(entry));
-                    pSave = groupBind->save;
-                }
-            }
-        }
-        if (pSave && !createChallenge)
-        {
-            // solo/perm/group
-            newInstanceId = pSave->GetInstanceId();
-            map = FindMap_i(mapId, newInstanceId);
-            // it is possible that the save exists but the map doesn't
-            if (!map)
-                map = CreateInstance(mapId, newInstanceId, pSave, pSave->GetDifficultyID(), player->GetTeamId());
+            // Reset difficulty to the one used in instance lock
+            if (!entries.Map->IsFlexLocking())
+                difficulty = instanceLock->GetDifficultyId();
         }
         else
         {
-            Difficulty diff = player->GetGroup() ? player->GetGroup()->GetDifficultyID(entry) : player->GetDifficultyID(entry);
+            // Try finding instance id for normal dungeon
+            if (!entries.MapDifficulty->HasResetSchedule())
+                newInstanceId = group ? group->GetRecentInstanceId(mapId) : player->GetRecentInstanceId(mapId);
 
-            // if no instanceId via group members or instance saves is found
-            // the instance will be created for the first time
+            // If not found or instance is not a normal dungeon, generate new one
+            if (!newInstanceId)
+                newInstanceId = GenerateInstanceId();
+
+            instanceLock = sInstanceLockMgr.CreateInstanceLockForNewInstance(instanceOwnerGuid, entries, newInstanceId);
+        }
+
+        // it is possible that the save exists but the map doesn't
+        map = FindMap_i(mapId, newInstanceId);
+
+        // is is also possible that instance id is already in use by another group for boss-based locks
+        if (!entries.IsInstanceIdBound() && instanceLock && map && map->ToInstanceMap()->GetInstanceLock() != instanceLock)
+        {
             newInstanceId = GenerateInstanceId();
+            instanceLock->SetInstanceId(newInstanceId);
+            map = nullptr;
+        }
 
-            Group* group = player->GetGroup();
+        if (!map)
+        {
+            map = CreateInstance(mapId, newInstanceId, instanceLock, difficulty, player->GetTeamId(), group);
             if (group)
-            {
-                if (group->isLFGGroup() && group->isRaidGroup())
-                    diff = group->GetRaidDifficultyID();
-                else
-                    diff = group->GetDifficultyID(entry);
-
-                if (createChallenge)
-                    group->UnbindInstance(mapId, DIFFICULTY_MYTHIC_KEYSTONE);
-            }
-
-            if (createChallenge)
-            {
-                diff = DIFFICULTY_MYTHIC_KEYSTONE;
-                player->UnbindInstance(mapId, diff);
-            }
+                group->SetRecentInstance(mapId, instanceOwnerGuid, newInstanceId);
             else
-                sDB2Manager.GetDownscaledMapDifficultyData(mapId, diff); // try to downscale because if not creating challenge, dont set as keystone
-
-            //Seems it is now possible, but I do not know if it should be allowed
-            //ASSERT(!FindInstanceMap(NewInstanceId));
-            map = FindMap_i(mapId, newInstanceId);
-            if (!map)
-                map = CreateInstance(mapId, newInstanceId, nullptr, diff, player->GetTeamId());
+                player->SetRecentInstance(mapId, newInstanceId);
         }
     }
     else if (entry->IsGarrison())
@@ -265,13 +270,54 @@ Map* MapManager::CreateMap(uint32 mapId, Player* player, uint32 loginInstanceId 
     else
     {
         newInstanceId = 0;
-        // When we need to implement map phasing, we would do it here.
         if (entry->IsSplitByFaction())
             newInstanceId = player->GetTeamId();
 
-        map = FindMap_i(mapId, newInstanceId);
+        if (newInstanceId)
+        {
+            map = FindMap_i(mapId, newInstanceId);
+            if (!map)
+                map = CreateWorldMap(mapId, newInstanceId);
+
+            if (map)
+                i_maps[{ map->GetId(), map->GetInstanceId() }] = map;
+
+            return map;
+        }
+
+        //uint32 l_MaxZonePlayerCount = p_CustomInstanceZone ? p_CustomInstanceZone->MaxPlayerCount : 150;
+        //
+        //if (mapId == 1191 || mapId == 1502) ///< Ashran, DalaranUnderbelly
+        //    l_MaxZonePlayerCount = 9999999;
+        //if (zoneId == 1617 || zoneId == 1519)
+        //    l_MaxZonePlayerCount = 9999999;
+        //
+        //
+        //for (uint32 l_ZoneInstanceId = 0; l_ZoneInstanceId < 0xFFFFFFFF; l_ZoneInstanceId++)
+        //{
+        //    Map* l_Map = FindMap_i(mapId, l_ZoneInstanceId << 16 | zoneId);
+        //    if (!l_Map)
+        //        l_Map = CreateWorldMap(mapId, l_ZoneInstanceId << 16 | zoneId);
+        //
+        //    if (l_Map->GetPlayerCount() > l_MaxZonePlayerCount)
+        //    {
+        //        l_ZoneInstanceId++;
+        //        continue;
+        //    }
+        //
+        //    if (l_Map)
+        //        i_maps[{ l_Map->GetId(), l_Map->GetInstanceId() }] = l_Map;
+        //
+        //    return l_Map;
+        //}
+
+        // For development purposes, we are no longer splitting maps.
+        map = FindMap_i(mapId, 0);
         if (!map)
-            map = CreateWorldMap(mapId, newInstanceId);
+            map = CreateWorldMap(mapId, 0);
+
+        if (map)
+            i_maps[{ map->GetId(), map->GetInstanceId() }] = map;
     }
 
     if (map)
@@ -284,6 +330,49 @@ Map* MapManager::FindMap(uint32 mapId, uint32 instanceId) const
 {
     std::shared_lock<std::shared_mutex> lock(_mapsLock);
     return FindMap_i(mapId, instanceId);
+}
+
+uint32 MapManager::FindInstanceIdForPlayer(uint32 mapId, Player const* player) const
+{
+    MapEntry const* entry = sMapStore.LookupEntry(mapId);
+    if (!entry)
+        return 0;
+
+    if (entry->IsBattlegroundOrArena())
+        return player->GetBattlegroundId();
+    else if (entry->IsDungeon())
+    {
+        Group const* group = player->GetGroup();
+        Difficulty difficulty = group ? group->GetDifficultyID(entry) : player->GetDifficultyID(entry);
+        MapDb2Entries entries{ entry, sDB2Manager.GetDownscaledMapDifficultyData(mapId, difficulty) };
+        ObjectGuid instanceOwnerGuid = group ? group->GetRecentInstanceOwner(mapId) : player->GetGUID();
+        InstanceLock* instanceLock = sInstanceLockMgr.FindActiveInstanceLock(instanceOwnerGuid, entries);
+        uint32 newInstanceId = 0;
+        if (instanceLock)
+            newInstanceId = instanceLock->GetInstanceId();
+        else if (!entries.MapDifficulty->HasResetSchedule()) // Try finding instance id for normal dungeon
+            newInstanceId = group ? group->GetRecentInstanceId(mapId) : player->GetRecentInstanceId(mapId);
+
+        if (!newInstanceId)
+            return 0;
+
+        Map* map = FindMap(mapId, newInstanceId);
+
+        // is is possible that instance id is already in use by another group for boss-based locks
+        if (!entries.IsInstanceIdBound() && instanceLock && map && map->ToInstanceMap()->GetInstanceLock() != instanceLock)
+            return 0;
+
+        return newInstanceId;
+    }
+    else if (entry->IsGarrison())
+        return uint32(player->GetGUID().GetCounter());
+    else
+    {
+        if (entry->IsSplitByFaction())
+            return player->GetTeamId();
+
+        return 0;
+    }
 }
 
 void MapManager::Update(uint32 diff)
@@ -318,6 +407,39 @@ void MapManager::Update(uint32 diff)
     for (iter = i_maps.begin(); iter != i_maps.end(); ++iter)
         iter->second->DelayedUpdate(uint32(i_timer.GetCurrent()));
 
+    std::queue<std::function<bool()>> l_Operations;
+    {
+        std::shared_lock<std::shared_mutex> lock(m_CriticalOperationLock);
+        l_Operations = m_CriticalOperation;
+
+        while (!m_CriticalOperation.empty())
+            m_CriticalOperation.pop();
+        lock.unlock();
+    }
+
+    std::queue<std::function<bool()>> l_CriticalOperationFallBack;
+    while (!l_Operations.empty())
+    {
+        if (l_Operations.front())
+        {
+            if (!(l_Operations.front()()))
+                l_CriticalOperationFallBack.push(l_Operations.front());
+        }
+
+        l_Operations.pop();
+    }
+
+    if (!l_CriticalOperationFallBack.empty())
+    {
+        std::shared_lock<std::shared_mutex> lock(m_CriticalOperationLock);
+        while (!l_CriticalOperationFallBack.empty())
+        {
+            m_CriticalOperation.push(l_CriticalOperationFallBack.front());
+            l_CriticalOperationFallBack.pop();
+        }
+        lock.unlock();
+    }
+
     i_timer.SetCurrent(0);
 }
 
@@ -329,8 +451,8 @@ bool MapManager::DestroyMap(Map* map)
 
     map->UnloadAll();
 
-    // Free up the instance id and allow it to be reused for bgs and arenas (other instances are handled in the InstanceSaveMgr)
-    if (map->IsBattlegroundOrArena())
+    // Free up the instance id and allow it to be reused for normal dungeons, bgs and arenas
+    if (map->IsBattlegroundOrArena() || (map->IsDungeon() && !map->GetMapDifficulty()->HasResetSchedule()))
         sMapMgr->FreeInstanceId(map->GetInstanceId());
 
     // erase map
@@ -377,10 +499,14 @@ void MapManager::InitInstanceIds()
 {
     _nextInstanceId = 1;
 
-    if (QueryResult result = CharacterDatabase.Query("SELECT IFNULL(MAX(id), 0) FROM instance"))
-        _freeInstanceIds->resize((*result)[0].GetUInt64() + 2, true); // make space for one extra to be able to access [_nextInstanceId] index in case all slots are taken
-    else
-        _freeInstanceIds->resize(_nextInstanceId + 1, true);
+    uint64 maxExistingInstanceId = 0;
+    if (QueryResult result = CharacterDatabase.Query("SELECT IFNULL(MAX(instanceId), 0) FROM instance"))
+        maxExistingInstanceId = std::max(maxExistingInstanceId, (*result)[0].GetUInt64());
+
+    if (QueryResult result = CharacterDatabase.Query("SELECT IFNULL(MAX(instanceId), 0) FROM character_instance_lock"))
+        maxExistingInstanceId = std::max(maxExistingInstanceId, (*result)[0].GetUInt64());
+
+    _freeInstanceIds->resize(maxExistingInstanceId + 2, true); // make space for one extra to be able to access [_nextInstanceId] index in case all slots are taken
 
     // never allow 0 id
     _freeInstanceIds->set(0, false);
@@ -449,5 +575,5 @@ void MapManager::AddSC_BuiltInScripts()
 {
     for (MapEntry const* mapEntry : sMapStore)
         if (mapEntry->IsWorldMap() && mapEntry->IsSplitByFaction())
-            new SplitByFactionMapScript(Trinity::StringFormat("world_map_set_faction_worldstates_%u", mapEntry->ID).c_str(), mapEntry->ID);
+            new SplitByFactionMapScript(Trinity::StringFormat("world_map_set_faction_worldstates_{}", mapEntry->ID).c_str(), mapEntry->ID);
 }

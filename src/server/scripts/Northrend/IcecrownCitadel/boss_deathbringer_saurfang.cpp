@@ -16,6 +16,7 @@
  */
 
 #include "icecrown_citadel.h"
+#include "Containers.h"
 #include "InstanceScript.h"
 #include "Map.h"
 #include "MotionMaster.h"
@@ -207,7 +208,9 @@ enum Misc
     DATA_MADE_A_MESS                    = 45374613, // 4537, 4613 are achievement IDs
 
     GOSSIP_MENU_MURADIN_BRONZEBEARD     = 10934,
-    GOSSIP_MENU_HIGH_OVERLORD_SAURFANG  = 10952
+    GOSSIP_MENU_HIGH_OVERLORD_SAURFANG  = 10952,
+
+    SPAWN_GROUP_ENTRANCE_THE_DAMNED_EVENT   = 275,
 };
 
 enum MovePoints
@@ -279,7 +282,7 @@ struct boss_deathbringer_saurfang : public BossAI
 
         if (!instance->CheckRequiredBosses(DATA_DEATHBRINGER_SAURFANG, who->ToPlayer()))
         {
-            EnterEvadeMode(EVADE_REASON_OTHER);
+            EnterEvadeMode(EvadeReason::Other);
             instance->DoCastSpellOnPlayers(LIGHT_S_HAMMER_TELEPORT);
             return;
         }
@@ -384,7 +387,7 @@ struct boss_deathbringer_saurfang : public BossAI
             if (target->GetTransport())
             {
                 summon->DespawnOrUnsummon(1ms);
-                EnterEvadeMode(EVADE_REASON_OTHER);
+                EnterEvadeMode(EvadeReason::Other);
                 return;
             }
 
@@ -414,7 +417,7 @@ struct boss_deathbringer_saurfang : public BossAI
     {
         if (target->GetTransport())
         {
-            EnterEvadeMode(EVADE_REASON_OTHER);
+            EnterEvadeMode(EvadeReason::Other);
             return;
         }
 
@@ -747,11 +750,7 @@ struct npc_high_overlord_saurfang_icc : public ScriptedAI
         }
         else if (type == WAYPOINT_MOTION_TYPE && id == POINT_EXIT)
         {
-            std::list<Creature*> guards;
-            GetCreatureListWithEntryInGrid(guards, me, NPC_KOR_KRON_GENERAL, 50.0f);
-            for (std::list<Creature*>::iterator itr = guards.begin(); itr != guards.end(); ++itr)
-                (*itr)->DespawnOrUnsummon();
-            me->DespawnOrUnsummon();
+            me->GetMap()->SpawnGroupDespawn(SPAWN_GROUP_ENTRANCE_THE_DAMNED_EVENT);
         }
     }
 
@@ -918,11 +917,7 @@ struct npc_muradin_bronzebeard_icc : public ScriptedAI
         }
         else if (type == WAYPOINT_MOTION_TYPE && id == POINT_EXIT)
         {
-            std::list<Creature*> guards;
-            GetCreatureListWithEntryInGrid(guards, me, NPC_ALLIANCE_COMMANDER, 50.0f);
-            for (std::list<Creature*>::iterator itr = guards.begin(); itr != guards.end(); ++itr)
-                (*itr)->DespawnOrUnsummon();
-            me->DespawnOrUnsummon();
+            me->GetMap()->SpawnGroupDespawn(SPAWN_GROUP_ENTRANCE_THE_DAMNED_EVENT);
         }
     }
 

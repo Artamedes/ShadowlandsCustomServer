@@ -20,11 +20,13 @@
 #include "DB2Stores.h"
 #include "Cell.h"
 #include "CellImpl.h"
+#include "Containers.h"
 #include "CreatureAIImpl.h"
 #include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"
 #include "InstanceScript.h"
 #include "Log.h"
+#include "Loot.h"
 #include "MotionMaster.h"
 #include "ObjectAccessor.h"
 #include "PhasingHandler.h"
@@ -52,7 +54,7 @@ void SummonList::DoZoneInCombat(uint32 entry)
         if (summon && summon->IsAIEnabled()
                 && (!entry || summon->GetEntry() == entry))
         {
-            summon->AI()->DoZoneInCombat(nullptr);
+            summon->AI()->DoZoneInCombat();
         }
     }
 }
@@ -133,8 +135,11 @@ bool SummonList::HasEntry(uint32 entry) const
     return false;
 }
 
-void SummonList::DoActionImpl(int32 action, StorageType const& summons)
+void SummonList::DoActionImpl(int32 action, StorageType& summons, uint16 max)
 {
+    if (max)
+        Trinity::Containers::RandomResize(summons, max);
+
     for (ObjectGuid const& guid : summons)
     {
         Creature* summon = ObjectAccessor::GetCreature(*_me, guid);
@@ -234,7 +239,7 @@ void ScriptedAI::DoPlaySoundToSet(WorldObject* source, uint32 soundId)
 
     if (!sSoundKitStore.LookupEntry(soundId))
     {
-        TC_LOG_ERROR("scripts.ai", "ScriptedAI::DoPlaySoundToSet: Invalid soundId %u used in DoPlaySoundToSet (Source: %s)", soundId, source->GetGUID().ToString().c_str());
+        TC_LOG_ERROR("scripts.ai", "ScriptedAI::DoPlaySoundToSet: Invalid soundId {} used in DoPlaySoundToSet (Source: {})", soundId, source->GetGUID().ToString());
         return;
     }
 
@@ -296,7 +301,9 @@ void ScriptedAI::ForceCombatStop(Creature* who, bool reset /*= true*/)
     if (reset)
     {
         who->LoadCreaturesAddon();
-        who->SetLootRecipient(nullptr);
+        if (!me->IsTapListNotClearedOnEvade())
+            who->SetTappedBy(nullptr);
+
         who->ResetPlayerDamageReq();
         who->SetLastDamagedTime(0);
         who->SetCannotReachTarget(false);
@@ -305,7 +312,7 @@ void ScriptedAI::ForceCombatStop(Creature* who, bool reset /*= true*/)
 
 void ScriptedAI::ForceCombatStopForCreatureEntry(uint32 entry, float maxSearchRange /*= 250.0f*/, bool samePhase /*= true*/, bool reset /*= true*/)
 {
-    TC_LOG_DEBUG("scripts.ai", "ScriptedAI::ForceCombatStopForCreatureEntry: called on '%s'. Debug info: %s", me->GetGUID().ToString().c_str(), me->GetDebugInfo().c_str());
+    TC_LOG_DEBUG("scripts.ai", "ScriptedAI::ForceCombatStopForCreatureEntry: called on '{}'. Debug info: {}", me->GetGUID().ToString(), me->GetDebugInfo());
 
     std::list<Creature*> creatures;
     Trinity::AllCreaturesOfEntryInRange check(me, entry, maxSearchRange);
@@ -351,7 +358,7 @@ SpellInfo const* ScriptedAI::SelectSpell(Unit* target, uint32 school, uint32 mec
         return nullptr;
 
     // Silenced so we can't cast
-    if (me->HasUnitFlag(UNIT_FLAG_SILENCED))
+    if (me->IsSilenced(school ? SpellSchoolMask(school) : SPELL_SCHOOL_MASK_MAGIC))
         return nullptr;
 
     // Using the extended script system we first create a list of viable spells
@@ -446,8 +453,8 @@ void ScriptedAI::DoTeleportPlayer(Unit* unit, float x, float y, float z, float o
     if (Player* player = unit->ToPlayer())
         player->TeleportTo(unit->GetMapId(), x, y, z, o, TELE_TO_NOT_LEAVE_COMBAT);
     else
-        TC_LOG_ERROR("scripts.ai", "ScriptedAI::DoTeleportPlayer: Creature %s Tried to teleport non-player unit (%s) to x: %f y:%f z: %f o: %f. Aborted.",
-            me->GetGUID().ToString().c_str(), unit->GetGUID().ToString().c_str(), x, y, z, o);
+        TC_LOG_ERROR("scripts.ai", "ScriptedAI::DoTeleportPlayer: Creature {} Tried to teleport non-player unit ({}) to x: {} y:{} z: {} o: {}. Aborted.",
+            me->GetGUID().ToString(), unit->GetGUID().ToString(), x, y, z, o);
 }
 
 void ScriptedAI::DoTeleportAll(float x, float y, float z, float o)
@@ -596,7 +603,7 @@ void BossAI::_JustEngagedWith(Unit* who)
         // bosses do not respawn, check only on enter combat
         if (!instance->CheckRequiredBosses(_bossId, who->ToPlayer()))
         {
-            EnterEvadeMode(EVADE_REASON_SEQUENCE_BREAK);
+            EnterEvadeMode(EvadeReason::SequenceBreak);
             return;
         }
         instance->SetBossState(_bossId, IN_PROGRESS);
@@ -662,7 +669,7 @@ void BossAI::_DespawnAtEvade(Seconds delayToRespawn /*= 30s*/, Creature* who /*=
 {
     if (delayToRespawn < 2s)
     {
-        TC_LOG_ERROR("scripts.ai", "BossAI::_DespawnAtEvade: called with delay of " SI64FMTD " seconds, defaulting to 2 (me: %s)", delayToRespawn.count(), me->GetGUID().ToString().c_str());
+        TC_LOG_ERROR("scripts.ai", "BossAI::_DespawnAtEvade: called with delay of {} seconds, defaulting to 2 (me: {})", delayToRespawn.count(), me->GetGUID().ToString());
         delayToRespawn = 2s;
     }
 
@@ -671,7 +678,7 @@ void BossAI::_DespawnAtEvade(Seconds delayToRespawn /*= 30s*/, Creature* who /*=
 
     if (TempSummon* whoSummon = who->ToTempSummon())
     {
-        TC_LOG_WARN("scripts.ai", "BossAI::_DespawnAtEvade: called on a temporary summon (who: %s)", who->GetGUID().ToString().c_str());
+        TC_LOG_WARN("scripts.ai", "BossAI::_DespawnAtEvade: called on a temporary summon (who: {})", who->GetGUID().ToString());
         whoSummon->UnSummon();
         return;
     }

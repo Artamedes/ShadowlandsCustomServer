@@ -71,8 +71,8 @@ void Totem::InitStats(uint32 duration)
         if (uint32 totemDisplayId = sSpellMgr->GetModelForTotem(m_unitData->CreatedBySpell, owner->GetRace()))
             SetDisplayId(totemDisplayId);
         else
-            TC_LOG_DEBUG("misc", "Totem with entry %u, owned by player %s, does not have a specialized model for spell %u and race %s. Set to default.",
-                         GetEntry(), owner->GetGUID().ToString().c_str(), *m_unitData->CreatedBySpell, EnumUtils::ToTitle(Races(owner->GetRace())));
+            TC_LOG_DEBUG("misc", "Totem with entry {}, owned by player {}, does not have a specialized model for spell {} and race {}. Set to default.",
+                         GetEntry(), owner->GetGUID().ToString(), *m_unitData->CreatedBySpell, EnumUtils::ToTitle(Races(owner->GetRace())));
     }
 
     Minion::InitStats(duration);
@@ -141,7 +141,8 @@ void Totem::UnSummon(uint32 msTime)
     AddObjectToRemoveList();
 }
 
-bool Totem::IsImmunedToSpellEffect(SpellInfo const* spellInfo, SpellEffectInfo const& spellEffectInfo, WorldObject const* caster) const
+bool Totem::IsImmunedToSpellEffect(SpellInfo const* spellInfo, SpellEffectInfo const& spellEffectInfo, WorldObject const* caster,
+    bool requireImmunityPurgesEffectAttribute /*= false*/) const
 {
     // immune to all positive spells, except of stoneclaw totem absorb and sentry totem bind sight
     // totems positive spells have unit_caster target
@@ -162,5 +163,5 @@ bool Totem::IsImmunedToSpellEffect(SpellInfo const* spellInfo, SpellEffectInfo c
             break;
     }
 
-    return Creature::IsImmunedToSpellEffect(spellInfo, spellEffectInfo, caster);
+    return Creature::IsImmunedToSpellEffect(spellInfo, spellEffectInfo, caster, requireImmunityPurgesEffectAttribute);
 }

@@ -1808,9 +1808,9 @@ public:
 
     class spell_FlashBangSpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_FlashBangSpellScript)
+        PrepareSpellScript(spell_FlashBangSpellScript);
 
-            void CheckTarget(std::list<WorldObject*>& unitList)
+        void CheckTarget(std::list<WorldObject*>& unitList)
         {
             Unit* caster = GetCaster();
             unitList.remove_if([caster](WorldObject* obj) {
@@ -1936,9 +1936,9 @@ public:
 
     class spell_SolarStorm_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_SolarStorm_SpellScript)
+        PrepareSpellScript(spell_SolarStorm_SpellScript);
 
-            void HandleDummy(SpellEffIndex /*effIndex*/)
+        void HandleDummy(SpellEffIndex /*effIndex*/)
         {
             if (GetHitUnit() && GetCaster())
                 GetCaster()->CastSpell(GetHitUnit(), uint32(Spells::SOLAR_STORM_1), true);
@@ -2310,9 +2310,9 @@ public:
 
     class spell_SpinningBlade_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_SpinningBlade_SpellScript)
+        PrepareSpellScript(spell_SpinningBlade_SpellScript);
 
-            enum eSpiningBladeSpells
+        enum eSpiningBladeSpells
         {
             SPINNING_BLADE_9 = 153583,
         };
@@ -2357,9 +2357,9 @@ public:
 
     class spell_BladeDance_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_BladeDance_SpellScript)
+        PrepareSpellScript(spell_BladeDance_SpellScript);
 
-            void HandleDummy(SpellEffIndex /*effIndex*/)
+        void HandleDummy(SpellEffIndex /*effIndex*/)
         {
             if (GetCaster() && GetHitUnit())
             {
@@ -2401,9 +2401,9 @@ public:
 
     class spell_Storm_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_Storm_SpellScript)
+        PrepareSpellScript(spell_Storm_SpellScript);
 
-            void HandleAfterCast()
+        void HandleAfterCast()
         {
             if (Unit* caster = GetCaster())
             {

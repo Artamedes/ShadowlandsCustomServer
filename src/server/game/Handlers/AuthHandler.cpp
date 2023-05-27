@@ -37,8 +37,8 @@ void WorldSession::SendAuthResponse(uint32 code, bool queued, uint32 queuePos)
     {
         response.SuccessInfo.emplace();
 
-        response.SuccessInfo->ActiveExpansionLevel = GetExpansion();
-        response.SuccessInfo->AccountExpansionLevel = GetAccountExpansion();
+        // response.SuccessInfo->ActiveExpansionLevel  = EXPANSION_DRAGONFLIGHT;
+        // response.SuccessInfo->AccountExpansionLevel = EXPANSION_DRAGONFLIGHT;
         response.SuccessInfo->VirtualRealmAddress = realm.Id.GetAddress();
         response.SuccessInfo->Time = int32(GameTime::GetGameTime());
 
@@ -82,7 +82,7 @@ void WorldSession::SendAuthWaitQueue(uint32 position)
 void WorldSession::SendClientCacheVersion(uint32 version)
 {
     WorldPackets::ClientConfig::ClientCacheVersion cache;
-    cache.CacheVersion = version;
+    cache.CacheVersion = 0;
 
     SendPacket(cache.Write());
 }
@@ -91,8 +91,9 @@ void WorldSession::SendSetTimeZoneInformation()
 {
     /// @todo: replace dummy values
     WorldPackets::System::SetTimeZoneInformation packet;
-    packet.ServerTimeTZ = "Europe/Paris";
-    packet.GameTimeTZ = "Europe/Paris";
+    packet.ServerTimeTZ = "America/Los_Angeles";
+    packet.GameTimeTZ = "America/Chicago";
+    packet.ServerRegionalTZ = "America/Los_Angeles";
 
     SendPacket(packet.Write());
 }
@@ -105,18 +106,16 @@ void WorldSession::SendFeatureSystemStatusGlueScreen()
     features.CharUndeleteEnabled = sWorld->getBoolConfig(CONFIG_FEATURE_SYSTEM_CHARACTER_UNDELETE_ENABLED);
     features.BpayStoreEnabled = true;
     features.MaxCharactersPerRealm = sWorld->getIntConfig(CONFIG_CHARACTERS_PER_REALM);
-    features.MinimumExpansionLevel = EXPANSION_CLASSIC;
-    features.MaximumExpansionLevel = sWorld->getIntConfig(CONFIG_EXPANSION);
 
     features.EuropaTicketSystemStatus.emplace();
     features.EuropaTicketSystemStatus->ThrottleState.MaxTries = 10;
     features.EuropaTicketSystemStatus->ThrottleState.PerMilliseconds = 60000;
-    features.EuropaTicketSystemStatus->ThrottleState.TryCount = 1;
-    features.EuropaTicketSystemStatus->ThrottleState.LastResetTimeBeforeNow = 111111;
-    features.EuropaTicketSystemStatus->TicketsEnabled = sWorld->getBoolConfig(CONFIG_SUPPORT_TICKETS_ENABLED);
-    features.EuropaTicketSystemStatus->BugsEnabled = sWorld->getBoolConfig(CONFIG_SUPPORT_BUGS_ENABLED);
-    features.EuropaTicketSystemStatus->ComplaintsEnabled = sWorld->getBoolConfig(CONFIG_SUPPORT_COMPLAINTS_ENABLED);
-    features.EuropaTicketSystemStatus->SuggestionsEnabled = sWorld->getBoolConfig(CONFIG_SUPPORT_SUGGESTIONS_ENABLED);
+    features.EuropaTicketSystemStatus->ThrottleState.TryCount = 0;
+    features.EuropaTicketSystemStatus->ThrottleState.LastResetTimeBeforeNow = 25192;
+    features.EuropaTicketSystemStatus->TicketsEnabled     = true;
+    features.EuropaTicketSystemStatus->BugsEnabled        = true;
+    features.EuropaTicketSystemStatus->ComplaintsEnabled  = true;
+    features.EuropaTicketSystemStatus->SuggestionsEnabled = true;
 
     SendPacket(features.Write());
 }

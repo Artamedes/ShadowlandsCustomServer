@@ -59,6 +59,40 @@ void ApplyCountTheOdds(Unit* caster)
                 }
             }
         }
+
+        if (auto countTheOdds = caster->GetAuraEffect(CountTheOddsNew, EFFECT_0))
+        {
+            bool stealthed = caster->HasAuraType(AuraType::SPELL_AURA_MOD_STEALTH);
+
+            float chance = static_cast<float>(countTheOdds->GetAmount());
+            uint32 duration = 5000;
+
+            if (caster->HasAuraType(AuraType::SPELL_AURA_MOD_STEALTH))
+            {
+                chance *= 3.0f;
+                duration *= 3;
+            }
+
+            if (chance > 100.0f)
+                chance = 100.0f;
+
+            if (roll_chance_f(chance))
+            {
+                std::vector<uint32> NotHaveRTBBuffs;
+                for (uint32 spellId : RTBSpells)
+                {
+                    if (!caster->GetAura(spellId))
+                    {
+                        NotHaveRTBBuffs.push_back(spellId);
+                    }
+                }
+
+                if (!NotHaveRTBBuffs.empty())
+                {
+                    caster->CastSpell(caster, Trinity::Containers::SelectRandomContainerElement(NotHaveRTBBuffs), CastSpellExtraArgs(true).AddSpellMod(SpellValueMod::SPELLVALUE_DURATION, duration));
+                }
+            }
+        }
     }
 }
 
@@ -98,9 +132,21 @@ class spell_rog_roll_the_bones : public SpellScript
             numBuffs = 2;
 
         if (numBuffs < 5)
+        {
             if (auto sleightOfHand = GetCaster()->GetAuraEffect(SleightOfHand, EFFECT_0))
                 if (roll_chance_i(std::min(100, sleightOfHand->GetAmount())))
                     numBuffs++;
+
+            if (auto sleightOfHand = GetCaster()->GetAuraEffect(SleightOfHandNew, EFFECT_0))
+                if (roll_chance_i(std::min(100, sleightOfHand->GetAmount())))
+                    numBuffs++;
+
+            if (auto loadedDice = GetCaster()->GetAura(LoadedDiceProc))
+            {
+                loadedDice->Remove();
+                numBuffs++;
+            }
+        }
 
         for (int32 i = 0; i < numBuffs; ++i)
         {
@@ -123,10 +169,39 @@ class spell_ambush : public SpellScript
 {
     PrepareSpellScript(spell_ambush);
 
+    enum eSinisterStrike
+    {
+        WeaponMaster = 200733,
+    };
+
     void HandleDummy(SpellEffIndex /*eff*/)
     {
-        if (GetCaster())
-            ApplyCountTheOdds(GetCaster());
+        // hack, maybe there is other ambush spellid!
+        if (auto spell = GetSpell())
+            if (spell->Variables.Exist("DontProcWM"))
+                return;
+
+        if (auto caster = GetCaster())
+            if (auto hitUnit = GetHitUnit())
+            {
+                ApplyCountTheOdds(GetCaster());
+
+                // only with this aura..
+                if (caster->HasAura(OpportunityNew) && caster->HasAura(HiddenOpportunity))
+                {
+                    float chance = 35.0f;
+                    if (caster->HasAura(WeaponMaster))
+                        chance += 10.0f;
+
+                    if (roll_chance_i(chance))
+                    {
+                        if (auto spell = caster->CastAndGetSpell(hitUnit, GetSpellInfo()->Id, true))
+                        {
+                            spell->Variables.Set("DontProcWM", true);
+                        }
+                    }
+                }
+            }
     }
 
     void Register() override
@@ -143,8 +218,29 @@ class spell_dispatch : public SpellScript
 
     void HandleDummy(SpellEffIndex /*eff*/)
     {
-        if (GetCaster())
+        if (auto caster = GetCaster())
+        {
             ApplyCountTheOdds(GetCaster());
+
+            if (auto spell = GetSpell())
+            {
+                if (auto comboPoints = spell->GetUsedComboPoints())
+                {
+                    if (comboPoints >= 5)
+                    {
+                        // no idea what rank does for this spell, blizz bug on beta?
+                        if (auto dispatcher = caster->GetAuraEffect(Dispatcher, EFFECT_0))
+                        {
+                            // adding spell not increase duration..
+                            if (auto dispatcherProc = caster->GetAura(DispatcherProc))
+                                dispatcherProc->ModStackAmount(1, AURA_REMOVE_BY_DEFAULT, false, false);
+                            else
+                                caster->CastSpell(caster, DispatcherProc, CastSpellExtraArgs(true));
+                        }
+                    }
+                }
+            }
+        }
     }
 
     void Register() override
@@ -334,18 +430,27 @@ class spell_sinister_strike : public SpellScript
         if (!hitUnit)
             return;
 
-        uint32 chance = 35.0f;
-        if (caster->HasAura(WeaponMaster))
-            chance += 10.0f;
-
-        if (roll_chance_i(chance))
+        // only with this aura..
+        if (caster->HasAura(OpportunityNew))
         {
-            caster->CastSpell(hitUnit, SinisterStrike, true);
-            caster->CastSpell(caster, Opportunity, true);
+            float chance = 35.0f;
+            if (caster->HasAura(WeaponMaster))
+                chance += 10.0f;
 
-            if (caster->HasAura(ConcealedBlunderbuss) && roll_chance_i(40))
+            if (roll_chance_i(chance))
             {
-                caster->CastSpell(caster, ConcealedBlunderbussProc, true);
+                caster->CastSpell(hitUnit, SinisterStrike, true);
+
+                if (auto tripleThreat = caster->GetAuraEffect(TripleThreatNew, EFFECT_0))
+                    if (roll_chance_i(tripleThreat->GetAmount()))
+                        caster->CastSpell(hitUnit, SinisterStrikeTripleThreatProc, true);
+
+                caster->CastSpell(caster, Opportunity, true);
+
+                if (caster->HasAura(ConcealedBlunderbuss) && roll_chance_i(40))
+                {
+                    caster->CastSpell(caster, ConcealedBlunderbussProc, true);
+                }
             }
         }
     }
@@ -370,6 +475,10 @@ class spell_opportunity : public AuraScript
     {
         PreventDefaultAction();
         Remove();
+
+        if (auto caster = GetCaster())
+            if (caster->HasAura(Audacity))
+                caster->CastSpell(caster, AudacityProc, true);
     }
 
     void Register() override
@@ -529,6 +638,7 @@ class spell_pistol_shot : public SpellScript
 };
 
 /// ID: 340085 Greenskin's Wickers
+/// ID - 386823 Greenskin's Wickers
 class spell_greenskins_wickers : public AuraScript
 {
     PrepareAuraScript(spell_greenskins_wickers);
@@ -591,15 +701,18 @@ class aura_rog_restless_blades : public AuraScript
                 {
                     case AdrenalineRush:
                     case BetweenTheEyes:
+                    case BladeFlurry:
+                    case BladeRush:
+                    case Dreadblades: // dreadblades
+                    case GhostlyStrike:
                     case GrapplingHook:
+                    case KeepItRolling: // keep it roolling
+                    case KillingSpree:
+                    case MarkedForDeath:
+                    case RollTheBones:
+                    case SepsisNew: // sepsis
                     case Sprint:
                     case Vanish:
-                    case BladeFlurry:
-                    case GhostlyStrike:
-                    case MarkedForDeath:
-                    case BladeRush:
-                    case KillingSpree:
-                    case RollTheBones:
                         return !itr->second.OnHold;
                     default:
                         return false;
@@ -635,6 +748,86 @@ class aura_rog_restless_blades : public AuraScript
     }
 };
 
+/// ID - 381989 Keep It Rolling
+class spell_keep_it_rolling_381989 : public AuraScript
+{
+    PrepareAuraScript(spell_keep_it_rolling_381989);
+
+    void HandleApply0(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+    {
+        auto caster = GetCaster();
+        if (!caster)
+            return;
+
+        for (uint32 spellId : RTBSpells)
+        {
+            if (auto aura = caster->GetAura(spellId))
+            {
+                aura->SetDuration(aura->GetDuration() + GetEffect(EFFECT_0)->GetAmount());
+            }
+        }
+    }
+
+    void Register() override
+    {
+        OnEffectApply += AuraEffectApplyFn(spell_keep_it_rolling_381989::HandleApply0, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL_OR_REAPPLY_MASK);
+    }
+};
+
+/// ID - 344363 Riposte
+class spell_riposte_344363 : public AuraScript
+{
+    PrepareAuraScript(spell_riposte_344363);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetHitMask() & ProcFlagsHit::PROC_HIT_DODGE;
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_riposte_344363::CheckProc);
+    }
+};
+
+/// ID - 256170 Loaded Dice
+class spell_loaded_dice_256170 : public AuraScript
+{
+    PrepareAuraScript(spell_loaded_dice_256170);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == AdrenalineRush;
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_loaded_dice_256170::CheckProc);
+    }
+};
+
+/// ID - 386270 Audacity
+class spell_audacity_386270 : public AuraScript
+{
+    PrepareAuraScript(spell_audacity_386270);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == Ambush;
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        Remove();
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_audacity_386270::CheckProc);
+        OnProc += AuraProcFn(spell_audacity_386270::HandleProc);
+    }
+};
+
 void AddSC_spell_rogue_outlaw()
 {
     RegisterSpellScript(spell_rog_roll_the_bones);
@@ -651,4 +844,8 @@ void AddSC_spell_rogue_outlaw()
     RegisterSpellScript(spell_pistol_shot);
     RegisterSpellScript(spell_greenskins_wickers);
     RegisterSpellScript(aura_rog_restless_blades);
+    RegisterSpellScript(spell_keep_it_rolling_381989);
+    RegisterSpellScript(spell_riposte_344363);
+    RegisterSpellScript(spell_loaded_dice_256170);
+    RegisterSpellScript(spell_audacity_386270);
 }

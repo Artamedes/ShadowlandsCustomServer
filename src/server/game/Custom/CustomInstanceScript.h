@@ -19,6 +19,7 @@
 #include "ScriptMgr.h"
 #include "SpellAuras.h"
 #include "TemporarySummon.h"
+#include "Containers.h"
 
 struct CustomInstanceRespawnData
 {
@@ -163,22 +164,7 @@ public:
             m_CheckpointId = Value;
     }
 
-    void OnChallengeComplete() override
-    {
-        if (auto chest = instance->SummonGameObject(1200005, ChestSpawn, Quad, 0))
-        {
-            instance->DoOnPlayers([this, chest](Player* player)
-            {
-                auto loot = chest->GetLootFor(player, true);
-                loot->FillLoot(GetLootIdForDungeon(), LootTemplates_Gameobject, player, true, false, chest->GetLootMode(), true, true, false, chest->GetGOInfo()->IsOploteChest());
-            });
-
-            ChestGuid = chest->GetGUID();
-
-            chest->SetLootState(LootState::GO_ACTIVATED); // set activated
-            chest->ForceUpdateFieldChange(chest->m_values.ModifyValue(&Object::m_objectData).ModifyValue(&UF::ObjectData::DynamicFlags)); // force update dynflags
-        }
-    }
+    void OnChallengeComplete() override;
 
     uint32 GetLootIdForDungeon() override
     {

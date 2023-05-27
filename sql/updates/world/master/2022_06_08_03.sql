@@ -1,2 +1,0 @@
-DELETE FROM `creature_template_model` WHERE `CreatureID`=700073 AND `Idx`=0;
-INSERT INTO `creature_template_model` (`CreatureID`, `Idx`, `CreatureDisplayID`, `DisplayScale`, `Probability`, `VerifiedBuild`) VALUES (700073, 0, 90509, 1, 1, 0);

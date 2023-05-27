@@ -6,6 +6,7 @@
 #include "SpellAuras.h"
 #include "GameTime.h"
 #include "SpellAuraEffects.h"
+#include "Containers.h"
 
 enum SpellVenthyr
 {

@@ -29,7 +29,6 @@
 #include "World.h"
 
 using namespace Trinity::Hyperlinks;
-
 inline uint8 toHex(char c) { return (c >= '0' && c <= '9') ? c - '0' + 0x10 : (c >= 'a' && c <= 'f') ? c - 'a' + 0x1a : 0x00; }
 // Validates a single hyperlink
 HyperlinkInfo Trinity::Hyperlinks::ParseSingleHyperlink(std::string_view str)
@@ -49,7 +48,7 @@ HyperlinkInfo Trinity::Hyperlinks::ParseSingleHyperlink(std::string_view str)
 
     for (uint8 i = 0; i < 8; ++i)
     {
-        if (uint8 hex = toHex(str[i]))
+        if (uint8 hex = toHex(std::tolower(str[i])))
             color = (color << 4) | (hex & 0xf);
         else
             return {};
@@ -99,7 +98,6 @@ HyperlinkInfo Trinity::Hyperlinks::ParseSingleHyperlink(std::string_view str)
     // ok, valid hyperlink, return info
     return { str, color, tag, data, text };
 }
-
 template <typename T>
 struct LinkValidator
 {
@@ -213,6 +211,23 @@ struct LinkValidator<LinkTags::battlepet>
     static bool IsColorValid(BattlePetLinkData const& data, HyperlinkColor c)
     {
         return c == ItemQualityColors[data.Quality];
+    }
+};
+
+template <>
+struct LinkValidator<LinkTags::battlePetAbil>
+{
+    static bool IsTextValid(BattlePetAbilLinkData const& data, std::string_view text)
+    {
+        for (LocaleConstant i = LOCALE_enUS; i < TOTAL_LOCALES; i = LocaleConstant(i + 1))
+            if (data.Ability->Name[i] == text)
+                return true;
+        return false;
+    }
+
+    static bool IsColorValid(BattlePetAbilLinkData const&, HyperlinkColor c)
+    {
+        return c == CHAT_LINK_COLOR_BATTLE_PET_ABIL;
     }
 };
 
@@ -430,7 +445,7 @@ struct LinkValidator<LinkTags::keystone>
 
         for (LocaleConstant i = LOCALE_enUS; i < TOTAL_LOCALES; i = LocaleConstant(i + 1))
         {
-            std::string expectedText = Trinity::StringFormat("%s (%u)", data.Map->Name[i], data.Level);
+            std::string expectedText = Trinity::StringFormat("{} ({})", data.Map->Name[i], data.Level);
             if (expectedText == text)
                 return true;
         }
@@ -497,14 +512,28 @@ struct LinkValidator<LinkTags::mawpower>
 };
 
 template <>
+struct LinkValidator<LinkTags::mount>
+{
+    static bool IsTextValid(MountLinkData const& data, std::string_view text)
+    {
+        return LinkValidator<LinkTags::spell>::IsTextValid(data.Spell, text);
+    }
+
+    static bool IsColorValid(MountLinkData const&, HyperlinkColor c)
+    {
+        return c == CHAT_LINK_COLOR_SPELL;
+    }
+};
+
+template <>
 struct LinkValidator<LinkTags::outfit>
 {
-    static bool IsTextValid(std::string const&, std::string_view)
+    static bool IsTextValid(std::string_view, std::string_view)
     {
         return true;
     }
 
-    static bool IsColorValid(std::string const&, HyperlinkColor c)
+    static bool IsColorValid(std::string_view, HyperlinkColor c)
     {
         return c == CHAT_LINK_COLOR_TRANSMOG;
     }
@@ -601,7 +630,7 @@ struct LinkValidator<LinkTags::transmogset>
         {
             if (ItemNameDescriptionEntry const* itemNameDescription = sItemNameDescriptionStore.LookupEntry(set->ItemNameDescriptionID))
             {
-                std::string expectedText = Trinity::StringFormat("%s (%s)", set->Name[i], itemNameDescription->Description[i]);
+                std::string expectedText = Trinity::StringFormat("{} ({})", set->Name[i], itemNameDescription->Description[i]);
                 if (expectedText.c_str() == text)
                     return true;
             }
@@ -658,15 +687,20 @@ static bool ValidateLinkInfo(HyperlinkInfo const& info)
 {
     using namespace LinkTags;
     TryValidateAs(achievement);
+    TryValidateAs(api);
     TryValidateAs(apower);
     TryValidateAs(azessence);
     TryValidateAs(area);
     TryValidateAs(areatrigger);
     TryValidateAs(battlepet);
+    TryValidateAs(battlePetAbil);
+    TryValidateAs(clubFinder);
+    TryValidateAs(clubTicket);
     TryValidateAs(conduit);
     TryValidateAs(creature);
     TryValidateAs(creature_entry);
     TryValidateAs(currency);
+    TryValidateAs(dungeonScore);
     TryValidateAs(enchant);
     TryValidateAs(gameevent);
     TryValidateAs(gameobject);
@@ -680,6 +714,7 @@ static bool ValidateLinkInfo(HyperlinkInfo const& info)
     TryValidateAs(journal);
     TryValidateAs(keystone);
     TryValidateAs(mawpower);
+    TryValidateAs(mount);
     TryValidateAs(outfit);
     TryValidateAs(player);
     TryValidateAs(pvptal);
@@ -687,6 +722,7 @@ static bool ValidateLinkInfo(HyperlinkInfo const& info)
     TryValidateAs(skill);
     TryValidateAs(spell);
     TryValidateAs(talent);
+    TryValidateAs(talentbuild);
     TryValidateAs(taxinode);
     TryValidateAs(tele);
     TryValidateAs(title);

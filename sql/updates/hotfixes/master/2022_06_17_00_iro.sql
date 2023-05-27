@@ -1,2 +1,0 @@
-REPLACE INTO `hotfix_data` (`Id`, `UniqueId`, `TableHash`, `RecordId`, `Status`, `VerifiedBuild`) VALUES (10187, 10187, 793851790, 10187, 1, 0);
-REPLACE INTO `currency_types` (`ID`, `Name`, `Description`, `CategoryID`, `InventoryIconFileID`, `SpellWeight`, `SpellCategory`, `MaxQty`, `MaxEarnablePerWeek`, `Quality`, `FactionID`, `ItemGroupSoundsID`, `XpQuestDifficulty`, `AwardConditionID`, `MaxQtyWorldStateID`, `Flags1`, `Flags2`, `VerifiedBuild`) VALUES (10187, 'Legendary Fragment', '', 245, 237446, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 2, 0, 0);

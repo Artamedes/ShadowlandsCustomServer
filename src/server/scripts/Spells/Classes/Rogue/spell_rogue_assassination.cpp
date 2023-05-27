@@ -64,9 +64,8 @@ struct at_rogue_poison_bomb : AreaTriggerAI
 {
     at_rogue_poison_bomb(AreaTrigger* areatrigger) : AreaTriggerAI(areatrigger)
     {
-        // How often should the action be executed
-        ///< Custom HASTE - set periodic timer to 50, originally is 1000
-        areatrigger->SetPeriodicProcTimer(50);
+        // @todo: scale by haste
+        areatrigger->SetPeriodicProcTimer(1000);
     }
 
     void OnPeriodicProc() override
@@ -135,13 +134,14 @@ class aura_rog_venomous_wounds : public AuraScript
             case Garrote:
             case Rupture:
             case InternalBleedingDot:
+            {
                 if (target->HasAuraWithDispelFlagsFromCaster(caster, DISPEL_POISON, false))
                     return true;
+                return false;
+            }
             default:
                 return false;
         }
-
-		return false;
 	}
 
     void HandleProc(ProcEventInfo& /*procInfo*/)
@@ -228,6 +228,73 @@ class spell_mutilate_27576 : public SpellScript
     }
 };
 
+/// ID - 385627 Kingsbane
+class spell_kingsbane_385627 : public AuraScript
+{
+    PrepareAuraScript(spell_kingsbane_385627);
+
+    enum eKingsBane
+    {
+        KingsBaneProc = 394095,
+    };
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        if (!eventInfo.GetSpellInfo())
+            return false;
+
+        switch (eventInfo.GetSpellInfo()->Id)
+        {
+            case eRogue::InstantPoisonDmg:
+            case eRogue::DeadlyPoisonInstant:
+            case eRogue::AmplifyingPoisonDmg:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (auto caster = GetCaster())
+            if (auto target = eventInfo.GetProcTarget())
+                caster->CastSpell(target, KingsBaneProc, true);
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_kingsbane_385627::CheckProc);
+        OnProc += AuraProcFn(spell_kingsbane_385627::HandleProc);
+    }
+};
+
+/// ID - 51667 Cut to the Chase
+class spell_cut_to_the_chase_51667 : public AuraScript
+{
+    PrepareAuraScript(spell_cut_to_the_chase_51667);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == Envenom;
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (auto procSpell = eventInfo.GetProcSpell())
+            if (auto caster = GetCaster())
+                if (auto aura = caster->GetAura(SliceAndDiceAssa))
+                    if (auto eff = GetEffect(EFFECT_0))
+                        if (auto comboPoints = procSpell->GetUsedComboPoints())
+                            aura->ModDuration(eff->GetAmount() * comboPoints * 1000, false, true);
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_cut_to_the_chase_51667::CheckProc);
+        OnProc += AuraProcFn(spell_cut_to_the_chase_51667::HandleProc);
+    }
+};
+
 void AddSC_spell_rogue_assassination()
 {
     RegisterSpellScript(aura_rog_poison_bomb);
@@ -235,6 +302,8 @@ void AddSC_spell_rogue_assassination()
     RegisterSpellScript(aura_rog_venomous_wounds);
     RegisterSpellScript(spell_mutilate_5374);
     RegisterSpellScript(spell_mutilate_27576);
+    RegisterSpellScript(spell_kingsbane_385627);
+    RegisterSpellScript(spell_cut_to_the_chase_51667);
         
     RegisterAreaTriggerAI(at_rogue_poison_bomb); // 16552
 }

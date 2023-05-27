@@ -9,6 +9,7 @@
 #include "SpellAuraEffects.h"
 #include "AreaTrigger.h"
 #include "AreaTriggerAI.h"
+#include "Containers.h"
 
 enum NightFae
 {
@@ -152,97 +153,6 @@ struct npc_regenerating_wild_seed_164589 : public ScriptedAI
                 me->DespawnOrUnsummon();
             }
         }
-};
-
-class unit_script_nightfae : public UnitScript
-{
-public:
-    unit_script_nightfae() : UnitScript("player_script_nightfae") { }
-
-    enum eSpells
-    {
-        WildHuntTactics = 325066,
-        WildHuntTacticsMS = 343594,
-        Stratagem = 353286,
-        StratagemHealer = 353793,
-        StratagemDamage = 353254,
-
-        // Hunter
-        WildSpirits = 328837,
-        WildSpiritsDmg = 328757,
-    };
-
-    //void OnHeal(Unit* healer, Unit* reciever, uint32& gain) override
-    //{
-    //    if (!healer || !reciever)
-    //        return;
-    //
-    //    if (reciever->HealthBelowPct(36))
-    //    {
-    //        if (healer->HasAura(WildHuntTactics))
-    //        {
-    //            AddPct(gain, 10);
-    //            if (!healer->HasAura(Stratagem))
-    //                healer->CastSpell(healer, Stratagem, true);
-    //            if (!healer->HasAura(WildHuntTacticsMS))
-    //                healer->CastSpell(healer, WildHuntTacticsMS, true);
-    //            if (healer->HasAura(Stratagem))
-    //                healer->CastSpell(reciever, StratagemHealer, true);
-    //        }
-    //    }
-    //}
-
-    void OnDamage(Unit* attacker, Unit* victim, uint32& damage, SpellInfo const* spellInfo)
-    {
-        if (!attacker || !victim)
-            return;
-
-        //if (victim->HealthAbovePct(69))
-        //{
-        //    if (attacker->HasAura(WildHuntTactics))
-        //    {
-        //        AddPct(damage, 10);
-        //        if (!attacker->HasAura(Stratagem))
-        //            attacker->CastSpell(attacker, Stratagem, true);
-        //        if (!attacker->HasAura(WildHuntTacticsMS))
-        //            attacker->CastSpell(attacker, WildHuntTacticsMS, true);
-        //        if (attacker->HasAura(Stratagem))
-        //            attacker->CastSpell(victim, StratagemDamage, true);
-        //    }
-        //}
-
-        /// <summary>
-        ///  @TODO
-        /// </summary>
-        /// <param name="attacker"></param>
-        /// <param name="victim"></param>
-        /// <param name="damage"></param>
-        /// <param name="spellInfo"></param>
-        if (spellInfo)
-        {
-            switch (spellInfo->Id)
-            {
-                case 259756:
-                case 259760:
-                    return;
-                default:
-                    break;
-            }
-        }
-
-        if (attacker->GetClass() == CLASS_HUNTER && attacker->IsPlayer() && spellInfo && spellInfo->Id != WildSpiritsDmg)
-        {
-            if (attacker->HasAura(WildSpirits))
-            {
-                auto areaTrigger = attacker->GetAreaTrigger(WildSpirits);
-                if (areaTrigger)
-                {
-                    //if (areaTrigger->GetInsideUnits().count(victim->GetGUID()))
-                    //    attacker->CastSpell(victim, WildSpiritsDmg, true);
-                }
-            }
-        }
-    }
 };
 
 // 328837
@@ -1509,7 +1419,4 @@ void AddSC_spell_nightfae()
 
     RegisterAreaTriggerAI(at_field_of_blossoms);
     RegisterAreaTriggerAI(at_horn_of_the_wild_hunt);
-
-    /// PIGPIG
-    /// new unit_script_nightfae();
 }

@@ -19,6 +19,7 @@ nbproject/*
 .idea/*
 .browse.VC*
 .vscode
-cmake-build-*/
+cmake-build-*/*
 .vs
 *.user
+/rl

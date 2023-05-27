@@ -97,7 +97,7 @@ public:
         ChrClassesEntry const* classEntry = sChrClassesStore.LookupEntry(player->GetClass());
         if (!classEntry)
         {
-            TC_LOG_ERROR("misc", "Class %u not found in DBC (Wrong DBC files?)", player->GetClass());
+            TC_LOG_ERROR("misc", "Class {} not found in DBC (Wrong DBC files?)", player->GetClass());
             return false;
         }
 
@@ -142,7 +142,7 @@ public:
         target->InitRunes();
         target->InitStatsForLevel(true);
         target->InitTaxiNodesForLevel();
-        target->InitTalentForLevel();
+      //  target->InitTalentForLevel();
         target->SetXP(0);
 
         target->_ApplyAllLevelScaleItemMods(true);
@@ -197,7 +197,7 @@ public:
         target->InitRunes();
         target->InitStatsForLevel(true);
         target->InitTaxiNodesForLevel();
-        target->InitTalentForLevel();
+        //target->InitTalentForLevel();
 
         return true;
     }
@@ -236,12 +236,13 @@ public:
 
         if (target)
         {
-            target->ResetTalents(true);
-            target->ResetTalentSpecialization();
-            target->SendTalentsInfoData();
-            ChatHandler(target->GetSession()).SendSysMessage(LANG_RESET_TALENTS);
-            if (!handler->GetSession() || handler->GetSession()->GetPlayer() != target)
-                handler->PSendSysMessage(LANG_RESET_TALENTS_ONLINE, handler->GetNameLink(target).c_str());
+            // @TODO
+          // target->ResetTalents(true);
+          // target->ResetTalentSpecialization();
+          // target->SendTalentsInfoData();
+          // ChatHandler(target->GetSession()).SendSysMessage(LANG_RESET_TALENTS);
+          // if (!handler->GetSession() || handler->GetSession()->GetPlayer() != target)
+          //     handler->PSendSysMessage(LANG_RESET_TALENTS_ONLINE, handler->GetNameLink(target).c_str());
 
             /* TODO: 6.x remove/update pet talents
             Pet* pet = target->GetPet();

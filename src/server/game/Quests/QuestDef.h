@@ -40,7 +40,7 @@ namespace WorldPackets
     }
 }
 
-#define MAX_QUEST_LOG_SIZE 25
+#define MAX_QUEST_LOG_SIZE 35
 
 #define QUEST_ITEM_DROP_COUNT 4
 #define QUEST_REWARD_CHOICES_COUNT 6
@@ -346,6 +346,19 @@ enum QuestObjectiveFlags
     QUEST_OBJECTIVE_FLAG_KILL_PLAYERS_SAME_FACTION          = 0x80
 };
 
+enum class QuestCompleteSpellType : uint32
+{
+    LegacyBehavior  = 0,
+    Follower        = 1,
+    Tradeskill      = 2,
+    Ability         = 3,
+    Aura            = 4,
+    Spell           = 5,
+    Unlock          = 6,
+    Companion       = 7,
+    Max
+};
+
 struct QuestGreeting
 {
     uint16 EmoteType;
@@ -494,11 +507,19 @@ using QuestObjectives = std::vector<QuestObjective>;
 
 struct QuestRewardDisplaySpell
 {
-    QuestRewardDisplaySpell() : SpellId(0), PlayerConditionId(0) { }
-    QuestRewardDisplaySpell(uint32 spellId, uint32 playerConditionId) : SpellId(spellId), PlayerConditionId(playerConditionId) { }
+    QuestRewardDisplaySpell() : SpellId(0), PlayerConditionId(0), Type(QuestCompleteSpellType::LegacyBehavior) { }
+    QuestRewardDisplaySpell(uint32 spellId, uint32 playerConditionId, QuestCompleteSpellType type) : SpellId(spellId), PlayerConditionId(playerConditionId), Type(type) { }
 
     uint32 SpellId;
     uint32 PlayerConditionId;
+    QuestCompleteSpellType Type;
+};
+
+struct QuestConditionalText
+{
+    int32 PlayerConditionId = 0;
+    int32 QuestgiverCreatureId = 0;
+    std::vector<std::string> Text;
 };
 
 // This Quest class provides a convenient way to access a few pretotaled (cached) quest details,
@@ -522,8 +543,13 @@ class TC_GAME_API Quest
         void LoadQuestMailSender(Field* fields);
         void LoadQuestObjective(Field* fields);
         void LoadQuestObjectiveVisualEffect(Field* fields);
+        void LoadConditionalConditionalQuestDescription(Field* fields);
+        void LoadConditionalConditionalRequestItemsText(Field* fields);
+        void LoadConditionalConditionalOfferRewardText(Field* fields);
+        void LoadConditionalConditionalQuestCompletionLog(Field* fields);
 
         uint32 XPValue(Player const* player) const;
+        static uint32 XPValue(Player const* player, uint32 contentTuningId, uint32 xpDifficulty, float xpMultiplier = 1.0f, int32 expansion = -1);
         uint32 MoneyValue(Player const* player) const;
         uint32 MaxMoneyValue() const;
         uint32 GetMaxMoneyReward() const;
@@ -579,10 +605,14 @@ class TC_GAME_API Quest
         std::string const& GetLogTitle() const { return _logTitle; }
         std::string const& GetLogDescription() const { return _logDescription; }
         std::string const& GetQuestDescription() const { return _questDescription; }
+        std::vector<QuestConditionalText> const& GetConditionalQuestDescription() const { return _conditionalQuestDescription; }
         std::string const& GetAreaDescription() const { return _areaDescription; }
         std::string const& GetOfferRewardText() const { return _offerRewardText; }
+        std::vector<QuestConditionalText> const& GetConditionalOfferRewardText() const { return _conditionalOfferRewardText; }
         std::string const& GetRequestItemsText() const { return _requestItemsText; }
+        std::vector<QuestConditionalText> const& GetConditionalRequestItemsText() const { return _conditionalRequestItemsText; }
         std::string const& GetQuestCompletionLog() const { return _questCompletionLog; }
+        std::vector<QuestConditionalText> const& GetConditionalQuestCompletionLog() const { return _conditionalQuestCompletionLog; }
         std::string const& GetPortraitGiverText() const { return _portraitGiverText; }
         std::string const& GetPortraitGiverName() const { return _portraitGiverName; }
         std::string const& GetPortraitTurnInText() const { return _portraitTurnInText; }
@@ -675,6 +705,9 @@ class TC_GAME_API Quest
 
         void BuildQuestRewards(WorldPackets::Quest::QuestRewards& rewards, Player* player) const;
 
+        // Helpers
+        static uint32 RoundXPValue(uint32 xp);
+
         std::vector<uint32> DependentPreviousQuests;
         std::vector<uint32> DependentBreadcrumbQuests;
         std::array<WorldPacket, TOTAL_LOCALES> QueryData;
@@ -741,6 +774,12 @@ class TC_GAME_API Quest
         std::string _portraitTurnInName;
         std::string _questCompletionLog;
 
+        // quest_description_conditional
+        std::vector<QuestConditionalText> _conditionalQuestDescription;
+
+        // quest_completion_log_conditional
+        std::vector<QuestConditionalText> _conditionalQuestCompletionLog;
+
         // quest_request_items table
         uint32 _emoteOnComplete = 0;
         uint32 _emoteOnIncomplete = 0;
@@ -748,8 +787,14 @@ class TC_GAME_API Quest
         uint32 _emoteOnIncompleteDelay = 0;
         std::string _requestItemsText;
 
+        // quest_request_items_conditional
+        std::vector<QuestConditionalText> _conditionalRequestItemsText;
+
         // quest_offer_reward table
         std::string _offerRewardText;
+
+        // quest_offer_reward_conditional
+        std::vector<QuestConditionalText> _conditionalOfferRewardText;
 
         // quest_template_addon table (custom data)
         uint32 _maxLevel = 0;
@@ -772,9 +817,6 @@ class TC_GAME_API Quest
         uint32 _specialFlags = 0; // custom flags, not sniffed/WDB
         std::bitset<MAX_QUEST_OBJECTIVE_TYPE> _usedQuestObjectiveTypes;
         uint32 _scriptId = 0;
-
-        // Helpers
-        static uint32 RoundXPValue(uint32 xp);
 };
 
 struct QuestStatusData
@@ -783,6 +825,83 @@ struct QuestStatusData
     QuestStatus Status = QUEST_STATUS_NONE;
     uint32 Timer = 0;
     bool Explored = false;
+};
+
+#define TREASURE_PICKER_MAX_ITEM_COUNT 5
+#define TREASURE_PICKER_MAX_CURRENCY_COUNT 5
+#define TREASURE_PICKER_MAX_BONUS_COUNT 5
+#define TREASURE_PICKER_ITEM_MAX_BONUSES 5
+#define TREASURE_PICKER_ITEM_MAX_MODIFIERS 5
+
+struct TreasurePickerItem
+{
+    TreasurePickerItem(uint32 currencyId = 0, uint32 quantity = 0)
+    {
+        ItemId = currencyId;
+        Quantity = quantity;
+
+        for (int i = 0; i < TREASURE_PICKER_ITEM_MAX_BONUSES; i++)
+            BonusIds[i] = 0;
+
+        for (int i = 0; i < TREASURE_PICKER_ITEM_MAX_MODIFIERS; i++)
+        {
+            ModifierId[i] = 0;
+            ModifierValue[i] = 0;
+        }
+    }
+
+    uint32 ItemId;
+    uint32 Quantity;
+    uint32 BonusIds[TREASURE_PICKER_MAX_BONUS_COUNT];
+    uint32 ModifierId[TREASURE_PICKER_ITEM_MAX_MODIFIERS];
+    uint32 ModifierValue[TREASURE_PICKER_ITEM_MAX_MODIFIERS];
+};
+
+struct TreasurePickerCurrency
+{
+    TreasurePickerCurrency(uint32 currencyId = 0, uint32 currencyValue = 0)
+    {
+        CurrencyId = currencyId;
+        CurrencyValue = currencyValue;
+    }
+
+    uint32 CurrencyId = 0;
+    uint32 CurrencyValue = 0;
+};
+
+struct TreasurePickerBonus
+{
+    TreasurePickerBonus(bool exists = false, uint32 bonusMoney = 0, bool unkBit = false)
+    {
+        Exists = exists;
+        BonusMoney = bonusMoney;
+        UnkBit = unkBit;
+    }
+
+    bool Exists = false;
+    uint32 BonusMoney = 0;
+    bool UnkBit = false;
+
+    TreasurePickerCurrency TresaurePickerCurrencies[TREASURE_PICKER_MAX_CURRENCY_COUNT];
+    TreasurePickerItem TresaurePickerItems[TREASURE_PICKER_MAX_ITEM_COUNT];
+};
+
+struct TreasurePicker
+{
+    TreasurePicker(uint32 id = 0, uint64 moneyReward = 0, uint32 flags = 0)
+    {
+        Id = id;
+        MoneyReward = moneyReward;
+        Flags = flags;
+    }
+
+    uint32 Id = 0;
+    uint64 MoneyReward = 0;
+    uint32 Flags = 0;
+
+    TreasurePickerCurrency TresaurePickerCurrencies[TREASURE_PICKER_MAX_CURRENCY_COUNT];
+    TreasurePickerItem TresaurePickerItems[TREASURE_PICKER_MAX_ITEM_COUNT];
+    TreasurePickerBonus TreasurePickerBonuses[TREASURE_PICKER_ITEM_MAX_BONUSES];
 };
 
 #endif

@@ -465,11 +465,11 @@ class instance_deadmines : public InstanceMapScript
                             }
                         }
                         _foeReaper5000Intro = data;
-                        SaveToDB();
+                        //SaveToDB();
                         break;
                     case DATA_BROKEN_DOOR:
                         _ironCladDoorState = data;
-                        SaveToDB();
+                        //SaveToDB();
                         break;
                     case DATA_RIPSNARL_FOG:
                         if (data == IN_PROGRESS)
@@ -592,7 +592,7 @@ class instance_deadmines : public InstanceMapScript
                         {
                             events.ScheduleEvent(EVENT_SPAWN_GOBLIN_EVENT, 2s + 500ms);
                             _goblinEventState = DONE;
-                            SaveToDB();
+                            //SaveToDB();
                         }
                         break;
                     default:
@@ -881,19 +881,19 @@ class instance_deadmines : public InstanceMapScript
                 }
             }
 
-            void WriteSaveDataMore(std::ostringstream& data) override
-            {
-                data << _goblinEventState << ' '
-                    << _foeReaper5000Intro << ' '
-                    << _ironCladDoorState;
-            }
-
-            void ReadSaveDataMore(std::istringstream& data) override
-            {
-                data >> _goblinEventState;
-                data >> _foeReaper5000Intro;
-                data >> _ironCladDoorState;
-            }
+            //void WriteSaveDataMore(std::ostringstream& data) override
+            //{
+            //    data << _goblinEventState << ' '
+            //        << _foeReaper5000Intro << ' '
+            //        << _ironCladDoorState;
+            //}
+            //
+            //void ReadSaveDataMore(std::istringstream& data) override
+            //{
+            //    data >> _goblinEventState;
+            //    data >> _foeReaper5000Intro;
+            //    data >> _ironCladDoorState;
+            //}
 
         protected:
             struct RopeAnchorPair

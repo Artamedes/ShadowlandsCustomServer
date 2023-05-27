@@ -266,9 +266,9 @@ public:
 
     class spell_Windwall_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_Windwall_SpellScript)
+        PrepareSpellScript(spell_Windwall_SpellScript);
 
-            void HandleDummy(SpellEffIndex /*effIndex*/)
+        void HandleDummy(SpellEffIndex /*effIndex*/)
         {
             if (GetCaster())
             {
@@ -318,9 +318,9 @@ public:
 
     class spell_FourWind_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_FourWind_SpellScript)
+        PrepareSpellScript(spell_FourWind_SpellScript);
 
-            void HandleTriggerMissible(SpellEffIndex /*effIndex*/)
+        void HandleTriggerMissible(SpellEffIndex /*effIndex*/)
         {
             static const uint32 k_spells1[2] =
             {

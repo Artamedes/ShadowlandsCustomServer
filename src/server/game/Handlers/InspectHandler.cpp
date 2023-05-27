@@ -31,11 +31,11 @@ void WorldSession::HandleInspectOpcode(WorldPackets::Inspect::Inspect& inspect)
     Player* player = ObjectAccessor::GetPlayer(*_player, inspect.Target);
     if (!player)
     {
-        TC_LOG_DEBUG("network", "WorldSession::HandleInspectOpcode: Target %s not found.", inspect.Target.ToString().c_str());
+        TC_LOG_DEBUG("network", "WorldSession::HandleInspectOpcode: Target {} not found.", inspect.Target.ToString());
         return;
     }
 
-    TC_LOG_DEBUG("network", "WorldSession::HandleInspectOpcode: Target %s.", inspect.Target.ToString().c_str());
+    TC_LOG_DEBUG("network", "WorldSession::HandleInspectOpcode: Target {}.", inspect.Target.ToString());
 
     if (!GetPlayer()->IsWithinDistInMap(player, INSPECT_DISTANCE, false))
         return;
@@ -46,17 +46,18 @@ void WorldSession::HandleInspectOpcode(WorldPackets::Inspect::Inspect& inspect)
     WorldPackets::Inspect::InspectResult inspectResult;
     inspectResult.DisplayInfo.Initialize(player);
 
-    if (GetPlayer()->CanBeGameMaster() || sWorld->getIntConfig(CONFIG_TALENTS_INSPECTING) + (GetPlayer()->GetEffectiveTeam() == player->GetEffectiveTeam()) > 1)
-    {
-        PlayerTalentMap const* talents = player->GetTalentMap(player->GetActiveTalentGroup());
-        for (PlayerTalentMap::value_type const& v : *talents)
-            if (v.second.state != PLAYERSPELL_REMOVED)
-                inspectResult.Talents.push_back(v.first);
-
-        PlayerPvpTalentMap const& pvpTalents = player->GetPvpTalentMap(player->GetActiveTalentGroup());
-        for (std::size_t i = 0; i < pvpTalents.size(); ++i)
-            inspectResult.PvpTalents[i] = pvpTalents[i];
-    }
+    // @TODO: NEW TALENTS
+   //if (GetPlayer()->CanBeGameMaster() || sWorld->getIntConfig(CONFIG_TALENTS_INSPECTING) + (GetPlayer()->GetEffectiveTeam() == player->GetEffectiveTeam()) > 1)
+   //{
+   //    PlayerTalentMap const* talents = player->GetTalentMap(player->GetActiveTalentGroup());
+   //    for (PlayerTalentMap::value_type const& v : *talents)
+   //        if (v.second.state != PLAYERSPELL_REMOVED)
+   //            inspectResult.Talents.push_back(v.first);
+   //
+   //    PlayerPvpTalentMap const& pvpTalents = player->GetPvpTalentMap(player->GetActiveTalentGroup());
+   //    for (std::size_t i = 0; i < pvpTalents.size(); ++i)
+   //        inspectResult.PvpTalents[i] = pvpTalents[i];
+   //}
 
     if (Guild* guild = sGuildMgr->GetGuildById(player->GetGuildId()))
     {
@@ -85,11 +86,11 @@ void WorldSession::HandleQueryInspectAchievements(WorldPackets::Inspect::QueryIn
     Player* player = ObjectAccessor::GetPlayer(*_player, inspect.Guid);
     if (!player)
     {
-        TC_LOG_DEBUG("network", "WorldSession::HandleQueryInspectAchievements: [%s] inspected unknown Player [%s]", GetPlayer()->GetGUID().ToString().c_str(), inspect.Guid.ToString().c_str());
+        TC_LOG_DEBUG("network", "WorldSession::HandleQueryInspectAchievements: [{}] inspected unknown Player [{}]", GetPlayer()->GetGUID().ToString(), inspect.Guid.ToString());
         return;
     }
 
-    TC_LOG_DEBUG("network", "WorldSession::HandleQueryInspectAchievements: [%s] inspected Player [%s]", GetPlayer()->GetGUID().ToString().c_str(), inspect.Guid.ToString().c_str());
+    TC_LOG_DEBUG("network", "WorldSession::HandleQueryInspectAchievements: [{}] inspected Player [{}]", GetPlayer()->GetGUID().ToString(), inspect.Guid.ToString());
 
     if (!GetPlayer()->IsWithinDistInMap(player, INSPECT_DISTANCE, false))
         return;

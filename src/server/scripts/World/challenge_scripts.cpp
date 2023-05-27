@@ -336,6 +336,13 @@ class aura_challengers_might : public AuraScript
         if (!aurEff->GetAmount() || !GetCaster()->IsInCombat())
             return;
 
+        // check if this is challenge mode map..
+        if (!GetCaster()->GetMap()->IsChallengeMode())
+        {
+            Remove();
+            return;
+        }
+
         if (volcanicTimer == volcanicTick)
             volcanicTimer = 0;
         else
@@ -474,8 +481,8 @@ class aura_challengers_might : public AuraScript
         OnEffectPeriodic += AuraEffectPeriodicFn(aura_challengers_might::OnTick, EFFECT_7, SPELL_AURA_PERIODIC_DUMMY);
         OnEffectProc += AuraEffectProcFn(aura_challengers_might::OnNecroticProc, EFFECT_8, SPELL_AURA_DUMMY);
         OnEffectProc += AuraEffectProcFn(aura_challengers_might::OnEnragingProc, EFFECT_2, SPELL_AURA_DUMMY);
-        OnEffectUpdate += AuraEffectUpdateFn(aura_challengers_might::OnUpdate, EFFECT_11, SPELL_AURA_DUMMY);
-        OnEffectUpdate += AuraEffectUpdateFn(aura_challengers_might::OnUpdate, EFFECT_12, SPELL_AURA_DUMMY);
+        //OnEffectUpdate += AuraEffectUpdateFn(aura_challengers_might::OnUpdate, EFFECT_11, SPELL_AURA_DUMMY);
+        //OnEffectUpdate += AuraEffectUpdateFn(aura_challengers_might::OnUpdate, EFFECT_12, SPELL_AURA_DUMMY);
     }
 };
 

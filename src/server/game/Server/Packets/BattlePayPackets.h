@@ -147,8 +147,8 @@ namespace WorldPackets
 
             void Read() override;
 
-            uint32 UnkInt1;
-            uint32 UnkInt2;
+            uint32 UnkInt1 = 0;
+            uint32 UnkInt2 = 0;
         };
 
         class BattlePayStartPurchase final : public ClientPacket
@@ -208,9 +208,9 @@ namespace WorldPackets
 
             WorldPacket const* Write() override;
 
-            uint64 CurrentPriceFixedPoint;        ///< Offset 0x0000 Type _MJVTBL_UINT64
-            uint64 PurchaseID;                    ///< Offset 0x0008 Type _MJVTBL_UINT64
-            uint32 ServerToken;                   ///< Offset 0x0010 Type _MJVTBL_UINT32
+            uint64 CurrentPriceFixedPoint = 0;        ///< Offset 0x0000 Type _MJVTBL_UINT64
+            uint64 PurchaseID = 0;                    ///< Offset 0x0008 Type _MJVTBL_UINT64
+            uint32 ServerToken = 0;                   ///< Offset 0x0010 Type _MJVTBL_UINT32
         };
 
         class BattlePayStartPurchaseResponse final : public ServerPacket

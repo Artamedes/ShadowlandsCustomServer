@@ -825,38 +825,44 @@ void SpellHistory::AddSpellCooldown(uint32 spellid, uint32 itemid, uint32 end_ti
     _spellCooldowns[spellid] = sc;
 }
 
-void SpellHistory::ModifySpellCooldown(uint32 spellId, Duration offset, bool withoutCategoryCooldown)
+void SpellHistory::ModifySpellCooldown(uint32 spellId, Duration cooldownMod, bool withoutCategoryCooldown)
 {
     auto itr = _spellCooldowns.find(spellId);
-    if (!offset.count() || itr == _spellCooldowns.end())
+    if (!cooldownMod.count() || itr == _spellCooldowns.end())
         return;
 
+    ModifySpellCooldown(itr, cooldownMod, withoutCategoryCooldown);
+
+}
+
+void SpellHistory::ModifySpellCooldown(CooldownStorageType::iterator& itr, Duration cooldownMod, bool withoutCategoryCooldown)
+{
     Clock::time_point now = GameTime::GetTime<Clock>();
 
-    itr->second.CooldownEnd += offset;
+    itr->second.CooldownEnd += cooldownMod;
 
     if (itr->second.CategoryId)
     {
         if (!withoutCategoryCooldown)
-            itr->second.CategoryEnd += offset;
+            itr->second.CategoryEnd += cooldownMod;
 
         // Because category cooldown existence is tied to regular cooldown, we cannot allow a situation where regular cooldown is shorter than category
         if (itr->second.CooldownEnd < itr->second.CategoryEnd)
             itr->second.CooldownEnd = itr->second.CategoryEnd;
     }
 
-    if (itr->second.CooldownEnd <= now)
-        EraseCooldown(itr);
-
     if (Player* playerOwner = GetPlayerOwner())
     {
         WorldPackets::Spells::ModifyCooldown modifyCooldown;
         modifyCooldown.IsPet = _owner != playerOwner;
-        modifyCooldown.SpellID = spellId;
-        modifyCooldown.DeltaTime = std::chrono::duration_cast<Milliseconds>(offset).count();
+        modifyCooldown.SpellID = itr->second.SpellId;
+        modifyCooldown.DeltaTime = std::chrono::duration_cast<Milliseconds>(cooldownMod).count();
         modifyCooldown.WithoutCategoryCooldown = withoutCategoryCooldown;
         playerOwner->SendDirectMessage(modifyCooldown.Write());
     }
+
+    if (itr->second.CooldownEnd <= now)
+        itr = EraseCooldown(itr);
 }
 
 void SpellHistory::ModifyCooldown(uint32 spellId, int32 cooldownModMs)
@@ -888,30 +894,6 @@ void SpellHistory::ResetCooldown(uint32 spellId, bool update /*= false*/)
         return;
 
     ResetCooldown(itr, update);
-}
-
-void SpellHistory::ResetCategoryCooldown(uint32 category, bool update)
-{
-    auto itr = _categoryCooldowns.find(category);
-    if (itr == _categoryCooldowns.end())
-        return;
-
-    Clock::time_point now = GameTime::GetTime<Clock>();
-    Clock::duration remaining = itr->second->CategoryEnd - now;
-    auto remainingMs = std::chrono::duration_cast<Milliseconds>(remaining);
-
-    if (update)
-    {
-        if (Player* playerOwner = GetPlayerOwner())
-        {
-            WorldPackets::Spells::CategoryCooldown clearCooldown;
-            clearCooldown.CategoryCooldowns.reserve(1);
-            clearCooldown.CategoryCooldowns.emplace_back(WorldPackets::Spells::CategoryCooldown::CategoryCooldownInfo(category, -int32(remainingMs.count())));
-            playerOwner->SendDirectMessage(clearCooldown.Write());
-        }
-    }
-
-     _categoryCooldowns.erase(itr);
 }
 
 void SpellHistory::ResetCooldown(CooldownStorageType::iterator& itr, bool update /*= false*/)
@@ -950,6 +932,9 @@ void SpellHistory::ResetAllCooldowns()
 bool SpellHistory::HasCooldown(SpellInfo const* spellInfo, uint32 itemId /*= 0*/) const
 {
     if (_spellCooldowns.count(spellInfo->Id) != 0)
+        return true;
+
+    if (spellInfo->CooldownAuraSpellId && _owner->HasAura(spellInfo->CooldownAuraSpellId))
         return true;
 
     uint32 category = 0;
@@ -1115,7 +1100,7 @@ bool SpellHistory::ConsumeCharge(uint32 chargeCategoryId, bool withPacket /*= fa
                 float addVal = 1.0f;
                 ApplyPercentModFloatVar(addVal, eff->GetAmount(), !true);
                 chargeRecovery *= addVal;
-                TC_LOG_INFO("server.spells", "SPELL_AURA_MOD_CHARGE_RECOVERY_RATE %u %u %f %d", eff->GetMiscValue(), eff->GetAmount(), addVal, chargeRecovery);
+                TC_LOG_INFO("server.spells", "SPELL_AURA_MOD_CHARGE_RECOVERY_RATE {} {} {} {}", eff->GetMiscValue(), eff->GetAmount(), addVal, chargeRecovery);
             }
         }
 

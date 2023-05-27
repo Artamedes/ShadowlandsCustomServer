@@ -50,7 +50,7 @@ namespace WorldPackets
         class UpdateTalentData final : public ServerPacket
         {
         public:
-            UpdateTalentData() : ServerPacket(SMSG_UPDATE_TALENT_DATA, 2+4+4+4+12) { }
+            UpdateTalentData() : ServerPacket(SMSG_UPDATE_TALENT_DATA, 2 + 4 + 4 + 4 + 12) { }
 
             WorldPacket const* Write() override;
 
@@ -69,7 +69,7 @@ namespace WorldPackets
         class RespecWipeConfirm final : public ServerPacket
         {
         public:
-            RespecWipeConfirm() : ServerPacket(SMSG_RESPEC_WIPE_CONFIRM, 16 + 4 +1) { }
+            RespecWipeConfirm() : ServerPacket(SMSG_RESPEC_WIPE_CONFIRM, 16 + 4 + 1) { }
 
             WorldPacket const* Write() override;
 

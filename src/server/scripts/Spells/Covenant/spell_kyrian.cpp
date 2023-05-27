@@ -112,11 +112,11 @@ struct npc_kyrian_steward : public ScriptedAI
             if (player == me->GetOwner())
             {
                 ClearGossipMenuFor(player);
-                AddGossipItemFor(player, GossipOptionIcon::None, "I need a favor. (1 hr cooldown)", 0, 7);
-                AddGossipItemFor(player, GossipOptionIcon::None, "I have a special request. (4 hr cooldown)", 0, 3);
-                AddGossipItemFor(player, GossipOptionIcon::None, "Tell one of my friends how great they are! (1 day cooldown)", 0, 6);
-                AddGossipItemFor(player, GossipOptionIcon::None, "Can you play me a song?", 0, 2);
-                AddGossipItemFor(player, GossipOptionIcon::None, "Thank you. See you later!", 0, 8);
+                AddGossipItemFor(player, GossipOptionNpc::None, "I need a favor. (1 hr cooldown)", 0, 7);
+                AddGossipItemFor(player, GossipOptionNpc::None, "I have a special request. (4 hr cooldown)", 0, 3);
+                AddGossipItemFor(player, GossipOptionNpc::None, "Tell one of my friends how great they are! (1 day cooldown)", 0, 6);
+                AddGossipItemFor(player, GossipOptionNpc::None, "Can you play me a song?", 0, 2);
+                AddGossipItemFor(player, GossipOptionNpc::None, "Thank you. See you later!", 0, 8);
 
                 // (26712, 3, 0, 'Let\'s talk about something else.',                           0, 1, 1, 0, 25502, 0, 0, 0, NULL, 0, 42979),
                 // (25502, 8, 0, 'Can you play me a song?',                                     0, 1, 1, 0, UNKNOWN, UNKNOWN, 0, 0, NULL, 0, 42979),
@@ -141,13 +141,13 @@ struct npc_kyrian_steward : public ScriptedAI
                 case 1:
                     return OnGossipHello(player);
                 case 7:
-                    AddGossipItemFor(player, GossipOptionIcon::None, "Would you please take these items off my hands?", 0, 5);
-                    AddGossipItemFor(player, GossipOptionIcon::None, "Let\'s talk about something else.", 0, 1);
+                    AddGossipItemFor(player, GossipOptionNpc::None, "Would you please take these items off my hands?", 0, 5);
+                    AddGossipItemFor(player, GossipOptionNpc::None, "Let\'s talk about something else.", 0, 1);
                     SendGossipMenuFor(player, IdOne, me);
                     break;
                 case 3:
-                    AddGossipItemFor(player, GossipOptionIcon::None, "I\'d like to change my talents.", 0, 4);
-                    AddGossipItemFor(player, GossipOptionIcon::None, "Let\'s talk about something else.", 0, 1);
+                    AddGossipItemFor(player, GossipOptionNpc::None, "I\'d like to change my talents.", 0, 4);
+                    AddGossipItemFor(player, GossipOptionNpc::None, "Let\'s talk about something else.", 0, 1);
                     SendGossipMenuFor(player, IdTwo, me);
                     break;
                 case 4:

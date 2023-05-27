@@ -12,6 +12,13 @@ namespace Rogue
         Sprint            = 2983,
         GrapplingHook     = 195457,
         MarkedForDeath    = 137619,
+        SliceAndDice      = 315496,
+        Ambush            = 8676,
+        InstantPoisonDmg  = 315585,
+        DeadlyPoisonDot   = 2818,
+        DeadlyPoisonInstant = 113780,
+        AmplifyingPoisonDmg = 383414,
+        SliceAndDiceAssa  = 5171,
         /// Covenant
         Flagellation      = 323654,
         Sepsis            = 328305,
@@ -23,11 +30,11 @@ namespace Rogue
         /// Conduits
 
         /// Legendaries
-        InvigoratingShadowdust  = 340080,
+        InvigoratingShadowdustLegendary  = 340080,
         DeathlyShadows          = 340092,
         DeathlyShadowsOutlaw    = 341202,
         DeathlyShadowsAssa      = 350964,
-        FinalityRupture         = 340601,
+        FinalityRuptureLegendary = 340601,
     };
 
     enum eAssassination
@@ -50,7 +57,6 @@ namespace Rogue
         /// Finishers
         Dispatch = 2098,
         BetweenTheEyes = 315341,
-        SliceAndDice = 315496,
         /// Conduits
         CountTheOdds = 341546,
         SleightOfHand = 341543,
@@ -77,6 +83,82 @@ namespace Rogue
     enum eSubtlety
     {
         ShadowBlades = 121471,
+        FindWeaknesDebuff = 91021,
+        ShurikenStorm = 197835,
+    };
+
+    enum eRogueTraits
+    {
+        SepsisNew = 385408,
+        SoothingDarkness     = 393970,
+        SoothingDarknessProc = 393971,
+    };
+
+    enum eSubtletyTraits
+    {
+        TheFirstDance         = 382505,
+        StiletoStaccato       = 382509,
+        ImprovedShurikenStorm = 319951,
+        Premeditation         = 343160,
+        PremeditationEnergize = 343170,
+        PremeditationProcAura = 343173,
+        SilentStorm           = 385722,
+        SilentStormProcAura   = 385727,
+        ShadowedFinishers     = 382511,
+        Gloomblade            = 200758,
+        FadeToNothing         = 382514,
+        FadeToNothingProc     = 386237,
+        CloakedInShadows      = 382515,
+        CloakedInShadowsBuff  = 386165,
+        DeeperDaggersProc     = 383405,
+        InvigoratingShadowdust = 382523,
+        Finality              = 382525,
+        FinalityBlackPowder   = 385948,
+        FinalityEviscerate    = 385948,
+        FinalityRupture       = 385951,
+        DanseMacabre          = 382528,
+        DanseMacabreProc      = 393969,
+    };
+
+    enum eOutlawTraits
+    {
+        LongArmOfTheOutlaw     = 381878,
+        LongArmOfTheOutlawProc = 385835,
+        KeepItRolling          = 381989,
+        Dreadblades            = 343142,
+        AceUpYourSleeve        = 381828,
+        AceUpYourSleeveEnergize = 279714,
+        SleightOfHandNew       = 381839,
+        LoadedDiceProc         = 256171,
+        CountTheOddsNew        = 381982,
+        Dispatcher             = 381990,
+        DispatcherProc         = 386868,
+        HiddenOpportunity      = 383281,
+        OpportunityNew         = 279876,
+        FanTheHammer           = 381846, // handled by spell system
+        SinisterStrikeTripleThreatProc = 341541,
+        TripleThreatNew        = 381894,
+        Audacity               = 381845,
+        AudacityProc           = 386270,
+        HeavyHitter            = 381885, // must be implemented by blizz first beta
+        PreciseCuts            = 381985, ///< NYI on blizz
+        TakeEmbySuprise        = 382742,
+        TakeEmbySupriseBuff    = 385907,
+    };
+
+    enum eAssassinationTraits
+    {
+        InternalBleedingNew     = 381627,
+        InternalBleedingProc    = 381628,
+        ImprovedGarrote         = 392403,
+        ImprovedGarroteProc     = 392401,
+        IntentToKillAssa        = 381630,
+        ShroudedSuffocationAssa = 385478,
+        ScentOfBlood            = 381799,
+        ScentOfBloodProc        = 394080,
+        IndiscriminateCarnage   = 381802,        ///< @todo: research this one more.
+        IndiscriminateCarnageRupture = 385747,   ///< @todo: research this one more.
+        IndiscriminateCarnageGarrote = 385754,   ///< @todo: research this one more.
     };
 
     enum eCovenant

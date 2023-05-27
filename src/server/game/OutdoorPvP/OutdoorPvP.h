@@ -23,6 +23,7 @@
 #include "SharedDefines.h"
 #include "ZoneScript.h"
 #include <map>
+#include <memory>
 
 enum OutdoorPvPTypes
 {
@@ -113,10 +114,6 @@ class TC_GAME_API OPvPCapturePoint
 
         virtual void SendChangePhase();
 
-        virtual bool HandleGossipOption(Player* /*player*/, Creature* /*guid*/, uint32 /*gossipId*/) { return false; }
-
-        virtual bool CanTalkTo(Player* /*player*/, Creature* /*creature*/, GossipMenuItems const& /*gso*/) { return false; }
-
         virtual bool HandleDropFlag(Player* /*player*/, uint32 /*spellId*/) { return false; }
 
         ObjectGuid::LowType m_capturePointSpawnId;
@@ -161,12 +158,16 @@ class TC_GAME_API OutdoorPvP : public ZoneScript
     public:
 
         // ctor
-        OutdoorPvP(Map* map);
+        explicit OutdoorPvP(Map* map);
+        OutdoorPvP(OutdoorPvP const& right) = delete;
+        OutdoorPvP(OutdoorPvP&& right) = delete;
+        OutdoorPvP& operator=(OutdoorPvP const& right) = delete;
+        OutdoorPvP& operator=(OutdoorPvP&& right) = delete;
 
         // dtor
         virtual ~OutdoorPvP();
 
-        typedef std::map<ObjectGuid::LowType/*spawnId*/, OPvPCapturePoint*> OPvPCapturePointMap;
+        typedef std::map<ObjectGuid::LowType/*spawnId*/, std::unique_ptr<OPvPCapturePoint>> OPvPCapturePointMap;
 
         // called when a player triggers an areatrigger
         virtual bool HandleAreaTrigger(Player* /*player*/, uint32 /*trigger*/, bool /*entered*/) { return false; }
@@ -204,10 +205,6 @@ class TC_GAME_API OutdoorPvP : public ZoneScript
         uint32 GetTypeId() const {return m_TypeId;}
 
         virtual bool HandleDropFlag(Player* player, uint32 spellId);
-
-        virtual bool HandleGossipOption(Player* player, Creature* creature, uint32 gossipid);
-
-        virtual bool CanTalkTo(Player* player, Creature* c, GossipMenuItems const& gso);
 
         void TeamApplyBuff(TeamId team, uint32 spellId, uint32 spellId2 = 0);
 

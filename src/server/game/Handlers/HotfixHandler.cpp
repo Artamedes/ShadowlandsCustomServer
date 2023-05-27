@@ -33,11 +33,6 @@ void WorldSession::HandleDBQueryBulk(WorldPackets::Hotfix::DBQueryBulk& dbQuery)
         dbReply.TableHash = dbQuery.TableHash;
         dbReply.RecordID = record.RecordID;
 
-        if (record.RecordID == 700014 && dbReply.TableHash == 35137211)
-        {
-            continue;
-        }
-
         if (store && store->HasRecord(record.RecordID))
         {
             dbReply.Status = DB2Manager::HotfixRecord::Status::Valid;
@@ -55,7 +50,7 @@ void WorldSession::HandleDBQueryBulk(WorldPackets::Hotfix::DBQueryBulk& dbQuery)
         }
         else
         {
-            TC_LOG_TRACE("network", "CMSG_DB_QUERY_BULK: %s requested non-existing entry %u in datastore: %u", GetPlayerInfo().c_str(), record.RecordID, dbQuery.TableHash);
+            TC_LOG_TRACE("network", "CMSG_DB_QUERY_BULK: {} requested non-existing entry {} in datastore: {}", GetPlayerInfo(), record.RecordID, dbQuery.TableHash);
             dbReply.Timestamp = GameTime::GetGameTime();
         }
 

@@ -285,7 +285,7 @@ enum RBACPermissions
     RBAC_PERM_COMMAND_INSTANCE_LISTBINDS                     = 413,
     RBAC_PERM_COMMAND_INSTANCE_UNBIND                        = 414,
     RBAC_PERM_COMMAND_INSTANCE_STATS                         = 415,
-    RBAC_PERM_COMMAND_INSTANCE_SAVEDATA                      = 416,
+    // 416 previously used, do not reuse
     RBAC_PERM_COMMAND_LEARN                                  = 417,
     // 418 previously used, do not reuse
     RBAC_PERM_COMMAND_LEARN_ALL_MY                           = 419,
@@ -748,6 +748,7 @@ enum RBACPermissions
     RBAC_PERM_COMMAND_PDUMP_COPY                             = 880,
     RBAC_PERM_COMMAND_RELOAD_VEHICLE_TEMPLATE                = 881,
     RBAC_PERM_COMMAND_RELOAD_SPELL_SCRIPT_NAMES              = 882,
+    RBAC_PERM_COMMAND_QUEST_OBJECTIVE_COMPLETE               = 883,
     //
     // IF YOU ADD NEW PERMISSIONS, ADD THEM IN 3.3.5 BRANCH AS WELL!
     //
@@ -862,7 +863,7 @@ class TC_GAME_API RBACData
          * // previously defined "RBACData* rbac" with proper initialization
          * uint32 permissionId = 2;
          * if (rbac->GrantRole(permissionId) == RBAC_IN_DENIED_LIST)
-         *     TC_LOG_DEBUG("entities.player", "Failed to grant permission %u, already denied", permissionId);
+         *     TC_LOG_DEBUG("entities.player", "Failed to grant permission {}, already denied", permissionId);
          * @endcode
          */
         RBACCommandResult GrantPermission(uint32 permissionId, int32 realmId = 0);
@@ -886,7 +887,7 @@ class TC_GAME_API RBACData
          * // previously defined "RBACData* rbac" with proper initialization
          * uint32 permissionId = 2;
          * if (rbac->DenyRole(permissionId) == RBAC_ID_DOES_NOT_EXISTS)
-         *     TC_LOG_DEBUG("entities.player", "Role Id %u does not exists", permissionId);
+         *     TC_LOG_DEBUG("entities.player", "Role Id {} does not exists", permissionId);
          * @endcode
          */
         RBACCommandResult DenyPermission(uint32 permissionId, int32 realmId = 0);
@@ -911,7 +912,7 @@ class TC_GAME_API RBACData
          * // previously defined "RBACData* rbac" with proper initialization
          * uint32 permissionId = 2;
          * if (rbac->RevokeRole(permissionId) == RBAC_OK)
-         *     TC_LOG_DEBUG("entities.player", "Permission %u succesfully removed", permissionId);
+         *     TC_LOG_DEBUG("entities.player", "Permission {} succesfully removed", permissionId);
          * @endcode
          */
         RBACCommandResult RevokePermission(uint32 permissionId, int32 realmId = 0);

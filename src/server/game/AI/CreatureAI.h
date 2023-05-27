@@ -112,9 +112,9 @@ public:
     void DoAction(int32 info, Predicate&& predicate, uint16 max = 0)
     {
         // We need to use a copy of SummonList here, otherwise original SummonList would be modified
-        StorageType listCopy = _storage;
-        Trinity::Containers::RandomResize<StorageType, Predicate>(listCopy, std::forward<Predicate>(predicate), max);
-        DoActionImpl(info, listCopy);
+        StorageType listCopy;
+        std::copy_if(std::begin(_storage), std::end(_storage), std::inserter(listCopy, std::end(listCopy)), predicate);
+        DoActionImpl(info, listCopy, max);
     }
 
     void DoZoneInCombat(uint32 entry = 0);
@@ -122,7 +122,7 @@ public:
     bool HasEntry(uint32 entry) const;
 
 private:
-    void DoActionImpl(int32 action, StorageType const& summons);
+    void DoActionImpl(int32 action, StorageType& summons, uint16 max);
 
     Creature* _me;
     StorageType _storage;
@@ -162,16 +162,6 @@ class TC_GAME_API CreatureAI : public UnitAI
         Creature* DoSummonFlyer(uint32 entry, WorldObject* obj, float flightZ, float radius = 5.0f, Milliseconds despawnTime = 30s, TempSummonType summonType = TEMPSUMMON_CORPSE_TIMED_DESPAWN);
 
     public:
-        // EnumUtils: DESCRIBE THIS (in CreatureAI::)
-        enum EvadeReason
-        {
-            EVADE_REASON_NO_HOSTILES,       // the creature's threat list is empty
-            EVADE_REASON_BOUNDARY,          // the creature has moved outside its evade boundary
-            EVADE_REASON_NO_PATH,           // the creature was unable to reach its target for over 5 seconds
-            EVADE_REASON_SEQUENCE_BREAK,    // this is a boss and the pre-requisite encounters for engaging it are not defeated yet
-            EVADE_REASON_OTHER,             // anything else
-        };
-
         explicit CreatureAI(Creature* creature, uint32 scriptId = {});
 
         virtual ~CreatureAI();
@@ -197,7 +187,7 @@ class TC_GAME_API CreatureAI : public UnitAI
         void TriggerAlert(Unit const* who) const;
 
         // Called for reaction at stopping attack at no attackers or targets
-        virtual void EnterEvadeMode(EvadeReason why = EVADE_REASON_OTHER);
+        virtual void EnterEvadeMode(EvadeReason why = EvadeReason::Other);
 
         // Called for reaction whenever we start being in combat (overridden from base UnitAI)
         void JustEnteredCombat(Unit* /*who*/) override;
@@ -277,7 +267,8 @@ class TC_GAME_API CreatureAI : public UnitAI
         // Called at reaching home after evade
         virtual void JustReachedHome() { }
 
-        void DoZoneInCombat(Creature* creature = nullptr);
+        void DoZoneInCombat() { DoZoneInCombat(me); }
+        static void DoZoneInCombat(Creature* creature);
 
         // Called at text emote receive from player
         virtual void ReceiveEmote(Player* /*player*/, uint32 /*emoteId*/) { }
@@ -372,7 +363,7 @@ class TC_GAME_API CreatureAI : public UnitAI
         void EngagementOver();
         virtual void MoveInLineOfSight(Unit* /*who*/);
 
-        bool _EnterEvadeMode(EvadeReason why = EVADE_REASON_OTHER);
+        bool _EnterEvadeMode(EvadeReason why = EvadeReason::Other);
 
         CreatureBoundary const* _boundary;
         bool _negateBoundary;

@@ -1,1 +1,0 @@
-UPDATE creature SET spawntimesecs = 90000000 WHERE map = 2456;

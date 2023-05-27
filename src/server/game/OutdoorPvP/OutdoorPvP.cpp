@@ -91,13 +91,13 @@ void OPvPCapturePoint::SendChangePhase()
 
 bool OPvPCapturePoint::SetCapturePointData(uint32 entry)
 {
-    TC_LOG_DEBUG("outdoorpvp", "Creating capture point %u", entry);
+    TC_LOG_DEBUG("outdoorpvp", "Creating capture point {}", entry);
 
     // check info existence
     GameObjectTemplate const* goinfo = sObjectMgr->GetGameObjectTemplate(entry);
     if (!goinfo || goinfo->type != GAMEOBJECT_TYPE_CONTROL_ZONE)
     {
-        TC_LOG_ERROR("outdoorpvp", "OutdoorPvP: GO %u is not capture point!", entry);
+        TC_LOG_ERROR("outdoorpvp", "OutdoorPvP: GO {} is not capture point!", entry);
         return false;
     }
 
@@ -127,7 +127,7 @@ void OutdoorPvP::HandlePlayerLeaveZone(Player* player, uint32 /*zone*/)
     if (!player->GetSession()->PlayerLogout())
         SendRemoveWorldStates(player);
     m_players[player->GetTeamId()].erase(player->GetGUID());
-    TC_LOG_DEBUG("outdoorpvp", "Player %s left an outdoorpvp zone", player->GetName().c_str());
+    TC_LOG_DEBUG("outdoorpvp", "Player {} left an outdoorpvp zone", player->GetName());
 }
 
 void OutdoorPvP::HandlePlayerResurrects(Player* /*player*/, uint32 /*zone*/) { }
@@ -255,7 +255,7 @@ bool OPvPCapturePoint::Update(uint32 diff)
 
     if (m_OldState != m_State)
     {
-        //TC_LOG_ERROR("outdoorpvp", "%u->%u", m_OldState, m_State);
+        //TC_LOG_ERROR("outdoorpvp", "{}->{}", m_OldState, m_State);
         if (oldTeam != m_team)
             ChangeTeam(oldTeam);
         ChangeState();
@@ -376,24 +376,6 @@ bool OutdoorPvP::HandleOpenGo(Player* player, GameObject* go)
     return false;
 }
 
-bool OutdoorPvP::HandleGossipOption(Player* player, Creature* creature, uint32 id)
-{
-    for (OPvPCapturePointMap::iterator itr = m_capturePoints.begin(); itr != m_capturePoints.end(); ++itr)
-        if (itr->second->HandleGossipOption(player, creature, id))
-            return true;
-
-    return false;
-}
-
-bool OutdoorPvP::CanTalkTo(Player* player, Creature* c, GossipMenuItems const& gso)
-{
-    for (OPvPCapturePointMap::iterator itr = m_capturePoints.begin(); itr != m_capturePoints.end(); ++itr)
-        if (itr->second->CanTalkTo(player, c, gso))
-            return true;
-
-    return false;
-}
-
 bool OutdoorPvP::HandleDropFlag(Player* player, uint32 id)
 {
     for (OPvPCapturePointMap::iterator itr = m_capturePoints.begin(); itr != m_capturePoints.end(); ++itr)
@@ -422,17 +404,18 @@ void OutdoorPvP::AddCapturePoint(OPvPCapturePoint* cp)
     OPvPCapturePointMap::iterator i = m_capturePoints.find(cp->m_capturePointSpawnId);
     if (i != m_capturePoints.end())
     {
-        TC_LOG_ERROR("outdoorpvp", "OutdoorPvP::AddCapturePoint: CapturePoint " UI64FMTD " already exists!", cp->m_capturePointSpawnId);
-        delete i->second;
+        TC_LOG_ERROR("outdoorpvp", "OutdoorPvP::AddCapturePoint: CapturePoint {} already exists!", cp->m_capturePointSpawnId);
+        if (i->second.get() == cp)
+            return;
     }
-    m_capturePoints[cp->m_capturePointSpawnId] = cp;
+    m_capturePoints[cp->m_capturePointSpawnId].reset(cp);
 }
 
 OPvPCapturePoint* OutdoorPvP::GetCapturePoint(ObjectGuid::LowType guid) const
 {
     OutdoorPvP::OPvPCapturePointMap::const_iterator itr = m_capturePoints.find(guid);
     if (itr != m_capturePoints.end())
-        return itr->second;
+        return itr->second.get();
     return nullptr;
 }
 

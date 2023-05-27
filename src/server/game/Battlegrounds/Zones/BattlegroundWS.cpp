@@ -17,6 +17,7 @@
 
 #include "BattlegroundWS.h"
 #include "BattlegroundMgr.h"
+#include "DB2Stores.h"
 #include "GameObject.h"
 #include "GameTime.h"
 #include "Log.h"
@@ -274,10 +275,12 @@ void BattlegroundWS::RespawnFlagAfterDrop(uint32 team)
     if (GameObject* obj = GetBgMap()->GetGameObject(GetDroppedFlagGUID(team)))
         obj->Delete();
     else
-        TC_LOG_ERROR("bg.battleground", "unknown dropped flag (%s)", GetDroppedFlagGUID(team).ToString().c_str());
+        TC_LOG_ERROR("bg.battleground", "unknown dropped flag ({})", GetDroppedFlagGUID(team).ToString());
 
     SetDroppedFlagGUID(ObjectGuid::Empty, GetTeamIndexByTeamId(team));
     _bothFlagsKept = false;
+    // Check opposing flag if it is in capture zone; if so, capture it
+    HandleFlagRoomCapturePoint(team == ALLIANCE ? TEAM_HORDE : TEAM_ALLIANCE);
 }
 
 void BattlegroundWS::EventPlayerCapturedFlag(Player* player)
@@ -365,6 +368,13 @@ void BattlegroundWS::EventPlayerCapturedFlag(Player* player)
     {
         _flagsTimer[GetTeamIndexByTeamId(team) ? 0 : 1] = BG_WS_FLAG_RESPAWN_TIME;
     }
+}
+void BattlegroundWS::HandleFlagRoomCapturePoint(int32 team)
+{
+    Player* flagCarrier = ObjectAccessor::GetPlayer(GetBgMap(), GetFlagPickerGUID(team));
+    uint32 areaTrigger = team == TEAM_ALLIANCE ? 3647 : 3646;
+    if (flagCarrier && flagCarrier->IsInAreaTriggerRadius(sAreaTriggerStore.LookupEntry(areaTrigger)))
+        EventPlayerCapturedFlag(flagCarrier);
 }
 
 void BattlegroundWS::EventPlayerDroppedFlag(Player* player)
@@ -514,6 +524,7 @@ void BattlegroundWS::EventPlayerClickedOnFlag(Player* player, GameObject* target
             PlaySoundToAll(BG_WS_SOUND_FLAG_RETURNED);
             UpdatePlayerScore(player, SCORE_FLAG_RETURNS, 1);
             _bothFlagsKept = false;
+            HandleFlagRoomCapturePoint(TEAM_HORDE); // Check Horde flag if it is in capture zone; if so, capture it
         }
         else
         {
@@ -546,6 +557,7 @@ void BattlegroundWS::EventPlayerClickedOnFlag(Player* player, GameObject* target
             PlaySoundToAll(BG_WS_SOUND_FLAG_RETURNED);
             UpdatePlayerScore(player, SCORE_FLAG_RETURNS, 1);
             _bothFlagsKept = false;
+            HandleFlagRoomCapturePoint(TEAM_ALLIANCE); // Check Alliance flag if it is in capture zone; if so, capture it
         }
         else
         {

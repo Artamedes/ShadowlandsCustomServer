@@ -20,12 +20,11 @@
 
 #include "DB2Store.h"
 #include "DB2Structure.h"
-#include <Optional.h>
+#include "Optional.h"
 #include "SharedDefines.h"
+#include "advstd.h"
 #include <map>
 #include <set>
-#include <unordered_map>
-#include <unordered_set>
 #include <vector>
 
  // temporary hack until includes are sorted out (don't want to pull in Windows.h)
@@ -61,6 +60,7 @@ TC_GAME_API extern DB2Storage<AzeritePowerEntry>                    sAzeritePowe
 TC_GAME_API extern DB2Storage<BankBagSlotPricesEntry>               sBankBagSlotPricesStore;
 TC_GAME_API extern DB2Storage<BannedAddonsEntry>                    sBannedAddonsStore;
 TC_GAME_API extern DB2Storage<BarberShopStyleEntry>                 sBarberShopStyleStore;
+TC_GAME_API extern DB2Storage<BattlePetAbilityEntry>                sBattlePetAbilityStore;
 TC_GAME_API extern DB2Storage<BattlePetBreedQualityEntry>           sBattlePetBreedQualityStore;
 TC_GAME_API extern DB2Storage<BattlePetBreedStateEntry>             sBattlePetBreedStateStore;
 TC_GAME_API extern DB2Storage<BattlePetSpeciesEntry>                sBattlePetSpeciesStore;
@@ -122,6 +122,7 @@ TC_GAME_API extern DB2Storage<GarrTalentEntry>                      sGarrTalentS
 TC_GAME_API extern DB2Storage<GarrTalentCostEntry>                  sGarrTalentCostStore;
 TC_GAME_API extern DB2Storage<GarrTalentRankEntry>                  sGarrTalentRankStore;
 TC_GAME_API extern DB2Storage<GarrTalentTreeEntry>                  sGarrTalentTreeStore;
+TC_GAME_API extern DB2Storage<GossipNPCOptionEntry>                 sGossipNPCOptionStore;
 TC_GAME_API extern DB2Storage<GemPropertiesEntry>                   sGemPropertiesStore;
 TC_GAME_API extern DB2Storage<GlyphPropertiesEntry>                 sGlyphPropertiesStore;
 TC_GAME_API extern DB2Storage<GuildColorBackgroundEntry>            sGuildColorBackgroundStore;
@@ -173,6 +174,7 @@ TC_GAME_API extern DB2Storage<LockEntry>                            sLockStore;
 TC_GAME_API extern DB2Storage<MailTemplateEntry>                    sMailTemplateStore;
 TC_GAME_API extern DB2Storage<MapEntry>                             sMapStore;
 TC_GAME_API extern DB2Storage<MapChallengeModeEntry>                sMapChallengeModeStore;
+TC_GAME_API extern DB2Storage<MapDifficultyEntry>                   sMapDifficultyStore;
 TC_GAME_API extern DB2Storage<MawPowerEntry>                        sMawPowerStore;
 TC_GAME_API extern DB2Storage<MawPowerRarityEntry>                  sMawPowerRarityStore;
 TC_GAME_API extern DB2Storage<ModifierTreeEntry>                    sModifierTreeStore;
@@ -184,6 +186,7 @@ TC_GAME_API extern DB2Storage<ParagonReputationEntry>               sParagonRepu
 TC_GAME_API extern DB2Storage<PhaseEntry>                           sPhaseStore;
 TC_GAME_API extern DB2Storage<PlayerConditionEntry>                 sPlayerConditionStore;
 TC_GAME_API extern DB2Storage<PowerDisplayEntry>                    sPowerDisplayStore;
+TC_GAME_API extern DB2Storage<PowerTypeEntry>                       sPowerTypeStore;
 TC_GAME_API extern DB2Storage<PvpTalentEntry>                       sPvpTalentStore;
 TC_GAME_API extern DB2Storage<PvpTalentCategoryEntry>               sPvpTalentCategoryStore;
 TC_GAME_API extern DB2Storage<PvpTalentSlotUnlockEntry>             sPvpTalentSlotUnlockStore;
@@ -202,6 +205,7 @@ TC_GAME_API extern DB2Storage<ScenarioStepEntry>                    sScenarioSte
 TC_GAME_API extern DB2Storage<SkillLineEntry>                       sSkillLineStore;
 TC_GAME_API extern DB2Storage<SceneScriptPackageEntry>              sSceneScriptPackageStore;
 TC_GAME_API extern DB2Storage<SkillLineAbilityEntry>                sSkillLineAbilityStore;
+TC_GAME_API extern DB2Storage<SkillLineXTraitTreeEntry>             sSkillLineXTraitTreeStore;
 TC_GAME_API extern DB2Storage<SkillRaceClassInfoEntry>              sSkillRaceClassInfoStore;
 TC_GAME_API extern DB2Storage<SoulbindEntry>                        sSoulbindStore;
 TC_GAME_API extern DB2Storage<SoulbindConduitEntry>                 sSoulbindConduitStore;
@@ -226,6 +230,7 @@ TC_GAME_API extern DB2Storage<SpellFocusObjectEntry>                sSpellFocusO
 TC_GAME_API extern DB2Storage<SpellInterruptsEntry>                 sSpellInterruptsStore;
 TC_GAME_API extern DB2Storage<SpellItemEnchantmentEntry>            sSpellItemEnchantmentStore;
 TC_GAME_API extern DB2Storage<SpellItemEnchantmentConditionEntry>   sSpellItemEnchantmentConditionStore;
+TC_GAME_API extern DB2Storage<SpellKeyboundOverrideEntry>           sSpellKeyboundOverrideStore;
 TC_GAME_API extern DB2Storage<SpellLabelEntry>                      sSpellLabelStore;
 TC_GAME_API extern DB2Storage<SpellLearnSpellEntry>                 sSpellLearnSpellStore;
 TC_GAME_API extern DB2Storage<SpellLevelsEntry>                     sSpellLevelsStore;
@@ -251,6 +256,29 @@ TC_GAME_API extern DB2Storage<SummonPropertiesEntry>                sSummonPrope
 TC_GAME_API extern DB2Storage<TalentEntry>                          sTalentStore;
 TC_GAME_API extern DB2Storage<TaxiNodesEntry>                       sTaxiNodesStore;
 TC_GAME_API extern DB2Storage<TaxiPathEntry>                        sTaxiPathStore;
+TC_GAME_API extern DB2Storage<TraitCondEntry>                       sTraitCondStore;
+TC_GAME_API extern DB2Storage<TraitCostEntry>                       sTraitCostStore;
+TC_GAME_API extern DB2Storage<TraitCurrencyEntry>                   sTraitCurrencyStore;
+TC_GAME_API extern DB2Storage<TraitCurrencySourceEntry>             sTraitCurrencySourceStore;
+TC_GAME_API extern DB2Storage<TraitDefinitionEntry>                 sTraitDefinitionStore;
+TC_GAME_API extern DB2Storage<TraitDefinitionEffectPointsEntry>     sTraitDefinitionEffectPointsStore;
+TC_GAME_API extern DB2Storage<TraitEdgeEntry>                       sTraitEdgeStore;
+TC_GAME_API extern DB2Storage<TraitNodeEntry>                       sTraitNodeStore;
+TC_GAME_API extern DB2Storage<TraitNodeEntryEntry>                  sTraitNodeEntryStore;
+TC_GAME_API extern DB2Storage<TraitNodeEntryXTraitCondEntry>        sTraitNodeEntryXTraitCondStore;
+TC_GAME_API extern DB2Storage<TraitNodeEntryXTraitCostEntry>        sTraitNodeEntryXTraitCostStore;
+TC_GAME_API extern DB2Storage<TraitNodeGroupEntry>                  sTraitNodeGroupStore;
+TC_GAME_API extern DB2Storage<TraitNodeGroupXTraitCondEntry>        sTraitNodeGroupXTraitCondStore;
+TC_GAME_API extern DB2Storage<TraitNodeGroupXTraitCostEntry>        sTraitNodeGroupXTraitCostStore;
+TC_GAME_API extern DB2Storage<TraitNodeGroupXTraitNodeEntry>        sTraitNodeGroupXTraitNodeStore;
+TC_GAME_API extern DB2Storage<TraitNodeXTraitCondEntry>             sTraitNodeXTraitCondStore;
+TC_GAME_API extern DB2Storage<TraitNodeXTraitCostEntry>             sTraitNodeXTraitCostStore;
+TC_GAME_API extern DB2Storage<TraitNodeXTraitNodeEntryEntry>        sTraitNodeXTraitNodeEntryStore;
+TC_GAME_API extern DB2Storage<TraitTreeEntry>                       sTraitTreeStore;
+TC_GAME_API extern DB2Storage<TraitTreeLoadoutEntry>                sTraitTreeLoadoutStore;
+TC_GAME_API extern DB2Storage<TraitTreeLoadoutEntryEntry>           sTraitTreeLoadoutEntryStore;
+TC_GAME_API extern DB2Storage<TraitTreeXTraitCostEntry>             sTraitTreeXTraitCostStore;
+TC_GAME_API extern DB2Storage<TraitTreeXTraitCurrencyEntry>         sTraitTreeXTraitCurrencyStore;
 TC_GAME_API extern DB2Storage<TransmogHolidayEntry>                 sTransmogHolidayStore;
 TC_GAME_API extern DB2Storage<TransmogIllusionEntry>                sTransmogIllusionStore;
 TC_GAME_API extern DB2Storage<TransmogSetEntry>                     sTransmogSetStore;
@@ -269,6 +297,11 @@ TC_GAME_API extern DB2Storage<VignetteEntry>                        sVignetteSto
 TC_GAME_API extern DB2Storage<WorldEffectEntry>                     sWorldEffectStore;
 TC_GAME_API extern DB2Storage<WorldMapOverlayEntry>                 sWorldMapOverlayStore;
 TC_GAME_API extern DB2Storage<WorldStateExpressionEntry>            sWorldStateExpressionStore;
+TC_GAME_API extern DB2Storage<SpellEntry>                           sSpellStore;
+TC_GAME_API extern DB2Storage<CharStartOutfitEntry>                 sCharStartOutfitStore;
+TC_GAME_API extern DB2Storage<CampaignEntry>                        sCampaignEntry;
+TC_GAME_API extern DB2Storage<CampaignXQuestLineEntry>              sCampaignXQuestLineEntry;
+TC_GAME_API extern DB2Storage<QuestLineEntry>                       sQuestLineEntry;
 
 struct ContentTuningLevels
 {
@@ -296,9 +329,6 @@ struct TaxiPathBySourceAndDestination
     uint32 price;
 };
 
-using TaxiPathSetForSource = std::map<uint32, TaxiPathBySourceAndDestination>;
-using TaxiPathSetBySource = std::map<uint32, TaxiPathSetForSource>;
-
 using TaxiPathNodeList = std::vector<TaxiPathNodeEntry const*>;
 using TaxiPathNodesByPath = std::vector<TaxiPathNodeList>;
 
@@ -306,7 +336,6 @@ TC_GAME_API extern TaxiMask                                         sTaxiNodesMa
 TC_GAME_API extern TaxiMask                                         sOldContinentsNodesMask;
 TC_GAME_API extern TaxiMask                                         sHordeTaxiNodesMask;
 TC_GAME_API extern TaxiMask                                         sAllianceTaxiNodesMask;
-TC_GAME_API extern TaxiPathSetBySource                              sTaxiPathSetBySource;
 TC_GAME_API extern TaxiPathNodesByPath                              sTaxiPathNodesByPath;
 
 #define DEFINE_DB2_SET_COMPARATOR(structure) \
@@ -327,10 +356,7 @@ public:
         int32 PushID = 0;
         uint32 UniqueID = 0;
 
-        friend bool operator<(HotfixId const& left, HotfixId const& right)
-        {
-            return std::tie(left.PushID, left.UniqueID) < std::tie(right.PushID, right.UniqueID);
-        }
+        friend std::strong_ordering operator<=>(HotfixId const& left, HotfixId const& right) = default;
     };
 
     struct HotfixRecord
@@ -349,9 +375,15 @@ public:
         HotfixId ID;
         Status HotfixStatus = Status::Invalid;
 
-        friend bool operator<(HotfixRecord const& left, HotfixRecord const& right)
+        friend std::strong_ordering operator<=>(HotfixRecord const& left, HotfixRecord const& right)
         {
-            return std::tie(left.ID, left.TableHash, left.RecordID) < std::tie(right.ID, right.TableHash, right.RecordID);
+            if (std::strong_ordering cmp = left.ID <=> right.ID; advstd::is_neq(cmp))
+                return cmp;
+            if (std::strong_ordering cmp = left.TableHash <=> right.TableHash; advstd::is_neq(cmp))
+                return cmp;
+            if (std::strong_ordering cmp = left.RecordID <=> right.RecordID; advstd::is_neq(cmp))
+                return cmp;
+            return std::strong_ordering::equal;
         }
     };
 
@@ -365,7 +397,6 @@ public:
 
     using FriendshipRepReactionSet = std::set<FriendshipRepReactionEntry const*, FriendshipRepReactionEntryComparator>;
     using ItemBonusList = std::vector<ItemBonusEntry const*>;
-    using MapDifficultyContainer = std::unordered_map<uint32, std::unordered_map<uint32, MapDifficultyEntry const*>>;
     using MapDifficultyConditionsContainer = std::vector<std::pair<uint32, PlayerConditionEntry const*>>;
     using MountTypeXCapabilitySet = std::set<MountTypeXCapabilityEntry const*, MountTypeXCapabilityEntryComparator>;
     using MountXDisplayContainer = std::vector<MountXDisplayEntry const*>;
@@ -375,6 +406,7 @@ public:
     uint32 LoadStores(std::string const& dataPath, LocaleConstant defaultLocale);
     DB2StorageBase const* GetStorage(uint32 type) const;
 
+    HotfixRecord AddHotfixData(uint32 recordId, uint32 hash);
     void LoadHotfixData();
     void LoadHotfixBlob(uint32 localeMask);
     void LoadHotfixOptionalData(uint32 localeMask);
@@ -386,8 +418,9 @@ public:
     uint32 GetEmptyAnimStateID() const;
     std::vector<uint32> GetAreasForGroup(uint32 areaGroupId) const;
     static bool IsInArea(uint32 objectAreaId, uint32 areaId);
+    static ContentTuningEntry const* GetContentTuningForArea(AreaTableEntry const* areaEntry);
     std::vector<ArtifactPowerEntry const*> GetArtifactPowers(uint8 artifactId) const;
-    std::unordered_set<uint32> const* GetArtifactPowerLinks(uint32 artifactPowerId) const;
+    std::vector<uint32> const* GetArtifactPowerLinks(uint32 artifactPowerId) const;
     ArtifactPowerRankEntry const* GetArtifactPowerRank(uint32 artifactPowerId, uint8 rank) const;
     AzeriteEmpoweredItemEntry const* GetAzeriteEmpoweredItem(uint32 itemId) const;
     bool IsAzeriteItem(uint32 itemId) const;
@@ -403,7 +436,7 @@ public:
     uint32 GetPowerIndexByClass(Powers power, uint32 classId) const;
     std::vector<ChrCustomizationChoiceEntry const*> const* GetCustomiztionChoices(uint32 chrCustomizationOptionId) const;
     std::vector<ChrCustomizationOptionEntry const*> const* GetCustomiztionOptions(uint8 race, uint8 gender) const;
-    std::unordered_map<uint32, std::vector<uint32>> const* GetRequiredCustomizationChoices(uint32 chrCustomizationReqId) const;
+    std::vector<std::pair<uint32, std::vector<uint32>>> const* GetRequiredCustomizationChoices(uint32 chrCustomizationReqId) const;
     ChrModelEntry const* GetChrModel(uint8 race, uint8 gender) const;
     static char const* GetChrRaceName(uint8 race, LocaleConstant locale = DEFAULT_LOCALE);
     ChrSpecializationEntry const* GetChrSpecializationByIndex(uint32 class_, uint32 index) const;
@@ -440,7 +473,6 @@ public:
     static LFGDungeonsEntry const* GetLfgDungeon(uint32 mapId, Difficulty difficulty);
     static uint32 GetDefaultMapLight(uint32 mapId);
     static uint32 GetLiquidFlags(uint32 liquidType);
-    MapDifficultyContainer const& GetMapDifficulties() const;
     MapDifficultyEntry const* GetDefaultMapDifficulty(uint32 mapId, Difficulty* difficulty = nullptr) const;
     MapDifficultyEntry const* GetMapDifficultyData(uint32 mapId, Difficulty difficulty) const;
     MapDifficultyEntry const* GetDownscaledMapDifficultyData(uint32 mapId, Difficulty &difficulty) const;
@@ -461,7 +493,7 @@ public:
     static PVPDifficultyEntry const* GetBattlegroundBracketById(uint32 mapid, BattlegroundBracketId id);
     uint32 GetRequiredLevelForPvpTalentSlot(uint8 slot, Classes class_) const;
     int32 GetPvpTalentNumSlotsAtLevel(uint32 level, Classes class_) const;
-    std::unordered_set<QuestLineXQuestEntry const*> const* GetQuestsForQuestLine(uint32 questLineId) const;
+    std::vector<QuestLineXQuestEntry const*> const* GetQuestsForQuestLine(uint32 questLineId) const;
     std::vector<QuestPackageItemEntry const*> const* GetQuestPackageItems(uint32 questPackageID) const;
     std::vector<QuestPackageItemEntry const*> const* GetQuestPackageItemsFallback(uint32 questPackageID) const;
     uint32 GetQuestUniqueBitFlag(uint32 questId);
@@ -470,7 +502,8 @@ public:
     ShapeshiftFormModelData const* GetShapeshiftFormModelData(uint8 race, uint8 gender, uint8 form) const;
     std::vector<SkillLineEntry const*> const* GetSkillLinesForParentSkill(uint32 parentSkillId) const;
     std::vector<SkillLineAbilityEntry const*> const* GetSkillLineAbilitiesBySkill(uint32 skillId) const;
-    SkillRaceClassInfoEntry const* GetSkillRaceClassInfo(uint32 skill, uint8 race, uint8 class_);
+    SkillRaceClassInfoEntry const* GetSkillRaceClassInfo(uint32 skill, uint8 race, uint8 class_) const;
+    std::vector<SkillRaceClassInfoEntry const*> GetSkillRaceClassInfo(uint32 skill) const;
     SoulbindConduitRankEntry const* GetSoulbindConduitRank(int32 soulbindConduitId, int32 rank) const;
     std::vector<SpecializationSpellsEntry const*> const* GetSpecializationSpells(uint32 specId) const;
     bool IsSpecSetMember(int32 specSetId, uint32 specId) const;
@@ -478,6 +511,7 @@ public:
     std::vector<SpellProcsPerMinuteModEntry const*> GetSpellProcsPerMinuteMods(uint32 spellprocsPerMinuteId) const;
     std::vector<SpellVisualMissileEntry const*> const* GetSpellVisualMissiles(int32 spellVisualMissileSetId) const;
     std::vector<TalentEntry const*> const& GetTalentsByPosition(uint32 class_, uint32 tier, uint32 column) const;
+    TaxiPathEntry const* GetTaxiPath(uint32 from, uint32 to) const;
     static bool IsTotemCategoryCompatibleWith(uint32 itemTotemCategoryId, uint32 requiredTotemCategoryId);
     bool IsToyItem(uint32 toy) const;
     TransmogIllusionEntry const* GetTransmogIllusionForEnchantment(uint32 spellItemEnchantmentId) const;
@@ -500,6 +534,8 @@ public:
     RuneforgeLegendaryAbilityEntry const* GetRuneforgeLegendaryAbilityEntryBySpellID(uint32 spellId);
     std::vector<GarrTalentCostEntry const*> const* GetGarrTalentCostEntriesByGarrTalentId(uint32 garrTalentId) const;
     std::vector<MawPowerEntry const*>* GetMawPowerEntriesBySpellId(uint32 spellId) const;
+    GossipNPCOptionEntry const* GetGossipNPCOptionEntryByGossipIndex(uint32 gossipIndex) const;
+    DB2StorageBase* GetDB2StorageBaseByName(std::string const& name);
 private:
     friend class DB2HotfixGeneratorBase;
     int32 _maxHotfixId = 0;

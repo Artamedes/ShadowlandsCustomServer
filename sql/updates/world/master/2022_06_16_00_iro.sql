@@ -1,1 +1,0 @@
-REPLACE INTO `quest_objectives` (`ID`, `QuestID`, `Type`, `Order`, `StorageIndex`, `ObjectID`, `Amount`, `Flags`, `Flags2`, `ProgressBarWeight`, `Description`, `VerifiedBuild`) VALUES (730250, 730250, 0, 0, 0, 730212, 5, 0, 0, 0, 'Kill 5 Mushroom Sappers', 0);

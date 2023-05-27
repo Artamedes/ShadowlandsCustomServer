@@ -23,7 +23,6 @@
 #include "Random.h"
 #include <functional>
 #include <algorithm>
-#include <chrono>
 #include <vector>
 #include <queue>
 #include <memory>
@@ -516,7 +515,7 @@ public:
     }
 
     // Move assign
-    TaskContext& operator= (TaskContext&& right)
+    TaskContext& operator= (TaskContext&& right) noexcept
     {
         _task = std::move(right._task);
         _owner = std::move(right._owner);

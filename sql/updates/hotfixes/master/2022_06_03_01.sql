@@ -1,2 +1,0 @@
-DELETE FROM `broadcast_text` WHERE `ID`=802000 AND `VerifiedBuild`=0;
-INSERT INTO `broadcast_text` (`Text`, `Text1`, `ID`, `LanguageID`, `ConditionID`, `EmotesID`, `Flags`, `ChatBubbleDurationMs`, `VoiceOverPriorityID`, `SoundKitID1`, `SoundKitID2`, `EmoteID1`, `EmoteID2`, `EmoteID3`, `EmoteDelay1`, `EmoteDelay2`, `EmoteDelay3`, `VerifiedBuild`) VALUES ('I can offer you a set of GM Robes, if you\'d like.\r\n\r\nGotta represent the GM\'s the proper way, you know? Even if it is a little old school.', NULL, 802000, 0, 0, 0, 65, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);

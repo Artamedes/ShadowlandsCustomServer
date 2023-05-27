@@ -45,6 +45,7 @@ EndScriptData */
 #include <openssl/crypto.h>
 #include <openssl/opensslv.h>
 #include <numeric>
+#include "MapManager.h"
 
 #if TRINITY_COMPILER == TRINITY_COMPILER_GNU
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
@@ -126,13 +127,13 @@ public:
 
         {
             uint16 dbPort = 0;
-            if (QueryResult res = LoginDatabase.PQuery("SELECT port FROM realmlist WHERE id = %u", realm.Id.Realm))
+            if (QueryResult res = LoginDatabase.PQuery("SELECT port FROM realmlist WHERE id = {}", realm.Id.Realm))
                 dbPort = (*res)[0].GetUInt16();
 
             if (dbPort)
-                dbPortOutput = Trinity::StringFormat("Realmlist (Realm Id: %u) configured in port %" PRIu16, realm.Id.Realm, dbPort);
+                dbPortOutput = Trinity::StringFormat("Realmlist (Realm Id: {}) configured in port %" PRIu16, realm.Id.Realm, dbPort);
             else
-                dbPortOutput = Trinity::StringFormat("Realm Id: %u not found in `realmlist` table. Please check your setup", realm.Id.Realm);
+                dbPortOutput = Trinity::StringFormat("Realm Id: {} not found in `realmlist` table. Please check your setup", realm.Id.Realm);
         }
 
         handler->PSendSysMessage("%s", GitRevision::GetFullVersion());
@@ -282,14 +283,22 @@ public:
         }
         else
         {
-            handler->PSendSysMessage("[%s] %s", GitRevision::GetCommitCount(), GitRevision::GetFullVersion());
-            handler->PSendSysMessage(LANG_CONNECTED_PLAYERS, playersNum, maxPlayersNum);
-            handler->PSendSysMessage(LANG_CONNECTED_USERS, activeClientsNum, maxActiveClientsNum, queuedClientsNum, maxQueuedClientsNum);
-            handler->PSendSysMessage(LANG_UPTIME, uptime.c_str());
-            handler->PSendSysMessage(LANG_UPDATE_DIFF, updateTime);
+            auto player = handler->GetPlayer();
+            handler->PSendSysMessage("|cff62CBF5Dragonflight Beta v.%s-%s (%s branch) (%s)", GitRevision::GetCommitCount(), GitRevision::GetHash(), GitRevision::GetBranch(), GitRevision::GetPlatformStr());
+            handler->PSendSysMessage("|cff62CBF5Last update: %s", GitRevision::GetDate());
+            handler->PSendSysMessage("|cff62CBF5Online players: %u (peak: %u)", playersNum, maxPlayersNum);
+            handler->PSendSysMessage("|cff62CBF5Active connections: %u (peak: %u)", activeClientsNum, maxActiveClientsNum);
+            handler->PSendSysMessage("|cff62CBF5Uptime: %s", secsToTimeString(GameTime::GetUptime()).c_str());
+            handler->PSendSysMessage("|cff62CBF5World Diff: %ums Map Diff: %ums Average: %ums", sWorldUpdateTime.GetLastUpdateTime(), player->GetMap()->LastMapDiffTime, player->GetMap()->MapDiffAverage);
             // Can't use sWorld->ShutdownMsg here in case of console command
             if (sWorld->IsShuttingDown())
                 handler->PSendSysMessage(LANG_SHUTDOWN_TIMELEFT, secsToTimeString(sWorld->GetShutDownTimeLeft()).c_str());
+
+            sMapMgr->DoForAllMaps([&](Map* map)
+            {
+                if (auto mapEntry = map->GetEntry())
+                    handler->PSendSysMessage("|cff62CBF5[%u] [%u] [%u] %s, diff: %u, players: %u", mapEntry->ID, map->GetInstanceId(), map->GetInstanceZoneId(), map->GetMapName(), map->MapDiffAverage, map->GetPlayerCount());
+            });
         }
 
         return true;

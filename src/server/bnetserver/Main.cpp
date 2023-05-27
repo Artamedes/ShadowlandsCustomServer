@@ -34,6 +34,7 @@
 #include "IPLocation.h"
 #include "LoginRESTService.h"
 #include "MySQLThreading.h"
+#include "OpenSSLCrypto.h"
 #include "ProcessPriority.h"
 #include "RealmList.h"
 #include "SecretMgr.h"
@@ -41,13 +42,117 @@
 #include "SslContext.h"
 #include "Util.h"
 #include <boost/asio/signal_set.hpp>
+#include <boost/dll/runtime_symbol_info.hpp>
 #include <boost/program_options.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <google/protobuf/stubs/common.h>
 #include <iostream>
 #include <csignal>
+#include "CryptoHash.h"
+#include "Util.h"
+#include "SRP6.h"
 
 #include "Hacks/boost_program_options_with_filesystem_path.h"
+
+std::string CalculateShaPassHash(std::string_view name, std::string_view password)
+{
+    Trinity::Crypto::SHA256 email;
+    email.UpdateData(name);
+    email.Finalize();
+
+    Trinity::Crypto::SHA256 sha;
+    sha.UpdateData(ByteArrayToHexStr(email.GetDigest()));
+    sha.UpdateData(":");
+    sha.UpdateData(password);
+    sha.Finalize();
+
+    return ByteArrayToHexStr(sha.GetDigest(), true);
+}
+
+uint32 GetId(std::string_view username)
+{
+    LoginDatabasePreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_SEL_BNET_ACCOUNT_ID_BY_EMAIL);
+    stmt->setStringView(0, username);
+    if (PreparedQueryResult result = LoginDatabase.Query(stmt))
+        return (*result)[0].GetUInt32();
+
+    return 0;
+}
+
+bool CreateAccount(std::string username, std::string password, std::string email /*= ""*/, uint32 bnetAccountId /*= 0*/, uint8 bnetIndex /*= 0*/)
+{
+    if (utf8length(username) > 16)
+        return false;
+
+    if (utf8length(password) > 16)
+        return false;
+
+    Utf8ToUpperOnlyLatin(username);
+    Utf8ToUpperOnlyLatin(password);
+    Utf8ToUpperOnlyLatin(email);
+
+    if (GetId(username))
+        return false;
+
+    LoginDatabasePreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_INS_ACCOUNT);
+
+    stmt->setString(0, username);
+    std::pair<Trinity::Crypto::SRP6::Salt, Trinity::Crypto::SRP6::Verifier> registrationData = Trinity::Crypto::SRP6::MakeRegistrationData(username, password);
+    stmt->setBinary(1, registrationData.first);
+    stmt->setBinary(2, registrationData.second);
+    stmt->setString(3, email);
+    stmt->setString(4, email);
+
+    if (bnetAccountId && bnetIndex)
+    {
+        stmt->setUInt32(5, bnetAccountId);
+        stmt->setUInt8(6, bnetIndex);
+    }
+    else
+    {
+        stmt->setNull(5);
+        stmt->setNull(6);
+    }
+
+    LoginDatabase.DirectExecute(stmt); // Enforce saving, otherwise AddGroup can fail
+
+    stmt = LoginDatabase.GetPreparedStatement(LOGIN_INS_REALM_CHARACTERS_INIT);
+    LoginDatabase.Execute(stmt);
+
+    return true;
+}
+
+bool CreateBattlenetAccount(std::string email, std::string password, bool withGameAccount, std::string* gameAccountName)
+{
+    if (utf8length(email) > 320)
+        return false;
+
+    if (utf8length(password) > 16)
+        return false;
+
+    Utf8ToUpperOnlyLatin(email);
+    Utf8ToUpperOnlyLatin(password);
+
+    if (GetId(email))
+        return false;
+
+    LoginDatabasePreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_INS_BNET_ACCOUNT);
+    stmt->setString(0, email);
+    stmt->setString(1, CalculateShaPassHash(email, password));
+    LoginDatabase.DirectExecute(stmt);
+
+    uint32 newAccountId = GetId(email);
+    if (!newAccountId)
+        return false;
+
+    if (withGameAccount)
+    {
+        *gameAccountName = std::to_string(newAccountId) + "#1";
+        CreateAccount(*gameAccountName, password, email, newAccountId, 1);
+    }
+
+    return true;
+}
 
 using boost::asio::ip::tcp;
 using namespace boost::program_options;
@@ -121,33 +226,32 @@ int main(int argc, char** argv)
     Trinity::Banner::Show("bnetserver",
         [](char const* text)
         {
-            TC_LOG_INFO("server.bnetserver", "%s", text);
+            TC_LOG_INFO("server.bnetserver", "{}", text);
         },
         []()
         {
-            TC_LOG_INFO("server.bnetserver", "Using configuration file %s.", sConfigMgr->GetFilename().c_str());
-            TC_LOG_INFO("server.bnetserver", "Using SSL version: %s (library: %s)", OPENSSL_VERSION_TEXT, OpenSSL_version(OPENSSL_VERSION));
-            TC_LOG_INFO("server.bnetserver", "Using Boost version: %i.%i.%i", BOOST_VERSION / 100000, BOOST_VERSION / 100 % 1000, BOOST_VERSION % 100);
+            TC_LOG_INFO("server.bnetserver", "Using configuration file {}.", sConfigMgr->GetFilename());
+            TC_LOG_INFO("server.bnetserver", "Using SSL version: {} (library: {})", OPENSSL_VERSION_TEXT, OpenSSL_version(OPENSSL_VERSION));
+            TC_LOG_INFO("server.bnetserver", "Using Boost version: {}.{}.{}", BOOST_VERSION / 100000, BOOST_VERSION / 100 % 1000, BOOST_VERSION % 100);
         }
     );
 
     for (std::string const& key : overriddenKeys)
-        TC_LOG_INFO("server.authserver", "Configuration field '%s' was overridden with environment variable.", key.c_str());
+        TC_LOG_INFO("server.authserver", "Configuration field '{}' was overridden with environment variable.", key);
 
-    // Seed the OpenSSL's PRNG here.
-    // That way it won't auto-seed when calling BigNumber::SetRand and slow down the first world login
-    BigNumber seed;
-    seed.SetRand(16 * 8);
+    OpenSSLCrypto::threadsSetup(boost::dll::program_location().remove_filename());
+
+    std::shared_ptr<void> opensslHandle(nullptr, [](void*) { OpenSSLCrypto::threadsCleanup(); });
 
     // bnetserver PID file creation
     std::string pidFile = sConfigMgr->GetStringDefault("PidFile", "");
     if (!pidFile.empty())
     {
         if (uint32 pid = CreatePIDFile(pidFile))
-            TC_LOG_INFO("server.bnetserver", "Daemon PID: %u\n", pid);
+            TC_LOG_INFO("server.bnetserver", "Daemon PID: {}\n", pid);
         else
         {
-            TC_LOG_ERROR("server.bnetserver", "Cannot create PID file %s.\n", pidFile.c_str());
+            TC_LOG_ERROR("server.bnetserver", "Cannot create PID file {}.\n", pidFile);
             return 1;
         }
     }
@@ -178,7 +282,7 @@ int main(int argc, char** argv)
     int32 bnport = sConfigMgr->GetIntDefault("BattlenetPort", 1119);
     if (bnport < 0 || bnport > 0xFFFF)
     {
-        TC_LOG_ERROR("server.bnetserver", "Specified battle.net port (%d) out of allowed range (1-65535)", bnport);
+        TC_LOG_ERROR("server.bnetserver", "Specified battle.net port ({}) out of allowed range (1-65535)", bnport);
         return 1;
     }
 

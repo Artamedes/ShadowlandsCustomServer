@@ -52,6 +52,7 @@ EndScriptData */
 #include "World.h"
 #include "BattlePayMgr.h"
 #include "CustomObjectMgr.h"
+#include "PhasingHandler.h"
 
 #if TRINITY_COMPILER == TRINITY_COMPILER_GNU
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
@@ -169,6 +170,7 @@ public:
             { "waypoint_data",                 rbac::RBAC_PERM_COMMAND_RELOAD_WAYPOINT_DATA,                    true,  &HandleReloadWpCommand,                         "" },
             { "vehicle_template",              rbac::RBAC_PERM_COMMAND_RELOAD_VEHICLE_TEMPLATE,                 true,  &HandleReloadVehicleTemplateCommand,            "" },
             { "vehicle_accessory",             rbac::RBAC_PERM_COMMAND_RELOAD_VEHICLE_ACCESORY,                 true,  &HandleReloadVehicleAccessoryCommand,           "" },
+            { "phase_area",                    rbac::RBAC_PERM_COMMAND_RELOAD_VEHICLE_TEMPLATE_ACCESSORY,       true,  &HandleReloadPhaseAreaCommand,   "" },
             { "vehicle_template_accessory",    rbac::RBAC_PERM_COMMAND_RELOAD_VEHICLE_TEMPLATE_ACCESSORY,       true,  &HandleReloadVehicleTemplateAccessoryCommand,   "" },
             { "broadcast_text",                rbac::RBAC_PERM_COMMAND_RELOAD_VEHICLE_TEMPLATE_ACCESSORY,       true,  &HandleReloadBroadcastText,   "" },
             { "instance_template",             rbac::RBAC_PERM_COMMAND_RELOAD_VEHICLE_TEMPLATE_ACCESSORY,       true,  &HandleReloadCreatureTemplateMovement,   "" },
@@ -181,6 +183,16 @@ public:
             { "reload",                        rbac::RBAC_PERM_COMMAND_RELOAD,                                  true,  nullptr,                                        "", reloadCommandTable },
         };
         return commandTable;
+    }
+
+    static bool HandleReloadPhaseAreaCommand(ChatHandler* handler)
+    {
+        sObjectMgr->LoadAreaPhases();
+        PhasingHandler::ResetPhaseShift(handler->GetPlayer());
+        PhasingHandler::OnAreaChange(handler->GetPlayer());
+        PhasingHandler::OnConditionChange(handler->GetPlayer());
+        handler->PSendSysMessage("Reloaded and updated your phases!");
+        return true;
     }
 
     static bool HandleReloadCoinModels(ChatHandler* handler)
@@ -487,7 +499,7 @@ public:
                 continue;
             }
 
-            TC_LOG_INFO("misc", "Reloading creature template entry %u", entry);
+            TC_LOG_INFO("misc", "Reloading creature template entry {}", entry);
 
             Field* fields = result->Fetch();
             sObjectMgr->LoadCreatureTemplate(fields);
@@ -970,6 +982,7 @@ public:
             TC_LOG_INFO("misc", "Re-Loading Waypoints data from 'waypoints_data'");
 
         sWaypointMgr->Load();
+        sWaypointMgr->LoadWaypointAddons();
 
         if (*args != 'a')
             handler->SendGlobalGMSysMessage("DB Table 'waypoint_data' reloaded.");

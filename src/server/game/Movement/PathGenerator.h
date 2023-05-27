@@ -85,6 +85,7 @@ class TC_GAME_API PathGenerator
 
         Movement::PointsArray const& GetPath() const { return _pathPoints; }
         Movement::PointsArray& GetPath() { return _pathPoints; }
+        float GetPathLength() const;
 
         PathType GetPathType() const { return _type; }
 

@@ -27,6 +27,7 @@ void AddSC_spell_dh_legendary();
 void AddSC_spell_dh_vengeance();
 void AddSC_spell_dh_covenant();
 void AddSC_druid_spell_scripts();
+void AddSC_evoker_spell_scripts();
 void AddSC_spell_druid_feral();
 void AddSC_spell_druid_covenant();
 void AddSC_spell_druid_balance();
@@ -84,6 +85,7 @@ void AddSC_spell_warrior_protection();
 void AddSC_spell_warrior_fury();
 void AddSC_quest_spell_scripts();
 void AddSC_item_spell_scripts();
+void AddSC_azerite_item_spell_scripts();
 void AddSC_spell_nightfae();
 void AddSC_spell_kyrian();
 void AddSC_spell_necrolord();
@@ -91,6 +93,8 @@ void AddSC_spell_venthyr();
 void AddSC_spell_corruption();
 void AddSC_spell_covenant();
 void AddSC_spell_legendary();
+void AddSC_spell_dragonriding();
+void AddSC_evoker_spell_scriptsSE();
 
 // The name of this function should match:
 // void Add${NameOfDirectory}Scripts()
@@ -107,6 +111,7 @@ void AddSpellsScripts()
     AddSC_spell_dh_vengeance();
     AddSC_spell_dh_covenant();
     AddSC_druid_spell_scripts();
+    AddSC_evoker_spell_scriptsSE();
     AddSC_spell_druid_feral();
     AddSC_spell_druid_covenant();
     AddSC_spell_druid_balance();
@@ -164,6 +169,7 @@ void AddSpellsScripts()
     AddSC_spell_warrior_fury();
     AddSC_quest_spell_scripts();
     AddSC_item_spell_scripts();
+    AddSC_azerite_item_spell_scripts();
     AddSC_spell_nightfae();
     AddSC_spell_kyrian();
     AddSC_spell_necrolord();
@@ -171,4 +177,6 @@ void AddSpellsScripts()
     AddSC_spell_corruption();
     AddSC_spell_covenant();
     AddSC_spell_legendary();
+    AddSC_spell_dragonriding();
+    AddSC_evoker_spell_scripts();
 }

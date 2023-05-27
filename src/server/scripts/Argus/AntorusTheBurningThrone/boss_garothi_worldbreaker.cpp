@@ -16,6 +16,7 @@
  */
 
 #include "AreaTriggerAI.h"
+#include "Containers.h"
 #include "CreatureAI.h"
 #include "CreatureAIImpl.h"
 #include "GridNotifiers.h"
@@ -121,8 +122,7 @@ constexpr uint8 MAX_TARGETS_SIZE = 6;
 
 enum Misc
 {
-    SUMMON_GROUP_ID_SURGING_FEL         = 0,
-    ENCOUNTER_ID_GAROTHI_WORLDBREAKER   = 2076
+    SUMMON_GROUP_ID_SURGING_FEL         = 0
 };
 
 namespace TargetHandler
@@ -242,7 +242,6 @@ struct boss_garothi_worldbreaker : public BossAI
         _JustDied();
         Talk(SAY_DEATH);
         CleanupEncounter();
-        instance->SendBossKillCredit(ENCOUNTER_ID_GAROTHI_WORLDBREAKER);
         instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
     }
 

@@ -183,32 +183,32 @@ public:
 
     static bool HandleLearnAllTalentsCommand(ChatHandler* handler)
     {
-        Player* player = handler->GetSession()->GetPlayer();
-        uint32 playerClass = player->GetClass();
-
-        for (uint32 i = 0; i < sTalentStore.GetNumRows(); ++i)
-        {
-            TalentEntry const* talentInfo = sTalentStore.LookupEntry(i);
-            if (!talentInfo)
-                continue;
-
-            if (playerClass != talentInfo->ClassID)
-                continue;
-
-            if (talentInfo->SpecID && player->GetPrimarySpecialization() != talentInfo->SpecID)
-                continue;
-
-            SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(talentInfo->SpellID, DIFFICULTY_NONE);
-            if (!spellInfo || !SpellMgr::IsSpellValid(spellInfo, handler->GetSession()->GetPlayer(), false))
-                continue;
-
-            player->AddTalent(talentInfo, player->GetActiveTalentGroup(), true);
-            player->LearnSpell(talentInfo->SpellID, false);
-        }
-
-        player->SendTalentsInfoData();
-
-        handler->SendSysMessage(LANG_COMMAND_LEARN_CLASS_TALENTS);
+        //Player* player = handler->GetSession()->GetPlayer();
+        //uint32 playerClass = player->GetClass();
+        //
+        //for (uint32 i = 0; i < sTalentStore.GetNumRows(); ++i)
+        //{
+        //    TalentEntry const* talentInfo = sTalentStore.LookupEntry(i);
+        //    if (!talentInfo)
+        //        continue;
+        //
+        //    if (playerClass != talentInfo->ClassID)
+        //        continue;
+        //
+        //    if (talentInfo->SpecID && player->GetPrimarySpecialization() != talentInfo->SpecID)
+        //        continue;
+        //
+        //    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(talentInfo->SpellID, DIFFICULTY_NONE);
+        //    if (!spellInfo || !SpellMgr::IsSpellValid(spellInfo, handler->GetSession()->GetPlayer(), false))
+        //        continue;
+        //
+        //    player->AddTalent(talentInfo, player->GetActiveTalentGroup(), true);
+        //    player->LearnSpell(talentInfo->SpellID, false);
+        //}
+        //
+        //player->SendTalentsInfoData();
+        //
+        //handler->SendSysMessage(LANG_COMMAND_LEARN_CLASS_TALENTS);
         return true;
     }
 
@@ -423,16 +423,12 @@ public:
     {
         uint32 classmask = player->GetClassMask();
 
-        for (uint32 j = 0; j < sSkillLineAbilityStore.GetNumRows(); ++j)
+        std::vector<SkillLineAbilityEntry const*> const* skillLineAbilities = sDB2Manager.GetSkillLineAbilitiesBySkill(skillId);
+        if (!skillLineAbilities)
+            return;
+
+        for (SkillLineAbilityEntry const* skillLine : *skillLineAbilities)
         {
-            SkillLineAbilityEntry const* skillLine = sSkillLineAbilityStore.LookupEntry(j);
-            if (!skillLine)
-                continue;
-
-            // wrong skill
-            if (skillLine->SkillLine != int32(skillId))
-                continue;
-
             // not high rank
             if (skillLine->SupercedesSpell)
                 continue;

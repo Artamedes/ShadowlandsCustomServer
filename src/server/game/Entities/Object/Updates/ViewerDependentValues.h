@@ -69,19 +69,16 @@ public:
         value_type dynamicFlags = objectData->DynamicFlags;
         if (Unit const* unit = object->ToUnit())
         {
-            dynamicFlags &= ~UNIT_DYNFLAG_TAPPED;
-
             if (Creature const* creature = object->ToCreature())
             {
-                if (creature->hasLootRecipient() && !creature->isTappedBy(receiver))
-                    dynamicFlags |= UNIT_DYNFLAG_TAPPED;
+                if (dynamicFlags & UNIT_DYNFLAG_TAPPED && creature->isTappedBy(receiver))
+                    dynamicFlags &= ~UNIT_DYNFLAG_TAPPED;
 
-                if (!receiver->isAllowedToLoot(creature))
+                if (dynamicFlags & UNIT_DYNFLAG_LOOTABLE && !receiver->isAllowedToLoot(creature))
                     dynamicFlags &= ~UNIT_DYNFLAG_LOOTABLE;
 
-                // TODO: Check if player has skinning?
-                if (creature->HasUnitFlag(UNIT_FLAG_SKINNABLE))
-                    dynamicFlags |= UNIT_DYNFLAG_ALLOW_SKIN;
+                if (dynamicFlags & UNIT_DYNFLAG_CAN_SKIN && creature->IsSkinnedBy(receiver))
+                    dynamicFlags &= ~UNIT_DYNFLAG_CAN_SKIN;
             }
 
             // unit UNIT_DYNFLAG_TRACK_UNIT should only be sent to caster of SPELL_AURA_MOD_STALKED auras
@@ -100,15 +97,18 @@ public:
                         dynFlags |= GO_DYNFLAG_LO_ACTIVATE;
                     break;
                 case GAMEOBJECT_TYPE_CHEST:
-                case GAMEOBJECT_TYPE_GOOBER:
-                    if (gameObject->GetEntry() == 1200005)
-                    {
-                        if (const_cast<GameObject*>(gameObject)->GetLootFor(const_cast<Player*>(receiver), true)->empty())
-                            dynFlags |= GO_DYNFLAG_LO_NO_INTERACT | GO_DYNFLAG_LO_DEPLETED;
-                    }
-
                     if (gameObject->ActivateToQuest(receiver))
                         dynFlags |= GO_DYNFLAG_LO_ACTIVATE | GO_DYNFLAG_LO_SPARKLE | GO_DYNFLAG_LO_HIGHLIGHT;
+                    else if (receiver->IsGameMaster())
+                        dynFlags |= GO_DYNFLAG_LO_ACTIVATE;
+                    break;
+                case GAMEOBJECT_TYPE_GOOBER:
+                    if (gameObject->ActivateToQuest(receiver))
+                    {
+                        dynFlags |= GO_DYNFLAG_LO_HIGHLIGHT;
+                        if (gameObject->GetGoStateFor(receiver->GetGUID()) != GO_STATE_ACTIVE)
+                            dynFlags |= GO_DYNFLAG_LO_ACTIVATE;
+                    }
                     else if (receiver->IsGameMaster())
                         dynFlags |= GO_DYNFLAG_LO_ACTIVATE;
                     break;
@@ -142,11 +142,20 @@ public:
                     if (const_cast<Player*>(receiver)->ConsumedAnimaPowers.count(gameObject->GetGUID()))
                         dynFlags |= GO_DYNFLAG_LO_DEPLETED;
                     break;
+                case GAMEOBJECT_TYPE_GATHERING_NODE:
+                    if (gameObject->ActivateToQuest(receiver))
+                        dynFlags |= GO_DYNFLAG_LO_ACTIVATE | GO_DYNFLAG_LO_SPARKLE | GO_DYNFLAG_LO_HIGHLIGHT;
+                    if (gameObject->GetGoStateFor(receiver->GetGUID()) == GO_STATE_ACTIVE)
+                        dynFlags |= GO_DYNFLAG_LO_DEPLETED;
+                    break;
                 default:
                     break;
             }
+            
+            if (!gameObject->MeetsInteractCondition(receiver))
+                dynFlags |= GO_DYNFLAG_LO_NO_INTERACT;
 
-            dynamicFlags = (pathProgress << 16) | dynFlags;
+            dynamicFlags = (uint32(pathProgress) << 16) | uint32(dynFlags);
         }
 
         return dynamicFlags;
@@ -243,6 +252,22 @@ public:
 };
 
 template<>
+class ViewerDependentValue<UF::UnitData::Flags3Tag>
+{
+public:
+    using value_type = UF::UnitData::Flags3Tag::value_type;
+
+    static value_type GetValue(UF::UnitData const* unitData, Unit const* unit, Player const* receiver)
+    {
+        value_type flags = unitData->Flags3;
+        if (flags & UNIT_FLAG3_ALREADY_SKINNED && unit->IsCreature() && !unit->ToCreature()->IsSkinnedBy(receiver))
+            flags &= ~UNIT_FLAG3_ALREADY_SKINNED;
+
+        return flags;
+    }
+};
+
+template<>
 class ViewerDependentValue<UF::UnitData::AuraStateTag>
 {
 public:
@@ -317,22 +342,34 @@ public:
     }
 };
 
+//template<>
+//class ViewerDependentValue<UF::GameObjectData::DisplayIDTag>
+//{
+//public:
+//    using value_type = UF::GameObjectData::DisplayIDTag::value_type;
+//
+//    static value_type GetValue(UF::GameObjectData const* gameObjectData, GameObject const* gameObject, Player const* receiver)
+//    {
+//        value_type displayId = gameObjectData->DisplayID;
+//        if (gameObject->GetGoType() == GAMEOBJECT_TYPE_PLAYER_CHOICE_CHEST)
+//        {
+//            if (!const_cast<Player*>(receiver)->ConsumedAnimaPowers.count(gameObject->GetGUID()))
+//                displayId = 61847;
+//        }
+//
+//        return displayId;
+//    }
+//};
+
 template<>
-class ViewerDependentValue<UF::GameObjectData::DisplayIDTag>
+class ViewerDependentValue<UF::GameObjectData::StateTag>
 {
 public:
-    using value_type = UF::GameObjectData::DisplayIDTag::value_type;
+    using value_type = UF::GameObjectData::StateTag::value_type;
 
-    static value_type GetValue(UF::GameObjectData const* gameObjectData, GameObject const* gameObject, Player const* receiver)
+    static value_type GetValue(UF::GameObjectData const* /*gameObjectData*/, GameObject const* gameObject, Player const* receiver)
     {
-        value_type displayId = gameObjectData->DisplayID;
-        if (gameObject->GetGoType() == GAMEOBJECT_TYPE_PLAYER_CHOICE_CHEST)
-        {
-            if (!const_cast<Player*>(receiver)->ConsumedAnimaPowers.count(gameObject->GetGUID()))
-                displayId = 61847;
-        }
-
-        return displayId;
+        return gameObject->GetGoStateFor(receiver->GetGUID());
     }
 };
 

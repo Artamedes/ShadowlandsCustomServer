@@ -68,12 +68,8 @@ class TC_GAME_API SmartAI : public CreatureAI
         {
             _escortState &= ~escortState;
         }
-        void SetAutoAttack(bool on)
-        {
-            _canAutoAttack = on;
-        }
         void SetCombatMove(bool on, bool stopMoving = false);
-        bool CanCombatMove()
+        bool CanCombatMove() const
         {
             return _canCombatMove;
         }
@@ -97,7 +93,7 @@ class TC_GAME_API SmartAI : public CreatureAI
         void JustEngagedWith(Unit* enemy) override;
 
         // Called for reaction at stopping attack at no attackers or targets
-        void EnterEvadeMode(EvadeReason why = EVADE_REASON_OTHER) override;
+        void EnterEvadeMode(EvadeReason why) override;
 
         // Called when the creature is killed
         void JustDied(Unit* killer) override;
@@ -158,6 +154,9 @@ class TC_GAME_API SmartAI : public CreatureAI
 
         // called when the corpse of this creature gets removed
         void CorpseRemoved(uint32& respawnDelay) override;
+
+        // Called when the unit is about to be removed from the world (despawn, grid unload, corpse disappearing)
+        void OnDespawn() override;
 
         // Called when a Player/Creature enters the creature (vehicle)
         void PassengerBoarded(Unit* who, int8 seatId, bool apply) override;
@@ -265,7 +264,6 @@ class TC_GAME_API SmartAI : public CreatureAI
 
         bool _run;
         bool _evadeDisabled;
-        bool _canAutoAttack;
         bool _canCombatMove;
         uint32 _invincibilityHPLevel;
 

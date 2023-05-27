@@ -19,8 +19,10 @@
 #define TRINITY_RANDOMMOTIONGENERATOR_H
 
 #include "MovementGenerator.h"
+#include "Optional.h"
 #include "Position.h"
 #include "Timer.h"
+#include <G3DPosition.hpp>
 
 class PathGenerator;
 
@@ -28,7 +30,7 @@ template<class T>
 class RandomMovementGenerator : public MovementGeneratorMedium<T, RandomMovementGenerator<T>>
 {
     public:
-        explicit RandomMovementGenerator(float distance = 0.0f);
+        explicit RandomMovementGenerator(float distance = 0.0f, Optional<Milliseconds> duration = {});
 
         MovementGeneratorType GetMovementGeneratorType() const override;
 
@@ -44,13 +46,17 @@ class RandomMovementGenerator : public MovementGeneratorMedium<T, RandomMovement
         void UnitSpeedChanged() override { RandomMovementGenerator<T>::AddFlag(MOVEMENTGENERATOR_FLAG_SPEED_UPDATE_PENDING); }
 
     private:
-        void SetRandomLocation(T*);
+        void RebuildPath(T*);
 
-        std::unique_ptr<PathGenerator> _path;
+        std::map<uint8, std::vector<G3D::Vector3>> _pathPoints;
+        std::queue<std::vector<G3D::Vector3>> _pathQueue;
+        TimeTracker _pathRebuildTimer;
         TimeTracker _timer;
+        Optional<TimeTracker> _duration;
         Position _reference;
         float _wanderDistance;
         uint8 _wanderSteps;
+        uint8 _currWander = 0;
 };
 
 #endif

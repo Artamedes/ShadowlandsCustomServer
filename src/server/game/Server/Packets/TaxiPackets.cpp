@@ -36,9 +36,8 @@ WorldPacket const* WorldPackets::Taxi::ShowTaxiNodes::Write()
     _worldPacket.WriteBit(WindowInfo.has_value());
     _worldPacket.FlushBits();
 
-    // PIGPIGPIG
-    _worldPacket << uint32(0);
-    _worldPacket << uint32(0);
+    _worldPacket << uint32(CanLandNodes.size() / 8); // client reads this in uint64 blocks, size is ensured to be divisible by 8 in TaxiMask constructor
+    _worldPacket << uint32(CanUseNodes.size() / 8);  // client reads this in uint64 blocks, size is ensured to be divisible by 8 in TaxiMask constructor
 
     if (WindowInfo.has_value())
     {
@@ -46,8 +45,8 @@ WorldPacket const* WorldPackets::Taxi::ShowTaxiNodes::Write()
         _worldPacket << uint32(WindowInfo->CurrentNode);
     }
 
-    //_worldPacket.append(CanLandNodes.data(), CanLandNodes.size());
-    //_worldPacket.append(CanUseNodes.data(), CanUseNodes.size());
+    _worldPacket.append(CanLandNodes.data(), CanLandNodes.size());
+    _worldPacket.append(CanUseNodes.data(), CanUseNodes.size());
 
     return &_worldPacket;
 }

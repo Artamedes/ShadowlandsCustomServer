@@ -34,17 +34,6 @@ namespace WorldPackets
             uint32 SoulbindID;
         };
 
-        class TC_GAME_API CovenantRenownOpenNpc final : public ServerPacket
-        {
-        public:
-            CovenantRenownOpenNpc() : ServerPacket(SMSG_COVENANT_RENOWN_OPEN_NPC, 16 + 1) { }
-
-            WorldPacket const* Write() override;
-
-            ObjectGuid NpcGUID;
-            bool CatchupState = false;
-        };
-
         class TC_GAME_API CovenantRenownSendCatchupState final : public ServerPacket
         {
         public:
@@ -53,18 +42,6 @@ namespace WorldPackets
             WorldPacket const* Write() override;
 
             bool CatchupState = false;
-        };
-
-        class TC_GAME_API OpenAnimaDiversionUI final : public ServerPacket
-        {
-        public:
-            OpenAnimaDiversionUI() : ServerPacket(SMSG_OPEN_ANIMA_DIVERSION_UI, 16 + 4 + 4) { }
-
-            WorldPacket const* Write() override;
-
-            ObjectGuid GUID;
-            int32 UiMapID = 0;
-            int32 GarrTalentTreeID = 0;
         };
 
         class TC_GAME_API CovenantPreviewOpenNpc final : public ServerPacket
@@ -87,18 +64,6 @@ namespace WorldPackets
 
             bool AreCallingsUnlocked = true;
             std::vector<int32> BountyIds;
-        };
-
-        class TC_GAME_API OpenItemForge final : public ServerPacket
-        {
-        public:
-            OpenItemForge(ObjectGuid guid) : ServerPacket(SMSG_OPEN_ITEM_FORGE, 16), GUID(guid) { }
-
-            WorldPacket const* Write() override;
-
-            int32 UnkInt1 = 3;
-            ObjectGuid GUID;
-            int32 UnkInt2 = 0;
         };
     }
 }

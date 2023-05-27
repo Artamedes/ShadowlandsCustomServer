@@ -15,8 +15,8 @@ enum eSubtlety
     FindWeakness = 316220,
 
     /// Conduits
-    DeeperDaggers = 341549,
-    DeeperDaggersProc = 341550,
+    DeeperDaggersConduit = 341549,
+    DeeperDaggersProcConduit = 341550,
 };
 
 /// ID: 341549 Deeper Daggers
@@ -36,7 +36,7 @@ class spell_deeper_daggers : public AuraScript
         {
             if (auto eff = GetEffect(EFFECT_0))
                 if (eff->ConduitRankEntry)
-                    caster->CastSpell(caster, DeeperDaggersProc, CastSpellExtraArgs(true).AddSpellBP0(eff->ConduitRankEntry->AuraPointsOverride));
+                    caster->CastSpell(caster, DeeperDaggersProcConduit, CastSpellExtraArgs(true).AddSpellBP0(eff->ConduitRankEntry->AuraPointsOverride));
         }
     }
 
@@ -71,13 +71,19 @@ class spell_black_powder : public SpellScript
                 {
                     if (auto hitUnit = GetHitUnit())
                     {
-                        if (hitUnit->HasAura(FindWeakness, caster->GetGUID()))
+                        if (auto shadowedFinishers = caster->GetAuraEffect(ShadowedFinishers, EFFECT_0))
                         {
-                            caster->CastSpell(hitUnit, BlackPowderFindWeaknessDmg, CastSpellExtraArgs(true).AddSpellBP0(CalculatePct(damage, 40)));
+                            if (hitUnit->HasAura(FindWeakness, caster->GetGUID()))
+                            {
+                                caster->CastSpell(hitUnit, BlackPowderFindWeaknessDmg, CastSpellExtraArgs(true).AddSpellBP0(CalculatePct(damage, shadowedFinishers->GetAmount())));
+                            }
                         }
                     }
                 }
             }
+
+            if (!caster->HasAura(FinalityBlackPowder))
+                caster->CastSpell(caster, FinalityBlackPowder, true);
         }
     }
 
@@ -89,8 +95,8 @@ class spell_black_powder : public SpellScript
 
 enum eFinality
 {
-    FinalityEviscerate  = 340600,
-    FinalityBlackPowder = 340603,
+    FinalityEviscerateLegendary  = 340600,
+    FinalityBlackPowderLegendary = 340603,
 };
 
 /// ID: 340089 Finality
@@ -128,20 +134,20 @@ class spell_finality : public AuraScript
         {
             case BlackPowder:
             {
-                if (!caster->HasAura(FinalityBlackPowder))
-                    caster->CastSpell(caster, FinalityBlackPowder, true);
+                if (!caster->HasAura(FinalityBlackPowderLegendary))
+                    caster->CastSpell(caster, FinalityBlackPowderLegendary, true);
                 break;
             }
             case Rupture:
             {
-                if (!caster->HasAura(FinalityRupture))
-                    caster->CastSpell(caster, FinalityRupture, true);
+                if (!caster->HasAura(FinalityRuptureLegendary))
+                    caster->CastSpell(caster, FinalityRuptureLegendary, true);
                 break;
             }
             case Eviscerate:
             {
-                if (!caster->HasAura(FinalityEviscerate))
-                    caster->CastSpell(caster, FinalityEviscerate, true);
+                if (!caster->HasAura(FinalityEviscerateLegendary))
+                    caster->CastSpell(caster, FinalityEviscerateLegendary, true);
                 break;
             }
         }
@@ -155,6 +161,7 @@ class spell_finality : public AuraScript
 };
 
 /// ID: 340600 Finality: Eviscerate
+/// 385949
 class spell_finality_eviscerate : public AuraScript
 {
     PrepareAuraScript(spell_finality_eviscerate);
@@ -178,6 +185,7 @@ class spell_finality_eviscerate : public AuraScript
 };
 
 /// ID: 340603 Finality: Black Powder
+/// 385948
 class spell_finality_black_powder : public AuraScript
 {
     PrepareAuraScript(spell_finality_black_powder);
@@ -201,6 +209,7 @@ class spell_finality_black_powder : public AuraScript
 };
 
 /// ID: 340091 The Rotten
+/// 382015
 class spell_the_rotten : public AuraScript
 {
     PrepareAuraScript(spell_the_rotten);
@@ -257,16 +266,202 @@ class spell_rog_eviscerate : public SpellScript
 
         if (auto hitUnit = GetHitUnit())
         {
-            if (hitUnit->GetAura(FindWeakness))
+            if (auto shadowedFinishers = caster->GetAuraEffect(ShadowedFinishers, EFFECT_0))
             {
-                caster->CastSpell(hitUnit, EviscerateShadowDmg, CastSpellExtraArgs(true).AddSpellBP0(CalculatePct(damage, 50)));
+                if (hitUnit->HasAura(FindWeakness, caster->GetGUID()))
+                {
+                    caster->CastSpell(hitUnit, EviscerateShadowDmg, CastSpellExtraArgs(true).AddSpellBP0(CalculatePct(damage, shadowedFinishers->GetAmount())));
+                }
             }
         }
+
+        if (!caster->HasAura(FinalityEviscerate))
+            caster->CastSpell(caster, FinalityEviscerate, true);
     }
 
     void Register() override
     {
         OnEffectHitTarget += SpellEffectFn(spell_rog_eviscerate::CalculateDamage, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
+    }
+};
+
+/// ID - 382518 Perforated Veins
+class spell_perforated_veins_382518 : public AuraScript
+{
+    PrepareAuraScript(spell_perforated_veins_382518);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == Shadowstrike;
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_perforated_veins_382518::CheckProc);
+    }
+};
+
+/// ID - 341572 Perforated Veins
+class spell_perforated_veins_341572 : public AuraScript
+{
+    PrepareAuraScript(spell_perforated_veins_341572);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && (eventInfo.GetSpellInfo()->Id == Shadowstrike || eventInfo.GetSpellInfo()->Id == Backstab);
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        Remove();
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_perforated_veins_341572::CheckProc);
+        OnProc += AuraProcFn(spell_perforated_veins_341572::HandleProc);
+    }
+};
+
+/// ID - 319949 Improved Backstab
+class spell_improved_backstab_319949 : public AuraScript
+{
+    PrepareAuraScript(spell_improved_backstab_319949);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && (eventInfo.GetSpellInfo()->Id == Shadowstrike || eventInfo.GetSpellInfo()->Id == Backstab)
+            && eventInfo.GetProcTarget() && GetCaster()
+            && !eventInfo.GetProcTarget()->isInFront(GetCaster());
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (auto caster = GetCaster())
+            if (auto procTarget = eventInfo.GetProcTarget())
+                caster->CastSpell(procTarget, FindWeaknesDebuff, true);
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_improved_backstab_319949::CheckProc);
+        OnProc += AuraProcFn(spell_improved_backstab_319949::HandleProc);
+    }
+};
+
+/// ID - 343173 Premeditation
+class spell_premeditation_343173 : public AuraScript
+{
+    PrepareAuraScript(spell_premeditation_343173);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == Shadowstrike;
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (auto caster = GetCaster())
+        {
+            auto aura = caster->GetAura(SliceAndDice);
+            uint32 oldSndDuration = [&]() -> uint32
+            {
+                if (aura)
+                    return aura->GetDuration();
+
+                return 0;
+            }();
+
+            auto newDurataion = caster->CalcSpellDuration(sSpellMgr->GetSpellInfo(SliceAndDice), true, nullptr, oldSndDuration, false);
+
+            if (aura)
+                aura->SetDuration(newDurataion);
+            else if (auto newAura = caster->AddAura(SliceAndDice, caster))
+                newAura->SetDuration(newDurataion);
+
+            caster->CastSpell(caster, PremeditationEnergize, true);
+        }
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_premeditation_343173::CheckProc);
+        OnProc += AuraProcFn(spell_premeditation_343173::HandleProc);
+    }
+};
+
+/// ID - 385727 Silent Storm
+class spell_silent_storm_385727 : public AuraScript
+{
+    PrepareAuraScript(spell_silent_storm_385727);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->Id == ShurikenStorm;
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        Remove();
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_silent_storm_385727::CheckProc);
+        OnProc += AuraProcFn(spell_silent_storm_385727::HandleProc);
+    }
+};
+
+/// ID - 382512 Inevitability
+/// 279720
+class spell_inevitability_382512 : public AuraScript
+{
+    PrepareAuraScript(spell_inevitability_382512);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        if (!eventInfo.GetSpellInfo())
+            return false;
+
+        switch (eventInfo.GetSpellInfo()->Id)
+        {
+            case Shadowstrike:
+            case Backstab:
+            case Gloomblade:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    void HandleProc(ProcEventInfo& eventInfo)
+    {
+        if (auto caster = GetCaster())
+            if (auto aura = caster->GetAura(SymbolsOfDeath))
+                if (auto eff = GetEffect(EFFECT_1))
+                    aura->ModDuration(eff->GetAmount() / 10, false, true);
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_inevitability_382512::CheckProc);
+        OnProc += AuraProcFn(spell_inevitability_382512::HandleProc);
+    }
+};
+
+/// ID - 382517 Deeper Daggers
+class spell_deeper_daggers_382517 : public AuraScript
+{
+    PrepareAuraScript(spell_deeper_daggers_382517);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetSpellInfo() && (eventInfo.GetSpellInfo()->Id == Eviscerate || eventInfo.GetSpellInfo()->Id == BlackPowder);
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_deeper_daggers_382517::CheckProc);
     }
 };
 
@@ -280,4 +475,11 @@ void AddSC_spell_rogue_subtlety()
     RegisterSpellScript(spell_the_rotten);
     RegisterSpellScript(spell_the_rotten_proc);
     RegisterSpellScript(spell_rog_eviscerate);
+    RegisterSpellScript(spell_perforated_veins_382518);
+    RegisterSpellScript(spell_perforated_veins_341572);
+    RegisterSpellScript(spell_improved_backstab_319949);
+    RegisterSpellScript(spell_premeditation_343173);
+    RegisterSpellScript(spell_silent_storm_385727);
+    RegisterSpellScript(spell_inevitability_382512);
+    RegisterSpellScript(spell_deeper_daggers_382517);
 }

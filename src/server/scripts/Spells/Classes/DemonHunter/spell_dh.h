@@ -17,6 +17,7 @@ namespace DH
         Torment            = 185245,
         ChaosBrand         = 255260,
         DoubleJump         = 196055,
+        ImmolationAuraDmg  = 258921,
 
         // Veng
         FelDevstation      = 212084,
@@ -55,12 +56,15 @@ namespace DH
         DemonicWards       = 278386,
         BladeDanceDmg      = 199552,
         DeathSweepDmg      = 210153,
+        Metamorphosis      = 162264,
 
         FelDevstationDmg = 212105,
         EyeBeamDmg       = 198030,
 
         // Covenant
         ElysianDecree      = 306830,
+
+        TheHuntNew         = 370965,
     };
 
     enum eCovenant
@@ -69,11 +73,41 @@ namespace DH
         ShatteredSoulsNecrolord = 328951,
     };
 
+    enum eTraits
+    {
+        BurningHatred = 320374,
+    };
+
+    enum eHavocTraits
+    {
+        RagefireProc          = 388107,
+        RagefireAura          = 390192,
+        RagefireDmg           = 390197,
+        ChaoticTransformation = 388112,
+        CycleOfHatred         = 258887,
+        RestlessHunter        = 390142,
+        RestlessHunterBuff    = 390212,
+        InitiativeProc        = 391215,
+        TacticalRetreat       = 389688,
+        TacticalRetreatProc   = 389890,
+        MomentumProc          = 208628,
+        IsolatedPrey          = 388113,
+        IsolatedPreyEyeBeam   = 357305,
+        IsolatedPreyFelRush   = 357323,
+        ChaosTheoryNew        = 389687,
+        ChaosTheoryNewBuff    = 390195,
+    };
+
     enum ePvpTalents
     {
         Glimpse = 354489,
         GlimpseAura = 354610,
         BloodMoon = 355995,
         BloodMoonLeech = 360258,
+    };
+
+    enum eDHCategoryIds
+    {
+        FelRushCategoryId = 1545,
     };
 }

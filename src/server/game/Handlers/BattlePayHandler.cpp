@@ -352,7 +352,7 @@ void WorldSession::HandleBattlePayRequestPriceInfo(WorldPackets::BattlePay::Batt
 
 void WorldSession::HandleBattlePayStartPurchase(WorldPackets::BattlePay::BattlePayStartPurchase& startPurchase)
 {
-    TC_LOG_TRACE("network.opcode", "HandleBattlePayStartPurchase ClientToken: %u ProductId: %u %s", startPurchase.ClientToken, startPurchase.ProductID, startPurchase.TargetCharacter.ToString().c_str());
+    TC_LOG_TRACE("network.opcode", "HandleBattlePayStartPurchase ClientToken: {} ProductId: {} {}", startPurchase.ClientToken, startPurchase.ProductID, startPurchase.TargetCharacter.ToString());
 
     auto productId = startPurchase.ProductID;
     auto clientToken = startPurchase.ClientToken;
@@ -523,7 +523,7 @@ void WorldSession::HandleBattlePayConfirmPurchaseResponse(WorldPackets::BattlePa
     if (!_battlePayPurchase)
         return;
 
-    TC_LOG_TRACE("network.opcode", "HandleBattlePayConfirmPurchaseResponse ClientCurrentPriceFixedPoint: %u ConfirmPurchase: %u ServerToken: %u", confirmPurchase.ClientCurrentPriceFixedPoint, confirmPurchase.ConfirmPurchase ? 1 : 0, confirmPurchase.ServerToken);
+    TC_LOG_TRACE("network.opcode", "HandleBattlePayConfirmPurchaseResponse ClientCurrentPriceFixedPoint: {} ConfirmPurchase: {} ServerToken: {}", confirmPurchase.ClientCurrentPriceFixedPoint, confirmPurchase.ConfirmPurchase ? 1 : 0, confirmPurchase.ServerToken);
 
     if (!confirmPurchase.ConfirmPurchase)
     {

@@ -21,6 +21,7 @@
 #include "AreaTriggerPackets.h"
 #include "CellImpl.h"
 #include "Chat.h"
+#include "Containers.h"
 #include "CreatureAISelector.h"
 #include "DB2Stores.h"
 #include "GridNotifiersImpl.h"
@@ -113,14 +114,14 @@ bool AreaTrigger::Create(uint32 areaTriggerCreatePropertiesId, Unit* caster, Uni
 
     if (!IsPositionValid())
     {
-        TC_LOG_ERROR("entities.areatrigger", "AreaTrigger (areaTriggerCreatePropertiesId %u) not created. Invalid coordinates (X: %f Y: %f)", areaTriggerCreatePropertiesId, GetPositionX(), GetPositionY());
+        TC_LOG_ERROR("entities.areatrigger", "AreaTrigger (areaTriggerCreatePropertiesId {}) not created. Invalid coordinates (X: {} Y: {})", areaTriggerCreatePropertiesId, GetPositionX(), GetPositionY());
         return false;
     }
 
     _areaTriggerCreateProperties = sAreaTriggerDataStore->GetAreaTriggerCreateProperties(areaTriggerCreatePropertiesId);
     if (!_areaTriggerCreateProperties)
     {
-        TC_LOG_ERROR("entities.areatrigger", "AreaTrigger (areaTriggerCreatePropertiesId %u) not created. Invalid areatrigger create properties id (%u)", areaTriggerCreatePropertiesId, areaTriggerCreatePropertiesId);
+        TC_LOG_ERROR("entities.areatrigger", "AreaTrigger (areaTriggerCreatePropertiesId {}) not created. Invalid areatrigger create properties id ({})", areaTriggerCreatePropertiesId, areaTriggerCreatePropertiesId);
         return false;
     }
 
@@ -185,7 +186,7 @@ bool AreaTrigger::Create(uint32 areaTriggerCreatePropertiesId, Unit* caster, Uni
     auto areaTriggerData = m_values.ModifyValue(&AreaTrigger::m_areaTriggerData);
     m_Caster = caster;
     SetUpdateFieldValue(areaTriggerData.ModifyValue(&UF::AreaTriggerData::Caster), caster->GetGUID());
-    SetUpdateFieldValue(areaTriggerData.ModifyValue(&UF::AreaTriggerData::TargetGUID), TargetGUID);
+    SetUpdateFieldValue(areaTriggerData.ModifyValue(&UF::AreaTriggerData::Field_88), TargetGUID);
     SetUpdateFieldValue(areaTriggerData.ModifyValue(&UF::AreaTriggerData::CreatingEffectGUID), castId);
 
     SetUpdateFieldValue(areaTriggerData.ModifyValue(&UF::AreaTriggerData::SpellID), spell->Id);
@@ -266,7 +267,7 @@ bool AreaTrigger::Create(uint32 areaTriggerCreatePropertiesId, Unit* caster, Uni
     }
     else if (m_areaTriggerData->SpellID == 202770)
     {
-        if (auto target = ObjectAccessor::GetUnit(*this, m_areaTriggerData->TargetGUID))
+        if (auto target = ObjectAccessor::GetUnit(*this, m_areaTriggerData->Field_88))
         {
             Relocate(*target);
             SetDestination(*target, timeToTarget, true);
@@ -274,6 +275,16 @@ bool AreaTrigger::Create(uint32 areaTriggerCreatePropertiesId, Unit* caster, Uni
     }
 
     AI_Initialize();
+
+    // lets get script
+    if (AI())
+    {
+        std::vector<G3D::Vector3> splinePoints;
+        if (AI()->InitSplines(splinePoints, timeToTarget))
+        {
+            InitSplines(splinePoints, timeToTarget);
+        }
+    }
 
     // Relocate areatriggers with circular movement again
     if (HasOrbit())
@@ -332,7 +343,7 @@ bool AreaTrigger::CreateServer(Map* map, AreaTriggerTemplate const* areaTriggerT
     Relocate(position.spawnPoint);
     if (!IsPositionValid())
     {
-        TC_LOG_ERROR("entities.areatrigger", "AreaTriggerServer (id %u) not created. Invalid coordinates (X: %f Y: %f)",
+        TC_LOG_ERROR("entities.areatrigger", "AreaTriggerServer (id {}) not created. Invalid coordinates (X: {} Y: {})",
             areaTriggerTemplate->Id.Id, GetPositionX(), GetPositionY());
         return false;
     }
@@ -386,6 +397,9 @@ void AreaTrigger::Update(uint32 diff)
                 _UpdateDuration(_duration - diff);
             else
             {
+                if (_ai)
+                    _ai->OnRegisterRemove();
+
                 Remove(); // expired
                 return;
             }
@@ -430,8 +444,8 @@ void AreaTrigger::SetDuration(int32 newDuration)
 
 void AreaTrigger::SetTargetGUID(ObjectGuid const& guid)
 {
-    SetUpdateFieldValue(m_values.ModifyValue(&AreaTrigger::m_areaTriggerData).ModifyValue(&UF::AreaTriggerData::TargetGUID), guid);
-    const_cast<UF::AreaTriggerData&>(*m_areaTriggerData).MarkChanged(&UF::AreaTriggerData::TargetGUID);
+    SetUpdateFieldValue(m_values.ModifyValue(&AreaTrigger::m_areaTriggerData).ModifyValue(&UF::AreaTriggerData::Field_88), guid);
+    const_cast<UF::AreaTriggerData&>(*m_areaTriggerData).MarkChanged(&UF::AreaTriggerData::Field_88);
 }
 
 void AreaTrigger::_UpdateDuration(int32 newDuration)
@@ -471,6 +485,9 @@ void AreaTrigger::UpdateTargetList()
             break;
         case AREATRIGGER_TYPE_DISK:
             SearchUnitInDisk(targetList);
+            break;
+        case AREATRIGGER_TYPE_BOUNDED_PLANE:
+            SearchUnitInBoundedPlane(targetList);
             break;
         default:
             break;
@@ -515,6 +532,11 @@ void AreaTrigger::SearchUnitInSphere(std::vector<Unit*>& targetList)
             radius = G3D::lerp(_shape.SphereDatas.Radius,
                 OverrideRadiusTarget,
                 sDB2Manager.GetCurveValueAt(GetCreateProperties()->MorphCurveId, GetProgress()));
+        }
+
+        if (GetCreateProperties()->ScaleCurveId)
+        {
+            radius *= sDB2Manager.GetCurveValueAt(GetCreateProperties()->ScaleCurveId, GetProgress());
         }
     }
 
@@ -591,6 +613,20 @@ void AreaTrigger::SearchUnitInDisk(std::vector<Unit*>& targetList)
     }), targetList.end());
 }
 
+void AreaTrigger::SearchUnitInBoundedPlane(std::vector<Unit*>& targetList)
+{
+    SearchUnits(targetList, GetMaxSearchRadius(), false);
+
+    Position const& boxCenter = GetPosition();
+    float extentsX = _shape.BoxDatas.Extents[0];
+    float extentsY = _shape.BoxDatas.Extents[1];
+
+    targetList.erase(std::remove_if(targetList.begin(), targetList.end(), [boxCenter, extentsX, extentsY](Unit const* unit) -> bool
+    {
+        return !unit->IsWithinBox(boxCenter, extentsX, extentsY, MAP_SIZE);
+    }), targetList.end());
+}
+
 void AreaTrigger::HandleUnitEnterExit(std::vector<Unit*> const& newTargetList)
 {
     GuidUnorderedSet exitUnits(std::move(_insideUnits));
@@ -617,7 +653,7 @@ void AreaTrigger::HandleUnitEnterExit(std::vector<Unit*> const& newTargetList)
         }
 
         DoActions(unit);
-
+        unit->InsideAreaTriggers.insert(GetGUID());
         _ai->OnUnitEnter(unit);
     }
 
@@ -634,7 +670,7 @@ void AreaTrigger::HandleUnitEnterExit(std::vector<Unit*> const& newTargetList)
             }
 
             UndoActions(leavingUnit);
-
+            leavingUnit->InsideAreaTriggers.erase(GetGUID());
             _ai->OnUnitExit(leavingUnit);
         }
     }
@@ -972,7 +1008,7 @@ void AreaTrigger::InitSplineOffsets(std::vector<Position> const& offsets, uint32
         // Hack for Fury of Elune
         if (m_areaTriggerData->SpellID == 202770)
         {
-            if (auto target = ObjectAccessor::GetUnit(*this, m_areaTriggerData->TargetGUID))
+            if (auto target = ObjectAccessor::GetUnit(*this, m_areaTriggerData->Field_88))
                 SetDestination(*target, timeToTarget, true);
             return;
         }
@@ -1087,7 +1123,7 @@ void AreaTrigger::InitSplines(std::vector<G3D::Vector3> splinePoints, uint32 tim
 
         SendMessageToSet(reshape.Write(), true);
 
-        TC_LOG_TRACE("network.opcode", "AreaTriggerRePath %u %u", timeToTarget, GetElapsedTimeForMovement());
+        TC_LOG_TRACE("network.opcode", "AreaTriggerRePath {} {}", timeToTarget, GetElapsedTimeForMovement());
     }
 
     _reachedDestination = false;
@@ -1359,7 +1395,7 @@ void AreaTrigger::BuildValuesUpdateForPlayerWithMask(UpdateData* data, UF::Objec
     if (requestedAreaTriggerMask.IsAnySet())
         valuesMask.Set(TYPEID_AREATRIGGER);
 
-    ByteBuffer buffer = PrepareValuesUpdateBuffer();
+    ByteBuffer& buffer = PrepareValuesUpdateBuffer(data);
     std::size_t sizePos = buffer.wpos();
     buffer << uint32(0);
     buffer << uint32(valuesMask.GetBlock(0));
@@ -1372,7 +1408,7 @@ void AreaTrigger::BuildValuesUpdateForPlayerWithMask(UpdateData* data, UF::Objec
 
     buffer.put<uint32>(sizePos, buffer.wpos() - sizePos - 4);
 
-    data->AddUpdateBlock(buffer);
+    data->AddUpdateBlock();
 }
 
 void AreaTrigger::ValuesUpdateForPlayerWithMaskSender::operator()(Player const* player) const

@@ -16,6 +16,7 @@
  */
 
 #include "DB2DatabaseLoader.h"
+#include "DB2Store.h"
 #include "Common.h"
 #include "DatabaseEnv.h"
 #include "DB2Meta.h"
@@ -23,14 +24,9 @@
 #include "Log.h"
 #include <cstring>
 
-DB2LoadInfo::DB2LoadInfo(DB2FieldMeta const* fields, std::size_t fieldCount, DB2Meta const* meta, HotfixDatabaseStatements statement)
-    : DB2FileLoadInfo(fields, fieldCount, meta), Statement(statement)
-{
-}
-
 static char const* nullStr = "";
 
-char* DB2DatabaseLoader::Load(bool custom, uint32& records, char**& indexTable, std::vector<char*>& stringPool)
+char* DB2DatabaseLoader::Load(DB2StorageBase* storageBase, bool custom, uint32& records, char**& indexTable, std::vector<char*>& stringPool, uint32& minId)
 {
     // Even though this query is executed only once, prepared statement is used to send data from mysql server in binary format
     HotfixDatabasePreparedStatement* stmt = HotfixDatabase.GetPreparedStatement(_loadInfo->Statement);
@@ -70,8 +66,8 @@ char* DB2DatabaseLoader::Load(bool custom, uint32& records, char**& indexTable, 
     if (stringFields)
         stringPool.reserve(std::max<uint64>(stringPool.capacity(), stringPool.size() + stringFields * result->GetRowCount() + 1));
 
-    uint32 rec = 0;
     uint32 newRecords = 0;
+    storageBase->Hotfixes.clear();
 
     do
     {
@@ -98,11 +94,13 @@ char* DB2DatabaseLoader::Load(bool custom, uint32& records, char**& indexTable, 
             ++f;
         }
 
+        storageBase->Hotfixes.push_back(indexValue);
+
         for (uint32 x = 0; x < _loadInfo->Meta->FieldCount; ++x)
         {
             for (uint32 z = 0; z < _loadInfo->Meta->Fields[x].ArraySize; ++z)
             {
-                switch (_loadInfo->TypesString[f])
+                switch (_loadInfo->Fields[f].Type)
                 {
                     case FT_FLOAT:
                         *((float*)(&dataValue[offset])) = fields[f].GetFloat();
@@ -153,7 +151,7 @@ char* DB2DatabaseLoader::Load(bool custom, uint32& records, char**& indexTable, 
                     }
                     default:
                         ABORT_MSG("Unknown format character '%c' found in %s meta for field %s",
-                            _loadInfo->TypesString[f], _storageName.c_str(), _loadInfo->Fields[f].Name);
+                            _loadInfo->Fields[f].Type, _storageName.c_str(), _loadInfo->Fields[f].Name);
                         break;
                 }
                 ++f;
@@ -161,7 +159,6 @@ char* DB2DatabaseLoader::Load(bool custom, uint32& records, char**& indexTable, 
         }
 
         ASSERT(offset == recordSize);
-        ++rec;
     } while (result->NextRow());
 
     if (!newRecords)
@@ -177,7 +174,11 @@ char* DB2DatabaseLoader::Load(bool custom, uint32& records, char**& indexTable, 
 
     // insert new records to index table
     for (uint32 i = 0; i < newRecords; ++i)
-        indexTable[newIndexes[i]] = &dataTable[i * recordSize];
+    {
+        uint32 newId = newIndexes[i];
+        indexTable[newId] = &dataTable[i * recordSize];
+        minId = std::min(minId, newId);
+    }
 
     delete[] tempDataTable;
     delete[] newIndexes;
@@ -229,7 +230,7 @@ void DB2DatabaseLoader::LoadStrings(bool custom, LocaleConstant locale, uint32 r
             {
                 for (uint32 z = 0; z < _loadInfo->Meta->Fields[x].ArraySize; ++z)
                 {
-                    switch (_loadInfo->TypesString[fieldIndex])
+                    switch (_loadInfo->Fields[fieldIndex].Type)
                     {
                         case FT_FLOAT:
                         case FT_INT:
@@ -260,7 +261,7 @@ void DB2DatabaseLoader::LoadStrings(bool custom, LocaleConstant locale, uint32 r
                             break;
                         default:
                             ABORT_MSG("Unknown format character '%c' found in %s meta for field %s",
-                                _loadInfo->TypesString[fieldIndex], _storageName.c_str(), _loadInfo->Fields[fieldIndex].Name);
+                                _loadInfo->Fields[fieldIndex].Type, _storageName.c_str(), _loadInfo->Fields[fieldIndex].Name);
                             break;
                     }
                     ++fieldIndex;
@@ -270,7 +271,7 @@ void DB2DatabaseLoader::LoadStrings(bool custom, LocaleConstant locale, uint32 r
             ASSERT(offset == recordSize);
         }
         else
-            TC_LOG_ERROR("sql.sql", "Hotfix locale table for storage %s references row that does not exist %u locale %s!", _storageName.c_str(), indexValue, localeNames[locale]);
+            TC_LOG_ERROR("sql.sql", "Hotfix locale table for storage {} references row that does not exist {} locale {}!", _storageName, indexValue, localeNames[locale]);
 
     } while (result->NextRow());
 }

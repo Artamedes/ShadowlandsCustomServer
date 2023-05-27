@@ -18,6 +18,7 @@
 #ifndef DEF_DEADMINES_H
 #define DEF_DEADMINES_H
 
+#include "Containers.h"
 #include "CreatureAIImpl.h"
 #include "Position.h"
 

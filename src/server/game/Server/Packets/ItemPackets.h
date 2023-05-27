@@ -19,6 +19,7 @@
 #define ItemPackets_h__
 
 #include "Packet.h"
+#include "CraftingPacketsCommon.h"
 #include "DBCEnums.h"
 #include "ItemDefines.h"
 #include "ItemPacketsCommon.h"
@@ -330,7 +331,8 @@ namespace WorldPackets
             {
                 DISPLAY_TYPE_HIDDEN = 0,
                 DISPLAY_TYPE_NORMAL = 1,
-                DISPLAY_TYPE_ENCOUNTER_LOOT = 2
+                DISPLAY_TYPE_ENCOUNTER_LOOT = 2,
+                DISPLAY_TYPE_UNK = 3,
             };
 
             ItemPushResult() : ServerPacket(SMSG_ITEM_PUSH_RESULT, 16 + 1 + 4 + 4 + 4 + 4 + 4 + 4 + 4 + 4 + 16 + 1 + 1 + 1 + 1) { }
@@ -345,12 +347,15 @@ namespace WorldPackets
                                                  // only set if different than real ID (similar to CreatureTemplate.KillCredit)
             int32 Quantity                  = 0;
             int32 QuantityInInventory       = 0;
-            int32 DungeonEncounterID       = 0;
+            int32 DungeonEncounterID        = 0;
             int32 BattlePetSpeciesID        = 0;
             int32 BattlePetBreedID          = 0;
             uint32 BattlePetBreedQuality    = 0;
             int32 BattlePetLevel            = 0;
             ObjectGuid ItemGUID;
+            std::vector<UiEventToast> Toasts;
+            Optional<Crafting::CraftingData> CraftingData;
+            Optional<uint32> FirstCraftOperationID;
             bool Pushed                     = false;
             DisplayType DisplayText         = DISPLAY_TYPE_HIDDEN;
             bool Created                    = false;
