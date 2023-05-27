@@ -44,12 +44,13 @@
 #include <algorithm>
 #include "SocialMgr.h"
 
-+enum class ChatWhisperTargetStatus : uint8
-+{
-+    CanWhisper      = 0,
-+    Offline         = 1,
-+    WrongFaction    = 2
-+};
+enum class ChatWhisperTargetStatus : uint8
+{
+    CanWhisper      = 0,
+    Offline         = 1,
+    WrongFaction    = 2
+};
+
 inline bool isNasty(uint8 c)
 {
     if (c == '\t')
