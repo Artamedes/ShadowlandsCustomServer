@@ -570,7 +570,7 @@ TC_API_EXPORT EnumText EnumUtils<NPCFlags2>::ToString(NPCFlags2 value)
 }
 
 template <>
-TC_API_EXPORT size_t EnumUtils<NPCFlags2>::Count() { return 14; }
+TC_API_EXPORT size_t EnumUtils<NPCFlags2>::Count() { return 15; }
 
 template <>
 TC_API_EXPORT NPCFlags2 EnumUtils<NPCFlags2>::FromIndex(size_t index)
@@ -581,16 +581,17 @@ TC_API_EXPORT NPCFlags2 EnumUtils<NPCFlags2>::FromIndex(size_t index)
         case 1: return UNIT_NPC_FLAG_2_ITEM_UPGRADE_MASTER;
         case 2: return UNIT_NPC_FLAG_2_GARRISON_ARCHITECT;
         case 3: return UNIT_NPC_FLAG_2_STEERING;
-        case 4: return UNIT_NPC_FLAG_2_SHIPMENT_CRAFTER;
-        case 5: return UNIT_NPC_FLAG_2_GARRISON_MISSION_NPC;
-        case 6: return UNIT_NPC_FLAG_2_TRADESKILL_NPC;
-        case 7: return UNIT_NPC_FLAG_2_BLACK_MARKET_VIEW;
-        case 8: return UNIT_NPC_FLAG_2_GARRISON_TALENT_NPC;
-        case 9: return UNIT_NPC_FLAG_2_CONTRIBUTION_COLLECTOR;
-        case 10: return UNIT_NPC_FLAG_2_AZERITE_RESPEC;
-        case 11: return UNIT_NPC_FLAG_2_ISLANDS_QUEUE;
-        case 12: return UNIT_NPC_FLAG_2_SUPPRESS_NPC_SOUNDS_EXCEPT_END_OF_INTERACTION;
-        case 13: return UNIT_NPC_FLAG_2_RUNECARVER;
+        case 4: return UNIT_NPC_FLAG_2_AREA_SPIRIT_HEALER_INDIVIDUAL;
+        case 5: return UNIT_NPC_FLAG_2_SHIPMENT_CRAFTER;
+        case 6: return UNIT_NPC_FLAG_2_GARRISON_MISSION_NPC;
+        case 7: return UNIT_NPC_FLAG_2_TRADESKILL_NPC;
+        case 8: return UNIT_NPC_FLAG_2_BLACK_MARKET_VIEW;
+        case 9: return UNIT_NPC_FLAG_2_GARRISON_TALENT_NPC;
+        case 10: return UNIT_NPC_FLAG_2_CONTRIBUTION_COLLECTOR;
+        case 11: return UNIT_NPC_FLAG_2_AZERITE_RESPEC;
+        case 12: return UNIT_NPC_FLAG_2_ISLANDS_QUEUE;
+        case 13: return UNIT_NPC_FLAG_2_SUPPRESS_NPC_SOUNDS_EXCEPT_END_OF_INTERACTION;
+        case 14: return UNIT_NPC_FLAG_2_RUNECARVER;
         default: throw std::out_of_range("index");
     }
 }
@@ -604,16 +605,17 @@ TC_API_EXPORT size_t EnumUtils<NPCFlags2>::ToIndex(NPCFlags2 value)
         case UNIT_NPC_FLAG_2_ITEM_UPGRADE_MASTER: return 1;
         case UNIT_NPC_FLAG_2_GARRISON_ARCHITECT: return 2;
         case UNIT_NPC_FLAG_2_STEERING: return 3;
-        case UNIT_NPC_FLAG_2_SHIPMENT_CRAFTER: return 4;
-        case UNIT_NPC_FLAG_2_GARRISON_MISSION_NPC: return 5;
-        case UNIT_NPC_FLAG_2_TRADESKILL_NPC: return 6;
-        case UNIT_NPC_FLAG_2_BLACK_MARKET_VIEW: return 7;
-        case UNIT_NPC_FLAG_2_GARRISON_TALENT_NPC: return 8;
-        case UNIT_NPC_FLAG_2_CONTRIBUTION_COLLECTOR: return 9;
-        case UNIT_NPC_FLAG_2_AZERITE_RESPEC: return 10;
-        case UNIT_NPC_FLAG_2_ISLANDS_QUEUE: return 11;
-        case UNIT_NPC_FLAG_2_SUPPRESS_NPC_SOUNDS_EXCEPT_END_OF_INTERACTION: return 12;
-        case UNIT_NPC_FLAG_2_RUNECARVER: return 13;
+        case UNIT_NPC_FLAG_2_AREA_SPIRIT_HEALER_INDIVIDUAL: return 4;
+        case UNIT_NPC_FLAG_2_SHIPMENT_CRAFTER: return 5;
+        case UNIT_NPC_FLAG_2_GARRISON_MISSION_NPC: return 6;
+        case UNIT_NPC_FLAG_2_TRADESKILL_NPC: return 7;
+        case UNIT_NPC_FLAG_2_BLACK_MARKET_VIEW: return 8;
+        case UNIT_NPC_FLAG_2_GARRISON_TALENT_NPC: return 9;
+        case UNIT_NPC_FLAG_2_CONTRIBUTION_COLLECTOR: return 10;
+        case UNIT_NPC_FLAG_2_AZERITE_RESPEC: return 11;
+        case UNIT_NPC_FLAG_2_ISLANDS_QUEUE: return 12;
+        case UNIT_NPC_FLAG_2_SUPPRESS_NPC_SOUNDS_EXCEPT_END_OF_INTERACTION: return 13;
+        case UNIT_NPC_FLAG_2_RUNECARVER: return 14;
         default: throw std::out_of_range("value");
     }
 }

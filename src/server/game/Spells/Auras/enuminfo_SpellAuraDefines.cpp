@@ -219,7 +219,7 @@ TC_API_EXPORT EnumText EnumUtils<AuraType>::ToString(AuraType value)
         case SPELL_AURA_MOD_ATTACKER_RANGED_HIT_CHANCE: return { "SPELL_AURA_MOD_ATTACKER_RANGED_HIT_CHANCE", "SPELL_AURA_MOD_ATTACKER_RANGED_HIT_CHANCE", "" };
         case SPELL_AURA_MOD_ATTACKER_SPELL_HIT_CHANCE: return { "SPELL_AURA_MOD_ATTACKER_SPELL_HIT_CHANCE", "SPELL_AURA_MOD_ATTACKER_SPELL_HIT_CHANCE", "" };
         case SPELL_AURA_MOD_ATTACKER_MELEE_CRIT_CHANCE: return { "SPELL_AURA_MOD_ATTACKER_MELEE_CRIT_CHANCE", "SPELL_AURA_MOD_ATTACKER_MELEE_CRIT_CHANCE", "" };
-        case SPELL_AURA_MOD_ATTACKER_RANGED_CRIT_CHANCE: return { "SPELL_AURA_MOD_ATTACKER_RANGED_CRIT_CHANCE", "SPELL_AURA_MOD_ATTACKER_RANGED_CRIT_CHANCE", "" };
+        case SPELL_AURA_MOD_UI_HEALING_RANGE: return { "SPELL_AURA_MOD_UI_HEALING_RANGE", "SPELL_AURA_MOD_UI_HEALING_RANGE", "" };
         case SPELL_AURA_MOD_RATING: return { "SPELL_AURA_MOD_RATING", "SPELL_AURA_MOD_RATING", "" };
         case SPELL_AURA_MOD_FACTION_REPUTATION_GAIN: return { "SPELL_AURA_MOD_FACTION_REPUTATION_GAIN", "SPELL_AURA_MOD_FACTION_REPUTATION_GAIN", "" };
         case SPELL_AURA_USE_NORMAL_MOVEMENT_SPEED: return { "SPELL_AURA_USE_NORMAL_MOVEMENT_SPEED", "SPELL_AURA_USE_NORMAL_MOVEMENT_SPEED", "" };
@@ -382,7 +382,7 @@ TC_API_EXPORT EnumText EnumUtils<AuraType>::ToString(AuraType value)
         case SPELL_AURA_MOD_MONEY_GAIN: return { "SPELL_AURA_MOD_MONEY_GAIN", "SPELL_AURA_MOD_MONEY_GAIN", "Modifies gold gains from source: [Misc = 0, Quests][Misc = 1, Loot]" };
         case SPELL_AURA_MOD_CURRENCY_GAIN: return { "SPELL_AURA_MOD_CURRENCY_GAIN", "SPELL_AURA_MOD_CURRENCY_GAIN", "" };
         case SPELL_AURA_350: return { "SPELL_AURA_350", "SPELL_AURA_350", "" };
-        case SPELL_AURA_MOD_CURRENCY_CATEGORY_GAIN_PCT: return { "SPELL_AURA_MOD_CURRENCY_CATEGORY_GAIN_PCT", "SPELL_AURA_MOD_CURRENCY_CATEGORY_GAIN_PCT", "NYI" };
+        case SPELL_AURA_MOD_CURRENCY_CATEGORY_GAIN_PCT: return { "SPELL_AURA_MOD_CURRENCY_CATEGORY_GAIN_PCT", "SPELL_AURA_MOD_CURRENCY_CATEGORY_GAIN_PCT", "" };
         case SPELL_AURA_352: return { "SPELL_AURA_352", "SPELL_AURA_352", "" };
         case SPELL_AURA_MOD_CAMOUFLAGE: return { "SPELL_AURA_MOD_CAMOUFLAGE", "SPELL_AURA_MOD_CAMOUFLAGE", "NYI" };
         case SPELL_AURA_MOD_HEALING_DONE_PCT_VERSUS_TARGET_HEALTH: return { "SPELL_AURA_MOD_HEALING_DONE_PCT_VERSUS_TARGET_HEALTH", "SPELL_AURA_MOD_HEALING_DONE_PCT_VERSUS_TARGET_HEALTH", "Restoration Shaman mastery - mod healing based on target's health (less = more healing)" };
@@ -437,7 +437,7 @@ TC_API_EXPORT EnumText EnumUtils<AuraType>::ToString(AuraType value)
         case SPELL_AURA_OVERRIDE_SPELL_VISUAL: return { "SPELL_AURA_OVERRIDE_SPELL_VISUAL", "SPELL_AURA_OVERRIDE_SPELL_VISUAL", "" };
         case SPELL_AURA_OVERRIDE_ATTACK_POWER_BY_SP_PCT: return { "SPELL_AURA_OVERRIDE_ATTACK_POWER_BY_SP_PCT", "SPELL_AURA_OVERRIDE_ATTACK_POWER_BY_SP_PCT", "" };
         case SPELL_AURA_MOD_RATING_PCT: return { "SPELL_AURA_MOD_RATING_PCT", "SPELL_AURA_MOD_RATING_PCT", "" };
-        case SPELL_AURA_KEYBOUND_OVERRIDE: return { "SPELL_AURA_KEYBOUND_OVERRIDE", "SPELL_AURA_KEYBOUND_OVERRIDE", "NYI" };
+        case SPELL_AURA_KEYBOUND_OVERRIDE: return { "SPELL_AURA_KEYBOUND_OVERRIDE", "SPELL_AURA_KEYBOUND_OVERRIDE", "" };
         case SPELL_AURA_MOD_FEAR_2: return { "SPELL_AURA_MOD_FEAR_2", "SPELL_AURA_MOD_FEAR_2", "NYI" };
         case SPELL_AURA_SET_ACTION_BUTTON_SPELL_COUNT: return { "SPELL_AURA_SET_ACTION_BUTTON_SPELL_COUNT", "SPELL_AURA_SET_ACTION_BUTTON_SPELL_COUNT", "" };
         case SPELL_AURA_CAN_TURN_WHILE_FALLING: return { "SPELL_AURA_CAN_TURN_WHILE_FALLING", "SPELL_AURA_CAN_TURN_WHILE_FALLING", "" };
@@ -566,13 +566,16 @@ TC_API_EXPORT EnumText EnumUtils<AuraType>::ToString(AuraType value)
         case SPELL_AURA_532: return { "SPELL_AURA_532", "SPELL_AURA_532", "" };
         case SPELL_AURA_DISABLE_NAVIGATION: return { "SPELL_AURA_DISABLE_NAVIGATION", "SPELL_AURA_DISABLE_NAVIGATION", "disables map pins" };
         case SPELL_AURA_534: return { "SPELL_AURA_534", "SPELL_AURA_534", "" };
+        case SPELL_AURA_535: return { "SPELL_AURA_535", "SPELL_AURA_535", "related to profession equipment; NYI; MiscValue[0] = Profession (enum, not id)" };
+        case SPELL_AURA_IGNORE_SPELL_CREATURE_TYPE_REQUIREMENTS: return { "SPELL_AURA_IGNORE_SPELL_CREATURE_TYPE_REQUIREMENTS", "SPELL_AURA_IGNORE_SPELL_CREATURE_TYPE_REQUIREMENTS", "" };
+        case SPELL_AURA_537: return { "SPELL_AURA_537", "SPELL_AURA_537", "" };
         case TOTAL_AURAS: return { "TOTAL_AURAS", "TOTAL_AURAS", "" };
         default: throw std::out_of_range("value");
     }
 }
 
 template <>
-TC_API_EXPORT size_t EnumUtils<AuraType>::Count() { return 536; }
+TC_API_EXPORT size_t EnumUtils<AuraType>::Count() { return 539; }
 
 template <>
 TC_API_EXPORT AuraType EnumUtils<AuraType>::FromIndex(size_t index)
@@ -767,7 +770,7 @@ TC_API_EXPORT AuraType EnumUtils<AuraType>::FromIndex(size_t index)
         case 185: return SPELL_AURA_MOD_ATTACKER_RANGED_HIT_CHANCE;
         case 186: return SPELL_AURA_MOD_ATTACKER_SPELL_HIT_CHANCE;
         case 187: return SPELL_AURA_MOD_ATTACKER_MELEE_CRIT_CHANCE;
-        case 188: return SPELL_AURA_MOD_ATTACKER_RANGED_CRIT_CHANCE;
+        case 188: return SPELL_AURA_MOD_UI_HEALING_RANGE;
         case 189: return SPELL_AURA_MOD_RATING;
         case 190: return SPELL_AURA_MOD_FACTION_REPUTATION_GAIN;
         case 191: return SPELL_AURA_USE_NORMAL_MOVEMENT_SPEED;
@@ -1114,7 +1117,10 @@ TC_API_EXPORT AuraType EnumUtils<AuraType>::FromIndex(size_t index)
         case 532: return SPELL_AURA_532;
         case 533: return SPELL_AURA_DISABLE_NAVIGATION;
         case 534: return SPELL_AURA_534;
-        case 535: return TOTAL_AURAS;
+        case 535: return SPELL_AURA_535;
+        case 536: return SPELL_AURA_IGNORE_SPELL_CREATURE_TYPE_REQUIREMENTS;
+        case 537: return SPELL_AURA_537;
+        case 538: return TOTAL_AURAS;
         default: throw std::out_of_range("index");
     }
 }
@@ -1312,7 +1318,7 @@ TC_API_EXPORT size_t EnumUtils<AuraType>::ToIndex(AuraType value)
         case SPELL_AURA_MOD_ATTACKER_RANGED_HIT_CHANCE: return 185;
         case SPELL_AURA_MOD_ATTACKER_SPELL_HIT_CHANCE: return 186;
         case SPELL_AURA_MOD_ATTACKER_MELEE_CRIT_CHANCE: return 187;
-        case SPELL_AURA_MOD_ATTACKER_RANGED_CRIT_CHANCE: return 188;
+        case SPELL_AURA_MOD_UI_HEALING_RANGE: return 188;
         case SPELL_AURA_MOD_RATING: return 189;
         case SPELL_AURA_MOD_FACTION_REPUTATION_GAIN: return 190;
         case SPELL_AURA_USE_NORMAL_MOVEMENT_SPEED: return 191;
@@ -1659,7 +1665,10 @@ TC_API_EXPORT size_t EnumUtils<AuraType>::ToIndex(AuraType value)
         case SPELL_AURA_532: return 532;
         case SPELL_AURA_DISABLE_NAVIGATION: return 533;
         case SPELL_AURA_534: return 534;
-        case TOTAL_AURAS: return 535;
+        case SPELL_AURA_535: return 535;
+        case SPELL_AURA_IGNORE_SPELL_CREATURE_TYPE_REQUIREMENTS: return 536;
+        case SPELL_AURA_537: return 537;
+        case TOTAL_AURAS: return 538;
         default: throw std::out_of_range("value");
     }
 }

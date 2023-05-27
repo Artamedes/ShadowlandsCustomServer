@@ -38,7 +38,7 @@ struct Position;
 struct SplineChainLink;
 struct SplineChainResumeInfo;
 struct WaypointPath;
-enum UnitMoveType : uint8;
+enum UnitMoveType : uint32;
 
 namespace Movement
 {

@@ -896,30 +896,6 @@ void SpellHistory::ResetCooldown(uint32 spellId, bool update /*= false*/)
     ResetCooldown(itr, update);
 }
 
-void SpellHistory::ResetCategoryCooldown(uint32 category, bool update)
-{
-    auto itr = _categoryCooldowns.find(category);
-    if (itr == _categoryCooldowns.end())
-        return;
-
-    Clock::time_point now = GameTime::GetTime<Clock>();
-    Clock::duration remaining = itr->second->CategoryEnd - now;
-    auto remainingMs = std::chrono::duration_cast<Milliseconds>(remaining);
-
-    if (update)
-    {
-        if (Player* playerOwner = GetPlayerOwner())
-        {
-            WorldPackets::Spells::CategoryCooldown clearCooldown;
-            clearCooldown.CategoryCooldowns.reserve(1);
-            clearCooldown.CategoryCooldowns.emplace_back(WorldPackets::Spells::CategoryCooldown::CategoryCooldownInfo(category, -int32(remainingMs.count())));
-            playerOwner->SendDirectMessage(clearCooldown.Write());
-        }
-    }
-
-     _categoryCooldowns.erase(itr);
-}
-
 void SpellHistory::ResetCooldown(CooldownStorageType::iterator& itr, bool update /*= false*/)
 {
     if (update)

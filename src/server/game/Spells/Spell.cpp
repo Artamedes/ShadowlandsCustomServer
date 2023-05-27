@@ -4624,7 +4624,7 @@ void Spell::finish(SpellCastResult result)
     // Unsummon summon as possessed creatures on spell cancel
     if (m_spellInfo->IsChanneled() && unitCaster->GetTypeId() == TYPEID_PLAYER)
     {
-        if (ok)
+        if (result == SPELL_CAST_OK)
             sScriptMgr->OnChanneledSpellSuccessfulCast(m_caster->ToPlayer(), this);
 
         if (Unit* charm = unitCaster->GetCharmed())
