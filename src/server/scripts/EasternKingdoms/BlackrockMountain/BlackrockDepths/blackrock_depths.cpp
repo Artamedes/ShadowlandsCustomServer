@@ -289,7 +289,7 @@ public:
                     case 0:
                         Talk(SAY_TEXT5);
                         HandleGameObject(DATA_ARENA4, false);
-                        LoadPath(PATH_ESCORT_GRIMSTONE);
+                        //LoadPath(PATH_ESCORT_GRIMSTONE);
                         Start(false);
                         CanWalk = true;
                         Event_Timer = 0;
@@ -621,7 +621,7 @@ public:
                     Talk(SAY_GOT_BEER);
                     DoCastSelf(SPELL_DRUNKEN_RAGE, false);
 
-                    LoadPath(PATH_ESCORT_ROCKNOT);
+                    //LoadPath(PATH_ESCORT_ROCKNOT);
                     Start(false);
                 }
             }

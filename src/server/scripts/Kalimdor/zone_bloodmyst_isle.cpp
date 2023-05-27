@@ -309,7 +309,7 @@ public:
             if (quest->GetQuestId() == QUEST_ENDING_THEIR_WORLD)
             {
                 SetGUID(player->GetGUID(), DATA_EVENT_STARTER_GUID);
-                LoadPath(PATH_ESCORT_LEGOSO);
+                //LoadPath(PATH_ESCORT_LEGOSO);
                 Start(true, player->GetGUID(), quest);
             }
         }

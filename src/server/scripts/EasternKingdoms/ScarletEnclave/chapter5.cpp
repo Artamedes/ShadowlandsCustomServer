@@ -1610,7 +1610,7 @@ public:
                 case GOSSIP_ACTION_INFO_DEF + 1:
                     CloseGossipMenuFor(player);
                     uiStep = 1;
-                    LoadPath(PATH_ESCORT_MOGRAINE);
+                    //LoadPath(PATH_ESCORT_MOGRAINE);
                     Start(true, player->GetGUID());
                     break;
             }

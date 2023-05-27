@@ -131,7 +131,7 @@ public:
                 if (!go)
                 {
                     go = true;
-                    LoadPath(PATH_ESCORT_AZGALOR);
+                    //LoadPath(PATH_ESCORT_AZGALOR);
                     Start(false);
                     SetDespawnAtEnd(false);
                 }

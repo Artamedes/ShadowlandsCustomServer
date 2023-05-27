@@ -546,7 +546,7 @@ public:
                 Talk(SAY_QUEST_START);
                 me->SetFaction(FACTION_ESCORTEE_A_NEUTRAL_PASSIVE);
 
-                LoadPath(PATH_ESCORT_RANSHALLA);
+                //LoadPath(PATH_ESCORT_RANSHALLA);
                 Start(false, player->GetGUID(), quest);
             }
         }

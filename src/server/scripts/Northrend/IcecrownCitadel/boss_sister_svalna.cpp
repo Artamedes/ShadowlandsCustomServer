@@ -749,7 +749,7 @@ struct npc_crok_scourgebane : public EscortAI
                     Talk(SAY_CROK_INTRO_3);
                     break;
                 case EVENT_START_PATHING:
-                    LoadPath(PATH_ESCORT_CROK_SCOURGEBANE),
+                    //LoadPath(PATH_ESCORT_CROK_SCOURGEBANE),
                     Start(true);
                     break;
                 case EVENT_SCOURGE_STRIKE:

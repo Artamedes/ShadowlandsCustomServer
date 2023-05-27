@@ -362,7 +362,7 @@ public:
     {
         npc_black_knight_skeletal_gryphonAI(Creature* creature) : EscortAI(creature)
         {
-            LoadPath(PATH_ESCORT_GRYPHON);
+            //LoadPath(PATH_ESCORT_GRYPHON);
             Start(false);
         }
 

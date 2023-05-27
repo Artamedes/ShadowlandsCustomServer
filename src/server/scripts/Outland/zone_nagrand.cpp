@@ -207,7 +207,7 @@ public:
             {
                 me->SetStandState(UNIT_STAND_STATE_STAND);
                 me->SetFaction(FACTION_ESCORTEE_H_NEUTRAL_ACTIVE);
-                LoadPath(PATH_ESCORT_MAGHAR_CAPTIVE);
+                //LoadPath(PATH_ESCORT_MAGHAR_CAPTIVE);
                 Start(true, player->GetGUID(), quest);
                 Talk(SAY_MAG_START);
 
@@ -402,7 +402,7 @@ public:
             {
                 me->SetStandState(UNIT_STAND_STATE_STAND);
                 me->SetFaction(FACTION_ESCORTEE_A_NEUTRAL_ACTIVE);
-                LoadPath(PATH_ESCORT_KURENAI_CAPTIVE);
+                //LoadPath(PATH_ESCORT_KURENAI_CAPTIVE);
                 Start(true, player->GetGUID(), quest);
                 Talk(SAY_KUR_START);
 

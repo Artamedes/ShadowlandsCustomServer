@@ -177,7 +177,7 @@ public:
             if (m_uiEventId == EVENT_OZ)
                 instance->SetData(DATA_OPERA_OZ_DEATHCOUNT, IN_PROGRESS);
 
-            LoadPath(PATH_ESCORT_BARNES);
+            //LoadPath(PATH_ESCORT_BARNES);
             Start(false);
         }
 

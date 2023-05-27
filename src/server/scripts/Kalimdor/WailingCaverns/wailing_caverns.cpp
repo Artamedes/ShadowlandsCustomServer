@@ -336,7 +336,7 @@ public:
                 me->SetFaction(FACTION_ESCORTEE_N_NEUTRAL_ACTIVE);
                 me->SetImmuneToPC(false);
 
-                LoadPath(PATH_ESCORT_NARALEX_DISCIPLE);
+                //LoadPath(PATH_ESCORT_NARALEX_DISCIPLE);
                 Start(false, player->GetGUID());
                 SetDespawnAtFar(false);
                 SetDespawnAtEnd(false);

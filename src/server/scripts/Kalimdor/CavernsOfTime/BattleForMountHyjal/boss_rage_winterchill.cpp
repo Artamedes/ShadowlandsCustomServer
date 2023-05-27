@@ -121,7 +121,7 @@ public:
                 if (!go)
                 {
                     go = true;
-                    LoadPath(PATH_ESCORT_RAGE_WINTERCHILL);
+                    //LoadPath(PATH_ESCORT_RAGE_WINTERCHILL);
                     Start(false);
                     SetDespawnAtEnd(false);
                 }

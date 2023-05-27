@@ -504,7 +504,7 @@ public:
                 me->SetFaction(FACTION_RATCHET);
                 Talk(SAY_START);
                 SetDespawnAtEnd(false);
-                LoadPath(PATH_ESCORT_WIZZLECRANK),
+                //LoadPath(PATH_ESCORT_WIZZLECRANK),
                 Start(true, player->GetGUID());
             }
         }

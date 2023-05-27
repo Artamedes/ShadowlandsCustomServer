@@ -128,7 +128,7 @@ public:
                 if (!go)
                 {
                     go = true;
-                    LoadPath(PATH_ESCORT_ANETHERON);
+                    //LoadPath(PATH_ESCORT_ANETHERON);
                     Start(false);
                     SetDespawnAtEnd(false);
                 }

@@ -1034,7 +1034,7 @@ public:
 
             if (!HasEscortState(STATE_ESCORT_ESCORTING))
             {
-                LoadPath(PATH_ESCORT_MIMIRONS_INFERNO);
+                //LoadPath(PATH_ESCORT_MIMIRONS_INFERNO);
                 Start(false, ObjectGuid::Empty, nullptr, false, true);
             }
             else

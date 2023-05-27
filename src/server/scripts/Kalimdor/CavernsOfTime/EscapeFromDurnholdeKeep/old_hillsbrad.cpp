@@ -332,7 +332,7 @@ struct npc_thrall_old_hillsbrad : public EscortAI
                         {
                             if (EscortAI* ai = CAST_AI(EscortAI, Taretha->AI()))
                             {
-                                ai->LoadPath(PATH_ESCORT_TARETHA);
+                             //   ai->LoadPath(PATH_ESCORT_TARETHA);
                                 ai->Start(false, player->GetGUID());
                             }
                         }
@@ -464,7 +464,7 @@ struct npc_thrall_old_hillsbrad : public EscortAI
 
                 Talk(SAY_TH_START_EVENT_PART1);
 
-                LoadPath(PATH_ESCORT_THRALL_OLD_HILLSBRAD);
+                //LoadPath(PATH_ESCORT_THRALL_OLD_HILLSBRAD);
                 Start(true, player->GetGUID());
 
                 SetMaxPlayerDistance(100.0f);//not really needed, because it will not despawn if player is too far

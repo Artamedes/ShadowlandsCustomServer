@@ -126,7 +126,7 @@ public:
                 if (!go)
                 {
                     go = true;
-                    LoadPath(PATH_ESCORT_KAZROGAL);
+                    //LoadPath(PATH_ESCORT_KAZROGAL);
                     Start(false);
                     SetDespawnAtEnd(false);
                 }

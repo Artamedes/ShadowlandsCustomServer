@@ -637,7 +637,7 @@ public:
                 Talk(SAY_WIL_START, player);
                 me->SetFaction(FACTION_EARTHEN_RING);
 
-                LoadPath(PATH_ESCORT_WILDA);
+                //LoadPath(PATH_ESCORT_WILDA);
                 Start(false, player->GetGUID(), quest);
             }
         }

@@ -1066,7 +1066,7 @@ public:
                                 break;
                         }
 
-                        LoadPath((me->GetEntry() << 3) | 2);
+                        //LoadPath((me->GetEntry() << 3) | 2);
                         Start(false);
                     }
                     else

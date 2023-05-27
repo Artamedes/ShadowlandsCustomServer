@@ -407,7 +407,7 @@ public:
                     case EVENT_START_ESCORT:
                         if (Player* player = ObjectAccessor::GetPlayer(*me, _player))
                         {
-                            LoadPath(PATH_ESCORT_MAGWIN);
+                            //LoadPath(PATH_ESCORT_MAGWIN);
                             EscortAI::Start(true, player->GetGUID());
                         }
                         _events.ScheduleEvent(EVENT_STAND, 2s);

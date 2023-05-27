@@ -177,7 +177,7 @@ struct npc_morridune : public EscortAI
     {
         Talk(SAY_MORRIDUNE_1);
         me->RemoveNpcFlag(UNIT_NPC_FLAG_GOSSIP);
-        LoadPath(PATH_ESCORT_MORRIDUNE);
+        //LoadPath(PATH_ESCORT_MORRIDUNE);
         Start(false);
     }
 
