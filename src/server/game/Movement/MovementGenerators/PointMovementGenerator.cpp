@@ -233,7 +233,7 @@ void PointMovementGenerator<Creature>::MovementInform(Creature* owner)
 
     while (!_callbacks.empty())
     {
-        _callbacks.front();
+        _callbacks.front()();
         _callbacks.pop();
     }
 }
