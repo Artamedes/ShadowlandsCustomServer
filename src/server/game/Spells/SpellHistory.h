@@ -130,7 +130,6 @@ public:
     }
 
     void ResetCooldown(uint32 spellId, bool update = false);
-    void ResetCategoryCooldown(uint32 category, bool update = false);
     template<typename Predicate>
     void ResetCooldowns(Predicate predicate, bool update = false)
     {

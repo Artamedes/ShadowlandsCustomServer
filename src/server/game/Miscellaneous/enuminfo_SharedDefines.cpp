@@ -256,12 +256,18 @@ TC_API_EXPORT EnumText EnumUtils<Powers>::ToString(Powers value)
         case POWER_FURY: return { "POWER_FURY", "Fury", "" };
         case POWER_PAIN: return { "POWER_PAIN", "Pain", "" };
         case POWER_ESSENCE: return { "POWER_ESSENCE", "POWER_ESSENCE", "Title ESSENCE" };
+        case POWER_RUNE_BLOOD: return { "POWER_RUNE_BLOOD", "Blood Runes", "" };
+        case POWER_RUNE_FROST: return { "POWER_RUNE_FROST", "Frost Runes", "" };
+        case POWER_RUNE_UNHOLY: return { "POWER_RUNE_UNHOLY", "Unholy Runes", "" };
+        case POWER_ALTERNATE_QUEST: return { "POWER_ALTERNATE_QUEST", "Alternate (Quest)", "" };
+        case POWER_ALTERNATE_ENCOUNTER: return { "POWER_ALTERNATE_ENCOUNTER", "Alternate (Encounter)", "" };
+        case POWER_ALTERNATE_MOUNT: return { "POWER_ALTERNATE_MOUNT", "Alternate (Mount)", "" };
         default: throw std::out_of_range("value");
     }
 }
 
 template <>
-TC_API_EXPORT size_t EnumUtils<Powers>::Count() { return 21; }
+TC_API_EXPORT size_t EnumUtils<Powers>::Count() { return 27; }
 
 template <>
 TC_API_EXPORT Powers EnumUtils<Powers>::FromIndex(size_t index)
@@ -289,6 +295,12 @@ TC_API_EXPORT Powers EnumUtils<Powers>::FromIndex(size_t index)
         case 18: return POWER_FURY;
         case 19: return POWER_PAIN;
         case 20: return POWER_ESSENCE;
+        case 21: return POWER_RUNE_BLOOD;
+        case 22: return POWER_RUNE_FROST;
+        case 23: return POWER_RUNE_UNHOLY;
+        case 24: return POWER_ALTERNATE_QUEST;
+        case 25: return POWER_ALTERNATE_ENCOUNTER;
+        case 26: return POWER_ALTERNATE_MOUNT;
         default: throw std::out_of_range("index");
     }
 }
@@ -319,6 +331,12 @@ TC_API_EXPORT size_t EnumUtils<Powers>::ToIndex(Powers value)
         case POWER_FURY: return 18;
         case POWER_PAIN: return 19;
         case POWER_ESSENCE: return 20;
+        case POWER_RUNE_BLOOD: return 21;
+        case POWER_RUNE_FROST: return 22;
+        case POWER_RUNE_UNHOLY: return 23;
+        case POWER_ALTERNATE_QUEST: return 24;
+        case POWER_ALTERNATE_ENCOUNTER: return 25;
+        case POWER_ALTERNATE_MOUNT: return 26;
         default: throw std::out_of_range("value");
     }
 }
@@ -2625,13 +2643,23 @@ TC_API_EXPORT EnumText EnumUtils<SpellEffectName>::ToString(SpellEffectName valu
         case SPELL_EFFECT_GATHERING: return { "SPELL_EFFECT_GATHERING", "SPELL_EFFECT_GATHERING", "" };
         case SPELL_EFFECT_CREATE_TRAIT_TREE_CONFIG: return { "SPELL_EFFECT_CREATE_TRAIT_TREE_CONFIG", "SPELL_EFFECT_CREATE_TRAIT_TREE_CONFIG", "MiscValue[0] = TraitTreeID" };
         case SPELL_EFFECT_CHANGE_ACTIVE_COMBAT_TRAIT_CONFIG: return { "SPELL_EFFECT_CHANGE_ACTIVE_COMBAT_TRAIT_CONFIG", "SPELL_EFFECT_CHANGE_ACTIVE_COMBAT_TRAIT_CONFIG", "" };
+        case SPELL_EFFECT_305: return { "SPELL_EFFECT_305", "SPELL_EFFECT_305", "" };
+        case SPELL_EFFECT_306: return { "SPELL_EFFECT_306", "SPELL_EFFECT_306", "" };
+        case SPELL_EFFECT_307: return { "SPELL_EFFECT_307", "SPELL_EFFECT_307", "" };
+        case SPELL_EFFECT_CANCEL_PRELOAD_WORLD: return { "SPELL_EFFECT_CANCEL_PRELOAD_WORLD", "SPELL_EFFECT_CANCEL_PRELOAD_WORLD", "" };
+        case SPELL_EFFECT_PRELOAD_WORLD: return { "SPELL_EFFECT_PRELOAD_WORLD", "SPELL_EFFECT_PRELOAD_WORLD", "" };
+        case SPELL_EFFECT_310: return { "SPELL_EFFECT_310", "SPELL_EFFECT_310", "" };
+        case SPELL_EFFECT_ENSURE_WORLD_LOADED: return { "SPELL_EFFECT_ENSURE_WORLD_LOADED", "SPELL_EFFECT_ENSURE_WORLD_LOADED", "" };
+        case SPELL_EFFECT_312: return { "SPELL_EFFECT_312", "SPELL_EFFECT_312", "" };
+        case SPELL_EFFECT_CHANGE_ITEM_BONUSES_2: return { "SPELL_EFFECT_CHANGE_ITEM_BONUSES_2", "SPELL_EFFECT_CHANGE_ITEM_BONUSES_2", "MiscValue[0] = ItemBonusTreeID to preserve" };
+        case SPELL_EFFECT_ADD_SOCKET_BONUS: return { "SPELL_EFFECT_ADD_SOCKET_BONUS", "SPELL_EFFECT_ADD_SOCKET_BONUS", "MiscValue[0] = required ItemBonusTreeID" };
         case TOTAL_SPELL_EFFECTS: return { "TOTAL_SPELL_EFFECTS", "TOTAL_SPELL_EFFECTS", "" };
         default: throw std::out_of_range("value");
     }
 }
 
 template <>
-TC_API_EXPORT size_t EnumUtils<SpellEffectName>::Count() { return 306; }
+TC_API_EXPORT size_t EnumUtils<SpellEffectName>::Count() { return 316; }
 
 template <>
 TC_API_EXPORT SpellEffectName EnumUtils<SpellEffectName>::FromIndex(size_t index)
@@ -2943,7 +2971,17 @@ TC_API_EXPORT SpellEffectName EnumUtils<SpellEffectName>::FromIndex(size_t index
         case 302: return SPELL_EFFECT_GATHERING;
         case 303: return SPELL_EFFECT_CREATE_TRAIT_TREE_CONFIG;
         case 304: return SPELL_EFFECT_CHANGE_ACTIVE_COMBAT_TRAIT_CONFIG;
-        case 305: return TOTAL_SPELL_EFFECTS;
+        case 305: return SPELL_EFFECT_305;
+        case 306: return SPELL_EFFECT_306;
+        case 307: return SPELL_EFFECT_307;
+        case 308: return SPELL_EFFECT_CANCEL_PRELOAD_WORLD;
+        case 309: return SPELL_EFFECT_PRELOAD_WORLD;
+        case 310: return SPELL_EFFECT_310;
+        case 311: return SPELL_EFFECT_ENSURE_WORLD_LOADED;
+        case 312: return SPELL_EFFECT_312;
+        case 313: return SPELL_EFFECT_CHANGE_ITEM_BONUSES_2;
+        case 314: return SPELL_EFFECT_ADD_SOCKET_BONUS;
+        case 315: return TOTAL_SPELL_EFFECTS;
         default: throw std::out_of_range("index");
     }
 }
@@ -3258,7 +3296,17 @@ TC_API_EXPORT size_t EnumUtils<SpellEffectName>::ToIndex(SpellEffectName value)
         case SPELL_EFFECT_GATHERING: return 302;
         case SPELL_EFFECT_CREATE_TRAIT_TREE_CONFIG: return 303;
         case SPELL_EFFECT_CHANGE_ACTIVE_COMBAT_TRAIT_CONFIG: return 304;
-        case TOTAL_SPELL_EFFECTS: return 305;
+        case SPELL_EFFECT_305: return 305;
+        case SPELL_EFFECT_306: return 306;
+        case SPELL_EFFECT_307: return 307;
+        case SPELL_EFFECT_CANCEL_PRELOAD_WORLD: return 308;
+        case SPELL_EFFECT_PRELOAD_WORLD: return 309;
+        case SPELL_EFFECT_310: return 310;
+        case SPELL_EFFECT_ENSURE_WORLD_LOADED: return 311;
+        case SPELL_EFFECT_312: return 312;
+        case SPELL_EFFECT_CHANGE_ITEM_BONUSES_2: return 313;
+        case SPELL_EFFECT_ADD_SOCKET_BONUS: return 314;
+        case TOTAL_SPELL_EFFECTS: return 315;
         default: throw std::out_of_range("value");
     }
 }

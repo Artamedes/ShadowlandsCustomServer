@@ -97,7 +97,7 @@ void WorldSession::HandleTrainerListOpcode(WorldPackets::NPC::Hello& packet)
         return;
     }
 
-    if (uint32 trainerId = sObjectMgr->GetCreatureDefaultTrainer(npc->GetEntry()))
+    if (uint32 trainerId = npc->GetTrainerId())
         SendTrainerList(npc, trainerId);
     else
         TC_LOG_DEBUG("network", "WorldSession::SendTrainerList - Creature id {} has no trainer data.", npc->GetEntry());
@@ -174,23 +174,17 @@ void WorldSession::HandleGossipHelloOpcode(WorldPackets::NPC::Hello& packet)
         unit->PauseMovement(pause);
     unit->SetHomePosition(unit->GetPosition());
 
-    // If spiritguide, no need for gossip menu, just put player into resurrect queue
-    if (unit->IsSpiritGuide())
+    if (unit->IsAreaSpiritHealer())
     {
-        Battleground* bg = _player->GetBattleground();
-        if (bg)
-        {
-            bg->AddPlayerToResurrectQueue(unit->GetGUID(), _player->GetGUID());
-            sBattlegroundMgr->SendAreaSpiritHealerQueryOpcode(_player, bg, unit->GetGUID());
-            return;
-        }
+        _player->SetAreaSpiritHealer(unit);
+        _player->SendAreaSpiritHealerTime(unit);
     }
 
     _player->PlayerTalkClass->ClearMenus();
     if (!unit->AI()->OnGossipHello(_player))
     {
 //        _player->TalkedToCreature(unit->GetEntry(), unit->GetGUID());
-        _player->PrepareGossipMenu(unit, unit->GetCreatureTemplate()->GossipMenuId, true);
+        _player->PrepareGossipMenu(unit, unit->GetGossipMenuId(), true);
         _player->SendPreparedGossip(unit);
     }
 }
@@ -335,7 +329,7 @@ void WorldSession::HandleGossipSelectOptionOpcode(WorldPackets::NPC::GossipSelec
 
 void WorldSession::HandleSpiritHealerActivate(WorldPackets::NPC::SpiritHealerActivate& packet)
 {
-    Creature* unit = GetPlayer()->GetNPCIfCanInteractWith(packet.Healer, UNIT_NPC_FLAG_SPIRITHEALER, UNIT_NPC_FLAG_2_NONE);
+    Creature* unit = GetPlayer()->GetNPCIfCanInteractWith(packet.Healer, UNIT_NPC_FLAG_SPIRIT_HEALER, UNIT_NPC_FLAG_2_NONE);
     if (!unit)
     {
         TC_LOG_DEBUG("network", "WORLD: HandleSpiritHealerActivateOpcode - {} not found or you can not interact with him.", packet.Healer.ToString());

@@ -432,9 +432,9 @@ public:
 
     class spell_CastDownSpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_CastDownSpellScript)
+        PrepareSpellScript(spell_CastDownSpellScript);
 
-            void HandleDummy(SpellEffIndex /*effIndex*/)
+        void HandleDummy(SpellEffIndex /*effIndex*/)
         {
             if (GetCaster() && GetHitUnit())
             {

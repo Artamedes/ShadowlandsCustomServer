@@ -33,7 +33,7 @@
 
 SmartAI::SmartAI(Creature* creature, uint32 scriptId) : CreatureAI(creature, scriptId), _charmed(false), _followCreditType(0), _followArrivedTimer(0), _followCredit(0), _followArrivedEntry(0), _followDistance(0.f), _followAngle(0.f),
     _escortState(SMART_ESCORT_NONE), _escortNPCFlags(0), _escortInvokerCheckTimer(1000), _currentWaypointNode(0), _waypointReached(false), _waypointPauseTimer(0), _waypointPauseForced(false), _repeatWaypointPath(false),
-    _OOCReached(false), _waypointPathEnded(false), _run(true), _evadeDisabled(false), _canAutoAttack(true), _canCombatMove(true), _invincibilityHPLevel(0), _despawnTime(0), _despawnState(0), _vehicleConditionsTimer(0),
+    _OOCReached(false), _waypointPathEnded(false), _run(true), _evadeDisabled(false), _canCombatMove(true), _invincibilityHPLevel(0), _despawnTime(0), _despawnState(0), _vehicleConditionsTimer(0),
     _gossipReturn(false), _escortQuestId(0)
 {
     _vehicleConditions = sConditionMgr->HasConditionsForNotGroupedEntry(CONDITION_SOURCE_TYPE_CREATURE_TEMPLATE_VEHICLE, creature->GetEntry());
@@ -309,8 +309,7 @@ void SmartAI::UpdateAI(uint32 diff)
     if (!hasVictim)
         return;
 
-    if (_canAutoAttack)
-        DoMeleeAttackIfReady();
+    DoMeleeAttackIfReady();
 }
 
 bool SmartAI::IsEscortInvokerInRange()
@@ -594,11 +593,11 @@ void SmartAI::AttackStart(Unit* who)
     if (!IsAIControlled())
     {
         if (who)
-            me->Attack(who, _canAutoAttack);
+            me->Attack(who, true);
         return;
     }
 
-    if (who && me->Attack(who, _canAutoAttack))
+    if (who && me->Attack(who, true))
     {
         me->GetMotionMaster()->Clear(MOTION_PRIORITY_NORMAL);
         me->PauseMovement();
@@ -1190,28 +1189,28 @@ public:
     void OnSceneStart(Player* player, uint32 /*sceneInstanceID*/, SceneTemplate const* sceneTemplate) override
     {
         SmartScript smartScript;
-        smartScript.OnInitialize(nullptr, nullptr, sceneTemplate);
+        smartScript.OnInitialize(player, nullptr, sceneTemplate);
         smartScript.ProcessEventsFor(SMART_EVENT_SCENE_START, player);
     }
 
     void OnSceneTriggerEvent(Player* player, uint32 /*sceneInstanceID*/, SceneTemplate const* sceneTemplate, std::string const& triggerName) override
     {
         SmartScript smartScript;
-        smartScript.OnInitialize(nullptr, nullptr, sceneTemplate);
+        smartScript.OnInitialize(player, nullptr, sceneTemplate);
         smartScript.ProcessEventsFor(SMART_EVENT_SCENE_TRIGGER, player, 0, 0, false, nullptr, nullptr, triggerName);
     }
 
     void OnSceneCancel(Player* player, uint32 /*sceneInstanceID*/, SceneTemplate const* sceneTemplate) override
     {
         SmartScript smartScript;
-        smartScript.OnInitialize(nullptr, nullptr, sceneTemplate);
+        smartScript.OnInitialize(player, nullptr, sceneTemplate);
         smartScript.ProcessEventsFor(SMART_EVENT_SCENE_CANCEL, player);
     }
 
     void OnSceneComplete(Player* player, uint32 /*sceneInstanceID*/, SceneTemplate const* sceneTemplate) override
     {
         SmartScript smartScript;
-        smartScript.OnInitialize(nullptr, nullptr, sceneTemplate);
+        smartScript.OnInitialize(player, nullptr, sceneTemplate);
         smartScript.ProcessEventsFor(SMART_EVENT_SCENE_COMPLETE, player);
     }
 };
@@ -1225,7 +1224,7 @@ public:
     void OnQuestStatusChange(Player* player, Quest const* quest, QuestStatus /*oldStatus*/, QuestStatus newStatus) override
     {
         SmartScript smartScript;
-        smartScript.OnInitialize(nullptr, nullptr, nullptr, quest);
+        smartScript.OnInitialize(player, nullptr, nullptr, quest);
         switch (newStatus)
         {
             case QUEST_STATUS_INCOMPLETE:
@@ -1253,7 +1252,7 @@ public:
         if (slot < MAX_QUEST_LOG_SIZE && player->IsQuestObjectiveComplete(slot, quest, objective))
         {
             SmartScript smartScript;
-            smartScript.OnInitialize(nullptr, nullptr, nullptr, quest);
+            smartScript.OnInitialize(player, nullptr, nullptr, quest);
             smartScript.ProcessEventsFor(SMART_EVENT_QUEST_OBJ_COMPLETION, player, objective.ID);
         }
     }

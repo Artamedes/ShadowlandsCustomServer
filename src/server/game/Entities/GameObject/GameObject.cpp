@@ -308,10 +308,15 @@ public:
             G3D::Vector3 prev(oldAnimation->Pos.X, oldAnimation->Pos.Y, oldAnimation->Pos.Z);
             G3D::Vector3 next(newAnimation->Pos.X, newAnimation->Pos.Y, newAnimation->Pos.Z);
 
-            float animProgress = float(newProgress - oldAnimation->TimeIndex) / float(newAnimation->TimeIndex - oldAnimation->TimeIndex);
+            G3D::Vector3 dst = next;
+            if (prev != next)
+            {
+                float animProgress = float(newProgress - oldAnimation->TimeIndex) / float(newAnimation->TimeIndex - oldAnimation->TimeIndex);
 
-            G3D::Vector3 dst = prev.lerp(next, animProgress) * pathRotation;
+                dst = prev.lerp(next, animProgress);
+            }
 
+            dst = dst * pathRotation;
             dst += PositionToVector3(&_owner.GetStationaryPosition());
 
             _owner.GetMap()->GameObjectRelocation(&_owner, dst.x, dst.y, dst.z, _owner.GetOrientation());
@@ -324,9 +329,14 @@ public:
             G3D::Quat prev(oldRotation->Rot[0], oldRotation->Rot[1], oldRotation->Rot[2], oldRotation->Rot[3]);
             G3D::Quat next(newRotation->Rot[0], newRotation->Rot[1], newRotation->Rot[2], newRotation->Rot[3]);
 
-            float animProgress = float(newProgress - oldRotation->TimeIndex) / float(newRotation->TimeIndex - oldRotation->TimeIndex);
+            G3D::Quat rotation = next;
 
-            G3D::Quat rotation = prev.slerp(next, animProgress);
+            if (prev != next)
+            {
+                float animProgress = float(newProgress - oldRotation->TimeIndex) / float(newRotation->TimeIndex - oldRotation->TimeIndex);
+
+                rotation = prev.slerp(next, animProgress);
+            }
 
             _owner.SetLocalRotation(rotation.x, rotation.y, rotation.z, rotation.w);
             _owner.UpdateModelPosition();
@@ -782,7 +792,7 @@ bool GameObject::Create(uint32 entry, Map* map, Position const& pos, QuaternionD
             break;
         }
         case GAMEOBJECT_TYPE_FISHINGNODE:
-            SetLevel(1);
+            SetLevel(0);
             SetGoAnimProgress(255);
             break;
         case GAMEOBJECT_TYPE_TRAP:
@@ -893,7 +903,6 @@ GameObject* GameObject::CreateGameObjectFromDB(ObjectGuid::LowType spawnId, Map*
 
 void GameObject::Update(uint32 diff)
 {
-    m_Events.Update(diff);
     _scheduler.Update(diff);
 
     WorldObject::Update(diff);
@@ -991,18 +1000,7 @@ void GameObject::Update(uint32 diff)
                         // splash bobber (bobber ready now)
                         Unit* caster = GetOwner();
                         if (caster && caster->GetTypeId() == TYPEID_PLAYER)
-                        {
-                            SetGoState(GO_STATE_ACTIVE);
-                            ReplaceAllFlags(GO_FLAG_NODESPAWN);
-
-                            UpdateData udata(caster->GetMapId());
-                            WorldPacket packet;
-                            BuildValuesUpdateBlockForPlayer(&udata, caster->ToPlayer());
-                            udata.BuildPacket(&packet);
-                            caster->ToPlayer()->SendDirectMessage(&packet);
-
-                            SendCustomAnim(GetGoAnimProgress());
-                        }
+                            SendCustomAnim(0);
 
                         m_lootState = GO_READY;                 // can be successfully open with some chance
                     }
@@ -1137,8 +1135,7 @@ void GameObject::Update(uint32 diff)
                     // Pointer to appropriate target if found any
                     Unit* target = nullptr;
 
-                    /// @todo this hack with search required until GO casting not implemented
-                    if (GetOwner())
+                    if (GetOwner() || goInfo->trap.Checkallunits)
                     {
                         // Hunter trap: Search units which are unfriendly to the trap's owner
                         Trinity::NearestAttackableNoTotemUnitInObjectRangeCheck checker(this, radius);
@@ -1464,7 +1461,7 @@ void GameObject::Delete()
         ReplaceAllFlags(GameObjectFlags(goOverride->Flags));
 
     uint32 poolid = GetGameObjectData() ? GetGameObjectData()->poolId : 0;
-    if (poolid)
+    if (m_respawnCompatibilityMode && poolid)
         sPoolMgr->UpdatePool<GameObject>(GetMap()->GetPoolData(), poolid, GetSpawnId());
     else
         AddObjectToRemoveList();
@@ -1816,15 +1813,15 @@ void GameObject::SaveRespawnTime(uint32 forceDelay)
     }
 }
 
-bool GameObject::IsNeverVisibleFor(WorldObject const* seer) const
+bool GameObject::IsNeverVisibleFor(WorldObject const* seer, bool allowServersideObjects) const
 {
     if (WorldObject::IsNeverVisibleFor(seer))
         return true;
 
-    if (GetGOInfo()->GetServerOnly())
+    if (GetGOInfo()->GetServerOnly() && !allowServersideObjects)
         return true;
 
-    if (!GetDisplayId())
+    if (!GetDisplayId() && GetGOInfo()->IsDisplayMandatory())
         return true;
 
     return false;
@@ -2548,34 +2545,44 @@ void GameObject::Use(Unit* user)
             {
                 case GO_READY:                              // ready for loot
                 {
-                    uint32 zone, subzone;
-                    GetZoneAndAreaId(zone, subzone);
+                    SetLootState(GO_ACTIVATED, player);
 
-                    int32 zone_skill = sObjectMgr->GetFishingBaseSkillLevel(subzone);
-                    if (!zone_skill)
-                        zone_skill = sObjectMgr->GetFishingBaseSkillLevel(zone);
+                    SetGoState(GO_STATE_ACTIVE);
+                    ReplaceAllFlags(GO_FLAG_IN_MULTI_USE);
 
-                    //provide error, no fishable zone or area should be 0
-                    if (!zone_skill)
-                        TC_LOG_ERROR("sql.sql", "Fishable areaId {} are not properly defined in `skill_fishing_base_level`.", subzone);
+                    SendUpdateToPlayer(player);
 
-                    int32 skill = player->GetSkillValue(SKILL_FISHING);
-
-                    int32 chance;
-                    if (skill < zone_skill)
+                    AreaTableEntry const* areaEntry = sAreaTableStore.LookupEntry(GetAreaId());
+                    if (!areaEntry)
                     {
-                        chance = int32(pow((double)skill/zone_skill, 2) * 100);
+                        TC_LOG_ERROR("entities.gameobject", "Gameobject '{}' ({}) spawned in unknown area (x: {} y: {} z: {} map: {})",
+                            GetEntry(), GetGUID().ToString(), GetPositionX(), GetPositionY(), GetPositionZ(), GetMapId());
+                        break;
+                    }
+
+                    // Update the correct fishing skill according to the area's ContentTuning
+                    ContentTuningEntry const* areaContentTuning = DB2Manager::GetContentTuningForArea(areaEntry);
+                    if (!areaContentTuning)
+                        break;
+
+                    player->UpdateFishingSkill(areaContentTuning->ExpansionID);
+
+                    // Send loot
+                    int32 areaFishingLevel = sObjectMgr->GetFishingBaseSkillLevel(areaEntry);
+
+                    uint32 playerFishingSkill = player->GetProfessionSkillForExp(SKILL_FISHING, areaContentTuning->ExpansionID);
+                    int32 playerFishingLevel = player->GetSkillValue(playerFishingSkill);
+
+                    int32 roll = irand(1, 100);
+                    int32 chance = 100;
+                    if (playerFishingLevel < areaFishingLevel)
+                    {
+                        chance = int32(pow((double)playerFishingLevel / areaFishingLevel, 2) * 100);
                         if (chance < 1)
                             chance = 1;
                     }
-                    else
-                        chance = 100;
 
-                    int32 roll = irand(1, 100);
-
-                    TC_LOG_DEBUG("misc", "Fishing check (skill: {} zone min skill: {} chance {} roll: {}", skill, zone_skill, chance, roll);
-
-                    player->UpdateFishingSkill();
+                    TC_LOG_DEBUG("misc", "Fishing check (skill {} level: {} area skill level: {} chance {} roll: {}", playerFishingSkill, playerFishingLevel, areaFishingLevel, chance, roll);
 
                     /// @todo find reasonable value for fishing hole search
                     GameObject* fishingPool = LookupFishingHoleAround(20.0f + CONTACT_DISTANCE);
@@ -2887,8 +2894,9 @@ void GameObject::Use(Unit* user)
 
             Player* player = user->ToPlayer();
 
-            WorldPackets::Misc::EnableBarberShop packet;
-            player->SendDirectMessage(packet.Write());
+            WorldPackets::Misc::EnableBarberShop enableBarberShop;
+            enableBarberShop.CustomizationScope = info->barberChair.CustomizationScope;
+            player->SendDirectMessage(enableBarberShop.Write());
 
             // fallback, will always work
             player->TeleportTo(GetMapId(), GetPositionX(), GetPositionY(), GetPositionZ(), GetOrientation(), TELE_TO_NOT_LEAVE_TRANSPORT | TELE_TO_NOT_LEAVE_COMBAT | TELE_TO_NOT_UNSUMMON_PET);

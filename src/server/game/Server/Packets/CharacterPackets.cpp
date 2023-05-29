@@ -46,7 +46,7 @@ namespace WorldPackets
 {
 namespace Character
 {
-void SortCustomizations(Array<ChrCustomizationChoice, 72>& customizations)
+void SortCustomizations(Array<ChrCustomizationChoice, 125>& customizations)
 {
     auto first = customizations.begin();
     auto last = customizations.end();
@@ -146,10 +146,12 @@ EnumCharactersResult::CharacterInfo::CharacterInfo(Field* fields)
 
     if (equipment.size() < REAGENT_BAG_SLOT_END * 5)
         return;
+    
+    constexpr std::size_t equipmentFieldsPerSlot = 5;
 
-    for (uint8 slot = 0; slot < REAGENT_BAG_SLOT_END; ++slot)
+    for (std::size_t slot = 0; slot < VisualItems.size() && (slot + 1) * equipmentFieldsPerSlot <= equipment.size(); ++slot)
     {
-        uint32 visualBase = slot * 5;
+        std::size_t visualBase = slot * equipmentFieldsPerSlot;
         VisualItems[slot].InvType = Trinity::StringTo<uint8>(equipment[visualBase + 0]).value_or(0);
         VisualItems[slot].DisplayID = Trinity::StringTo<uint32>(equipment[visualBase + 1]).value_or(0);
         VisualItems[slot].DisplayEnchantID = Trinity::StringTo<uint32>(equipment[visualBase + 2]).value_or(0);

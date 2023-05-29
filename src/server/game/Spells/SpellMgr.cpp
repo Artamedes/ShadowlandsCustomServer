@@ -1784,7 +1784,7 @@ void SpellMgr::LoadSpellProcs()
                 if (spellEffectInfo.IsAura())
                 {
                     TC_LOG_ERROR("sql.sql", "Spell Id {} has DBC ProcFlags 0x{:X} 0x{:X}, but it's of non-proc aura type, it probably needs an entry in `spell_proc` table to be handled correctly.",
-                        spellInfo.Id, spellInfo.ProcFlags[0], spellInfo.ProcFlags[1]);
+                        spellInfo.Id, uint32(spellInfo.ProcFlags[0]), uint32(spellInfo.ProcFlags[1]));
                     break;
                 }
             }
@@ -4905,6 +4905,18 @@ void SpellMgr::LoadSpellInfoCorrections()
 
     // ENDOF ANTORUS THE BURNING THRONE SPELLS
 
+    //
+    // THE AZURE VAULT SPELLS
+    //
+
+    // Stinging Sap
+    ApplySpellFix({ 374523 }, [](SpellInfo* spellInfo)
+    {
+        spellInfo->AttributesEx8 |= SPELL_ATTR8_CAN_ATTACK_IMMUNEPC;
+    });
+
+    // ENDOF THE AZURE VAULT SPELLS
+    //
     // Summon Master Li Fei
     ApplySpellFix({ 102445 }, [](SpellInfo* spellInfo)
     {
@@ -4954,6 +4966,15 @@ void SpellMgr::LoadSpellInfoCorrections()
         ApplySpellEffectFix(spellInfo, EFFECT_2, [](SpellEffectInfo* spellEffectInfo)
         {
             spellEffectInfo->Effect = SPELL_EFFECT_APPLY_AURA;
+        });
+    });
+    
+    ApplySpellFix({ 265057 }, [](SpellInfo* spellInfo)
+    {
+        ApplySpellEffectFix(spellInfo, EFFECT_0, [](SpellEffectInfo* spellEffectInfo)
+        {
+            // Fix incorrect spell id (it has self in TriggerSpell)
+            spellEffectInfo->TriggerSpell = 16403;
         });
     });
 

@@ -141,9 +141,8 @@ void WorldSession::HandleAutostoreLootItemOpcode(WorldPackets::Loot::LootItem& p
 
 void WorldSession::HandleLootMoneyOpcode(WorldPackets::Loot::LootMoney& /*packet*/)
 {
-    std::vector<Loot*> lootsToRelease;
-
     Player* player = GetPlayer();
+    std::vector<Loot*> forceLootRelease;
     for (std::pair<ObjectGuid const, Loot*> const& lootView : player->GetAELootView())
     {
         Loot* loot = lootView.second;
@@ -207,10 +206,10 @@ void WorldSession::HandleLootMoneyOpcode(WorldPackets::Loot::LootMoney& /*packet
 
         // Delete container if empty
         if (loot->isLooted() && guid.IsItem())
-            lootsToRelease.push_back(loot);
+            forceLootRelease.push_back(loot);
     }
 
-    for (auto loot : lootsToRelease)
+    for (Loot* loot : forceLootRelease)
         player->GetSession()->DoLootRelease(loot);
 }
 
@@ -293,7 +292,11 @@ void WorldSession::DoLootRelease(Loot* loot)
 
         if (loot->isLooted() || go->GetGoType() == GAMEOBJECT_TYPE_FISHINGNODE || go->GetGoType() == GAMEOBJECT_TYPE_FISHINGHOLE)
         {
-            if (go->GetGoType() == GAMEOBJECT_TYPE_FISHINGHOLE)
+            if (go->GetGoType() == GAMEOBJECT_TYPE_FISHINGNODE)
+            {
+                go->SetLootState(GO_JUST_DEACTIVATED);
+            }
+            else if (go->GetGoType() == GAMEOBJECT_TYPE_FISHINGHOLE)
             {                                               // The fishing hole used once more
                 go->AddUse();                               // if the max usage is reached, will be despawned in next tick
                 if (go->GetUseCount() >= go->GetGOValue()->FishingHole.MaxOpens)

@@ -24,23 +24,6 @@
 #include <boost/any.hpp>
 #include <unordered_map>
 
-#include <cstdlib>
-
-#if TRINITY_COMPILER == TRINITY_COMPILER_MICROSOFT
-
-#define atoll _atoi64
-#define llabs _abs64
-
-#else
-
-#define stricmp strcasecmp
-#define strnicmp strncasecmp
-
-#endif
-
-inline unsigned long atoul(char const* str) { return strtoul(str, nullptr, 10); }
-inline unsigned long long atoull(char const* str) { return strtoull(str, nullptr, 10); }
-
 #define STRINGIZE(a) #a
 
 enum TimeConstants
@@ -129,15 +112,6 @@ struct LocalizedString
 };
 
 #pragma pack(pop)
-
-// we always use stdlib std::max/std::min, undefine some not C++ standard defines (Win API and some other platforms)
-#ifdef max
-#undef max
-#endif
-
-#ifdef min
-#undef min
-#endif
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846

@@ -103,33 +103,6 @@ namespace WorldPackets
             uint32 SpellID = 0;
         };
 
-        class RequestCategoryCooldowns final : public ClientPacket
-        {
-        public:
-            RequestCategoryCooldowns(WorldPacket&& packet) : ClientPacket(CMSG_REQUEST_CATEGORY_COOLDOWNS, std::move(packet)) { }
-
-            void Read() override { }
-        };
-
-        class CategoryCooldown final : public ServerPacket
-        {
-        public:
-            struct CategoryCooldownInfo
-            {
-                CategoryCooldownInfo(uint32 category, int32 cooldown)
-                    : Category(category), ModCooldown(cooldown) { }
-
-                uint32 Category   = 0; ///< SpellCategory Id
-                int32 ModCooldown = 0; ///< Reduced Cooldown in ms
-            };
-
-            CategoryCooldown() : ServerPacket(SMSG_CATEGORY_COOLDOWN, 4) { }
-
-            WorldPacket const* Write() override;
-
-            std::vector<CategoryCooldownInfo> CategoryCooldowns;
-        };
-
         class SendKnownSpells final : public ServerPacket
         {
         public:
@@ -277,7 +250,8 @@ namespace WorldPackets
             MissileTrajectoryRequest MissileTrajectory;
             Optional<MovementInfo> MoveUpdate;
             std::vector<SpellWeight> Weight;
-            Array<SpellCraftingReagent, 3> OptionalReagents;
+            Array<SpellCraftingReagent, 6> OptionalReagents;
+            Array<SpellCraftingReagent, 6> RemovedModifications;
             Array<SpellExtraCurrencyCost, 5 /*MAX_ITEM_EXT_COST_CURRENCIES*/> OptionalCurrencies;
             Optional<uint64> CraftingOrderID;
             ObjectGuid CraftingNPC;
@@ -964,7 +938,6 @@ namespace WorldPackets
 
             ObjectGuid SpellClickUnitGuid;
             bool TryAutoDismount = false;
-            bool IsSoftInteract = false;
         };
 
         class ResyncRunes final : public ServerPacket
@@ -1096,6 +1069,16 @@ namespace WorldPackets
 
             int32 RecipeID = 0;
             bool IsFavorite = false;
+        };
+        
+        class KeyboundOverride final : public ClientPacket
+        {
+        public:
+            KeyboundOverride(WorldPacket&& packet) : ClientPacket(CMSG_KEYBOUND_OVERRIDE,  std::move(packet)) { }
+
+            void Read() override;
+
+            uint16 OverrideID = 0;
         };
 
         class LossControlAuraUpdate final : public ServerPacket

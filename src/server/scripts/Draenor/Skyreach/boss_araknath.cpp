@@ -301,9 +301,9 @@ public:
 
     class spell_EnergizeSpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_EnergizeSpellScript)
+        PrepareSpellScript(spell_EnergizeSpellScript);
 
-            void HandleDummy(SpellEffIndex /*effIndex*/)
+        void HandleDummy(SpellEffIndex /*effIndex*/)
         {
             if (Unit* caster = GetCaster())
                 caster->CastSpell(caster, uint32(Spells::ENERGIZE_HEAL));
@@ -332,9 +332,9 @@ public:
 
     class spell_VisualEnergizeSpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_VisualEnergizeSpellScript)
+        PrepareSpellScript(spell_VisualEnergizeSpellScript);
 
-            void CheckTarget(std::list<WorldObject*>& unitList)
+        void CheckTarget(std::list<WorldObject*>& unitList)
         {
             Unit* caster = GetCaster();
             unitList.remove_if([caster](WorldObject* obj) {
@@ -367,9 +367,9 @@ public:
 
     class spell_VisualEnergize2SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_VisualEnergize2SpellScript)
+        PrepareSpellScript(spell_VisualEnergize2SpellScript);
 
-            void CheckTarget(std::list<WorldObject*>& unitList)
+        void CheckTarget(std::list<WorldObject*>& unitList)
         {
             Unit* caster = GetCaster();
             unitList.remove_if([caster](WorldObject* obj) {

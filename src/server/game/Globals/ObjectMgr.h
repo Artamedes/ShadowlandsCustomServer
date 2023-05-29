@@ -80,11 +80,7 @@ struct TempSummonGroupKey
     {
     }
 
-    bool operator<(TempSummonGroupKey const& rhs) const
-    {
-        return std::tie(_summonerEntry, _summonerType, _summonGroup) <
-            std::tie(rhs._summonerEntry, rhs._summonerType, rhs._summonGroup);
-    }
+    std::strong_ordering operator<=>(TempSummonGroupKey const& right) const = default;
 
 private:
     uint32 _summonerEntry;      ///< Summoner's entry
@@ -1280,6 +1276,7 @@ class TC_GAME_API ObjectMgr
 
         WorldSafeLocsEntry const* GetDefaultGraveyard(uint32 team) const;
         WorldSafeLocsEntry const* GetClosestGraveyard(WorldLocation const& location, uint32 team, WorldObject* conditionObject) const;
+        WorldSafeLocsEntry const* GetClosestGraveyardInZone(WorldLocation const& location, uint32 team, WorldObject* conditionObject, uint32 zoneId) const;
         bool AddGraveyardLink(uint32 id, uint32 zoneId, uint32 team, bool persist = true);
         void RemoveGraveyardLink(uint32 id, uint32 zoneId, uint32 team, bool persist = false);
         void LoadGraveyardZones();
@@ -1480,11 +1477,7 @@ class TC_GAME_API ObjectMgr
         uint32 GetBaseXP(uint8 level);
         uint32 GetXPForLevel(uint8 level) const;
 
-        int32 GetFishingBaseSkillLevel(uint32 entry) const
-        {
-            FishingBaseSkillContainer::const_iterator itr = _fishingBaseForAreaStore.find(entry);
-            return itr != _fishingBaseForAreaStore.end() ? itr->second : 0;
-        }
+        int32 GetFishingBaseSkillLevel(AreaTableEntry const* areaEntry) const;
 
         SkillTiersEntry const* GetSkillTier(uint32 skillTierId) const
         {
@@ -1760,7 +1753,7 @@ class TC_GAME_API ObjectMgr
         // for wintergrasp only
         GraveyardContainer GraveyardStore;
 
-        static void AddLocaleString(std::string&& value, LocaleConstant localeConstant, std::vector<std::string>& data);
+        static void AddLocaleString(std::string_view value, LocaleConstant localeConstant, std::vector<std::string>& data);
         static std::string_view GetLocaleString(std::vector<std::string> const& data, LocaleConstant locale)
         {
             if (locale < data.size())
@@ -1807,11 +1800,6 @@ class TC_GAME_API ObjectMgr
         }
 
         void LoadRaceAndClassExpansionRequirements();
-        void LoadRealmNames();
-
-        std::string GetRealmName(uint32 realm) const;
-        std::string GetNormalizedRealmName(uint32 realm) const;
-        bool GetRealmName(uint32 realmId, std::string& name, std::string& normalizedName) const;
 
         std::string GetPhaseName(uint32 phaseId) const;
 

@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 8.0.31, for Linux (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.32, for Linux (x86_64)
 --
 -- Host: localhost    Database: world
 -- ------------------------------------------------------
--- Server version	8.0.31-0ubuntu0.20.04.2
+-- Server version	8.0.32-0ubuntu0.20.04.2
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -608,6 +608,7 @@ CREATE TABLE `creature` (
   `unit_flags3` int unsigned NOT NULL DEFAULT '0',
   `dynamicflags` int unsigned NOT NULL DEFAULT '0',
   `ScriptName` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+  `StringId` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `VerifiedBuild` int NOT NULL DEFAULT '0',
   PRIMARY KEY (`guid`),
   KEY `idx_map` (`map`),
@@ -627,8 +628,11 @@ CREATE TABLE `creature_addon` (
   `path_id` int unsigned NOT NULL DEFAULT '0',
   `mount` int unsigned NOT NULL DEFAULT '0',
   `MountCreatureID` int unsigned NOT NULL DEFAULT '0',
-  `bytes1` int unsigned NOT NULL DEFAULT '0',
-  `bytes2` int unsigned NOT NULL DEFAULT '1',
+  `StandState` tinyint unsigned NOT NULL DEFAULT '0',
+  `AnimTier` tinyint unsigned NOT NULL DEFAULT '0',
+  `VisFlags` tinyint unsigned NOT NULL DEFAULT '0',
+  `SheathState` tinyint unsigned NOT NULL DEFAULT '1',
+  `PvPFlags` tinyint unsigned NOT NULL DEFAULT '0',
   `emote` int unsigned NOT NULL DEFAULT '0',
   `aiAnimKit` smallint NOT NULL DEFAULT '0',
   `movementAnimKit` smallint NOT NULL DEFAULT '0',
@@ -900,8 +904,6 @@ CREATE TABLE `creature_template` (
   `TitleAlt` mediumtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `IconName` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `gossip_menu_id` int unsigned NOT NULL DEFAULT '0',
-  `minlevel` smallint NOT NULL DEFAULT '1',
-  `maxlevel` smallint NOT NULL DEFAULT '1',
   `HealthScalingExpansion` int NOT NULL DEFAULT '0',
   `RequiredExpansion` int NOT NULL DEFAULT '0',
   `VignetteID` int NOT NULL DEFAULT '0',
@@ -952,6 +954,7 @@ CREATE TABLE `creature_template` (
   `spell_school_immune_mask` int unsigned NOT NULL DEFAULT '0',
   `flags_extra` int unsigned NOT NULL DEFAULT '0',
   `ScriptName` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+  `StringId` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `VerifiedBuild` int NOT NULL DEFAULT '0',
   PRIMARY KEY (`entry`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Creature System';
@@ -969,8 +972,11 @@ CREATE TABLE `creature_template_addon` (
   `path_id` int unsigned NOT NULL DEFAULT '0',
   `mount` int unsigned NOT NULL DEFAULT '0',
   `MountCreatureID` int unsigned NOT NULL DEFAULT '0',
-  `bytes1` int unsigned NOT NULL DEFAULT '0',
-  `bytes2` int unsigned NOT NULL DEFAULT '1',
+  `StandState` tinyint unsigned NOT NULL DEFAULT '0',
+  `AnimTier` tinyint unsigned NOT NULL DEFAULT '0',
+  `VisFlags` tinyint unsigned NOT NULL DEFAULT '0',
+  `SheathState` tinyint unsigned NOT NULL DEFAULT '1',
+  `PvPFlags` tinyint unsigned NOT NULL DEFAULT '0',
   `emote` int unsigned NOT NULL DEFAULT '0',
   `aiAnimKit` smallint NOT NULL DEFAULT '0',
   `movementAnimKit` smallint NOT NULL DEFAULT '0',
@@ -1518,7 +1524,7 @@ CREATE TABLE `game_tele` (
   `map` smallint unsigned NOT NULL DEFAULT '0',
   `name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=1951 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Tele Command';
+) ENGINE=InnoDB AUTO_INCREMENT=1965 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Tele Command';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -4021,6 +4027,7 @@ CREATE TABLE `smart_scripts` (
   `action_param4` int unsigned NOT NULL DEFAULT '0',
   `action_param5` int unsigned NOT NULL DEFAULT '0',
   `action_param6` int unsigned NOT NULL DEFAULT '0',
+  `action_param7` int unsigned NOT NULL DEFAULT '0',
   `target_type` tinyint unsigned NOT NULL DEFAULT '0',
   `target_param1` int unsigned NOT NULL DEFAULT '0',
   `target_param2` int unsigned NOT NULL DEFAULT '0',
@@ -4865,4 +4872,4 @@ CREATE TABLE `world_state` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2022-12-20  3:10:14
+-- Dump completed on 2023-04-02  1:02:30

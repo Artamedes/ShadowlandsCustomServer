@@ -81,6 +81,8 @@ struct MovementInfo
 
     Optional<AdvFlying> advFlying;
 
+    Optional<ObjectGuid> standingOnGameObjectGUID;
+
     // jumping
     struct JumpInfo
     {

@@ -246,10 +246,8 @@ public:
     }
 
     //Edit Player Faction
-    static bool HandleModifyFactionCommand(ChatHandler* handler, char const* args)
+    static bool HandleModifyFactionCommand(ChatHandler* handler, Optional<uint32> factionid, Optional<uint32> flag, Optional<uint64> npcflag, Optional<uint32> dyflag)
     {
-        char* pfactionid = handler->extractKeyFromLink((char*)args, "Hfaction");
-
         Creature* target = handler->getSelectedCreature();
         if (!target)
         {
@@ -258,56 +256,35 @@ public:
             return false;
         }
 
-        if (!pfactionid)
+        if (!flag)
+            flag = target->m_unitData->Flags;
+
+        if (!npcflag)
+            memcpy(&npcflag.emplace(), target->m_unitData->NpcFlags.begin(), sizeof(uint64));
+
+        if (!dyflag)
+            dyflag = target->m_objectData->DynamicFlags;
+
+        if (!factionid)
         {
-            uint32 factionid = target->GetFaction();
-            uint32 flag      = target->m_unitData->Flags;
-            uint64 npcflag;
-            memcpy(&npcflag, target->m_unitData->NpcFlags.begin(), sizeof(uint64));
-            uint32 dyflag    = target->m_objectData->DynamicFlags;
-            handler->PSendSysMessage(LANG_CURRENT_FACTION, target->GetGUID().ToString().c_str(), factionid, flag, std::to_string(npcflag).c_str(), dyflag);
+            handler->PSendSysMessage(LANG_CURRENT_FACTION, target->GetGUID().ToString().c_str(), *factionid, *flag, std::to_string(*npcflag).c_str(), *dyflag);
             return true;
         }
 
-        uint32 factionid = atoul(pfactionid);
-        uint32 flag;
-
-        char *pflag = strtok(nullptr, " ");
-        if (!pflag)
-            flag = target->m_unitData->Flags;
-        else
-            flag = atoul(pflag);
-
-        char* pnpcflag = strtok(nullptr, " ");
-
-        uint64 npcflag;
-        if (!pnpcflag)
-            memcpy(&npcflag, target->m_unitData->NpcFlags.begin(), sizeof(uint64));
-        else
-            npcflag = atoull(pnpcflag);
-
-        char* pdyflag = strtok(nullptr, " ");
-
-        uint32  dyflag;
-        if (!pdyflag)
-            dyflag = target->m_objectData->DynamicFlags;
-        else
-            dyflag = atoul(pdyflag);
-
-        if (!sFactionTemplateStore.LookupEntry(factionid))
+        if (!sFactionTemplateStore.LookupEntry(*factionid))
         {
-            handler->PSendSysMessage(LANG_WRONG_FACTION, factionid);
+            handler->PSendSysMessage(LANG_WRONG_FACTION, *factionid);
             handler->SetSentErrorMessage(true);
             return false;
         }
 
-        handler->PSendSysMessage(LANG_YOU_CHANGE_FACTION, target->GetGUID().ToString().c_str(), factionid, flag, std::to_string(npcflag).c_str(), dyflag);
+        handler->PSendSysMessage(LANG_YOU_CHANGE_FACTION, target->GetGUID().ToString().c_str(), *factionid, *flag, std::to_string(*npcflag).c_str(), *dyflag);
 
-        target->SetFaction(factionid);
-        target->ReplaceAllUnitFlags(UnitFlags(flag));
-        target->ReplaceAllNpcFlags(NPCFlags(npcflag & 0xFFFFFFFF));
-        target->ReplaceAllNpcFlags2(NPCFlags2(npcflag >> 32));
-        target->ReplaceAllDynamicFlags(dyflag);
+        target->SetFaction(*factionid);
+        target->ReplaceAllUnitFlags(UnitFlags(*flag));
+        target->ReplaceAllNpcFlags(NPCFlags(*npcflag & 0xFFFFFFFF));
+        target->ReplaceAllNpcFlags2(NPCFlags2(*npcflag >> 32));
+        target->ReplaceAllDynamicFlags(*dyflag);
 
         return true;
     }
@@ -544,15 +521,12 @@ public:
     //Edit Player or Creature Scale
     static bool HandleModifyScaleCommand(ChatHandler* handler, float speed)
     {
-        float Scale;
+        float scale;
         Unit* target = handler->getSelectedUnit();
-        if (CheckModifySpeed(handler, speed, target, Scale, 0.1f, 10.0f, false))
+        if (CheckModifySpeed(handler, speed, target, scale, 0.1f, 10.0f, false))
         {
-            NotifyModification(handler, target, LANG_YOU_CHANGE_SIZE, LANG_YOURS_SIZE_CHANGED, Scale);
-            if (Creature* creatureTarget = target->ToCreature())
-                creatureTarget->SetDisplayId(creatureTarget->GetDisplayId(), Scale);
-            else
-                target->SetObjectScale(Scale);
+            NotifyModification(handler, target, LANG_YOU_CHANGE_SIZE, LANG_YOURS_SIZE_CHANGED, scale);
+            target->SetObjectScale(scale);
             return true;
         }
         return false;
@@ -816,13 +790,8 @@ public:
     }
 
     //morph creature or player
-    static bool HandleModifyMorphCommand(ChatHandler* handler, char const* args)
+    static bool HandleModifyMorphCommand(ChatHandler* handler, uint32 display_id)
     {
-        if (!*args)
-            return false;
-
-        uint32 display_id = atoul(args);
-
         Unit* target = handler->getSelectedUnit();
         if (!target)
             target = handler->GetSession()->GetPlayer();
@@ -837,22 +806,8 @@ public:
     }
 
     // Toggles a phaseid on a player
-    static bool HandleModifyPhaseCommand(ChatHandler* handler, char const* args)
+    static bool HandleModifyPhaseCommand(ChatHandler* handler, uint32 phaseId, Optional<uint32> visibleMapId)
     {
-        if (!*args)
-            return false;
-
-        char* phaseText = strtok((char*)args, " ");
-        if (!phaseText)
-            return false;
-
-        uint32 phaseId = uint32(strtoul(phaseText, nullptr, 10));
-        uint32 visibleMapId = 0;
-
-        char* visibleMapIdText = strtok(nullptr, " ");
-        if (visibleMapIdText)
-            visibleMapId = uint32(strtoul(visibleMapIdText, nullptr, 10));
-
         if (phaseId && !sPhaseStore.LookupEntry(phaseId))
         {
             handler->SendSysMessage(LANG_PHASE_NOTFOUND);
@@ -864,7 +819,7 @@ public:
 
         if (visibleMapId)
         {
-            MapEntry const* visibleMap = sMapStore.LookupEntry(visibleMapId);
+            MapEntry const* visibleMap = sMapStore.LookupEntry(*visibleMapId);
             if (!visibleMap || visibleMap->ParentMapID != int32(target->GetMapId()))
             {
                 handler->SendSysMessage(LANG_PHASE_NOTFOUND);
@@ -872,10 +827,10 @@ public:
                 return false;
             }
 
-            if (!target->GetPhaseShift().HasVisibleMapId(visibleMapId))
-                PhasingHandler::AddVisibleMapId(target, visibleMapId);
+            if (!target->GetPhaseShift().HasVisibleMapId(*visibleMapId))
+                PhasingHandler::AddVisibleMapId(target, *visibleMapId);
             else
-                PhasingHandler::RemoveVisibleMapId(target, visibleMapId);
+                PhasingHandler::RemoveVisibleMapId(target, *visibleMapId);
         }
 
         if (phaseId)
@@ -1118,11 +1073,11 @@ public:
         {
             if (upperCase)
             {
-                c = char(::toupper(c));
+                c = charToUpper(c);
                 upperCase = false;
             }
             else
-                c = char(::tolower(c));
+                c = charToLower(c);
 
             if (c == '_')
             {
